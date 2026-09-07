@@ -13,12 +13,12 @@ import NextLink from "next/link"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { requireGodModeAdmin } from "~/features/godmode/serverSideProps"
-import { type NextPageWithLayout } from "~/lib/types"
+import type { NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-export const getServerSideProps: GetServerSideProps = (context) =>
+export const getServerSideProps: GetServerSideProps =  async (context) =>
   requireGodModeAdmin(context, [IsomerAdminRole.Core, IsomerAdminRole.Migrator])
 
 const GodModeWhitelistPage: NextPageWithLayout = () => {
@@ -28,6 +28,13 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
   const [adminEmails, setAdminEmails] = useState<string[]>([])
 
   const whitelistMutation = trpc.whitelist.whitelistEmails.useMutation({
+    onError: (error) => {
+      toast({
+        title: error.message,
+        status: "error",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
     onSuccess: (data) => {
       toast({
         title: `Successfully whitelisted ${data.adminCount} admin(s) and ${data.vendorCount} vendor(s)`,
@@ -36,13 +43,6 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
       })
       setAdminEmails([])
       setVendorEmails([])
-    },
-    onError: (error) => {
-      toast({
-        title: error.message,
-        status: "error",
-        ...BRIEF_TOAST_SETTINGS,
-      })
     },
   })
 

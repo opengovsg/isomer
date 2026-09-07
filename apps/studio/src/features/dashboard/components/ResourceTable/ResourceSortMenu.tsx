@@ -37,7 +37,7 @@ export const ResourceSortMenu = ({
                 <Menu.Item
                   key={option}
                   // SAFETY: caller invariant is checked immediately before this narrowing assertion
-                  onClick={() => onChange(option as ResourceOrderByOption)}
+                  onClick={() =>{  onChange(option as ResourceOrderByOption); }}
                 >
                   {label}
                 </Menu.Item>

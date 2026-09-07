@@ -35,9 +35,9 @@ export const CollectionTableMenu = ({
   const handleMoveResourceClick = () => {
     setMoveResource({
       id: resourceId,
-      title,
-      permalink,
       parentId,
+      permalink,
+      title,
       type: resourceType,
     })
   }
@@ -59,11 +59,11 @@ export const CollectionTableMenu = ({
             resourceType === ResourceType.CollectionLink) && (
             <MenuItem
               icon={<BiCog fontSize="1rem" />}
-              onClick={() =>
+              onClick={() =>{ 
                 setPageSettingsModalState({
                   pageId: resourceId,
                   type: resourceType,
-                })
+                }); }
               }
             >
               Edit settings
@@ -80,9 +80,9 @@ export const CollectionTableMenu = ({
             <MenuItem
               onClick={() => {
                 setValue({
-                  title,
                   resourceId,
                   resourceType,
+                  title,
                 })
               }}
               colorScheme="critical"

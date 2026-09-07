@@ -29,7 +29,7 @@ export type PreviewProps = IsomerSchema & {
 const FakeLink = forwardRef<
   HTMLAnchorElement,
   PropsWithChildren<AnchorHTMLAttributes<HTMLAnchorElement>>
->(function FakeLink({ children, href, onClick, ...rest }, ref) {
+>(({ children, href, onClick, ...rest }, ref) => {
   return (
     <a
       {...rest}
@@ -66,15 +66,15 @@ const SuspendablePreviewWithCustomSitemap = ({
 
   const renderProps = merge(props, overrides, {
     page: {
-      permalink,
       lastModified,
+      permalink,
     },
   })
 
   const siteConfig = {
     ...baseSiteConfig,
-    navbar,
     footerItems: footer,
+    navbar,
     ...overrides.site,
   }
 
@@ -86,13 +86,13 @@ const SuspendablePreviewWithCustomSitemap = ({
         // @ts-expect-error to fix when types are proper
         site={{
           ...siteConfig,
-          siteMap,
+          assetsBaseUrl: ASSETS_BASE_URL,
           environment: "production",
           search: {
-            type: "localSearch",
             searchUrl: "/search",
+            type: "localSearch",
           },
-          assetsBaseUrl: ASSETS_BASE_URL,
+          siteMap,
         }}
         ScriptComponent={Script}
       />

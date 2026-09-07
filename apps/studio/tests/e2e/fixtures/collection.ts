@@ -1,4 +1,4 @@
-import crypto from "crypto"
+import crypto from "node:crypto"
 import { db } from "~/server/modules/database/database"
 import { jsonb } from "~/server/modules/database/utils"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
@@ -33,14 +33,14 @@ export const createCollectionWithTagCategories = async (
   const collection = await db
     .insertInto("Resource")
     .values({
-      permalink: `e2e-tags-collection-${suffix}`,
-      siteId,
-      parentId: null,
-      title: "E2E Tags Collection",
       draftBlobId: null,
-      state: ResourceState.Draft,
-      type: ResourceType.Collection,
+      parentId: null,
+      permalink: `e2e-tags-collection-${suffix}`,
       publishedVersionId: null,
+      siteId,
+      state: ResourceState.Draft,
+      title: "E2E Tags Collection",
+      type: ResourceType.Collection,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
@@ -49,13 +49,13 @@ export const createCollectionWithTagCategories = async (
     .insertInto("Blob")
     .values({
       content: jsonb({
+        content: [],
         layout: "collection",
         page: {
-          title: "E2E Tags Collection",
           subtitle: "E2E test subtitle",
           tagCategories,
+          title: "E2E Tags Collection",
         },
-        content: [],
         version: "0.1.0",
       }),
     })
@@ -65,14 +65,14 @@ export const createCollectionWithTagCategories = async (
   const indexPage = await db
     .insertInto("Resource")
     .values({
-      permalink: `e2e-tags-index-${suffix}`,
-      siteId,
-      parentId: collection.id,
-      title: "E2E Tags Index",
       draftBlobId: null,
-      state: ResourceState.Draft,
-      type: ResourceType.IndexPage,
+      parentId: collection.id,
+      permalink: `e2e-tags-index-${suffix}`,
       publishedVersionId: null,
+      siteId,
+      state: ResourceState.Draft,
+      title: "E2E Tags Index",
+      type: ResourceType.IndexPage,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
@@ -86,10 +86,10 @@ export const createCollectionWithTagCategories = async (
   const version = await db
     .insertInto("Version")
     .values({
-      versionNum: 1,
-      resourceId: indexPage.id,
       blobId: indexBlob.id,
       publishedBy: admin.id,
+      resourceId: indexPage.id,
+      versionNum: 1,
     })
     .returning("id")
     .executeTakeFirstOrThrow()
@@ -105,7 +105,7 @@ export const createCollectionWithTagCategories = async (
 
 // Cascades to the index page and any collection items (Resource.parent is
 // onDelete: Cascade).
-export const deleteCollection = (collectionId: string) =>
+export const deleteCollection =  async (collectionId: string) =>
   db.deleteFrom("Resource").where("id", "=", collectionId).execute()
 
 export const createCollectionLink = async ({
@@ -121,26 +121,26 @@ export const createCollectionLink = async ({
     .insertInto("Blob")
     .values({
       content: jsonb({
-        layout: "link",
-        page: { ref, summary: "", category: "", date: "01/01/2026" },
         content: [],
+        layout: "link",
+        page: { category: "", date: "01/01/2026", ref, summary: "" },
         version: "0.1.0",
       }),
     })
     .returningAll()
     .executeTakeFirstOrThrow()
 
-  return db
+  return await db
     .insertInto("Resource")
     .values({
-      permalink: `e2e-tags-link-${uniqueSuffix()}`,
-      siteId,
+      draftBlobId: blob.id,
       parentId: collectionId,
+      permalink: `e2e-tags-link-${uniqueSuffix()}`,
+      publishedVersionId: null,
+      siteId,
+      state: ResourceState.Draft,
       title: "E2E Tags Link",
       type: ResourceType.CollectionLink,
-      state: ResourceState.Draft,
-      draftBlobId: blob.id,
-      publishedVersionId: null,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
@@ -157,30 +157,30 @@ export const createCollectionPage = async ({
     .insertInto("Blob")
     .values({
       content: jsonb({
+        content: [],
         layout: "article",
         page: {
-          date: "01/01/2026",
-          category: "Feature Articles",
           articlePageHeader: { summary: "E2E test summary" },
+          category: "Feature Articles",
+          date: "01/01/2026",
         },
-        content: [],
         version: "0.1.0",
       }),
     })
     .returningAll()
     .executeTakeFirstOrThrow()
 
-  return db
+  return await db
     .insertInto("Resource")
     .values({
-      permalink: `e2e-tags-page-${uniqueSuffix()}`,
-      siteId,
+      draftBlobId: blob.id,
       parentId: collectionId,
+      permalink: `e2e-tags-page-${uniqueSuffix()}`,
+      publishedVersionId: null,
+      siteId,
+      state: ResourceState.Draft,
       title: "E2E Tags Page",
       type: ResourceType.CollectionPage,
-      state: ResourceState.Draft,
-      draftBlobId: blob.id,
-      publishedVersionId: null,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
@@ -188,10 +188,10 @@ export const createCollectionPage = async ({
 
 const readBlobPageContent = (
   content: PrismaJson.BlobJsonContent,
-): { page: { tagged?: string[] } } => {
+): { page: { tagged?: string[] } } => 
   // SAFETY: e2e fixtures only read optional tagged tags from article page blobs.
-  return content as { page: { tagged?: string[] } }
-}
+  content as { page: { tagged?: string[] } }
+
 
 export const readBlobContent = async (blobId: string) => {
   const blob = await db

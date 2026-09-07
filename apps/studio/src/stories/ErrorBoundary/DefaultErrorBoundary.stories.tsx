@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from "@storybook/nextjs"
 import { DefaultTrpcError } from "~/components/ErrorBoundary/DefaultTrpcError"
 
 const meta: Meta<typeof DefaultTrpcError> = {
-  title: "Pages/Error Boundaries",
   component: DefaultTrpcError,
+  title: "Pages/Error Boundaries",
 }
 
 type Story = StoryObj<typeof DefaultTrpcError>

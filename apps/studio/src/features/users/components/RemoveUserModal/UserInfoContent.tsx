@@ -43,8 +43,8 @@ const SuspendableUserInfoContent = ({
   )
 }
 
-export const UserInfoContent = (props: UserInfoContentProps) => {
-  return (
+export const UserInfoContent = (props: UserInfoContentProps) => 
+  (
     <Box
       backgroundColor="base.canvas.alt"
       borderRadius="0.25rem"
@@ -60,4 +60,4 @@ export const UserInfoContent = (props: UserInfoContentProps) => {
       </Suspense>
     </Box>
   )
-}
+

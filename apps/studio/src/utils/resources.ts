@@ -15,70 +15,85 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 export const isAllowedToHaveChildren = (
   resourceType: ResourceType,
-): boolean => {
-  return (
+): boolean => 
+  (
     resourceType === ResourceType.Folder ||
     resourceType === ResourceType.Collection ||
     resourceType === ResourceType.RootPage
   )
-}
+
 
 export const getIcon = (resourceType: ResourceType): IconType => {
   switch (resourceType) {
     case ResourceType.Page:
     case ResourceType.IndexPage:
-    case ResourceType.CollectionPage:
+    case ResourceType.CollectionPage: {
       return BiFile
-    case ResourceType.Folder:
+    }
+    case ResourceType.Folder: {
       return BiFolder
-    case ResourceType.Collection:
+    }
+    case ResourceType.Collection: {
       return BiData
-    case ResourceType.CollectionLink:
+    }
+    case ResourceType.CollectionLink: {
       return BiLink
-    case ResourceType.RootPage:
+    }
+    case ResourceType.RootPage: {
       return BiHome
-    case ResourceType.FolderMeta:
+    }
+    case ResourceType.FolderMeta: {
       return BiSort
-    case ResourceType.CollectionMeta:
+    }
+    case ResourceType.CollectionMeta: {
       return BiCog
-    default:
+    }
+    default: {
       const _: never = resourceType // exhaustive check
       return BiData
+    }
   }
 }
 
 export const isAllowedToHaveLastEditedText = (
   resourceType: ResourceType,
-): boolean => {
-  return (
+): boolean => 
+  (
     resourceType === ResourceType.Page ||
     resourceType === ResourceType.CollectionLink ||
     resourceType === ResourceType.CollectionPage
   )
-}
+
 
 export const getStudioResourceUrl = (resource: Resource): string => {
   const siteUrlPrefix = `${env.NEXT_PUBLIC_APP_URL}/sites/${resource.siteId}`
 
   switch (resource.type) {
-    case ResourceType.RootPage:
+    case ResourceType.RootPage: {
       return siteUrlPrefix
+    }
     case ResourceType.Page:
     case ResourceType.IndexPage:
-    case ResourceType.CollectionPage:
+    case ResourceType.CollectionPage: {
       return `${siteUrlPrefix}/pages/${String(resource.id)}`
-    case ResourceType.CollectionLink:
+    }
+    case ResourceType.CollectionLink: {
       return `${siteUrlPrefix}/links/${String(resource.id)}`
-    case ResourceType.Folder:
+    }
+    case ResourceType.Folder: {
       return `${siteUrlPrefix}/folders/${String(resource.id)}`
-    case ResourceType.Collection:
+    }
+    case ResourceType.Collection: {
       return `${siteUrlPrefix}/collections/${String(resource.id)}`
+    }
     case ResourceType.FolderMeta:
-    case ResourceType.CollectionMeta:
-      return siteUrlPrefix // they aren't accessible by users but we should return a valid url
-    default:
+    case ResourceType.CollectionMeta: {
+      return siteUrlPrefix
+    } // they aren't accessible by users but we should return a valid url
+    default: {
       const exhaustiveCheck: never = resource.type
       return exhaustiveCheck
+    }
   }
 }
 

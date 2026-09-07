@@ -45,8 +45,8 @@ const JsonFormsMetaImageControl = (props: JsonFormsMetaImageControlProps) => {
   const { siteId, pageId } = useQueryParse(pageSchema)
   const toast = useToast()
   const { mutate: uploadFile } = useUploadAssetMutation({
-    siteId,
     resourceId: String(pageId),
+    siteId,
   })
 
   return (
@@ -69,7 +69,7 @@ const JsonFormsMetaImageControl = (props: JsonFormsMetaImageControlProps) => {
               fileSize: file.size,
             })
 
-            if (parseResult.success) return null
+            if (parseResult.success) {return null}
             // NOTE: safe assertion here because we're in error path and there's at least 1 error
             return (
               parseResult.error.issues[0]?.message ||
@@ -78,7 +78,7 @@ const JsonFormsMetaImageControl = (props: JsonFormsMetaImageControlProps) => {
           }}
           onChange={(file) => {
             if (!file) {
-              handleChange(props.path, undefined)
+              handleChange(props.path)
               return
             }
 
@@ -92,9 +92,9 @@ const JsonFormsMetaImageControl = (props: JsonFormsMetaImageControlProps) => {
                     })
                     .catch(() => {
                       toast({
-                        title: "Failed to upload image",
                         description: "Please try again.",
                         status: "error",
+                        title: "Failed to upload image",
                         ...BRIEF_TOAST_SETTINGS,
                       })
                     })

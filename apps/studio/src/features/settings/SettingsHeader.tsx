@@ -50,8 +50,8 @@ export const SettingsHeader = ({
           isLoading={isLoading}
           onClick={() => {
             posthog.capture("settings_saved", {
-              site_id: router.query.siteId,
               settings_section: router.pathname.split("/").pop(),
+              site_id: router.query.siteId,
             })
             onClick()
           }}

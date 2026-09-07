@@ -23,8 +23,8 @@ export const RoleBox = ({
   isDisabled = false,
   onClick,
   permissionLabels,
-}: RoleBoxProps) => {
-  return (
+}: RoleBoxProps) => 
+  (
     <Button
       variant="unstyled"
       border="1.5px solid"
@@ -107,4 +107,4 @@ export const RoleBox = ({
       </VStack>
     </Button>
   )
-}
+

@@ -50,7 +50,7 @@ const JsonFormsMaxColumnsControl = ({
           name={label || "Maximum columns"}
           items={MAX_COLUMNS_OPTIONS}
           isClearable={false}
-          onChange={(value) => handleChange(path, value)}
+          onChange={(value) =>{  handleChange(path, value); }}
         />
       </FormControl>
     </Box>

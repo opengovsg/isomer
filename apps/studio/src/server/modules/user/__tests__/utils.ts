@@ -20,7 +20,7 @@ export const setupIsomerAdmins = async ({ siteId }: { siteId: number }) => {
       email,
       isDeleted: false,
     })
-    await setupAdminPermissions({ userId: user.id, siteId })
+    await setupAdminPermissions({ siteId, userId: user.id })
 
     // Also insert into IsomerAdmin table
     const role = email.startsWith("admin")
@@ -29,9 +29,9 @@ export const setupIsomerAdmins = async ({ siteId }: { siteId: number }) => {
     await db
       .insertInto("IsomerAdmin")
       .values({
-        userId: user.id,
-        role,
         expiry: null,
+        role,
+        userId: user.id,
       })
       .execute()
   }

@@ -13,7 +13,7 @@ import {
   generateSignedPutUrl,
 } from "~/lib/s3"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
-import { type DB } from "~prisma/generated/generatedTypes"
+import type { DB } from "~prisma/generated/generatedTypes"
 
 import {
   buildGazetteObjectGroupFilter,
@@ -58,7 +58,7 @@ export const assertGazetteAccess = async (userId: string): Promise<void> => {
     throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
   }
 
-  if (user.email.endsWith(TOPPAN_EMAIL_DOMAIN)) return
+  if (user.email.endsWith(TOPPAN_EMAIL_DOMAIN)) {return}
 
   const isCoreAdmin = await isActiveIsomerAdmin(userId, [
     IsomerAdminRole.Core,
@@ -111,7 +111,7 @@ export const findCollectionLinkWithFilename = async ({
     query = query.where("Resource.id", "!=", excludeId)
   }
 
-  return query.executeTakeFirst()
+  return await query.executeTakeFirst()
 }
 
 // NOTE: Identical to the one in assets.service.ts
@@ -137,25 +137,25 @@ export const getPresignedPutUrl = async ({
 
   const presignedPutUrl = await generateSignedPutUrl({
     Bucket: S3_GAZETTE_BUCKET_NAME,
-    Key: key,
-    ContentType: contentType,
     ContentDisposition: contentDisposition,
     ContentLength: fileSize,
+    ContentType: contentType,
+    Key: key,
     Tagging: tags && stringifiedTags,
   })
-  return { presignedPutUrl, contentType, contentDisposition }
+  return { contentDisposition, contentType, presignedPutUrl }
 }
 
 export const getPresignedGetUrl = async ({
   key,
 }: {
   key: string
-}): Promise<string> => {
-  return generateSignedGetUrl({
+}): Promise<string> => 
+  await generateSignedGetUrl({
     Bucket: S3_GAZETTE_BUCKET_NAME,
     Key: key,
   })
-}
+
 
 /**
  * Copy `sourceKey` to a new key derived by replacing the filename segment with
@@ -189,9 +189,9 @@ export const copyFileWithNewName = async ({
   // `TaggingDirective` to `COPY`, so the ISOMER_STATUS tag (and any other
   // object tags) carry over without us having to set them explicitly.
   await copyFile({
-    SourceKey: sourceKey,
-    DestKey: newKey,
     Bucket: S3_GAZETTE_BUCKET_NAME,
+    DestKey: newKey,
+    SourceKey: sourceKey,
   })
 
   return newKey
@@ -199,8 +199,8 @@ export const copyFileWithNewName = async ({
 
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
   await deleteFile({
-    Key: key,
     Bucket: S3_GAZETTE_BUCKET_NAME,
+    Key: key,
   })
 }
 
@@ -216,25 +216,25 @@ export const removeGazetteFromSearchIndex = async (
   const response = await fetch(
     `${SEARCHSG_BASE_URL}/v2/indexes/${EGAZETTE_DOCUMENT_INDEX}/documents`,
     {
-      method: "POST",
+      body: JSON.stringify({ documentsToDelete: [documentId] }),
       headers: {
         Authorization: `${tokenType} ${accessToken}`,
         "Content-Type": "application/json",
         "User-Agent": ISOMER_UA,
       },
-      body: JSON.stringify({ documentsToDelete: [documentId] }),
+      method: "POST",
     },
   )
 
   if (!response.ok) {
     const errorText = await response.text()
     logger.warn(
-      { status: response.status, documentId, error: errorText },
+      { documentId, error: errorText, status: response.status },
       "Failed to remove gazette from search index",
     )
     throw new TRPCError({
-      message: "Failed to remove gazette from search index",
       code: "PRECONDITION_FAILED",
+      message: "Failed to remove gazette from search index",
     })
   }
 }
@@ -252,23 +252,23 @@ export const deleteGazetteAsset = async (ref: string): Promise<void> => {
   const key = ref.slice(1) // Remove leading slash
   try {
     await markFileAsDeleted({ key })
-  } catch (err) {
+  } catch (error) {
     const publicUrl = `https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`
     logger.error(
-      { err, key, publicUrl },
+      { error, key, publicUrl },
       "Failed to soft-delete gazette in S3; the file may still be publicly reachable at publicUrl until manually cleaned up",
     )
-    throw err
+    throw error
   }
 }
 
 const getSearchSGAuthToken = async () => {
   const response = await fetch(`${SEARCHSG_BASE_URL}/v1/auth/token`, {
-    method: "POST",
     headers: {
       Authorization: `Basic ${env.SEARCHSG_API_KEY}`,
       "User-Agent": ISOMER_UA,
     },
+    method: "POST",
   })
 
   if (!response.ok) {
@@ -315,8 +315,8 @@ export const removeGazetteFromAlgolia = async (ref: string): Promise<void> => {
   } catch (error) {
     logger.warn({ error, objectGroup }, "Failed to remove gazette from Algolia")
     throw new TRPCError({
-      message: "Failed to remove gazette from search index",
       code: "PRECONDITION_FAILED",
+      message: "Failed to remove gazette from search index",
     })
   }
 }
@@ -331,20 +331,20 @@ export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
   const response = await fetch(
     `${SEARCHSG_BASE_URL}/v2/indexes/${EGAZETTE_DOCUMENT_INDEX}/documents`,
     {
-      method: "POST",
+      body: JSON.stringify({ documentsToAdd: documents }),
       headers: {
         Authorization: `${tokenType} ${accessToken}`,
         "Content-Type": "application/json",
         "User-Agent": ISOMER_UA,
       },
-      body: JSON.stringify({ documentsToAdd: documents }),
+      method: "POST",
     },
   )
 
   if (!response.ok) {
     const errorText = await response.text()
     logger.error(
-      { status: response.status, error: errorText, documents },
+      { documents, error: errorText, status: response.status },
       "Failed to push documents for ingestion",
     )
     throw new Error(

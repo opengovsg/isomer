@@ -49,12 +49,12 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
       .insertInto("CodeBuildJobs")
       .values(
         resourceWithUserIds.map(({ resourceId, userId }) => ({
-          siteId,
-          userId,
           buildId: buildIdToLink,
-          startedAt: buildStartTime,
-          resourceId,
           isScheduled,
+          resourceId,
+          siteId,
+          startedAt: buildStartTime,
+          userId,
         })),
       )
       .execute()
@@ -87,7 +87,7 @@ export const updateStoppedBuild = async ({
 }) => {
   await trx
     .updateTable("CodeBuildJobs")
-    .set({ supersededByBuildId: startedBuildId, status: "STOPPED" })
+    .set({ status: "STOPPED", supersededByBuildId: startedBuildId })
     .where(
       "buildId",
       "in",
@@ -181,12 +181,12 @@ export const computeBuildChanges = async (
       await client.send(stopBuildCommand)
 
       return {
+        isNewBuildNeeded: true,
         stoppedBuild: {
           ...latestBuild,
           id: latestBuild.id,
           startTime: latestBuild.startTime,
         },
-        isNewBuildNeeded: true,
       }
     }
 
@@ -208,7 +208,7 @@ export const computeBuildChanges = async (
     }
   } catch (error) {
     logger.error(
-      { projectId, error },
+      { error, projectId },
       "Unexpected error while determining if new builds should be started",
     )
     throw error
@@ -237,7 +237,7 @@ export const startProjectById = async (
     return { id: build.id, startTime: build.startTime }
   } catch (error) {
     logger.error(
-      { projectId, error },
+      { error, projectId },
       `Unexpected error when starting CodeBuild project run for ${projectId}`,
     )
     throw error

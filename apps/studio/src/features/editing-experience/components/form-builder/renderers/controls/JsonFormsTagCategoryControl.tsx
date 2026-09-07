@@ -47,16 +47,16 @@ const JsonFormsTagCategoriesArrayLayoutInner = (props: ArrayLayoutProps) => {
   const { duplicate: duplicateFilterIndices } = useLiveLabelIssues({ path })
 
   const arrayResult = useArray({
-    data,
-    path,
     arraySchema,
-    schema,
-    rootSchema,
-    uischemas,
-    uischema,
-    removeItems,
-    moveUp,
+    data,
     moveDown,
+    moveUp,
+    path,
+    removeItems,
+    rootSchema,
+    schema,
+    uischema,
+    uischemas,
   })
   const {
     setSelectedIndex,
@@ -73,16 +73,16 @@ const JsonFormsTagCategoriesArrayLayoutInner = (props: ArrayLayoutProps) => {
     closeDeleteModal,
     handleConfirmDelete,
   } = useDeleteTarget({
+    isRemoveItemDisabled,
     path,
     removeItems,
-    isRemoveItemDisabled,
     resolveTarget: (index) => ({
       label: page?.tagCategories?.[index]?.label?.trim() ?? "",
     }),
   })
 
   const deleteTargetTagOptionIds = useMemo(() => {
-    if (!deleteTarget) return []
+    if (!deleteTarget) {return []}
     return (
       page?.tagCategories?.[deleteTarget.index]?.options
         ?.map((option) => option.id)
@@ -156,7 +156,7 @@ const JsonFormsTagCategoriesArrayLayoutInner = (props: ArrayLayoutProps) => {
                               dragHandleProps={dragHandleProps}
                             />
                             <DraggableTagButton.Body
-                              onClick={() => setSelectedIndex(index)}
+                              onClick={() =>{  setSelectedIndex(index); }}
                             >
                               <DraggableTagButton.Icon icon={BiPurchaseTag} />
                               <DraggableTagButton.Content>
@@ -185,7 +185,7 @@ const JsonFormsTagCategoriesArrayLayoutInner = (props: ArrayLayoutProps) => {
                                 noun="filter"
                                 index={index}
                                 isDisabled={isRemoveItemDisabled}
-                                onDelete={() => openDeleteModal(index)}
+                                onDelete={() =>{  openDeleteModal(index); }}
                               />
                             </DraggableTagButton.Trailing>
                           </DraggableTagButton.Root>

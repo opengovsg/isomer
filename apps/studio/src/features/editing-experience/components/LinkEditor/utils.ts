@@ -3,10 +3,12 @@ import { LINK_TYPES } from "./constants"
 
 export const parseHref = (href: string, pageType: LinkTypesWithHrefFormat) => {
   switch (pageType) {
-    case LINK_TYPES.File:
+    case LINK_TYPES.File: {
       return href.split("/").pop()
-    default:
+    }
+    default: {
       return href
+    }
   }
 }
 

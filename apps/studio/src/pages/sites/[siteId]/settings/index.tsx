@@ -23,13 +23,13 @@ const SiteSettingsPage: NextPageWithLayout = () => {
   return <FullscreenSpinner />
 }
 
-SiteSettingsPage.getLayout = (page) => {
-  return (
+SiteSettingsPage.getLayout = (page) => 
+  (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
       page={SiteBasicLayout(page)}
     />
   )
-}
+
 
 export default SiteSettingsPage

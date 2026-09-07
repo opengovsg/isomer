@@ -2,8 +2,8 @@ import type { StackProps } from "@chakra-ui/react"
 import type { PropsWithChildren } from "react"
 import { VStack } from "@chakra-ui/react"
 
-export const SettingsEditingLayout = (props: PropsWithChildren<StackProps>) => {
-  return (
+export const SettingsEditingLayout = (props: PropsWithChildren<StackProps>) => 
+  (
     <VStack
       align="start"
       {...props}
@@ -14,4 +14,4 @@ export const SettingsEditingLayout = (props: PropsWithChildren<StackProps>) => {
       h="100%"
     />
   )
-}
+

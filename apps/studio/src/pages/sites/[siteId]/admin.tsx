@@ -23,8 +23,8 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useZodForm } from "~/lib/form"
-import { type NextPageWithLayout } from "~/lib/types"
-import { type SessionData } from "~/lib/types/session"
+import type { NextPageWithLayout } from "~/lib/types"
+import type { SessionData } from "~/lib/types/session"
 import { setSiteConfigByAdminSchema } from "~/schemas/site"
 import { generateSessionOptions } from "~/server/modules/auth/session"
 import { isActiveIsomerAdmin } from "~/server/modules/permissions/permissions.service"
@@ -111,6 +111,12 @@ const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
     handleSubmit,
     formState: { isDirty, errors },
   } = useZodForm({
+    defaultValues: {
+      config: JSON.stringify(previousConfig, null, 2),
+      footer: JSON.stringify(previousFooter.content, null, 2),
+      navbar: JSON.stringify(previousNavbar.content, null, 2),
+      theme: JSON.stringify(previousTheme, null, 2),
+    },
     schema: setSiteConfigByAdminSchema
       .omit({ siteId: true })
       .refine((data) => !!data.config, {
@@ -129,15 +135,17 @@ const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
         message: "Site footer must be present",
         path: ["footer"],
       }),
-    defaultValues: {
-      config: JSON.stringify(previousConfig, null, 2),
-      theme: JSON.stringify(previousTheme, null, 2),
-      navbar: JSON.stringify(previousNavbar.content, null, 2),
-      footer: JSON.stringify(previousFooter.content, null, 2),
-    },
   })
 
   const { mutate, isPending } = trpc.site.setSiteConfigByAdmin.useMutation({
+    onError: () => {
+      toast({
+        title: "Error saving site config!",
+        description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
+        status: "error",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
     onSuccess: async () => {
       await trpcUtils.site.getConfig.invalidate({ id: siteId })
       await trpcUtils.site.getTheme.invalidate({ id: siteId })
@@ -152,20 +160,12 @@ const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
         ...BRIEF_TOAST_SETTINGS,
       })
     },
-    onError: () => {
-      toast({
-        title: "Error saving site config!",
-        description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
-        status: "error",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
   })
 
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
 
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+  useNavigationEffect({ callback: setNextUrl, isDirty, isOpen })
 
   const onClickUpdate = handleSubmit((input) => {
     mutate({
@@ -178,7 +178,7 @@ const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
     <>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() => setNextUrl("")}
+        onClose={() =>{  setNextUrl(""); }}
         nextUrl={nextUrl}
       />
       <chakra.form
@@ -236,13 +236,13 @@ const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
   )
 }
 
-SiteAdminPage.getLayout = (page) => {
-  return (
+SiteAdminPage.getLayout = (page) => 
+  (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
       page={SiteBasicLayout(page)}
     />
   )
-}
+
 
 export default SiteAdminPage

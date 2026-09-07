@@ -1,4 +1,4 @@
-import { type SessionOptions } from "iron-session"
+import type { SessionOptions } from "iron-session"
 import { env } from "~/env.mjs"
 
 // The versioned iron-session password map used to seal/unseal every iron
@@ -21,11 +21,11 @@ export const generateSessionOptions = ({
 }: GenerateSessionOptionsProps = {}): SessionOptions => {
   const ONE_HOUR = 60 * 60
   return {
-    password: getIronPassword(),
     cookieName: "auth.session-token",
-    ttl: ONE_HOUR * ttlInHours,
     cookieOptions: {
       secure: env.NODE_ENV === "production",
     },
+    password: getIronPassword(),
+    ttl: ONE_HOUR * ttlInHours,
   }
 }

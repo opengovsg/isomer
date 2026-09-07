@@ -51,45 +51,67 @@ import {
 } from "./site.service"
 
 export const siteRouter = router({
-  list: protectedProcedure.query(async ({ ctx }) => {
-    // Isomer admins can see all sites, with an implicit Admin role
-    // regardless of any explicit roles they have on the site
-    const isIsomerAdmin = await isActiveIsomerAdmin(ctx.user.id)
-    if (isIsomerAdmin) {
-      const sites = await db
-        .selectFrom("Site")
-        .select(["Site.id", "Site.config"])
-        .orderBy("Site.id", "asc")
-        .execute()
-      return sites.map((site) => ({ ...site, role: RoleType.Admin }))
-    }
+  create: protectedProcedure
+    .input(createSiteSchema)
+    .mutation(async ({ ctx, input: { siteName } }) => {
+      await validateUserIsIsomerAdmin({
+        userId: ctx.user.id,
+        roles: [IsomerAdminRole.Core],
+      })
 
-    // NOTE: Any role should be able to read site.
-    // We only consider site-wide permissions (resourceId is null) here
-    // because there's no granular resource role, mirroring
-    // `getResourcePermission` in the permissions module.
-    return db
-      .selectFrom("Site")
-      .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
-      .where("ResourcePermission.deletedAt", "is", null)
-      .where("ResourcePermission.resourceId", "is", null)
-      .where("ResourcePermission.userId", "=", ctx.user.id)
-      .select(["Site.id", "Site.config", "ResourcePermission.role"])
-      .orderBy("Site.id", "asc")
-      .execute()
-  }),
-  listAllSites: protectedProcedure.query(async ({ ctx }) => {
-    await validateUserIsIsomerAdmin({
-      userId: ctx.user.id,
-      roles: [IsomerAdminRole.Core],
-    })
+      return await createSite({ siteName, userId: ctx.user.id })
+    }),
+  getConfig: protectedProcedure
+    .input(getConfigSchema)
+    .query(async ({ ctx, input: { id } }) => {
+      await validateUserPermissionsForSite({
+        siteId: id,
+        userId: ctx.user.id,
+        action: "read",
+      })
+      return await getSiteConfig(db, id)
+    }),
+  getFooter: protectedProcedure
+    .input(getConfigSchema)
+    .query(async ({ ctx, input: { id } }) => {
+      await validateUserPermissionsForSite({
+        siteId: id,
+        userId: ctx.user.id,
+        action: "read",
+      })
+      return await getFooter(db, id)
+    }),
+  getLocalisedSitemap: protectedProcedure
+    .input(getLocalisedSitemapSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
+      return await getLocalisedSitemap(siteId, resourceId)
+    }),
+  getNavbar: protectedProcedure
+    .input(getConfigSchema)
+    .query(async ({ ctx, input: { id } }) => {
+      await validateUserPermissionsForSite({
+        siteId: id,
+        userId: ctx.user.id,
+        action: "read",
+      })
+      return await getNavBar(db, id)
+    }),
+  getNotification: protectedProcedure
+    .input(getNotificationSchema)
+    .query(async ({ ctx, input: { siteId } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
 
-    return db
-      .selectFrom("Site")
-      .select(["Site.id", "Site.config", "Site.codeBuildId"])
-      .orderBy("Site.id", "asc")
-      .execute()
-  }),
+      return await getNotification(siteId)
+    }),
   getSiteName: protectedProcedure
     .input(getNameSchema)
     .query(async ({ ctx, input: { siteId } }) => {
@@ -107,153 +129,6 @@ export const siteRouter = router({
 
       return { name: config.siteName }
     }),
-  getConfig: protectedProcedure
-    .input(getConfigSchema)
-    .query(async ({ ctx, input: { id } }) => {
-      await validateUserPermissionsForSite({
-        siteId: id,
-        userId: ctx.user.id,
-        action: "read",
-      })
-      return getSiteConfig(db, id)
-    }),
-  updateSiteConfig: protectedProcedure
-    .input(updateSiteConfigSchema)
-    .mutation(async ({ ctx, input: { siteId, siteName, ...rest } }) => {
-      await validateUserPermissionsForSite({
-        siteId,
-        userId: ctx.user.id,
-        action: "update",
-      })
-
-      const [user, site] = await Promise.all([
-        db
-          .selectFrom("User")
-          .where("id", "=", ctx.user.id)
-          .selectAll()
-          .executeTakeFirstOrThrow(),
-        db
-          .selectFrom("Site")
-          .where("id", "=", siteId)
-          .selectAll()
-          .executeTakeFirstOrThrow(),
-      ])
-
-      const { config } = site
-      const normalizedConfig = normalizeAskgovConfig({ ...rest, siteName })
-
-      const updatedConfig = await db.transaction().execute(async (tx) => {
-        // searchSG and egazette-algolia are admin-managed; their credentials
-        // always come from the DB, never from site-admin input.
-        const searchConfig = resolveSearchConfig(
-          config.search,
-          normalizedConfig.search,
-        )
-
-        const updatedSite = await tx
-          .updateTable("Site")
-          .set({
-            name: siteName,
-            config: jsonb({ ...normalizedConfig, search: searchConfig }),
-          })
-          .where("id", "=", siteId)
-          .returningAll()
-          .executeTakeFirstOrThrow()
-
-        await logConfigEvent(tx, {
-          eventType: AuditLogEvent.SiteConfigUpdate,
-          delta: { before: site, after: updatedSite },
-          by: user,
-          siteId,
-        })
-
-        return updatedSite.config
-      })
-
-      await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
-
-      // NOTE: only update searchsg if either the agency name changed
-      // or if the search type changed.
-      // `void` here because this API call is slow
-      // and not super critical to update
-      if (
-        updatedConfig.search?.type === "searchSG" &&
-        (config.search?.type !== "searchSG" ||
-          config.siteName !== updatedConfig.siteName)
-      )
-        // IMPORTANT: clientId must always come from the DB, not user input (path traversal risk)
-        void updateSearchSGConfig(
-          { name: siteName, _kind: "name" },
-          updatedConfig.search.clientId,
-          updatedConfig.url,
-        ).catch((error) =>
-          ctx.logger.error({ error }, "[ERROR] updateSearchSGConfig failed"),
-        )
-
-      return updatedConfig
-    }),
-  updateSiteIntegrations: protectedProcedure
-    .input(updateSiteIntegrationsSchema)
-    .mutation(async ({ ctx, input: { siteId, data } }) => {
-      await validateUserPermissionsForSite({
-        siteId,
-        userId: ctx.user.id,
-        action: "update",
-      })
-      const user = await db
-        .selectFrom("User")
-        .where("id", "=", ctx.user.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const normalizedData = normalizeAskgovConfig(data)
-
-      return await db.transaction().execute(async (tx) => {
-        const site = await tx
-          .selectFrom("Site")
-          .where("id", "=", siteId)
-          .selectAll()
-          .executeTakeFirstOrThrow()
-
-        // SearchSG is a vetted external search integration; localSearch exposes
-        // a searchUrl field that could be used for open redirect. Prevent
-        // a site admin from switching back to localSearch once SearchSG is set.
-        if (
-          site.config.search?.type === "searchSG" &&
-          normalizedData.search?.type === "localSearch"
-        ) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message:
-              "Cannot downgrade search integration from SearchSG to local search",
-          })
-        }
-
-        // searchSG and egazette-algolia are admin-managed; their credentials
-        // always come from the DB, never from site-admin input.
-        const search = resolveSearchConfig(
-          site.config.search,
-          normalizedData.search,
-        )
-
-        const updatedSite = await tx
-          .updateTable("Site")
-          .set({ config: jsonb({ ...normalizedData, search }) })
-          .where("id", "=", siteId)
-          .returningAll()
-          .executeTakeFirstOrThrow()
-
-        await logConfigEvent(tx, {
-          eventType: AuditLogEvent.SiteConfigUpdate,
-          delta: { before: site, after: updatedSite },
-          by: user,
-          siteId,
-        })
-
-        await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
-
-        return updatedSite
-      })
-    }),
   getTheme: protectedProcedure
     .input(getConfigSchema)
     .query(async ({ ctx, input: { id } }) => {
@@ -265,104 +140,75 @@ export const siteRouter = router({
       const theme = await getSiteTheme(id)
       return theme
     }),
-  setTheme: protectedProcedure
-    .input(setThemeSchema)
-    .mutation(async ({ ctx, input: { siteId, theme } }) => {
-      await validateUserPermissionsForSite({
-        siteId,
-        userId: ctx.user.id,
-        action: "update",
-      })
-
-      const site = await db
+  list: protectedProcedure.query(async ({ ctx }) => {
+    // Isomer admins can see all sites, with an implicit Admin role
+    // regardless of any explicit roles they have on the site
+    const isIsomerAdmin = await isActiveIsomerAdmin(ctx.user.id)
+    if (isIsomerAdmin) {
+      const sites = await db
         .selectFrom("Site")
-        .where("id", "=", siteId)
-        .selectAll()
-        .executeTakeFirst()
+        .select(["Site.id", "Site.config"])
+        .orderBy("Site.id", "asc")
+        .execute()
+      return sites.map((site) => ({ ...site, role: RoleType.Admin }))
+    }
 
-      if (!site) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "The site could not be found.",
-        })
-      }
+    // NOTE: Any role should be able to read site.
+    // We only consider site-wide permissions (resourceId is null) here
+    // because there's no granular resource role, mirroring
+    // `getResourcePermission` in the permissions module.
+    return await db
+      .selectFrom("Site")
+      .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
+      .where("ResourcePermission.deletedAt", "is", null)
+      .where("ResourcePermission.resourceId", "is", null)
+      .where("ResourcePermission.userId", "=", ctx.user.id)
+      .select(["Site.id", "Site.config", "ResourcePermission.role"])
+      .orderBy("Site.id", "asc")
+      .execute()
+  }),
+  listAllSites: protectedProcedure.query(async ({ ctx }) => {
+    await validateUserIsIsomerAdmin({
+      userId: ctx.user.id,
+      roles: [IsomerAdminRole.Core],
+    })
 
-      const oldTheme = site.theme
-
-      if (!oldTheme) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "The theme for the site could not be found.",
-        })
-      }
-
-      const updatedSite = await db.transaction().execute(async (tx) => {
-        const user = await tx
-          .selectFrom("User")
-          .where("id", "=", ctx.user.id)
-          .selectAll()
-          .executeTakeFirst()
-
-        if (!user) {
-          // NOTE: This shouldn't happen as the user is already logged in
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "The user could not be found.",
-          })
-        }
-
-        const newSite = await tx
-          .updateTable("Site")
-          .set({ theme: jsonb(theme) })
-          .where("id", "=", siteId)
-          .returningAll()
-          .executeTakeFirst()
-
-        if (!newSite)
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to update site theme.",
-          })
-
-        await logConfigEvent(tx, {
-          siteId,
-          eventType: AuditLogEvent.SiteConfigUpdate,
-          delta: { before: site, after: newSite },
-          by: user,
-        })
-
-        await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
-        return newSite
-      })
-
-      // NOTE: if the users update their `canvas.inverse`
-      // we also need to update their searchsg theme settings
-      if (
-        site.config.search?.type === "searchSG" &&
-        oldTheme.colors.brand.canvas.inverse !==
-          theme.colors.brand.canvas.inverse
-      ) {
-        // IMPORTANT: clientId must always come from the DB, not user input (path traversal risk)
-        void updateSearchSGConfig(
-          { colour: theme.colors.brand.canvas.inverse, _kind: "colour" },
-          site.config.search.clientId,
-          site.config.url,
-        ).catch((error) =>
-          ctx.logger.error({ error }, "[ERROR] updateSearchSGConfig failed"),
-        )
-      }
-
-      return updatedSite
-    }),
-  getFooter: protectedProcedure
-    .input(getConfigSchema)
-    .query(async ({ ctx, input: { id } }) => {
-      await validateUserPermissionsForSite({
-        siteId: id,
+    return await db
+      .selectFrom("Site")
+      .select(["Site.id", "Site.config", "Site.codeBuildId"])
+      .orderBy("Site.id", "asc")
+      .execute()
+  }),
+  publish: protectedProcedure
+    .input(publishSiteSchema)
+    .mutation(async ({ ctx, input: { siteId } }) => {
+      await validateUserIsIsomerAdmin({
         userId: ctx.user.id,
-        action: "read",
+        roles: [IsomerAdminRole.Core],
       })
-      return getFooter(db, id)
+
+      const byUser = await db
+        .selectFrom("User")
+        .selectAll()
+        .where("id", "=", ctx.user.id)
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "The user could not be found.",
+            }),
+        )
+
+      return await db.transaction().execute(async (tx) => {
+        await logPublishEvent(tx, {
+          by: byUser,
+          eventType: AuditLogEvent.Publish,
+          delta: { before: null, after: null },
+          metadata: {},
+          siteId,
+        })
+        await publishSite(ctx.logger, { siteId: siteId })
+      })
     }),
   setFooter: protectedProcedure
     .input(setFooterSchema)
@@ -449,16 +295,6 @@ export const siteRouter = router({
         )
       })
     }),
-  getNavbar: protectedProcedure
-    .input(getConfigSchema)
-    .query(async ({ ctx, input: { id } }) => {
-      await validateUserPermissionsForSite({
-        siteId: id,
-        userId: ctx.user.id,
-        action: "read",
-      })
-      return getNavBar(db, id)
-    }),
   setNavbar: protectedProcedure
     .input(setNavbarSchema)
     .mutation(async ({ ctx, input: { siteId, navbar } }) => {
@@ -542,27 +378,6 @@ export const siteRouter = router({
           ctx.logger,
         )
       })
-    }),
-  getLocalisedSitemap: protectedProcedure
-    .input(getLocalisedSitemapSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await validateUserPermissionsForSite({
-        siteId,
-        userId: ctx.user.id,
-        action: "read",
-      })
-      return getLocalisedSitemap(siteId, resourceId)
-    }),
-  getNotification: protectedProcedure
-    .input(getNotificationSchema)
-    .query(async ({ ctx, input: { siteId } }) => {
-      await validateUserPermissionsForSite({
-        siteId,
-        userId: ctx.user.id,
-        action: "read",
-      })
-
-      return await getNotification(siteId)
     }),
   setNotification: protectedProcedure.input(setNotificationSchema).mutation(
     async ({
@@ -748,45 +563,230 @@ export const siteRouter = router({
         })
       },
     ),
-  create: protectedProcedure
-    .input(createSiteSchema)
-    .mutation(async ({ ctx, input: { siteName } }) => {
-      await validateUserIsIsomerAdmin({
+  setTheme: protectedProcedure
+    .input(setThemeSchema)
+    .mutation(async ({ ctx, input: { siteId, theme } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
         userId: ctx.user.id,
-        roles: [IsomerAdminRole.Core],
+        action: "update",
       })
 
-      return createSite({ siteName, userId: ctx.user.id })
-    }),
-  publish: protectedProcedure
-    .input(publishSiteSchema)
-    .mutation(async ({ ctx, input: { siteId } }) => {
-      await validateUserIsIsomerAdmin({
-        userId: ctx.user.id,
-        roles: [IsomerAdminRole.Core],
-      })
-
-      const byUser = await db
-        .selectFrom("User")
+      const site = await db
+        .selectFrom("Site")
+        .where("id", "=", siteId)
         .selectAll()
-        .where("id", "=", ctx.user.id)
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              code: "NOT_FOUND",
-              message: "The user could not be found.",
-            }),
+        .executeTakeFirst()
+
+      if (!site) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "The site could not be found.",
+        })
+      }
+
+      const oldTheme = site.theme
+
+      if (!oldTheme) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "The theme for the site could not be found.",
+        })
+      }
+
+      const updatedSite = await db.transaction().execute(async (tx) => {
+        const user = await tx
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirst()
+
+        if (!user) {
+          // NOTE: This shouldn't happen as the user is already logged in
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The user could not be found.",
+          })
+        }
+
+        const newSite = await tx
+          .updateTable("Site")
+          .set({ theme: jsonb(theme) })
+          .where("id", "=", siteId)
+          .returningAll()
+          .executeTakeFirst()
+
+        if (!newSite)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to update site theme.",
+          })
+
+        await logConfigEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.SiteConfigUpdate,
+          delta: { before: site, after: newSite },
+          by: user,
+        })
+
+        await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
+        return newSite
+      })
+
+      // NOTE: if the users update their `canvas.inverse`
+      // we also need to update their searchsg theme settings
+      if (
+        site.config.search?.type === "searchSG" &&
+        oldTheme.colors.brand.canvas.inverse !==
+          theme.colors.brand.canvas.inverse
+      ) {
+        // IMPORTANT: clientId must always come from the DB, not user input (path traversal risk)
+        void updateSearchSGConfig(
+          { colour: theme.colors.brand.canvas.inverse, _kind: "colour" },
+          site.config.search.clientId,
+          site.config.url,
+        ).catch((error) =>{ 
+          ctx.logger.error({ error }, "[ERROR] updateSearchSGConfig failed"); },
+        )
+      }
+
+      return updatedSite
+    }),
+  updateSiteConfig: protectedProcedure
+    .input(updateSiteConfigSchema)
+    .mutation(async ({ ctx, input: { siteId, siteName, ...rest } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+
+      const [user, site] = await Promise.all([
+        db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(),
+        db
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .selectAll()
+          .executeTakeFirstOrThrow(),
+      ])
+
+      const { config } = site
+      const normalizedConfig = normalizeAskgovConfig({ ...rest, siteName })
+
+      const updatedConfig = await db.transaction().execute(async (tx) => {
+        // searchSG and egazette-algolia are admin-managed; their credentials
+        // always come from the DB, never from site-admin input.
+        const searchConfig = resolveSearchConfig(
+          config.search,
+          normalizedConfig.search,
         )
 
-      return db.transaction().execute(async (tx) => {
-        await logPublishEvent(tx, {
-          by: byUser,
-          eventType: AuditLogEvent.Publish,
-          delta: { before: null, after: null },
-          metadata: {},
+        const updatedSite = await tx
+          .updateTable("Site")
+          .set({
+            name: siteName,
+            config: jsonb({ ...normalizedConfig, search: searchConfig }),
+          })
+          .where("id", "=", siteId)
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        await logConfigEvent(tx, {
+          eventType: AuditLogEvent.SiteConfigUpdate,
+          delta: { before: site, after: updatedSite },
+          by: user,
           siteId,
         })
-        await publishSite(ctx.logger, { siteId: siteId })
+
+        return updatedSite.config
+      })
+
+      await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
+
+      // NOTE: only update searchsg if either the agency name changed
+      // or if the search type changed.
+      // `void` here because this API call is slow
+      // and not super critical to update
+      if (
+        updatedConfig.search?.type === "searchSG" &&
+        (config.search?.type !== "searchSG" ||
+          config.siteName !== updatedConfig.siteName)
+      )
+        // IMPORTANT: clientId must always come from the DB, not user input (path traversal risk)
+        void updateSearchSGConfig(
+          { name: siteName, _kind: "name" },
+          updatedConfig.search.clientId,
+          updatedConfig.url,
+        ).catch((error) =>{ 
+          ctx.logger.error({ error }, "[ERROR] updateSearchSGConfig failed"); },
+        )
+
+      return updatedConfig
+    }),
+  updateSiteIntegrations: protectedProcedure
+    .input(updateSiteIntegrationsSchema)
+    .mutation(async ({ ctx, input: { siteId, data } }) => {
+      await validateUserPermissionsForSite({
+        siteId,
+        userId: ctx.user.id,
+        action: "update",
+      })
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const normalizedData = normalizeAskgovConfig(data)
+
+      return await db.transaction().execute(async (tx) => {
+        const site = await tx
+          .selectFrom("Site")
+          .where("id", "=", siteId)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+
+        // SearchSG is a vetted external search integration; localSearch exposes
+        // a searchUrl field that could be used for open redirect. Prevent
+        // a site admin from switching back to localSearch once SearchSG is set.
+        if (
+          site.config.search?.type === "searchSG" &&
+          normalizedData.search?.type === "localSearch"
+        ) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Cannot downgrade search integration from SearchSG to local search",
+          })
+        }
+
+        // searchSG and egazette-algolia are admin-managed; their credentials
+        // always come from the DB, never from site-admin input.
+        const search = resolveSearchConfig(
+          site.config.search,
+          normalizedData.search,
+        )
+
+        const updatedSite = await tx
+          .updateTable("Site")
+          .set({ config: jsonb({ ...normalizedData, search }) })
+          .where("id", "=", siteId)
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        await logConfigEvent(tx, {
+          eventType: AuditLogEvent.SiteConfigUpdate,
+          delta: { before: site, after: updatedSite },
+          by: user,
+          siteId,
+        })
+
+        await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
+
+        return updatedSite
       })
     }),
 })

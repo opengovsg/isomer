@@ -29,8 +29,8 @@ export const EditLink = () => {
 
   const initialLinkState = useMemo(
     () => ({
-      ref: "",
       category: "",
+      ref: "",
       ...content.page,
     }),
     [content.page],

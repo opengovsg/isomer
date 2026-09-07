@@ -36,18 +36,18 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
   })
   const { mutate: saveNavbar, isPending: isSavingNavbar } =
     trpc.site.setNavbar.useMutation({
-      onSuccess: async () => {
-        await utils.site.getNavbar.invalidate({ id: Number(siteId) })
-        toast({
-          ...SETTINGS_TOAST_MESSAGES.success,
-          status: "success",
-        })
-      },
       onError: () => {
         toast({
           status: "error",
           title: "Error saving navigation bar.",
           description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
+        })
+      },
+      onSuccess: async () => {
+        await utils.site.getNavbar.invalidate({ id: Number(siteId) })
+        toast({
+          ...SETTINGS_TOAST_MESSAGES.success,
+          status: "success",
         })
       },
     })
@@ -59,17 +59,17 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
   const isDirty = !isEqual(previewNavbarState, content)
 
   const handleSaveNavbar = (data: NavbarSchemaType | undefined) => {
-    if (!data) return
-    saveNavbar({ siteId: Number(siteId), navbar: JSON.stringify(data) })
+    if (!data) {return}
+    saveNavbar({ navbar: JSON.stringify(data), siteId: Number(siteId) })
   }
 
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+  useNavigationEffect({ callback: setNextUrl, isDirty, isOpen })
 
   return (
     <>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() => setNextUrl("")}
+        onClose={() =>{  setNextUrl(""); }}
         nextUrl={nextUrl}
       />
 
@@ -94,13 +94,13 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-NavbarSettingsPage.getLayout = (page) => {
-  return (
+NavbarSettingsPage.getLayout = (page) => 
+  (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
       page={SiteSettingsLayout(page)}
     />
   )
-}
+
 
 export default NavbarSettingsPage

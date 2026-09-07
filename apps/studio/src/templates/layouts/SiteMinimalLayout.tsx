@@ -3,10 +3,10 @@ import { AppNavbar } from "~/components/AppNavbar"
 import { EnforceLoginStatePageWrapper } from "~/components/AuthWrappers"
 import { CmsContainer } from "~/components/CmsSidebar"
 import { LayoutHead } from "~/components/LayoutHead"
-import { type GetLayout } from "~/lib/types"
+import type { GetLayout } from "~/lib/types"
 
-export const SiteMinimalLayout: GetLayout = (page) => {
-  return (
+export const SiteMinimalLayout: GetLayout = (page) => 
+  (
     <EnforceLoginStatePageWrapper>
       <LayoutHead />
       <Flex
@@ -22,4 +22,4 @@ export const SiteMinimalLayout: GetLayout = (page) => {
       </Flex>
     </EnforceLoginStatePageWrapper>
   )
-}
+

@@ -86,6 +86,7 @@ const EmbedCodeModal = ({
     formState: { errors, isValid },
   } = useZodForm({
     mode: "onChange",
+    reValidateMode: "onChange",
     schema: z.object({
       embedCode: z
         .string()
@@ -106,7 +107,6 @@ const EmbedCodeModal = ({
           },
         ),
     }),
-    reValidateMode: "onChange",
   })
 
   const onSubmit = handleSubmit(({ embedCode }) => {
@@ -197,7 +197,7 @@ const JsonFormsEmbedControl = ({
       <EmbedCodeModal
         isOpen={isEmbedModalOpen}
         onClose={onEmbedModalClose}
-        onSave={(embedCode) => handleEmbedCodeSave(embedCode)}
+        onSave={(embedCode) =>{  handleEmbedCodeSave(embedCode); }}
         urlPattern={schema.pattern}
       />
 

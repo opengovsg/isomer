@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import crypto from "crypto"
+import crypto from "node:crypto"
 import { db } from "~/server/modules/database/database"
 
 import { storageStateFor, TEST_EMAILS } from "../fixtures/auth"
@@ -16,7 +16,7 @@ import { getSeedSiteId } from "../fixtures/seed"
 
 const siteId = getSeedSiteId()
 
-const dismissWelcomeModal = (email: string) =>
+const dismissWelcomeModal =  async (email: string) =>
   db
     .updateTable("User")
     .set({ name: "test-e2e", phone: "82345678" })
@@ -41,8 +41,8 @@ test.describe("collection link — required tag categories", () => {
     const collection = await createCollectionWithTagCategories([
       {
         id: TAG_CATEGORY_ID,
-        label: TAG_CATEGORY_LABEL,
         isRequired: true,
+        label: TAG_CATEGORY_LABEL,
         options: [{ id: TAG_OPTION_ID, label: TAG_OPTION_LABEL }],
       },
     ])
@@ -69,7 +69,7 @@ test.describe("collection link — required tag categories", () => {
     const collection = new CollectionPO(page)
     await page.goto(`/sites/${siteId}/links/${linkId}`)
 
-    const saveButton = page.getByRole("button", { name: "Save", exact: true })
+    const saveButton = page.getByRole("button", { exact: true, name: "Save" })
     await expect(saveButton).toBeDisabled()
 
     await collection.selectTagOption(TAG_CATEGORY_LABEL, TAG_OPTION_LABEL)
@@ -94,7 +94,7 @@ test.describe("collection link — required tag categories", () => {
     await page.goto(`/sites/${siteId}/links/${linkId}`)
 
     await expect(
-      page.getByRole("button", { name: "Save", exact: true }),
+      page.getByRole("button", { exact: true, name: "Save" }),
     ).toBeDisabled()
     await collection.expectRequiredTagError()
   })
@@ -111,8 +111,8 @@ test.describe("collection page — required tag categories", () => {
     const collection = await createCollectionWithTagCategories([
       {
         id: TAG_CATEGORY_ID,
-        label: TAG_CATEGORY_LABEL,
         isRequired: true,
+        label: TAG_CATEGORY_LABEL,
         options: [{ id: TAG_OPTION_ID, label: TAG_OPTION_LABEL }],
       },
     ])
@@ -134,8 +134,8 @@ test.describe("collection page — required tag categories", () => {
     await page.getByRole("button", { name: "Article page header" }).click()
 
     const saveButton = page.getByRole("button", {
-      name: "Save changes",
       exact: true,
+      name: "Save changes",
     })
     await expect(saveButton).toBeDisabled()
 
@@ -166,7 +166,7 @@ test.describe("collection page — required tag categories", () => {
     await page.getByRole("button", { name: "Article page header" }).click()
 
     await expect(
-      page.getByRole("button", { name: "Save changes", exact: true }),
+      page.getByRole("button", { exact: true, name: "Save changes" }),
     ).toBeDisabled()
     await collection.expectRequiredTagError()
   })

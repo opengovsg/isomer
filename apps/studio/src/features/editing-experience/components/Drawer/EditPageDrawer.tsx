@@ -40,31 +40,41 @@ export const EditPageDrawer = (): React.ReactNode => {
   } = useEditorDrawerContext()
 
   switch (currState.state) {
-    case "root":
+    case "root": {
       return <RootStateDrawer />
-    case "rawJsonEditor":
+    }
+    case "rawJsonEditor": {
       return <RawJsonEditorModeStateDrawer />
-    case "addBlock":
+    }
+    case "addBlock": {
       return <ComponentSelector />
+    }
     case "nativeEditor": {
       const component = previewPageState.content[currActiveIdx]
-      if (!component) return <div />
+      if (!component) {return <div />}
       return <TipTapProseComponent content={inferAsProse(component)} />
     }
-    case "complexEditor":
+    case "complexEditor": {
       return <ComplexEditorStateDrawer />
-    case "metadataEditor":
+    }
+    case "metadataEditor": {
       return <MetadataEditorStateDrawer />
-    case "databaseEditor":
+    }
+    case "databaseEditor": {
       return <DatabaseEditorStateDrawer />
-    case "heroEditor":
+    }
+    case "heroEditor": {
       return <HeroEditorDrawer />
-    case "collectionEditor":
+    }
+    case "collectionEditor": {
       return <CollectionEditorStateDrawer />
-    case "siderailOrderingEditor":
+    }
+    case "siderailOrderingEditor": {
       return <SiderailOrderingEditorStateDrawer />
-    default:
+    }
+    default: {
       const _: never = currState
       return <h1>Edit Page Drawer</h1>
+    }
   }
 }

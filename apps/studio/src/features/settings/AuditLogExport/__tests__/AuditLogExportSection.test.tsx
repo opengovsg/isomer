@@ -54,7 +54,7 @@ vi.mock("~/utils/trpc", () => ({
       createExportRequest: {
         useMutation: (options: typeof capturedOptions) => {
           capturedOptions = options
-          return { mutate, isPending: false }
+          return { isPending: false, mutate }
         },
       },
     },
@@ -118,15 +118,15 @@ describe("AuditLogExportSection", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() =>{  expect(mutate).toHaveBeenCalledTimes(1); })
     const [payload] = mutate.mock.calls[0] as [
       { scope: string; siteId: number; month: string; reportType: string },
     ]
     expect(payload).toEqual({
-      scope: AuditLogExportScope.Site,
-      siteId: SITE_ID,
       month: getMonthOptions()[0]!.value,
       reportType: AuditLogExportRequestedReportType.Activity,
+      scope: AuditLogExportScope.Site,
+      siteId: SITE_ID,
     })
   })
 
@@ -140,7 +140,7 @@ describe("AuditLogExportSection", () => {
     )
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() =>{  expect(mutate).toHaveBeenCalledTimes(1); })
     const [payload] = mutate.mock.calls[0] as [{ scope: string }]
     expect(payload).toMatchObject({ scope: "allSites", siteId: 42 })
   })
@@ -152,11 +152,11 @@ describe("AuditLogExportSection", () => {
     renderWith(adminAbility)
 
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
-    await waitFor(() => expect(capturedOptions?.onError).toBeDefined())
+    await waitFor(() =>{  expect(capturedOptions?.onError).toBeDefined(); })
 
     capturedOptions?.onError?.({
-      message: "You cannot export audit logs for a month that is in the future",
       data: { code: "BAD_REQUEST" },
+      message: "You cannot export audit logs for a month that is in the future",
     })
 
     expect(
@@ -173,12 +173,12 @@ describe("AuditLogExportSection", () => {
 
     // First ask.
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() =>{  expect(mutate).toHaveBeenCalledTimes(1); })
 
     fireOnSuccessForLastMutation()
 
     // The success handler also reports the requested log type to PostHog.
-    await waitFor(() => expect(posthogCapture).toHaveBeenCalledTimes(1))
+    await waitFor(() =>{  expect(posthogCapture).toHaveBeenCalledTimes(1); })
     expect(posthogCapture).toHaveBeenCalledWith(
       "audit_log_requested",
       expect.objectContaining({ site_id: SITE_ID }),
@@ -186,7 +186,7 @@ describe("AuditLogExportSection", () => {
 
     // Ask again, identically.
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(2))
+    await waitFor(() =>{  expect(mutate).toHaveBeenCalledTimes(2); })
     // Identical payload both times — the duplicate is sent as-is; the server
     // idempotent-accepts it rather than erroring.
     expect(mutate.mock.calls[1]).toEqual(mutate.mock.calls[0])

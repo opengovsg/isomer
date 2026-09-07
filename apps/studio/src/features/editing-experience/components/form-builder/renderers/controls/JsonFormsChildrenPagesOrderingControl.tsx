@@ -30,17 +30,17 @@ const DraggableBlocks = ({
   path,
 }: ReorderingControlProps<{ title: string; id: string }>) => {
   const onDragEnd = ({ source, destination }: DropResult) => {
-    if (!destination) return
+    if (!destination) {return}
 
     const from = source.index
     const to = destination.index
 
-    if (from >= data.length || to >= data.length || from < 0 || to < 0) return
+    if (from >= data.length || to >= data.length || from < 0 || to < 0) {return}
 
-    const updatedBlocks = Array.from(data)
+    const updatedBlocks = [...data]
     const [movedBlock] = updatedBlocks.splice(from, 1)
 
-    if (!movedBlock) return
+    if (!movedBlock) {return}
 
     updatedBlocks.splice(to, 0, movedBlock)
 
@@ -53,8 +53,8 @@ const DraggableBlocks = ({
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Droppable droppableId="blocks">
-        {(provided) => {
-          return (
+        {(provided) => 
+          (
             <VStack
               spacing="0.75rem"
               {...provided.droppableProps}
@@ -94,7 +94,7 @@ const DraggableBlocks = ({
               {provided.placeholder}
             </VStack>
           )
-        }}
+        }
       </Droppable>
     </DragDropContext>
   )
@@ -107,8 +107,8 @@ const SuspendableBlocks = ({
   ...rest
 }: ReorderingControlProps & { siteId: string; indexPageId: string }) => {
   const [{ childPages }] = trpc.folder.listChildPages.useSuspenseQuery({
-    siteId: String(siteId),
     indexPageId: String(indexPageId),
+    siteId: String(siteId),
   })
 
   const mappings = new Map(childPages.map(({ title, id }) => [id, title]))
@@ -116,12 +116,12 @@ const SuspendableBlocks = ({
     data,
     childPages.map(({ id }) => id),
     mappings,
-  ).map((resourceId) => {
-    return {
+  ).map((resourceId) => (
+    {
       title: mappings.get(resourceId) ?? "Unknown page",
       id: resourceId,
     }
-  })
+  ))
 
   return <DraggableBlocks data={resources} {...rest} />
 }

@@ -34,8 +34,8 @@ export const TiptapLinkEditorModal = ({
   editor,
   isOpen,
   onClose,
-}: LinkEditorModalProps) => {
-  return (
+}: LinkEditorModalProps) => 
+  (
     <LinkEditorModal
       linkTypes={LINK_TYPES_MAPPING}
       linkText={getLinkText(editor)}
@@ -57,4 +57,4 @@ export const TiptapLinkEditorModal = ({
       onClose={onClose}
     />
   )
-}
+

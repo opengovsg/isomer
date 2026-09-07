@@ -36,11 +36,11 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
     totalResultsCount,
     recentlyEditedResources,
   } = useSearchQuery({
-    siteId,
-    resourceTypes: USER_VIEWABLE_RESOURCE_TYPES,
     onSearchSuccess: useCallback(() => {
       setQueryCount((prev) => prev + 1)
     }, []),
+    resourceTypes: USER_VIEWABLE_RESOURCE_TYPES,
+    siteId,
   })
 
   const renderModalBody = (): React.ReactNode => {
@@ -85,7 +85,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
         <ModalHeader p={0}>
           <OgpSearchBar
             defaultIsExpanded
-            onChange={({ target }) => setSearchValue(target.value)}
+            onChange={({ target }) =>{  setSearchValue(target.value); }}
             minW={minWidth}
             maxW={maxWidth}
             // border={0}

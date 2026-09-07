@@ -16,8 +16,8 @@ export const ComplexEditorStateDrawerFooter = ({
   onDeleteBlockModalOpen,
   onSave,
   isNonEditableBlock,
-}: ComplexEditorStateDrawerFooterProps) => {
-  return (
+}: ComplexEditorStateDrawerFooterProps) => 
+  (
     <Box bgColor="base.canvas.default" boxShadow="md" py="1.5rem" px="2rem">
       <HStack spacing="0.75rem">
         <IconButton
@@ -37,4 +37,4 @@ export const ComplexEditorStateDrawerFooter = ({
       </HStack>
     </Box>
   )
-}
+

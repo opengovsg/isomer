@@ -51,6 +51,19 @@ const SuspendablePublishButton = ({
   const isChangesPendingPublish = !!currPage.draftBlobId
 
   const { mutate, isPending } = trpc.page.publishPage.useMutation({
+    onError: (error) => {
+      console.error(`Error occurred when publishing page: ${error.message}`)
+      // The publish-block throws CONFLICT with an actionable message naming the
+      // redirect to remove — surface it verbatim, not the generic failure copy.
+      toast({
+        status: "error",
+        title:
+          error.data?.code === "CONFLICT"
+            ? error.message
+            : "Failed to publish page. Please contact Isomer support.",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
     onSettled: () => {
       void Promise.all([
         utils.page.readPage.refetch({ pageId, siteId }),
@@ -70,19 +83,6 @@ const SuspendablePublishButton = ({
       })
       if (publishNowDisclosure.isOpen) publishNowDisclosure.onClose()
     },
-    onError: (error) => {
-      console.error(`Error occurred when publishing page: ${error.message}`)
-      // The publish-block throws CONFLICT with an actionable message naming the
-      // redirect to remove — surface it verbatim, not the generic failure copy.
-      toast({
-        status: "error",
-        title:
-          error.data?.code === "CONFLICT"
-            ? error.message
-            : "Failed to publish page. Please contact Isomer support.",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
   })
 
   return (
@@ -91,9 +91,9 @@ const SuspendablePublishButton = ({
         <TouchableTooltip
           hidden={isChangesPendingPublish && isAllowed}
           label={
-            !isAllowed
-              ? "You need to be a Publisher or Admin to publish."
-              : "All changes have been published"
+            isAllowed
+              ? "All changes have been published"
+              : "You need to be a Publisher or Admin to publish."
           }
         >
           <>
@@ -109,7 +109,7 @@ const SuspendablePublishButton = ({
               <PublishingModal
                 pageId={pageId}
                 siteId={siteId}
-                onPublishNow={(pageId, siteId) => mutate({ pageId, siteId })}
+                onPublishNow={(pageId, siteId) =>{  mutate({ pageId, siteId }); }}
                 isPublishingNow={isPending}
                 {...publishNowDisclosure}
               />

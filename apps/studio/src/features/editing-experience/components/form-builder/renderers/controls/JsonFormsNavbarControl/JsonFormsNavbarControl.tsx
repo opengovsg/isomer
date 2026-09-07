@@ -130,6 +130,7 @@ const JsonFormsNavbarControl = ({
       // Navbar dropzone
       dropTargetForElements({
         element: droppableZoneElement,
+        getIsSticky: () => true,
         onDrop: (args) => {
           // NOTE: The data on the navbar can be obtained from args.source.data.*
           // The dropzone can be found at args.location.current.dropTargets[0]
@@ -152,7 +153,6 @@ const JsonFormsNavbarControl = ({
 
           handleMove(originalPath, newPath, instruction?.operation, closestEdge)
         },
-        getIsSticky: () => true,
       }),
     )
   }, [droppableZoneElement, handleMove])
@@ -166,7 +166,7 @@ const JsonFormsNavbarControl = ({
         schema={schema}
         uischema={getChildUiSchema(selectedPath)}
         path={selectedPath}
-        onBack={() => setSelectedPath(undefined)}
+        onBack={() =>{  setSelectedPath(undefined); }}
         handleRemoveItem={() => {
           handleRemove(
             getParentPath(selectedPath),
@@ -287,25 +287,25 @@ const JsonFormsNavbarControl = ({
                       }
                       description={childItem.description}
                       onEdit={(subItemIndex) => {
-                        if (subItemIndex !== undefined) {
+                        if (subItemIndex === undefined) {
+                          setSelectedPath(childPath)
+                        } else {
                           setSelectedPath(
                             composePaths(
                               [childPath, "items"].join("."),
                               String(subItemIndex),
                             ),
                           )
-                        } else {
-                          setSelectedPath(childPath)
                         }
                       }}
                       removeItem={(subItemIndex) => {
-                        if (subItemIndex !== undefined) {
+                        if (subItemIndex === undefined) {
+                          handleRemove(path, index)
+                        } else {
                           handleRemove(
                             [childPath, "items"].join("."),
                             subItemIndex,
                           )
-                        } else {
-                          handleRemove(path, index)
                         }
                       }}
                       subItems={childItem.items}

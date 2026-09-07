@@ -33,9 +33,9 @@ export const isFirstLevelLinksOverLimit = (
   maxItems?: number,
 ): boolean => !!(maxItems && itemCount > maxItems)
 
-export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) => {
-  return `/${path.replace(/\./g, "/")}`
-}
+export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) => 
+  `/${path.replace(/\./g, "/")}`
+
 
 // Helper function to extract the indices from the navbar item path in the
 // format "items.{index}" or "items.{parentIndex}.items.{index}"
@@ -87,10 +87,10 @@ const insertSubItem = (
 ) => {
   const data = cloneDeep(items)
 
-  if (!items[parentIndex]?.items) {
-    set(data, [parentIndex, "items"], [item])
-  } else {
+  if (items[parentIndex]?.items) {
     data[parentIndex]?.items?.push(item)
+  } else {
+    set(data, [parentIndex, "items"], [item])
   }
 
   return data
@@ -211,9 +211,9 @@ const reorderWithinSameList = (
       return {
         ...item,
         items: reorder({
+          finishIndex,
           list: item.items ?? [],
           startIndex,
-          finishIndex,
         }),
       }
     }
@@ -268,9 +268,9 @@ const moveSubItemToBecomeMainItem = (
   )
 
   return reorder({
+    finishIndex,
     list: newData,
     startIndex: newData.length - 1,
-    finishIndex,
   })
 }
 
@@ -302,33 +302,37 @@ export const handleMoveItem = (
   )
 
   switch (operation) {
-    case "MoveSingleMainItemToBecomeSubitem":
+    case "MoveSingleMainItemToBecomeSubitem": {
       return moveSingleMainItemToBecomeSubitem(
         data,
         originalPath,
         moveItemIndices,
         targetLocationIndices,
       )
-    case "CombineSubitemToMainItem":
+    }
+    case "CombineSubitemToMainItem": {
       return moveSubItemToBecomeSubItemOfAnother(
         data,
         moveItemIndices,
         targetLocationIndices,
       )
-    case "ReorderWithinSameList":
+    }
+    case "ReorderWithinSameList": {
       return reorderWithinSameList(
         data,
         moveItemIndices,
         startIndex,
         finishIndex,
       )
-    case "ReorderMainItems":
+    }
+    case "ReorderMainItems": {
       return reorder({
         list: data,
         startIndex,
         finishIndex,
       })
-    case "MoveSubitemToBecomeMainItem":
+    }
+    case "MoveSubitemToBecomeMainItem": {
       return moveSubItemToBecomeMainItem(
         data,
         isMaxItemsReached,
@@ -337,8 +341,10 @@ export const handleMoveItem = (
         targetLocationIndices,
         closestEdge,
       )
-    default:
+    }
+    default: {
       const _: never = operation
       return data
+    }
   }
 }

@@ -67,8 +67,8 @@ export const emailSessionRouter = router({
       // Not rejecting error outright so that it looks like the email is valid
       if (email === env.SYSTEM_USER_EMAIL) {
         return {
-          otpPrefix,
           email,
+          otpPrefix,
         }
       }
 
@@ -81,33 +81,33 @@ export const emailSessionRouter = router({
       try {
         await Promise.all([
           ctx.prisma.verificationToken.upsert({
-            where: {
+            create: {
+              expires,
               identifier: getOtpFingerPrint(email, ctx.req),
+              token: hashedToken,
             },
             update: {
-              token: hashedToken,
-              expires,
               attempts: 0,
-            },
-            create: {
-              identifier: getOtpFingerPrint(email, ctx.req),
-              token: hashedToken,
               expires,
+              token: hashedToken,
+            },
+            where: {
+              identifier: getOtpFingerPrint(email, ctx.req),
             },
           }),
           isStaticOtp
             ? Promise.resolve()
             : sendMail({
-                subject: `Sign in to ${url.host}`,
                 body: `Your OTP is ${otpPrefix}-<b>${token}</b>. It expires in ${expiryMinutes} minutes.
       Please use this to login to your account.
       <p>If your OTP does not work, please request for a new one.</p>`,
                 recipient: email,
+                subject: `Sign in to ${url.host}`,
               }),
         ])
-      } catch (e) {
+      } catch (error) {
         ctx.logger.error(
-          { error: e, email },
+          { error: error, email },
           "Failed to send OTP email for email sign in",
         )
 
@@ -144,23 +144,23 @@ export const emailSessionRouter = router({
 
       try {
         await verifyToken(ctx.prisma, ctx.req, {
-          token,
           email,
+          token,
         })
-      } catch (e) {
-        if (e instanceof VerificationError) {
+      } catch (error) {
+        if (error instanceof VerificationError) {
           ctx.logger.warn(
-            { error: e, email },
+            { error: error, email },
             "Failed to verify OTP for email sign in",
           )
 
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: e.message,
-            cause: e,
+            message: error.message,
+            cause: error,
           })
         }
-        throw e
+        throw error
       }
 
       const newAttributes: Partial<GrowthbookAttributes> = {
@@ -174,8 +174,8 @@ export const emailSessionRouter = router({
       if (!isSingpassEnabled) {
         const user = await db.transaction().execute(async (tx) => {
           const user = await upsertUser({
-            tx,
             email,
+            tx,
           })
 
           const userId = user.id
@@ -200,10 +200,10 @@ export const emailSessionRouter = router({
         return user
       }
 
-      return db.transaction().execute(async (tx) => {
+      return await db.transaction().execute(async (tx) => {
         const user = await upsertUser({
-          tx,
           email,
+          tx,
         })
 
         ctx.session.destroy()

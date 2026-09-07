@@ -28,27 +28,27 @@ interface FixedBlockContent {
 
 const FIXED_BLOCK_CONTENT = {
   article: {
-    label: "Article page header",
     description: "Category, Date, and Summary",
+    label: "Article page header",
   },
   content: {
-    label: "Content page header",
     description: "Summary, Button label, and Button destination",
+    label: "Content page header",
   },
   database: {
-    label: "Database page header",
     description: "Summary, Button label, and Button URL",
+    label: "Database page header",
   },
   index: {
-    label: "Header",
     description: "Summary, Button label and Button URL",
+    label: "Header",
   },
 } as const satisfies Record<string, FixedBlockContent>
 
 const getFixedBlockContent = (
   layout: string,
 ): FixedBlockContent | undefined => {
-  if (!Object.hasOwn(FIXED_BLOCK_CONTENT, layout)) return undefined
+  if (!Object.hasOwn(FIXED_BLOCK_CONTENT, layout)) {return undefined}
   // SAFETY: Object.hasOwn confirms layout is a key of FIXED_BLOCK_CONTENT
   return FIXED_BLOCK_CONTENT[layout as keyof typeof FIXED_BLOCK_CONTENT]
 }
@@ -66,12 +66,12 @@ export const FixedBlock = () => {
     const isValid = validateHeroComponentFn(fixedBlock)
     return (
       <BaseBlock
-        onClick={() => selectBlock(0, { state: "heroEditor" })}
+        onClick={() =>{  selectBlock(0, { state: "heroEditor" }); }}
         label="Hero banner"
         description="Title, subtitle, and Call-to-Action"
         icon={TYPE_TO_ICON.hero}
         invalidProps={
-          !isValid ? { description: invalidBlockDescription } : undefined
+          isValid ? undefined : { description: invalidBlockDescription }
         }
       />
     )
@@ -86,8 +86,8 @@ export const FixedBlock = () => {
       <>
         <BaseBlock
           variant="vertical"
-          onClick={() =>
-            selectBlock(0, { state: "collectionEditor", type: "display" })
+          onClick={() =>{ 
+            selectBlock(0, { state: "collectionEditor", type: "display" }); }
           }
           label="Collection display"
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
@@ -96,8 +96,8 @@ export const FixedBlock = () => {
         <CanManageCollectionFilters>
           <BaseBlock
             variant="vertical"
-            onClick={() =>
-              selectBlock(0, { state: "collectionEditor", type: "filter" })
+            onClick={() =>{ 
+              selectBlock(0, { state: "collectionEditor", type: "filter" }); }
             }
             label="Filters"
             description="Define and manage filters for this Collection."
@@ -111,8 +111,8 @@ export const FixedBlock = () => {
   if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
     return (
       <BaseBlock
-        onClick={() =>
-          selectBlock(0, { state: "collectionEditor", type: "display" })
+        onClick={() =>{ 
+          selectBlock(0, { state: "collectionEditor", type: "display" }); }
         }
         label="Collection settings"
         description="Summary, style, categories and sorting"

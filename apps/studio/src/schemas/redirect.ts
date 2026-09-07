@@ -44,7 +44,7 @@ const SOURCE_ALLOWED_CHARS_REGEX = /^[A-Za-z0-9\-._~!$&'()*+,;=:@%/]+$/
 // and ultimately the CloudFront Location header), so a CR/LF/NUL must never reach
 // it. These are stripped (not rejected) — the global flag strips every match.
 // (Source paths use the stricter whitelist above instead.)
-const CONTROL_CHARS_REGEX = /[\x00-\x1f\x7f]/g
+const CONTROL_CHARS_REGEX = /[\x00-\x1F\x7F]/g
 
 // Anchored form of the shared [resource:siteId:resourceId] reference (the shared
 // regex is unanchored, so a value only counts as a reference when it is exactly
@@ -79,13 +79,13 @@ export const redirectKind = (source: string): RedirectKind =>
 
 // Strips slashes from both ends of a path so "/foo/", "foo" and "foo//"
 // all normalise to the same inner segments before validation.
-const trimSlashes = (value: string) => value.replace(/^\/+|\/+$/g, "")
+const trimSlashes = (value: string) => value.replaceAll(/^\/+|\/+$/g, "")
 
 // Normalises a path to a single leading slash, no trailing slash, collapsed
 // runs ("/foo/", "foo", "foo//" -> "/foo"). Exported so the server can compare
 // a destination path against stored sources, persisted in this form.
 export const normalizeRedirectPath = (value: string) =>
-  `/${trimSlashes(value).replace(/\/{2,}/g, "/")}`
+  `/${trimSlashes(value).replaceAll(/\/{2,}/g, "/")}`
 
 // Sources are additionally lowercased — page permalinks are lowercase-only, so
 // a source must lowercase to compare against (and not shadow) a real page. A
@@ -125,10 +125,10 @@ const sourceSchema = z
   // collapsing "//" or a "." segment can't smuggle a root wildcard through.
   .refine(
     (value) => {
-      if (!value.includes("*")) return true
-      if (!value.endsWith("/*")) return false
+      if (!value.includes("*")) {return true}
+      if (!value.endsWith("/*")) {return false}
       const prefix = value.slice(0, -2)
-      if (prefix.includes("*")) return false
+      if (prefix.includes("*")) {return false}
       return trimSlashes(prefix)
         .split("/")
         .some((segment) => segment !== "" && segment !== ".")
@@ -211,8 +211,8 @@ export const refineSourceDestinationDiffer = (
   ) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      path: ["destination"],
       message: "You can't redirect a URL to itself.",
+      path: ["destination"],
     })
   }
 }
@@ -221,9 +221,9 @@ export const refineSourceDestinationDiffer = (
 // refinement turns a ZodObject into a ZodEffects, losing those helpers). The
 // form omits siteId and re-applies the cross-field refinement.
 export const createRedirectObjectSchema = z.object({
+  destination: destinationSchema,
   siteId: z.number().min(1),
   source: sourceSchema,
-  destination: destinationSchema,
 })
 
 export const createRedirectSchema = createRedirectObjectSchema.superRefine(
@@ -256,12 +256,12 @@ export const normalizeDestinationScheme = (value: string): string => {
 // redirect and a CSV row are validated by exactly the same rules.
 export const redirectRowSchema = z
   .object({
-    source: sourceSchema,
     destination: z
       .string()
       .trim()
       .transform(normalizeDestinationScheme)
       .pipe(destinationSchema),
+    source: sourceSchema,
   })
   .superRefine(refineSourceDestinationDiffer)
 export type RedirectRowInput = z.infer<typeof redirectRowSchema>
@@ -279,7 +279,6 @@ export const MAX_BULK_REDIRECT_CSV_BYTES = 1_000_000
 const utf8ByteLength = (value: string) => new TextEncoder().encode(value).length
 
 export const bulkRedirectsCsvSchema = z.object({
-  siteId: z.number().min(1),
   csv: z
     .string()
     .min(1, { message: "Upload a .csv file to continue" })
@@ -289,6 +288,7 @@ export const bulkRedirectsCsvSchema = z.object({
     .refine((csv) => utf8ByteLength(csv) <= MAX_BULK_REDIRECT_CSV_BYTES, {
       message: "File is too big",
     }),
+  siteId: z.number().min(1),
 })
 export type BulkRedirectsCsvInput = z.infer<typeof bulkRedirectsCsvSchema>
 
@@ -329,10 +329,10 @@ export type CountRedirectsInput = z.infer<typeof countRedirectsSchema>
 // off the list endpoint so the read path stays a plain query; the table calls
 // this once per page to render references as the page's current permalink.
 export const resolveRedirectReferencesSchema = z.object({
-  siteId: z.number().min(1),
   references: z
     .array(z.string())
     .max(MAX_REDIRECT_REFERENCES, { message: "Too many references" }),
+  siteId: z.number().min(1),
 })
 export type ResolveRedirectReferencesInput = z.infer<
   typeof resolveRedirectReferencesSchema
@@ -356,8 +356,8 @@ export type GetRedirectBySourceInput = z.infer<typeof getRedirectBySourceSchema>
 // will remove those redirects. Descendants are resolved server-side from the
 // resource being deleted.
 export const countRedirectsByDestinationSchema = z.object({
-  siteId: z.number().min(1, { message: "Site ID is required" }),
   resourceId: generateBigIntSchema("resource ID"),
+  siteId: z.number().min(1, { message: "Site ID is required" }),
 })
 export type CountRedirectsByDestinationInput = z.infer<
   typeof countRedirectsByDestinationSchema

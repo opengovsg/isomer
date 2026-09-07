@@ -14,8 +14,8 @@ import { prisma } from "~/server/prisma"
  */
 const createWebhookContext = async (
   opts: CreateNextContextOptions,
-): Promise<Context> => {
-  return {
+): Promise<Context> => (
+  {
     db,
     prisma,
     req: opts.req,
@@ -23,7 +23,7 @@ const createWebhookContext = async (
     gb: await createGrowthBookContext(),
     session: undefined, // no session since api key auth
   }
-}
+)
 
 /**
  * A mock TRPCRequestInfo object to satisfy the tRPC caller creation
@@ -31,11 +31,11 @@ const createWebhookContext = async (
  */
 const createTRPCRequestInfo: CreateNextContextOptions["info"] = {
   accept: null,
-  type: "mutation",
-  isBatchCall: false,
   calls: [],
   connectionParams: null,
+  isBatchCall: false,
   signal: new AbortController().signal,
+  type: "mutation",
   url: null,
 }
 
@@ -47,12 +47,12 @@ const createTRPCRequestInfo: CreateNextContextOptions["info"] = {
 export const webhookHandlers = {
   updateCodebuildWebhook: async (req: NextApiRequest, res: NextApiResponse) => {
     const ctx = await createWebhookContext({
+      info: createTRPCRequestInfo,
       req,
       res,
-      info: createTRPCRequestInfo,
     })
     return (
-      webhookRouter
+      await webhookRouter
         .createCaller(ctx)
         // We disable the eslint rule here because the input is validated by the trpc procedure
         // so we don't want to re-validate it here

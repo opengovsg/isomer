@@ -24,7 +24,7 @@ vi.mock("~/utils/trpc", () => ({
       createExportRequest: {
         useMutation: (options: typeof capturedOptions) => {
           capturedOptions = options
-          return { mutate, isPending: false }
+          return { isPending: false, mutate }
         },
       },
     },
@@ -33,7 +33,7 @@ vi.mock("~/utils/trpc", () => ({
 
 const renderOpen = () => {
   const store = createStore()
-  store.set(exportAccessLogsModalAtom, { siteId: SITE_ID, isOpen: true })
+  store.set(exportAccessLogsModalAtom, { isOpen: true, siteId: SITE_ID })
   const rendered = render(
     <Provider store={store}>
       <ThemeProvider theme={theme}>
@@ -87,12 +87,12 @@ describe("ExportAccessLogsModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
     // Assert
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() =>{  expect(mutate).toHaveBeenCalledTimes(1); })
     expect(mutate).toHaveBeenCalledWith({
-      scope: "allSites",
-      siteId: SITE_ID,
       month: getCurrentSingaporeMonth(),
       reportType: "Access",
+      scope: "allSites",
+      siteId: SITE_ID,
     })
   })
 
@@ -105,7 +105,7 @@ describe("ExportAccessLogsModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
 
     // Assert
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    await waitFor(() =>{  expect(mutate).toHaveBeenCalledTimes(1); })
     expect(mutate).toHaveBeenCalledWith(
       expect.objectContaining({ scope: "site" }),
     )
@@ -117,13 +117,13 @@ describe("ExportAccessLogsModal", () => {
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Export logs" }))
-    await waitFor(() => expect(capturedOptions?.onSuccess).toBeDefined())
+    await waitFor(() =>{  expect(capturedOptions?.onSuccess).toBeDefined(); })
     capturedOptions?.onSuccess?.(undefined, mutate.mock.lastCall?.[0])
 
     // Assert
     expect(store.get(exportAccessLogsModalAtom)).toEqual({
-      siteId: 0,
       isOpen: false,
+      siteId: 0,
     })
   })
 
@@ -136,8 +136,8 @@ describe("ExportAccessLogsModal", () => {
 
     // Assert
     expect(store.get(exportAccessLogsModalAtom)).toEqual({
-      siteId: 0,
       isOpen: false,
+      siteId: 0,
     })
   })
 })

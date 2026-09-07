@@ -101,11 +101,11 @@ export const BaseBlock = ({
       transitionDuration="normal"
       aria-invalid={!!invalidProps}
       _hover={{
-        bg: "interaction.muted.main.hover",
-        borderColor: "interaction.main-subtle.hover",
         _invalid: {
           shadow: "0px 1px 6px 0px #C0343426",
         },
+        bg: "interaction.muted.main.hover",
+        borderColor: "interaction.main-subtle.hover",
       }}
       _active={{
         bg: "interaction.main-subtle.default",
@@ -191,8 +191,8 @@ interface BaseBlockDragHandleProps extends ButtonProps {
 export const BaseBlockDragHandle = ({
   isDragging,
   ...handleProps
-}: BaseBlockDragHandleProps): React.ReactNode => {
-  return (
+}: BaseBlockDragHandleProps): React.ReactNode => 
+  (
     <chakra.button
       display="flex"
       tabIndex={0}
@@ -208,4 +208,4 @@ export const BaseBlockDragHandle = ({
       <Icon as={BiGridVertical} fontSize="1.5rem" />
     </chakra.button>
   )
-}
+

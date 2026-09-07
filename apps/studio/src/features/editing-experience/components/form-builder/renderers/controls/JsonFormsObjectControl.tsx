@@ -42,7 +42,7 @@ const JsonFormsObjectControl = ({
     if (isChecked) {
       // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment -- JsonForms data is schema-driven
       dataSnapshotRef.current = data
-      handleChange(path, undefined)
+      handleChange(path)
     } else {
       handleChange(path, dataSnapshotRef.current)
     }

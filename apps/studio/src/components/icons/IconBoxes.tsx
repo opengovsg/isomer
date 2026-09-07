@@ -1,7 +1,7 @@
 import { chakra } from "@chakra-ui/react"
 
-export const IconBoxes = chakra((props: React.SVGProps<SVGSVGElement>) => {
-  return (
+export const IconBoxes = chakra((props: React.SVGProps<SVGSVGElement>) => 
+  (
     <svg
       width="105"
       height="64"
@@ -25,4 +25,4 @@ export const IconBoxes = chakra((props: React.SVGProps<SVGSVGElement>) => {
       <rect x="73" y="35" width="24" height="20" rx="4" fill="#EBEBEB" />
     </svg>
   )
-})
+)

@@ -9,10 +9,10 @@ export const asSiteJsonConfig = (config: {
   isGovernment: boolean
   agencyName?: string
   favicon?: string
-}): PrismaJson.SiteJsonConfig => {
+}): PrismaJson.SiteJsonConfig => 
   // SAFETY: MSW fixture matches SiteJsonConfig fields used in Storybook/tests.
-  return config as PrismaJson.SiteJsonConfig
-}
+  config as PrismaJson.SiteJsonConfig
+
 
 export const asSiteThemeJson = (
   theme: PrismaJson.SiteThemeJson,
@@ -33,7 +33,7 @@ export const asBlobJsonContent = (content: {
   page: BlobJsonPageFixture
   content: unknown[]
   version: string
-}): PrismaJson.BlobJsonContent => {
+}): PrismaJson.BlobJsonContent => 
   // SAFETY: MSW fixture matches blob layout shapes used by collection/gazette handlers.
-  return content as PrismaJson.BlobJsonContent
-}
+  content as PrismaJson.BlobJsonContent
+

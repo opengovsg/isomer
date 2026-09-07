@@ -56,8 +56,8 @@ const SuspendablePermalink = ({
 }: SuspendablePermalinkProps) => {
   const [{ fullPermalink }] =
     trpc.resource.getWithFullPermalink.useSuspenseQuery({
-      siteId,
       resourceId: folderId ? String(folderId) : "",
+      siteId,
     })
 
   return (
@@ -74,8 +74,8 @@ export const FolderSettingsModal = () => {
   const { folderId } = useAtomValue(folderSettingsModalAtom)
   const { siteId } = useQueryParse(sitePageSchema)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
-  const onClose = () =>
-    setFolderSettingsModalState(DEFAULT_FOLDER_SETTINGS_MODAL_STATE)
+  const onClose = () =>{ 
+    setFolderSettingsModalState(DEFAULT_FOLDER_SETTINGS_MODAL_STATE); }
 
   return (
     <Modal isOpen={!!folderId} onClose={onClose}>
@@ -104,22 +104,31 @@ const SuspendableModalContent = ({
 }) => {
   const [{ title: originalTitle, permalink: originalPermalink, parentId }] =
     trpc.folder.getMetadata.useSuspenseQuery({
-      siteId,
       resourceId: Number(folderId),
+      siteId,
     })
   const { register, handleSubmit, watch, control, formState } = useZodForm({
-    mode: "onChange",
     defaultValues: {
-      title: originalTitle,
       permalink: originalPermalink,
       shouldCreateRedirect: true,
+      title: originalTitle,
     },
+    mode: "onChange",
     schema: baseEditFolderSchema.omit({ siteId: true, resourceId: true }),
   })
   const { errors, isValid } = formState
   const utils = trpc.useUtils()
   const toast = useToast()
   const { mutate, isPending } = trpc.folder.editFolder.useMutation({
+    onError: (err) => {
+      toast({
+        title: "Failed to update folder",
+        status: "error",
+        // TODO: check if this property is correct
+        description: err.message,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
     onSettled: onClose,
     onSuccess: async () => {
       await utils.resource.listWithoutRoot.invalidate()
@@ -142,15 +151,6 @@ const SuspendableModalContent = ({
       toast({
         title: "Folder updated!",
         status: "success",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-    onError: (err) => {
-      toast({
-        title: "Failed to update folder",
-        status: "error",
-        // TODO: check if this property is correct
-        description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -251,7 +251,7 @@ const SuspendableModalContent = ({
                       alignItems="flex-start"
                       size="sm"
                       isChecked={!!value}
-                      onChange={(e) => onChange(e.target.checked)}
+                      onChange={(e) =>{  onChange(e.target.checked); }}
                       ref={ref}
                       {...field}
                     >

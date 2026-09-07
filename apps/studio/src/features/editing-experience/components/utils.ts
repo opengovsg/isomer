@@ -21,13 +21,13 @@ import { transliterate } from "transliteration"
 import { PLACEHOLDER_IMAGE_FILENAME } from "./constants"
 
 export const EMBED_NAME_MAPPING = {
-  googlemaps: "Google Map",
-  onemap: "OneMap",
-  ogpmaps: "Maps.gov.sg",
   fbvideo: "Facebook Video",
-  youtube: "YouTube",
-  vimeo: "Vimeo",
   formsg: "FormSG",
+  googlemaps: "Google Map",
+  ogpmaps: "Maps.gov.sg",
+  onemap: "OneMap",
+  vimeo: "Vimeo",
+  youtube: "YouTube",
 } satisfies Record<
   | keyof typeof MAPS_EMBED_URL_REGEXES
   | keyof typeof VIDEO_EMBED_URL_REGEXES
@@ -38,7 +38,7 @@ export const EMBED_NAME_MAPPING = {
 export const generateResourceUrl = (value: string): string =>
   transliterate(value)
     .toLowerCase()
-    .replace(/[^a-z0-9]/g, "-")
+    .replaceAll(/[^a-z0-9]/g, "-")
 
 interface UploadModifiedAssetsParams {
   block: IsomerComponent
@@ -46,8 +46,7 @@ interface UploadModifiedAssetsParams {
   uploadAsset: UseMutateAsyncFunction<
     UploadAssetMutationOutput,
     void,
-    UploadAssetMutationInput,
-    unknown
+    UploadAssetMutationInput
   >
   onSuccess: (block: IsomerComponent) => void
   onError: (failedUploads: ModifiedAsset[]) => void
@@ -64,8 +63,8 @@ export const uploadModifiedAssets = async ({
   const assetsToUpload = modifiedAssets.filter(
     (asset) => !!asset.file && asset.file.name !== PLACEHOLDER_IMAGE_FILENAME,
   )
-  return Promise.allSettled(
-    assetsToUpload.map(({ path, file }) => {
+  return await Promise.allSettled(
+    assetsToUpload.map( async ({ path, file }) => {
       if (!file) {
         return Promise.resolve()
       }
@@ -101,16 +100,16 @@ export const uploadModifiedAssets = async ({
 export const generatePreviewSitemap = (
   sitemap: typeof collectionSitemap,
   title = "Your filename",
-) => {
+) => (
   // SAFETY: preview sitemap children are mapped from the collection fixture shape
-  return {
+  {
     ...sitemap,
     children: sitemap.children.map(({ children, ...rest }) => ({
       ...rest,
       children: children.map((props) => ({ ...props, title })),
     })),
   } as IsomerGeneratedSiteProps["siteMap"]
-}
+)
 
 export const getIframeSrc = (embedCode: string): string | undefined => {
   const elem = DOMPurify.sanitize(embedCode, {
@@ -139,5 +138,5 @@ export const getEmbedNameFromUrl = (url: string) =>
       return EMBED_NAME_MAPPING[embedName as keyof typeof EMBED_NAME_MAPPING]
     }
 
-    return undefined
-  }, undefined)
+    return
+  })

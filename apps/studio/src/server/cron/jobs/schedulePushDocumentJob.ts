@@ -21,16 +21,16 @@ import { registerPgbossJob } from "@isomer/pgboss"
 
 const JOB_NAME = "schedule-push-document"
 const CRON_SCHEDULE = "* * * * *" // every minute
-const SEARCHSG_CONTENT_LENGTH = 50000
+const SEARCHSG_CONTENT_LENGTH = 50_000
 
 const logger = createBaseLogger({ path: "cron:schedulePushDocumentJob" })
 
 const pushDocumentContentSchema = z.object({
   page: z.object({
-    ref: z.string(),
     category: z.string(),
-    tagged: z.array(z.string()),
     description: z.string().optional(),
+    ref: z.string(),
+    tagged: z.array(z.string()),
   }),
 })
 
@@ -88,7 +88,7 @@ const extractResourceData = async ({
     return null
   }
 
-  const ref = parsed.data.page.ref
+  const {ref} = parsed.data.page
   // objectGroup is the S3 key (no leading slash), matching egazette's
   // objectKey convention.
   const objectGroup = ref.slice(1)
@@ -112,9 +112,9 @@ const extractResourceData = async ({
   // so that the pdf is viewable to MOPs, and rename the download
   // filename to the gazette's title
   await setAssetAsPublished({
-    Key: ref.slice(1),
     Bucket: env.S3_GAZETTE_BUCKET_NAME,
     ContentDisposition: getContentDispositionForTitle(title, ref),
+    Key: ref.slice(1),
   })
 
   // NOTE: Derive the subcategory from the tagged mapping
@@ -132,7 +132,7 @@ const extractResourceData = async ({
   const { tagCategories } = indexParsed.data.page
   // reduce the tag category options into a single array then we find
   const options =
-    tagCategories?.map((category) => category.options).flat() ?? []
+    tagCategories?.flatMap((category) => category.options) ?? []
   const subcategory = options.find(
     (option) => option.id === parsed.data.page.tagged[0],
   )
@@ -140,17 +140,17 @@ const extractResourceData = async ({
   const pdfTextContent = await parseFullTextFromPDF(blob)
 
   return {
-    ref,
-    objectGroup,
     fileUrl,
-    subcategoryLabel: subcategory?.label,
-    pdfTextContent,
+    objectGroup,
     parsedPage: parsed.data.page,
+    pdfTextContent,
+    ref,
+    subcategoryLabel: subcategory?.label,
   }
 }
 
-export const schedulePushDocumentJob = async () => {
-  return await registerPgbossJob(
+export const schedulePushDocumentJob = async () => 
+  await registerPgbossJob(
     logger,
     JOB_NAME,
     CRON_SCHEDULE,
@@ -160,7 +160,7 @@ export const schedulePushDocumentJob = async () => {
       ? { heartbeatURL: env.SCHEDULE_PUSH_DOCUMENT_JOB_HEARTBEAT_URL }
       : undefined,
   )
-}
+
 
 export const schedulePushDocumentJobHandler = async () => {
   const scheduledAtCutoff = new Date()
@@ -204,12 +204,12 @@ export const schedulePushDocumentJobHandler = async () => {
         async ({ scheduledAt, resourceId, title, parentId, content }) => {
           try {
             const extracted = await extractResourceData({
-              resourceId,
-              parentId,
-              title,
               content,
+              parentId,
+              resourceId,
+              title,
             })
-            if (extracted === null) return null
+            if (extracted === null) {return null}
 
             const { ref, pdfTextContent, subcategoryLabel, parsedPage } =
               extracted
@@ -260,12 +260,12 @@ export const schedulePushDocumentJobHandler = async () => {
       } of scheduledResources) {
         try {
           const extracted = await extractResourceData({
-            resourceId,
-            parentId,
-            title,
             content,
+            parentId,
+            resourceId,
+            title,
           })
-          if (extracted === null) continue
+          if (extracted === null) {continue}
 
           const {
             objectGroup,
@@ -276,14 +276,14 @@ export const schedulePushDocumentJobHandler = async () => {
           } = extracted
 
           const records = buildGazetteSearchRecords({
-            parsedText: pdfTextContent,
-            objectGroup,
-            title,
             category: parsedPage.category,
-            subCategory: subcategoryLabel ?? "",
-            notificationNum: parsedPage.description,
             fileUrl,
+            notificationNum: parsedPage.description,
+            objectGroup,
+            parsedText: pdfTextContent,
             scheduledAt,
+            subCategory: subcategoryLabel ?? "",
+            title,
           })
 
           if (records.length === 0) {
@@ -296,7 +296,7 @@ export const schedulePushDocumentJobHandler = async () => {
 
           await saveObjectsToSearchIndex(records)
           savedCount++
-          logger.info({ resourceId, count: records.length }, "Saved to Algolia")
+          logger.info({ count: records.length, resourceId }, "Saved to Algolia")
         } catch (error) {
           logger.error(
             { error, resourceId },
@@ -307,7 +307,7 @@ export const schedulePushDocumentJobHandler = async () => {
 
       await deleteProcessedJobs(scheduledAtCutoff)
       logger.info(
-        { count: savedCount, attempted: scheduledResources.length },
+        { attempted: scheduledResources.length, count: savedCount },
         "Completed schedule push document job (Algolia)",
       )
     }

@@ -22,8 +22,8 @@ const SearchResults = ({
   items: SearchResultResource[]
   isSimplifiedView?: boolean
   shouldHideLastEditedText?: boolean
-}) => {
-  return (
+}) => 
+  (
     <VStack gap="0.25rem" w="full">
       {items.map((item) => (
         <SearchResult
@@ -38,10 +38,10 @@ const SearchResults = ({
       ))}
     </VStack>
   )
-}
 
-const ModalBody = ({ children, ...props }: PropsWithChildren & ChakraProps) => {
-  return (
+
+const ModalBody = ({ children, ...props }: PropsWithChildren & ChakraProps) => 
+  (
     <ChakraModalBody
       border="1px solid"
       borderColor="base.divider.medium"
@@ -59,7 +59,7 @@ const ModalBody = ({ children, ...props }: PropsWithChildren & ChakraProps) => {
       {children}
     </ChakraModalBody>
   )
-}
+
 
 const HeaderTextAndContent = ({
   headerText,
@@ -70,8 +70,8 @@ const HeaderTextAndContent = ({
   headerText?: string
   shouldShowHint?: boolean
   content: React.ReactNode
-} & ChakraProps) => {
-  return (
+} & ChakraProps) => 
+  (
     <VStack gap="0.75rem" align="start" w="full" {...props}>
       {headerText && (
         <Text textColor="base.content.medium" textStyle="body-2">
@@ -82,7 +82,7 @@ const HeaderTextAndContent = ({
       {content}
     </VStack>
   )
-}
+
 
 export const InitialState = ({
   siteId,
@@ -94,8 +94,8 @@ export const InitialState = ({
   const { get } = useResourceLocalViewHistory({ siteId })
   const { data: localViewHistorySearchResults = [] } =
     trpc.resource.searchWithResourceIds.useQuery({
-      siteId,
       resourceIds: get().map((history) => history.resourceId),
+      siteId,
     })
 
   const hasLocalViewHistory = localViewHistorySearchResults.length > 0
@@ -130,8 +130,8 @@ export const InitialState = ({
   )
 }
 
-export const LoadingState = () => {
-  return (
+export const LoadingState = () => 
+  (
     <ModalBody>
       <HeaderTextAndContent
         headerText="Searching your website high and low"
@@ -153,7 +153,7 @@ export const LoadingState = () => {
       />
     </ModalBody>
   )
-}
+
 
 export const SearchResultsState = ({
   siteId,
@@ -167,8 +167,8 @@ export const SearchResultsState = ({
   totalResultsCount: number
   searchTerm: string
   shouldShowHint?: boolean
-}) => {
-  return (
+}) => 
+  (
     <ModalBody>
       <HeaderTextAndContent
         headerText={`${totalResultsCount} search result${totalResultsCount === 1 ? "" : "s"} with "${searchTerm}" in title`}
@@ -184,10 +184,10 @@ export const SearchResultsState = ({
       />
     </ModalBody>
   )
-}
 
-export const NoResultsState = () => {
-  return (
+
+export const NoResultsState = () => 
+  (
     <ModalBody justifyContent="center">
       <HeaderTextAndContent
         content={
@@ -210,4 +210,4 @@ export const NoResultsState = () => {
       />
     </ModalBody>
   )
-}
+

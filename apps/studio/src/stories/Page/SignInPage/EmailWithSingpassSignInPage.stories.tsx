@@ -10,12 +10,11 @@ import { withChromaticModes } from "@isomer/storybook-config"
 const VALID_AUTH_EMAIL = "test@example.gov.sg"
 
 const meta: Meta<typeof SignInPage> = {
-  title: "Pages/Sign In Page/Email with Singpass Sign In Page",
   component: SignInPage,
   parameters: {
-    loginState: false,
     chromatic: withChromaticModes(["gsib", "mobile"]),
     growthbook: [createSingpassEnabledGbParameters(true)],
+    loginState: false,
     msw: {
       handlers: [
         meHandlers.unauthorized(),
@@ -27,6 +26,7 @@ const meta: Meta<typeof SignInPage> = {
       ],
     },
   },
+  title: "Pages/Sign In Page/Email with Singpass Sign In Page",
 }
 
 export default meta

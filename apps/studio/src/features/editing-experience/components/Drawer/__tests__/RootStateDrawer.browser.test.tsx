@@ -34,32 +34,32 @@ vi.mock("~/utils/trpc", () => ({
         useMutation: () => ({ mutate: noop }),
       },
       updatePageBlob: {
-        useMutation: () => ({ mutate: noop, isPending: false }),
+        useMutation: () => ({ isPending: false, mutate: noop }),
       },
     },
     useUtils: () => ({
+      collection: {
+        countTagOptionsUsage: { invalidate: noop },
+      },
       page: {
         readPage: { invalidate: noop },
         readPageAndBlob: { invalidate: noop },
-      },
-      collection: {
-        countTagOptionsUsage: { invalidate: noop },
       },
     }),
   },
 }))
 
 const SEARCH_PAGE: IsomerSchema = {
-  page: { title: "Search", description: "Search results" },
-  layout: "search",
   content: [],
+  layout: "search",
+  page: { description: "Search results", title: "Search" },
   version: "0.1.0",
 }
 
 const CONTENT_PAGE: IsomerSchema = {
-  page: { title: "About us", description: "About us" },
-  layout: "content",
   content: [],
+  layout: "content",
+  page: { description: "About us", title: "About us" },
   version: "0.1.0",
 }
 

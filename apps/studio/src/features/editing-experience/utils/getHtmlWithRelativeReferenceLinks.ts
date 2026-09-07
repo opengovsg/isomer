@@ -9,7 +9,7 @@ export const getHtmlWithRelativeReferenceLinks = (html: string) =>
       `href="(?:http|https)://[^[]*/${REFERENCE_LINK_REGEX.source}"`,
       "g",
     ),
-    (_, siteId, resourceId) => {
-      return `href="[resource:${siteId}:${resourceId}]"`
-    },
+    (_, siteId, resourceId) => 
+      `href="[resource:${siteId}:${resourceId}]"`
+    ,
   )

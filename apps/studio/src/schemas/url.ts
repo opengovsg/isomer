@@ -8,8 +8,8 @@ const baseUrl = getBaseUrl()
 const validator = new UrlValidator({
   baseOrigin: new URL(baseUrl).origin,
   whitelist: {
-    protocols: ["http", "https"],
     hosts: [new URL(baseUrl).host],
+    protocols: ["http", "https"],
   },
 })
 

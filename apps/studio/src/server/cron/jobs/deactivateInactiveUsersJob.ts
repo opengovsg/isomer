@@ -12,8 +12,8 @@ const logger = createBaseLogger({
   path: "cron:deactivateInactiveUsersJob",
 })
 
-export const deactivateInactiveUsersJob = async () => {
-  return await registerPgbossJob(
+export const deactivateInactiveUsersJob = async () => 
+  await registerPgbossJob(
     logger,
     JOB_NAME,
     CRON_SCHEDULE,
@@ -23,4 +23,4 @@ export const deactivateInactiveUsersJob = async () => {
       ? { heartbeatURL: env.DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL }
       : undefined,
   )
-}
+

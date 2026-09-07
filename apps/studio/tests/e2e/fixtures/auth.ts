@@ -1,5 +1,5 @@
-import path from "path"
-import { fileURLToPath } from "url"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
 
 export const ROLES = [
   "editor",
@@ -12,12 +12,12 @@ export const ROLES = [
 export type Role = (typeof ROLES)[number]
 
 export const TEST_EMAILS = {
-  editor: "editor@open.gov.sg",
-  publisher: "publisher@open.gov.sg",
   admin: "admin-e2e@open.gov.sg",
-  nomember: "nomember-e2e@open.gov.sg",
   core: "core-e2e@open.gov.sg",
+  editor: "editor@open.gov.sg",
   migrator: "migrator-e2e@open.gov.sg",
+  nomember: "nomember-e2e@open.gov.sg",
+  publisher: "publisher@open.gov.sg",
 } satisfies Record<Role, string>
 
 const STORAGE_DIR = fileURLToPath(new URL("../storage-state", import.meta.url))

@@ -4,8 +4,8 @@ import { BiWrench } from "react-icons/bi"
 
 import { REDIRECTS_SUPPORT_LINK } from "../constants"
 
-export const RedirectsHeader = (): React.ReactNode => {
-  return (
+export const RedirectsHeader = (): React.ReactNode => 
+  (
     <Flex justifyContent="space-between" align="center" gap="1rem" w="full">
       <Stack spacing="0.5rem">
         <Flex align="center" gap="0.75rem">
@@ -32,4 +32,4 @@ export const RedirectsHeader = (): React.ReactNode => {
       </Stack>
     </Flex>
   )
-}
+

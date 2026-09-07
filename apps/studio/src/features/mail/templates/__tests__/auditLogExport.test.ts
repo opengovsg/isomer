@@ -59,8 +59,8 @@ describe("auditLogExportReady template", () => {
     // measured — the template must not render "NaN" or crash.
     const template = templates.auditLogExportReady({
       ...baseData,
-      sizeInBytes: null,
       link: { label: "access", url: "https://s3.example/nosize" },
+      sizeInBytes: null,
     })
 
     // Assert
@@ -123,8 +123,8 @@ describe("auditLogExportReady template", () => {
     // Act: the site name is interpolated into the subject, which isn't HTML
     const template = templates.auditLogExportReady({
       ...baseData,
-      siteName: `Evil <b>&</b> Co`,
       link: { label: "access", url: "https://s3.example/x" },
+      siteName: `Evil <b>&</b> Co`,
     })
 
     // Assert: the raw site name renders as-is; escaped entities never leak in
@@ -154,9 +154,9 @@ describe("auditLogExportReady template", () => {
 
 describe("auditLogExportFailed template", () => {
   const data = {
+    month: "June 2026",
     recipientEmail: "test@example.com",
     siteName: "Test Site",
-    month: "June 2026",
   }
 
   it("has a sane subject mentioning failure to generate", () => {

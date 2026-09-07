@@ -6,13 +6,13 @@ export const LOCALHOST = "127.0.0.1"
 export const getOtpFingerPrint = (
   email: string,
   req: NextApiRequest,
-): `${string}|${string}` => {
-  return getIpFingerprint(email, getIP(req))
-}
+): `${string}|${string}` => 
+  getIpFingerprint(email, getIP(req))
+
 
 export const getIpFingerprint = (
   email: string,
   flattenedIp: string,
-): `${string}|${string}` => {
-  return `${email}|${flattenedIp}`
-}
+): `${string}|${string}` => 
+  `${email}|${flattenedIp}`
+

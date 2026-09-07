@@ -25,8 +25,8 @@ export const PermissionsProvider = ({
   resourceId,
 }: PropsWithChildren<PermissionsProviderProps>) => {
   const [roles] = trpc.resource.getRolesFor.useSuspenseQuery({
-    siteId,
     resourceId: resourceId ?? null,
+    siteId,
   })
 
   const ability = getPermissions(roles)
@@ -34,8 +34,8 @@ export const PermissionsProvider = ({
   return <AbilityProvider value={ability}>{children}</AbilityProvider>
 }
 
-export const usePermissions = (): ResourceAbility => {
-  return useAbility<ResourceAbility>()
-}
+export const usePermissions = (): ResourceAbility => 
+  useAbility<ResourceAbility>()
+
 
 export { Can }

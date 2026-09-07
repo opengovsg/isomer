@@ -19,12 +19,12 @@ interface TestRowData {
 const columnsHelper = createColumnHelper<StockFeatures, TestRowData>()
 const columns = columnsHelper.columns([
   columnsHelper.accessor("title", {
-    header: "Title",
     cell: ({ getValue }) => (
       <LinkOverlay href="/test-page" sx={{ position: "static" }}>
         {getValue()}
       </LinkOverlay>
     ),
+    header: "Title",
   }),
 ])
 
@@ -36,9 +36,9 @@ const LinkedRowTable = ({
   data?: TestRowData[]
 }) => {
   const instance = useTable({
-    features: stockFeatures,
     columns,
     data,
+    features: stockFeatures,
   })
 
   return (
@@ -58,7 +58,7 @@ describe("Datatable linked rows", () => {
     const row = link.closest("tr")
 
     expect(row).not.toBeNull()
-    if (!row) throw new Error("Expected link to be inside a table row")
+    if (!row) {throw new Error("Expected link to be inside a table row")}
 
     expect(row.parentElement?.tagName).toBe("TBODY")
     expect(link.getAttribute("href")).toBe("/test-page")

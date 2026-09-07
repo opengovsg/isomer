@@ -19,7 +19,7 @@ import { TableSizePicker } from "./TableSizePicker"
 // editor.
 const TableSizePickerHarness = () => {
   const editor = useTextEditor({
-    data: { type: "prose", content: [{ type: "paragraph" }] },
+    data: { content: [{ type: "paragraph" }], type: "prose" },
     handleChange: () => {
       // no-op: tests only assert on the editor's own document state
     },

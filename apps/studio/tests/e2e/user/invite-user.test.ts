@@ -1,7 +1,8 @@
-import { expect, test, type Page } from "@playwright/test"
-import crypto from "crypto"
+import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import crypto from "node:crypto"
 import { db } from "~/server/modules/database/database"
-import { type RoleType } from "~prisma/generated/generatedEnums"
+import type { RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, TEST_EMAILS } from "../fixtures/auth"
 import { getSeedSiteId } from "../fixtures/seed"
@@ -94,7 +95,7 @@ const deleteUsersByEmail = async (emailPattern: string) => {
     .where("email", "like", emailPattern)
     .select(["id"])
     .execute()
-  if (users.length === 0) return
+  if (users.length === 0) {return}
   const ids = users.map((u) => u.id)
   await db.deleteFrom("ResourcePermission").where("userId", "in", ids).execute()
   await db.deleteFrom("User").where("id", "in", ids).execute()

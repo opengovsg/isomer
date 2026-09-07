@@ -44,27 +44,99 @@ import {
 } from "./collection.service"
 
 export const collectionRouter = router({
-  getMetadata: protectedProcedure
-    .input(readFolderSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+  countTagOptionsUsage: protectedProcedure
+    .input(countTagOptionsUsageSchema)
+    .query(async ({ ctx, input: { siteId, pageId, tagOptionIds } }) => {
       await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
         userId: ctx.user.id,
       })
 
-      const resource = await getSiteResourceById({
+      const indexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(pageId))
+        .where("siteId", "=", siteId)
+        .where("type", "=", ResourceType.IndexPage)
+        .select(["parentId"])
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "Collection index page not found",
+            }),
+        )
+
+      const { parentId } = indexPage
+      if (!parentId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page has no parent collection",
+        })
+      }
+      const collection = await getSiteResourceById({
         siteId,
-        resourceId: String(resourceId),
+        resourceId: parentId,
         type: ResourceType.Collection,
       })
-      if (!resource) {
+      if (!collection) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Collection not found",
         })
       }
-      return resource
+
+      const uniqueTagOptionIds = [...new Set(tagOptionIds)]
+      if (uniqueTagOptionIds.length === 0) {
+        return { count: 0 }
+      }
+
+      // Bound parameters as a Postgres text[] for use with = ANY(...).
+      // Compare as text: `tagged` is stored inside jsonb (no native uuid type),
+      // and jsonb_array_elements_text returns text. The z.string().uuid() validator
+      // is a request-boundary check, not a storage-type contract.
+      const optionIdsAsSqlArray = sql.join(
+        uniqueTagOptionIds.map((id) => sql`${id}::text`),
+        sql`, `,
+      )
+      const tagOptionIdArray = sql`ARRAY[${optionIdsAsSqlArray}]::text[]`
+
+      const row = await db
+        .selectFrom("Resource as r")
+        .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
+        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
+        .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
+        .where("r.parentId", "=", parentId)
+        .where("r.siteId", "=", siteId)
+        .where("r.type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+        ])
+        // Match child resources whose page.tagged JSON array overlaps the queried
+        // option ids. Postgres has no jsonb && jsonb overlap; unnest to text and use ANY.
+        // Draft or published blob alone is enough; one row per resource still counts once.
+        .where(
+          sql<boolean>`(
+            EXISTS (
+              SELECT 1
+              FROM jsonb_array_elements_text(
+                COALESCE("draftBlob"."content"->'page'->'tagged', '[]'::jsonb)
+              ) AS tag
+              WHERE tag = ANY(${tagOptionIdArray})
+            )
+            OR EXISTS (
+              SELECT 1
+              FROM jsonb_array_elements_text(
+                COALESCE("publishedBlob"."content"->'page'->'tagged', '[]'::jsonb)
+              ) AS tag
+              WHERE tag = ANY(${tagOptionIdArray})
+            )
+          )`,
+        )
+        .select(sql<number>`cast(count(*) as int)`.as("count"))
+        .executeTakeFirstOrThrow()
+
+      return { count: row.count }
     }),
   create: protectedProcedure
     .input(createCollectionSchema)
@@ -271,6 +343,86 @@ export const collectionRouter = router({
       })
       return { pageId: resource.id }
     }),
+  getCollectionTags: protectedProcedure
+    .input(getCollectionTagsSchema)
+    .query(async ({ ctx, input: { resourceId, collectionId, siteId } }) => {
+      const resourceIdToValidate = collectionId ?? resourceId
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+        resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
+      })
+
+      if (collectionId !== undefined) {
+        return await getCollectionTagsForResource({
+          siteId,
+          collectionId,
+          isPublishedOnly: true,
+        })
+      }
+      if (resourceId !== undefined) {
+        return await getCollectionTagsForResource({
+          siteId,
+          resourceId,
+          isPublishedOnly: true,
+        })
+      }
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Either collectionId or resourceId must be provided",
+      })
+    }),
+  getCollections: protectedProcedure
+    .input(getCollectionsSchema)
+    .query(async ({ ctx, input: { siteId, hasChildren } }) => {
+      // will need permissions to fetch all collections for a site
+      await validateUserPermissionsForSite({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      let query = db.selectFrom("Resource")
+
+      if (hasChildren) {
+        query = query.innerJoin(
+          "Resource as children",
+          "Resource.id",
+          "children.parentId",
+        )
+      }
+
+      return await query
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "=", ResourceType.Collection)
+        .orderBy("Resource.title", "asc")
+        .distinct()
+        .selectAll("Resource")
+        .execute()
+    }),
+  getMetadata: protectedProcedure
+    .input(readFolderSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const resource = await getSiteResourceById({
+        siteId,
+        resourceId: String(resourceId),
+        type: ResourceType.Collection,
+      })
+      if (!resource) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection not found",
+        })
+      }
+      return resource
+    }),
   list: protectedProcedure
     .input(readCollectionSchema)
     .query(
@@ -305,102 +457,6 @@ export const collectionRouter = router({
           .execute()
       },
     ),
-
-  countTagOptionsUsage: protectedProcedure
-    .input(countTagOptionsUsageSchema)
-    .query(async ({ ctx, input: { siteId, pageId, tagOptionIds } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      const indexPage = await db
-        .selectFrom("Resource")
-        .where("id", "=", String(pageId))
-        .where("siteId", "=", siteId)
-        .where("type", "=", ResourceType.IndexPage)
-        .select(["parentId"])
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              code: "NOT_FOUND",
-              message: "Collection index page not found",
-            }),
-        )
-
-      const { parentId } = indexPage
-      if (!parentId) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Collection index page has no parent collection",
-        })
-      }
-      const collection = await getSiteResourceById({
-        siteId,
-        resourceId: parentId,
-        type: ResourceType.Collection,
-      })
-      if (!collection) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Collection not found",
-        })
-      }
-
-      const uniqueTagOptionIds = [...new Set(tagOptionIds)]
-      if (uniqueTagOptionIds.length === 0) {
-        return { count: 0 }
-      }
-
-      // Bound parameters as a Postgres text[] for use with = ANY(...).
-      // Compare as text: `tagged` is stored inside jsonb (no native uuid type),
-      // and jsonb_array_elements_text returns text. The z.string().uuid() validator
-      // is a request-boundary check, not a storage-type contract.
-      const optionIdsAsSqlArray = sql.join(
-        uniqueTagOptionIds.map((id) => sql`${id}::text`),
-        sql`, `,
-      )
-      const tagOptionIdArray = sql`ARRAY[${optionIdsAsSqlArray}]::text[]`
-
-      const row = await db
-        .selectFrom("Resource as r")
-        .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
-        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
-        .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
-        .where("r.parentId", "=", parentId)
-        .where("r.siteId", "=", siteId)
-        .where("r.type", "in", [
-          ResourceType.CollectionPage,
-          ResourceType.CollectionLink,
-        ])
-        // Match child resources whose page.tagged JSON array overlaps the queried
-        // option ids. Postgres has no jsonb && jsonb overlap; unnest to text and use ANY.
-        // Draft or published blob alone is enough; one row per resource still counts once.
-        .where(
-          sql<boolean>`(
-            EXISTS (
-              SELECT 1
-              FROM jsonb_array_elements_text(
-                COALESCE("draftBlob"."content"->'page'->'tagged', '[]'::jsonb)
-              ) AS tag
-              WHERE tag = ANY(${tagOptionIdArray})
-            )
-            OR EXISTS (
-              SELECT 1
-              FROM jsonb_array_elements_text(
-                COALESCE("publishedBlob"."content"->'page'->'tagged', '[]'::jsonb)
-              ) AS tag
-              WHERE tag = ANY(${tagOptionIdArray})
-            )
-          )`,
-        )
-        .select(sql<number>`cast(count(*) as int)`.as("count"))
-        .executeTakeFirstOrThrow()
-
-      return { count: row.count }
-    }),
-
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)
     .query(async ({ ctx, input: { linkId, siteId } }) => {
@@ -423,7 +479,7 @@ export const collectionRouter = router({
 
       if (draft) return draft
 
-      return baseQuery
+      return await baseQuery
         .innerJoin("Version", "Resource.publishedVersionId", "Version.id")
         .innerJoin("Blob", "Blob.id", "Version.blobId")
         .select(["Blob.content", "Resource.title"])
@@ -435,7 +491,6 @@ export const collectionRouter = router({
             }),
         )
     }),
-
   updateCollectionLink: protectedProcedure
     .input(editLinkSchema)
     .mutation(
@@ -524,64 +579,4 @@ export const collectionRouter = router({
         })
       },
     ),
-
-  getCollectionTags: protectedProcedure
-    .input(getCollectionTagsSchema)
-    .query(async ({ ctx, input: { resourceId, collectionId, siteId } }) => {
-      const resourceIdToValidate = collectionId ?? resourceId
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-        resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
-      })
-
-      if (collectionId !== undefined) {
-        return getCollectionTagsForResource({
-          siteId,
-          collectionId,
-          isPublishedOnly: true,
-        })
-      }
-      if (resourceId !== undefined) {
-        return getCollectionTagsForResource({
-          siteId,
-          resourceId,
-          isPublishedOnly: true,
-        })
-      }
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Either collectionId or resourceId must be provided",
-      })
-    }),
-
-  getCollections: protectedProcedure
-    .input(getCollectionsSchema)
-    .query(async ({ ctx, input: { siteId, hasChildren } }) => {
-      // will need permissions to fetch all collections for a site
-      await validateUserPermissionsForSite({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      let query = db.selectFrom("Resource")
-
-      if (hasChildren) {
-        query = query.innerJoin(
-          "Resource as children",
-          "Resource.id",
-          "children.parentId",
-        )
-      }
-
-      return query
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "=", ResourceType.Collection)
-        .orderBy("Resource.title", "asc")
-        .distinct()
-        .selectAll("Resource")
-        .execute()
-    }),
 })

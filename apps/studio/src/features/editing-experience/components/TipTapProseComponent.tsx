@@ -59,7 +59,7 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
   })
 
   const updatePageState = (editorContent: JSONContent | undefined) => {
-    const updatedBlocks = Array.from(previewPageState.content)
+    const updatedBlocks = [...previewPageState.content]
     // TODO: actual validation
     // SAFETY: caller invariant is checked immediately before this narrowing assertion
     updatedBlocks[currActiveIdx] = editorContent as ProseProps
@@ -73,7 +73,7 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
   const editor = useTextEditor({ data: content, handleChange: updatePageState })
 
   const handleDeleteBlock = () => {
-    const updatedBlocks = Array.from(savedPageState.content)
+    const updatedBlocks = [...savedPageState.content]
     updatedBlocks.splice(currActiveIdx, 1)
     const newPageState = {
       ...previewPageState,
@@ -88,14 +88,16 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
     onDeleteBlockModalClose()
     setAddedBlockIndex(null)
     mutate({
+      content: JSON.stringify(newPageState),
       pageId,
       siteId,
-      content: JSON.stringify(newPageState),
     })
   }
 
   const handleDiscardChanges = () => {
-    if (addedBlockIndex !== null) {
+    if (addedBlockIndex === null) {
+      setPreviewPageState(savedPageState)
+    } else {
       const updatedBlocks = Array.from(savedPageState.content)
       updatedBlocks.splice(addedBlockIndex, 1)
       const newPageState = {
@@ -104,8 +106,6 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
       }
       setSavedPageState(newPageState)
       setPreviewPageState(newPageState)
-    } else {
-      setPreviewPageState(savedPageState)
     }
     setAddedBlockIndex(null)
     onDiscardChangesModalClose()
@@ -134,10 +134,10 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
         <DrawerHeader
           isDisabled={isPending}
           onBackClick={() => {
-            if (!isEqual(previewPageState, savedPageState)) {
-              onDiscardChangesModalOpen()
-            } else {
+            if (isEqual(previewPageState, savedPageState)) {
               handleDiscardChanges()
+            } else {
+              onDiscardChangesModalOpen()
             }
           }}
           label={`Edit ${PROSE_COMPONENT_NAME}`}
@@ -167,9 +167,9 @@ const TipTapProseComponent = ({ content }: TipTapComponentProps) => {
                   setSavedPageState(previewPageState)
                   mutate(
                     {
+                      content: JSON.stringify(previewPageState),
                       pageId,
                       siteId,
-                      content: JSON.stringify(previewPageState),
                     },
                     {
                       onSuccess: () => {

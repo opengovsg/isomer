@@ -1,8 +1,8 @@
 import type { GridProps } from "@chakra-ui/react"
 import { Grid } from "@chakra-ui/react"
 
-export const SettingsGrid = (props: GridProps) => {
-  return (
+export const SettingsGrid = (props: GridProps) => 
+  (
     <Grid
       h="full"
       w="100%"
@@ -11,4 +11,4 @@ export const SettingsGrid = (props: GridProps) => {
       {...props}
     />
   )
-}
+

@@ -53,7 +53,7 @@ describe("deleteFile", () => {
     })
 
     // Act
-    await deleteFile({ Key: "1/uuid/file.png", Bucket: "test-bucket" })
+    await deleteFile({ Bucket: "test-bucket", Key: "1/uuid/file.png" })
 
     // Assert: one Get followed by one Put
     expect(sendMock).toHaveBeenCalledTimes(2)
@@ -80,7 +80,7 @@ describe("deleteFile", () => {
     })
 
     // Act
-    await deleteFile({ Key: "1/uuid/file.png", Bucket: "test-bucket" })
+    await deleteFile({ Bucket: "test-bucket", Key: "1/uuid/file.png" })
 
     // Assert: only the cheap Get ran, no Put
     expect(sendMock).toHaveBeenCalledTimes(1)
@@ -99,7 +99,7 @@ describe("getFileSize", () => {
     sendMock.mockResolvedValueOnce({ ContentLength: 4096 })
 
     // Act
-    const size = await getFileSize({ Key: "a/b.csv", Bucket: "test-bucket" })
+    const size = await getFileSize({ Bucket: "test-bucket", Key: "a/b.csv" })
 
     // Assert
     expect(size).toBe(4096)
@@ -110,13 +110,13 @@ describe("getFileSize", () => {
     // Arrange: AWS SDK v3 surfaces a missing object as a NotFound error.
     sendMock.mockRejectedValueOnce(
       Object.assign(new Error("Not Found"), {
-        name: "NotFound",
         $metadata: { httpStatusCode: 404 },
+        name: "NotFound",
       }),
     )
 
     // Act
-    const size = await getFileSize({ Key: "gone.csv", Bucket: "test-bucket" })
+    const size = await getFileSize({ Bucket: "test-bucket", Key: "gone.csv" })
 
     // Assert
     expect(size).toBeNull()
@@ -129,7 +129,7 @@ describe("getFileSize", () => {
     )
 
     // Act
-    const size = await getFileSize({ Key: "gone.csv", Bucket: "test-bucket" })
+    const size = await getFileSize({ Bucket: "test-bucket", Key: "gone.csv" })
 
     // Assert
     expect(size).toBeNull()
@@ -142,7 +142,7 @@ describe("getFileSize", () => {
     )
 
     // Act
-    const size = await getFileSize({ Key: "gone.csv", Bucket: "test-bucket" })
+    const size = await getFileSize({ Bucket: "test-bucket", Key: "gone.csv" })
 
     // Assert
     expect(size).toBeNull()
@@ -152,14 +152,14 @@ describe("getFileSize", () => {
     // Arrange: a throttling error must NOT be swallowed as null — callers rely
     // on null meaning "genuinely absent", not "we couldn't tell".
     const transientError = Object.assign(new Error("SlowDown"), {
-      name: "SlowDown",
       $metadata: { httpStatusCode: 503 },
+      name: "SlowDown",
     })
     sendMock.mockRejectedValueOnce(transientError)
 
     // Act + Assert
     await expect(
-      getFileSize({ Key: "present.csv", Bucket: "test-bucket" }),
+      getFileSize({ Bucket: "test-bucket", Key: "present.csv" }),
     ).rejects.toBe(transientError)
   })
 })
@@ -182,9 +182,9 @@ describe("setAssetAsPublished", () => {
 
     // Act
     await setAssetAsPublished({
-      Key: "2024/category/sub/file.pdf",
       Bucket: "test-bucket",
       ContentDisposition: contentDisposition,
+      Key: "2024/category/sub/file.pdf",
     })
 
     // Assert: the self-copy replaces the disposition, preserves the object's
@@ -204,12 +204,12 @@ describe("setAssetAsPublished", () => {
       throw new Error("Expected CopyObjectCommand")
     }
     expect(copyCommand.input).toMatchObject({
+      ContentDisposition: contentDisposition,
+      ContentType: "application/pdf",
       CopySource: "test-bucket/2024/category/sub/file.pdf",
       Key: "2024/category/sub/file.pdf",
-      MetadataDirective: "REPLACE",
-      ContentType: "application/pdf",
       Metadata: { foo: "bar" },
-      ContentDisposition: contentDisposition,
+      MetadataDirective: "REPLACE",
     })
   })
 
@@ -222,9 +222,9 @@ describe("setAssetAsPublished", () => {
 
     // Act
     await setAssetAsPublished({
-      Key: "2026/Government Gazette/Notices #1/file.pdf",
       Bucket: "test-bucket",
       ContentDisposition: "inline; filename*=UTF-8''file.pdf",
+      Key: "2026/Government Gazette/Notices #1/file.pdf",
     })
 
     // Assert: each path segment is encoded, but the Key itself stays raw
@@ -250,9 +250,9 @@ describe("setAssetAsPublished", () => {
 
     // Act
     await setAssetAsPublished({
-      Key: "2024/category/sub/file.pdf",
       Bucket: "test-bucket",
       ContentDisposition: "inline; filename*=UTF-8''My%20Gazette.pdf",
+      Key: "2024/category/sub/file.pdf",
     })
 
     // Assert
@@ -276,9 +276,9 @@ describe("setAssetAsPublished", () => {
 
     // Act
     await setAssetAsPublished({
-      Key: "2024/category/sub/file.pdf",
       Bucket: "test-bucket",
       ContentDisposition: contentDisposition,
+      Key: "2024/category/sub/file.pdf",
     })
 
     // Assert: no copy issued, but the lock still applies.
@@ -298,8 +298,8 @@ describe("setAssetAsPublished", () => {
 
     // Act
     await setAssetAsPublished({
-      Key: "2024/category/sub/file.pdf",
       Bucket: "test-bucket",
+      Key: "2024/category/sub/file.pdf",
     })
 
     // Assert: no HeadObject/CopyObject issued, but the lock still applies.
@@ -320,9 +320,9 @@ describe("copyFile", () => {
 
     // Act
     await copyFile({
-      SourceKey: "2026/Government Gazette/Notices #1/file.pdf",
-      DestKey: "2026/Government Gazette/Notices #1/copy.pdf",
       Bucket: "test-bucket",
+      DestKey: "2026/Government Gazette/Notices #1/copy.pdf",
+      SourceKey: "2026/Government Gazette/Notices #1/file.pdf",
     })
 
     // Assert: the copy source is encoded per segment; the destination Key

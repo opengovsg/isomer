@@ -2,16 +2,16 @@ import type { ErrorObject } from "ajv"
 
 import { getUniqueErrorMessages } from "../utils"
 
-const createError = (message?: string): ErrorObject => {
+const createError = (message?: string): ErrorObject => (
   // SAFETY: partial ErrorObject is sufficient for getUniqueErrorMessages tests.
-  return {
+  {
     keyword: "maxItems",
     instancePath: "/items",
     schemaPath: "#/properties/items/maxItems",
     params: {},
     message,
   } as ErrorObject
-}
+)
 
 describe("getUniqueErrorMessages", () => {
   it("should return an empty array when there are no errors", () => {
@@ -59,7 +59,7 @@ describe("getUniqueErrorMessages", () => {
   it("should filter out errors with no message", () => {
     // Arrange
     const errors = {
-      "/items": [createError(undefined), createError("has a message")],
+      "/items": [createError(), createError("has a message")],
     }
 
     // Act

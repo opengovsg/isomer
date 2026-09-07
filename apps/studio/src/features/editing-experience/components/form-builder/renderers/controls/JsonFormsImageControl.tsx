@@ -45,7 +45,7 @@ const JsonFormsImageControl = ({
       {data ? (
         <AttachmentData
           data={data.split("/").pop() ?? "Unknown"}
-          onClick={() => handleChange(path, undefined)}
+          onClick={() =>{  handleChange(path); }}
         />
       ) : (
         <FileAttachment
@@ -55,7 +55,7 @@ const JsonFormsImageControl = ({
           }
           siteId={siteId}
           resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
-          setHref={(src) => handleChange(path, src)}
+          setHref={(src) =>{  handleChange(path, src); }}
           shouldFetchResource={true}
         />
       )}

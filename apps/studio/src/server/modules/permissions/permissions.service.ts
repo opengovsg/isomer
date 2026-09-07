@@ -37,15 +37,15 @@ export const definePermissionsForResource = async ({
     .where("siteId", "=", siteId)
     .where("deletedAt", "is", null)
 
-  if (!resourceId) {
-    query = query.where("resourceId", "is", null)
-  } else {
+  if (resourceId) {
     query = query.where("resourceId", "=", resourceId)
+  } else {
+    query = query.where("resourceId", "is", null)
   }
 
   const roles = await query.select("role").execute()
 
-  roles.map(({ role }) => buildPermissionsForResource(role, builder))
+  roles.map(({ role }) =>{  buildPermissionsForResource(role, builder); })
 
   const isUserIsomerAdmin = await isActiveIsomerAdmin(userId)
 
@@ -150,7 +150,7 @@ export const bulkValidateUserPermissionsForResources = async ({
   ])
 
   await Promise.all(
-    resources.map((resource) => {
+    resources.map( async (resource) => {
       if (perms.cannot(action, resource)) {
         return Promise.reject(
           new TRPCError({
@@ -199,7 +199,7 @@ export const validatePermissionsForManagingUsers = async ({
 }: Omit<PermissionsProps, "resourceId"> & {
   action: UserManagementActions
 }) => {
-  const roles = await getResourcePermission({ userId, siteId })
+  const roles = await getResourcePermission({ siteId, userId })
   const perms = buildUserManagementPermissions(roles)
 
   if (perms.cannot(action, "UserManagement")) {
@@ -265,31 +265,31 @@ export const updateUserSitewidePermission = async ({
     }
 
     await logPermissionEvent(tx, {
-      eventType: AuditLogEvent.PermissionDelete,
       by: byUser,
-      delta: { before: sitePermissionToRemove, after: deletedSitePermission },
+      delta: { after: deletedSitePermission, before: sitePermissionToRemove },
+      eventType: AuditLogEvent.PermissionDelete,
       siteId,
     })
 
     const createdSitePermission = await tx
       .insertInto("ResourcePermission")
-      .values({ userId, siteId, role, resourceId: null }) // because we are updating site-wide permissions
+      .values({ resourceId: null, role, siteId, userId }) // because we are updating site-wide permissions
       .returningAll()
       .executeTakeFirstOrThrow()
-      .catch((err) => {
-        if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+      .catch((error) => {
+        if (get(error, "code") === PG_ERROR_CODES.uniqueViolation) {
           throw new TRPCError({
             code: "CONFLICT",
             message: "Permission already exists",
           })
         }
-        throw err
+        throw error
       })
 
     await logPermissionEvent(tx, {
-      eventType: AuditLogEvent.PermissionCreate,
       by: byUser,
-      delta: { before: null, after: createdSitePermission },
+      delta: { after: createdSitePermission, before: null },
+      eventType: AuditLogEvent.PermissionCreate,
       siteId,
     })
 
@@ -345,7 +345,7 @@ export const validateUserIsSiteAdmin = async ({
   // Use the shared permission lookup so platform-level Isomer Admins inherit
   // every capability guarded as Site Admin-only. This also keeps expiry and
   // soft-deletion handling consistent with the rest of the permission system.
-  const roles = await getResourcePermission({ userId, siteId })
+  const roles = await getResourcePermission({ siteId, userId })
 
   if (!roles.some(({ role }) => role === RoleType.Admin)) {
     throw new TRPCError({

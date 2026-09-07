@@ -38,7 +38,7 @@ export const useResourceLocalViewHistory = ({ siteId }: { siteId: string }) => {
       localViewHistory.splice(existingEntryIndex, 1)
     }
     // Add the new entry to the beginning of the array
-    localViewHistory.unshift({ resourceId, dateTime: new Date() })
+    localViewHistory.unshift({ dateTime: new Date(), resourceId })
 
     // Limit history to 10 items by removing older entries
     // 10 is a arbitrary number to ensure localStorage doesn't get too big

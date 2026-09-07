@@ -9,9 +9,9 @@ export const jsonFormsAntiScamDisclaimerBannerLayoutTester: RankedTester =
   rankWith(
     JSON_FORMS_RANKING.AntiScamDisclaimerBannerLayoutRenderer,
     (uischema, schema) => {
-      if (uischema.type !== "VerticalLayout") return false
+      if (uischema.type !== "VerticalLayout") {return false}
       const typeProperty = schema.properties?.type
-      if (!typeProperty || !("const" in typeProperty)) return false
+      if (!typeProperty || !("const" in typeProperty)) {return false}
       return typeProperty.const === "antiscambanner"
     },
   )
@@ -26,7 +26,7 @@ export const jsonFormsAntiScamDisclaimerBannerLayoutTester: RankedTester =
 // Studio runs AJV with `useDefaults: true` which can materialize defaults into the saved page
 // JSON even when marked read-only, making it look like these are user-configurable settings.
 const JsonFormsAntiScamDisclaimerBannerLayout = ({ visible }: LayoutProps) => {
-  if (!visible) return null
+  if (!visible) {return null}
 
   return (
     <VStack alignItems="stretch" gap="1.25rem">

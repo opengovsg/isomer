@@ -44,9 +44,9 @@ export const addUsersToSite = async ({
         await tx
           .insertInto("ResourcePermission")
           .values({
-            userId: user.id,
-            siteId,
             role,
+            siteId,
+            userId: user.id,
           })
           .execute()
 

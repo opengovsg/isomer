@@ -19,17 +19,17 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { ImageRadioIndicator } from "./ImageRadioIndicator"
 
 const IMAGE_RADIO_ICONS = {
+  "callout/goodToKnow": IconCalloutGoodToKnow,
+  "callout/information": IconCalloutInformation,
+  "callout/note": IconCalloutNote,
+  "callout/urgent": IconCalloutUrgent,
+  "callout/warning": IconCalloutWarning,
   "tagcategory/pills": IconTagCategoryPills,
   "tagcategory/plaintext": IconTagCategoryPlaintext,
-  "callout/information": IconCalloutInformation,
-  "callout/goodToKnow": IconCalloutGoodToKnow,
-  "callout/warning": IconCalloutWarning,
-  "callout/urgent": IconCalloutUrgent,
-  "callout/note": IconCalloutNote,
 } as const satisfies Record<string, typeof IconTagCategoryPills>
 
 const getImageRadioIcon = (image: string): typeof IconTagCategoryPills => {
-  if (!Object.hasOwn(IMAGE_RADIO_ICONS, image)) return IconTagCategoryPills
+  if (!Object.hasOwn(IMAGE_RADIO_ICONS, image)) {return IconTagCategoryPills}
   // SAFETY: Object.hasOwn confirms image is a key of IMAGE_RADIO_ICONS
   return IMAGE_RADIO_ICONS[image as keyof typeof IMAGE_RADIO_ICONS]
 }
@@ -79,10 +79,10 @@ const ImageRadioOption = ({
       >
         {ImageRadioIcon
           ? createElement(ImageRadioIcon, {
-              width: "100%",
-              height: "auto",
-              display: "block",
               "aria-hidden": true,
+              display: "block",
+              height: "auto",
+              width: "100%",
             })
           : null}
         <ImageRadioIndicator
@@ -101,9 +101,9 @@ const ImageRadioOption = ({
 const getImageRadioOptions = (schema: ControlProps["schema"]) =>
   // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
   ((schema as ImageRadioSchema).oneOf ?? []).map((option) => ({
-    value: option.const,
-    title: option.title,
     image: option.image,
+    title: option.title,
+    value: option.const,
   }))
 
 export const jsonFormsImageRadioControlTester: RankedTester = rankWith(

@@ -19,12 +19,12 @@ import NextLink from "next/link"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { requireGodModeAdmin } from "~/features/godmode/serverSideProps"
-import { type NextPageWithLayout } from "~/lib/types"
+import type { NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-export const getServerSideProps: GetServerSideProps = (context) =>
+export const getServerSideProps: GetServerSideProps =  async (context) =>
   requireGodModeAdmin(context, [IsomerAdminRole.Core])
 
 const GodModePublishingPage: NextPageWithLayout = () => {
@@ -36,6 +36,14 @@ const GodModePublishingPage: NextPageWithLayout = () => {
   const { data: sites = [] } = trpc.site.listAllSites.useQuery()
 
   const { mutate: publishOneSite } = trpc.site.publish.useMutation({
+    onError: (error) => {
+      toast({
+        title: "Failed to publish site",
+        description: error.message,
+        status: "error",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
     onSettled: (_, __, { siteId }) => {
       setPublishingSiteIds((prev) => {
         const next = new Set(prev)
@@ -47,14 +55,6 @@ const GodModePublishingPage: NextPageWithLayout = () => {
       toast({
         title: "Site published successfully",
         status: "success",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-    onError: (error) => {
-      toast({
-        title: "Failed to publish site",
-        description: error.message,
-        status: "error",
         ...BRIEF_TOAST_SETTINGS,
       })
     },

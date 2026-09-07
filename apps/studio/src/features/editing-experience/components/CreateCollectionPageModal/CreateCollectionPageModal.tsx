@@ -17,8 +17,8 @@ export const CreateCollectionPageModal = ({
   onClose,
   siteId,
   collectionId,
-}: CreateCollectionPageModalProps): React.ReactNode => {
-  return (
+}: CreateCollectionPageModalProps): React.ReactNode => 
+  (
     <Modal size="full" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent height="$100vh" overflow="hidden">
@@ -33,4 +33,4 @@ export const CreateCollectionPageModal = ({
       </ModalContent>
     </Modal>
   )
-}
+

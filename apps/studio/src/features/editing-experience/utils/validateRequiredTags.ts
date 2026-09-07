@@ -15,7 +15,7 @@ export function validateRequiredTags(
   )
 
   return {
-    unfilledRequiredCategories,
     isValid: unfilledRequiredCategories.length === 0,
+    unfilledRequiredCategories,
   }
 }

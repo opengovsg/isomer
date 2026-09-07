@@ -1,7 +1,7 @@
 import type { IconBaseProps } from "react-icons"
 
-export const OpenSidebarIcon = (props: IconBaseProps) => {
-  return (
+export const OpenSidebarIcon = (props: IconBaseProps) => 
+  (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="20"
@@ -22,4 +22,4 @@ export const OpenSidebarIcon = (props: IconBaseProps) => {
       </defs>
     </svg>
   )
-}
+

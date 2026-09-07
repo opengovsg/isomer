@@ -38,13 +38,6 @@ export const buildCollectionLinkPreviewSitemap = ({
   const collectionSegments = collectionPermalink.split("/").filter(Boolean)
 
   const collectionNode: IsomerSitemap = {
-    id: "collection",
-    permalink: collectionPermalink,
-    lastModified,
-    layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
-    title: collectionTitle,
-    summary: "",
-    collectionPagePageProps: { tagCategories },
     children: [
       {
         id: "9999999",
@@ -56,6 +49,13 @@ export const buildCollectionLinkPreviewSitemap = ({
         ...link,
       },
     ],
+    collectionPagePageProps: { tagCategories },
+    id: "collection",
+    lastModified,
+    layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
+    permalink: collectionPermalink,
+    summary: "",
+    title: collectionTitle,
   }
 
   // The collection index page resolves both its items and its breadcrumb by walking
@@ -69,24 +69,24 @@ export const buildCollectionLinkPreviewSitemap = ({
   // Fold innermost-first, so the outermost ancestor ends up directly under the root.
   const node = ancestors.reduceRight<IsomerSitemap>(
     (child, ancestor, index) => ({
+      children: [child],
       id: `ancestor-${index}`,
-      permalink: ancestor.permalink,
       lastModified,
       layout: ISOMER_USABLE_PAGE_LAYOUTS.Content,
-      title: ancestor.title,
+      permalink: ancestor.permalink,
       summary: "",
-      children: [child],
+      title: ancestor.title,
     }),
     collectionNode,
   )
 
   return {
+    children: [node],
     id: "root",
-    permalink: "/",
     lastModified,
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Homepage,
-    title: "An Isomer Site",
+    permalink: "/",
     summary: "",
-    children: [node],
+    title: "An Isomer Site",
   }
 }

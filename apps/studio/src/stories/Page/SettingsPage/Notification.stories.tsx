@@ -17,9 +17,9 @@ const COMMON_HANDLERS = [
 ]
 
 const meta: Meta<typeof NotificationsSettingsPage> = {
-  title: "Pages/Site Management/Agency Settings Page/Notification",
   component: NotificationsSettingsPage,
   parameters: {
+    decorators: [],
     getLayout: NotificationsSettingsPage.getLayout,
     msw: {
       handlers: COMMON_HANDLERS,
@@ -32,8 +32,8 @@ const meta: Meta<typeof NotificationsSettingsPage> = {
         },
       },
     },
-    decorators: [],
   },
+  title: "Pages/Site Management/Agency Settings Page/Notification",
 }
 
 export default meta

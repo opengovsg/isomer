@@ -30,7 +30,6 @@ const COMMON_NEXTJS = {
 }
 
 const meta: Meta<typeof AuditLogSettingsPage> = {
-  title: "Pages/Site Management/Agency Settings Page/Audit Log",
   component: AuditLogSettingsPage,
   parameters: {
     getLayout: AuditLogSettingsPage.getLayout,
@@ -44,6 +43,7 @@ const meta: Meta<typeof AuditLogSettingsPage> = {
     },
     nextjs: COMMON_NEXTJS,
   },
+  title: "Pages/Site Management/Agency Settings Page/Audit Log",
 }
 
 export default meta
@@ -55,7 +55,7 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body)
     await waitFor(async () =>
-      expect(
+      await expect(
         await screen.findByRole("button", { name: "Export logs" }),
       ).toBeEnabled(),
     )

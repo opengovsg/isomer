@@ -29,25 +29,25 @@ const SuspendableJsonFormsCollectionDropdownControl = ({
   const { siteId } = useQueryParse(siteSchema)
 
   const [collections] = trpc.collection.getCollections.useSuspenseQuery({
-    siteId: Number(siteId),
     hasChildren: true,
+    siteId: Number(siteId),
   })
 
   return (
     <SingleSelect
       value={data}
       name={label}
-      items={collections.map((collection) => {
-        return {
+      items={collections.map((collection) => (
+        {
           label: collection.title,
           value: getReferenceLink({
             siteId: siteId.toString(),
             resourceId: collection.id.toString(),
           }),
         }
-      })}
+      ))}
       isClearable={false}
-      onChange={(value) => handleChange(path, value)}
+      onChange={(value) =>{  handleChange(path, value); }}
     />
   )
 }
@@ -57,8 +57,8 @@ const JsonFormsCollectionDropdownControl = ({
   required,
   label,
   ...props
-}: ControlProps) => {
-  return (
+}: ControlProps) => 
+  (
     <FormControl isRequired={required} gap="0.5rem">
       <FormLabel description={description}>{label}</FormLabel>
       <Suspense fallback={<Skeleton />}>
@@ -69,6 +69,6 @@ const JsonFormsCollectionDropdownControl = ({
       </Suspense>
     </FormControl>
   )
-}
+
 
 export default withJsonFormsControlProps(JsonFormsCollectionDropdownControl)

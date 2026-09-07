@@ -16,7 +16,7 @@ vi.mock("~/env.mjs", () => ({
 import { updateSearchSGConfig } from "../searchsg.service"
 
 const VALID_UUID = "550e8400-e29b-41d4-a716-446655440000"
-const PROPS = { name: "test-site", _kind: "name" } as const
+const PROPS = { _kind: "name", name: "test-site" } as const
 const URL = "https://example.gov.sg"
 
 describe("updateSearchSGConfig", () => {
@@ -27,8 +27,8 @@ describe("updateSearchSGConfig", () => {
     mockWretch.mockReturnValue({
       auth: vi.fn().mockReturnThis(),
       headers: vi.fn().mockReturnThis(),
-      post: vi.fn().mockReturnThis(),
       json: vi.fn().mockRejectedValue(new Error("no network in tests")),
+      post: vi.fn().mockReturnThis(),
     })
   })
 

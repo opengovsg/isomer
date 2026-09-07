@@ -47,22 +47,28 @@ const getEditorHookAndEditor = (
   format: ComponentsWithProse,
 ): EditorHookAndEditor => {
   switch (format) {
-    case "simple-prose":
+    case "simple-prose": {
       return {
         EditorHook: useSimpleProseEditor,
         Editor: TiptapSimpleProseEditor,
       }
-    case "accordion":
+    }
+    case "accordion": {
       return { EditorHook: useAccordionEditor, Editor: TiptapAccordionEditor }
-    case "callout":
+    }
+    case "callout": {
       return { EditorHook: useCalloutEditor, Editor: TiptapCalloutEditor }
-    case "contentpic":
+    }
+    case "contentpic": {
       return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
-    case "prose":
+    }
+    case "prose": {
       return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
-    default:
+    }
+    default: {
       const _: never = format
       return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
+    }
   }
 }
 
@@ -91,7 +97,7 @@ const JsonFormsProseControl = ({
     handleChange: useCallback(
       (content) => {
         if (required && isTiptapEditorEmpty(content)) {
-          handleChange(path, undefined)
+          handleChange(path)
         } else {
           handleChange(path, content)
         }
@@ -105,7 +111,7 @@ const JsonFormsProseControl = ({
   useEffect(() => {
     if (data !== undefined) {
       const selection = editor?.state.selection
-      if (!selection) return
+      if (!selection) {return}
       // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
       editor.commands.setContent(data, { emitUpdate: false })
       editor.commands.setTextSelection(selection)

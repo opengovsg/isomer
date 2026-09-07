@@ -32,7 +32,6 @@ const COMMON_HANDLERS = [
 ]
 
 const meta: Meta<typeof EditPage> = {
-  title: "Pages/Edit Page/Content Page",
   component: EditPage,
   parameters: {
     getLayout: EditPage.getLayout,
@@ -41,14 +40,15 @@ const meta: Meta<typeof EditPage> = {
     },
     nextjs: {
       router: {
-        query: {
-          siteId: "1",
-          pageId: "1",
-        },
         pathname: "/sites/[siteId]/pages/[pageId]",
+        query: {
+          pageId: "1",
+          siteId: "1",
+        },
       },
     },
   },
+  title: "Pages/Edit Page/Content Page",
 }
 
 export default meta
@@ -105,8 +105,8 @@ export const PublishedState: Story = {
     msw: {
       handlers: [
         pageHandlers.readPage.content({
-          state: ResourceState.Published,
           draftBlobId: null,
+          state: ResourceState.Published,
         }),
         ...COMMON_HANDLERS,
       ],
@@ -118,8 +118,8 @@ export const WithBanner: Story = {
   parameters: {
     growthbook: [
       createBannerGbParameters({
-        variant: "info",
         message: "This is a test banner",
+        variant: "info",
       }),
     ],
   },
@@ -174,7 +174,7 @@ export const ActiveTableToolbar: Story = {
     const overflowTrigger = canvas
       .getAllByRole("button", { name: /more options/i })
       .find((button) => button.getAttribute("aria-haspopup") === "dialog")
-    if (!overflowTrigger) throw new Error("Overflow trigger not found")
+    if (!overflowTrigger) {throw new Error("Overflow trigger not found")}
     await userEvent.click(overflowTrigger)
     await canvas.findByRole("button", { name: /^superscript$/i })
     await expect(

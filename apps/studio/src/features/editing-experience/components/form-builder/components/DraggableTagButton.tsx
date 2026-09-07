@@ -36,10 +36,10 @@ interface RootProps {
   children: ReactNode
 }
 
-const Root = forwardRef<RootProps, "div">(function DraggableTagButtonRoot(
+const Root = forwardRef<RootProps, "div">((
   { draggableProps, isError, isDragDisabled = false, children },
   ref,
-) {
+) => {
   const contextValue = useMemo(() => ({ isDragDisabled }), [isDragDisabled])
 
   return (
@@ -128,11 +128,11 @@ interface BodyProps {
 }
 
 const BODY_BASE_STYLE: BoxProps = {
-  layerStyle: "focusRing",
-  flex: 1,
-  minW: 0,
-  display: "flex",
   alignItems: "center",
+  display: "flex",
+  flex: 1,
+  layerStyle: "focusRing",
+  minW: 0,
   pl: "0.25rem",
   pr: "1rem",
 }
@@ -218,7 +218,7 @@ type LabelProps = Pick<
 const Label = (props: LabelProps) => (
   <LabelRaw
     {...props}
-    handleSelect={() => () => undefined}
+    handleSelect={() => () => {}}
     selected={false}
     childLabelProp={undefined}
     translations={{}}
@@ -257,9 +257,9 @@ const EditableLabel = ({
   const isDirty = draft !== value
 
   const handleSave = () => {
-    if (isInvalid) return
+    if (isInvalid) {return}
     const trimmed = draft.trim()
-    if (trimmed !== value) onSubmit(trimmed)
+    if (trimmed !== value) {onSubmit(trimmed)}
     onEditingChange(false)
   }
 
@@ -310,8 +310,8 @@ const EditableLabel = ({
           onDraftChange?.(e.target.value)
         }}
         onKeyDown={(e) => {
-          if (e.key === "Enter") handleSave()
-          if (e.key === "Escape") handleDiscard()
+          if (e.key === "Enter") {handleSave()}
+          if (e.key === "Escape") {handleDiscard()}
         }}
       />
       <IconButton
@@ -381,22 +381,22 @@ const Trailing = ({ children }: { children: ReactNode }) => (
     alignItems="center"
     flexShrink={0}
     p="0.5rem"
-    onPointerDown={(e) => e.stopPropagation()}
+    onPointerDown={(e) =>{  e.stopPropagation(); }}
   >
     {children}
   </Flex>
 )
 
 export const DraggableTagButton = {
-  Root,
-  Handle,
   Body,
-  Icon: IconBadge,
   Content,
-  Label,
   EditableLabel,
-  Subtitle,
   ErrorCaption,
+  Handle,
+  Icon: IconBadge,
   InfoCaption,
+  Label,
+  Root,
+  Subtitle,
   Trailing,
 }

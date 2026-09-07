@@ -43,7 +43,7 @@ const setBlobContentForPushDocument = async (
     .updateTable("Blob")
     .set({
       // SAFETY: test fixture narrows BlobJsonContent to the push-document page shape
-      content: { page: { ref, category, tagged, description } } as never,
+      content: { page: { category, description, ref, tagged } } as never,
     })
     .where("id", "=", String(blobId))
     .execute()
@@ -63,18 +63,18 @@ const seedDocumentReadyForIngestion = async ({
   description?: string
 }) => {
   const { page: parent, site } = await setupPageResource({
+    permalink: parentTitle.toLowerCase().replace(/\s+/g, "-"),
     resourceType: ResourceType.Folder,
     title: parentTitle,
-    permalink: parentTitle.toLowerCase().replace(/\s+/g, "-"),
   })
 
   // IndexPage resource — the handler queries for this to derive subcategory.
   const { page: indexPage, blob: indexBlob } = await setupPageResource({
+    parentId: parent.id,
+    permalink: "index",
     resourceType: ResourceType.IndexPage,
     siteId: site.id,
-    parentId: parent.id,
     title: "Index",
-    permalink: "index",
   })
 
   // Set the IndexPage blob content to the expected shape.
@@ -102,10 +102,10 @@ const seedDocumentReadyForIngestion = async ({
   const indexVersion = await db
     .insertInto("Version")
     .values({
-      versionNum: 1,
-      resourceId: indexPage.id,
       blobId: indexBlob.id,
       publishedBy,
+      resourceId: indexPage.id,
+      versionNum: 1,
     })
     .returning("id")
     .executeTakeFirstOrThrow()
@@ -117,11 +117,11 @@ const seedDocumentReadyForIngestion = async ({
 
   // Child page that points at the PDF asset.
   const { page: child, blob } = await setupPageResource({
+    parentId: parent.id,
+    permalink: "document-title",
     resourceType: ResourceType.Page,
     siteId: site.id,
-    parentId: parent.id,
     title: "Document Title",
-    permalink: "document-title",
   })
 
   await setBlobContentForPushDocument(
@@ -137,22 +137,22 @@ const seedDocumentReadyForIngestion = async ({
   await db
     .insertInto("Version")
     .values({
-      versionNum: 1,
-      resourceId: child.id,
       blobId: blob.id,
       publishedBy,
+      resourceId: child.id,
+      versionNum: 1,
     })
     .execute()
 
-  return { resourceId: child.id, parentTitle, ref }
+  return { parentTitle, ref, resourceId: child.id }
 }
 
 /** Build a mock GrowthBook instance where isOn returns the given value. */
 const makeMockGb = (isOn: boolean): GrowthBook =>
   // @ts-expect-error partial GrowthBook mock for unit test
   ({
-    isOn: vi.fn().mockReturnValue(isOn),
     destroy: vi.fn(),
+    isOn: vi.fn().mockReturnValue(isOn),
   })
 
 describe("schedulePushDocumentJobHandler", async () => {
@@ -175,15 +175,15 @@ describe("schedulePushDocumentJobHandler", async () => {
       "User",
     )
     user = await setupUser({
-      userId: session.userId,
       email: "test@mock.com",
       isDeleted: false,
+      userId: session.userId,
     })
 
     // Stub heavy I/O so unit-style runs don't touch S3 or hit the
     // SearchSG endpoint.
     vi.spyOn(s3Lib, "getBlob").mockResolvedValue(new Uint8Array([1, 2, 3]))
-    vi.spyOn(s3Lib, "setAssetAsPublished").mockResolvedValue(undefined)
+    vi.spyOn(s3Lib, "setAssetAsPublished").mockResolvedValue()
     vi.spyOn(algoliaPkg, "parseFullTextFromPDF").mockResolvedValue(
       "parsed pdf text",
     )
@@ -194,8 +194,7 @@ describe("schedulePushDocumentJobHandler", async () => {
     )
 
     vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue(
-      undefined,
-    )
+      )
 
     // Two sequential fetches: auth token, then ingest POST.
     vi.spyOn(global, "fetch").mockImplementation(
@@ -224,10 +223,10 @@ describe("schedulePushDocumentJobHandler", async () => {
     it("dispatches a due row to Algolia and deletes it", async () => {
       // Arrange
       const { resourceId, ref } = await seedDocumentReadyForIngestion({
-        parentTitle: "Notices",
-        ref: "/some-bucket-key/file.pdf",
         category: "Government Gazettes",
+        parentTitle: "Notices",
         publishedBy: user.id,
+        ref: "/some-bucket-key/file.pdf",
       })
       await db
         .insertInto("PushDocumentJob")
@@ -249,11 +248,11 @@ describe("schedulePushDocumentJobHandler", async () => {
       // objectGroup is the S3 key WITHOUT the leading slash.
       const expectedObjectGroup = ref.slice(1) // "some-bucket-key/file.pdf"
       expect(records[0]).toMatchObject({
+        category: "Government Gazettes",
         objectGroup: expectedObjectGroup,
         objectID: `${expectedObjectGroup}-text-0`,
-        title: "Document Title",
-        category: "Government Gazettes",
         subCategory: "Public",
+        title: "Document Title",
       })
       // fileUrl is the public URL (with scheme + domain).
       expect(records[0]!.fileUrl).toMatch(/^https:\/\//)
@@ -277,8 +276,8 @@ describe("schedulePushDocumentJobHandler", async () => {
       // gazette title (extension carried over from the key).
       expect(s3Lib.setAssetAsPublished).toHaveBeenCalledWith(
         expect.objectContaining({
-          Key: expectedObjectGroup,
           ContentDisposition: `inline; filename="Document Title.pdf"`,
+          Key: expectedObjectGroup,
         }),
       )
     })
@@ -292,10 +291,10 @@ describe("schedulePushDocumentJobHandler", async () => {
       const longText = word.repeat(8000) // 64 000 chars, > 50 000
       vi.spyOn(algoliaPkg, "parseFullTextFromPDF").mockResolvedValue(longText)
       const { resourceId } = await seedDocumentReadyForIngestion({
-        parentTitle: "Notices",
-        ref: "/2024/gazette/public/long.pdf",
         category: "Government Gazettes",
+        parentTitle: "Notices",
         publishedBy: user.id,
+        ref: "/2024/gazette/public/long.pdf",
       })
       await db
         .insertInto("PushDocumentJob")
@@ -326,17 +325,17 @@ describe("schedulePushDocumentJobHandler", async () => {
         0,
       )
       expect(combinedLength).toBe(longText.length)
-      expect(combinedLength).toBeGreaterThan(50000)
+      expect(combinedLength).toBeGreaterThan(50_000)
     })
 
     it("passes notification number when description is present", async () => {
       // Arrange
       const { resourceId } = await seedDocumentReadyForIngestion({
-        parentTitle: "Notices",
-        ref: "/2024/gazette/public/notif.pdf",
         category: "Government Gazettes",
-        publishedBy: user.id,
         description: "12345",
+        parentTitle: "Notices",
+        publishedBy: user.id,
+        ref: "/2024/gazette/public/notif.pdf",
       })
       await db
         .insertInto("PushDocumentJob")
@@ -361,10 +360,10 @@ describe("schedulePushDocumentJobHandler", async () => {
       // Arrange
       vi.spyOn(algoliaPkg, "parseFullTextFromPDF").mockResolvedValue("")
       const { resourceId } = await seedDocumentReadyForIngestion({
-        parentTitle: "Notices",
-        ref: "/empty/gazette.pdf",
         category: "Government Gazettes",
+        parentTitle: "Notices",
         publishedBy: user.id,
+        ref: "/empty/gazette.pdf",
       })
       await db
         .insertInto("PushDocumentJob")
@@ -390,17 +389,17 @@ describe("schedulePushDocumentJobHandler", async () => {
     it("isolates failures: one bad resource does not prevent others from being saved", async () => {
       // Arrange
       const { resourceId: goodId } = await seedDocumentReadyForIngestion({
-        parentTitle: "Notices",
-        ref: "/good/gazette.pdf",
         category: "Government Gazettes",
+        parentTitle: "Notices",
         publishedBy: user.id,
+        ref: "/good/gazette.pdf",
       })
       const { resourceId: badId, ref: badRef } =
         await seedDocumentReadyForIngestion({
-          parentTitle: "Notices2",
-          ref: "/bad/gazette.pdf",
           category: "Government Gazettes",
+          parentTitle: "Notices2",
           publishedBy: user.id,
+          ref: "/bad/gazette.pdf",
         })
 
       await db
@@ -421,7 +420,7 @@ describe("schedulePushDocumentJobHandler", async () => {
 
       // Make saveObjectsToSearchIndex throw for the bad resource's objectGroup.
       vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockImplementation(
-        (records) => {
+         async (records) => {
           const firstRecord = records[0]
           if (firstRecord?.objectGroup === badRef.slice(1)) {
             throw new Error("Algolia error")
@@ -450,10 +449,10 @@ describe("schedulePushDocumentJobHandler", async () => {
       // version.service.ts). Both crons fire on the same scheduledAt, so
       // this ordering happens whenever schedule-publishing wins the tick.
       const { resourceId, ref } = await seedDocumentReadyForIngestion({
-        parentTitle: "Notices",
-        ref: "/2024/gazette/public/published-first.pdf",
         category: "Government Gazettes",
+        parentTitle: "Notices",
         publishedBy: user.id,
+        ref: "/2024/gazette/public/published-first.pdf",
       })
       const version = await db
         .selectFrom("Version")
@@ -462,7 +461,7 @@ describe("schedulePushDocumentJobHandler", async () => {
         .executeTakeFirstOrThrow()
       await db
         .updateTable("Resource")
-        .set({ publishedVersionId: version.id, draftBlobId: null })
+        .set({ draftBlobId: null, publishedVersionId: version.id })
         .where("id", "=", String(resourceId))
         .execute()
       await db
@@ -498,10 +497,10 @@ describe("schedulePushDocumentJobHandler", async () => {
       const publishedRef = "/2024/gazette/public/live.pdf"
       const draftRef = "/2024/gazette/public/edited-draft.pdf"
       const { resourceId } = await seedDocumentReadyForIngestion({
-        parentTitle: "Notices",
-        ref: publishedRef,
         category: "Government Gazettes",
+        parentTitle: "Notices",
         publishedBy: user.id,
+        ref: publishedRef,
       })
       const version = await db
         .selectFrom("Version")
@@ -522,7 +521,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       )
       await db
         .updateTable("Resource")
-        .set({ publishedVersionId: version.id, draftBlobId: draftBlob.id })
+        .set({ draftBlobId: draftBlob.id, publishedVersionId: version.id })
         .where("id", "=", String(resourceId))
         .execute()
       await db
@@ -549,10 +548,10 @@ describe("schedulePushDocumentJobHandler", async () => {
     it("skips rows scheduled for the future", async () => {
       // Arrange
       const { resourceId } = await seedDocumentReadyForIngestion({
-        parentTitle: "Notices",
-        ref: "/some-bucket-key/future.pdf",
         category: "Public",
+        parentTitle: "Notices",
         publishedBy: user.id,
+        ref: "/some-bucket-key/future.pdf",
       })
       const futureAt = addMinutes(FIXED_NOW, 30)
       await db
@@ -582,16 +581,16 @@ describe("schedulePushDocumentJobHandler", async () => {
     it("logs and skips a row whose blob content does not match the expected shape", async () => {
       // Arrange
       const { page: parent, site } = await setupPageResource({
+        permalink: "notices",
         resourceType: ResourceType.Folder,
         title: "Notices",
-        permalink: "notices",
       })
       const { page: child } = await setupPageResource({
+        parentId: parent.id,
+        permalink: "bad-document",
         resourceType: ResourceType.Page,
         siteId: site.id,
-        parentId: parent.id,
         title: "Bad Document",
-        permalink: "bad-document",
       })
       // Default setupBlob content has no `page.ref`/`page.category`, so
       // the worker's Zod check should reject it.
@@ -604,10 +603,10 @@ describe("schedulePushDocumentJobHandler", async () => {
       await db
         .insertInto("Version")
         .values({
-          versionNum: 1,
-          resourceId: child.id,
           blobId,
           publishedBy: user.id,
+          resourceId: child.id,
+          versionNum: 1,
         })
         .execute()
 
@@ -647,10 +646,10 @@ describe("schedulePushDocumentJobHandler", async () => {
     it("dispatches a row whose scheduledAt has passed to SearchSG and deletes it", async () => {
       // Arrange
       const { resourceId } = await seedDocumentReadyForIngestion({
-        parentTitle: "Notices",
-        ref: "/some-bucket-key/file.pdf",
         category: "Government Gazettes",
+        parentTitle: "Notices",
         publishedBy: user.id,
+        ref: "/some-bucket-key/file.pdf",
       })
       await db
         .insertInto("PushDocumentJob")
@@ -682,10 +681,10 @@ describe("schedulePushDocumentJobHandler", async () => {
       }
       expect(body.documentsToAdd).toHaveLength(1)
       expect(body.documentsToAdd[0]).toMatchObject({
-        title: "Document Title",
+        categories: ["Public"],
         content: "parsed pdf text",
         contentType: "Government Gazettes",
-        categories: ["Public"],
+        title: "Document Title",
       })
 
       // Algolia was NOT called.
@@ -714,10 +713,10 @@ describe("schedulePushDocumentJobHandler", async () => {
     it("skips rows scheduled for the future", async () => {
       // Arrange
       const { resourceId } = await seedDocumentReadyForIngestion({
-        parentTitle: "Notices",
-        ref: "/some-bucket-key/future.pdf",
         category: "Public",
+        parentTitle: "Notices",
         publishedBy: user.id,
+        ref: "/some-bucket-key/future.pdf",
       })
       const futureAt = addMinutes(FIXED_NOW, 30)
       await db

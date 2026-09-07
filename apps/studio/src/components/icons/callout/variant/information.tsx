@@ -1,8 +1,8 @@
 import { chakra } from "@chakra-ui/react"
 
 export const IconCalloutInformation = chakra(
-  (props: React.SVGProps<SVGSVGElement>) => {
-    return (
+  (props: React.SVGProps<SVGSVGElement>) => 
+    (
       <svg
         viewBox="0 0 806 55"
         fill="none"
@@ -32,5 +32,5 @@ export const IconCalloutInformation = chakra(
         />
       </svg>
     )
-  },
+  ,
 )

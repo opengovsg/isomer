@@ -118,9 +118,9 @@ const CollectionEditorStateDrawer = (): React.ReactNode => {
     setSavedPageState(previewPageState)
     mutate(
       {
+        content: JSON.stringify(previewPageState),
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
       },
       {
         onSuccess: () => {
@@ -172,10 +172,10 @@ const CollectionEditorStateDrawer = (): React.ReactNode => {
         <DrawerHeader
           isDisabled={isPending}
           onBackClick={() => {
-            if (!isEqual(previewPageState, savedPageState)) {
-              onDiscardChangesModalOpen()
-            } else {
+            if (isEqual(previewPageState, savedPageState)) {
               handleDiscardChanges()
+            } else {
+              onDiscardChangesModalOpen()
             }
           }}
           label={
@@ -246,7 +246,7 @@ const SaveButton = ({
       isLoading={isLoading}
       isDisabled={!isEmpty(errors)}
       onClick={() => {
-        if (!isEmpty(errors)) return
+        if (!isEmpty(errors)) {return}
         onClick()
       }}
     >

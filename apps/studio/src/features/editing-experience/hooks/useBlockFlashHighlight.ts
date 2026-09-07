@@ -31,7 +31,7 @@ export const useBlockFlashHighlight = ({
     }
 
     const fadeTimeout = setTimeout(
-      () => setFadeState({ blockIndex: flashBlockIndex, isFading: true }),
+      () =>{  setFadeState({ blockIndex: flashBlockIndex, isFading: true }); },
       FLASH_HOLD_DURATION_MS,
     )
     const endTimeout = setTimeout(

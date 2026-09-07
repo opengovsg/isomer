@@ -20,15 +20,15 @@ import { CreateFolderModal } from "~/features/editing-experience/components/Crea
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type NextPageWithLayout } from "~/lib/types"
+import type { NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getFolderHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const folderPageSchema = z.object({
-  siteId: z.string(),
   folderId: z.string(),
+  siteId: z.string(),
 })
 
 const FolderPage: NextPageWithLayout = () => {
@@ -51,13 +51,13 @@ const FolderPage: NextPageWithLayout = () => {
 
   const { folderId, siteId } = useQueryParse(folderPageSchema)
   const [resource] = trpc.resource.getParentOf.useSuspenseQuery({
-    siteId: Number(siteId),
     resourceId: folderId,
+    siteId: Number(siteId),
   })
 
   const [{ title }] = trpc.folder.getMetadata.useSuspenseQuery({
-    siteId: parseInt(siteId),
     resourceId: parseInt(folderId),
+    siteId: parseInt(siteId),
   })
 
   return (
@@ -74,10 +74,10 @@ const FolderPage: NextPageWithLayout = () => {
             <Button
               variant="outline"
               size="md"
-              onClick={() =>
+              onClick={() =>{ 
                 setFolderSettingsModalState({
                   folderId,
-                })
+                }); }
               }
             >
               Folder settings
@@ -98,8 +98,8 @@ const FolderPage: NextPageWithLayout = () => {
                       <Menu.Item
                         onClick={() => {
                           posthog.capture("folder_create_modal_opened", {
-                            site_id: siteId,
                             parent_type: "folder",
+                            site_id: siteId,
                           })
                           onFolderCreateModalOpen()
                         }}
@@ -110,8 +110,8 @@ const FolderPage: NextPageWithLayout = () => {
                       <Menu.Item
                         onClick={() => {
                           posthog.capture("page_create_modal_opened", {
-                            site_id: siteId,
                             parent_type: "folder",
+                            site_id: siteId,
                           })
                           onPageCreateModalOpen()
                         }}
@@ -122,8 +122,8 @@ const FolderPage: NextPageWithLayout = () => {
                       <Menu.Item
                         onClick={() => {
                           posthog.capture("collection_create_modal_opened", {
-                            site_id: siteId,
                             parent_type: "folder",
+                            site_id: siteId,
                           })
                           onCollectionCreateModalOpen()
                         }}
@@ -145,42 +145,42 @@ const FolderPage: NextPageWithLayout = () => {
           resourceId={folderId}
         />
         <ResourceTable
-          siteId={parseInt(siteId)}
-          resourceId={parseInt(folderId)}
+          siteId={Number.parseInt(siteId)}
+          resourceId={Number.parseInt(folderId)}
         />
       </DashboardLayout>
       <CreatePageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}
-        siteId={parseInt(siteId)}
-        folderId={parseInt(folderId)}
+        siteId={Number.parseInt(siteId)}
+        folderId={Number.parseInt(folderId)}
       />
       <CreateFolderModal
         isOpen={isFolderCreateModalOpen}
         onClose={onFolderCreateModalClose}
-        siteId={parseInt(siteId)}
-        parentFolderId={parseInt(folderId)}
+        siteId={Number.parseInt(siteId)}
+        parentFolderId={Number.parseInt(folderId)}
       />
       <CreateCollectionModal
         isOpen={isCollectionCreateModalOpen}
         onClose={onCollectionCreateModalClose}
-        siteId={parseInt(siteId)}
-        parentFolderId={parseInt(folderId)}
+        siteId={Number.parseInt(siteId)}
+        parentFolderId={Number.parseInt(folderId)}
       />
       <FolderSettingsModal />
       <MoveResourceModal />
       <PageSettingsModal />
-      <DeleteResourceModal siteId={parseInt(siteId)} />
+      <DeleteResourceModal siteId={Number.parseInt(siteId)} />
     </>
   )
 }
 
-FolderPage.getLayout = (page) => {
-  return (
+FolderPage.getLayout = (page) => 
+  (
     <PermissionsBoundary
       resourceType={ResourceType.Folder}
       page={SiteEditorLayout(page)}
     />
   )
-}
+
 export default FolderPage

@@ -34,8 +34,8 @@ export const publishCollectionById = async ({
       await tx
         .updateTable("Resource")
         .set({
-          state: ResourceState.Published,
           draftBlobId: null,
+          state: ResourceState.Published,
           updatedAt: new Date(),
         })
         .where("id", "=", collectionId)
@@ -64,11 +64,11 @@ export const publishCollectionById = async ({
             .insertInto("Version")
             .values({
               blobId: child.draftBlobId,
-              versionNum: 1,
-              resourceId: child.id,
               publishedAt: new Date(),
               publishedBy: publisherId,
+              resourceId: child.id,
               updatedAt: new Date(),
+              versionNum: 1,
             })
             .returning("id")
             .executeTakeFirstOrThrow()
@@ -76,9 +76,9 @@ export const publishCollectionById = async ({
           await tx
             .updateTable("Resource")
             .set({
-              state: ResourceState.Published,
-              publishedVersionId: childVersion.id,
               draftBlobId: null,
+              publishedVersionId: childVersion.id,
+              state: ResourceState.Published,
               updatedAt: new Date(),
             })
             .where("id", "=", child.id)
@@ -98,4 +98,4 @@ export const publishCollectionById = async ({
 // NOTE: TODO: Put in the publisher ID and collection ID to publish
 const publisherId = "xyz"
 const collectionId = "0"
-await publishCollectionById({ publisherId, collectionId })
+await publishCollectionById({ collectionId, publisherId })

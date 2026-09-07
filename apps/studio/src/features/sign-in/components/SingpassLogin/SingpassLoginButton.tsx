@@ -9,21 +9,21 @@ import { getRedirectUrl } from "~/utils/url"
 export const SingpassLoginButton = (): React.ReactNode | null => {
   const router = useRouter()
   const singpassLoginMutation = trpc.auth.singpass.login.useMutation({
-    onSuccess: async ({ redirectUrl }) => {
-      await router.push(redirectUrl)
-    },
     onError: async (error) => {
       await router.push(`${SIGN_IN}?error=${error.message}`)
+    },
+    onSuccess: async ({ redirectUrl }) => {
+      await router.push(redirectUrl)
     },
   })
 
   const landingUrl = getRedirectUrl(router.query)
 
-  const handleSingpassLogin = () => {
-    return singpassLoginMutation.mutate({
+  const handleSingpassLogin = () =>{  
+    singpassLoginMutation.mutate({
       landingUrl,
-    })
-  }
+    }); }
+  
 
   return (
     <Button

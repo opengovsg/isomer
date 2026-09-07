@@ -5,8 +5,8 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 const siteSchema = z.object({
   collectionId: z.string().optional(),
   folderId: z.string().optional(),
-  resourceId: z.string().optional(),
   linkId: z.string().optional(),
+  resourceId: z.string().optional(),
   siteId: z.string(),
 })
 
@@ -24,25 +24,32 @@ export const getIsActiveForResource = (
     siteProps.linkId !== undefined
 
   switch (type) {
-    case ResourceType.RootPage:
+    case ResourceType.RootPage: {
       return currentResourceId === null && !hasActiveRoutedResource
+    }
     case ResourceType.Page:
     case ResourceType.CollectionPage:
-    case ResourceType.IndexPage:
+    case ResourceType.IndexPage: {
       return siteProps.resourceId === currentResourceId
-    case ResourceType.Folder:
+    }
+    case ResourceType.Folder: {
       return siteProps.folderId === currentResourceId
-    case ResourceType.Collection:
+    }
+    case ResourceType.Collection: {
       return siteProps.collectionId === currentResourceId
-    case ResourceType.CollectionLink:
+    }
+    case ResourceType.CollectionLink: {
       return siteProps.linkId === currentResourceId
+    }
     case ResourceType.FolderMeta:
-    case ResourceType.CollectionMeta:
+    case ResourceType.CollectionMeta: {
       // TODO: Not implemented yet
       return false
-    default:
+    }
+    default: {
       const _uncaught: never = type
       throw new Error(`Unhandled case for useIsActive`)
+    }
   }
 }
 

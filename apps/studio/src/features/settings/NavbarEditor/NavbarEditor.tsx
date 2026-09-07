@@ -55,9 +55,9 @@ export const NavbarEditor = ({
   isSaving,
 }: NavbarEditorProps) => {
   const theme = useTheme()
-  const isDirty = useMemo(() => {
-    return !isEqual(previewNavbarState, savedNavbarState)
-  }, [previewNavbarState, savedNavbarState])
+  const isDirty = useMemo(() => 
+    !isEqual(previewNavbarState, savedNavbarState)
+  , [previewNavbarState, savedNavbarState])
 
   const handleItemsChange = useCallback(
     (data: Static<typeof NavbarItemsSchema>) => {
@@ -201,7 +201,7 @@ const PublishButton = ({
     <Can do="create" on={{ parentId: null }}>
       <Tooltip
         label={
-          !isSchemaValid ? (
+          isSchemaValid ? undefined : (
             <VStack alignItems="start" gap="0.25rem" py="0.25rem">
               <Text textStyle="caption-2">
                 Fix the following before publishing:
@@ -214,7 +214,7 @@ const PublishButton = ({
                 ))}
               </UnorderedList>
             </VStack>
-          ) : undefined
+          )
         }
         hasArrow
       >

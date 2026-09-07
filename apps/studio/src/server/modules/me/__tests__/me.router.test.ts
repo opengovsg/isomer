@@ -26,8 +26,8 @@ describe("me.router", async () => {
     caller = createCaller(createMockRequest(session))
     unauthedCaller = createCaller(createMockRequest(applySession()))
     user = await setupUser({
-      userId: session.userId,
       email: "test@mock.com",
+      userId: session.userId,
     })
     await auth(user)
   })

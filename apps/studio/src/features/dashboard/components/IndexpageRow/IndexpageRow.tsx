@@ -27,14 +27,14 @@ export const IndexpageRow = ({
     trpc.page.createIndexPage.useMutation()
 
   const { data, isError, error } = trpc.folder.getIndexpage.useQuery({
-    siteId,
     resourceId,
+    siteId,
   })
 
   useEffect(() => {
     if (isError) {
       if (error.data?.code === "NOT_FOUND") {
-        createIndexPage({ siteId, parentId: resourceId })
+        createIndexPage({ parentId: resourceId, siteId })
         void trpcUtils.folder.getIndexpage.refetch()
         void trpcUtils.resource.getChildrenOf.invalidate()
       }
@@ -90,8 +90,8 @@ export const IndexpageRow = ({
           {/* we also need to give the user who did the update */}
           <Text textStyle="caption-2" textColor="base.content.medium">
             {getIndexPageSubtitle({
-              type,
               isNewCollectionTagsManagementEnabled,
+              type,
             })}
           </Text>
         </VStack>

@@ -51,10 +51,10 @@ export const TableSettingsModal = ({
     setValue,
     handleSubmit,
   } = useZodForm({
-    schema: tableSettingsSchema,
     defaultValues: {
       caption: "",
     },
+    schema: tableSettingsSchema,
   })
 
   const caption = watch("caption")

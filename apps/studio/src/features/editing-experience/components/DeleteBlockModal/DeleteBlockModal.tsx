@@ -22,8 +22,8 @@ export const DeleteBlockModal = ({
   isOpen,
   onClose,
   onDelete,
-}: DeleteBlockModalProps): React.ReactNode => {
-  return (
+}: DeleteBlockModalProps): React.ReactNode => 
+  (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
@@ -50,4 +50,4 @@ export const DeleteBlockModal = ({
       </ModalContent>
     </Modal>
   )
-}
+

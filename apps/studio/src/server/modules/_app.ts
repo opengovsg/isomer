@@ -19,21 +19,21 @@ import { webhookRouter } from "./webhook/webhook.router"
 import { whitelistRouter } from "./whitelist/whitelist.router"
 
 export const appRouter = router({
-  healthcheck: publicProcedure.query(() => "yay!"),
-  me: meRouter,
-  auth: authRouter,
   asset: assetRouter,
   audit: auditRouter,
-  page: pageRouter,
-  folder: folderRouter,
+  auth: authRouter,
   collection: collectionRouter,
+  folder: folderRouter,
   gazette: gazetteRouter,
-  site: siteRouter,
+  healthcheck: publicProcedure.query(() => "yay!"),
+  me: meRouter,
+  page: pageRouter,
   redirect: redirectRouter,
   resource: resourceRouter,
+  site: siteRouter,
   user: userRouter,
-  whitelist: whitelistRouter,
   webhook: webhookRouter,
+  whitelist: whitelistRouter,
 })
 
 export type AppRouter = typeof appRouter

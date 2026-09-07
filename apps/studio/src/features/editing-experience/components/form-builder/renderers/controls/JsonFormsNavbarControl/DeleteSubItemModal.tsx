@@ -22,8 +22,8 @@ export const DeleteSubItemModal = ({
   isOpen,
   onClose,
   onDelete,
-}: DeleteSubItemModalProps): React.ReactNode => {
-  return (
+}: DeleteSubItemModalProps): React.ReactNode => 
+  (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
@@ -51,4 +51,4 @@ export const DeleteSubItemModal = ({
       </ModalContent>
     </Modal>
   )
-}
+

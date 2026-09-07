@@ -14,8 +14,8 @@ export interface ResourceItemProps {
   isLoading?: boolean
 }
 
-const ResourceItemContainer = (props: ButtonProps) => {
-  return (
+const ResourceItemContainer = (props: ButtonProps) => 
+  (
     <Button
       variant="clear"
       w="full"
@@ -27,10 +27,10 @@ const ResourceItemContainer = (props: ButtonProps) => {
       {...props}
     />
   )
-}
 
-export const ResourceItemSkeleton = () => {
-  return (
+
+export const ResourceItemSkeleton = () => 
+  (
     <ResourceItemContainer isDisabled>
       <VStack alignItems="flex-start" textAlign="left" gap="0.25rem">
         <Skeleton width="12rem" height="1.125rem" variant="pulse" />
@@ -38,7 +38,7 @@ export const ResourceItemSkeleton = () => {
       </VStack>
     </ResourceItemContainer>
   )
-}
+
 
 export const ResourceItem = ({
   item,
@@ -46,8 +46,8 @@ export const ResourceItem = ({
   isHighlighted = false,
   handleOnClick,
   hasAdditionalLeftPadding = false,
-}: ResourceItemProps) => {
-  return (
+}: ResourceItemProps) => 
+  (
     <ResourceItemContainer
       data-selected={dataAttr(isHighlighted)}
       _selected={{
@@ -73,4 +73,4 @@ export const ResourceItem = ({
       </VStack>
     </ResourceItemContainer>
   )
-}
+

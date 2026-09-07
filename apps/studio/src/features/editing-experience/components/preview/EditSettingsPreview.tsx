@@ -45,18 +45,18 @@ const SHARED_TAB_STYLES = {
   textColor: "base.content.default",
   _hover: { bgColor: "interaction.muted.main.hover" },
   _selected: {
-    textTransform: "none",
-    borderColor: "interaction.main.default",
     bgColor: "muted.main.active",
+    borderColor: "interaction.main.default",
     textColor: "interaction.main.default",
+    textTransform: "none",
   },
   // SAFETY: caller invariant is checked immediately before this narrowing assertion
 } as const
 
 const BUTTON_COLOURS = ["#ff5f56", "#ffbd2e", "#27c93f"]
 
-const WindowButtons = () => {
-  return (
+const WindowButtons = () => 
+  (
     <Box
       style={{
         display: "flex",
@@ -80,7 +80,7 @@ const WindowButtons = () => {
       ))}
     </Box>
   )
-}
+
 
 const CHROME_TAB_BASE_STYLE = {
   display: "flex",
@@ -95,7 +95,7 @@ const CHROME_TAB_BASE_STYLE = {
 } as const
 
 // SAFETY: caller invariant is checked immediately before this narrowing assertion
-const CHROME_TAB_FAVICON_STYLE = { width: "16px", height: "16px" } as const
+const CHROME_TAB_FAVICON_STYLE = { height: "16px", width: "16px" } as const
 // SAFETY: caller invariant is checked immediately before this narrowing assertion
 const CHROME_TAB_CLOSE_ICON_STYLE = { marginLeft: "2rem" } as const
 
@@ -255,7 +255,7 @@ export const EditSettingsPreview = ({
               px="2rem"
               w="full"
               display="flex"
-              onChange={(index) => setTabIndex(index)}
+              onChange={(index) =>{  setTabIndex(index); }}
             >
               <TabList w="full" gap={0} textTransform="none">
                 <Tab borderLeftRadius="4px" {...SHARED_TAB_STYLES}>
@@ -273,11 +273,11 @@ export const EditSettingsPreview = ({
           <>
             <Box
               style={{
-                display: "flex",
                 background: "#e8eaed",
-                paddingTop: "8px",
+                display: "flex",
                 paddingLeft: "12px",
                 paddingRight: "12px",
+                paddingTop: "8px",
               }}
             >
               <WindowButtons />

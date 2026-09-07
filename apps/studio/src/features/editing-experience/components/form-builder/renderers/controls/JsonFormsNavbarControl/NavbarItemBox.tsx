@@ -32,8 +32,8 @@ export const NavbarItemBox = ({
     navbarItemClosestEdge,
   } = useNavbarItemSubItemDrag({
     index,
-    parentIndex,
     isSubItem: dragPresentation.isSubItem,
+    parentIndex,
   })
 
   return (

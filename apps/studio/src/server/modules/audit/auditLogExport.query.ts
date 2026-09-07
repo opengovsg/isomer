@@ -120,8 +120,8 @@ export const getExportRange = (auditLogDateRange: string): ExportRange => {
   const { lowerInclusive, upperExclusive } =
     parseAuditLogDateRange(auditLogDateRange)
   return {
-    rangeStart: fromZonedTime(lowerInclusive, SINGAPORE_TIME_ZONE),
     rangeEnd: fromZonedTime(upperExclusive, SINGAPORE_TIME_ZONE),
+    rangeStart: fromZonedTime(lowerInclusive, SINGAPORE_TIME_ZONE),
   }
 }
 
@@ -197,9 +197,9 @@ export const accessReportQuery = ({
 export const getAccessReportRows = async ({
   siteId,
   auditLogDateRange,
-}: AuditReportQueryParams): Promise<AccessReportRow[]> => {
-  return accessReportQuery({ siteId, auditLogDateRange }).execute()
-}
+}: AuditReportQueryParams): Promise<AccessReportRow[]> => 
+  await accessReportQuery({ siteId, auditLogDateRange }).execute()
+
 
 // NOTE: Only use these in the context of `getActivityReportRows`; they are
 // separated out for type safety to ensure all displayable event types are
@@ -444,9 +444,9 @@ export const activityReportQuery = ({
 export const getActivityReportRows = async ({
   siteId,
   auditLogDateRange,
-}: AuditReportQueryParams) => {
-  return activityReportQuery({ siteId, auditLogDateRange }).execute()
-}
+}: AuditReportQueryParams) => 
+  await activityReportQuery({ siteId, auditLogDateRange }).execute()
+
 
 // Inferred from the query so the row shape (including the quoted-key columns
 // and the `Description` CASE expression) stays exactly in sync with the
@@ -536,7 +536,6 @@ export const toCsv = (rows: CsvRow[]): string => {
 export const createCsvTransform = (): Transform => {
   let headerWritten = false
   return new Transform({
-    writableObjectMode: true,
     transform(row: CsvRow, _encoding, callback) {
       try {
         if (!headerWritten) {
@@ -549,5 +548,6 @@ export const createCsvTransform = (): Transform => {
         callback(error instanceof Error ? error : new Error(String(error)))
       }
     },
+    writableObjectMode: true,
   })
 }

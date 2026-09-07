@@ -18,8 +18,8 @@ const JsonFormsCollectionVariantControl = ({
   handleChange,
   path,
   description,
-}: ControlProps): React.ReactNode => {
-  return (
+}: ControlProps): React.ReactNode => 
+  (
     <Box>
       <FormControl isRequired gap="0.5rem">
         <FormLabel description={description}>{label || "Layout"}</FormLabel>
@@ -54,6 +54,6 @@ const JsonFormsCollectionVariantControl = ({
       </FormControl>
     </Box>
   )
-}
+
 
 export default withJsonFormsControlProps(JsonFormsCollectionVariantControl)

@@ -31,8 +31,8 @@ const ReplaceContentModal = ({
   isOpen,
   onClose,
   onProceed,
-}: ReplaceContentModalProps) => {
-  return (
+}: ReplaceContentModalProps) => 
+  (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
@@ -56,7 +56,7 @@ const ReplaceContentModal = ({
       </ModalContent>
     </Modal>
   )
-}
+
 
 export const jsonFormsPrefillLinkControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.LinkControl,
@@ -67,10 +67,10 @@ export const jsonFormsPrefillLinkControlTester: RankedTester = rankWith(
 )
 
 const prefillFieldMappings = {
-  title: "title",
   description: "description",
   imageAlt: "thumbnailAlt",
   imageUrl: "thumbnail",
+  title: "title",
 } as const
 
 const JsonFormsPrefillLinkControl = ({
@@ -93,26 +93,26 @@ const JsonFormsPrefillLinkControl = ({
     onOpen: onPrefillModalOpen,
   } = useDisclosure()
   const overrideFields = useCallback(() => {
-    if (!prefill?.data) return
+    if (!prefill?.data) {return}
     // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
     const prefillData = prefill.data as Record<string, string | undefined>
     AUTOPOPULATED_FIELDS.forEach((field) => {
       const prefillField = prefillFieldMappings[field]
       const value = prefillData[prefillField]
-      if (value) handleChange(`${prefill.basePath}.${field}`, value)
+      if (value) {handleChange(`${prefill.basePath}.${field}`, value)}
     })
     toast({
-      title: "Some details of the page were copied over. You can modify them.",
       status: "success",
+      title: "Some details of the page were copied over. You can modify them.",
       ...BRIEF_TOAST_SETTINGS,
     })
     setCanPrefill(false)
   }, [handleChange, prefill, toast])
 
   useEffect(() => {
-    if (!prefill?.data) return
-    if (!canPrefill) return
-    if (!data) return
+    if (!prefill?.data) {return}
+    if (!canPrefill) {return}
+    if (!data) {return}
 
     const timeoutId = setTimeout(() => {
       if (!prefill.needsConfirmation) {
@@ -123,7 +123,7 @@ const JsonFormsPrefillLinkControl = ({
       onPrefillModalOpen()
     }, 0)
 
-    return () => clearTimeout(timeoutId)
+    return () =>{  clearTimeout(timeoutId); }
   }, [
     canPrefill,
     data,

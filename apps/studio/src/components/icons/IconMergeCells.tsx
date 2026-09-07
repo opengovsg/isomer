@@ -1,7 +1,7 @@
 import { chakra } from "@chakra-ui/react"
 
-export const IconMergeCells = chakra((props: React.SVGProps<SVGSVGElement>) => {
-  return (
+export const IconMergeCells = chakra((props: React.SVGProps<SVGSVGElement>) => 
+  (
     <svg
       width="24"
       height="24"
@@ -18,4 +18,4 @@ export const IconMergeCells = chakra((props: React.SVGProps<SVGSVGElement>) => {
       />
     </svg>
   )
-})
+)

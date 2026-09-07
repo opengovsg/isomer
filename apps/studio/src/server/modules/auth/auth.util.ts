@@ -14,13 +14,13 @@ export const createVfnPrefix = customAlphabet(
   OTP_PREFIX_LENGTH,
 )
 
-export const createTokenHash = (token: string, email: string) => {
-  return scryptSync(token, email, 64).toString("base64")
-}
+export const createTokenHash = (token: string, email: string) => 
+  scryptSync(token, email, 64).toString("base64")
 
-export const compareHash = (token: string, email: string, hash: string) => {
-  return timingSafeEqual(
+
+export const compareHash = (token: string, email: string, hash: string) => 
+  timingSafeEqual(
     Buffer.from(hash),
     Buffer.from(createTokenHash(token, email)),
   )
-}
+

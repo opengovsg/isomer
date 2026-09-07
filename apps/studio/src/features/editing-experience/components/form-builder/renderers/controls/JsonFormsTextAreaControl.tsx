@@ -58,7 +58,7 @@ const JsonFormsTextAreaControl = ({
     const { value } = e.target
 
     if (value === "") {
-      handleChange(path, undefined)
+      handleChange(path)
     } else {
       handleChange(path, value)
     }

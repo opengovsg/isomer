@@ -1,8 +1,8 @@
 import { Container } from "@chakra-ui/react"
 import { Spinner } from "@opengovsg/design-system-react"
 
-export const FullscreenSpinner = (): React.ReactNode => {
-  return (
+export const FullscreenSpinner = (): React.ReactNode => 
+  (
     <Container
       display="flex"
       h="$100vh"
@@ -12,4 +12,4 @@ export const FullscreenSpinner = (): React.ReactNode => {
       <Spinner color="interaction.main.default" fontSize="2rem" />
     </Container>
   )
-}
+

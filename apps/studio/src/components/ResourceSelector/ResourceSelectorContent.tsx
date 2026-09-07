@@ -5,8 +5,8 @@ import { Button } from "@opengovsg/design-system-react"
 import { ResourceItem, ResourceItemSkeleton } from "./ResourceItem"
 import { lastResourceItemInAncestryStack } from "./utils"
 
-const NoItemsInFolderResult = () => {
-  return (
+const NoItemsInFolderResult = () => 
+  (
     <Text
       h="full"
       w="full"
@@ -19,7 +19,7 @@ const NoItemsInFolderResult = () => {
       This folder is empty.
     </Text>
   )
-}
+
 
 const ResourceItemsResults = ({
   resourceItemsWithAncestryStack,
@@ -35,8 +35,8 @@ const ResourceItemsResults = ({
   handleClickResourceItem: (
     resourceItemWithAncestryStack: ResourceItemContent[],
   ) => void
-}) => {
-  return (resourceItemsWithAncestryStack ?? []).map(
+}) => 
+  (resourceItemsWithAncestryStack ?? []).map(
     (resourceItemWithAncestryStack) => {
       const lastChild = lastResourceItemInAncestryStack(
         resourceItemWithAncestryStack,
@@ -54,23 +54,23 @@ const ResourceItemsResults = ({
           item={lastChild}
           isDisabled={isResourceItemDisabled(lastChild)}
           isHighlighted={isResourceIdHighlighted(lastChild.id)}
-          handleOnClick={() =>
-            handleClickResourceItem(resourceItemWithAncestryStack)
+          handleOnClick={() =>{ 
+            handleClickResourceItem(resourceItemWithAncestryStack); }
           }
           hasAdditionalLeftPadding={hasAdditionalLeftPadding}
         />
       )
     },
   )
-}
+
 
 const ZeroResult = ({
   searchQuery,
   handleClickClearSearch,
 }: Pick<SuspendableContentProps, "searchQuery"> & {
   handleClickClearSearch: SuspendableContentProps["clearSearchValue"]
-}) => {
-  return (
+}) => 
+  (
     <VStack
       h="full"
       w="full"
@@ -96,13 +96,13 @@ const ZeroResult = ({
       </Button>
     </VStack>
   )
-}
 
-export const LoadingResourceItemsResults = () => {
-  return Array.from({ length: 5 }).map((_, index) => (
+
+export const LoadingResourceItemsResults = () => 
+  Array.from({ length: 5 }).map((_, index) => (
     <ResourceItemSkeleton key={`loading-${index}`} />
   ))
-}
+
 
 interface SuspendableContentViewState {
   hasAdditionalLeftPadding: boolean
@@ -131,19 +131,19 @@ export const SuspendableContent = ({
   clearSearchValue,
 }: SuspendableContentProps) => {
   if (isLoading || !resourceItemsWithAncestryStack)
-    return <LoadingResourceItemsResults />
+    {return <LoadingResourceItemsResults />}
 
   const hasNoItems = resourceItemsWithAncestryStack.length === 0
 
-  if (hasNoItems && isSearchQueryEmpty) return <NoItemsInFolderResult />
+  if (hasNoItems && isSearchQueryEmpty) {return <NoItemsInFolderResult />}
 
   if (hasNoItems)
-    return (
+    {return (
       <ZeroResult
         searchQuery={searchQuery}
         handleClickClearSearch={clearSearchValue}
       />
-    )
+    )}
 
   return (
     <ResourceItemsResults

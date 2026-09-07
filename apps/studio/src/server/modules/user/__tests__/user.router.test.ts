@@ -74,7 +74,7 @@ describe("user.router", () => {
 
     it("should throw 403 if user is not admin of the site", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const { site: newSite } = await setupSite()
 
@@ -100,7 +100,7 @@ describe("user.router", () => {
 
     it("should throw error if email is invalid", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       // Act
       const result = caller.create({
@@ -118,7 +118,7 @@ describe("user.router", () => {
 
     it("should create user if user already exists but has non-null deletedAt", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
 
@@ -148,14 +148,14 @@ describe("user.router", () => {
       expect(dbUserResult).toHaveLength(2) // original + newly created record
       expect(dbUserResult).toEqual([
         expect.objectContaining({
-          email: TEST_EMAIL,
-          id: user.id, // original record
           deletedAt: expect.any(Date),
+          email: TEST_EMAIL,
+          id: user.id, // original record,
         }),
         expect.objectContaining({
+          deletedAt: null,
           email: TEST_EMAIL,
           id: expect.any(String),
-          deletedAt: null,
         }),
       ])
 
@@ -169,9 +169,9 @@ describe("user.router", () => {
       expect(resourcePermissions).toHaveLength(1)
       expect(resourcePermissions).toEqual([
         expect.objectContaining({
-          userId: expect.any(String),
-          siteId,
           role: roleToCreate,
+          siteId,
+          userId: expect.any(String),
         }),
       ])
 
@@ -183,7 +183,6 @@ describe("user.router", () => {
         .execute()
       expect(userAuditEntry).toHaveLength(1)
       expect(userAuditEntry[0]).toMatchObject({
-        eventType: "UserCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining({
@@ -191,6 +190,7 @@ describe("user.router", () => {
             email: TEST_EMAIL,
           }),
         }),
+        eventType: "UserCreate",
       })
 
       // Assert DB - audit logs (permission)
@@ -201,22 +201,22 @@ describe("user.router", () => {
         .execute()
       expect(permissionAuditEntry).toHaveLength(1)
       expect(permissionAuditEntry[0]).toMatchObject({
-        eventType: "PermissionCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
             omit(resourcePermissions[0], ["createdAt", "updatedAt"]),
           ),
         }),
+        eventType: "PermissionCreate",
       })
     })
 
     it("should throw error if both user and permission already exists", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
-      await setupAdminPermissions({ userId: user.id, siteId })
+      await setupAdminPermissions({ siteId, userId: user.id })
 
       // Act
       const result = caller.create({
@@ -240,7 +240,7 @@ describe("user.router", () => {
     it("should throw 403 if creating a non-whitelisted non-gov.sg email with any role", async () => {
       // Arrange
       const nonGovSgEmail = "test@coolvendor.com"
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       // Act
       const result = caller.create({
@@ -264,7 +264,7 @@ describe("user.router", () => {
     it("should throw 403 if assigning a non-whitelisted non-gov.sg email with admin role", async () => {
       // Arrange
       const nonGovSgEmail = "test@coolvendor.com"
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       // Act
       const result = caller.create({
@@ -290,7 +290,7 @@ describe("user.router", () => {
       const nonGovSgEmail = "test-vendor-whitelisted@coolvendor.com"
       const oneYearFromNow = new Date()
       oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
       await setUpWhitelist({ email: nonGovSgEmail, expiry: oneYearFromNow })
 
       // Act
@@ -306,7 +306,7 @@ describe("user.router", () => {
     it("should create a whitelisted non-gov.sg email with admin role", async () => {
       // Arrange
       const nonGovSgEmail = "test@coolvendor.com"
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
       await setUpWhitelist({ email: nonGovSgEmail })
 
       // Act
@@ -323,7 +323,7 @@ describe("user.router", () => {
       // Arrange
       const nonGovSgEmail = "test@coolvendor.com"
       const role = RoleType.Editor
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
       await setUpWhitelist({ email: nonGovSgEmail })
 
       // Act
@@ -343,7 +343,6 @@ describe("user.router", () => {
         .execute()
       expect(userAuditEntry).toHaveLength(1)
       expect(userAuditEntry[0]).toMatchObject({
-        eventType: "UserCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining({
@@ -351,6 +350,7 @@ describe("user.router", () => {
             email: nonGovSgEmail,
           }),
         }),
+        eventType: "UserCreate",
       })
 
       // Assert DB - audit logs (permission)
@@ -361,7 +361,6 @@ describe("user.router", () => {
         .execute()
       expect(permissionAuditEntry).toHaveLength(1)
       expect(permissionAuditEntry[0]).toMatchObject({
-        eventType: "PermissionCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining({
@@ -370,12 +369,13 @@ describe("user.router", () => {
             role,
           }),
         }),
+        eventType: "PermissionCreate",
       })
     })
 
     it("should create user permissions successfully if user already exists but permissions do not exist", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
 
@@ -413,9 +413,9 @@ describe("user.router", () => {
       expect(resourcePermissions).toHaveLength(1)
       expect(resourcePermissions).toEqual([
         expect.objectContaining({
-          userId: createdUser?.id,
-          siteId,
           role: RoleType.Editor,
+          siteId,
+          userId: createdUser?.id,
         }),
       ])
 
@@ -436,19 +436,19 @@ describe("user.router", () => {
         .execute()
       expect(permissionAuditEntry).toHaveLength(1)
       expect(permissionAuditEntry[0]).toMatchObject({
-        eventType: "PermissionCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
             omit(resourcePermissions[0], ["createdAt", "updatedAt"]),
           ),
         }),
+        eventType: "PermissionCreate",
       })
     })
 
     it("should create both user and permissions successfully if user is admin", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       // Act
       const createdUsers = await caller.create({
@@ -473,9 +473,9 @@ describe("user.router", () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       expect(user).toMatchObject({
+        deletedAt: null,
         email: TEST_EMAIL,
         id: createdUser?.id,
-        deletedAt: null,
       })
 
       // Assert: Verify permissions in database
@@ -488,8 +488,8 @@ describe("user.router", () => {
       expect(resourcePermissions).toHaveLength(1)
       expect(resourcePermissions).toEqual([
         expect.objectContaining({
-          userId: createdUser?.id,
           siteId,
+          userId: createdUser?.id,
         }),
       ])
 
@@ -501,7 +501,6 @@ describe("user.router", () => {
         .execute()
       expect(userAuditEntries).toHaveLength(1)
       expect(userAuditEntries[0]).toMatchObject({
-        eventType: "UserCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining({
@@ -509,6 +508,7 @@ describe("user.router", () => {
             email: TEST_EMAIL,
           }),
         }),
+        eventType: "UserCreate",
       })
 
       // Assert: Verify audit logs (permission)
@@ -519,13 +519,13 @@ describe("user.router", () => {
         .execute()
       expect(permissionAuditEntry).toHaveLength(1)
       expect(permissionAuditEntry[0]).toMatchObject({
-        eventType: "PermissionCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
             omit(resourcePermissions[0], ["createdAt", "updatedAt"]),
           ),
         }),
+        eventType: "PermissionCreate",
       })
     })
 
@@ -557,7 +557,7 @@ describe("user.router", () => {
 
     it("should throw 403 if user is not admin of the site", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const { site: newSite } = await setupSite()
       const newUser = await setupUser({
@@ -587,7 +587,7 @@ describe("user.router", () => {
 
     it("should throw 404 if user does not exist", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       // Act
       const result = caller.delete({
@@ -610,7 +610,7 @@ describe("user.router", () => {
 
     it("should throw 404 if user exist but the permissions do not exist", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
 
@@ -632,14 +632,14 @@ describe("user.router", () => {
 
     it("should throw 404 if user to delete is not from the same site", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const { site: newSite } = await setupSite()
       const newUser = await setupUser({
         email: TEST_EMAIL,
         isDeleted: false,
       })
-      await setupAdminPermissions({ userId: newUser.id, siteId: newSite.id })
+      await setupAdminPermissions({ siteId: newSite.id, userId: newUser.id })
 
       // Act
       const result = caller.delete({
@@ -662,7 +662,7 @@ describe("user.router", () => {
 
     it("should throw 403 if user tries to delete their own account", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       // Act
       const result = caller.delete({
@@ -685,19 +685,19 @@ describe("user.router", () => {
 
     it("should throw 403 if non-isomer admins try to delete isomer admins", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const isomerAdmin = await setupUser({
         email: "testisomeradmin@open.gov.sg",
         isDeleted: false,
       })
-      await setupAdminPermissions({ userId: isomerAdmin.id, siteId })
+      await setupAdminPermissions({ siteId, userId: isomerAdmin.id })
       await db
         .insertInto("IsomerAdmin")
         .values({
-          userId: isomerAdmin.id,
-          role: IsomerAdminRole.Core,
           expiry: null,
+          role: IsomerAdminRole.Core,
+          userId: isomerAdmin.id,
         })
         .execute()
 
@@ -719,13 +719,13 @@ describe("user.router", () => {
 
     it("should soft delete an existing user's permissions successfully", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const userToDelete = await setupUser({
         email: TEST_EMAIL,
         isDeleted: false,
       })
-      await setupEditorPermissions({ userId: userToDelete.id, siteId })
+      await setupEditorPermissions({ siteId, userId: userToDelete.id })
 
       // Act
       const result = await caller.delete({
@@ -736,8 +736,8 @@ describe("user.router", () => {
       // Assert
       expect(result).toEqual(
         expect.objectContaining({
-          id: userToDelete.id,
           email: userToDelete.email,
+          id: userToDelete.id,
         }),
       )
 
@@ -768,7 +768,6 @@ describe("user.router", () => {
         .execute()
       expect(permissionsAuditLogs).toHaveLength(1)
       expect(permissionsAuditLogs[0]).toMatchObject({
-        eventType: "PermissionDelete",
         delta: expect.objectContaining({
           before: expect.objectContaining({
             ...omit(deletedUserPermissions[0], [
@@ -787,6 +786,7 @@ describe("user.router", () => {
             deletedAt: expect.anything(),
           }),
         }),
+        eventType: "PermissionDelete",
       })
     })
 
@@ -794,13 +794,13 @@ describe("user.router", () => {
     // We should only soft delete the permissions for the site that the user is being deleted from
     it("should soft delete a user's permissions and not their account", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const userToDelete = await setupUser({
         email: TEST_EMAIL,
         isDeleted: false,
       })
-      await setupEditorPermissions({ userId: userToDelete.id, siteId })
+      await setupEditorPermissions({ siteId, userId: userToDelete.id })
 
       // Act
       const result = await caller.delete({
@@ -811,8 +811,8 @@ describe("user.router", () => {
       // Assert
       expect(result).toEqual(
         expect.objectContaining({
-          id: userToDelete.id,
           email: userToDelete.email,
+          id: userToDelete.id,
         }),
       )
 
@@ -848,7 +848,6 @@ describe("user.router", () => {
         .execute()
       expect(permissionsAuditLogs).toHaveLength(1)
       expect(permissionsAuditLogs[0]).toMatchObject({
-        eventType: "PermissionDelete",
         delta: expect.objectContaining({
           before: expect.objectContaining({
             ...omit(deletedUserPermission, [
@@ -867,6 +866,7 @@ describe("user.router", () => {
             deletedAt: expect.anything(),
           }),
         }),
+        eventType: "PermissionDelete",
       })
     })
   })
@@ -907,7 +907,7 @@ describe("user.router", () => {
 
     it("should throw 404 if user does not exist", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
 
       // Act
       const result = caller.getUser({
@@ -926,11 +926,11 @@ describe("user.router", () => {
 
     it("should throw 404 if user exists but has no permissions for the site", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const { site: newSite } = await setupSite()
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
-      await setupEditorPermissions({ userId: user.id, siteId: newSite.id })
+      await setupEditorPermissions({ siteId: newSite.id, userId: user.id })
 
       // Act
       const result = caller.getUser({
@@ -949,10 +949,10 @@ describe("user.router", () => {
 
     it("should not return user if all their permissions are deleted", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
-      await setupEditorPermissions({ userId: user.id, siteId, isDeleted: true })
+      await setupEditorPermissions({ isDeleted: true, siteId, userId: user.id })
 
       // Act
       const result = caller.getUser({
@@ -971,9 +971,9 @@ describe("user.router", () => {
 
     it("should return user with their last login date", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
-      await setupEditorPermissions({ userId: user.id, siteId })
+      await setupEditorPermissions({ siteId, userId: user.id })
       await db
         .updateTable("User")
         .where("id", "=", user.id)
@@ -989,8 +989,8 @@ describe("user.router", () => {
       // Assert
       expect(result).toEqual(
         expect.objectContaining({
-          id: user.id,
           email: TEST_EMAIL,
+          id: user.id,
           lastLoginAt: MOCK_STORY_DATE,
         }),
       )
@@ -1027,10 +1027,10 @@ describe("user.router", () => {
 
     it("should not return users with deletedAt set", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
-      await setupEditorPermissions({ userId: user.id, siteId })
+      await setupEditorPermissions({ siteId, userId: user.id })
 
       // Act
       const result = await caller.list({ siteId })
@@ -1046,14 +1046,14 @@ describe("user.router", () => {
 
     it("should not return users with all permissions deleted", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
       await setupAdminPermissions({
-        userId: user.id,
-        siteId,
         isDeleted: true,
+        siteId,
         useCurrentTime: true,
+        userId: user.id,
       })
 
       // Act
@@ -1070,18 +1070,18 @@ describe("user.router", () => {
 
     it("should return users with at least one non-deleted permission", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
       await setupEditorPermissions({
-        userId: user.id,
-        siteId,
         isDeleted: true, // assuming previously soft deleted
+        siteId,
+        userId: user.id,
       })
       await setupEditorPermissions({
-        userId: user.id,
-        siteId,
         isDeleted: false, // assuming being granted new permissions
+        siteId,
+        userId: user.id,
       })
 
       // Act
@@ -1100,7 +1100,7 @@ describe("user.router", () => {
 
     it("should return array with self when no other users exist", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
 
       // Act
       const result = await caller.list({ siteId })
@@ -1110,15 +1110,15 @@ describe("user.router", () => {
       expect(result).toEqual([
         expect.objectContaining({
           id: session.userId,
-          name: MOCK_TEST_USER_NAME,
           lastLoginAt: null,
+          name: MOCK_TEST_USER_NAME,
         }),
       ])
     })
 
     it("should return users with their last login date", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
       await db
         .updateTable("User")
         .where("id", "=", session.userId!)
@@ -1139,7 +1139,7 @@ describe("user.router", () => {
 
     it("should not return isomer admins if adminType is not set", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
       await setupIsomerAdmins({ siteId })
 
       // Act
@@ -1157,11 +1157,11 @@ describe("user.router", () => {
 
     it("should not return isomer admins if adminType is set to agency", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
       await setupIsomerAdmins({ siteId })
 
       // Act
-      const result = await caller.list({ siteId, adminType: "agency" })
+      const result = await caller.list({ adminType: "agency", siteId })
 
       // Assert
       expect(result).toHaveLength(1) // only the current admin user
@@ -1175,11 +1175,11 @@ describe("user.router", () => {
 
     it("should only return isomer admins if adminType is set as isomer", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
       await setupIsomerAdmins({ siteId })
 
       // Act
-      const result = await caller.list({ siteId, adminType: "isomer" })
+      const result = await caller.list({ adminType: "isomer", siteId })
 
       // Assert
       expect(result).toHaveLength(Math.min(isomerAdminsCount, 10))
@@ -1193,14 +1193,14 @@ describe("user.router", () => {
 
     it("should return paginated results (10 users per page)", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
 
       for (let i = 0; i < 15; i++) {
         const editorUser = await setupUser({
           email: `editor.user.${i}@open.gov.sg`,
           isDeleted: false,
         })
-        await setupEditorPermissions({ userId: editorUser.id, siteId })
+        await setupEditorPermissions({ siteId, userId: editorUser.id })
       }
 
       // Act
@@ -1212,18 +1212,18 @@ describe("user.router", () => {
 
     it("should return paginated results (10 users per page) with offset", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
 
       for (let i = 0; i < 15; i++) {
         const editorUser = await setupUser({
           email: `editor.user.${i}@open.gov.sg`,
           isDeleted: false,
         })
-        await setupEditorPermissions({ userId: editorUser.id, siteId })
+        await setupEditorPermissions({ siteId, userId: editorUser.id })
       }
 
       // Act
-      const result = await caller.list({ siteId, offset: 10 })
+      const result = await caller.list({ offset: 10, siteId })
 
       // Assert
       expect(result).toHaveLength(6)
@@ -1231,7 +1231,7 @@ describe("user.router", () => {
 
     it("should return users with emails in ascending alphabetical order", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
 
       // Create users with emails in non-alphabetical order
       const userC = await setupUser({
@@ -1247,8 +1247,8 @@ describe("user.router", () => {
         isDeleted: false,
       })
       await Promise.all(
-        [userA, userB, userC].map((user) =>
-          setupEditorPermissions({ userId: user.id, siteId }),
+        [userA, userB, userC].map( async (user) =>
+          setupEditorPermissions({ siteId, userId: user.id }),
         ),
       )
 
@@ -1295,10 +1295,10 @@ describe("user.router", () => {
 
     it("should not return users with deletedAt set", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
-      await setupEditorPermissions({ userId: user.id, siteId })
+      await setupEditorPermissions({ siteId, userId: user.id })
 
       // Act
       const result = await caller.count({ siteId })
@@ -1309,14 +1309,14 @@ describe("user.router", () => {
 
     it("should not return users with all permissions deleted", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
       await setupAdminPermissions({
-        userId: user.id,
-        siteId,
         isDeleted: true,
+        siteId,
         useCurrentTime: true,
+        userId: user.id,
       })
 
       // Act
@@ -1328,18 +1328,18 @@ describe("user.router", () => {
 
     it("should return users with at least one non-deleted permission", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
       await setupEditorPermissions({
-        userId: user.id,
-        siteId,
         isDeleted: true, // assuming previously soft deleted
+        siteId,
+        userId: user.id,
       })
       await setupAdminPermissions({
-        userId: user.id,
-        siteId,
         isDeleted: false, // assuming being granted new permissions
+        siteId,
+        userId: user.id,
       })
       // Act
       const result = await caller.count({ siteId })
@@ -1350,7 +1350,7 @@ describe("user.router", () => {
 
     it("should return array with self when no other users exist", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
 
       // Act
       const result = await caller.count({ siteId })
@@ -1361,7 +1361,7 @@ describe("user.router", () => {
 
     it("should not return isomer admins if adminType is not set", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
       await setupIsomerAdmins({ siteId })
 
       // Act
@@ -1373,11 +1373,11 @@ describe("user.router", () => {
 
     it("should not return isomer admins if adminType is set to agency", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
       await setupIsomerAdmins({ siteId })
 
       // Act
-      const result = await caller.count({ siteId, adminType: "agency" })
+      const result = await caller.count({ adminType: "agency", siteId })
 
       // Assert
       expect(result).toBe(1) // only the current admin user
@@ -1385,11 +1385,11 @@ describe("user.router", () => {
 
     it("should only return isomer admins if adminType is set as isomer", async () => {
       // Arrange
-      await setupEditorPermissions({ userId: session.userId, siteId })
+      await setupEditorPermissions({ siteId, userId: session.userId })
       await setupIsomerAdmins({ siteId })
 
       // Act
-      const result = await caller.count({ siteId, adminType: "isomer" })
+      const result = await caller.count({ adminType: "isomer", siteId })
 
       // Assert
       expect(result).toBe(isomerAdminsCount)
@@ -1403,9 +1403,9 @@ describe("user.router", () => {
 
       // Act
       const result = unauthedCaller.update({
+        role: RoleType.Editor,
         siteId,
         userId: "test-user-id",
-        role: RoleType.Editor,
       })
 
       // Assert
@@ -1420,15 +1420,15 @@ describe("user.router", () => {
 
     it("should throw 403 if user is not admin of the site", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const { site: newSite } = await setupSite()
 
       // Act
       const result = caller.update({
+        role: RoleType.Editor,
         siteId: newSite.id,
         userId: "test-user-id",
-        role: RoleType.Editor,
       })
 
       // Assert
@@ -1447,13 +1447,13 @@ describe("user.router", () => {
 
     it("should throw 404 if user does not exist", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       // Act
       const result = caller.update({
+        role: RoleType.Editor,
         siteId,
         userId: "non-existent-id",
-        role: RoleType.Editor,
       })
 
       // Assert
@@ -1471,15 +1471,15 @@ describe("user.router", () => {
 
     it("should throw 404 if user exist but the permissions do not exist", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
 
       // Act
       const result = caller.update({
+        role: RoleType.Editor,
         siteId,
         userId: user.id,
-        role: RoleType.Editor,
       })
 
       // Assert
@@ -1497,20 +1497,20 @@ describe("user.router", () => {
 
     it("should throw 404 if user to update is not from the same site", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const { site: newSite } = await setupSite()
       const newUser = await setupUser({
         email: TEST_EMAIL,
         isDeleted: false,
       })
-      await setupAdminPermissions({ userId: newUser.id, siteId: newSite.id })
+      await setupAdminPermissions({ siteId: newSite.id, userId: newUser.id })
 
       // Act
       const result = caller.update({
+        role: RoleType.Editor,
         siteId,
         userId: newUser.id,
-        role: RoleType.Editor,
       })
 
       // Assert
@@ -1528,15 +1528,15 @@ describe("user.router", () => {
 
     it("should throw 404 if user exists but only has non-null deletedAt", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
 
       // Act
       const result = caller.update({
+        role: RoleType.Editor,
         siteId,
         userId: user.id,
-        role: RoleType.Editor,
       })
 
       // Assert
@@ -1554,13 +1554,13 @@ describe("user.router", () => {
 
     it("should throw 403 if user tries to update their own role", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       // Act
       const result = caller.update({
+        role: RoleType.Editor,
         siteId,
         userId: session.userId!,
-        role: RoleType.Editor,
       })
 
       // Assert
@@ -1584,68 +1584,68 @@ describe("user.router", () => {
     // don't need to go through this check again to keep/regain that role.
     it("should update a non-whitelisted non-gov.sg email to admin role successfully", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const userToUpdate = await setupUser({
         email: "test-not-whitelisted@coolvendor.com",
         isDeleted: false,
       })
-      await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+      await setupEditorPermissions({ siteId, userId: userToUpdate.id })
 
       // Act
       const result = await caller.update({
+        role: RoleType.Admin,
         siteId,
         userId: userToUpdate.id,
-        role: RoleType.Admin,
       })
 
       // Assert
       expect(result).toEqual(
         expect.objectContaining({
+          role: RoleType.Admin,
           siteId,
           userId: userToUpdate.id,
-          role: RoleType.Admin,
         }),
       )
     })
 
     it("should update a whitelisted non-gov.sg email to admin role successfully", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const userToUpdate = await setupUser({
         email: "test@coolvendor.com",
         isDeleted: false,
       })
-      await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+      await setupEditorPermissions({ siteId, userId: userToUpdate.id })
       await setUpWhitelist({ email: userToUpdate.email })
 
       // Act
       const result = await caller.update({
+        role: RoleType.Admin,
         siteId,
         userId: userToUpdate.id,
-        role: RoleType.Admin,
       })
 
       // Assert
       expect(result).toEqual(
         expect.objectContaining({
+          role: RoleType.Admin,
           siteId,
           userId: userToUpdate.id,
-          role: RoleType.Admin,
         }),
       )
     })
 
     it("should update a temporarily (vendor) whitelisted non-gov.sg email to admin role successfully", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const userToUpdate = await setupUser({
         email: "test-vendor-whitelisted@coolvendor.com",
         isDeleted: false,
       })
-      await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+      await setupEditorPermissions({ siteId, userId: userToUpdate.id })
       const oneYearFromNow = new Date()
       oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
       await setUpWhitelist({
@@ -1655,48 +1655,48 @@ describe("user.router", () => {
 
       // Act
       const result = await caller.update({
+        role: RoleType.Admin,
         siteId,
         userId: userToUpdate.id,
-        role: RoleType.Admin,
       })
 
       // Assert
       expect(result).toEqual(
         expect.objectContaining({
+          role: RoleType.Admin,
           siteId,
           userId: userToUpdate.id,
-          role: RoleType.Admin,
         }),
       )
     })
 
     it("should update a non-gov.sg email with non-admin role successfully", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const userToUpdate = await setupUser({
         email: "test@coolvendor.com",
         isDeleted: false,
       })
       const currentPermission = await setupEditorPermissions({
-        userId: userToUpdate.id,
         siteId,
+        userId: userToUpdate.id,
       })
       const newRole = RoleType.Publisher
 
       // Act
       const result = await caller.update({
+        role: newRole,
         siteId,
         userId: userToUpdate.id,
-        role: newRole,
       })
 
       // Assert
       expect(result).toEqual(
         expect.objectContaining({
+          role: newRole,
           siteId,
           userId: userToUpdate.id,
-          role: newRole,
         }),
       )
 
@@ -1718,7 +1718,6 @@ describe("user.router", () => {
         .execute()
       expect(deletedPermissionAuditLogs).toHaveLength(1)
       expect(deletedPermissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionDelete",
         delta: expect.objectContaining({
           before: expect.objectContaining({
             ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
@@ -1729,6 +1728,7 @@ describe("user.router", () => {
             deletedAt: expect.anything(),
           }),
         }),
+        eventType: "PermissionDelete",
       })
 
       // Assert DB - audit logs (new permission)
@@ -1746,43 +1746,43 @@ describe("user.router", () => {
         .execute()
       expect(newPermissionAuditLogs).toHaveLength(1)
       expect(newPermissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining({
             ...omit(newPermission, ["createdAt", "updatedAt"]),
           }),
         }),
+        eventType: "PermissionCreate",
       })
     })
 
     it("should update a user's role successfully", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const userToUpdate = await setupUser({
         email: TEST_EMAIL,
         isDeleted: false,
       })
       const currentPermission = await setupEditorPermissions({
-        userId: userToUpdate.id,
         siteId,
+        userId: userToUpdate.id,
       })
       const newRole = RoleType.Admin
 
       // Act
       const result = await caller.update({
+        role: newRole,
         siteId,
         userId: userToUpdate.id,
-        role: newRole,
       })
 
       // Assert
       expect(result).toEqual(
         expect.objectContaining({
+          role: newRole,
           siteId,
           userId: userToUpdate.id,
-          role: newRole,
         }),
       )
 
@@ -1805,7 +1805,6 @@ describe("user.router", () => {
         .execute()
       expect(deletedPermissionAuditLogs).toHaveLength(1)
       expect(deletedPermissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionDelete",
         delta: expect.objectContaining({
           before: expect.objectContaining({
             ...omit(currentPermission, ["createdAt", "updatedAt", "deletedAt"]),
@@ -1816,6 +1815,7 @@ describe("user.router", () => {
             deletedAt: expect.anything(), // should be set to a new date
           }),
         }),
+        eventType: "PermissionDelete",
       })
 
       // Assert DB - audit logs (new permission)
@@ -1833,19 +1833,19 @@ describe("user.router", () => {
         .execute()
       expect(newPermissionAuditLogs).toHaveLength(1)
       expect(newPermissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining({
             ...omit(newPermission, ["createdAt", "updatedAt"]),
           }),
         }),
+        eventType: "PermissionCreate",
       })
     })
 
     it("when updating a user's role, create a new permission for the user and update the old permission's deletedAt", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const userToUpdate = await setupUser({
         email: TEST_EMAIL,
@@ -1853,8 +1853,8 @@ describe("user.router", () => {
       })
       // If deletedAt is set, it should not be overwritten
       const originalDeletedPermission = await setupEditorPermissions({
-        userId: userToUpdate.id,
         siteId,
+        userId: userToUpdate.id,
       })
       const originalDeletedPermissionDeletedAt = new Date()
       await db
@@ -1864,24 +1864,24 @@ describe("user.router", () => {
         .execute()
       // original active permission
       const originalPermission = await setupEditorPermissions({
-        userId: userToUpdate.id,
         siteId,
+        userId: userToUpdate.id,
       })
       const newRole = RoleType.Publisher
 
       // Act
       const result = await caller.update({
+        role: newRole,
         siteId,
         userId: userToUpdate.id,
-        role: newRole,
       })
 
       // Assert
       expect(result).toEqual({
         id: expect.not.stringContaining(originalPermission.id),
+        role: newRole,
         siteId,
         userId: userToUpdate.id,
-        role: newRole,
       })
 
       // Assert: Verify in DB
@@ -1895,19 +1895,19 @@ describe("user.router", () => {
       expect(userPermissions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
+            deletedAt: originalDeletedPermissionDeletedAt,
             id: originalDeletedPermission.id,
             role: RoleType.Editor,
-            deletedAt: originalDeletedPermissionDeletedAt,
           }),
           expect.objectContaining({
+            deletedAt: expect.any(Date),
             id: originalPermission.id,
             role: RoleType.Editor,
-            deletedAt: expect.any(Date),
           }),
           expect.objectContaining({
+            deletedAt: null,
             id: result.id,
             role: RoleType.Publisher,
-            deletedAt: null,
           }),
         ]),
       )
@@ -1920,7 +1920,6 @@ describe("user.router", () => {
         .execute()
       expect(deletedPermissionAuditLogs).toHaveLength(1)
       expect(deletedPermissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionDelete",
         delta: expect.objectContaining({
           before: expect.objectContaining({
             ...omit(originalPermission, [
@@ -1939,6 +1938,7 @@ describe("user.router", () => {
             deletedAt: expect.anything(), // should be set to a new date
           }),
         }),
+        eventType: "PermissionDelete",
       })
 
       // Assert DB - audit logs (new permission)
@@ -1949,7 +1949,6 @@ describe("user.router", () => {
         .execute()
       expect(createdPermissionAuditLogs).toHaveLength(1)
       expect(createdPermissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining({
@@ -1959,6 +1958,7 @@ describe("user.router", () => {
             ),
           }),
         }),
+        eventType: "PermissionCreate",
       })
     })
   })
@@ -2026,7 +2026,6 @@ describe("user.router", () => {
           .execute()
         expect(auditLogs).toHaveLength(1)
         expect(auditLogs[0]).toMatchObject({
-          eventType: "UserUpdate",
           delta: expect.objectContaining({
             before: expect.objectContaining({
               name: MOCK_TEST_USER_NAME,
@@ -2036,6 +2035,7 @@ describe("user.router", () => {
               omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
             ),
           }),
+          eventType: "UserUpdate",
         })
       })
     })
@@ -2127,7 +2127,6 @@ describe("user.router", () => {
             .execute()
           expect(auditLogs).toHaveLength(1)
           expect(auditLogs[0]).toMatchObject({
-            eventType: "UserUpdate",
             delta: expect.objectContaining({
               before: expect.objectContaining({
                 name: MOCK_TEST_USER_NAME,
@@ -2137,6 +2136,7 @@ describe("user.router", () => {
                 omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
               ),
             }),
+            eventType: "UserUpdate",
           })
         })
       }
@@ -2166,7 +2166,6 @@ describe("user.router", () => {
           .execute()
         expect(auditLogs).toHaveLength(1)
         expect(auditLogs[0]).toMatchObject({
-          eventType: "UserUpdate",
           delta: expect.objectContaining({
             before: expect.objectContaining({
               name: MOCK_TEST_USER_NAME,
@@ -2176,6 +2175,7 @@ describe("user.router", () => {
               omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
             ),
           }),
+          eventType: "UserUpdate",
         })
       })
 
@@ -2204,7 +2204,6 @@ describe("user.router", () => {
             .execute()
           expect(auditLogs).toHaveLength(1)
           expect(auditLogs[0]).toMatchObject({
-            eventType: "UserUpdate",
             delta: expect.objectContaining({
               before: expect.objectContaining({
                 name: MOCK_TEST_USER_NAME,
@@ -2214,6 +2213,7 @@ describe("user.router", () => {
                 omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
               ),
             }),
+            eventType: "UserUpdate",
           })
         })
       }
@@ -2246,7 +2246,6 @@ describe("user.router", () => {
         .execute()
       expect(auditLogs).toHaveLength(1)
       expect(auditLogs[0]).toMatchObject({
-        eventType: "UserUpdate",
         delta: expect.objectContaining({
           before: expect.objectContaining({
             name: MOCK_TEST_USER_NAME,
@@ -2256,6 +2255,7 @@ describe("user.router", () => {
             omit(updatedUser, ["createdAt", "updatedAt", "deletedAt"]),
           ),
         }),
+        eventType: "UserUpdate",
       })
     })
   })
@@ -2279,7 +2279,7 @@ describe("user.router", () => {
 
     it("should throw 403 if user does not have admin permissions", async () => {
       // Arrange
-      await setupPublisherPermissions({ userId: session.userId, siteId })
+      await setupPublisherPermissions({ siteId, userId: session.userId })
 
       // Act
       const result = caller.resendInvite({ siteId, userId: "123" })
@@ -2296,7 +2296,7 @@ describe("user.router", () => {
 
     it("should throw 404 if user does not exist", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       // Act
       const result = caller.resendInvite({ siteId, userId: "123" })
@@ -2312,14 +2312,14 @@ describe("user.router", () => {
 
     it("should throw 400 if user has already logged in", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({
         email: TEST_EMAIL,
         isDeleted: false,
         lastLoginAt: MOCK_STORY_DATE,
       })
-      await setupEditorPermissions({ userId: user.id, siteId })
+      await setupEditorPermissions({ siteId, userId: user.id })
 
       // Act
       const result = caller.resendInvite({ siteId, userId: user.id })
@@ -2335,7 +2335,7 @@ describe("user.router", () => {
 
     it("should throw 400 if user has not logged in and was created before user management launch", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({
         email: TEST_EMAIL,
@@ -2347,7 +2347,7 @@ describe("user.router", () => {
         .where("id", "=", user.id)
         .set({ createdAt: new Date("2025-03-01") })
         .execute()
-      await setupEditorPermissions({ userId: user.id, siteId })
+      await setupEditorPermissions({ siteId, userId: user.id })
 
       // Act
       const result = caller.resendInvite({ siteId, userId: user.id })
@@ -2363,7 +2363,7 @@ describe("user.router", () => {
 
     it("should throw 400 if user does not have any permissions to the site", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({
         email: TEST_EMAIL,
@@ -2390,7 +2390,7 @@ describe("user.router", () => {
 
     it("should send invite successfully", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({
         email: TEST_EMAIL,
@@ -2402,7 +2402,7 @@ describe("user.router", () => {
         .where("id", "=", user.id)
         .set({ createdAt: new Date("2025-03-10") })
         .execute()
-      await setupEditorPermissions({ userId: user.id, siteId })
+      await setupEditorPermissions({ siteId, userId: user.id })
 
       // Act
       const result = await caller.resendInvite({ siteId, userId: user.id })
@@ -2413,7 +2413,7 @@ describe("user.router", () => {
 
     it("should fall back to Site.name when Site.config is JSON null", async () => {
       // Arrange
-      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setupAdminPermissions({ siteId, userId: session.userId })
 
       const user = await setupUser({
         email: TEST_EMAIL,
@@ -2425,7 +2425,7 @@ describe("user.router", () => {
         .where("id", "=", user.id)
         .set({ createdAt: new Date("2025-03-10") })
         .execute()
-      await setupEditorPermissions({ userId: user.id, siteId })
+      await setupEditorPermissions({ siteId, userId: user.id })
 
       // Simulate malformed-but-allowed JSONB payload written by admin JSON API.
       await db

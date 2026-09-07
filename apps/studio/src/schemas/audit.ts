@@ -58,8 +58,8 @@ export type AuditLogExportRequestedReportType = AuditLogExportReportType
 // one independent export per site — mirroring how the removed `Both` report
 // type used to fan out into one row per report type.
 export const AuditLogExportScope = {
-  Site: "site",
   AllSites: "allSites",
+  Site: "site",
 } as const
 export type AuditLogExportScope =
   (typeof AuditLogExportScope)[keyof typeof AuditLogExportScope]
@@ -173,10 +173,10 @@ export const createAuditLogExportRequestSchema = z.object({
     .regex(MONTH_REGEX, {
       message: "Enter a month in the format YYYY-MM, e.g. 2026-03",
     })
-    .transform((month) => {
+    .transform((month) => 
       // SAFETY: MONTH_REGEX guarantees yyyy-MM shape at runtime; narrow to IsoMonth for consumers
-      return month as IsoMonth
-    }),
+      month as IsoMonth
+    ),
   reportType: z.enum(AuditLogExportRequestedReportType, {
     message: "Select a report type",
   }),

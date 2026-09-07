@@ -44,9 +44,9 @@ export const EditCollectionLinkPreview = ({
 
   // Ends at the parent collection, so drop it — the collection node is built below.
   const [ancestry] = trpc.resource.getAncestryStack.useSuspenseQuery({
+    includeSelf: false,
     resourceId: String(linkId),
     siteId: String(siteId),
-    includeSelf: false,
   })
 
   const parentPermalink = useMemo(
@@ -65,13 +65,13 @@ export const EditCollectionLinkPreview = ({
   const siteMap = useMemo(
     () =>
       buildCollectionLinkPreviewSitemap({
-        permalink,
-        title,
-        link,
-        collectionTitle: parentTitle,
         ancestorTitles,
-        tagCategories,
+        collectionTitle: parentTitle,
         lastModified: currentDate,
+        link,
+        permalink,
+        tagCategories,
+        title,
       }),
     [permalink, title, link, parentTitle, ancestorTitles, tagCategories],
   )
@@ -80,7 +80,7 @@ export const EditCollectionLinkPreview = ({
     <ViewportContainer siteId={siteId}>
       <PreviewWithCustomSitemap
         content={[]}
-        page={{ title: parentTitle, tagCategories }}
+        page={{ tagCategories, title: parentTitle }}
         layout="collection"
         siteId={siteId}
         siteMap={siteMap}

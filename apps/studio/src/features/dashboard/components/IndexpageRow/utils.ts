@@ -7,13 +7,16 @@ export const getIndexPageIcon = (
   type: ResourceTypesWithIndexPage,
 ): IconType => {
   switch (type) {
-    case "collection":
+    case "collection": {
       return BiData
-    case "folder":
+    }
+    case "folder": {
       return BiFile
-    default:
+    }
+    default: {
       const _: never = type
       return BiFileBlank
+    }
   }
 }
 
@@ -25,14 +28,17 @@ export const getIndexPageSubtitle = ({
   isNewCollectionTagsManagementEnabled: boolean
 }) => {
   switch (type) {
-    case "collection":
+    case "collection": {
       return isNewCollectionTagsManagementEnabled
         ? "Manage the Collection’s layout, filters, and sorting."
         : "Manage how your Collection looks like and behaves"
-    case "folder":
+    }
+    case "folder": {
       return "Customise the index page for this folder"
-    default:
+    }
+    default: {
       const _: never = type
       return ""
+    }
   }
 }

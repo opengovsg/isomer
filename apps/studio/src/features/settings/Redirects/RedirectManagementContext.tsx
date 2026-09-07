@@ -38,8 +38,8 @@ export const RedirectManagementProvider = ({
     isPending,
     isError,
   } = trpc.resource.getRolesFor.useQuery({
-    siteId,
     resourceId: null,
+    siteId,
   })
 
   const value = useMemo(
@@ -47,8 +47,8 @@ export const RedirectManagementProvider = ({
       ability: roles
         ? buildRedirectManagementPermissions(roles)
         : new Ability(),
-      isPending,
       isError,
+      isPending,
     }),
     [roles, isPending, isError],
   )
@@ -75,7 +75,7 @@ export const useRedirectManagement = (): UseRedirectManagementResult => {
   const { ability, isPending, isError } = useContext(RedirectManagementContext)
   return {
     canManageRedirects: ability.can("manage", "RedirectManagement"),
-    isPending,
     isError,
+    isPending,
   }
 }

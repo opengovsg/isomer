@@ -49,8 +49,8 @@ const FilterUsageInfobox = ({
   tagOptionIds: string[]
 }) => {
   const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
-    siteId,
     pageId,
+    siteId,
     tagOptionIds,
   })
 
@@ -111,7 +111,7 @@ export const DeleteFilterModal = ({
             <HStack align="start">
               <Checkbox
                 isChecked={isChecked}
-                onChange={(e) => setIsChecked(e.target.checked)}
+                onChange={(e) =>{  setIsChecked(e.target.checked); }}
               >
                 <Text textStyle="body-2">
                   Yes, delete the entire filter permanently

@@ -20,8 +20,8 @@ const COMMON_HANDLERS = [
 ]
 
 const meta: Meta<typeof FooterSettingsPage> = {
-  title: "Pages/Site Management/Footer Settings Page",
   component: FooterSettingsPage,
+  decorators: [],
   parameters: {
     getLayout: FooterSettingsPage.getLayout,
     nextjs: {
@@ -32,7 +32,7 @@ const meta: Meta<typeof FooterSettingsPage> = {
       },
     },
   },
-  decorators: [],
+  title: "Pages/Site Management/Footer Settings Page",
 }
 
 export default meta

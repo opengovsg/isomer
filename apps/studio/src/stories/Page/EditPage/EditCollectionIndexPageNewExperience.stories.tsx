@@ -33,7 +33,6 @@ const COMMON_HANDLERS = [
 ]
 
 const meta: Meta<typeof EditPage> = {
-  title: "Pages/Edit Page/Collection Index Page/New Experience",
   component: EditPage,
   parameters: {
     getLayout: EditPage.getLayout,
@@ -42,14 +41,15 @@ const meta: Meta<typeof EditPage> = {
     },
     nextjs: {
       router: {
-        query: {
-          siteId: "1",
-          pageId: "1",
-        },
         pathname: "/sites/[siteId]/pages/[pageId]",
+        query: {
+          pageId: "1",
+          siteId: "1",
+        },
       },
     },
   },
+  title: "Pages/Edit Page/Collection Index Page/New Experience",
 }
 
 export default meta
@@ -531,7 +531,7 @@ export const FiltersInlineEditBlankError: Story = {
       canvas.getByText(/Option name cannot be empty\./i),
     ).toBeVisible()
     const row = nameInput.parentElement
-    if (!row) throw new Error("Expected inline edit row container")
+    if (!row) {throw new Error("Expected inline edit row container")}
     await expect(
       within(row).getByRole("button", { name: /^Save changes$/i }),
     ).toBeDisabled()

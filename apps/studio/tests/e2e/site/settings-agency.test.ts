@@ -23,8 +23,8 @@ test.beforeEach(async () => {
   await db
     .updateTable("Site")
     .set({
-      name: "Isomer",
       config: sql`jsonb_set(config, '{siteName}', '"Isomer"')`,
+      name: "Isomer",
     })
     .where("id", "=", getSeedSiteId())
     .execute()

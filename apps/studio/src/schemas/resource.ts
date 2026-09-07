@@ -13,17 +13,17 @@ import {
 const bigIntSchema = generateBigIntSchema("ID")
 
 export const getMetadataSchema = z.object({
-  siteId: z.number(),
   resourceId: bigIntSchema,
+  siteId: z.number(),
 })
 
 export const getChildrenSchema = z
   .object({
+    includeSearchPage: z.boolean().optional().default(true),
     resourceId: z.union([bigIntSchema, z.null()]),
     siteId: z.string().min(0),
-    includeSearchPage: z.boolean().optional().default(true),
   })
-  .extend(infiniteOffsetPaginationSchema["shape"])
+  .extend(infiniteOffsetPaginationSchema.shape)
 
 export const getChildrenOutputSchema = z.object({
   items: z.array(z.custom<ResourceItemContent>()),
@@ -49,18 +49,18 @@ export const moveSchema = z.object({
 })
 
 export const countResourceSchema = z.object({
-  siteId: z.number(),
   resourceId: z.number().optional(),
+  siteId: z.number(),
 })
 
 export const deleteResourceSchema = z.object({
-  siteId: z.number(),
   resourceId: bigIntSchema,
+  siteId: z.number(),
 })
 
 export const getParentSchema = z.object({
-  siteId: z.number().min(0),
   resourceId: bigIntSchema,
+  siteId: z.number().min(0),
 })
 
 export const resourceOrderByOptions = [
@@ -73,26 +73,26 @@ export type ResourceOrderByOption = (typeof resourceOrderByOptions)[number]
 
 export const listResourceSchema = z
   .object({
-    siteId: z.number(),
-    resourceId: z.number().optional(),
     orderBy: z.enum(resourceOrderByOptions).optional().default("updated-desc"),
+    resourceId: z.number().optional(),
+    siteId: z.number(),
   })
-  .extend(offsetPaginationSchema["shape"])
+  .extend(offsetPaginationSchema.shape)
 
 export const getFullPermalinkSchema = z.object({
-  siteId: z.number(),
   resourceId: bigIntSchema,
+  siteId: z.number(),
 })
 
 export const getRolesForSchema = z.object({
-  siteId: z.number(),
   resourceId: z.string().nullable(),
+  siteId: z.number(),
 })
 
 export const getAncestryStackSchema = z.object({
-  siteId: z.string(),
-  resourceId: z.string().optional(),
   includeSelf: z.boolean().optional().default(true),
+  resourceId: z.string().optional(),
+  siteId: z.string(),
 })
 
 export const getAncestryStackOutputSchema = z.array(
@@ -103,8 +103,8 @@ export const getAncestryStackOutputSchema = z.array(
 export const MAX_BATCH_RESOURCE_IDS = 25
 
 export const getBatchAncestryWithSelfSchema = z.object({
-  siteId: z.string(),
   resourceIds: z.array(z.string()).max(MAX_BATCH_RESOURCE_IDS),
+  siteId: z.string(),
 })
 
 export const getBatchAncestryWithSelfOutputSchema = z.array(
@@ -121,25 +121,25 @@ export interface ResourceItemContent {
 
 export const searchSchema = z
   .object({
-    siteId: z.string(),
     query: z.string().trim().optional(),
     resourceTypes: z
       .array(z.enum(ResourceType))
       .optional()
       .default(Object.values(ResourceType)),
+    siteId: z.string(),
   })
-  .extend(infiniteOffsetPaginationSchema["shape"])
+  .extend(infiniteOffsetPaginationSchema.shape)
 
 export const searchOutputSchema = z.object({
-  totalCount: z.number().nullable(),
-  resources: z.array(z.custom<SearchResultResource>()),
-  recentlyEdited: z.array(z.custom<SearchResultResource>()),
   nextOffset: z.number().nullable(),
+  recentlyEdited: z.array(z.custom<SearchResultResource>()),
+  resources: z.array(z.custom<SearchResultResource>()),
+  totalCount: z.number().nullable(),
 })
 
 export const searchWithResourceIdsSchema = z.object({
-  siteId: z.string(),
   resourceIds: z.array(bigIntSchema).max(MAX_BATCH_RESOURCE_IDS),
+  siteId: z.string(),
 })
 
 export const searchWithResourceIdsOutputSchema = z.array(
@@ -147,8 +147,8 @@ export const searchWithResourceIdsOutputSchema = z.array(
 )
 
 export const getIndexPageSchema = z.object({
-  siteId: z.number(),
   parentId: z.string(),
+  siteId: z.number(),
 })
 
 export const getIndexPageOutputSchema = z.object({

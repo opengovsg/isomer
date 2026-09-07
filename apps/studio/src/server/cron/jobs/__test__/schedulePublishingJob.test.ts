@@ -47,9 +47,9 @@ describe("schedulePublishingJob", async () => {
       "User",
     )
     user = await setupUser({
-      userId: session.userId,
       email: "test@mock.com",
       isDeleted: false,
+      userId: session.userId,
     })
     await auth(user)
   })
@@ -67,8 +67,8 @@ describe("schedulePublishingJob", async () => {
         scheduledBy: session.userId,
       })
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -96,9 +96,9 @@ describe("schedulePublishingJob", async () => {
         .execute()
       expect(auditLogs).toHaveLength(1)
       expect(auditLogs[0]).toMatchObject({
+        eventType: AuditLogEvent.Publish,
         siteId: site.id,
         userId: user.id,
-        eventType: AuditLogEvent.Publish,
       })
 
       // expect the resourceSiteMap to contain the site and resource
@@ -113,8 +113,8 @@ describe("schedulePublishingJob", async () => {
         scheduledBy: session.userId,
       })
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -138,8 +138,8 @@ describe("schedulePublishingJob", async () => {
         scheduledBy: session.userId,
       })
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       // mock the publishPageResource to throw an error to simulate failure
       vi.spyOn(
@@ -167,29 +167,29 @@ describe("schedulePublishingJob", async () => {
       expect(result[site.id]).toBeUndefined()
       expect(sendFailedPublishEmailSpy).toHaveBeenCalledTimes(1)
       expect(sendFailedPublishEmailSpy).toHaveBeenCalledWith({
-        recipientEmail: user.email,
         isScheduled: true,
+        recipientEmail: user.email,
         resource: expect.objectContaining({ id: page.id }),
       })
     })
     it("throwing an error when publishing a resource still processes the next resource correctly", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
+        permalink: "page-1",
         resourceType: ResourceType.Page,
         scheduledAt: FIXED_NOW,
         scheduledBy: session.userId,
-        permalink: "page-1",
       })
       // setup a second resource which should be published successfully
       const { page: page2, site: site2 } = await setupPageResource({
+        permalink: "page-2",
         resourceType: ResourceType.Page,
         scheduledAt: FIXED_NOW,
         scheduledBy: session.userId,
-        permalink: "page-2",
       })
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       // mock the publishPageResource to throw an error to simulate failure
       // the second call should use the original function implementation
@@ -205,7 +205,7 @@ describe("schedulePublishingJob", async () => {
           throw new Error("Mock error for resource 1")
         } else {
           // second call uses original implementation
-          return await originalPublishPageResource(args)
+           await originalPublishPageResource(args); return;
         }
       })
 
@@ -219,8 +219,8 @@ describe("schedulePublishingJob", async () => {
       // Assert
       expect(sendFailedPublishEmailSpy).toHaveBeenCalledTimes(1)
       expect(sendFailedPublishEmailSpy).toHaveBeenCalledWith({
-        recipientEmail: user.email,
         isScheduled: true,
+        recipientEmail: user.email,
         resource: expect.objectContaining({ id: page.id }),
       })
       expect(result[site.id]).not.toBeDefined()
@@ -250,21 +250,21 @@ describe("schedulePublishingJob", async () => {
     it("a resource without userId inside scheduledBy is skipped and does not prevent other resources from being published", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
+        permalink: "page-1",
         resourceType: ResourceType.Page,
         scheduledAt: FIXED_NOW,
-        scheduledBy: null, // no user info
-        permalink: "page-1",
+        scheduledBy: null, // no user info,
       })
       // setup a second resource which should be published successfully
       const { page: page2, site: site2 } = await setupPageResource({
+        permalink: "page-2",
         resourceType: ResourceType.Page,
         scheduledAt: FIXED_NOW,
         scheduledBy: session.userId,
-        permalink: "page-2",
       })
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
       const publishPageResourceSpy = vi.spyOn(
         publishPageResourceModule,
@@ -303,21 +303,21 @@ describe("schedulePublishingJob", async () => {
     it("throwing an error when sending an email for a resource still processes the next resource correctly", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
+        permalink: "page-1",
         resourceType: ResourceType.Page,
         scheduledAt: FIXED_NOW,
         scheduledBy: session.userId,
-        permalink: "page-1",
       })
       // setup a second resource which should be published successfully
       const { page: page2, site: site2 } = await setupPageResource({
+        permalink: "page-2",
         resourceType: ResourceType.Page,
         scheduledAt: FIXED_NOW,
         scheduledBy: session.userId,
-        permalink: "page-2",
       })
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // mock the publishPageResource to throw an error to simulate failure
@@ -334,7 +334,7 @@ describe("schedulePublishingJob", async () => {
           throw new Error("Mock error for resource 1")
         } else {
           // second call uses original implementation
-          return await originalPublishPageResource(args)
+           await originalPublishPageResource(args); return;
         }
       })
 
@@ -350,8 +350,8 @@ describe("schedulePublishingJob", async () => {
       // Assert
       expect(emailServiceSpy).toHaveBeenCalledTimes(1)
       expect(emailServiceSpy).toHaveBeenCalledWith({
-        recipientEmail: user.email,
         isScheduled: true,
+        recipientEmail: user.email,
         resource: expect.objectContaining({ id: page.id }),
       })
 
@@ -407,8 +407,8 @@ describe("schedulePublishingJob", async () => {
       })
       await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -417,8 +417,8 @@ describe("schedulePublishingJob", async () => {
           [site.id]: [
             {
               ...page,
-              scheduledBy: String(session.userId),
               email: user.email,
+              scheduledBy: String(session.userId),
               userDeletedAt: null,
             },
           ],
@@ -438,12 +438,12 @@ describe("schedulePublishingJob", async () => {
 
       expect(codebuildJobs).toHaveLength(1)
       expect(codebuildJobs[0]).toMatchObject({
-        siteId: site.id,
-        userId: session.userId,
-        resourceId: page.id,
-        status: "IN_PROGRESS",
-        startedAt: FIXED_NOW,
         isScheduled: true,
+        resourceId: page.id,
+        siteId: site.id,
+        startedAt: FIXED_NOW,
+        status: "IN_PROGRESS",
+        userId: session.userId,
       })
     })
     it("passing in enableCodebuildJobs false leads to no codebuild row being inserted", async () => {
@@ -455,8 +455,8 @@ describe("schedulePublishingJob", async () => {
       })
       await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
@@ -465,8 +465,8 @@ describe("schedulePublishingJob", async () => {
           [site.id]: [
             {
               ...page,
-              scheduledBy: String(session.userId),
               email: user.email,
+              scheduledBy: String(session.userId),
               userDeletedAt: null,
             },
           ],
@@ -493,8 +493,8 @@ describe("schedulePublishingJob", async () => {
       })
       await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // mock the startProjectByIdSpy to throw an error to simulate failure to start codebuild
@@ -512,8 +512,8 @@ describe("schedulePublishingJob", async () => {
           [site.id]: [
             {
               ...page,
-              scheduledBy: String(session.userId),
               email: user.email,
+              scheduledBy: String(session.userId),
               userDeletedAt: null,
             },
           ],
@@ -524,8 +524,8 @@ describe("schedulePublishingJob", async () => {
       // Assert
       expect(sendFailedPublishEmailSpy).toHaveBeenCalledTimes(1)
       expect(sendFailedPublishEmailSpy).toHaveBeenCalledWith({
-        recipientEmail: user.email,
         isScheduled: true,
+        recipientEmail: user.email,
         resource: expect.objectContaining({ id: page.id }),
       })
     })
@@ -538,8 +538,8 @@ describe("schedulePublishingJob", async () => {
       })
       await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // mock the startProjectByIdSpy to throw an error to simulate failure to start codebuild
@@ -557,8 +557,8 @@ describe("schedulePublishingJob", async () => {
           [site.id]: [
             {
               ...page,
-              scheduledBy: String(session.userId),
               email: user.email,
+              scheduledBy: String(session.userId),
               userDeletedAt: FIXED_NOW, // simulate deleted user
             },
           ],
@@ -578,8 +578,8 @@ describe("schedulePublishingJob", async () => {
       })
       await addCodebuildProjectToSite(site.id)
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // mock the startProjectByIdSpy to throw an error to simulate failure to start codebuild
@@ -597,8 +597,8 @@ describe("schedulePublishingJob", async () => {
           [site.id]: [
             {
               ...page,
-              scheduledBy: String(session.userId),
               email: null, // simulate missing email
+              scheduledBy: String(session.userId),
               userDeletedAt: null,
             },
           ],

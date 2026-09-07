@@ -3,7 +3,7 @@ import { CmsContainerWrapper } from "~/components/CmsSidebar"
 import { LayoutHead } from "~/components/LayoutHead"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type GetLayout } from "~/lib/types"
+import type { GetLayout } from "~/lib/types"
 
 export const SiteBasicLayout: GetLayout = (page) => {
   const { siteId } = useQueryParse(siteSchema)

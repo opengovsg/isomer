@@ -75,8 +75,8 @@ export const NavbarItemBoxBody = ({
   },
   onEditItem,
   onDeleteItem,
-}: NavbarItemBoxBodyProps) => {
-  return (
+}: NavbarItemBoxBodyProps) => 
+  (
     <>
       {isSubItem &&
         navbarItemClosestEdge === "top" &&
@@ -192,7 +192,7 @@ export const NavbarItemBoxBody = ({
               gap="0.5rem"
               w="full"
               textAlign="start"
-              onClick={() => onEditItem()}
+              onClick={() =>{  onEditItem(); }}
             >
               <VStack gap="0.25rem" alignItems="start">
                 <Text
@@ -250,7 +250,7 @@ export const NavbarItemBoxBody = ({
               icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
             />
             <MenuList>
-              <MenuItem onClick={() => onEditItem()}>
+              <MenuItem onClick={() =>{  onEditItem(); }}>
                 <Flex
                   alignItems="center"
                   gap="0.5rem"
@@ -303,4 +303,4 @@ export const NavbarItemBoxBody = ({
         )}
     </>
   )
-}
+

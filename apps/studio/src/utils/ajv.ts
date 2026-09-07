@@ -2,10 +2,10 @@ import Ajv from "ajv"
 import addErrors from "ajv-errors"
 
 export const ajv = new Ajv({
-  useDefaults: true,
   allErrors: true,
-  strict: false,
-  logger: false,
   discriminator: true,
+  logger: false,
+  strict: false,
+  useDefaults: true,
 })
 addErrors(ajv)

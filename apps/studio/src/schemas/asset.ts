@@ -9,10 +9,10 @@ import {
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 
 // Combine allowed extensions from existing constants
-const ALLOWED_EXTENSIONS = [
+const ALLOWED_EXTENSIONS = new Set([
   ...Object.keys(IMAGE_ACCEPTED_MIME_TYPE_MAPPING),
   ...Object.keys(FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING),
-]
+])
 
 const fileNameStartingCharRefine = (s: string) => /^[a-zA-Z0-9\-_]/.test(s)
 const fileNameStartingCharMessage =
@@ -41,7 +41,7 @@ const fileNameSchema = z
       // validate or strip embedded scripts/event handlers.
       if (extension === ".svg") return false
 
-      return ALLOWED_EXTENSIONS.includes(extension)
+      return ALLOWED_EXTENSIONS.has(extension)
     },
     {
       message: "File type not allowed. Please upload a supported file type.",
@@ -65,16 +65,19 @@ const fileSizeRefine = (
     extension in IMAGE_ACCEPTED_MIME_TYPE_MAPPING
       ? MAX_IMG_FILE_SIZE_BYTES
       : MAX_FILE_SIZE_BYTES
-  if (fileSize <= maxFileSize) return
+  if (fileSize <= maxFileSize) {return}
 
   ctx.addIssue({
     code: "custom",
-    path: ["fileSize"],
     message: `File size must not exceed ${formatFileSizeLimit({ bytes: maxFileSize })}`,
+    path: ["fileSize"],
   })
 }
 
 const getPresignedPutUrlBaseSchema = z.object({
+  fileName: fileNameSchema,
+  fileSize: fileSizeSchema,
+  resourceId: z.string().optional(),
   siteId: z.number().min(1),
   tags: z
     .array(
@@ -84,9 +87,6 @@ const getPresignedPutUrlBaseSchema = z.object({
       }),
     )
     .optional(),
-  resourceId: z.string().optional(),
-  fileSize: fileSizeSchema,
-  fileName: fileNameSchema,
 })
 
 export const getPresignedPutUrlSchema =
@@ -129,8 +129,6 @@ export const uploadSvgSchema = z.object({
 export const MAX_DELETE_FILE_KEYS = 100
 
 export const deleteAssetsSchema = z.object({
-  siteId: z.number().min(1),
-  resourceId: z.string(),
   fileKeys: z
     .array(
       z.string({
@@ -140,11 +138,13 @@ export const deleteAssetsSchema = z.object({
     .max(MAX_DELETE_FILE_KEYS, {
       message: `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
     }),
+  resourceId: z.string(),
+  siteId: z.number().min(1),
 })
 
 export const getPresignedGetUrlSchema = z.object({
-  siteId: z.number().min(1),
   fileKey: z.string({
     error: "Missing file key",
   }),
+  siteId: z.number().min(1),
 })

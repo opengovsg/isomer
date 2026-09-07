@@ -4,9 +4,9 @@ import { differenceInMinutes, format, isToday, isYesterday } from "date-fns"
 // Coarse relative time for the "Added" column, matching the design:
 // "just now" → "today" → "yesterday" → "12 Sep 2024"
 export const formatAddedAt = (date: Date): string => {
-  if (differenceInMinutes(new Date(), date) < 5) return "just now"
-  if (isToday(date)) return "today"
-  if (isYesterday(date)) return "yesterday"
+  if (differenceInMinutes(new Date(), date) < 5) {return "just now"}
+  if (isToday(date)) {return "today"}
+  if (isYesterday(date)) {return "yesterday"}
   return format(date, "d MMM yyyy")
 }
 
@@ -44,7 +44,7 @@ export const getDestinationDisplay = (
   infoByDestination: Map<string, ResolvedDestination>,
 ): DestinationDisplay => {
   if (!isReferenceDestination(destination)) {
-    return { status: "resolved", label: destination }
+    return { label: destination, status: "resolved" }
   }
   const info = infoByDestination.get(destination)
   if (!info) {
@@ -52,7 +52,7 @@ export const getDestinationDisplay = (
   }
   return info.permalink === null
     ? { status: "missing" }
-    : { status: "resolved", label: info.permalink }
+    : { label: info.permalink, status: "resolved" }
 }
 
 // Whether the table should flag this destination as leading nowhere (missing or

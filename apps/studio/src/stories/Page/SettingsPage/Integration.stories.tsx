@@ -17,9 +17,9 @@ const COMMON_HANDLERS = [
 ]
 
 const meta: Meta<typeof IntegrationsSettingsPage> = {
-  title: "Pages/Site Management/Agency Settings Page/Integrations",
   component: IntegrationsSettingsPage,
   parameters: {
+    decorators: [],
     getLayout: IntegrationsSettingsPage.getLayout,
     msw: {
       handlers: COMMON_HANDLERS,
@@ -32,8 +32,8 @@ const meta: Meta<typeof IntegrationsSettingsPage> = {
         },
       },
     },
-    decorators: [],
   },
+  title: "Pages/Site Management/Agency Settings Page/Integrations",
 }
 
 export default meta

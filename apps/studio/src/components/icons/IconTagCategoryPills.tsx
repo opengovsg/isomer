@@ -1,8 +1,8 @@
 import { chakra } from "@chakra-ui/react"
 
 export const IconTagCategoryPills = chakra(
-  (props: React.SVGProps<SVGSVGElement>) => {
-    return (
+  (props: React.SVGProps<SVGSVGElement>) => 
+    (
       <svg
         width="206"
         height="82"
@@ -55,5 +55,5 @@ export const IconTagCategoryPills = chakra(
         </defs>
       </svg>
     )
-  },
+  ,
 )

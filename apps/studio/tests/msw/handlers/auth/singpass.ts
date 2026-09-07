@@ -2,15 +2,17 @@ import { MOCK_TEST_EMAIL, MOCK_TEST_USER_NAME } from "tests/msw/constants"
 import { trpcMsw } from "tests/msw/mockTrpc"
 
 export const authSingpassHandlers = {
-  getUserProps: {
-    newUser: () => {
-      return trpcMsw.auth.singpass.getUserProps.query((_input) => {
+  callback: {
+    default: () => {
+      return trpcMsw.auth.singpass.callback.query((_input) => {
         return {
           isNewUser: true,
-          name: MOCK_TEST_EMAIL,
+          redirectUrl: "/",
         }
       })
     },
+  },
+  getUserProps: {
     existingUser: () => {
       return trpcMsw.auth.singpass.getUserProps.query((_input) => {
         return {
@@ -27,13 +29,11 @@ export const authSingpassHandlers = {
         }
       })
     },
-  },
-  callback: {
-    default: () => {
-      return trpcMsw.auth.singpass.callback.query((_input) => {
+    newUser: () => {
+      return trpcMsw.auth.singpass.getUserProps.query((_input) => {
         return {
           isNewUser: true,
-          redirectUrl: "/",
+          name: MOCK_TEST_EMAIL,
         }
       })
     },

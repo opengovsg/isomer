@@ -27,26 +27,26 @@ export const assetRouter = router({
         input: { tags, siteId, fileName, fileSize, resourceId },
       }) => {
         await validateUserPermissionsForAsset({
-          siteId,
-          resourceId,
           action: "create",
+          resourceId,
+          siteId,
           userId: ctx.user.id,
         })
 
-        const fileKey = getFileKey({ siteId, fileName })
+        const fileKey = getFileKey({ fileName, siteId })
 
         const uploadConfig = await getPresignedPutUrl({
-          key: fileKey,
           fileSize,
+          key: fileKey,
           tags,
         })
 
         ctx.logger.info(
           {
-            userId: ctx.session?.userId,
-            siteId,
-            fileName,
             fileKey,
+            fileName,
+            siteId,
+            userId: ctx.session?.userId,
           },
           `Generated upload config for ${fileKey} for site ${siteId}`,
         )
@@ -61,8 +61,8 @@ export const assetRouter = router({
     .input(getPresignedGetUrlSchema)
     .mutation(async ({ ctx, input: { siteId, fileKey } }) => {
       await validateUserPermissionsForAsset({
-        siteId,
         action: "read",
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -78,9 +78,9 @@ export const assetRouter = router({
 
       ctx.logger.info(
         {
-          userId: ctx.session?.userId,
-          siteId,
           fileKey,
+          siteId,
+          userId: ctx.session?.userId,
         },
         `Generated presigned GET URL for ${fileKey} for site ${siteId}`,
       )
@@ -98,9 +98,9 @@ export const assetRouter = router({
     .input(deleteAssetsSchema)
     .mutation(async ({ ctx, input: { siteId, resourceId, fileKeys } }) => {
       await validateUserPermissionsForAsset({
-        siteId,
-        resourceId,
         action: "delete",
+        resourceId,
+        siteId,
         userId: ctx.user.id,
       })
 
@@ -113,7 +113,7 @@ export const assetRouter = router({
       }
 
       await Promise.allSettled(
-        fileKeys.map((fileKey) => markFileAsDeleted({ key: fileKey })),
+        fileKeys.map( async (fileKey) => markFileAsDeleted({ key: fileKey })),
       ).then((results) => {
         const deleteFailedCounts = results.filter(
           (result) => result.status === "rejected",
@@ -122,12 +122,12 @@ export const assetRouter = router({
 
         if (deleteFailedCounts > 0) {
           ctx.logger.error({
-            message: `Failed to delete files/images`,
             merged: {
-              fileKeys,
               deleteFailedCounts,
+              fileKeys,
               totalDeleteCounts,
             },
+            message: `Failed to delete files/images`,
           })
 
           throw new TRPCError({
@@ -150,27 +150,27 @@ export const assetRouter = router({
         input: { siteId, fileName, content, resourceId, tags },
       }) => {
         await validateUserPermissionsForAsset({
-          siteId,
-          resourceId,
           action: "create",
+          resourceId,
+          siteId,
           userId: ctx.user.id,
         })
 
-        const fileKey = getFileKey({ siteId, fileName })
+        const fileKey = getFileKey({ fileName, siteId })
         const sanitized = sanitizeSvg(content)
 
         await putFileDirect({
-          key: fileKey,
           body: sanitized,
+          key: fileKey,
           tags,
         })
 
         ctx.logger.info(
           {
-            userId: ctx.session?.userId,
-            siteId,
-            fileName,
             fileKey,
+            fileName,
+            siteId,
+            userId: ctx.session?.userId,
           },
           `Uploaded sanitized SVG ${fileKey} for site ${siteId}`,
         )

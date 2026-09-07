@@ -7,7 +7,7 @@ import { useMemo } from "react"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 import { IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
-import { type DrawerState } from "~/types/editorDrawer"
+import type { DrawerState } from "~/types/editorDrawer"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { UsageTooltipProps } from "./UsageTooltip"
@@ -20,28 +20,28 @@ import {
   getHomepageAllowedBlocks,
   INDEX_ALLOWED_BLOCKS,
 } from "./constants"
-import { type SectionType } from "./types"
+import type { SectionType } from "./types"
 import { UsageTooltip } from "./UsageTooltip"
 
-const Section = ({ children }: React.PropsWithChildren) => {
-  return (
+const Section = ({ children }: React.PropsWithChildren) => 
+  (
     <VStack gap="1rem" alignItems="start" w="full">
       {children}
     </VStack>
   )
-}
 
-const SectionTitle = ({ title }: { title: string }) => {
-  return (
+
+const SectionTitle = ({ title }: { title: string }) => 
+  (
     <Text textStyle="subhead-2" textColor="base.content.medium">
       {title}
     </Text>
   )
-}
 
-const BlockList = ({ children }: React.PropsWithChildren) => {
-  return <Stack w="full">{children}</Stack>
-}
+
+const BlockList = ({ children }: React.PropsWithChildren) => 
+  <Stack w="full">{children}</Stack>
+
 
 type BlockItemProps = UsageTooltipProps & {
   onProceed: (sectionType: SectionType) => void
@@ -80,13 +80,13 @@ const BlockItem = ({
       display="flex"
       alignItems="start"
       gap="0.75rem"
-      onClick={() => onProceed(sectionType)}
+      onClick={() =>{  onProceed(sectionType); }}
       _disabled={{
         bg: "interaction.support.disabled",
         borderColor: "base.divider.medium",
-        textColor: "interaction.support.disabled-content",
         cursor: "not-allowed",
         opacity: "75%",
+        textColor: "interaction.support.disabled-content",
       }}
       data-group
     >
@@ -183,11 +183,12 @@ const ComponentSelector = () => {
 
   const availableBlocks = useMemo(() => {
     switch (type) {
-      case ResourceType.RootPage:
+      case ResourceType.RootPage: {
         return getHomepageAllowedBlocks({
           includeAntiScamBanner: isHomepageAntiScamBannerEnabled,
         })
-      case ResourceType.Page:
+      }
+      case ResourceType.Page: {
         if (savedPageState.layout === "content") {
           return CONTENT_ALLOWED_BLOCKS
         } else if (savedPageState.layout === "article") {
@@ -196,20 +197,26 @@ const ComponentSelector = () => {
           return DATABASE_ALLOWED_BLOCKS
         }
         throw new Error(`Unsupported page layout: ${savedPageState.layout}`)
-      case ResourceType.CollectionPage:
+      }
+      case ResourceType.CollectionPage: {
         return ARTICLE_ALLOWED_BLOCKS
+      }
       case ResourceType.Collection:
-      case ResourceType.CollectionLink:
+      case ResourceType.CollectionLink: {
         return []
-      case ResourceType.IndexPage:
+      }
+      case ResourceType.IndexPage: {
         return INDEX_ALLOWED_BLOCKS
+      }
       case ResourceType.Folder:
       case ResourceType.FolderMeta:
-      case ResourceType.CollectionMeta:
+      case ResourceType.CollectionMeta: {
         throw new Error(`Unsupported resource type: ${type}`)
-      default:
+      }
+      default: {
         const exhaustiveCheck: never = type
         return exhaustiveCheck
+      }
     }
   }, [isHomepageAntiScamBannerEnabled, savedPageState.layout, type])
 

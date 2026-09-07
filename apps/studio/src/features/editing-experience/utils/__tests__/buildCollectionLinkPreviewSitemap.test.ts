@@ -5,9 +5,9 @@ import { describe, expect, it } from "vitest"
 import { buildCollectionLinkPreviewSitemap } from "../buildCollectionLinkPreviewSitemap"
 
 const LINK: CollectionLinkProps = {
-  ref: "[resource:1:2]",
   category: "",
   description: "A summary",
+  ref: "[resource:1:2]",
 }
 
 const buildSitemap = (
@@ -16,13 +16,13 @@ const buildSitemap = (
   > = {},
 ) =>
   buildCollectionLinkPreviewSitemap({
-    permalink: "/circulars/my-link",
-    title: "My link",
-    link: LINK,
-    collectionTitle: "Circulars",
     ancestorTitles: [],
-    tagCategories: undefined,
+    collectionTitle: "Circulars",
     lastModified: "2024-01-01",
+    link: LINK,
+    permalink: "/circulars/my-link",
+    tagCategories: undefined,
+    title: "My link",
     ...overrides,
   })
 
@@ -52,8 +52,8 @@ describe("buildCollectionLinkPreviewSitemap", () => {
     it("creates a node for every permalink prefix so the walk can reach the link", () => {
       // Arrange / Act
       const result = buildSitemap({
-        permalink: "/a/b/circulars/my-link",
         ancestorTitles: ["A", "B"],
+        permalink: "/a/b/circulars/my-link",
       })
 
       // Assert
@@ -69,8 +69,8 @@ describe("buildCollectionLinkPreviewSitemap", () => {
     it("titles the intermediate nodes with the real resource titles", () => {
       // Arrange / Act
       const result = buildSitemap({
-        permalink: "/resources/circulars/my-link",
         ancestorTitles: ["Resources"],
+        permalink: "/resources/circulars/my-link",
       })
 
       // Assert
@@ -81,8 +81,8 @@ describe("buildCollectionLinkPreviewSitemap", () => {
     it("falls back to the permalink segment when a title is unavailable", () => {
       // Arrange / Act
       const result = buildSitemap({
-        permalink: "/resources/circulars/my-link",
         ancestorTitles: [],
+        permalink: "/resources/circulars/my-link",
       })
 
       // Assert
@@ -99,10 +99,10 @@ describe("buildCollectionLinkPreviewSitemap", () => {
       // Assert
       expect(linkNode).toMatchObject({
         layout: "link",
-        title: "My link",
-        summary: "A summary",
         permalink: "/circulars/my-link",
         ref: "[resource:1:2]",
+        summary: "A summary",
+        title: "My link",
       })
     })
   })

@@ -1,8 +1,8 @@
 import { chakra } from "@chakra-ui/react"
 
 export const IconAddRowBelow = chakra(
-  (props: React.SVGProps<SVGSVGElement>): React.ReactNode => {
-    return (
+  (props: React.SVGProps<SVGSVGElement>): React.ReactNode => 
+    (
       <svg
         width="24"
         height="24"
@@ -26,5 +26,5 @@ export const IconAddRowBelow = chakra(
         />
       </svg>
     )
-  },
+  ,
 )

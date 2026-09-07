@@ -19,7 +19,7 @@ export const mergeResourcesWithOrdering = (
     .concat(
       // NOTE: We have to assume default sort order (alphabetical)
       // when we shift in new items
-      Array.from(toAdd).toSorted((a, b) => {
+      [...toAdd].toSorted((a, b) => {
         const aTitle = mappings.get(a) ?? ""
         const bTitle = mappings.get(b) ?? ""
 

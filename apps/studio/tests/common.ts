@@ -7,36 +7,41 @@ import { z } from "zod"
 type ContainerType = "database" | "mockpass"
 export const CONTAINER_CONFIGURATIONS = {
   database: {
-    name: "database",
-    image: "postgres:15-alpine",
-    ports: [5432],
     environment: {
-      POSTGRES_USER: "root",
-      POSTGRES_PASSWORD: "root",
       POSTGRES_DB: "test",
+      POSTGRES_PASSWORD: "root",
+      POSTGRES_USER: "root",
     },
-    wait: { type: "PORT" },
+    image: "postgres:15-alpine",
+    name: "database",
+    ports: [5432],
     type: "image",
+    wait: { type: "PORT" },
   },
   mockpass: {
-    name: "mockpass",
-    image: "opengovsg/mockpass:4.5.1",
-    ports: [5156],
-    extraHosts: [{ host: "host.docker.internal", ipAddress: "host-gateway" }],
     environment: {
       MOCKPASS_NRIC: "S6005038D",
       MOCKPASS_UEN: "123456789A",
       SHOW_LOGIN_PAGE: "true",
+      SINGPASS_CLIENT_PROFILE: "direct",
       SP_RP_JWKS_ENDPOINT:
         "http://host.docker.internal:3000/api/sign-in/singpass/jwks",
-      SINGPASS_CLIENT_PROFILE: "direct",
     },
-    wait: { type: "PORT" },
+    extraHosts: [{ host: "host.docker.internal", ipAddress: "host-gateway" }],
+    image: "opengovsg/mockpass:4.5.1",
+    name: "mockpass",
+    ports: [5156],
     type: "image",
+    wait: { type: "PORT" },
   },
 } satisfies Record<ContainerType, ContainerConfiguration>
 
 const baseContainerConfiguration = z.object({
+  buildArgs: z.record(z.string(), z.string()).optional(),
+  environment: z.record(z.string(), z.string()).optional(),
+  extraHosts: z
+    .array(z.object({ host: z.string(), ipAddress: z.string() }))
+    .optional(),
   name: z.string(),
   ports: z
     .array(
@@ -45,11 +50,6 @@ const baseContainerConfiguration = z.object({
         z.object({ container: z.number(), host: z.number() }),
       ]),
     )
-    .optional(),
-  environment: z.record(z.string(), z.string()).optional(),
-  buildArgs: z.record(z.string(), z.string()).optional(),
-  extraHosts: z
-    .array(z.object({ host: z.string(), ipAddress: z.string() }))
     .optional(),
   wait: z
     .union([
@@ -70,9 +70,6 @@ const baseContainerConfiguration = z.object({
 
 export const CONTAINER_INFORMATION_SCHEMA = z.array(
   z.object({
-    name: z.string(),
-    host: z.string(),
-    ports: z.map(z.number(), z.number()),
     configuration: z.discriminatedUnion("type", [
       baseContainerConfiguration.extend({
         image: z.string(),
@@ -83,6 +80,9 @@ export const CONTAINER_INFORMATION_SCHEMA = z.array(
         type: z.literal("dockerfile"),
       }),
     ]),
+    host: z.string(),
+    name: z.string(),
+    ports: z.map(z.number(), z.number()),
   }),
 )
 
@@ -106,8 +106,8 @@ export const setup = async (
         wait,
         type,
       } = configuration
-      const __filename = fileURLToPath(import.meta.url)
-      const __dirname = dirname(__filename)
+      const __filename = import.meta.filename
+      const __dirname = import.meta.dirname
 
       const context = join(__dirname, "..", "..", "..")
 
@@ -138,23 +138,26 @@ export const setup = async (
       if (wait) {
         const { type, timeout = 60 * 1000 } = wait
         switch (type) {
-          case "PORT":
+          case "PORT": {
             container = container
               .withStartupTimeout(timeout)
               .withWaitStrategy(Wait.forListeningPorts())
             break
-          case "LOG":
+          }
+          case "LOG": {
             container = container
               .withStartupTimeout(timeout)
               .withWaitStrategy(
                 Wait.forLogMessage(wait.message, wait.times ?? 1),
               )
             break
-          case "HEALTHCHECK":
+          }
+          case "HEALTHCHECK": {
             container = container
               .withStartupTimeout(timeout)
               .withWaitStrategy(Wait.forHealthCheck())
             break
+          }
         }
       }
 
@@ -170,10 +173,10 @@ export const setup = async (
       ): number => exposedPortSchema.parse(port)
 
       return {
-        name,
-        container,
-        ports: ports.map(getExposedPort),
         configuration,
+        container,
+        name,
+        ports: ports.map(getExposedPort),
       }
     }),
   )
@@ -194,9 +197,9 @@ export const setup = async (
 
       return {
         ...containerTemplate,
+        container: startedContainer,
         host,
         ports: mappedPorts,
-        container: startedContainer,
       }
     }),
   )
@@ -208,6 +211,6 @@ export const teardown = async (
   containers: { container: StartedTestContainer }[],
 ) => {
   await Promise.all(
-    containers.map((container) => container.container.stop({ remove: true })),
+    containers.map( async (container) => container.container.stop({ remove: true })),
   )
 }

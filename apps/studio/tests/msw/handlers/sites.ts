@@ -12,8 +12,8 @@ const siteListQuery = ({
 }: {
   wait?: DelayMode | number
   isEmpty?: boolean
-} = {}) => {
-  return trpcMsw.site.list.query(async () => {
+} = {}) => 
+  trpcMsw.site.list.query(async () => {
     if (wait !== undefined) {
       await delay(wait)
     }
@@ -67,45 +67,9 @@ const siteListQuery = ({
       },
     ]
   })
-}
+
 
 export const sitesHandlers = {
-  list: {
-    default: () => siteListQuery({}),
-    loading: () => siteListQuery({ wait: "infinite" }),
-    empty: () => siteListQuery({ isEmpty: true }),
-  },
-  getSiteName: {
-    default: () => {
-      return trpcMsw.site.getSiteName.query(() => {
-        return { name: "Isomer" }
-      })
-    },
-  },
-  getTheme: {
-    default: () => {
-      return trpcMsw.site.getTheme.query(() => {
-        // SAFETY: MSW fixture matches SiteThemeJson fields used in Storybook/tests.
-        return {
-          colors: {
-            brand: {
-              canvas: {
-                default: "#e6ecef",
-                alt: "#bfcfd7",
-                backdrop: "#80a0af",
-                inverse: "#00405f",
-              },
-              interaction: {
-                default: "#00405f",
-                hover: "#002e44",
-                pressed: "#00283b",
-              },
-            },
-          },
-        } as PrismaJson.SiteThemeJson
-      })
-    },
-  },
   getConfig: {
     default: () => {
       return trpcMsw.site.getConfig.query(() => {
@@ -182,161 +146,7 @@ export const sitesHandlers = {
       })
     },
   },
-  getNavbar: {
-    default: () => {
-      return trpcMsw.site.getNavbar.query(() => {
-        // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
-        return {
-          id: 1,
-          siteId: 1,
-          content: {
-            items: [
-              {
-                url: "/item-one",
-                name: "Expandable nav item",
-                items: [
-                  {
-                    url: "/item-one/pa-network-one",
-                    name: "PA's network one",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                  {
-                    url: "/item-one/pa-network-two",
-                    name: "PA's network two",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                  {
-                    url: "/item-one/pa-network-three",
-                    name: "PA's network three",
-                  },
-                  {
-                    url: "/item-one/pa-network-four",
-                    name: "PA's network four",
-                    description:
-                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                  },
-                  {
-                    url: "/item-one/pa-network-five",
-                    name: "PA's network five",
-                    description:
-                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                  },
-                  {
-                    url: "/item-one/pa-network-six",
-                    name: "PA's network six",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                ],
-              },
-            ],
-          } as PrismaJson.NavbarJsonContent,
-          createdAt: MOCK_STORY_DATE,
-          updatedAt: MOCK_STORY_DATE,
-        }
-      })
-    },
-    withUtilityLinks: () => {
-      return trpcMsw.site.getNavbar.query(() => {
-        // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
-        return {
-          id: 1,
-          siteId: 1,
-          content: {
-            items: [
-              {
-                url: "/item-one",
-                name: "Expandable nav item",
-                items: [
-                  {
-                    url: "/item-one/pa-network-one",
-                    name: "PA's network one",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                ],
-              },
-            ],
-            utility: {
-              label: "Quick links",
-              items: [
-                { name: "Login", url: "/login" },
-                { name: "Register", url: "/register" },
-              ],
-            },
-          } as PrismaJson.NavbarJsonContent,
-          createdAt: MOCK_STORY_DATE,
-          updatedAt: MOCK_STORY_DATE,
-        }
-      })
-    },
-    withCTA: () => {
-      return trpcMsw.site.getNavbar.query(() => {
-        // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
-        return {
-          id: 1,
-          siteId: 1,
-          content: {
-            items: [
-              {
-                url: "/item-one",
-                name: "Expandable nav item",
-                items: [
-                  {
-                    url: "/item-one/pa-network-one",
-                    name: "PA's network one",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                ],
-              },
-            ],
-            callToAction: {
-              label: "Apply now",
-              url: "https://www.isomer.gov.sg/apply",
-              isPinnedOnMobile: true,
-            },
-          } as PrismaJson.NavbarJsonContent,
-          createdAt: MOCK_STORY_DATE,
-          updatedAt: MOCK_STORY_DATE,
-        }
-      })
-    },
-  },
   getLocalisedSitemap: {
-    default: () => {
-      return trpcMsw.site.getLocalisedSitemap.query(() => {
-        return {
-          id: "1",
-          layout: "content",
-          title: "Home",
-          summary: "",
-          lastModified: "2024-09-16T04:34:54.838Z",
-          permalink: "/",
-          children: [
-            {
-              id: "4",
-              layout: "content",
-              title: "article layout",
-              summary: "",
-              lastModified: "2024-09-16T04:34:54.838Z",
-              permalink: "/article-layout",
-            },
-            {
-              id: "3",
-              layout: "content",
-              title: "Page title here",
-              summary: "",
-              lastModified: "2024-09-16T04:34:54.838Z",
-              permalink: "/page-title-here",
-            },
-          ],
-        }
-      })
-    },
-
     collection: () => {
       return trpcMsw.site.getLocalisedSitemap.query(() => {
         return {
@@ -527,6 +337,37 @@ export const sitesHandlers = {
       })
     },
 
+    default: () => {
+      return trpcMsw.site.getLocalisedSitemap.query(() => {
+        return {
+          id: "1",
+          layout: "content",
+          title: "Home",
+          summary: "",
+          lastModified: "2024-09-16T04:34:54.838Z",
+          permalink: "/",
+          children: [
+            {
+              id: "4",
+              layout: "content",
+              title: "article layout",
+              summary: "",
+              lastModified: "2024-09-16T04:34:54.838Z",
+              permalink: "/article-layout",
+            },
+            {
+              id: "3",
+              layout: "content",
+              title: "Page title here",
+              summary: "",
+              lastModified: "2024-09-16T04:34:54.838Z",
+              permalink: "/page-title-here",
+            },
+          ],
+        }
+      })
+    },
+
     index: () => {
       return trpcMsw.site.getLocalisedSitemap.query(() => {
         return {
@@ -569,7 +410,129 @@ export const sitesHandlers = {
       })
     },
   },
-
+  getNavbar: {
+    default: () => {
+      return trpcMsw.site.getNavbar.query(() => {
+        // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
+        return {
+          id: 1,
+          siteId: 1,
+          content: {
+            items: [
+              {
+                url: "/item-one",
+                name: "Expandable nav item",
+                items: [
+                  {
+                    url: "/item-one/pa-network-one",
+                    name: "PA's network one",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                  {
+                    url: "/item-one/pa-network-two",
+                    name: "PA's network two",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                  {
+                    url: "/item-one/pa-network-three",
+                    name: "PA's network three",
+                  },
+                  {
+                    url: "/item-one/pa-network-four",
+                    name: "PA's network four",
+                    description:
+                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                  },
+                  {
+                    url: "/item-one/pa-network-five",
+                    name: "PA's network five",
+                    description:
+                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                  },
+                  {
+                    url: "/item-one/pa-network-six",
+                    name: "PA's network six",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                ],
+              },
+            ],
+          } as PrismaJson.NavbarJsonContent,
+          createdAt: MOCK_STORY_DATE,
+          updatedAt: MOCK_STORY_DATE,
+        }
+      })
+    },
+    withCTA: () => {
+      return trpcMsw.site.getNavbar.query(() => {
+        // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
+        return {
+          id: 1,
+          siteId: 1,
+          content: {
+            items: [
+              {
+                url: "/item-one",
+                name: "Expandable nav item",
+                items: [
+                  {
+                    url: "/item-one/pa-network-one",
+                    name: "PA's network one",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                ],
+              },
+            ],
+            callToAction: {
+              label: "Apply now",
+              url: "https://www.isomer.gov.sg/apply",
+              isPinnedOnMobile: true,
+            },
+          } as PrismaJson.NavbarJsonContent,
+          createdAt: MOCK_STORY_DATE,
+          updatedAt: MOCK_STORY_DATE,
+        }
+      })
+    },
+    withUtilityLinks: () => {
+      return trpcMsw.site.getNavbar.query(() => {
+        // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
+        return {
+          id: 1,
+          siteId: 1,
+          content: {
+            items: [
+              {
+                url: "/item-one",
+                name: "Expandable nav item",
+                items: [
+                  {
+                    url: "/item-one/pa-network-one",
+                    name: "PA's network one",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                ],
+              },
+            ],
+            utility: {
+              label: "Quick links",
+              items: [
+                { name: "Login", url: "/login" },
+                { name: "Register", url: "/register" },
+              ],
+            },
+          } as PrismaJson.NavbarJsonContent,
+          createdAt: MOCK_STORY_DATE,
+          updatedAt: MOCK_STORY_DATE,
+        }
+      })
+    },
+  },
   getNotification: {
     default: () => {
       return trpcMsw.site.getNotification.query(() => {
@@ -665,21 +628,6 @@ export const sitesHandlers = {
       })
     },
 
-    title: () => {
-      return trpcMsw.site.getNotification.query(() => {
-        return {
-          notification: {
-            title: "hello world",
-            enabled: true,
-            content: {
-              type: "prose",
-              content: [],
-            },
-          },
-        }
-      })
-    },
-
     disabled: () => {
       return trpcMsw.site.getNotification.query(() => {
         return {
@@ -725,5 +673,56 @@ export const sitesHandlers = {
         }
       })
     },
+
+    title: () => {
+      return trpcMsw.site.getNotification.query(() => {
+        return {
+          notification: {
+            title: "hello world",
+            enabled: true,
+            content: {
+              type: "prose",
+              content: [],
+            },
+          },
+        }
+      })
+    },
+  },
+  getSiteName: {
+    default: () => {
+      return trpcMsw.site.getSiteName.query(() => {
+        return { name: "Isomer" }
+      })
+    },
+  },
+  getTheme: {
+    default: () => {
+      return trpcMsw.site.getTheme.query(() => {
+        // SAFETY: MSW fixture matches SiteThemeJson fields used in Storybook/tests.
+        return {
+          colors: {
+            brand: {
+              canvas: {
+                default: "#e6ecef",
+                alt: "#bfcfd7",
+                backdrop: "#80a0af",
+                inverse: "#00405f",
+              },
+              interaction: {
+                default: "#00405f",
+                hover: "#002e44",
+                pressed: "#00283b",
+              },
+            },
+          },
+        } as PrismaJson.SiteThemeJson
+      })
+    },
+  },
+  list: {
+    default: () => siteListQuery({}),
+    empty: () => siteListQuery({ isEmpty: true }),
+    loading: () => siteListQuery({ wait: "infinite" }),
   },
 }

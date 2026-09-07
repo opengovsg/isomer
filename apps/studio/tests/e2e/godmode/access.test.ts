@@ -1,11 +1,13 @@
-import { expect, test, type Browser, type Page } from "@playwright/test"
+import { expect, test } from '@playwright/test';
+import type { Browser, Page } from '@playwright/test';
 
-import { storageStateFor, type Role } from "../fixtures/auth"
+import { storageStateFor } from '../fixtures/auth';
+import type { Role } from '../fixtures/auth';
 
 const GODMODE_ROUTES = [
-  { path: "/godmode/create-site", heading: "Create a new site" },
-  { path: "/godmode/publishing", heading: "Publishing" },
-  { path: "/godmode/whitelist", heading: "Whitelist" },
+  { heading: "Create a new site", path: "/godmode/create-site" },
+  { heading: "Publishing", path: "/godmode/publishing" },
+  { heading: "Whitelist", path: "/godmode/whitelist" },
 ] as const
 
 const openAs = async (

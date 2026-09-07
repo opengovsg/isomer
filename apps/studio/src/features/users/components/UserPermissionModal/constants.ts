@@ -24,20 +24,20 @@ export const ROLE_CONFIGS: {
   permissionLabels: (typeof ROLES_LABELS)[number][]
 }[] = [
   {
-    role: RoleType.Editor,
     permissionLabels: ["Edit content"],
+    role: RoleType.Editor,
   },
   {
-    role: RoleType.Publisher,
     permissionLabels: ["Edit content", "Publish content"],
+    role: RoleType.Publisher,
   },
   {
-    role: RoleType.Admin,
     permissionLabels: [
       "Edit content",
       "Publish content",
       "Manage users",
       "Change settings",
     ],
+    role: RoleType.Admin,
   },
 ] as const

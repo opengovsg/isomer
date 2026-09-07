@@ -11,7 +11,8 @@ import { useZodForm } from "~/lib/form"
 import { normalizeRedirectSource, redirectKind } from "~/schemas/redirect"
 
 import { useCreateRedirect } from "../api"
-import { addRedirectSchema, type AddRedirectInput } from "../types"
+import { addRedirectSchema } from '../types';
+import type { AddRedirectInput } from '../types';
 import { AddRedirectCardForm } from "./AddRedirectCardForm"
 
 const safeNormalize = (raw: string): string | null => {
@@ -26,7 +27,7 @@ const buildWildcardPreview = (
   normalizedSource: string,
   destination: string,
 ): string | null => {
-  if (!normalizedSource.endsWith("/*")) return null
+  if (!normalizedSource.endsWith("/*")) {return null}
   const prefix = normalizedSource.slice(0, -2)
   const trimmed = destination.trim()
   const base = trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed
@@ -41,8 +42,8 @@ export const AddRedirectCard = ({
   siteId,
 }: AddRedirectCardProps): React.ReactNode => {
   const form = useZodForm<typeof addRedirectSchema>({
+    defaultValues: { destination: "", source: "" },
     schema: addRedirectSchema,
-    defaultValues: { source: "", destination: "" },
   })
   const { reset, setError, watch } = form
   const toast = useToast(BRIEF_TOAST_SETTINGS)
@@ -74,18 +75,8 @@ export const AddRedirectCard = ({
 
   const onSubmit = ({ source, destination }: AddRedirectInput) => {
     createRedirect(
-      { siteId, source, destination },
+      { destination, siteId, source },
       {
-        onSuccess: () => {
-          posthog.capture("redirect_created", {
-            site_id: siteId,
-            destination_type: destination.startsWith("/")
-              ? "internal"
-              : "external",
-          })
-          reset()
-          toast({ ...SETTINGS_TOAST_MESSAGES.success, status: "success" })
-        },
         onError: (error) => {
           switch (error.data?.code) {
             case "CONFLICT":
@@ -107,6 +98,16 @@ export const AddRedirectCard = ({
               })
           }
         },
+        onSuccess: () => {
+          posthog.capture("redirect_created", {
+            site_id: siteId,
+            destination_type: destination.startsWith("/")
+              ? "internal"
+              : "external",
+          })
+          reset()
+          toast({ ...SETTINGS_TOAST_MESSAGES.success, status: "success" })
+        },
       },
     )
   }
@@ -117,10 +118,10 @@ export const AddRedirectCard = ({
       form={form}
       uiState={{
         isAddDisabled,
-        isDestinationFocused,
-        isPending,
-        isPageModalOpen,
         isBulkUploadOpen,
+        isDestinationFocused,
+        isPageModalOpen,
+        isPending,
       }}
       wildcardPreview={wildcardPreview}
       setIsDestinationFocused={setIsDestinationFocused}

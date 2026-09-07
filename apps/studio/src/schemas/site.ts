@@ -27,8 +27,8 @@ export const getConfigSchema = z.object({
 })
 
 export const getLocalisedSitemapSchema = z.object({
-  siteId: z.number().min(1),
   resourceId: z.number().min(1),
+  siteId: z.number().min(1),
 })
 
 export const getNotificationSchema = z.object({
@@ -39,10 +39,10 @@ export const getNotificationSchema = z.object({
 // with the exception of `siteId` so that we always rely on components
 // for our definitions
 export const setNotificationSchema = z.object({
-  siteId: z.number().min(1),
   notification: z.custom<Notification>((value) => {
     return notificationValidator(value)
   }, "Invalid notification content"),
+  siteId: z.number().min(1),
 })
 
 export const getNameSchema = z.object({
@@ -50,23 +50,23 @@ export const getNameSchema = z.object({
 })
 
 export const setFooterSchema = z.object({
-  siteId: z.number().min(1),
   footer: z.string(),
+  siteId: z.number().min(1),
 })
 
 export const setNavbarSchema = z.object({
-  siteId: z.number().min(1),
   navbar: z.string(),
+  siteId: z.number().min(1),
 })
 
 // NOTE: This is a temporary schema for editing the JSON content directly,
 // until the proper editing experience is implemented
 export const setSiteConfigByAdminSchema = z.object({
-  siteId: z.number().min(1),
   config: z.string(),
-  theme: z.string(),
-  navbar: z.string(),
   footer: z.string(),
+  navbar: z.string(),
+  siteId: z.number().min(1),
+  theme: z.string(),
 })
 
 export const createSiteSchema = z.object({
@@ -90,11 +90,11 @@ export const updateSiteConfigSchema = z
   )
 
 export const updateSiteIntegrationsSchema = z.object({
-  siteId: z.number().min(1),
   data: z.custom<IsomerSiteConfigProps>((value) => {
     const res = isomerSiteConfigValidator(value)
     return res
   }, "Invalid integration settings"),
+  siteId: z.number().min(1),
 })
 
 export const setThemeSchema = z

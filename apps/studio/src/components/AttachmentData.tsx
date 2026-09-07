@@ -5,8 +5,8 @@ interface AttachmentDataProps {
   data: string
   onClick: () => void
 }
-export const AttachmentData = ({ data, onClick }: AttachmentDataProps) => {
-  return (
+export const AttachmentData = ({ data, onClick }: AttachmentDataProps) => 
+  (
     <Flex
       px="1rem"
       py="0.75rem"
@@ -26,4 +26,4 @@ export const AttachmentData = ({ data, onClick }: AttachmentDataProps) => {
       />
     </Flex>
   )
-}
+

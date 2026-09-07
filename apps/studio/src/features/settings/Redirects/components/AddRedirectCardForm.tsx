@@ -183,9 +183,9 @@ export const AddRedirectCardForm = ({
             <Input
               placeholder="/path-to-page or https://www.google.com"
               size="sm"
-              onFocus={() => setIsDestinationFocused(true)}
+              onFocus={() =>{  setIsDestinationFocused(true); }}
               {...register("destination", {
-                onBlur: () => setIsDestinationFocused(false),
+                onBlur: () =>{  setIsDestinationFocused(false); },
                 onChange: clearFieldFeedback("destination"),
               })}
             />
@@ -211,7 +211,7 @@ export const AddRedirectCardForm = ({
                   spacing="0.5rem"
                   px="0.75rem"
                   py="0.5rem"
-                  onMouseDown={(e) => e.preventDefault()}
+                  onMouseDown={(e) =>{  e.preventDefault(); }}
                   onClick={onPageModalOpen}
                   _hover={{ bgColor: "interaction.muted.main.hover" }}
                 >
@@ -250,11 +250,11 @@ export const AddRedirectCardForm = ({
         isOpen={isPageModalOpen}
         siteId={siteId}
         onClose={onPageModalClose}
-        onSelect={(permalink) =>
+        onSelect={(permalink) =>{ 
           setValue("destination", permalink, {
-            shouldValidate: true,
             shouldDirty: true,
-          })
+            shouldValidate: true,
+          }); }
         }
       />
 

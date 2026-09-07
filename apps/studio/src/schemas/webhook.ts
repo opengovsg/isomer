@@ -23,8 +23,8 @@ export const buildIdFromArn = (arn: string) => {
  */
 export const codeBuildWebhookSchema = z
   .object({
-    projectName: z.string(),
     arn: z.string(),
+    projectName: z.string(),
     status: z.enum(BuildStatusType),
   })
   .transform(({ arn, ...rest }, ctx) => {

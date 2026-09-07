@@ -26,7 +26,7 @@ const getScopedElementKey = (
   path: string,
 ): string => {
   if ("scope" in element) {
-    const scope = element.scope
+    const {scope} = element
     if (isStringValue(scope)) {
       return scope
     }
@@ -95,9 +95,9 @@ function getUiSchemaWithGroup(
       )
 
       newUiSchema.push({
-        type: "Group",
-        label,
         elements: groupElements,
+        label,
+        type: "Group",
       })
 
       tempUiSchema = tempUiSchema.filter(

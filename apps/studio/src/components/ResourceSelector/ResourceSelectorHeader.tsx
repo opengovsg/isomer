@@ -9,8 +9,8 @@ import type { ResourceItemProps } from "./ResourceItem"
 const HomeHeader = ({
   handleOnClick,
   isHighlighted = false,
-}: Pick<ResourceItemProps, "handleOnClick"> & { isHighlighted?: boolean }) => {
-  return (
+}: Pick<ResourceItemProps, "handleOnClick"> & { isHighlighted?: boolean }) => 
+  (
     <Button
       as={Flex}
       variant="clear"
@@ -48,14 +48,14 @@ const HomeHeader = ({
       </Text>
     </Button>
   )
-}
+
 
 const BackButtonHeader = ({
   handleOnClick,
 }: {
   handleOnClick: SuspendableHeaderProps["handleClickBackButton"]
-}) => {
-  return (
+}) => 
+  (
     <Link
       variant="clear"
       w="full"
@@ -76,29 +76,29 @@ const BackButtonHeader = ({
       </HStack>
     </Link>
   )
-}
+
 
 const SearchResultsHeader = ({
   resultsCount,
   searchQuery,
 }: Pick<SuspendableHeaderProps, "searchQuery"> & {
   resultsCount: number
-}) => {
-  return (
+}) => 
+  (
     <Text textStyle="caption-2" px="0.5rem" pt="0.25rem" pb="0.5rem">
       {resultsCount} result{resultsCount > 1 ? "s" : ""} with &quot;
       {searchQuery}&quot; in title
     </Text>
   )
-}
 
-export const LoadingHeader = () => {
-  return (
+
+export const LoadingHeader = () => 
+  (
     <Text textStyle="caption-2" py="0.375rem" px="0.375rem">
       Searching your website, high and low
     </Text>
   )
-}
+
 
 interface SuspendableHeaderViewState {
   isSearchQueryEmpty: boolean
@@ -126,18 +126,18 @@ export const SuspendableHeader = ({
   searchQuery,
   handleOnClick,
 }: SuspendableHeaderProps) => {
-  if (isLoading) return <LoadingHeader />
+  if (isLoading) {return <LoadingHeader />}
 
   if (isSearchQueryEmpty && hasParentInStack)
-    return <BackButtonHeader handleOnClick={handleClickBackButton} />
+    {return <BackButtonHeader handleOnClick={handleClickBackButton} />}
 
   if (isSearchQueryEmpty || !resourceItemsWithAncestryStack)
-    return (
+    {return (
       <HomeHeader
         handleOnClick={handleOnClick}
         isHighlighted={isHomeHighlighted}
       />
-    )
+    )}
 
   return (
     <SearchResultsHeader

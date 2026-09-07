@@ -60,7 +60,7 @@ const PostHogIdentity = () => {
   const { data: sites } = trpc.site.list.useQuery(undefined, {
     enabled: hasLoginStateFlag,
   })
-  const identifiedUserId = useRef<string | undefined>(undefined)
+  const identifiedUserId = useRef<string | undefined>()
 
   useEffect(() => {
     // Logout resets PostHog's identity independently (see useMe's `logout`),
@@ -72,7 +72,7 @@ const PostHogIdentity = () => {
       return
     }
 
-    if (!user || !sites || identifiedUserId.current === user.id) return
+    if (!user || !sites || identifiedUserId.current === user.id) {return}
 
     void withPosthog((posthog) => {
       if (identifiedUserId.current && identifiedUserId.current !== user.id) {
@@ -104,7 +104,6 @@ const PostHogIdentity = () => {
 const useProvideLoginState = () => {
   const [hasLoginStateFlag, setLoginStateFlag] = useLocalStorage<boolean>(
     LOGGED_IN_KEY,
-    undefined,
   )
 
   const setHasLoginStateFlag = useCallback(() => {
@@ -117,7 +116,7 @@ const useProvideLoginState = () => {
 
   return {
     hasLoginStateFlag: !!hasLoginStateFlag,
-    setHasLoginStateFlag,
     removeLoginStateFlag,
+    setHasLoginStateFlag,
   }
 }

@@ -110,7 +110,7 @@ describe("isFirstLevelLinksOverLimit", () => {
     const itemCount = 100
 
     // Act
-    const actual = isFirstLevelLinksOverLimit(itemCount, undefined)
+    const actual = isFirstLevelLinksOverLimit(itemCount)
 
     // Assert
     expect(actual).toBe(false)
@@ -316,9 +316,9 @@ describe("handleMoveItem", () => {
     // Assert
     const expected = [
       {
+        items: [{ name: "Item 3", url: "/item3" }],
         name: "Item 1",
         url: "/item1",
-        items: [{ name: "Item 3", url: "/item3" }],
       },
       { name: "Item 2", url: "/item2" },
     ]
@@ -329,12 +329,12 @@ describe("handleMoveItem", () => {
     // Arrange
     const prevData = [
       {
-        name: "Item 1",
-        url: "/item1",
         items: [
           { name: "Subitem 1-1", url: "/item1/subitem1" },
           { name: "Subitem 1-2", url: "/item1/subitem2" },
         ],
+        name: "Item 1",
+        url: "/item1",
       },
       { name: "Item 2", url: "/item2" },
     ]
@@ -357,14 +357,14 @@ describe("handleMoveItem", () => {
     // Assert
     const expected = [
       {
+        items: [{ name: "Subitem 1-1", url: "/item1/subitem1" }],
         name: "Item 1",
         url: "/item1",
-        items: [{ name: "Subitem 1-1", url: "/item1/subitem1" }],
       },
       {
+        items: [{ name: "Subitem 1-2", url: "/item1/subitem2" }],
         name: "Item 2",
         url: "/item2",
-        items: [{ name: "Subitem 1-2", url: "/item1/subitem2" }],
       },
     ]
     expect(actual).toEqual(expected)
@@ -374,13 +374,13 @@ describe("handleMoveItem", () => {
     // Arrange
     const prevData = [
       {
-        name: "Item 1",
-        url: "/item1",
         items: [
           { name: "Subitem 1-1", url: "/item1/subitem1" },
           { name: "Subitem 1-2", url: "/item1/subitem2" },
           { name: "Subitem 1-3", url: "/item1/subitem3" },
         ],
+        name: "Item 1",
+        url: "/item1",
       },
       { name: "Item 2", url: "/item2" },
     ]
@@ -403,13 +403,13 @@ describe("handleMoveItem", () => {
     // Assert
     const expected = [
       {
-        name: "Item 1",
-        url: "/item1",
         items: [
           { name: "Subitem 1-2", url: "/item1/subitem2" },
           { name: "Subitem 1-3", url: "/item1/subitem3" },
           { name: "Subitem 1-1", url: "/item1/subitem1" },
         ],
+        name: "Item 1",
+        url: "/item1",
       },
       { name: "Item 2", url: "/item2" },
     ]
@@ -452,12 +452,12 @@ describe("handleMoveItem", () => {
     // Arrange
     const prevData = [
       {
-        name: "Item 1",
-        url: "/item1",
         items: [
           { name: "Subitem 1-1", url: "/item1/subitem1" },
           { name: "Subitem 1-2", url: "/item1/subitem2" },
         ],
+        name: "Item 1",
+        url: "/item1",
       },
       { name: "Item 2", url: "/item2" },
     ]
@@ -480,9 +480,9 @@ describe("handleMoveItem", () => {
     // Assert
     const expected = [
       {
+        items: [{ name: "Subitem 1-2", url: "/item1/subitem2" }],
         name: "Item 1",
         url: "/item1",
-        items: [{ name: "Subitem 1-2", url: "/item1/subitem2" }],
       },
       { name: "Subitem 1-1", url: "/item1/subitem1" },
       { name: "Item 2", url: "/item2" },
@@ -494,12 +494,12 @@ describe("handleMoveItem", () => {
     // Arrange
     const prevData = [
       {
-        name: "Item 1",
-        url: "/item1",
         items: [
           { name: "Subitem 1-1", url: "/item1/subitem1" },
           { name: "Subitem 1-2", url: "/item1/subitem2" },
         ],
+        name: "Item 1",
+        url: "/item1",
       },
       { name: "Item 2", url: "/item2" },
       { name: "Item 3", url: "/item3" },
@@ -533,12 +533,12 @@ describe("handleMoveItem", () => {
     // Arrange
     const prevData = [
       {
-        name: "Item 1",
-        url: "/item1",
         items: [
           { name: "Subitem 1-1", url: "/item1/subitem1" },
           { name: "Subitem 1-2", url: "/item1/subitem2" },
         ],
+        name: "Item 1",
+        url: "/item1",
       },
       { name: "Item 2", url: "/item2" },
     ]

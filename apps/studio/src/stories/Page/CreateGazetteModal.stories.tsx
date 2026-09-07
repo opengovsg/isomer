@@ -6,7 +6,12 @@ import { CreateGazetteModal } from "~/features/gazettes"
 import { GazetteSubcategoriesProvider } from "~/features/gazettes/contexts/GazetteSubcategoriesContext"
 
 const meta: Meta<typeof CreateGazetteModal> = {
-  title: "Pages/eGazette/Create Gazette Modal",
+  args: {
+    collectionId: 30,
+    isOpen: true,
+    onClose: () =>{  console.log("close"); },
+    siteId: 1,
+  },
   component: CreateGazetteModal,
   decorators: [
     (storyFn, { args }) => (
@@ -23,18 +28,13 @@ const meta: Meta<typeof CreateGazetteModal> = {
     ),
   ],
   parameters: {
-    layout: "fullscreen",
     chromatic: { delay: 200 },
+    layout: "fullscreen",
     msw: {
       handlers: [gazetteHandlers.collectionTags.default()],
     },
   },
-  args: {
-    isOpen: true,
-    onClose: () => console.log("close"),
-    siteId: 1,
-    collectionId: 30,
-  },
+  title: "Pages/eGazette/Create Gazette Modal",
 }
 
 export default meta

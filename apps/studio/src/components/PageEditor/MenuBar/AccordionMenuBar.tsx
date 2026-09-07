@@ -45,39 +45,37 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
   const items: PossibleMenubarItemProps[] = useMemo(
     () => [
       {
-        type: "item",
-        icon: BiBold,
-        title: "Bold",
         action: () => editor.chain().focus().toggleBold().run(),
+        icon: BiBold,
         isActive: () => editor.isActive("bold"),
+        title: "Bold",
+        type: "item",
       },
       {
-        type: "item",
-        icon: BiItalic,
-        title: "Italicise",
         action: () => editor.chain().focus().toggleItalic().run(),
+        icon: BiItalic,
         isActive: () => editor.isActive("italic"),
+        title: "Italicise",
+        type: "item",
       },
       {
-        type: "item",
-        icon: BiUnderline,
-        title: "Underline",
         action: () => editor.chain().focus().toggleUnderline().run(),
+        icon: BiUnderline,
         isActive: () => editor.isActive("underline"),
+        title: "Underline",
+        type: "item",
       },
       {
-        type: "item",
-        icon: BiStrikethrough,
-        title: "Strikethrough",
         action: () => editor.chain().focus().toggleStrike().run(),
+        icon: BiStrikethrough,
         isActive: () => editor.isActive("strike"),
+        title: "Strikethrough",
+        type: "item",
       },
       {
         type: "divider",
       },
       {
-        type: "horizontal-list",
-        label: "Lists",
         defaultIcon: BiListOl,
         items: [
           {
@@ -96,16 +94,18 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
             isActive: () => editor.isActive("unorderedList"),
           },
         ],
+        label: "Lists",
+        type: "horizontal-list",
       },
       {
         type: "divider",
       },
       {
-        type: "item",
-        icon: BiLink,
-        title: "Link",
         action: onLinkModalOpen,
+        icon: BiLink,
         isActive: () => editor.isActive("link"),
+        title: "Link",
+        type: "item",
       },
       {
         type: "divider",
@@ -117,8 +117,6 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
         render: () => <TableSizePicker editor={editor} />,
       },
       {
-        type: "horizontal-list",
-        label: "Table",
         defaultIcon: BiWrench,
         isHidden: () => !editor.isActive("table"),
         items: [
@@ -177,30 +175,31 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
             action: onTableSettingsModalOpen,
           },
         ],
+        label: "Table",
+        type: "horizontal-list",
       },
       // Table-scoped: promoted onto the main toolbar instead of the overflow
       // menu while editing inside a table, same as the "Table" group above.
       {
-        type: "item",
-        icon: MdSuperscript,
-        title: "Superscript",
-        isHidden: () => !editor.isActive("table"),
         action: () =>
           editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
+        icon: MdSuperscript,
         isActive: () => editor.isActive("superscript"),
+        isHidden: () => !editor.isActive("table"),
+        title: "Superscript",
+        type: "item",
       },
       {
-        type: "item",
-        icon: MdSubscript,
-        title: "Subscript",
-        isHidden: () => !editor.isActive("table"),
         action: () =>
           editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
+        icon: MdSubscript,
         isActive: () => editor.isActive("subscript"),
+        isHidden: () => !editor.isActive("table"),
+        title: "Subscript",
+        type: "item",
       },
       // Lesser-used commands are kept inside the overflow items list
       {
-        type: "overflow-list",
         items: [
           {
             type: "item",
@@ -229,6 +228,7 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
             isActive: () => editor.isActive("divider"),
           },
         ],
+        type: "overflow-list",
       },
     ],
     [editor, onLinkModalOpen, onTableSettingsModalOpen],

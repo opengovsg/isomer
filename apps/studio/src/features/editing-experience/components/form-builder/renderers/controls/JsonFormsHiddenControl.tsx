@@ -8,8 +8,8 @@ export const jsonFormsHiddenControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "hidden"),
 )
 
-const JsonFormsHiddenControl = () => {
-  return null
-}
+const JsonFormsHiddenControl = () => 
+  null
+
 
 export default withJsonFormsControlProps(JsonFormsHiddenControl)

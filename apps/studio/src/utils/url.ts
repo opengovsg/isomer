@@ -1,4 +1,4 @@
-import { type ParsedUrlQuery } from "querystring"
+import type { ParsedUrlQuery } from "node:querystring"
 import { CALLBACK_URL_KEY } from "~/constants/params"
 
 import { getBaseUrl } from "./getBaseUrl"
@@ -12,7 +12,7 @@ export const appendWithRedirect = (url: string, redirectUrl?: string) => {
 
 export const getRedirectUrl = (query: ParsedUrlQuery) => {
   if (!query[CALLBACK_URL_KEY]) {
-    return undefined
+    return
   }
   return decodeURIComponent(String(query[CALLBACK_URL_KEY]))
 }

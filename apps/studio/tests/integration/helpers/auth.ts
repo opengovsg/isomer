@@ -16,14 +16,14 @@ export const auth = async ({ id, ...user }: SetOptional<User, "id">) => {
   await setUpWhitelist({ email: normalizedUser.email })
 
   if (id !== undefined) {
-    return db
+    return await db
       .updateTable("User")
       .where("id", "=", id)
       .set({ ...normalizedUser, id })
       .returningAll()
       .executeTakeFirstOrThrow()
   }
-  return db
+  return await db
     .insertInto("User")
     .values({ ...normalizedUser, id: createId() })
     .returningAll()

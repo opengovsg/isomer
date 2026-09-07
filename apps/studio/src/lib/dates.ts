@@ -5,7 +5,7 @@ export const formatRelativeTime = (
   baseDate?: Date | null,
   formatStr = "MMM dd",
 ) => {
-  if (date === null || date === undefined) return
+  if (date === null || date === undefined) {return}
 
   baseDate ??= new Date()
 
@@ -19,16 +19,16 @@ export const formatRelativeTime = (
     t = `${Math.floor(deltaSeconds)}s`
   } else if (deltaSeconds < 3600) {
     t = `${Math.floor(deltaSeconds / 60)}m`
-  } else if (deltaSeconds < 86400) {
+  } else if (deltaSeconds < 86_400) {
     t = `${Math.floor(deltaSeconds / 3600)}h`
   } else {
     t = format(date, formatStr)
   }
   if (isFuture) {
-    return "in " + t
-  } else {
-    return t
+    return `in ${  t}`
   }
+    return t
+  
 }
 
 /**
@@ -36,13 +36,13 @@ export const formatRelativeTime = (
  * https://github.com/tc39/proposal-temporal/issues/2257#issuecomment-1152070209
  * @returns The timezone abbreviation or a fallback GMT offset string.
  */
-export const getTimezoneAbbreviation = (format: "short" | "long" = "short") => {
-  return new Intl.DateTimeFormat("en", {
+export const getTimezoneAbbreviation = (format: "short" | "long" = "short") => 
+  new Intl.DateTimeFormat("en", {
     timeZoneName: format,
   })
     .formatToParts(new Date())
     .find((part) => part.type === "timeZoneName")?.value
-}
+
 
 export const formatScheduledAtDate = (d: Date, includeTimezone = true) => {
   const formatStr = `dd/MM/yyyy, hh:mma`

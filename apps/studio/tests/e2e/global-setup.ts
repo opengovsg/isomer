@@ -1,6 +1,6 @@
 import type { FullConfig } from "@playwright/test"
 import { chromium } from "@playwright/test"
-import crypto from "crypto"
+import crypto from "node:crypto"
 import { db } from "~/server/modules/database/database"
 
 import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
@@ -10,7 +10,7 @@ import { seedRolesForE2E } from "./fixtures/seed"
 const setSingpassUuidFor = async (email: string, uuid: string) => {
   await db
     .updateTable("User")
-    .set({ singpassUuid: uuid, name: "test-e2e", phone: "82345678" })
+    .set({ name: "test-e2e", phone: "82345678", singpassUuid: uuid })
     .where("email", "=", email)
     .execute()
 }
@@ -31,7 +31,7 @@ const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   await loginPage.fillToken(email)
   await page.getByRole("button", { name: "Sign in" }).click()
   await loginPage.mockpassLoginWith(uuid)
-  await page.waitForURL(baseURL + "/")
+  await page.waitForURL(`${baseURL  }/`)
 
   await ctx.storageState({ path: storageStateFor(role) })
   await browser.close()

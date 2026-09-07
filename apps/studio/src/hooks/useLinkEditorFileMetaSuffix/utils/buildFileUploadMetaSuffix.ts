@@ -14,9 +14,9 @@ export function buildFileUploadMetaSuffix(file: File): string {
   const size = formatBytes(file.size)
 
   const parts: string[] = []
-  if (type) parts.push(type)
-  if (size) parts.push(size)
+  if (type) {parts.push(type)}
+  if (size) {parts.push(size)}
 
-  if (parts.length === 0) return ""
+  if (parts.length === 0) {return ""}
   return ` [${parts.join(", ")}]`
 }

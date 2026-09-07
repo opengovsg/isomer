@@ -23,8 +23,8 @@ const JsonFormsChildrenPagesLayoutControl = ({
   handleChange,
   path,
   description,
-}: ControlProps): React.ReactNode => {
-  return (
+}: ControlProps): React.ReactNode => 
+  (
     <Box>
       <FormControl isRequired gap="0.5rem">
         <FormLabel description={description}>{label || "Variant"}</FormLabel>
@@ -58,6 +58,6 @@ const JsonFormsChildrenPagesLayoutControl = ({
       </FormControl>
     </Box>
   )
-}
+
 
 export default withJsonFormsControlProps(JsonFormsChildrenPagesLayoutControl)

@@ -36,13 +36,13 @@ export const ExportAccessLogsButton = ({
   // for other roles (unlike AddNewUserButton's disabled-with-tooltip, there
   // is nothing a non-admin can do to unlock it on this page). The server
   // enforces the same rule independently on the mutation.
-  if (!isAuditLogEnabled || !canManageUsers) return null
+  if (!isAuditLogEnabled || !canManageUsers) {return null}
 
   return (
     <Button
       variant="outline"
       leftIcon={<BiDownload />}
-      onClick={() => setExportAccessLogsModalState({ siteId, isOpen: true })}
+      onClick={() =>{  setExportAccessLogsModalState({ isOpen: true, siteId }); }}
       {...buttonProps}
     >
       Export user access

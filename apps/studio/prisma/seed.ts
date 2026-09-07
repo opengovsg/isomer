@@ -36,11 +36,6 @@ const createPage = async ({
       .insertInto("Blob")
       .values({
         content: jsonb({
-          version: "0.1.0",
-          layout: "content",
-          page: {
-            contentPageHeader: { summary: `This is the ${title} page.` },
-          },
           content: [
             {
               type: "prose",
@@ -54,6 +49,11 @@ const createPage = async ({
               ],
             },
           ],
+          layout: "content",
+          page: {
+            contentPageHeader: { summary: `This is the ${title} page.` },
+          },
+          version: "0.1.0",
         }),
       })
       .returning("id")
@@ -61,12 +61,12 @@ const createPage = async ({
     db
       .insertInto("Resource")
       .values({
+        parentId: parentId ?? null,
         permalink,
         siteId,
-        parentId: parentId ?? null,
-        type: ResourceType.Page,
         state: ResourceState.Published,
         title,
+        type: ResourceType.Page,
       })
       .returning("id")
       .executeTakeFirstOrThrow(),
@@ -74,7 +74,7 @@ const createPage = async ({
 
   const { id: versionId } = await db
     .insertInto("Version")
-    .values({ resourceId, blobId, publishedBy: userId, versionNum: 1 })
+    .values({ blobId, publishedBy: userId, resourceId, versionNum: 1 })
     .returning("id")
     .executeTakeFirstOrThrow()
 
@@ -101,12 +101,12 @@ const createFolder = async ({
   const { id: folderId } = await db
     .insertInto("Resource")
     .values({
+      parentId: parentId ?? null,
       permalink,
       siteId,
-      parentId: parentId ?? null,
-      type: ResourceType.Folder,
       state: ResourceState.Published,
       title,
+      type: ResourceType.Folder,
     })
     .returning("id")
     .executeTakeFirstOrThrow()
@@ -130,8 +130,8 @@ async function main() {
   const isomerAdminUser = await db
     .insertInto("User")
     .values({
-      id: createId(),
       email: "isomeradmin@open.gov.sg",
+      id: createId(),
       name: "isomeradmin",
       phone: "88888888",
     })
@@ -148,44 +148,44 @@ async function main() {
   const { siteId } = await createSite({ siteName: "Sample Site", userId })
 
   // Create top-level pages so footer links resolve to real pages rather than 404s
-  await createPage({ permalink: "about", title: "About Us", siteId, userId })
+  await createPage({ permalink: "about", siteId, title: "About Us", userId })
   await createPage({
     permalink: "contact-us",
-    title: "Contact Us",
     siteId,
+    title: "Contact Us",
     userId,
   })
   await createPage({
     permalink: "privacy",
-    title: "Privacy Statement",
     siteId,
+    title: "Privacy Statement",
     userId,
   })
   await createPage({
     permalink: "terms-of-use",
-    title: "Terms of Use",
     siteId,
+    title: "Terms of Use",
     userId,
   })
 
   // Create folder + sub-pages so navbar links resolve to real pages rather than 404s
   const navFolderId = await createFolder({
     permalink: "item-one",
-    title: "Expandable nav item",
     siteId,
+    title: "Expandable nav item",
   })
   await createPage({
-    permalink: "pa-network-one",
-    title: "PA's network one",
-    siteId,
     parentId: navFolderId,
+    permalink: "pa-network-one",
+    siteId,
+    title: "PA's network one",
     userId,
   })
   await createPage({
-    permalink: "pa-network-two",
-    title: "PA's network two",
-    siteId,
     parentId: navFolderId,
+    permalink: "pa-network-two",
+    siteId,
+    title: "PA's network two",
     userId,
   })
 
@@ -202,7 +202,7 @@ async function main() {
       .executeTakeFirstOrThrow(),
     db
       .insertInto("IsomerAdmin")
-      .values({ userId: isomerAdminUser.id, role: IsomerAdminRole.Core })
+      .values({ role: IsomerAdminRole.Core, userId: isomerAdminUser.id })
       .onConflict((oc) =>
         oc
           .columns(["userId", "role"])
@@ -217,30 +217,30 @@ async function main() {
     siteId,
     users: [
       {
-        name: "editor",
         email: "editor@open.gov.sg",
+        name: "editor",
+        phone: "88888888",
         role: RoleType.Editor,
-        phone: "88888888",
       },
       {
-        name: "publisher",
         email: "publisher@open.gov.sg",
-        role: RoleType.Publisher,
+        name: "publisher",
         phone: "88888888",
+        role: RoleType.Publisher,
       },
       {
-        name: "admin",
         email: "admin@open.gov.sg",
-        role: RoleType.Admin,
+        name: "admin",
         phone: "88888888",
+        role: RoleType.Admin,
       },
     ],
   })
 }
 
 await main()
-  .catch((e) => {
-    console.error(e)
+  .catch((error) => {
+    console.error(error)
     process.exit(1)
   })
   .finally(() => {

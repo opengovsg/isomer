@@ -38,9 +38,9 @@ export const FooterEditor = ({
   onSave,
   isSaving,
 }: FooterEditorProps) => {
-  const isDirty = useMemo(() => {
-    return !isEqual(previewFooterState, savedFooterState)
-  }, [previewFooterState, savedFooterState])
+  const isDirty = useMemo(() => 
+    !isEqual(previewFooterState, savedFooterState)
+  , [previewFooterState, savedFooterState])
 
   const validateFn = ajv.compile<FooterSchemaType>(FooterSchema)
 
@@ -139,9 +139,9 @@ const PublishButton = ({
     <Can do="create" on={{ parentId: null }}>
       <Tooltip
         label={
-          !isSchemaValid
-            ? "There are errors in footer. Fix them before publishing."
-            : undefined
+          isSchemaValid
+            ? undefined
+            : "There are errors in footer. Fix them before publishing."
         }
         hasArrow
       >

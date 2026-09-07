@@ -29,24 +29,24 @@ export const redirectRouter = router({
     .input(listRedirectsSchema)
     .query(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
-      return listRedirects(input)
+      return await listRedirects(input)
     }),
 
   count: protectedProcedure
     .input(countRedirectsSchema)
     .query(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
-      return countRedirects(input)
+      return await countRedirects(input)
     }),
 
   // Preflight a would-be redirect, returning blocking errors and non-blocking
@@ -57,12 +57,12 @@ export const redirectRouter = router({
     .input(createRedirectSchema)
     .query(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
-      return validateRedirect(input)
+      return await validateRedirect(input)
     }),
 
   // Resolves stored [resource:...] destinations to display permalinks. A read
@@ -71,12 +71,12 @@ export const redirectRouter = router({
     .input(resolveRedirectReferencesSchema)
     .query(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
-      return resolveRedirectReferences(input)
+      return await resolveRedirectReferences(input)
     }),
 
   // Whether a path is the source of a live redirect (and where it points), for
@@ -86,12 +86,12 @@ export const redirectRouter = router({
     .input(getRedirectBySourceSchema)
     .query(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
-      return getRedirectBySource(input)
+      return await getRedirectBySource(input)
     }),
 
   // Counts the live redirects that point at a resource (or any descendant), so
@@ -100,12 +100,12 @@ export const redirectRouter = router({
     .input(countRedirectsByDestinationSchema)
     .query(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
-      return countRedirectsPointingToResource(input)
+      return await countRedirectsPointingToResource(input)
     }),
 
   // Validates a whole uploaded CSV without writing anything, so the bulk-upload
@@ -118,12 +118,12 @@ export const redirectRouter = router({
     .input(bulkRedirectsCsvSchema)
     .mutation(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "read",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "read",
       })
 
-      return bulkValidateRedirects(input)
+      return await bulkValidateRedirects(input)
     }),
 
   // Commits a validated batch: re-validates server-side, inserts every row in
@@ -132,12 +132,12 @@ export const redirectRouter = router({
     .input(bulkRedirectsCsvSchema)
     .mutation(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "create",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "create",
       })
 
-      return bulkCreateRedirects({
+      return await bulkCreateRedirects({
         ...input,
         byUserId: ctx.user.id,
         logger: ctx.logger,
@@ -150,12 +150,12 @@ export const redirectRouter = router({
     .input(createRedirectSchema)
     .mutation(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "create",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "create",
       })
 
-      return createRedirect({
+      return await createRedirect({
         ...input,
         byUserId: ctx.user.id,
         logger: ctx.logger,
@@ -166,9 +166,9 @@ export const redirectRouter = router({
     .input(deleteRedirectSchema)
     .mutation(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
+        action: "delete",
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "delete",
       })
 
       await deleteRedirect({

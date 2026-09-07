@@ -16,7 +16,7 @@ import { CreatePageModal } from "~/features/editing-experience/components/Create
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type NextPageWithLayout } from "~/lib/types"
+import type { NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -33,8 +33,8 @@ const HomepageMenuButton = ({
   onCollectionCreateModalOpen,
   onPageCreateModalOpen,
   onFolderCreateModalOpen,
-}: HomepageMenuButtonProps) => {
-  return (
+}: HomepageMenuButtonProps) => 
+  (
     <Can do="create" on={{ parentId: null }} passThrough>
       {({ isAllowed }) => {
         return (
@@ -82,7 +82,7 @@ const HomepageMenuButton = ({
       }}
     </Can>
   )
-}
+
 
 const SitePage: NextPageWithLayout = () => {
   const {
@@ -118,22 +118,22 @@ const SitePage: NextPageWithLayout = () => {
           <HomepageMenuButton
             onPageCreateModalOpen={() => {
               posthog.capture("page_create_modal_opened", {
-                site_id: siteId,
                 parent_type: "site",
+                site_id: siteId,
               })
               onPageCreateModalOpen()
             }}
             onFolderCreateModalOpen={() => {
               posthog.capture("folder_create_modal_opened", {
-                site_id: siteId,
                 parent_type: "site",
+                site_id: siteId,
               })
               onFolderCreateModalOpen()
             }}
             onCollectionCreateModalOpen={() => {
               posthog.capture("collection_create_modal_opened", {
-                site_id: siteId,
                 parent_type: "site",
+                site_id: siteId,
               })
               onCollectionCreateModalOpen()
             }}
@@ -166,13 +166,13 @@ const SitePage: NextPageWithLayout = () => {
   )
 }
 
-SitePage.getLayout = (page) => {
-  return (
+SitePage.getLayout = (page) => 
+  (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
       page={SiteEditorLayout(page)}
     />
   )
-}
+
 
 export default SitePage

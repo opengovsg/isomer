@@ -54,8 +54,8 @@ export const RowEntry = ({
         iconSpacing="0.25rem"
         title={label}
         _selected={{
-          bg: "interaction.muted.main.active",
           _hover: { bg: "interaction.muted.main.active" },
+          bg: "interaction.muted.main.active",
         }}
         _focus={{
           zIndex: 1,

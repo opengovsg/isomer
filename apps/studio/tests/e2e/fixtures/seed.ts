@@ -24,8 +24,8 @@ const ensureUserWithRole = async (
   const user = await db
     .insertInto("User")
     .values({
-      id: createId(),
       email,
+      id: createId(),
       name: "test-e2e",
       phone: "82345678",
     })
@@ -51,10 +51,10 @@ const ensureUserWithRole = async (
   await db
     .insertInto("ResourcePermission")
     .values({
-      userId: user.id,
-      siteId: SEED_SITE_ID,
-      role,
       resourceId: null,
+      role,
+      siteId: SEED_SITE_ID,
+      userId: user.id,
     })
     .onConflict((oc) =>
       // Unique constraint: (userId, siteId, resourceId, deletedAt) NULLS NOT DISTINCT
@@ -77,7 +77,7 @@ const ensureGodModeAdmin = async (
 
   await db
     .insertInto("IsomerAdmin")
-    .values({ userId: user.id, role, expiry: null })
+    .values({ expiry: null, role, userId: user.id })
     .onConflict((oc) =>
       oc.columns(["userId", "role"]).doUpdateSet({ expiry: null }),
     )

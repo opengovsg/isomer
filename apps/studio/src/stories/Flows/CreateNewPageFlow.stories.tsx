@@ -7,8 +7,8 @@ import { sitesHandlers } from "tests/msw/handlers/sites"
 import SitePage from "~/pages/sites/[siteId]"
 
 const meta: Meta<typeof SitePage> = {
-  title: "Flows/Create New Page",
   component: SitePage,
+  decorators: [],
   parameters: {
     getLayout: SitePage.getLayout,
     msw: {
@@ -34,7 +34,7 @@ const meta: Meta<typeof SitePage> = {
       },
     },
   },
-  decorators: [],
+  title: "Flows/Create New Page",
 }
 
 export default meta

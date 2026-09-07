@@ -1,4 +1,4 @@
-import { type Attributes, type ComponentType, type ReactNode } from "react"
+import type { Attributes, ComponentType, ReactNode } from "react"
 import Suspense from "~/components/Suspense"
 
 /**

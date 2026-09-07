@@ -91,9 +91,9 @@ const ContentSecurityPolicy = `
     https://placehold.co
     https://cdn.growthbook.io
     ${
-      !!env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
-        ? `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
-        : "https://*.by.gov.sg"
+      !env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+        ? "https://*.by.gov.sg"
+        : `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
     }
     https://${env.S3_GAZETTE_DOMAIN_NAME}
     https://via.intercom.io
@@ -173,8 +173,8 @@ const config = {
     remotePatterns: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
       ? [
           {
-            protocol: /** @type {"https"} */ ("https"),
             hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
+            protocol: /** @type {"https"} */ ("https"),
           },
         ]
       : [],
@@ -182,7 +182,6 @@ const config = {
   async headers() {
     return [
       {
-        source: "/(.*)",
         headers: [
           {
             key: "Content-Security-Policy",
@@ -217,6 +216,7 @@ const config = {
             value: "max-age=31536000",
           },
         ],
+        source: "/(.*)",
       },
     ]
   },

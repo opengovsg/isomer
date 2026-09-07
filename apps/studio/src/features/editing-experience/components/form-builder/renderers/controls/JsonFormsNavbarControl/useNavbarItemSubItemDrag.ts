@@ -63,8 +63,8 @@ export const useNavbarItemSubItemDrag = ({
 
     return combine(
       draggable({
-        element: itemElement,
         dragHandle: dragHandleElement,
+        element: itemElement,
         getInitialData: () => ({
           type: "navbar-item",
           navbarId: itemElement.dataset.id,
@@ -101,18 +101,18 @@ export const useNavbarItemSubItemDrag = ({
             },
           ),
         getIsSticky: () => true,
-        onDragEnter: handleDrag,
         onDrag: handleDrag,
-        onDragLeave: () => setNavbarItemClosestEdge(null),
-        onDrop: () => setNavbarItemClosestEdge(null),
+        onDragEnter: handleDrag,
+        onDragLeave: () =>{  setNavbarItemClosestEdge(null); },
+        onDrop: () =>{  setNavbarItemClosestEdge(null); },
       }),
     )
   }, [index, isSubItem, parentIndex])
 
   return {
-    itemRef,
-    itemDefaultDragHandleRef,
     isSubItemDragging,
+    itemDefaultDragHandleRef,
+    itemRef,
     navbarItemClosestEdge,
   }
 }

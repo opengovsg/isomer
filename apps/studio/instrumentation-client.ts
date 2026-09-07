@@ -10,10 +10,10 @@ if (posthogProjectToken && posthogHost) {
   const initOptions: Parameters<typeof posthog.init>[1] = {
     api_host: posthogHost,
     asset_host: env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST,
-    cross_subdomain_cookie: false,
-    defaults: "2026-01-30",
     capture_exceptions: true,
+    cross_subdomain_cookie: false,
     debug: env.NEXT_PUBLIC_APP_ENV === "development",
+    defaults: "2026-01-30",
   }
   if (env.NEXT_PUBLIC_APP_URL) {
     initOptions.tracing_headers = [new URL(env.NEXT_PUBLIC_APP_URL).hostname]

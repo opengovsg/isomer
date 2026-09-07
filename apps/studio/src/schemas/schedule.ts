@@ -26,9 +26,9 @@ export const schedulePublishClientSchema = basePageSchema
       ...rest,
       scheduledAt: set(publishDate, {
         hours,
+        milliseconds: 0,
         minutes,
         seconds: 0,
-        milliseconds: 0,
       }),
     }
   })
@@ -42,9 +42,9 @@ export const schedulePublishClientSchema = basePageSchema
     // if the scheduled date is before the earliest allowable date, show error on publishDate
     if (isBefore(scheduledAt, earliestScheduleTime)) {
       ctx.addIssue({
-        path: isDateBeforeToday ? ["publishDate"] : ["publishTime"],
         code: z.ZodIssueCode.custom,
         message: "Date can't be in the past",
+        path: isDateBeforeToday ? ["publishDate"] : ["publishTime"],
       })
     }
   })

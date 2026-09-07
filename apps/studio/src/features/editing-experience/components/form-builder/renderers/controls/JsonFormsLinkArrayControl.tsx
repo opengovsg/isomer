@@ -91,7 +91,7 @@ const EditLinkItem = ({
   // Disable scrolling on parent container when editing a link item, as this
   // is an absolutely-positioned overlay
   useEffect(() => {
-    const parent = document.getElementById(FORM_BUILDER_PARENT_ID)
+    const parent = document.querySelector(`#${FORM_BUILDER_PARENT_ID}`)
     if (parent) {
       parent.scrollTop = 0
       parent.style.overflow = "hidden"
@@ -305,7 +305,7 @@ const JsonFormsArrayLinkControl = ({
     [moveUp, moveDown],
   )
   const handleDeleteItem = () => {
-    if (selectedPathForDeletion === undefined) return
+    if (selectedPathForDeletion === undefined) {return}
 
     const index = Number(selectedPathForDeletion.split(".").pop())
     handleRemoveItem(path, index)()
@@ -340,7 +340,7 @@ const JsonFormsArrayLinkControl = ({
       <>
         <DeleteLinkModal
           isOpen={!!selectedPathForDeletion}
-          onClose={() => setSelectedPathForDeletion(undefined)}
+          onClose={() =>{  setSelectedPathForDeletion(undefined); }}
           onDelete={handleDeleteItem}
           path={selectedPathForDeletion ?? ""}
           schema={schema}
@@ -354,10 +354,10 @@ const JsonFormsArrayLinkControl = ({
           schema={schema}
           uischema={getChildUiSchema(composePaths(path, `${selectedIndex}`))}
           path={composePaths(path, `${selectedIndex}`)}
-          handleRemoveItem={() =>
-            setSelectedPathForDeletion(composePaths(path, `${selectedIndex}`))
+          handleRemoveItem={() =>{ 
+            setSelectedPathForDeletion(composePaths(path, `${selectedIndex}`)); }
           }
-          onBack={() => setSelectedIndex(undefined)}
+          onBack={() =>{  setSelectedIndex(undefined); }}
         />
       </>
     )
@@ -367,7 +367,7 @@ const JsonFormsArrayLinkControl = ({
     <>
       <DeleteLinkModal
         isOpen={!!selectedPathForDeletion}
-        onClose={() => setSelectedPathForDeletion(undefined)}
+        onClose={() =>{  setSelectedPathForDeletion(undefined); }}
         onDelete={handleDeleteItem}
         path={selectedPathForDeletion ?? ""}
         schema={schema}
@@ -472,8 +472,8 @@ const JsonFormsArrayLinkControl = ({
                           schema={schema}
                           uischema={getChildUiSchema(childPath)}
                           setSelectedIndex={setSelectedIndex}
-                          onDeleteItem={() =>
-                            setSelectedPathForDeletion(childPath)
+                          onDeleteItem={() =>{ 
+                            setSelectedPathForDeletion(childPath); }
                           }
                           resetLink={() => {
                             handleRemoveItem(path, index)()

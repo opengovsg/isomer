@@ -39,8 +39,8 @@ export const ComplexEditorNestedDrawer = ({
   handleRemoveItem,
   selectedIndex,
   maxIndex,
-}: ComplexEditorNestedDrawerProps) => {
-  return (
+}: ComplexEditorNestedDrawerProps) => 
+  (
     <VStack
       position="absolute"
       top={0}
@@ -53,7 +53,7 @@ export const ComplexEditorNestedDrawer = ({
     >
       <DrawerHeader
         label={`Edit ${label}`}
-        onBackClick={() => setSelectedIndex()}
+        onBackClick={() =>{  setSelectedIndex(); }}
         textStyle="subhead-1"
         backAriaLabel={`Return to ${label}`}
       />
@@ -89,7 +89,7 @@ export const ComplexEditorNestedDrawer = ({
             flex={1}
             variant="outline"
             isDisabled={selectedIndex === 0}
-            onClick={() => setSelectedIndex(Math.max(selectedIndex - 1, 0))}
+            onClick={() =>{  setSelectedIndex(Math.max(selectedIndex - 1, 0)); }}
           >
             Previous
           </Button>
@@ -98,8 +98,8 @@ export const ComplexEditorNestedDrawer = ({
             flex={1}
             variant="outline"
             isDisabled={selectedIndex === maxIndex}
-            onClick={() =>
-              setSelectedIndex(Math.min(selectedIndex + 1, maxIndex))
+            onClick={() =>{ 
+              setSelectedIndex(Math.min(selectedIndex + 1, maxIndex)); }
             }
           >
             Next
@@ -108,4 +108,4 @@ export const ComplexEditorNestedDrawer = ({
       </Stack>
     </VStack>
   )
-}
+

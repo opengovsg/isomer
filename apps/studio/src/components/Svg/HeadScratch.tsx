@@ -2,8 +2,8 @@ import type { SVGProps } from "react"
 
 import { HeadScratchGraphic } from "./HeadScratchGraphic"
 
-export const HeadScratch = (props: SVGProps<SVGSVGElement>) => {
-  return (
+export const HeadScratch = (props: SVGProps<SVGSVGElement>) => 
+  (
     <svg
       width="320"
       height="378"
@@ -15,4 +15,4 @@ export const HeadScratch = (props: SVGProps<SVGSVGElement>) => {
       <HeadScratchGraphic />
     </svg>
   )
-}
+

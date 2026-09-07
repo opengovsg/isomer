@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
-import { composePaths, type ArrayLayoutProps } from "@jsonforms/core"
+import { composePaths } from '@jsonforms/core';
+import type { ArrayLayoutProps } from '@jsonforms/core';
 
 import type { UseArrayReturn } from "../hooks/useArray"
 import { ComplexEditorNestedDrawer } from "./ComplexEditorNestedDrawer"

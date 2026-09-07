@@ -66,7 +66,7 @@ export const EditNavbarItem = ({
     <>
       <DeleteGroupModal
         label={label}
-        subItemsCount={!!subItems ? subItems.length : 0}
+        subItemsCount={!subItems ? 0 : subItems.length}
         isOpen={isDeleteGroupModalOpen}
         onClose={onDeleteGroupModalClose}
         onDelete={() => {

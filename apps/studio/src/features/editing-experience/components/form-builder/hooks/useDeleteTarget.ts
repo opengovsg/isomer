@@ -16,16 +16,16 @@ export function useDeleteTarget<T extends { label: string }>({
 }: UseDeleteTargetArgs<T>) {
   const [target, setTarget] = useState<(T & { index: number }) | null>(null)
 
-  const openDeleteModal = (index: number) =>
-    setTarget({ ...resolveTarget(index), index })
+  const openDeleteModal = (index: number) =>{ 
+    setTarget({ ...resolveTarget(index), index }); }
 
-  const closeDeleteModal = () => setTarget(null)
+  const closeDeleteModal = () =>{  setTarget(null); }
 
   const handleConfirmDelete = () => {
-    if (!target || !removeItems || isRemoveItemDisabled) return
+    if (!target || !removeItems || isRemoveItemDisabled) {return}
     removeItems(path, [target.index])()
     setTarget(null)
   }
 
-  return { target, openDeleteModal, closeDeleteModal, handleConfirmDelete }
+  return { closeDeleteModal, handleConfirmDelete, openDeleteModal, target }
 }

@@ -43,16 +43,16 @@ const JsonFormsArrayControl = (props: ArrayLayoutProps) => {
   } = props
   const { hasErrorAt } = useBuilderErrors()
   const arrayResult = useArray({
-    data,
-    path,
     arraySchema,
-    schema,
-    rootSchema,
-    uischemas,
-    uischema,
-    removeItems,
-    moveUp,
+    data,
     moveDown,
+    moveUp,
+    path,
+    removeItems,
+    rootSchema,
+    schema,
+    uischema,
+    uischemas,
   })
   const {
     setSelectedIndex,
@@ -122,7 +122,7 @@ const JsonFormsArrayControl = (props: ArrayLayoutProps) => {
                               py={hasError ? "0.75rem" : "1.25rem"}
                             />
                             <DraggableTagButton.Body
-                              onClick={() => setSelectedIndex(index)}
+                              onClick={() =>{  setSelectedIndex(index); }}
                               py={hasError ? "0.75rem" : "1rem"}
                             >
                               <DraggableTagButton.Content>

@@ -33,7 +33,6 @@ const COMMON_HANDLERS = [
 ]
 
 const meta: Meta<typeof EditPage> = {
-  title: "Pages/Edit Page/Article Page",
   component: EditPage,
   parameters: {
     getLayout: EditPage.getLayout,
@@ -42,14 +41,15 @@ const meta: Meta<typeof EditPage> = {
     },
     nextjs: {
       router: {
-        query: {
-          siteId: "1",
-          pageId: "1",
-        },
         pathname: "/sites/[siteId]/pages/[pageId]",
+        query: {
+          pageId: "1",
+          siteId: "1",
+        },
       },
     },
   },
+  title: "Pages/Edit Page/Article Page",
 }
 
 export default meta
@@ -106,8 +106,8 @@ export const PublishedState: Story = {
     msw: {
       handlers: [
         pageHandlers.readPage.article({
-          state: ResourceState.Published,
           draftBlobId: null,
+          state: ResourceState.Published,
         }),
         ...COMMON_HANDLERS,
       ],
@@ -119,8 +119,8 @@ export const WithBanner: Story = {
   parameters: {
     growthbook: [
       createBannerGbParameters({
-        variant: "info",
         message: "This is a test banner",
+        variant: "info",
       }),
     ],
   },

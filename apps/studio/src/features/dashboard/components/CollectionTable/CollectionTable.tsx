@@ -25,8 +25,6 @@ const columnsHelper = createColumnHelper<StockFeatures, CollectionTableData>()
 const getColumns = ({ siteId }: CollectionTableProps) =>
   columnsHelper.columns([
     columnsHelper.accessor("title", {
-      minSize: 300,
-      header: () => <TableHeader>Title</TableHeader>,
       cell: ({ row }) => (
         <TitleCell
           scheduledAt={row.original.scheduledAt}
@@ -41,10 +39,10 @@ const getColumns = ({ siteId }: CollectionTableProps) =>
           type={row.original.type}
         />
       ),
+      header: () => <TableHeader>Title</TableHeader>,
+      minSize: 300,
     }),
     columnsHelper.display({
-      id: "resource_menu",
-      header: () => <TableHeader>Actions</TableHeader>,
       cell: ({ row }) => (
         <CollectionTableMenu
           permalink={row.original.permalink}
@@ -54,6 +52,8 @@ const getColumns = ({ siteId }: CollectionTableProps) =>
           resourceId={row.original.id}
         />
       ),
+      header: () => <TableHeader>Actions</TableHeader>,
+      id: "resource_menu",
       size: 24,
     }),
   ])
@@ -71,14 +71,14 @@ export const CollectionTable = ({
     useState<ResourceOrderByOption>("updated-desc")
 
   const columns = useMemo(
-    () => getColumns({ siteId, resourceId }),
+    () => getColumns({ resourceId, siteId }),
     [siteId, resourceId],
   )
 
   const { data: totalRowCount = 0, isLoading: isCountLoading } =
     trpc.resource.countWithoutRoot.useQuery({
-      siteId,
       resourceId,
+      siteId,
     })
 
   const { limit, onPaginationChange, skip, pagination, pageCount } =
@@ -90,11 +90,11 @@ export const CollectionTable = ({
 
   const { data: resources, isFetching } = trpc.collection.list.useQuery(
     {
-      siteId,
-      resourceId,
-      orderBy: sortOption,
       limit,
       offset: skip,
+      orderBy: sortOption,
+      resourceId,
+      siteId,
     },
     {
       placeholderData: keepPreviousData, // Required for table to show previous data while fetching next page
@@ -102,17 +102,17 @@ export const CollectionTable = ({
   )
 
   const tableInstance = useTable({
-    features: stockFeatures,
+    autoResetPageIndex: false,
     columns,
     data: resources ?? [],
+    features: stockFeatures,
     manualFiltering: true,
     manualPagination: true,
-    autoResetPageIndex: false,
     onPaginationChange,
+    pageCount,
     state: {
       pagination,
     },
-    pageCount,
   })
 
   return (
@@ -149,8 +149,8 @@ export const CollectionTable = ({
         }
         instance={tableInstance}
         sx={{
-          tableLayout: "auto",
           overflowX: "auto",
+          tableLayout: "auto",
         }}
         totalRowCount={totalRowCount}
       />

@@ -28,16 +28,16 @@ describe("updateStoppedBuild", () => {
     const NUMBER_SUPERSEDED_BUILDS = 4
     const NEWLY_STARTED_BUILD_ID = "newly-started-build-id"
     const { codebuildJob, page: pageForMainBuild } = await setupCodeBuildJob({
-      userId: user.id,
       arn: "build/test-id",
-      status: "IN_PROGRESS",
-      startedAt: FIXED_NOW,
       isScheduled: true,
+      startedAt: FIXED_NOW,
+      status: "IN_PROGRESS",
+      userId: user.id,
     })
     await createSupersededBuildRows({
       numberOfSupersededBuilds: NUMBER_SUPERSEDED_BUILDS,
-      supersedingBuild: codebuildJob,
       resourceId: pageForMainBuild.id,
+      supersedingBuild: codebuildJob,
       userId: user.id,
     })
 
@@ -48,8 +48,8 @@ describe("updateStoppedBuild", () => {
       throw new Error("Codebuild job has no buildId provided")
     }
     await updateStoppedBuild({
-      stoppedBuildId: codebuildJob.buildId,
       startedBuildId: NEWLY_STARTED_BUILD_ID,
+      stoppedBuildId: codebuildJob.buildId,
     })
 
     // Assert

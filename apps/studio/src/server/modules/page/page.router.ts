@@ -103,9 +103,9 @@ const validatedPageProcedure = protectedProcedure.use(
       // NOTE: content will be the entire page schema for now...
       if (!schemaValidator(safeJsonParse(rawInput.content))) {
         throw new TRPCError({
+          cause: schemaValidator.errors,
           code: "BAD_REQUEST",
           message: "Schema validation failed.",
-          cause: schemaValidator.errors,
         })
       }
     } else {
@@ -115,351 +115,11 @@ const validatedPageProcedure = protectedProcedure.use(
       })
     }
 
-    return next()
+    return await next()
   },
 )
 
 export const pageRouter = router({
-  getPrefill: protectedProcedure
-    .input(getPrefillSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      const resource = await getFullPageById(db, {
-        resourceId: Number(resourceId),
-        siteId,
-      })
-
-      if (!resource) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Resource not found",
-        })
-      }
-
-      const { title, content } = resource
-
-      return { title, ...renderPrefillText(content) }
-    }),
-
-  list: protectedProcedure
-    .input(listPagesSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      let query = db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-
-      if (resourceId) {
-        query = query.where("Resource.parentId", "=", String(resourceId))
-      }
-      return query
-        .select([
-          "Resource.id",
-          "Resource.permalink",
-          "Resource.title",
-          "Resource.publishedVersionId",
-          "Resource.draftBlobId",
-          "Resource.type",
-        ])
-        .execute()
-    }),
-
-  getCategories: protectedProcedure
-    .input(basePageSchema)
-    .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      const { parentId } = await db
-        .selectFrom("Resource")
-        .where("siteId", "=", siteId)
-        .where("id", "=", String(pageId))
-        .select("parentId")
-        .executeTakeFirstOrThrow()
-
-      const blobs = await db
-        .selectFrom("Resource as r")
-        .leftJoin("Blob as b", "r.draftBlobId", "b.id")
-        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
-        .leftJoin("Blob as vb", "v.blobId", "vb.id")
-        .where("r.siteId", "=", siteId)
-        .where("r.parentId", "=", String(parentId))
-        .select((eb) => {
-          return eb.fn
-            .coalesce(
-              sql<string>`b.content->'page'->>'category'`,
-              sql<string>`vb.content->'page'->>'category'`,
-            )
-            .as("category")
-        })
-        .distinct()
-        .execute()
-
-      const categories: string[] = []
-      for (const blob of blobs) {
-        const category = blob.category
-        if (category && category.trim()) {
-          categories.push(category)
-        }
-      }
-
-      return { categories }
-    }),
-
-  readPage: protectedProcedure
-    .input(basePageSchema)
-    .output(readPageOutputSchema)
-    .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      const retrievedPage = await getPageById(db, {
-        resourceId: pageId,
-        siteId,
-      })
-
-      if (!retrievedPage) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Resource not found",
-        })
-      }
-
-      return retrievedPage
-    }),
-
-  readPageAndBlob: protectedProcedure
-    .input(basePageSchema)
-    .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      return db.transaction().execute(async (tx) => {
-        const page = await getFullPageById(tx, { resourceId: pageId, siteId })
-        if (!page) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Resource not found",
-          })
-        }
-
-        const { title, type, permalink, content, updatedAt } = page
-
-        if (
-          type !== ResourceType.Page &&
-          type !== ResourceType.CollectionPage &&
-          type !== ResourceType.RootPage &&
-          type !== ResourceType.IndexPage &&
-          type !== ResourceType.FolderMeta &&
-          type !== ResourceType.CollectionMeta
-        ) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "The specified resource could not be found",
-          })
-        }
-
-        const [siteMeta, navbar, footer] = await Promise.all([
-          getSiteConfig(tx, siteId),
-          getNavBar(tx, siteId),
-          getFooter(tx, siteId),
-        ])
-
-        return {
-          permalink,
-          navbar,
-          footer,
-          // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore type instantiation is excessively deep and possibly infinite
-          content,
-          title,
-          type,
-          updatedAt,
-          ...siteMeta,
-        }
-      })
-    }),
-
-  reorderBlock: protectedProcedure
-    .input(reorderBlobSchema)
-    .mutation(async ({ ctx, input: { pageId, from, to, blocks, siteId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "update",
-        userId: ctx.user.id,
-      })
-
-      const by = await db
-        .selectFrom("User")
-        .where("id", "=", ctx.user.id)
-        .selectAll()
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Please ensure that you are authenticated",
-            }),
-        )
-
-      // NOTE: we have to check against the page's content that we retrieve from db
-      // we adopt a strict check such that we allow the update iff the checksum is the same
-      return db.transaction().execute(async (tx) => {
-        const fullPage = await getFullPageById(tx, {
-          resourceId: pageId,
-          siteId,
-        })
-        if (!fullPage?.content) {
-          // TODO: we should probably ping on call
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message:
-              "Unable to load content for the requested page, please contact Isomer Support",
-          })
-        }
-
-        const actualBlocks = fullPage.content.content
-
-        if (!isEqual(blocks, actualBlocks)) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message:
-              "Someone on your team has changed this page, refresh the page and try again",
-          })
-        }
-
-        if (
-          from >= actualBlocks.length ||
-          to >= actualBlocks.length ||
-          from < 0 ||
-          to < 0
-        ) {
-          // NOTE: If this happens, this indicates that either our dnd libary on our frontend has a
-          // bug or someone is trying to mess with our frontend
-          throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" })
-        }
-
-        const [movedBlock] = actualBlocks.splice(from, 1)
-        if (!movedBlock) return blocks
-        if (!fullPage.draftBlobId && !fullPage.publishedVersionId) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Please ensure that you have selected a valid page",
-          })
-        }
-
-        // Insert at destination index
-        actualBlocks.splice(to, 0, movedBlock)
-
-        const [oldBlob, updatedBlob] = await Promise.all([
-          getBlobOfResource({
-            db: tx,
-            resourceId: String(pageId),
-          }),
-          updateBlobById(tx, {
-            pageId,
-            content: { ...fullPage.content, content: actualBlocks },
-            siteId,
-          }),
-        ])
-        await logResourceEvent(tx, {
-          siteId,
-          eventType: AuditLogEvent.ResourceUpdate,
-          delta: {
-            before: { blob: oldBlob, resource: fullPage },
-            after: { blob: updatedBlob, resource: fullPage },
-          },
-          by,
-        })
-
-        // NOTE: user given content and db state is the same at this point
-        return actualBlocks
-      })
-    }),
-  schedulePage: protectedProcedure
-    .input(scheduledPublishServerSchema)
-    .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "publish",
-        userId: ctx.user.id,
-      })
-
-      // check if the input.scheduledAt is after the current time
-      if (isBefore(scheduledAt, new Date())) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Scheduled time must be in the future",
-        })
-      }
-      const by = await db
-        .selectFrom("User")
-        .where("id", "=", ctx.user.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-
-      const updatedPage = await db.transaction().execute(async (tx) => {
-        // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
-        const resource = await getPageById(tx, { resourceId: pageId, siteId })
-        if (!resource) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Resource not found",
-          })
-        }
-        if (resource.scheduledAt) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `Page is already scheduled to be published at ${format(
-              resource.scheduledAt,
-              "yyyy-MM-dd HH:mm",
-            )}`,
-          })
-        }
-        // update the resource's scheduled field
-        const updatedPage = await updatePageById(
-          { id: pageId, siteId, scheduledAt, scheduledBy: by.id },
-          tx,
-        )
-        // verify that the update was successful
-        if (!updatedPage) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to schedule page",
-          })
-        }
-        await logResourceEvent(tx, {
-          siteId,
-          by,
-          delta: { before: resource, after: updatedPage },
-          eventType: AuditLogEvent.SchedulePublish,
-        })
-        return updatedPage
-      })
-      await sendScheduledPageEmail({
-        resource: updatedPage,
-        scheduledAt,
-        recipientEmail: by.email,
-      })
-    }),
   cancelSchedulePage: protectedProcedure
     .input(basePageSchema)
     .mutation(async ({ ctx, input: { siteId, pageId } }) => {
@@ -513,61 +173,104 @@ export const pageRouter = router({
         recipientEmail: by.email,
       })
     }),
-  updatePageBlob: validatedPageProcedure
-    .input(updatePageBlobSchema)
-    .mutation(async ({ input, ctx }) => {
+
+  createIndexPage: protectedProcedure
+    .input(createIndexPageSchema)
+    .mutation(async ({ ctx, input: { siteId, parentId } }) => {
       await bulkValidateUserPermissionsForResources({
-        siteId: input.siteId,
-        action: "update",
+        siteId,
+        action: "create",
         userId: ctx.user.id,
+        resourceIds: [String(parentId)],
       })
 
-      const resource = await getPageById(db, {
-        resourceId: input.pageId,
-        siteId: input.siteId,
-      })
+      const [by, parent] = await Promise.all([
+        db
+          .selectFrom("User")
+          .where("id", "=", ctx.user.id)
+          .selectAll()
+          .executeTakeFirstOrThrow(
+            () =>
+              new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Please ensure that you are logged in",
+              }),
+          ),
+        db
+          .selectFrom("Resource")
+          .where("Resource.id", "=", parentId)
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "in", [
+            ResourceType.Folder,
+            ResourceType.Collection,
+          ])
+          .select(["title", "type"])
+          .executeTakeFirst(),
+      ])
 
-      if (!resource) {
+      if (!parent) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Resource not found",
+          message: "Parent resource not found or is not a folder/collection",
         })
       }
 
-      const by = await db
-        .selectFrom("User")
-        .where("id", "=", ctx.user.id)
-        .selectAll()
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Please ensure that you are authenticated",
-            }),
-        )
+      const blobContent =
+        parent.type === ResourceType.Collection
+          ? {
+              layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
+              page: {
+                title: parent.title,
+                subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
+                sortOrder: "date-desc",
+                variant: COLLECTION_VARIANT_OPTIONS.Collection,
+              },
+              content: [],
+              version: "0.1.0",
+            }
+          : createFolderIndexPage(parent.title)
 
-      await db.transaction().execute(async (tx) => {
-        const [oldBlob, updatedBlob] = await Promise.all([
-          getBlobOfResource({
-            db: tx,
-            resourceId: String(input.pageId),
-          }),
-          updateBlobById(tx, input),
-        ])
+      const page = await db.transaction().execute(async (tx) => {
+        const blob = await tx
+          .insertInto("Blob")
+          .values({ content: jsonb(blobContent) })
+          .returning("Blob.id")
+          .executeTakeFirstOrThrow()
+
+        const addedResource = await tx
+          .insertInto("Resource")
+          .values({
+            title: parent.title,
+            permalink: INDEX_PAGE_PERMALINK,
+            siteId,
+            parentId,
+            draftBlobId: blob.id,
+            type: ResourceType.IndexPage,
+            state: ResourceState.Draft,
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow()
+          .catch((err) => {
+            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A resource with the same permalink already exists",
+              })
+            }
+            throw err
+          })
 
         await logResourceEvent(tx, {
-          siteId: input.siteId,
+          siteId,
           by,
-          delta: {
-            before: { blob: oldBlob, resource },
-            after: { blob: updatedBlob, resource },
-          },
-          eventType: AuditLogEvent.ResourceUpdate,
+          delta: { before: null, after: addedResource },
+          eventType: AuditLogEvent.ResourceCreate,
         })
-        return updatedBlob
+
+        return { pageId: addedResource.id }
       })
 
-      return input
+      return page
     }),
 
   createPage: protectedProcedure
@@ -642,6 +345,116 @@ export const pageRouter = router({
       },
     ),
 
+  getCategories: protectedProcedure
+    .input(basePageSchema)
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const { parentId } = await db
+        .selectFrom("Resource")
+        .where("siteId", "=", siteId)
+        .where("id", "=", String(pageId))
+        .select("parentId")
+        .executeTakeFirstOrThrow()
+
+      const blobs = await db
+        .selectFrom("Resource as r")
+        .leftJoin("Blob as b", "r.draftBlobId", "b.id")
+        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
+        .leftJoin("Blob as vb", "v.blobId", "vb.id")
+        .where("r.siteId", "=", siteId)
+        .where("r.parentId", "=", String(parentId))
+        .select((eb) => {
+          return eb.fn
+            .coalesce(
+              sql<string>`b.content->'page'->>'category'`,
+              sql<string>`vb.content->'page'->>'category'`,
+            )
+            .as("category")
+        })
+        .distinct()
+        .execute()
+
+      const categories: string[] = []
+      for (const blob of blobs) {
+        const category = blob.category
+        if (category && category.trim()) {
+          categories.push(category)
+        }
+      }
+
+      return { categories }
+    }),
+
+  getFullPermalink: protectedProcedure
+    .input(basePageSchema)
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const permalink = await getResourceFullPermalink(siteId, pageId)
+      if (!permalink) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No permalink could be found for the given page",
+        })
+      }
+
+      return permalink
+    }),
+
+  getPermalinkTree: protectedProcedure
+    .input(basePageSchema)
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const permalinkTree = await getResourcePermalinkTree(siteId, pageId)
+      if (isEmpty(permalinkTree)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No permalink tree could be found for the given page",
+        })
+      }
+      return permalinkTree
+    }),
+
+  getPrefill: protectedProcedure
+    .input(getPrefillSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const resource = await getFullPageById(db, {
+        resourceId: Number(resourceId),
+        siteId,
+      })
+
+      if (!resource) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+
+      const { title, content } = resource
+
+      return { title, ...renderPrefillText(content) }
+    }),
+
   getRootPage: protectedProcedure
     .input(getRootPageSchema)
     .query(async ({ ctx, input: { siteId } }) => {
@@ -666,6 +479,34 @@ export const pageRouter = router({
         })
       }
       return rootPage
+    }),
+
+  list: protectedProcedure
+    .input(listPagesSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      let query = db
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+
+      if (resourceId) {
+        query = query.where("Resource.parentId", "=", String(resourceId))
+      }
+      return await query
+        .select([
+          "Resource.id",
+          "Resource.permalink",
+          "Resource.title",
+          "Resource.publishedVersionId",
+          "Resource.draftBlobId",
+          "Resource.type",
+        ])
+        .execute()
     }),
 
   publishPage: protectedProcedure
@@ -699,6 +540,249 @@ export const pageRouter = router({
       },
     ),
 
+  readPage: protectedProcedure
+    .input(basePageSchema)
+    .output(readPageOutputSchema)
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const retrievedPage = await getPageById(db, {
+        resourceId: pageId,
+        siteId,
+      })
+
+      if (!retrievedPage) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+
+      return retrievedPage
+    }),
+
+  readPageAndBlob: protectedProcedure
+    .input(basePageSchema)
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      return await db.transaction().execute(async (tx) => {
+        const page = await getFullPageById(tx, { resourceId: pageId, siteId })
+        if (!page) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Resource not found",
+          })
+        }
+
+        const { title, type, permalink, content, updatedAt } = page
+
+        if (
+          type !== ResourceType.Page &&
+          type !== ResourceType.CollectionPage &&
+          type !== ResourceType.RootPage &&
+          type !== ResourceType.IndexPage &&
+          type !== ResourceType.FolderMeta &&
+          type !== ResourceType.CollectionMeta
+        ) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "The specified resource could not be found",
+          })
+        }
+
+        const [siteMeta, navbar, footer] = await Promise.all([
+          getSiteConfig(tx, siteId),
+          getNavBar(tx, siteId),
+          getFooter(tx, siteId),
+        ])
+
+        return {
+          permalink,
+          navbar,
+          footer,
+          // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore type instantiation is excessively deep and possibly infinite
+          content,
+          title,
+          type,
+          updatedAt,
+          ...siteMeta,
+        }
+      })
+    }),
+
+  reorderBlock: protectedProcedure
+    .input(reorderBlobSchema)
+    .mutation(async ({ ctx, input: { pageId, from, to, blocks, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "update",
+        userId: ctx.user.id,
+      })
+
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Please ensure that you are authenticated",
+            }),
+        )
+
+      // NOTE: we have to check against the page's content that we retrieve from db
+      // we adopt a strict check such that we allow the update iff the checksum is the same
+      return await db.transaction().execute(async (tx) => {
+        const fullPage = await getFullPageById(tx, {
+          resourceId: pageId,
+          siteId,
+        })
+        if (!fullPage?.content) {
+          // TODO: we should probably ping on call
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message:
+              "Unable to load content for the requested page, please contact Isomer Support",
+          })
+        }
+
+        const actualBlocks = fullPage.content.content
+
+        if (!isEqual(blocks, actualBlocks)) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message:
+              "Someone on your team has changed this page, refresh the page and try again",
+          })
+        }
+
+        if (
+          from >= actualBlocks.length ||
+          to >= actualBlocks.length ||
+          from < 0 ||
+          to < 0
+        ) {
+          // NOTE: If this happens, this indicates that either our dnd libary on our frontend has a
+          // bug or someone is trying to mess with our frontend
+          throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" })
+        }
+
+        const [movedBlock] = actualBlocks.splice(from, 1)
+        if (!movedBlock) return blocks
+        if (!fullPage.draftBlobId && !fullPage.publishedVersionId) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Please ensure that you have selected a valid page",
+          })
+        }
+
+        // Insert at destination index
+        actualBlocks.splice(to, 0, movedBlock)
+
+        const [oldBlob, updatedBlob] = await Promise.all([
+          getBlobOfResource({
+            db: tx,
+            resourceId: String(pageId),
+          }),
+          updateBlobById(tx, {
+            pageId,
+            content: { ...fullPage.content, content: actualBlocks },
+            siteId,
+          }),
+        ])
+        await logResourceEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.ResourceUpdate,
+          delta: {
+            before: { blob: oldBlob, resource: fullPage },
+            after: { blob: updatedBlob, resource: fullPage },
+          },
+          by,
+        })
+
+        // NOTE: user given content and db state is the same at this point
+        return actualBlocks
+      })
+    }),
+
+  schedulePage: protectedProcedure
+    .input(scheduledPublishServerSchema)
+    .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "publish",
+        userId: ctx.user.id,
+      })
+
+      // check if the input.scheduledAt is after the current time
+      if (isBefore(scheduledAt, new Date())) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Scheduled time must be in the future",
+        })
+      }
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      const updatedPage = await db.transaction().execute(async (tx) => {
+        // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
+        const resource = await getPageById(tx, { resourceId: pageId, siteId })
+        if (!resource) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Resource not found",
+          })
+        }
+        if (resource.scheduledAt) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Page is already scheduled to be published at ${format(
+              resource.scheduledAt,
+              "yyyy-MM-dd HH:mm",
+            )}`,
+          })
+        }
+        // update the resource's scheduled field
+        const updatedPage = await updatePageById(
+          { id: pageId, siteId, scheduledAt, scheduledBy: by.id },
+          tx,
+        )
+        // verify that the update was successful
+        if (!updatedPage) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to schedule page",
+          })
+        }
+        await logResourceEvent(tx, {
+          siteId,
+          by,
+          delta: { before: resource, after: updatedPage },
+          eventType: AuditLogEvent.SchedulePublish,
+        })
+        return updatedPage
+      })
+      await sendScheduledPageEmail({
+        resource: updatedPage,
+        scheduledAt,
+        recipientEmail: by.email,
+      })
+    }),
+
   updateMeta: protectedProcedure
     .input(updatePageMetaSchema)
     .mutation(async ({ ctx, input: { meta, siteId, resourceId } }) => {
@@ -720,7 +804,7 @@ export const pageRouter = router({
             }),
         )
 
-      return db.transaction().execute(async (tx) => {
+      return await db.transaction().execute(async (tx) => {
         const fullPage = await getFullPageById(tx, {
           resourceId: Number(resourceId),
           siteId,
@@ -805,6 +889,63 @@ export const pageRouter = router({
       })
     }),
 
+  updatePageBlob: validatedPageProcedure
+    .input(updatePageBlobSchema)
+    .mutation(async ({ input, ctx }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId: input.siteId,
+        action: "update",
+        userId: ctx.user.id,
+      })
+
+      const resource = await getPageById(db, {
+        resourceId: input.pageId,
+        siteId: input.siteId,
+      })
+
+      if (!resource) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Please ensure that you are authenticated",
+            }),
+        )
+
+      await db.transaction().execute(async (tx) => {
+        const [oldBlob, updatedBlob] = await Promise.all([
+          getBlobOfResource({
+            db: tx,
+            resourceId: String(input.pageId),
+          }),
+          updateBlobById(tx, input),
+        ])
+
+        await logResourceEvent(tx, {
+          siteId: input.siteId,
+          by,
+          delta: {
+            before: { blob: oldBlob, resource },
+            after: { blob: updatedBlob, resource },
+          },
+          eventType: AuditLogEvent.ResourceUpdate,
+        })
+        return updatedBlob
+      })
+
+      return input
+    }),
+
   updateSettings: protectedProcedure
     .input(pageSettingsSchema)
     .mutation(
@@ -837,7 +978,7 @@ export const pageRouter = router({
               }),
           )
 
-        return db.transaction().execute(async (tx) => {
+        return await db.transaction().execute(async (tx) => {
           const fullPage = await getFullPageById(tx, {
             resourceId: pageId,
             siteId,
@@ -963,140 +1104,4 @@ export const pageRouter = router({
         })
       },
     ),
-  getFullPermalink: protectedProcedure
-    .input(basePageSchema)
-    .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      const permalink = await getResourceFullPermalink(siteId, pageId)
-      if (!permalink) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No permalink could be found for the given page",
-        })
-      }
-
-      return permalink
-    }),
-  getPermalinkTree: protectedProcedure
-    .input(basePageSchema)
-    .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      const permalinkTree = await getResourcePermalinkTree(siteId, pageId)
-      if (isEmpty(permalinkTree)) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No permalink tree could be found for the given page",
-        })
-      }
-      return permalinkTree
-    }),
-
-  createIndexPage: protectedProcedure
-    .input(createIndexPageSchema)
-    .mutation(async ({ ctx, input: { siteId, parentId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "create",
-        userId: ctx.user.id,
-        resourceIds: [String(parentId)],
-      })
-
-      const [by, parent] = await Promise.all([
-        db
-          .selectFrom("User")
-          .where("id", "=", ctx.user.id)
-          .selectAll()
-          .executeTakeFirstOrThrow(
-            () =>
-              new TRPCError({
-                code: "BAD_REQUEST",
-                message: "Please ensure that you are logged in",
-              }),
-          ),
-        db
-          .selectFrom("Resource")
-          .where("Resource.id", "=", parentId)
-          .where("Resource.siteId", "=", siteId)
-          .where("Resource.type", "in", [
-            ResourceType.Folder,
-            ResourceType.Collection,
-          ])
-          .select(["title", "type"])
-          .executeTakeFirst(),
-      ])
-
-      if (!parent) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Parent resource not found or is not a folder/collection",
-        })
-      }
-
-      const blobContent =
-        parent.type === ResourceType.Collection
-          ? {
-              layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
-              page: {
-                title: parent.title,
-                subtitle: `Read more on ${parent.title.toLowerCase()} here.`,
-                sortOrder: "date-desc",
-                variant: COLLECTION_VARIANT_OPTIONS.Collection,
-              },
-              content: [],
-              version: "0.1.0",
-            }
-          : createFolderIndexPage(parent.title)
-
-      const page = await db.transaction().execute(async (tx) => {
-        const blob = await tx
-          .insertInto("Blob")
-          .values({ content: jsonb(blobContent) })
-          .returning("Blob.id")
-          .executeTakeFirstOrThrow()
-
-        const addedResource = await tx
-          .insertInto("Resource")
-          .values({
-            title: parent.title,
-            permalink: INDEX_PAGE_PERMALINK,
-            siteId,
-            parentId,
-            draftBlobId: blob.id,
-            type: ResourceType.IndexPage,
-            state: ResourceState.Draft,
-          })
-          .returningAll()
-          .executeTakeFirstOrThrow()
-          .catch((err) => {
-            if (get(err, "code") === PG_ERROR_CODES.uniqueViolation) {
-              throw new TRPCError({
-                code: "CONFLICT",
-                message: "A resource with the same permalink already exists",
-              })
-            }
-            throw err
-          })
-
-        await logResourceEvent(tx, {
-          siteId,
-          by,
-          delta: { before: null, after: addedResource },
-          eventType: AuditLogEvent.ResourceCreate,
-        })
-
-        return { pageId: addedResource.id }
-      })
-
-      return page
-    }),
 })

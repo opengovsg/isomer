@@ -28,8 +28,8 @@ export const JsonFormsTaggedControl = ({
   path,
   description,
   handleChange,
-}: TaggedControlProps) => {
-  return (
+}: TaggedControlProps) => 
+  (
     <Suspense fallback={<Skeleton />}>
       <SuspendableJsonFormsTaggedControl
         data={data}
@@ -39,7 +39,7 @@ export const JsonFormsTaggedControl = ({
       />
     </Suspense>
   )
-}
+
 
 type SuspendableJsonFormsTaggedControlProps = Pick<
   TaggedControlProps,
@@ -101,12 +101,12 @@ const SuspendableJsonFormsTaggedControl = ({
                 nothingFoundLabel="No tags found."
                 values={currentTagCategoryOptions.map(({ id }) => id)}
                 name={label}
-                items={options.map(({ id, label }) => {
-                  return {
+                items={options.map(({ id, label }) => (
+                  {
                     value: id,
                     label,
                   }
-                })}
+                ))}
                 // NOTE: `value` is the new set of selected options
                 onChange={(value) => {
                   const others =

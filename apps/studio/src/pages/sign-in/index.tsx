@@ -13,10 +13,10 @@ import {
   NonMobileSidebarGridArea,
   SignInContextProvider,
 } from "~/features/sign-in/components"
-import { type NextPageWithLayout } from "~/lib/types"
+import type { NextPageWithLayout } from "~/lib/types"
 
-const SignIn: NextPageWithLayout = () => {
-  return (
+const SignIn: NextPageWithLayout = () => 
+  (
     <PublicPageWrapper strict>
       <Flex w="100%" flexDir="column" h="inherit" minH="$100vh">
         <RestrictedGovtMasthead />
@@ -42,6 +42,6 @@ const SignIn: NextPageWithLayout = () => {
       </Flex>
     </PublicPageWrapper>
   )
-}
+
 
 export default SignIn

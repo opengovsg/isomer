@@ -4,6 +4,6 @@ export const ASSETS_BASE_URL = env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
   ? `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
   : ""
 
-export const generateAssetUrl = (url: string): string => {
-  return !!url && url.startsWith("/") ? `${ASSETS_BASE_URL}${url}` : url
-}
+export const generateAssetUrl = (url: string): string => 
+  !!url && url.startsWith("/") ? `${ASSETS_BASE_URL}${url}` : url
+

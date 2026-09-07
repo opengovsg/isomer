@@ -8,8 +8,8 @@ import { sitesHandlers } from "tests/msw/handlers/sites"
 import CollectionListPage from "~/pages/sites/[siteId]/collections/[collectionId]"
 
 const meta: Meta<typeof CollectionListPage> = {
-  title: "Flows/Create Collection Item",
   component: CollectionListPage,
+  decorators: [],
   parameters: {
     getLayout: CollectionListPage.getLayout,
     msw: {
@@ -38,15 +38,15 @@ const meta: Meta<typeof CollectionListPage> = {
     },
     nextjs: {
       router: {
-        query: {
-          siteId: "1",
-          collectionId: "1",
-        },
         pathname: "/sites/[siteId]/collections/[collectionId]",
+        query: {
+          collectionId: "1",
+          siteId: "1",
+        },
       },
     },
   },
-  decorators: [],
+  title: "Flows/Create Collection Item",
 }
 
 export default meta

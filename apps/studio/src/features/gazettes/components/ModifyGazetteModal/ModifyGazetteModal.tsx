@@ -57,8 +57,8 @@ export const ModifyGazetteModal = ({
   siteId,
   collectionId,
   initialData,
-}: ModifyGazetteModalProps): React.ReactNode => {
-  return (
+}: ModifyGazetteModalProps): React.ReactNode => 
+  (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModifyGazetteModalContent
@@ -71,7 +71,7 @@ export const ModifyGazetteModal = ({
       />
     </Modal>
   )
-}
+
 
 type ModifyGazetteModalContentProps = Pick<
   ModifyGazetteModalProps,
@@ -95,8 +95,8 @@ const ModifyGazetteModalContent = ({
 
   const { mutateAsync: uploadFile, isPending: isUploading } =
     useUploadGazetteMutation({
-      siteId,
       resourceId: String(collectionId),
+      siteId,
     })
   const { mutateAsync: updateGazette, isPending: isUpdatingGazette } =
     trpc.gazette.update.useMutation()
@@ -113,16 +113,16 @@ const ModifyGazetteModalContent = ({
     formState: { errors, isValid },
   } = useZodForm({
     defaultValues: {
-      title: initialData.title,
       category: initialData.category,
-      subcategory: initialData.subcategory,
+      fileId: initialData.fileId,
       notificationNumber: initialData.notificationNumber ?? "",
       publishDate: initialData.publishDate,
       publishTime: initialData.publishTime,
-      fileId: initialData.fileId,
+      subcategory: initialData.subcategory,
+      title: initialData.title,
     },
-    schema: createGazetteSchema,
     mode: "onChange",
+    schema: createGazetteSchema,
   })
 
   const onSubmit = handleSubmit(async (data) => {
@@ -137,12 +137,12 @@ const ModifyGazetteModalContent = ({
 
       if (newFile) {
         const { path } = await uploadFile({
+          category: data.category,
           file: newFile,
           fileName: data.fileId,
           scheduledAt,
-          year: data.publishDate.getFullYear(),
-          category: data.category,
           subcategory: subcategoryMap[data.subcategory] ?? data.subcategory,
+          year: data.publishDate.getFullYear(),
         })
         newRef = path
       } else if (initialData.fileKey && initialData.fileId !== data.fileId) {
@@ -150,16 +150,16 @@ const ModifyGazetteModalContent = ({
       }
 
       await updateGazette({
-        siteId,
-        gazetteId: Number(gazetteId),
-        title: data.title,
-        newRef,
-        desiredFileName,
         category: data.category,
         date: format(data.publishDate, "dd/MM/yyyy"),
         description: data.notificationNumber,
-        tagged: [data.subcategory],
+        desiredFileName,
+        gazetteId: Number(gazetteId),
+        newRef,
         scheduledAt,
+        siteId,
+        tagged: [data.subcategory],
+        title: data.title,
       })
 
       void utils.gazette.list.invalidate()
@@ -171,10 +171,10 @@ const ModifyGazetteModalContent = ({
       onClose()
     } catch (error) {
       toast({
-        status: "error",
-        title: "Failed to update gazette",
         description:
           error instanceof Error ? error.message : "An error occurred",
+        status: "error",
+        title: "Failed to update gazette",
         ...BRIEF_TOAST_SETTINGS,
       })
     }
@@ -195,10 +195,10 @@ const ModifyGazetteModalContent = ({
       onClose()
     } catch (error) {
       toast({
-        status: "error",
-        title: "Failed to cancel gazette",
         description:
           error instanceof Error ? error.message : "An error occurred",
+        status: "error",
+        title: "Failed to cancel gazette",
         ...BRIEF_TOAST_SETTINGS,
       })
     }
@@ -242,7 +242,7 @@ const ModifyGazetteModalContent = ({
               <Button
                 variant="clear"
                 color="base.content.strong"
-                onClick={() => setIsConfirmingCancel(false)}
+                onClick={() =>{  setIsConfirmingCancel(false); }}
               >
                 No
               </Button>
@@ -256,7 +256,7 @@ const ModifyGazetteModalContent = ({
             variant="outline"
             colorScheme="critical"
             leftIcon={<BiBlock />}
-            onClick={() => setIsConfirmingCancel(true)}
+            onClick={() =>{  setIsConfirmingCancel(true); }}
           >
             Cancel publish
           </Button>

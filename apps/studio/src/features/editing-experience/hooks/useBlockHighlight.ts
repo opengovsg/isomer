@@ -49,10 +49,10 @@ export const useBlockHighlight = ({
       const domRect = blockEl.getBoundingClientRect()
 
       setRect({
-        top: domRect.top + scrollY,
-        left: domRect.left + scrollX,
-        width: domRect.width,
         height: domRect.height,
+        left: domRect.left + scrollX,
+        top: domRect.top + scrollY,
+        width: domRect.width,
       })
     }
 
@@ -71,13 +71,13 @@ export const useBlockHighlight = ({
   }, [shouldTrack, hoveredBlockIndex, iframeDocument, content])
 
   const block =
-    hoveredBlockIndex !== null ? content[hoveredBlockIndex] : undefined
+    hoveredBlockIndex === null ? undefined : content[hoveredBlockIndex]
 
   const label = block
-    ? block.type === "prose"
+    ? (block.type === "prose"
       ? PROSE_COMPONENT_NAME
-      : (getComponentSchema({ component: block.type }).title ?? "Unknown")
+      : (getComponentSchema({ component: block.type }).title ?? "Unknown"))
     : undefined
 
-  return { rect: shouldTrack ? rect : null, label }
+  return { label, rect: shouldTrack ? rect : null }
 }

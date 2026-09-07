@@ -10,8 +10,8 @@ export const toFileId = (filename: string): string => {
   const base = filename.replace(/\.pdf$/i, "")
   const sanitized =
     base
-      .replace(/[/\\:*?"<>|]/g, "-")
-      .replace(/\s+/g, "-")
-      .replace(/[^_\-a-zA-Z0-9]/g, "") || "file"
+      .replaceAll(/[/\\:*?"<>|]/g, "-")
+      .replaceAll(/\s+/g, "-")
+      .replaceAll(/[^_\-a-zA-Z0-9]/g, "") || "file"
   return `${sanitized}.pdf`
 }

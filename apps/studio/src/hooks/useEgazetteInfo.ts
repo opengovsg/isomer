@@ -33,15 +33,15 @@ export const useEgazetteInfo = ():
   | ConfiguredEgazetteInfo
   | UnconfiguredEgazetteInfo => {
   const value = useFeatureValue<EgazetteInfo>(EGAZETTE_INFO_FEATURE_KEY, {
-    siteId: "",
     gazettesCollectionId: "",
+    siteId: "",
   })
   if (value.siteId && value.gazettesCollectionId) {
     return {
+      gazettesCollectionId: value.gazettesCollectionId,
       isConfigured: true,
       siteId: value.siteId,
-      gazettesCollectionId: value.gazettesCollectionId,
     }
   }
-  return { isConfigured: false, siteId: "", gazettesCollectionId: "" }
+  return { gazettesCollectionId: "", isConfigured: false, siteId: "" }
 }

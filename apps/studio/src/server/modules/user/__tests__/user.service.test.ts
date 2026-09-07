@@ -24,7 +24,7 @@ describe("user.service", () => {
       const email = "active@example.com"
       // Setup active user
       await setupUser({
-        email: email,
+        email,
         isDeleted: false,
       })
 
@@ -39,7 +39,7 @@ describe("user.service", () => {
       const email = "deleted@example.com"
       // Setup deleted user
       await setupUser({
-        email: email,
+        email,
         isDeleted: true,
       })
 
@@ -65,24 +65,24 @@ describe("user.service", () => {
       siteId = site.id
 
       const creator = await setupUser({
-        name: "creator",
         email: "creator@open.gov.sg",
         isDeleted: false,
+        name: "creator",
       })
       creatorUserId = creator.id
     })
 
     it("should throw error if email is invalid", async () => {
       // Act
-      const result = db.transaction().execute((tx) => {
-        return createUserWithPermission({
+      const result = db.transaction().execute( async (tx) => 
+        createUserWithPermission({
           byUserId: creatorUserId,
           email: "invalid-email",
           role: RoleType.Editor,
           siteId,
           tx,
         })
-      })
+      )
       // Assert
       await expect(result).rejects.toThrow(
         new TRPCError({
@@ -98,15 +98,15 @@ describe("user.service", () => {
 
     it("should throw error if site does not exist", async () => {
       // Act
-      const result = db.transaction().execute((tx) => {
-        return createUserWithPermission({
+      const result = db.transaction().execute( async (tx) => 
+        createUserWithPermission({
           byUserId: creatorUserId,
           email: TEST_EMAIL,
           role: RoleType.Editor,
           siteId: 9999,
           tx,
         })
-      })
+      )
 
       // Assert
       await expect(result).rejects.toThrow()
@@ -119,19 +119,19 @@ describe("user.service", () => {
     it("should throw error if both user and permission already exists", async () => {
       // Arrange
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: false })
-      await setupAdminPermissions({ userId: user.id, siteId })
+      await setupAdminPermissions({ siteId, userId: user.id })
 
       // Act
 
-      const result = db.transaction().execute((tx) => {
-        return createUserWithPermission({
+      const result = db.transaction().execute( async (tx) => 
+        createUserWithPermission({
           byUserId: creatorUserId,
           email: TEST_EMAIL,
           role: RoleType.Editor,
           siteId,
           tx,
         })
-      })
+      )
       // Assert
       await expect(result).rejects.toThrow(
         new TRPCError({
@@ -148,21 +148,21 @@ describe("user.service", () => {
     it("should create user if user already exists but has non-null deletedAt", async () => {
       // Arrange
       const user = await setupUser({ email: TEST_EMAIL, isDeleted: true })
-      await setupAdminPermissions({ userId: user.id, siteId })
+      await setupAdminPermissions({ siteId, userId: user.id })
 
       // Act
       const roleToCreate = RoleType.Editor
       const { user: createdUser, resourcePermission } = await db
         .transaction()
-        .execute((tx) => {
-          return createUserWithPermission({
+        .execute( async (tx) => 
+          createUserWithPermission({
             byUserId: creatorUserId,
             email: TEST_EMAIL,
             role: roleToCreate,
             siteId,
             tx,
           })
-        })
+        )
 
       // Assert: Verify user in database
       const dbUserResult = await db
@@ -173,14 +173,14 @@ describe("user.service", () => {
       expect(dbUserResult).toHaveLength(2) // original + newly created record
       expect(dbUserResult).toEqual([
         expect.objectContaining({
-          email: TEST_EMAIL,
-          id: user.id, // original record
           deletedAt: expect.any(Date),
+          email: TEST_EMAIL,
+          id: user.id, // original record,
         }),
         expect.objectContaining({
+          deletedAt: null,
           email: TEST_EMAIL,
           id: expect.any(String),
-          deletedAt: null,
         }),
       ])
 
@@ -194,9 +194,9 @@ describe("user.service", () => {
       expect(dbResourcePermissionResult).toHaveLength(1)
       expect(dbResourcePermissionResult).toEqual([
         expect.objectContaining({
-          userId: expect.any(String),
-          siteId,
           role: roleToCreate,
+          siteId,
+          userId: expect.any(String),
         }),
       ])
 
@@ -208,7 +208,6 @@ describe("user.service", () => {
         .execute()
       expect(userAuditLogs).toHaveLength(1)
       expect(userAuditLogs[0]).toMatchObject({
-        eventType: "UserCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining({
@@ -216,6 +215,7 @@ describe("user.service", () => {
             email: TEST_EMAIL,
           }),
         }),
+        eventType: "UserCreate",
       })
 
       // Assert DB - audit logs (permission)
@@ -226,13 +226,13 @@ describe("user.service", () => {
         .execute()
       expect(permissionAuditLogs).toHaveLength(1)
       expect(permissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
             omit(resourcePermission, ["createdAt", "updatedAt"]),
           ),
         }),
+        eventType: "PermissionCreate",
       })
     })
 
@@ -241,15 +241,15 @@ describe("user.service", () => {
       const nonGovSgEmail = "test@coolvendor.com"
 
       // Act
-      const result = db.transaction().execute((tx) => {
-        return createUserWithPermission({
+      const result = db.transaction().execute( async (tx) => 
+        createUserWithPermission({
           byUserId: creatorUserId,
           email: nonGovSgEmail,
           role: RoleType.Editor,
           siteId,
           tx,
         })
-      })
+      )
       // Assert
       await expect(result).rejects.toThrow(
         new TRPCError({
@@ -268,15 +268,15 @@ describe("user.service", () => {
       const nonGovSgEmail = "test@coolvendor.com"
 
       // Act
-      const result = db.transaction().execute((tx) => {
-        return createUserWithPermission({
+      const result = db.transaction().execute( async (tx) => 
+        createUserWithPermission({
           byUserId: creatorUserId,
           email: nonGovSgEmail,
           role: RoleType.Admin,
           siteId,
           tx,
         })
-      })
+      )
 
       // Assert
       await expect(result).rejects.toThrow(
@@ -299,15 +299,15 @@ describe("user.service", () => {
       await setUpWhitelist({ email: nonGovSgEmail, expiry: oneYearFromNow })
 
       // Act
-      const result = await db.transaction().execute((tx) => {
-        return createUserWithPermission({
+      const result = await db.transaction().execute( async (tx) => 
+        createUserWithPermission({
           byUserId: creatorUserId,
           email: nonGovSgEmail,
           role: RoleType.Admin,
           siteId,
           tx,
         })
-      })
+      )
 
       // Assert
       expect(result).toEqual(expect.anything())
@@ -319,15 +319,15 @@ describe("user.service", () => {
       await setUpWhitelist({ email: nonGovSgEmail })
 
       // Act
-      const result = await db.transaction().execute((tx) => {
-        return createUserWithPermission({
+      const result = await db.transaction().execute( async (tx) => 
+        createUserWithPermission({
           byUserId: creatorUserId,
           email: nonGovSgEmail,
           role: RoleType.Admin,
           siteId,
           tx,
         })
-      })
+      )
 
       // Assert
       expect(result).toEqual(expect.anything())
@@ -339,15 +339,15 @@ describe("user.service", () => {
       await setUpWhitelist({ email: nonGovSgEmail })
 
       // Act
-      const result = await db.transaction().execute((tx) => {
-        return createUserWithPermission({
+      const result = await db.transaction().execute( async (tx) => 
+        createUserWithPermission({
           byUserId: creatorUserId,
           email: nonGovSgEmail,
           role: RoleType.Editor,
           siteId,
           tx,
         })
-      })
+      )
       // Assert
       expect(result).toEqual(expect.anything())
 
@@ -359,13 +359,13 @@ describe("user.service", () => {
         .execute()
       expect(userAuditLogs).toHaveLength(1)
       expect(userAuditLogs[0]).toMatchObject({
-        eventType: "UserCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
             omit(result.user, ["createdAt", "updatedAt"]),
           ),
         }),
+        eventType: "UserCreate",
       })
 
       // Assert DB - audit logs (permission)
@@ -376,13 +376,13 @@ describe("user.service", () => {
         .execute()
       expect(permissionAuditLogs).toHaveLength(1)
       expect(permissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
             omit(result.resourcePermission, ["createdAt", "updatedAt"]),
           ),
         }),
+        eventType: "PermissionCreate",
       })
     })
 
@@ -390,8 +390,8 @@ describe("user.service", () => {
       // Act
       const { user, resourcePermission } = await db
         .transaction()
-        .execute((tx) => {
-          return createUserWithPermission({
+        .execute( async (tx) => 
+          createUserWithPermission({
             byUserId: creatorUserId,
             email: TEST_EMAIL,
             name: "",
@@ -400,7 +400,7 @@ describe("user.service", () => {
             siteId,
             tx,
           })
-        })
+        )
       // Assert: Verify user in database
       const dbUserResult = await db
         .selectFrom("User")
@@ -410,8 +410,8 @@ describe("user.service", () => {
 
       expect(dbUserResult).toHaveLength(1)
       expect(dbUserResult[0]).toMatchObject({
-        id: user.id,
         email: TEST_EMAIL,
+        id: user.id,
         name: TEST_EMAIL.split("@")[0],
         phone: "",
       })
@@ -426,9 +426,9 @@ describe("user.service", () => {
 
       expect(dbResourcePermissionResult).toHaveLength(1)
       expect(dbResourcePermissionResult[0]).toMatchObject({
-        userId: user.id,
-        siteId,
         role: RoleType.Editor,
+        siteId,
+        userId: user.id,
       })
 
       // Assert DB - audit logs (user)
@@ -439,13 +439,13 @@ describe("user.service", () => {
         .execute()
       expect(userAuditLogs).toHaveLength(1)
       expect(userAuditLogs[0]).toMatchObject({
-        eventType: "UserCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
             omit(user, ["createdAt", "updatedAt"]),
           ),
         }),
+        eventType: "UserCreate",
       })
 
       // Assert DB - audit logs (permission)
@@ -456,13 +456,13 @@ describe("user.service", () => {
         .execute()
       expect(permissionAuditLogs).toHaveLength(1)
       expect(permissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
             omit(resourcePermission, ["createdAt", "updatedAt"]),
           ),
         }),
+        eventType: "PermissionCreate",
       })
     })
 
@@ -475,8 +475,8 @@ describe("user.service", () => {
       // Act
       const { user, resourcePermission } = await db
         .transaction()
-        .execute((tx) => {
-          return createUserWithPermission({
+        .execute( async (tx) => 
+          createUserWithPermission({
             byUserId: creatorUserId,
             email: TEST_EMAIL,
             name,
@@ -485,7 +485,7 @@ describe("user.service", () => {
             siteId,
             tx,
           })
-        })
+        )
       // Assert: Verify user in database
       const dbUserResult = await db
         .selectFrom("User")
@@ -495,8 +495,8 @@ describe("user.service", () => {
 
       expect(dbUserResult).toHaveLength(1)
       expect(dbUserResult[0]).toMatchObject({
-        id: user.id,
         email: TEST_EMAIL,
+        id: user.id,
         name,
         phone,
       })
@@ -511,9 +511,9 @@ describe("user.service", () => {
 
       expect(dbResourcePermissionResult).toHaveLength(1)
       expect(dbResourcePermissionResult[0]).toMatchObject({
-        userId: user.id,
-        siteId,
         role,
+        siteId,
+        userId: user.id,
       })
 
       // Assert DB - audit logs (user)
@@ -524,13 +524,13 @@ describe("user.service", () => {
         .execute()
       expect(userAuditLogs).toHaveLength(1)
       expect(userAuditLogs[0]).toMatchObject({
-        eventType: "UserCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
             omit(user, ["createdAt", "updatedAt"]),
           ),
         }),
+        eventType: "UserCreate",
       })
 
       // Assert DB - audit logs (permission)
@@ -541,13 +541,13 @@ describe("user.service", () => {
         .execute()
       expect(permissionAuditLogs).toHaveLength(1)
       expect(permissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
             omit(resourcePermission, ["createdAt", "updatedAt"]),
           ),
         }),
+        eventType: "PermissionCreate",
       })
     })
 
@@ -559,15 +559,15 @@ describe("user.service", () => {
       })
 
       // Act
-      const { resourcePermission } = await db.transaction().execute((tx) => {
-        return createUserWithPermission({
+      const { resourcePermission } = await db.transaction().execute( async (tx) => 
+        createUserWithPermission({
           byUserId: creatorUserId,
           email: TEST_EMAIL,
           role: RoleType.Admin,
           siteId,
           tx,
         })
-      })
+      )
 
       // Assert: Verify resource permission in database
       const dbResourcePermissionResult = await db
@@ -579,9 +579,9 @@ describe("user.service", () => {
 
       expect(dbResourcePermissionResult).toHaveLength(1)
       expect(dbResourcePermissionResult[0]).toMatchObject({
-        userId: existingUser.id,
-        siteId,
         role: RoleType.Admin,
+        siteId,
+        userId: existingUser.id,
       })
 
       // Assert DB - audit logs (user)
@@ -601,13 +601,13 @@ describe("user.service", () => {
         .execute()
       expect(permissionAuditLogs).toHaveLength(1)
       expect(permissionAuditLogs[0]).toMatchObject({
-        eventType: "PermissionCreate",
         delta: expect.objectContaining({
           before: null,
           after: expect.objectContaining(
             omit(resourcePermission, ["createdAt", "updatedAt"]),
           ),
         }),
+        eventType: "PermissionCreate",
       })
     })
   })

@@ -37,7 +37,7 @@ const validateFn = ajv.compile<DatabaseFormData>(databasePageDatabaseSchema)
 const getDatabaseFormData = (
   pageState: IsomerSchema,
 ): DatabaseFormData | undefined => {
-  if (pageState.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Database) return undefined
+  if (pageState.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Database) {return undefined}
   // SAFETY: layout check confirms database page shape.
   // @ts-expect-error IsomerSchema union is wider than DatabasePageSchemaType at compile time.
   return (pageState as DatabasePageSchemaType).page.database
@@ -77,12 +77,12 @@ const DatabaseEditorStateDrawer = (): React.ReactNode => {
     setSavedPageState(previewPageState)
     mutate(
       {
+        content: JSON.stringify(previewPageState),
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
       },
       {
-        onSuccess: () => setDrawerState({ state: "root" }),
+        onSuccess: () =>{  setDrawerState({ state: "root" }); },
       },
     )
   }, [
@@ -95,7 +95,7 @@ const DatabaseEditorStateDrawer = (): React.ReactNode => {
   ])
 
   const handleChange = (data: DatabaseFormData) => {
-    if (previewPageState.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Database) return
+    if (previewPageState.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Database) {return}
     // SAFETY: layout check confirms database page shape.
     // @ts-expect-error IsomerSchema union is wider than DatabasePageSchemaType at compile time.
     const databasePageState = previewPageState as DatabasePageSchemaType
@@ -130,10 +130,10 @@ const DatabaseEditorStateDrawer = (): React.ReactNode => {
         <DrawerHeader
           isDisabled={isPending}
           onBackClick={() => {
-            if (!isEqual(previewPageState, savedPageState)) {
-              onDiscardChangesModalOpen()
-            } else {
+            if (isEqual(previewPageState, savedPageState)) {
               handleDiscardChanges()
+            } else {
+              onDiscardChangesModalOpen()
             }
           }}
           label="Edit database"

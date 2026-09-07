@@ -3,8 +3,8 @@ import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 
 import { NoResultIcon } from "../Svg/NoResultIcon"
 
-export const DefaultNotFound = () => {
-  return (
+export const DefaultNotFound = () => 
+  (
     <Flex
       flexDirection="column"
       gap="1.5rem"
@@ -29,4 +29,4 @@ export const DefaultNotFound = () => {
       </Flex>
     </Flex>
   )
-}
+

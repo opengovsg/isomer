@@ -1,24 +1,14 @@
 import type { UnwrapTagged } from "type-fest"
-import { mkdirSync, readFileSync, writeFileSync } from "fs"
-import { dirname, join } from "path"
-import { fileURLToPath } from "url"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { db } from "~/server/modules/database/database"
-import {
-  ResourceState,
-  ResourceType,
-  type DB,
-  type Transaction,
-} from "~/server/modules/database/types"
+import { ResourceState, ResourceType } from '~/server/modules/database/types';
+import type { DB, Transaction } from '~/server/modules/database/types';
 import { jsonb } from "~/server/modules/database/utils"
 
-import {
-  buildConversionReport,
-  toFolderPlan,
-  type ConversionPlan,
-  type ConversionReportEntry,
-  type FolderPlan,
-  type PagePlan,
-} from "./helpers"
+import { buildConversionReport, toFolderPlan } from './helpers';
+import type { ConversionPlan, ConversionReportEntry, FolderPlan, PagePlan } from './helpers';
 
 // ---------------------------------------------------------------------------
 // Blob helpers (local copies — avoid resource.service, which imports
@@ -43,7 +33,7 @@ export const getBlobOfResource = async ({
     )
 
   if (draftBlobId) {
-    return database
+    return await database
       .selectFrom("Blob")
       .where("id", "=", draftBlobId)
       .selectAll()
@@ -56,7 +46,7 @@ export const getBlobOfResource = async ({
     )
   }
 
-  return database
+  return await database
     .selectFrom("Blob")
     .selectAll()
     .where("Blob.id", "=", (eb) =>
@@ -105,7 +95,7 @@ export const updateBlobById = async (
     return newBlob
   }
 
-  return tx
+  return await tx
     .updateTable("Blob")
     .set({ content: jsonb(content) })
     .where("Blob.id", "=", page.draftBlobId)
@@ -143,7 +133,7 @@ export const incrementVersion = async ({
   if (!page) {
     throw new Error(`Resource ${resourceId} not found`)
   }
-  if (!page.draftBlobId) return null
+  if (!page.draftBlobId) {return null}
 
   let newVersionNum = 1
   let previousVersion: ScriptVersion | null = null
@@ -159,11 +149,11 @@ export const incrementVersion = async ({
   const newVersion = await tx
     .insertInto("Version")
     .values({
-      versionNum: newVersionNum,
-      resourceId,
       blobId: page.draftBlobId,
       publishedAt: new Date(),
       publishedBy: userId,
+      resourceId,
+      versionNum: newVersionNum,
     })
     .returning(["id", "versionNum"])
     .executeTakeFirstOrThrow()
@@ -171,8 +161,8 @@ export const incrementVersion = async ({
   await tx
     .updateTable("Resource")
     .set({
-      publishedVersionId: newVersion.id,
       draftBlobId: null,
+      publishedVersionId: newVersion.id,
       state: ResourceState.Published,
     })
     .where("id", "=", resourceId)
@@ -192,7 +182,7 @@ export const verifySite = async (siteId: number) => {
     .where("id", "=", siteId)
     .select(["id", "name"])
     .executeTakeFirst()
-  if (!site) throw new Error(`Site ${siteId} not found`)
+  if (!site) {throw new Error(`Site ${siteId} not found`)}
   return site
 }
 
@@ -220,7 +210,7 @@ export const verifyUser = async (userId: string) => {
     .where("id", "=", userId)
     .select("id")
     .executeTakeFirst()
-  if (!user) throw new Error(`User ${userId} not found`)
+  if (!user) {throw new Error(`User ${userId} not found`)}
   return user
 }
 
@@ -229,7 +219,7 @@ export const verifyUser = async (userId: string) => {
 // ---------------------------------------------------------------------------
 
 const defaultOutDir = () =>
-  join(dirname(fileURLToPath(import.meta.url)), ".out")
+  join(import.meta.dirname, ".out")
 
 export const folderPlanFileName = (folderId: string) =>
   `convert-folder-${folderId}.json`
@@ -274,21 +264,21 @@ export const loadConversionPlan = (
   // SAFETY: plan files are written by writePlanFiles using the same FolderPlan shape.
   const folderPlan = JSON.parse(readFileSync(folderPath, "utf-8")) as FolderPlan
 
-  const readResource = (resourceId: string): PagePlan => {
+  const readResource = (resourceId: string): PagePlan => 
     // SAFETY: resource plan files are written by writePlanFiles using PagePlan.
-    return JSON.parse(
+    JSON.parse(
       readFileSync(join(baseDir, resourcePlanFileName(resourceId)), "utf-8"),
     ) as PagePlan
-  }
+  
 
   return {
+    defaultCategory: folderPlan.defaultCategory,
     folder: {
       id: folderPlan.id,
+      permalink: folderPlan.permalink,
       siteId: folderPlan.siteId,
       title: folderPlan.title,
-      permalink: folderPlan.permalink,
     },
-    defaultCategory: folderPlan.defaultCategory,
     indexPage: readResource(folderPlan.indexPageId),
     pages: folderPlan.pageIds.map(readResource),
   }
@@ -370,7 +360,7 @@ export const printPlan = (plan: ConversionPlan) => {
     console.log(
       `\n⚠  Article layout does not list these as allowed editor blocks:`,
     )
-    for (const [t, n] of flaggedTypes) console.log(`     - ${t}: ${n}`)
+    for (const [t, n] of flaggedTypes) {console.log(`     - ${t}: ${n}`)}
     console.log(
       "   The blocks will be preserved in the blob — they will continue to render —",
     )

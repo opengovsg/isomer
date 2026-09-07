@@ -47,8 +47,8 @@ export const SchedulePublishDetails = () => {
       resetField("publishTime")
     }
     return {
-      earliestSchedule,
       earliestAllowableTime,
+      earliestSchedule,
     }
   }, [publishDate, publishTime, resetField])
 
@@ -65,12 +65,12 @@ export const SchedulePublishDetails = () => {
                 {...field}
                 size="sm"
                 shouldSetDateOnTodayButtonClick={true}
-                isDateUnavailable={(date) => {
-                  return isBefore(
+                isDateUnavailable={(date) => 
+                  isBefore(
                     startOfDay(date),
                     startOfDay(earliestSchedule),
                   )
-                }}
+                }
               />
             )}
           />

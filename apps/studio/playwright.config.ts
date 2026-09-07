@@ -9,9 +9,6 @@ const opts = {
 }
 
 export default defineConfig({
-  reporter: process.env.CI ? "github" : "list",
-  testDir: "./tests/e2e",
-  timeout: 35e3,
   globalSetup: "./tests/e2e/global-setup.ts",
   projects: [
     {
@@ -27,4 +24,7 @@ export default defineConfig({
       },
     },
   ],
+  reporter: process.env.CI ? "github" : "list",
+  testDir: "./tests/e2e",
+  timeout: 35e3,
 })

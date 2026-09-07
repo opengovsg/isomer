@@ -1,5 +1,5 @@
 import { useRouter } from "next/router"
-import { type PropsWithChildren, type ReactNode } from "react"
+import type { PropsWithChildren, ReactNode } from "react"
 import { CALLBACK_URL_KEY } from "~/constants/params"
 import { useLoginState } from "~/features/auth"
 import { callbackUrlSchema } from "~/schemas/url"

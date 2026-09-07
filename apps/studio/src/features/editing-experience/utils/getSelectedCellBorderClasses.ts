@@ -6,10 +6,10 @@ export interface SelectionBorderRect {
 }
 
 export const SELECTED_CELL_BORDER_CLASSES = {
-  top: "selectedCell-border-top",
-  right: "selectedCell-border-right",
   bottom: "selectedCell-border-bottom",
   left: "selectedCell-border-left",
+  right: "selectedCell-border-right",
+  top: "selectedCell-border-top",
 } as const
 
 /**

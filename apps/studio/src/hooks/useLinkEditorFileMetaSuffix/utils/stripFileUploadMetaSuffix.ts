@@ -14,10 +14,10 @@ function isDisplayType(value: string): boolean {
  */
 function isFormattedSize(value: string): boolean {
   const parts = value.split(" ")
-  if (parts.length !== 2) return false
+  if (parts.length !== 2) {return false}
 
   const [num, unit] = parts
-  if (!num || !unit) return false // defensive programming
+  if (!num || !unit) {return false} // defensive programming
 
   return ["B", "KB", "MB", "GB", "TB"].includes(unit) && Number(num) >= 0
 }
@@ -33,14 +33,14 @@ function isFileUploadMetaSuffix(content: string): boolean {
   // Single segment: type only (e.g. "PDF") or size only (e.g. "280.00 KB").
   if (parts.length === 1) {
     const part = parts[0]
-    if (!part) return false // defensive programming
+    if (!part) {return false} // defensive programming
     return isDisplayType(part) || isFormattedSize(part)
   }
 
   // Two segments: type then size (e.g. "PDF, 1.00 MB").
   if (parts.length === 2) {
     const [type, size] = parts
-    if (!type || !size) return false // defensive programming
+    if (!type || !size) {return false} // defensive programming
     return isDisplayType(type) && isFormattedSize(size)
   }
 
@@ -61,10 +61,10 @@ export function stripFileUploadMetaSuffix(text: string): string {
   // Find the opening bracket index
   // If not found, return the original text
   const openBracketIndex = text.lastIndexOf(META_SUFFIX_OPEN)
-  if (openBracketIndex === -1) return text
+  if (openBracketIndex === -1) {return text}
 
   // If the closing bracket is not found, return the original text
-  if (!text.endsWith(META_SUFFIX_CLOSE)) return text
+  if (!text.endsWith(META_SUFFIX_CLOSE)) {return text}
 
   // Extract the bracket content
   const contentStart = openBracketIndex + META_SUFFIX_OPEN.length
@@ -72,7 +72,7 @@ export function stripFileUploadMetaSuffix(text: string): string {
   const bracketContent = text.slice(contentStart, contentEnd)
 
   // If the bracket content is not a valid file upload meta suffix, return the original text
-  if (!isFileUploadMetaSuffix(bracketContent)) return text
+  if (!isFileUploadMetaSuffix(bracketContent)) {return text}
 
   // Return the text up to the opening bracket
   return text.slice(0, openBracketIndex)

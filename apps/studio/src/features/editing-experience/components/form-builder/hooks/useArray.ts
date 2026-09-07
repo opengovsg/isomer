@@ -112,12 +112,12 @@ export function useArray({
   )
 
   return {
-    selectedIndex,
-    setSelectedIndex,
-    isAddItemDisabled,
-    isRemoveItemDisabled,
     childUiSchema,
     handleRemoveSelectedItem,
+    isAddItemDisabled,
+    isRemoveItemDisabled,
     onDragEnd,
+    selectedIndex,
+    setSelectedIndex,
   }
 }

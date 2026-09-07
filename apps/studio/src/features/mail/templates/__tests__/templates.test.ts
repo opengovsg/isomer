@@ -9,8 +9,8 @@ describe("invitationTemplate", () => {
   const mockData = {
     inviterName: "Test User",
     recipientEmail: "test@example.com",
-    siteName: "Test Site",
     role: RoleType.Admin,
+    siteName: "Test Site",
   }
 
   it("should generate correct subject line", () => {
@@ -64,9 +64,9 @@ describe("invitationTemplate", () => {
 
 describe("accountDeactivationWarningTemplate", () => {
   const mockData = {
+    inHowManyDays: 7 as const,
     recipientEmail: "test@example.com",
     siteNames: ["Test Site 1"],
-    inHowManyDays: 7 as const,
   }
 
   it("should generate correct subject line with days remaining", () => {
@@ -236,8 +236,8 @@ describe("accountDeactivationTemplate", () => {
       recipientEmail: "test@example.com",
       sitesAndAdmins: [
         {
-          siteName: "Test Site 1",
           adminEmails: ["admin1@example.com", "admin2@example.com"],
+          siteName: "Test Site 1",
         },
       ],
     })
@@ -256,8 +256,8 @@ describe("accountDeactivationTemplate", () => {
       recipientEmail: "test@example.com",
       sitesAndAdmins: [
         {
-          siteName: "Test Site 1",
           adminEmails: [],
+          siteName: "Test Site 1",
         },
       ],
     })
@@ -275,12 +275,12 @@ describe("accountDeactivationTemplate", () => {
       recipientEmail: "test@example.com",
       sitesAndAdmins: [
         {
-          siteName: "Site A",
           adminEmails: ["admin1@example.com"],
+          siteName: "Site A",
         },
         {
-          siteName: "Site B",
           adminEmails: ["admin2@example.com", "admin3@example.com"],
+          siteName: "Site B",
         },
       ],
     })
@@ -305,16 +305,16 @@ describe("accountDeactivationTemplate", () => {
       recipientEmail: "test@example.com",
       sitesAndAdmins: [
         {
-          siteName: "Site with one admin",
           adminEmails: ["admin@example.com"],
+          siteName: "Site with one admin",
         },
         {
-          siteName: "Site with two admins",
           adminEmails: ["admin1@example.com", "admin2@example.com"],
+          siteName: "Site with two admins",
         },
         {
-          siteName: "Site without Admins",
           adminEmails: [],
+          siteName: "Site without Admins",
         },
       ],
     })
@@ -344,18 +344,18 @@ describe("email template HTML escaping", () => {
   const escapedPayload = `&lt;/p&gt;&lt;h1&gt;URGENT&lt;/h1&gt;&lt;a href=&#39;https://evil.tld?a=1&amp;b=2&#39;&gt;Click &quot;verify&quot;&lt;/a&gt;&lt;p&gt;`
 
   const mockResource = {
-    id: "resource-id",
-    title: "Test Page",
-    permalink: "test-page",
-    siteId: 1,
-    parentId: null,
-    publishedVersionId: null,
+    createdAt: new Date(),
     draftBlobId: null,
-    state: null,
-    type: ResourceType.Page,
+    id: "resource-id",
+    parentId: null,
+    permalink: "test-page",
+    publishedVersionId: null,
     scheduledAt: null,
     scheduledBy: null,
-    createdAt: new Date(),
+    siteId: 1,
+    state: null,
+    title: "Test Page",
+    type: ResourceType.Page,
     updatedAt: new Date(),
   } satisfies Resource
 
@@ -364,8 +364,8 @@ describe("email template HTML escaping", () => {
     const templateData = {
       inviterName: maliciousPayload,
       recipientEmail: "recipient@example.com",
-      siteName: maliciousPayload,
       role: RoleType.Admin,
+      siteName: maliciousPayload,
     }
 
     // Act
@@ -381,11 +381,11 @@ describe("email template HTML escaping", () => {
     // Arrange
     const templateData = {
       recipientEmail: "publisher@example.com",
-      siteName: maliciousPayload,
       resource: {
         ...mockResource,
         title: maliciousPayload,
       },
+      siteName: maliciousPayload,
     }
 
     // Act
@@ -402,13 +402,13 @@ describe("email template HTML escaping", () => {
   it("keeps the resource title unescaped in publish alert subjects", () => {
     // Arrange
     const templateData = {
-      recipientEmail: "publisher@example.com",
       publisherEmail: "publisher@example.com",
-      siteName: "Test Site",
+      recipientEmail: "publisher@example.com",
       resource: {
         ...mockResource,
         title: "R&D Report",
       },
+      siteName: "Test Site",
     }
 
     // Act
@@ -428,9 +428,9 @@ describe("email template HTML escaping", () => {
   it("escapes site names in account deactivation warnings", () => {
     // Arrange
     const templateData = {
+      inHowManyDays: 7 as const,
       recipientEmail: "recipient@example.com",
       siteNames: [maliciousPayload],
-      inHowManyDays: 7 as const,
     }
 
     // Act
@@ -448,8 +448,8 @@ describe("email template HTML escaping", () => {
       recipientEmail: "recipient@example.com",
       sitesAndAdmins: [
         {
-          siteName: maliciousPayload,
           adminEmails: [maliciousPayload],
+          siteName: maliciousPayload,
         },
       ],
     }

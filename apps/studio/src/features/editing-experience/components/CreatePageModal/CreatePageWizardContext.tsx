@@ -18,8 +18,8 @@ export enum CreatePageFlowStates {
 }
 
 const createPageFormSchema = createPageSchema.omit({
-  siteId: true,
   folderId: true,
+  siteId: true,
 })
 
 interface CreatePageWizardProps extends Pick<UseDisclosureReturn, "onClose"> {
@@ -56,20 +56,20 @@ const useCreatePageWizardContext = ({
     useState<CreatePageFlowStates>(INITIAL_STEP_STATE)
 
   const formMethods = useZodForm({
-    schema: createPageFormSchema,
     defaultValues: {
-      title: "",
-      permalink: "",
       layout: "content",
+      permalink: "",
+      title: "",
     },
+    schema: createPageFormSchema,
   })
 
   const [layout, title] = formMethods.watch(["layout", "title"])
   const { data, isLoading: isPermalinkLoading } =
     trpc.resource.getWithFullPermalink.useQuery(
       {
-        siteId,
         resourceId: folderId ? String(folderId) : "",
+        siteId,
       },
       { enabled: !!folderId },
     )
@@ -77,15 +77,18 @@ const useCreatePageWizardContext = ({
   const layoutPreviewJson: IsomerSchema = useMemo(() => {
     let jsonPreview
     switch (layout) {
-      case "content":
+      case "content": {
         jsonPreview = contentLayoutPreview
         break
-      case "article":
+      }
+      case "article": {
         jsonPreview = articleLayoutPreview
         break
-      case "database":
+      }
+      case "database": {
         jsonPreview = databaseLayoutPreview
         break
+      }
     }
     // SAFETY: layout preview JSON is merged with the wizard title before save
     return merge(jsonPreview, {
@@ -109,19 +112,11 @@ const useCreatePageWizardContext = ({
   const handleCreatePage = formMethods.handleSubmit((values) => {
     mutate(
       {
-        siteId,
         folderId,
+        siteId,
         ...values,
       },
       {
-        onSuccess: ({ pageId }) => {
-          posthog.capture("page_created", {
-            site_id: siteId,
-            has_parent_folder: !!folderId,
-            layout: values.layout,
-          })
-          void router.push(`/sites/${siteId}/pages/${pageId}`)
-        },
         onError: (error) => {
           if (error.data?.code === "CONFLICT") {
             formMethods.setError(
@@ -132,6 +127,14 @@ const useCreatePageWizardContext = ({
           } else {
             console.error(error)
           }
+        },
+        onSuccess: ({ pageId }) => {
+          posthog.capture("page_created", {
+            site_id: siteId,
+            has_parent_folder: !!folderId,
+            layout: values.layout,
+          })
+          void router.push(`/sites/${siteId}/pages/${pageId}`)
         },
       },
     )
@@ -146,17 +149,17 @@ const useCreatePageWizardContext = ({
   }
 
   return {
-    siteId,
+    currentLayout: layout,
     currentStep,
     formMethods,
-    handleCreatePage,
-    isLoading: isPending || (!!folderId && isPermalinkLoading),
-    handleNextToDetailScreen,
+    fullPermalink: !!folderId ? data?.fullPermalink : "",
     handleBackToLayoutScreen,
+    handleCreatePage,
+    handleNextToDetailScreen,
+    isLoading: isPending || (!!folderId && isPermalinkLoading),
     layoutPreviewJson,
     onClose,
-    currentLayout: layout,
-    fullPermalink: !!folderId ? data?.fullPermalink : "",
+    siteId,
   }
 }
 

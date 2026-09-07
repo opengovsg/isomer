@@ -1,7 +1,7 @@
 import type { SVGProps } from "react"
 
-export const LiftUnderRepair = (props: SVGProps<SVGSVGElement>) => {
-  return (
+export const LiftUnderRepair = (props: SVGProps<SVGSVGElement>) => 
+  (
     <svg
       width="424"
       height="350"
@@ -222,4 +222,4 @@ export const LiftUnderRepair = (props: SVGProps<SVGSVGElement>) => {
       />
     </svg>
   )
-}
+

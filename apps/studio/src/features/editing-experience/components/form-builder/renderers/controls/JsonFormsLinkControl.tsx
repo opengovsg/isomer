@@ -21,8 +21,8 @@ const JsonFormsLinkControl = ({
   path,
   required,
   errors,
-}: ControlProps) => {
-  return (
+}: ControlProps) => 
+  (
     <BaseLinkControl
       // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
       data={data as string}
@@ -35,6 +35,6 @@ const JsonFormsLinkControl = ({
       errors={errors}
     />
   )
-}
+
 
 export default withJsonFormsControlProps(JsonFormsLinkControl)

@@ -24,8 +24,6 @@ const columnsHelper = createColumnHelper<StockFeatures, ResourceTableData>()
 const getColumns = ({ siteId }: ResourceTableProps) =>
   columnsHelper.columns([
     columnsHelper.accessor("title", {
-      minSize: 300,
-      header: () => <TableHeader>Title</TableHeader>,
       cell: ({ row }) => (
         <TitleCell
           siteId={siteId}
@@ -36,10 +34,10 @@ const getColumns = ({ siteId }: ResourceTableProps) =>
           scheduledAt={row.original.scheduledAt}
         />
       ),
+      header: () => <TableHeader>Title</TableHeader>,
+      minSize: 300,
     }),
     columnsHelper.display({
-      id: "resource_menu",
-      header: () => <TableHeader>Actions</TableHeader>,
       cell: ({ row }) => (
         <ResourceTableMenu
           parentId={row.original.parentId}
@@ -50,6 +48,8 @@ const getColumns = ({ siteId }: ResourceTableProps) =>
           resourceType={row.original.type}
         />
       ),
+      header: () => <TableHeader>Actions</TableHeader>,
+      id: "resource_menu",
       size: 24,
     }),
   ])
@@ -67,14 +67,14 @@ export const ResourceTable = ({
     useState<ResourceOrderByOption>("updated-desc")
 
   const columns = useMemo(
-    () => getColumns({ siteId, resourceId }),
+    () => getColumns({ resourceId, siteId }),
     [siteId, resourceId],
   )
 
   const { data: totalCount = 0, isLoading: isCountLoading } =
     trpc.resource.countWithoutRoot.useQuery({
-      siteId,
       resourceId,
+      siteId,
     })
 
   const { limit, onPaginationChange, skip, pagination, pageCount } =
@@ -87,11 +87,11 @@ export const ResourceTable = ({
   const { data: resources, isFetching } =
     trpc.resource.listWithoutRoot.useQuery(
       {
-        siteId,
-        resourceId,
-        orderBy: sortOption,
         limit,
         offset: skip,
+        orderBy: sortOption,
+        resourceId,
+        siteId,
       },
       {
         placeholderData: keepPreviousData, // Required for table to show previous data while fetching next page
@@ -99,17 +99,17 @@ export const ResourceTable = ({
     )
 
   const tableInstance = useTable({
-    features: stockFeatures,
+    autoResetPageIndex: false,
     columns,
     data: resources ?? [],
+    features: stockFeatures,
     manualFiltering: true,
     manualPagination: true,
-    autoResetPageIndex: false,
     onPaginationChange,
+    pageCount,
     state: {
       pagination,
     },
-    pageCount,
   })
 
   return (
@@ -146,8 +146,8 @@ export const ResourceTable = ({
         isFetching={isFetching || isCountLoading}
         instance={tableInstance}
         sx={{
-          tableLayout: "auto",
           overflowX: "auto",
+          tableLayout: "auto",
         }}
         totalRowCount={totalCount}
       />

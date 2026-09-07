@@ -1,7 +1,7 @@
 import { Text, Flex } from "@chakra-ui/react"
 
-export const EmptyArray = () => {
-  return (
+export const EmptyArray = () => 
+  (
     <Flex
       alignItems="center"
       flexDir="column"
@@ -20,4 +20,4 @@ export const EmptyArray = () => {
       </Text>
     </Flex>
   )
-}
+

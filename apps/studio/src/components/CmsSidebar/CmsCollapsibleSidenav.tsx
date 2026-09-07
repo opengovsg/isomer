@@ -14,8 +14,8 @@ export const CmsCollapsibleSidenav = ({
   title,
   onSidenavClose,
   children,
-}: PropsWithChildren<CmsCollapsibleSidenavProps>) => {
-  return (
+}: PropsWithChildren<CmsCollapsibleSidenavProps>) => 
+  (
     <Flex flexDir="column" px="1.25rem" py="1.5rem" gap="1.25rem">
       <Flex justify="space-between" align="center">
         <Text as="h2" textStyle="subhead-1">
@@ -37,4 +37,4 @@ export const CmsCollapsibleSidenav = ({
       {children}
     </Flex>
   )
-}
+

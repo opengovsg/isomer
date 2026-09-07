@@ -29,8 +29,8 @@ const Site = ({
   siteId?: number
   siteName?: string
   siteLogoUrl?: string
-}): React.ReactNode => {
-  return (
+}): React.ReactNode => 
+  (
     <LinkBox cursor="pointer" role="group">
       <LinkOverlay
         href={`/sites/${siteId}`}
@@ -85,14 +85,14 @@ const Site = ({
       </LinkOverlay>
     </LinkBox>
   )
-}
+
 
 const SiteListSection = ({
   children,
 }: {
   children: React.ReactNode
-}): React.ReactNode => {
-  return (
+}): React.ReactNode => 
+  (
     <Flex flexDirection="column" gap="1.5rem" marginTop="0.75rem">
       <Text textStyle="body-2">
         Don&apos;t see a site that you&apos;re supposed to have access to?{" "}
@@ -106,7 +106,7 @@ const SiteListSection = ({
       </SimpleGrid>
     </Flex>
   )
-}
+
 
 const SuspendableSiteList = (): React.ReactNode => {
   const [sites] = trpc.site.list.useSuspenseQuery()
@@ -154,8 +154,8 @@ const SuspendableSiteList = (): React.ReactNode => {
   )
 }
 
-const SiteListSkeleton = (): React.ReactNode => {
-  return (
+const SiteListSkeleton = (): React.ReactNode => 
+  (
     <SiteListSection>
       {[1, 2, 3].map((index) => (
         <Card key={index} width="100%">
@@ -166,6 +166,6 @@ const SiteListSkeleton = (): React.ReactNode => {
       ))}
     </SiteListSection>
   )
-}
+
 
 export const SiteList = withSuspense(SuspendableSiteList, <SiteListSkeleton />)

@@ -9,7 +9,7 @@ export const TiptapCalloutEditor = ({
   editor: ReturnType<typeof useCalloutEditor>
 }) => {
   // TODO: Add a loading state or use suspense
-  if (!editor) return null
+  if (!editor) {return null}
 
   return <Editor isNested menubar={CalloutMenuBar} editor={editor} />
 }

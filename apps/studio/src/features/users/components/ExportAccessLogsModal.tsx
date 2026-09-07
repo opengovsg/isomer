@@ -30,9 +30,9 @@ import {
 // month server-side, so this form only ever captures the scope — `month` and
 // `reportType` are supplied directly on submit.
 const exportAccessLogsFormSchema = createAuditLogExportRequestSchema.omit({
-  siteId: true,
   month: true,
   reportType: true,
+  siteId: true,
 })
 
 export const ExportAccessLogsModal = () => {
@@ -40,8 +40,8 @@ export const ExportAccessLogsModal = () => {
   const setModalState = useSetAtom(exportAccessLogsModalAtom)
 
   const form = useZodForm({
-    schema: exportAccessLogsFormSchema,
     defaultValues: { scope: AuditLogExportScope.AllSites },
+    schema: exportAccessLogsFormSchema,
   })
 
   const onClose = () => {
@@ -52,15 +52,15 @@ export const ExportAccessLogsModal = () => {
   // Shared with the settings page's export form: same toasts, same PostHog
   // captures.
   const { mutate: createExportRequest, isPending } =
-    useCreateAuditLogExportRequest({ siteId, onSuccess: onClose })
+    useCreateAuditLogExportRequest({ onSuccess: onClose, siteId })
 
-  const onSubmit = form.handleSubmit(({ scope }) =>
+  const onSubmit = form.handleSubmit(({ scope }) =>{ 
     createExportRequest({
-      scope,
-      siteId,
       month: getCurrentSingaporeMonth(),
       reportType: AuditLogExportRequestedReportType.Access,
-    }),
+      scope,
+      siteId,
+    }); },
   )
 
   return (

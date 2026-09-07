@@ -51,54 +51,54 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
 
   const SIDENAV_ITEMS: SideNavItem[] = [
     {
-      header: { label: "General", icon: BiWrench },
+      header: { icon: BiWrench, label: "General" },
       items: [
-        { label: "Name and agency", href: `/sites/${siteId}/settings/agency` },
+        { href: `/sites/${siteId}/settings/agency`, label: "Name and agency" },
         {
-          label: "Notification banner",
           href: `/sites/${siteId}/settings/notification`,
+          label: "Notification banner",
         },
         {
-          label: "Integrations",
           href: `/sites/${siteId}/settings/integrations`,
+          label: "Integrations",
         },
         {
-          label: "Redirects",
           href: `/sites/${siteId}/settings/redirects`,
+          label: "Redirects",
         },
         ...(isAdmin && isAuditLogEnabled
           ? [
               {
-                label: "Logs",
                 href: `/sites/${siteId}/settings/audit-log`,
+                label: "Logs",
               },
             ]
           : []),
       ],
     },
     {
-      header: { label: "Navigation", icon: BiDirections },
+      header: { icon: BiDirections, label: "Navigation" },
       items: [
         {
-          label: "Navigation bar",
           href: `/sites/${siteId}/settings/navbar`,
+          label: "Navigation bar",
         },
         {
-          label: "Footer",
           href: `/sites/${siteId}/settings/footer`,
+          label: "Footer",
         },
       ],
     },
     {
-      header: { label: "Branding", icon: BiPaint },
+      header: { icon: BiPaint, label: "Branding" },
       items: [
         {
-          label: "Colours",
           href: `/sites/${siteId}/settings/colours`,
+          label: "Colours",
         },
         {
-          label: "Logos and favicon",
           href: `/sites/${siteId}/settings/logo`,
+          label: "Logos and favicon",
         },
       ],
     },
@@ -109,8 +109,8 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
       title="Site settings"
       onSidenavClose={onSidenavClose}
     >
-      {SIDENAV_ITEMS.map(({ header, items }) => {
-        return (
+      {SIDENAV_ITEMS.map(({ header, items }) => 
+        (
           <VStack key={header.label} align="start">
             <HeaderRow {...header} />
             <VStack
@@ -130,7 +130,7 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
             </VStack>
           </VStack>
         )
-      })}
+      )}
     </CmsCollapsibleSidenav>
   )
 }

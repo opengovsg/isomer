@@ -8,8 +8,8 @@ interface DisableProps {
 export const Disable = ({
   when,
   children,
-}: PropsWithChildren<DisableProps>): ReactNode => {
-  return when ? (
+}: PropsWithChildren<DisableProps>): ReactNode => 
+  when ? (
     // NOTE: This is done so that the cursor has the disabled icon
     // while not permitting any `onClick` events.
     // Combining them into the same element leads to
@@ -22,4 +22,4 @@ export const Disable = ({
   ) : (
     children
   )
-}
+

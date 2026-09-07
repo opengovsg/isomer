@@ -52,8 +52,8 @@ export const publishSite = async (
     buildChangesWithStartedBuild = { ...buildChanges, startedBuild }
     logger.info(
       {
-        siteId,
         codeBuildId,
+        siteId,
       },
       "Started new CodeBuild project run",
     )

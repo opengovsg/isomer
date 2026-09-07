@@ -30,10 +30,10 @@ export const useResourceQuery = ({
     isLoading: isLoadingChildren,
   } = queryFn(
     {
+      limit: MAX_BATCH_RESOURCE_IDS,
       resourceId:
         (isResourceHighlighted ? parentDest?.id : moveDest?.id) ?? null,
       siteId: String(siteId),
-      limit: MAX_BATCH_RESOURCE_IDS,
     },
     {
       getNextPageParam: (lastPage) => lastPage.nextOffset,
@@ -55,8 +55,8 @@ export const useResourceQuery = ({
   const { data: resourceItemsWithAncestryStack } =
     trpc.resource.getBatchAncestryWithSelf.useQuery(
       {
-        siteId: String(siteId),
         resourceIds: resourceIdsForAncestry,
+        siteId: String(siteId),
       },
       {
         enabled: !isLoadingChildren,

@@ -25,8 +25,8 @@ export const TagRowActionsMenu = ({
   isDisabled,
   isDragDisabled = false,
   onDelete,
-}: TagRowActionsMenuProps) => {
-  return (
+}: TagRowActionsMenuProps) => 
+  (
     <Menu isLazy>
       <MenuButton
         as={IconButton}
@@ -35,7 +35,7 @@ export const TagRowActionsMenu = ({
         color={isDragDisabled ? "interaction.support.disabled" : undefined}
         isDisabled={isDisabled}
         aria-label={`${upperFirst(noun)} ${index + 1} actions`}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) =>{  e.stopPropagation(); }}
       />
       <Portal>
         <MenuList>
@@ -54,4 +54,4 @@ export const TagRowActionsMenu = ({
       </Portal>
     </Menu>
   )
-}
+

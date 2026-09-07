@@ -29,12 +29,12 @@ import { DrawerHeader } from "./DrawerHeader"
 const HEADER_LABELS = {
   article: "Edit article page header",
   content: "Edit content page header",
-  index: "Edit index page header",
   database: "Edit page header",
+  index: "Edit index page header",
 } as const satisfies Record<string, string>
 
 const getHeaderLabel = (layout: string): string => {
-  if (!Object.hasOwn(HEADER_LABELS, layout)) return "Edit header information"
+  if (!Object.hasOwn(HEADER_LABELS, layout)) {return "Edit header information"}
   // SAFETY: Object.hasOwn confirms layout is a key of HEADER_LABELS
   return HEADER_LABELS[layout as keyof typeof HEADER_LABELS]
 }
@@ -61,9 +61,9 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
 
   const { data: collectionTags = [], isLoading: isCollectionTagsLoading } =
     useCollectionTags({
+      enabled: isCollectionItem,
       resourceId: pageId,
       siteId,
-      enabled: isCollectionItem,
     })
 
   const toast = useToast()
@@ -87,7 +87,7 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
 
   const filteredSchema = useMemo(() => {
     switch (previewPageState.layout) {
-      case ISOMER_USABLE_PAGE_LAYOUTS.Database:
+      case ISOMER_USABLE_PAGE_LAYOUTS.Database: {
         // For database layout, exclude the database field from metadata editing
         // since it's handled by the separate database editor (DatabaseEditorStateDrawer)
         return getScopedSchema({
@@ -95,7 +95,8 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
           scope: "page",
           exclude: ["database"],
         })
-      case ISOMER_USABLE_PAGE_LAYOUTS.Collection:
+      }
+      case ISOMER_USABLE_PAGE_LAYOUTS.Collection: {
         // For collection layout, only show the subtitle field, as the other
         // fields are part of the new collection index editing experience
         return getScopedSchema({
@@ -103,8 +104,10 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
           scope: "page",
           include: ["subtitle"],
         })
-      default:
+      }
+      default: {
         return metadataSchema
+      }
     }
   }, [metadataSchema, previewPageState.layout])
 
@@ -114,12 +117,12 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
     setSavedPageState(previewPageState)
     mutate(
       {
+        content: JSON.stringify(previewPageState),
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
       },
       {
-        onSuccess: () => setDrawerState({ state: "root" }),
+        onSuccess: () =>{  setDrawerState({ state: "root" }); },
       },
     )
   }, [
@@ -157,10 +160,10 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
         <DrawerHeader
           isDisabled={isPending}
           onBackClick={() => {
-            if (!isEqual(previewPageState, savedPageState)) {
-              onDiscardChangesModalOpen()
-            } else {
+            if (isEqual(previewPageState, savedPageState)) {
               handleDiscardChanges()
+            } else {
+              onDiscardChangesModalOpen()
             }
           }}
           label={getHeaderLabel(savedPageState.layout)}
@@ -189,7 +192,7 @@ const MetadataEditorStateDrawer = (): React.ReactNode => {
                 schema={filteredSchema}
                 validateFn={validateFn}
                 data={previewPageState.page}
-                handleChange={(data) => handleChange(data)}
+                handleChange={(data) =>{  handleChange(data); }}
               />
             </Box>
           </Box>

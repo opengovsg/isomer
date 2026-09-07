@@ -48,18 +48,18 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   const [, setIsDismissed] = useIsNotificationDismissed()
 
   const notificationMutation = trpc.site.setNotification.useMutation({
-    onSuccess: () => {
-      void trpcUtils.site.getNotification.invalidate({ siteId })
-      toast({
-        ...SETTINGS_TOAST_MESSAGES.success,
-        status: "success",
-      })
-    },
     onError: () => {
       toast({
         title: "Error saving site notification!",
         description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
         status: "error",
+      })
+    },
+    onSuccess: () => {
+      void trpcUtils.site.getNotification.invalidate({ siteId })
+      toast({
+        ...SETTINGS_TOAST_MESSAGES.success,
+        status: "success",
       })
     },
   })
@@ -77,19 +77,19 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
 
   const isDirty = !isEqual(state, previousNotification)
 
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+  useNavigationEffect({ callback: setNextUrl, isDirty, isOpen })
 
-  const onSubmit = () =>
+  const onSubmit = () =>{ 
     notificationMutation.mutate({
-      siteId,
       notification: state,
-    })
+      siteId,
+    }); }
 
   return (
     <ErrorProvider>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() => setNextUrl("")}
+        onClose={() =>{  setNextUrl(""); }}
         nextUrl={nextUrl}
       />
       <SettingsGrid>
@@ -112,7 +112,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
                 // NOTE: We have to set `isDismissed` here because
                 // we need to show the notification banner again when
                 // the user toggles it on
-                if (isEmpty(data)) setIsDismissed(false)
+                if (isEmpty(data)) {setIsDismissed(false)}
               }}
             />
           </Box>
@@ -128,13 +128,13 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-NotificationSettingsPage.getLayout = (page) => {
-  return (
+NotificationSettingsPage.getLayout = (page) => 
+  (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
       page={SiteSettingsLayout(page)}
     />
   )
-}
+
 
 export default NotificationSettingsPage

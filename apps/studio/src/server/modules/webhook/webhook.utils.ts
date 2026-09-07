@@ -27,12 +27,12 @@ const updateCurrentAndSupersededBuilds = async (
   await db
     .updateTable("CodeBuildJobs")
     .set({ status: buildStatus })
-    .where((eb) => {
-      return eb.or([
+    .where((eb) => 
+      eb.or([
         eb("CodeBuildJobs.buildId", "=", buildId),
         eb("CodeBuildJobs.supersededByBuildId", "=", buildId),
       ])
-    })
+    )
     .execute()
 }
 
@@ -56,12 +56,12 @@ export const updateCodebuildStatusAndSendEmails = async (
   try {
     codebuildJobIdsForSentEmails = await sendEmails(gb, buildId, status)
     logger.info(
-      { buildId, status, codebuildJobIdsForSentEmails },
+      { buildId, codebuildJobIdsForSentEmails, status },
       `Emails sent for buildId ${String(buildId)}`,
     )
   } catch (error) {
     logger.error(
-      { buildId, status, error },
+      { buildId, error, status },
       `Failed to send notification emails for build status ${String(status)} for buildId ${String(buildId)}.`,
     )
   }
@@ -94,8 +94,8 @@ const sendEmails = async (
     .selectFrom("CodeBuildJobs")
     .innerJoin("User", "User.id", "CodeBuildJobs.userId")
     .innerJoin("Resource", "Resource.id", "CodeBuildJobs.resourceId")
-    .where((eb) => {
-      return eb.and([
+    .where((eb) => 
+      eb.and([
         eb.or([
           eb("CodeBuildJobs.buildId", "=", buildId),
           eb("CodeBuildJobs.supersededByBuildId", "=", buildId),
@@ -103,7 +103,7 @@ const sendEmails = async (
         eb("CodeBuildJobs.emailSent", "=", false), // only consider builds that haven't had an email sent yet
         eb("User.email", "is not", null), // only consider users with an email
       ])
-    })
+    )
     .selectAll()
     .select(["CodeBuildJobs.id as codeBuildJobId"])
     .execute()
@@ -117,7 +117,7 @@ const sendEmails = async (
       }
 
       switch (buildStatus) {
-        case "SUCCEEDED":
+        case "SUCCEEDED": {
           // Toppan users can only access gazettes in studio, and the
           // successful publish email links to the raw studio resource which
           // they cannot view. Suppress the email for them (Toppan users only
@@ -139,7 +139,8 @@ const sendEmails = async (
             }),
           })
           return acc
-        case "FAILED":
+        }
+        case "FAILED": {
           acc.push({
             id: info.codeBuildJobId, // codebuild job id
             promise: sendFailedPublishEmail({
@@ -149,13 +150,15 @@ const sendEmails = async (
             }),
           })
           return acc
-        default:
-          return acc // no emails for other statuses
+        }
+        default: {
+          return acc
+        } // no emails for other statuses
       }
     }, []),
   )
   const emailPromisesSettled = await Promise.allSettled(
-    emailPromisesWithCodebuildJobId.map((t) => t.promise),
+    emailPromisesWithCodebuildJobId.map( async (t) => t.promise),
   )
   // get the codebuildJobIds for which the email was successfully sent
   const codebuildJobIdsForSentEmails: string[] = []
@@ -181,7 +184,7 @@ const sendEmails = async (
 const isEmailFunctionalityActive = (gb: GrowthBook, isScheduled: boolean) => {
   if (isScheduled) {
     return gb.isOn(ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY)
-  } else {
-    return gb.isOn(ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY)
   }
+    return gb.isOn(ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY)
+  
 }

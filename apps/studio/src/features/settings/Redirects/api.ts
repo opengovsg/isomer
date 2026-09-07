@@ -33,7 +33,7 @@ export function useResolveRedirectReferences(
   references: string[],
 ) {
   const { data } = trpc.redirect.resolveReferences.useQuery(
-    { siteId, references },
+    { references, siteId },
     {
       enabled: references.length > 0,
       // Keep the previous resolutions visible while a new page loads
@@ -51,7 +51,7 @@ export function useCreateRedirect() {
     // Invalidate the whole router so both list and count refetch
     onSuccess: () => void utils.redirect.invalidate(),
   })
-  return { mutate, isPending }
+  return { isPending, mutate }
 }
 
 // Deleting a redirect removes it from the site immediately
@@ -60,7 +60,7 @@ export function useDeleteRedirect() {
   const { mutate, isPending } = trpc.redirect.delete.useMutation({
     onSuccess: () => void utils.redirect.invalidate(),
   })
-  return { mutate, isPending }
+  return { isPending, mutate }
 }
 
 // Validates an uploaded CSV without writing. Uses the mutation (not a query) so
@@ -73,7 +73,7 @@ export function useDeleteRedirect() {
 export function useBulkValidateRedirects(siteId: number) {
   const { mutateAsync } = trpc.redirect.bulkValidate.useMutation()
   return {
-    validate: (csv: string) => mutateAsync({ siteId, csv }),
+    validate:  async (csv: string) => mutateAsync({ csv, siteId }),
   }
 }
 
@@ -84,8 +84,8 @@ export function useBulkCreateRedirects() {
   const utils = trpc.useUtils()
   const { mutateAsync, isPending } = trpc.redirect.bulkCreate.useMutation({
     onSuccess: (result) => {
-      if (result.ok) void utils.redirect.invalidate()
+      if (result.ok) {void utils.redirect.invalidate()}
     },
   })
-  return { mutateAsync, isPending }
+  return { isPending, mutateAsync }
 }

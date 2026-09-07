@@ -19,8 +19,8 @@ describe("useLinkEditorFileMetaSuffix", () => {
     // Arrange
     const { result } = renderHook(() =>
       useLinkEditorFileMetaSuffix({
-        initialLinkText: INITIAL_FILE_LINK_TEXT,
         initialLinkHref: FILE_HREF,
+        initialLinkText: INITIAL_FILE_LINK_TEXT,
         showLinkText: true,
       }),
     )
@@ -49,8 +49,8 @@ describe("useLinkEditorFileMetaSuffix", () => {
       // Arrange
       const { result } = renderHook(() =>
         useLinkEditorFileMetaSuffix({
-          initialLinkText: INITIAL_FILE_LINK_TEXT,
           initialLinkHref: linkHref,
+          initialLinkText: INITIAL_FILE_LINK_TEXT,
           showLinkText: true,
         }),
       )
@@ -74,8 +74,8 @@ describe("useLinkEditorFileMetaSuffix", () => {
     // Arrange
     const { result } = renderHook(() =>
       useLinkEditorFileMetaSuffix({
-        initialLinkText: INITIAL_FILE_LINK_TEXT,
         initialLinkHref: FILE_HREF,
+        initialLinkText: INITIAL_FILE_LINK_TEXT,
         showLinkText: false,
       }),
     )
@@ -99,8 +99,8 @@ describe("useLinkEditorFileMetaSuffix", () => {
     // Arrange
     const { result } = renderHook(() =>
       useLinkEditorFileMetaSuffix({
-        initialLinkText: INITIAL_FILE_LINK_TEXT,
         initialLinkHref: FILE_HREF,
+        initialLinkText: INITIAL_FILE_LINK_TEXT,
         showLinkText: true,
       }),
     )
@@ -125,8 +125,8 @@ describe("useLinkEditorFileMetaSuffix", () => {
     // Arrange
     const { result } = renderHook(() =>
       useLinkEditorFileMetaSuffix({
-        initialLinkText: INITIAL_FILE_LINK_TEXT,
         initialLinkHref: FILE_HREF,
+        initialLinkText: INITIAL_FILE_LINK_TEXT,
         showLinkText: true,
       }),
     )
@@ -146,8 +146,8 @@ describe("useLinkEditorFileMetaSuffix", () => {
     // Arrange
     const { result } = renderHook(() =>
       useLinkEditorFileMetaSuffix({
-        initialLinkText: INITIAL_FILE_LINK_TEXT,
         initialLinkHref: FILE_HREF,
+        initialLinkText: INITIAL_FILE_LINK_TEXT,
         showLinkText: true,
       }),
     )
@@ -172,8 +172,8 @@ describe("useLinkEditorFileMetaSuffix", () => {
     // Arrange
     const { result } = renderHook(() =>
       useLinkEditorFileMetaSuffix({
-        initialLinkText: INITIAL_FILE_LINK_TEXT,
         initialLinkHref: FILE_HREF,
+        initialLinkText: INITIAL_FILE_LINK_TEXT,
         showLinkText: true,
       }),
     )
@@ -193,8 +193,8 @@ describe("useLinkEditorFileMetaSuffix", () => {
     // Arrange
     const { result } = renderHook(() =>
       useLinkEditorFileMetaSuffix({
-        initialLinkText: INITIAL_FILE_LINK_TEXT,
         initialLinkHref: FILE_HREF,
+        initialLinkText: INITIAL_FILE_LINK_TEXT,
         showLinkText: true,
       }),
     )

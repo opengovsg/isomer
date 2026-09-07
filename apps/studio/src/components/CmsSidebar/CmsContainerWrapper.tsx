@@ -33,30 +33,30 @@ export const CmsContainerWrapper = ({
 
   const pageNavItems: CmsSidebarItem[] = [
     {
-      icon: BiFolder,
-      label: "Site content",
       href: `/sites/${siteId}`,
+      icon: BiFolder,
       isActive:
         router.asPath === `/sites/${siteId}` ||
         router.asPath.startsWith(`/sites/${siteId}/pages`),
+      label: "Site content",
     },
     {
+      href: `/sites/${siteId}/users`,
       icon: BiGroup,
       label: "Collaborators",
-      href: `/sites/${siteId}/users`,
     },
     {
-      icon: BiCog,
-      label: "Settings",
       href: `/sites/${siteId}/settings/agency`,
+      icon: BiCog,
       isActive: router.asPath.startsWith(`/sites/${siteId}/settings`),
+      label: "Settings",
     },
     ...(isUserIsomerAdmin
       ? [
           {
+            href: `/sites/${siteId}/admin`,
             icon: BiStar,
             label: "Isomer Admin Settings",
-            href: `/sites/${siteId}/admin`,
           },
         ]
       : []),
@@ -73,9 +73,9 @@ export const CmsContainerWrapper = ({
         ]
       : []),
     {
+      href: "https://support.isomer.gov.sg",
       icon: BiHelpCircle,
       label: "Get support",
-      href: "https://support.isomer.gov.sg",
     },
   ]
 

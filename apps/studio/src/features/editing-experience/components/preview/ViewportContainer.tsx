@@ -45,11 +45,11 @@ export const ViewportContainer = ({
   const containerProps: Partial<FlexProps> = useMemo(() => {
     if (viewport === "fullscreen") {
       return {
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
         bottom: 0,
+        left: 0,
+        position: "fixed",
+        right: 0,
+        top: 0,
       }
     }
 

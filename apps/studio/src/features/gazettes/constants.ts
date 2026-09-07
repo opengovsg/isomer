@@ -17,23 +17,23 @@ export const GAZETTE_CATEGORIES: { label: string; value: string }[] =
 export const GAZETTE_SUBCATEGORY_LABEL = "Sub-category"
 
 export const governmentGazetteSubcategories = {
-  NOTICES_UNDER_OTHER_ACTS: "Notices under other Acts",
+  ADVERTISEMENTS: "Advertisements",
   APPOINTMENTS: "Appointments",
+  AUDITED_REPORTS: "Audited Reports",
+  BANKRUPTCY_ACT_NOTICE: "Bankruptcy Act Notice",
   CESSATION_OF_SERVICE: "Cessation of Service",
+  COMPANIES_ACT_NOTICE: "Companies Act Notice",
   CORRIGENDUM: "Corrigendum",
+  DEATH: "Death",
   DISMISSALS: "Dismissals",
   LEAVE: "Leave",
+  NOTICES_UNDER_OTHER_ACTS: "Notices under other Acts",
   NOTICES_UNDER_THE_CONSTITUTION: "Notices under the Constitution",
-  DEATH: "Death",
+  OTHERS: "Others",
+  REVOCATION: "Revocation",
+  TENDERS: "Tenders",
   TERMINATION_OF_SERVICE: "Termination of Service",
   VACATION_OF_SERVICE: "Vacation of Service",
-  BANKRUPTCY_ACT_NOTICE: "Bankruptcy Act Notice",
-  COMPANIES_ACT_NOTICE: "Companies Act Notice",
-  OTHERS: "Others",
-  ADVERTISEMENTS: "Advertisements",
-  TENDERS: "Tenders",
-  REVOCATION: "Revocation",
-  AUDITED_REPORTS: "Audited Reports",
 } as const
 
 export const governmentGazetteSubcategoriesKeys = Object.values(
@@ -41,11 +41,11 @@ export const governmentGazetteSubcategoriesKeys = Object.values(
 )
 
 export const legislativeSupplementsSubcategories = {
-  SUBSIDIARY_LEGISLATION_SUPPLEMENT: "Subsidiary Legislation Supplement",
-  BILLS_SUPPLEMENT: "Bills Supplement",
   ACTS_SUPPLEMENT: "Acts Supplement",
+  BILLS_SUPPLEMENT: "Bills Supplement",
   REVISED_ACTS: "Revised Acts",
   REVISED_SUBSIDIARY_LEGISLATION: "Revised Subsidiary Legislation",
+  SUBSIDIARY_LEGISLATION_SUPPLEMENT: "Subsidiary Legislation Supplement",
 } as const
 
 export const legislativeSupplementsSubcategoriesKeys = Object.values(

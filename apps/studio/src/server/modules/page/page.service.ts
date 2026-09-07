@@ -14,9 +14,9 @@ export const createDefaultPage = ({
   switch (layout) {
     case "content": {
       const contentDefaultPage = {
+        content: [],
         layout: ISOMER_USABLE_PAGE_LAYOUTS.Content,
         page: { contentPageHeader: { summary: "This is the page summary" } },
-        content: [],
         version: "0.1.0",
       } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
       return contentDefaultPage
@@ -24,13 +24,13 @@ export const createDefaultPage = ({
 
     case "article": {
       const articleDefaultPage = {
+        content: [],
         layout: ISOMER_USABLE_PAGE_LAYOUTS.Article,
         page: {
-          date: format(new Date(), "dd/MM/yyyy"),
-          category: "Feature Articles",
           articlePageHeader: { summary: "This is the page summary" },
+          category: "Feature Articles",
+          date: format(new Date(), "dd/MM/yyyy"),
         },
-        content: [],
         version: "0.1.0",
       } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 
@@ -39,6 +39,7 @@ export const createDefaultPage = ({
 
     case "database": {
       const databaseDefaultPage = {
+        content: [],
         layout: ISOMER_USABLE_PAGE_LAYOUTS.Database,
         page: {
           contentPageHeader: { summary: "This is the page summary" },
@@ -51,7 +52,6 @@ export const createDefaultPage = ({
             },
           },
         },
-        content: [],
         version: "0.1.0",
       } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 
@@ -65,8 +65,8 @@ export const createDefaultPage = ({
   }
 }
 
-export const createFolderIndexPage = (title: string) => {
-  return {
+export const createFolderIndexPage = (title: string) => (
+  {
     version: "0.1.0",
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Index,
     // NOTE: cannot use placeholder values here
@@ -79,4 +79,4 @@ export const createFolderIndexPage = (title: string) => {
     },
     content: [DEFAULT_CHILDREN_PAGES_BLOCK],
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
-}
+)

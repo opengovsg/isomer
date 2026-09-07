@@ -83,6 +83,14 @@ export const AddUserModal = () => {
   )
 
   const { mutate: createUser, isPending } = trpc.user.create.useMutation({
+    onError: (error) => {
+      toast({
+        status: "error",
+        title: "Failed to create user",
+        description: error.message,
+      })
+      reset()
+    },
     onSuccess: async (createdUsers) => {
       posthog.capture("site_user_invited", {
         site_id: siteId,
@@ -96,14 +104,6 @@ export const AddUserModal = () => {
         description: `Sent invite to ${createdUsers.length === 1 ? createdUsers[0]?.email : createdUsers.length + " users"}. They'll receive an email in a few minutes.`,
       })
     },
-    onError: (error) => {
-      toast({
-        status: "error",
-        title: "Failed to create user",
-        description: error.message,
-      })
-      reset()
-    },
   })
 
   const {
@@ -112,7 +112,7 @@ export const AddUserModal = () => {
     isSuccess,
     isError,
   } = trpc.whitelist.isEmailWhitelisted.useQuery(
-    { siteId, email: (debouncedEmail || "").trim() },
+    { email: (debouncedEmail || "").trim(), siteId },
     {
       enabled: false,
     },
@@ -145,7 +145,7 @@ export const AddUserModal = () => {
   // Check whitelist when email changes
   useEffect(() => {
     // no need to check whitelist if email is not entered or already invalid
-    if (!debouncedEmail || errors.email) return
+    if (!debouncedEmail || errors.email) {return}
 
     void checkWhitelist()
   }, [debouncedEmail, errors.email, checkWhitelist])
@@ -167,10 +167,10 @@ export const AddUserModal = () => {
         ],
       },
       {
-        onSuccess: () => reset(),
         onSettled: () => {
           handleOnClose()
         },
+        onSuccess: () =>{  reset(); },
       },
     )
   })
@@ -228,7 +228,7 @@ export const AddUserModal = () => {
                       key={role}
                       value={role}
                       isSelected={watch("role") === role}
-                      onClick={() => setValue("role", role)}
+                      onClick={() =>{  setValue("role", role); }}
                       permissionLabels={permissionLabels}
                     />
                   ))}

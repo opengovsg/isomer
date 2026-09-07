@@ -6,14 +6,14 @@ import { createBaseLogger } from "~/lib/logger"
 const logger = createBaseLogger({ path: "searchsg.service" })
 
 export const SEARCHSG_BASE_URL = "https://api.services.search.gov.sg/admin"
-export const EGAZETTE_DOCUMENT_INDEX = env.EGAZETTE_DOCUMENT_INDEX
+export const {EGAZETTE_DOCUMENT_INDEX} = env
 export const ISOMER_UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
 const SearchSgApi = {
-  auth: () => `/v1/auth/token`,
-  site: (id: string) => `/v2/sites/${id}`,
   app: (id: string, appId: string) => `/v2/sites/${id}/apps/${appId}`,
+  auth: () => `/v1/auth/token`,
   project: (projectId: string) => `/v2/projects/${projectId}`,
+  site: (id: string) => `/v2/sites/${id}`,
 } as const
 
 interface UpdateSearchSgSiteNameProps {
@@ -93,7 +93,7 @@ export const updateSearchSGConfig = async (
   // This is to avoid accidentally updating a production site in a non-prod environment
   if (!["production", "staging"].includes(env.NEXT_PUBLIC_APP_ENV)) {
     logger.info(
-      { ...props, searchsgClientId, url, env: env.NEXT_PUBLIC_APP_ENV },
+      { ...props, env: env.NEXT_PUBLIC_APP_ENV, searchsgClientId, url },
       `[INFO] Skipping SearchSG config update for ${url} - not in production or staging environment`,
     )
     return
@@ -133,10 +133,10 @@ export const updateSearchSGConfig = async (
 
   const kind = props._kind
   switch (kind) {
-    case "colour":
+    case "colour": {
       const app = findWebsiteSearchApp(data.siteDetail.applications)
 
-      return client
+      return await client
         .url(SearchSgApi.app(searchsgClientId, app.appId))
         .json({
           config: { theme: { primary: props.colour, fontFamily: "Inter" } },
@@ -144,7 +144,8 @@ export const updateSearchSGConfig = async (
         .patch()
         .res()
         .catch(logAndRethrow)
-    case "name":
+    }
+    case "name": {
       const { projectId } = data.project
       if (!projectId) {
         logger.error(
@@ -156,12 +157,13 @@ export const updateSearchSGConfig = async (
         )
       }
 
-      return client
+      return await client
         .url(SearchSgApi.project(projectId))
         .json({ projectName: props.name })
         .patch()
         .res()
         .catch(logAndRethrow)
+    }
     default: {
       const exhaustiveCheck: never = kind
       // SAFETY: unreachable default branch — kind is narrowed to the UpdateSearchSGConfigProps union

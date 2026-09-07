@@ -2,8 +2,8 @@ import { Link, Text } from "@chakra-ui/react"
 import Image from "next/image"
 import NextLink from "next/link"
 
-export const RestrictedMiniFooter = (): React.ReactNode => {
-  return (
+export const RestrictedMiniFooter = (): React.ReactNode => 
+  (
     <Text
       display="flex"
       alignItems="center"
@@ -26,4 +26,4 @@ export const RestrictedMiniFooter = (): React.ReactNode => {
       </Link>
     </Text>
   )
-}
+

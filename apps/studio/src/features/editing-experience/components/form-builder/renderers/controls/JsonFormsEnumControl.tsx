@@ -31,8 +31,8 @@ const JsonFormsEnumControl = ({
   path,
   enabled,
   handleChange,
-}: ControlProps & OwnPropsOfEnum) => {
-  return (
+}: ControlProps & OwnPropsOfEnum) => 
+  (
     <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
@@ -63,6 +63,6 @@ const JsonFormsEnumControl = ({
       </FormControl>
     </Box>
   )
-}
+
 
 export default withJsonFormsEnumProps(JsonFormsEnumControl)

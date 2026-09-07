@@ -32,10 +32,10 @@ export const jsonFormsIntegerControlTester: RankedTester = rankWith(
     or(schemaTypeIs("integer"), schemaTypeIs("number")),
     schemaMatches(
       (schema) =>
-        (Object.prototype.hasOwnProperty.call(schema, "maximum") ||
-          Object.prototype.hasOwnProperty.call(schema, "exclusiveMaximum")) &&
-        (Object.prototype.hasOwnProperty.call(schema, "minimum") ||
-          Object.prototype.hasOwnProperty.call(schema, "exclusiveMinimum")),
+        (Object.hasOwn(schema, "maximum") ||
+          Object.hasOwn(schema, "exclusiveMaximum")) &&
+        (Object.hasOwn(schema, "minimum") ||
+          Object.hasOwn(schema, "exclusiveMinimum")),
     ),
   ),
 )
@@ -62,7 +62,7 @@ const JsonFormsIntegerControl = ({
 
   const onChange = (valueAsString: string, valueAsNumber: number) => {
     if (valueAsString === "") {
-      handleChange(path, undefined)
+      handleChange(path)
     } else {
       handleChange(path, valueAsNumber)
     }

@@ -19,7 +19,7 @@ import { useSignInContext } from "../SignInContext"
 
 const EmailInputErrorMessage = ({ type, message }: Partial<FieldError>) => {
   switch (type) {
-    case "INTERNAL_SERVER_ERROR":
+    case "INTERNAL_SERVER_ERROR": {
       return (
         <Text>
           We are having trouble sending an OTP to this email address.{" "}
@@ -35,9 +35,11 @@ const EmailInputErrorMessage = ({ type, message }: Partial<FieldError>) => {
           .
         </Text>
       )
+    }
     case "UNAUTHORIZED":
-    default:
+    default: {
       return message
+    }
   }
 }
 
@@ -59,7 +61,6 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
   const router = useRouter()
 
   const loginMutation = trpc.auth.email.login.useMutation({
-    onSuccess,
     onError: (error) => {
       if (error.data?.code === "UNAUTHORIZED") {
         setErrorState("unauthorized")
@@ -67,6 +68,7 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
 
       setError("email", { type: error.data?.code, message: error.message })
     },
+    onSuccess,
   })
 
   useEffect(() => {
@@ -75,9 +77,9 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
     }
   }, [router.query.error, setError])
 
-  const handleSignIn = handleSubmit(({ email }) => {
-    return loginMutation.mutate({ email })
-  })
+  const handleSignIn = handleSubmit(({ email }) =>{  
+    loginMutation.mutate({ email }); }
+  )
 
   return (
     <form onSubmit={handleSignIn} noValidate>

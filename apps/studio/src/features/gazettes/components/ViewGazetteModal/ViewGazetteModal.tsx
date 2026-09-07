@@ -74,6 +74,14 @@ export const ViewGazetteModal = ({
 
   const { mutateAsync: deleteGazette, isPending: isDeleting } =
     trpc.gazette.delete.useMutation({
+      onError: (error) => {
+        toast({
+          status: "error",
+          title: "Failed to delete gazette",
+          description: error.message,
+          ...BRIEF_TOAST_SETTINGS,
+        })
+      },
       onSuccess: () => {
         toast({
           status: "success",
@@ -83,14 +91,6 @@ export const ViewGazetteModal = ({
         })
         void utils.gazette.list.invalidate()
         handleClose()
-      },
-      onError: (error) => {
-        toast({
-          status: "error",
-          title: "Failed to delete gazette",
-          description: error.message,
-          ...BRIEF_TOAST_SETTINGS,
-        })
       },
     })
 
@@ -102,8 +102,8 @@ export const ViewGazetteModal = ({
 
   const onDelete = async () => {
     await deleteGazette({
-      siteId,
       gazetteId: Number(gazetteId),
+      siteId,
     })
   }
 
@@ -148,7 +148,7 @@ export const ViewGazetteModal = ({
                       variant="outline"
                       colorScheme="critical"
                       leftIcon={<BiTrash />}
-                      onClick={() => setView("delete")}
+                      onClick={() =>{  setView("delete"); }}
                     >
                       Delete this Gazette permanently
                     </Button>
@@ -209,7 +209,7 @@ export const ViewGazetteModal = ({
               <Box mt="1.5rem">
                 <Checkbox
                   isChecked={isConfirmed}
-                  onChange={(e) => setIsConfirmed(e.target.checked)}
+                  onChange={(e) =>{  setIsConfirmed(e.target.checked); }}
                 >
                   <Text textStyle="body-2">
                     Yes, delete this Gazette permanently
@@ -247,8 +247,8 @@ interface DataFieldProps {
   value: string
 }
 
-const DataField = ({ label, value }: DataFieldProps) => {
-  return (
+const DataField = ({ label, value }: DataFieldProps) => 
+  (
     <Box w="100%">
       <Text textStyle="subhead-2" color="base.content.medium" mb="0.25rem">
         {label}
@@ -258,10 +258,10 @@ const DataField = ({ label, value }: DataFieldProps) => {
       </Text>
     </Box>
   )
-}
 
-const DeleteDataField = ({ label, value }: DataFieldProps) => {
-  return (
+
+const DeleteDataField = ({ label, value }: DataFieldProps) => 
+  (
     <Box>
       <Text textStyle="caption-1" color="base.content.medium">
         {label}
@@ -271,4 +271,4 @@ const DeleteDataField = ({ label, value }: DataFieldProps) => {
       </Text>
     </Box>
   )
-}
+

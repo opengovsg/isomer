@@ -58,19 +58,19 @@ const useCreateCollectionPageWizardContext = ({
     useState<CreateCollectionPageFlowStates>(INITIAL_STEP_STATE)
 
   const formMethods = useZodForm({
-    schema: createCollectionPageFormSchema,
     defaultValues: {
-      title: "",
       permalink: "",
+      title: "",
       type: ResourceType.CollectionPage,
     },
+    schema: createCollectionPageFormSchema,
   })
 
   const [type, title] = formMethods.watch(["type", "title"])
   const { data, isLoading: isPermalinkLoading } =
     trpc.resource.getWithFullPermalink.useQuery({
-      siteId,
       resourceId: collectionId ? String(collectionId) : "",
+      siteId,
     })
 
   const pagePreviewJson: IsomerSchema = useMemo(() => {
@@ -101,19 +101,11 @@ const useCreateCollectionPageWizardContext = ({
     (values: z.output<typeof createCollectionPageFormSchema>) => {
       mutate(
         {
-          siteId,
           collectionId,
+          siteId,
           ...values,
         },
         {
-          onSuccess: ({ pageId }) => {
-            posthog.capture("collection_page_created", {
-              site_id: siteId,
-              resource_type: values.type,
-            })
-            const nextType = getResourceSubpath(type)
-            void router.push(`/sites/${siteId}/${nextType}/${pageId}`)
-          },
           onError: (error) => {
             if (
               error.data?.code === "CONFLICT" &&
@@ -139,6 +131,14 @@ const useCreateCollectionPageWizardContext = ({
               console.error(error)
             }
           },
+          onSuccess: ({ pageId }) => {
+            posthog.capture("collection_page_created", {
+              site_id: siteId,
+              resource_type: values.type,
+            })
+            const nextType = getResourceSubpath(type)
+            void router.push(`/sites/${siteId}/${nextType}/${pageId}`)
+          },
         },
       )
     },
@@ -153,17 +153,17 @@ const useCreateCollectionPageWizardContext = ({
   }
 
   return {
-    siteId,
     currentStep,
-    formMethods,
-    handleCreatePage,
-    isLoading: isPending || isPermalinkLoading,
-    handleNextToDetailScreen,
-    handleBackToTypeScreen,
-    pagePreviewJson,
-    onClose,
     currentType: type,
+    formMethods,
     fullPermalink: data?.fullPermalink || "",
+    handleBackToTypeScreen,
+    handleCreatePage,
+    handleNextToDetailScreen,
+    isLoading: isPending || isPermalinkLoading,
+    onClose,
+    pagePreviewJson,
+    siteId,
   }
 }
 

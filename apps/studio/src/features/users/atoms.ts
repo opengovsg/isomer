@@ -9,10 +9,10 @@ import type {
 } from "./types"
 
 export const DEFAULT_UPDATE_USER_MODAL_STATE = {
-  siteId: 0,
-  userId: "",
   email: "",
   role: RoleType.Editor,
+  siteId: 0,
+  userId: "",
 }
 
 export const updateUserModalAtom = atom<UpdateUserModalState>(
@@ -20,8 +20,8 @@ export const updateUserModalAtom = atom<UpdateUserModalState>(
 )
 
 export const DEFAULT_ADD_USER_MODAL_STATE = {
-  siteId: 0,
   hasWhitelistError: false,
+  siteId: 0,
 }
 
 export const addUserModalAtom = atom<AddUserModalState>(
@@ -44,8 +44,8 @@ export const removeUserModalAtom = atom<RemoveUserModalState>(
 )
 
 export const DEFAULT_EXPORT_ACCESS_LOGS_MODAL_STATE = {
-  siteId: 0,
   isOpen: false,
+  siteId: 0,
 } as const
 
 export const exportAccessLogsModalAtom = atom<ExportAccessLogsModalState>(

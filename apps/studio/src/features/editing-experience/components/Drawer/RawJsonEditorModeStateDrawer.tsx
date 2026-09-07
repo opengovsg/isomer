@@ -49,12 +49,12 @@ const RawJsonEditorModeStateDrawer = (): React.ReactNode => {
     setSavedPageState(previewPageState)
     mutate(
       {
+        content: JSON.stringify(previewPageState),
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
       },
       {
-        onSuccess: () => setDrawerState({ state: "root" }),
+        onSuccess: () =>{  setDrawerState({ state: "root" }); },
       },
     )
   }, [
@@ -76,9 +76,9 @@ const RawJsonEditorModeStateDrawer = (): React.ReactNode => {
     }
   }
 
-  const isPendingChangesValid = useMemo(() => {
-    return validateFn(safeJsonParse(pendingChanges))
-  }, [pendingChanges])
+  const isPendingChangesValid = useMemo(() => 
+    validateFn(safeJsonParse(pendingChanges))
+  , [pendingChanges])
 
   const handleDiscardChanges = () => {
     setPreviewPageState(savedPageState)

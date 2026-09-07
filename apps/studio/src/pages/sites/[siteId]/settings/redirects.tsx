@@ -12,13 +12,13 @@ const RedirectsSettingsPage: NextPageWithLayout = () => {
   return <RedirectsSettings siteId={Number(siteId)} />
 }
 
-RedirectsSettingsPage.getLayout = (page) => {
-  return (
+RedirectsSettingsPage.getLayout = (page) => 
+  (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
       page={SiteSettingsLayout(page)}
     />
   )
-}
+
 
 export default RedirectsSettingsPage

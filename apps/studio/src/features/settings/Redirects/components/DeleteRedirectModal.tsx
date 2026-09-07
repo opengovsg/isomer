@@ -29,8 +29,8 @@ export const DeleteRedirectModal = ({
   isPending,
   onClose,
   onDelete,
-}: DeleteRedirectModalProps): React.ReactNode => {
-  return (
+}: DeleteRedirectModalProps): React.ReactNode => 
+  (
     <Modal isOpen={redirect !== null} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
@@ -96,4 +96,4 @@ export const DeleteRedirectModal = ({
       </ModalContent>
     </Modal>
   )
-}
+

@@ -29,11 +29,19 @@ export const RemoveUserModal = () => {
 
   const { siteId, userId } = useAtomValue(removeUserModalAtom)
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
-  const onClose = () => setRemoveUserModalState(DEFAULT_REMOVE_USER_MODAL_STATE)
+  const onClose = () =>{  setRemoveUserModalState(DEFAULT_REMOVE_USER_MODAL_STATE); }
 
   const { isSingpassEnabled } = useIsSingpassEnabled()
 
   const { mutate, isPending } = trpc.user.delete.useMutation({
+    onError: (err) => {
+      toast({
+        status: "error",
+        title: "Failed to remove user",
+        description: err.message,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
     onSettled: onClose,
     onSuccess: async (result) => {
       posthog.capture("site_user_removed", { site_id: siteId })
@@ -42,14 +50,6 @@ export const RemoveUserModal = () => {
       toast({
         status: "success",
         title: `Removed ${result.email} from site.`,
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-    onError: (err) => {
-      toast({
-        status: "error",
-        title: "Failed to remove user",
-        description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })
     },

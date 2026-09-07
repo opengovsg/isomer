@@ -32,29 +32,29 @@ const SHARED_HANDLERS = [
 // change + redirect UI — the generic content() mock returns a Page for every
 // id, which the validation rejects as an invalid destination.
 const PAGE_INTO_FOLDER_METADATA = resourceHandlers.getMetadataById.byId({
-  "4": {
-    id: "4",
-    type: "Page",
-    title: "Test page 1",
-    permalink: "test-page-1",
-    parentId: null,
-    siteId: 1,
-    publishedVersionId: "1",
-  },
   "1": {
     id: "1",
-    type: "Folder",
-    title: "Folder 1",
-    permalink: "folder-1",
     parentId: null,
-    siteId: 1,
+    permalink: "folder-1",
     publishedVersionId: null,
+    siteId: 1,
+    title: "Folder 1",
+    type: "Folder",
+  },
+  "4": {
+    id: "4",
+    parentId: null,
+    permalink: "test-page-1",
+    publishedVersionId: "1",
+    siteId: 1,
+    title: "Test page 1",
+    type: "Page",
   },
 })
 
 const meta: Meta<typeof SitePage> = {
-  title: "Pages/Site Management/Move Resource Modal",
   component: SitePage,
+  decorators: [],
   parameters: {
     getLayout: SitePage.getLayout,
     nextjs: {
@@ -65,7 +65,7 @@ const meta: Meta<typeof SitePage> = {
       },
     },
   },
-  decorators: [],
+  title: "Pages/Site Management/Move Resource Modal",
 }
 
 export default meta
@@ -90,7 +90,7 @@ export const Default: Story = {
     const moveButton = (
       await within(canvasElement.ownerDocument.body).findByText("Move to...")
     ).closest("button")
-    if (!moveButton) throw new Error("Move button not found")
+    if (!moveButton) {throw new Error("Move button not found")}
     await userEvent.click(moveButton)
   },
 }
@@ -113,7 +113,7 @@ export const SingleClick: Story = {
     const folder1 = (
       await within(canvasElement.ownerDocument.body).findByText("Folder 1")
     ).closest("button")
-    if (!folder1) throw new Error("Folder 1 not found")
+    if (!folder1) {throw new Error("Folder 1 not found")}
     await userEvent.click(folder1)
   },
 }
@@ -232,23 +232,23 @@ export const CollectionItemInvalidDestination: Story = {
         // be moved via the ordinary root dashboard listing without a real
         // collection fixture; "Folder 1" (id 1) is the invalid destination.
         resourceHandlers.getMetadataById.byId({
-          "4": {
-            id: "4",
-            type: "CollectionPage",
-            title: "Test page 1",
-            permalink: "test-page-1",
-            parentId: null,
-            siteId: 1,
-            publishedVersionId: null,
-          },
           "1": {
             id: "1",
-            type: "Folder",
-            title: "Folder 1",
-            permalink: "folder-1",
             parentId: null,
-            siteId: 1,
+            permalink: "folder-1",
             publishedVersionId: null,
+            siteId: 1,
+            title: "Folder 1",
+            type: "Folder",
+          },
+          "4": {
+            id: "4",
+            parentId: null,
+            permalink: "test-page-1",
+            publishedVersionId: null,
+            siteId: 1,
+            title: "Test page 1",
+            type: "CollectionPage",
           },
         }),
       ],

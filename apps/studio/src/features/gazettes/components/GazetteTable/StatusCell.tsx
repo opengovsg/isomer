@@ -10,40 +10,40 @@ interface StatusConfig {
 }
 
 const STATUS_CONFIG = {
-  published: {
-    icon: BiCheckCircle,
-    label: "Published",
-    color: "utility.feedback.success",
-  },
-  scheduled: {
-    icon: BiTimeFive,
-    label: "Scheduled",
-    color: "yellow.400",
-  },
-  scanning: {
-    icon: BiLoaderAlt,
-    label: "Scanning",
-    color: "yellow.400",
-  },
-  "publish-failure": {
-    icon: BiError,
-    label: "Publish failure",
-    color: "utility.feedback.critical",
-  },
-  "scanning-failure": {
-    icon: BiError,
-    label: "Scanning failure",
-    color: "utility.feedback.critical",
-  },
   "parsing-failure": {
+    color: "utility.feedback.critical",
     icon: BiError,
     label: "Parsing failure",
+  },
+  "publish-failure": {
     color: "utility.feedback.critical",
+    icon: BiError,
+    label: "Publish failure",
+  },
+  published: {
+    color: "utility.feedback.success",
+    icon: BiCheckCircle,
+    label: "Published",
+  },
+  scanning: {
+    color: "yellow.400",
+    icon: BiLoaderAlt,
+    label: "Scanning",
+  },
+  "scanning-failure": {
+    color: "utility.feedback.critical",
+    icon: BiError,
+    label: "Scanning failure",
+  },
+  scheduled: {
+    color: "yellow.400",
+    icon: BiTimeFive,
+    label: "Scheduled",
   },
   "upload-failure": {
+    color: "utility.feedback.critical",
     icon: BiError,
     label: "Upload failure",
-    color: "utility.feedback.critical",
   },
 } satisfies Record<GazetteStatus, StatusConfig>
 

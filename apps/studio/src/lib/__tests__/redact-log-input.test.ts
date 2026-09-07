@@ -6,11 +6,11 @@ describe("redactLogInput", () => {
   it("redacts known sensitive keys at the top level", () => {
     // Arrange
     const input = {
-      email: "user@example.com",
-      token: "123456",
-      password: "hunter2",
       apiKey: "sk-live",
+      email: "user@example.com",
+      password: "hunter2",
       secret: "shh",
+      token: "123456",
     }
 
     // Act
@@ -18,11 +18,11 @@ describe("redactLogInput", () => {
 
     // Assert
     expect(result).toEqual({
-      email: "user@example.com",
-      token: "[REDACTED]",
-      password: "[REDACTED]",
       apiKey: "[REDACTED]",
+      email: "user@example.com",
+      password: "[REDACTED]",
       secret: "[REDACTED]",
+      token: "[REDACTED]",
     })
   })
 
@@ -43,11 +43,11 @@ describe("redactLogInput", () => {
   it("redacts sensitive keys in nested objects and arrays", () => {
     // Arrange
     const input = {
+      meta: { refreshToken: "rt-123" },
       users: [
         { email: "a@example.com", token: "one" },
         { email: "b@example.com", token: "two" },
       ],
-      meta: { refreshToken: "rt-123" },
     }
 
     // Act
@@ -55,11 +55,11 @@ describe("redactLogInput", () => {
 
     // Assert
     expect(result).toEqual({
+      meta: { refreshToken: "[REDACTED]" },
       users: [
         { email: "a@example.com", token: "[REDACTED]" },
         { email: "b@example.com", token: "[REDACTED]" },
       ],
-      meta: { refreshToken: "[REDACTED]" },
     })
   })
 
@@ -72,7 +72,7 @@ describe("redactLogInput", () => {
     const stringResult = redactLogInput(stringInput)
     const numberResult = redactLogInput(numberInput)
     const nullResult = redactLogInput(null)
-    const undefinedResult = redactLogInput(undefined)
+    const undefinedResult = redactLogInput()
 
     // Assert
     expect(stringResult).toBe("plain")

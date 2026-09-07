@@ -33,24 +33,24 @@ export const DraggableBlock = ({
 }: DraggableBlockProps): React.ReactNode => {
   const { setHoveredBlockIndex } = useEditorDrawerContext()
 
-  useEffect(() => {
+  useEffect(() => 
     // If this row unmounts while hovered (e.g. clicking it navigates the
     // drawer away, or the block is deleted), no `mouseleave` fires — clear
     // the hover state directly so the preview highlight doesn't get stuck.
-    return () => {
+    () => {
       setHoveredBlockIndex((prev) => (prev === index ? null : prev))
     }
-  }, [index, setHoveredBlockIndex])
+  , [index, setHoveredBlockIndex])
 
   const icon = TYPE_TO_ICON[block.type]
 
-  const blockComponentName = useMemo(() => {
+  const blockComponentName = useMemo(() => 
     // NOTE: Because we use `Type.Ref` for prose,
     // this gets a `$Ref` only and not the concrete values
-    return block.type === "prose"
+    block.type === "prose"
       ? PROSE_COMPONENT_NAME
       : (getComponentSchema({ component: block.type }).title ?? "Unknown")
-  }, [block.type])
+  , [block.type])
 
   const previewText: string = renderComponentPreviewText({
     component: block,
@@ -76,8 +76,8 @@ export const DraggableBlock = ({
             <BaseBlock
               isHidden={isHidden}
               onClick={onClick}
-              onMouseEnter={() => setHoveredBlockIndex(index)}
-              onMouseLeave={() => setHoveredBlockIndex(null)}
+              onMouseEnter={() =>{  setHoveredBlockIndex(index); }}
+              onMouseLeave={() =>{  setHoveredBlockIndex(null); }}
               dragHandle={
                 <BaseBlockDragHandle
                   isDragging={isDragging}

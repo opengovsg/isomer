@@ -40,8 +40,8 @@ interface SuspendableLabelProps {
 const SuspendableLabel = ({ siteId, resourceId }: SuspendableLabelProps) => {
   const [{ fullPermalink }] =
     trpc.resource.getWithFullPermalink.useSuspenseQuery({
-      siteId,
       resourceId,
+      siteId,
     })
 
   return (
@@ -62,7 +62,7 @@ interface DraggableLinkButtonProps extends Omit<
 }
 
 const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
-  function DraggableLinkButton(
+  (
     {
       draggableProps,
       dragHandleProps,
@@ -76,7 +76,7 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
       resetLink,
     },
     ref,
-  ) {
+  ) => {
     const ctx = useJsonForms()
     const label = computeChildLabel(
       ctx.core?.data,
@@ -155,7 +155,7 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
                   gap="0.5rem"
                   w="full"
                   textAlign="start"
-                  onClick={() => setSelectedIndex(index)}
+                  onClick={() =>{  setSelectedIndex(index); }}
                 >
                   <VStack gap="0.25rem" alignItems="start">
                     <Text
@@ -223,7 +223,7 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
                   icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
                 />
                 <MenuList>
-                  <MenuItem onClick={() => setSelectedIndex(index)}>
+                  <MenuItem onClick={() =>{  setSelectedIndex(index); }}>
                     <Flex
                       alignItems="center"
                       gap="0.5rem"

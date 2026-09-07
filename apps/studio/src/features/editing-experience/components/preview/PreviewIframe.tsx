@@ -31,29 +31,32 @@ export const PreviewIframe = ({
 
   const containerStyles = useMemo(() => {
     if (!viewport)
-      return {
+      {return {
         width: "100%",
-      }
+      }}
     switch (viewport) {
-      case "tablet":
+      case "tablet": {
         return {
           width: "768px",
           borderRadius: "8px",
         }
-      case "mobile":
+      }
+      case "mobile": {
         return {
           width: "480px",
           borderRadius: "8px",
         }
-      case "responsive":
+      }
+      case "responsive": {
         return {
           width: "100%",
           borderRadius: "8px",
         }
+      }
       case "fullscreen": {
         return {
-          width: "100%",
           borderRadius: 0,
+          width: "100%",
         }
       }
     }
@@ -124,18 +127,18 @@ const IframeInnerComponent = ({
       })
     })
     observer.observe(document.body, {
-      attributes: true,
       attributeFilter: ["style"],
+      attributes: true,
     })
 
     const portalObserver = new MutationObserver(() => {
-      const portalRoot = document.getElementById("headlessui-portal-root")
+      const portalRoot = document.querySelector("#headlessui-portal-root")
 
       if (
         portalRoot &&
         !containerRef.current?.querySelector("#headlessui-portal-root")
       ) {
-        containerRef.current?.appendChild(portalRoot)
+        containerRef.current?.append(portalRoot)
       }
     })
 

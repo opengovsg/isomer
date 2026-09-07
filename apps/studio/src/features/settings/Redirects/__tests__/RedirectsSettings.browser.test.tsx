@@ -23,10 +23,10 @@ vi.mock("~/hooks/useIsAdvancedRedirectsEnabled", () => ({
 }))
 
 const REDIRECT_ROW = {
-  id: "1",
-  source: "/old-news",
   destination: "https://www.example.gov.sg",
+  id: "1",
   publishedAt: new Date("2026-01-01T00:00:00Z"),
+  source: "/old-news",
 }
 
 // What the site-wide roles query answers with. RedirectManagementProvider turns
@@ -34,7 +34,7 @@ const REDIRECT_ROW = {
 // rules rather than an ability injected past them. `undefined` roles stand for
 // the query not having resolved, which pairs with isPending/isError below.
 let currentRoles: { role: RoleType }[] | undefined = []
-let rolesQueryState = { isPending: false, isError: false }
+let rolesQueryState = { isError: false, isPending: false }
 
 // The table's reads and every write the card/modal owns. None of them is what
 // this test covers — the question is purely which controls a role is shown — so
@@ -43,23 +43,23 @@ vi.mock("~/utils/trpc", () => {
   const noop = vi.fn()
   return {
     trpc: {
-      useUtils: () => ({ redirect: { invalidate: noop } }),
+      redirect: {
+        bulkCreate: {
+          useMutation: () => ({ mutateAsync: noop, isPending: false }),
+        },
+        bulkValidate: { useMutation: () => ({ mutateAsync: noop }) },
+        count: { useQuery: () => ({ data: 1, isLoading: false }) },
+        create: { useMutation: () => ({ mutate: noop, isPending: false }) },
+        delete: { useMutation: () => ({ mutate: noop, isPending: false }) },
+        list: { useQuery: () => ({ data: [REDIRECT_ROW], isLoading: false }) },
+        resolveReferences: { useQuery: () => ({ data: [] }) },
+      },
       resource: {
         getRolesFor: {
           useQuery: () => ({ data: currentRoles, ...rolesQueryState }),
         },
       },
-      redirect: {
-        list: { useQuery: () => ({ data: [REDIRECT_ROW], isLoading: false }) },
-        count: { useQuery: () => ({ data: 1, isLoading: false }) },
-        resolveReferences: { useQuery: () => ({ data: [] }) },
-        create: { useMutation: () => ({ mutate: noop, isPending: false }) },
-        delete: { useMutation: () => ({ mutate: noop, isPending: false }) },
-        bulkValidate: { useMutation: () => ({ mutateAsync: noop }) },
-        bulkCreate: {
-          useMutation: () => ({ mutateAsync: noop, isPending: false }),
-        },
-      },
+      useUtils: () => ({ redirect: { invalidate: noop } }),
     },
   }
 })
@@ -82,7 +82,7 @@ const PERMISSION_ERROR = /We couldn't check your permissions/
 describe("RedirectsSettings", () => {
   beforeEach(() => {
     currentRoles = []
-    rolesQueryState = { isPending: false, isError: false }
+    rolesQueryState = { isError: false, isPending: false }
   })
 
   it("shows the add-redirect card, bulk upload and delete to a site admin", () => {
@@ -119,7 +119,7 @@ describe("RedirectsSettings", () => {
     // layout, hence Browser Mode.
     const rowHeightsFor = (role: RoleType) => {
       const { unmount } = renderAs(role)
-      const heights = Array.from(document.querySelectorAll("tbody tr")).map(
+      const heights = [...document.querySelectorAll('tbody tr')].map(
         (row) => row.getBoundingClientRect().height,
       )
       unmount()
@@ -141,7 +141,7 @@ describe("RedirectsSettings", () => {
     // admin would be told they lack access and then contradicted a moment
     // later.
     currentRoles = undefined
-    rolesQueryState = { isPending: true, isError: false }
+    rolesQueryState = { isError: false, isPending: true }
 
     // Act
     renderRedirects()
@@ -157,7 +157,7 @@ describe("RedirectsSettings", () => {
   it("says so when the roles query fails instead of silently going read-only", () => {
     // Arrange
     currentRoles = undefined
-    rolesQueryState = { isPending: false, isError: true }
+    rolesQueryState = { isError: true, isPending: false }
 
     // Act
     renderRedirects()

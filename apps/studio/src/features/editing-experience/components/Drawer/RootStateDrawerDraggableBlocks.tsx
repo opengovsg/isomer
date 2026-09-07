@@ -32,8 +32,8 @@ export const RootStateDrawerAlerts = ({
   scheduledAt,
   isPreviewingIndexPage,
   onPreviewConversionToIndexPage,
-}: RootStateDrawerAlertsProps) => {
-  return (
+}: RootStateDrawerAlertsProps) => 
+  (
     <>
       {isCustomContentIndexPage && (
         <Infobox
@@ -93,7 +93,7 @@ export const RootStateDrawerAlerts = ({
       )}
     </>
   )
-}
+
 
 interface RootStateDrawerBlocksSectionProps {
   disableBlocks: boolean
@@ -146,7 +146,7 @@ export const RootStateDrawerBlocksSection = ({
             gap="0.25rem"
             cursor="pointer"
             alignSelf="flex-start"
-            onClick={() => setDrawerState({ state: "siderailOrderingEditor" })}
+            onClick={() =>{  setDrawerState({ state: "siderailOrderingEditor" }); }}
           >
             <Icon
               as={BiCog}
@@ -181,7 +181,7 @@ export const RootStateDrawerBlocksSection = ({
                   flexShrink={0}
                   leftIcon={<BiPlusCircle fontSize="1.25rem" />}
                   variant="clear"
-                  onClick={() => setDrawerState({ state: "addBlock" })}
+                  onClick={() =>{  setDrawerState({ state: "addBlock" }); }}
                 >
                   Add block
                 </Button>
@@ -229,8 +229,8 @@ export const RootStateDrawerBlocksSection = ({
                             <Button
                               variant="outline"
                               w="100%"
-                              onClick={() =>
-                                setDrawerState({ state: "addBlock" })
+                              onClick={() =>{ 
+                                setDrawerState({ state: "addBlock" }); }
                               }
                               leftIcon={<Icon as={BiPlus} fontSize="1.25rem" />}
                             >
@@ -307,8 +307,8 @@ export const RootStateDrawerPreviewFooter = ({
   isSavingPage,
   onConfirmConvertIndexPageModalOpen,
   onCancelConversionToIndexPage,
-}: RootStateDrawerPreviewFooterProps) => {
-  return (
+}: RootStateDrawerPreviewFooterProps) => 
+  (
     <Box
       bgColor="base.canvas.default"
       boxShadow="md"
@@ -344,4 +344,4 @@ export const RootStateDrawerPreviewFooter = ({
       </VStack>
     </Box>
   )
-}
+

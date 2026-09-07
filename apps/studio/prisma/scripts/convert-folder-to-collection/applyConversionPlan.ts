@@ -48,9 +48,9 @@ const applyConversion = async (plan: ConversionPlan) => {
       .execute()
 
     await updateBlobById(tx, {
+      content: plan.indexPage.nextBlob,
       pageId: Number(plan.indexPage.resourceId),
       siteId: plan.folder.siteId,
-      content: plan.indexPage.nextBlob,
     })
     await tx
       .updateTable("Resource")
@@ -60,13 +60,13 @@ const applyConversion = async (plan: ConversionPlan) => {
 
     for (const p of plan.pages) {
       await updateBlobById(tx, {
+        content: p.nextBlob,
         pageId: Number(p.resourceId),
         siteId: plan.folder.siteId,
-        content: p.nextBlob,
       })
       await tx
         .updateTable("Resource")
-        .set({ type: ResourceType.CollectionPage, state: ResourceState.Draft })
+        .set({ state: ResourceState.Draft, type: ResourceType.CollectionPage })
         .where("id", "=", p.resourceId)
         .execute()
     }
@@ -89,18 +89,18 @@ const massPublish = async (plan: ConversionPlan, userId: string) => {
     await Promise.all(
       allResourceIds.map(async (resourceId) => {
         const result = await incrementVersion({
-          tx,
-          siteId: plan.folder.siteId,
           resourceId,
+          siteId: plan.folder.siteId,
+          tx,
           userId,
         })
-        if (!result) {
+        if (result) {
           console.log(
-            `  - ${resourceId}: no draft (already published) — skipped`,
+            `  - ${resourceId}: published v${result.newVersion.versionNum}`,
           )
         } else {
           console.log(
-            `  - ${resourceId}: published v${result.newVersion.versionNum}`,
+            `  - ${resourceId}: no draft (already published) — skipped`,
           )
         }
       }),
@@ -130,8 +130,8 @@ const main = async () => {
 
   const suggestedPath = findPlanForFolder(folderId.trim())
   const planPath = await input({
-    message: "Path to the folder conversion plan JSON",
     default: suggestedPath,
+    message: "Path to the folder conversion plan JSON",
     validate: (v) => v.trim().length > 0 || "Plan path is required",
   })
 
@@ -151,8 +151,8 @@ const main = async () => {
   printPlan(plan)
 
   const proceed = await confirm({
-    message: "Apply these changes as draft blobs (overwrites existing drafts)?",
     default: false,
+    message: "Apply these changes as draft blobs (overwrites existing drafts)?",
   })
   if (!proceed) {
     console.log("Aborted. No changes written.")
@@ -162,8 +162,8 @@ const main = async () => {
   await applyConversion(plan)
 
   const publish = await confirm({
-    message: "Mass-publish all converted resources now?",
     default: false,
+    message: "Mass-publish all converted resources now?",
   })
   if (!publish) {
     console.log("Done. Drafts left for review in Studio.")
@@ -180,8 +180,8 @@ const main = async () => {
 
 try {
   await main()
-} catch (err) {
-  console.error("\n✗ Apply failed:", err)
+} catch (error) {
+  console.error("\n✗ Apply failed:", error)
   process.exitCode = 1
 } finally {
   await db.destroy()

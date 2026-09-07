@@ -13,7 +13,103 @@ export const userHandlers = {
         return 0
       }),
   },
+  create: {
+    loading: () => {
+      return trpcMsw.user.create.mutation( async () => {
+        return new Promise(() => {
+          // Never resolve to simulate infinite loading
+        })
+      })
+    },
+    success: ({ email }: { email: string }) => {
+      return trpcMsw.user.create.mutation(() => {
+        return [
+          {
+            id: "1",
+            email,
+            role: RoleType.Admin,
+          },
+        ]
+      })
+    },
+  },
+  delete: {
+    loading: () => {
+      return trpcMsw.user.delete.mutation( async () => {
+        return new Promise(() => {
+          // Never resolve to simulate infinite loading
+        })
+      })
+    },
+    success: () => {
+      return trpcMsw.user.delete.mutation(() => {
+        return {
+          id: "1",
+          email: "test@example.com",
+        }
+      })
+    },
+  },
+  getUser: {
+    default: () => {
+      return trpcMsw.user.getUser.query(() => {
+        return {
+          id: "1",
+          name: "Test User",
+          email: "test@example.com",
+          role: RoleType.Admin,
+          createdAt: new Date(),
+          lastLoginAt: new Date(),
+        }
+      })
+    },
+  },
+  isIsomerAdmin: {
+    admin: () => {
+      return trpcMsw.user.isIsomerAdmin.query(() => {
+        return true
+      })
+    },
+    default: () => {
+      return trpcMsw.user.isIsomerAdmin.query(() => {
+        return false
+      })
+    },
+  },
   list: {
+    isomerAdmins: () => {
+      return trpcMsw.user.list.query(() => {
+        return [
+          {
+            id: "1",
+            name: "Should not show action menu",
+            email: "admin@open.gov.sg",
+            role: RoleType.Admin,
+            createdAt: new Date(),
+            lastLoginAt: new Date(),
+          },
+        ]
+      })
+    },
+    noUsers: () => {
+      return trpcMsw.user.list.query(() => {
+        return []
+      })
+    },
+    removeUserModal: () => {
+      return trpcMsw.user.list.query(() => {
+        return [
+          {
+            id: "2",
+            name: "Admin User",
+            email: "admin@example.com",
+            role: RoleType.Admin,
+            createdAt: new Date(),
+            lastLoginAt: new Date(),
+          },
+        ]
+      })
+    },
     users: () => {
       return trpcMsw.user.list.query(() => {
         return [
@@ -76,78 +172,15 @@ export const userHandlers = {
         ]
       })
     },
-    isomerAdmins: () => {
-      return trpcMsw.user.list.query(() => {
-        return [
-          {
-            id: "1",
-            name: "Should not show action menu",
-            email: "admin@open.gov.sg",
-            role: RoleType.Admin,
-            createdAt: new Date(),
-            lastLoginAt: new Date(),
-          },
-        ]
-      })
-    },
-    noUsers: () => {
-      return trpcMsw.user.list.query(() => {
-        return []
-      })
-    },
-    removeUserModal: () => {
-      return trpcMsw.user.list.query(() => {
-        return [
-          {
-            id: "2",
-            name: "Admin User",
-            email: "admin@example.com",
-            role: RoleType.Admin,
-            createdAt: new Date(),
-            lastLoginAt: new Date(),
-          },
-        ]
-      })
-    },
-  },
-  updateDetails: {
-    success: () => {
-      return trpcMsw.user.updateDetails.mutation(() => {
-        return {
-          name: "Test User",
-          phone: "91234567",
-        }
-      })
-    },
-    loading: () => {
-      return trpcMsw.user.updateDetails.mutation(() => {
-        return new Promise(() => {
-          // Never resolve to simulate infinite loading
-        })
-      })
-    },
-  },
-  create: {
-    success: ({ email }: { email: string }) => {
-      return trpcMsw.user.create.mutation(() => {
-        return [
-          {
-            id: "1",
-            email,
-            role: RoleType.Admin,
-          },
-        ]
-      })
-    },
-    loading: () => {
-      return trpcMsw.user.create.mutation(() => {
-        return new Promise(() => {
-          // Never resolve to simulate infinite loading
-        })
-      })
-    },
   },
   update: {
+    loading: () => {
+      return trpcMsw.user.update.mutation( async () => {
+        return new Promise(() => {
+          // Never resolve to simulate infinite loading
+        })
+      })
+    },
     success: () => {
       return trpcMsw.user.update.mutation(() => {
         return {
@@ -158,54 +191,21 @@ export const userHandlers = {
         }
       })
     },
+  },
+  updateDetails: {
     loading: () => {
-      return trpcMsw.user.update.mutation(() => {
+      return trpcMsw.user.updateDetails.mutation( async () => {
         return new Promise(() => {
           // Never resolve to simulate infinite loading
         })
       })
     },
-  },
-  getUser: {
-    default: () => {
-      return trpcMsw.user.getUser.query(() => {
-        return {
-          id: "1",
-          name: "Test User",
-          email: "test@example.com",
-          role: RoleType.Admin,
-          createdAt: new Date(),
-          lastLoginAt: new Date(),
-        }
-      })
-    },
-  },
-  delete: {
     success: () => {
-      return trpcMsw.user.delete.mutation(() => {
+      return trpcMsw.user.updateDetails.mutation(() => {
         return {
-          id: "1",
-          email: "test@example.com",
+          name: "Test User",
+          phone: "91234567",
         }
-      })
-    },
-    loading: () => {
-      return trpcMsw.user.delete.mutation(() => {
-        return new Promise(() => {
-          // Never resolve to simulate infinite loading
-        })
-      })
-    },
-  },
-  isIsomerAdmin: {
-    default: () => {
-      return trpcMsw.user.isIsomerAdmin.query(() => {
-        return false
-      })
-    },
-    admin: () => {
-      return trpcMsw.user.isIsomerAdmin.query(() => {
-        return true
       })
     },
   },

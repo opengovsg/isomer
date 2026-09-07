@@ -3,12 +3,12 @@ import type { CreateNextContextOptions } from "@trpc/server/adapters/next"
 import { GrowthBook } from "@growthbook/growthbook"
 import { getIronSession } from "iron-session"
 import { env } from "~/env.mjs"
-import { type Session, type SessionData } from "~/lib/types/session"
-import { type User } from "~prisma/generated/prisma/client"
+import type { Session, SessionData } from "~/lib/types/session"
+import type { User } from "~prisma/generated/prisma/client"
 
 import { generateSessionOptions } from "./modules/auth/session"
 import { db } from "./modules/database/database"
-import { type defaultUserSelect } from "./modules/me/me.select"
+import type { defaultUserSelect } from "./modules/me/me.select"
 import { prisma } from "./prisma"
 
 interface CreateContextOptions {
@@ -22,9 +22,9 @@ interface CreateContextOptions {
  */
 export function createContextInner(opts: CreateContextOptions) {
   return {
-    session: opts.session,
-    prisma,
     db,
+    prisma,
+    session: opts.session,
   }
 }
 
@@ -45,9 +45,9 @@ export const createContext = async (opts: CreateNextContextOptions) => {
 
   return {
     ...innerContext,
+    gb: await createGrowthBookContext(),
     req: opts.req,
     res: opts.res,
-    gb: await createGrowthBookContext(),
   }
 }
 

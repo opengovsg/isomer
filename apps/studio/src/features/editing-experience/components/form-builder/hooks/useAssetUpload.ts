@@ -18,10 +18,10 @@ export const getAssetUploadBackoffOptions = ({
   numOfAttempts = DEFAULT_NUM_OF_ATTEMPTS,
   baseTimeoutMs = DEFAULT_BASE_TIMEOUT_MS,
 }: UseAssetUploadProps) => ({
-  startingDelay: baseTimeoutMs,
-  numOfAttempts,
   delayFirstAttempt: true,
   maxDelay: MAX_ASSET_UPLOAD_BACKOFF_DELAY_MS,
+  numOfAttempts,
+  startingDelay: baseTimeoutMs,
 })
 
 export const useAssetUpload = ({
@@ -38,13 +38,13 @@ export const useAssetUpload = ({
           throw new Error(`Unable to read from ${src}`)
         }
         return src
-      }, getAssetUploadBackoffOptions({ numOfAttempts, baseTimeoutMs }))
+      }, getAssetUploadBackoffOptions({ baseTimeoutMs, numOfAttempts }))
       setIsLoading(false)
       return src
-    } catch (e) {
+    } catch (error) {
       setIsLoading(false)
-      console.error(e)
-      throw e
+      console.error(error)
+      throw error
     }
   }
 

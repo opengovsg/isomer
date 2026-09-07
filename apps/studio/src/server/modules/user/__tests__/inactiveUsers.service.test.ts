@@ -51,11 +51,11 @@ const setupIsomerAdminUser = async ({
   await db
     .insertInto("IsomerAdmin")
     .values({
-      userId: user.id,
+      expiry: null,
       role: email.includes("migrator")
         ? IsomerAdminRole.Migrator
         : IsomerAdminRole.Core,
-      expiry: null,
+      userId: user.id,
     })
     .execute()
 
@@ -88,28 +88,32 @@ const setupUserWrapper = async ({
 }: SetupUserWrapperProps): Promise<User> => {
   const user = await setupUser({
     email: email ?? crypto.randomUUID() + "@user.com",
-    lastLoginAt: lastLoginDaysAgo ? getDateOnlyInSG(lastLoginDaysAgo) : null,
     isDeleted,
+    lastLoginAt: lastLoginDaysAgo ? getDateOnlyInSG(lastLoginDaysAgo) : null,
   })
 
   if (siteId) {
     switch (sitePermission) {
-      case RoleType.Admin:
+      case RoleType.Admin: {
         await setupAdminPermissions({ siteId, userId: user.id, isDeleted })
         break
-      case RoleType.Publisher:
+      }
+      case RoleType.Publisher: {
         await setupPublisherPermissions({ siteId, userId: user.id, isDeleted })
         break
-      case RoleType.Editor:
+      }
+      case RoleType.Editor: {
         await setupEditorPermissions({ siteId, userId: user.id, isDeleted })
         break
-      default:
+      }
+      default: {
         const _: never = sitePermission
         throw new Error(`Invalid site permission`)
+      }
     }
   }
 
-  if (!createdDaysAgo) return user
+  if (!createdDaysAgo) {return user}
 
   return await db
     .updateTable("User")
@@ -127,12 +131,11 @@ describe("inactiveUsers.service", () => {
     beforeEach(async () => {
       vi.clearAllMocks()
       vi.spyOn(mailService, "sendAccountDeactivationEmail").mockResolvedValue(
-        undefined,
-      )
+        )
       vi.spyOn(
         mailService,
         "sendAccountDeactivationWarningEmail",
-      ).mockResolvedValue(undefined)
+      ).mockResolvedValue()
       await resetTables("Site", "User", "ResourcePermission", "AuditLog")
 
       const { site: _site } = await setupSite()
@@ -144,9 +147,9 @@ describe("inactiveUsers.service", () => {
     it("should successfully deactivate user with permissions", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
@@ -170,9 +173,9 @@ describe("inactiveUsers.service", () => {
     it("should create a PermissionDelete audit log entry attributed to the system user", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
@@ -187,9 +190,9 @@ describe("inactiveUsers.service", () => {
       expect(auditLogs).toHaveLength(1)
       expect(auditLogs[0]).toEqual(
         expect.objectContaining({
-          userId: systemUser.id,
-          siteId: site.id,
           metadata: { reason: "inactivity" },
+          siteId: site.id,
+          userId: systemUser.id,
         }),
       )
       // SAFETY: audit log delta shape is narrowed to the permission-delete fields under test.
@@ -206,9 +209,9 @@ describe("inactiveUsers.service", () => {
     it("should create one audit log entry per removed permission across multiple sites", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       const { site: otherSite } = await setupSite()
       await setupAdminPermissions({ siteId: otherSite.id, userId: user.id })
@@ -226,15 +229,15 @@ describe("inactiveUsers.service", () => {
       expect(auditLogs.map((log) => log.siteId)).toEqual(
         expect.arrayContaining([site.id, otherSite.id]),
       )
-      auditLogs.forEach((log) => expect(log.userId).toBe(systemUser.id))
+      auditLogs.forEach((log) =>{  expect(log.userId).toBe(systemUser.id); })
     })
 
     it("should recreate the system user and continue deactivating if it does not exist", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       await db.deleteFrom("User").where("id", "=", systemUser.id).execute()
 
@@ -277,10 +280,10 @@ describe("inactiveUsers.service", () => {
     it("should return early when user's permissions are already deleted", async () => {
       // Arrange
       await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
-        lastLoginDaysAgo: null,
         isDeleted: true,
+        lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
@@ -293,14 +296,14 @@ describe("inactiveUsers.service", () => {
     it("should handle multiple calls to deactivate same user without sending duplicate emails", async () => {
       // Arrange
       await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
       await Promise.all(
-        Array.from({ length: 5 }, () => bulkDeactivateInactiveUsers()),
+        Array.from({ length: 5 },  async () => bulkDeactivateInactiveUsers()),
       )
 
       // Assert
@@ -310,9 +313,9 @@ describe("inactiveUsers.service", () => {
     it("should deactivate user with permissions on multiple sites", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       const { site: otherSite } = await setupSite()
       await setupAdminPermissions({ siteId: otherSite.id, userId: user.id })
@@ -339,14 +342,14 @@ describe("inactiveUsers.service", () => {
     it("should exclude users being deactivated from admin list", async () => {
       // Arrange
       const user1 = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       const user2 = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
@@ -364,22 +367,22 @@ describe("inactiveUsers.service", () => {
       // Arrange
       // Create Site 1 with User A (to be deactivated) and User C (admin)
       const userToDeactivate = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       const adminOnSite1 = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Create Site 2 with User B (admin) - User A never had permissions here
       const { site: site2 } = await setupSite()
       const adminOnSite2 = await setupUserWrapper({
-        siteId: site2.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: null,
+        siteId: site2.id,
       })
 
       // Act
@@ -408,14 +411,14 @@ describe("inactiveUsers.service", () => {
     it("should send email with correct recipient and site data", async () => {
       // Arrange
       const userToDeactivate = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       const userNotToDeactivate = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
@@ -426,8 +429,8 @@ describe("inactiveUsers.service", () => {
         recipientEmail: userToDeactivate.email,
         sitesAndAdmins: [
           {
-            siteName: site.name,
             adminEmails: [userNotToDeactivate.email],
+            siteName: site.name,
           },
         ],
       })
@@ -436,9 +439,9 @@ describe("inactiveUsers.service", () => {
     it("should still send email if user is the last admin on a site", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
@@ -450,8 +453,8 @@ describe("inactiveUsers.service", () => {
         recipientEmail: user.email,
         sitesAndAdmins: [
           {
-            siteName: site.name,
             adminEmails: [],
+            siteName: site.name,
           },
         ],
       })
@@ -460,9 +463,9 @@ describe("inactiveUsers.service", () => {
     it("should still remove permissions when sendAccountDeactivationEmail throws error", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       vi.mocked(sendAccountDeactivationEmail).mockRejectedValueOnce(
         new Error("Email service error"),
@@ -484,14 +487,14 @@ describe("inactiveUsers.service", () => {
     it("should continue sending emails when retrieving site admins throws", async () => {
       // Arrange
       await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       const withSpy = vi.spyOn(db, "with").mockImplementationOnce(() => {
         throw new Error("Database error")
@@ -511,16 +514,16 @@ describe("inactiveUsers.service", () => {
     it("should only delete non-deleted permissions", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       // Add another permission that's already deleted
       const { site: otherSite } = await setupSite()
       const existingDeletedPermission = await setupAdminPermissions({
+        isDeleted: true,
         siteId: otherSite.id,
         userId: user.id,
-        isDeleted: true,
       })
 
       // Act
@@ -548,17 +551,17 @@ describe("inactiveUsers.service", () => {
     it("should not include active isomer admins and migrators in the email", async () => {
       // Arrange
       const userToDeactivate = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       await Promise.all(
-        TEST_ISOMER_ADMIN_EMAILS.map((email) =>
+        TEST_ISOMER_ADMIN_EMAILS.map( async (email) =>
           setupIsomerAdminUser({
-            siteId: site.id,
-            email,
             createdDaysAgo: 91,
+            email,
             lastLoginDaysAgo: null,
+            siteId: site.id,
           }),
         ),
       )
@@ -578,9 +581,9 @@ describe("inactiveUsers.service", () => {
     it("should not include themselves in the site admins list", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
@@ -592,8 +595,8 @@ describe("inactiveUsers.service", () => {
         recipientEmail: user.email,
         sitesAndAdmins: [
           {
-            siteName: site.name,
             adminEmails: [], // does not include themselves
+            siteName: site.name,
           },
         ],
       })
@@ -602,26 +605,26 @@ describe("inactiveUsers.service", () => {
     it("should not include non-admins (publishers + editors) in the site admins list", async () => {
       // Arrange
       await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       const admin = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: null,
+        siteId: site.id,
         sitePermission: RoleType.Admin,
       })
       const publisher = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: null,
+        siteId: site.id,
         sitePermission: RoleType.Publisher,
       })
       const editor = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: null,
+        siteId: site.id,
         sitePermission: RoleType.Editor,
       })
 
@@ -662,19 +665,19 @@ describe("inactiveUsers.service", () => {
     it("should return an empty array if all users are active", async () => {
       // Arrange
       const _userCreatedRecentlyNeverLoggedIn = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       const _userCreatedRecentlyLoggedInRecently = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: 1,
+        siteId: site.id,
       })
       const _userCreatedLongAgoLoggedInRecently = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: 89,
+        siteId: site.id,
       })
 
       // Act
@@ -689,9 +692,9 @@ describe("inactiveUsers.service", () => {
     it("should select users created over 90 days ago who never logged in", async () => {
       // Arrange
       const userCreatedLongAgoNeverLoggedIn = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
@@ -707,9 +710,9 @@ describe("inactiveUsers.service", () => {
     it("should NOT select users created under 90 days ago who never logged in", async () => {
       // Arrange
       const _userCreatedRecentlyNeverLoggedIn = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
@@ -724,9 +727,9 @@ describe("inactiveUsers.service", () => {
     it("should select users whose last login was over 90 days ago", async () => {
       // Arrange
       const userCreatedLongAgoLoggedInLongAgo = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: 91,
+        siteId: site.id,
       })
 
       // Act
@@ -742,9 +745,9 @@ describe("inactiveUsers.service", () => {
     it("should NOT select users whose last login was under 90 days ago", async () => {
       // Arrange
       const _userCreatedLongAgoLoggedInRecently = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: 89,
+        siteId: site.id,
       })
 
       // Act
@@ -759,29 +762,29 @@ describe("inactiveUsers.service", () => {
     it("should only select inactive users from a mixed pool", async () => {
       // Arrange
       const _userCreatedRecentlyNeverLoggedIn = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       const _userCreatedRecentlyLoggedInRecently = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: 1,
+        siteId: site.id,
       })
       const _userCreatedLongAgoLoggedInRecently = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: 89,
+        siteId: site.id,
       })
       const userCreatedLongAgoNeverLoggedIn = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       const userCreatedLongAgoLoggedInLongAgo = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: 91,
+        siteId: site.id,
       })
 
       // Act
@@ -807,10 +810,10 @@ describe("inactiveUsers.service", () => {
 
       for (const { createdDaysAgo, lastLoginDaysAgo } of optionsMap) {
         await setupUserWrapper({
-          siteId: site.id,
           createdDaysAgo,
-          lastLoginDaysAgo,
           isDeleted: true,
+          lastLoginDaysAgo,
+          siteId: site.id,
         })
       }
 
@@ -842,16 +845,16 @@ describe("inactiveUsers.service", () => {
     it("should select users who have at least one non-deleted resource permission", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       // Add a deleted resource permission for the user on another site
       const { site: otherSite } = await setupSite()
       await setupAdminPermissions({
+        isDeleted: true,
         siteId: otherSite.id,
         userId: user.id,
-        isDeleted: true,
       })
 
       // Act
@@ -867,16 +870,16 @@ describe("inactiveUsers.service", () => {
     it("should only return one instance of a user even if they have multiple resource permissions", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       // Add a non-deleted resource permission for the user on another site
       const { site: otherSite } = await setupSite()
       await setupAdminPermissions({
+        isDeleted: false,
         siteId: otherSite.id,
         userId: user.id,
-        isDeleted: false,
       })
 
       // Act
@@ -892,12 +895,12 @@ describe("inactiveUsers.service", () => {
     it("should NOT select isomer admins and migrators", async () => {
       // Arrange
       await Promise.all(
-        TEST_ISOMER_ADMIN_EMAILS.map((email) =>
+        TEST_ISOMER_ADMIN_EMAILS.map( async (email) =>
           setupIsomerAdminUser({
-            siteId: site.id,
-            email,
             createdDaysAgo: 91,
+            email,
             lastLoginDaysAgo: null,
+            siteId: site.id,
           }),
         ),
       )
@@ -922,9 +925,9 @@ describe("inactiveUsers.service", () => {
       await db
         .insertInto("IsomerAdmin")
         .values({
-          userId: expiredAdmin.id,
-          role: IsomerAdminRole.Core,
           expiry: new Date(Date.now() - 24 * 60 * 60 * 1000), // expired yesterday
+          role: IsomerAdminRole.Core,
+          userId: expiredAdmin.id,
         })
         .execute()
       await db
@@ -946,19 +949,19 @@ describe("inactiveUsers.service", () => {
     it("should filter users by fromDaysAgo when provided", async () => {
       // Arrange
       const userCreatedVeryLongAgo = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 120,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       const userCreatedLongAgo = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 100,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       const userCreatedRecently = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 80,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act + Assert (1)
@@ -998,19 +1001,19 @@ describe("inactiveUsers.service", () => {
     it("should filter users by fromDaysAgo for users who have logged in", async () => {
       // Arrange
       const _userLoggedInVeryLongAgo = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 120,
         lastLoginDaysAgo: 110,
+        siteId: site.id,
       })
       const userLoggedInLongAgo = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 100,
         lastLoginDaysAgo: 90,
+        siteId: site.id,
       })
       const _userLoggedInRecently = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 80,
         lastLoginDaysAgo: 70,
+        siteId: site.id,
       })
 
       // Act
@@ -1027,14 +1030,14 @@ describe("inactiveUsers.service", () => {
     it("should work with only fromDaysAgo parameter", async () => {
       // Arrange
       const userCreatedVeryLongAgo = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 110,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       const _userCreatedLongAgo = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 80,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
@@ -1050,9 +1053,9 @@ describe("inactiveUsers.service", () => {
     it("should return empty array when toDaysAgo is greater than fromDaysAgo", async () => {
       // Arrange
       await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 100,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
@@ -1069,9 +1072,9 @@ describe("inactiveUsers.service", () => {
     it("should return empty array when fromDaysAgo is less than 90", async () => {
       // Arrange
       await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 80,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
@@ -1099,9 +1102,9 @@ describe("inactiveUsers.service", () => {
       it("1 day", async () => {
         // Arrange
         const user = await setupUserWrapper({
-          siteId: site.id,
           createdDaysAgo: 89, // Will be inactive in 1 day (90 - 1 = 89)
           lastLoginDaysAgo: null,
+          siteId: site.id,
         })
 
         // Act
@@ -1111,9 +1114,9 @@ describe("inactiveUsers.service", () => {
 
         // Assert
         expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+          inHowManyDays: 1,
           recipientEmail: user.email,
           siteNames: [site.name],
-          inHowManyDays: 1,
         })
         await expect(
           bulkSendAccountDeactivationWarningEmails({ inHowManyDays: 1 }),
@@ -1123,9 +1126,9 @@ describe("inactiveUsers.service", () => {
       it("7 days", async () => {
         // Arrange
         const user = await setupUserWrapper({
-          siteId: site.id,
           createdDaysAgo: 83, // Will be inactive in 7 days (90 - 7 = 83)
           lastLoginDaysAgo: null,
+          siteId: site.id,
         })
 
         // Act
@@ -1135,9 +1138,9 @@ describe("inactiveUsers.service", () => {
 
         // Assert
         expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+          inHowManyDays: 7,
           recipientEmail: user.email,
           siteNames: [site.name],
-          inHowManyDays: 7,
         })
         await expect(
           bulkSendAccountDeactivationWarningEmails({ inHowManyDays: 7 }),
@@ -1147,9 +1150,9 @@ describe("inactiveUsers.service", () => {
       it("14 days", async () => {
         // Arrange
         const user = await setupUserWrapper({
-          siteId: site.id,
           createdDaysAgo: 76, // Will be inactive in 14 days (90 - 14 = 76)
           lastLoginDaysAgo: null,
+          siteId: site.id,
         })
 
         // Act
@@ -1159,9 +1162,9 @@ describe("inactiveUsers.service", () => {
 
         // Assert
         expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+          inHowManyDays: 14,
           recipientEmail: user.email,
           siteNames: [site.name],
-          inHowManyDays: 14,
         })
         await expect(
           bulkSendAccountDeactivationWarningEmails({ inHowManyDays: 14 }),
@@ -1172,9 +1175,9 @@ describe("inactiveUsers.service", () => {
     it("should not send multiple emails to the same user", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
@@ -1191,40 +1194,40 @@ describe("inactiveUsers.service", () => {
       // Assert
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledTimes(1)
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+        inHowManyDays: 1,
         recipientEmail: user.email,
         siteNames: [site.name],
-        inHowManyDays: 1,
       })
       // Assert that the user is not sent ANY email for days 7 method
       expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalledWith({
+        inHowManyDays: 7,
         recipientEmail: user.email,
         siteNames: [],
-        inHowManyDays: 7,
       })
       expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalledWith({
+        inHowManyDays: 7,
         recipientEmail: user.email,
         siteNames: [site.name],
-        inHowManyDays: 7,
       })
       // Assert that the user is not sent ANY email for days 14 method
       expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalledWith({
+        inHowManyDays: 14,
         recipientEmail: user.email,
         siteNames: [],
-        inHowManyDays: 14,
       })
       expect(sendAccountDeactivationWarningEmail).not.toHaveBeenCalledWith({
+        inHowManyDays: 14,
         recipientEmail: user.email,
         siteNames: [site.name],
-        inHowManyDays: 14,
       })
     })
 
     it("should not send warning emails to users who are active", async () => {
       // Arrange
       await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: 1,
+        siteId: site.id,
       })
 
       // Act
@@ -1239,14 +1242,14 @@ describe("inactiveUsers.service", () => {
     it("should send warning emails to all inactive users", async () => {
       // Arrange
       const user1 = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89, // Will be inactive in 1 day
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       const user2 = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89, // Will be inactive in 1 day
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
 
       // Act
@@ -1257,14 +1260,14 @@ describe("inactiveUsers.service", () => {
       // Assert
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledTimes(2)
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+        inHowManyDays: 1,
         recipientEmail: user1.email,
         siteNames: [site.name],
-        inHowManyDays: 1,
       })
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+        inHowManyDays: 1,
         recipientEmail: user2.email,
         siteNames: [site.name],
-        inHowManyDays: 1,
       })
     })
 
@@ -1284,9 +1287,9 @@ describe("inactiveUsers.service", () => {
       for (let i = 0; i < 3; i++) {
         users.push(
           await setupUserWrapper({
-            siteId: site.id,
             createdDaysAgo: 89,
             lastLoginDaysAgo: null,
+            siteId: site.id,
           }),
         )
       }
@@ -1300,9 +1303,9 @@ describe("inactiveUsers.service", () => {
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledTimes(3)
       users.forEach((user) => {
         expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+          inHowManyDays: 1,
           recipientEmail: user.email,
           siteNames: [site.name],
-          inHowManyDays: 1,
         })
       })
     })
@@ -1326,18 +1329,18 @@ describe("inactiveUsers.service", () => {
     it("should include multiple sites in the email", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: null,
+        siteId: site.id,
       })
       // Add another site permission for the user
       const { site: anotherSite } = await setupSite()
       await db
         .insertInto("ResourcePermission")
         .values({
-          userId: user.id,
-          siteId: anotherSite.id,
           role: RoleType.Admin,
+          siteId: anotherSite.id,
+          userId: user.id,
         })
         .execute()
 
@@ -1349,18 +1352,18 @@ describe("inactiveUsers.service", () => {
       // Assert
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledTimes(1)
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+        inHowManyDays: 1,
         recipientEmail: user.email,
         siteNames: [site.name, anotherSite.name],
-        inHowManyDays: 1,
       })
     })
 
     it("should work with users who have never logged in", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 89,
         lastLoginDaysAgo: null, // Never logged in
+        siteId: site.id,
       })
 
       // Act
@@ -1370,18 +1373,18 @@ describe("inactiveUsers.service", () => {
 
       // Assert
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+        inHowManyDays: 1,
         recipientEmail: user.email,
         siteNames: [site.name],
-        inHowManyDays: 1,
       })
     })
 
     it("should work with users who have logged in before", async () => {
       // Arrange
       const user = await setupUserWrapper({
-        siteId: site.id,
         createdDaysAgo: 91,
         lastLoginDaysAgo: 89, // Logged in 89 days ago
+        siteId: site.id,
       })
 
       // Act
@@ -1391,9 +1394,9 @@ describe("inactiveUsers.service", () => {
 
       // Assert
       expect(sendAccountDeactivationWarningEmail).toHaveBeenCalledWith({
+        inHowManyDays: 1,
         recipientEmail: user.email,
         siteNames: [site.name],
-        inHowManyDays: 1,
       })
     })
   })

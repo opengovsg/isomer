@@ -9,8 +9,8 @@ interface DirectorySidebarProps {
 
 export const DirectorySidebar = ({
   siteId,
-}: DirectorySidebarProps): React.ReactNode => {
-  return (
+}: DirectorySidebarProps): React.ReactNode => 
+  (
     <Flex flexDir="column" px="1.25rem" py="1.75rem">
       <DirectorySidebarContent
         siteId={siteId}
@@ -22,4 +22,4 @@ export const DirectorySidebar = ({
       />
     </Flex>
   )
-}
+

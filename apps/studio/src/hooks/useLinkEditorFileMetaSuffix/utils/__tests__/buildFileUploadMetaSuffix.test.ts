@@ -10,7 +10,7 @@ const mockFile = (name: string, size: number): File => ({ name, size }) as File
 describe("buildFileUploadMetaSuffix", () => {
   it("includes type and size for allowed extensions", () => {
     // Arrange + Act + Assert
-    expect(buildFileUploadMetaSuffix(mockFile("speech.pdf", 286720))).toBe(
+    expect(buildFileUploadMetaSuffix(mockFile("speech.pdf", 286_720))).toBe(
       " [PDF, 280.00 KB]",
     )
     expect(buildFileUploadMetaSuffix(mockFile("data.xlsx", 1024))).toBe(
@@ -42,7 +42,7 @@ describe("buildFileUploadMetaSuffix", () => {
   it("round-trips with stripFileUploadMetaSuffix", () => {
     // Arrange
     const cases = [
-      { base: "Download speech", file: mockFile("speech.pdf", 286720) },
+      { base: "Download speech", file: mockFile("speech.pdf", 286_720) },
       { base: "Download data", file: mockFile("unknown.bin", 100) },
       { base: "Download speech", file: mockFile("speech.pdf", 0) },
     ]

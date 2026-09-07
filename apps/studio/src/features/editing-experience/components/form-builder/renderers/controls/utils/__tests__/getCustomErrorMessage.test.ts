@@ -14,7 +14,7 @@ describe("getCustomErrorMessage", () => {
   })
 
   it("should return empty string when error is undefined", () => {
-    expect(getCustomErrorMessage(undefined)).toBe("")
+    expect(getCustomErrorMessage()).toBe("")
   })
 
   it("should return the original error message for other errors", () => {

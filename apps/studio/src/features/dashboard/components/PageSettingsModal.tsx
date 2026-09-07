@@ -72,6 +72,11 @@ const PageSettingsModalContent = ({
     handleSubmit,
     formState: { isDirty, errors },
   } = useZodForm({
+    defaultValues: {
+      permalink: permalinkTree[permalinkTree.length - 1] || "",
+      shouldCreateRedirect: true,
+      title: originalTitle,
+    },
     schema: basePageSettingsSchema.omit({ pageId: true, siteId: true }).extend({
       permalink: generateBasePermalinkSchema("page")
         .min(1, {
@@ -81,11 +86,6 @@ const PageSettingsModalContent = ({
           message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
         }),
     }),
-    defaultValues: {
-      title: originalTitle,
-      permalink: permalinkTree[permalinkTree.length - 1] || "",
-      shouldCreateRedirect: true,
-    },
   })
 
   const [title, permalink] = watch(["title", "permalink"])
@@ -93,8 +93,8 @@ const PageSettingsModalContent = ({
     // Case 1: Root page
     if (permalinkTree.length === 0 || permalinkTree[0] === "") {
       return {
-        permalink: "/",
         parentPermalinks: "",
+        permalink: "/",
       }
     }
 
@@ -102,15 +102,15 @@ const PageSettingsModalContent = ({
     // Case 2: Parent is root page
     if (!parentPermalinks) {
       return {
-        permalink,
         parentPermalinks: "/",
+        permalink,
       }
     }
 
     // Default case: Nested page
     return {
-      permalink,
       parentPermalinks: `/${parentPermalinks}/`,
+      permalink,
     }
   }, [permalink, permalinkTree])
 
@@ -130,7 +130,7 @@ const PageSettingsModalContent = ({
     },
   )
 
-  const originalPermalink = permalinkTree[permalinkTree.length - 1] ?? ""
+  const originalPermalink = permalinkTree.at(-1) ?? ""
   const isPagePublished = publishedVersionId !== null
   // Offer the redirect only when a published Page/CollectionPage URL actually
   // changes — an unpublished page has no live URL to preserve, so the server
@@ -146,6 +146,14 @@ const PageSettingsModalContent = ({
 
   const { mutate: updatePageSettings, isPending } =
     trpc.page.updateSettings.useMutation({
+      onError: (error) => {
+        toast({
+          title: "Failed to save settings",
+          description: error.message,
+          status: "error",
+        })
+        reset()
+      },
       onSuccess: async () => {
         // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
         await utils.page.invalidate()
@@ -166,14 +174,6 @@ const PageSettingsModalContent = ({
               },
         )
       },
-      onError: (error) => {
-        toast({
-          title: "Failed to save settings",
-          description: error.message,
-          status: "error",
-        })
-        reset()
-      },
     })
 
   const onSubmit = handleSubmit((data) => {
@@ -186,8 +186,8 @@ const PageSettingsModalContent = ({
           ...data,
         },
         {
-          onSuccess: () => reset(data),
           onSettled: onClose,
+          onSuccess: () =>{  reset(data); },
         },
       )
     }
@@ -282,7 +282,7 @@ const PageSettingsModalContent = ({
                         alignItems="flex-start"
                         size="lg"
                         isChecked={!!value}
-                        onChange={(e) => onChange(e.target.checked)}
+                        onChange={(e) =>{  onChange(e.target.checked); }}
                         ref={ref}
                         {...field}
                       >

@@ -1,8 +1,8 @@
 import { program } from "commander"
-import { mkdirSync, writeFileSync } from "fs"
+import { mkdirSync, writeFileSync } from "node:fs"
 import * as jose from "jose"
-import { dirname, join } from "path"
-import { fileURLToPath } from "url"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { z } from "zod"
 
 program.option(
@@ -27,6 +27,16 @@ program.parse()
 
 const opts = z
   .object({
+    encryptionAlg: z.union([
+      z.literal("ECDH-ES+A128KW"),
+      z.literal("ECDH-ES+A192KW"),
+      z.literal("ECDH-ES+A256KW"),
+    ]),
+    encryptionCrv: z.union([
+      z.literal("P-256"),
+      z.literal("P-384"),
+      z.literal("P-521"),
+    ]),
     environment: z.union([
       z.literal("development"),
       z.literal("staging"),
@@ -44,21 +54,11 @@ const opts = z
       z.literal("P-384"),
       z.literal("P-521"),
     ]),
-    encryptionAlg: z.union([
-      z.literal("ECDH-ES+A128KW"),
-      z.literal("ECDH-ES+A192KW"),
-      z.literal("ECDH-ES+A256KW"),
-    ]),
-    encryptionCrv: z.union([
-      z.literal("P-256"),
-      z.literal("P-384"),
-      z.literal("P-521"),
-    ]),
   })
   .parse(program.opts())
 
 const OUTPUT_FOLDER = join(
-  dirname(fileURLToPath(import.meta.url)),
+  import.meta.dirname,
   "..",
   "keys",
   opts.environment,
@@ -72,8 +72,8 @@ async function generateSigningKey({ alg, crv }: { alg: string; crv: string }) {
     jose.exportSPKI(keyPair.publicKey),
     jose.calculateJwkThumbprint(jwk),
   ])
-  const json = { ...jwk, kid, use: "sig", alg }
-  return { privateKey, publicKey, jwk: json }
+  const json = { ...jwk, alg, kid, use: "sig" }
+  return { jwk: json, privateKey, publicKey }
 }
 
 async function generateEncryptionKey({
@@ -90,8 +90,8 @@ async function generateEncryptionKey({
     jose.exportSPKI(keyPair.publicKey),
     jose.calculateJwkThumbprint(jwk),
   ])
-  const json = { ...jwk, kid, use: "enc", alg }
-  return { privateKey, publicKey, jwk: json }
+  const json = { ...jwk, alg, kid, use: "enc" }
+  return { jwk: json, privateKey, publicKey }
 }
 
 const [encryption, signing] = await Promise.all([

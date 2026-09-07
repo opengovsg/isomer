@@ -31,8 +31,8 @@ const config: StorybookConfig = {
 
   typescript: {
     check: false,
-    skipCompiler: false,
     reactDocgen: "react-docgen-typescript",
+    skipCompiler: false,
   },
 
   // Force Storybook to use the same React version as the app, rather than its

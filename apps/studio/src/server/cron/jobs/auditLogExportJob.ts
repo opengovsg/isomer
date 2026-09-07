@@ -12,12 +12,12 @@ export const auditLogExportJobHandler = async () => {
   await processPendingAuditLogExports()
 }
 
-export const auditLogExportJob = async () => {
-  return await registerPgbossJob(
+export const auditLogExportJob = async () => 
+  await registerPgbossJob(
     logger,
     JOB_NAME,
     CRON_SCHEDULE,
     auditLogExportJobHandler,
     { retryLimit: 3, singletonKey: JOB_NAME },
   )
-}
+

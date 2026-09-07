@@ -7,11 +7,11 @@ import { Skeleton, Stack } from "@chakra-ui/react"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { withThemeFromJSXProvider } from "@storybook/addon-themes"
-import {
-  type Args,
-  type Decorator,
-  type Preview,
-  type ReactRenderer,
+import type {
+  Args,
+  Decorator,
+  Preview,
+  ReactRenderer,
 } from "@storybook/nextjs"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { httpLink } from "@trpc/client"
@@ -56,9 +56,9 @@ const SetupDecorator: Decorator = (Story, { parameters }) => {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: Infinity,
-            retry: false,
             refetchOnWindowFocus: false,
+            retry: false,
+            staleTime: Infinity,
           },
         },
       }),
@@ -67,7 +67,7 @@ const SetupDecorator: Decorator = (Story, { parameters }) => {
   const trpcClient = useMemo(
     () =>
       trpc.createClient({
-        links: [httpLink({ url: "", transformer: superjson })],
+        links: [httpLink({ transformer: superjson, url: "" })],
       }),
     [],
   )
@@ -182,16 +182,17 @@ const decorators: Decorator[] = [
   SetupDecorator,
   StorybookEnvDecorator,
   withThemeFromJSXProvider<ReactRenderer>({
+    Provider: ThemeProvider,
     themes: {
       default: theme,
     },
-    Provider: ThemeProvider,
   }),
   LoginStateDecorator,
   conditionalMockDateDecorator,
 ]
 
 const preview: Preview = {
+  decorators,
   loaders: [
     mswLoader(async () => {
       const worker = setupWorker()
@@ -199,7 +200,6 @@ const preview: Preview = {
       return worker
     }),
   ],
-  decorators,
   parameters: {
     // More on how to position stories at: https://storybook.js.org/docs/react/configure/story-layout
     layout: "fullscreen",

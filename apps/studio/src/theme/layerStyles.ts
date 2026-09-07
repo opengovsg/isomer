@@ -1,4 +1,4 @@
-import { type SystemStyleInterpolation } from "@chakra-ui/react"
+import type { SystemStyleInterpolation } from "@chakra-ui/react"
 
 export const layerStyles = {
   post: {

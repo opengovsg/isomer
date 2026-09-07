@@ -11,7 +11,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import Image from "next/image"
-import { type IconType } from "react-icons"
+import type { IconType } from "react-icons"
 
 type UsageOrDescription = RequireAtLeastOne<
   {
@@ -35,8 +35,8 @@ export const UsageTooltip = ({
   label,
   description,
   usageText,
-}: UsageTooltipProps) => {
-  return (
+}: UsageTooltipProps) => 
+  (
     <Popover trigger="hover" placement="right" isLazy offset={[0, 20]}>
       <PopoverTrigger>{children}</PopoverTrigger>
       <Portal>
@@ -64,4 +64,4 @@ export const UsageTooltip = ({
       </Portal>
     </Popover>
   )
-}
+

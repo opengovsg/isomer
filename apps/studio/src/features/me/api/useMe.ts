@@ -17,8 +17,8 @@ export const useMe = () => {
   const logoutMutation = trpc.auth.logout.useMutation()
 
   const logout = useCallback(
-    (redirectToSignIn = true) => {
-      return logoutMutation.mutate(undefined, {
+    (redirectToSignIn = true) =>{  
+      logoutMutation.mutate(undefined, {
         onSuccess: () => {
           posthog.capture("user_logged_out")
           void withPosthog((posthog) => posthog.reset())
@@ -28,12 +28,12 @@ export const useMe = () => {
             void router.push("/sign-in")
           }
         },
-      })
-    },
+      }); }
+    ,
     [gb, logoutMutation, removeLoginStateFlag, router],
   )
 
   const isOnboarded = useMemo(() => isUserOnboarded(me), [me])
 
-  return { me, logout, isOnboarded }
+  return { isOnboarded, logout, me }
 }

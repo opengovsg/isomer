@@ -46,8 +46,8 @@ const LinkTypeRadioCard = ({
         mx={0}
         _checked={{
           bgColor: "interaction.muted.main.active",
-          color: "interaction.main.default",
           borderColor: "interaction.main.default",
+          color: "interaction.main.default",
         }}
         textTransform="none"
         fontWeight={500}
@@ -67,13 +67,13 @@ export const LinkEditorRadioGroup = () => {
     // NOTE: This is a safe cast because we map over the `linkTypes` below
     // so each time we are using the `linkType`
     // SAFETY: caller invariant is checked immediately before this narrowing assertion
-    onChange: (value) => setCurType(value as LinkTypes),
+    onChange: (value) =>{  setCurType(value as LinkTypes); },
   })
 
   return (
     <HStack {...getRootProps()} spacing={0}>
       {Object.entries(linkTypes).map(([key, props]) => {
-        if (!props) return null
+        if (!props) {return null}
         const { icon, label } = props
         const radio = getRadioProps({ value: key })
 

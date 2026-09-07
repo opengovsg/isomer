@@ -45,6 +45,14 @@ export const EditProfileModal = () => {
 
   const { mutate: updateDetails, isPending } =
     trpc.user.updateDetails.useMutation({
+      onError: (error) => {
+        toast({
+          status: "error",
+          title: "Failed to update profile",
+          description: error.message,
+        })
+        reset()
+      },
       onSuccess: () => {
         void utils.me.get.invalidate()
         toast({
@@ -53,14 +61,6 @@ export const EditProfileModal = () => {
           description: "Your profile has been updated successfully",
         })
         handleClose()
-      },
-      onError: (error) => {
-        toast({
-          status: "error",
-          title: "Failed to update profile",
-          description: error.message,
-        })
-        reset()
       },
     })
 
@@ -71,13 +71,13 @@ export const EditProfileModal = () => {
     handleSubmit,
     formState: { isDirty, errors },
   } = useZodForm({
-    schema: updateUserDetailsInputSchema,
     defaultValues: {
       name: me.name,
       phone: me.phone,
     },
     mode: "onChange",
     reValidateMode: "onChange",
+    schema: updateUserDetailsInputSchema,
   })
 
   // Reset form when user data changes
@@ -100,7 +100,7 @@ export const EditProfileModal = () => {
         phone: data.phone,
       },
       {
-        onSuccess: () => reset(data),
+        onSuccess: () =>{  reset(data); },
       },
     )
   })

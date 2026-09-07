@@ -27,17 +27,20 @@ export const buildPermissionsForResource = (
   builder: AbilityBuilder<ResourceAbility>,
 ) => {
   switch (role) {
-    case RoleType.Editor:
-      return giveBasePermissions(builder)
-    case RoleType.Admin:
+    case RoleType.Editor: {
+       giveBasePermissions(builder); return;
+    }
+    case RoleType.Admin: {
       ALL_ACTIONS.map((action) => {
         builder.can(action, "Resource")
       })
       return
-    case RoleType.Publisher:
+    }
+    case RoleType.Publisher: {
       giveBasePermissions(builder)
       builder.can("publish", "Resource")
       return
+    }
   }
 }
 

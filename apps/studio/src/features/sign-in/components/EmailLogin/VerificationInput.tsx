@@ -40,9 +40,9 @@ export const VerificationInput = (): React.ReactNode | null => {
   const { isSingpassEnabled } = useIsSingpassEnabled()
 
   useInterval(
-    () => setShowOtpDelayMessage(true),
+    () =>{  setShowOtpDelayMessage(true); },
     // Show otp delay info message after 15 seconds.
-    showOtpDelayMessage ? null : 15000,
+    showOtpDelayMessage ? null : 15_000,
   )
 
   const {
@@ -53,28 +53,14 @@ export const VerificationInput = (): React.ReactNode | null => {
     setFocus,
     setError,
   } = useZodForm({
-    schema: emailVerifyOtpSchema,
     defaultValues: {
       email: vfnStepData?.email ?? "",
       token: "",
     },
+    schema: emailVerifyOtpSchema,
   })
 
   const verifyOtpMutation = trpc.auth.email.verifyOtp.useMutation({
-    onSuccess: async () => {
-      if (isSingpassEnabled) {
-        await router.push(SIGN_IN_SINGPASS)
-      } else {
-        posthog.capture("user_logged_in", { method: "email" })
-        setHasLoginStateFlag()
-        await utils.me.get.invalidate()
-        // accessing router.query values returns decoded URI params automatically,
-        // so there's no need to call decodeURIComponent manually when accessing the callback url.
-        await router.push(
-          callbackUrlSchema.parse(router.query[CALLBACK_URL_KEY]),
-        )
-      }
-    },
     onError: (error) => {
       switch (error.message) {
         case "Token is invalid or has expired":
@@ -93,19 +79,33 @@ export const VerificationInput = (): React.ReactNode | null => {
           setError("token", { message: error.message })
       }
     },
+    onSuccess: async () => {
+      if (isSingpassEnabled) {
+        await router.push(SIGN_IN_SINGPASS)
+      } else {
+        posthog.capture("user_logged_in", { method: "email" })
+        setHasLoginStateFlag()
+        await utils.me.get.invalidate()
+        // accessing router.query values returns decoded URI params automatically,
+        // so there's no need to call decodeURIComponent manually when accessing the callback url.
+        await router.push(
+          callbackUrlSchema.parse(router.query[CALLBACK_URL_KEY]),
+        )
+      }
+    },
   })
 
   const resendOtpMutation = trpc.auth.email.login.useMutation({
-    onError: (error) => setError("token", { message: error.message }),
+    onError: (error) =>{  setError("token", { message: error.message }); },
   })
 
-  const handleVerifyOtp = handleSubmit(({ email, token }) => {
-    return verifyOtpMutation.mutate({ email, token })
-  })
+  const handleVerifyOtp = handleSubmit(({ email, token }) =>{  
+    verifyOtpMutation.mutate({ email, token }); }
+  )
 
   const handleResendOtp = () => {
-    if (timer > 0 || !vfnStepData?.email) return
-    return resendOtpMutation.mutate(
+    if (timer > 0 || !vfnStepData?.email) {return}
+     resendOtpMutation.mutate(
       { email: vfnStepData.email },
       {
         onSuccess: ({ email, otpPrefix }) => {
@@ -119,7 +119,7 @@ export const VerificationInput = (): React.ReactNode | null => {
     )
   }
 
-  if (!vfnStepData) return null
+  if (!vfnStepData) {return null}
 
   return (
     <form onSubmit={handleVerifyOtp}>
@@ -151,7 +151,7 @@ export const VerificationInput = (): React.ReactNode | null => {
                   maxLength={OTP_LENGTH}
                   {...field}
                   value={value}
-                  onChange={(e) => onChange(e.target.value.toUpperCase())}
+                  onChange={(e) =>{  onChange(e.target.value.toUpperCase()); }}
                 />
               </InputGroup>
             )}

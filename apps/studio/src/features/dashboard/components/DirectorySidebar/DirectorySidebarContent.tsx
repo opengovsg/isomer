@@ -52,14 +52,14 @@ export const DirectorySidebarContent = ({
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     trpc.resource.getChildrenOf.useInfiniteQuery(
       {
+        includeSearchPage: false,
+        limit: 25,
         resourceId,
         siteId,
-        limit: 25,
-        includeSearchPage: false,
       },
       {
-        getNextPageParam: (lastPage) => lastPage.nextOffset,
         enabled: isEnabled,
+        getNextPageParam: (lastPage) => lastPage.nextOffset,
       },
     )
 
@@ -74,7 +74,7 @@ export const DirectorySidebarContent = ({
       <Accordion
         index={accordionIndex}
         // SAFETY: caller invariant is checked immediately before this narrowing assertion
-        onChange={(expandedIndex) => setExpandedIndex(expandedIndex as number)}
+        onChange={(expandedIndex) =>{  setExpandedIndex(expandedIndex as number); }}
         allowToggle
       >
         <AccordionItem
@@ -101,8 +101,8 @@ export const DirectorySidebarContent = ({
               gap="2px"
             >
               {data?.pages.map((page) =>
-                page.items.map((item) => {
-                  return (
+                page.items.map((item) => 
+                  (
                     <DirectorySidebarContent
                       key={item.id}
                       siteId={siteId}
@@ -111,7 +111,7 @@ export const DirectorySidebarContent = ({
                       level={level + 1}
                     />
                   )
-                }),
+                ),
               )}
               {hasNextPage && (
                 <Button
@@ -119,7 +119,7 @@ export const DirectorySidebarContent = ({
                   pl="2.75rem"
                   size="xs"
                   isLoading={isFetchingNextPage}
-                  onClick={() => fetchNextPage()}
+                  onClick={ async () => fetchNextPage()}
                 >
                   Load more
                 </Button>

@@ -34,8 +34,8 @@ interface DraggablePageItemProps {
   index: number
 }
 
-const DraggablePageItem = ({ page, index }: DraggablePageItemProps) => {
-  return (
+const DraggablePageItem = ({ page, index }: DraggablePageItemProps) => 
+  (
     <Draggable
       draggableId={page.id}
       index={index}
@@ -67,7 +67,7 @@ const DraggablePageItem = ({ page, index }: DraggablePageItemProps) => {
       }}
     </Draggable>
   )
-}
+
 
 interface SiderailOrderingContentProps {
   ordering: string[]
@@ -81,8 +81,8 @@ const SiderailOrderingContent = ({
   const { pageId, siteId } = useQueryParse(pageSchema)
 
   const [{ childPages }] = trpc.folder.listChildPages.useSuspenseQuery({
-    siteId: String(siteId),
     indexPageId: String(pageId),
+    siteId: String(siteId),
   })
 
   const mappings = useMemo(
@@ -90,7 +90,7 @@ const SiderailOrderingContent = ({
       new Map(
         childPages.map(({ title, id, type, permalink }) => [
           id,
-          { type, title, permalink },
+          { permalink, title, type },
         ]),
       ),
     [childPages],
@@ -113,8 +113,8 @@ const SiderailOrderingContent = ({
 
         return {
           id: resourceId,
-          title: resource?.title ?? "Unknown page",
           permalink: `/${resource?.permalink ?? ""}`,
+          title: resource?.title ?? "Unknown page",
           type: resource?.type ?? ResourceType.Page,
         }
       }),
@@ -123,19 +123,19 @@ const SiderailOrderingContent = ({
 
   const handleDragEnd = useCallback(
     ({ source, destination }: DropResult) => {
-      if (!destination) return
+      if (!destination) {return}
 
       const from = source.index
       const to = destination.index
 
-      if (from === to) return
+      if (from === to) {return}
       if (from >= pages.length || to >= pages.length || from < 0 || to < 0)
-        return
+        {return}
 
-      const updatedOrdering = Array.from(mergedOrdering)
+      const updatedOrdering = [...mergedOrdering]
       const [movedItem] = updatedOrdering.splice(from, 1)
 
-      if (!movedItem) return
+      if (!movedItem) {return}
 
       updatedOrdering.splice(to, 0, movedItem)
       onOrderingChange(updatedOrdering)
@@ -186,6 +186,14 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
   const utils = trpc.useUtils()
 
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
+    onError: (error) => {
+      toast({
+        status: "error",
+        title: "Failed to save changes",
+        description: error.message,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
     onSuccess: async () => {
       posthog.capture("page_changes_saved", { site_id: siteId })
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
@@ -193,14 +201,6 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
       toast({
         status: "success",
         title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-    onError: (error) => {
-      toast({
-        status: "error",
-        title: "Failed to save changes",
-        description: error.message,
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -215,7 +215,7 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
   )
 
   const childrenPagesBlock = useMemo(() => {
-    if (childrenPagesBlockIndex === -1) return null
+    if (childrenPagesBlockIndex === -1) {return null}
     // SAFETY: childrenPagesBlockIndex points at a childrenpages block in content
     return previewPageState.content[childrenPagesBlockIndex] as
       | (IsomerComponent & { type: "childrenpages" })
@@ -229,7 +229,7 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
 
   const handleOrderingChange = useCallback(
     (newOrdering: string[]) => {
-      if (childrenPagesBlockIndex === -1) return
+      if (childrenPagesBlockIndex === -1) {return}
 
       const updatedContent = [...previewPageState.content]
       const updatedBlock = {
@@ -250,9 +250,9 @@ const SiderailOrderingEditorStateDrawer = (): React.ReactNode => {
   const handleSaveChanges = useCallback(() => {
     mutate(
       {
+        content: JSON.stringify(previewPageState),
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
       },
       {
         onSuccess: () => {

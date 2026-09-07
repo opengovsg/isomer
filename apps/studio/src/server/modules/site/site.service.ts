@@ -85,7 +85,7 @@ const SEARCHSG_SEARCH_TYPE = "searchSG"
 export const normalizeAskgovConfig = (
   config: IsomerSiteConfigProps,
 ): IsomerSiteConfigProps => {
-  if (!config.askgov) return config
+  if (!config.askgov) {return config}
 
   const agencyId = getAskgovIdFromString(config.askgov["data-agency"])
 
@@ -156,7 +156,7 @@ const resolveSearchSGSearchConfig = (
   existing: SiteSearchConfig,
   incoming: SiteSearchConfig,
 ): SiteSearchConfig => {
-  if (incoming?.type !== SEARCHSG_SEARCH_TYPE) return incoming
+  if (incoming?.type !== SEARCHSG_SEARCH_TYPE) {return incoming}
 
   if (existing?.type !== SEARCHSG_SEARCH_TYPE) {
     throw new TRPCError({
@@ -249,7 +249,6 @@ export const getNotification = async (
       notification: {
         ...result.notification,
         content: {
-          type: "prose",
           content: [
             {
               content: result.notification.content,
@@ -259,6 +258,7 @@ export const getNotification = async (
               },
             },
           ],
+          type: "prose",
         },
       },
     }
@@ -276,8 +276,8 @@ export const setSiteNotification = async ({
   siteId,
   userId,
   notification,
-}: SetSiteNotificationParams) => {
-  return await db.transaction().execute(async (tx) => {
+}: SetSiteNotificationParams) => 
+  await db.transaction().execute(async (tx) => {
     const user = await tx
       .selectFrom("User")
       .where("id", "=", userId)
@@ -337,7 +337,7 @@ export const setSiteNotification = async ({
 
     return newSite
   })
-}
+
 
 interface CreateSiteProps {
   siteName: string
@@ -354,6 +354,14 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     const { id: siteId } = await tx
       .insertInto("Site")
       .values({
+        config: jsonb({
+          theme: "isomer-next",
+          siteName,
+          url: "https://www.isomer.gov.sg",
+          logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+          search: undefined,
+          isGovernment: true,
+        }),
         name: siteName,
         theme: jsonb({
           colors: {
@@ -372,14 +380,6 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
             },
           },
         }),
-        config: jsonb({
-          theme: "isomer-next",
-          siteName,
-          url: "https://www.isomer.gov.sg",
-          logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
-          search: undefined,
-          isGovernment: true,
-        }),
       })
       .onConflict((oc) =>
         oc
@@ -396,8 +396,8 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     await tx
       .insertInto("Footer")
       .values({
-        siteId,
         content: jsonb(FOOTER),
+        siteId,
       })
       .onConflict((oc) =>
         oc
@@ -411,8 +411,8 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     await tx
       .insertInto("Navbar")
       .values({
-        siteId,
         content: jsonb(NAVBAR_CONTENT),
+        siteId,
       })
       .onConflict((oc) =>
         oc
@@ -438,9 +438,9 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
         .values({
           permalink: "",
           siteId,
-          type: ResourceType.RootPage,
           state: ResourceState.Published,
           title: "Home",
+          type: ResourceType.RootPage,
         })
         .onConflict((oc) =>
           oc.column("draftBlobId").doUpdateSet((eb) => ({
@@ -454,9 +454,9 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     const { id: versionId } = await tx
       .insertInto("Version")
       .values({
-        resourceId,
         blobId,
         publishedBy: userId,
+        resourceId,
         versionNum: 1,
       })
       .returning("id")
@@ -490,8 +490,8 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
         draftBlobId: String(blobId),
         permalink: SEARCH_PAGE_PERMALINK,
         siteId,
-        type: ResourceType.Page,
         title: "Search",
+        type: ResourceType.Page,
       })
       .onConflict((oc) =>
         oc.column("draftBlobId").doUpdateSet((eb) => ({
@@ -504,9 +504,9 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     const { id: versionId } = await tx
       .insertInto("Version")
       .values({
-        resourceId,
         blobId,
         publishedBy: userId,
+        resourceId,
         versionNum: 1,
       })
       .returning("id")
@@ -527,8 +527,8 @@ export const createSite = async ({ siteName, userId }: CreateSiteProps) => {
     const siteId = await createSiteRecord(tx)
     await createFooter(tx, siteId)
     await createNavbar(tx, siteId)
-    await createRootPage({ tx, siteId, userId })
-    await createSearchPage({ tx, siteId, userId })
+    await createRootPage({ siteId, tx, userId })
+    await createSearchPage({ siteId, tx, userId })
     return siteId
   })
 

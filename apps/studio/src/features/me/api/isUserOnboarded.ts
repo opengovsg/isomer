@@ -16,6 +16,6 @@ const isSingaporePhoneNumber = (phone: string | null) => {
   return /^[689]\d{7}$/.test(phone)
 }
 
-export const isUserOnboarded = ({ name, phone }: isUserOnboardedProps) => {
-  return !!name && !!phone && isSingaporePhoneNumber(phone)
-}
+export const isUserOnboarded = ({ name, phone }: isUserOnboardedProps) => 
+  !!name && !!phone && isSingaporePhoneNumber(phone)
+

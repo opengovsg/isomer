@@ -6,8 +6,8 @@ export const EmptyCategory = ({
 }: {
   title: string
   description?: string
-}) => {
-  return (
+}) => 
+  (
     <Flex
       alignItems="center"
       flexDir="column"
@@ -35,4 +35,4 @@ export const EmptyCategory = ({
       </VStack>
     </Flex>
   )
-}
+

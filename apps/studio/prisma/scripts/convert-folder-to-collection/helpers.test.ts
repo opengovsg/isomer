@@ -4,23 +4,8 @@ import type {
 } from "@opengovsg/isomer-components"
 import { describe, expect, it } from "vitest"
 
-import {
-  ARTICLE_TYPES,
-  asContentBlob,
-  asIndexBlob,
-  asPageBlob,
-  buildArticleBlob,
-  buildCollectionIndexBlob,
-  buildConversionReport,
-  CONTENT_ONLY_TYPES,
-  CONTENT_TYPES,
-  findDisallowedBlocks,
-  toFolderPlan,
-  type ArticleBlob,
-  type ContentBlob,
-  type ConversionPlan,
-  type IndexBlob,
-} from "./helpers"
+import { ARTICLE_TYPES, asContentBlob, asIndexBlob, asPageBlob, buildArticleBlob, buildCollectionIndexBlob, buildConversionReport, CONTENT_ONLY_TYPES, CONTENT_TYPES, findDisallowedBlocks, toFolderPlan } from './helpers';
+import type { ArticleBlob, ContentBlob, ConversionPlan, IndexBlob } from './helpers';
 
 // Shape used purely for asserting on builder output without TypeScript
 // narrowing on the `IsomerSchema` union for every property access.
@@ -46,28 +31,24 @@ const asResult = (s: IsomerSchema): BuilderResult => s
 
 const toIsomerSchema = (
   blob: IndexBlob | ContentBlob | ArticleBlob,
-): IsomerSchema => {
+): IsomerSchema => 
   // SAFETY: test fixtures are valid page blobs without the render-time site field.
   // @ts-expect-error test blobs omit render-time site props required by IsomerSchema.
-  return blob as IsomerSchema
-}
+  blob as IsomerSchema
+
 
 const proseBlock: IsomerComponent = {
-  type: "prose",
   content: [{ type: "paragraph", content: [{ type: "text", text: "hi" }] }],
+  type: "prose",
 }
 
 const infobarBlock: IsomerComponent = {
-  type: "infobar",
-  title: "CTA",
   description: "Call-to-action",
+  title: "CTA",
+  type: "infobar",
 }
 
 const infocardsBlock: IsomerComponent = {
-  type: "infocards",
-  title: "Cards",
-  variant: "cardsWithImages",
-  maxColumns: "3",
   cards: [
     {
       title: "Card",
@@ -77,6 +58,10 @@ const infocardsBlock: IsomerComponent = {
       imageFit: "cover",
     },
   ],
+  maxColumns: "3",
+  title: "Cards",
+  type: "infocards",
+  variant: "cardsWithImages",
 }
 
 interface PageOverrides {
@@ -86,20 +71,20 @@ interface PageOverrides {
 
 const makeIndexBlob = (overrides?: PageOverrides): IndexBlob => {
   const page = {
-    title: "Index",
     contentPageHeader: {
-      summary: overrides?.summary ?? "Index summary",
       showThumbnail: false,
+      summary: overrides?.summary ?? "Index summary",
     },
+    title: "Index",
   }
   if (overrides?.image) {
     Object.assign(page, { image: overrides.image })
   }
   const blob = {
-    version: "0.1.0",
+    content: [],
     layout: "index",
     page,
-    content: [],
+    version: "0.1.0",
   }
   // SAFETY: test fixture matches IndexBlob layout discriminator.
   // @ts-expect-error test fixture uses string layout literal without full IndexBlob typing.
@@ -111,20 +96,20 @@ const makeContentBlob = (
   content: IsomerComponent[] = [],
 ): ContentBlob => {
   const page = {
-    title: "Page",
     contentPageHeader: {
-      summary: overrides?.summary ?? "Content summary",
       showThumbnail: false,
+      summary: overrides?.summary ?? "Content summary",
     },
+    title: "Page",
   }
   if (overrides?.image) {
     Object.assign(page, { image: overrides.image })
   }
   const blob = {
-    version: "0.1.0",
+    content,
     layout: "content",
     page,
-    content,
+    version: "0.1.0",
   }
   // SAFETY: test fixture matches ContentBlob layout discriminator.
   // @ts-expect-error test fixture uses string layout literal without full ContentBlob typing.
@@ -136,21 +121,21 @@ const makeArticleBlob = (
   content: IsomerComponent[] = [],
 ): ArticleBlob => {
   const page = {
-    title: "Article",
-    category: overrides?.category ?? "News",
-    date: overrides?.date ?? "1 Jan 2024",
     articlePageHeader: {
       summary: overrides?.summary ?? "Article summary",
     },
+    category: overrides?.category ?? "News",
+    date: overrides?.date ?? "1 Jan 2024",
+    title: "Article",
   }
   if (overrides?.image) {
     Object.assign(page, { image: overrides.image })
   }
   const blob = {
-    version: "0.1.0",
+    content,
     layout: "article",
     page,
-    content,
+    version: "0.1.0",
   }
   // SAFETY: test fixture matches ArticleBlob layout discriminator.
   // @ts-expect-error test fixture uses string layout literal without full ArticleBlob typing.
@@ -182,21 +167,21 @@ const withIndexPageSortOrder = (
 const makeConversionPlan = (
   overrides?: Partial<ConversionPlan>,
 ): ConversionPlan => ({
+  defaultCategory: "Feature Articles",
   folder: {
     id: "159351",
+    permalink: "folder",
     siteId: 1,
     title: "Folder",
-    permalink: "folder",
   },
-  defaultCategory: "Feature Articles",
   indexPage: {
+    currentBlob: toIsomerSchema(makeIndexBlob()),
+    currentBlobId: "blob-index",
+    disallowedBlocks: [],
+    nextBlob: toIsomerSchema(makeIndexBlob()),
+    permalink: "_index",
     resourceId: "159352",
     title: "Index",
-    permalink: "_index",
-    currentBlobId: "blob-index",
-    currentBlob: toIsomerSchema(makeIndexBlob()),
-    nextBlob: toIsomerSchema(makeIndexBlob()),
-    disallowedBlocks: [],
   },
   pages: [],
   ...overrides,
@@ -208,13 +193,13 @@ describe("buildConversionReport", () => {
     const plan = makeConversionPlan({
       pages: [
         {
+          currentBlob: toIsomerSchema(makeContentBlob()),
+          currentBlobId: "b1",
+          disallowedBlocks: [],
+          nextBlob: toIsomerSchema(makeArticleBlob()),
+          permalink: "clean",
           resourceId: "1",
           title: "Clean page",
-          permalink: "clean",
-          currentBlobId: "b1",
-          currentBlob: toIsomerSchema(makeContentBlob()),
-          nextBlob: toIsomerSchema(makeArticleBlob()),
-          disallowedBlocks: [],
         },
       ],
     })
@@ -228,22 +213,22 @@ describe("buildConversionReport", () => {
     const plan = makeConversionPlan({
       pages: [
         {
+          currentBlob: toIsomerSchema(makeContentBlob({}, [infobarBlock])),
+          currentBlobId: "b1",
+          disallowedBlocks: [{ index: 0, type: "infobar" }],
+          nextBlob: toIsomerSchema(makeArticleBlob({}, [infobarBlock])),
+          permalink: "flagged",
           resourceId: "159536",
           title: "Flagged",
-          permalink: "flagged",
-          currentBlobId: "b1",
-          currentBlob: toIsomerSchema(makeContentBlob({}, [infobarBlock])),
-          nextBlob: toIsomerSchema(makeArticleBlob({}, [infobarBlock])),
-          disallowedBlocks: [{ index: 0, type: "infobar" }],
         },
         {
+          currentBlob: toIsomerSchema(makeContentBlob()),
+          currentBlobId: "b2",
+          disallowedBlocks: [],
+          nextBlob: toIsomerSchema(makeArticleBlob()),
+          permalink: "clean",
           resourceId: "159537",
           title: "Clean",
-          permalink: "clean",
-          currentBlobId: "b2",
-          currentBlob: toIsomerSchema(makeContentBlob()),
-          nextBlob: toIsomerSchema(makeArticleBlob()),
-          disallowedBlocks: [],
         },
       ],
     })
@@ -265,20 +250,20 @@ describe("buildConversionReport", () => {
     const plan = makeConversionPlan({
       pages: [
         {
-          resourceId: "99",
-          title: "Many flags",
-          permalink: "many",
-          currentBlobId: "b1",
           currentBlob: toIsomerSchema(
             makeContentBlob({}, [infobarBlock, infocardsBlock]),
           ),
-          nextBlob: toIsomerSchema(
-            makeArticleBlob({}, [infobarBlock, infocardsBlock]),
-          ),
+          currentBlobId: "b1",
           disallowedBlocks: [
             { index: 0, type: "infobar" },
             { index: 1, type: "infocards" },
           ],
+          nextBlob: toIsomerSchema(
+            makeArticleBlob({}, [infobarBlock, infocardsBlock]),
+          ),
+          permalink: "many",
+          resourceId: "99",
+          title: "Many flags",
         },
       ],
     })
@@ -299,22 +284,22 @@ describe("toFolderPlan", () => {
     const plan = makeConversionPlan({
       pages: [
         {
+          currentBlob: toIsomerSchema(makeContentBlob()),
+          currentBlobId: "b1",
+          disallowedBlocks: [],
+          nextBlob: toIsomerSchema(makeArticleBlob()),
+          permalink: "a",
           resourceId: "159536",
           title: "Page A",
-          permalink: "a",
-          currentBlobId: "b1",
-          currentBlob: toIsomerSchema(makeContentBlob()),
-          nextBlob: toIsomerSchema(makeArticleBlob()),
-          disallowedBlocks: [],
         },
         {
+          currentBlob: toIsomerSchema(makeContentBlob()),
+          currentBlobId: "b2",
+          disallowedBlocks: [],
+          nextBlob: toIsomerSchema(makeArticleBlob()),
+          permalink: "b",
           resourceId: "159537",
           title: "Page B",
-          permalink: "b",
-          currentBlobId: "b2",
-          currentBlob: toIsomerSchema(makeContentBlob()),
-          nextBlob: toIsomerSchema(makeArticleBlob()),
-          disallowedBlocks: [],
         },
       ],
     })
@@ -324,13 +309,13 @@ describe("toFolderPlan", () => {
 
     // Assert
     expect(folderPlan).toEqual({
-      id: "159351",
-      siteId: 1,
-      title: "Folder",
-      permalink: "folder",
       defaultCategory: "Feature Articles",
+      id: "159351",
       indexPageId: "159352",
       pageIds: ["159536", "159537"],
+      permalink: "folder",
+      siteId: 1,
+      title: "Folder",
     })
   })
 })
@@ -485,16 +470,16 @@ describe("buildCollectionIndexBlob", () => {
     // Assert
     expect(result.layout).toBe("collection")
     expect(result.page).toMatchObject({
-      title: "Folder Title",
-      subtitle: "Summary text",
       sortOrder: "date-desc",
+      subtitle: "Summary text",
+      title: "Folder Title",
     })
   })
 
   it("preserves the image when present on the source page", () => {
     // Arrange
-    const image = { src: "/img.png", alt: "alt" }
-    const current = makeIndexBlob({ summary: "x", image })
+    const image = { alt: "alt", src: "/img.png" }
+    const current = makeIndexBlob({ image, summary: "x" })
 
     // Act
     const result = asResult(buildCollectionIndexBlob(current, "Folder"))
@@ -578,8 +563,8 @@ describe("buildCollectionIndexBlob", () => {
   it("does not mutate the source blob", () => {
     // Arrange
     const current = makeIndexBlob({
+      image: { alt: "a", src: "/a.png" },
       summary: "Original",
-      image: { src: "/a.png", alt: "a" },
     })
     const snapshot = structuredClone(current)
 
@@ -619,8 +604,8 @@ describe("buildArticleBlob", () => {
 
   it("preserves the image when present on the source page", () => {
     // Arrange
-    const image = { src: "/img.png", alt: "alt" }
-    const current = makeContentBlob({ summary: "x", image })
+    const image = { alt: "alt", src: "/img.png" }
+    const current = makeContentBlob({ image, summary: "x" })
 
     // Act
     const result = asResult(buildArticleBlob(current, "cat"))
@@ -680,7 +665,7 @@ describe("buildArticleBlob", () => {
   it("does not mutate the source blob", () => {
     // Arrange
     const current = makeContentBlob(
-      { summary: "Original", image: { src: "/a.png", alt: "a" } },
+      { image: { alt: "a", src: "/a.png" }, summary: "Original" },
       [proseBlock, infobarBlock],
     )
     const snapshot = structuredClone(current)
@@ -695,9 +680,9 @@ describe("buildArticleBlob", () => {
   it("updates category on an already-article blob while preserving article fields", () => {
     // Arrange
     const current = makeArticleBlob({
-      summary: "Existing summary",
       category: "Old Category",
       date: "15 May 2024",
+      summary: "Existing summary",
     })
 
     // Act
@@ -706,9 +691,9 @@ describe("buildArticleBlob", () => {
     // Assert
     expect(result.layout).toBe("article")
     expect(result.page).toMatchObject({
+      articlePageHeader: { summary: "Existing summary" },
       category: "Feature Articles",
       date: "15 May 2024",
-      articlePageHeader: { summary: "Existing summary" },
     })
     expect("contentPageHeader" in result.page).toBe(false)
   })

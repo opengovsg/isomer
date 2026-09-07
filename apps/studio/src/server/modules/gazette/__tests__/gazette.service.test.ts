@@ -21,12 +21,11 @@ describe("gazette.service", () => {
     env.ALGOLIA_API_KEY = "test-api-key"
     env.ALGOLIA_INDEX_NAME = "test-index"
     vi.spyOn(algoliaLib, "saveObjectsToSearchIndex").mockResolvedValue(
-      undefined,
-    )
+      )
     vi.spyOn(
       algoliaLib,
       "deleteObjectsFromSearchIndexByFilter",
-    ).mockResolvedValue(undefined)
+    ).mockResolvedValue()
     await resetTables(
       "AuditLog",
       "ResourcePermission",
@@ -47,15 +46,15 @@ describe("gazette.service", () => {
 
     it("allows a Core IsomerAdmin even without a Toppan email", async () => {
       const user = await setupUser({ email: "admin@example.com" })
-      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      await setupIsomerAdmin({ role: IsomerAdminRole.Core, userId: user.id })
       await expect(assertGazetteAccess(user.id)).resolves.toBeUndefined()
     })
 
     it("allows a Migrator IsomerAdmin", async () => {
       const user = await setupUser({ email: "migrator@example.com" })
       await setupIsomerAdmin({
-        userId: user.id,
         role: IsomerAdminRole.Migrator,
+        userId: user.id,
       })
       await expect(assertGazetteAccess(user.id)).resolves.toBeUndefined()
     })
@@ -81,8 +80,8 @@ describe("gazette.service", () => {
     it("rejects a sourceKey that does not have the expected /year/cat/sub/file shape", async () => {
       await expect(
         copyFileWithNewName({
-          sourceKey: "too/few/parts",
           newFileName: "renamed.pdf",
+          sourceKey: "too/few/parts",
         }),
       ).rejects.toThrowError(
         new TRPCError({
@@ -99,8 +98,8 @@ describe("gazette.service", () => {
       )
 
       const newKey = await copyFileWithNewName({
-        sourceKey: "2026/Government Gazette/Public/original.pdf",
         newFileName: "renamed:weird*name.pdf",
+        sourceKey: "2026/Government Gazette/Public/original.pdf",
       })
 
       // filenamify replaces disallowed characters with `-`.
@@ -121,8 +120,8 @@ describe("gazette.service", () => {
         .mockResolvedValue("https://signed.example/put")
 
       await getPresignedPutUrl({
-        key: "2026/Government Gazette/Public/notice.pdf",
         fileSize: 1234,
+        key: "2026/Government Gazette/Public/notice.pdf",
         tags: [{ key: "scheduledAt", value: "1700000000000" }],
       })
 
@@ -137,8 +136,8 @@ describe("gazette.service", () => {
         .mockResolvedValue("https://signed.example/put")
 
       await getPresignedPutUrl({
-        key: "2026/Government Gazette/Public/notice.pdf",
         fileSize: 1234,
+        key: "2026/Government Gazette/Public/notice.pdf",
       })
 
       const args = signedPutSpy.mock.calls[0]![0]
@@ -151,7 +150,7 @@ describe("gazette.service", () => {
       // Arrange
       const deleteSpy = vi
         .spyOn(algoliaLib, "deleteObjectsFromSearchIndexByFilter")
-        .mockResolvedValue(undefined)
+        .mockResolvedValue()
 
       // Act
       await removeGazetteFromAlgolia(

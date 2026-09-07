@@ -3,22 +3,22 @@ import { z } from "zod"
 const SYSTEM_USER_EMAIL = "system@isomer.gov.sg"
 
 const s3Schema = z.object({
-  NEXT_PUBLIC_S3_REGION: z.string().default("us-east-1"),
-  NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z.string(),
   NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME: z.string(),
+  NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z.string(),
+  NEXT_PUBLIC_S3_REGION: z.string().default("us-east-1"),
 })
 
 // R2 is the S3-compatible storage backend used when its credentials are
 // present (currently: preview environments); otherwise falls back to AWS S3.
 const r2Schema = z.object({
-  R2_ACCOUNT_ID: z.string().optional(),
   R2_ACCESS_KEY_ID: z.string().optional(),
+  R2_ACCOUNT_ID: z.string().optional(),
   R2_SECRET_ACCESS_KEY: z.string().optional(),
 })
 
 const cronHeartbeatSchema = z.object({
-  SCHEDULED_PUBLISHING_HEARTBEAT_URL: z.url().optional(),
   DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL: z.url().optional(),
+  SCHEDULED_PUBLISHING_HEARTBEAT_URL: z.url().optional(),
   SCHEDULE_PUSH_DOCUMENT_JOB_HEARTBEAT_URL: z.url().optional(),
 })
 
@@ -52,17 +52,17 @@ const client = z
     NEXT_PUBLIC_POSTHOG_HOST: z.url().optional(),
     NEXT_PUBLIC_POSTHOG_ASSETS_HOST: z.url().optional(),
   })
-  .extend(s3Schema["shape"])
-  .extend(cronHeartbeatSchema["shape"])
+  .extend(s3Schema.shape)
+  .extend(cronHeartbeatSchema.shape)
 
 const singpassSchema = z.object({
   SINGPASS_CLIENT_ID: z.string().min(1),
+  SINGPASS_ENCRYPTION_KEY_ALG: z.string().min(1).default("ECDH-ES+A256KW"),
+  SINGPASS_ENCRYPTION_PRIVATE_KEY: z.string().min(1),
   SINGPASS_ISSUER_ENDPOINT: z.url().min(1),
   SINGPASS_REDIRECT_URI: z.url().optional(),
-  SINGPASS_ENCRYPTION_PRIVATE_KEY: z.string().min(1),
-  SINGPASS_ENCRYPTION_KEY_ALG: z.string().min(1).default("ECDH-ES+A256KW"),
-  SINGPASS_SIGNING_PRIVATE_KEY: z.string().min(1),
   SINGPASS_SIGNING_KEY_ALG: z.string().min(1).default("ES512"),
+  SINGPASS_SIGNING_PRIVATE_KEY: z.string().min(1),
 })
 
 /**
@@ -93,10 +93,10 @@ const server = z
     ALGOLIA_INDEX_NAME: z.string(),
     SYSTEM_USER_EMAIL: z.email().optional().default(SYSTEM_USER_EMAIL),
   })
-  .extend(s3Schema["shape"])
-  .extend(r2Schema["shape"])
-  .extend(singpassSchema["shape"])
-  .extend(client["shape"])
+  .extend(s3Schema.shape)
+  .extend(r2Schema.shape)
+  .extend(singpassSchema.shape)
+  .extend(client.shape)
   .superRefine((data, ctx) => {
     // Which storage backend to use is decided by whether R2 credentials are
     // present, not by NEXT_PUBLIC_APP_ENV — so these must be set together.
@@ -223,9 +223,9 @@ const processEnv = {
 /** @typedef {z.ZodSafeParseResult<MergedOutput>} MergedSafeParseReturn */
 
 // @ts-expect-error Types are wonky from refinement
-let env = /** @type {MergedOutput} */ (process.env)
+let {env} = process
 
-if (!!process.env.SKIP_ENV_VALIDATION == false) {
+if (!(!!process.env.SKIP_ENV_VALIDATION)) {
   const isServer = globalThis.window === undefined
 
   const parsed = /** @type {MergedSafeParseReturn} */ (
@@ -234,7 +234,7 @@ if (!!process.env.SKIP_ENV_VALIDATION == false) {
       : client.safeParse(processEnv) // on client we can only validate the ones that are exposed
   )
 
-  if (parsed.success === false) {
+  if (!parsed.success) {
     console.error(
       "❌ Invalid environment variables:",
       parsed.error.flatten().fieldErrors,
@@ -245,16 +245,16 @@ if (!!process.env.SKIP_ENV_VALIDATION == false) {
   env = new Proxy(parsed.data, {
     get(target, prop) {
       if (Object.prototype.toString.call(prop) !== "[object String]")
-        return undefined
+        {return undefined}
       const key = /** @type {string} */ (prop)
       // Throw a descriptive error if a server-side env var is accessed on the client
       // Otherwise it would just be returning `undefined` and be annoying to debug
       if (!isServer && !key.startsWith("NEXT_PUBLIC_"))
-        throw new Error(
+        {throw new Error(
           process.env.NODE_ENV === "production"
             ? "❌ Attempted to access a server-side environment variable on the client"
             : `❌ Attempted to access server-side environment variable '${key}' on the client`,
-        )
+        )}
       return target[/** @type {keyof typeof target} */ (key)]
     },
   })
@@ -262,7 +262,7 @@ if (!!process.env.SKIP_ENV_VALIDATION == false) {
   const parsed = client
     .partial()
     .safeParse(JSON.parse(process.env.STORYBOOK_ENVIRONMENT ?? "{}"))
-  if (parsed.success === false) {
+  if (!parsed.success) {
     console.error(
       "❌ Invalid environment variables:",
       parsed.error.flatten().fieldErrors,

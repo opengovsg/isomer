@@ -47,8 +47,8 @@ const generateSidebarItem = (
             aria-label={item.label}
             icon={<Icon fontSize="1.5rem" fill="base.content.default" />}
             _active={{
-              fill: "base.content.brand",
               bg: "interaction.muted.main.active",
+              fill: "base.content.brand",
             }}
             href={item.href}
           />
@@ -69,9 +69,9 @@ const generateSidebarItem = (
 export const CmsSidebarItems = ({ navItems }: CmsSidebarItemsProps) => {
   const router = useRouter()
 
-  const renderedSidebarItems = useMemo(() => {
-    return navItems.map((item) => generateSidebarItem(item, router.asPath))
-  }, [navItems, router.asPath])
+  const renderedSidebarItems = useMemo(() => 
+    navItems.map((item) => generateSidebarItem(item, router.asPath))
+  , [navItems, router.asPath])
 
   return <List spacing={3}>{renderedSidebarItems}</List>
 }

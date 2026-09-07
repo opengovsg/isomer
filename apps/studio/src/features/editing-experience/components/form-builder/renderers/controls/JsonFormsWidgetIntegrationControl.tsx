@@ -65,7 +65,7 @@ const JsonFormsWidgetIntegrationControl = ({
     }
 
     if (!isChecked) {
-      handleChange(path, undefined)
+      handleChange(path)
     }
   }, [isChecked, data, handleChange, path])
 
@@ -115,16 +115,18 @@ export default withJsonFormsControlWithDetailProps(
 
 function extractVariantFromFormat(format?: string): WidgetType {
   const possibleFormat = format?.split("/")[1]
-  if (!possibleFormat) return "askgov"
+  if (!possibleFormat) {return "askgov"}
 
   switch (possibleFormat) {
     case "askgov":
-    case "vica":
+    case "vica": {
       return possibleFormat
+    }
 
-    default:
+    default: {
       // NOTE: cannot do exhaustive check as the string split
       // will return a string type
       return "askgov"
+    }
   }
 }

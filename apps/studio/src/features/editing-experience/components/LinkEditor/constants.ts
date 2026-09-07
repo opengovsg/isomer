@@ -2,10 +2,10 @@ import type { IconType } from "react-icons"
 import { BiEnvelopeOpen, BiFile, BiFileBlank, BiLink } from "react-icons/bi"
 
 export const LINK_TYPES = {
-  Page: "page",
+  Email: "email",
   External: "external",
   File: "file",
-  Email: "email",
+  Page: "page",
 } as const
 
 export const LINK_TYPES_MAPPING = {

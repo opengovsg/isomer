@@ -12,9 +12,9 @@
 import type { IsoMonth } from "~/schemas/audit"
 import { format, subMonths } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
-import fs from "fs"
-import path, { dirname } from "path"
-import { fileURLToPath } from "url"
+import fs from "node:fs"
+import path, { dirname } from "node:path"
+import { fileURLToPath } from "node:url"
 import {
   getAccessReportRows,
   getActivityReportRows,
@@ -22,8 +22,8 @@ import {
   toCsv,
 } from "~/server/modules/audit/auditLogExport.query"
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+const __filename = import.meta.filename
+const __dirname = import.meta.dirname
 
 // Sites requiring audit logs
 const SITES_WITH_AUDIT_LOGS = [
@@ -189,8 +189,8 @@ const getAuditLogsForSite = async () => {
 
       // Get users with access as of the end of the range (point-in-time)
       const [users, events] = await Promise.all([
-        getAccessReportRows({ siteId, auditLogDateRange }),
-        getActivityReportRows({ siteId, auditLogDateRange }),
+        getAccessReportRows({ auditLogDateRange, siteId }),
+        getActivityReportRows({ auditLogDateRange, siteId }),
       ])
 
       // Save as CSV files
@@ -217,5 +217,5 @@ const getAuditLogsForSite = async () => {
 }
 
 // Only run when executed directly, not when imported by tests
-const isMain = process.argv[1] === fileURLToPath(import.meta.url)
-if (isMain) await getAuditLogsForSite()
+const isMain = process.argv[1] === import.meta.filename
+if (isMain) {await getAuditLogsForSite()}

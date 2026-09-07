@@ -83,9 +83,9 @@ const SuspensableResourceSelector = ({
     setResourceStack,
     removeFromStack,
   } = useResourceStack({
-    siteId,
-    selectedResourceId,
     existingResource,
+    selectedResourceId,
+    siteId,
   })
 
   const {
@@ -94,14 +94,14 @@ const SuspensableResourceSelector = ({
     hasNextPage,
     isFetchingNextPage,
   } = useResourceQuery({
-    siteId,
+    isResourceHighlighted,
     moveDest,
     parentDest,
-    isResourceHighlighted,
-    showOnlyContainers: interactionType === "move",
     resourceIds: isSearchQueryEmpty
       ? undefined
       : matchedResources.map((resource) => resource.id),
+    showOnlyContainers: interactionType === "move",
+    siteId,
   })
 
   const {
@@ -112,23 +112,23 @@ const SuspensableResourceSelector = ({
     handleClickBackButton,
     handleClickResourceItem,
   } = useResourceSelector({
-    interactionType,
-    siteId,
-    moveDest,
-    resourceStack,
-    isResourceHighlighted,
-    setIsResourceHighlighted,
     existingResource,
-    setResourceStack,
-    removeFromStack,
+    interactionType,
+    isResourceHighlighted,
+    moveDest,
     onChange: (resourceId: string | null, fullPermalink: string) => {
       onChange(resourceId, fullPermalink)
       clearSearchValue()
     },
+    removeFromStack,
+    resourceStack,
+    setIsResourceHighlighted,
+    setResourceStack,
+    siteId,
   })
 
-  const renderedHeader = useMemo(() => {
-    return (
+  const renderedHeader = useMemo(() => 
+    (
       <Suspense fallback={<LoadingHeader />}>
         <SuspendableHeader
           viewState={{
@@ -139,7 +139,7 @@ const SuspensableResourceSelector = ({
           }}
           handleClickBackButton={handleClickBackButton}
           resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
-          handleOnClick={() =>
+          handleOnClick={() =>{ 
             handleClickResourceItem([
               {
                 title: "Home",
@@ -148,13 +148,13 @@ const SuspensableResourceSelector = ({
                 id: rootPage.id,
                 parentId: null,
               },
-            ])
+            ]); }
           }
           searchQuery={searchQuery}
         />
       </Suspense>
     )
-  }, [
+  , [
     isSearchQueryEmpty,
     hasParentInStack,
     handleClickBackButton,
@@ -166,8 +166,8 @@ const SuspensableResourceSelector = ({
     rootPage.id,
   ])
 
-  const renderedContent = useMemo(() => {
-    return (
+  const renderedContent = useMemo(() => 
+    (
       <Suspense fallback={<LoadingResourceItemsResults />}>
         <SuspendableContent
           resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
@@ -184,7 +184,7 @@ const SuspensableResourceSelector = ({
         />
       </Suspense>
     )
-  }, [
+  , [
     resourceItemsWithAncestryStack,
     isResourceIdHighlighted,
     isResourceItemDisabled,
@@ -257,8 +257,8 @@ export const ResourceSelector = (props: ResourceSelectorProps) => {
     matchedResources,
     clearSearchValue,
   } = useSearchQuery({
-    siteId: String(props.siteId),
     resourceTypes,
+    siteId: String(props.siteId),
   })
 
   return (

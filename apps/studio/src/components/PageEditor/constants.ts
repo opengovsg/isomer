@@ -4,7 +4,6 @@ import { DEFAULT_CHILDREN_PAGES_BLOCK } from "@opengovsg/isomer-components"
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS = {
   prose: {
-    type: "prose",
     content: [
       {
         type: "paragraph",
@@ -16,32 +15,31 @@ export const DEFAULT_BLOCKS = {
         ],
       },
     ],
+    type: "prose",
   },
   childrenpages: DEFAULT_CHILDREN_PAGES_BLOCK,
   accordion: {
-    type: "accordion",
-    summary: "Title for the accordion item",
     details: {
-      type: "prose",
       content: [],
+      type: "prose",
     },
+    summary: "Title for the accordion item",
+    type: "accordion",
   },
   blockquote: {
-    type: "blockquote",
+    imageAlt: "Enter a descriptive alt text.",
     quote: "Enter your quote here.",
     source: "Describe who said the quote.",
-    imageAlt: "Enter a descriptive alt text.",
+    type: "blockquote",
   },
   button: {
-    type: "button",
     alignment: "left",
     buttonLabel: "Enter your button text.",
     buttonUrl: "https://www.google.com",
+    type: "button",
   },
   callout: {
-    type: "callout",
     content: {
-      type: "prose",
       content: [
         {
           type: "paragraph",
@@ -53,37 +51,34 @@ export const DEFAULT_BLOCKS = {
           ],
         },
       ],
+      type: "prose",
     },
+    type: "callout",
   },
   formsg: {
+    title: "Fill in a sample feedback form for Isomer.",
     type: "formsg",
     url: "https://form.gov.sg/686e73c1a1f7bf391ee2b3af",
-    title: "Fill in a sample feedback form for Isomer.",
   },
   hero: undefined,
   iframe: {
-    type: "iframe",
-    title: "YouTube embed",
     content:
       '<iframe width="560" height="315" src="https://www.youtube.com/embed/GzQiJ091g7Q?si=GePcnmUmvmGk77fz" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>',
+    title: "YouTube embed",
+    type: "iframe",
   },
   image: {
-    type: "image",
-    src: "/placeholder_no_image.png",
     alt: "Enter a descriptive alt text.",
     size: "default",
+    src: "/placeholder_no_image.png",
+    type: "image",
   },
   infobar: {
-    type: "infobar",
-    title: "Enter a strong message or call-to-action.",
     description: "Elaborate on the title.",
+    title: "Enter a strong message or call-to-action.",
+    type: "infobar",
   },
   infocards: {
-    type: "infocards",
-    title: "Enter a title.",
-    subtitle: "Elaborate on the title.",
-    variant: "cardsWithImages",
-    maxColumns: "3",
     cards: [
       {
         title: "Enter a title for your first card.",
@@ -107,11 +102,13 @@ export const DEFAULT_BLOCKS = {
         imageFit: "cover",
       },
     ],
+    maxColumns: "3",
+    subtitle: "Elaborate on the title.",
+    title: "Enter a title.",
+    type: "infocards",
+    variant: "cardsWithImages",
   },
   infocols: {
-    type: "infocols",
-    title: "Enter a title.",
-    subtitle: "Elaborate on the title.",
     infoBoxes: [
       {
         title: "Enter a title for your first column.",
@@ -129,18 +126,19 @@ export const DEFAULT_BLOCKS = {
         icon: "globe",
       },
     ],
+    subtitle: "Elaborate on the title.",
+    title: "Enter a title.",
+    type: "infocols",
   },
   infopic: {
-    type: "infopic",
-    title: "Enter a title.",
     description: "Elaborate on the title.",
-    imageSrc: "/placeholder_no_image.png",
     imageAlt: "Enter a descriptive alt text.",
+    imageSrc: "/placeholder_no_image.png",
+    title: "Enter a title.",
+    type: "infopic",
   },
   contentpic: {
-    type: "contentpic",
     content: {
-      type: "prose",
       content: [
         {
           type: "paragraph",
@@ -152,13 +150,13 @@ export const DEFAULT_BLOCKS = {
           ],
         },
       ],
+      type: "prose",
     },
-    imageSrc: "/placeholder_no_image.png",
     imageAlt: "Describe what the image is about.",
+    imageSrc: "/placeholder_no_image.png",
+    type: "contentpic",
   },
   keystatistics: {
-    type: "keystatistics",
-    title: "Enter a title.",
     statistics: [
       {
         label: "Enter a label for each item.",
@@ -177,28 +175,28 @@ export const DEFAULT_BLOCKS = {
         value: "Integrity",
       },
     ],
+    title: "Enter a title.",
+    type: "keystatistics",
   },
   map: {
-    type: "map",
     title: "Map of the Singapore region",
+    type: "map",
     url: "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d127639.0647119137!2d103.79481771806647!3d1.343949056391766!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2ssg!4v1731681854346!5m2!1sen!2ssg",
   },
   audio: {
-    type: "audio",
     title:
       "Play podcast: As scammers adapt and evolve, how can technology keep up?",
+    type: "audio",
     url: "https://open.spotify.com/embed/episode/1xaBZfZ3tffBZdgBdy1Kh6",
   },
   video: {
-    type: "video",
     title: "Play video: Kit Chan sings 'Home' at NDP 2025",
+    type: "video",
     url: "https://www.youtube.com/embed/GzQiJ091g7Q?si=GePcnmUmvmGk77fz",
   },
   // TODO: Replace with actual working API endpoint
   dynamicdatabanner: {
-    type: "dynamicdatabanner",
     apiEndpoint: "https://jsonplaceholder.com/muis_prayers_time",
-    title: "hijriDate",
     data: [
       {
         label: "Subuh",
@@ -225,20 +223,21 @@ export const DEFAULT_BLOCKS = {
         key: "isyak",
       },
     ],
-    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    label: "View all dates",
     errorMessage: [
       {
         type: "text",
         text: "Oops! Having trouble loading the data. Try refreshing — that usually does the trick!",
       },
     ],
+    label: "View all dates",
+    title: "hijriDate",
+    type: "dynamicdatabanner",
+    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   antiscambanner: {
     type: "antiscambanner",
   },
   logocloud: {
-    type: "logocloud",
     images: [
       {
         src: "/placeholder_no_image.png",
@@ -254,16 +253,16 @@ export const DEFAULT_BLOCKS = {
       },
     ],
     title: "Our partners",
+    type: "logocloud",
   },
   collectionblock: {
-    type: "collectionblock",
-    collectionReferenceLink: "", // TODO: placeholder for now as we cannot select a collection beforehand but it's required by the schema
     buttonLabel: "Read all latest news",
-    displayThumbnail: true,
+    collectionReferenceLink: "", // TODO: placeholder for now as we cannot select a collection beforehand but it's required by the schema
     displayCategory: true,
+    displayThumbnail: true,
+    type: "collectionblock",
   },
   imagegallery: {
-    type: "imagegallery",
     images: [
       {
         caption: "Enter a caption to describe the image or attribute it.",
@@ -281,10 +280,9 @@ export const DEFAULT_BLOCKS = {
         alt: "Enter a descriptive alt text.",
       },
     ],
+    type: "imagegallery",
   },
   contactinformation: {
-    type: "contactinformation",
-    title: "Contact us",
     methods: [
       {
         method: "email",
@@ -292,166 +290,168 @@ export const DEFAULT_BLOCKS = {
         values: ["contact@example.com"],
       },
     ],
+    title: "Contact us",
+    type: "contactinformation",
   },
   dynamiccomponentlist: {
-    type: "dynamiccomponentlist",
-    dataSource: {
-      type: "dgs",
-      resourceId: "PLACEHOLDER_RESOURCE_ID",
-    },
     component: {
-      type: "contactinformation",
-      title: "[dgs:entity_name]",
       description: "[dgs:description]",
       methods: "[dgs:methods]",
       otherInformation: "[dgs:other_information]",
+      title: "[dgs:entity_name]",
+      type: "contactinformation",
     },
+    dataSource: {
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      type: "dgs",
+    },
+    type: "dynamiccomponentlist",
   },
 }
 
 export const BLOCK_TO_META = {
   hero: {
-    label: "Hero banner",
     description: "Title, summary, hero image, and Call-to-Action.",
+    label: "Hero banner",
   },
   childrenpages: {
-    label: "Child pages",
     description: "Automatically display all child pages in this folder.",
     imageSrc: "/assets/block-images/Childrenpages.png",
+    label: "Child pages",
   },
   image: {
-    label: "Image",
     description: "Add an image with caption.",
-    usageText: "Evoke emotions by adding an authentic image.",
     imageSrc: "/assets/block-images/Image.png",
+    label: "Image",
+    usageText: "Evoke emotions by adding an authentic image.",
   },
   prose: {
-    label: "Text",
     description: "Add text, links, lists, and tables.",
     imageSrc: "/assets/block-images/Text.png",
+    label: "Text",
   },
   callout: {
-    label: "Callout",
     description: "Bring attention to important information.",
+    imageSrc: "/assets/block-images/Callout.png",
+    label: "Callout",
     usageText:
       "Highlight information that is out of the ordinary, like changes or updates.",
-    imageSrc: "/assets/block-images/Callout.png",
   },
   keystatistics: {
-    label: "Statistics",
     description: "Display metrics that represent your agency.",
-    usageText: "Share key wins or highlight your values in short words.",
     imageSrc: "/assets/block-images/KeyStatistics.png",
+    label: "Statistics",
+    usageText: "Share key wins or highlight your values in short words.",
   },
   infobar: {
-    label: "Call-to-Action",
     description: "Add a strong Call-to-Action.",
+    imageSrc: "/assets/block-images/Infobar.png",
+    label: "Call-to-Action",
     usageText:
       "Add a strong punchline, or use to get conversions like sign-ups and subscriptions.",
-    imageSrc: "/assets/block-images/Infobar.png",
   },
   contentpic: {
-    label: "Image with text",
     description: "Put image and text side-by-side.",
-    usageText: "Introduce people with their headshots or show report covers.",
     imageSrc: "/assets/block-images/Contentpic.png",
+    label: "Image with text",
+    usageText: "Introduce people with their headshots or show report covers.",
   },
   infopic: {
-    label: "Image with text",
     description: "Place an image with a text and Call-to-Action.",
     imageSrc: "/assets/block-images/Infopic.png",
+    label: "Image with text",
   },
   accordion: {
-    label: "Accordion",
     description: "Hide content in expandable accordions.",
+    imageSrc: "/assets/block-images/Accordion.png",
+    label: "Accordion",
     usageText:
       "Show content that isn't relevant to every reader, but only to some readers.",
-    imageSrc: "/assets/block-images/Accordion.png",
   },
   infocards: {
-    label: "Cards",
     description: "Link your pages using cards.",
     imageSrc: "/assets/block-images/InfoCards.png",
+    label: "Cards",
   },
   infocols: {
-    label: "Columns of text",
     description: "Show links using multiple columns and icons.",
     imageSrc: "/assets/block-images/Infocol.png",
+    label: "Columns of text",
   },
   iframe: {
-    label: "Embed",
     description: "Embed content from external websites.",
+    label: "Embed",
   },
   map: {
-    label: "Map",
     description: "Embed a map of a location or an area.",
-    usageText: "Direct people to your office or an event location.",
     imageSrc: "/assets/block-images/Map.png",
+    label: "Map",
+    usageText: "Direct people to your office or an event location.",
   },
   // TODO: Add image source (skipped because component not available on studio yet)
   audio: {
-    label: "Audio",
     description: "Embed an audio from Spotify or Apple Podcast.",
-    usageText: "The audio will be playable directly on the page.",
     imageSrc: "/assets/block-images/Podcast.png",
+    label: "Audio",
+    usageText: "The audio will be playable directly on the page.",
   },
   video: {
-    label: "Video",
     description: "Embed a video from YouTube, Vimeo, or Facebook Watch.",
-    usageText: "The video will be playable directly on the page.",
     imageSrc: "/assets/block-images/Video.png",
+    label: "Video",
+    usageText: "The video will be playable directly on the page.",
   },
   dynamicdatabanner: {
-    label: "Dynamic Data Banner",
     description: "Display a dynamic data banner.",
+    label: "Dynamic Data Banner",
     usageText: "This block supports fetching data from an API endpoint.",
   },
   antiscambanner: {
-    label: "Anti-scam disclaimer",
     description: "Show a warning against scams.",
+    imageSrc: "/assets/block-images/AntiScamDisclaimerBanner.png",
+    label: "Anti-scam disclaimer",
     usageText:
       "Comes with a pre-approved text that warns against Government Officials Impersonation Scams.",
-    imageSrc: "/assets/block-images/AntiScamDisclaimerBanner.png",
   },
   logocloud: {
-    label: "Logo cloud",
     description: "Display logos of partner organisations or accolades.",
+    imageSrc: "/assets/block-images/LogoCloud.png",
+    label: "Logo cloud",
     usageText:
       "Upload original logos with transparent backgrounds for the best results.",
-    imageSrc: "/assets/block-images/LogoCloud.png",
   },
   collectionblock: {
-    label: "Link a Collection",
     description: "Automatically display recent items from a Collection.",
+    imageSrc: "/assets/block-images/CollectionBlock.png",
+    label: "Link a Collection",
     usageText:
       "Keep your website up-to-date with recent items from your newsroom, resources, or blog.",
-    imageSrc: "/assets/block-images/CollectionBlock.png",
   },
   imagegallery: {
-    label: "Image gallery",
     description: "Display up to 30 images in a slideshow.",
-    usageText: "Share memorable moments from an event.",
     imageSrc: "/assets/block-images/ImageGallery.png",
+    label: "Image gallery",
+    usageText: "Share memorable moments from an event.",
   },
   blockquote: {
-    label: "Quote",
     description: "Display a quote or testimonial.",
+    imageSrc: "/assets/block-images/Blockquote.png",
+    label: "Quote",
     usageText:
       "Humanise your site with powerful quotes or stories from real people.",
-    imageSrc: "/assets/block-images/Blockquote.png",
   },
   button: {
-    label: "Button",
     description: "Add one or two buttons that link somewhere.",
+    imageSrc: "/assets/block-images/Button.png",
+    label: "Button",
     usageText:
       "Use when you want to show a clear next step or two, without a heading or coloured background.",
-    imageSrc: "/assets/block-images/Button.png",
   },
   contactinformation: {
-    label: "Contact information",
     description: "Display contact information.",
-    usageText: "Let people know how they can reach you.",
     imageSrc: "/assets/block-images/ContactInformation.png",
+    label: "Contact information",
+    usageText: "Let people know how they can reach you.",
   },
   dynamiccomponentlist: {
     label: "Dynamic component list",
@@ -460,11 +460,11 @@ export const BLOCK_TO_META = {
     // TODO: Add imageSrc
   },
   formsg: {
-    label: "FormSG",
     description: "Embed a form to collect data.",
+    imageSrc: "/assets/block-images/FormSG.png",
+    label: "FormSG",
     usageText:
       "Get mailing list sign-ups or quick feedback directly on the page.",
-    imageSrc: "/assets/block-images/FormSG.png",
   },
 } satisfies Record<
   IsomerComponent["type"],

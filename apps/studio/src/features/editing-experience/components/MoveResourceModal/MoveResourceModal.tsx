@@ -31,7 +31,7 @@ import { useValidateResourceMove } from "../../hooks/useValidateResourceMove"
 export const MoveResourceModal = () => {
   // NOTE: This is what we are trying to move
   const [moveItem, setMoveItem] = useAtom(moveResourceAtom)
-  const onClose = () => setMoveItem(null)
+  const onClose = () =>{  setMoveItem(null); }
 
   return (
     <Modal isOpen={!!moveItem} onClose={onClose}>
@@ -50,13 +50,13 @@ const MoveResourceContent = withSuspense(
     // this is used to disable the move button when the user has not selected a destination
     const [curResourceId, setCurResourceId] = useState<
       string | null | undefined
-    >(undefined)
+    >()
     const { siteId } = useQueryParse(sitePageSchema)
     const setMovedItem = useSetAtom(moveResourceAtom)
     const [{ title, type, permalink: movedSlug, publishedVersionId }] =
       trpc.resource.getMetadataById.useSuspenseQuery({
-        siteId: Number(siteId),
         resourceId,
+        siteId: Number(siteId),
       })
     const ability = usePermissions()
     const utils = trpc.useUtils()
@@ -64,9 +64,9 @@ const MoveResourceContent = withSuspense(
     const { mutate, isPending } = trpc.resource.move.useMutation({
       onError: (err) => {
         toast({
-          title: "Failed to move resource",
-          status: "error",
           description: err.message,
+          status: "error",
+          title: "Failed to move resource",
           ...BRIEF_TOAST_SETTINGS,
         })
       },
@@ -122,18 +122,18 @@ const MoveResourceContent = withSuspense(
       isValidMove,
       errorMessage,
     } = useValidateResourceMove({
-      sourceId: movedItem?.id,
       destinationId: curResourceId ?? null,
+      sourceId: movedItem?.id,
     })
 
     const [shouldCreateRedirect, setShouldCreateRedirect] = useState(true)
     const [{ fullPermalink: movedFullPermalink }] =
       trpc.resource.getWithFullPermalink.useSuspenseQuery({
-        siteId: Number(siteId),
         resourceId,
+        siteId: Number(siteId),
       })
     const { data: destination } = trpc.resource.getWithFullPermalink.useQuery(
-      { siteId: Number(siteId), resourceId: curResourceId ?? "" },
+      { resourceId: curResourceId ?? "", siteId: Number(siteId) },
       { enabled: !!curResourceId },
     )
 
@@ -188,7 +188,7 @@ const MoveResourceContent = withSuspense(
               siteId={siteId}
               showSelectedResourcePreview={false}
               existingResource={movedItem ?? undefined}
-              onChange={(resourceId) => setCurResourceId(resourceId)}
+              onChange={(resourceId) =>{  setCurResourceId(resourceId); }}
             />
             {curResourceId !== undefined &&
               errorMessage &&
@@ -229,8 +229,8 @@ const MoveResourceContent = withSuspense(
                       size="sm"
                       px="0.25rem"
                       isChecked={shouldCreateRedirect}
-                      onChange={(e) =>
-                        setShouldCreateRedirect(e.target.checked)
+                      onChange={(e) =>{ 
+                        setShouldCreateRedirect(e.target.checked); }
                       }
                     >
                       <Text textStyle="body-2" color="base.content.strong">
@@ -271,10 +271,10 @@ const MoveResourceContent = withSuspense(
             onClick={() =>
               movedItem?.id &&
               mutate({
-                siteId,
-                movedResourceId: movedItem.id,
                 destinationResourceId: curResourceId ?? null,
+                movedResourceId: movedItem.id,
                 shouldCreateRedirect,
+                siteId,
               })
             }
           >

@@ -1,5 +1,5 @@
-import fs from "fs/promises" // Use the promise-based version of fs for async/await
-import path from "path"
+import fs from "node:fs/promises" // Use the promise-based version of fs for async/await
+import path from "node:path"
 import { db } from "~/server/modules/database/database"
 
 import { FileLogger } from "../FileLogger"
@@ -81,10 +81,10 @@ const collectionId = "0"
 const backupDirectory = "/Users/XYZ/<your-path>"
 
 await backupCollection({
-  resourceId: collectionId,
   backupDir: backupDirectory,
-}).catch((err) => {
-  if (err instanceof Error) {
-    logger.error(`Unhandled error: ${err.message}`)
+  resourceId: collectionId,
+}).catch((error) => {
+  if (error instanceof Error) {
+    logger.error(`Unhandled error: ${error.message}`)
   }
 })

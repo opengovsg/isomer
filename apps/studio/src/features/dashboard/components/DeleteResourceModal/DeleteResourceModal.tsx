@@ -73,8 +73,8 @@ export const DeleteResourceModal = ({
   const [{ resourceId, ...rest }, setDeleteCollectionModalState] = useAtom(
     deleteResourceModalAtom,
   )
-  const onClose = () =>
-    setDeleteCollectionModalState(DEFAULT_RESOURCE_MODAL_STATE)
+  const onClose = () =>{ 
+    setDeleteCollectionModalState(DEFAULT_RESOURCE_MODAL_STATE); }
   return (
     <Modal isOpen={!!resourceId} onClose={onClose}>
       <ModalOverlay />
@@ -104,8 +104,17 @@ const DeleteResourceModalContent = ({
   // Redirects whose destination resolves to this resource (or any descendant)
   // are soft-deleted alongside it, so warn how many will go.
   const { data: redirectCount = 0 } =
-    trpc.redirect.countByDestinationResource.useQuery({ siteId, resourceId })
+    trpc.redirect.countByDestinationResource.useQuery({ resourceId, siteId })
   const { mutate, isPending } = trpc.resource.delete.useMutation({
+    onError: (err) => {
+      toast({
+        title: `Failed to delete ${label}`,
+        status: "error",
+        // TODO: check if this property is correct
+        description: err.message,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
     onSettled: onClose,
     onSuccess: async () => {
       posthog.capture("resource_deleted", {
@@ -128,19 +137,10 @@ const DeleteResourceModalContent = ({
         ...BRIEF_TOAST_SETTINGS,
       })
     },
-    onError: (err) => {
-      toast({
-        title: `Failed to delete ${label}`,
-        status: "error",
-        // TODO: check if this property is correct
-        description: err.message,
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
   })
 
   const onDelete = () => {
-    mutate({ siteId, resourceId })
+    mutate({ resourceId, siteId })
   }
 
   return (
@@ -151,7 +151,7 @@ const DeleteResourceModalContent = ({
       <ModalBody>
         <Text textStyle="body-1">{getWarningText(resourceType)}</Text>
         <HStack mt="1.5rem">
-          <Checkbox onChange={() => setIsChecked((prev) => !prev)}>
+          <Checkbox onChange={() =>{  setIsChecked((prev) => !prev); }}>
             <Text textStyle="body-2">Yes, delete this {label} permanently</Text>
           </Checkbox>
         </HStack>

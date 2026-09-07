@@ -2,9 +2,6 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Navbar } from "~/server/modules/resource/resource.types"
 
 export const PAGE_BLOB: IsomerSchema = {
-  version: "0.1.0",
-  layout: "homepage",
-  page: {},
   content: [
     {
       type: "hero",
@@ -56,13 +53,14 @@ export const PAGE_BLOB: IsomerSchema = {
       type: "antiscambanner",
     },
   ],
+  layout: "homepage",
+  page: {},
+  version: "0.1.0",
 }
 
 export const NAVBAR_CONTENT: Navbar = {
   items: [
     {
-      name: "Expandable nav item",
-      url: "/item-one",
       items: [
         {
           name: "PA's network one",
@@ -96,14 +94,16 @@ export const NAVBAR_CONTENT: Navbar = {
           description: "Click here and brace yourself for mild disappointment.",
         },
       ],
+      name: "Expandable nav item",
+      url: "/item-one",
     },
   ],
 }
 
 export const SEARCH_PAGE_BLOB: IsomerSchema = {
-  page: { title: "Search", description: "Search results" },
-  layout: "search",
   content: [],
+  layout: "search",
+  page: { description: "Search results", title: "Search" },
   version: "0.1.0",
 }
 
@@ -138,6 +138,6 @@ export const FOOTER = {
   contactUsLink: "/contact-us",
   feedbackFormLink: "https://www.form.gov.sg",
   privacyStatementLink: "/privacy",
-  termsOfUseLink: "/terms-of-use",
   siteNavItems: FOOTER_ITEMS,
+  termsOfUseLink: "/terms-of-use",
 }

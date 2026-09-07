@@ -1,4 +1,4 @@
-import { type PaginationState } from "@tanstack/react-table"
+import type { PaginationState } from "@tanstack/react-table"
 import { useState } from "react"
 
 type UseTablePaginationArgs = PaginationState & {
@@ -16,8 +16,8 @@ export const useTablePagination = ({
 
   return {
     limit: pageSize,
-    pageCount,
     onPaginationChange: setPagination,
+    pageCount,
     pagination,
     skip: pageSize * pageIndex,
   }

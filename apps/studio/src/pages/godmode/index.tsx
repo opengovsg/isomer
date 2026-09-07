@@ -7,11 +7,9 @@ import {
   Text,
 } from "@chakra-ui/react"
 import NextLink from "next/link"
-import {
-  requireGodModeAdmin,
-  type GodModeAdminRoleProps,
-} from "~/features/godmode/serverSideProps"
-import { type NextPageWithLayout } from "~/lib/types"
+import { requireGodModeAdmin } from '~/features/godmode/serverSideProps';
+import type { GodModeAdminRoleProps } from '~/features/godmode/serverSideProps';
+import type { NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
@@ -40,7 +38,7 @@ const GODMODE_LINKS: readonly GodModeLink[] = [
   },
 ]
 
-export const getServerSideProps: GetServerSideProps<GodModeAdminRoleProps> = (
+export const getServerSideProps: GetServerSideProps<GodModeAdminRoleProps> =  async (
   context,
 ) =>
   requireGodModeAdmin(context, [IsomerAdminRole.Core, IsomerAdminRole.Migrator])

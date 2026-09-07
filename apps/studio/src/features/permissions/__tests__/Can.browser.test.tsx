@@ -1,7 +1,6 @@
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
-import { Can } from "@casl/react"
-import { AbilityProvider } from "@casl/react"
+import { Can,AbilityProvider } from "@casl/react"
 import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 

@@ -19,7 +19,7 @@ import { EditFooterPreview } from "~/features/settings/EditFooterPreview"
 import { FooterEditor } from "~/features/settings/FooterEditor"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type NextPageWithLayout } from "~/lib/types"
+import type { NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -35,19 +35,19 @@ const FooterSettingsPage: NextPageWithLayout = () => {
   })
   const { mutate: saveFooter, isPending: isSavingFooter } =
     trpc.site.setFooter.useMutation({
-      onSuccess: async () => {
-        await utils.site.getFooter.invalidate({ id: Number(siteId) })
-        toast({
-          status: "success",
-          ...SETTINGS_TOAST_MESSAGES.success,
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
       onError: () => {
         toast({
           status: "error",
           title: "Error saving footer.",
           description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
+          ...BRIEF_TOAST_SETTINGS,
+        })
+      },
+      onSuccess: async () => {
+        await utils.site.getFooter.invalidate({ id: Number(siteId) })
+        toast({
+          status: "success",
+          ...SETTINGS_TOAST_MESSAGES.success,
           ...BRIEF_TOAST_SETTINGS,
         })
       },
@@ -60,17 +60,17 @@ const FooterSettingsPage: NextPageWithLayout = () => {
   const isDirty = !isEqual(previewFooterState, content)
 
   const handleSaveFooter = (data?: FooterSchemaType) => {
-    if (!data) return
-    saveFooter({ siteId: Number(siteId), footer: JSON.stringify(data) })
+    if (!data) {return}
+    saveFooter({ footer: JSON.stringify(data), siteId: Number(siteId) })
   }
 
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+  useNavigationEffect({ callback: setNextUrl, isDirty, isOpen })
 
   return (
     <>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() => setNextUrl("")}
+        onClose={() =>{  setNextUrl(""); }}
         nextUrl={nextUrl}
       />
 
@@ -95,13 +95,13 @@ const FooterSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-FooterSettingsPage.getLayout = (page) => {
-  return (
+FooterSettingsPage.getLayout = (page) => 
+  (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
       page={SiteSettingsLayout(page)}
     />
   )
-}
+
 
 export default FooterSettingsPage

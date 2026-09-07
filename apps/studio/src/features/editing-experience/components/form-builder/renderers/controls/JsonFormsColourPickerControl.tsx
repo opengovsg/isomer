@@ -79,13 +79,12 @@ const JsonFormsColourPickerControl = ({
                 onChange={(e) => {
                   const rawString = e.target.value
                   if (!rawString) {
-                    handleChange(path, undefined)
+                    handleChange(path)
                     setDisplayedColour(undefined)
                     return
                   }
 
-                  const parsedHex = rawString
-                    .split("")
+                  const parsedHex = [...rawString]
                     .filter((c) => isHexadecimal(c))
                     .join("")
                     .slice(0, 6) // limit to 6 characters
@@ -133,7 +132,7 @@ const JsonFormsColourPickerControl = ({
           <Flex mt="0.75rem" h="3rem">
             {THEME_PATHS.map((p) => {
               const isFirst = p === THEME_PATHS[0]
-              const isLast = p === THEME_PATHS[THEME_PATHS.length - 1]
+              const isLast = p === THEME_PATHS.at(-1)
 
               return (
                 <Box

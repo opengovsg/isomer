@@ -17,21 +17,25 @@ export const InitialLoginStep = (): React.ReactNode => {
 
   const errorTitle = useMemo(() => {
     switch (errorState) {
-      case "unauthorized":
+      case "unauthorized": {
         return "You don’t have access to Isomer Studio"
-      default:
+      }
+      default: {
         const _: undefined = errorState
         return undefined
+      }
     }
   }, [errorState])
 
   const errorDescription = useMemo(() => {
     switch (errorState) {
-      case "unauthorized":
+      case "unauthorized": {
         return "If you think you should have access, ask the agency you are working with to whitelist your email address."
-      default:
+      }
+      default: {
         const _: undefined = errorState
         return undefined
+      }
     }
   }, [errorState])
 

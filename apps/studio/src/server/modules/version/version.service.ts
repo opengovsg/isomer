@@ -1,7 +1,7 @@
 import type { SelectExpression } from "kysely"
 import { TRPCError } from "@trpc/server"
 import { ResourceState } from "~prisma/generated/generatedEnums"
-import { type DB } from "~prisma/generated/generatedTypes"
+import type { DB } from "~prisma/generated/generatedTypes"
 
 import type { SafeKysely, Transaction } from "../database/types"
 import { db } from "../database/database"
@@ -20,7 +20,7 @@ const defaultVersionSelect: SelectExpression<DB, "Version">[] = [
   "Version.publishedAt",
 ]
 
-const getVersionById = ({ versionId }: { versionId: string }) =>
+const getVersionById =  async ({ versionId }: { versionId: string }) =>
   db
     .selectFrom("Version")
     .where("Version.id", "=", versionId)
@@ -40,11 +40,11 @@ const createVersion = async (
   const addedVersion = await db
     .insertInto("Version")
     .values({
-      versionNum,
-      resourceId: resourceId,
       blobId,
       publishedAt: new Date(),
       publishedBy: publisherId,
+      resourceId: resourceId,
+      versionNum,
     })
     .returning(["Version.id", "Version.versionNum"])
     .executeTakeFirstOrThrow()
@@ -72,8 +72,8 @@ export const incrementVersion = async ({
   newVersion: Version
 } | null> => {
   const page = await getPageById(tx, {
-    siteId,
     resourceId: Number(resourceId),
+    siteId,
   })
 
   if (!page) {
@@ -84,7 +84,7 @@ export const incrementVersion = async ({
   }
 
   // If there's no draft, we don't create a new version
-  if (!page.draftBlobId) return null
+  if (!page.draftBlobId) {return null}
 
   let newVersionNum = 1
   let previousVersion: Version | null = null
@@ -97,19 +97,19 @@ export const incrementVersion = async ({
 
   // Create the new version
   const newVersion = await createVersion(tx, {
-    versionNum: newVersionNum,
-    resourceId,
     blobId: page.draftBlobId,
     publisherId: userId,
+    resourceId,
+    versionNum: newVersionNum,
   })
 
   // Update resource with new versionId and draft to be null
   await updatePageById(
     {
-      id: parseInt(page.id),
-      siteId,
-      publishedVersionId: newVersion.id,
       draftBlobId: null,
+      id: parseInt(page.id),
+      publishedVersionId: newVersion.id,
+      siteId,
       state: ResourceState.Published,
     },
     tx,

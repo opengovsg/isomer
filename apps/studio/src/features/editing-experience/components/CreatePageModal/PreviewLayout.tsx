@@ -93,11 +93,11 @@ const SuspendableLayoutPreview = () => {
         permalink={currentPermalink}
         siteMap={{
           id: "0",
-          layout: "content",
-          title: "Root",
-          summary: "",
           lastModified: "1970-01-01T00:00:00.000Z",
+          layout: "content",
           permalink: "",
+          summary: "",
+          title: "Root",
         }}
         {...layoutPreviewJson}
       />

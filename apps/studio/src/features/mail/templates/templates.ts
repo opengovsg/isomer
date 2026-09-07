@@ -36,9 +36,9 @@ const getDownloadLinkLabel = (
   label: AuditLogExportDownloadLink["label"],
   longMonth: string,
   sizeInMb: string,
-) => {
-  return `Download ${label} review logs for ${longMonth} [.csv, ${sizeInMb}MB]`
-}
+) => 
+  `Download ${label} review logs for ${longMonth} [.csv, ${sizeInMb}MB]`
+
 
 const constructStudioRedirect = () =>
   `<a target="_blank" href="${escapeHtml(env.NEXT_PUBLIC_APP_URL)}">${escapeHtml(env.NEXT_PUBLIC_APP_URL?.replace("https://", ""))}</a>`
@@ -50,12 +50,12 @@ export const gazetteDeletionTemplate = (
 
   // Greeting is not personalised. This email goes to all site admins (to + cc).
   return {
-    subject: `[Isomer Studio] The gazette with file id: ${fileId} and title: ${gazetteTitle} has been deleted`,
     body: `<p>Hi everyone,</p>
 <p>The gazette ${gazetteTitle} has been deleted from your site and removed from the search results</p>
 <p>If you believe this was a mistake or need assistance, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a>.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
+    subject: `[Isomer Studio] The gazette with file id: ${fileId} and title: ${gazetteTitle} has been deleted`,
   }
 }
 
@@ -64,19 +64,23 @@ const invitationTemplate = (
 ): EmailTemplate => {
   let roleAction: string
   switch (data.role) {
-    case RoleType.Admin:
+    case RoleType.Admin: {
       roleAction =
         "edit and publish the content, as well as manage users and site settings"
       break
-    case RoleType.Publisher:
+    }
+    case RoleType.Publisher: {
       roleAction = "edit and publish content"
       break
-    case RoleType.Editor:
+    }
+    case RoleType.Editor: {
       roleAction = "edit content"
       break
-    default:
+    }
+    default: {
       const _: never = data.role
       throw new Error(`Unknown role. Please check the role type.`)
+    }
   }
 
   const { inviterName, recipientEmail, siteName, role, isSingpassEnabled } =
@@ -97,8 +101,8 @@ const invitationTemplate = (
   ]
 
   return {
-    subject: "[Isomer Studio] Activate your account to edit Isomer sites",
     body: emailBodyParts.join("<p></p>").trim(),
+    subject: "[Isomer Studio] Activate your account to edit Isomer sites",
   }
 }
 
@@ -108,13 +112,13 @@ const loginAlertTemplate = (
 ): EmailTemplate => {
   const { recipientEmail } = data
   return {
-    subject: `[Isomer Studio] Successful Login to Your Account`,
     body: `<p>Hi ${recipientEmail},</p>
 <p>We wanted to let you know that your account was accessed successfully.</p>
 <p>If this was you, no action is needed.</p>
 <p><strong>Note:</strong> You're receiving this notification because your account was logged into during a Singpass authentication outage. If you are not the one who logged in, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
+    subject: `[Isomer Studio] Successful Login to Your Account`,
   }
 }
 
@@ -124,12 +128,12 @@ const schedulePageTemplate = (
   const { recipientEmail, scheduledAt, resource } = data
   const studioResourceUrl = getStudioResourceUrl(resource)
   return {
-    subject: `[Isomer Studio] You scheduled a page to be published`,
     body: `<p>Hi ${recipientEmail},</p>
     <p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${formatScheduledAtDate(toZonedTime(scheduledAt, "Asia/Singapore"), false)} (SGT)</strong>.</p>
     <p>Log in to Isomer Studio at ${studioResourceUrl} to modify or cancel your schedule.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
+    subject: `[Isomer Studio] You scheduled a page to be published`,
   }
 }
 
@@ -139,12 +143,12 @@ const cancelSchedulePageTemplate = (
   const { recipientEmail, resource } = data
   const studioResourceUrl = getStudioResourceUrl(resource)
   return {
-    subject: `[Isomer Studio] Schedule to publish was cancelled`,
     body: `<p>Hi ${recipientEmail},</p>
     <p>Your schedule to publish "${resource.title}" has been cancelled. The page is now in draft mode.</p>
     <p>Log in to Isomer Studio at ${studioResourceUrl} to manage changes to your page.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
+    subject: `[Isomer Studio] Schedule to publish was cancelled`,
   }
 }
 
@@ -154,7 +158,7 @@ const failedPublishTemplate = (
   const { recipientEmail, isScheduled, resource } = data
   const studioResourceUrl = getStudioResourceUrl(resource)
   switch (isScheduled) {
-    case true:
+    case true: {
       return {
         subject: `[Isomer Studio] We couldn’t publish your page that was scheduled`,
         body: `<p>Hi ${recipientEmail},</p>
@@ -163,7 +167,8 @@ const failedPublishTemplate = (
         <p>Best,</p>
         <p>Isomer team</p>`,
       }
-    case false:
+    }
+    case false: {
       return {
         subject: `[Isomer Studio] We couldn’t publish your page`,
         body: `<p>Hi ${recipientEmail},</p>
@@ -172,6 +177,7 @@ const failedPublishTemplate = (
         <p>Best,</p>
         <p>Isomer team</p>`,
       }
+    }
   }
 }
 
@@ -181,7 +187,7 @@ const successfulPublishTemplate = (
   const { recipientEmail, resource, ...rest } = data
   const studioResourceUrl = getStudioResourceUrl(resource)
   switch (rest.isScheduled) {
-    case true:
+    case true: {
       return {
         subject: `[Isomer Studio] Your scheduled page was published`,
         body: `<p>Hi ${recipientEmail},</p>
@@ -190,7 +196,8 @@ const successfulPublishTemplate = (
         <p>Best,</p>
         <p>Isomer team</p>`,
       }
-    case false:
+    }
+    case false: {
       return {
         subject: `[Isomer Studio] Changes you published are now live`,
         body: `<p>Hi ${recipientEmail},</p>
@@ -199,6 +206,7 @@ const successfulPublishTemplate = (
         <p>Best,</p>
         <p>Isomer team</p>`,
       }
+    }
   }
 }
 
@@ -209,12 +217,12 @@ const publishAlertContentPublisherTemplate = (
   const studioResourceUrl = getStudioResourceUrl(resource)
 
   return {
-    subject: `[Isomer Studio] ${unescapeHtml(resource.title)} has been published`,
     body: `<p>Hi ${recipientEmail},</p>
     <p>You have successfully published "${resource.title}" on ${siteName}. You can access your published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
     <p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. If you didn't authorize this publication, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
+    subject: `[Isomer Studio] ${unescapeHtml(resource.title)} has been published`,
   }
 }
 
@@ -225,12 +233,12 @@ const publishAlertSiteAdminTemplate = (
   const studioResourceUrl = getStudioResourceUrl(resource)
 
   return {
-    subject: `[Isomer Studio] ${unescapeHtml(resource.title)} has been published`,
     body: `<p>Hi ${recipientEmail},</p>
     <p>${publisherEmail} has published "${resource.title}" on ${siteName}. You can view the published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
     <p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. As a site admin, we want to keep you informed of all publishing activities. If you have any concerns, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
+    subject: `[Isomer Studio] ${unescapeHtml(resource.title)} has been published`,
   }
 }
 
@@ -239,7 +247,6 @@ const accountDeactivationWarningTemplate = (
 ): EmailTemplate => {
   const { recipientEmail, siteNames, inHowManyDays } = data
   return {
-    subject: `[Isomer Studio] Account deactivation warning - ${inHowManyDays} days remaining`,
     body: `<p>Hi ${recipientEmail},</p>
 <p>We noticed you haven’t logged in for a while. To keep your account active, please log in within the next ${inHowManyDays} days at ${constructStudioRedirect()}.</p>
 <p>This is a standard security measure to protect your sites and data.</p>
@@ -248,6 +255,7 @@ const accountDeactivationWarningTemplate = (
 <p>Your content will still be preserved, but you won’t be able to access or manage these sites unless your account is reactivated.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
+    subject: `[Isomer Studio] Account deactivation warning - ${inHowManyDays} days remaining`,
   }
 }
 
@@ -283,8 +291,8 @@ const accountDeactivationTemplate = (
   ].join("")
 
   return {
-    subject: `[Isomer Studio] Your account has been deactivated due to inactivity`,
     body: emailBody,
+    subject: `[Isomer Studio] Your account has been deactivated due to inactivity`,
   }
 }
 
@@ -302,13 +310,13 @@ const auditLogExportReadyTemplate = (
   const downloadLink = `<a href="${link.url}">${getDownloadLinkLabel(link.label, month, sizeInBytes ? (sizeInBytes / ONE_MB_IN_BYTES).toFixed(2) : "-")}</a>`
 
   return {
-    subject: `[Isomer] ${logName} logs for ${month} for your site (${unescapeHtml(siteName)}) is ready`,
     body: `<p>Hi ${recipientEmail},</p>
 <p>You requested for audit logs for your site(s) for ${month}. This link will expire after ${AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS} days.</p>
 <p>${downloadLink}</p>
 <br/>
 <p>Best,</p>
 <p>Isomer team</p>`,
+    subject: `[Isomer] ${logName} logs for ${month} for your site (${unescapeHtml(siteName)}) is ready`,
   }
 }
 
@@ -320,43 +328,43 @@ const auditLogExportFailedTemplate = (
   const { recipientEmail, siteName, month } = data
 
   return {
-    subject: `[Isomer Studio] Your audit log export for ${unescapeHtml(siteName)} (${month}) could not be generated`,
     body: `<p>Hi ${recipientEmail},</p>
 <p>We're sorry — we couldn't generate your audit log export for ${siteName} (${month}).</p>
 <p>Please try again later. If the problem persists, contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a>.</p>
 <br/>
 <p>Best,</p>
 <p>Isomer team</p>`,
+    subject: `[Isomer Studio] Your audit log export for ${unescapeHtml(siteName)} (${month}) could not be generated`,
   }
 }
 
 const _templates = {
+  accountDeactivation:
+    accountDeactivationTemplate satisfies EmailTemplateFunction<AccountDeactivationEmailTemplateData>,
+  accountDeactivationWarning:
+    accountDeactivationWarningTemplate satisfies EmailTemplateFunction<AccountDeactivationWarningEmailTemplateData>,
+  auditLogExportFailed:
+    auditLogExportFailedTemplate satisfies EmailTemplateFunction<AuditLogExportFailedEmailTemplateData>,
+  auditLogExportReady:
+    auditLogExportReadyTemplate satisfies EmailTemplateFunction<AuditLogExportReadyEmailTemplateData>,
+  cancelSchedulePage:
+    cancelSchedulePageTemplate satisfies EmailTemplateFunction<CancelSchedulePageTemplateData>,
+  failedPublish:
+    failedPublishTemplate satisfies EmailTemplateFunction<FailedPublishTemplateData>,
+  gazetteDeletion:
+    gazetteDeletionTemplate satisfies EmailTemplateFunction<GazetteDeletionEmailTemplateData>,
   invitation:
     invitationTemplate satisfies EmailTemplateFunction<InvitationEmailTemplateData>,
   loginAlert:
     loginAlertTemplate satisfies EmailTemplateFunction<LoginAlertEmailTemplateData>,
   publishAlertContentPublisher:
     publishAlertContentPublisherTemplate satisfies EmailTemplateFunction<PublishAlertContentPublisherEmailTemplateData>,
-  cancelSchedulePage:
-    cancelSchedulePageTemplate satisfies EmailTemplateFunction<CancelSchedulePageTemplateData>,
-  failedPublish:
-    failedPublishTemplate satisfies EmailTemplateFunction<FailedPublishTemplateData>,
-  successfulPublish:
-    successfulPublishTemplate satisfies EmailTemplateFunction<SuccessfulPublishTemplateData>,
-  schedulePage:
-    schedulePageTemplate satisfies EmailTemplateFunction<SchedulePageTemplateData>,
   publishAlertSiteAdmin:
     publishAlertSiteAdminTemplate satisfies EmailTemplateFunction<PublishAlertSiteAdminEmailTemplateData>,
-  accountDeactivationWarning:
-    accountDeactivationWarningTemplate satisfies EmailTemplateFunction<AccountDeactivationWarningEmailTemplateData>,
-  accountDeactivation:
-    accountDeactivationTemplate satisfies EmailTemplateFunction<AccountDeactivationEmailTemplateData>,
-  gazetteDeletion:
-    gazetteDeletionTemplate satisfies EmailTemplateFunction<GazetteDeletionEmailTemplateData>,
-  auditLogExportReady:
-    auditLogExportReadyTemplate satisfies EmailTemplateFunction<AuditLogExportReadyEmailTemplateData>,
-  auditLogExportFailed:
-    auditLogExportFailedTemplate satisfies EmailTemplateFunction<AuditLogExportFailedEmailTemplateData>,
+  schedulePage:
+    schedulePageTemplate satisfies EmailTemplateFunction<SchedulePageTemplateData>,
+  successfulPublish:
+    successfulPublishTemplate satisfies EmailTemplateFunction<SuccessfulPublishTemplateData>,
 } as const
 
 export const templates = escapeTemplateArguments(_templates)

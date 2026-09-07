@@ -1,2 +1,2 @@
 export { templates } from "./templates"
-export * from "./types"
+export type * from "./types"

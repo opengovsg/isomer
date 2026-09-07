@@ -19,8 +19,8 @@ const JsonFormsRefControl = ({
   label,
   required,
   errors,
-}: ControlProps) => {
-  return (
+}: ControlProps) => 
+  (
     <BaseLinkControl
       // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
       data={data as string}
@@ -33,6 +33,6 @@ const JsonFormsRefControl = ({
       errors={errors}
     />
   )
-}
+
 
 export default withJsonFormsControlProps(JsonFormsRefControl)

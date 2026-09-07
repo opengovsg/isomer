@@ -46,13 +46,6 @@ const LogoSettingsPage: NextPageWithLayout = () => {
     useState<LogoSettings>(existingLogoSettings)
 
   const updateSiteConfigMutation = trpc.site.updateSiteConfig.useMutation({
-    onSuccess: () => {
-      toast({
-        ...SETTINGS_TOAST_MESSAGES.success,
-        status: "success",
-      })
-      void trpcUtils.site.getConfig.invalidate({ id: siteId })
-    },
     onError: (error) => {
       toast({
         title: "Failed to update site",
@@ -60,11 +53,18 @@ const LogoSettingsPage: NextPageWithLayout = () => {
         status: "error",
       })
     },
+    onSuccess: () => {
+      toast({
+        ...SETTINGS_TOAST_MESSAGES.success,
+        status: "success",
+      })
+      void trpcUtils.site.getConfig.invalidate({ id: siteId })
+    },
   })
 
   const isDirty = !isEqual(logoSettings, existingLogoSettings)
 
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+  useNavigationEffect({ callback: setNextUrl, isDirty, isOpen })
 
   const onSubmit = () => {
     updateSiteConfigMutation.mutate({
@@ -78,7 +78,7 @@ const LogoSettingsPage: NextPageWithLayout = () => {
     <ErrorProvider>
       <UnsavedSettingModal
         isOpen={isOpen}
-        onClose={() => setNextUrl("")}
+        onClose={() =>{  setNextUrl(""); }}
         nextUrl={nextUrl}
       />
       <SettingsGrid>
@@ -114,13 +114,13 @@ const LogoSettingsPage: NextPageWithLayout = () => {
   )
 }
 
-LogoSettingsPage.getLayout = (page) => {
-  return (
+LogoSettingsPage.getLayout = (page) => 
+  (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
       page={SiteSettingsLayout(page)}
     />
   )
-}
+
 
 export default LogoSettingsPage

@@ -2,8 +2,8 @@
 export const waitForElement = async (
   document: Document,
   querySelector: string,
-) => {
-  return new Promise((resolve) => {
+) => 
+  await new Promise((resolve) => {
     const observer = new MutationObserver((mutationsList, observer) => {
       const element = document.querySelector(querySelector)
       if (element) {
@@ -22,4 +22,4 @@ export const waitForElement = async (
       observer.disconnect()
     }, 30000)
   })
-}
+

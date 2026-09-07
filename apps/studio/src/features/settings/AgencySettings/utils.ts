@@ -8,13 +8,13 @@ const isBlankString = (value: string | undefined): boolean =>
 const compactStringRecord = <T extends Record<string, string | undefined>>(
   value: T | undefined,
 ): T | undefined => {
-  if (!value) return undefined
+  if (!value) {return undefined}
 
   const entries = Object.entries(value).filter(
     ([, entryValue]) => !isBlankString(entryValue),
   )
 
-  if (!entries.length) return undefined
+  if (!entries.length) {return undefined}
   // SAFETY: entries only drop blank string fields from the same record shape
   return Object.fromEntries(entries) as T
 }
@@ -22,7 +22,7 @@ const compactStringRecord = <T extends Record<string, string | undefined>>(
 export const normalizeSiteEntity = (
   siteEntity: SiteEntitySettings | undefined,
 ): SiteEntitySettings | undefined => {
-  if (!siteEntity) return undefined
+  if (!siteEntity) {return undefined}
 
   const result: SiteEntitySettings = {}
 

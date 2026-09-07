@@ -25,8 +25,8 @@ export const useSearchStyle = () => {
   )
 
   const minWidth = "30rem"
-  const maxWidth = isDesktop ? "42.5rem" : isTablet ? "35rem" : "30rem"
+  const maxWidth = isDesktop ? "42.5rem" : (isTablet ? "35rem" : "30rem")
   const marginTop = `${bannerHeight + (isSmallerThanTablet ? 0 : topOffsetInPx)}px`
 
-  return { minWidth, maxWidth, marginTop }
+  return { marginTop, maxWidth, minWidth }
 }

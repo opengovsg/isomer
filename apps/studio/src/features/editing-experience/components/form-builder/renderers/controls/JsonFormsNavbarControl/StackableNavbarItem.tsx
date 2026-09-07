@@ -35,10 +35,10 @@ import { DeleteSubItemModal } from "./DeleteSubItemModal"
 import { NavbarItemBox } from "./NavbarItemBox"
 import { getInstancePathFromNavbarItemPath, getNavbarItemPath } from "./utils"
 
-type NavbarAjvError = ErrorObject<string, Record<string, never>, unknown>
+type NavbarAjvError = ErrorObject<string, Record<string, never>>
 
 const getNumberOfErrors = (errors: NavbarAjvError[], path: string) => {
-  const instancePath = `/${path.replace(/\./g, "/")}`
+  const instancePath = `/${path.replaceAll('.', "/")}`
   return errors.filter((error) => error.instancePath.startsWith(instancePath))
     .length
 }
@@ -136,8 +136,8 @@ export const StackableNavbarItem = ({
     return combine(
       // This allows the main navbar item to be draggable via the drag handle
       draggable({
-        element: mainItemElement,
         dragHandle: mainItemDragHandleElement,
+        element: mainItemElement,
         getInitialData: () => ({
           type: "navbar-item",
           navbarId: mainItemElement.dataset.id,
@@ -191,16 +191,16 @@ export const StackableNavbarItem = ({
             },
           ),
         getIsSticky: () => true,
-        onDragEnter: handleDrag,
         onDrag: handleDrag,
-        onDragLeave: () => setNavbarItemClosestEdge(null),
-        onDrop: () => setNavbarItemClosestEdge(null),
+        onDragEnter: handleDrag,
+        onDragLeave: () =>{  setNavbarItemClosestEdge(null); },
+        onDrop: () =>{  setNavbarItemClosestEdge(null); },
       }),
 
       // Subitems dropzone, for subitems within the same group to be rearranged
       dropTargetForElements({
-        element: subItemsDroppableZoneElement,
         canDrop: () => true,
+        element: subItemsDroppableZoneElement,
         getIsSticky: () => true,
       }),
     )
@@ -255,10 +255,10 @@ export const StackableNavbarItem = ({
             index={index}
             itemDragHandleRef={mainItemDragHandleRef}
             dragPresentation={{
-              isNavbarItemDragging,
-              isItemBeingDraggedOver,
-              setIsItemBeingDraggedOver,
               isInvalid: numberOfErrors > 0,
+              isItemBeingDraggedOver,
+              isNavbarItemDragging,
+              setIsItemBeingDraggedOver,
             }}
             onEditItem={onEdit}
             onDeleteItem={onDeleteGroupModalOpen}
@@ -292,8 +292,8 @@ export const StackableNavbarItem = ({
                       }
                       index={idx}
                       parentIndex={index}
-                      dragPresentation={{ isSubItem: true, isInvalid }}
-                      onEditItem={() => onEdit(idx)}
+                      dragPresentation={{ isInvalid, isSubItem: true }}
+                      onEditItem={() =>{  onEdit(idx); }}
                       onDeleteItem={() => {
                         setSubItemToDelete(idx)
                         onDeleteSubItemModalOpen()

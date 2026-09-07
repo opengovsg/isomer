@@ -8,9 +8,9 @@ import twColors from "tailwindcss/colors"
 // to a linear rgb scale
 // Ref: https://en.wikipedia.org/wiki/Relative_luminance
 const LINEAR_RGB_FACTORS = {
-  red: 0.2126,
-  green: 0.7152,
   blue: 0.0722,
+  green: 0.7152,
+  red: 0.2126,
 }
 
 // NOTE: This is used to check relative contrast.
@@ -43,8 +43,7 @@ export const normalizeHex = (color: string): string => {
   }
 
   if (normalizedColor.length === 3) {
-    normalizedColor = normalizedColor
-      .split("")
+    normalizedColor = [...normalizedColor]
       .map((char) => char + char)
       .join("")
   }
@@ -55,7 +54,7 @@ export const normalizeHex = (color: string): string => {
 const convertHexToRgb = (color: string): [number, number, number] => {
   const rgb = normalizeHex(color)
   // SAFETY: normalized hex always yields three 8-bit RGB channel values
-  return chunk(rgb, 2).map((hex) => parseInt(hex.join(""), 16)) as [
+  return chunk(rgb, 2).map((hex) => Number.parseInt(hex.join(""), 16)) as [
     number,
     number,
     number,
@@ -72,9 +71,9 @@ const calculateRelativeContrast = (lum1: number, lum2: number): number => {
 const normaliseRsRgb = (value: number) => {
   if (value <= 0.03928) {
     return value / 12.92
-  } else {
-    return ((value + 0.055) / 1.055) ** 2.4
   }
+    return ((value + 0.055) / 1.055) ** 2.4
+  
 }
 
 const calculateRelativeLuminance = (color: string) => {
@@ -122,7 +121,7 @@ const generateTheme = ({
     "colors.brand.interaction.pressed": shades[6],
   } as Theme
 
-  if (passesContrastCheck(simpleTheme)) return simpleTheme
+  if (passesContrastCheck(simpleTheme)) {return simpleTheme}
 
   // NOTE: This is from light to dark
   const range = [...tints, colour, ...shades]
@@ -130,8 +129,8 @@ const generateTheme = ({
   const light = pickColorsFromRange(range.reverse(), TEXT_COLOURS.dark, 2)
 
   return {
-    "colors.brand.canvas.default": light[0],
     "colors.brand.canvas.alt": light[1],
+    "colors.brand.canvas.default": light[0],
     "colors.brand.canvas.inverse": dark[3],
     "colors.brand.interaction.default": dark[2],
     "colors.brand.interaction.hover": dark[1],
@@ -175,34 +174,34 @@ export const convertThemeToCss = (theme: IsomerSiteThemeProps) => {
   )
 
   // SAFETY: flattened theme colour tokens map directly to CSS custom properties
-  return Object.entries(flattenedVars).reduce(
+  return Object.entries(flattenedVars).reduce< Record<string, string>>(
     (acc, [key, value]) => {
       acc[`--${key}`] = value
       return acc
     },
-    {} as Record<string, string>,
+    {},
   ) as CSSProperties
 }
 
 const PALETTE_SCALES = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
-const toHexValue = (value: number) => {
-  return Math.min(Math.max(Math.round(value), 0), 255)
+const toHexValue = (value: number) => 
+  Math.min(Math.max(Math.round(value), 0), 255)
     .toString(16)
     .padStart(2, "0")
-}
+
 const rgbToHex = (r: number, g: number, b: number) => {
   const rgb = [r, g, b]
   return `#${rgb.map(toHexValue).join("")}`
 }
 
-const tint = (value: number, scale: number) => {
-  return Math.round(value + (255 - value) * scale)
-}
+const tint = (value: number, scale: number) => 
+  Math.round(value + (255 - value) * scale)
 
-const shade = (value: number, scale: number) => {
-  return Math.round(value * scale)
-}
+
+const shade = (value: number, scale: number) => 
+  Math.round(value * scale)
+
 
 const generateColorPalette = (r: number, g: number, b: number) => {
   const tints = PALETTE_SCALES.map((scale) => {
@@ -219,7 +218,7 @@ const generateColorPalette = (r: number, g: number, b: number) => {
     return rgbToHex(red, green, blue)
   })
 
-  return { tints, colour: rgbToHex(r, g, b), shades }
+  return { colour: rgbToHex(r, g, b), shades, tints }
 }
 export function passesContrastCheck(theme: Theme): boolean {
   const passesDarkContrastCheck = BACKGROUND_COLOURS.light
@@ -252,5 +251,5 @@ export const getPalette = (base: string) => {
     ...convertHexToRgb(base),
   )
 
-  return generateTheme({ tints, colour, shades })
+  return generateTheme({ colour, shades, tints })
 }

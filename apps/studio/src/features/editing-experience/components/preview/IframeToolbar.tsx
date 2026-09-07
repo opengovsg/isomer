@@ -23,26 +23,30 @@ export const IframeToolbar = ({
 }: IframeToolbarProps): React.ReactNode => {
   const toolbarTextLabels = useMemo(() => {
     switch (viewport) {
-      case "mobile":
+      case "mobile": {
         return {
           mode: "Preview in different screen sizes before you publish",
           viewport: "Mobile",
         }
-      case "tablet":
+      }
+      case "tablet": {
         return {
           mode: "Preview in different screen sizes before you publish",
           viewport: "Tablet",
         }
-      case "responsive":
+      }
+      case "responsive": {
         return {
           mode: "Preview in different screen sizes before you publish",
           viewport: "Default mode",
         }
-      case "fullscreen":
+      }
+      case "fullscreen": {
         return {
           mode: "Preview in different screen sizes before you publish",
           viewport: "Full screen",
         }
+      }
     }
   }, [viewport])
 
@@ -54,11 +58,11 @@ export const IframeToolbar = ({
       }
     }
     return {
-      mx: "2rem",
-      mt: "1rem",
-      borderRadius: "8px",
       border: "1px solid",
       borderColor: "interaction.main-subtle.default",
+      borderRadius: "8px",
+      mt: "1rem",
+      mx: "2rem",
     }
   }, [viewport])
 
@@ -83,7 +87,7 @@ export const IframeToolbar = ({
       </Flex>
       {viewport === "fullscreen" ? (
         <Button
-          onClick={() => setViewport("responsive")}
+          onClick={() =>{  setViewport("responsive"); }}
           variant="outline"
           colorScheme="neutral"
           size="xs"
@@ -101,9 +105,9 @@ export const IframeToolbar = ({
               <MenuOptionGroup
                 value={viewport}
                 type="radio"
-                onChange={(nextValue) =>
+                onChange={(nextValue) =>{ 
                   // SAFETY: caller invariant is checked immediately before this narrowing assertion
-                  setViewport(nextValue as ViewportOptions)
+                  setViewport(nextValue as ViewportOptions); }
                 }
               >
                 <MenuItemOption value="responsive">

@@ -52,7 +52,7 @@ describe("getDgsIdFromString", () => {
 
     it("should handle very long valid IDs", () => {
       // Arrange
-      const longId = "d_" + "a".repeat(50)
+      const longId = `d_${  "a".repeat(50)}`
 
       // Act
       const result = getDgsIdFromString({ string: longId })

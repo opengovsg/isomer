@@ -1,7 +1,7 @@
 import { HStack, Link } from "@chakra-ui/react"
 
-export const LandingLinks = (): React.ReactNode => {
-  return (
+export const LandingLinks = (): React.ReactNode => 
+  (
     <HStack spacing="1.5rem">
       <Link
         title="View privacy statement"
@@ -37,4 +37,4 @@ export const LandingLinks = (): React.ReactNode => {
       </Link>
     </HStack>
   )
-}
+

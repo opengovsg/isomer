@@ -34,8 +34,8 @@ describe("whitelist.router", async () => {
       caller = createCaller(createMockRequest(session))
       unauthedCaller = createCaller(createMockRequest(applySession()))
       const user = await setupUser({
-        userId: session.userId,
         email: "test@mock.com",
+        userId: session.userId,
       })
       await auth(user)
     })
@@ -43,8 +43,8 @@ describe("whitelist.router", async () => {
     it("should throw 401 if not logged in", async () => {
       // Act
       const result = unauthedCaller.isEmailWhitelisted({
-        siteId: 1,
         email: "test@mock.com",
+        siteId: 1,
       })
 
       // Assert
@@ -58,14 +58,14 @@ describe("whitelist.router", async () => {
       const { site } = await setupSite()
       await setUpWhitelist({ email: "another-test@mock.com" })
       await setupPublisherPermissions({
-        userId: session.userId,
         siteId: site.id,
+        userId: session.userId,
       })
 
       // Act
       const result = caller.isEmailWhitelisted({
-        siteId: site.id,
         email: "another-test@mock.com",
+        siteId: site.id,
       })
 
       // Assert
@@ -81,12 +81,12 @@ describe("whitelist.router", async () => {
     it("should return false if email is not whitelisted", async () => {
       // Arrange
       const { site } = await setupSite()
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
 
       // Act
       const result = await caller.isEmailWhitelisted({
-        siteId: site.id,
         email: "another-test@mock.com",
+        siteId: site.id,
       })
 
       // Assert
@@ -97,11 +97,11 @@ describe("whitelist.router", async () => {
       // Arrange
       const { site } = await setupSite()
       await setUpWhitelist({ email: "another-test@mock.com" })
-      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: session.userId })
       // Act
       const result = await caller.isEmailWhitelisted({
-        siteId: site.id,
         email: "another-test@mock.com",
+        siteId: site.id,
       })
 
       // Assert
@@ -117,8 +117,8 @@ describe("whitelist.router", async () => {
       caller = createCaller(createMockRequest(session))
       unauthedCaller = createCaller(createMockRequest(applySession()))
       user = await setupUser({
-        userId: session.userId,
         email: "test@mock.com",
+        userId: session.userId,
       })
       await auth(user)
     })
@@ -157,7 +157,7 @@ describe("whitelist.router", async () => {
 
     it("should whitelist admin emails successfully if user is an Isomer Core Admin", async () => {
       // Arrange
-      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      await setupIsomerAdmin({ role: IsomerAdminRole.Core, userId: user.id })
       const adminEmail = "admin@test.com"
 
       // Act
@@ -186,7 +186,7 @@ describe("whitelist.router", async () => {
 
     it("should whitelist vendor emails with 90-day expiry if user is an Isomer Core Admin", async () => {
       // Arrange
-      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      await setupIsomerAdmin({ role: IsomerAdminRole.Core, userId: user.id })
       const vendorEmail = "vendor@test.com"
 
       // Act
@@ -222,8 +222,8 @@ describe("whitelist.router", async () => {
     it("should whitelist emails successfully if user is an Isomer Migrator", async () => {
       // Arrange
       await setupIsomerAdmin({
-        userId: user.id,
         role: IsomerAdminRole.Migrator,
+        userId: user.id,
       })
       const adminEmail = "admin@test.com"
       const vendorEmail = "vendor@test.com"
@@ -260,7 +260,7 @@ describe("whitelist.router", async () => {
 
     it("should whitelist multiple admin and vendor emails", async () => {
       // Arrange
-      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      await setupIsomerAdmin({ role: IsomerAdminRole.Core, userId: user.id })
       const adminEmails = ["admin1@test.com", "admin2@test.com"]
       const vendorEmails = ["vendor1@test.com", "vendor2@test.com"]
 
@@ -289,7 +289,7 @@ describe("whitelist.router", async () => {
 
     it("should normalise emails to lowercase", async () => {
       // Arrange
-      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      await setupIsomerAdmin({ role: IsomerAdminRole.Core, userId: user.id })
       const uppercaseEmail = "ADMIN@TEST.COM"
 
       // Act
@@ -311,7 +311,7 @@ describe("whitelist.router", async () => {
 
     it("should deduplicate emails within the same request", async () => {
       // Arrange
-      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      await setupIsomerAdmin({ role: IsomerAdminRole.Core, userId: user.id })
       const duplicateEmail = "admin@test.com"
 
       // Act
@@ -339,7 +339,7 @@ describe("whitelist.router", async () => {
 
     it("should upgrade existing vendor to admin when same email is submitted as admin", async () => {
       // Arrange
-      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      await setupIsomerAdmin({ role: IsomerAdminRole.Core, userId: user.id })
       const email = "user@test.com"
 
       // First whitelist as vendor
@@ -374,7 +374,7 @@ describe("whitelist.router", async () => {
 
     it("should not downgrade admin to vendor when same email is submitted as vendor", async () => {
       // Arrange
-      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      await setupIsomerAdmin({ role: IsomerAdminRole.Core, userId: user.id })
       const email = "user@test.com"
 
       // First whitelist as admin
@@ -409,7 +409,7 @@ describe("whitelist.router", async () => {
 
     it("should return zero counts when empty arrays are provided", async () => {
       // Arrange
-      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      await setupIsomerAdmin({ role: IsomerAdminRole.Core, userId: user.id })
 
       // Act
       const result = await caller.whitelistEmails({

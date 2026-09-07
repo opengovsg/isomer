@@ -59,9 +59,6 @@ const RootStateDrawer = () => {
   })
   const toast = useToast()
   const { mutate } = trpc.page.reorderBlock.useMutation({
-    onSuccess: async () => {
-      await utils.page.readPage.invalidate({ pageId, siteId })
-    },
     onError: (error, variables) => {
       // NOTE: rollback to last known good state
       // @ts-expect-error Our zod validator runs between frontend and backend
@@ -84,6 +81,9 @@ const RootStateDrawer = () => {
         ...BRIEF_TOAST_SETTINGS,
       })
     },
+    onSuccess: async () => {
+      await utils.page.readPage.invalidate({ pageId, siteId })
+    },
   })
 
   const { mutate: savePage, isPending: isSavingPage } =
@@ -105,19 +105,19 @@ const RootStateDrawer = () => {
 
   const onDragEnd = useCallback(
     (result: DropResult) => {
-      if (!result.destination) return
+      if (!result.destination) {return}
 
       const from = result.source.index
       const to = result.destination.index
       const contentLength = savedPageState.content.length
 
       if (from >= contentLength || to >= contentLength || from < 0 || to < 0)
-        return
+        {return}
 
       // NOTE: We eagerly update their page state here
       // and if it fails on the backend,
       // we rollback to what we passed them
-      const updatedBlocks = Array.from(savedPageState.content)
+      const updatedBlocks = [...savedPageState.content]
       const [movedBlock] = updatedBlocks.splice(from, 1)
 
       if (!!movedBlock) {
@@ -131,7 +131,7 @@ const RootStateDrawer = () => {
       }
 
       // NOTE: drive an update to the db with the updated index
-      mutate({ pageId, from, to, blocks: savedPageState.content, siteId })
+      mutate({ blocks: savedPageState.content, from, pageId, siteId, to })
     },
     [
       mutate,
@@ -166,9 +166,9 @@ const RootStateDrawer = () => {
   const handleSaveConversionToIndexPage = useCallback(() => {
     savePage(
       {
+        content: JSON.stringify(previewPageState),
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
       },
       {
         onSuccess: () => {
@@ -222,7 +222,7 @@ const RootStateDrawer = () => {
       <VStack gap="1.5rem" p="1.5rem" flex={1}>
         {isUserIsomerAdmin && (
           <ActivateRawJsonEditorMode
-            onActivate={() => setDrawerState({ state: "rawJsonEditor" })}
+            onActivate={() =>{  setDrawerState({ state: "rawJsonEditor" }); }}
           />
         )}
 

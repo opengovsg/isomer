@@ -8,8 +8,8 @@ import { ResetEditUserModalDecorator } from "../decorators"
 import { ADMIN_HANDLERS } from "../handlers"
 
 const meta: Meta<typeof UsersPage> = {
-  title: "Pages/Site Management/Users Page/Edit User Modal",
   component: UsersPage,
+  decorators: [ResetEditUserModalDecorator],
   parameters: {
     getLayout: UsersPage.getLayout,
     growthbook: [createSingpassEnabledGbParameters(true)],
@@ -24,7 +24,7 @@ const meta: Meta<typeof UsersPage> = {
       },
     },
   },
-  decorators: [ResetEditUserModalDecorator],
+  title: "Pages/Site Management/Users Page/Edit User Modal",
 }
 
 export default meta

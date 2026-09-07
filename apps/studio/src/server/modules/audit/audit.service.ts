@@ -92,12 +92,12 @@ export const logResourceEvent: AuditLogger<ResourceEventLogProps> = async (
   await tx
     .insertInto("AuditLog")
     .values({
-      eventType,
       delta: toAuditLogDelta(delta),
-      userId: by.id,
+      eventType,
       ipAddress: ip,
       metadata,
       siteId,
+      userId: by.id,
     })
     .execute()
 }
@@ -153,12 +153,12 @@ export const logConfigEvent: AuditLogger<ConfigEventLogProps> = async (
   await tx
     .insertInto("AuditLog")
     .values({
-      siteId,
-      eventType,
       delta: toAuditLogDelta(delta),
-      userId: by.id,
+      eventType,
       ipAddress: ip,
       metadata: {},
+      siteId,
+      userId: by.id,
     })
     .execute()
 }
@@ -196,12 +196,12 @@ export const logRedirectEvent: AuditLogger<RedirectEventLogProps> = async (
   await tx
     .insertInto("AuditLog")
     .values({
-      siteId,
-      eventType,
       delta: toAuditLogDelta(delta),
-      userId: by.id,
+      eventType,
       ipAddress: ip,
       metadata: {},
+      siteId,
+      userId: by.id,
     })
     .execute()
 }
@@ -231,11 +231,11 @@ export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
   await tx
     .insertInto("AuditLog")
     .values({
-      eventType,
       delta: toAuditLogDelta(delta),
-      userId: by.id,
+      eventType,
       ipAddress: ip,
       metadata: {},
+      userId: by.id,
     })
     .execute()
 }
@@ -306,12 +306,12 @@ export const logPublishEvent: AuditLogger<
   await tx
     .insertInto("AuditLog")
     .values({
-      eventType,
       delta: toAuditLogDelta(delta),
-      userId: by.id,
+      eventType,
       ipAddress: ip,
       metadata,
       siteId,
+      userId: by.id,
     })
     .execute()
 }
@@ -346,11 +346,11 @@ export const logUserEvent: AuditLogger<UserEventLogProps> = async (
   await tx
     .insertInto("AuditLog")
     .values({
-      eventType,
       delta: toAuditLogDelta(delta),
-      userId: by.id,
+      eventType,
       ipAddress: ip,
       metadata,
+      userId: by.id,
     })
     .execute()
 }
@@ -393,12 +393,12 @@ export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
   await tx
     .insertInto("AuditLog")
     .values({
-      eventType,
       delta: toAuditLogDelta(delta),
-      userId: by.id,
+      eventType,
       ipAddress: ip,
-      siteId,
       metadata,
+      siteId,
+      userId: by.id,
     })
     .execute()
 }
@@ -434,12 +434,12 @@ export const logAuditLogExportEvents: AuditLogger<
     .insertInto("AuditLog")
     .values(
       events.map(({ eventType, delta, by, ip, siteId }) => ({
-        siteId,
-        eventType,
         delta: toAuditLogDelta(delta),
-        userId: by.id,
+        eventType,
         ipAddress: ip,
         metadata: {},
+        siteId,
+        userId: by.id,
       })),
     )
     .execute()

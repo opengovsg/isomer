@@ -17,9 +17,9 @@ const COMMON_HANDLERS = [
 ]
 
 const meta: Meta<typeof LogoSettingsPage> = {
-  title: "Pages/Site Management/Agency Settings Page/Logo",
   component: LogoSettingsPage,
   parameters: {
+    decorators: [],
     getLayout: LogoSettingsPage.getLayout,
     msw: {
       handlers: COMMON_HANDLERS,
@@ -32,8 +32,8 @@ const meta: Meta<typeof LogoSettingsPage> = {
         },
       },
     },
-    decorators: [],
   },
+  title: "Pages/Site Management/Agency Settings Page/Logo",
 }
 
 export default meta

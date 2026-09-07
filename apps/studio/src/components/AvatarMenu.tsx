@@ -36,7 +36,7 @@ export const AvatarMenu = () => {
       >
         <Menu.Item
           isDisabled
-          style={{ cursor: "default", backgroundColor: "transparent" }}
+          style={{ backgroundColor: "transparent", cursor: "default" }}
         >
           <Flex alignItems="center" gap="0.75rem">
             <BiUser size="1.25rem" color="#666c7a" />
@@ -47,7 +47,7 @@ export const AvatarMenu = () => {
         </Menu.Item>
         <Divider orientation="horizontal" />
         <Menu.Item
-          onClick={() => setIsEditProfileModalOpen(true)}
+          onClick={() =>{  setIsEditProfileModalOpen(true); }}
           // This is a hotfix because OGPDS MenuItem has an issue of the next item
           // covering the bottom border of the current item when current item is active
           // Reference: https://github.com/opengovsg/isomer/pull/1138#issuecomment-2683836810
@@ -58,7 +58,7 @@ export const AvatarMenu = () => {
             <Text>Edit profile</Text>
           </Flex>
         </Menu.Item>
-        <Menu.Item onClick={() => logout()}>
+        <Menu.Item onClick={() =>{  logout(); }}>
           <Flex alignItems="center" gap="0.75rem">
             <BiLogOut size="1.25rem" />
             <Text>Sign out</Text>

@@ -22,7 +22,7 @@ describe("withPosthog", () => {
   it("runs queued operations strictly in call order, even while the underlying import is still pending", async () => {
     // Arrange
     const order: number[] = []
-    let releaseImport: () => void = () => undefined
+    let releaseImport: () => void = () => {}
     const importGate = new Promise<void>((resolve) => {
       releaseImport = resolve
     })
@@ -30,7 +30,7 @@ describe("withPosthog", () => {
     // @ts-expect-error test stub supplies only the PostHog methods exercised by withPosthog
     setPosthogModuleLoaderForTests(async () => {
       await importGate
-      return { default: { reset: resetMock, identify: identifyMock } }
+      return { default: { identify: identifyMock, reset: resetMock } }
     })
 
     // Act

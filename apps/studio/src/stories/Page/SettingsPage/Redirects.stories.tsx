@@ -29,7 +29,6 @@ const COMMON_NEXTJS = {
 }
 
 const meta: Meta<typeof RedirectsSettingsPage> = {
-  title: "Pages/Site Management/Agency Settings Page/Redirects",
   component: RedirectsSettingsPage,
   parameters: {
     getLayout: RedirectsSettingsPage.getLayout,
@@ -38,6 +37,7 @@ const meta: Meta<typeof RedirectsSettingsPage> = {
     },
     nextjs: COMMON_NEXTJS,
   },
+  title: "Pages/Site Management/Agency Settings Page/Redirects",
 }
 
 export default meta
@@ -80,7 +80,7 @@ const submitNewRedirect = async (canvasElement: HTMLElement) => {
     "/new-page",
   )
   const addButton = screen.getByRole("button", { name: "Add" })
-  await waitFor(() => expect(addButton).toBeEnabled())
+  await waitFor( async () => expect(addButton).toBeEnabled())
   await userEvent.click(addButton, { pointerEventsCheck: 0 })
   return screen
 }
@@ -116,10 +116,10 @@ const SWAPPED_CSV =
 
 // Processing holds its spinner for a deliberate minimum duration, so anything
 // asserted after "Process redirects" needs longer than the 1s default.
-const AFTER_PROCESSING = { timeout: 10000 }
+const AFTER_PROCESSING = { timeout: 10_000 }
 
 const openBulkUploadModal = async (canvasElement: HTMLElement) => {
-  const body = canvasElement.ownerDocument.body
+  const {body} = canvasElement.ownerDocument
   const screen = within(body)
   await userEvent.click(
     await screen.findByRole("button", { name: /bulk upload with a \.csv/i }),
@@ -136,7 +136,7 @@ const pickFileInModal = async (body: HTMLElement, file: File) => {
     const input = body.querySelector<HTMLInputElement>(
       "[role='dialog'] input[type='file']",
     )
-    if (!input) throw new Error("file input not found")
+    if (!input) {throw new Error("file input not found")}
     return input
   })
   await userEvent.upload(fileInput, file)
@@ -151,7 +151,7 @@ const openModalAndUpload = async (canvasElement: HTMLElement) => {
   const processButton = await screen.findByRole("button", {
     name: "Process redirects",
   })
-  await waitFor(() => expect(processButton).toBeEnabled())
+  await waitFor( async () => expect(processButton).toBeEnabled())
   await userEvent.click(processButton, { pointerEventsCheck: 0 })
   return screen
 }
@@ -242,7 +242,7 @@ export const BulkUploadFileSwappedWhileProcessing: Story = {
     const processButton = await screen.findByRole("button", {
       name: "Process redirects",
     })
-    await waitFor(() => expect(processButton).toBeEnabled())
+    await waitFor( async () => expect(processButton).toBeEnabled())
     await userEvent.click(processButton, { pointerEventsCheck: 0 })
 
     // Still inside the floor: drop the file being processed and attach another.
@@ -258,7 +258,7 @@ export const BulkUploadFileSwappedWhileProcessing: Story = {
     // dropped: the modal stays on the upload step with the newly attached file
     // instead of showing the first file's review screen.
     await waitFor(
-      () =>
+       async () =>
         expect(
           screen.getByRole("button", { name: "Process redirects" }),
         ).toBeEnabled(),
@@ -335,7 +335,7 @@ export const BulkUploadOversizeFile: Story = {
     await userEvent.click(screen.getByRole("button", { name: "Remove file" }), {
       pointerEventsCheck: 0,
     })
-    await waitFor(() => expect(screen.queryByText(OVERSIZE_MESSAGE)).toBeNull())
+    await waitFor( async () => expect(screen.queryByText(OVERSIZE_MESSAGE)).toBeNull())
 
     // Re-picking lands back on the same state, which is what this story shows.
     await pickFileInModal(body, tooBig)

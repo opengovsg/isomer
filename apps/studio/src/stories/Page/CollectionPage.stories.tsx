@@ -15,8 +15,8 @@ import {
 } from "../utils/growthbook"
 
 const meta: Meta<typeof CollectionPage> = {
-  title: "Pages/Collection Management/Collection Page",
   component: CollectionPage,
+  decorators: [],
   parameters: {
     getLayout: CollectionPage.getLayout,
     msw: {
@@ -40,13 +40,13 @@ const meta: Meta<typeof CollectionPage> = {
     nextjs: {
       router: {
         query: {
-          siteId: "1",
           collectionId: "1",
+          siteId: "1",
         },
       },
     },
   },
-  decorators: [],
+  title: "Pages/Collection Management/Collection Page",
 }
 
 export default meta
@@ -80,9 +80,9 @@ export const WithBanner: Story = {
   parameters: {
     growthbook: [
       createBannerGbParameters({
-        variant: "info",
         message:
           "This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long.",
+        variant: "info",
       }),
     ],
   },
@@ -92,8 +92,8 @@ export const GazetteCollection: Story = {
   parameters: {
     growthbook: [
       createEgazetteInfoGbParameters({
-        siteId: "1",
         gazettesCollectionId: "1",
+        siteId: "1",
       }),
     ],
   },

@@ -7,8 +7,8 @@ import { RestrictedMiniFooter } from "~/components/RestrictedMiniFooter"
 // It tells the recipient the link is no longer valid and to request a fresh
 // export from their site settings — it deliberately reveals nothing about
 // whether a matching export ever existed.
-const AuditLogExportExpired = () => {
-  return (
+const AuditLogExportExpired = () => 
+  (
     <Flex flexDirection="column" w="100%" flex={1}>
       <Stack
         px="1rem"
@@ -33,6 +33,6 @@ const AuditLogExportExpired = () => {
       </Stack>
     </Flex>
   )
-}
+
 
 export default AuditLogExportExpired

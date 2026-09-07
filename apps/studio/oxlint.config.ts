@@ -3,7 +3,7 @@ import antiSlop, {
   antiSlopJsPluginEntries,
 } from "@isomer/oxlint-config/anti-slop"
 import base from "@isomer/oxlint-config/base"
-import { react } from "@isomer/oxlint-config/presets"
+import { core, react } from "@isomer/oxlint-config/presets"
 import reactDoctor, {
   jsPluginSettings,
   reactDoctorJsPluginEntries,
@@ -12,16 +12,12 @@ import reactDoctor, {
 export default defineConfig({
   extends: [
     base,
+    core,
     react,
     antiSlop,
     reactDoctor,
     // To enable this in following stacked PRs
     // next, vitest
-  ],
-  settings: jsPluginSettings,
-  jsPlugins: [
-    ...(reactDoctorJsPluginEntries ?? []),
-    ...(antiSlopJsPluginEntries ?? []),
   ],
   ignorePatterns: [
     ".next/**",
@@ -29,9 +25,17 @@ export default defineConfig({
     "./next-env.d.ts",
     "prisma/generated/prisma/**",
   ],
+  jsPlugins: [
+    ...(reactDoctorJsPluginEntries ?? []),
+    ...(antiSlopJsPluginEntries ?? []),
+  ],
   overrides: [
     {
       files: ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.tsx"],
+      globals: {
+        React: "writable",
+      },
+      plugins: ["react", "nextjs", "node"],
       rules: {
         "react/react-in-jsx-scope": "off",
         // Suppressions are harmless until React Compiler is enabled.
@@ -62,24 +66,41 @@ export default defineConfig({
         "@next/next/no-head-import-in-document": "error",
         "@next/next/no-script-component-in-head": "error",
         "node/no-process-env": "error",
+        "@typescript-eslint/no-unsafe-assignment": "warn",
+        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/no-unsafe-call": "warn",
+        "@typescript-eslint/no-unsafe-member-access": "warn",
+        "@typescript-eslint/no-unsafe-return": "warn",
+        "@typescript-eslint/no-unsafe-argument": "warn",
+        "@typescript-eslint/no-unnecessary-condition": "warn",
+        "unicorn/filename-case": [
+          "error",
+          {
+            cases: {
+              camelCase: true,
+              pascalCase: true,
+            },
+          },
+        ],
+        "eslint/prefer-arrow-callback": "off",
+        "no-unused-vars": "warn",
         "no-restricted-imports": [
           "error",
           {
             paths: [
               {
-                name: "process",
                 importNames: ["env"],
                 message:
                   "Use `import { env } from '~/env'` instead to ensure validated types.",
+                name: "process",
               },
               {
-                name: "@chakra-ui/react",
                 importNames: ["useToast"],
                 message:
                   "Please use useToast from @opengovsg/design-system-react instead.",
+                name: "@chakra-ui/react",
               },
               {
-                name: "@chakra-ui/react",
                 importNames: [
                   "FormLabel",
                   "FormErrorMessage",
@@ -87,27 +108,32 @@ export default defineConfig({
                 ],
                 message:
                   "Please use FormLabel, FormErrorMessage, and FormHelperText from @opengovsg/design-system-react instead.",
+                name: "@chakra-ui/react",
               },
               {
-                name: "@intercom/messenger-js-sdk",
                 message:
                   "Use `~/lib/intercom` instead so calls fall back to a console.log when NEXT_PUBLIC_INTERCOM_APP_ID is absent (e.g. on staging).",
+                name: "@intercom/messenger-js-sdk",
               },
             ],
           },
         ],
       },
-      globals: {
-        React: "writable",
-      },
-      plugins: ["react", "nextjs", "node"],
     },
     {
       files: ["src/env.mjs"],
+      plugins: ["node"],
       rules: {
+        "anti-slop/no-shape-in-symbol-names": "off",
+        "import/no-mutable-exports": "off",
         "node/no-process-env": "off",
       },
-      plugins: ["node"],
+    },
+    {
+      files: ["src/schemas/**/*.ts"],
+      rules: {
+        "anti-slop/no-shape-in-symbol-names": "off",
+      },
     },
     {
       files: ["tests/mocks/db.ts"],
@@ -140,6 +166,37 @@ export default defineConfig({
     },
     {
       files: [
+        "**/*.config.*",
+        ".storybook/**",
+        "oxlint.config.ts",
+        "src/env.mjs",
+        "tests/mocks/**",
+        "tests/integration/**",
+        "prisma/scripts/**",
+      ],
+      rules: {
+        "eslint/sort-keys": "off",
+      },
+    },
+    {
+      files: ["tests/msw/**/*.ts"],
+      rules: {
+        "eslint/sort-keys": "off",
+      },
+    },
+    {
+      files: ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"],
+      rules: {
+        "eslint/no-plusplus": "off",
+        "eslint/no-shadow": "off",
+        "eslint/no-use-before-define": "off",
+        "eslint/sort-keys": "off",
+        "unicorn/consistent-function-scoping": "off",
+        "unicorn/no-array-for-each": "off",
+      },
+    },
+    {
+      files: [
         "playwright.config.ts",
         "vitest.config.ts",
         "tests/**/*.ts",
@@ -149,13 +206,14 @@ export default defineConfig({
         ".storybook/**/*.js",
         ".storybook/**/*.jsx",
       ],
+      plugins: ["node"],
       rules: {
         "node/no-process-env": "off",
       },
-      plugins: ["node"],
     },
     {
       files: ["**/*.ts", "**/*.tsx"],
+      plugins: ["typescript"],
       rules: {
         "@typescript-eslint/prefer-nullish-coalescing": [
           "error",
@@ -164,7 +222,6 @@ export default defineConfig({
           },
         ],
       },
-      plugins: ["typescript"],
     },
     {
       files: [
@@ -181,9 +238,15 @@ export default defineConfig({
         "**/*.story.mjs",
         "**/*.story.cjs",
       ],
+      jsPlugins: ["eslint-plugin-storybook"],
+      plugins: ["react", "import"],
       rules: {
-        "react-hooks/rules-of-hooks": "off",
+        "eslint/no-shadow": "off",
+        "eslint/prefer-destructuring": "off",
+        "eslint/sort-keys": "off",
         "import/no-anonymous-default-export": "off",
+        "promise/avoid-new": "off",
+        "react-hooks/rules-of-hooks": "off",
         "storybook/await-interactions": "error",
         "storybook/context-in-play-function": "error",
         "storybook/default-exports": "error",
@@ -195,8 +258,6 @@ export default defineConfig({
         "storybook/use-storybook-expect": "error",
         "storybook/use-storybook-testing-library": "error",
       },
-      jsPlugins: ["eslint-plugin-storybook"],
-      plugins: ["react", "import"],
     },
     {
       files: [
@@ -205,10 +266,11 @@ export default defineConfig({
         ".storybook/main.mjs",
         ".storybook/main.ts",
       ],
+      jsPlugins: ["eslint-plugin-storybook"],
       rules: {
         "storybook/no-uninstalled-addons": "error",
       },
-      jsPlugins: ["eslint-plugin-storybook"],
     },
   ],
+  settings: jsPluginSettings,
 })

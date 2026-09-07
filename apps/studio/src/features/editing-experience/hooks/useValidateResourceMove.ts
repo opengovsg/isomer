@@ -16,13 +16,13 @@ export const useValidateResourceMove = ({
   const { siteId } = useQueryParse(sitePageSchema)
   const { data: source, isLoading: isSourceLoading } =
     trpc.resource.getMetadataById.useQuery(
-      sourceId ? { siteId, resourceId: sourceId } : skipToken,
+      sourceId ? { resourceId: sourceId, siteId } : skipToken,
     )
   const { data: destination, isLoading: isDestinationLoading } =
     trpc.resource.getMetadataById.useQuery(
-      destinationId !== null
-        ? { siteId, resourceId: destinationId }
-        : skipToken,
+      destinationId === null
+        ? skipToken
+        : { siteId, resourceId: destinationId },
     )
 
   const { data: rootPage, isLoading: isRootPageLoading } =
@@ -39,10 +39,10 @@ export const useValidateResourceMove = ({
     destinationId === null
       ? rootPage && {
           id: rootPage.id,
-          type: ResourceType.RootPage,
-          siteId,
-          permalink: "/",
           parentId: null,
+          permalink: "/",
+          siteId,
+          type: ResourceType.RootPage,
         }
       : destination
 
@@ -54,13 +54,13 @@ export const useValidateResourceMove = ({
   const errorMessage =
     isValidMove instanceof Error
       ? isValidMove.message
-      : !isValidMove
+      : (!isValidMove
         ? "Invalid resource move"
-        : undefined
+        : undefined)
 
   return {
+    errorMessage,
     isLoading: isSourceLoading || isDestinationLoading || isRootPageLoading,
     isValidMove,
-    errorMessage,
   }
 }

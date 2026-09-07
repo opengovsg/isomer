@@ -9,8 +9,8 @@ import SitePage from "~/pages/sites/[siteId]"
 import { createBannerGbParameters } from "../utils/growthbook"
 
 const meta: Meta<typeof SitePage> = {
-  title: "Pages/Site Management/Site Page",
   component: SitePage,
+  decorators: [],
   parameters: {
     getLayout: SitePage.getLayout,
     msw: {
@@ -35,7 +35,7 @@ const meta: Meta<typeof SitePage> = {
       },
     },
   },
-  decorators: [],
+  title: "Pages/Site Management/Site Page",
 }
 
 export default meta
@@ -69,9 +69,9 @@ export const WithBanner: Story = {
   parameters: {
     growthbook: [
       createBannerGbParameters({
-        variant: "info",
         message:
           "This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long.",
+        variant: "info",
       }),
     ],
   },

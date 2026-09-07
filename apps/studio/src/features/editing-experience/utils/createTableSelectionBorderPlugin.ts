@@ -29,7 +29,7 @@ export const createTableSelectionBorderPlugin = () =>
         state.selection.forEachCell((node, pos) => {
           const cellRect = rect.map.findCell(pos - rect.tableStart)
           const classes = getSelectedCellBorderClasses(rect, cellRect)
-          if (classes.length === 0) return
+          if (classes.length === 0) {return}
 
           decorations.push(
             Decoration.node(pos, pos + node.nodeSize, {

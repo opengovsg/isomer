@@ -1,9 +1,6 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 
 export const PAGE_BLOB: IsomerSchema = {
-  version: "0.1.0",
-  layout: "homepage",
-  page: {},
   content: [
     {
       type: "hero",
@@ -52,4 +49,7 @@ export const PAGE_BLOB: IsomerSchema = {
       title: "Irrationality in numbers",
     },
   ],
+  layout: "homepage",
+  page: {},
+  version: "0.1.0",
 }

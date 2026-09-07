@@ -5,90 +5,6 @@ import { DEFAULT_COLLECTION_ITEMS } from "./collection"
 import { DEFAULT_PAGE_ITEMS } from "./page"
 
 export const resourceHandlers = {
-  getChildrenOf: {
-    default: () => {
-      return trpcMsw.resource.getChildrenOf.query(
-        ({ input: { resourceId } }) => {
-          const items = DEFAULT_PAGE_ITEMS.map((item) => ({
-            title: item.title,
-            permalink: item.permalink,
-            // SAFETY: DEFAULT_PAGE_ITEMS only uses these child resource types.
-            type: item.type as
-              | "Page"
-              | "Folder"
-              | "Collection"
-              | "CollectionPage",
-            // ID must be unique so infinite loop won't occur
-            id: `${resourceId}-${item.title}-${item.id}`,
-            parentId: item.parentId,
-          }))
-          return {
-            items,
-            nextOffset: null,
-          }
-        },
-      )
-    },
-    collection: () => {
-      return trpcMsw.resource.getChildrenOf.query(
-        ({ input: { resourceId } }) => {
-          const items = DEFAULT_COLLECTION_ITEMS.map((item) => ({
-            title: item.title,
-            permalink: item.permalink,
-            parentId: item.parentId,
-            type: item.type,
-            // ID must be unique so infinite loop won't occur
-            id: `${resourceId}-${item.title}-${item.id}`,
-          }))
-          return {
-            items,
-            nextOffset: null,
-          }
-        },
-      )
-    },
-  },
-  getRolesFor: {
-    admin: () => {
-      return trpcMsw.resource.getRolesFor.query(() => {
-        return [{ role: "Admin" }]
-      })
-    },
-    publisher: () => {
-      return trpcMsw.resource.getRolesFor.query(() => {
-        return [{ role: "Publisher" }]
-      })
-    },
-    editor: () => {
-      return trpcMsw.resource.getRolesFor.query(() => {
-        return [{ role: "Editor" }]
-      })
-    },
-  },
-  getParentOf: {
-    folder: () => {
-      return trpcMsw.resource.getParentOf.query(() => {
-        return {
-          type: "Folder",
-          id: "1",
-          parentId: null,
-          parent: null,
-          title: "a folder",
-        }
-      })
-    },
-    collection: () => {
-      return trpcMsw.resource.getParentOf.query(() => {
-        return {
-          type: "Collection",
-          id: "1",
-          parentId: null,
-          parent: null,
-          title: "a collection",
-        }
-      })
-    },
-  },
   getAncestryStack: {
     default: () => {
       return trpcMsw.resource.getAncestryStack.query(() => {
@@ -181,24 +97,47 @@ export const resourceHandlers = {
       })
     },
   },
-  getWithFullPermalink: {
-    default: () => {
-      return trpcMsw.resource.getWithFullPermalink.query(() => {
-        return {
-          id: "1",
-          title: "Homepage",
-          fullPermalink: "folder/page",
-        }
-      })
+  getChildrenOf: {
+    collection: () => {
+      return trpcMsw.resource.getChildrenOf.query(
+        ({ input: { resourceId } }) => {
+          const items = DEFAULT_COLLECTION_ITEMS.map((item) => ({
+            title: item.title,
+            permalink: item.permalink,
+            parentId: item.parentId,
+            type: item.type,
+            // ID must be unique so infinite loop won't occur
+            id: `${resourceId}-${item.title}-${item.id}`,
+          }))
+          return {
+            items,
+            nextOffset: null,
+          }
+        },
+      )
     },
-    index: () => {
-      return trpcMsw.resource.getWithFullPermalink.query(() => {
-        return {
-          id: "4",
-          title: "Index page",
-          fullPermalink: "parent/_index",
-        }
-      })
+    default: () => {
+      return trpcMsw.resource.getChildrenOf.query(
+        ({ input: { resourceId } }) => {
+          const items = DEFAULT_PAGE_ITEMS.map((item) => ({
+            title: item.title,
+            permalink: item.permalink,
+            // SAFETY: DEFAULT_PAGE_ITEMS only uses these child resource types.
+            type: item.type as
+              | "Page"
+              | "Folder"
+              | "Collection"
+              | "CollectionPage",
+            // ID must be unique so infinite loop won't occur
+            id: `${resourceId}-${item.title}-${item.id}`,
+            parentId: item.parentId,
+          }))
+          return {
+            items,
+            nextOffset: null,
+          }
+        },
+      )
     },
   },
   getMetadataById: {
@@ -279,6 +218,67 @@ export const resourceHandlers = {
         return resource
       }),
   },
+  getParentOf: {
+    collection: () => {
+      return trpcMsw.resource.getParentOf.query(() => {
+        return {
+          type: "Collection",
+          id: "1",
+          parentId: null,
+          parent: null,
+          title: "a collection",
+        }
+      })
+    },
+    folder: () => {
+      return trpcMsw.resource.getParentOf.query(() => {
+        return {
+          type: "Folder",
+          id: "1",
+          parentId: null,
+          parent: null,
+          title: "a folder",
+        }
+      })
+    },
+  },
+  getRolesFor: {
+    admin: () => {
+      return trpcMsw.resource.getRolesFor.query(() => {
+        return [{ role: "Admin" }]
+      })
+    },
+    editor: () => {
+      return trpcMsw.resource.getRolesFor.query(() => {
+        return [{ role: "Editor" }]
+      })
+    },
+    publisher: () => {
+      return trpcMsw.resource.getRolesFor.query(() => {
+        return [{ role: "Publisher" }]
+      })
+    },
+  },
+  getWithFullPermalink: {
+    default: () => {
+      return trpcMsw.resource.getWithFullPermalink.query(() => {
+        return {
+          id: "1",
+          title: "Homepage",
+          fullPermalink: "folder/page",
+        }
+      })
+    },
+    index: () => {
+      return trpcMsw.resource.getWithFullPermalink.query(() => {
+        return {
+          id: "4",
+          title: "Index page",
+          fullPermalink: "parent/_index",
+        }
+      })
+    },
+  },
   search: {
     initial: () => {
       return trpcMsw.resource.search.query(() => {
@@ -300,6 +300,13 @@ export const resourceHandlers = {
           }),
           nextOffset: null,
         }
+      })
+    },
+    loading: () => {
+      return trpcMsw.resource.search.query( async () => {
+        return new Promise(() => {
+          // Never resolve to simulate infinite loading
+        })
       })
     },
     results: () => {
@@ -356,13 +363,6 @@ export const resourceHandlers = {
           recentlyEdited: [],
           nextOffset: null,
         }
-      })
-    },
-    loading: () => {
-      return trpcMsw.resource.search.query(() => {
-        return new Promise(() => {
-          // Never resolve to simulate infinite loading
-        })
       })
     },
   },

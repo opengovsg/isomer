@@ -1,7 +1,7 @@
 import { Box, Grid, GridItem, Skeleton, VStack } from "@chakra-ui/react"
 
-export const LoadingPreview = (): React.ReactNode => {
-  return (
+export const LoadingPreview = (): React.ReactNode => 
+  (
     <Box
       position="relative"
       overflow="hidden"
@@ -75,4 +75,4 @@ export const LoadingPreview = (): React.ReactNode => {
       </Grid>
     </Box>
   )
-}
+

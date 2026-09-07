@@ -6,8 +6,8 @@ interface ImageRadioIndicatorProps {
 }
 
 export const ImageRadioIndicator = chakra(
-  ({ isSelected, ...props }: ImageRadioIndicatorProps & BoxProps) => {
-    return (
+  ({ isSelected, ...props }: ImageRadioIndicatorProps & BoxProps) => 
+    (
       <Box
         position="relative"
         boxSize="20px"
@@ -36,5 +36,5 @@ export const ImageRadioIndicator = chakra(
         {...props}
       />
     )
-  },
+  ,
 )

@@ -5,32 +5,32 @@ import { linkEditorSchema } from "./LinkEditorModal"
 describe("linkEditorSchema", () => {
   it("accepts a valid external link", () => {
     const result = linkEditorSchema.safeParse({
-      linkText: "Isomer",
       linkHref: "https://isomer.gov.sg",
+      linkText: "Isomer",
     })
     expect(result.success).toBe(true)
   })
 
   it("rejects an empty linkText", () => {
     const result = linkEditorSchema.safeParse({
-      linkText: "",
       linkHref: "https://isomer.gov.sg",
+      linkText: "",
     })
     expect(result.success).toBe(false)
   })
 
   it("rejects an empty linkHref", () => {
     const result = linkEditorSchema.safeParse({
-      linkText: "Isomer",
       linkHref: "",
+      linkText: "Isomer",
     })
     expect(result.success).toBe(false)
   })
 
   it("trims stray leading/trailing whitespace from a valid linkHref", () => {
     const result = linkEditorSchema.safeParse({
-      linkText: "Isomer",
       linkHref: "  https://isomer.gov.sg  ",
+      linkText: "Isomer",
     })
     expect(result.success).toBe(true)
     if (result.success) {
@@ -40,64 +40,64 @@ describe("linkEditorSchema", () => {
 
   it("rejects a linkHref that is only whitespace", () => {
     const result = linkEditorSchema.safeParse({
-      linkText: "Isomer",
       linkHref: "   ",
+      linkText: "Isomer",
     })
     expect(result.success).toBe(false)
   })
 
   it("does not reject a valid link containing internal whitespace-like characters", () => {
     const result = linkEditorSchema.safeParse({
-      linkText: "Isomer",
       linkHref: "https://example.com/foo\tbar\nbaz",
+      linkText: "Isomer",
     })
     expect(result.success).toBe(true)
   })
 
   it("rejects a bare https:// scheme with no domain", () => {
     const result = linkEditorSchema.safeParse({
-      linkText: "Isomer",
       linkHref: "https://",
+      linkText: "Isomer",
     })
     expect(result.success).toBe(false)
   })
 
   it("rejects a bare mailto: scheme with no address", () => {
     const result = linkEditorSchema.safeParse({
-      linkText: "Isomer",
       linkHref: "mailto:",
+      linkText: "Isomer",
     })
     expect(result.success).toBe(false)
   })
 
   it("rejects an external link with a malformed host", () => {
     const result = linkEditorSchema.safeParse({
-      linkText: "Isomer",
       linkHref: "https://exa mple.com",
+      linkText: "Isomer",
     })
     expect(result.success).toBe(false)
   })
 
   it("accepts a well-formed mailto: link", () => {
     const result = linkEditorSchema.safeParse({
-      linkText: "Isomer",
       linkHref: "mailto:foo@example.com",
+      linkText: "Isomer",
     })
     expect(result.success).toBe(true)
   })
 
   it("accepts a Page-type reference link, unaffected by the URL check", () => {
     const result = linkEditorSchema.safeParse({
-      linkText: "Isomer",
       linkHref: "[resource:1:2]",
+      linkText: "Isomer",
     })
     expect(result.success).toBe(true)
   })
 
   it("accepts a File-type link, unaffected by the URL check", () => {
     const result = linkEditorSchema.safeParse({
-      linkText: "Isomer",
       linkHref: "/123/550e8400-e29b-41d4-a716-446655440000/file.pdf",
+      linkText: "Isomer",
     })
     expect(result.success).toBe(true)
   })
@@ -110,8 +110,8 @@ describe("linkEditorSchema", () => {
     "rejects an unprefixed external-looking href: %s (known limitation)",
     (linkHref) => {
       const result = linkEditorSchema.safeParse({
-        linkText: "Isomer",
         linkHref,
+        linkText: "Isomer",
       })
       expect(result.success).toBe(false)
     },
@@ -131,8 +131,8 @@ describe("linkEditorSchema", () => {
     "\tjavascript:alert(1)",
   ])("rejects a disallowed href scheme: %s", (linkHref) => {
     const result = linkEditorSchema.safeParse({
-      linkText: "Isomer",
       linkHref,
+      linkText: "Isomer",
     })
     expect(result.success).toBe(false)
   })

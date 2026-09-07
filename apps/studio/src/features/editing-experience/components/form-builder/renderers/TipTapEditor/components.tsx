@@ -13,15 +13,15 @@ const EditorContainer = ({
   const containerProps: Partial<BoxProps> = useMemo(() => {
     if (isNested) {
       return {
-        height: "22.5rem",
-        borderRadius: "4px",
-        overflow: "hidden",
-        border: "1px solid",
-        borderColor: "base.divider.strong",
         _groupFocusWithin: {
           borderColor: "utility.focus-default",
           boxShadow: `0 0 0 1px #1361F0`,
         },
+        border: "1px solid",
+        borderColor: "base.divider.strong",
+        borderRadius: "4px",
+        height: "22.5rem",
+        overflow: "hidden",
       }
     }
     return {}
@@ -44,8 +44,8 @@ const EditorContainer = ({
 
 const EditorContentWrapper = ({
   editor,
-}: Pick<EditorContentProps, "editor">) => {
-  return (
+}: Pick<EditorContentProps, "editor">) => 
+  (
     <Box
       as={EditorContent}
       editor={editor}
@@ -59,18 +59,18 @@ const EditorContentWrapper = ({
       cursor="text"
     />
   )
-}
+
 
 interface EditorProps {
   menubar: EditorMenuBar
   editor: TiptapEditor
   isNested?: boolean
 }
-export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
-  return (
+export const Editor = ({ editor, menubar, isNested }: EditorProps) => 
+  (
     <EditorContainer isNested={isNested}>
       {menubar({ editor })}
       <EditorContentWrapper editor={editor} />
     </EditorContainer>
   )
-}
+

@@ -8,8 +8,8 @@ export const EmptyTablePlaceholder = ({
   entityName: string
   hasSearchTerm: boolean
   groupLabel: string
-}) => {
-  return (
+}) => 
+  (
     <Tr aria-hidden>
       <Td colSpan={8}>
         <Flex align="center" justify="center" p="2rem">
@@ -30,4 +30,4 @@ export const EmptyTablePlaceholder = ({
       </Td>
     </Tr>
   )
-}
+

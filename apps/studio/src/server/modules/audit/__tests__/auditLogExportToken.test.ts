@@ -84,7 +84,7 @@ describe("auditLogExportToken", () => {
 
   it("rejects a correctly-purposed blob whose requestId is a number, not a string", async () => {
     const token = await sealData(
-      { purpose: "audit-log-export", requestId: 12345 },
+      { purpose: "audit-log-export", requestId: 12_345 },
       { password: IRON_PASSWORD },
     )
     expect(await unsealAuditLogExportToken(token)).toBeNull()

@@ -34,16 +34,16 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
   )
   if (droppedCc.length > 0) {
     logger.warn({
-      error: "Dropping non-whitelisted cc recipients",
       cc: droppedCc.map((r) => r.email),
+      error: "Dropping non-whitelisted cc recipients",
       subject: params.subject,
     })
   }
   const cc = whitelistedCc.map((r) => r.email)
   const payload = {
+    body: params.body,
     recipient: params.recipient,
     subject: params.subject,
-    body: params.body,
     ...(cc.length > 0 && { cc }),
   }
 
@@ -59,8 +59,8 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
       if (response.status >= 300) {
         logger.error({
           error: "Postman API error",
-          status: response.status,
           recipient: params.recipient,
+          status: response.status,
           subject: params.subject,
         })
         throw new PostmanApiStatusError(
@@ -71,13 +71,13 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
 
       logger.info({
         event: "email_send_succeeded",
-        status: response.status,
         recipient: params.recipient,
+        status: response.status,
         subject: params.subject,
       })
       return
     } catch (error) {
-      if (error instanceof PostmanApiStatusError) throw error
+      if (error instanceof PostmanApiStatusError) {throw error}
 
       logger.error({
         error: "Postman API call failed",
@@ -90,7 +90,7 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
   }
 
   console.warn(
-    "POSTMAN_API_KEY is missing. Logging the following mail: ",
+    "POSTMAN_API_KEY is missing. Logging the following mail:",
     params,
   )
   return

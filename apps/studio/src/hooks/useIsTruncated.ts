@@ -14,7 +14,7 @@ export const useIsTruncated = <T extends HTMLElement>() => {
     observerRef.current?.disconnect()
     observerRef.current = null
 
-    if (!element) return
+    if (!element) {return}
 
     const measure = () => {
       setIsTruncated(
@@ -24,7 +24,7 @@ export const useIsTruncated = <T extends HTMLElement>() => {
     }
 
     measure()
-    if (globalThis.ResizeObserver === undefined) return
+    if (globalThis.ResizeObserver === undefined) {return}
     const observer = new ResizeObserver(measure)
     observer.observe(element)
     observerRef.current = observer
@@ -32,5 +32,5 @@ export const useIsTruncated = <T extends HTMLElement>() => {
 
   useEffect(() => () => observerRef.current?.disconnect(), [])
 
-  return { ref, isTruncated }
+  return { isTruncated, ref }
 }

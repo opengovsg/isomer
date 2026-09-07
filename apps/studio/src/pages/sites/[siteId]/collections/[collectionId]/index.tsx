@@ -21,15 +21,15 @@ import { CreateCollectionPageModal } from "~/features/editing-experience/compone
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useEgazetteInfo } from "~/hooks/useEgazetteInfo"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type NextPageWithLayout } from "~/lib/types"
+import type { NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getCollectionHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const collectionPageSchema = z.object({
-  siteId: z.coerce.number(),
   collectionId: z.coerce.number(),
+  siteId: z.coerce.number(),
 })
 
 const CollectionResourceListPage: NextPageWithLayout = () => {
@@ -47,13 +47,13 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
     egazetteInfo.gazettesCollectionId === String(collectionId)
 
   const [resource] = trpc.resource.getParentOf.useSuspenseQuery({
-    siteId: Number(siteId),
     resourceId: String(collectionId),
+    siteId: Number(siteId),
   })
 
   const [metadata] = trpc.collection.getMetadata.useSuspenseQuery({
-    siteId,
     resourceId: collectionId,
+    siteId,
   })
 
   return (
@@ -70,10 +70,10 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             <Button
               variant="outline"
               size="md"
-              onClick={() =>
+              onClick={() =>{ 
                 setFolderSettingsModalState({
                   folderId: String(collectionId),
-                })
+                }); }
               }
             >
               Collection settings
@@ -118,13 +118,13 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
   )
 }
 
-CollectionResourceListPage.getLayout = (page) => {
-  return (
+CollectionResourceListPage.getLayout = (page) => 
+  (
     <PermissionsBoundary
       resourceType={ResourceType.Collection}
       page={SiteEditorLayout(page)}
     />
   )
-}
+
 
 export default CollectionResourceListPage

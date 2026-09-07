@@ -16,7 +16,7 @@ const getScopedElementKey = (
 ): string => {
   if ("scope" in element) {
     // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
-    const scope = (element as { scope?: unknown }).scope
+    const {scope} = (element as { scope?: unknown })
     if (Object.prototype.toString.call(scope) === "[object String]") {
       // SAFETY: JSON Forms control narrows schema/data to the expected editor shape
       return scope as string
@@ -30,7 +30,7 @@ export const jsonFormsGroupLayoutTester: RankedTester = rankWith(
   uiTypeIs("Group"),
 )
 
-const GroupComponent = React.memo(function GroupComponent({
+const GroupComponent = React.memo(({
   visible,
   enabled,
   uischema,
@@ -39,7 +39,7 @@ const GroupComponent = React.memo(function GroupComponent({
   path,
   renderers,
   cells,
-}: LayoutProps) {
+}: LayoutProps) => {
   // Note: We have to perform this check here due to inaccuracies in JSONForms'
   // type definitions.
   // Ref: https://github.com/eclipsesource/jsonforms/blob/c3cead71d08ff11837bdeb5fbea66e5313137218/packages/material-renderers/src/layouts/MaterialGroupLayout.tsx#L52
@@ -84,8 +84,8 @@ const JsonFormsGroupLayoutRenderer = ({
   cells,
   direction,
   label,
-}: LayoutProps) => {
-  return (
+}: LayoutProps) => 
+  (
     <GroupComponent
       schema={schema}
       path={path}
@@ -98,6 +98,6 @@ const JsonFormsGroupLayoutRenderer = ({
       label={label}
     />
   )
-}
+
 
 export default withJsonFormsLayoutProps(JsonFormsGroupLayoutRenderer)

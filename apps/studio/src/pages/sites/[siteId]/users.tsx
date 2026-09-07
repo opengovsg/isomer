@@ -14,7 +14,7 @@ import {
 } from "~/features/users/components"
 import { CollaboratorsDescription } from "~/features/users/components/CollaboratorsDescription"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type NextPageWithLayout } from "~/lib/types"
+import type { NextPageWithLayout } from "~/lib/types"
 import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -83,8 +83,8 @@ const SiteUsersPage: NextPageWithLayout = () => {
   )
 }
 
-SiteUsersPage.getLayout = (page: React.ReactNode) => {
-  return (
+SiteUsersPage.getLayout = (page: React.ReactNode) => 
+  (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
       page={SiteBasicLayout(
@@ -92,6 +92,6 @@ SiteUsersPage.getLayout = (page: React.ReactNode) => {
       )}
     />
   )
-}
+
 
 export default SiteUsersPage

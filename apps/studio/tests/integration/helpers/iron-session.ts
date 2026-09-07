@@ -2,7 +2,7 @@ import type { RequestOptions, ResponseOptions } from "node-mocks-http"
 import type { Context } from "~/server/context"
 import type { User } from "~server/db"
 import { nanoid } from "nanoid"
-import { type NextApiRequest, type NextApiResponse } from "next"
+import type { NextApiRequest, NextApiResponse } from "next"
 import { createMocks } from "node-mocks-http"
 import {
   MOCK_STORY_DATE,
@@ -10,7 +10,7 @@ import {
   MOCK_TEST_USER_NAME,
   MOCK_TEST_UUID,
 } from "tests/msw/constants"
-import { type Session } from "~/lib/types/session"
+import type { Session } from "~/lib/types/session"
 import { createContextInner } from "~/server/context"
 
 import { auth } from "./auth"
@@ -80,9 +80,9 @@ export const createMockRequest = (
 
   return {
     ...innerContext,
+    gb: mockGrowthBook,
     req,
     res,
-    gb: mockGrowthBook,
   }
 }
 
@@ -109,14 +109,14 @@ export const applySession = () => {
 }
 
 export const createTestUser = (): Omit<User, "id"> => ({
-  email: `test${nanoid()}@example.com`,
-  name: MOCK_TEST_USER_NAME,
   createdAt: MOCK_STORY_DATE,
-  updatedAt: MOCK_STORY_DATE,
+  deletedAt: null,
+  email: `test${nanoid()}@example.com`,
+  lastLoginAt: null,
+  name: MOCK_TEST_USER_NAME,
   phone: MOCK_TEST_PHONE,
   singpassUuid: MOCK_TEST_UUID,
-  deletedAt: null,
-  lastLoginAt: null,
+  updatedAt: MOCK_STORY_DATE,
 })
 
 // NOTE: The argument to this function was changed from

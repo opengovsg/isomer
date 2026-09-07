@@ -50,7 +50,7 @@ export const getInactiveUsers = async ({
   const fromDateThreshold = fromDaysAgo ? getDateOnlyInSG(fromDaysAgo) : null
   const toDateThreshold = getDateOnlyInSG(toDaysAgo)
 
-  return db
+  return await db
     .selectFrom("User")
     .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
     .where("User.deletedAt", "is", null)
@@ -90,7 +90,7 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
   })
 
   const userIds = inactiveUsers.map((user) => user.id)
-  if (userIds.length === 0) return
+  if (userIds.length === 0) {return}
 
   const userAndSiteNames: { userEmail: string; siteNames: string[] }[] =
     await db
@@ -112,13 +112,13 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
     userAndSiteNames.map(async ({ userEmail, siteNames }) => {
       // should not happen as we filter out users who have no site permissions
       // but just in case, we add this as a safety net
-      if (siteNames.length === 0) return
+      if (siteNames.length === 0) {return}
 
       try {
         await sendAccountDeactivationWarningEmail({
+          inHowManyDays,
           recipientEmail: userEmail,
           siteNames,
-          inHowManyDays,
         })
       } catch {
         logger.error(
@@ -134,7 +134,7 @@ interface DeactivateUsersProps {
 }
 const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
   // prevent empty array from being passed in
-  if (userIds.length === 0) return []
+  if (userIds.length === 0) {return []}
 
   let deletedPermissions: ResourcePermission[] = []
 
@@ -150,8 +150,8 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
         const systemUser = await tx
           .insertInto("User")
           .values({
-            id: createId(),
             email: env.SYSTEM_USER_EMAIL,
+            id: createId(),
             name: "System",
             phone: "",
           })
@@ -170,7 +170,7 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
           .selectAll()
           .execute()
 
-        if (permissionsToDelete.length === 0) return []
+        if (permissionsToDelete.length === 0) {return []}
 
         const updated = await tx
           .updateTable("ResourcePermission")
@@ -195,11 +195,11 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
             }
 
             await logPermissionEvent(tx, {
-              eventType: AuditLogEvent.PermissionDelete,
               by: systemUser,
-              delta: { before, after },
-              siteId: after.siteId,
+              delta: { after, before },
+              eventType: AuditLogEvent.PermissionDelete,
               metadata: { reason: "inactivity" },
+              siteId: after.siteId,
             })
           }),
         )
@@ -235,7 +235,7 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
         siteIds.push(permission.siteId)
       }
     }
-    return { user, siteIds }
+    return { siteIds, user }
   })
 }
 
@@ -245,10 +245,10 @@ interface GetSiteAndAdminsProps {
 }
 const getSiteAndAdmins = async ({ userId, siteIds }: GetSiteAndAdminsProps) => {
   // Prevent empty array from being passed in
-  if (siteIds.length === 0) return []
+  if (siteIds.length === 0) {return []}
 
   return (
-    db
+    await db
       .with("siteAdmins", (eb) =>
         eb
           .selectFrom("Site")
@@ -314,12 +314,12 @@ export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
   }
 
   for (const { user, siteIds } of deactivatedUsersAndSiteIds) {
-    if (siteIds.length === 0) continue
+    if (siteIds.length === 0) {continue}
 
     try {
       const sitesAndAdmins = await getSiteAndAdmins({
-        userId: user.id,
         siteIds,
+        userId: user.id,
       })
 
       await sendAccountDeactivationEmail({

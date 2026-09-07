@@ -24,15 +24,15 @@ type SingpassSessionUserId = NonNullable<
   NonNullable<SessionData["singpass"]>["sessionState"]
 >["userId"]
 
-const asSingpassSessionUserId = (userId: string): SingpassSessionUserId => {
+const asSingpassSessionUserId = (userId: string): SingpassSessionUserId => 
   // SAFETY: singpass session fixtures use persisted user id strings from test seeds
-  return userId as SingpassSessionUserId
-}
+  userId as SingpassSessionUserId
 
-const emptyVerificationToken = () => {
+
+const emptyVerificationToken = () => (
   // SAFETY: getUserProps only needs sessionState.userId; other fields are unused in these tests
-  return {} as never
-}
+  {} as never
+)
 
 describe("auth.singpass", () => {
   let caller: ReturnType<typeof createCaller>
@@ -75,10 +75,10 @@ describe("auth.singpass", () => {
 
       session.singpass = {
         sessionState: {
-          userId: asSingpassSessionUserId("test-user-id"),
-          verificationToken,
           codeVerifier: "code-verifier",
           nonce: "nonce",
+          userId: asSingpassSessionUserId("test-user-id"),
+          verificationToken,
         },
       }
       await session.save()
@@ -111,10 +111,10 @@ describe("auth.singpass", () => {
       // Arrange
       session.singpass = {
         sessionState: {
-          userId: asSingpassSessionUserId("non-existent-user-id"),
-          verificationToken: emptyVerificationToken(),
           codeVerifier: "code-verifier",
           nonce: "nonce",
+          userId: asSingpassSessionUserId("non-existent-user-id"),
+          verificationToken: emptyVerificationToken(),
         },
       }
       await session.save()
@@ -137,10 +137,10 @@ describe("auth.singpass", () => {
         .executeTakeFirstOrThrow()
       session.singpass = {
         sessionState: {
-          userId: asSingpassSessionUserId(user.id),
-          verificationToken: emptyVerificationToken(),
           codeVerifier: "code-verifier",
           nonce: "nonce",
+          userId: asSingpassSessionUserId(user.id),
+          verificationToken: emptyVerificationToken(),
         },
       }
       await session.save()
@@ -150,8 +150,8 @@ describe("auth.singpass", () => {
 
       // Assert
       expect(result).toEqual({
-        name: user.name || user.email,
         isNewUser: !user.singpassUuid,
+        name: user.name || user.email,
       })
     })
   })
@@ -160,8 +160,8 @@ describe("auth.singpass", () => {
     it("should throw if no session state is found", async () => {
       // Act
       const result = caller.callback({
-        state: "state",
         code: "code",
+        state: "state",
       })
 
       // Assert
@@ -177,10 +177,10 @@ describe("auth.singpass", () => {
       // Arrange
       session.singpass = {
         sessionState: {
-          userId: asSingpassSessionUserId("user-id"),
-          verificationToken: emptyVerificationToken(),
           codeVerifier: "code-verifier",
           nonce: "nonce",
+          userId: asSingpassSessionUserId("user-id"),
+          verificationToken: emptyVerificationToken(),
         },
       }
       await session.save()
@@ -192,8 +192,8 @@ describe("auth.singpass", () => {
       // Assert
       await expect(
         caller.callback({
-          state: JSON.stringify({ state: expect.any(String) }),
           code: "code",
+          state: JSON.stringify({ state: expect.any(String) }),
         }),
       ).rejects.toThrow(
         new TRPCError({
@@ -213,10 +213,10 @@ describe("auth.singpass", () => {
         .executeTakeFirstOrThrow()
       session.singpass = {
         sessionState: {
-          userId: asSingpassSessionUserId(user.id),
-          verificationToken: emptyVerificationToken(),
           codeVerifier: "code-verifier",
           nonce: "nonce",
+          userId: asSingpassSessionUserId(user.id),
+          verificationToken: emptyVerificationToken(),
         },
       }
       await session.save()
@@ -228,8 +228,8 @@ describe("auth.singpass", () => {
       // Assert
       await expect(
         caller.callback({
-          state: JSON.stringify({ state: expect.any(String) }),
           code: "code",
+          state: JSON.stringify({ state: expect.any(String) }),
         }),
       ).rejects.toThrow(
         new TRPCError({
@@ -249,10 +249,10 @@ describe("auth.singpass", () => {
         .executeTakeFirstOrThrow()
       session.singpass = {
         sessionState: {
-          userId: asSingpassSessionUserId(user.id),
-          verificationToken: emptyVerificationToken(),
           codeVerifier: "code-verifier",
           nonce: "nonce",
+          userId: asSingpassSessionUserId(user.id),
+          verificationToken: emptyVerificationToken(),
         },
       }
       await session.save()
@@ -263,8 +263,8 @@ describe("auth.singpass", () => {
 
       // Act
       await caller.callback({
-        state: JSON.stringify({ state: expect.any(String) }),
         code: "code",
+        state: JSON.stringify({ state: expect.any(String) }),
       })
 
       // Assert
@@ -279,20 +279,20 @@ describe("auth.singpass", () => {
       expect(auditLogs).toHaveLength(2)
       expect(auditLogs).toEqual([
         expect.objectContaining({
-          eventType: AuditLogEvent.UserUpdate,
           delta: {
-            before: expect.objectContaining({ singpassUuid: null }),
             after: expect.objectContaining({
               singpassUuid: MOCK_SINGPASS_UUID,
             }),
+            before: expect.objectContaining({ singpassUuid: null }),
           },
+          eventType: AuditLogEvent.UserUpdate,
         }),
         expect.objectContaining({
-          eventType: AuditLogEvent.Login,
           delta: {
-            before: { attempts: null },
             after: null,
+            before: { attempts: null },
           },
+          eventType: AuditLogEvent.Login,
         }),
       ])
     })
@@ -307,10 +307,10 @@ describe("auth.singpass", () => {
         .executeTakeFirstOrThrow()
       session.singpass = {
         sessionState: {
-          userId: asSingpassSessionUserId(user.id),
-          verificationToken: emptyVerificationToken(),
           codeVerifier: "code-verifier",
           nonce: "nonce",
+          userId: asSingpassSessionUserId(user.id),
+          verificationToken: emptyVerificationToken(),
         },
       }
       await session.save()
@@ -321,8 +321,8 @@ describe("auth.singpass", () => {
 
       // Act
       await caller.callback({
-        state: JSON.stringify({ state: expect.any(String) }),
         code: "code",
+        state: JSON.stringify({ state: expect.any(String) }),
       })
 
       // Assert
@@ -330,11 +330,11 @@ describe("auth.singpass", () => {
       expect(auditLogs).toHaveLength(1)
       expect(auditLogs).toEqual([
         expect.objectContaining({
-          eventType: AuditLogEvent.Login,
           delta: {
-            before: { attempts: null },
             after: null,
+            before: { attempts: null },
           },
+          eventType: AuditLogEvent.Login,
         }),
       ])
     })

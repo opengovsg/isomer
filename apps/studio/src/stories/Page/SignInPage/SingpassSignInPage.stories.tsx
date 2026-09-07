@@ -7,13 +7,13 @@ import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 const meta: Meta<typeof SingpassSignInPage> = {
-  title: "Pages/Sign In Page/Singpass Sign In Page",
   component: SingpassSignInPage,
   parameters: {
     chromatic: withChromaticModes(["gsib", "mobile"]),
-    loginState: false,
     growthbook: [createSingpassEnabledGbParameters(true)],
+    loginState: false,
   },
+  title: "Pages/Sign In Page/Singpass Sign In Page",
 }
 
 export default meta

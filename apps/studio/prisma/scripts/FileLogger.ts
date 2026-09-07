@@ -1,8 +1,8 @@
-import fs from "fs"
-import path from "path"
+import fs from "node:fs"
+import path from "node:path"
 
 export class FileLogger {
-  private logFilePath: string
+  private readonly logFilePath: string
 
   constructor(logFilePath: string) {
     this.logFilePath = logFilePath

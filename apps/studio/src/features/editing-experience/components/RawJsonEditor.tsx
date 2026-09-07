@@ -75,7 +75,7 @@ export const RawJsonEditor = ({
             </HStack>
             <Spacer />
             <Button onClick={onCopy} variant="clear">
-              {!hasCopied ? "Copy to clipboard" : "Copied!"}
+              {hasCopied ? "Copied!" : "Copy to clipboard"}
             </Button>
             <IconButton
               icon={<Icon as={BiX} />}
@@ -101,7 +101,7 @@ export const RawJsonEditor = ({
             boxSizing="border-box"
             minH="68vh"
             value={pendingChanges}
-            onChange={(e) => handleChange(e.target.value)}
+            onChange={(e) =>{  handleChange(e.target.value); }}
           />
         </Box>
 

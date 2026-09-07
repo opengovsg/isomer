@@ -1,6 +1,6 @@
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { Box, HStack, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
-import { type ReactNode } from "react"
+import type { ReactNode } from "react"
 import { formatDate } from "~/utils/formatDate"
 import { getLinkToResource } from "~/utils/resource"
 import { getIcon, isAllowedToHaveLastEditedText } from "~/utils/resources"
@@ -89,7 +89,7 @@ export const SearchResult = ({
   }
 
   const renderPermalink = () => {
-    if (isSimplifiedView) return null
+    if (isSimplifiedView) {return null}
 
     return (
       <Text textStyle="caption-2" textColor="base.content.medium" noOfLines={1}>
@@ -115,7 +115,7 @@ export const SearchResult = ({
       _focus={{
         background: "interaction.muted.main.active",
       }}
-      href={getLinkToResource({ siteId, type, resourceId: id })}
+      href={getLinkToResource({ resourceId: id, siteId, type })}
       borderRadius="0.25rem"
       alignItems="flex-start"
     >

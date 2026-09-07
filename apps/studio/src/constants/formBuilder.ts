@@ -6,7 +6,7 @@ export const JSON_FORMS_RANKING = {
   TaggedControl: 4,
   BooleanControl: 2,
   ConstControl: 2,
-  HiddenControl: 99999999999, // Always rendered first
+  HiddenControl: 99_999_999_999, // Always rendered first
   ImageControl: 2,
   IntegerControl: 4,
   EnumControl: 2,
@@ -50,7 +50,7 @@ export const JSON_FORMS_RANKING = {
   // NOTE: needs to have higher priority than VerticalLayoutRenderer
   AntiScamDisclaimerBannerLayoutRenderer: 2,
   UnionRootControl: 1,
-  Catchall: -99999999999,
+  Catchall: -99_999_999_999,
 }
 
 export const PROSE_COMPONENT_NAME = "Text"

@@ -9,7 +9,7 @@ interface UserTableTabProps {
 export const UserTableTab = React.forwardRef<
   HTMLButtonElement,
   UserTableTabProps
->(function ({ label, count, ...props }, ref) {
+>(({ label, count, ...props }, ref) => {
   const tabProps = useTab({ ...props, ref })
   const isSelected = !!tabProps["aria-selected"]
 

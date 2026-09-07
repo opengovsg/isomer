@@ -9,8 +9,8 @@ interface ResendOtpButtonProps extends ButtonProps {
 export const ResendOtpButton = ({
   timer,
   ...buttonProps
-}: ResendOtpButtonProps): React.ReactNode => {
-  return (
+}: ResendOtpButtonProps): React.ReactNode => 
+  (
     <Button type="button" variant="link" size="xs" {...buttonProps}>
       Resend OTP
       <Text as="span" data-chromatic="ignore">
@@ -18,4 +18,4 @@ export const ResendOtpButton = ({
       </Text>
     </Button>
   )
-}
+

@@ -1,8 +1,8 @@
 import { chakra } from "@chakra-ui/react"
 
 export const IconOneColumnLayout = chakra(
-  (props: React.SVGProps<SVGSVGElement>) => {
-    return (
+  (props: React.SVGProps<SVGSVGElement>) => 
+    (
       <svg
         width="105"
         height="64"
@@ -40,5 +40,5 @@ export const IconOneColumnLayout = chakra(
         </defs>
       </svg>
     )
-  },
+  ,
 )

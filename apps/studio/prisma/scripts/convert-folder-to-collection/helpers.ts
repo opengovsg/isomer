@@ -90,13 +90,13 @@ export const buildConversionReport = (
   )
 
 export const toFolderPlan = (plan: ConversionPlan): FolderPlan => ({
-  id: plan.folder.id,
-  siteId: plan.folder.siteId,
-  title: plan.folder.title,
-  permalink: plan.folder.permalink,
   defaultCategory: plan.defaultCategory,
+  id: plan.folder.id,
   indexPageId: plan.indexPage.resourceId,
   pageIds: plan.pages.map((p) => p.resourceId),
+  permalink: plan.folder.permalink,
+  siteId: plan.folder.siteId,
+  title: plan.folder.title,
 })
 
 export const findDisallowedBlocks = (content: IsomerComponent[]) =>
@@ -161,16 +161,16 @@ export const buildCollectionIndexBlob = (
   folderTitle: string,
 ): IsomerSchema => {
   const page = {
-    title: folderTitle,
-    subtitle: current.page.contentPageHeader.summary,
     sortOrder: "date-desc" as const,
+    subtitle: current.page.contentPageHeader.summary,
+    title: folderTitle,
     ...optionalPageImage(current.page),
   }
   const blob = {
     ...current,
+    content: [],
     layout: "collection" as const,
     page,
-    content: [],
   }
   // SAFETY: transforms a validated IndexBlob into collection layout per conversion rules.
   // @ts-expect-error collection layout blob is a valid IsomerSchema at runtime.
@@ -184,12 +184,12 @@ export const buildArticleBlob = (
   if (current.layout === "article") {
     const blob = {
       ...current,
+      content: current.content,
       layout: "article" as const,
       page: {
         ...current.page,
         category: defaultCategory,
       },
-      content: current.content,
     }
     // SAFETY: article layout fields are preserved while updating category.
     // @ts-expect-error article layout blob is a valid IsomerSchema at runtime.
@@ -197,17 +197,17 @@ export const buildArticleBlob = (
   }
 
   const page = {
-    category: defaultCategory,
     articlePageHeader: {
       summary: current.page.contentPageHeader.summary,
     },
+    category: defaultCategory,
     ...optionalPageImage(current.page),
   }
   const blob = {
     ...current,
+    content: current.content,
     layout: "article" as const,
     page,
-    content: current.content,
   }
   // SAFETY: content page fields are mapped to article layout per conversion rules.
   return blob as IsomerSchema

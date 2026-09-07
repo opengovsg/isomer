@@ -72,7 +72,7 @@ export const DashboardLayout = ({
   children: ReactNode
 }) => {
   const allBreadcrumbsExceptLast = breadcrumbs.slice(0, -1)
-  const lastBreadcrumb = breadcrumbs[breadcrumbs.length - 1]
+  const lastBreadcrumb = breadcrumbs.at(-1)
   return (
     <VStack
       w="100%"
@@ -90,8 +90,8 @@ export const DashboardLayout = ({
           display="flex"
           alignItems="center"
         >
-          {allBreadcrumbsExceptLast.map(({ href, label }) => {
-            return (
+          {allBreadcrumbsExceptLast.map(({ href, label }) => 
+            (
               <BreadcrumbItem key={href ?? label}>
                 <BreadcrumbLink href={href} as={NextLink}>
                   <Text
@@ -105,7 +105,7 @@ export const DashboardLayout = ({
                 </BreadcrumbLink>
               </BreadcrumbItem>
             )
-          })}
+          )}
           <BreadcrumbItem
             key={lastBreadcrumb?.href}
             overflow="hidden"

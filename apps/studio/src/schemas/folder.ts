@@ -29,10 +29,10 @@ export const createFolderSchema = z.object({
 
 export const readFolderSchema = z
   .object({
-    siteId: z.number().min(1),
     resourceId: z.number().min(1),
+    siteId: z.number().min(1),
   })
-  .extend(offsetPaginationSchema["shape"])
+  .extend(offsetPaginationSchema.shape)
 
 const baseFolderSchema = z.object({
   resourceId: z.string(),
@@ -58,8 +58,8 @@ export const editFolderSchema = baseEditFolderSchema.superRefine(
     if (!permalink && !title) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["permalink", "title"],
         message: "Either permalink or title must be provided.",
+        path: ["permalink", "title"],
       })
     }
   },

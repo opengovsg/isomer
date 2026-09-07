@@ -171,34 +171,6 @@ export const folderRouter = router({
         return { folderId: folder.id }
       },
     ),
-  getMetadata: protectedProcedure
-    .input(readFolderSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-      // Things that aren't working yet:
-      // 1. Last Edited user and time
-      // 2. Page status(draft, published)
-
-      const data = await db
-        .selectFrom("Resource")
-        .select(["Resource.title", "Resource.permalink", "Resource.parentId"])
-        .where("siteId", "=", siteId)
-        .where("id", "=", String(resourceId))
-        .executeTakeFirst()
-
-      if (!data) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "This folder does not exist",
-        })
-      }
-
-      return data
-    }),
   editFolder: protectedProcedure
     .input(editFolderSchema)
     .mutation(
@@ -331,7 +303,6 @@ export const folderRouter = router({
         return pick(result, defaultFolderSelect)
       },
     ),
-
   getIndexpage: protectedProcedure
     .input(getIndexpageSchema)
     .query(async ({ ctx, input: { resourceId, siteId } }) => {
@@ -366,7 +337,34 @@ export const folderRouter = router({
 
       return { title, ...indexPage }
     }),
+  getMetadata: protectedProcedure
+    .input(readFolderSchema)
+    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+      // Things that aren't working yet:
+      // 1. Last Edited user and time
+      // 2. Page status(draft, published)
 
+      const data = await db
+        .selectFrom("Resource")
+        .select(["Resource.title", "Resource.permalink", "Resource.parentId"])
+        .where("siteId", "=", siteId)
+        .where("id", "=", String(resourceId))
+        .executeTakeFirst()
+
+      if (!data) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "This folder does not exist",
+        })
+      }
+
+      return data
+    }),
   listChildPages: protectedProcedure
     .input(listChildPagesSchema)
     .query(async ({ ctx, input: { indexPageId, siteId } }) => {

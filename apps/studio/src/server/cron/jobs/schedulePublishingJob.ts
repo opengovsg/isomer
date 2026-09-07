@@ -25,8 +25,8 @@ const logger = createBaseLogger({ path: "cron:schedulePublishingJob" })
  * Registers the schedule publishing job with the specified cron schedule.
  * @returns A promise that resolves when the job is registered.
  */
-export const schedulePublishingJob = async () => {
-  return await registerPgbossJob(
+export const schedulePublishingJob = async () => 
+  await registerPgbossJob(
     logger,
     JOB_NAME,
     CRON_SCHEDULE,
@@ -38,7 +38,7 @@ export const schedulePublishingJob = async () => {
       ? { heartbeatURL: env.SCHEDULED_PUBLISHING_HEARTBEAT_URL }
       : undefined,
   )
-}
+
 
 /**
  * Handler function for the schedule publishing job.
@@ -127,8 +127,8 @@ export const publishScheduledResources = async (
         if (enableEmailsForScheduledPublishes) {
           try {
             await sendFailedPublishEmail({
-              recipientEmail: resource.email,
               isScheduled: true,
+              recipientEmail: resource.email,
               resource,
             })
             logger.warn(
@@ -155,7 +155,6 @@ export const publishScheduledSites = async (
     Object.entries(siteResourcesMap).map(async ([siteId, resources]) => {
       try {
         await publishSite(logger, {
-          siteId: Number(siteId),
           codebuildJob: enableCodebuildJobs
             ? {
                 isScheduled: true,
@@ -166,6 +165,7 @@ export const publishScheduledSites = async (
                 ),
               }
             : undefined,
+          siteId: Number(siteId),
         })
         logger.info(`Successfully published site for siteId: ${siteId}`)
       } catch (error) {
@@ -180,8 +180,8 @@ export const publishScheduledSites = async (
             }
             try {
               await sendFailedPublishEmail({
-                recipientEmail: resource.email,
                 isScheduled: true,
+                recipientEmail: resource.email,
                 resource,
               })
               logger.warn(

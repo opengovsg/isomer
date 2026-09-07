@@ -28,9 +28,9 @@ const BASE_HANDLERS = [
   // Published page so the "Redirect page automatically" option can appear when
   // the URL changes (RedirectOptionShown).
   pageHandlers.readPage.homepage({
-    title: "Contact us",
     publishedVersionId: "1",
     state: "Published",
+    title: "Contact us",
   }),
   pageHandlers.getPermalinkTree.withParent(),
 ]
@@ -102,9 +102,9 @@ export const UnpublishedPageHidesRedirectOption: Story = {
       handlers: [
         ...ADMIN_HANDLERS,
         pageHandlers.readPage.homepage({
-          title: "Contact us",
           publishedVersionId: null,
           state: "Draft",
+          title: "Contact us",
         }),
         pageHandlers.getPermalinkTree.withParent(),
         redirectHandlers.getBySource.none(),

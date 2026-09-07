@@ -27,19 +27,19 @@ const setupPermissions = async ({
   isDeleted = false,
   useCurrentTime = false,
 }: SetupPermissionsProps) => {
-  if (!userId) throw new Error("userId is a required field")
+  if (!userId) {throw new Error("userId is a required field")}
 
   const time = useCurrentTime ? new Date() : MOCK_STORY_DATE
   return await db
     .insertInto("ResourcePermission")
     .values({
-      userId: String(userId),
-      siteId,
-      role,
-      resourceId: null,
-      deletedAt: isDeleted ? time : null,
       createdAt: time,
+      deletedAt: isDeleted ? time : null,
+      resourceId: null,
+      role,
+      siteId,
       updatedAt: time,
+      userId: String(userId),
     })
     .returningAll()
     .executeTakeFirstOrThrow()
@@ -47,25 +47,25 @@ const setupPermissions = async ({
 
 export const setupPublisherPermissions = async (
   props: Omit<SetupPermissionsProps, "role">,
-) => {
-  return await setupPermissions({ ...props, role: RoleType.Publisher })
-}
+) => 
+  await setupPermissions({ ...props, role: RoleType.Publisher })
+
 
 export const setupEditorPermissions = async (
   props: Omit<SetupPermissionsProps, "role">,
-) => {
-  return await setupPermissions({ ...props, role: RoleType.Editor })
-}
+) => 
+  await setupPermissions({ ...props, role: RoleType.Editor })
+
 
 export const setupAdminPermissions = async (
   props: Omit<SetupPermissionsProps, "role">,
-) => {
-  return await setupPermissions({ ...props, role: RoleType.Admin })
-}
+) => 
+  await setupPermissions({ ...props, role: RoleType.Admin })
+
 
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
   if (siteId !== undefined && fetch) {
-    return db.transaction().execute(async (tx) => {
+    return await db.transaction().execute(async (tx) => {
       const site = await tx
         .selectFrom("Site")
         .where("id", "=", siteId)
@@ -83,7 +83,7 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
         .selectAll()
         .executeTakeFirstOrThrow()
 
-      return { site, navbar, footer }
+      return { footer, navbar, site }
     })
   }
 
@@ -94,10 +94,10 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
       .values({
         name,
         config: jsonb({
-          theme: "isomer-next",
+          isGovernment: true,
           logoUrl: "",
           siteName: name,
-          isGovernment: true,
+          theme: "isomer-next",
           url: "",
         }),
         // @ts-expect-error id is GeneratedAlways but we override it for tests
@@ -115,8 +115,6 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
         content: jsonb({
           items: [
             {
-              url: "/item-one",
-              name: "Expandable nav item",
               items: [
                 {
                   url: "/item-one/pa-network-one",
@@ -153,6 +151,8 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
                     "Click here and brace yourself for mild disappointment.",
                 },
               ],
+              name: "Expandable nav item",
+              url: "/item-one",
             },
           ],
         }),
@@ -166,6 +166,9 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
       .insertInto("Footer")
       .values({
         content: jsonb({
+          contactUsLink: "/contact-us",
+          feedbackFormLink: "https://www.form.gov.sg",
+          privacyStatementLink: "/privacy",
           siteNavItems: [
             { url: "/about", title: "About us" },
             { url: "/partners", title: "Our partners" },
@@ -174,36 +177,29 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
             { url: "/something-else", title: "Something else" },
             { url: "/resources", title: "Resources" },
           ],
-          contactUsLink: "/contact-us",
           termsOfUseLink: "/terms-of-use",
-          feedbackFormLink: "https://www.form.gov.sg",
-          privacyStatementLink: "/privacy",
         }),
         siteId: site.id,
       })
       .returningAll()
       .executeTakeFirstOrThrow()
 
-    return { site, navbar, footer }
+    return { footer, navbar, site }
   })
 }
 
 export const setupBlob = async (blobId?: string) => {
   if (blobId !== undefined) {
-    return db
+    return await db
       .selectFrom("Blob")
       .where("id", "=", blobId)
       .selectAll()
       .executeTakeFirstOrThrow()
   }
-  return db
+  return await db
     .insertInto("Blob")
     .values({
       content: jsonb({
-        page: {
-          contentPageHeader: { summary: "This is the page summary" },
-        },
-        layout: "content",
         content: [
           {
             type: "prose",
@@ -227,6 +223,10 @@ export const setupBlob = async (blobId?: string) => {
             },
           },
         ],
+        layout: "content",
+        page: {
+          contentPageHeader: { summary: "This is the page summary" },
+        },
         version: "0.1.0",
       }),
     })
@@ -236,27 +236,35 @@ export const setupBlob = async (blobId?: string) => {
 
 const getFallbackTitle = (resourceType: ResourceType) => {
   switch (resourceType) {
-    case ResourceType.RootPage:
+    case ResourceType.RootPage: {
       return "Home"
-    case ResourceType.CollectionPage:
+    }
+    case ResourceType.CollectionPage: {
       return "test collection page"
-    case ResourceType.IndexPage:
+    }
+    case ResourceType.IndexPage: {
       return "test index page"
-    default:
+    }
+    default: {
       return "test page"
+    }
   }
 }
 
 const getFallbackPermalink = (resourceType: ResourceType) => {
   switch (resourceType) {
-    case ResourceType.RootPage:
+    case ResourceType.RootPage: {
       return ""
-    case ResourceType.CollectionPage:
+    }
+    case ResourceType.CollectionPage: {
       return "test-collection-page"
-    case ResourceType.IndexPage:
+    }
+    case ResourceType.IndexPage: {
       return INDEX_PAGE_PERMALINK
-    default:
+    }
+    default: {
       return "test-page"
+    }
   }
 }
 
@@ -291,16 +299,16 @@ export const setupPageResource = async ({
   let page = await db
     .insertInto("Resource")
     .values({
-      title: title ?? getFallbackTitle(resourceType),
-      permalink: permalink ?? getFallbackPermalink(resourceType),
-      siteId: site.id,
+      draftBlobId: blob.id,
       parentId,
+      permalink: permalink ?? getFallbackPermalink(resourceType),
       publishedVersionId: null,
       scheduledAt,
       scheduledBy,
-      draftBlobId: blob.id,
-      type: resourceType,
+      siteId: site.id,
       state,
+      title: title ?? getFallbackTitle(resourceType),
+      type: resourceType,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
@@ -315,10 +323,10 @@ export const setupPageResource = async ({
     const version = await db
       .insertInto("Version")
       .values({
-        versionNum: 1,
-        resourceId: page.id,
         blobId: blob.id,
         publishedBy: userId,
+        resourceId: page.id,
+        versionNum: 1,
       })
       .returning("id")
       .executeTakeFirstOrThrow()
@@ -327,19 +335,19 @@ export const setupPageResource = async ({
       .updateTable("Resource")
       .where("id", "=", page.id)
       .set({
-        publishedVersionId: version.id,
         draftBlobId: null,
+        publishedVersionId: version.id,
       })
       .returningAll()
       .executeTakeFirstOrThrow()
   }
 
   return {
-    site,
-    navbar,
-    footer,
     blob,
+    footer,
+    navbar,
     page,
+    site,
   }
 }
 
@@ -361,23 +369,23 @@ export const setupFolder = async ({
   const folder = await db
     .insertInto("Resource")
     .values({
-      permalink,
-      siteId: site.id,
-      parentId,
-      title,
       draftBlobId: null,
-      state,
-      type: ResourceType.Folder,
+      parentId,
+      permalink,
       publishedVersionId: null,
+      siteId: site.id,
+      state,
+      title,
+      type: ResourceType.Folder,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
 
   return {
-    site,
-    navbar,
-    footer,
     folder,
+    footer,
+    navbar,
+    site,
   }
 }
 
@@ -399,39 +407,39 @@ export const setupCollection = async ({
   const collection = await db
     .insertInto("Resource")
     .values({
-      permalink,
-      siteId: site.id,
-      parentId,
-      title,
       draftBlobId: null,
-      state,
-      type: ResourceType.Collection,
+      parentId,
+      permalink,
       publishedVersionId: null,
+      siteId: site.id,
+      state,
+      title,
+      type: ResourceType.Collection,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
 
   return {
-    site,
-    navbar,
-    footer,
     collection,
+    footer,
+    navbar,
+    site,
   }
 }
 
 export const collectionPageBlobContent = (
   tagged: string[] = [],
 ): UnwrapTagged<PrismaJson.BlobJsonContent> => ({
+  content: [],
   layout: "article",
   page: {
-    date: "01/01/2026",
-    category: "Feature Articles",
     articlePageHeader: {
       summary: "A concise summary of the main points regarding this article.",
     },
+    category: "Feature Articles",
+    date: "01/01/2026",
     tagged,
   },
-  content: [],
   version: "0.1.0",
 })
 
@@ -452,11 +460,11 @@ export const setupCollectionPage = async (
 
   const { page } = await setupPageResource({
     ...rest,
-    resourceType: ResourceType.CollectionPage,
     blobId: blob.id,
+    resourceType: ResourceType.CollectionPage,
   })
 
-  return { page, blob }
+  return { blob, page }
 }
 
 export const setupCollectionLink = async ({
@@ -480,13 +488,13 @@ export const setupCollectionLink = async ({
   let collectionLink = await db
     .insertInto("Resource")
     .values({
+      draftBlobId: blob.id,
+      parentId: collectionId,
       permalink,
       siteId: site.id,
-      parentId: collectionId,
+      state,
       title,
       type: ResourceType.CollectionLink,
-      state,
-      draftBlobId: blob.id,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
@@ -501,10 +509,10 @@ export const setupCollectionLink = async ({
     const version = await db
       .insertInto("Version")
       .values({
-        versionNum: 1,
-        resourceId: collectionLink.id,
         blobId: blob.id,
         publishedBy: userId,
+        resourceId: collectionLink.id,
+        versionNum: 1,
       })
       .returning("id")
       .executeTakeFirstOrThrow()
@@ -513,19 +521,19 @@ export const setupCollectionLink = async ({
       .updateTable("Resource")
       .where("id", "=", collectionLink.id)
       .set({
-        publishedVersionId: version.id,
         draftBlobId: null,
+        publishedVersionId: version.id,
       })
       .returningAll()
       .executeTakeFirstOrThrow()
   }
 
   return {
-    site,
-    navbar,
-    footer,
-    collectionLink,
     blob,
+    collectionLink,
+    footer,
+    navbar,
+    site,
   }
 }
 
@@ -541,20 +549,20 @@ export const setupCollectionMeta = async ({
   const collectionMeta = await db
     .insertInto("Resource")
     .values({
-      siteId: site.id,
       parentId: collectionId,
-      title: "collection meta",
       permalink: "collection-meta",
+      siteId: site.id,
+      title: "collection meta",
       type: ResourceType.CollectionMeta,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
 
   return {
-    site,
-    navbar,
-    footer,
     collectionMeta,
+    footer,
+    navbar,
+    site,
   }
 }
 
@@ -570,20 +578,20 @@ export const setupFolderMeta = async ({
   const folderMeta = await db
     .insertInto("Resource")
     .values({
-      siteId: site.id,
       parentId: folderId,
-      title: "Folder meta",
       permalink: "folder-meta",
+      siteId: site.id,
+      title: "Folder meta",
       type: ResourceType.FolderMeta,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
 
   return {
-    site,
-    navbar,
-    footer,
     folderMeta,
+    footer,
+    navbar,
+    site,
   }
 }
 
@@ -593,8 +601,8 @@ export const setUpWhitelist = async ({
 }: {
   email: string
   expiry?: Date
-}) => {
-  return db
+}) => 
+  await db
     .insertInto("Whitelist")
     .values({
       email: email.toLowerCase(),
@@ -607,7 +615,7 @@ export const setUpWhitelist = async ({
     )
     .returningAll()
     .executeTakeFirstOrThrow()
-}
+
 
 export const setupIsomerAdmin = async ({
   userId,
@@ -617,13 +625,13 @@ export const setupIsomerAdmin = async ({
   userId: string
   role?: IsomerAdminRole
   expiry?: Date | null
-}) => {
-  return db
+}) => 
+  await db
     .insertInto("IsomerAdmin")
     .values({ userId, role, expiry })
     .returningAll()
     .executeTakeFirstOrThrow()
-}
+
 
 export const setupUser = async ({
   name = "Test User",
@@ -639,8 +647,8 @@ export const setupUser = async ({
   phone?: string
   isDeleted?: boolean
   lastLoginAt?: Date | null
-}) => {
-  return db
+}) => 
+  await db
     .insertInto("User")
     .values({
       id: userId,
@@ -652,7 +660,7 @@ export const setupUser = async ({
     })
     .returningAll()
     .executeTakeFirstOrThrow()
-}
+
 
 export const setupFullSite = async () => {
   const { site, folder: parentFolder } = await setupFolder({})
@@ -661,41 +669,41 @@ export const setupFullSite = async () => {
     siteId: site.id,
   })
   const { page: childPage } = await setupPageResource({
-    resourceType: "Page",
     parentId: parentFolder.id,
+    resourceType: "Page",
     siteId: site.id,
   })
   const { folder } = await setupFolder({
-    siteId: site.id,
     parentId: parentFolder.id,
+    siteId: site.id,
   })
   const { collection } = await setupCollection({
     siteId: site.id,
   })
 
   const { page: collectionPage } = await setupPageResource({
-    resourceType: "CollectionPage",
     parentId: collection.id,
+    resourceType: "CollectionPage",
   })
   const { page: collectionLink } = await setupPageResource({
-    resourceType: "CollectionLink",
     parentId: collection.id,
+    resourceType: "CollectionLink",
   })
   const { page: collectionIndex } = await setupPageResource({
-    resourceType: "IndexPage",
     parentId: collection.id,
+    resourceType: "IndexPage",
   })
 
   return {
-    site,
-    rootPage,
-    rootFolder: parentFolder,
-    childPage,
     childFolder: folder,
-    rootCollection: collection,
-    collectionPage,
-    collectionLink,
+    childPage,
     collectionIndex,
+    collectionLink,
+    collectionPage,
+    rootCollection: collection,
+    rootFolder: parentFolder,
+    rootPage,
+    site,
   }
 }
 
@@ -723,26 +731,26 @@ export const setupCodeBuildJob = async ({
     throw new Error(`Invalid buildId format: ${arn}`)
   }
   const { page, site } = await setupPageResource({
+    permalink,
     resourceType: ResourceType.Page,
     siteId,
-    permalink,
   })
   const codebuildJob = await db
     .insertInto("CodeBuildJobs")
     .values({
-      siteId: site.id,
-      resourceId: omitResourceId ? null : page.id,
-      userId,
       buildId,
-      startedAt,
-      status,
       emailSent,
       isScheduled,
+      resourceId: omitResourceId ? null : page.id,
+      siteId: site.id,
+      startedAt,
+      status,
+      userId,
     })
     .returningAll()
     .executeTakeFirstOrThrow()
 
-  return { site, page, codebuildJob }
+  return { codebuildJob, page, site }
 }
 
 export const createSupersededBuildRows = async ({
@@ -761,11 +769,11 @@ export const createSupersededBuildRows = async ({
     .values(
       Array.from({ length: numberOfSupersededBuilds }).map((_, i) => ({
         buildId: "test-build-id-superseded-" + i,
+        isScheduled: supersedingBuild.isScheduled,
+        resourceId,
         siteId: supersedingBuild.siteId,
         startedAt: supersedingBuild.startedAt,
-        isScheduled: supersedingBuild.isScheduled,
         supersededByBuildId: supersedingBuild.buildId,
-        resourceId,
         userId,
       })),
     )

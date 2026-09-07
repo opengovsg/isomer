@@ -67,8 +67,8 @@ describe("auth.email", () => {
         .executeTakeFirstOrThrow()
       expect(log).toMatchObject({
         delta: {
-          before: user,
           after: null,
+          before: user,
         },
         eventType: "Logout",
         ipAddress: "127.0.0.1",

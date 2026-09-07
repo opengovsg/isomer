@@ -10,8 +10,8 @@ import Papa from "papaparse"
 // labels. The downloadable template and the errors file share these exact
 // strings so a corrected errors file re-uploads without renaming anything.
 export const BULK_REDIRECT_CSV_HEADERS = {
-  source: "When someone visits",
   destination: "Redirect them to",
+  source: "When someone visits",
 } as const
 
 // Appended to the errors file only. Not one of the required columns, so it is
@@ -130,12 +130,12 @@ export const parseRedirectCsv = (csv: string): ParseRedirectCsvResult => {
       continue
     }
     rows.push({
-      rowNumber,
-      source: (row[sourceIndex] ?? "").trim(),
       destination: (row[destinationIndex] ?? "").trim(),
       malformed:
         row.length > expectedColumns &&
         row.slice(expectedColumns).some((cell) => cell.trim() !== ""),
+      rowNumber,
+      source: (row[sourceIndex] ?? "").trim(),
     })
   }
   if (rows.length === 0) {
@@ -166,15 +166,15 @@ export const buildRedirectErrorsCsv = (
     ...rows.filter((row) => row.error === null),
   ]
   return Papa.unparse({
-    fields: [
-      BULK_REDIRECT_CSV_HEADERS.source,
-      BULK_REDIRECT_CSV_HEADERS.destination,
-      BULK_REDIRECT_CSV_ERROR_HEADER,
-    ],
     data: failedFirst.map((row) => [
       row.source,
       row.destination,
       row.error ?? BULK_REDIRECT_CSV_NO_ERROR,
     ]),
+    fields: [
+      BULK_REDIRECT_CSV_HEADERS.source,
+      BULK_REDIRECT_CSV_HEADERS.destination,
+      BULK_REDIRECT_CSV_ERROR_HEADER,
+    ],
   })
 }

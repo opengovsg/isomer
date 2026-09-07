@@ -5,8 +5,8 @@ import { BiPlusCircle } from "react-icons/bi"
 export const AddItemButton = ({
   children,
   ...rest
-}: Omit<ButtonProps, "leftIcon" | "size" | "variant">) => {
-  return (
+}: Omit<ButtonProps, "leftIcon" | "size" | "variant">) => 
+  (
     <Button
       variant="clear"
       size="xs"
@@ -17,4 +17,4 @@ export const AddItemButton = ({
       {children}
     </Button>
   )
-}
+

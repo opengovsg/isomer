@@ -40,7 +40,7 @@ const PageSettings: NextPageWithLayout = () => {
   )
 
   const pageMetaSchema = getLayoutMetadataSchema(content.layout)
-  const validateFn = ajv.compile<Static<typeof pageMetaSchema>>(pageMetaSchema)
+  const validateFn = ajv.compile(pageMetaSchema)
 
   const {
     control,
@@ -48,20 +48,28 @@ const PageSettings: NextPageWithLayout = () => {
     handleSubmit,
     formState: { isDirty },
   } = useZodForm({
+    defaultValues: {
+      meta: content.meta,
+    },
     schema: updatePageMetaSchema
       .omit({ resourceId: true, siteId: true })
       .extend({
         meta: z.unknown(),
       }),
-    defaultValues: {
-      meta: content.meta,
-    },
   })
 
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const utils = trpc.useUtils()
 
   const { mutate: updateMeta } = trpc.page.updateMeta.useMutation({
+    onError: (error) => {
+      toast({
+        title: "Failed to save page metadata",
+        description: error.message,
+        status: "error",
+      })
+      reset()
+    },
     onSuccess: async () => {
       // TODO: we should use a specialised query for this rather than the general one that retrives the page and the blob
       await utils.page.invalidate()
@@ -77,26 +85,18 @@ const PageSettings: NextPageWithLayout = () => {
         status: "success",
       })
     },
-    onError: (error) => {
-      toast({
-        title: "Failed to save page metadata",
-        description: error.message,
-        status: "error",
-      })
-      reset()
-    },
   })
 
   const onSubmit = handleSubmit(({ meta, ...rest }) => {
     if (isDirty) {
       updateMeta(
         {
+          meta: JSON.stringify(meta),
           resourceId: String(pageId),
           siteId,
-          meta: JSON.stringify(meta),
         },
         {
-          onSuccess: () => reset({ meta, ...rest }),
+          onSuccess: () =>{  reset({ meta, ...rest }); },
         },
       )
     }
@@ -150,13 +150,13 @@ const PageSettings: NextPageWithLayout = () => {
   )
 }
 
-PageSettings.getLayout = (page) => {
-  return (
+PageSettings.getLayout = (page) => 
+  (
     <PermissionsBoundary
       resourceType={ResourceType.Page}
       page={PageEditingLayout(page)}
     />
   )
-}
+
 
 export default PageSettings

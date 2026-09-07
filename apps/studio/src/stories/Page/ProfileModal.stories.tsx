@@ -11,12 +11,11 @@ import { ResetUpdateProfileModalDecorator } from "~/stories/decorators"
 const COMMON_HANDLERS = {
   me: meHandlers.me(),
   roles: resourceHandlers.getRolesFor.admin(),
-  siteName: sitesHandlers.getSiteName.default(),
   rootPage: pageHandlers.getRootPage.default(),
+  siteName: sitesHandlers.getSiteName.default(),
 }
 
 const meta: Meta<typeof SitePage> = {
-  title: "Pages/Profile Management/Profile Modal",
   component: SitePage,
   parameters: {
     getLayout: SitePage.getLayout,
@@ -31,6 +30,7 @@ const meta: Meta<typeof SitePage> = {
       },
     },
   },
+  title: "Pages/Profile Management/Profile Modal",
 }
 
 export default meta
@@ -67,9 +67,9 @@ export const Required: Story = {
       "Welcome to Studio! Tell us about yourself.",
     )
 
-    await waitFor(() => expect(modalHeader).toBeVisible())
+    await waitFor( async () => expect(modalHeader).toBeVisible())
     await userEvent.keyboard("{Escape}")
-    await waitFor(() => expect(modalHeader).toBeVisible())
+    await waitFor( async () => expect(modalHeader).toBeVisible())
   },
 }
 
@@ -80,21 +80,13 @@ export const Unfilled: Story = {
     await Default.play?.(context)
 
     // Check for name input
-    const nameInput = Array.from(
-      canvasElement.ownerDocument.querySelectorAll(
-        'input[name="name"][required]',
-      ),
-    )[0]
+    const nameInput = [...canvasElement.ownerDocument.querySelectorAll('input[name="name"][required]')][0]
     if (nameInput) {
       await userEvent.clear(nameInput)
     }
 
     // Check for phone input
-    const phoneInput = Array.from(
-      canvasElement.ownerDocument.querySelectorAll(
-        'input[name="phone"][required]',
-      ),
-    )[0]
+    const phoneInput = [...canvasElement.ownerDocument.querySelectorAll('input[name="phone"][required]')][0]
     if (phoneInput) {
       await userEvent.clear(phoneInput)
     }
@@ -107,11 +99,7 @@ export const PhoneNumberNot8Digits: Story = {
     const { canvasElement } = context
     await Default.play?.(context)
 
-    const phoneInput = Array.from(
-      canvasElement.ownerDocument.querySelectorAll(
-        'input[name="phone"][required]',
-      ),
-    )[0]
+    const phoneInput = [...canvasElement.ownerDocument.querySelectorAll('input[name="phone"][required]')][0]
     if (phoneInput) {
       await userEvent.clear(phoneInput)
       await userEvent.type(phoneInput, "6512345678")
@@ -125,11 +113,7 @@ export const NonSingaporePhone: Story = {
     const { canvasElement } = context
     await Default.play?.(context)
 
-    const phoneInput = Array.from(
-      canvasElement.ownerDocument.querySelectorAll(
-        'input[name="phone"][required]',
-      ),
-    )[0]
+    const phoneInput = [...canvasElement.ownerDocument.querySelectorAll('input[name="phone"][required]')][0]
     if (phoneInput) {
       await userEvent.clear(phoneInput)
       await userEvent.type(phoneInput, "12345678")

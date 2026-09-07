@@ -4,7 +4,7 @@ import { forwardRef, memo } from "react"
 
 const MemoSingpassFullLogo = memo(
   forwardRef<SVGSVGElement, SVGProps<SVGSVGElement>>(
-    function SingpassFullLogo(props, ref) {
+    (props, ref) => {
       return (
         <svg
           viewBox="0 0 73 17"

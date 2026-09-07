@@ -20,7 +20,7 @@ export const sendAccountDeactivationWarningEmailsJob = async ({
     logger,
     JOB_NAME,
     CRON_SCHEDULE,
-    () => bulkSendAccountDeactivationWarningEmails({ inHowManyDays }),
+     async () => bulkSendAccountDeactivationWarningEmails({ inHowManyDays }),
     // It's sent on best-effort basis, so don't retry failed jobs or heartbeat monitoring
     { retryLimit: 0, singletonKey: JOB_NAME },
   )

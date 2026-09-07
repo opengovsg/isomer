@@ -18,8 +18,8 @@ const SHARED_HANDLERS = [
 ]
 
 const meta: Meta<typeof SitePage> = {
-  title: "Pages/Site Management/Search",
   component: SitePage,
+  decorators: [],
   parameters: {
     getLayout: SitePage.getLayout,
     nextjs: {
@@ -30,7 +30,7 @@ const meta: Meta<typeof SitePage> = {
       },
     },
   },
-  decorators: [],
+  title: "Pages/Site Management/Search",
 }
 
 export default meta

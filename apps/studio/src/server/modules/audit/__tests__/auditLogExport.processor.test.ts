@@ -59,12 +59,12 @@ const seedRequest = async ({
   completedAt?: Date
 }) => {
   const values: SeedRequestValues = {
-    siteId,
-    userId,
+    attempts,
     auditLogDateRange,
     reportType,
+    siteId,
     status,
-    attempts,
+    userId,
   }
   if (updatedAt) {
     values.updatedAt = updatedAt
@@ -76,20 +76,20 @@ const seedRequest = async ({
     values.completedAt = completedAt
   }
 
-  return db
+  return await db
     .insertInto("AuditLogExportRequest")
     .values(values)
     .returningAll()
     .executeTakeFirstOrThrow()
 }
 
-const getRequest = async (id: string) => {
-  return db
+const getRequest = async (id: string) => 
+  await db
     .selectFrom("AuditLogExportRequest")
     .where("id", "=", id)
     .selectAll()
     .executeTakeFirstOrThrow()
-}
+
 
 describe("auditLogExport processor", () => {
   beforeEach(async () => {
@@ -125,28 +125,26 @@ describe("auditLogExport processor", () => {
     // By default every candidate artifact still exists in S3.
     vi.spyOn(s3Lib, "getFileSize").mockResolvedValue(1024)
     vi.spyOn(mailService, "sendAuditLogExportReadyEmail").mockResolvedValue(
-      undefined,
-    )
+      )
     vi.spyOn(mailService, "sendAuditLogExportFailedEmail").mockResolvedValue(
-      undefined,
-    )
+      )
   })
 
   it("processes an Access request: one upload with an inclusive-end key, one link, status Done", async () => {
     // Arrange
     const { site } = await setupSite()
     const admin = await setupUser({ email: "admin@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    await setupAdminPermissions({ siteId: site.id, userId: admin.id })
     // A couple of permission rows so the access report is non-empty.
     const memberA = await setupUser({ email: "alice@vendor.com.sg" })
     const memberB = await setupUser({ email: "bob@vendor.com.sg" })
-    await setupAdminPermissions({ userId: memberA.id, siteId: site.id })
-    await setupAdminPermissions({ userId: memberB.id, siteId: site.id })
+    await setupAdminPermissions({ siteId: site.id, userId: memberA.id })
+    await setupAdminPermissions({ siteId: site.id, userId: memberB.id })
 
     const request = await seedRequest({
+      reportType: "Access",
       siteId: site.id,
       userId: admin.id,
-      reportType: "Access",
     })
 
     // Act
@@ -195,9 +193,9 @@ describe("auditLogExport processor", () => {
     const admin = await setupUser({ email: "isomer-admin@open.gov.sg" })
     await setupIsomerAdmin({ userId: admin.id })
     const request = await seedRequest({
+      reportType: "Access",
       siteId: site.id,
       userId: admin.id,
-      reportType: "Access",
     })
 
     // Act
@@ -217,11 +215,11 @@ describe("auditLogExport processor", () => {
     // Arrange
     const { site } = await setupSite()
     const admin = await setupUser({ email: "ordering@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    await setupAdminPermissions({ siteId: site.id, userId: admin.id })
     const request = await seedRequest({
+      reportType: "Access",
       siteId: site.id,
       userId: admin.id,
-      reportType: "Access",
     })
 
     // Capture the row's state at the exact moment the email goes out: if the
@@ -252,11 +250,11 @@ describe("auditLogExport processor", () => {
     // Arrange
     const { site } = await setupSite()
     const admin = await setupUser({ email: "sesdown@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    await setupAdminPermissions({ siteId: site.id, userId: admin.id })
     const request = await seedRequest({
+      reportType: "Access",
       siteId: site.id,
       userId: admin.id,
-      reportType: "Access",
     })
     vi.mocked(mailService.sendAuditLogExportReadyEmail).mockRejectedValue(
       new Error("ses down"),
@@ -281,17 +279,17 @@ describe("auditLogExport processor", () => {
     // fulfilled as its own job with its own email — no cross-job coordination.
     const { site } = await setupSite()
     const admin = await setupUser({ email: "admin2@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    await setupAdminPermissions({ siteId: site.id, userId: admin.id })
 
     const accessRequest = await seedRequest({
+      reportType: "Access",
       siteId: site.id,
       userId: admin.id,
-      reportType: "Access",
     })
     const activityRequest = await seedRequest({
+      reportType: "Activity",
       siteId: site.id,
       userId: admin.id,
-      reportType: "Activity",
     })
 
     // Act
@@ -329,12 +327,12 @@ describe("auditLogExport processor", () => {
     // admin is still found as a valid recipient for the ready email.
     const { site } = await setupSite()
     const admin = await setupUser({ email: "admin3@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    await setupAdminPermissions({ siteId: site.id, userId: admin.id })
 
     const request = await seedRequest({
+      reportType: "Access",
       siteId: site.id,
       userId: admin.id,
-      reportType: "Access",
     })
 
     // Act
@@ -354,15 +352,15 @@ describe("auditLogExport processor", () => {
     // Arrange
     const { site } = await setupSite()
     const admin = await setupUser({ email: "admin4@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    await setupAdminPermissions({ siteId: site.id, userId: admin.id })
     vi.mocked(s3Lib.uploadAuditLogExport).mockRejectedValue(
       new Error("s3 down"),
     )
 
     const request = await seedRequest({
+      reportType: "Access",
       siteId: site.id,
       userId: admin.id,
-      reportType: "Access",
     })
 
     // Act: first sweep → attempt 1, re-queued, no failed email.
@@ -409,13 +407,13 @@ describe("auditLogExport processor", () => {
     // Arrange
     const { site } = await setupSite()
     const admin = await setupUser({ email: "admin5@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    await setupAdminPermissions({ siteId: site.id, userId: admin.id })
 
     const doneRequest = await seedRequest({
-      siteId: site.id,
-      userId: admin.id,
       reportType: "Access",
+      siteId: site.id,
       status: "Done",
+      userId: admin.id,
     })
 
     // Act
@@ -437,15 +435,15 @@ describe("auditLogExport processor", () => {
     // before the ready email / mark-Done. A later sweep must recover it.
     const { site } = await setupSite()
     const admin = await setupUser({ email: "stale@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    await setupAdminPermissions({ siteId: site.id, userId: admin.id })
 
     const staleUpdatedAt = new Date(Date.now() - 30 * 60 * 1000) // 30 min ago
     const request = await seedRequest({
-      siteId: site.id,
-      userId: admin.id,
       reportType: "Access",
+      siteId: site.id,
       status: "Processing",
       updatedAt: staleUpdatedAt,
+      userId: admin.id,
     })
 
     // Act
@@ -476,19 +474,19 @@ describe("auditLogExport processor", () => {
     // skipping the middle retry entirely.)
     const { site } = await setupSite()
     const admin = await setupUser({ email: "stalefail@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    await setupAdminPermissions({ siteId: site.id, userId: admin.id })
     vi.mocked(s3Lib.uploadAuditLogExport).mockRejectedValue(
       new Error("s3 down"),
     )
 
     const staleUpdatedAt = new Date(Date.now() - 30 * 60 * 1000) // 30 min ago
     const request = await seedRequest({
-      siteId: site.id,
-      userId: admin.id,
-      reportType: "Access",
-      status: "Processing",
       attempts: 1,
+      reportType: "Access",
+      siteId: site.id,
+      status: "Processing",
       updatedAt: staleUpdatedAt,
+      userId: admin.id,
     })
 
     // Act
@@ -508,15 +506,15 @@ describe("auditLogExport processor", () => {
     // worker is presumably still on it). A concurrent sweep must leave it alone.
     const { site } = await setupSite()
     const admin = await setupUser({ email: "fresh@vendor.com.sg" })
-    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    await setupAdminPermissions({ siteId: site.id, userId: admin.id })
 
     const freshUpdatedAt = new Date(Date.now() - 60 * 1000) // 1 min ago
     const request = await seedRequest({
-      siteId: site.id,
-      userId: admin.id,
       reportType: "Access",
+      siteId: site.id,
       status: "Processing",
       updatedAt: freshUpdatedAt,
+      userId: admin.id,
     })
 
     // Act
@@ -549,11 +547,11 @@ describe("auditLogExport processor", () => {
       // Arrange: first admin's request is processed to Done normally.
       const { site } = await setupSite()
       const firstAdmin = await setupUser({ email: "first@vendor.com.sg" })
-      await setupAdminPermissions({ userId: firstAdmin.id, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: firstAdmin.id })
       const first = await seedRequest({
+        reportType: "Access",
         siteId: site.id,
         userId: firstAdmin.id,
-        reportType: "Access",
       })
       await processPendingAuditLogExports()
       expect(vi.mocked(s3Lib.uploadAuditLogExport)).toHaveBeenCalledTimes(1)
@@ -561,11 +559,11 @@ describe("auditLogExport processor", () => {
       // A SECOND admin asks for the same (site, range, type): the artifact is
       // a function of (site, range, type) only, so their request qualifies.
       const secondAdmin = await setupUser({ email: "second@vendor.com.sg" })
-      await setupAdminPermissions({ userId: secondAdmin.id, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: secondAdmin.id })
       const second = await seedRequest({
+        reportType: "Access",
         siteId: site.id,
         userId: secondAdmin.id,
-        reportType: "Access",
       })
 
       // Act
@@ -610,22 +608,22 @@ describe("auditLogExport processor", () => {
       )
       const { site } = await setupSite()
       const admin = await setupUser({ email: "snapshot@vendor.com.sg" })
-      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: admin.id })
 
       const first = await seedRequest({
+        auditLogDateRange: currentMonthRange,
+        reportType: "Access",
         siteId: site.id,
         userId: admin.id,
-        reportType: "Access",
-        auditLogDateRange: currentMonthRange,
       })
       await processPendingAuditLogExports()
       expect(vi.mocked(s3Lib.uploadAuditLogExport)).toHaveBeenCalledTimes(1)
 
       const second = await seedRequest({
+        auditLogDateRange: currentMonthRange,
+        reportType: "Access",
         siteId: site.id,
         userId: admin.id,
-        reportType: "Access",
-        auditLogDateRange: currentMonthRange,
       })
 
       // Act
@@ -651,11 +649,11 @@ describe("auditLogExport processor", () => {
       // delivery measurably slower than the query and checking the stamp.
       const { site } = await setupSite()
       const admin = await setupUser({ email: "straddle@vendor.com.sg" })
-      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: admin.id })
       const request = await seedRequest({
+        reportType: "Access",
         siteId: site.id,
         userId: admin.id,
-        reportType: "Access",
       })
 
       let uploadStartedAt: Date | undefined
@@ -688,22 +686,22 @@ describe("auditLogExport processor", () => {
       // a completedAt after the range end — status must still disqualify it.
       const { site } = await setupSite()
       const admin = await setupUser({ email: "failed@vendor.com.sg" })
-      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: admin.id })
 
       const failedKey = `audit-log-exports/${site.id}/999/access-2024-03-01-to-2024-03-31.csv`
       await seedRequest({
-        siteId: site.id,
-        userId: admin.id,
-        reportType: "Access",
-        status: "Failed",
-        objectKey: failedKey,
         completedAt: new Date(),
+        objectKey: failedKey,
+        reportType: "Access",
+        siteId: site.id,
+        status: "Failed",
+        userId: admin.id,
       })
 
       const request = await seedRequest({
+        reportType: "Access",
         siteId: site.id,
         userId: admin.id,
-        reportType: "Access",
       })
 
       // Act
@@ -722,23 +720,23 @@ describe("auditLogExport processor", () => {
       // the object has vanished (e.g. a lifecycle policy deleted it).
       const { site } = await setupSite()
       const admin = await setupUser({ email: "vanished@vendor.com.sg" })
-      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: admin.id })
 
       const goneKey = `audit-log-exports/${site.id}/998/access-2024-03-01-to-2024-03-31.csv`
       await seedRequest({
-        siteId: site.id,
-        userId: admin.id,
-        reportType: "Access",
-        status: "Done",
-        objectKey: goneKey,
         completedAt: new Date(),
+        objectKey: goneKey,
+        reportType: "Access",
+        siteId: site.id,
+        status: "Done",
+        userId: admin.id,
       })
       vi.mocked(s3Lib.getFileSize).mockResolvedValue(null)
 
       const request = await seedRequest({
+        reportType: "Access",
         siteId: site.id,
         userId: admin.id,
-        reportType: "Access",
       })
 
       // Act
@@ -767,27 +765,27 @@ describe("auditLogExport processor", () => {
       // regenerate. A blip must never be mistaken for a vanished artifact.
       const { site } = await setupSite()
       const admin = await setupUser({ email: "throttled@vendor.com.sg" })
-      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+      await setupAdminPermissions({ siteId: site.id, userId: admin.id })
 
       const reusableKey = `audit-log-exports/${site.id}/997/access-2024-03-01-to-2024-03-31.csv`
       await seedRequest({
-        siteId: site.id,
-        userId: admin.id,
-        reportType: "Access",
-        status: "Done",
-        objectKey: reusableKey,
         completedAt: new Date(),
+        objectKey: reusableKey,
+        reportType: "Access",
+        siteId: site.id,
+        status: "Done",
+        userId: admin.id,
       })
       const transientError = Object.assign(new Error("SlowDown"), {
-        name: "SlowDown",
         $metadata: { httpStatusCode: 503 },
+        name: "SlowDown",
       })
       vi.mocked(s3Lib.getFileSize).mockRejectedValue(transientError)
 
       const request = await seedRequest({
+        reportType: "Access",
         siteId: site.id,
         userId: admin.id,
-        reportType: "Access",
       })
 
       // Act

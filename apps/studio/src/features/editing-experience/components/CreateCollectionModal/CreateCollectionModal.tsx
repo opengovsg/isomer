@@ -49,8 +49,8 @@ export const CreateCollectionModal = ({
   onClose,
   siteId,
   parentFolderId,
-}: CreateCollectionModalProps): React.ReactNode => {
-  return (
+}: CreateCollectionModalProps): React.ReactNode => 
+  (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <CreateCollectionModalContent
@@ -62,7 +62,7 @@ export const CreateCollectionModal = ({
       />
     </Modal>
   )
-}
+
 
 const CreateCollectionModalContent = ({
   onClose,
@@ -84,14 +84,28 @@ const CreateCollectionModalContent = ({
       permalink: "",
     },
     schema: createCollectionSchema.omit({
-      siteId: true,
       parentFolderId: true,
+      siteId: true,
     }),
   })
   const { errors, isValid } = formState
   const utils = trpc.useUtils()
   const toast = useToast()
   const { mutate, isPending } = trpc.collection.create.useMutation({
+    onError: (err) => {
+      if (err.data?.code === "CONFLICT") {
+        setError("permalink", { message: err.message }, { shouldFocus: true })
+        return
+      }
+      toast({
+        title: "Failed to create collection",
+        status: "error",
+        // TODO: check if this property is correct
+        description: err.message,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+      onClose()
+    },
     onSuccess: async () => {
       posthog.capture("collection_created", {
         site_id: siteId,
@@ -103,20 +117,6 @@ const CreateCollectionModalContent = ({
       toast({
         title: "Collection created!",
         status: "success",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-      onClose()
-    },
-    onError: (err) => {
-      if (err.data?.code === "CONFLICT") {
-        setError("permalink", { message: err.message }, { shouldFocus: true })
-        return
-      }
-      toast({
-        title: "Failed to create collection",
-        status: "error",
-        // TODO: check if this property is correct
-        description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })
       onClose()

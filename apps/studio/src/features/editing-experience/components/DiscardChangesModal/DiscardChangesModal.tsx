@@ -20,8 +20,8 @@ export const DiscardChangesModal = ({
   isOpen,
   onClose,
   onDiscard,
-}: DiscardChangesModalProps): React.ReactNode => {
-  return (
+}: DiscardChangesModalProps): React.ReactNode => 
+  (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
@@ -48,4 +48,4 @@ export const DiscardChangesModal = ({
       </ModalContent>
     </Modal>
   )
-}
+

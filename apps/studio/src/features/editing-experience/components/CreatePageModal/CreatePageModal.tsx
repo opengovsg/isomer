@@ -17,8 +17,8 @@ export const CreatePageModal = ({
   onClose,
   siteId,
   folderId,
-}: CreatePageModalProps): React.ReactNode => {
-  return (
+}: CreatePageModalProps): React.ReactNode => 
+  (
     <Modal size="full" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent height="$100vh" overflow="hidden">
@@ -33,4 +33,4 @@ export const CreatePageModal = ({
       </ModalContent>
     </Modal>
   )
-}
+

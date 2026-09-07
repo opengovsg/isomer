@@ -29,22 +29,22 @@ export const createGazetteSchema = z.object({
 export type CreateGazetteInput = z.infer<typeof createGazetteSchema>
 
 const gazetteMetadataSchema = z.object({
-  title: z.string().min(1).max(255),
   category: z.string().min(1),
   date: z
     .string()
     .regex(/^\d{2}\/\d{2}\/\d{4}$/, { message: "Date must be dd/MM/yyyy" }),
   description: z.string().optional(),
-  tagged: z.array(z.string()).min(1),
   scheduledAt: z.date(),
+  tagged: z.array(z.string()).min(1),
+  title: z.string().min(1).max(255),
 })
 
 export const gazetteListSchema = z
   .object({
-    siteId: z.number().min(1),
     collectionId: z.number().min(1),
+    siteId: z.number().min(1),
   })
-  .extend(offsetPaginationSchema["shape"])
+  .extend(offsetPaginationSchema.shape)
 
 export const createGazetteServerSchema = gazetteMetadataSchema.extend({
   siteId: z.number().min(1),
@@ -69,17 +69,16 @@ export const updateGazetteServerSchema = gazetteMetadataSchema.extend({
 })
 
 export const cancelScheduledPublishSchema = z.object({
-  siteId: z.number().min(1),
   gazetteId: z.number().min(1),
+  siteId: z.number().min(1),
 })
 
 export const deleteGazetteSchema = z.object({
-  siteId: z.number().min(1),
   gazetteId: z.number().min(1),
+  siteId: z.number().min(1),
 })
 
 export const getPresignedGetUrlSchema = z.object({
-  siteId: z.number().min(1),
   fileKey: z
     .string()
     .min(1)
@@ -89,29 +88,11 @@ export const getPresignedGetUrlSchema = z.object({
     .refine((s) => !s.startsWith("/") && !s.split("/").includes(".."), {
       message: "Invalid fileKey",
     }),
+  siteId: z.number().min(1),
 })
 
 export const getPresignedPutUrlSchema = z.object({
-  siteId: z.number().min(1),
-  tags: z
-    .array(
-      z.object({
-        key: z.string(),
-        value: z.string(),
-      }),
-    )
-    .optional(),
-  resourceId: z.string().optional(),
-  year: z.number().min(1000).max(9999),
   category: z.string().trim().min(1),
-  subcategory: z.string().trim().min(1),
-  fileSize: z
-    .number({ error: "Missing file size" })
-    .int()
-    .min(1, { message: "File size must be greater than 0 bytes" })
-    .max(MAX_FILE_SIZE_BYTES, {
-      message: `File size must not exceed ${formatFileSizeLimit({ bytes: MAX_FILE_SIZE_BYTES })}`,
-    }),
   fileName: z
     .string({
       error: "Missing file name",
@@ -123,4 +104,23 @@ export const getPresignedPutUrlSchema = z.object({
     .refine((fileName) => fileName.trim().toLowerCase().endsWith(".pdf"), {
       message: "Only PDF files are allowed.",
     }),
+  fileSize: z
+    .number({ error: "Missing file size" })
+    .int()
+    .min(1, { message: "File size must be greater than 0 bytes" })
+    .max(MAX_FILE_SIZE_BYTES, {
+      message: `File size must not exceed ${formatFileSizeLimit({ bytes: MAX_FILE_SIZE_BYTES })}`,
+    }),
+  resourceId: z.string().optional(),
+  siteId: z.number().min(1),
+  subcategory: z.string().trim().min(1),
+  tags: z
+    .array(
+      z.object({
+        key: z.string(),
+        value: z.string(),
+      }),
+    )
+    .optional(),
+  year: z.number().min(1000).max(9999),
 })

@@ -1,8 +1,8 @@
-import {
-  type GroupLayout,
-  type JsonSchema,
-  type UISchemaElement,
-  type VerticalLayout,
+import type {
+  GroupLayout,
+  JsonSchema,
+  UISchemaElement,
+  VerticalLayout,
 } from "@jsonforms/core"
 
 export type IsomerExtendedJsonSchema = JsonSchema & {

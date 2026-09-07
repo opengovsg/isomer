@@ -7,10 +7,10 @@ export const performUpload = async (
   config: UploadConfig,
 ): Promise<string> => {
   await handleAssetUpload({
+    contentDisposition: config.contentDisposition,
+    contentType: config.contentType,
     file,
     presignedPutUrl: config.presignedPutUrl,
-    contentType: config.contentType,
-    contentDisposition: config.contentDisposition,
   })
   return `/${fileKey}`
 }

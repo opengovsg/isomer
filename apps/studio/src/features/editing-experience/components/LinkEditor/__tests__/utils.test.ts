@@ -3,7 +3,7 @@ import { getLinkHrefType } from "../utils"
 
 describe("getLinkHrefType", () => {
   it("returns Page for empty or undefined href", () => {
-    expect(getLinkHrefType(undefined)).toBe(LINK_TYPES.Page)
+    expect(getLinkHrefType()).toBe(LINK_TYPES.Page)
     expect(getLinkHrefType("")).toBe(LINK_TYPES.Page)
   })
 

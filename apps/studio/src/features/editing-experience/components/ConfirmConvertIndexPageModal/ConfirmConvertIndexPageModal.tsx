@@ -20,8 +20,8 @@ export const ConfirmConvertIndexPageModal = ({
   isOpen,
   onClose,
   onProceed,
-}: ConfirmConvertIndexPageModalProps): React.ReactNode => {
-  return (
+}: ConfirmConvertIndexPageModalProps): React.ReactNode => 
+  (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
@@ -48,4 +48,4 @@ export const ConfirmConvertIndexPageModal = ({
       </ModalContent>
     </Modal>
   )
-}
+

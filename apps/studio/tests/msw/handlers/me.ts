@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { type User } from "~prisma/generated/prisma/client"
+import type { User } from "~prisma/generated/prisma/client"
 
 import {
   MOCK_STORY_DATE,
@@ -10,38 +10,38 @@ import {
 import { trpcMsw } from "../mockTrpc"
 
 export const defaultUser: User = {
-  id: "cljcnahpn0000xlwynuea40lv",
+  createdAt: MOCK_STORY_DATE,
+  deletedAt: null,
   email: "test@example.com",
+  id: "cljcnahpn0000xlwynuea40lv",
+  lastLoginAt: null,
   name: MOCK_TEST_USER_NAME,
   phone: MOCK_TEST_PHONE,
   singpassUuid: MOCK_TEST_UUID,
-  createdAt: MOCK_STORY_DATE,
   updatedAt: MOCK_STORY_DATE,
-  deletedAt: null,
-  lastLoginAt: null,
 }
 
-const defaultMeGetQuery = () => {
-  return trpcMsw.me.get.query(() => {
+const defaultMeGetQuery = () => 
+  trpcMsw.me.get.query(() => {
     return defaultUser
   })
-}
 
-const notOnboardedMeGetQuery = () => {
-  return trpcMsw.me.get.query(() => {
+
+const notOnboardedMeGetQuery = () => 
+  trpcMsw.me.get.query(() => {
     return {
       ...defaultUser,
       name: "",
       phone: "",
     }
   })
-}
 
-const unauthorizedMeGetQuery = () => {
-  return trpcMsw.me.get.query(() => {
+
+const unauthorizedMeGetQuery = () => 
+  trpcMsw.me.get.query(() => {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   })
-}
+
 
 export const meHandlers = {
   me: defaultMeGetQuery,

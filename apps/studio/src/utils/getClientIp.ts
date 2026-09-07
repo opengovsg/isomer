@@ -1,4 +1,4 @@
-import { type NextApiRequest } from "next"
+import type { NextApiRequest } from "next"
 
 const LOCALHOST_IP = "127.0.0.1"
 
@@ -20,7 +20,7 @@ const getFirstIp = (header: string | string[] | null | undefined) =>
 
 const getLastIp = (header: string | string[] | null | undefined) => {
   const ips = getIpList(header)
-  return ips[ips.length - 1]
+  return ips.at(-1)
 }
 
 const isRequest = (request: Request | NextApiRequest): request is Request =>

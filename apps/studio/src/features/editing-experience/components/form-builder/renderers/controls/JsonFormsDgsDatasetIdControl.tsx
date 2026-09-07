@@ -47,7 +47,7 @@ export const jsonFormsDgsDatasetIdControlTester: RankedTester = rankWith(
 )
 
 const generateDgsDatasetUrl = (datasetId: string | null) => {
-  if (!datasetId) return ""
+  if (!datasetId) {return ""}
   return `https://data.gov.sg/datasets/${datasetId}/view`
 }
 
@@ -103,8 +103,8 @@ const DgsDatasetIdModal = ({
   const datasetId = getDgsIdFromString({ string: debouncedInputValue })
 
   const { metadata, isLoading: isValidatingDataset } = useDgsMetadata({
-    resourceId: datasetId ?? "",
     enabled: !!datasetId,
+    resourceId: datasetId ?? "",
   })
   const format = metadata?.format
   // Datasets above 4MB require server-side search via the DGS "q" parameter,
@@ -124,6 +124,7 @@ const DgsDatasetIdModal = ({
     formState: { errors, isValid },
   } = useZodForm({
     mode: "onChange",
+    reValidateMode: "onChange",
     schema: z.object({
       datasetId: z
         .string()
@@ -133,12 +134,11 @@ const DgsDatasetIdModal = ({
             "This doesn't look like a valid link from data.gov.sg. Check that you have the correct link and try again.",
         }),
     }),
-    reValidateMode: "onChange",
   })
 
   // Handle dataset validation
   useEffect(() => {
-    if (isValidatingDataset || !datasetId) return
+    if (isValidatingDataset || !datasetId) {return}
 
     if (isValidDataset) {
       clearErrors("datasetId")
@@ -146,12 +146,12 @@ const DgsDatasetIdModal = ({
     }
 
     setError("datasetId", {
-      type: "manual",
       message: isDatasetTooLarge
         ? "This dataset exceeds the 4MB size limit and cannot be used. Please use a smaller dataset."
         : format
           ? "You can only link CSV datasets. Please check the dataset ID and try again."
           : "This doesn’t look like a valid link from data.gov.sg. Check that you have the correct link and try again.",
+      type: "manual",
     })
   }, [
     datasetId,
@@ -260,7 +260,7 @@ const JsonFormsDgsDatasetIdControl = ({
         <DgsDatasetIdModal
           isOpen={isDgsModalOpen}
           onClose={onDgsModalClose}
-          onSave={(datasetId) => handleDatasetIdSave(datasetId)}
+          onSave={(datasetId) =>{  handleDatasetIdSave(datasetId); }}
           initialValue={data || ""}
         />
       )}

@@ -15,71 +15,6 @@ import { generateSessionOptions } from "../session"
 import { getAuthorizationUrl, login } from "./singpass.service"
 
 export const singpassRouter = router({
-  login: publicProcedure
-    .input(singpassLoginSchema)
-    .mutation(async ({ ctx, input: { landingUrl } }) => {
-      // NOTE: The Singpass login flow is not the first login mechanism that the
-      // user encounters, as they should have completed the email OTP
-      // verification before this. Hence, the user will need to have a partial
-      // user session created before this step.
-      if (!ctx.session.singpass?.sessionState?.userId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Email verification has not been completed",
-        })
-      }
-
-      const { userId, verificationToken } = ctx.session.singpass.sessionState
-
-      ctx.logger.info(
-        { landingUrl },
-        `Starting Singpass login flow: ${landingUrl.toString()}`,
-      )
-
-      const { authorizationUrl, session } = await getAuthorizationUrl()
-
-      // Reset session state
-      ctx.session.destroy()
-
-      set(ctx.session, "singpass.sessionState", {
-        ...session,
-        userId,
-        verificationToken,
-      })
-
-      await ctx.session.save()
-
-      return {
-        redirectUrl: authorizationUrl,
-      }
-    }),
-
-  getUserProps: publicProcedure.query(async ({ ctx }) => {
-    if (!ctx.session.singpass?.sessionState) {
-      ctx.logger.warn("No Singpass session state found")
-
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Invalid login flow",
-      })
-    }
-
-    const { userId } = ctx.session.singpass.sessionState
-
-    const user = await ctx.db
-      .selectFrom("User")
-      .select(["User.name", "User.email", "User.singpassUuid"])
-      .where("User.id", "=", userId)
-      .executeTakeFirstOrThrow(
-        () => new TRPCError({ code: "NOT_FOUND", message: "User not found" }),
-      )
-
-    return {
-      name: user.name || user.email,
-      isNewUser: !user.singpassUuid,
-    }
-  }),
-
   callback: publicProcedure
     .input(singpassCallbackSchema)
     .query(async ({ ctx, input: { state, code } }) => {
@@ -201,6 +136,71 @@ export const singpassRouter = router({
       return {
         isNewUser: !possibleUser.singpassUuid,
         redirectUrl: DASHBOARD,
+      }
+    }),
+
+  getUserProps: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.session.singpass?.sessionState) {
+      ctx.logger.warn("No Singpass session state found")
+
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Invalid login flow",
+      })
+    }
+
+    const { userId } = ctx.session.singpass.sessionState
+
+    const user = await ctx.db
+      .selectFrom("User")
+      .select(["User.name", "User.email", "User.singpassUuid"])
+      .where("User.id", "=", userId)
+      .executeTakeFirstOrThrow(
+        () => new TRPCError({ code: "NOT_FOUND", message: "User not found" }),
+      )
+
+    return {
+      name: user.name || user.email,
+      isNewUser: !user.singpassUuid,
+    }
+  }),
+
+  login: publicProcedure
+    .input(singpassLoginSchema)
+    .mutation(async ({ ctx, input: { landingUrl } }) => {
+      // NOTE: The Singpass login flow is not the first login mechanism that the
+      // user encounters, as they should have completed the email OTP
+      // verification before this. Hence, the user will need to have a partial
+      // user session created before this step.
+      if (!ctx.session.singpass?.sessionState?.userId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Email verification has not been completed",
+        })
+      }
+
+      const { userId, verificationToken } = ctx.session.singpass.sessionState
+
+      ctx.logger.info(
+        { landingUrl },
+        `Starting Singpass login flow: ${landingUrl.toString()}`,
+      )
+
+      const { authorizationUrl, session } = await getAuthorizationUrl()
+
+      // Reset session state
+      ctx.session.destroy()
+
+      set(ctx.session, "singpass.sessionState", {
+        ...session,
+        userId,
+        verificationToken,
+      })
+
+      await ctx.session.save()
+
+      return {
+        redirectUrl: authorizationUrl,
       }
     }),
 })

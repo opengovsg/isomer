@@ -1,8 +1,8 @@
 import type { ChakraProps } from "@chakra-ui/react"
 import { Box, ListItem, Text, UnorderedList, VStack } from "@chakra-ui/react"
 
-export const SearchResultHint = (props: ChakraProps) => {
-  return (
+export const SearchResultHint = (props: ChakraProps) => 
+  (
     <Box
       borderRadius="0.25rem"
       bg="utility.feedback.info-subtle"
@@ -24,4 +24,4 @@ export const SearchResultHint = (props: ChakraProps) => {
       </VStack>
     </Box>
   )
-}
+

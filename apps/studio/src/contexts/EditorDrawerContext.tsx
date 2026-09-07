@@ -11,7 +11,7 @@ import {
 } from "react"
 // oxlint-disable-next-line react-doctor/no-flush-sync -- JSONForms preview updates must flush synchronously; see commitPreviewPageState.
 import { flushSync } from "react-dom"
-import { type DrawerState } from "~/types/editorDrawer"
+import type { DrawerState } from "~/types/editorDrawer"
 
 // Preview-iframe interaction state: which block is hovered/active in the
 // editor, and a reference to the preview iframe's document to act on it.
@@ -106,30 +106,30 @@ export const EditorDrawerProvider = ({
 
   const contextValue = useMemo(
     () => ({
-      currActiveIdx,
-      setCurrActiveIdx,
-      drawerState,
-      setDrawerState,
-      savedPageState,
-      setSavedPageState,
-      previewPageState,
-      setPreviewPageState: commitPreviewPageState,
-      modifiedAssets,
-      setModifiedAssets,
       addedBlockIndex,
-      setAddedBlockIndex,
-      hoveredBlockIndex,
-      setHoveredBlockIndex,
+      currActiveIdx,
+      drawerState,
       flashBlockIndex,
-      setFlashBlockIndex,
+      hoveredBlockIndex,
       iframeDocument,
-      setIframeDocument,
-      type,
-      permalink,
-      siteId,
+      modifiedAssets,
       pageId,
-      updatedAt,
+      permalink,
+      previewPageState,
+      savedPageState,
+      setAddedBlockIndex,
+      setCurrActiveIdx,
+      setDrawerState,
+      setFlashBlockIndex,
+      setHoveredBlockIndex,
+      setIframeDocument,
+      setModifiedAssets,
+      setPreviewPageState: commitPreviewPageState,
+      setSavedPageState,
+      siteId,
       title,
+      type,
+      updatedAt,
     }),
     [
       currActiveIdx,

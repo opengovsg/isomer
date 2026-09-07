@@ -38,15 +38,15 @@ interface AuditLogExportTokenPayload {
  */
 export const sealAuditLogExportToken = async (
   requestId: string,
-): Promise<string> => {
-  return sealData(
+): Promise<string> => 
+  await sealData(
     { purpose: AUDIT_LOG_EXPORT_TOKEN_PURPOSE, requestId },
     {
       password: getIronPassword(),
       ttl: AUDIT_LOG_EXPORT_TOKEN_TTL_SECONDS,
     },
   )
-}
+
 
 /**
  * Unseal a Download Token, returning its request id, or `null` if the token is

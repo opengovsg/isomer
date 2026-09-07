@@ -9,8 +9,8 @@ interface UserTableEmptyStateProps {
 export const UserTableEmptyState = ({
   siteId,
   promptAddUser = true,
-}: UserTableEmptyStateProps) => {
-  return (
+}: UserTableEmptyStateProps) => 
+  (
     <Tr aria-hidden>
       <Td colSpan={4}>
         <Flex align="center" justify="center" minHeight="50vh" py="4rem">
@@ -29,4 +29,4 @@ export const UserTableEmptyState = ({
       </Td>
     </Tr>
   )
-}
+

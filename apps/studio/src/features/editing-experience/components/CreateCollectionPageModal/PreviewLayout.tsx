@@ -65,8 +65,8 @@ const SuspendableLayoutPreview = () => {
       case ResourceType.CollectionLink: {
         return {
           page: {
-            title: "Newsroom",
             date: format(new Date(), "dd MMM yyyy"),
+            title: "Newsroom",
           },
         }
       }

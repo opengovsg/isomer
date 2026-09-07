@@ -26,15 +26,15 @@ const NavigationBreadcrumbs = ({
 }: NavigationBreadcrumbsProps): React.ReactNode => {
   const { data: resource, isLoading: isResourceLoading } =
     trpc.resource.getMetadataById.useQuery({
-      siteId: Number(siteId),
       resourceId: pageId,
+      siteId: Number(siteId),
     })
 
   const { data: parentResource, isLoading: isParentResourceLoading } =
     trpc.resource.getMetadataById.useQuery(
       {
-        siteId: Number(siteId),
         resourceId: resource?.parentId ?? "",
+        siteId: Number(siteId),
       },
       { enabled: !!resource?.parentId },
     )

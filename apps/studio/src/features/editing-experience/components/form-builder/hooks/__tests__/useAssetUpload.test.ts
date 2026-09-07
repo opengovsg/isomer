@@ -20,8 +20,8 @@ describe("useAssetUpload backoff options", () => {
   it("should preserve caller-provided attempt and base timeout values", () => {
     // Act
     const options = getAssetUploadBackoffOptions({
-      numOfAttempts: 4,
       baseTimeoutMs: 250,
+      numOfAttempts: 4,
     })
 
     // Assert

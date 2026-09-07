@@ -22,7 +22,7 @@ interface TypeTileProps extends UseRadioProps {
 }
 
 const TypeOptionRadio = forwardRef<HTMLInputElement, TypeTileProps>(
-  function TypeOptionRadio(props, ref) {
+  (props, ref) => {
     const styles = useMultiStyleConfig("Tile", {})
 
     const { getInputProps, getRadioProps } = useRadio(props)
@@ -110,7 +110,7 @@ type TypeOptionsInputProps = UseRadioGroupProps
 export const TypeOptionsInput = forwardRef<
   HTMLInputElement,
   TypeOptionsInputProps
->(function TypeOptionsInput(props, ref) {
+>((props, ref) => {
   const { getRootProps, getRadioProps } = useRadioGroup(props)
 
   const group = getRootProps()

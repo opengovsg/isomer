@@ -6,8 +6,8 @@ interface SettingsItemProps {
   href: string
   isActive?: boolean
 }
-export const SettingsItem = ({ isActive, label, href }: SettingsItemProps) => {
-  return (
+export const SettingsItem = ({ isActive, label, href }: SettingsItemProps) => 
+  (
     <Link
       as={NextLink}
       variant="inline"
@@ -32,4 +32,4 @@ export const SettingsItem = ({ isActive, label, href }: SettingsItemProps) => {
       </Text>
     </Link>
   )
-}
+

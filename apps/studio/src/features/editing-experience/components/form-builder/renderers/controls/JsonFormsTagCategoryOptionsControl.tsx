@@ -44,8 +44,8 @@ const DeleteOptionWarningBody = ({
   tagId: string
 }) => {
   const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
-    siteId,
     pageId,
+    siteId,
     tagOptionIds: [tagId],
   })
 
@@ -93,19 +93,19 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   const isAnyRowEditing = editingIndex !== null
 
   const { blank: blankOptionIndices, duplicate: duplicateOptionIndices } =
-    useLiveLabelIssues({ path, editingIndex, editingDraftLabel })
+    useLiveLabelIssues({ editingDraftLabel, editingIndex, path })
 
   const arrayResult = useArray({
-    data,
-    path,
     arraySchema,
-    schema,
-    rootSchema,
-    uischemas,
-    uischema,
-    removeItems,
-    moveUp,
+    data,
     moveDown,
+    moveUp,
+    path,
+    removeItems,
+    rootSchema,
+    schema,
+    uischema,
+    uischemas,
   })
   const { isAddItemDisabled, isRemoveItemDisabled, onDragEnd } = arrayResult
 
@@ -130,7 +130,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     committedLabel: string,
     isEditing: boolean,
   ) => {
-    if (isEditing && editingIndex !== null && editingIndex !== index) return
+    if (isEditing && editingIndex !== null && editingIndex !== index) {return}
     setEditingIndex(isEditing ? index : null)
     setEditingDraftLabel(isEditing ? committedLabel : "")
   }
@@ -141,9 +141,9 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     closeDeleteModal,
     handleConfirmDelete,
   } = useDeleteTarget<{ label: string; tagId: string }>({
+    isRemoveItemDisabled,
     path,
     removeItems,
-    isRemoveItemDisabled,
     resolveTarget: (index) => ({
       label: items?.[index]?.label?.trim() ?? "",
       tagId: items?.[index]?.id ?? "", // always set by createDefaultTagOption()
@@ -198,9 +198,9 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                     const optionName = `Option ${index + 1}`
                     const errorMessage = isDuplicate
                       ? "An option with this name already exists."
-                      : isBlank
+                      : (isBlank
                         ? "Option name cannot be empty."
-                        : undefined
+                        : undefined)
 
                     return (
                       <Draggable
@@ -233,15 +233,15 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                                     !enabled || (isAnyRowEditing && !isEditing)
                                   }
                                   isEditing={isEditing}
-                                  onSubmit={(value) =>
-                                    submitLabel(childPath, value)
+                                  onSubmit={(value) =>{ 
+                                    submitLabel(childPath, value); }
                                   }
-                                  onEditingChange={(nextIsEditing) =>
+                                  onEditingChange={(nextIsEditing) =>{ 
                                     handleEditingChange(
                                       index,
                                       committedLabel,
                                       nextIsEditing,
-                                    )
+                                    ); }
                                   }
                                   onDraftChange={setEditingDraftLabel}
                                 />

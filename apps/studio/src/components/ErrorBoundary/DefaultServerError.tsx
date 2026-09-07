@@ -5,8 +5,8 @@ import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 
 import { LiftUnderRepair } from "../Svg/LiftUnderRepair"
 
-export const DefaultServerError = () => {
-  return (
+export const DefaultServerError = () => 
+  (
     <Flex
       flexDirection="column"
       gap="1.5rem"
@@ -35,4 +35,4 @@ export const DefaultServerError = () => {
       </Flex>
     </Flex>
   )
-}
+

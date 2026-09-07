@@ -14,7 +14,6 @@ import {
 import { selectTableCellContent } from "../selectTableCellContent"
 
 const TABLE_DOC: JSONContent = {
-  type: "prose",
   content: [
     {
       type: "paragraph",
@@ -76,10 +75,10 @@ const TABLE_DOC: JSONContent = {
       content: [{ type: "text", text: "after table" }],
     },
   ],
+  type: "prose",
 }
 
 const MULTI_PARAGRAPH_CELL_DOC: JSONContent = {
-  type: "prose",
   content: [
     {
       type: "table",
@@ -114,6 +113,7 @@ const MULTI_PARAGRAPH_CELL_DOC: JSONContent = {
       ],
     },
   ],
+  type: "prose",
 }
 
 const createEditor = (content: JSONContent = TABLE_DOC) => {
@@ -121,6 +121,7 @@ const createEditor = (content: JSONContent = TABLE_DOC) => {
   document.body.append(element)
 
   return new Editor({
+    content,
     element,
     extensions: [
       ...BASE_EXTENSIONS,
@@ -130,7 +131,6 @@ const createEditor = (content: JSONContent = TABLE_DOC) => {
       IsomerTableCell,
       IsomerTableHeader,
     ],
-    content,
   })
 }
 
@@ -163,7 +163,7 @@ const selectedText = (editor: Editor) =>
   )
 
 // Click so the editable gets real browser focus (needed for clipboard checks).
-const focusEditor = (editor: Editor) =>
+const focusEditor =  async (editor: Editor) =>
   userEvent.click(page.elementLocator(editor.view.dom))
 
 // Copy via the browser and return clipboard text/plain.
@@ -187,12 +187,12 @@ const isMac = /Mac|iP(hone|[oa]d)/.test(navigator.platform)
 
 const dispatchModA = (editor: Editor) => {
   const event = new KeyboardEvent("keydown", {
-    key: "a",
-    code: "KeyA",
-    ctrlKey: !isMac,
-    metaKey: isMac,
     bubbles: true,
     cancelable: true,
+    code: "KeyA",
+    ctrlKey: !isMac,
+    key: "a",
+    metaKey: isMac,
   })
 
   editor.view.someProp("handleKeyDown", (handler) =>

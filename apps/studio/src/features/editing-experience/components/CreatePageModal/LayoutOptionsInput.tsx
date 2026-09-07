@@ -22,7 +22,7 @@ interface LayoutTileProps extends UseRadioProps {
 }
 
 const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
-  function LayoutOptionRadio(props, ref) {
+  (props, ref) => {
     const [isHover, setIsHover] = useState(false)
 
     const hoverTileColorFullOpacity = useToken(
@@ -50,8 +50,8 @@ const LayoutOptionRadio = forwardRef<HTMLInputElement, LayoutTileProps>(
           role="group"
           {...checkbox}
           cursor="pointer"
-          onMouseEnter={() => setIsHover(true)}
-          onMouseLeave={() => setIsHover(false)}
+          onMouseEnter={() =>{  setIsHover(true); }}
+          onMouseLeave={() =>{  setIsHover(false); }}
         >
           <Box
             borderWidth="2px"
@@ -141,7 +141,7 @@ type LayoutOptionsInputProps = UseRadioGroupProps
 export const LayoutOptionsInput = forwardRef<
   HTMLInputElement,
   LayoutOptionsInputProps
->(function LayoutOptionsInput(props, ref) {
+>((props, ref) => {
   const { getRootProps, getRadioProps } = useRadioGroup(props)
 
   const group = getRootProps()

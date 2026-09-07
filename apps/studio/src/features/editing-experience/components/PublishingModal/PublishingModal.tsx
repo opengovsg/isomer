@@ -27,8 +27,8 @@ export const PublishingModal = ({
   isPublishingNow,
   onClose,
   ...rest
-}: PublishingModalProps): React.ReactNode => {
-  return (
+}: PublishingModalProps): React.ReactNode => 
+  (
     <Modal onClose={onClose} {...rest}>
       <ModalOverlay />
       <ModalContent>
@@ -60,4 +60,4 @@ export const PublishingModal = ({
       </ModalContent>
     </Modal>
   )
-}
+

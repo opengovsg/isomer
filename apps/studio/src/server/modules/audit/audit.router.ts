@@ -26,7 +26,7 @@ export const auditRouter = router({
         userId: ctx.user.id,
       })
 
-      return getAuditLogExportWindow(siteId)
+      return await getAuditLogExportWindow(siteId)
     }),
   createExportRequest: protectedProcedure
     .input(createAuditLogExportRequestServerSchema)
@@ -64,11 +64,11 @@ export const auditRouter = router({
 
       try {
         return await createAuditLogExportRequestsForSites({
-          siteIds,
-          userId: ctx.user.id,
+          ip: getIP(ctx.req),
           month,
           reportType,
-          ip: getIP(ctx.req),
+          siteIds,
+          userId: ctx.user.id,
         })
       } catch (error) {
         // Permission / validation failures are already typed TRPCErrors with
@@ -83,10 +83,10 @@ export const auditRouter = router({
         ctx.logger.error({
           error,
           message: "Failed to create audit log export request",
-          scope,
-          siteCount: siteIds.length,
           month,
           reportType,
+          scope,
+          siteCount: siteIds.length,
         })
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

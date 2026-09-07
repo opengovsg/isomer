@@ -35,8 +35,8 @@ interface SuspendableLabelProps {
 const SuspendableLabel = ({ siteId, resourceId }: SuspendableLabelProps) => {
   const [{ fullPermalink }] =
     trpc.resource.getWithFullPermalink.useSuspenseQuery({
-      siteId,
       resourceId,
+      siteId,
     })
 
   return (
@@ -86,7 +86,7 @@ export const BaseLinkControl = ({
     <>
       <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
         <FormLabel>{label}</FormLabel>
-        <LinkErrorBoundary resetLink={() => handleChange(path, undefined)}>
+        <LinkErrorBoundary resetLink={() =>{  handleChange(path); }}>
           <Flex
             px="1rem"
             py="0.75rem"
@@ -95,7 +95,21 @@ export const BaseLinkControl = ({
             justifyContent="space-between"
             alignItems="center"
           >
-            {!!data ? (
+            {!data ? (
+              <>
+                <Text textStyle="body-2">{description}</Text>
+                <Button
+                  onClick={onOpen}
+                  variant="link"
+                  aria-labelledby="button-label"
+                  py="0.5rem"
+                >
+                  <Text id="button-label" textStyle="subhead-2">
+                    Link something...
+                  </Text>
+                </Button>
+              </>
+            ) : (
               <>
                 {pageType !== LINK_TYPES.Page && (
                   <Text overflow="auto" textStyle="body-2">
@@ -116,31 +130,17 @@ export const BaseLinkControl = ({
                   colorScheme="critical"
                   aria-label="Remove file"
                   icon={<BiTrash />}
-                  onClick={() => handleChange(path, undefined)}
+                  onClick={() =>{  handleChange(path, undefined); }}
                 />
-              </>
-            ) : (
-              <>
-                <Text textStyle="body-2">{description}</Text>
-                <Button
-                  onClick={onOpen}
-                  variant="link"
-                  aria-labelledby="button-label"
-                  py="0.5rem"
-                >
-                  <Text id="button-label" textStyle="subhead-2">
-                    Link something...
-                  </Text>
-                </Button>
               </>
             )}
           </Flex>
           {required && (
             <FormErrorMessage>
               {/* AJV sees an empty string as present, so pattern mismatch (not "required") fires here — check data directly to show the empty-state copy */}
-              {!data
-                ? `${label} cannot be empty.`
-                : `${label} ${getCustomErrorMessage(errors)}`}
+              {data
+                ? `${label} ${getCustomErrorMessage(errors)}`
+                : `${label} cannot be empty.`}
             </FormErrorMessage>
           )}
         </LinkErrorBoundary>
@@ -155,7 +155,7 @@ export const BaseLinkControl = ({
         showLinkText={false}
         isOpen={isOpen}
         onClose={onClose}
-        onSave={(_, linkHref) => handleChange(path, linkHref)}
+        onSave={(_, linkHref) =>{  handleChange(path, linkHref); }}
       />
     </>
   )

@@ -11,8 +11,8 @@ import { ResourceType, sql } from "../database/types"
 
 export const createCollectionPageJson = ({}: {
   type: typeof ResourceType.CollectionPage // Act as soft typeguard
-}) => {
-  return {
+}) => (
+  {
     layout: "article",
     page: {
       date: format(new Date(), "dd/MM/yyyy"),
@@ -26,12 +26,12 @@ export const createCollectionPageJson = ({}: {
     content: [],
     version: "0.1.0",
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
-}
+)
 
 export const createCollectionLinkJson = ({}: {
   type: typeof ResourceType.CollectionLink // Act as soft typeguard
-}) => {
-  return {
+}) => (
+  {
     layout: "link",
     page: {
       ref: "",
@@ -43,9 +43,9 @@ export const createCollectionLinkJson = ({}: {
     // TODO: Add pdf blob to content
     version: "0.1.0",
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
-}
-export const createCollectionIndexJson = (title: string) => {
-  return {
+)
+export const createCollectionIndexJson = (title: string) => (
+  {
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
     // SAFETY: collection index pages use Collection layout defaults validated by schema
     page: {
@@ -56,7 +56,7 @@ export const createCollectionIndexJson = (title: string) => {
     content: [],
     version: "0.1.0",
   }
-}
+)
 
 export const getCollectionTagsForResource = async ({
   resourceId,

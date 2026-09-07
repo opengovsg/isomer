@@ -71,10 +71,10 @@ const formatTimeSelectOptionLabel = (
 export const TimeSelect = React.forwardRef<
   SelectInstance<BaseSelectOption<string>>,
   TimeSelectProps
->(function TimeSelect(
+>((
   { value, earliestAllowableTime, minutesStep = 15, ...rest }: TimeSelectProps,
   ref,
-) {
+) => {
   const totalSlots = (24 * 60) / minutesStep
 
   // Generate all time slots in a day
@@ -126,6 +126,6 @@ export const TimeSelect = React.forwardRef<
  * @param time Time string in the format "HH:mm"
  * @returns
  */
-export const parseTimeStringToDate = (time: string): Date => {
-  return parse(time, "HH:mm", new Date())
-}
+export const parseTimeStringToDate = (time: string): Date => 
+  parse(time, "HH:mm", new Date())
+

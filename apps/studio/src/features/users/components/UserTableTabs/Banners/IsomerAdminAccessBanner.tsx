@@ -1,8 +1,8 @@
 import { Text, VStack } from "@chakra-ui/react"
 import { Infobox } from "@opengovsg/design-system-react"
 
-export const IsomerAdminAccessBanner = () => {
-  return (
+export const IsomerAdminAccessBanner = () => 
+  (
     <Infobox
       textStyle="body-2"
       size="sm"
@@ -23,4 +23,4 @@ export const IsomerAdminAccessBanner = () => {
       </VStack>
     </Infobox>
   )
-}
+

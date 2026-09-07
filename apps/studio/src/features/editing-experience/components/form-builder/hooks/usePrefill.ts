@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState } from "react"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type RouterOutput, trpc } from "~/utils/trpc"
+import { trpc } from '~/utils/trpc';
+import type { RouterOutput } from '~/utils/trpc';
 
 import { AUTOPOPULATED_FIELDS } from "../constants"
 
@@ -19,7 +20,7 @@ const PLACEHOLDER_VALUES = new Set(
 )
 
 const isEmptyOrPlaceholder = (value: string | undefined): boolean => {
-  if (!value?.trim()) return true
+  if (!value?.trim()) {return true}
   return PLACEHOLDER_VALUES.has(value)
 }
 
@@ -45,7 +46,7 @@ export function usePrefillForCards({ data, path }: UsePrefillParams) {
   const parent = parts[0]
 
   const shouldFetch = useMemo(() => {
-    if (!resourceId || parent !== "cards") return false
+    if (!resourceId || parent !== "cards") {return false}
     return (
       data &&
       AUTOPOPULATED_FIELDS.some((field) =>
@@ -58,7 +59,7 @@ export function usePrefillForCards({ data, path }: UsePrefillParams) {
   }, [resourceId, parent, ctx.core?.data, basePath, data])
 
   useEffect(() => {
-    if (!shouldFetch || !resourceId) return
+    if (!shouldFetch || !resourceId) {return}
 
     void utils.page.getPrefill
       .fetch({ resourceId, siteId: Number(siteId) })
@@ -68,7 +69,7 @@ export function usePrefillForCards({ data, path }: UsePrefillParams) {
       })
   }, [shouldFetch, resourceId, siteId, utils.page.getPrefill])
 
-  if (!shouldFetch || !prefillData) return undefined
+  if (!shouldFetch || !prefillData) {return undefined}
 
   const needsConfirmation = !AUTOPOPULATED_FIELDS.every((field) =>
     isEmptyOrPlaceholder(
@@ -77,5 +78,5 @@ export function usePrefillForCards({ data, path }: UsePrefillParams) {
     ),
   )
 
-  return { needsConfirmation, basePath, data: prefillData }
+  return { basePath, data: prefillData, needsConfirmation }
 }

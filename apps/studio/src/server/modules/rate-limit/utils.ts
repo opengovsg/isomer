@@ -1,4 +1,4 @@
-import { type NextApiRequest } from "next"
+import type { NextApiRequest } from "next"
 import getIP from "~/utils/getClientIp"
 
 export const getRateLimitFingerprint = (req: NextApiRequest) => {

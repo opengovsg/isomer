@@ -1,4 +1,4 @@
-import { type NextApiRequest } from "next"
+import type { NextApiRequest } from "next"
 import { describe, expect, it } from "vitest"
 
 import getIP from "../getClientIp"

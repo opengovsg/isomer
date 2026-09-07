@@ -37,8 +37,8 @@ export const ResourceTableMenu = ({
   parentId,
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
-  const handleMoveResourceClick = () =>
-    setMoveResource({ id: resourceId, title, permalink, parentId, type })
+  const handleMoveResourceClick = () =>{ 
+    setMoveResource({ id: resourceId, parentId, permalink, title, type }); }
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
@@ -61,11 +61,11 @@ export const ResourceTableMenu = ({
             type === ResourceType.CollectionPage ||
             type === ResourceType.CollectionLink) && (
             <MenuItem
-              onClick={() =>
+              onClick={() =>{ 
                 setPageSettingsModalState({
                   pageId: resourceId,
                   type,
-                })
+                }); }
               }
               icon={<BiCog fontSize="1rem" />}
             >
@@ -74,10 +74,10 @@ export const ResourceTableMenu = ({
           )}
           {type === ResourceType.Folder && (
             <MenuItem
-              onClick={() =>
+              onClick={() =>{ 
                 setFolderSettingsModalState({
                   folderId: resourceId,
-                })
+                }); }
               }
               icon={<BiCog fontSize="1rem" />}
             >
@@ -115,9 +115,9 @@ export const ResourceTableMenu = ({
                 <MenuItem
                   onClick={() => {
                     setResourceModalState({
-                      title,
                       resourceId,
                       resourceType,
+                      title,
                     })
                   }}
                   colorScheme="critical"

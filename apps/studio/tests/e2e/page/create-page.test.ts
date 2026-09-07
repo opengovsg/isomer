@@ -1,5 +1,6 @@
-import { expect, test, type Page } from "@playwright/test"
-import crypto from "crypto"
+import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import crypto from "node:crypto"
 import { db } from "~/server/modules/database/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -10,7 +11,7 @@ const UNIQUE_TITLE = () => `E2E Test Page ${crypto.randomUUID().slice(0, 8)}`
 
 // The welcome modal blocks the dashboard until the user has a name + phone, so
 // set them before the create flow is reachable.
-const dismissWelcomeModal = (email: string) =>
+const dismissWelcomeModal =  async (email: string) =>
   db
     .updateTable("User")
     .set({ name: "test-e2e", phone: "82345678" })
@@ -42,25 +43,25 @@ const createPageViaWizard = async (
 
 // A folder isn't part of the seed, so create one per-test to nest pages under.
 // Returns the folder id (BigInt columns are serialized as strings).
-const createSeedFolder = () =>
+const createSeedFolder =  async () =>
   db
     .insertInto("Resource")
     .values({
-      permalink: `e2e-test-folder-${crypto.randomUUID().slice(0, 8)}`,
-      siteId: getSeedSiteId(),
-      parentId: null,
-      title: "E2E Test Folder",
       draftBlobId: null,
-      state: ResourceState.Draft,
-      type: ResourceType.Folder,
+      parentId: null,
+      permalink: `e2e-test-folder-${crypto.randomUUID().slice(0, 8)}`,
       publishedVersionId: null,
+      siteId: getSeedSiteId(),
+      state: ResourceState.Draft,
+      title: "E2E Test Folder",
+      type: ResourceType.Folder,
     })
     .returning("id")
     .executeTakeFirstOrThrow()
 
 // Deleting the folder cascades to its child pages (Resource.parent is
 // onDelete: Cascade), so this also clears anything the wizard created under it.
-const deleteFolder = (folderId: string) =>
+const deleteFolder =  async (folderId: string) =>
   db.deleteFrom("Resource").where("id", "=", folderId).execute()
 
 test.describe("admin", () => {

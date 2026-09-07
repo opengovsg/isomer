@@ -24,8 +24,8 @@ const createMockRequest = ({
   apiKey?: string | null
 }) => {
   const body: z.input<typeof codeBuildWebhookSchema> = {
-    projectName: "test-project",
     arn,
+    projectName: "test-project",
     status: "SUCCEEDED",
   }
   const headers: { "content-type": string } & Partial<
@@ -38,9 +38,9 @@ const createMockRequest = ({
   }
   const { req, res }: { req: NextApiRequest; res: NextApiResponse } =
     createMocks({
-      method: "POST",
-      headers,
       body,
+      headers,
+      method: "POST",
     })
   return { req, res }
 }
@@ -50,9 +50,8 @@ describe("webhook", () => {
     env.STUDIO_SSM_WEBHOOK_API_KEY = WEBHOOK_API_KEY
     env.GROWTHBOOK_CLIENT_KEY = "test-growthbook-client-key"
     vi.spyOn(mailService, "sendSuccessfulPublishEmail").mockResolvedValue(
-      undefined,
-    )
-    vi.spyOn(mailService, "sendFailedPublishEmail").mockResolvedValue(undefined)
+      )
+    vi.spyOn(mailService, "sendFailedPublishEmail").mockResolvedValue()
     await resetTables("CodeBuildJobs", "Resource", "Site")
   })
   describe("updateCodebuildWebhook", () => {
@@ -60,10 +59,10 @@ describe("webhook", () => {
       // Arrange
       const user = await setupUser(createTestUser())
       await setupCodeBuildJob({
-        userId: user.id,
         arn: "build/test-id",
-        startedAt: new Date(),
         isScheduled: true,
+        startedAt: new Date(),
+        userId: user.id,
       })
       const { req, res } = createMockRequest({
         arn: "build/test-id",
@@ -79,14 +78,14 @@ describe("webhook", () => {
       // Arrange
       const user = await setupUser(createTestUser())
       await setupCodeBuildJob({
-        userId: user.id,
         arn: "build/test-id",
-        startedAt: new Date(),
         isScheduled: true,
+        startedAt: new Date(),
+        userId: user.id,
       })
       const { req, res } = createMockRequest({
-        arn: "build/test-id",
         apiKey: "wrong-api-key",
+        arn: "build/test-id",
       })
 
       // Act
@@ -99,14 +98,14 @@ describe("webhook", () => {
       // Arrange
       const user = await setupUser(createTestUser())
       await setupCodeBuildJob({
-        userId: user.id,
         arn: "build/test-id",
-        startedAt: new Date(),
         isScheduled: true,
+        startedAt: new Date(),
+        userId: user.id,
       })
       const { req, res } = createMockRequest({
-        arn: "build/test-id",
         apiKey: INVALID_WEBHOOK_API_KEY_WITH_EXPECTED_LENGTH,
+        arn: "build/test-id",
       })
 
       // Act
@@ -119,13 +118,13 @@ describe("webhook", () => {
       // Arrange
       const user = await setupUser(createTestUser())
       await setupCodeBuildJob({
-        userId: user.id,
         arn: "build/test-id",
         startedAt: new Date(),
+        userId: user.id,
       })
       const { req, res } = createMockRequest({
-        arn: "build/test-id",
         apiKey: null,
+        arn: "build/test-id",
       })
 
       // Act

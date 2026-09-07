@@ -48,7 +48,6 @@ import { ResourceSelector } from "../ResourceSelector/ResourceSelector"
 import { FileAttachment } from "./FileAttachment"
 
 export const linkEditorSchema = z.object({
-  linkText: z.string().min(1, "Link text cannot be empty."),
   linkHref: z
     .string()
     // Strips stray leading/trailing whitespace (e.g. from a paste) before
@@ -80,6 +79,7 @@ export const linkEditorSchema = z.object({
       }
       return true
     }, "Link destination is not a valid URL."),
+  linkText: z.string().min(1, "Link text cannot be empty."),
 })
 
 interface PageLinkElementProps {
@@ -93,13 +93,13 @@ const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
     <ResourceSelector
       interactionType="link"
       siteId={Number(siteId)}
-      onChange={(resourceId) =>
+      onChange={(resourceId) =>{ 
         onChange(
           getReferenceLink({
-            siteId: String(siteId),
             resourceId: resourceId ?? "",
+            siteId: String(siteId),
           }),
-        )
+        ); }
       }
       selectedResourceId={getResourceIdFromReferenceLink(value)}
       fileExplorerHeight={12}
@@ -122,8 +122,8 @@ const LinkEditorModalContent = ({
 }: LinkEditorModalContentProps) => {
   const { strippedLinkText, onUploadedFile, buildFinalLinkTextForSave } =
     useLinkEditorFileMetaSuffix({
-      initialLinkText: linkText,
       initialLinkHref: linkHref,
+      initialLinkText: linkText,
       showLinkText,
     })
 
@@ -133,19 +133,19 @@ const LinkEditorModalContent = ({
     register,
     formState: { errors },
   } = useZodForm({
-    mode: "onChange",
-    schema: linkEditorSchema,
     defaultValues: {
-      linkText: strippedLinkText,
       linkHref,
+      linkText: strippedLinkText,
     },
+    mode: "onChange",
     reValidateMode: "onChange",
+    schema: linkEditorSchema,
   })
 
   const isEditingLink = !!linkText && !!linkHref
 
-  const onSubmit = handleSubmit(({ linkText, linkHref }) =>
-    onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref),
+  const onSubmit = handleSubmit(({ linkText, linkHref }) =>{ 
+    onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref); },
   )
 
   return (
@@ -182,11 +182,11 @@ const LinkEditorModalContent = ({
             <LinkEditorContextProvider
               linkTypes={linkTypes}
               linkHref={linkHref ?? ""}
-              onChange={(href) =>
+              onChange={(href) =>{ 
                 setValue("linkHref", href, {
                   shouldDirty: true,
                   shouldValidate: true,
-                })
+                }); }
               }
               error={errors.linkHref?.message}
             >
@@ -295,7 +295,7 @@ const ModalLinkEditor = ({
       pageLinkElement={<PageLinkElement value={curHref} onChange={setHref} />}
       fileLinkElement={
         getLinkHrefType(curHref) === LINK_TYPES.File ? (
-          <AttachmentData data={curHref} onClick={() => setHref("")} />
+          <AttachmentData data={curHref} onClick={() =>{  setHref(""); }} />
         ) : (
           <FileAttachment
             maxSizeInBytes={MAX_FILE_SIZE_BYTES}
@@ -304,7 +304,7 @@ const ModalLinkEditor = ({
             resourceId={
               (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
             }
-            setHref={(href) => setHref(href ?? "")}
+            setHref={(href) =>{  setHref(href ?? ""); }}
             shouldFetchResource={false}
             onUploadedFile={onUploadedFile}
             enableRiskyFileWarning={true}

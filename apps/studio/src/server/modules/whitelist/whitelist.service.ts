@@ -4,17 +4,17 @@ import { isValidEmail } from "~/utils/email"
 import type { DB, Transaction } from "../database/types"
 import { db } from "../database/database"
 
-const normalise = (email: string) => {
-  return email.toLowerCase().trim()
-}
+const normalise = (email: string) => 
+  email.toLowerCase().trim()
+
 
 const getBaseQuery = (
   emails: string[],
   tx: Transaction<DB>,
   expiry: Date | null = null,
 ) => {
-  const dedupedEmails = Array.from(new Set(emails))
-  if (dedupedEmails.length === 0) return
+  const dedupedEmails = [...new Set(emails)]
+  if (dedupedEmails.length === 0) {return}
 
   return tx.insertInto("Whitelist").values(
     dedupedEmails.map((email) => ({
@@ -26,7 +26,7 @@ const getBaseQuery = (
 
 const insertAdminEmails = async (emails: string[], tx: Transaction<DB>) => {
   const query = getBaseQuery(emails, tx)
-  if (!query) return
+  if (!query) {return}
 
   return await query
     .onConflict((oc) =>
@@ -42,7 +42,7 @@ const insertVendorEmails = async (
   tx: Transaction<DB>,
 ) => {
   const query = getBaseQuery(emails, tx, expiry)
-  if (!query) return
+  if (!query) {return}
 
   return await query
     .onConflict((oc) =>
@@ -69,7 +69,7 @@ export const whitelistEmails = async ({
   vendorExpiry.setHours(0, 0, 0, 0)
 
   // Use transaction for bulk insert
-  return db.transaction().execute(async (tx) => {
+  return await db.transaction().execute(async (tx) => {
     // Batch insert admin emails (no expiry) and vendor emails (90 day expiry)
     const [insertedAdmins, insertedVendors] = await Promise.all([
       insertAdminEmails(adminEmails, tx),

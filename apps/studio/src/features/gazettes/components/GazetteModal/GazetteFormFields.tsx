@@ -192,8 +192,8 @@ export const GazetteFormFields = ({
             onFileChange?.(newFile)
             if (newFile) {
               setValue("fileId", toFileId(newFile.name), {
-                shouldValidate: true,
                 shouldDirty: true,
+                shouldValidate: true,
               })
             }
           }}

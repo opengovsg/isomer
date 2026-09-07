@@ -16,7 +16,7 @@ import Suspense from "~/components/Suspense"
 import { VersionWrapper } from "~/components/VersionWrapper"
 import { env } from "~/env.mjs"
 import { LoginStateProvider } from "~/features/auth"
-import { type NextPageWithLayout } from "~/lib/types"
+import type { NextPageWithLayout } from "~/lib/types"
 import { DefaultLayout } from "~/templates/layouts/DefaultLayout"
 import { theme } from "~/theme"
 import { trpc } from "~/utils/trpc"
@@ -63,8 +63,8 @@ void gb.init({
   streaming: true,
 })
 
-const MyApp: AppType = (props: AppPropsWithAuthAndLayout) => {
-  return (
+const MyApp: AppType = (props: AppPropsWithAuthAndLayout) => 
+  (
     <EnvProvider env={env}>
       <LoginStateProvider>
         <ThemeProvider theme={theme}>
@@ -89,7 +89,7 @@ const MyApp: AppType = (props: AppPropsWithAuthAndLayout) => {
       </LoginStateProvider>
     </EnvProvider>
   )
-}
+
 
 // This is needed so suspense will be triggered for anything within the LayoutComponents which uses useSuspenseQuery
 const ChildWithLayout = ({

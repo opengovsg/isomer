@@ -3,7 +3,7 @@ import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { create as createContentDisposition } from "content-disposition"
-import { randomUUID } from "crypto"
+import { randomUUID } from "node:crypto"
 import filenamify from "filenamify"
 import { env } from "~/env.mjs"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/lib/fileUpload"
@@ -67,9 +67,9 @@ export const getContentTypeFromKey = (key: string): string => {
 /**
  * Build Content-Disposition for signed upload (inline; filename for download hint).
  */
-export const getContentDispositionForKey = (key: string): string => {
-  return createContentDisposition(getFilenameFromKey(key), { type: "inline" })
-}
+export const getContentDispositionForKey = (key: string): string => 
+  createContentDisposition(getFilenameFromKey(key), { type: "inline" })
+
 
 // Permissions for assets share the same permissions as resources preferentially
 // because the underlying assumption is that the asset is tied to the resource,
@@ -84,10 +84,10 @@ export const validateUserPermissionsForAsset = async ({
     // No resourceId means that this is a site-level asset
     // so we check for site-level permissions
     await bulkValidateUserPermissionsForResources({
-      resourceIds: [],
       action,
-      userId,
+      resourceIds: [],
       siteId,
+      userId,
     })
     return
   }
@@ -106,10 +106,10 @@ export const validateUserPermissionsForAsset = async ({
   }
 
   await bulkValidateUserPermissionsForResources({
-    resourceIds: [resourceId],
     action,
-    userId,
+    resourceIds: [resourceId],
     siteId,
+    userId,
   })
 }
 
@@ -131,9 +131,9 @@ export const doAllFileKeysBelongToSite = ({
 }: {
   fileKeys: string[]
   siteId: number
-}) => {
-  return fileKeys.every((key) => key.startsWith(`${siteId}/`))
-}
+}) => 
+  fileKeys.every((key) => key.startsWith(`${siteId}/`))
+
 
 export const getPresignedPutUrl = async ({
   key,
@@ -148,26 +148,26 @@ export const getPresignedPutUrl = async ({
   const contentDisposition = getContentDispositionForKey(key)
   const presignedPutUrl = await generateSignedPutUrl({
     Bucket: bucket,
-    Key: key,
-    ContentType: contentType,
     ContentDisposition: contentDisposition,
     ContentLength: fileSize,
+    ContentType: contentType,
+    Key: key,
     Tagging: tags && generateTagsQueryString(tags),
   })
-  return { presignedPutUrl, contentType, contentDisposition }
+  return { contentDisposition, contentType, presignedPutUrl }
 }
 
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
-  await deleteFile({ Key: key, Bucket: bucket })
+  await deleteFile({ Bucket: bucket, Key: key })
 }
 
 export const getPresignedGetUrl = async ({
   key,
 }: {
   key: string
-}): Promise<string> => {
-  return generateSignedGetUrl({ Bucket: bucket, Key: key })
-}
+}): Promise<string> => 
+  await generateSignedGetUrl({ Bucket: bucket, Key: key })
+
 
 export const sanitizeSvg = (content: string): string => {
   // Must run BEFORE parsing. Entity expansion (e.g. billion-laughs) happens
@@ -185,7 +185,7 @@ export const sanitizeSvg = (content: string): string => {
 
   const doc = new DOMParser().parseFromString(content, "image/svg+xml")
 
-  if (doc.getElementsByTagName("parsererror").length > 0) {
+  if (doc.querySelectorAll("parsererror").length > 0) {
     logger.error("SVG rejected: failed to parse as valid XML")
     throw new TRPCError({
       code: "BAD_REQUEST",
@@ -213,9 +213,9 @@ export const sanitizeSvg = (content: string): string => {
   // below are defense-in-depth for the highest-risk items; do not treat them as
   // exhaustive. Adding an entry here does not replace the profile's coverage.
   const sanitized = DOMPurify.sanitize(content, {
-    USE_PROFILES: { svg: true, svgFilters: true },
-    FORBID_TAGS: ["script", "foreignObject", "use"],
     FORBID_ATTR: ["onload", "onclick", "onerror", "onmouseover"],
+    FORBID_TAGS: ["script", "foreignObject", "use"],
+    USE_PROFILES: { svg: true, svgFilters: true },
   })
 
   return sanitized
@@ -233,11 +233,11 @@ export const putFileDirect = async ({
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
   await putObjectDirect({
-    Bucket: bucket,
-    Key: key,
     Body: body,
-    ContentType: contentType,
+    Bucket: bucket,
     ContentDisposition: contentDisposition,
+    ContentType: contentType,
+    Key: key,
     Tagging: tags && generateTagsQueryString(tags),
   })
 }

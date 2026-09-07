@@ -18,7 +18,7 @@ import { useMe } from "~/features/me/api/useMe"
 import { useEgazetteInfo } from "~/hooks/useEgazetteInfo"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { type NextPageWithLayout } from "~/lib/types"
+import type { NextPageWithLayout } from "~/lib/types"
 import { SiteMinimalLayout } from "~/templates/layouts/SiteMinimalLayout"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -121,13 +121,13 @@ const GazettesPage: NextPageWithLayout = () => {
   )
 }
 
-GazettesPage.getLayout = (page) => {
-  return (
+GazettesPage.getLayout = (page) => 
+  (
     <PermissionsBoundary
       resourceType={ResourceType.Collection}
       page={SiteMinimalLayout(page)}
     />
   )
-}
+
 
 export default GazettesPage

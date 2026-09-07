@@ -14,13 +14,8 @@ import {
   getStudioAssetsBucketName,
   uploadAuditLogExport,
 } from "~/lib/s3"
-import {
-  AUDIT_LOG_EXPORT_MAX_MONTHS,
-  type CreateAuditLogExportRequestInput,
-  getCurrentSingaporeMonth,
-  validateIsMonthInPastYear,
-  validateIsNotFutureMonth,
-} from "~/schemas/audit"
+import { AUDIT_LOG_EXPORT_MAX_MONTHS, getCurrentSingaporeMonth, validateIsMonthInPastYear, validateIsNotFutureMonth } from '~/schemas/audit';
+import type { CreateAuditLogExportRequestInput } from '~/schemas/audit';
 import { AuditLogExportStatus } from "~prisma/generated/generatedEnums"
 
 import type { BaseLogger } from "@isomer/logging"
@@ -88,9 +83,9 @@ const resolveAuditLogDateRange = (
 
   const futureMonthCheck = validateIsNotFutureMonth(month)
   const possibleError =
-    futureMonthCheck !== true
-      ? futureMonthCheck
-      : validateIsMonthInPastYear(month)
+    futureMonthCheck === true
+      ? validateIsMonthInPastYear(month)
+      : futureMonthCheck
   if (possibleError !== true) {
     logger.warn(possibleError)
     throw new TRPCError({
@@ -155,7 +150,7 @@ export const createAuditLogExportRequestsForSites = async ({
   // All three steps run inside one transaction, so this is a small, fixed
   // number of queries no matter how many sites are in `siteIds` — the
   // property that bounds the DoS risk of one transaction per site.
-  return db.transaction().execute(async (tx) => {
+  return await db.transaction().execute(async (tx) => {
     const inFlightRowsQuery = tx
       .selectFrom("AuditLogExportRequest")
       .where("siteId", "in", siteIds)
@@ -176,12 +171,12 @@ export const createAuditLogExportRequestsForSites = async ({
             .insertInto("AuditLogExportRequest")
             .values(
               siteIdsToInsert.map((siteId) => ({
-                siteId,
-                userId,
+                attempts: 0,
                 auditLogDateRange,
                 reportType,
+                siteId,
                 status: AuditLogExportStatus.Pending,
-                attempts: 0,
+                userId,
               })),
             )
             // Target the partial unique index so a race-losing row is a
@@ -258,14 +253,14 @@ export const createAuditLogExportRequestsForSites = async ({
     await logAuditLogExportEvents(
       tx,
       rows.map((row) => ({
-        eventType: "AuditLogExportCreate" as const,
         by: requestedBy,
-        siteId: row.siteId,
-        ip,
         delta: {
-          before: null,
           after: { auditLogDateRange, reportType },
+          before: null,
         },
+        eventType: "AuditLogExportCreate" as const,
+        ip,
+        siteId: row.siteId,
       })),
     )
 
@@ -414,9 +409,9 @@ export const processAuditLogExportRequest = async (
   const request = await db
     .updateTable("AuditLogExportRequest")
     .set({
+      attempts: sql<number>`attempts + 1`,
       status: AuditLogExportStatus.Processing,
       updatedAt: new Date(),
-      attempts: sql<number>`attempts + 1`,
     })
     .where("id", "=", requestId)
     .where((eb) =>
@@ -455,7 +450,7 @@ export const processAuditLogExportRequest = async (
       .where("User.deletedAt", "is", null)
       .select(["User.id", "User.email"])
       .executeTakeFirst(),
-    getResourcePermission({ userId: request.userId, siteId: site.id }),
+    getResourcePermission({ siteId: site.id, userId: request.userId }),
   ])
   const isAdmin = roles.some(({ role }) => role === RoleType.Admin)
 
@@ -469,8 +464,8 @@ export const processAuditLogExportRequest = async (
     await db
       .updateTable("AuditLogExportRequest")
       .set({
-        status: AuditLogExportStatus.Failed,
         errorMessage: "User no longer exists or is not an admin",
+        status: AuditLogExportStatus.Failed,
         updatedAt: new Date(),
       })
       .where("id", "=", requestId)
@@ -556,8 +551,8 @@ export const processAuditLogExportRequest = async (
       // This is what makes the reuse predicate above sound.
       queriedAt = new Date()
       const queryParams = {
-        siteId: request.siteId,
         auditLogDateRange: request.auditLogDateRange,
+        siteId: request.siteId,
       }
       const rowStream = Readable.from(
         report.kind === "Access"
@@ -576,7 +571,7 @@ export const processAuditLogExportRequest = async (
       objectKey = `audit-log-exports/${request.siteId}/${requestId}/${report.kind.toLowerCase()}-${rangeSlug}.csv`
 
       try {
-        await uploadAuditLogExport({ key: objectKey, body: csvStream })
+        await uploadAuditLogExport({ body: csvStream, key: objectKey })
         objectSize = await getFileSize({ Bucket: bucket, Key: objectKey })
       } finally {
         // Tear the cursor down even if the upload consumer bailed early (or
@@ -620,26 +615,26 @@ export const processAuditLogExportRequest = async (
     await db
       .updateTable("AuditLogExportRequest")
       .set({
-        status: AuditLogExportStatus.Done,
-        objectKey,
         completedAt: queriedAt ?? new Date(),
         errorMessage: null,
+        objectKey,
+        status: AuditLogExportStatus.Done,
         updatedAt: new Date(),
       })
       .where("id", "=", requestId)
       .execute()
 
     logger.info(
-      { requestId, objectKey, bytes: objectSize },
+      { bytes: objectSize, objectKey, requestId },
       "Audit log export CSV ready for delivery",
     )
 
     // Step 6: one ready email with the single download link.
     await sendAuditLogExportReadyEmail({
+      link: { label: report.label, url },
+      month: getExportPeriodLabel(request.auditLogDateRange),
       recipientEmail,
       siteName,
-      month: getExportPeriodLabel(request.auditLogDateRange),
-      link: { label: report.label, url },
       sizeInBytes: objectSize,
     })
   } catch (error) {
@@ -650,7 +645,7 @@ export const processAuditLogExportRequest = async (
       error instanceof Error ? error.message : "Unknown error"
 
     logger.error(
-      { error, requestId, attempts },
+      { attempts, error, requestId },
       "Failed to process audit log export request",
     )
 
@@ -659,8 +654,8 @@ export const processAuditLogExportRequest = async (
       await db
         .updateTable("AuditLogExportRequest")
         .set({
-          status: AuditLogExportStatus.Pending,
           errorMessage,
+          status: AuditLogExportStatus.Pending,
           updatedAt: new Date(),
         })
         .where("id", "=", requestId)
@@ -672,8 +667,8 @@ export const processAuditLogExportRequest = async (
     await db
       .updateTable("AuditLogExportRequest")
       .set({
-        status: AuditLogExportStatus.Failed,
         errorMessage,
+        status: AuditLogExportStatus.Failed,
         updatedAt: new Date(),
       })
       .where("id", "=", requestId)
@@ -682,9 +677,9 @@ export const processAuditLogExportRequest = async (
     try {
       // Reuse the site/user already loaded above instead of re-querying.
       await sendAuditLogExportFailedEmail({
+        month: getExportPeriodLabel(request.auditLogDateRange),
         recipientEmail,
         siteName,
-        month: getExportPeriodLabel(request.auditLogDateRange),
       })
     } catch (emailError) {
       // The row is already Failed; a failed failure-email must not throw.

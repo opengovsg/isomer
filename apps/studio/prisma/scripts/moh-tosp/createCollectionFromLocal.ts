@@ -1,5 +1,5 @@
-import fs from "fs/promises"
-import path from "path"
+import fs from "node:fs/promises"
+import path from "node:path"
 import { db } from "~/server/modules/database/database"
 import { jsonb } from "~/server/modules/database/utils"
 import { ResourceState, ResourceType } from "~prisma/generated/prisma/client"
@@ -35,12 +35,12 @@ export const createCollectionFromLocal = async ({
       const collection = await tx
         .insertInto("Resource")
         .values({
-          title: nameOfNewCollectionToCreate,
+          createdAt: new Date(),
           permalink: nameOfNewCollectionToCreate,
           siteId: siteId,
-          type: ResourceType.Collection,
           state: ResourceState.Draft,
-          createdAt: new Date(),
+          title: nameOfNewCollectionToCreate,
+          type: ResourceType.Collection,
           updatedAt: new Date(),
         })
         .returning("id")
@@ -62,14 +62,14 @@ export const createCollectionFromLocal = async ({
       const indexPage = await tx
         .insertInto("Resource")
         .values({
-          title: indexPageTitle,
+          createdAt: new Date(),
+          draftBlobId: indexPageBlob.id,
+          parentId: collectionId,
           permalink: "_index",
           siteId: siteId,
-          type: ResourceType.IndexPage,
-          parentId: collectionId,
-          draftBlobId: indexPageBlob.id,
           state: ResourceState.Draft,
-          createdAt: new Date(),
+          title: indexPageTitle,
+          type: ResourceType.IndexPage,
           updatedAt: new Date(),
         })
         .returning("id")
@@ -122,7 +122,7 @@ export const createCollectionFromLocal = async ({
             // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             title: parsedFileContent.page.title,
             permalink: file.replace(/\.json$/, ""), // remove the .json at the back on permalinks
-            siteId: siteId, // Replace with appropriate site ID
+            siteId, // Replace with appropriate site ID
             type: ResourceType.CollectionPage,
             parentId: collectionId,
             state: "Draft",
@@ -158,10 +158,10 @@ const nameOfNewCollectionToCreate = "cost-financing-new" // will also be the per
 const siteId = 0
 
 await createCollectionFromLocal({
+  collectionName,
   contentDir,
   indexPageName,
   indexPageTitle,
-  collectionName,
   nameOfNewCollectionToCreate,
   siteId,
 })
