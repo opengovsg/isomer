@@ -42,6 +42,20 @@ export default defineConfig({
 
 Add package-specific `ignorePatterns` and `overrides` only—**`base.ts`** already sets `options.typeAware`, env, default ignores (`dist`, `**/*.config.*`), and the shared JS/TS/test rule blocks.
 
+### Framework presets (React, Next.js, Vitest)
+
+Ultracite framework presets are re-exported from `@isomer/oxlint-config/presets`. Consumers only need `@isomer/oxlint-config` — not a direct `ultracite` dependency.
+
+```ts
+import { defineConfig } from "@isomer/oxlint-config";
+import base from "@isomer/oxlint-config/base";
+import { next, react, vitest } from "@isomer/oxlint-config/presets";
+
+export default defineConfig({
+  extends: [base, react, next, vitest],
+});
+```
+
 ### Other repositories
 
 1. Add the dependency (publish `@isomer/oxlint-config` or use `file:` / git / workspace protocol).
@@ -61,5 +75,6 @@ Or set `"options": { "typeAware": true }` in the root Oxlint config only.
 |--------|------|
 | `@isomer/oxlint-config` | `index.ts` (`defineConfig`, `OxlintConfig`) |
 | `@isomer/oxlint-config/base` | `base.ts` |
+| `@isomer/oxlint-config/presets` | `presets.ts` — Ultracite `react`, `next`, and `vitest` presets |
 
 Add more JSON presets under `tooling/oxlint/` and list them under `exports` in `package.json` as you split shared vs app-specific rules.
