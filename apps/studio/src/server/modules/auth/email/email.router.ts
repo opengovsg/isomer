@@ -198,22 +198,30 @@ export const emailSessionRouter = router({
           await sendLoginAlertEmail({ recipientEmail: email })
         }
 
-        return user
+        return {
+          ...pick(user, defaultUserSelect),
+          requiresSingpass: false,
+        }
       }
 
-      return await db.transaction().execute(async (tx) => {
-        const user = await upsertUser({
+      const user = await db.transaction().execute(async (tx) => {
+        const userValue = await upsertUser({
           email,
           tx,
         })
 
         ctx.session.destroy()
         set(ctx.session, "singpass.sessionState", {
-          userId: user.id,
+          userId: userValue.id,
           verificationToken: oldVerificationToken,
         })
         await ctx.session.save()
-        return pick(user, defaultUserSelect)
+        return pick(userValue, defaultUserSelect)
       })
+
+      return {
+        ...user,
+        requiresSingpass: true,
+      }
     }),
 })
