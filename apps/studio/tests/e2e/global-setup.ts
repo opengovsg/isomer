@@ -1,109 +1,86 @@
-import type { FullConfig } from "@playwright/test"
-import type { NextApiRequest, NextApiResponse } from "next"
-import type { SessionData } from "~/lib/types/session"
+import type { APIRequestContext, FullConfig } from "@playwright/test"
+import type { z } from "zod"
 import { chromium } from "@playwright/test"
-import { getIronSession } from "iron-session"
-import { createMocks } from "node-mocks-http"
 import crypto from "node:crypto"
-import { LOGGED_IN_KEY } from "~/constants/localStorage"
-import { generateSessionOptions } from "~/server/modules/auth/session"
+import { APP_VERSION_HEADER_KEY } from "~/constants/version"
+import { env } from "~/env.mjs"
+import {
+  emailSignInSchema,
+  emailVerifyOtpSchema,
+} from "~/schemas/auth/email/signIn"
 import { db } from "~/server/modules/database/database"
 
 import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
+import { LoginPage } from "./fixtures/login"
 import { seedRolesForE2E } from "./fixtures/seed"
+import { overwriteToken } from "./utils"
 
-const ensureSingpassUser = async (email: string) => {
+const trpcHeaders = () => ({
+  "content-type": "application/json",
+  [APP_VERSION_HEADER_KEY]: env.NEXT_PUBLIC_APP_VERSION,
+})
+
+type EmailLoginInput = z.infer<typeof emailSignInSchema>
+type EmailVerifyOtpInput = z.infer<typeof emailVerifyOtpSchema>
+
+const trpcMutate = async (
+  request: APIRequestContext,
+  procedure: string,
+  input: EmailLoginInput | EmailVerifyOtpInput,
+) => {
+  const response = await request.post(`/api/trpc/${procedure}`, {
+    data: { json: input },
+    headers: trpcHeaders(),
+  })
+
+  const body = (await response.json()) as
+    | { error?: unknown }
+    | { result?: unknown }
+
+  if (body.error !== undefined) {
+    throw new Error(
+      `tRPC ${procedure} failed: ${JSON.stringify(body.error)}`,
+    )
+  }
+
+  if (!response.ok()) {
+    throw new Error(
+      `tRPC ${procedure} failed: ${response.status()} ${JSON.stringify(body)}`,
+    )
+  }
+}
+
+const setSingpassUuidFor = async (email: string, uuid: string) => {
   await db
     .updateTable("User")
-    .set({
-      name: "test-e2e",
-      phone: "82345678",
-      singpassUuid: crypto.randomUUID(),
-    })
+    .set({ singpassUuid: uuid, name: "test-e2e", phone: "82345678" })
     .where("email", "=", email)
     .execute()
 }
 
-const sealUserSessionCookie = async (userId: string) => {
-  const mocks = createMocks({ method: "GET" })
-  const { req, res } = mocks as {
-    req: NextApiRequest
-    res: NextApiResponse
-  }
-  const sessionOptions = generateSessionOptions({ ttlInHours: 12 })
-  const session = await getIronSession<SessionData>(req, res, sessionOptions)
-  session.userId = userId as NonNullable<SessionData["userId"]>
-  await session.save()
-
-  const setCookieHeader = res.getHeader("set-cookie")
-  if (!setCookieHeader) {
-    throw new Error("iron-session did not emit a Set-Cookie header")
-  }
-
-  const cookieStrings = Array.isArray(setCookieHeader)
-    ? setCookieHeader.map(String)
-    : [String(setCookieHeader)]
-
-  const sessionCookie = cookieStrings.find((cookie) =>
-    cookie.startsWith(`${sessionOptions.cookieName}=`),
-  )
-  if (!sessionCookie) {
-    throw new Error(`Missing ${sessionOptions.cookieName} in Set-Cookie header`)
-  }
-
-  const [cookiePair] = sessionCookie.split(";")
-  if (!cookiePair) {
-    throw new Error(`Invalid ${sessionOptions.cookieName} Set-Cookie header`)
-  }
-  const [, ...valueParts] = cookiePair.split("=")
-  return valueParts.join("=")
-}
-
-const createAuthenticatedStorageState = async (
-  role: keyof typeof TEST_EMAILS,
-  baseURL: string,
-) => {
+const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   const email = TEST_EMAILS[role]
-  await ensureSingpassUser(email)
-
-  const user = await db
-    .selectFrom("User")
-    .select(["id"])
-    .where("email", "=", email)
-    .executeTakeFirstOrThrow()
-
-  const sessionOptions = generateSessionOptions({ ttlInHours: 12 })
-  const sessionCookieValue = await sealUserSessionCookie(user.id)
-  const { hostname, origin, protocol } = new URL(baseURL)
+  const uuid = crypto.randomUUID()
+  await setSingpassUuidFor(email, uuid)
 
   const browser = await chromium.launch()
-  const ctx = await browser.newContext({
-    baseURL,
-    storageState: {
-      cookies: [
-        {
-          domain: hostname,
-          expires: Math.floor(Date.now() / 1000) + 43_200,
-          httpOnly: true,
-          name: sessionOptions.cookieName,
-          path: "/",
-          sameSite: "Lax",
-          secure: protocol === "https:",
-          value: sessionCookieValue,
-        },
-      ],
-      origins: [
-        {
-          localStorage: [{ name: LOGGED_IN_KEY, value: JSON.stringify(true) }],
-          origin,
-        },
-      ],
-    },
-  })
-
+  const ctx = await browser.newContext({ baseURL })
+  const { request } = ctx
   const page = await ctx.newPage()
-  await page.goto("/")
-  await page.getByText("Your sites").waitFor({ state: "visible" })
+  const loginPage = new LoginPage(page)
+
+  // Seed the Singpass session cookie via tRPC so Playwright's request context
+  // stores Set-Cookie headers (they are not exposed on page responses).
+  await trpcMutate(request, "auth.email.login", { email })
+  const token = await overwriteToken({
+    factory: () => "123456",
+    identifier: email,
+  })
+  await trpcMutate(request, "auth.email.verifyOtp", { email, token })
+
+  await page.goto("/sign-in/singpass")
+  await loginPage.mockpassLoginWith(uuid)
+  await page.waitForURL(`${baseURL}/`)
 
   await ctx.storageState({ path: storageStateFor(role) })
   await browser.close()
@@ -115,7 +92,7 @@ const globalSetup = async (config: FullConfig) => {
   await seedRolesForE2E()
 
   for (const role of ROLES) {
-    await createAuthenticatedStorageState(role, baseURL)
+    await signInOnce(role, baseURL)
   }
 }
 
