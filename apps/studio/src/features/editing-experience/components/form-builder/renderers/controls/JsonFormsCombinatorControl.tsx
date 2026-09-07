@@ -18,7 +18,6 @@ import {
 } from "@jsonforms/react"
 import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
 import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
-import { pick } from "lodash-es"
 import { useEffect, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
@@ -37,7 +36,9 @@ interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
 }
 
 // Keeps existing array items (e.g. `cards`) instead of letting schema
-// defaults reset them to `[]`, dropping only fields the new variant lacks.
+// defaults reset them to `[]`. Extra fields the new variant does not use
+// (e.g. imageUrl on a no-image card) stay on the item so switching back
+// can restore them. They are stripped on save.
 export function keepMatchingArrayFields(
   oldData: Record<string, unknown> | undefined,
   newSchema: JsonSchema7,
@@ -50,13 +51,12 @@ export function keepMatchingArrayFields(
     const itemSchema = Array.isArray(propSchema.items)
       ? undefined
       : propSchema.items
-    const oldItems = oldData?.[key] as Record<string, unknown>[] | undefined
+    const oldItems = oldData?.[key]
     if (!itemSchema?.properties || !Array.isArray(oldItems)) {
       continue
     }
 
-    const allowedKeys = Object.keys(itemSchema.properties)
-    preserved[key] = oldItems.map((item) => pick(item, allowedKeys))
+    preserved[key] = oldItems
   }
   return preserved
 }

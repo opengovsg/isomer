@@ -65,7 +65,7 @@ describe("keepMatchingArrayFields", () => {
     })
   })
 
-  it("drops fields no longer present in the schema when switching to a variant with fewer fields", () => {
+  it("retains extra fields when switching to a variant with fewer fields", () => {
     // Arrange
     const oldData = {
       variant: "cardsWithImages",
@@ -85,7 +85,43 @@ describe("keepMatchingArrayFields", () => {
 
     // Assert
     expect(preserved).toStrictEqual({
-      cards: [{ title: "Card 1", description: "Desc 1", url: "/a" }],
+      cards: [
+        {
+          title: "Card 1",
+          description: "Desc 1",
+          url: "/a",
+          imageUrl: "https://example.com/image.png",
+          imageAlt: "alt text",
+        },
+      ],
+    })
+  })
+
+  it("restores extra fields when switching back to a variant that uses them", () => {
+    // Arrange
+    const withImages = {
+      variant: "cardsWithImages",
+      cards: [
+        {
+          title: "Card 1",
+          description: "Desc 1",
+          url: "/a",
+          imageUrl: "https://example.com/image.png",
+          imageAlt: "alt text",
+        },
+      ],
+    }
+
+    // Act
+    const onNoImage = keepMatchingArrayFields(withImages, noImageVariantSchema)
+    const backToImages = keepMatchingArrayFields(
+      { variant: "cardsWithoutImages", ...onNoImage },
+      withImageVariantSchema,
+    )
+
+    // Assert
+    expect(backToImages).toStrictEqual({
+      cards: withImages.cards,
     })
   })
 
