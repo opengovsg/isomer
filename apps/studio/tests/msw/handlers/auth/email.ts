@@ -10,9 +10,6 @@ export const authEmailHandlers = {
   login: emailLoginPostQuery,
   verifyOtp: {
     default: () =>
-      trpcMsw.auth.email.verifyOtp.mutation(() => ({
-        ...defaultUser,
-        requiresSingpass: true,
-      })),
+      trpcMsw.auth.email.verifyOtp.mutation(() => defaultUser),
   },
 }

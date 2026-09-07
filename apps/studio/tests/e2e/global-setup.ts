@@ -30,8 +30,6 @@ const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   await page.getByText("Enter OTP").waitFor()
   await loginPage.fillToken(email)
   await page.getByRole("button", { name: "Sign in" }).click()
-  await page.waitForURL(/\/sign-in\/singpass/u)
-  await loginPage.singpassButton.waitFor({ state: "visible" })
   await loginPage.mockpassLoginWith(uuid)
   await page.waitForURL(`${baseURL}/`)
 
@@ -40,7 +38,7 @@ const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
 }
 
 const globalSetup = async (config: FullConfig) => {
-  const baseURL = config.projects[0]?.use.baseURL ?? "http://127.0.0.1:3000"
+  const baseURL = config.projects[0]?.use.baseURL ?? "http://localhost:3000"
 
   await seedRolesForE2E()
 

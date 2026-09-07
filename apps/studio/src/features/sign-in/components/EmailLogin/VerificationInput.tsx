@@ -1,4 +1,4 @@
-/* oxlint-disable typescript/strict-void-return -- core cleanup deferred */
+/* oxlint-disable typescript/strict-void-return, eslint/sort-keys -- core cleanup deferred */
 import {
   FormControl,
   InputGroup,
@@ -19,6 +19,7 @@ import { Controller } from "react-hook-form"
 import { useInterval } from "usehooks-ts"
 import { CALLBACK_URL_KEY } from "~/constants/params"
 import { useLoginState } from "~/features/auth"
+import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { OTP_LENGTH } from "~/lib/auth"
 import { useZodForm } from "~/lib/form"
 import { SIGN_IN_SINGPASS } from "~/lib/routes"
@@ -37,6 +38,8 @@ export const VerificationInput = (): React.ReactNode | null => {
   const utils = trpc.useUtils()
 
   const { vfnStepData, timer, setVfnStepData, resetTimer } = useSignInContext()
+
+  const { isSingpassEnabled } = useIsSingpassEnabled()
 
   useInterval(
     () => {
@@ -62,6 +65,20 @@ export const VerificationInput = (): React.ReactNode | null => {
   })
 
   const verifyOtpMutation = trpc.auth.email.verifyOtp.useMutation({
+    onSuccess: async () => {
+      if (isSingpassEnabled) {
+        await router.push(SIGN_IN_SINGPASS)
+      } else {
+        posthogJs.capture("user_logged_in", { method: "email" })
+        setHasLoginStateFlag()
+        await utils.me.get.invalidate()
+        // accessing router.query values returns decoded URI params automatically,
+        // so there's no need to call decodeURIComponent manually when accessing the callback url.
+        await router.push(
+          callbackUrlSchema.parse(router.query[CALLBACK_URL_KEY]),
+        )
+      }
+    },
     onError: (error) => {
       switch (error.message) {
         case "Token is invalid or has expired": {
@@ -81,20 +98,6 @@ export const VerificationInput = (): React.ReactNode | null => {
         default: {
           setError("token", { message: error.message })
         }
-      }
-    },
-    onSuccess: async ({ requiresSingpass }) => {
-      if (requiresSingpass) {
-        await router.push(SIGN_IN_SINGPASS)
-      } else {
-        posthogJs.capture("user_logged_in", { method: "email" })
-        setHasLoginStateFlag()
-        await utils.me.get.invalidate()
-        // accessing router.query values returns decoded URI params automatically,
-        // so there's no need to call decodeURIComponent manually when accessing the callback url.
-        await router.push(
-          callbackUrlSchema.parse(router.query[CALLBACK_URL_KEY]),
-        )
       }
     },
   })
