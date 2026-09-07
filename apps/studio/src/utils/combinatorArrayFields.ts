@@ -2,8 +2,8 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { pick } from "lodash-es"
 
-type JsonSchema = {
-  type?: string
+interface JsonSchema {
+  type?: string | string[]
   properties?: Record<string, JsonSchema>
   items?: JsonSchema | JsonSchema[]
   const?: unknown
@@ -40,31 +40,23 @@ function mapObjectArrayFields(
 
 export function keepMatchingArrayFields(
   oldData: Record<string, unknown> | undefined,
-  newSchema: object,
+  newSchema: JsonSchema,
 ): Record<string, unknown> {
-  return mapObjectArrayFields(
-    oldData,
-    newSchema as JsonSchema,
-    (items) => items,
-  )
+  return mapObjectArrayFields(oldData, newSchema, (items) => items)
 }
 
 function pickMatchingArrayFields(
   data: Record<string, unknown> | undefined,
-  schema: object,
+  schema: JsonSchema,
 ): Record<string, unknown> {
-  return mapObjectArrayFields(
-    data,
-    schema as JsonSchema,
-    (items, itemSchema) => {
-      const allowedKeys = Object.keys(itemSchema.properties ?? {})
-      return items.map((item) =>
-        item !== null && typeof item === "object" && !Array.isArray(item)
-          ? pick(item, allowedKeys)
-          : item,
-      )
-    },
-  )
+  return mapObjectArrayFields(data, schema, (items, itemSchema) => {
+    const allowedKeys = Object.keys(itemSchema.properties ?? {})
+    return items.map((item) =>
+      item !== null && typeof item === "object" && !Array.isArray(item)
+        ? pick(item, allowedKeys)
+        : item,
+    )
+  })
 }
 
 function combinatorBranches(schema: JsonSchema | undefined): JsonSchema[] {
