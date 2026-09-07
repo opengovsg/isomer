@@ -891,16 +891,19 @@ export const getPublishedDescendantResourceIds = async (
 // check. A descendant is "safe" (excluded from the result) only if:
 //   - it's currently live AND has its own scheduled Unpublish strictly before
 //     `scheduledAt` (so it'll be down well before this one fires), or
-//   - it's currently not live AND has no scheduled Publish before
-//     `scheduledAt` (so it won't come back up before this one fires).
+//   - it's currently not live AND has no scheduled Publish at all.
 // The second case matters even though the descendant isn't live right now:
-// without it, a descendant could be sitting on an already-scheduled Publish
-// for some time before `scheduledAt`, guaranteeing it'll be live again by
-// the time this unpublish executes — a fact fully knowable now, not a race.
+// without it, a descendant could be sitting on an already-scheduled Publish,
+// guaranteeing it'll be live again at some point — a fact fully knowable now,
+// not a race. This is intentionally conservative: a Publish scheduled to fire
+// *after* `scheduledAt` would still leave the descendant down in time, but is
+// flagged unsafe anyway rather than reasoning about relative ordering here —
+// this is only an early-feedback check, not the authoritative gate (that's
+// unpublishPageResource's own execution-time check).
 // A currently-live descendant with no schedule, or one scheduled for a
 // *later* Unpublish, is unsafe; same for a currently-unpublished descendant
-// scheduled to Publish before `scheduledAt` (a null scheduledAction is
-// treated as Publish, matching the convention elsewhere in this module).
+// with any scheduled Publish (a null scheduledAction is treated as Publish,
+// matching the convention elsewhere in this module).
 export const getDescendantResourceIdsUnsafeForScheduledUnpublish = async (
   trx: SafeKysely,
   {
@@ -931,17 +934,15 @@ export const getDescendantResourceIdsUnsafeForScheduledUnpublish = async (
             // Unpublish.
             eb("Resource.scheduledAction", "is", null),
             // A schedule exists, but it's a Publish, not an Unpublish.
-            eb("Resource.scheduledAction", "!=", ScheduledAction.Unpublish),
+            eb("Resource.scheduledAction", "=", ScheduledAction.Publish),
           ]),
         ]),
-        // Unsafe case 2: not live right now, but scheduled to become live
-        // again before `scheduledAt` fires.
+        // Unsafe case 2: not live right now, but has a Publish scheduled —
+        // it'll become live again at some point.
         eb.and([
           eb("Resource.publishedVersionId", "is", null),
           // A schedule exists...
           eb("Resource.scheduledAt", "is not", null),
-          // ...and it fires strictly before `scheduledAt`...
-          eb("Resource.scheduledAt", "<", scheduledAt),
           eb.or([
             // ...and it's a Publish (or defaults to one, per the legacy
             // null-scheduledAction convention above).
