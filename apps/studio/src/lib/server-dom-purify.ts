@@ -29,11 +29,13 @@ export interface ServerDomPurify {
 
 const initServerDomPurify = (): ServerDomPurify => {
   // SAFETY: jsdom's CJS export matches the JsdomExports subset used here
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   const { JSDOM } = nodeRequire("jsdom") as JsdomExports
   // SAFETY: isomorphic-dompurify's CJS default export is the DOMPurify API
-  const DOMPurify = (
-    nodeRequire("isomorphic-dompurify") as { default: DomPurifyLib }
-  ).default
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+  const DOMPurify =
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+    (nodeRequire("isomorphic-dompurify") as { default: DomPurifyLib }).default
   const { DOMParser } = new JSDOM("").window
   return { DOMParser, DOMPurify }
 }

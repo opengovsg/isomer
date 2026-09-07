@@ -1,3 +1,4 @@
+/* oxlint-disable promise/avoid-new -- studio lint cleanup */
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { trpcMsw } from "../mockTrpc"

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define, typescript/parameter-properties -- studio lint cleanup */
 import type { Page } from "@playwright/test"
 
 export type SettingsSection =
@@ -30,7 +31,7 @@ export class SitePO {
     // Labels sourced from apps/studio/src/features/settings/SettingsSidenav/SettingsSidenav.tsx
     const label = SETTINGS_SECTION_LABELS[section]
     await this.page.getByRole("link", { name: label }).click()
-    await this.page.waitForURL(new RegExp(`/settings/u${section}$`))
+    await this.page.waitForURL(new RegExp(`/settings/uuuuuu${section}$`, "u"))
   }
 
   /**

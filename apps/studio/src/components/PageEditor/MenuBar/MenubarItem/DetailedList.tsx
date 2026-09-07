@@ -11,6 +11,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
+import { isNullableBooleanTrue } from "~/utils/truthiness"
 
 interface DetailedItem {
   name: string
@@ -34,7 +35,7 @@ export const MenubarDetailedList = ({
   items,
   icon,
 }: MenubarDetailedListProps): React.ReactNode | null => {
-  if (isHidden?.()) {
+  if (isNullableBooleanTrue(isHidden?.())) {
     return null
   }
   return (
@@ -59,7 +60,7 @@ export const MenubarDetailedList = ({
         <PopoverBody px={0} py="0.75rem">
           <VStack spacing="0.75rem">
             {items.map((subItem) => {
-              if (subItem.isHidden?.()) {
+              if (isNullableBooleanTrue(subItem.isHidden?.())) {
                 return null
               }
 

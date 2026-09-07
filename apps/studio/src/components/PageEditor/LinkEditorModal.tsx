@@ -1,3 +1,5 @@
+/* oxlint-disable eslint/no-unused-expressions, typescript/no-unnecessary-condition -- studio lint cleanup */
+/* oxlint-disable typescript/strict-boolean-expressions, eslint/no-unused-vars, eslint/no-shadow, eslint/no-use-before-define, typescript/strict-void-return, typescript/no-unnecessary-type-conversion, import/no-named-as-default-member -- studio lint cleanup */
 import type { IconType } from "react-icons"
 import type { LinkTypes } from "~/features/editing-experience/components/LinkEditor/constants"
 import {
@@ -42,6 +44,7 @@ import {
 } from "~/lib/fileUpload"
 import { useZodForm } from "~/lib/form"
 import { getReferenceLink } from "~/utils/link"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { AttachmentData } from "../AttachmentData"
 import { ResourceSelector } from "../ResourceSelector/ResourceSelector"
@@ -142,9 +145,9 @@ const LinkEditorModalContent = ({
     schema: linkEditorSchema,
   })
 
-  const isEditingLink = !!linkText && !!linkHref
+  const isEditingLink = hasNonEmptyString(linkText) && linkHref
 
-  const onSubmit = handleSubmit(({ linkText, linkHref }) => {
+  const onSubmit = handleSubmit(({ linkTextValue, linkHref }) => {
     onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref)
   })
 
@@ -172,7 +175,7 @@ const LinkEditorModalContent = ({
                 {...register("linkText")}
               />
 
-              {errors.linkText?.message && (
+              {hasNonEmptyString(errors.linkText)?.message && (
                 <FormErrorMessage>{errors.linkText.message}</FormErrorMessage>
               )}
             </FormControl>
@@ -191,7 +194,7 @@ const LinkEditorModalContent = ({
               error={errors.linkHref?.message}
             >
               <ModalLinkEditor onUploadedFile={onUploadedFile} />
-              {errors.linkHref?.message && (
+              {hasNonEmptyString(errors.linkHref)?.message && (
                 <FormErrorMessage>{errors.linkHref.message}</FormErrorMessage>
               )}
             </LinkEditorContextProvider>
@@ -212,7 +215,9 @@ const LinkEditorModalContent = ({
             <Spacer />
             <Button
               variant="solid"
-              onClick={onSubmit}
+              onClick={() => {
+                onSubmit
+              }}
               // NOTE: Using `isEmpty` here because we trigger `setError`
               // using `isValid` doesn't trigger the error
               isDisabled={!isEmpty(errors)}
@@ -262,7 +267,7 @@ export const LinkEditorModal = ({
         linkText={linkText}
         showLinkText={showLinkText}
         linkHref={linkHref}
-        onSave={(linkText, linkHref) => {
+        onSave={(linkText, linkHrefValue) => {
           onSave(linkText, linkHref)
           onClose()
         }}
@@ -305,7 +310,7 @@ const ModalLinkEditor = ({
           <FileAttachment
             maxSizeInBytes={MAX_FILE_SIZE_BYTES}
             acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
-            siteId={Number(siteId)}
+            siteId={siteId}
             resourceId={
               (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
             }

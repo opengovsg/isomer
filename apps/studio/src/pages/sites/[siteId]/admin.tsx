@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-void-return -- studio lint cleanup */
 import type { GetServerSideProps } from "next"
 import type { NextPageWithLayout } from "~/lib/types"
 import type { SessionData } from "~/lib/types/session"

@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/prefer-number-coercion -- studio lint cleanup */
 import type { StockFeatures } from "@tanstack/react-table"
 import { LinkOverlay } from "@chakra-ui/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"

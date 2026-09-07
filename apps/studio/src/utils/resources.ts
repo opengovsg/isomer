@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unnecessary-condition, typescript/strict-boolean-expressions, typescript/no-unnecessary-type-conversion -- studio lint cleanup */
 import type { IconType } from "react-icons"
 import type { Resource } from "~/server/modules/database/types"
 import {

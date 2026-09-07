@@ -1,25 +1,27 @@
+/* oxlint-disable typescript/strict-boolean-expressions, eslint/prefer-destructuring -- studio lint cleanup */
+import { hasNonEmptyString } from "~/utils/truthiness"
+
 import { toDisplayType } from "./toDisplayType"
 
 /**
  * Checks whether `value` is a known file type label from `toDisplayType`, e.g.
  * `"PDF"`, `"XLSX"`, `"DOCX"` (uppercase extension of an allowed upload type).
  */
-function isDisplayType(value: string): boolean {
-  return toDisplayType(`.${value.toLowerCase()}`) !== undefined
-}
+const isDisplayType = (value: string): boolean =>
+  toDisplayType(`.${value.toLowerCase()}`) !== undefined
 
 /**
  * Checks whether `value` is a file size from `formatBytes`: a non-negative number,
  * one space, then B/KB/MB/GB/TB — e.g. `"280.00 KB"`, `"1.00 MB"`, `"100.00 B"`.
  */
-function isFormattedSize(value: string): boolean {
+const isFormattedSize = (value: string): boolean => {
   const parts = value.split(" ")
   if (parts.length !== 2) {
     return false
   }
 
   const [num, unit] = parts
-  if (!num || !unit) {
+  if (!hasNonEmptyString(num || !unit)) {
     return false
   }
   // defensive programming
@@ -32,13 +34,13 @@ function isFormattedSize(value: string): boolean {
  * `buildFileUploadMetaSuffix`: `[type]`, `[size]`, or `[type, size]` — e.g.
  * `"PDF"`, `"100.00 B"`, or `"PDF, 1.00 MB"`.
  */
-function isFileUploadMetaSuffix(content: string): boolean {
+const isFileUploadMetaSuffix = (content: string): boolean => {
   const parts = content.split(", ")
 
   // Single segment: type only (e.g. "PDF") or size only (e.g. "280.00 KB").
   if (parts.length === 1) {
     const part = parts[0]
-    if (!part) {
+    if (!hasNonEmptyString(part)) {
       return false
     }
     // defensive programming
@@ -48,7 +50,7 @@ function isFileUploadMetaSuffix(content: string): boolean {
   // Two segments: type then size (e.g. "PDF, 1.00 MB").
   if (parts.length === 2) {
     const [type, size] = parts
-    if (!type || !size) {
+    if (!hasNonEmptyString(type || !size)) {
       return false
     }
     // defensive programming

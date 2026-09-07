@@ -47,7 +47,7 @@ const inviteCollaborator = async (
   await openInviteModal(page)
   await page.getByLabel("Email address").fill(email)
   // RoleBoxes are clickable cards; their accessible name is "<Role> role".
-  await page.getByRole("button", { name: new RegExp(`^${role}`) }).click()
+  await page.getByRole("button", { name: new RegExp(`^${role}`, "u") }).click()
 
   const sendBtn = page.getByRole("button", { name: "Send invite" })
   // The form debounces email + runs a whitelist check before enabling Send.

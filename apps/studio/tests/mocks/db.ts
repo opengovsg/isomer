@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/import-style -- studio lint cleanup */
 import { PrismaPg } from "@prisma/adapter-pg"
 import { PostgresDialect } from "kysely"
 import { randomUUID } from "node:crypto"
@@ -69,7 +70,7 @@ const setupPgClient = async () => {
 
 // Running migrations manually; dd-trace intercepts `exec` usage and prevents runs
 const applyMigrations = async (client: Client) => {
-  const directory = readdirSync(prismaMigrationDir).sort()
+  const directory = readdirSync(prismaMigrationDir).toSorted()
   for (const file of directory) {
     const name = `${prismaMigrationDir}/${file}`
     if (statSync(name).isDirectory()) {

@@ -1,8 +1,9 @@
+/* oxlint-disable unicorn/prefer-spread, eslint/object-shorthand -- studio lint cleanup */
 import type { NextPageWithLayout } from "~/lib/types"
 import { useDisclosure } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { BiData } from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -48,7 +49,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
 
   const [resource] = trpc.resource.getParentOf.useSuspenseQuery({
     resourceId: String(collectionId),
-    siteId: Number(siteId),
+    siteId: siteId,
   })
 
   const [metadata] = trpc.collection.getMetadata.useSuspenseQuery({
@@ -80,7 +81,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             </Button>
             <Button
               onClick={() => {
-                posthog.capture("collection_page_create_modal_opened", {
+                posthogJs.capture("collection_page_create_modal_opened", {
                   site_id: siteId,
                 })
                 onPageCreateModalOpen()

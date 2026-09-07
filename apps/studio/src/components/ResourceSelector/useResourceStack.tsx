@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- studio lint cleanup */
 import type { ResourceItemContent } from "~/schemas/resource"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { trpc } from "~/utils/trpc"

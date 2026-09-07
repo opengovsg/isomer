@@ -1,4 +1,8 @@
+/* oxlint-disable typescript/no-unnecessary-condition -- studio lint cleanup */
 import { z } from "zod"
+
+const hasNonEmptyString = (value) =>
+  value !== undefined && value !== null && value !== ""
 
 const SYSTEM_USER_EMAIL = "system@isomer.gov.sg"
 
@@ -117,7 +121,7 @@ const server = z
     // outside preview — a boot-time failure, not an operational assumption.
     if (
       data.NEXT_PUBLIC_APP_ENV !== "preview" &&
-      data.DANGEROUSLY_SET_STATIC_OTP
+      hasNonEmptyString(data.DANGEROUSLY_SET_STATIC_OTP)
     ) {
       ctx.addIssue({
         code: "custom",
@@ -199,11 +203,21 @@ const processEnv = {
   // The reusable AWS deploy workflow always forwards these as Docker
   // build-args, so an unset input arrives here as "" rather than absent —
   // normalize to undefined so `.optional()` in the schema still applies.
-  NEXT_PUBLIC_POSTHOG_ASSETS_HOST:
-    process.env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST || undefined,
-  NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST || undefined,
-  NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:
-    process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN || undefined,
+  NEXT_PUBLIC_POSTHOG_ASSETS_HOST: hasNonEmptyString(
+    process.env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST,
+  )
+    ? process.env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST
+    : undefined,
+  NEXT_PUBLIC_POSTHOG_HOST: hasNonEmptyString(
+    process.env.NEXT_PUBLIC_POSTHOG_HOST,
+  )
+    ? process.env.NEXT_PUBLIC_POSTHOG_HOST
+    : undefined,
+  NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: hasNonEmptyString(
+    process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN,
+  )
+    ? process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
+    : undefined,
   NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY:
     process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
   NEXT_PUBLIC_INTERCOM_APP_ID: process.env.NEXT_PUBLIC_INTERCOM_APP_ID,
@@ -225,20 +239,18 @@ const processEnv = {
 // @ts-expect-error Types are wonky from refinement
 let { env } = process
 
-if (!!!process.env.SKIP_ENV_VALIDATION) {
+if (!hasNonEmptyString(process.env.SKIP_ENV_VALIDATION)) {
   const isServer = globalThis.window === undefined
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Zod safeParse boundary
   const parsed = /** @type {MergedSafeParseReturn} */ (
-    isServer
-      ? server.safeParse(processEnv)
-      : // on server we can validate all env vars
-        client.safeParse(processEnv)
-    // on client we can only validate the ones that are exposed
+    isServer ? server.safeParse(processEnv) : client.safeParse(processEnv)
   )
 
   if (!parsed.success) {
     console.error(
       "❌ Invalid environment variables:",
+      // oxlint-disable-next-line typescript/no-deprecated -- z.treeifyError migration deferred
       parsed.error.flatten().fieldErrors,
     )
     throw new Error("Invalid environment variables")
@@ -247,11 +259,10 @@ if (!!!process.env.SKIP_ENV_VALIDATION) {
   env = new Proxy(parsed.data, {
     get(target, prop) {
       if (Object.prototype.toString.call(prop) !== "[object String]") {
-        return
+        return undefined
       }
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Proxy property key
       const key = /** @type {string} */ (prop)
-      // Throw a descriptive error if a server-side env var is accessed on the client
-      // Otherwise it would just be returning `undefined` and be annoying to debug
       if (!isServer && !key.startsWith("NEXT_PUBLIC_")) {
         throw new Error(
           process.env.NODE_ENV === "production"
@@ -259,16 +270,18 @@ if (!!!process.env.SKIP_ENV_VALIDATION) {
             : `❌ Attempted to access server-side environment variable '${key}' on the client`,
         )
       }
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Proxy property key
       return target[/** @type {keyof typeof target} */ (key)]
     },
   })
-} else if (process.env.STORYBOOK) {
+} else if (hasNonEmptyString(process.env.STORYBOOK)) {
   const parsed = client
     .partial()
     .safeParse(JSON.parse(process.env.STORYBOOK_ENVIRONMENT ?? "{}"))
   if (!parsed.success) {
     console.error(
       "❌ Invalid environment variables:",
+      // oxlint-disable-next-line typescript/no-deprecated -- z.treeifyError migration deferred
       parsed.error.flatten().fieldErrors,
     )
     throw new Error("Invalid environment variables")

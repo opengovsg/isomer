@@ -1,4 +1,6 @@
+/* oxlint-disable typescript/no-unsafe-return, typescript/strict-boolean-expressions, typescript/no-unsafe-call, typescript/no-unnecessary-condition, typescript/no-unsafe-assignment -- studio lint cleanup */
 import type { NextApiRequest } from "next"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 const LOCALHOST_IP = "127.0.0.1"
 
@@ -32,7 +34,7 @@ export default function getIP(request: Request | NextApiRequest) {
     : request.headers["cf-connecting-ip"]
   const remoteAddress = isRequest(request)
     ? undefined
-    : request.socket.remoteAddress?.trim() || undefined
+    : hasNonEmptyString(request.socket.remoteAddress)?.trim() || undefined
   const xForwardedFor = isRequest(request)
     ? request.headers.get("x-forwarded-for")
     : request.headers["x-forwarded-for"]

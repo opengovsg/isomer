@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/func-style -- studio lint cleanup */
 import { scryptSync } from "node:crypto"
 import { db } from "~/server/modules/database/database"
 

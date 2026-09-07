@@ -5,6 +5,7 @@ import { useLinkEditorFileMetaSuffix } from "../useLinkEditorFileMetaSuffix"
 
 /** Minimal stand-in for browser `File` (implementation only uses `name` and `size`). */
 // SAFETY: test helper only supplies the File fields read by the suffix hook
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
 const mockFile = (name: string, size: number): File => ({ name, size }) as File
 
 const FILE_HREF = "/123/550e8400-e29b-41d4-a716-446655440000/doc.pdf"

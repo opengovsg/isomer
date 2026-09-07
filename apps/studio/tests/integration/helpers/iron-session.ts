@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-object-as-default-parameter, typescript/no-dynamic-delete -- studio lint cleanup */
 import type { NextApiRequest, NextApiResponse } from "next"
 import type { RequestOptions, ResponseOptions } from "node-mocks-http"
 import type { Session } from "~/lib/types/session"
@@ -124,8 +125,11 @@ export const createTestUser = (): Omit<User, "id"> => ({
 // `Partial<User>` to `User`
 export const applyAuthedSession = async (user?: User) => {
   const authedUser = await auth(user ?? createTestUser())
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   const session = applySession()
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: auth() returns a user id compatible with the session userId branded type.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   session.userId = authedUser.id as typeof session.userId
   await session.save()
   return session

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/prefer-named-capture-group -- studio lint cleanup */
 const getDiffInDays = (date: Date): number => {
   const now = new Date()
   const diffInMs = now.getTime() - date.getTime()

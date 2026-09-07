@@ -1,3 +1,6 @@
+const hasNonEmptyString = (value) =>
+  value !== undefined && value !== null && value !== ""
+
 /**
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
  * for Docker builds.
@@ -86,12 +89,12 @@ const ContentSecurityPolicy = `
     https://*.browser-intake-datadoghq.com
     https://vitals.vercel-insights.com
     https://*.amazonaws.com
-    ${env.R2_ACCOUNT_ID ? `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com` : ""}
+    ${hasNonEmptyString(env.R2_ACCOUNT_ID) ? `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com` : ""}
     https://*.wogaa.sg
     https://placehold.co
     https://cdn.growthbook.io
     ${
-      env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+      hasNonEmptyString(env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME)
         ? `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
         : "https://*.by.gov.sg"
     }
@@ -141,7 +144,7 @@ const ContentSecurityPolicy = `
 `
 
 /**
- * @link https://nextjs.org/docs/api-reference/next.config.js/introduction
+ * @see https://nextjs.org/docs/api-reference/next.config.js/introduction
  */
 /** @type {import("next").NextConfig} */
 const config = {
@@ -170,16 +173,16 @@ const config = {
     "@opengovsg/validators",
   ],
   images: {
-    remotePatterns: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+    remotePatterns: hasNonEmptyString(env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME)
       ? [
           {
             hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
-            protocol: /** @type {"https"} */ ("https"),
+            protocol: "https",
           },
         ]
       : [],
   },
-  async headers() {
+  headers() {
     return [
       {
         headers: [

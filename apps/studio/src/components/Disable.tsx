@@ -1,5 +1,6 @@
 import type { PropsWithChildren, ReactNode } from "react"
 import { Box } from "@chakra-ui/react"
+import { isNullableBooleanTrue } from "~/utils/truthiness"
 
 interface DisableProps {
   when?: boolean
@@ -9,7 +10,7 @@ export const Disable = ({
   when,
   children,
 }: PropsWithChildren<DisableProps>): ReactNode =>
-  when ? (
+  isNullableBooleanTrue(when) ? (
     // NOTE: This is done so that the cursor has the disabled icon
     // while not permitting any `onClick` events.
     // Combining them into the same element leads to

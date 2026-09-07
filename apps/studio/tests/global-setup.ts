@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-anonymous-default-export -- studio lint cleanup */
 import { stringify } from "superjson"
 
 import type { ContainerInformation } from "./common"

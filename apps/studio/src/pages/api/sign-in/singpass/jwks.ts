@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/consistent-return, eslint/func-style -- studio lint cleanup */
 import type { NextApiRequest, NextApiResponse } from "next"
 import { calculateJwkThumbprint, exportJWK } from "jose"
 import crypto from "node:crypto"

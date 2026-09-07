@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/prefer-destructuring -- studio lint cleanup */
 import { expect, test } from "@playwright/test"
 import crypto from "node:crypto"
 import { db } from "~/server/modules/database/database"

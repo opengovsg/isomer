@@ -109,8 +109,11 @@ export const createCollectionFromLocal = async ({
 
         const blob = await tx
           .insertInto("Blob")
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           .values({
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
             // SAFETY: parsedFileContent was validated against collection schema before insert.
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
             content: parsedFileContent as PrismaJson.BlobJsonContent,
             createdAt: new Date(),
             updatedAt: new Date(),

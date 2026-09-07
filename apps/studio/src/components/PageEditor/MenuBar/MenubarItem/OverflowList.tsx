@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- studio lint cleanup */
 import {
   HStack,
   Icon,

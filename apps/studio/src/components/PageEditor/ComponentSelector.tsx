@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-assignment, typescript/strict-boolean-expressions, eslint/no-unused-vars -- studio lint cleanup */
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { RequireAllOrNone } from "type-fest"
 import type { DrawerState } from "~/types/editorDrawer"
@@ -8,6 +9,7 @@ import { useMemo } from "react"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 import { IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import { isNullableBooleanTrue } from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { SectionType } from "./types"
@@ -105,7 +107,7 @@ const BlockItem = ({
     </chakra.button>
   )
 
-  if (isDisabled) {
+  if (isNullableBooleanTrue(isDisabled)) {
     return <TouchableTooltip label={disabledText}>{button}</TouchableTooltip>
   }
 
@@ -260,7 +262,7 @@ const ComponentSelector = () => {
           <Section key={section.label}>
             <SectionTitle title={section.label} />
             <BlockList>
-              {section.types.map((type) => {
+              {section.types.map((typeValue) => {
                 const blockMeta = BLOCK_TO_META[type]
                 const isDisabled =
                   type === "childrenpages" &&
@@ -275,7 +277,7 @@ const ComponentSelector = () => {
                     icon={TYPE_TO_ICON[type]}
                     onProceed={onProceed}
                     sectionType={type}
-                    isDisabled={!!isDisabled}
+                    isDisabled={isDisabled}
                     disabledText="This page already has a child pages block."
                     {...blockMeta}
                   />

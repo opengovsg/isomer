@@ -1,3 +1,4 @@
+/* oxlint-disable import/no-cycle -- studio lint cleanup */
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { Grid, GridItem } from "@chakra-ui/react"
 import { useMemo, useState } from "react"

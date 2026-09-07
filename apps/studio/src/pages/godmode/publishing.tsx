@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions -- studio lint cleanup */
 import type { GetServerSideProps } from "next"
 import type { NextPageWithLayout } from "~/lib/types"
 import {
@@ -22,6 +23,7 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { requireGodModeAdmin } from "~/features/godmode/serverSideProps"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 export const getServerSideProps: GetServerSideProps = async (context) =>
@@ -109,7 +111,7 @@ const GodModePublishingPage: NextPageWithLayout = () => {
                 <Td>{site.config.siteName}</Td>
                 <Td>{site.codeBuildId || "-"}</Td>
                 <Td>
-                  {site.codeBuildId && (
+                  {hasNonEmptyString(site.codeBuildId) && (
                     <Button
                       size="xs"
                       colorScheme="blue"

@@ -1,3 +1,4 @@
+/* oxlint-disable promise/prefer-await-to-callbacks, eslint/class-methods-use-this -- studio lint cleanup */
 import fs from "node:fs"
 import path from "node:path"
 

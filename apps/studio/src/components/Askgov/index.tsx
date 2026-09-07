@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define -- studio lint cleanup */
 const ASKGOV_WIDGET_STYLE = {
   alignItems: "center",
   backdropFilter: "blur(16px)",
@@ -34,6 +35,7 @@ const ASKGOV_ICON_STYLE = { color: "#064cbd" } as const
 export const AskgovWidget = () => (
   <div style={ASKGOV_WIDGET_STYLE}>
     <div style={ASKGOV_ICON_CONTAINER_STYLE}>
+      deferred
       <ChatButtonIcon />
     </div>
   </div>

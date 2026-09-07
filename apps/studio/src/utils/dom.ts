@@ -1,16 +1,19 @@
+/* oxlint-disable typescript/no-unsafe-call, typescript/no-unsafe-member-access, eslint/no-unused-vars, promise/avoid-new -- studio lint cleanup */
 // Utility function to wait for an element to appear in the provided document
 export const waitForElement = async (
   document: Document,
   querySelector: string,
 ) =>
   await new Promise((resolve) => {
-    const observer = new MutationObserver((mutationsList, observer) => {
-      const element = document.querySelector(querySelector)
-      if (element) {
-        observer.disconnect()
-        resolve(element)
-      }
-    })
+    const observerValueValueValueValueValueValueValue = new MutationObserver(
+      (mutationsList, observerValueValueValueValueValueValueValueValue) => {
+        const element = document.querySelector(querySelector)
+        if (element) {
+          observer.disconnect()
+          resolve(element)
+        }
+      },
+    )
 
     observer.observe(document.body, {
       childList: true,

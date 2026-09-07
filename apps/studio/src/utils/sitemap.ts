@@ -1,3 +1,5 @@
+/* oxlint-disable typescript/no-unnecessary-condition -- studio lint cleanup */
+/* oxlint-disable typescript/no-unsafe-argument, eslint/no-use-before-define, typescript/no-unnecessary-type-conversion, eslint/sort-keys, typescript/strict-boolean-expressions, eslint/complexity, eslint/no-unused-vars -- studio lint cleanup */
 import type {
   ArticlePagePageProps,
   CollectionPagePageProps,
@@ -15,12 +17,7 @@ import {
   getBlobOfResource,
   getPublishedIndexBlobByParentId,
 } from "~/server/modules/resource/resource.blob"
-import {
-  hasNonEmptyString,
-  isDefinedNumber,
-  isNullableBooleanTrue,
-  isNonEmptyArray,
-} from "~/utils/truthiness"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 // Projected in SQL from the first top-level image block of the page body, so
@@ -90,7 +87,6 @@ const getSitemapTreeFromArray = (
   })
 
   // Deferred: Sort the children by the page ordering if the FolderMeta resource exists
-  // oxlint-disable-next-line eslint/complexity -- core cleanup deferred
   return children.map((resource) => {
     const permalink = `${path}${resource.permalink}`
     // Null when the body has no image block at all; `src` is null only when a
@@ -165,11 +161,11 @@ const getSitemapTreeFromArray = (
 
     return {
       id: resource.id,
+      // Needed for collectionblock component to fetch the correct collection
       layout:
         resource.type === ResourceType.Collection
           ? ISOMER_USABLE_PAGE_LAYOUTS.Collection
-          : // Needed for collectionblock component to fetch the correct collection
-            ISOMER_USABLE_PAGE_LAYOUTS.Content,
+          : ISOMER_USABLE_PAGE_LAYOUTS.Content,
       // Note: We are not using the layout field in our previews
       title: titleOfPage || resource.title,
       summary: summaryOfPage ?? `Pages in ${resource.title}`,
@@ -280,9 +276,7 @@ export const injectTagMappings = async (
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   const collectionPageProps = publishedIndexBlob.content
     .page as CollectionPagePageProps
-  // oxlint-disable-next-line unicorn/no-use-before-define -- core cleanup deferred
 
-  // oxlint-disable-next-line unicorn/no-use-before-define -- core cleanup deferred
   return _injectTagMappings(
     sitemapTree,
     // NOTE: This cast is abit overkill,

@@ -1,3 +1,4 @@
+/* oxlint-disable promise/avoid-new -- studio lint cleanup */
 import type { RouterOutput } from "~/utils/trpc"
 
 import { trpcMsw } from "../mockTrpc"
@@ -102,6 +103,7 @@ export const resourceHandlers = {
           title: item.title,
           permalink: item.permalink,
           // SAFETY: DEFAULT_PAGE_ITEMS only uses these child resource types.
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           type: item.type as
             | "Page"
             | "Folder"
@@ -231,7 +233,7 @@ export const resourceHandlers = {
         resources: [],
         recentlyEdited: Array.from({ length: 5 }, (_, i) => {
           const title = `testing ${i}`
-          const permalink = title.toLowerCase().replaceAll(' ', "-")
+          const permalink = title.toLowerCase().replaceAll(" ", "-")
           return {
             id: (5 - i).toString(),
             title,

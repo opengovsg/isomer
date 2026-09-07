@@ -190,6 +190,7 @@ const readBlobPageContent = (
   content: PrismaJson.BlobJsonContent,
 ): { page: { tagged?: string[] } } =>
   // SAFETY: e2e fixtures only read optional tagged tags from article page blobs.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   content as { page: { tagged?: string[] } }
 
 export const readBlobContent = async (blobId: string) => {

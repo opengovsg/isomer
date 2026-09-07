@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-call -- studio lint cleanup */
 import type { UnwrapTagged } from "type-fest"
 import type { CodeBuildJobs } from "~prisma/generated/prisma/client"
 import { nanoid } from "nanoid"
@@ -11,6 +12,11 @@ import {
   RoleType,
 } from "~prisma/generated/generatedEnums"
 import { db, jsonb } from "~server/db"
+
+import {
+  hasNonEmptyString,
+  isNullableBooleanTrue,
+} from "../../src/utils/truthiness"
 
 interface SetupPermissionsProps {
   userId?: string
@@ -27,7 +33,7 @@ const setupPermissions = async ({
   isDeleted = false,
   useCurrentTime = false,
 }: SetupPermissionsProps) => {
-  if (!userId) {
+  if (!hasNonEmptyString(userId)) {
     throw new Error("userId is a required field")
   }
 
@@ -60,7 +66,7 @@ export const setupAdminPermissions = async (
 ) => await setupPermissions({ ...props, role: RoleType.Admin })
 
 export const setupSite = async (siteId?: number, fetch?: boolean) => {
-  if (siteId !== undefined && fetch) {
+  if (isNullableBooleanTrue(siteId !== undefined && fetch)) {
     return await db.transaction().execute(async (tx) => {
       const site = await tx
         .selectFrom("Site")
@@ -309,13 +315,13 @@ export const setupPageResource = async ({
     .returningAll()
     .executeTakeFirstOrThrow()
 
-  if (state === ResourceState.Published && !userId) {
+  if (hasNonEmptyString(state === ResourceState.Published && !userId)) {
     throw new Error(
       "Precondition failed, we need a valid `userId` in order to publish",
     )
   }
 
-  if (state === ResourceState.Published && userId) {
+  if (hasNonEmptyString(state === ResourceState.Published && userId)) {
     const version = await db
       .insertInto("Version")
       .values({
@@ -495,13 +501,13 @@ export const setupCollectionLink = async ({
     .returningAll()
     .executeTakeFirstOrThrow()
 
-  if (state === ResourceState.Published && !userId) {
+  if (hasNonEmptyString(state === ResourceState.Published && !userId)) {
     throw new Error(
       "Precondition failed, we need a valid `userId` in order to publish",
     )
   }
 
-  if (state === ResourceState.Published && userId) {
+  if (hasNonEmptyString(state === ResourceState.Published && userId)) {
     const version = await db
       .insertInto("Version")
       .values({
@@ -720,7 +726,7 @@ export const setupCodeBuildJob = async ({
   omitResourceId = false,
 }: SetupCodeBuildJobParams) => {
   const buildId = buildIdFromArn(arn)
-  if (!buildId) {
+  if (!hasNonEmptyString(buildId)) {
     throw new Error(`Invalid buildId format: ${arn}`)
   }
   const { page, site } = await setupPageResource({

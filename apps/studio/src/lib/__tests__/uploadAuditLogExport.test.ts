@@ -46,6 +46,7 @@ describe("uploadAuditLogExport", () => {
     expect(doneMock).toHaveBeenCalledTimes(1)
 
     // SAFETY: uploadCtorMock is wired to the Upload constructor under test
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     const options = uploadCtorMock.mock.calls[0]?.[0] as ConstructorParameters<
       typeof UploadType
     >[0]

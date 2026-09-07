@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/no-await-expression-member, eslint/require-unicode-regexp -- studio lint cleanup */
 import type { Page } from "@playwright/test"
 import { expect, test } from "@playwright/test"
 import crypto from "node:crypto"
@@ -38,7 +39,9 @@ const createPageViaWizard = async (
   await page.getByRole("button", { name: "Start editing" }).click()
 
   // Router pushes to /sites/{siteId}/pages/{pageId}.
-  await page.waitForURL(new RegExp(`/sites/u${getSeedSiteId()}/pages/u\\d+$`))
+  await page.waitForURL(
+    new RegExp(`/sites/u${getSeedSiteId()}/pages/uuuuu\\d+$`),
+  )
 }
 
 // A folder isn't part of the seed, so create one per-test to nest pages under.

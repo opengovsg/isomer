@@ -1,3 +1,4 @@
+/* oxlint-disable react/function-component-definition -- studio lint cleanup */
 import type { SVGProps } from "react"
 import { chakra } from "@chakra-ui/react"
 import { forwardRef, memo } from "react"

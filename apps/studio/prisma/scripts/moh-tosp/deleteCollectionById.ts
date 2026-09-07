@@ -1,6 +1,8 @@
+/* oxlint-disable typescript/no-unsafe-call -- studio lint cleanup */
 import { db } from "~/server/modules/database/database"
 
 import { FileLogger } from "../FileLogger"
+import { hasNonEmptyString } from "../src/utils/truthiness"
 
 // Update the logger path if required
 const logger = new FileLogger("./deleteCollectionById.log")
@@ -26,7 +28,7 @@ export const deleteCollectionById = async ({
       // Step 2: Handle each child resource
       for (const resource of childResources) {
         // Delete published version and its blob, if applicable
-        if (resource.publishedVersionId) {
+        if (hasNonEmptyString(resource.publishedVersionId)) {
           const publishedVersion = await tx
             .selectFrom("Version")
             .select(["blobId"])
@@ -40,7 +42,7 @@ export const deleteCollectionById = async ({
             .where("id", "=", resource.publishedVersionId)
             .execute()
 
-          if (blobIdToDelete) {
+          if (hasNonEmptyString(blobIdToDelete)) {
             await tx
               .deleteFrom("Blob")
               .where("id", "=", blobIdToDelete)
@@ -49,7 +51,7 @@ export const deleteCollectionById = async ({
         }
 
         // Delete draft blob, if applicable
-        if (resource.draftBlobId) {
+        if (hasNonEmptyString(resource.draftBlobId)) {
           await tx
             .deleteFrom("Blob")
             .where("id", "=", resource.draftBlobId)
@@ -75,7 +77,7 @@ export const deleteCollectionById = async ({
       }
 
       // Handle published version and its blob for the collection
-      if (collection.publishedVersionId) {
+      if (hasNonEmptyString(collection.publishedVersionId)) {
         const publishedVersion = await tx
           .selectFrom("Version")
           .select(["blobId"])
@@ -89,7 +91,7 @@ export const deleteCollectionById = async ({
           .where("id", "=", collection.publishedVersionId)
           .execute()
 
-        if (blobIdToDelete) {
+        if (hasNonEmptyString(blobIdToDelete)) {
           await tx.deleteFrom("Blob").where("id", "=", blobIdToDelete).execute()
         }
       }

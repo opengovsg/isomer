@@ -1,9 +1,10 @@
+/* oxlint-disable typescript/promise-function-async -- studio lint cleanup */
 import type { ReactNode } from "react"
 import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { PermissionsErrorBoundary } from "~/features/dashboard/PermissionsErrorPage"
 import { Can, PermissionsProvider } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { sitePageSchema } from "~/pages/sites/[siteId]"
+import { sitePageSchema } from "~/pages/sites/[siteId]/sitePageSchema"
 import { DefaultLayout } from "~/templates/layouts/DefaultLayout"
 
 interface ErrorProps {

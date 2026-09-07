@@ -1,5 +1,7 @@
+/* oxlint-disable node/callback-return, promise/prefer-await-to-callbacks -- studio lint cleanup */
 import { useRouter } from "next/router"
 import { useEffect } from "react"
+import { isNullableBooleanTrue } from "~/utils/truthiness"
 
 interface UseNavigationEffectProps {
   isOpen?: boolean
@@ -16,7 +18,7 @@ export const useNavigationEffect = ({
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
-      if (isDirty) {
+      if (isNullableBooleanTrue(isDirty)) {
         router.events.off("routeChangeStart", handleRouteChange)
         callback(url)
         router.events.emit("routeChangeError")
@@ -25,7 +27,7 @@ export const useNavigationEffect = ({
       }
     }
 
-    if (!isOpen) {
+    if (!isNullableBooleanTrue(isOpen)) {
       router.events.on("routeChangeStart", handleRouteChange)
     }
     return () => {

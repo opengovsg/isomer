@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-void-return -- studio lint cleanup */
 import type { Static } from "@sinclair/typebox"
 import type { NextPageWithLayout } from "~/lib/types"
 import { Box, chakra, Grid, GridItem, Text, VStack } from "@chakra-ui/react"

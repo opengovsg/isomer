@@ -1,8 +1,9 @@
+/* oxlint-disable unicorn/prefer-number-coercion, unicorn/prefer-spread -- studio lint cleanup */
 import type { NextPageWithLayout } from "~/lib/types"
 import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -56,8 +57,8 @@ const FolderPage: NextPageWithLayout = () => {
   })
 
   const [{ title }] = trpc.folder.getMetadata.useSuspenseQuery({
-    resourceId: Number.parseInt(folderId),
-    siteId: Number.parseInt(siteId),
+    resourceId: Number.parseInt(folderId, 10),
+    siteId: Number.parseInt(siteId, 10),
   })
 
   return (
@@ -97,7 +98,7 @@ const FolderPage: NextPageWithLayout = () => {
                     <Menu.List>
                       <Menu.Item
                         onClick={() => {
-                          posthog.capture("folder_create_modal_opened", {
+                          posthogJs.capture("folder_create_modal_opened", {
                             parent_type: "folder",
                             site_id: siteId,
                           })
@@ -109,7 +110,7 @@ const FolderPage: NextPageWithLayout = () => {
                       </Menu.Item>
                       <Menu.Item
                         onClick={() => {
-                          posthog.capture("page_create_modal_opened", {
+                          posthogJs.capture("page_create_modal_opened", {
                             parent_type: "folder",
                             site_id: siteId,
                           })
@@ -121,7 +122,7 @@ const FolderPage: NextPageWithLayout = () => {
                       </Menu.Item>
                       <Menu.Item
                         onClick={() => {
-                          posthog.capture("collection_create_modal_opened", {
+                          posthogJs.capture("collection_create_modal_opened", {
                             parent_type: "folder",
                             site_id: siteId,
                           })
@@ -145,32 +146,32 @@ const FolderPage: NextPageWithLayout = () => {
           resourceId={folderId}
         />
         <ResourceTable
-          siteId={Number.parseInt(siteId)}
-          resourceId={Number.parseInt(folderId)}
+          siteId={Number.parseInt(siteId, 10)}
+          resourceId={Number.parseInt(folderId, 10)}
         />
       </DashboardLayout>
       <CreatePageModal
         isOpen={isPageCreateModalOpen}
         onClose={onPageCreateModalClose}
-        siteId={Number.parseInt(siteId)}
-        folderId={Number.parseInt(folderId)}
+        siteId={Number.parseInt(siteId, 10)}
+        folderId={Number.parseInt(folderId, 10)}
       />
       <CreateFolderModal
         isOpen={isFolderCreateModalOpen}
         onClose={onFolderCreateModalClose}
-        siteId={Number.parseInt(siteId)}
-        parentFolderId={Number.parseInt(folderId)}
+        siteId={Number.parseInt(siteId, 10)}
+        parentFolderId={Number.parseInt(folderId, 10)}
       />
       <CreateCollectionModal
         isOpen={isCollectionCreateModalOpen}
         onClose={onCollectionCreateModalClose}
-        siteId={Number.parseInt(siteId)}
-        parentFolderId={Number.parseInt(folderId)}
+        siteId={Number.parseInt(siteId, 10)}
+        parentFolderId={Number.parseInt(folderId, 10)}
       />
       <FolderSettingsModal />
       <MoveResourceModal />
       <PageSettingsModal />
-      <DeleteResourceModal siteId={Number.parseInt(siteId)} />
+      <DeleteResourceModal siteId={Number.parseInt(siteId, 10)} />
     </>
   )
 }

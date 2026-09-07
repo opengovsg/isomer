@@ -1,3 +1,4 @@
+/* oxlint-disable anti-slop/no-unknown-parameters, eslint/func-style, jsdoc/check-tag-names -- studio lint cleanup */
 /**
  * Adds seed data to your db
  *
@@ -239,7 +240,7 @@ async function main() {
 }
 
 await main()
-  .catch((error) => {
+  .catch((error: unknown) => {
     console.error(error)
     process.exit(1)
   })

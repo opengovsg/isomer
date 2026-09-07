@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-script-url -- studio lint cleanup */
 import { describe, expect, it } from "vitest"
 
 import { linkEditorSchema } from "./LinkEditorModal"

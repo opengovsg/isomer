@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/require-unicode-regexp, eslint/prefer-named-capture-group, typescript/no-unsafe-assignment, typescript/no-unsafe-call -- studio lint cleanup */
 const path = require("node:path")
 const { CleanWebpackPlugin } = require("clean-webpack-plugin")
 const GlobEntries = require("webpack-glob-entries")

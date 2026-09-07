@@ -8,6 +8,7 @@ const makeNextApiRequest = (
   remoteAddress?: string,
 ): NextApiRequest =>
   // SAFETY: test helper supplies only the NextApiRequest fields read by getIP
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   ({
     headers,
     socket: {

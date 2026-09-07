@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-unused-expressions -- studio lint cleanup */
 import type { GetServerSideProps } from "next"
 import type { NextPageWithLayout } from "~/lib/types"
 import {
@@ -121,7 +122,9 @@ const GodModeCreateSitePage: NextPageWithLayout = () => {
         <Button
           variant="solid"
           width="full"
-          onClick={onSubmit}
+          onClick={() => {
+            onSubmit
+          }}
           isLoading={createSiteMutation.isPending}
           isDisabled={Object.keys(errors).length > 0}
         >

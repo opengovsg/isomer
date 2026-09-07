@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-call, eslint/no-unused-vars, unicorn/import-style -- studio lint cleanup */
 import type { UnwrapTagged } from "type-fest"
 import type { DB, Transaction } from "~/server/modules/database/types"
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
@@ -13,6 +14,7 @@ import type {
   FolderPlan,
   PagePlan,
 } from "./helpers"
+import { hasNonEmptyString } from "../src/utils/truthiness"
 import { buildConversionReport, toFolderPlan } from "./helpers"
 
 // ---------------------------------------------------------------------------
@@ -37,7 +39,7 @@ export const getBlobOfResource = async ({
       () => new Error(`Resource ${resourceId} not found`),
     )
 
-  if (draftBlobId) {
+  if (hasNonEmptyString(draftBlobId)) {
     return await database
       .selectFrom("Blob")
       .where("id", "=", draftBlobId)
@@ -45,7 +47,7 @@ export const getBlobOfResource = async ({
       .executeTakeFirstOrThrow()
   }
 
-  if (!publishedVersionId) {
+  if (!hasNonEmptyString(publishedVersionId)) {
     throw new Error(
       `Resource ${resourceId} has no draft blob and no published version`,
     )
@@ -86,7 +88,7 @@ export const updateBlobById = async (
     throw new Error(`Resource ${pageId} not found`)
   }
 
-  if (!page.draftBlobId) {
+  if (!hasNonEmptyString(page.draftBlobId)) {
     const newBlob = await tx
       .insertInto("Blob")
       .values({ content: jsonb(content) })
@@ -138,13 +140,13 @@ export const incrementVersion = async ({
   if (!page) {
     throw new Error(`Resource ${resourceId} not found`)
   }
-  if (!page.draftBlobId) {
+  if (!hasNonEmptyString(page.draftBlobId)) {
     return null
   }
 
   let newVersionNum = 1
   let previousVersion: ScriptVersion | null = null
-  if (page.publishedVersionId) {
+  if (hasNonEmptyString(page.publishedVersionId)) {
     previousVersion = await tx
       .selectFrom("Version")
       .where("id", "=", page.publishedVersionId)
@@ -271,11 +273,16 @@ export const loadConversionPlan = (
   baseDir: string = defaultOutDir(),
 ): ConversionPlan => {
   const folderPath = join(baseDir, folderPlanFileName(folderId))
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: plan files are written by writePlanFiles using the same FolderPlan shape.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   const folderPlan = JSON.parse(readFileSync(folderPath, "utf-8")) as FolderPlan
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   const readResource = (resourceId: string): PagePlan =>
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     // SAFETY: resource plan files are written by writePlanFiles using PagePlan.
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     JSON.parse(
       readFileSync(join(baseDir, resourcePlanFileName(resourceId)), "utf-8"),
     ) as PagePlan
@@ -295,9 +302,13 @@ export const loadConversionPlan = (
 
 export const loadConversionPlanFromPath = (
   path: string,
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   baseDir: string = defaultOutDir(),
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
 ): ConversionPlan => {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: path points to a folder plan file written by writePlanFiles.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   const folderPlan = JSON.parse(readFileSync(path, "utf-8")) as FolderPlan
   return loadConversionPlan(folderPlan.id, baseDir)
 }

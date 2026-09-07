@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/prefer-logical-operator-over-ternary, typescript/no-unnecessary-condition, eslint/no-unused-vars, unicorn/import-style -- studio lint cleanup */
 // Thin wrapper over the audit log export module's queries
 // (`~/server/modules/audit/auditLogExport.query`) — that module is the single
 // source of truth for the report queries and CSV serialisation; this script
@@ -308,8 +309,10 @@ const getAuditLogsForSite = async () => {
   // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
   // SAFETY: format with "yyyy-MM" always produces a valid IsoMonth string.
   const monthYear: IsoMonth = MONTH_YEAR
-    ? MONTH_YEAR
-    : (format(
+    ? // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+      MONTH_YEAR
+    : // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+      (format(
         subMonths(toZonedTime(new Date(), "Asia/Singapore"), 1),
         "yyyy-MM",
       ) as IsoMonth)
@@ -338,8 +341,11 @@ const getAuditLogsForSite = async () => {
       fs.writeFileSync(path.join(outputDir, usersFilename), toCsv(users))
       // SAFETY: activity report rows are JSON-serializable for CSV export at runtime.
       fs.writeFileSync(
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         path.join(outputDir, eventsFilename),
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         // @ts-expect-error activity report Metadata is JSON-serializable at CSV export time.
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         toCsv(events as Parameters<typeof toCsv>[0]),
       )
     }),

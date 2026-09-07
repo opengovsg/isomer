@@ -1,5 +1,6 @@
 import { formatBytes } from "@opengovsg/isomer-components"
 import { getFileExtension } from "~/utils/getFileExtension"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { toDisplayType } from "./toDisplayType"
 
@@ -14,10 +15,10 @@ export function buildFileUploadMetaSuffix(file: File): string {
   const size = formatBytes(file.size)
 
   const parts: string[] = []
-  if (type) {
+  if (hasNonEmptyString(type)) {
     parts.push(type)
   }
-  if (size) {
+  if (hasNonEmptyString(size)) {
     parts.push(size)
   }
 

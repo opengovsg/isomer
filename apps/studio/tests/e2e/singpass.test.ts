@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unnecessary-type-conversion -- studio lint cleanup */
 import { test as base, expect } from "@playwright/test"
 import crypto from "node:crypto"
 import { env } from "~/env.mjs"

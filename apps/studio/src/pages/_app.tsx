@@ -1,3 +1,4 @@
+/* oxlint-disable node/no-process-env, eslint/no-use-before-define, eslint/sort-keys -- studio lint cleanup */
 import "@fontsource/ibm-plex-mono"
 // Import if using code textStyles.
 import "inter-ui/inter.css"
@@ -22,6 +23,7 @@ import { LoginStateProvider } from "~/features/auth"
 import { DefaultLayout } from "~/templates/layouts/DefaultLayout"
 import { theme } from "~/theme"
 import { trpc } from "~/utils/trpc"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 type AppPropsWithAuthAndLayout = AppProps & {
   Component: NextPageWithLayout
@@ -45,7 +47,7 @@ datadogRum.init({
   // inject tracing information inside headers, to correlate RUM with backend traces
   allowedTracingUrls: [
     (url) => {
-      if (!env.NEXT_PUBLIC_APP_URL) {
+      if (!hasNonEmptyString(env.NEXT_PUBLIC_APP_URL)) {
         return false
       }
       return url.includes(env.NEXT_PUBLIC_APP_URL)
@@ -75,13 +77,11 @@ const MyApp: AppType = (props: AppPropsWithAuthAndLayout) => (
               <Stack spacing={0} height="$100vh" flexDirection="column">
                 <AppBanner />
                 <VersionWrapper />
+
                 <ChildWithLayout {...props} />
-                {
-                  // oxlint-disable-next-line node/no-process-env
-                  process.env.NODE_ENV !== "production" && (
-                    <ReactQueryDevtools initialIsOpen={false} />
-                  )
-                }
+                {process.env.NODE_ENV !== "production" && (
+                  <ReactQueryDevtools initialIsOpen={false} />
+                )}
               </Stack>
             </Suspense>
           </ErrorBoundary>

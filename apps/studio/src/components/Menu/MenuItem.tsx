@@ -1,6 +1,7 @@
 import type { MenuItemProps as ChakraMenuItemProps } from "@chakra-ui/react"
 import { MenuItem as ChakraMenuItem, cssVar, Tooltip } from "@chakra-ui/react"
 import { useMemo } from "react"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 const $bg = cssVar("menu-bg")
 
@@ -45,7 +46,7 @@ export const MenuItem = ({
 
   const menuItem = <ChakraMenuItem {...menuItemProps} sx={extraStyles} />
 
-  return tooltip ? (
+  return hasNonEmptyString(tooltip) ? (
     <Tooltip label={tooltip} placement="right">
       {menuItem}
     </Tooltip>

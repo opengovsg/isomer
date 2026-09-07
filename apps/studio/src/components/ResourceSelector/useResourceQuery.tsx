@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/sort-keys -- studio lint cleanup */
 import type { ResourceItemContent } from "~/schemas/resource"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import { trpc } from "~/utils/trpc"

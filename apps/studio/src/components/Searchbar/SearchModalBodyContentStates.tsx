@@ -4,6 +4,7 @@ import type { SearchResultResource } from "~/server/modules/resource/resource.ty
 import { ModalBody as ChakraModalBody, Text, VStack } from "@chakra-ui/react"
 import { useResourceLocalViewHistory } from "~/hooks/useResourceLocalViewHistory"
 import { trpc } from "~/utils/trpc"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { SearchResultProps } from "./SearchResult"
@@ -68,7 +69,7 @@ const HeaderTextAndContent = ({
   content: React.ReactNode
 } & ChakraProps) => (
   <VStack gap="0.75rem" align="start" w="full" {...props}>
-    {headerText && (
+    {hasNonEmptyString(headerText) && (
       <Text textColor="base.content.medium" textStyle="body-2">
         {headerText}
       </Text>

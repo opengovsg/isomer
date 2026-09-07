@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/parameter-properties -- studio lint cleanup */
 import type { Page } from "@playwright/test"
 import { expect } from "@playwright/test"
 

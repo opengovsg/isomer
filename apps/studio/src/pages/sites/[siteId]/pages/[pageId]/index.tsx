@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-use-before-define -- studio lint cleanup */
 import type { NextPageWithLayout } from "~/lib/types"
 import { Grid, GridItem } from "@chakra-ui/react"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -48,6 +49,7 @@ const EditPage: NextPageWithLayout = () => {
       updatedAt={updatedAt}
       title={title}
     >
+      deferred
       <PageEditingView />
     </EditorDrawerProvider>
   )

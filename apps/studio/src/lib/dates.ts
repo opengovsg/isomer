@@ -1,3 +1,4 @@
+/* oxlint-disable react-doctor/js-hoist-intl, eslint/no-unused-vars, typescript/consistent-return, eslint/no-param-reassign -- studio lint cleanup */
 import { format } from "date-fns/format"
 
 export const formatRelativeTime = (
@@ -12,7 +13,7 @@ export const formatRelativeTime = (
   baseDate ??= new Date()
 
   let deltaSeconds = (date.getTime() - baseDate.getTime()) / 1000
-  const isFuture = deltaSeconds > 0 ? true : false
+  const isFuture = deltaSeconds > 0
 
   let t
   deltaSeconds = Math.abs(deltaSeconds)
@@ -37,7 +38,9 @@ export const formatRelativeTime = (
  * https://github.com/tc39/proposal-temporal/issues/2257#issuecomment-1152070209
  * @returns The timezone abbreviation or a fallback GMT offset string.
  */
-export const getTimezoneAbbreviation = (format: "short" | "long" = "short") =>
+export const getTimezoneAbbreviation = (
+  formatValue: "short" | "long" = "short",
+) =>
   new Intl.DateTimeFormat("en", {
     timeZoneName: format,
   })

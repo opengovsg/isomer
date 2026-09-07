@@ -1,3 +1,4 @@
+/* oxlint-disable react/function-component-definition, react/display-name -- studio lint cleanup */
 import type {
   FormatOptionLabelMeta,
   PlaceholderProps,
@@ -92,7 +93,7 @@ export const TimeSelect = React.forwardRef<
         value: string
         label: string
       }[] = []
-      for (let i = 0; i < totalSlots; i++) {
+      for (let i = 0; i < totalSlots; i += 1) {
         const minutesOfDay = i * minutesStep
         const optionTime = set(new Date(), {
           hours: Math.floor(minutesOfDay / 60),

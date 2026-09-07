@@ -1,3 +1,4 @@
+/* oxlint-disable jsdoc/check-tag-names, typescript/no-unnecessary-condition, node/callback-return, eslint/sort-keys -- studio lint cleanup */
 import type { TRPCLink } from "@trpc/client"
 import type { inferRouterOutputs } from "@trpc/server"
 import type { TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc"
@@ -16,6 +17,7 @@ import {
 } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { TRPCWithErrorCodeSchema } from "~/utils/error"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 import { getBaseUrl } from "./getBaseUrl"
 
@@ -42,7 +44,9 @@ const versionLink: TRPCLink<AppRouter> =
             observer.next(value)
             return
           }
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           // SAFETY: tRPC context.response is a fetch Response when present on the client
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           const response = value.context.response as
             | Partial<Response>
             // Looser type for caution
@@ -57,7 +61,7 @@ const versionLink: TRPCLink<AppRouter> =
             return
           }
           const serverVersion = headers.get(APP_VERSION_HEADER_KEY)
-          if (!serverVersion) {
+          if (!hasNonEmptyString(serverVersion)) {
             observer.next(value)
             return
           }

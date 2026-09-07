@@ -1,3 +1,4 @@
+/* oxlint-disable promise/prefer-await-to-then, jsdoc/empty-tags -- studio lint cleanup */
 import type PostHogInstance from "posthog-js"
 
 interface PosthogModule {

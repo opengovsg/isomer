@@ -1,8 +1,10 @@
+/* oxlint-disable typescript/parameter-properties, eslint/no-useless-return, eslint/no-use-before-define -- studio lint cleanup */
 import { partition } from "lodash-es"
 import wretch from "wretch"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 import { isEmailWhitelisted } from "~/server/modules/whitelist/whitelist.service"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 interface SendMailParams {
   recipient: string
@@ -47,7 +49,7 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
     ...(cc.length > 0 && { cc }),
   }
 
-  if (env.POSTMAN_API_KEY) {
+  if (hasNonEmptyString(env.POSTMAN_API_KEY)) {
     try {
       const response = await wretch(
         "https://api.postman.gov.sg/v1/transactional/email/send",

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-floating-promises, eslint/no-shadow -- studio lint cleanup */
 import type { ResourceItemContent } from "~/schemas/resource"
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
@@ -222,7 +223,9 @@ const SuspensableResourceSelector = ({
             pl={hasAdditionalLeftPadding ? "2.25rem" : "1rem"}
             size="xs"
             isLoading={isFetchingNextPage}
-            onClick={() => fetchNextPage()}
+            onClick={() => {
+              fetchNextPage()
+            }}
           >
             Load more
           </Button>

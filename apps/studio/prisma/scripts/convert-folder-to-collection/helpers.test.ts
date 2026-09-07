@@ -51,6 +51,7 @@ const toIsomerSchema = (
 ): IsomerSchema =>
   // SAFETY: test fixtures are valid page blobs without the render-time site field.
   // @ts-expect-error test blobs omit render-time site props required by IsomerSchema.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   blob as IsomerSchema
 
 const proseBlock: IsomerComponent = {

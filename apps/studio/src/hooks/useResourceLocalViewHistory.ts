@@ -1,3 +1,5 @@
+/* oxlint-disable import/newline-after-import -- studio lint cleanup */
+import { hasNonEmptyString } from "~/utils/truthiness"
 const LOCAL_VIEW_HISTORY_KEY = "localViewHistory"
 
 interface LocalViewHistory {
@@ -12,9 +14,11 @@ export const useResourceLocalViewHistory = ({ siteId }: { siteId: string }) => {
     let history: LocalViewHistory[] = []
     const storedHistory = localStorage.getItem(storageKeyForSiteId)
 
-    if (storedHistory) {
+    if (hasNonEmptyString(storedHistory)) {
       try {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         // SAFETY: stored history is written by upsert() as LocalViewHistory[]
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         history = JSON.parse(storedHistory) as LocalViewHistory[]
       } catch (error) {
         console.error("Failed to parse local view history from storage:", error)

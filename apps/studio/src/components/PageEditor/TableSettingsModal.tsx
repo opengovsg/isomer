@@ -1,3 +1,5 @@
+/* oxlint-disable typescript/no-unnecessary-condition -- studio lint cleanup */
+/* oxlint-disable eslint/no-shadow, typescript/strict-void-return, typescript/strict-boolean-expressions -- studio lint cleanup */
 import type { Editor } from "@tiptap/react"
 import {
   FormControl,
@@ -20,6 +22,7 @@ import {
 import { useEffect } from "react"
 import { z } from "zod"
 import { useZodForm } from "~/lib/form"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 const MAX_CAPTION_LENGTH = 200
 const tableSettingsSchema = z.object({
@@ -90,7 +93,7 @@ export const TableSettingsModal = ({
               {...register("caption")}
             />
 
-            {errors.caption?.message ? (
+            {hasNonEmptyString(errors.caption)?.message ? (
               <FormErrorMessage>{errors.caption.message}</FormErrorMessage>
             ) : (
               <FormHelperText mt="0.5rem" color="base.content.medium">

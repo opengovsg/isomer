@@ -1,5 +1,8 @@
+/* oxlint-disable typescript/no-unnecessary-condition -- studio lint cleanup */
+/* oxlint-disable typescript/strict-boolean-expressions -- studio lint cleanup */
 import { Flex, Text } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
+import { hasNonEmptyString, isNullableBooleanTrue } from "~/utils/truthiness"
 
 import type { MenubarNestedItem } from "./types"
 import { MenuItem } from "../../MenuItem"
@@ -16,7 +19,7 @@ export const MenubarVerticalList = ({
   items,
   defaultTitle,
 }: MenubarVerticalListProps): React.ReactNode | null => {
-  if (isHidden?.()) {
+  if (isNullableBooleanTrue(isHidden?.())) {
     return null
   }
   return (
@@ -48,7 +51,7 @@ export const MenubarVerticalList = ({
                 bg: "interaction.muted.main.active",
               }}
             >
-              {activeItem?.title || defaultTitle}
+              {hasNonEmptyString(activeItem)?.title || defaultTitle}
             </Menu.Button>
 
             <Menu.List width="12.25rem">
@@ -70,7 +73,7 @@ export const MenubarVerticalList = ({
                           {subItem.title}
                         </Text>
                       )}
-                      {subItem.description && (
+                      {hasNonEmptyString(subItem.description) && (
                         <Text
                           wordBreak="break-word"
                           color="base.content.medium"

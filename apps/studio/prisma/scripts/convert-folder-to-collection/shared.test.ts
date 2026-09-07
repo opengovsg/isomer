@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-assignment, eslint/prefer-destructuring, unicorn/import-style -- studio lint cleanup */
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Transaction, DB } from "~/server/modules/database/types"
 import { mkdtempSync, readFileSync, rmSync } from "node:fs"
@@ -34,13 +35,18 @@ interface TestBlobFixture {
 }
 
 const asTestIsomerSchema = (blob: TestBlobFixture): IsomerSchema =>
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: fixture matches conversion-plan blob layout shapes under test.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   blob as IsomerSchema
 
 type GetBlobDb = Parameters<typeof getBlobOfResource>[0]["db"]
 
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
 const asGetBlobDb = (db: { selectFrom: ReturnType<typeof vi.fn> }): GetBlobDb =>
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: test double implements only the selectFrom chain used by getBlobOfResource.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   db as GetBlobDb
 
 interface TransactionTestDouble {

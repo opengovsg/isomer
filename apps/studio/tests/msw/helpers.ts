@@ -11,6 +11,7 @@ export const asSiteJsonConfig = (config: {
   favicon?: string
 }): PrismaJson.SiteJsonConfig =>
   // SAFETY: MSW fixture matches SiteJsonConfig fields used in Storybook/tests.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   config as PrismaJson.SiteJsonConfig
 
 export const asSiteThemeJson = (
@@ -33,5 +34,7 @@ export const asBlobJsonContent = (content: {
   content: unknown[]
   version: string
 }): PrismaJson.BlobJsonContent =>
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: MSW fixture matches blob layout shapes used by collection/gazette handlers.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   content as PrismaJson.BlobJsonContent

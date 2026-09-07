@@ -1,3 +1,4 @@
+/* oxlint-disable jsdoc/check-tag-names, typescript/no-deprecated, eslint/sort-keys -- studio lint cleanup */
 /**
  * This file contains tRPC's HTTP response handler
  */

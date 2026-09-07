@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-void-return, promise/avoid-new -- studio lint cleanup */
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
@@ -34,9 +35,15 @@ describe("withPosthog", () => {
     })
 
     // Act
-    const first = withPosthog(() => order.push(1))
-    const second = withPosthog(() => order.push(2))
-    const third = withPosthog(() => order.push(3))
+    const first = withPosthog(() => {
+      order.push(1)
+    })
+    const second = withPosthog(() => {
+      order.push(2)
+    })
+    const third = withPosthog(() => {
+      order.push(3)
+    })
     releaseImport()
     await Promise.all([first, second, third])
 

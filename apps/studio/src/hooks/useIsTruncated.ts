@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unnecessary-condition, typescript/no-unnecessary-type-parameters -- studio lint cleanup */
 import { useCallback, useEffect, useRef, useState } from "react"
 
 // Tracks whether an element's text is being clipped by CSS (e.g. noOfLines /

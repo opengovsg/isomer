@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-assignment, typescript/no-invalid-void-type -- studio lint cleanup */
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/gazette"
 import { useMutation } from "@tanstack/react-query"

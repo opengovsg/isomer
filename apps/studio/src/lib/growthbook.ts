@@ -1,5 +1,6 @@
 import type { GrowthBook } from "@growthbook/growthbook-react"
 import { env } from "~/env.mjs"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 export const ENABLE_CODEBUILD_JOBS = "enable-codebuild-jobs"
 export const ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY =
@@ -30,7 +31,7 @@ interface GetIsSingpassEnabledProps {
 export const getIsSingpassEnabled = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
-  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) {
+  if (hasNonEmptyString(env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS)) {
     return false
   }
   return gb.getFeatureValue(
@@ -45,7 +46,7 @@ export const getIsSingpassEnabled = ({
 export const getIsSingpassDisabledInNonPreview = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
-  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) {
+  if (hasNonEmptyString(env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS)) {
     return false
   }
   return !gb.getFeatureValue(

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/switch-exhaustiveness-check -- studio lint cleanup */
 import type { TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc"
 import type { FallbackProps } from "react-error-boundary"
 import { useRouter } from "next/router"

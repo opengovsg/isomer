@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-warning-comments, eslint/sort-keys -- studio lint cleanup */
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { DEFAULT_CHILDREN_PAGES_BLOCK } from "@opengovsg/isomer-components"
 

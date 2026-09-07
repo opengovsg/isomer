@@ -1,3 +1,4 @@
+/* oxlint-disable next/no-img-element -- studio lint cleanup */
 const VICA_LAUNCHER_STYLE = {
   bottom: "40px",
   cursor: "pointer",

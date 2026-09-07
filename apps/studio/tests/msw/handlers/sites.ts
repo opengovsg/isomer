@@ -1,8 +1,10 @@
+/* oxlint-disable typescript/no-unsafe-call -- studio lint cleanup */
 import type { DelayMode } from "msw"
 import { DEFAULT_TAG_CATEGORY_DISPLAY } from "@opengovsg/isomer-components"
 import { delay } from "msw"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
+import { isNullableBooleanTrue } from "../../src/utils/truthiness"
 import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
 
@@ -18,7 +20,7 @@ const siteListQuery = ({
       await delay(wait)
     }
 
-    if (isEmpty) {
+    if (isNullableBooleanTrue(isEmpty)) {
       return []
     }
 
@@ -27,6 +29,7 @@ const siteListQuery = ({
         id: 1,
         name: "Ministry of Trade and Industry",
         // SAFETY: MSW fixture matches SiteJsonConfig fields used in Storybook/tests.
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         config: {
           theme: "isomer-next",
           siteName: "MTI",
@@ -40,7 +43,9 @@ const siteListQuery = ({
       {
         id: 2,
         name: "Having a really long name is cool i guess",
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         // SAFETY: MSW fixture matches SiteJsonConfig fields used in Storybook/tests.
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         config: {
           theme: "isomer-next",
           siteName: "MTI",
@@ -53,8 +58,11 @@ const siteListQuery = ({
       },
       {
         id: 3,
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         name: "But not if it's too long then nobody can read your name anyway so why even bother",
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         // SAFETY: MSW fixture matches SiteJsonConfig fields used in Storybook/tests.
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         config: {
           theme: "isomer-next",
           siteName: "MTI",
@@ -71,9 +79,13 @@ const siteListQuery = ({
 export const sitesHandlers = {
   getConfig: {
     default: () =>
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
       trpcMsw.site.getConfig.query(
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         () =>
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           // SAFETY: MSW fixture matches SiteJsonConfig fields used in Storybook/tests.
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           ({
             theme: "isomer-next",
             siteName: "Ministry of Test and Industry",
@@ -84,10 +96,15 @@ export const sitesHandlers = {
             logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
           }) as PrismaJson.SiteJsonConfig,
       ),
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     withFavicon: () =>
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
       trpcMsw.site.getConfig.query(
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         () =>
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           // SAFETY: MSW fixture matches SiteJsonConfig fields used in Storybook/tests.
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           ({
             theme: "isomer-next",
             siteName: "Ministry of Test and Industry",
@@ -102,11 +119,17 @@ export const sitesHandlers = {
   },
   getFooter: {
     default: () =>
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
       trpcMsw.site.getFooter.query(() =>
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         // SAFETY: MSW fixture matches FooterJsonContent fields used in Storybook/tests.
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         ({
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           id: 1,
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           siteId: 1,
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           content: {
             siteNavItems: [
               {
@@ -400,95 +423,118 @@ export const sitesHandlers = {
       })),
   },
   getNavbar: {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     default: () =>
-      trpcMsw.site.getNavbar.query(() =>
-        // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
-        ({
-          id: 1,
-          siteId: 1,
-          content: {
-            items: [
-              {
-                url: "/item-one",
-                name: "Expandable nav item",
-                items: [
-                  {
-                    url: "/item-one/pa-network-one",
-                    name: "PA's network one",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                  {
-                    url: "/item-one/pa-network-two",
-                    name: "PA's network two",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                  {
-                    url: "/item-one/pa-network-three",
-                    name: "PA's network three",
-                  },
-                  {
-                    url: "/item-one/pa-network-four",
-                    name: "PA's network four",
-                    description:
-                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                  },
-                  {
-                    url: "/item-one/pa-network-five",
-                    name: "PA's network five",
-                    description:
-                      "Click here and brace yourself for mild disappointment. This one has a pretty long one",
-                  },
-                  {
-                    url: "/item-one/pa-network-six",
-                    name: "PA's network six",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                ],
-              },
-            ],
-          } as PrismaJson.NavbarJsonContent,
-          createdAt: MOCK_STORY_DATE,
-          updatedAt: MOCK_STORY_DATE,
-        }),
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+      trpcMsw.site.getNavbar.query(
+        () =>
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+          // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+          ({
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+            id: 1,
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+            siteId: 1,
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+            content: {
+              items: [
+                {
+                  url: "/item-one",
+                  name: "Expandable nav item",
+                  items: [
+                    {
+                      url: "/item-one/pa-network-one",
+                      name: "PA's network one",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                    {
+                      url: "/item-one/pa-network-two",
+                      name: "PA's network two",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                    {
+                      url: "/item-one/pa-network-three",
+                      name: "PA's network three",
+                    },
+                    {
+                      url: "/item-one/pa-network-four",
+                      name: "PA's network four",
+                      description:
+                        "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                    },
+                    {
+                      url: "/item-one/pa-network-five",
+                      name: "PA's network five",
+                      description:
+                        "Click here and brace yourself for mild disappointment. This one has a pretty long one",
+                    },
+                    {
+                      url: "/item-one/pa-network-six",
+                      name: "PA's network six",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                  ],
+                },
+              ],
+            } as PrismaJson.NavbarJsonContent,
+            createdAt: MOCK_STORY_DATE,
+            updatedAt: MOCK_STORY_DATE,
+          }),
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
       ),
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     withCTA: () =>
-      trpcMsw.site.getNavbar.query(() =>
-        // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
-        ({
-          id: 1,
-          siteId: 1,
-          content: {
-            items: [
-              {
-                url: "/item-one",
-                name: "Expandable nav item",
-                items: [
-                  {
-                    url: "/item-one/pa-network-one",
-                    name: "PA's network one",
-                    description:
-                      "Click here and brace yourself for mild disappointment.",
-                  },
-                ],
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+      trpcMsw.site.getNavbar.query(
+        () =>
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+          // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+          ({
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+            id: 1,
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+            siteId: 1,
+            content: {
+              items: [
+                {
+                  url: "/item-one",
+                  name: "Expandable nav item",
+                  items: [
+                    {
+                      url: "/item-one/pa-network-one",
+                      name: "PA's network one",
+                      description:
+                        "Click here and brace yourself for mild disappointment.",
+                    },
+                  ],
+                },
+              ],
+              callToAction: {
+                label: "Apply now",
+                url: "https://www.isomer.gov.sg/apply",
+                isPinnedOnMobile: true,
               },
-            ],
-            callToAction: {
-              label: "Apply now",
-              url: "https://www.isomer.gov.sg/apply",
-              isPinnedOnMobile: true,
-            },
-          } as PrismaJson.NavbarJsonContent,
-          createdAt: MOCK_STORY_DATE,
-          updatedAt: MOCK_STORY_DATE,
-        }),
+            } as PrismaJson.NavbarJsonContent,
+            createdAt: MOCK_STORY_DATE,
+            updatedAt: MOCK_STORY_DATE,
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
+          }),
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
       ),
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     withUtilityLinks: () =>
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
       trpcMsw.site.getNavbar.query(() =>
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         // SAFETY: MSW fixture matches NavbarJsonContent fields used in Storybook/tests.
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
         ({
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
           id: 1,
           siteId: 1,
           content: {
@@ -659,12 +705,19 @@ export const sitesHandlers = {
           },
         },
       })),
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   },
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   getSiteName: {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     default: () => trpcMsw.site.getSiteName.query(() => ({ name: "Isomer" })),
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   },
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   getTheme: {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     default: () =>
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
       trpcMsw.site.getTheme.query(
         () =>
           // SAFETY: MSW fixture matches SiteThemeJson fields used in Storybook/tests.

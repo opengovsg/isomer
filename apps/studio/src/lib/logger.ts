@@ -1,3 +1,5 @@
+/* oxlint-disable typescript/no-unsafe-assignment -- studio lint cleanup */
+/* oxlint-disable eslint/func-style -- studio lint cleanup */
 import type { NextApiRequest } from "next"
 import { env } from "~/env.mjs"
 import getIP from "~/utils/getClientIp"

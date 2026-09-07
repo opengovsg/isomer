@@ -1,9 +1,8 @@
 import type { NextPageWithLayout } from "~/lib/types"
 import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu, TouchableTooltip } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
+import posthogJs from "posthog-js"
 import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
-import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal"
@@ -17,12 +16,9 @@ import { CreatePageModal } from "~/features/editing-experience/components/Create
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { sitePageSchema } from "~/pages/sites/[siteId]/sitePageSchema"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-
-export const sitePageSchema = z.object({
-  siteId: z.coerce.number(),
-})
 
 interface HomepageMenuButtonProps {
   onCollectionCreateModalOpen: () => void
@@ -113,21 +109,21 @@ const SitePage: NextPageWithLayout = () => {
         buttons={
           <HomepageMenuButton
             onPageCreateModalOpen={() => {
-              posthog.capture("page_create_modal_opened", {
+              posthogJs.capture("page_create_modal_opened", {
                 parent_type: "site",
                 site_id: siteId,
               })
               onPageCreateModalOpen()
             }}
             onFolderCreateModalOpen={() => {
-              posthog.capture("folder_create_modal_opened", {
+              posthogJs.capture("folder_create_modal_opened", {
                 parent_type: "site",
                 site_id: siteId,
               })
               onFolderCreateModalOpen()
             }}
             onCollectionCreateModalOpen={() => {
-              posthog.capture("collection_create_modal_opened", {
+              posthogJs.capture("collection_create_modal_opened", {
                 parent_type: "site",
                 site_id: siteId,
               })

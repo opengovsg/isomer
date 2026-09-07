@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unnecessary-condition, typescript/strict-boolean-expressions -- studio lint cleanup */
 import type { IconType } from "react-icons"
 import type { MergeExclusive } from "type-fest"
 import { List, ListItem, Tooltip } from "@chakra-ui/react"
@@ -5,6 +6,7 @@ import { IconButton } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { useMemo } from "react"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 export type CmsSidebarItem = {
   icon: IconType
@@ -27,7 +29,8 @@ const generateSidebarItem = (
   { icon: Icon, ...item }: CmsSidebarItem,
   asPath: string,
 ) => {
-  const isActive = item.isActive ?? (!!item.href && asPath === item.href)
+  const isActive =
+    hasNonEmptyString(item.isActive) ?? (!!item.href && asPath === item.href)
   const itemKey = item.href ?? item.label
   const handleClick = item.onClick
     ? () => {
@@ -38,7 +41,7 @@ const generateSidebarItem = (
   return (
     <ListItem key={itemKey}>
       <Tooltip label={item.label} placement="right">
-        {item.href ? (
+        {hasNonEmptyString(item.href) ? (
           <IconButton
             key={itemKey}
             as={NextLink}

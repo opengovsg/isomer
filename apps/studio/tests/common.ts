@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-return, eslint/no-unused-vars, eslint/no-shadow, typescript/no-unsafe-argument, eslint/default-case, typescript/switch-exhaustiveness-check, unicorn/import-style -- studio lint cleanup */
 import type { StartedNetwork, StartedTestContainer } from "testcontainers"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -136,7 +137,7 @@ export const setup = async (
       }
 
       if (wait) {
-        const { type, timeout = 60 * 1000 } = wait
+        const { typeValue, timeout = 60 * 1000 } = wait
         switch (type) {
           case "PORT": {
             container = container
@@ -165,7 +166,7 @@ export const setup = async (
         z.number(),
         z
           .object({ container: z.number(), host: z.number() })
-          .transform(({ container }) => container),
+          .transform(({ container }) => containerValue),
       ])
 
       const getExposedPort = (

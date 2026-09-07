@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, typescript/no-unnecessary-condition -- studio lint cleanup */
 import type { NextPageWithLayout } from "~/lib/types"
 import type { Notification } from "~/schemas/site"
 import { Box } from "@chakra-ui/react"
@@ -32,6 +33,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { notificationValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
+import { hasNonEmptyString } from "~/utils/truthiness"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 const validateFn = notificationValidator
@@ -69,7 +71,9 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   })
 
   const [state, setState] = useState<Notification>(
-    previousNotification.notification?.title ? previousNotification : {},
+    hasNonEmptyString(previousNotification.notification)?.title
+      ? previousNotification
+      : {},
   )
 
   const [nextUrl, setNextUrl] = useState("")

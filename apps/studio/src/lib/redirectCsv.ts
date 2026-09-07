@@ -1,3 +1,4 @@
+/* oxlint-disable unicorn/consistent-function-scoping -- studio lint cleanup */
 // Shared CSV parsing + errors-file generation for the bulk-upload-redirects
 // feature. Isomorphic (papaparse runs in both the browser and Node): the client
 // parses a picked file for instant file-level errors and the preview, and the
@@ -120,7 +121,7 @@ export const parseRedirectCsv = (csv: string): ParseRedirectCsvResult => {
     destination: string
     malformed: boolean
   }[] = []
-  for (let index = headerIndex + 1; index < data.length; index++) {
+  for (let index = headerIndex + 1; index < data.length; index += 1) {
     const row = data[index]
     if (!row) {
       continue

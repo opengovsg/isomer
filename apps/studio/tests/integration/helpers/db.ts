@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/func-style -- studio lint cleanup */
 import type { DB } from "~server/db"
 import { db, sql } from "~server/db"
 

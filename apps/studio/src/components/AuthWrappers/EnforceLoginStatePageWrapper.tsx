@@ -1,9 +1,11 @@
+/* oxlint-disable typescript/no-unnecessary-condition -- studio lint cleanup */
 import type { PropsWithChildren } from "react"
 import { useRouter } from "next/router"
 import { useMemo } from "react"
 import { useLoginState } from "~/features/auth"
 import { SIGN_IN } from "~/lib/routes"
 import { callbackUrlSchema } from "~/schemas/url"
+import { isNullableBooleanTrue } from "~/utils/truthiness"
 import { appendWithRedirect } from "~/utils/url"
 
 import { FullscreenSpinner } from "../FullscreenSpinner"
@@ -49,7 +51,7 @@ export const EnforceLoginStatePageWrapper = ({
 }: PropsWithChildren<EnforceLoginStatePageWrapperProps>): React.ReactElement => {
   const { hasLoginStateFlag } = useLoginState()
 
-  if (hasLoginStateFlag) {
+  if (isNullableBooleanTrue(hasLoginStateFlag)) {
     return (
       <ToppanRouteGuard>
         <Intercom />

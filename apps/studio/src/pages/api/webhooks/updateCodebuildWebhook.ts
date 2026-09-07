@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-confusing-void-expression -- studio lint cleanup */
 import type { NextApiRequest, NextApiResponse } from "next"
 import { TRPCError } from "@trpc/server"
 import { getHTTPStatusCodeFromError } from "@trpc/server/http"

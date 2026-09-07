@@ -3,6 +3,7 @@ import { useRouter } from "next/router"
 import { CALLBACK_URL_KEY } from "~/constants/params"
 import { useLoginState } from "~/features/auth"
 import { callbackUrlSchema } from "~/schemas/url"
+import { hasNonEmptyString, isNullableBooleanTrue } from "~/utils/truthiness"
 
 import { FullscreenSpinner } from "../FullscreenSpinner"
 
@@ -23,8 +24,8 @@ export const PublicPageWrapper = ({
   const router = useRouter()
   const { hasLoginStateFlag } = useLoginState()
 
-  if (hasLoginStateFlag && rest.strict) {
-    if (rest.redirectUrl) {
+  if (isNullableBooleanTrue(hasLoginStateFlag) && rest.strict) {
+    if (hasNonEmptyString(rest.redirectUrl)) {
       void router.replace(callbackUrlSchema.parse(rest.redirectUrl))
     } else {
       void router.replace(

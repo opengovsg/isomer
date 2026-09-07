@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/func-style -- studio lint cleanup */
 import fs from "node:fs/promises"
 // Use the promise-based version of fs for async/await
 import path from "node:path"
@@ -85,7 +86,7 @@ const backupDirectory = "/Users/XYZ/<your-path>"
 await backupCollection({
   backupDir: backupDirectory,
   resourceId: collectionId,
-}).catch((error) => {
+}).catch((error: unknown) => {
   if (error instanceof Error) {
     logger.error(`Unhandled error: ${error.message}`)
   }

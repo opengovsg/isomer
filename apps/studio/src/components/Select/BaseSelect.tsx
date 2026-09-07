@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-type-assertion, eslint/no-unused-vars -- studio lint cleanup */
 import type {
   FormatOptionLabelMeta,
   GroupBase,
@@ -60,7 +61,7 @@ const BaseSelectComponent = <T,>(
 ) => {
   const transformSelect = {
     // mapping from the value to the option
-    input: (value: T | null): BaseSelectOption<T> | null => {
+    input: (valueValue: T | null): BaseSelectOption<T> | null => {
       if (value === null) {
         return null
       }
@@ -78,7 +79,7 @@ const BaseSelectComponent = <T,>(
     <Select<BaseSelectOption<T>>
       isSearchable={isSearchable}
       value={transformSelect.input(value)}
-      onChange={(value) => {
+      onChange={(valueValue) => {
         onChange(transformSelect.output(value))
       }}
       formatOptionLabel={formatOptionLabel}

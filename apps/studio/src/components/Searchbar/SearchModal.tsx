@@ -44,7 +44,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
   })
 
   const renderModalBody = (): React.ReactNode => {
-    if (!!debouncedSearchTerm) {
+    if (debouncedSearchTerm) {
       if (isLoading) {
         return <LoadingState />
       }

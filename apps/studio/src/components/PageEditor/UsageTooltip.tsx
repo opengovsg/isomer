@@ -12,6 +12,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import Image from "next/image"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 type UsageOrDescription = RequireAtLeastOne<
   {
@@ -41,7 +42,7 @@ export const UsageTooltip = ({
     <Portal>
       <PopoverContent width="fit-content" overflow="hidden">
         <Flex flexDir="column" w="18.25rem">
-          {imageSrc && (
+          {hasNonEmptyString(imageSrc) && (
             <Image height={160} width={292} src={imageSrc} alt={label} />
           )}
           <VStack
@@ -49,7 +50,7 @@ export const UsageTooltip = ({
             px="1.125rem"
             alignItems="start"
             gap="0.75rem"
-            borderTop={imageSrc ? "1px solid" : undefined}
+            borderTop={hasNonEmptyString(imageSrc) ? "1px solid" : undefined}
             borderColor="base.divider.medium"
           >
             <Flex alignItems="center" gap="0.25rem" w="full">

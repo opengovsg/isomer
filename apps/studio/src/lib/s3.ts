@@ -1,3 +1,4 @@
+/* oxlint-disable jsdoc/empty-tags, eslint/no-shadow, typescript/consistent-return, typescript/no-unnecessary-condition, eslint/no-useless-return -- studio lint cleanup */
 import type {
   CopyObjectCommandInput,
   GetObjectCommandInput,
@@ -20,6 +21,7 @@ import { Upload } from "@aws-sdk/lib-storage"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { addDays } from "date-fns"
 import { env } from "~/env.mjs"
+import { hasNonEmptyString } from "~/utils/truthiness"
 
 const DELETE_TAG = "deletedAt"
 const EGAZETTE_COMPLIANCE_HOLD_IN_DAYS = 10_000
@@ -33,11 +35,10 @@ const getEncodedCopySource = (Bucket: string, Key: string) =>
 // R2 credentials are only set for preview, but the choice of backend is
 // driven by their presence rather than the environment name. Exported so
 // other modules don't have to re-derive this from the raw env vars.
-export const isR2Configured = !!(
-  env.R2_ACCOUNT_ID &&
-  env.R2_ACCESS_KEY_ID &&
-  env.R2_SECRET_ACCESS_KEY
-)
+export const isR2Configured =
+  hasNonEmptyString(env.R2_ACCOUNT_ID) &&
+  hasNonEmptyString(env.R2_ACCESS_KEY_ID) &&
+  hasNonEmptyString(env.R2_SECRET_ACCESS_KEY)
 
 const createDefaultStorage = () =>
   new S3Client(
@@ -58,7 +59,9 @@ let storage = createDefaultStorage()
 
 /** @internal Injects a mock S3 client for unit tests. */
 export const setS3StorageForTests = (client: Pick<S3Client, "send">) => {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   // SAFETY: test doubles only implement send(), which is all exercised s3 paths use
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   storage = client as S3Client
 }
 
@@ -191,10 +194,10 @@ export const setAssetAsPublished = async ({
   if (isR2Configured) {
     return
   }
-  if (!Bucket) {
+  if (!hasNonEmptyString(Bucket)) {
     throw new Error("Bucket must be defined")
   }
-  if (!Key) {
+  if (!hasNonEmptyString(Key)) {
     throw new Error("Key must be defined")
   }
 
@@ -227,7 +230,7 @@ export const setAssetAsPublished = async ({
   // object can no longer be overwritten. REPLACE drops all existing metadata,
   // so ContentType and user metadata are read back and re-supplied; object
   // tags carry over via the default TaggingDirective (COPY).
-  if (ContentDisposition) {
+  if (hasNonEmptyString(ContentDisposition)) {
     const head = await storage.send(new HeadObjectCommand({ Bucket, Key }))
     // Skip the (paid) self-copy when the disposition is already correct,
     // e.g. on a pg-boss retry after an earlier attempt already rewrote it.
@@ -239,7 +242,7 @@ export const setAssetAsPublished = async ({
         Key,
         MetadataDirective: "REPLACE",
       }
-      if (head.ContentType) {
+      if (hasNonEmptyString(head.ContentType)) {
         copyInput.ContentType = head.ContentType
       }
       if (head.Metadata && Object.keys(head.Metadata).length > 0) {
@@ -311,11 +314,15 @@ export const getFileSize = async ({
   Key,
   Bucket,
 }: Pick<HeadObjectCommandInput, "Key" | "Bucket">): Promise<number | null> => {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
   try {
     const response = await storage.send(new HeadObjectCommand({ Bucket, Key }))
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     return response.ContentLength ?? null
   } catch (error) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     // SAFETY: only AWS error name and $metadata.httpStatusCode are inspected
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     if (isNotFoundError(error as AwsS3NotFoundError)) {
       return null
     }
@@ -331,7 +338,7 @@ export const copyFile = async ({
   SourceKey: string
   DestKey: string
 }) => {
-  if (!Bucket) {
+  if (!hasNonEmptyString(Bucket)) {
     throw new Error("Bucket must be defined")
   }
 
@@ -444,7 +451,7 @@ export const resetStudioAssetsBucketNameForTests = () => {
 export const getStudioAssetsBucketName = (): string => {
   const bucket =
     studioAssetsBucketNameOverride ?? env.S3_STUDIO_ASSETS_BUCKET_NAME
-  if (!bucket) {
+  if (!hasNonEmptyString(bucket)) {
     throw new Error("S3_STUDIO_ASSETS_BUCKET_NAME is not configured")
   }
   return bucket

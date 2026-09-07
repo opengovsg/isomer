@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/strict-boolean-expressions, promise/prefer-await-to-then -- studio lint cleanup */
 import type { AttachmentProps } from "@opengovsg/design-system-react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment, useToast } from "@opengovsg/design-system-react"

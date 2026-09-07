@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/no-useless-return, typescript/consistent-return -- studio lint cleanup */
 import type { NextApiRequest, NextApiResponse } from "next"
 import { addDays, isAfter } from "date-fns"
 import { AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS } from "~/constants/misc"
@@ -47,6 +48,7 @@ export default async function handler(
   // log line is the operator's only signal, so it must never be skipped.
   try {
     // SAFETY: token guard above rejects non-string query values.
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary narrowing
     const sealedToken = token as string
     const requestId = await unsealAuditLogExportToken(sealedToken)
     if (requestId === null) {
