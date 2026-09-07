@@ -9,7 +9,6 @@ const emailLoginPostQuery = (vfnStepData: VfnStepData) =>
 export const authEmailHandlers = {
   login: emailLoginPostQuery,
   verifyOtp: {
-    default: () =>
-      trpcMsw.auth.email.verifyOtp.mutation(() => defaultUser),
+    default: () => trpcMsw.auth.email.verifyOtp.mutation(() => defaultUser),
   },
 }

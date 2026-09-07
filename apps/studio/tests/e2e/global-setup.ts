@@ -46,17 +46,17 @@ const createAuthenticatedStorageState = async (
     },
   )
 
-  const { hostname } = new URL(baseURL)
+  const { protocol } = new URL(baseURL)
   const browser = await chromium.launch()
   const ctx = await browser.newContext({ baseURL })
   await ctx.addCookies([
     {
-      domain: hostname,
       httpOnly: true,
       name: sessionOptions.cookieName,
       path: "/",
       sameSite: "Lax",
-      secure: hostname !== "localhost" && hostname !== "127.0.0.1",
+      secure: protocol === "https:",
+      url: baseURL,
       value: sealed,
     },
   ])
@@ -67,10 +67,10 @@ const createAuthenticatedStorageState = async (
   }, LOGGED_IN_KEY)
 
   await page.goto("/")
-  await page.waitForURL(`${baseURL}/`)
-  await page
-    .getByRole("heading", { name: "Your sites" })
-    .waitFor({ state: "visible" })
+  await page.waitForResponse(
+    (response) =>
+      response.url().includes("me.get") && response.status() === 200,
+  )
 
   await ctx.storageState({ path: storageStateFor(role) })
   await browser.close()
