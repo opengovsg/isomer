@@ -208,7 +208,7 @@ export const emailSessionRouter = router({
         async (tx) => await upsertUser({ email, tx }),
       )
 
-      ctx.session.destroy()
+      ctx.session.userId = undefined
       set(ctx.session, "singpass.sessionState", {
         userId: userValue.id,
         verificationToken: oldVerificationToken,
