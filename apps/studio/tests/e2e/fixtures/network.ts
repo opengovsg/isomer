@@ -126,6 +126,36 @@ export const resetGrowthBookPage = async (page: Page) => {
   await page.goto("about:blank")
 }
 
+export const failTagOptionsUsageCount = async (page: Page) => {
+  await page.route("**/api/trpc/**", (route) => {
+    const url = route.request().url()
+    const postData = route.request().postData() ?? ""
+    if (
+      url.includes("countTagOptionsUsage") ||
+      postData.includes("countTagOptionsUsage")
+    ) {
+      return route.fulfill({
+        status: 403,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: {
+            json: {
+              message: "usage count failed",
+              code: -32003,
+              data: {
+                code: "FORBIDDEN",
+                httpStatus: 403,
+                path: "collection.countTagOptionsUsage",
+              },
+            },
+          },
+        }),
+      })
+    }
+    return route.continue()
+  })
+}
+
 interface GrowthBookFeaturesResponse {
   features: Record<string, { defaultValue?: unknown; rules?: unknown[] }>
 }

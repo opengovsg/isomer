@@ -34,6 +34,19 @@ export const getResource = (resourceId: string) =>
     .selectAll()
     .executeTakeFirst()
 
+export const listResourcesByParent = (opts: {
+  siteId: number
+  parentId: string
+  type: ResourceType
+}) =>
+  db
+    .selectFrom("Resource")
+    .where("siteId", "=", opts.siteId)
+    .where("parentId", "=", opts.parentId)
+    .where("type", "=", opts.type)
+    .select("id")
+    .execute()
+
 export const getResourceDraftBlobContent = async (resourceId: string) => {
   const row = await db
     .selectFrom("Resource")

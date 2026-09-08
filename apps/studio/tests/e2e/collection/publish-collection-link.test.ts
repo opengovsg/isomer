@@ -7,6 +7,7 @@ import {
   createCollectionWithTagCategories,
   deleteCollection,
 } from "../fixtures/collection"
+import { CollectionLinkPO } from "../fixtures/collection-link.po"
 import { PageEditorPO } from "../fixtures/page-editor.po"
 import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
@@ -37,8 +38,9 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     try {
       // Act: the collection link editor reuses the same PublishButton and
       // page.publishPage flow as a Page, just under the /links/ route.
+      const linkEditor = new CollectionLinkPO(page)
       const editor = new PageEditorPO(page)
-      await page.goto(`/sites/${siteId}/links/${link.id}`)
+      await linkEditor.gotoLink(siteId, link.id)
       await editor.expectPublishButtonEnabled()
       await editor.clickPublish()
       await editor.expectPublishedToast()

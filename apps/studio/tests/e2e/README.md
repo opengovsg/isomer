@@ -18,7 +18,12 @@
 
 - `fixtures/` — reusable test infrastructure (login flow, page objects, role storage state).
 - `storage-state/` — gitignored; populated by `global-setup.ts` with one signed-in cookie jar per role.
-- `<module>/` — one directory per backend router module (`site/`, `page/`, `resource/`, …). Each file inside covers a single UI surface (e.g. `site/settings-agency.test.ts`).
+- `<module>/` — one directory per product area / CI shard (`site/`, `resource/`, `collection/`, `user/`, …). Each file inside covers a single UI surface (e.g. `site/settings-agency.test.ts`).
+
+| Directory     | Scope                                                                     |
+| ------------- | ------------------------------------------------------------------------- |
+| `resource/`   | Site tree: pages, folders, delete/move/search, normal page edit & publish |
+| `collection/` | Collections: wizard, items, filters, tags, display, table                 |
 
 ## Adding tests for a new module
 

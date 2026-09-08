@@ -25,6 +25,47 @@ export class DashboardPO {
     ).not.toBeVisible()
   }
 
+  async expectCreateMenuHidden() {
+    await this.expectCreateButtonHidden()
+  }
+
+  async openCreateCollectionModal() {
+    await this.openCreateMenu()
+    await this.clickCreateCollection()
+    await expect(this.page.getByText("Create a new collection")).toBeVisible()
+  }
+
+  async fillCreateCollectionModalTitle(title: string) {
+    await this.page.getByLabel("Collection name").fill(title)
+  }
+
+  async cancelCreateCollectionModal() {
+    // The modal has two "Close"-named buttons: the icon-only `ModalCloseButton`
+    // (aria-label only, no visible text) and this footer action button. Filter
+    // by visible text to target the footer button specifically.
+    await this.page
+      .getByRole("button", { name: "Close" })
+      .filter({ hasText: "Close" })
+      .click()
+    await expect(
+      this.page.getByText("Create a new collection"),
+    ).not.toBeVisible()
+  }
+
+  async openCollectionItemWizard() {
+    await this.clickAddCollectionItem()
+    await expect(
+      this.page.getByText("What kind of collection item are you creating?"),
+    ).toBeVisible()
+  }
+
+  async cancelCollectionItemWizard() {
+    await this.page.getByRole("button", { name: "Cancel" }).click()
+    await expect(
+      this.page.getByText("What kind of collection item are you creating?"),
+    ).not.toBeVisible()
+  }
+
   async openResourceMenu(title: string) {
     await this.page
       .getByRole("button", { name: `Options for ${title}`, exact: true })
@@ -78,8 +119,15 @@ export class DashboardPO {
     await this.page.getByRole("button", { name: "Add new item" }).click()
   }
 
+  async clickAddCollectionItem() {
+    await this.openAddCollectionItem()
+  }
+
   async selectCollectionItemType(type: "Page" | "Link or file") {
     await this.page.getByText(type, { exact: true }).click()
+  }
+
+  async proceedToCollectionItemDetails() {
     await this.page.getByRole("button", { name: "Next: Page details" }).click()
   }
 
@@ -88,11 +136,30 @@ export class DashboardPO {
     await this.page.getByRole("button", { name: "Start editing" }).click()
   }
 
+  async fillCollectionPageWizard(title: string) {
+    await this.page.getByLabel("Page title").fill(title)
+    await this.page.getByRole("button", { name: "Start editing" }).click()
+  }
+
+  async fillCollectionLinkWizard(title: string) {
+    await this.page.getByLabel("Item title").fill(title)
+    await this.page.getByRole("button", { name: "Start editing" }).click()
+  }
+
   async gotoCollection(siteId: number, collectionId: string) {
     await this.page.goto(`/sites/${siteId}/collections/${collectionId}`)
     await this.page.waitForURL(
       new RegExp(`/sites/${siteId}/collections/${collectionId}$`),
     )
+  }
+
+  async expectCollectionAccessDenied() {
+    await expect(
+      this.page.getByText("You don't have access to edit this collection."),
+    ).toBeVisible()
+    await expect(
+      this.page.getByRole("button", { name: "Back to My Sites" }),
+    ).toBeVisible()
   }
 
   /** Collection table uses the same options menu as the resource table. */
@@ -301,5 +368,47 @@ export class DashboardPO {
     const resultLink = dialog.getByRole("link", { name: title })
     await expect(resultLink).toBeVisible()
     await resultLink.click()
+  }
+
+  async sortCollectionBy(label: "Recently edited" | "Alphabetical" | "URL") {
+    await this.page
+      .getByRole("button", { name: /Recently edited|Alphabetical|URL/ })
+      .click()
+    await this.page.getByRole("menuitem", { name: label }).click()
+  }
+
+  async expectCollectionItemCount(count: number) {
+    const noun = count === 1 ? "item" : "items"
+    await expect(this.page.getByText(`${count} ${noun}`)).toBeVisible()
+  }
+
+  async expectCollectionRowVisible(title: string) {
+    await expect(this.page.getByRole("link", { name: title })).toBeVisible()
+  }
+
+  async expectCollectionRowHidden(title: string) {
+    await expect(this.page.getByRole("link", { name: title })).toHaveCount(0)
+  }
+
+  async expectCollectionRowsInOrder(titles: string[]) {
+    const links = this.page.getByRole("link").filter({
+      hasText: new RegExp(
+        titles
+          .map((title) => title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+          .join("|"),
+      ),
+    })
+    await expect(links).toHaveCount(titles.length)
+    for (const [index, title] of titles.entries()) {
+      await expect(links.nth(index)).toHaveText(title)
+    }
+  }
+
+  async goToCollectionTablePage(pageNumber: number) {
+    const nav = this.page.getByRole("navigation", { name: "Pagination" })
+    await expect(nav).toBeVisible()
+    await nav
+      .getByRole("button", { name: String(pageNumber), exact: true })
+      .click()
   }
 }
