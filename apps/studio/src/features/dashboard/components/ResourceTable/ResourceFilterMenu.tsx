@@ -57,16 +57,7 @@ export const ResourceFilterMenu = ({
               fontSize="0.75rem"
               isOpen={isOpen}
             >
-              {/* Fixed width so the label text changing length doesn't
-              resize the button and drag the anchored popover along with it. */}
-              <Box
-                as="span"
-                display="inline-block"
-                minW="5rem"
-                textAlign="left"
-              >
-                {value.length === 0 ? "All" : `${value.length} selected`}
-              </Box>
+              {value.length === 0 ? "All" : `${value.length} selected`}
             </Menu.Button>
             <Menu.List minW="13.3125rem" py="0.5rem">
               <Menu.Item
