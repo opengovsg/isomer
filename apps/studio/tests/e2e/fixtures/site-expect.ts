@@ -14,6 +14,17 @@ export const expectSiteName = (siteId: number) =>
     return row?.name ?? null
   })
 
+export const expectSiteConfigSiteName = (siteId: number) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Site")
+      .where("id", "=", siteId)
+      .select("config")
+      .executeTakeFirst()
+    const config = row?.config as IsomerSiteConfigProps
+    return config?.siteName ?? null
+  })
+
 export const expectSiteThemeBrandColour = (siteId: number) =>
   expect.poll(async () => {
     const row = await db

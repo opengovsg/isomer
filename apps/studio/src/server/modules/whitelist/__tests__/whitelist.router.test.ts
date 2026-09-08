@@ -423,5 +423,50 @@ describe("whitelist.router", async () => {
         vendorCount: 0,
       })
     })
+
+    it("should keep admin (no expiry) when the same email is submitted as both admin and vendor", async () => {
+      // Arrange
+      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      const email = "both@test.com"
+
+      // Act
+      await caller.whitelistEmails({
+        adminEmails: [email],
+        vendorEmails: [email],
+      })
+
+      // Assert
+      const entry = await db
+        .selectFrom("Whitelist")
+        .where("email", "=", email)
+        .selectAll()
+        .executeTakeFirst()
+
+      expect(entry).toBeDefined()
+      expect(entry?.expiry).toBeNull()
+    })
+
+    it("should reject the whole request when any email is invalid", async () => {
+      // Arrange
+      await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })
+      const validEmail = "valid@test.com"
+
+      // Act
+      const result = caller.whitelistEmails({
+        adminEmails: [validEmail, "not-an-email"],
+        vendorEmails: [],
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({
+        code: "BAD_REQUEST",
+      })
+      const entry = await db
+        .selectFrom("Whitelist")
+        .where("email", "=", validEmail)
+        .selectAll()
+        .executeTakeFirst()
+      expect(entry).toBeUndefined()
+    })
   })
 })

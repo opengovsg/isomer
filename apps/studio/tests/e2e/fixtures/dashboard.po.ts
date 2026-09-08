@@ -19,6 +19,18 @@ export class DashboardPO {
     await this.page.getByRole("button", { name: "Create new..." }).click()
   }
 
+  async expectHomepageRowVisible() {
+    await expect(
+      this.page.getByRole("link", { name: "Home Published" }),
+    ).toBeVisible()
+  }
+
+  async expectCreateButtonVisible() {
+    await expect(
+      this.page.getByRole("button", { name: "Create new..." }),
+    ).toBeVisible()
+  }
+
   async expectCreateButtonHidden() {
     await expect(
       this.page.getByRole("button", { name: "Create new..." }),

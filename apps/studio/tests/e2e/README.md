@@ -13,6 +13,7 @@
 | `fixtures/dashboard.po.ts`   | Site dashboard / resource table page object                    |
 | `fixtures/page-editor.po.ts` | Page editor / publish page object                              |
 | `fixtures/users.po.ts`       | Users / collaborators page object                              |
+| `fixtures/godmode.po.ts`     | God Mode admin surfaces (create site, publishing, whitelist)   |
 
 ## Structure
 

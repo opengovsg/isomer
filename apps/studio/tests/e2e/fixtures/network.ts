@@ -160,6 +160,89 @@ interface GrowthBookFeaturesResponse {
   features: Record<string, { defaultValue?: unknown; rules?: unknown[] }>
 }
 
+const TRPC_UNDEFINED_SUCCESS_BODY = JSON.stringify({
+  result: {
+    data: {
+      json: null,
+      meta: {
+        values: ["undefined"],
+      },
+    },
+  },
+})
+
+const trpcMutationErrorBody = (procedure: string, message: string) =>
+  JSON.stringify({
+    error: {
+      json: {
+        message,
+        code: -32603,
+        data: {
+          code: "INTERNAL_SERVER_ERROR",
+          httpStatus: 500,
+          path: procedure,
+        },
+      },
+    },
+  })
+
+/**
+ * Stub `site.publish` so godmode publishing E2E can assert toasts without
+ * calling AWS CodeBuild (no credentials in the test env).
+ *
+ * `failTimes` fulfils that many calls with an error, then succeeds.
+ */
+export const mockGodmodeSitePublish = async (
+  page: Page,
+  options?: { failTimes?: number; errorMessage?: string },
+) => {
+  let remainingFailures = options?.failTimes ?? 0
+  const errorMessage = options?.errorMessage ?? "CodeBuild unavailable"
+
+  await page.route("**/api/trpc/**", async (route) => {
+    const url = route.request().url()
+    if (!url.includes("site.publish")) {
+      await route.fallback()
+      return
+    }
+
+    if (remainingFailures > 0) {
+      remainingFailures -= 1
+      await route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: trpcMutationErrorBody("site.publish", errorMessage),
+      })
+      return
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: TRPC_UNDEFINED_SUCCESS_BODY,
+    })
+  })
+}
+
+/** Fail the next `times` calls to a tRPC mutation, then hit the real server. */
+export const mockTrpcMutationError = async (
+  page: Page,
+  procedure: string,
+  options: { message: string; times?: number },
+) => {
+  await page.route(
+    `**/api/trpc/${procedure}*`,
+    async (route) => {
+      await route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: trpcMutationErrorBody(procedure, options.message),
+      })
+    },
+    { times: options.times ?? 1 },
+  )
+}
+
 /** Patch a GrowthBook feature into the CDN features response before navigation. */
 export const enableGrowthBookFeature = async (
   page: Page,

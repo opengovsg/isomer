@@ -161,6 +161,8 @@ surface. **All `page.*` Playwright calls belong in `fixtures/*.po.ts` or
 | `CollectionPO` | `collection.po.ts` | Collection link/page editor drawers |
 | `FolderSettingsPO` | `folder-settings.po.ts` | Folder settings modal |
 | `UsersPO` | `users.po.ts` | Users / collaborators page |
+| `GodmodePO` | `godmode.po.ts` | God Mode hub, create site, publishing, whitelist |
+| `SiteAdminPO` | `site-admin.po.ts` | Raw site admin JSON (`/sites/:id/admin`) |
 
 Rules:
 
