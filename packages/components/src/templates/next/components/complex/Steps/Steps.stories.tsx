@@ -83,7 +83,15 @@ export const ThreeSteps: Story = {
   },
 }
 
-// The widest the row gets before the columns become uncomfortably narrow.
+// 4 is the widest single row; the columns get too narrow to hold a description
+// beyond that.
+export const FourSteps: Story = {
+  args: {
+    ...LargeNumeral.args,
+  },
+}
+
+// Wraps to two rows of 3, leaving 3 on top and 2 below.
 export const FiveSteps: Story = {
   args: {
     title: "From enquiry to launch",
@@ -95,6 +103,28 @@ export const FiveSteps: Story = {
         title: "Receive your payout",
         description:
           "Approved applicants receive the first payout within 10 working days.",
+      },
+    ],
+  },
+}
+
+// The maximum: two even rows of 3.
+export const SixSteps: Story = {
+  args: {
+    title: "From enquiry to launch",
+    subtitle: "What to expect at each stage of onboarding.",
+    numberStyle: "numeral",
+    steps: [
+      ...APPLICATION_STEPS,
+      {
+        title: "Receive your payout",
+        description:
+          "Approved applicants receive the first payout within 10 working days.",
+      },
+      {
+        title: "Renew before the year ends",
+        description:
+          "Support runs for 12 months. We will remind you a month before it lapses.",
       },
     ],
   },

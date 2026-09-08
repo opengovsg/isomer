@@ -70,7 +70,7 @@ export const StepsSchema = Type.Object(
     steps: Type.Array(StepSchema, {
       title: "Steps",
       minItems: 2,
-      maxItems: 5,
+      maxItems: 6,
     }),
   },
   {

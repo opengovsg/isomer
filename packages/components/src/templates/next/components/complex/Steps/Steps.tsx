@@ -62,13 +62,16 @@ const createStepsStyles = tv({
           "prose-display-xs flex h-11 w-11 items-center justify-center rounded-md bg-brand-canvas text-base-content-strong",
       },
     },
-    // Steps read as a single row on large screens; the column count has to be a
-    // static class for Tailwind to emit it.
+    // Up to 4 steps read as a single row on large screens. Beyond that a row
+    // gets too narrow to hold a description, so 5 and 6 wrap to two rows of 3
+    // (leaving 3 + 2 and 3 + 3). The column count has to be a static class for
+    // Tailwind to emit it.
     count: {
       2: { stepsContainer: "lg:grid-cols-2" },
       3: { stepsContainer: "lg:grid-cols-3" },
       4: { stepsContainer: "lg:grid-cols-4" },
-      5: { stepsContainer: "lg:grid-cols-5" },
+      5: { stepsContainer: "lg:grid-cols-3" },
+      6: { stepsContainer: "lg:grid-cols-3" },
     },
     isExternalLink: {
       true: {
@@ -114,7 +117,7 @@ export const Steps = ({
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const TitleTag = getHeadingTag(headingLevel)
   const StepTitleTag = getHeadingTag(headingLevel + 1)
-  const count = Math.min(Math.max(steps.length, 2), 5) as 2 | 3 | 4 | 5
+  const count = Math.min(Math.max(steps.length, 2), 6) as 2 | 3 | 4 | 5 | 6
 
   return (
     <section id={id} className={compoundStyles.section()}>
