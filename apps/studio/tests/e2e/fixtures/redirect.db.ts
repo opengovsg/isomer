@@ -24,3 +24,17 @@ export const deleteRedirectBySource = (opts: {
     .where("siteId", "=", opts.siteId)
     .where("source", "=", normalizeRedirectSource(opts.source))
     .execute()
+
+export const getRedirectDestination = async (opts: {
+  siteId: number
+  source: string
+}) => {
+  const row = await db
+    .selectFrom("Redirect")
+    .where("siteId", "=", opts.siteId)
+    .where("source", "=", normalizeRedirectSource(opts.source))
+    .where("deletedAt", "is", null)
+    .select("destination")
+    .executeTakeFirst()
+  return row?.destination ?? null
+}

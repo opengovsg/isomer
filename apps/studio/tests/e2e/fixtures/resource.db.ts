@@ -10,6 +10,15 @@ export const getFolderByTitle = (opts: { siteId: number; title: string }) =>
     .select("id")
     .executeTakeFirstOrThrow()
 
+export const getCollectionByTitle = (opts: { siteId: number; title: string }) =>
+  db
+    .selectFrom("Resource")
+    .where("siteId", "=", opts.siteId)
+    .where("title", "=", opts.title)
+    .where("type", "=", ResourceType.Collection)
+    .select("id")
+    .executeTakeFirstOrThrow()
+
 export const getResourceByTitle = (opts: { siteId: number; title: string }) =>
   db
     .selectFrom("Resource")

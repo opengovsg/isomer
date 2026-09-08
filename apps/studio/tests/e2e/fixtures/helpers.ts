@@ -4,7 +4,7 @@ import { type RoleType } from "~prisma/generated/generatedEnums"
 import { storageStateFor, type Role } from "./auth"
 import { DashboardPO } from "./dashboard.po"
 import { PageEditorPO } from "./page-editor.po"
-import { getFolderByTitle } from "./resource.db"
+import { getCollectionByTitle, getFolderByTitle } from "./resource.db"
 import { UsersPO } from "./users.po"
 
 export const openSeededPageEditor = async (
@@ -99,11 +99,7 @@ export const createPageViaWizard = async (
   await dashboard.clickCreatePage()
   await dashboard.fillPageWizard(title)
 
-  await page.waitForURL(new RegExp(`/sites/${siteId}/pages/\\d+$`))
-  const pageId = page.url().match(/\/pages\/(\d+)$/)?.[1]
-  if (!pageId) {
-    throw new Error(`Expected page editor URL after wizard, got ${page.url()}`)
-  }
+  const pageId = await dashboard.capturePageEditorIdFromUrl(siteId)
   return { pageId }
 }
 
@@ -119,6 +115,49 @@ export const createFolderViaWizard = async (
 
   const folder = await getFolderByTitle({ siteId, title })
   return { folderId: folder.id }
+}
+
+export const createCollectionViaWizard = async (
+  page: Page,
+  {
+    startUrl,
+    title,
+    siteId,
+  }: { startUrl: string; title: string; siteId: number },
+) => {
+  await page.goto(startUrl)
+
+  const dashboard = new DashboardPO(page)
+  await dashboard.openCreateMenu()
+  await dashboard.clickCreateCollection()
+  await dashboard.fillCollectionWizard(title)
+
+  const collection = await getCollectionByTitle({ siteId, title })
+  return { collectionId: collection.id }
+}
+
+export const createCollectionItemViaWizard = async (
+  page: Page,
+  {
+    siteId,
+    collectionId,
+    type,
+    title,
+  }: {
+    siteId: number
+    collectionId: string
+    type: "Page" | "Link or file"
+    title: string
+  },
+) => {
+  const dashboard = new DashboardPO(page)
+  await dashboard.gotoCollection(siteId, collectionId)
+  await dashboard.openAddCollectionItem()
+  await dashboard.selectCollectionItemType(type)
+  await dashboard.fillCollectionItemWizard(title)
+
+  const itemId = await dashboard.captureCollectionItemIdFromUrl(siteId, type)
+  return { itemId }
 }
 
 export const openInviteModal = async (page: Page, siteId: number) => {

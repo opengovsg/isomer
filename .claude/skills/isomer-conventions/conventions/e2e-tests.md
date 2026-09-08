@@ -129,6 +129,7 @@ surface. Prefer them over raw Playwright calls when a locator will be reused.
 | `PageEditorPO` | `page-editor.po.ts` | Page edit + publish chrome |
 | `PageSettingsPO` | `page-settings.po.ts` | Page settings modal (from dashboard) |
 | `CollectionPO` | `collection.po.ts` | Collection link/page editor drawers |
+| `FolderSettingsPO` | `folder-settings.po.ts` | Folder settings modal |
 | `UsersPO` | `users.po.ts` | Users / collaborators page |
 
 Rules:
@@ -192,6 +193,18 @@ Rules:
   under the existing DB setup convention (`reset.ts`, `site.ts`) — this only
   covers read queries used to verify an action's effect
 
+## DB assertions (`fixtures/page-seed.ts`)
+
+After UI mutations (delete, move, rename, publish), assert persisted state via
+`expect.poll` helpers in `page-seed.ts` — not inline `db.selectFrom(...)` in test
+files. Examples:
+
+- `expectResourceAbsent` / `expectResourcePresent` — row existence
+- `expectResourceParentId` — move outcomes
+- `expectResourceTitle` — title changes (pages, folders, collections)
+
+Use Playwright's default poll timeout unless a specific surface needs more.
+
 ## How to detect violations
 
 - Asserting "Sample Site", hardcoding a site ID, or calling `teardownE2ESite`/`getSeedSiteId()` (neither exists anymore) → use `provisionE2ESite` and assert on the returned site
@@ -200,3 +213,5 @@ Rules:
 - Raw `{ tag: "@admin" }` → use `roleTag("admin")` so unknown roles fail typecheck
 - Raw `page.getByRole("button", { name: "Create new..." })` repeated across files → use `DashboardPO`
 - Inline `db.selectFrom(...)` (or Prisma query) in a test file feeding an `expect()` → extract the query into `fixtures/<entity>.db.ts`
+- Inline `db.selectFrom("Resource")` in `*.test.ts` → use `page-seed.ts` poll helpers
+- Raw `page.waitForURL(...)` for dashboard navigation → use `DashboardPO.expectOnFolder` / `expectOnCollection` / `expectOnPageEditor`
