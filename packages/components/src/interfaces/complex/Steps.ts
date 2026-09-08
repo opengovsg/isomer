@@ -11,10 +11,12 @@ export const STEPS_NUMBER_STYLES = ["numeral", "eyebrow", "badge"] as const
 const StepSchema = Type.Object({
   title: Type.String({
     title: "Step title",
+    maxLength: 80,
   }),
   description: Type.Optional(
     Type.String({
       title: "Description",
+      description: "Keep to 1–2 sentences so steps stay scannable.",
     }),
   ),
   buttonLabel: Type.Optional(

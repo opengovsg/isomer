@@ -20,8 +20,11 @@ const createStepsStyles = tv({
     headerSubtitle: "prose-headline-lg-regular text-base-content",
     stepsContainer: "grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-2",
     step: "flex",
+    // w-full because the <li> is a flex container: without it the card is a
+    // flex item sized to its own content, so a short step collapses to a
+    // narrower box than the grid column it sits in.
     stepLink:
-      "group flex h-full flex-col items-start gap-3 text-left outline-0",
+      "group flex h-full w-full flex-col items-start gap-3 text-left outline-0",
     stepNumber: "text-base-content-subtle",
     stepTitle: [
       groupFocusVisibleHighlight(),
@@ -29,7 +32,7 @@ const createStepsStyles = tv({
     ],
     stepDescription: "prose-body-base text-base-content",
     stepButton:
-      "prose-headline-base-medium mt-auto inline-flex items-center gap-1 pt-1 text-base-content-strong",
+      "prose-headline-base-medium inline-flex items-center gap-1 pt-1 text-base-content-strong",
     stepButtonIcon:
       "mb-0.5 ml-1 inline text-[1.375rem] transition ease-in group-hover:translate-x-1",
   },
