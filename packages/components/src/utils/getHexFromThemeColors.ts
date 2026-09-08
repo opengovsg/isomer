@@ -26,22 +26,9 @@ const DEFAULT_BASE_COLORS = {
   },
 } as const
 
-export type HexThemeColors = {
-  brand: IsomerSiteThemeProps["colors"]["brand"]
-  base: {
-    canvas: string
-    content: {
-      strong: string
-    }
-    divider: {
-      medium: string
-    }
-  }
-}
-
 export const getHexFromThemeColors = (
   themeColors?: IsomerSiteThemeProps["colors"],
-): HexThemeColors => ({
+) => ({
   brand: themeColors?.brand ?? DEFAULT_BRAND_COLORS,
   base: DEFAULT_BASE_COLORS,
 })
