@@ -45,7 +45,12 @@ export const ResourceFilterMenu = ({
       <Text textStyle="caption-1" color="base.content.default">
         Filter by:
       </Text>
-      <Menu size="sm" variant="clear" closeOnSelect={false}>
+      <Menu
+        size="sm"
+        variant="clear"
+        closeOnSelect={false}
+        placement="bottom-end"
+      >
         {({ isOpen }) => (
           <>
             <Menu.Button
