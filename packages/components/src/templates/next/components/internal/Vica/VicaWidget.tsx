@@ -1,7 +1,7 @@
 import type { VicaWidgetProps } from "~/interfaces"
+import { getHexFromThemeColors } from "~/utils/getHexFromThemeColors"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
-import { getVicaThemeColors } from "./getVicaThemeColors"
 import { VicaWidgetClient } from "./VicaWidgetClient"
 
 export const VicaWidget = ({
@@ -10,7 +10,7 @@ export const VicaWidget = ({
   "app-icon": appIcon,
   ...rest
 }: VicaWidgetProps) => {
-  const vicaColors = getVicaThemeColors(themeColors)
+  const { brand, base } = getHexFromThemeColors(themeColors)
 
   return (
     <VicaWidgetClient
@@ -24,24 +24,18 @@ export const VicaWidget = ({
       // the following attributes to ensure consistency and best brand appearance.
       // VICA only accepts literal hex values — not CSS variables or design tokens.
       app-font-family="Inter, system-ui, sans-serif"
-      app-foreground-color={vicaColors.foreground}
-      app-color={vicaColors.brand}
-      app-button-border-color={vicaColors.buttonBorder}
-      app-canvas-background-color={vicaColors.canvasBackground}
-      app-quick-reply-button-background-color={
-        vicaColors.quickReplyButtonBackground
-      }
-      app-auto-complete-background-color={vicaColors.autoCompleteBackground}
-      app-auto-complete-hover-color={vicaColors.autoCompleteHover}
-      app-auto-complete-foreground-color={vicaColors.autoCompleteForeground}
-      app-auto-complete-divider-color={vicaColors.autoCompleteDivider}
-      app-recommendations-background-color={
-        vicaColors.recommendationsBackground
-      }
-      app-recommendations-hover-color={vicaColors.recommendationsHover}
-      app-recommendations-foreground-color={
-        vicaColors.recommendationsForeground
-      }
+      app-foreground-color={base.canvas}
+      app-color={brand.canvas.inverse}
+      app-button-border-color={brand.canvas.inverse}
+      app-canvas-background-color={brand.canvas.default}
+      app-quick-reply-button-background-color={base.canvas}
+      app-auto-complete-background-color={brand.canvas.default}
+      app-auto-complete-hover-color={brand.canvas.alt}
+      app-auto-complete-foreground-color={base.content.strong}
+      app-auto-complete-divider-color={base.divider.medium}
+      app-recommendations-background-color={brand.canvas.default}
+      app-recommendations-hover-color={brand.canvas.alt}
+      app-recommendations-foreground-color={base.content.strong}
     />
   )
 }
