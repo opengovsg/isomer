@@ -1,14 +1,17 @@
 import type { VicaWidgetProps } from "~/interfaces"
-import { colors } from "~/presets/next/colors"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
+import { getVicaThemeColors } from "./getVicaThemeColors"
 import { VicaWidgetClient } from "./VicaWidgetClient"
 
 export const VicaWidget = ({
   site,
+  themeColors,
   "app-icon": appIcon,
   ...rest
 }: VicaWidgetProps) => {
+  const vicaColors = getVicaThemeColors(themeColors)
+
   return (
     <VicaWidgetClient
       app-icon={
@@ -18,20 +21,27 @@ export const VicaWidget = ({
       }
       {...rest}
       // We ignore config passed in from DB and manually overwrite
-      // the following attributes to ensure consistency and best brand appearance
+      // the following attributes to ensure consistency and best brand appearance.
+      // VICA only accepts literal hex values — not CSS variables or design tokens.
       app-font-family="Inter, system-ui, sans-serif"
-      app-foreground-color={colors.base.canvas.DEFAULT}
-      app-color={colors.brand.canvas.inverse}
-      app-button-border-color={colors.brand.canvas.inverse}
-      app-canvas-background-color={colors.brand.canvas.DEFAULT}
-      app-quick-reply-button-background-color={colors.base.canvas.DEFAULT}
-      app-auto-complete-background-color={colors.brand.canvas.DEFAULT}
-      app-auto-complete-hover-color={colors.brand.canvas.alt}
-      app-auto-complete-foreground-color={colors.base.content.strong}
-      app-auto-complete-divider-color={colors.base.divider.medium}
-      app-recommendations-background-color={colors.brand.canvas.DEFAULT}
-      app-recommendations-hover-color={colors.brand.canvas.alt}
-      app-recommendations-foreground-color={colors.base.content.strong}
+      app-foreground-color={vicaColors.foreground}
+      app-color={vicaColors.brand}
+      app-button-border-color={vicaColors.buttonBorder}
+      app-canvas-background-color={vicaColors.canvasBackground}
+      app-quick-reply-button-background-color={
+        vicaColors.quickReplyButtonBackground
+      }
+      app-auto-complete-background-color={vicaColors.autoCompleteBackground}
+      app-auto-complete-hover-color={vicaColors.autoCompleteHover}
+      app-auto-complete-foreground-color={vicaColors.autoCompleteForeground}
+      app-auto-complete-divider-color={vicaColors.autoCompleteDivider}
+      app-recommendations-background-color={
+        vicaColors.recommendationsBackground
+      }
+      app-recommendations-hover-color={vicaColors.recommendationsHover}
+      app-recommendations-foreground-color={
+        vicaColors.recommendationsForeground
+      }
     />
   )
 }
