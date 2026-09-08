@@ -78,7 +78,7 @@ jobs:
           pnpm config set store-dir .pnpm-store --location project
 
       - name: Install pnpm dependencies
-        run: pnpm install --frozen-lockfile --filter isomer-base-template...
+        run: pnpm install --frozen-lockfile
 
       # publisher.sh's per-site builds each need this dist (packages/components/dist is
       # gitignored, so it isn't in the repository archive below); building it once here
