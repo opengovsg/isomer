@@ -50,6 +50,17 @@ export const SITE_THEME = {
         pressed: "#00283b",
       },
     },
+    base: {
+      canvas: {
+        default: "#ffffff",
+      },
+      content: {
+        strong: "#111827",
+      },
+      divider: {
+        medium: "#d1d5db",
+      },
+    },
   },
 }
 

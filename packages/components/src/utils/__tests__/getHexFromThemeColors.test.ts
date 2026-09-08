@@ -16,21 +16,34 @@ const themeColors = {
       pressed: "#0c2433",
     },
   },
+  base: {
+    canvas: {
+      default: "#fefefe",
+    },
+    content: {
+      strong: "#222222",
+    },
+    divider: {
+      medium: "#cccccc",
+    },
+  },
 }
 
 describe("getHexFromThemeColors", () => {
-  it("returns provided brand colours as hex values", () => {
+  it("returns provided brand and base colours as hex values", () => {
     const colors = getHexFromThemeColors(themeColors)
 
     expect(colors.brand?.canvas.inverse).toBe("#123456")
     expect(colors.brand?.canvas.default).toBe("#f0f0f0")
-    expect(colors.brand?.canvas.alt).toBe("#d0d0d0")
+    expect(colors.base?.canvas.default).toBe("#fefefe")
+    expect(colors.base?.content.strong).toBe("#222222")
   })
 
-  it("returns undefined brand colours when theme colours are omitted", () => {
+  it("returns undefined brand and base colours when theme colours are omitted", () => {
     const colors = getHexFromThemeColors()
 
     expect(colors.brand).toBeUndefined()
+    expect(colors.base).toBeUndefined()
   })
 
   it("does not return CSS variable references", () => {
@@ -39,9 +52,9 @@ describe("getHexFromThemeColors", () => {
     const values = [
       ...Object.values(colors.brand!.canvas),
       ...Object.values(colors.brand!.interaction),
-      colors.base.canvas,
-      colors.base.content.strong,
-      colors.base.divider.medium,
+      colors.base!.canvas.default,
+      colors.base!.content.strong,
+      colors.base!.divider.medium,
     ]
 
     for (const value of values) {
