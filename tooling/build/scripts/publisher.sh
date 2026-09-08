@@ -213,14 +213,80 @@ echo "Uploading redirect files to S3..."
 
 calculate_duration $start_time
 
-# Update CloudFront origin path
+# Update CloudFront origin path.
+#
+# Two builds of the same site can run concurrently (see computeBuildChanges),
+# racing to write the same DistributionConfig; the second writer gets a 412
+# PreconditionFailed on a stale ETag. On a lost race, check who actually
+# should be live:
+#   - live build >= ours: a concurrent build legitimately won. Concede.
+#   - live build < ours: we're the newer build and only lost because the
+#     other write landed first. Retry with a fresh ETag - failing here
+#     would leave the site on older content and page on-call for a race
+#     that a retry resolves on its own.
+#   - anything else (path doesn't parse): not explained by a normal race
+#     (e.g. a manual or IaC change). Fail loudly rather than guess.
 echo "Updating CloudFront origin path..."
 echo "CloudFront distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
-aws cloudfront get-distribution --id $CLOUDFRONT_DISTRIBUTION_ID >distribution.json
 
-ETag=$(cat distribution.json | jq -r '.ETag')
-echo "ETag: $ETag"
+MAX_ATTEMPTS=5
+for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
+  aws cloudfront get-distribution --id "$CLOUDFRONT_DISTRIBUTION_ID" >distribution.json
+  ETag=$(jq -r '.ETag' distribution.json)
 
-jq '.Distribution.DistributionConfig' distribution.json >distribution-new.json
-jq ".Origins.Items[0].OriginPath = \"/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest\"" distribution-new.json >distribution-config.json
-aws cloudfront update-distribution --id $CLOUDFRONT_DISTRIBUTION_ID --distribution-config file://distribution-config.json --if-match $ETag
+  jq '.Distribution.DistributionConfig' distribution.json >distribution-new.json
+  jq ".Origins.Items[0].OriginPath = \"/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest\"" distribution-new.json >distribution-config.json
+
+  set +e
+  aws cloudfront update-distribution --id "$CLOUDFRONT_DISTRIBUTION_ID" --distribution-config file://distribution-config.json --if-match "$ETag" 2>update-error.log
+  UPDATE_EXIT_CODE=$?
+  set -e
+
+  if [ "$UPDATE_EXIT_CODE" -eq 0 ]; then
+    echo "Successfully updated CloudFront origin path to build $CODEBUILD_BUILD_NUMBER"
+    exit 0
+  fi
+
+  cat update-error.log
+  if ! grep -q "PreconditionFailed" update-error.log; then
+    echo "Error: CloudFront update-distribution failed for a reason other than an ETag conflict."
+    exit "$UPDATE_EXIT_CODE"
+  fi
+
+  aws cloudfront get-distribution --id "$CLOUDFRONT_DISTRIBUTION_ID" >distribution.json
+  CURRENT_ORIGIN_PATH=$(jq -r '.Distribution.DistributionConfig.Origins.Items[0].OriginPath' distribution.json)
+
+  # SITE_NAME can contain digits (e.g. "mindef-sg101"), so strip the known
+  # prefix/suffix instead of grepping the whole path for digits. Fails
+  # closed to empty if the path isn't exactly /$SITE_NAME/<digits>/latest.
+  CURRENT_BUILD_NUMBER=""
+  EXPECTED_PREFIX="/$SITE_NAME/"
+  EXPECTED_SUFFIX="/latest"
+  if [[ "$CURRENT_ORIGIN_PATH" == "$EXPECTED_PREFIX"*"$EXPECTED_SUFFIX" ]]; then
+    MIDDLE="${CURRENT_ORIGIN_PATH#"$EXPECTED_PREFIX"}"
+    MIDDLE="${MIDDLE%"$EXPECTED_SUFFIX"}"
+    if [[ "$MIDDLE" =~ ^[0-9]+$ ]]; then
+      CURRENT_BUILD_NUMBER="$MIDDLE"
+    fi
+  fi
+
+  if [ -z "$CURRENT_BUILD_NUMBER" ]; then
+    echo "Error: PreconditionFailed but the live origin path ($CURRENT_ORIGIN_PATH) doesn't match /$SITE_NAME/<digits>/latest."
+    exit 1
+  fi
+
+  if [ "$CURRENT_BUILD_NUMBER" -ge "$CODEBUILD_BUILD_NUMBER" ]; then
+    echo "CloudFront already points to build $CURRENT_BUILD_NUMBER (>= ours: $CODEBUILD_BUILD_NUMBER). A concurrent build won the race fairly, skipping our update."
+    exit 0
+  fi
+
+  echo "Lost the write to an older build ($CURRENT_BUILD_NUMBER < ours: $CODEBUILD_BUILD_NUMBER)."
+  if [ "$attempt" -lt "$MAX_ATTEMPTS" ]; then
+    sleep_time=$(((2 ** attempt) + (RANDOM % 3)))
+    echo "Retrying with a fresh ETag in ${sleep_time}s..."
+    sleep "$sleep_time"
+  fi
+done
+
+echo "Error: exhausted $MAX_ATTEMPTS attempts trying to publish a build that should have won."
+exit 1
