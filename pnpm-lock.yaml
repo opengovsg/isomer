@@ -285,8 +285,8 @@ catalogs:
       specifier: ^7.0.2001
       version: 7.0.2001
     papaparse:
-      specifier: ^5.5.4
-      version: 5.5.4
+      specifier: ^5.7.0
+      version: 5.7.0
     pg-boss:
       specifier: ^12.27.0
       version: 12.27.0
@@ -945,7 +945,7 @@ importers:
         version: 5.7.1
       papaparse:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.0
       pdfreader:
         specifier: ^3.0.8
         version: 3.0.8
@@ -10544,8 +10544,8 @@ packages:
   pako@1.0.11:
     resolution: {integrity: sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==}
 
-  papaparse@5.5.4:
-    resolution: {integrity: sha512-SwzWD9gl/ElwYLCI0nUja1mFJzjq2D8ziShfNBa7zCHzkOozeOGDwHWQ+tvCzEZcewecWZ5U7kUopDnG+DFYEQ==}
+  papaparse@5.7.0:
+    resolution: {integrity: sha512-qBGxg/7Q3Kl9Wfhrz2Z74UnvnHTXLNG6jmKJFeBvP2+y4lV7So+7SR62+Zd47JvdrCkX+nDcnr0ObPzek/+6RA==}
 
   param-case@3.0.4:
     resolution: {integrity: sha512-RXlj7zCYokReqWpOPH9oYivUzLYZ5vAPIfEmCTNViosC78F8F0H9y7T7gG2M39ymgutxF5gcFEsyZQSph9Bp3A==}
@@ -22293,7 +22293,7 @@ snapshots:
 
   pako@1.0.11: {}
 
-  papaparse@5.5.4: {}
+  papaparse@5.7.0: {}
 
   param-case@3.0.4:
     dependencies:
