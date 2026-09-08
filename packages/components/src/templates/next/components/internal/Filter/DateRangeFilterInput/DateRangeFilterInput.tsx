@@ -9,7 +9,7 @@ export interface DateRangeFilterValue {
 }
 
 const dateRangeInputFieldStyles = tv({
-  base: "prose-label-md-regular w-full rounded bg-white px-4 py-2 text-base-content shadow-[0_0_0_1.5px] outline-none placeholder:text-base-content-subtle focus:shadow-[0_0_0_2px] focus:shadow-utility-feedback-info",
+  base: "prose-label-md-regular w-full rounded bg-white px-4 py-2 text-base-content shadow-[0_0_0_1.5px] outline-none placeholder:text-base-content-subtle focus-visible:shadow-[0_0_0_2px] focus-visible:shadow-utility-feedback-info forced-colors:focus-visible:shadow-none forced-colors:focus-visible:outline forced-colors:focus-visible:outline-2 forced-colors:focus-visible:outline-offset-2 forced-colors:focus-visible:outline-[Highlight]",
   variants: {
     isInvalid: {
       false: "shadow-base-divider-strong",
@@ -21,9 +21,12 @@ const dateRangeInputFieldStyles = tv({
 interface DateRangeFilterInputProps {
   value: DateRangeFilterValue | undefined
   onChange: (value: DateRangeFilterValue | undefined) => void
+  legend: string
 }
 
 const DATE_PLACEHOLDER = "yyyy-mm-dd"
+const FROM_LABEL = "From"
+const TO_LABEL = "To"
 
 const toFilterValue = (
   start: string,
@@ -46,6 +49,7 @@ const toFilterValue = (
 export const DateRangeFilterInput = ({
   value,
   onChange,
+  legend,
 }: DateRangeFilterInputProps) => {
   const fromId = useId()
   const toId = useId()
@@ -89,19 +93,24 @@ export const DateRangeFilterInput = ({
   }
 
   return (
-    <div className="mx-2 mb-2 flex flex-col gap-2">
+    <fieldset className="mx-2 mb-2 flex min-w-0 flex-col gap-2 border-0 p-0">
+      <legend className="prose-headline-base-medium mb-2 text-base-content">
+        {legend}
+      </legend>
+
       <div className="flex flex-col gap-4">
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <label
             htmlFor={fromId}
             className="prose-headline-base-medium text-base-content"
           >
-            From
+            {FROM_LABEL}
           </label>
           <input
             id={fromId}
             type="date"
             value={start}
+            max={end || undefined}
             placeholder={DATE_PLACEHOLDER}
             onChange={handleStartChange}
             className={dateRangeInputFieldStyles({
@@ -117,12 +126,13 @@ export const DateRangeFilterInput = ({
             htmlFor={toId}
             className="prose-headline-base-medium text-base-content"
           >
-            To
+            {TO_LABEL}
           </label>
           <input
             id={toId}
             type="date"
             value={end}
+            min={start || undefined}
             placeholder={DATE_PLACEHOLDER}
             onChange={handleEndChange}
             className={dateRangeInputFieldStyles({
@@ -140,9 +150,9 @@ export const DateRangeFilterInput = ({
           role="alert"
           className="text-utility-feedback-error-medium prose-label-sm-regular"
         >
-          From date must be before or equal to To date
+          {FROM_LABEL} date must be before or equal to {TO_LABEL} date
         </p>
       )}
-    </div>
+    </fieldset>
   )
 }

@@ -3,14 +3,20 @@ import { describe, expect, it, vi } from "vitest"
 
 import { DateRangeFilterInput } from "../DateRangeFilterInput"
 
+const TEST_LEGEND = "Publication date"
+
 const getFromInput = () => screen.getByLabelText("From")
 const getToInput = () => screen.getByLabelText("To")
+
+const renderDateRangeFilterInput = (
+  props: Omit<React.ComponentProps<typeof DateRangeFilterInput>, "legend">,
+) => render(<DateRangeFilterInput legend={TEST_LEGEND} {...props} />)
 
 describe("DateRangeFilterInput", () => {
   it("calls onChange with a closed range when both fields are set", () => {
     // Arrange
     const onChange = vi.fn()
-    render(<DateRangeFilterInput value={undefined} onChange={onChange} />)
+    renderDateRangeFilterInput({ value: undefined, onChange })
 
     // Act
     fireEvent.change(getFromInput(), { target: { value: "2026-04-05" } })
@@ -26,7 +32,7 @@ describe("DateRangeFilterInput", () => {
   it("calls onChange with a From-only open-ended range", () => {
     // Arrange
     const onChange = vi.fn()
-    render(<DateRangeFilterInput value={undefined} onChange={onChange} />)
+    renderDateRangeFilterInput({ value: undefined, onChange })
 
     // Act
     fireEvent.change(getFromInput(), { target: { value: "2026-04-05" } })
@@ -40,7 +46,7 @@ describe("DateRangeFilterInput", () => {
   it("calls onChange with a To-only open-ended range", () => {
     // Arrange
     const onChange = vi.fn()
-    render(<DateRangeFilterInput value={undefined} onChange={onChange} />)
+    renderDateRangeFilterInput({ value: undefined, onChange })
 
     // Act
     fireEvent.change(getToInput(), { target: { value: "2026-04-08" } })
@@ -54,12 +60,10 @@ describe("DateRangeFilterInput", () => {
   it("clears one field without clearing the other", () => {
     // Arrange
     const onChange = vi.fn()
-    render(
-      <DateRangeFilterInput
-        value={{ start: "2026-04-05", end: "2026-04-08" }}
-        onChange={onChange}
-      />,
-    )
+    renderDateRangeFilterInput({
+      value: { start: "2026-04-05", end: "2026-04-08" },
+      onChange,
+    })
 
     // Act
     fireEvent.change(getFromInput(), { target: { value: "" } })
@@ -75,12 +79,10 @@ describe("DateRangeFilterInput", () => {
   it("calls onChange with undefined when both fields are cleared", () => {
     // Arrange
     const onChange = vi.fn()
-    render(
-      <DateRangeFilterInput
-        value={{ start: "2026-04-05", end: "2026-04-08" }}
-        onChange={onChange}
-      />,
-    )
+    renderDateRangeFilterInput({
+      value: { start: "2026-04-05", end: "2026-04-08" },
+      onChange,
+    })
 
     // Act
     fireEvent.change(getFromInput(), { target: { value: "" } })
@@ -93,7 +95,7 @@ describe("DateRangeFilterInput", () => {
   it("shows a validation error and does not call onChange when From is after To", () => {
     // Arrange
     const onChange = vi.fn()
-    render(<DateRangeFilterInput value={undefined} onChange={onChange} />)
+    renderDateRangeFilterInput({ value: undefined, onChange })
 
     // Act
     fireEvent.change(getFromInput(), { target: { value: "2026-06-01" } })
@@ -109,7 +111,7 @@ describe("DateRangeFilterInput", () => {
   it("commits again after an invalid range is corrected", () => {
     // Arrange
     const onChange = vi.fn()
-    render(<DateRangeFilterInput value={undefined} onChange={onChange} />)
+    renderDateRangeFilterInput({ value: undefined, onChange })
 
     // Act
     fireEvent.change(getFromInput(), { target: { value: "2026-06-01" } })

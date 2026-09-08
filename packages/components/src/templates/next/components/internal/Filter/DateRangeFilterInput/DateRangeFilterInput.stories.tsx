@@ -9,11 +9,16 @@ import { DateRangeFilterInput } from "./DateRangeFilterInput"
 const meta: Meta<typeof DateRangeFilterInput> = {
   title: "Next/Internal Components/Filter/DateRangeFilterInput",
   component: DateRangeFilterInput,
-  render: ({ value: initialValue }) => {
+  args: {
+    legend: "Publication date",
+  },
+  render: ({ value: initialValue, legend }) => {
     const [value, setValue] = useState<DateRangeFilterValue | undefined>(
       initialValue,
     )
-    return <DateRangeFilterInput value={value} onChange={setValue} />
+    return (
+      <DateRangeFilterInput legend={legend} value={value} onChange={setValue} />
+    )
   },
   parameters: {
     themes: {
