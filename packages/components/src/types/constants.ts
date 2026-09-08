@@ -34,11 +34,7 @@ export const resolveTagCategoryDisplay = (
   display?: TagCategoryDisplay,
 ): TagCategoryDisplay => display ?? DEFAULT_TAG_CATEGORY_DISPLAY
 
-// A `tagCategories` entry is either a "text" filter (admin-defined option
-// list, the original mechanism) or a "date" filter (computed ended/ongoing/
-// upcoming status). Legacy persisted entries omit `type` entirely — read
-// missing/`undefined` as `Text` for backward compatibility, same pattern as
-// `resolveTagCategoryDisplay` above.
+// tagCategories entry is "text" (option list) or "date" (status buckets).
 export const TAG_CATEGORY_TYPE = {
   Text: "text",
   Date: "date",

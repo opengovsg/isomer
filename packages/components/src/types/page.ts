@@ -79,14 +79,11 @@ const dateFilterIsRequiredSchemaObject = {
 const TextFilterSchema = Type.Object(
   {
     ...tagCategoryLabelSchemaObject,
-    // Optional for backward compatibility — every pre-existing `tagCategories`
-    // entry was a text filter before date filters existed. Must stay
-    // `"text"` or absent (never `"date"`) so this branch and `DateFilterSchema`
-    // remain mutually exclusive for `oneOf` resolution.
+    ...tagCategoryIsRequiredSchemaObject,
+    // Optional on old rows. Must be "text" or absent so oneOf picks TextFilterSchema.
     type: Type.Optional(
       Type.Literal(TAG_CATEGORY_TYPE.Text, { format: "hidden" }),
     ),
-    ...tagCategoryIsRequiredSchemaObject,
     // Optional for backward compatibility. Missing/`undefined` must be read as
     // `DEFAULT_TAG_CATEGORY_DISPLAY` via `resolveTagCategoryDisplay`.
     // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
@@ -230,7 +227,7 @@ export const isTextFilter = (
 // text, index 1 is date — JsonFormsTagCategoryItemControl indexes into this
 // same array via JSONForms' own `indexOfFittingSchema`.
 const TagCategorySchema = Type.Unsafe<
-  TextFilterSchemaType | DateFilterSchemaType
+  Static<typeof TextFilterSchema> | Static<typeof DateFilterSchema>
 >({
   oneOf: [TextFilterSchema, DateFilterSchema],
   format: "tag-category-item",
