@@ -2,6 +2,7 @@ import type { VicaWidgetProps } from "~/interfaces"
 import { getHexFromThemeColors } from "~/utils/getHexFromThemeColors"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
+import { getVicaColorAttributes } from "./getVicaColorAttributes"
 import { VicaWidgetClient } from "./VicaWidgetClient"
 
 export const VicaWidget = ({
@@ -10,7 +11,9 @@ export const VicaWidget = ({
   "app-icon": appIcon,
   ...rest
 }: VicaWidgetProps) => {
-  const { brand, base } = getHexFromThemeColors(themeColors)
+  const themeColorAttributes = getVicaColorAttributes(
+    getHexFromThemeColors(themeColors),
+  )
 
   return (
     <VicaWidgetClient
@@ -24,24 +27,7 @@ export const VicaWidget = ({
       // the following attributes to ensure consistency and best brand appearance.
       // VICA only accepts literal hex values — not CSS variables or design tokens.
       app-font-family="Inter, system-ui, sans-serif"
-      {...(base && {
-        "app-foreground-color": base.canvas.default,
-      })}
-      {...(brand && {
-        "app-color": brand.canvas.inverse,
-        "app-button-border-color": brand.canvas.inverse,
-        "app-canvas-background-color": brand.canvas.default,
-        ...(base && {
-          "app-quick-reply-button-background-color": base.canvas.default,
-          "app-auto-complete-background-color": brand.canvas.default,
-          "app-auto-complete-hover-color": brand.canvas.alt,
-          "app-auto-complete-foreground-color": base.content.strong,
-          "app-auto-complete-divider-color": base.divider.medium,
-          "app-recommendations-background-color": brand.canvas.default,
-          "app-recommendations-hover-color": brand.canvas.alt,
-          "app-recommendations-foreground-color": base.content.strong,
-        }),
-      })}
+      {...themeColorAttributes}
     />
   )
 }
