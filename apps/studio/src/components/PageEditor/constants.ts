@@ -371,9 +371,7 @@ export const BLOCK_TO_META: Record<
     description: "Break a process into numbered steps.",
     usageText:
       "Show users what to do in order, like applying for a scheme or making a report.",
-    // TODO: needs its own thumbnail — borrowing Infocol's so the picker card
-    // isn't broken while the block is being evaluated.
-    imageSrc: "/assets/block-images/Infocol.png",
+    imageSrc: "/assets/block-images/Steps.png",
   },
   infobar: {
     label: "Call-to-Action",
