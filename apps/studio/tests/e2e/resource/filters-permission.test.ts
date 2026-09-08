@@ -1,15 +1,15 @@
 import { test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import { roleTag, storageStateFor, TEST_EMAILS } from "../fixtures/auth"
+import { roleTag, TEST_EMAILS } from "../fixtures/auth"
 import {
   createCollectionWithTagCategories,
   deleteCollection,
 } from "../fixtures/collection"
 import { CollectionPO } from "../fixtures/collection.po"
 import { provisionE2ESite } from "../fixtures/site"
+import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number
 
@@ -19,13 +19,6 @@ test.beforeAll(async () => {
   })
   siteId = site.siteId
 })
-
-const dismissWelcomeModal = (email: string) =>
-  db
-    .updateTable("User")
-    .set({ name: "test-e2e", phone: "82345678" })
-    .where("email", "=", email)
-    .execute()
 
 const seedCollection = () =>
   createCollectionWithTagCategories(
@@ -41,13 +34,11 @@ const seedCollection = () =>
   )
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
-  test.use({ storageState: storageStateFor("admin") })
-
   let collectionId: string
   let indexPageId: string
 
   test.beforeEach(async () => {
-    await dismissWelcomeModal(TEST_EMAILS.admin)
+    await ensureUserOnboarded(TEST_EMAILS.admin)
     ;({ collectionId, indexPageId } = await seedCollection())
   })
 
@@ -74,13 +65,11 @@ for (const role of ["core", "migrator"] as const) {
     `isomer admin (${role}) without site permission`,
     { tag: roleTag(role) },
     () => {
-      test.use({ storageState: storageStateFor(role) })
-
       let collectionId: string
       let indexPageId: string
 
       test.beforeEach(async () => {
-        await dismissWelcomeModal(TEST_EMAILS[role])
+        await ensureUserOnboarded(TEST_EMAILS[role])
         ;({ collectionId, indexPageId } = await seedCollection())
       })
 
@@ -105,13 +94,11 @@ for (const role of ["core", "migrator"] as const) {
 
 for (const role of ["editor", "publisher"] as const) {
   test.describe(role, { tag: roleTag(role) }, () => {
-    test.use({ storageState: storageStateFor(role) })
-
     let collectionId: string
     let indexPageId: string
 
     test.beforeEach(async () => {
-      await dismissWelcomeModal(TEST_EMAILS[role])
+      await ensureUserOnboarded(TEST_EMAILS[role])
       ;({ collectionId, indexPageId } = await seedCollection())
     })
 
