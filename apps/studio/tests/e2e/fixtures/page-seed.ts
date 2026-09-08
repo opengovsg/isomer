@@ -107,6 +107,29 @@ export const seedFolderWithChildPage = async ({
   return { folder, childPage: page }
 }
 
+export const seedNestedFolder = async ({
+  siteId,
+  parentFolderTitle = "E2E Parent Folder",
+  childFolderTitle = "E2E Nested Folder",
+}: {
+  siteId: number
+  parentFolderTitle?: string
+  childFolderTitle?: string
+}) => {
+  const suffix = crypto.randomUUID().slice(0, 8)
+  const { folder: parentFolder } = await seedFolder({
+    siteId,
+    folderTitle: parentFolderTitle,
+  })
+  const { folder: childFolder } = await setupFolder({
+    siteId,
+    title: childFolderTitle,
+    permalink: `e2e-nested-folder-${suffix}`,
+    parentId: parentFolder.id,
+  })
+  return { parentFolder, childFolder }
+}
+
 export const seedCollectionWithPage = async ({
   siteId,
   collectionTitle = "E2E Seed Collection",

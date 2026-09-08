@@ -21,7 +21,8 @@ introduces a **new reusable pattern** — not when merely adding test cases. See
 | **Helpers** | `fixtures/helpers.ts` | Flows that **cross surfaces** (e.g. create page: dashboard wizard → page editor) |
 | **Page objects** | `fixtures/*.po.ts` | Locators + actions on **one** UI surface, including multi-step modals/forms on that surface (`fillPageWizard`, `fillInviteForm`, …) |
 | **DB setup** | `fixtures/reset.ts`, `fixtures/site.ts` | Non-UI reset and site lifecycle |
-| **DB assertions** | `fixtures/*.db.ts` | Query helpers that fetch persisted state for a test to assert on (`resource.db.ts`, `user.db.ts`, …) |
+| **DB assertions** | `fixtures/*.db.ts`, `fixtures/site-expect.ts`, `fixtures/page-seed.ts` | Query/poll helpers that fetch or wait on persisted state for a test to assert on |
+| **Network mocks** | `fixtures/network.ts` | Route stubs (S3 upload, GrowthBook flags) used in `beforeEach` |
 
 **Wizards** here means multi-step modals on a single surface (e.g. Create Page:
 "Next: Page title and URL" → fill title → "Start editing"). The step sequence
@@ -37,9 +38,28 @@ does not block tests (singpass global-setup can blank profiles).
 
 ## Test pattern
 
-Per UI surface: **one happy-path** + **one permission-gate** where the UI shows a
-signal (hidden button, redirect, disabled control). Do not translate audit-log or
-validation-edge-case scenarios — those stay in integration tests.
+Per UI surface:
+
+1. **One happy-path** E2E test (admin completes the primary flow end-to-end).
+2. **One permission-gate** E2E test where the UI shows a signal (hidden button,
+   redirect, disabled control). For settings Publish gates, centralize in
+   `site/settings-permissions.test.ts` instead of repeating per file.
+3. **User-visible validation signals** belong in E2E when the assertion is what
+   the admin *sees* — inline error copy, a disabled Publish button, a toast, a
+   rejected upload state. Integration tests cannot substitute for these; they
+   exercise schema/router logic without a browser.
+
+**Integration tests** own exhaustive validation: every schema rule, edge case, and
+error code path. **E2E** picks one representative scenario per visible signal per
+surface (e.g. one invalid-input message, one required-field message) — not a
+full matrix duplicating integration coverage.
+
+Do not translate **audit-log** scenarios or **non-UI** backend-only behavior to
+E2E.
+
+When iterating the same Act/Assert over multiple sections, register **one
+`test()` per section** (a `for` loop around `test(...)`) — not multiple Acts in
+one test body.
 
 ## Per-site isolation (PR-2)
 
@@ -70,6 +90,13 @@ test.beforeAll(async () => {
 - Do not add a `teardownE2ESite`/per-test cleanup call — it doesn't exist; cleanup is run-scoped, not test-scoped
 - **Exception:** files that exercise surfaces not scoped to a site (e.g. `godmode/`,
   `smoke.test.ts`) do not need `provisionE2ESite`
+
+## Settings publisher gate (PR-7)
+
+Publisher permission gates for settings Publish buttons live in **one** file:
+`site/settings-permissions.test.ts`. Individual settings happy-path files do not
+repeat the gate — add new Publish-gated sections to `PUBLISH_GATED_SETTINGS_SECTIONS`
+in `fixtures/site.po.ts` and extend `settings-permissions.test.ts`.
 
 ## Role projects and tags (PR-3)
 
@@ -120,7 +147,8 @@ await withRoleSession(browser, "admin", async ({ page }) => {
 ## Page objects (PR-4)
 
 Page objects live in `fixtures/*.po.ts` and wrap locators + actions for **one** UI
-surface. Prefer them over raw Playwright calls when a locator will be reused.
+surface. **All `page.*` Playwright calls belong in `fixtures/*.po.ts` or
+`fixtures/helpers.ts` — not in `*.test.ts` files.**
 
 | PO | File | Surface |
 |----|------|---------|
@@ -205,13 +233,52 @@ files. Examples:
 
 Use Playwright's default poll timeout unless a specific surface needs more.
 
+### `page.*` boundary
+
+**Smell:** any `page.<method>(` in `tests/e2e/**/*.test.ts`.
+
+**Blessed:** the same call lives on the PO (or a helper) for that surface; the
+test file only constructs the PO and asserts outcomes.
+
+**Allowlist** (the only `page.*` permitted in test files):
+
+| Call | Why |
+|------|-----|
+| `async ({ page })` fixture destructuring | Playwright test signature |
+| `new SomePO(page)` | PO construction |
+| Documented infra exceptions in this file | e.g. `resetGrowthBookPage(page)` in `fixtures/network.ts` before GrowthBook-gated navigation |
+
+Everything else — `page.goto`, `page.getByRole`, `page.getByLabel`, `page.locator`,
+`page.click`, `page.fill`, `page.waitForURL`, etc. — belongs in the relevant
+`*.po.ts` or `helpers.ts`. When a PO method does not exist yet, add it there
+first, then call it from the test.
+
+**How to detect:**
+
+```bash
+rg 'page\.\w+\(' apps/studio/tests/e2e --glob '*.test.ts'
+```
+
+Review each match against the allowlist above. A hit that is not allowlisted is a
+violation — extract it to the PO for that UI surface (or to `helpers.ts` if it
+crosses surfaces/modals).
+
+### Site settings (`SitePO`) — examples
+
+- `gotoSettingsSection(siteId, section)` — deep-link navigation
+- `clickPublish({ force: true })` — header Publish; `force` when FormBuilder
+  inline editors overlay the button (navbar/footer rows)
+- `logoUploadInput()` — scopes past the separate favicon control
+- GrowthBook-gated UI: `enableGrowthBookFeature` in `beforeEach`, then
+  `resetGrowthBookPage(page)` from `fixtures/network.ts` before the first app navigation
+
 ## How to detect violations
 
 - Asserting "Sample Site", hardcoding a site ID, or calling `teardownE2ESite`/`getSeedSiteId()` (neither exists anymore) → use `provisionE2ESite` and assert on the returned site
 - Duplicated cross-surface flows in test files → move to `helpers.ts`; duplicated modal/form steps → add a PO method
 - `test.use({ storageState: storageStateFor(...) })` in a test file → use `{ tag: roleTag(...) }` on `test.describe` instead
 - Raw `{ tag: "@admin" }` → use `roleTag("admin")` so unknown roles fail typecheck
-- Raw `page.getByRole("button", { name: "Create new..." })` repeated across files → use `DashboardPO`
 - Inline `db.selectFrom(...)` (or Prisma query) in a test file feeding an `expect()` → extract the query into `fixtures/<entity>.db.ts`
 - Inline `db.selectFrom("Resource")` in `*.test.ts` → use `page-seed.ts` poll helpers
 - Raw `page.waitForURL(...)` for dashboard navigation → use `DashboardPO.expectOnFolder` / `expectOnCollection` / `expectOnPageEditor`
+- Any `page.<method>(` in `*.test.ts` outside the allowlist above → move to the relevant `*.po.ts` or `helpers.ts`

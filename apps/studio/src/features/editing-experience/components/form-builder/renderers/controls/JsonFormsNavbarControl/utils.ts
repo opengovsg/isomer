@@ -31,6 +31,14 @@ export const isFirstLevelLinksOverLimit = (
   maxItems?: number,
 ): boolean => !!(maxItems && itemCount > maxItems)
 
+// At-limit (not over): Add is disabled, matching footer columns and utility
+// links. Over-limit still uses isFirstLevelLinksOverLimit for the warning
+// Infobox (existing payloads that already have too many first-level items).
+export const isFirstLevelLinksAtLimit = (
+  itemCount: number,
+  maxItems?: number,
+): boolean => !!(maxItems && itemCount >= maxItems)
+
 export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) => {
   return `/${path.replace(/\./g, "/")}`
 }

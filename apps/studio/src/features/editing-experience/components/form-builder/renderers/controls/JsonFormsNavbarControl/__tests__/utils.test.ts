@@ -4,6 +4,7 @@ import {
   getMoveItemOperation,
   getNavbarItemPath,
   handleMoveItem,
+  isFirstLevelLinksAtLimit,
   isFirstLevelLinksOverLimit,
   isSubItemPath,
 } from "../utils"
@@ -123,6 +124,67 @@ describe("isFirstLevelLinksOverLimit", () => {
 
     // Act
     const actual = isFirstLevelLinksOverLimit(itemCount, maxItems)
+
+    // Assert
+    expect(actual).toBe(false)
+  })
+})
+
+describe("isFirstLevelLinksAtLimit", () => {
+  it("should return false when item count is below maxItems", () => {
+    // Arrange
+    const itemCount = 7
+    const maxItems = 8
+
+    // Act
+    const actual = isFirstLevelLinksAtLimit(itemCount, maxItems)
+
+    // Assert
+    expect(actual).toBe(false)
+  })
+
+  it("should return true when item count is exactly maxItems", () => {
+    // Arrange
+    const itemCount = 8
+    const maxItems = 8
+
+    // Act
+    const actual = isFirstLevelLinksAtLimit(itemCount, maxItems)
+
+    // Assert
+    expect(actual).toBe(true)
+  })
+
+  it("should return true when item count exceeds maxItems", () => {
+    // Arrange
+    const itemCount = 9
+    const maxItems = 8
+
+    // Act
+    const actual = isFirstLevelLinksAtLimit(itemCount, maxItems)
+
+    // Assert
+    expect(actual).toBe(true)
+  })
+
+  it("should return false when maxItems is undefined", () => {
+    // Arrange
+    const itemCount = 100
+
+    // Act
+    const actual = isFirstLevelLinksAtLimit(itemCount, undefined)
+
+    // Assert
+    expect(actual).toBe(false)
+  })
+
+  it("should return false when maxItems is 0", () => {
+    // Arrange
+    const itemCount = 1
+    const maxItems = 0
+
+    // Act
+    const actual = isFirstLevelLinksAtLimit(itemCount, maxItems)
 
     // Assert
     expect(actual).toBe(false)
