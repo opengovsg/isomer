@@ -105,3 +105,6 @@ export const seedRolesForE2E = async () => {
     site.id,
   )
 }
+
+/** Global Isomer admins seeded once per e2e run (core + migrator). */
+export const SEEDED_ISOMER_ADMIN_COUNT = 2

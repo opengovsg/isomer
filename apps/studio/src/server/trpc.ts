@@ -225,10 +225,14 @@ const rateLimitMiddleware = t.middleware(async ({ next, ctx, meta }) => {
     return next()
   }
 
-  if (
-    env.NODE_ENV === "test" &&
-    !meta.rateLimitOptions._internalUseRateLimiterInTestEnv
-  ) {
+  // `next build`/`next start` bakes `process.env.NODE_ENV` into the bundle as
+  // "production" (webpack DefinePlugin), so `env.NODE_ENV` is never "test" in
+  // the E2E CI server even though `.env.test` sets it — `NEXT_PUBLIC_APP_ENV`
+  // isn't subject to that inlining here since it's absent at build time, so it
+  // reflects the real runtime value from `.env.test`.
+  const isTestEnv =
+    env.NODE_ENV === "test" || env.NEXT_PUBLIC_APP_ENV === "test"
+  if (isTestEnv && !meta.rateLimitOptions._internalUseRateLimiterInTestEnv) {
     return next()
   }
 

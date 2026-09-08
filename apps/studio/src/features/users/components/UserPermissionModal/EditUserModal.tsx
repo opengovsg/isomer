@@ -65,9 +65,9 @@ export const EditUserModal = () => {
 
   const { mutate, isPending } = trpc.user.update.useMutation({
     onSettled: onClose,
-    onSuccess: async () => {
-      await utils.user.list.invalidate()
-      await utils.user.count.invalidate()
+    onSuccess: () => {
+      void utils.user.list.invalidate()
+      void utils.user.count.invalidate()
       toast({
         status: "success",
         title: `Changes saved!`,

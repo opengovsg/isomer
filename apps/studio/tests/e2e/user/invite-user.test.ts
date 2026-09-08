@@ -1,55 +1,34 @@
-import { expect, test } from "@playwright/test"
-import crypto from "crypto"
+import { test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { inviteCollaborator, openInviteModal } from "../fixtures/helpers"
 import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
 import {
-  deleteUsersByEmailLike,
-  deleteWhitelistByEmailLike,
-  getGrantedRole,
+  ensureUserOnboarded,
+  uniqueInviteeEmail,
+  uniqueVendorEmail,
   whitelistVendorEmail,
-} from "../fixtures/user.db"
+} from "../fixtures/user"
+import { expectUserRoleOnSite } from "../fixtures/user-expect"
+import { UsersPO } from "../fixtures/users.po"
 
-test.describe("invite user", { tag: roleTag("admin") }, () => {
-  test.describe.configure({ mode: "serial" })
+let siteId: number
 
-  const UNIQUE_INVITEE = () =>
-    `e2e-invitee-${crypto.randomUUID().slice(0, 8)}@open.gov.sg`
-
-  const UNIQUE_VENDOR = () =>
-    `e2e-vendor-${crypto.randomUUID().slice(0, 8)}@vendor.example.com`
-
-  let siteId: number
-
+test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeAll(async () => {
     const site = await provisionE2ESite({ roles: [RoleType.Admin] })
     siteId = site.siteId
   })
 
-  const expectGrantedRole = (email: string) =>
-    expect.poll(
-      async () => (await getGrantedRole({ siteId, email }))?.role ?? null,
-      { timeout: 10_000 },
-    )
-
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
-  test.afterEach(async () => {
-    await deleteUsersByEmailLike("e2e-invitee-%@open.gov.sg")
-    await deleteUsersByEmailLike("e2e-vendor-%@vendor.example.com")
-    await deleteWhitelistByEmailLike("e2e-vendor-%@vendor.example.com")
-  })
-
   test("admin can invite a new collaborator as Editor", async ({ page }) => {
-    // Arrange
-    const inviteeEmail = UNIQUE_INVITEE()
+    const inviteeEmail = uniqueInviteeEmail()
 
-    // Act
+    // Arrange / Act
     await inviteCollaborator(page, {
       email: inviteeEmail,
       role: "Editor",
@@ -57,14 +36,13 @@ test.describe("invite user", { tag: roleTag("admin") }, () => {
     })
 
     // Assert
-    await expectGrantedRole(inviteeEmail).toBe("Editor")
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
   })
 
   test("admin can invite a new collaborator as Publisher", async ({ page }) => {
-    // Arrange
-    const inviteeEmail = UNIQUE_INVITEE()
+    const inviteeEmail = uniqueInviteeEmail()
 
-    // Act
+    // Arrange / Act
     await inviteCollaborator(page, {
       email: inviteeEmail,
       role: "Publisher",
@@ -72,14 +50,13 @@ test.describe("invite user", { tag: roleTag("admin") }, () => {
     })
 
     // Assert
-    await expectGrantedRole(inviteeEmail).toBe("Publisher")
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Publisher")
   })
 
   test("admin can invite a new collaborator as Admin", async ({ page }) => {
-    // Arrange
-    const inviteeEmail = UNIQUE_INVITEE()
+    const inviteeEmail = uniqueInviteeEmail()
 
-    // Act
+    // Arrange / Act
     await inviteCollaborator(page, {
       email: inviteeEmail,
       role: "Admin",
@@ -87,14 +64,15 @@ test.describe("invite user", { tag: roleTag("admin") }, () => {
     })
 
     // Assert
-    await expectGrantedRole(inviteeEmail).toBe("Admin")
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Admin")
   })
 
   test("admin can invite a whitelisted vendor collaborator as Admin", async ({
     page,
   }) => {
+    const vendorEmail = uniqueVendorEmail()
+
     // Arrange
-    const vendorEmail = UNIQUE_VENDOR()
     await whitelistVendorEmail(vendorEmail)
 
     // Act
@@ -105,34 +83,51 @@ test.describe("invite user", { tag: roleTag("admin") }, () => {
     })
 
     // Assert
-    await expectGrantedRole(vendorEmail).toBe("Admin")
+    await expectUserRoleOnSite(siteId, vendorEmail).toBe("Admin")
+  })
+
+  test("admin sees AddAdminWarning when selecting Admin role in invite modal", async ({
+    page,
+  }) => {
+    const users = new UsersPO(page)
+
+    // Arrange / Act
+    await openInviteModal(page, siteId)
+    await users.selectInviteRole("Admin")
+
+    // Assert
+    await users.expectAddAdminWarningVisible()
   })
 
   test("admin cannot invite a non-whitelisted vendor collaborator", async ({
     page,
   }) => {
-    // Arrange
-    const vendorEmail = UNIQUE_VENDOR()
-    const users = await openInviteModal(page, siteId)
-    await users.fillEmail(vendorEmail)
+    const vendorEmail = uniqueVendorEmail()
+    const users = new UsersPO(page)
+
+    // Arrange / Act
+    await openInviteModal(page, siteId)
+    await users.fillInviteForm(vendorEmail, "Editor")
 
     // Assert
-    await users.expectVendorWhitelistRequired()
+    await users.expectNonGovSgWhitelistWarning()
     await users.expectSendInviteDisabled()
   })
 
   test("admin cannot invite a non-whitelisted vendor collaborator, even as Admin", async ({
     page,
   }) => {
-    // Arrange
-    const vendorEmail = UNIQUE_VENDOR()
-    const users = await openInviteModal(page, siteId)
-    await users.selectRole("Admin")
-    await users.fillEmail(vendorEmail)
+    const vendorEmail = uniqueVendorEmail()
+    const users = new UsersPO(page)
+
+    // Arrange / Act
+    await openInviteModal(page, siteId)
+    await users.selectInviteRole("Admin")
+    await users.fillInviteEmail(vendorEmail)
 
     // Assert
-    await users.expectRoleEnabled("Admin")
-    await users.expectVendorWhitelistRequired()
+    await users.expectInviteRoleEnabled("Admin")
+    await users.expectNonGovSgWhitelistWarning()
     await users.expectSendInviteDisabled()
   })
 })

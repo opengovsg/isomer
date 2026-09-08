@@ -21,7 +21,7 @@ introduces a **new reusable pattern** — not when merely adding test cases. See
 | **Helpers** | `fixtures/helpers.ts` | Flows that **cross surfaces** (e.g. create page: dashboard wizard → page editor) |
 | **Page objects** | `fixtures/*.po.ts` | Locators + actions on **one** UI surface, including multi-step modals/forms on that surface (`fillPageWizard`, `fillInviteForm`, …) |
 | **DB setup** | `fixtures/reset.ts`, `fixtures/site.ts` | Non-UI reset and site lifecycle |
-| **DB assertions** | `fixtures/*.db.ts`, `fixtures/site-expect.ts`, `fixtures/page-seed.ts` | Query/poll helpers that fetch or wait on persisted state for a test to assert on |
+| **DB assertions** | `fixtures/*.db.ts`, `fixtures/site-expect.ts`, `fixtures/page-seed.ts`, `fixtures/user-expect.ts` | Query/poll helpers that fetch or wait on persisted state for a test to assert on |
 | **Network mocks** | `fixtures/network.ts` | Route stubs (S3 upload, GrowthBook flags) used in `beforeEach` |
 
 **Wizards** here means multi-step modals on a single surface (e.g. Create Page:
