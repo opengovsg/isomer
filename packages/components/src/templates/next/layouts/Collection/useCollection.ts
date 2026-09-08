@@ -3,6 +3,7 @@ import type { CollectionPagePageProps } from "~/types"
 import { isEmpty } from "lodash-es"
 import { useCallback, useMemo } from "react"
 import { useQueryParams } from "~/hooks/useQueryParams"
+import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
 import type { AppliedFilter } from "../../types/Filter"
 import { isAppliedFilters } from "../../types/Filter"
@@ -10,6 +11,7 @@ import {
   getFilteredItems,
   getPaginatedItems,
   toggleAppliedFilterItem,
+  updateAppliedFilterDateRange,
 } from "./utils"
 
 export const ITEMS_PER_PAGE = 10
@@ -17,9 +19,11 @@ export const ITEMS_PER_PAGE = 10
 export const useCollection = ({
   items,
   tagCategories,
+  today = getSingaporeDateYYYYMMDD(),
 }: {
   items: ProcessedCollectionCardProps[]
   tagCategories?: CollectionPagePageProps["tagCategories"]
+  today?: string
 }) => {
   const [queryParams, updateQueryParams] = useQueryParams()
 
@@ -83,9 +87,28 @@ export const useCollection = ({
     [appliedFilters, setAppliedFilters],
   )
 
+  const handleDateRangeChange = useCallback(
+    (id: string, dateRange: AppliedFilter["dateRange"]) => {
+      return updateAppliedFilterDateRange({
+        appliedFilters,
+        setAppliedFilters,
+        filterId: id,
+        dateRange,
+      })
+    },
+    [appliedFilters, setAppliedFilters],
+  )
+
   const filteredItems = useMemo(
-    () => getFilteredItems(items, appliedFilters, searchValue, tagCategories),
-    [items, appliedFilters, searchValue, tagCategories],
+    () =>
+      getFilteredItems(
+        items,
+        appliedFilters,
+        searchValue,
+        tagCategories,
+        today,
+      ),
+    [items, appliedFilters, searchValue, tagCategories, today],
   )
   const paginatedItems = useMemo(
     () => getPaginatedItems(filteredItems, ITEMS_PER_PAGE, currPage),
@@ -107,9 +130,11 @@ export const useCollection = ({
     handleClearFilter,
     appliedFilters,
     handleFilterToggle,
+    handleDateRangeChange,
     setAppliedFilters,
     currPage,
     setCurrPage,
+    today,
   }
 }
 

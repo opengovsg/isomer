@@ -40,12 +40,6 @@ const TagCategoryUuidSchema = generateUuidSchema({
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
 })
 
-const DateFilterStatusIdSchema = Type.Union([
-  Type.Literal(DATE_FILTER_STATUS_ID.Ended),
-  Type.Literal(DATE_FILTER_STATUS_ID.Ongoing),
-  Type.Literal(DATE_FILTER_STATUS_ID.Upcoming),
-])
-
 const tagCategoryLabelSchemaObject = {
   label: Type.String({
     title: "Filter name",
@@ -297,7 +291,7 @@ const categorySchemaObject = Type.Object({
 const dateSchemaObject = Type.Object({
   date: Type.Optional(
     Type.String({
-      title: "Article date",
+      title: "Item date",
       format: "date",
     }),
   ),

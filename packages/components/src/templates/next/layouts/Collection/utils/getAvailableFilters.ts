@@ -1,6 +1,7 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { isDateFilter } from "~/types/page"
+import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
 import type { Filter } from "../../../types/Filter"
 import { getDateFilters } from "./getDateFilters"
@@ -19,10 +20,11 @@ const filterLookupKey = (category: TagCategory) =>
 export const getAvailableFilters = (
   items: ProcessedCollectionCardProps[],
   tagCategories?: CollectionPageSchemaType["page"]["tagCategories"],
+  today: string = getSingaporeDateYYYYMMDD(),
 ): Filter[] => {
   const categoryFilters = [
     ...getTagFilters(items, tagCategories),
-    ...getDateFilters(items, tagCategories),
+    ...getDateFilters(items, tagCategories, today),
   ]
 
   const filtersByLookupKey = Object.fromEntries(

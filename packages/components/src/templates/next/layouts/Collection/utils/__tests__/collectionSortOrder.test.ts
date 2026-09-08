@@ -1,6 +1,9 @@
 import type { CollectionPagePageProps } from "~/types/page"
 import { describe, expect, it } from "vitest"
-import { DATE_FILTER_STATUS_ID, TAG_CATEGORY_TYPE } from "~/types/constants"
+import {
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  TAG_CATEGORY_TYPE,
+} from "~/types/constants"
 import { COLLECTION_SORT_ORDER_PATTERN } from "~/utils/validation"
 
 import {
@@ -18,22 +21,14 @@ const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> = [
     label: "Event date",
     type: TAG_CATEGORY_TYPE.Date,
     isRequired: false,
-    statusLabels: [
-      { id: DATE_FILTER_STATUS_ID.Ended, label: "Event ended" },
-      { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Ongoing" },
-      { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Upcoming" },
-    ],
+    statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
   },
   {
     id: DEADLINE_FILTER_ID,
     label: "Registration deadline",
     type: TAG_CATEGORY_TYPE.Date,
     isRequired: false,
-    statusLabels: [
-      { id: DATE_FILTER_STATUS_ID.Ended, label: "Event ended" },
-      { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Ongoing" },
-      { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Upcoming" },
-    ],
+    statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
   },
 ]
 

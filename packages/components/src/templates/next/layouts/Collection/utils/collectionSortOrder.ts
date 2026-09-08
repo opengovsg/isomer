@@ -18,11 +18,11 @@ type ParsedCollectionSortOrder =
 const BASE_COLLECTION_SORT_OPTIONS = [
   {
     value: "date-desc",
-    label: "By article date, newest → oldest",
+    label: "By item date, newest → oldest",
   },
   {
     value: "date-asc",
-    label: "By article date, oldest → newest",
+    label: "By item date, oldest → newest",
   },
   {
     value: "title-asc",

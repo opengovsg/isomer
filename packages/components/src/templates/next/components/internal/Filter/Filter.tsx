@@ -55,6 +55,7 @@ export const Filter = ({
   filters,
   appliedFilters,
   handleFilterToggle,
+  handleDateRangeChange,
   handleClearFilter,
   setAppliedFilters,
 }: FilterProps) => {
@@ -97,6 +98,7 @@ export const Filter = ({
         isOpen={mobileFiltersOpen}
         onOpen={setMobileFiltersOpen}
         handleFilterToggle={handleFilterToggle}
+        handleDateRangeChange={handleDateRangeChange}
         setAppliedFilters={setAppliedFilters}
       />
       <aside className="hidden lg:block">

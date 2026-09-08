@@ -1,5 +1,6 @@
 import type { TagCategoryDisplay, TAG_CATEGORY_TYPE } from "~/types/constants"
 import type { DateFilterSidebarVisibility } from "~/types/page"
+import { format, isValid, parse } from "date-fns"
 
 export interface FilterItem {
   id: string
@@ -39,9 +40,12 @@ export interface AppliedFilter {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value)
 
-// ISO calendar date (YYYY-MM-DD) from URL-parsed filter JSON. Rejects time and locale formats.
-const isIsoDateString = (value: string): boolean =>
-  /^\d{4}-\d{2}-\d{2}$/.test(value)
+// ISO calendar date (YYYY-MM-DD) from URL-parsed filter JSON. Rejects time,
+// locale formats, and invalid calendar dates (e.g. month 13).
+const isIsoDateString = (value: string): boolean => {
+  const parsed = parse(value, "yyyy-MM-dd", new Date())
+  return isValid(parsed) && format(parsed, "yyyy-MM-dd") === value
+}
 
 const isValidDateRange = (value: unknown): boolean =>
   value === undefined ||
@@ -70,5 +74,9 @@ export interface FilterProps {
   appliedFilters: AppliedFilter[]
   setAppliedFilters: (appliedFilters: AppliedFilter[]) => void
   handleFilterToggle: (filterId: string, itemId: string) => void
+  handleDateRangeChange: (
+    filterId: string,
+    dateRange: AppliedFilter["dateRange"],
+  ) => void
   handleClearFilter: () => void
 }
