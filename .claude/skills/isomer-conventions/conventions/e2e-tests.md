@@ -61,7 +61,31 @@ test.beforeAll(async () => {
 - `provisionE2ESite` creates a root page + search page so the site dashboard loads
 - Do not add a `teardownE2ESite`/per-test cleanup call — it doesn't exist; cleanup is run-scoped, not test-scoped
 
+## Role projects and tags (PR-3)
+
+Playwright config defines one project per role plus `unauthenticated` (smoke) and `singpass`. Role projects set `storageState` and filter with `grep: /@role\b/`.
+
+```ts
+import { roleTag } from "../fixtures/auth"
+
+test.describe("admin", { tag: roleTag("admin") }, () => {
+  test("...", async ({ page }) => {
+    /* cookies come from the admin project — do not call test.use({ storageState }) */
+  })
+})
+```
+
+Use `roleTag(...)` (typed from `ROLES`) — not a raw `"@admin"` string. Multi-role files should map over `ROLES` with an exhaustive `Record<Role, …>` when every role must be classified (see `site/admin.test.ts`).
+
+| Do | Don't |
+|----|-------|
+| `{ tag: roleTag("admin") }` on each role `describe` | `test.use({ storageState: storageStateFor(...) })` |
+| Put smoke in `smoke.test.ts` (no role tag) | Mix unauthenticated smoke into role-tagged files |
+| Run `pnpm exec playwright test --project=admin` to filter | Rely on file path alone for role selection |
+
 ## How to detect violations
 
 - Asserting "Sample Site", hardcoding a site ID, or calling `teardownE2ESite`/`getSeedSiteId()` (neither exists anymore) → use `provisionE2ESite` and assert on the returned site
 - Duplicated wizard/invite flows in test files → move to `helpers.ts` or a PO
+- `test.use({ storageState: storageStateFor(...) })` in a test file → use `{ tag: roleTag(...) }` on `test.describe` instead
+- Raw `{ tag: "@admin" }` → use `roleTag("admin")` so unknown roles fail typecheck
