@@ -18,7 +18,8 @@ const createStepsStyles = tv({
     header: "flex w-full max-w-[47.5rem] flex-col items-start text-left",
     headerTitle: "prose-display-sm break-words text-base-content-strong",
     headerSubtitle: "prose-headline-lg-regular text-base-content",
-    stepsContainer: "grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-2",
+    stepsContainer:
+      "grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-2 lg:grid-cols-3",
     step: "flex",
     // w-full because the <li> is a flex container: without it the card is a
     // flex item sized to its own content, so a short step collapses to a
@@ -65,16 +66,13 @@ const createStepsStyles = tv({
           "prose-display-xs flex h-11 w-11 items-center justify-center rounded-md bg-brand-canvas text-base-content-strong",
       },
     },
-    // Up to 4 steps read as a single row on large screens. Beyond that a row
-    // gets too narrow to hold a description, so 5 and 6 wrap to two rows of 3
-    // (leaving 3 + 2 and 3 + 3). The column count has to be a static class for
+    // Three to a row is the cap: a Content page only gives a block ~764px, and
+    // a fourth column would leave each step too narrow to hold a description.
+    // So 4, 5 and 6 wrap to a second row (3 + 1, 3 + 2, 3 + 3) and only a pair
+    // gets its own narrower grid. The column count has to be a static class for
     // Tailwind to emit it.
-    count: {
-      2: { stepsContainer: "lg:grid-cols-2" },
-      3: { stepsContainer: "lg:grid-cols-3" },
-      4: { stepsContainer: "lg:grid-cols-4" },
-      5: { stepsContainer: "lg:grid-cols-3" },
-      6: { stepsContainer: "lg:grid-cols-3" },
+    isPair: {
+      true: { stepsContainer: "lg:grid-cols-2" },
     },
     isExternalLink: {
       true: {
@@ -90,7 +88,6 @@ const createStepsStyles = tv({
   defaultVariants: {
     layout: "default",
     numberStyle: "numeral",
-    count: 3,
   },
 })
 
@@ -120,7 +117,7 @@ export const Steps = ({
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const TitleTag = getHeadingTag(headingLevel)
   const StepTitleTag = getHeadingTag(headingLevel + 1)
-  const count = Math.min(Math.max(steps.length, 2), 6) as 2 | 3 | 4 | 5 | 6
+  const isPair = steps.length === 2
 
   return (
     <section id={id} className={compoundStyles.section()}>
@@ -146,7 +143,7 @@ export const Steps = ({
 
           {/* An ordered list so screen readers announce the sequence and its
               length; the rendered number is decorative and hidden from them. */}
-          <ol className={compoundStyles.stepsContainer({ count })}>
+          <ol className={compoundStyles.stepsContainer({ isPair })}>
             {steps.map(
               ({ title, description, buttonLabel, buttonUrl }, idx) => {
                 const hasLink = !!buttonUrl

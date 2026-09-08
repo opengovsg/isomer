@@ -83,15 +83,15 @@ export const ThreeSteps: Story = {
   },
 }
 
-// 4 is the widest single row; the columns get too narrow to hold a description
-// beyond that.
+// Wraps to 3 + 1. Three to a row is the cap, so the fourth step starts a new
+// row rather than squeezing a fourth column.
 export const FourSteps: Story = {
   args: {
     ...LargeNumeral.args,
   },
 }
 
-// Wraps to two rows of 3, leaving 3 on top and 2 below.
+// Wraps to 3 + 2.
 export const FiveSteps: Story = {
   args: {
     title: "From enquiry to launch",
