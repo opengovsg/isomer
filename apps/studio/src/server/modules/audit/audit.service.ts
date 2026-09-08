@@ -57,6 +57,14 @@ interface ResourceEventDeltaMap {
         before: WithoutMeta<PushDocumentJob>
         after: null
       }
+  ScheduleUnpublish: {
+    before: FullResource
+    after: FullResource
+  }
+  CancelScheduleUnpublish: {
+    before: FullResource
+    after: FullResource
+  }
 }
 
 interface BaseResourceEventLogProps {
@@ -253,7 +261,7 @@ interface PublishEventLogProps<
     before: Before extends null ? null : WithoutMeta<Before>
     after: After extends null ? null : WithoutMeta<After>
   }
-  eventType: Extract<AuditLogEvent, "Publish">
+  eventType: Extract<AuditLogEvent, "Publish" | "Unpublish">
   ip?: string
   metadata: Meta
   siteId: Site["id"]
@@ -264,6 +272,14 @@ interface PublishEventLogProps<
 type BlobPublishEventLogProps = PublishEventLogProps<
   null | VersionPointer,
   VersionPointer,
+  BlobPublishEvent
+>
+
+// NOTE: Unpublish clears Resource.publishedVersionId while leaving Version
+// history and any draft untouched, so there is no new version to point to.
+type BlobUnpublishEventLogProps = PublishEventLogProps<
+  VersionPointer,
+  null,
   BlobPublishEvent
 >
 
@@ -284,6 +300,7 @@ type RepublishEventLogProps = PublishEventLogProps<
 
 export const logPublishEvent: AuditLogger<
   | BlobPublishEventLogProps
+  | BlobUnpublishEventLogProps
   | ResourcePublishEventLogProps
   | ConfigPublishEventLogProps
   | RepublishEventLogProps

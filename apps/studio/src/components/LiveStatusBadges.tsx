@@ -1,0 +1,110 @@
+import type { RouterOutput } from "~/utils/trpc"
+import { Badge, HStack, Icon, Text, Tooltip } from "@chakra-ui/react"
+import {
+  Badge as PillBadge,
+  BadgeLeftIcon,
+} from "@opengovsg/design-system-react"
+import { format } from "date-fns"
+import { BiSolidCircle, BiTimeFive } from "react-icons/bi"
+import { ScheduledAction } from "~prisma/generated/generatedEnums"
+
+type LiveStatus =
+  RouterOutput["resource"]["listWithoutRoot"]["items"][number]["liveStatus"]
+
+interface LiveStatusBadgesProps {
+  liveStatus: LiveStatus
+  scheduledAt: Date | null
+  scheduledAction: ScheduledAction | null
+}
+
+// liveTemplate (a Folder/Collection whose own landing page isn't published,
+// but something nested inside it still is) is shown identically to live —
+// callers no longer need to distinguish the two in the UI.
+const LIVE_STATUS_CONFIG: Record<
+  LiveStatus,
+  // bgColor/color override the design system's own subtle-variant styling,
+  // which is lighter than the design here calls for.
+  { label: string; colorScheme: string; bgColor?: string; color?: string }
+> = {
+  live: {
+    label: "Published",
+    colorScheme: "success",
+    bgColor: "interaction.success-subtle.default",
+    color: "interaction.success.hover",
+  },
+  liveTemplate: {
+    label: "Published",
+    colorScheme: "success",
+    bgColor: "interaction.success-subtle.default",
+    color: "interaction.success.hover",
+  },
+  notLive: { label: "Unpublished", colorScheme: "neutral" },
+}
+
+export const LiveStatusBadges = ({
+  liveStatus,
+  scheduledAt,
+  scheduledAction,
+}: LiveStatusBadgesProps): JSX.Element => {
+  const { label, colorScheme, bgColor, color } = LIVE_STATUS_CONFIG[liveStatus]
+
+  const livePill = (
+    <PillBadge
+      size="xs"
+      variant="subtle"
+      colorScheme={colorScheme}
+      bgColor={bgColor}
+      color={color}
+    >
+      <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
+      <Text textStyle="legal">{label}</Text>
+    </PillBadge>
+  )
+
+  return (
+    <HStack spacing="0.5rem">
+      {livePill}
+      {scheduledAt && (
+        <Tooltip
+          label={
+            <>
+              {scheduledAction === ScheduledAction.Unpublish
+                ? "Will be unpublished on"
+                : "Will be published on"}
+              <br />
+              {format(scheduledAt, "d MMM yyyy, h:mma")}
+            </>
+          }
+          placement="bottom"
+          hasArrow
+        >
+          <Badge
+            // Scheduled-to-unpublish is styled to match the "Not live" pill,
+            // since that's where the page is headed; scheduled-to-publish
+            // matches the "Published" pill's styling.
+            bgColor={
+              scheduledAction === ScheduledAction.Unpublish
+                ? "interaction.neutral-subtle.default"
+                : "interaction.success-subtle.default"
+            }
+            color={
+              scheduledAction === ScheduledAction.Unpublish
+                ? "interaction.sub.default"
+                : "interaction.success.hover"
+            }
+            cursor="pointer"
+          >
+            <HStack spacing="0.25rem" align="center">
+              <Icon as={BiTimeFive} boxSize="0.75rem" />
+              <Text textStyle="legal">
+                {scheduledAction === ScheduledAction.Unpublish
+                  ? "Scheduled to unpublish"
+                  : "Scheduled to publish"}
+              </Text>
+            </HStack>
+          </Badge>
+        </Tooltip>
+      )}
+    </HStack>
+  )
+}

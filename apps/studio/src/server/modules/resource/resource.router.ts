@@ -3,6 +3,7 @@ import { jsonObjectFrom } from "kysely/helpers/postgres"
 import { get } from "lodash-es"
 import { USER_LINKABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { SEARCH_PAGE_PERMALINK } from "~/constants/sitemap"
+import { IS_UNPUBLISH_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -16,6 +17,8 @@ import {
   getIndexPageOutputSchema,
   getIndexPageSchema,
   getMetadataSchema,
+  getMoveLockInfoOutputSchema,
+  getMoveLockInfoSchema,
   getNestedFolderChildrenOutputSchema,
   getNestedFolderChildrenSchema,
   getParentSchema,
@@ -48,8 +51,13 @@ import {
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
   applyResourceOrderBy,
+  applyResourceStatusFilter,
+  assertMoveDestinationUnlocked,
+  assertResourceNotLive,
   defaultResourceSelect,
   getBatchAncestryWithSelfQuery,
+  getChildLiveStatusMap,
+  getMoveLockInfo,
   getResourceFullPermalink,
   getSearchRecentlyEdited,
   getSearchResults,
@@ -57,6 +65,8 @@ import {
   getWithFullPermalink,
   hasPublishedDescendant,
   publishResource,
+  selectLastPublishedAt,
+  splitContainerIdsByStatus,
 } from "./resource.service"
 
 const fetchResource = async (resourceId: string | null) => {
@@ -415,6 +425,13 @@ export const resourceRouter = router({
               })
             }
 
+            await assertMoveDestinationUnlocked(tx, {
+              siteId,
+              destinationId: parent.id,
+              destinationType: parent.type,
+              movedResourceId,
+            })
+
             if (
               toMove.type === "Folder" ||
               toMove.type === "Collection" ||
@@ -569,9 +586,39 @@ export const resourceRouter = router({
       },
     ),
 
+  // Read-only mirror of the `move` mutation's unpublish-lock check (see the
+  // comment there), so the destination picker can warn as soon as a
+  // destination is selected instead of only surfacing the error on submit.
+  // The mutation still re-runs this check itself as the source of truth.
+  getMoveLockInfo: protectedProcedure
+    .input(getMoveLockInfoSchema)
+    .output(getMoveLockInfoOutputSchema)
+    .query(
+      async ({
+        ctx,
+        input: { siteId, movedResourceId, destinationResourceId },
+      }) => {
+        await bulkValidateUserPermissionsForResources({
+          action: "read",
+          resourceIds: [
+            movedResourceId,
+            ...(destinationResourceId ? [destinationResourceId] : []),
+          ],
+          userId: ctx.user.id,
+          siteId: Number(siteId),
+        })
+
+        return getMoveLockInfo(db, {
+          siteId,
+          movedResourceId,
+          destinationResourceId,
+        })
+      },
+    ),
+
   countWithoutRoot: protectedProcedure
     .input(countResourceSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+    .query(async ({ ctx, input: { siteId, resourceId, statusFilter } }) => {
       await bulkValidateUserPermissionsForResources({
         action: "read",
         resourceIds: [resourceId ? String(resourceId) : null],
@@ -612,6 +659,33 @@ export const resourceRouter = router({
           .where("Resource.permalink", "!=", SEARCH_PAGE_PERMALINK)
       }
 
+      if (statusFilter.length > 0) {
+        // Every tag needs the container-id sets — a Folder/Collection's own
+        // publishedVersionId/scheduledAt/scheduledAction/draftBlobId are
+        // never set, so all five tags key off its child IndexPage instead.
+        const {
+          liveContainerIds,
+          notLiveContainerIds,
+          hasDraftContainerIds,
+          scheduledToPublishContainerIds,
+          scheduledToUnpublishContainerIds,
+        } = splitContainerIdsByStatus(
+          await getChildLiveStatusMap(db, {
+            siteId,
+            resourceId: resourceId ? String(resourceId) : null,
+          }),
+        )
+
+        query = applyResourceStatusFilter(query, {
+          statusFilter,
+          liveContainerIds,
+          notLiveContainerIds,
+          hasDraftContainerIds,
+          scheduledToPublishContainerIds,
+          scheduledToUnpublishContainerIds,
+        })
+      }
+
       const result = await query.executeTakeFirst()
       return Number(result?.totalCount ?? 0)
     }),
@@ -621,7 +695,7 @@ export const resourceRouter = router({
     .query(
       async ({
         ctx,
-        input: { siteId, resourceId, offset, limit, orderBy },
+        input: { siteId, resourceId, offset, limit, orderBy, statusFilter },
       }) => {
         await bulkValidateUserPermissionsForResources({
           action: "read",
@@ -648,11 +722,39 @@ export const resourceRouter = router({
 
         query = applyResourceOrderBy(query, orderBy)
 
-        // TODO: Add pagination support
-        return query
+        // A Folder/Collection never carries its own publishedVersionId — its
+        // live content is its child IndexPage's — so its status needs the
+        // recursive descendant check; every other type is live iff its own
+        // publishedVersionId is set. Computed up front (rather than after
+        // the rows query, as before) since the live/notLive status filter
+        // needs it too.
+        const childLiveStatus = await getChildLiveStatusMap(db, {
+          siteId,
+          resourceId: resourceId ? String(resourceId) : null,
+        })
+
+        if (statusFilter.length > 0) {
+          const {
+            liveContainerIds,
+            notLiveContainerIds,
+            hasDraftContainerIds,
+            scheduledToPublishContainerIds,
+            scheduledToUnpublishContainerIds,
+          } = splitContainerIdsByStatus(childLiveStatus)
+          query = applyResourceStatusFilter(query, {
+            statusFilter,
+            liveContainerIds,
+            notLiveContainerIds,
+            hasDraftContainerIds,
+            scheduledToPublishContainerIds,
+            scheduledToUnpublishContainerIds,
+          })
+        }
+
+        const rows = await query
           .offset(offset)
           .limit(limit)
-          .select([
+          .select((eb) => [
             "Resource.id",
             "Resource.permalink",
             "Resource.title",
@@ -662,8 +764,56 @@ export const resourceRouter = router({
             "Resource.parentId",
             "Resource.updatedAt",
             "Resource.scheduledAt",
+            "Resource.scheduledAction",
+            selectLastPublishedAt(eb),
+            // A window function count avoids a second round-trip for the
+            // common case. It rides along on every returned row, so it's
+            // unavailable when the page itself comes back empty (e.g. a
+            // stale `offset` past the true end) — see the fallback below.
+            eb.fn.countAll<string>().over().as("totalCount"),
           ])
           .execute()
+
+        const items = rows.map(({ totalCount: _totalCount, ...row }) => {
+          const isContainer =
+            row.type === ResourceType.Folder ||
+            row.type === ResourceType.Collection
+          if (!isContainer) {
+            return {
+              ...row,
+              liveStatus: row.publishedVersionId !== null ? "live" : "notLive",
+            } as const
+          }
+
+          const status = childLiveStatus.get(String(row.id))
+          return {
+            ...row,
+            liveStatus: status?.hasLiveIndexPage
+              ? "live"
+              : status?.hasLiveDescendant
+                ? "liveTemplate"
+                : "notLive",
+            // A Folder/Collection never carries its own draftBlobId/
+            // scheduledAt/scheduledAction — that state lives on its child
+            // IndexPage — so the Status badges need those substituted in.
+            draftBlobId: status?.indexPageDraftBlobId ?? null,
+            scheduledAt: status?.indexPageScheduledAt ?? null,
+            scheduledAction: status?.indexPageScheduledAction ?? null,
+          } as const
+        })
+
+        const totalCount = rows[0]
+          ? Number(rows[0].totalCount)
+          : Number(
+              (
+                await query
+                  .clearOrderBy()
+                  .select((eb) => [eb.fn.countAll<string>().as("totalCount")])
+                  .executeTakeFirst()
+              )?.totalCount ?? 0,
+            )
+
+        return { items, totalCount }
       },
     ),
 
@@ -716,6 +866,18 @@ export const resourceRouter = router({
           })
         }
 
+        // Gated on the flag: with unpublish unreachable, a live resource
+        // could never become deletable, so skip the guard entirely rather
+        // than lock it out permanently.
+        if (ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+          await assertResourceNotLive(tx, {
+            siteId: Number(siteId),
+            resourceId,
+            resourceType: before.type,
+            publishedVersionId: before.publishedVersionId,
+          })
+        }
+
         await logResourceEvent(tx, {
           siteId,
           delta: {
@@ -749,7 +911,13 @@ export const resourceRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST" })
       }
 
-      await publishResource(user.id, result, ctx.logger)
+      // Skip the rebuild when the guard above ran: it already proved nothing
+      // live was just deleted, so there's nothing for a rebuild to remove.
+      // Without the flag, a live resource can still reach here, so keep
+      // rebuilding in that case.
+      if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+        await publishResource(user.id, result, ctx.logger)
+      }
 
       // NOTE: We need to do this cast as the property is a `bigint`
       // and trpc cannot serialise it, which leads to errors

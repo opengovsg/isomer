@@ -7,6 +7,7 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
 import type {
   ResourceState,
+  ScheduledAction,
   ResourceType,
   RoleType,
   IsomerAdminRole,
@@ -133,6 +134,7 @@ export interface Resource {
   type: ResourceType
   scheduledAt: Timestamp | null
   scheduledBy: string | null
+  scheduledAction: ScheduledAction | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }

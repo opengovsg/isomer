@@ -8,14 +8,18 @@ import type {
   AuditLogExportReadyEmailTemplateData,
   BaseEmailTemplateData,
   CancelSchedulePageTemplateData,
+  CancelScheduleUnpublishTemplateData,
   EmailTemplate,
   FailedPublishTemplateData,
+  FailedSiteRebuildTemplateData,
+  FailedUnpublishTemplateData,
   GazetteDeletionEmailTemplateData,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
   SchedulePageTemplateData,
+  ScheduleUnpublishTemplateData,
   SuccessfulPublishTemplateData,
 } from "./templates"
 import { sendMail } from "../../lib/mail"
@@ -108,6 +112,26 @@ export async function sendCancelSchedulePageEmail(
   })
 }
 
+export async function sendScheduledUnpublishEmail(
+  data: ScheduleUnpublishTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.scheduleUnpublish(data),
+    emailType: "scheduled unpublish",
+  })
+}
+
+export async function sendCancelScheduleUnpublishEmail(
+  data: CancelScheduleUnpublishTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.cancelScheduleUnpublish(data),
+    emailType: "cancel scheduled unpublish",
+  })
+}
+
 export async function sendFailedPublishEmail(
   data: FailedPublishTemplateData,
 ): Promise<void> {
@@ -115,6 +139,26 @@ export async function sendFailedPublishEmail(
     data,
     template: templates.failedPublish(data),
     emailType: "failed publish",
+  })
+}
+
+export async function sendFailedUnpublishEmail(
+  data: FailedUnpublishTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.failedUnpublish(data),
+    emailType: "failed unpublish",
+  })
+}
+
+export async function sendFailedSiteRebuildEmail(
+  data: FailedSiteRebuildTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.failedSiteRebuild(data),
+    emailType: "failed site rebuild",
   })
 }
 

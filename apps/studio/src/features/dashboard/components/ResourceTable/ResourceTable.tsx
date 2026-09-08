@@ -1,5 +1,8 @@
 import type { StockFeatures } from "@tanstack/react-table"
-import type { ResourceOrderByOption } from "~/schemas/resource"
+import type {
+  ResourceOrderByOption,
+  ResourceStatusFilterOption,
+} from "~/schemas/resource"
 import { HStack, Text } from "@chakra-ui/react"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
@@ -11,10 +14,13 @@ import { useMemo, useState } from "react"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
+import { LiveStatusBadges } from "~/components/LiveStatusBadges"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 
 import type { ResourceTableData } from "./types"
+import { RESOURCE_TABLE_STATUS_FILTER_OPTIONS } from "./constants"
+import { ResourceFilterMenu } from "./ResourceFilterMenu"
 import { ResourceSortMenu } from "./ResourceSortMenu"
 import { ResourceTableMenu } from "./ResourceTableMenu"
 import { TitleCell } from "./TitleCell"
@@ -33,7 +39,18 @@ const getColumns = ({ siteId }: ResourceTableProps) =>
           title={row.original.title}
           permalink={`/${row.original.permalink}`}
           type={row.original.type}
+          draftBlobId={row.original.draftBlobId}
+        />
+      ),
+    }),
+    columnsHelper.display({
+      id: "status",
+      header: () => <TableHeader>Status</TableHeader>,
+      cell: ({ row }) => (
+        <LiveStatusBadges
+          liveStatus={row.original.liveStatus}
           scheduledAt={row.original.scheduledAt}
+          scheduledAction={row.original.scheduledAction}
         />
       ),
     }),
@@ -65,43 +82,46 @@ export const ResourceTable = ({
 }: ResourceTableProps): JSX.Element => {
   const [sortOption, setSortOption] =
     useState<ResourceOrderByOption>("updated-desc")
+  const [statusFilter, setStatusFilter] = useState<
+    ResourceStatusFilterOption[]
+  >([])
 
   const columns = useMemo(
     () => getColumns({ siteId, resourceId }),
     [siteId, resourceId],
   )
 
-  const { data: totalCount = 0, isLoading: isCountLoading } =
-    trpc.resource.countWithoutRoot.useQuery({
+  // `limit`/`skip` only depend on local pagination state (pageIndex/pageSize),
+  // not on `totalCount` — so it's safe for `totalCount` to come from the same
+  // query this feeds into, with no circular dependency. `pageCount` from this
+  // call is discarded (it'd be stuck at 0) and recomputed below once the
+  // query's own `totalCount` is available.
+  const { limit, onPaginationChange, skip, pagination } = useTablePagination({
+    pageIndex: 0,
+    pageSize: 25,
+    totalCount: 0,
+  })
+
+  const { data, isFetching } = trpc.resource.listWithoutRoot.useQuery(
+    {
       siteId,
       resourceId,
-    })
-
-  const { limit, onPaginationChange, skip, pagination, pageCount } =
-    useTablePagination({
-      pageIndex: 0,
-      pageSize: 25,
-      totalCount,
-    })
-
-  const { data: resources, isFetching } =
-    trpc.resource.listWithoutRoot.useQuery(
-      {
-        siteId,
-        resourceId,
-        orderBy: sortOption,
-        limit,
-        offset: skip,
-      },
-      {
-        placeholderData: keepPreviousData, // Required for table to show previous data while fetching next page
-      },
-    )
+      orderBy: sortOption,
+      statusFilter,
+      limit,
+      offset: skip,
+    },
+    {
+      placeholderData: keepPreviousData, // Required for table to show previous data while fetching next page
+    },
+  )
+  const totalCount = data?.totalCount ?? 0
+  const pageCount = Math.ceil(totalCount / limit)
 
   const tableInstance = useTable({
     features: stockFeatures,
     columns,
-    data: resources ?? [],
+    data: data?.items ?? [],
     manualFiltering: true,
     manualPagination: true,
     autoResetPageIndex: false,
@@ -124,13 +144,22 @@ export const ResourceTable = ({
           {totalCount} {totalCount === 1 ? "item" : "items"}
         </Text>
 
-        <ResourceSortMenu
-          value={sortOption}
-          onChange={(option) => {
-            setSortOption(option)
-            onPaginationChange((old) => ({ ...old, pageIndex: 0 }))
-          }}
-        />
+        <HStack spacing="1.5rem">
+          <ResourceFilterMenu
+            value={statusFilter}
+            onChange={(next) => {
+              setStatusFilter(next)
+              onPaginationChange((old) => ({ ...old, pageIndex: 0 }))
+            }}
+          />
+          <ResourceSortMenu
+            value={sortOption}
+            onChange={(option) => {
+              setSortOption(option)
+              onPaginationChange((old) => ({ ...old, pageIndex: 0 }))
+            }}
+          />
+        </HStack>
       </HStack>
 
       <Datatable
@@ -141,9 +170,16 @@ export const ResourceTable = ({
             entityName="page"
             groupLabel="folder"
             hasSearchTerm={false}
+            activeFilterLabels={statusFilter.map(
+              (option) => RESOURCE_TABLE_STATUS_FILTER_OPTIONS[option],
+            )}
+            onClearFilter={() => {
+              setStatusFilter([])
+              onPaginationChange((old) => ({ ...old, pageIndex: 0 }))
+            }}
           />
         }
-        isFetching={isFetching || isCountLoading}
+        isFetching={isFetching}
         instance={tableInstance}
         sx={{
           tableLayout: "auto",
