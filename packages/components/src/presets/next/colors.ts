@@ -75,3 +75,14 @@ export const colors = {
     },
   },
 }
+
+/** Literal hex base palette for contexts that cannot use CSS variables. */
+export const baseHexColors = {
+  canvas: colors.base.canvas.DEFAULT,
+  content: {
+    strong: colors.base.content.strong,
+  },
+  divider: {
+    medium: colors.base.divider.medium,
+  },
+}

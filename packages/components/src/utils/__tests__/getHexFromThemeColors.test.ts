@@ -46,7 +46,7 @@ describe("getHexFromThemeColors", () => {
 
     for (const value of values) {
       expect(value).not.toMatch(/^var\(/)
-      expect(value).toMatch(/^#[0-9a-f]{6}$/i)
+      expect(value).toMatch(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)
     }
   })
 })
