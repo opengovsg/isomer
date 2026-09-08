@@ -13,6 +13,7 @@ import {
 } from "~/components/Select/TimeSelect"
 
 import { getEarliestAllowableTime } from "../PublishingModal/utils"
+import { useClampDatePickerHeight } from "./useClampDatePickerHeight"
 
 interface ScheduleDateTimeFieldsProps {
   // Field names differ between the publish and unpublish client schemas
@@ -34,6 +35,8 @@ export const ScheduleDateTimeFields = ({
     control,
     formState: { errors },
   } = useFormContext()
+
+  useClampDatePickerHeight()
 
   const selectedDate = watch(dateField) as Date
   const selectedTime = watch(timeField) as string | undefined
