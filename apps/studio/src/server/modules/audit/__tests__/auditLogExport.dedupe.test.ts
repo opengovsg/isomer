@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { getCurrentSingaporeMonth } from "~/schemas/audit"
+import { AuditLogExportScope, getCurrentSingaporeMonth } from "~/schemas/audit"
 
 // This file deliberately mocks the DB (unlike the sibling integration tests) so
 // it can drive the ONE code path that a real-Postgres test cannot deterministic-
@@ -247,6 +247,7 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     // Act
     const result = await createAuditLogExportRequestsForSites({
       siteIds: [1],
+      scope: AuditLogExportScope.Site,
       userId: "user-1",
       month: VALID_MONTH,
       reportType: "Access",
@@ -292,6 +293,7 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     // Act
     const result = await createAuditLogExportRequestsForSites({
       siteIds: [1],
+      scope: AuditLogExportScope.Site,
       userId: "user-1",
       month: VALID_MONTH,
       reportType: "Access",
@@ -316,6 +318,7 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     // Act
     const result = createAuditLogExportRequestsForSites({
       siteIds: [1],
+      scope: AuditLogExportScope.Site,
       userId: "user-1",
       month: VALID_MONTH,
       reportType: "Access",
@@ -340,6 +343,7 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     // Act
     const result = await createAuditLogExportRequestsForSites({
       siteIds: [1],
+      scope: AuditLogExportScope.Site,
       userId: "user-1",
       month: VALID_MONTH,
       reportType: "Activity",
@@ -370,6 +374,7 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     // Act
     const result = await createAuditLogExportRequestsForSites({
       siteIds: [1, 2],
+      scope: AuditLogExportScope.AllSites,
       userId: "user-1",
       month: VALID_MONTH,
       reportType: "Activity",
@@ -389,5 +394,69 @@ describe("createAuditLogExportRequestsForSites — idempotent accept", () => {
     expect(tx.auditLogValues).toHaveLength(2)
     const siteIdsLogged = tx.auditLogValues.map((v) => v.siteId).sort()
     expect(siteIdsLogged).toEqual([1, 2])
+  })
+
+  it("mints a batchId for an allSites ask's freshly-inserted rows, but never overwrites an existing row's batchId", async () => {
+    // Arrange: site 2 already has an in-flight row from an EARLIER ask (fast-
+    // path SELECT) — it may or may not itself carry a batchId, but either way
+    // this ask must not touch it. Site 1 has no in-flight row and gets freshly
+    // inserted by this ask, so it's the only row that should be stamped with
+    // this ask's new batchId.
+    const existingRow = {
+      id: "existing-row-2",
+      siteId: 2,
+      reportType: "Activity",
+      batchId: null,
+    }
+    const tx = makeTx({
+      selects: [[existingRow]],
+      inserts: [{ site: 1, outcome: "inserted" }],
+    })
+    useTx(tx)
+
+    // Act
+    const result = await createAuditLogExportRequestsForSites({
+      siteIds: [1, 2],
+      scope: AuditLogExportScope.AllSites,
+      userId: "user-1",
+      month: VALID_MONTH,
+      reportType: "Activity",
+    })
+
+    // Assert: the freshly-inserted site-1 row was stamped with a (truthy,
+    // string) batchId, the reused site-2 row is untouched (still whatever
+    // batchId — here null — it already had), and the two rows in the result
+    // don't share a batchId.
+    expect(tx.insertedValues).toHaveLength(1)
+    const insertedBatchId = tx.insertedValues[0]?.batchId
+    expect(typeof insertedBatchId).toBe("string")
+    expect(insertedBatchId).toBeTruthy()
+
+    const bySiteId = new Map(result.map((row) => [row.siteId, row]))
+    expect(bySiteId.get(2)).toMatchObject({ batchId: null })
+    expect(bySiteId.get(1)).toMatchObject({ batchId: insertedBatchId })
+  })
+
+  it('never mints a batchId for a scope:"site" ask', async () => {
+    // Arrange: a plain single-site ask.
+    const tx = makeTx({
+      selects: [[]],
+      inserts: [{ site: 1, outcome: "inserted" }],
+    })
+    useTx(tx)
+
+    // Act
+    await createAuditLogExportRequestsForSites({
+      siteIds: [1],
+      scope: AuditLogExportScope.Site,
+      userId: "user-1",
+      month: VALID_MONTH,
+      reportType: "Activity",
+    })
+
+    // Assert: the inserted row's batchId stays null — "site" asks always
+    // keep sending their existing one-row-one-email path, unbatched.
+    expect(tx.insertedValues).toHaveLength(1)
+    expect(tx.insertedValues[0]).toMatchObject({ batchId: null })
   })
 })

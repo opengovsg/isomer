@@ -411,6 +411,16 @@ model AuditLogExportRequest {
   completedAt       DateTime?
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @default(now()) @updatedAt
+  // Correlates every per-site row created by ONE "allSites" ask so the
+  // fulfilment worker can wait for all of them and send a single combined
+  // email. Null for `scope: "site"` asks (and legacy rows), which keep
+  // sending their existing one-row-one-email path unchanged.
+  batchId           String?
+  // Set once the combined batch email for `batchId` has been sent (stamped
+  // on every row sharing that batchId at once). Guards against sending the
+  // batch email twice when two sibling rows finish at nearly the same time -
+  // see the advisory-lock check in `processAuditLogExportRequest`.
+  batchEmailedAt    DateTime?
 
   @@index([status])
   // NOTE: the migration promotes this to a PARTIAL UNIQUE index
@@ -420,4 +430,5 @@ model AuditLogExportRequest {
   // this stays a plain `@@index`. As a result `prisma migrate dev` against an
   // existing DB will report drift here; that divergence is expected.
   @@index([siteId, userId, auditLogDateRange, reportType])
+  @@index([batchId])
 }

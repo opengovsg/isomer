@@ -1,10 +1,12 @@
 import { TRPCError } from "@trpc/server"
+import { randomUUID } from "crypto"
 import { addDays, differenceInCalendarMonths, format, parseISO } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { sql } from "kysely"
 import { Readable } from "node:stream"
 import { env } from "~/env.mjs"
 import {
+  sendAuditLogExportBatchReadyEmail,
   sendAuditLogExportFailedEmail,
   sendAuditLogExportReadyEmail,
 } from "~/features/mail/service"
@@ -16,6 +18,7 @@ import {
 } from "~/lib/s3"
 import {
   AUDIT_LOG_EXPORT_MAX_MONTHS,
+  AuditLogExportScope,
   type CreateAuditLogExportRequestInput,
   getCurrentSingaporeMonth,
   validateIsMonthInPastYear,
@@ -111,12 +114,14 @@ const resolveAuditLogDateRange = (
 // path unchanged, as a one-element `siteIds` fan-out.
 export const createAuditLogExportRequestsForSites = async ({
   siteIds,
+  scope,
   userId,
   month,
   reportType,
   ip,
 }: {
   siteIds: number[]
+  scope: AuditLogExportScope
   userId: string
   month: CreateAuditLogExportRequestFields["month"]
   reportType: CreateAuditLogExportRequestFields["reportType"]
@@ -168,6 +173,17 @@ export const createAuditLogExportRequestsForSites = async ({
     const existingSiteIds = new Set(existingRows.map((row) => row.siteId))
     const siteIdsToInsert = siteIds.filter((id) => !existingSiteIds.has(id))
 
+    // Only an "allSites" ask correlates the rows IT creates into one batch,
+    // so its admin gets a single combined email once every site is done (see
+    // the batchId branch in processAuditLogExportRequest) — "site" rows keep
+    // batchId null and their existing immediate one-row-one-email send.
+    // Deliberately minted once per ask and stamped only on rows THIS call
+    // inserts: a row reused from (or lost the race to) an earlier ask via
+    // `existingRows`/`raceLoserRows` below keeps whatever batchId it already
+    // has — possibly null, if that earlier ask was scope "site" — rather than
+    // being folded into this ask's batch.
+    const batchId = scope === AuditLogExportScope.AllSites ? randomUUID() : null
+
     const insertedRows =
       siteIdsToInsert.length === 0
         ? []
@@ -181,6 +197,7 @@ export const createAuditLogExportRequestsForSites = async ({
                 reportType,
                 status: AuditLogExportStatus.Pending,
                 attempts: 0,
+                batchId,
               })),
             )
             // Target the partial unique index so a race-losing row is a
@@ -376,6 +393,135 @@ const getRangeSlug = (auditLogDateRange: string): string => {
 }
 
 /**
+ * Called every time a sibling row of `batchId` (see the column on
+ * AuditLogExportRequest) reaches Done/Failed, to send ONE combined email for
+ * the whole "allSites" ask once every site it covers is done — a no-op
+ * unless THIS call is the one that finds every sibling terminal.
+ *
+ * The advisory lock (scoped to `batchId`, released when the transaction
+ * ends) plus the atomic `batchEmailedAt IS NULL` check-and-stamp inside it
+ * are what let two siblings finish near-simultaneously and still send
+ * exactly one email: the second caller to acquire the lock always finds
+ * `batchEmailedAt` already stamped by the first and returns early.
+ */
+const maybeSendAuditLogExportBatchEmail = async (
+  batchId: string,
+): Promise<void> => {
+  const readySiblings = await db.transaction().execute(async (tx) => {
+    // A bigint key is required by the single-argument overload of
+    // pg_advisory_xact_lock, hence hashtextextended (bigint) over hashtext
+    // (int4). Scoped to this batchId so unrelated batches never contend on
+    // the same lock.
+    await sql`select pg_advisory_xact_lock(hashtextextended(${batchId}, 0))`.execute(
+      tx,
+    )
+
+    const siblings = await tx
+      .selectFrom("AuditLogExportRequest")
+      .where("batchId", "=", batchId)
+      .selectAll()
+      .execute()
+
+    const allTerminal = siblings.every(
+      (row) =>
+        row.status === AuditLogExportStatus.Done ||
+        row.status === AuditLogExportStatus.Failed,
+    )
+    const alreadyEmailed = siblings.some((row) => row.batchEmailedAt !== null)
+
+    if (!allTerminal || alreadyEmailed) {
+      return null
+    }
+
+    // Stamped on every sibling at once, under the lock — this, not the
+    // lock itself, is the durable record that the batch email already went
+    // out (the lock only serialises the check; it remembers nothing once
+    // released).
+    await tx
+      .updateTable("AuditLogExportRequest")
+      .set({ batchEmailedAt: new Date() })
+      .where("batchId", "=", batchId)
+      .execute()
+
+    return siblings
+  })
+
+  if (readySiblings === null || readySiblings.length === 0) {
+    return
+  }
+
+  // Every row in a batch shares the same requester, month, and report type —
+  // they're all created by one "allSites" ask (see
+  // createAuditLogExportRequestsForSites).
+  const firstSibling = readySiblings[0]
+  if (!firstSibling) {
+    // Unreachable: guarded by the `readySiblings.length === 0` check above.
+    return
+  }
+  const { userId, auditLogDateRange, reportType } = firstSibling
+
+  const [user, sites] = await Promise.all([
+    db
+      .selectFrom("User")
+      .where("User.id", "=", userId)
+      .where("User.deletedAt", "is", null)
+      .select(["email"])
+      .executeTakeFirst(),
+    db
+      .selectFrom("Site")
+      .where(
+        "id",
+        "in",
+        readySiblings.map((row) => row.siteId),
+      )
+      .select(["id", "name", "config"])
+      .execute(),
+  ])
+
+  if (!user) {
+    logger.warn(
+      { batchId, userId },
+      "Batch requester no longer exists; skipping batch email",
+    )
+    return
+  }
+
+  const siteNameById = new Map(
+    sites.map((site) => [site.id, site.config?.siteName || site.name]),
+  )
+  const report = REPORT_BY_TYPE[reportType]
+  const bucket = getStudioAssetsBucketName()
+
+  const links: { siteName: string; url: string; sizeInBytes: number | null }[] =
+    []
+  const failedSiteNames: string[] = []
+
+  for (const row of readySiblings) {
+    const siteName = siteNameById.get(row.siteId) ?? `Site ${row.siteId}`
+    if (row.status !== AuditLogExportStatus.Done || row.objectKey === null) {
+      failedSiteNames.push(siteName)
+      continue
+    }
+
+    const token = await sealAuditLogExportToken(row.id)
+    const url = `${env.NEXT_PUBLIC_APP_URL}/api/audit-log-exports/download?token=${encodeURIComponent(token)}`
+    const sizeInBytes = await getFileSize({
+      Bucket: bucket,
+      Key: row.objectKey,
+    })
+    links.push({ siteName, url, sizeInBytes })
+  }
+
+  await sendAuditLogExportBatchReadyEmail({
+    recipientEmail: user.email,
+    month: getExportPeriodLabel(auditLogDateRange),
+    reportLabel: report.label,
+    links,
+    failedSiteNames,
+  })
+}
+
+/**
  * Process a single export request, identified by id.
  *
  * Step 1 claims the row atomically so that concurrent sweeps never
@@ -474,6 +620,11 @@ export const processAuditLogExportRequest = async (
       })
       .where("id", "=", requestId)
       .execute()
+    // This row is now terminal — if it belongs to a batch, it may be the
+    // last sibling the batch was waiting on.
+    if (request.batchId !== null) {
+      await maybeSendAuditLogExportBatchEmail(request.batchId)
+    }
     return
   }
 
@@ -633,14 +784,21 @@ export const processAuditLogExportRequest = async (
       "Audit log export CSV ready for delivery",
     )
 
-    // Step 6: one ready email with the single download link.
-    await sendAuditLogExportReadyEmail({
-      recipientEmail,
-      siteName,
-      month: getExportPeriodLabel(request.auditLogDateRange),
-      link: { label: report.label, url },
-      sizeInBytes: objectSize,
-    })
+    // Step 6: a row belonging to a batch never sends its own email — the
+    // batch's one combined email (sent once every sibling site is done)
+    // replaces it. Otherwise, same as before: one ready email with the
+    // single download link.
+    if (request.batchId !== null) {
+      await maybeSendAuditLogExportBatchEmail(request.batchId)
+    } else {
+      await sendAuditLogExportReadyEmail({
+        recipientEmail,
+        siteName,
+        month: getExportPeriodLabel(request.auditLogDateRange),
+        link: { label: report.label, url },
+        sizeInBytes: objectSize,
+      })
+    }
   } catch (error) {
     // Step 7: failure handling. The claim already charged this attempt, so
     // `request.attempts` (post-claim) is authoritative — re-queue or fail.
@@ -679,12 +837,18 @@ export const processAuditLogExportRequest = async (
       .execute()
 
     try {
-      // Reuse the site/user already loaded above instead of re-querying.
-      await sendAuditLogExportFailedEmail({
-        recipientEmail,
-        siteName,
-        month: getExportPeriodLabel(request.auditLogDateRange),
-      })
+      // A row belonging to a batch never sends its own failure email — see
+      // the note on the Step 6 success path above.
+      if (request.batchId !== null) {
+        await maybeSendAuditLogExportBatchEmail(request.batchId)
+      } else {
+        // Reuse the site/user already loaded above instead of re-querying.
+        await sendAuditLogExportFailedEmail({
+          recipientEmail,
+          siteName,
+          month: getExportPeriodLabel(request.auditLogDateRange),
+        })
+      }
     } catch (emailError) {
       // The row is already Failed; a failed failure-email must not throw.
       logger.error(
