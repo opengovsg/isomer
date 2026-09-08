@@ -60,7 +60,13 @@ export const DateRangeFilterInput = ({
     setValidationError(false)
   }, [value])
 
-  const commitIfValid = (nextStart: string, nextEnd: string) => {
+  const commitIfValid = ({
+    nextStart,
+    nextEnd,
+  }: {
+    nextStart: string
+    nextEnd: string
+  }) => {
     if (nextStart && nextEnd && nextStart > nextEnd) {
       setValidationError(true)
       return
@@ -73,18 +79,18 @@ export const DateRangeFilterInput = ({
   const handleStartChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const nextStart = event.target.value
     setStart(nextStart)
-    commitIfValid(nextStart, end)
+    commitIfValid({ nextStart, nextEnd: end })
   }
 
   const handleEndChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const nextEnd = event.target.value
     setEnd(nextEnd)
-    commitIfValid(start, nextEnd)
+    commitIfValid({ nextStart: start, nextEnd })
   }
 
   return (
     <div className="mx-2 mb-2 flex flex-col gap-2">
-      <div className="flex flex-col gap-4 sm:flex-row">
+      <div className="flex flex-col gap-4">
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <label
             htmlFor={fromId}
