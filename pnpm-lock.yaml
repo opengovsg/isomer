@@ -681,7 +681,7 @@ importers:
         version: 2.0.0
       '@aws-sdk/client-cloudfront':
         specifier: catalog:aws-sdk
-        version: 3.1119.0
+        version: 3.1121.0
       '@aws-sdk/client-codebuild':
         specifier: catalog:aws-sdk
         version: 3.1121.0
@@ -18076,7 +18076,6 @@ snapshots:
   '@types/node@26.4.1':
     dependencies:
       undici-types: 8.3.0
-    optional: true
 
   '@types/papaparse@5.5.2':
     dependencies:
@@ -18165,7 +18164,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
   '@typescript-eslint/project-service@8.57.2(typescript@6.0.3)':
     dependencies:
@@ -19111,7 +19110,7 @@ snapshots:
 
   buffer-image-size@0.6.4:
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
   buffer-xor@1.0.3: {}
 
@@ -20711,7 +20710,7 @@ snapshots:
 
   happy-dom@20.10.6:
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
       '@types/whatwg-mimetype': 3.0.2
       '@types/ws': 8.18.1
       buffer-image-size: 0.6.4
