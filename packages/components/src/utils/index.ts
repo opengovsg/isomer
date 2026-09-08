@@ -1,6 +1,5 @@
 export { getBreadcrumbFromSiteMap } from "./getBreadcrumbFromSiteMap"
 export { getFormattedDate } from "./getFormattedDate"
-export { getHexFromThemeColors } from "./getHexFromThemeColors"
 export { getAskgovIdFromString } from "./getAskgovIdFromString"
 export { getNodeFromSiteMap } from "./getNodeFromSiteMap"
 export { getParsedDate } from "./getParsedDate"

@@ -3,23 +3,25 @@ import { colors } from "~/presets/next/colors"
 
 import { getVicaColorAttributes } from "./getVicaColorAttributes"
 
-const brand = {
-  canvas: {
-    default: "#f0f0f0",
-    alt: "#d0d0d0",
-    backdrop: "#b0b0b0",
-    inverse: "#123456",
-  },
-  interaction: {
-    default: "#123456",
-    hover: "#0f2d44",
-    pressed: "#0c2433",
+const themeColors = {
+  brand: {
+    canvas: {
+      default: "#f0f0f0",
+      alt: "#d0d0d0",
+      backdrop: "#b0b0b0",
+      inverse: "#123456",
+    },
+    interaction: {
+      default: "#123456",
+      hover: "#0f2d44",
+      pressed: "#0c2433",
+    },
   },
 }
 
 describe("getVicaColorAttributes", () => {
   it("returns brand and preset base attributes", () => {
-    expect(getVicaColorAttributes({ brand })).toEqual({
+    expect(getVicaColorAttributes(themeColors)).toEqual({
       "app-foreground-color": colors.base.canvas.DEFAULT,
       "app-quick-reply-button-background-color": colors.base.canvas.DEFAULT,
       "app-auto-complete-foreground-color": colors.base.content.strong,
@@ -35,8 +37,8 @@ describe("getVicaColorAttributes", () => {
     })
   })
 
-  it("returns only preset base attributes when brand is omitted", () => {
-    expect(getVicaColorAttributes({})).toEqual({
+  it("returns only preset base attributes when theme colours are omitted", () => {
+    expect(getVicaColorAttributes()).toEqual({
       "app-foreground-color": colors.base.canvas.DEFAULT,
       "app-quick-reply-button-background-color": colors.base.canvas.DEFAULT,
       "app-auto-complete-foreground-color": colors.base.content.strong,

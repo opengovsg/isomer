@@ -1,5 +1,4 @@
 import type { VicaWidgetProps } from "~/interfaces"
-import { getHexFromThemeColors } from "~/utils/getHexFromThemeColors"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { getVicaColorAttributes } from "./getVicaColorAttributes"
@@ -11,10 +10,6 @@ export const VicaWidget = ({
   "app-icon": appIcon,
   ...rest
 }: VicaWidgetProps) => {
-  const themeColorAttributes = getVicaColorAttributes(
-    getHexFromThemeColors(themeColors),
-  )
-
   return (
     <VicaWidgetClient
       app-icon={
@@ -27,7 +22,7 @@ export const VicaWidget = ({
       // the following attributes to ensure consistency and best brand appearance.
       // VICA only accepts literal hex values — not CSS variables or design tokens.
       app-font-family="Inter, system-ui, sans-serif"
-      {...themeColorAttributes}
+      {...getVicaColorAttributes(themeColors)}
     />
   )
 }

@@ -1,11 +1,10 @@
 import type { IsomerSiteThemeProps } from "~/types"
 import { colors } from "~/presets/next/colors"
 
-type ThemeColorParts = {
-  brand?: IsomerSiteThemeProps["colors"]["brand"]
-}
-
-export const getVicaColorAttributes = ({ brand }: ThemeColorParts) => {
+export const getVicaColorAttributes = (
+  themeColors?: IsomerSiteThemeProps["colors"],
+) => {
+  const brand = themeColors?.brand
   const attributes: Record<string, string> = {
     "app-foreground-color": colors.base.canvas.DEFAULT,
     "app-quick-reply-button-background-color": colors.base.canvas.DEFAULT,
