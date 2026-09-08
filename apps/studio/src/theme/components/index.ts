@@ -1,3 +1,4 @@
+import { DatePicker } from "./DatePicker"
 import { Infobox } from "./Infobox"
 import { MultiSelect } from "./MultiSelect"
 import { Searchbar } from "./Searchbar"
@@ -8,4 +9,5 @@ export const components = {
   Infobox,
   Searchbar,
   MultiSelect,
+  DatePicker,
 }
