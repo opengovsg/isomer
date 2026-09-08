@@ -10,6 +10,7 @@ import {
 } from "~/interfaces"
 import { imageSchemaObject } from "~/schemas/internal"
 import {
+  COLLECTION_SORT_ORDER_PATTERN,
   REF_HREF_PATTERN,
   TRIMMED_NON_EMPTY_STRING_REGEX,
   TRIMMED_STRING_OR_EMPTY_REGEX,
@@ -38,6 +39,12 @@ const TagCategoryUuidSchema = generateUuidSchema({
   description:
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
 })
+
+const DateFilterStatusIdSchema = Type.Union([
+  Type.Literal(DATE_FILTER_STATUS_ID.Ended),
+  Type.Literal(DATE_FILTER_STATUS_ID.Ongoing),
+  Type.Literal(DATE_FILTER_STATUS_ID.Upcoming),
+])
 
 const tagCategoryLabelSchemaObject = {
   label: Type.String({
@@ -79,11 +86,14 @@ const dateFilterIsRequiredSchemaObject = {
 const TextFilterSchema = Type.Object(
   {
     ...tagCategoryLabelSchemaObject,
-    ...tagCategoryIsRequiredSchemaObject,
-    // Optional on old rows. Must be "text" or absent so oneOf picks TextFilterSchema.
+    // Optional for backward compatibility — every pre-existing `tagCategories`
+    // entry was a text filter before date filters existed. Must stay
+    // `"text"` or absent (never `"date"`) so this branch and `DateFilterSchema`
+    // remain mutually exclusive for `oneOf` resolution.
     type: Type.Optional(
       Type.Literal(TAG_CATEGORY_TYPE.Text, { format: "hidden" }),
     ),
+    ...tagCategoryIsRequiredSchemaObject,
     // Optional for backward compatibility. Missing/`undefined` must be read as
     // `DEFAULT_TAG_CATEGORY_DISPLAY` via `resolveTagCategoryDisplay`.
     // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
@@ -227,7 +237,7 @@ export const isTextFilter = (
 // text, index 1 is date — JsonFormsTagCategoryItemControl indexes into this
 // same array via JSONForms' own `indexOfFittingSchema`.
 const TagCategorySchema = Type.Unsafe<
-  Static<typeof TextFilterSchema> | Static<typeof DateFilterSchema>
+  TextFilterSchemaType | DateFilterSchemaType
 >({
   oneOf: [TextFilterSchema, DateFilterSchema],
   format: "tag-category-item",
@@ -383,24 +393,16 @@ export const CollectionPagePageSchema = Type.Intersect([
       ),
     ),
     sortOrder: Type.Optional(
-      Type.Union(
-        [
-          Type.Literal("date-desc", {
-            title: "By article date, newest → oldest",
-          }),
-          Type.Literal("date-asc", {
-            title: "By article date, oldest → newest",
-          }),
-          Type.Literal("title-asc", { title: "By title, A → Z" }),
-          Type.Literal("title-desc", { title: "By title, Z → A" }),
-        ],
-        {
-          title: "Sort items by",
-          description: "This might take a while to reflect on the preview.",
-          type: "string",
-          default: "date-desc",
+      Type.String({
+        title: "Sort items by",
+        description: "This might take a while to reflect on the preview.",
+        format: "collection-sort-order",
+        pattern: COLLECTION_SORT_ORDER_PATTERN,
+        errorMessage: {
+          pattern: "must be a valid collection sort order",
         },
-      ),
+        default: "date-desc",
+      }),
     ),
     // Deprecated, will be replaced with sortOrder above
     defaultSortBy: Type.Optional(

@@ -1,10 +1,5 @@
 import type { ImageProps } from "~/interfaces"
-import type {
-  DateTaggedItem,
-  FormattedDate,
-  IsomerSiteProps,
-  TagGroup,
-} from "~/types"
+import type { FormattedDate, IsomerSiteProps, TagGroup } from "~/types"
 import type { DateFilterStatusId } from "~/types/constants"
 
 export type DateFilterDisplayEntry = DateTaggedItem & {
