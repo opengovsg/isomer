@@ -1,12 +1,13 @@
 name: Update publisher script
 
-# Reusable workflow: uploads tooling/build/scripts/publisher.sh to the S3 bucket
-# that CodeBuild site-publish projects fetch it from. Always uploads
-# unconditionally - the upload is a cheap, idempotent aws s3 cp, and detecting
-# "did it change" reliably across every trigger type (push, release,
-# workflow_dispatch) isn't worth the complexity. No direct trigger of its own
-# (yet) - wire this up from a caller (workflow_call) or run it manually
-# (workflow_dispatch).
+# Reusable workflow: uploads tooling/build/scripts/publisher.sh to the same
+# sites-cache S3 bucket that build-components.yml publishes isomer.tar.zst to
+# (object key publisher.sh at the bucket root). CodeBuild site-publish projects
+# fetch it from there. Always uploads unconditionally - the upload is a cheap,
+# idempotent aws s3 cp, and detecting "did it change" reliably across every
+# trigger type (push, release, workflow_dispatch) isn't worth the complexity.
+# No direct trigger of its own (yet) - wire this up from a caller
+# (workflow_call) or run it manually (workflow_dispatch).
 on:
   workflow_dispatch:
     inputs:
@@ -24,7 +25,7 @@ on:
         required: true
         type: string
       publisher-script-bucket:
-        description: "S3 bucket that CodeBuild site-publish projects fetch publisher.sh from"
+        description: "Sites-cache S3 bucket that CodeBuild site-publish projects fetch publisher.sh from"
         required: true
         type: string
   workflow_call:
@@ -43,7 +44,7 @@ on:
         required: true
         type: string
       publisher-script-bucket:
-        description: "S3 bucket that CodeBuild site-publish projects fetch publisher.sh from"
+        description: "Sites-cache S3 bucket that CodeBuild site-publish projects fetch publisher.sh from"
         required: true
         type: string
 
