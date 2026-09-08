@@ -83,7 +83,7 @@ export type VicaWidgetClientProps = VicaProps
 
 export type VicaWidgetProps = VicaProps & {
   site: Pick<IsomerSiteProps, "siteMapArray" | "assetsBaseUrl">
-  themeColors?: IsomerSiteThemeProps["colors"]
+  themeColors: IsomerSiteThemeProps["colors"]
 }
 
 export type VicaStylesheetProps = Pick<VicaProps, "useDevStagingScript">

@@ -75,16 +75,3 @@ export const colors = {
     },
   },
 }
-
-/** Default base palette hex values for theme seeding and tests. */
-export const defaultBaseThemeColors = {
-  canvas: {
-    default: colors.base.canvas.DEFAULT,
-  },
-  content: {
-    strong: colors.base.content.strong,
-  },
-  divider: {
-    medium: colors.base.divider.medium,
-  },
-}

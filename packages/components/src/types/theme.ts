@@ -22,19 +22,6 @@ export const SiteThemeSchema = Type.Object(
           pressed: Type.String({ format: "hidden" }),
         }),
       }),
-      base: Type.Optional(
-        Type.Object({
-          canvas: Type.Object({
-            default: Type.String({ format: "hidden" }),
-          }),
-          content: Type.Object({
-            strong: Type.String({ format: "hidden" }),
-          }),
-          divider: Type.Object({
-            medium: Type.String({ format: "hidden" }),
-          }),
-        }),
-      ),
     }),
   },
   {

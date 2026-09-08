@@ -1,19 +1,17 @@
 import type { IsomerSiteThemeProps } from "~/types"
+import { colors } from "~/presets/next/colors"
 
 type ThemeColorParts = {
   brand?: IsomerSiteThemeProps["colors"]["brand"]
-  base?: IsomerSiteThemeProps["colors"]["base"]
 }
 
-export const getVicaColorAttributes = ({ brand, base }: ThemeColorParts) => {
-  const attributes: Record<string, string> = {}
-
-  if (base) {
-    attributes["app-foreground-color"] = base.canvas.default
-    attributes["app-quick-reply-button-background-color"] = base.canvas.default
-    attributes["app-auto-complete-foreground-color"] = base.content.strong
-    attributes["app-auto-complete-divider-color"] = base.divider.medium
-    attributes["app-recommendations-foreground-color"] = base.content.strong
+export const getVicaColorAttributes = ({ brand }: ThemeColorParts) => {
+  const attributes: Record<string, string> = {
+    "app-foreground-color": colors.base.canvas.DEFAULT,
+    "app-quick-reply-button-background-color": colors.base.canvas.DEFAULT,
+    "app-auto-complete-foreground-color": colors.base.content.strong,
+    "app-auto-complete-divider-color": colors.base.divider.medium,
+    "app-recommendations-foreground-color": colors.base.content.strong,
   }
 
   if (brand) {
