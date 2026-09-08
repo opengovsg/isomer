@@ -234,8 +234,8 @@ catalogs:
       specifier: ^6.2.10
       version: 6.2.10
     jotai:
-      specifier: ^2.20.2
-      version: 2.20.2
+      specifier: ^2.20.3
+      version: 2.20.3
     js-md5:
       specifier: ^0.9.2
       version: 0.9.2
@@ -924,7 +924,7 @@ importers:
         version: 6.2.10
       jotai:
         specifier: 'catalog:'
-        version: 2.20.2(@babel/core@7.29.7)(@babel/template@8.0.0)(@types/react@18.3.28)(react@18.3.1)
+        version: 2.20.3(@babel/core@7.29.7)(@babel/template@8.0.0)(@types/react@18.3.28)(react@18.3.1)
       jsdom:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@2.2.0)
@@ -9616,8 +9616,8 @@ packages:
   jose@6.2.10:
     resolution: {integrity: sha512-iiW7J9qRFlGxvCOIBDBDxFePQSn7ZMAnrYGhrrOo6siO/MIqwfyilLR27pkfDgUk+raLuzADS8A3S/KLBisc0g==}
 
-  jotai@2.20.2:
-    resolution: {integrity: sha512-aHB4CNb9qRcyf0mwSB6EO5bCGAjx8cTwFgOFCE2leOnTzqACbnSWG8XoWB3LxCT1Qoj03I1OWAHszDmN4uHb/w==}
+  jotai@2.20.3:
+    resolution: {integrity: sha512-N8L9FUbeGDP+0qNJw1FebOxt+5hk+jTOwUA2LlRE4C081jUcY6F1T/FSETp4DT2/INMtiSRZyNm2D+yZdzrSgA==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
       '@babel/core': '>=7.0.0'
@@ -21180,7 +21180,7 @@ snapshots:
 
   jose@6.2.10: {}
 
-  jotai@2.20.2(@babel/core@7.29.7)(@babel/template@8.0.0)(@types/react@18.3.28)(react@18.3.1):
+  jotai@2.20.3(@babel/core@7.29.7)(@babel/template@8.0.0)(@types/react@18.3.28)(react@18.3.1):
     optionalDependencies:
       '@babel/core': 7.29.7
       '@babel/template': 8.0.0
