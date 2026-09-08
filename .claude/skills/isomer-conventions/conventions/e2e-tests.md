@@ -68,6 +68,8 @@ test.beforeAll(async () => {
 - Use `resetSite*` helpers from `fixtures/reset.ts` in `beforeEach` for idempotent state
 - `provisionE2ESite` creates a root page + search page so the site dashboard loads
 - Do not add a `teardownE2ESite`/per-test cleanup call — it doesn't exist; cleanup is run-scoped, not test-scoped
+- **Exception:** files that exercise surfaces not scoped to a site (e.g. `godmode/`,
+  `smoke.test.ts`) do not need `provisionE2ESite`
 
 ## Role projects and tags (PR-3)
 
@@ -91,6 +93,30 @@ Use `roleTag(...)` (typed from `ROLES`) — not a raw `"@admin"` string. Multi-r
 | Put smoke in `smoke.test.ts` (no role tag) | Mix unauthenticated smoke into role-tagged files |
 | Run `pnpm exec playwright test --project=admin` to filter | Rely on file path alone for role selection |
 
+**Cross-role sessions:** when a test needs a *second* role in the same
+scenario (e.g. editor saves, publisher publishes), use `withSeededPageEditorAsRole`
+or `withRoleSession` from `helpers.ts` — they spin up a fresh
+`browser.newContext({ storageState: storageStateFor(role) })` and close it in
+`finally`. That is not the same as `test.use({ storageState })` (which would
+replace the whole project's session). Prefer the `with*` helpers over
+`openSeededPageEditorAsRole` + manual `context.close()` (see
+`publish-page.test.ts`). Use `withRoleSession` when the second role navigates
+somewhere other than the page editor.
+
+```ts
+// Page editor handoff (editor saves → publisher publishes)
+await withSeededPageEditorAsRole(browser, "publisher", siteId, pageId, async ({ editor }) => {
+  await editor.clickPublish()
+  await editor.expectPublishedToast()
+})
+
+// Any other surface under a second role's session
+await withRoleSession(browser, "admin", async ({ page }) => {
+  await page.goto(`/sites/${siteId}/users`)
+  // …
+})
+```
+
 ## Page objects (PR-4)
 
 Page objects live in `fixtures/*.po.ts` and wrap locators + actions for **one** UI
@@ -101,6 +127,8 @@ surface. Prefer them over raw Playwright calls when a locator will be reused.
 | `SitePO` | `site.po.ts` | Site settings |
 | `DashboardPO` | `dashboard.po.ts` | Site dashboard / resource table |
 | `PageEditorPO` | `page-editor.po.ts` | Page edit + publish chrome |
+| `PageSettingsPO` | `page-settings.po.ts` | Page settings modal (from dashboard) |
+| `CollectionPO` | `collection.po.ts` | Collection link/page editor drawers |
 | `UsersPO` | `users.po.ts` | Users / collaborators page |
 
 Rules:

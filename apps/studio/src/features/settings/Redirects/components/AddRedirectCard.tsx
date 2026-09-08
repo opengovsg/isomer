@@ -28,7 +28,8 @@ import {
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
-import { normalizeRedirectSource, redirectKind } from "~/schemas/redirect"
+import { redirectKind } from "~/schemas/redirect"
+import { normalizeRedirectSource } from "~/schemas/redirect/utils"
 
 import { useCreateRedirect } from "../api"
 import { WILDCARD_HINT } from "../constants"

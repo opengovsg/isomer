@@ -21,7 +21,7 @@ import { usePermissions } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
-import { normalizeRedirectPath } from "~/schemas/redirect"
+import { normalizeRedirectPath } from "~/schemas/redirect/utils"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 

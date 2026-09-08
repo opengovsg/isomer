@@ -64,3 +64,18 @@ export const resetSiteTheme = (siteId: number) =>
     .set({ theme: jsonb(DEFAULT_SITE_THEME) })
     .where("id", "=", siteId)
     .execute()
+
+/** Delete a single resource row created during a test. */
+export const deleteResource = (resourceId: string) =>
+  db.deleteFrom("Resource").where("id", "=", resourceId).execute()
+
+/** Delete resources on a site whose title matches a SQL LIKE pattern. */
+export const deleteResourcesByTitleLike = (
+  siteId: number,
+  titlePattern: string,
+) =>
+  db
+    .deleteFrom("Resource")
+    .where("siteId", "=", siteId)
+    .where("title", "like", titlePattern)
+    .execute()
