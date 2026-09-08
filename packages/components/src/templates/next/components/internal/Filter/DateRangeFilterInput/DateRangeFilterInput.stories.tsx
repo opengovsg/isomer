@@ -24,7 +24,7 @@ const meta: Meta<typeof DateRangeFilterInput> = {
     themes: {
       themeOverride: "Isomer Next",
     },
-    chromatic: withChromaticModes(["desktop"]),
+    chromatic: withChromaticModes(["mobileSmall", "desktop"]),
   },
 }
 export default meta
