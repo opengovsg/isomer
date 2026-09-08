@@ -32,23 +32,27 @@ describe("getVicaColorAttributes", () => {
   it("returns brand and base attributes when both are provided", () => {
     expect(getVicaColorAttributes({ brand, base })).toEqual({
       "app-foreground-color": "#fefefe",
+      "app-quick-reply-button-background-color": "#fefefe",
+      "app-auto-complete-foreground-color": "#222222",
+      "app-auto-complete-divider-color": "#cccccc",
+      "app-recommendations-foreground-color": "#222222",
       "app-color": "#123456",
       "app-button-border-color": "#123456",
       "app-canvas-background-color": "#f0f0f0",
-      "app-quick-reply-button-background-color": "#fefefe",
       "app-auto-complete-background-color": "#f0f0f0",
       "app-auto-complete-hover-color": "#d0d0d0",
-      "app-auto-complete-foreground-color": "#222222",
-      "app-auto-complete-divider-color": "#cccccc",
       "app-recommendations-background-color": "#f0f0f0",
       "app-recommendations-hover-color": "#d0d0d0",
-      "app-recommendations-foreground-color": "#222222",
     })
   })
 
   it("returns only base attributes when brand is omitted", () => {
     expect(getVicaColorAttributes({ base })).toEqual({
       "app-foreground-color": "#fefefe",
+      "app-quick-reply-button-background-color": "#fefefe",
+      "app-auto-complete-foreground-color": "#222222",
+      "app-auto-complete-divider-color": "#cccccc",
+      "app-recommendations-foreground-color": "#222222",
     })
   })
 
@@ -57,6 +61,10 @@ describe("getVicaColorAttributes", () => {
       "app-color": "#123456",
       "app-button-border-color": "#123456",
       "app-canvas-background-color": "#f0f0f0",
+      "app-auto-complete-background-color": "#f0f0f0",
+      "app-auto-complete-hover-color": "#d0d0d0",
+      "app-recommendations-background-color": "#f0f0f0",
+      "app-recommendations-hover-color": "#d0d0d0",
     })
   })
 
