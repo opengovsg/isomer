@@ -1,0 +1,208 @@
+import type { StepsProps } from "~/interfaces"
+import { BiRightArrowAlt } from "react-icons/bi"
+import { tv } from "~/lib/tv"
+import { getHeadingTag } from "~/utils/getHeadingTag"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+import { groupFocusVisibleHighlight } from "~/utils/tailwind"
+
+import { ComponentContent } from "../../internal/customCssClass"
+import { Link } from "../../internal/Link"
+
+const createStepsStyles = tv({
+  slots: {
+    section: "bg-white",
+    outerContainer: `${ComponentContent}`,
+    innerContainer: "flex flex-col gap-12",
+    header: "flex w-full max-w-[47.5rem] flex-col items-start text-left",
+    headerTitle: "prose-display-sm break-words text-base-content-strong",
+    headerSubtitle: "prose-headline-lg-regular text-base-content",
+    stepsContainer: "grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-2",
+    step: "flex",
+    stepLink:
+      "group flex h-full flex-col items-start gap-3 text-left outline-0",
+    stepNumber: "text-base-content-subtle",
+    stepTitle: [
+      groupFocusVisibleHighlight(),
+      "prose-headline-lg-semibold text-base-content-strong",
+    ],
+    stepDescription: "prose-body-base text-base-content",
+    stepButton:
+      "prose-headline-base-medium mt-auto inline-flex items-center gap-1 pt-1 text-base-content-strong",
+    stepButtonIcon:
+      "mb-0.5 ml-1 inline text-[1.375rem] transition ease-in group-hover:translate-x-1",
+  },
+  variants: {
+    layout: {
+      homepage: {
+        outerContainer: "py-12 md:py-16",
+        header: "gap-2.5",
+        headerSubtitle: "prose-headline-lg-regular",
+      },
+      default: {
+        outerContainer: "mt-14",
+        header: "gap-6",
+        headerSubtitle: "prose-body-base",
+      },
+    },
+    // The three number treatments under evaluation. `numeral` is bare (no card),
+    // the other two sit inside a bordered card.
+    numberStyle: {
+      numeral: {
+        stepNumber: "prose-display-md text-base-content-strong",
+      },
+      eyebrow: {
+        stepLink: "rounded-lg border border-base-divider-medium p-6",
+        stepNumber: "prose-headline-base-medium",
+      },
+      badge: {
+        stepLink: "rounded-lg border border-base-divider-medium p-6",
+        stepNumber:
+          "prose-display-xs flex h-11 w-11 items-center justify-center rounded-md bg-brand-canvas text-base-content-strong",
+      },
+    },
+    // Steps read as a single row on large screens; the column count has to be a
+    // static class for Tailwind to emit it.
+    count: {
+      2: { stepsContainer: "lg:grid-cols-2" },
+      3: { stepsContainer: "lg:grid-cols-3" },
+      4: { stepsContainer: "lg:grid-cols-4" },
+      5: { stepsContainer: "lg:grid-cols-5" },
+    },
+    isExternalLink: {
+      true: {
+        stepButtonIcon: "rotate-[-45deg]",
+      },
+    },
+    hasLink: {
+      true: {
+        stepTitle: "group-hover:text-brand-interaction",
+      },
+    },
+  },
+  defaultVariants: {
+    layout: "default",
+    numberStyle: "numeral",
+    count: 3,
+  },
+})
+
+const compoundStyles = createStepsStyles()
+
+// `numeral` and `eyebrow` zero-pad to keep the numbers optically even in a row;
+// the badge is a fixed-size square, so padding would just look cramped.
+const formatStepNumber = (
+  index: number,
+  numberStyle: NonNullable<StepsProps["numberStyle"]>,
+): string => {
+  const number = index + 1
+  if (numberStyle === "badge") return `${number}`
+  return `${number}`.padStart(2, "0")
+}
+
+export const Steps = ({
+  id,
+  title,
+  subtitle,
+  steps,
+  numberStyle = "numeral",
+  layout,
+  site,
+  headingLevel,
+}: StepsProps) => {
+  const simplifiedLayout = getTailwindVariantLayout(layout)
+  const TitleTag = getHeadingTag(headingLevel)
+  const StepTitleTag = getHeadingTag(headingLevel + 1)
+  const count = Math.min(Math.max(steps.length, 2), 5) as 2 | 3 | 4 | 5
+
+  return (
+    <section id={id} className={compoundStyles.section()}>
+      <div
+        className={compoundStyles.outerContainer({ layout: simplifiedLayout })}
+      >
+        <div className={compoundStyles.innerContainer()}>
+          <div className={compoundStyles.header({ layout: simplifiedLayout })}>
+            <TitleTag className={compoundStyles.headerTitle()}>
+              {title}
+            </TitleTag>
+
+            {subtitle && (
+              <p
+                className={compoundStyles.headerSubtitle({
+                  layout: simplifiedLayout,
+                })}
+              >
+                {subtitle}
+              </p>
+            )}
+          </div>
+
+          {/* An ordered list so screen readers announce the sequence and its
+              length; the rendered number is decorative and hidden from them. */}
+          <ol className={compoundStyles.stepsContainer({ count })}>
+            {steps.map(
+              ({ title, description, buttonLabel, buttonUrl }, idx) => {
+                const hasLink = !!buttonUrl
+                const isExternalLink = isExternalUrl(buttonUrl)
+                const showTitleArrow = hasLink && !buttonLabel
+
+                return (
+                  <li key={idx} className={compoundStyles.step()}>
+                    <Link
+                      href={getReferenceLinkHref(
+                        buttonUrl,
+                        site.siteMapArray,
+                        site.assetsBaseUrl,
+                      )}
+                      className={compoundStyles.stepLink({ numberStyle })}
+                      isExternal={isExternalLink}
+                    >
+                      <span
+                        aria-hidden
+                        className={compoundStyles.stepNumber({ numberStyle })}
+                      >
+                        {formatStepNumber(idx, numberStyle)}
+                      </span>
+
+                      <StepTitleTag
+                        className={compoundStyles.stepTitle({ hasLink })}
+                      >
+                        {title}
+                        {showTitleArrow && (
+                          <BiRightArrowAlt
+                            aria-hidden
+                            className={compoundStyles.stepButtonIcon({
+                              isExternalLink,
+                            })}
+                          />
+                        )}
+                      </StepTitleTag>
+
+                      {description && (
+                        <p className={compoundStyles.stepDescription()}>
+                          {description}
+                        </p>
+                      )}
+
+                      {hasLink && !showTitleArrow && (
+                        <div className={compoundStyles.stepButton()}>
+                          {buttonLabel}
+                          <BiRightArrowAlt
+                            className={compoundStyles.stepButtonIcon({
+                              isExternalLink,
+                            })}
+                          />
+                        </div>
+                      )}
+                    </Link>
+                  </li>
+                )
+              },
+            )}
+          </ol>
+        </div>
+      </div>
+    </section>
+  )
+}
