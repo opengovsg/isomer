@@ -3123,9 +3123,7 @@ describe("resource.router", async () => {
       const result = await caller.listWithoutRoot({ siteId: site.id })
 
       // Assert
-      expect(result.items.map(({ permalink }) => permalink)).toEqual([
-        "about",
-      ])
+      expect(result.items.map(({ permalink }) => permalink)).toEqual(["about"])
     })
 
     it("should return resources (respecting the limit) nested inside the resourceId", async () => {

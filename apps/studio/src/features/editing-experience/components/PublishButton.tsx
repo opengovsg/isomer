@@ -33,20 +33,22 @@ const SuspendablePublishButton = ({
     !!currPage.scheduledAt &&
     currPage.scheduledAction === ScheduledAction.Unpublish
 
-  // publishPageResource blocks an immediate publish while a scheduled
-  // unpublish is pending (opposite-direction conflict) — surface that here
-  // instead of letting the user hit the error after submitting.
-  const disabledReason = isScheduledToUnpublish
-    ? "This page has a scheduled unpublish. Cancel it before publishing."
-    : !isChangesPendingPublish
-      ? "All changes have been published"
-      : undefined
-
   return (
     <Can do="publish" on="Resource" passThrough>
-      {({ isAllowed }) => (
-        <TouchableTooltip hidden={!disabledReason} label={disabledReason}>
-          {isAllowed && (
+      {({ isAllowed }) => {
+        // publishPageResource blocks an immediate publish while a scheduled
+        // unpublish is pending (opposite-direction conflict) — surface that
+        // here instead of letting the user hit the error after submitting.
+        const disabledReason = !isAllowed
+          ? "You need to be a Publisher or Admin to publish."
+          : isScheduledToUnpublish
+            ? "This page has a scheduled unpublish. Cancel it before publishing."
+            : !isChangesPendingPublish
+              ? "All changes have been published"
+              : undefined
+
+        return (
+          <TouchableTooltip hidden={!disabledReason} label={disabledReason}>
             <>
               {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
               {publishDisclosure.isOpen && (
@@ -57,7 +59,7 @@ const SuspendablePublishButton = ({
                   {...publishDisclosure}
                 />
               )}
-              {isScheduledToPublish ? (
+              {isScheduledToPublish && isAllowed ? (
                 <CancelSchedulePublishIndicator
                   siteId={siteId}
                   pageId={pageId}
@@ -79,9 +81,9 @@ const SuspendablePublishButton = ({
                 </Button>
               )}
             </>
-          )}
-        </TouchableTooltip>
-      )}
+          </TouchableTooltip>
+        )
+      }}
     </Can>
   )
 }

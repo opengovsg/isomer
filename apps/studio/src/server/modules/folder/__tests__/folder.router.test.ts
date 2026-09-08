@@ -1058,6 +1058,7 @@ describe("folder.router", async () => {
         lastPublishedAt: null,
         parentType: ResourceType.Folder,
         otherPublishedDescendantCount: 0,
+        unschedulableDescendantCount: 0,
       })
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
