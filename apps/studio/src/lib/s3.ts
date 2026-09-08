@@ -273,7 +273,7 @@ export const setAssetAsPublished = async ({
 // or an HTTP 404. Every other failure (throttling, network blips, auth) is
 // transient/operational and MUST propagate — swallowing it as `null` would let
 // callers mistake a present object for a missing one.
-const isNotFoundError = (error: unknown): boolean => {
+export const isNotFoundError = (error: unknown): boolean => {
   if (typeof error !== "object" || error === null) return false
   const { name, $metadata } = error as {
     name?: unknown

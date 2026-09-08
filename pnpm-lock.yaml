@@ -679,6 +679,9 @@ importers:
       '@atlaskit/pragmatic-drag-and-drop-hitbox':
         specifier: catalog:atlaskitPragmaticDnd
         version: 2.0.0
+      '@aws-sdk/client-cloudfront':
+        specifier: catalog:aws-sdk
+        version: 3.1119.0
       '@aws-sdk/client-codebuild':
         specifier: catalog:aws-sdk
         version: 3.1121.0
