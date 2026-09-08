@@ -19,6 +19,10 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 
 import { getCustomErrorMessage } from "./utils"
 
+const SORT_MENU_ITEM_HEIGHT = 40
+const SORT_MENU_MAX_VISIBLE_SLOTS = 4
+const SORT_MENU_SCROLL_VISIBLE_ITEMS = 2.5
+
 export const jsonFormsCollectionSortOrderControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.CollectionSortOrderControl,
   schemaMatches((schema) => schema.format === "collection-sort-order"),
@@ -58,6 +62,13 @@ function JsonFormsCollectionSortOrderControl({
     return <Skeleton />
   }
 
+  const sortOptions = getCollectionSortOptions(tagCategories)
+  const fixedItemHeight =
+    sortOptions.length > SORT_MENU_MAX_VISIBLE_SLOTS
+      ? (SORT_MENU_SCROLL_VISIBLE_ITEMS * SORT_MENU_ITEM_HEIGHT) /
+        SORT_MENU_MAX_VISIBLE_SLOTS
+      : undefined
+
   return (
     <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
@@ -66,7 +77,8 @@ function JsonFormsCollectionSortOrderControl({
         <SingleSelect
           value={resolvedValue}
           name={label}
-          items={getCollectionSortOptions(tagCategories)}
+          items={sortOptions}
+          fixedItemHeight={fixedItemHeight}
           isClearable={false}
           isDisabled={!enabled}
           onChange={(value) => {
