@@ -5,6 +5,7 @@ import type {
   DateTaggedItem,
 } from "~/types"
 import { format, isSameDay, parseISO } from "date-fns"
+import { DEFAULT_DATE_FILTER_STATUS_LABELS } from "~/types/constants"
 import { isDateFilter } from "~/types/page"
 
 export interface ResolvedItemDateFields {
@@ -64,7 +65,10 @@ export const resolveItemDateFields = (
       dateText: formatDateFilterDateText(value.date, value.endDate),
       date: value.date,
       endDate: value.endDate,
-      statusLabels: category.statusLabels,
+      statusLabels: {
+        ...DEFAULT_DATE_FILTER_STATUS_LABELS,
+        ...category.statusLabels,
+      },
     })
   })
 

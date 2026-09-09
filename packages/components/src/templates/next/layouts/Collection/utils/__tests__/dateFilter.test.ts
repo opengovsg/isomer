@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
+import { getDateFilterCardsFromEntries } from "~/templates/next/components/internal/CollectionCard/utils/getDateFilterCardsFromEntries"
+import { DEFAULT_DATE_FILTER_STATUS_LABELS } from "~/types/constants"
 
-import { getDateFilterCardsFromEntries } from "../dateFilterCards"
 import { resolveItemDateFields } from "../dateFilterStatic"
 
 const EVENT_DATE_FILTER_ID = "11111111-1111-1111-1111-111111111111"
@@ -10,11 +11,7 @@ const tagCategories = [
     id: EVENT_DATE_FILTER_ID,
     label: "Event Date",
     type: "date" as const,
-    statusLabels: [
-      { id: "ENDED" as const, label: "Event ended" },
-      { id: "ONGOING" as const, label: "Ongoing" },
-      { id: "UPCOMING" as const, label: "Upcoming" },
-    ],
+    statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
   },
 ]
 
@@ -109,7 +106,7 @@ describe("getDateFilterCardsFromEntries", () => {
       tagCategories,
     ).dateFilterDisplayEntries!
 
-    expect(getDateFilterCardsFromEntries(entries, "2026-06-15")).toEqual([
+    expect(getDateFilterCardsFromEntries(entries)).toEqual([
       {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
