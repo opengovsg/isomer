@@ -129,8 +129,21 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     setIsTypeChoiceModalOpen(false)
   }
 
+  const selectedFilter =
+    arrayResult.selectedIndex === undefined
+      ? undefined
+      : page?.tagCategories?.[arrayResult.selectedIndex]
+  const nestedDrawerHeaderLabel =
+    selectedFilter && isDateFilter(selectedFilter)
+      ? "Manage date filter"
+      : "Manage text filter"
+
   return (
-    <NestedDrawerSwitch {...props} {...arrayResult}>
+    <NestedDrawerSwitch
+      {...props}
+      {...arrayResult}
+      headerLabel={nestedDrawerHeaderLabel}
+    >
       <VStack spacing={0} align="start">
         <VStack align="start" spacing="0.25rem" w="full">
           <HStack w="full" justifyContent="space-between" align="center">

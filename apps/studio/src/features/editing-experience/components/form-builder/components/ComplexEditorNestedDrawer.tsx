@@ -19,6 +19,8 @@ interface ComplexEditorNestedDrawerProps {
   uischema: UISchemaElement
   path: string
   label: string
+  // Full header copy when the default `Edit ${label}` is wrong for this drawer.
+  headerLabel?: string
   setSelectedIndex: (selectedIndex?: number) => void
   selectedIndex: number
   maxIndex: number
@@ -34,6 +36,7 @@ export function ComplexEditorNestedDrawer({
   uischema,
   path,
   label,
+  headerLabel,
   setSelectedIndex,
   isRemoveItemDisabled,
   handleRemoveItem,
@@ -52,7 +55,7 @@ export function ComplexEditorNestedDrawer({
       gap={0}
     >
       <DrawerHeader
-        label={`Edit ${label}`}
+        label={headerLabel ?? `Edit ${label}`}
         onBackClick={() => setSelectedIndex()}
         textStyle="subhead-1"
         backAriaLabel={`Return to ${label}`}

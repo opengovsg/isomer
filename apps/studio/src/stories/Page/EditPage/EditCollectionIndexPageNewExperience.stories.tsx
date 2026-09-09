@@ -5,7 +5,10 @@ import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import {
+  IS_DATE_FILTERS_ENABLED_FEATURE_KEY,
+  IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY,
+} from "~/lib/growthbook"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 
 const COMMON_HANDLERS = [
@@ -57,6 +60,13 @@ type Story = StoryObj<typeof EditPage>
 
 const newCollectionFiltersParameters = {
   growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
+} satisfies Story["parameters"]
+
+const dateCollectionFiltersParameters = {
+  growthbook: [
+    [IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true],
+    [IS_DATE_FILTERS_ENABLED_FEATURE_KEY, true],
+  ],
 } satisfies Story["parameters"]
 
 const zeroTagOptionsUsageParameters = {
@@ -159,7 +169,7 @@ async function assertThreeDefaultOptionRows(canvasElement: HTMLElement) {
   await expect(newOptionLabels).toHaveLength(3)
 }
 
-/** Ensures at least one filter row exists, opens nested "Edit Filters" editor. */
+/** Ensures at least one filter row exists, opens nested "Manage text filter" editor. */
 async function playOpenFirstFilterEditor(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
   if (!canvas.queryByText("New filter")) {
@@ -168,10 +178,24 @@ async function playOpenFirstFilterEditor(canvasElement: HTMLElement) {
     )
   }
   await userEvent.click(await canvas.findByText("New filter"))
-  await canvas.findByText(/Edit Filters/i)
+  await canvas.findByText(/^Manage text filter$/)
 }
 
-/** From "Edit Filters": rename filter, add three options, assert default row labels. */
+/** Adds a date filter via the type-choice modal and waits for its nested editor. */
+async function playOpenFirstDateFilterEditor(canvasElement: HTMLElement) {
+  const canvas = within(canvasElement)
+  await userEvent.click(
+    await canvas.findByRole("button", { name: /Add a filter/i }),
+  )
+  const portals = withinPortals(canvasElement)
+  await userEvent.click(await portals.findByText(/^Date filter$/))
+  await userEvent.click(
+    await portals.findByRole("button", { name: /^Add filter$/i }),
+  )
+  await canvas.findByText(/^Manage date filter$/)
+}
+
+/** From "Manage text filter": rename filter, add three options, assert default row labels. */
 async function playFillFilterNameAndAddThreeOptions(
   canvasElement: HTMLElement,
 ) {
@@ -289,6 +313,22 @@ export const ManageFilters: Story = {
   parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
+  },
+}
+
+export const FiltersManageTextFilter: Story = {
+  parameters: newCollectionFiltersParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenManageFilters(canvasElement)
+    await playOpenFirstFilterEditor(canvasElement)
+  },
+}
+
+export const FiltersManageDateFilter: Story = {
+  parameters: dateCollectionFiltersParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenManageFilters(canvasElement)
+    await playOpenFirstDateFilterEditor(canvasElement)
   },
 }
 

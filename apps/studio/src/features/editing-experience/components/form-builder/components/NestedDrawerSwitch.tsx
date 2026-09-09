@@ -7,6 +7,7 @@ import { ComplexEditorNestedDrawer } from "./ComplexEditorNestedDrawer"
 type NestedDrawerSwitchProps = ArrayLayoutProps &
   UseArrayReturn & {
     children: ReactNode
+    headerLabel?: string
   }
 /**
  * Renders the nested item drawer when a row is selected, the list otherwise.
@@ -25,6 +26,7 @@ export const NestedDrawerSwitch = ({
   isRemoveItemDisabled,
   handleRemoveSelectedItem,
   data,
+  headerLabel,
 }: NestedDrawerSwitchProps) => {
   if (selectedIndex === undefined) {
     return children
@@ -39,6 +41,7 @@ export const NestedDrawerSwitch = ({
       uischema={childUiSchema}
       path={composePaths(path, `${selectedIndex}`)}
       label={label}
+      headerLabel={headerLabel}
       setSelectedIndex={setSelectedIndex}
       isRemoveItemDisabled={isRemoveItemDisabled}
       handleRemoveItem={handleRemoveSelectedItem(path, selectedIndex)}
