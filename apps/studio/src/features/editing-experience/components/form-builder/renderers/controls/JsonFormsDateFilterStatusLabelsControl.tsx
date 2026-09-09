@@ -3,7 +3,7 @@ import type {
   DateFilterSchemaType,
   DateFilterStatusId,
 } from "@opengovsg/isomer-components"
-import { FormControl, VStack } from "@chakra-ui/react"
+import { FormControl, Text, VStack } from "@chakra-ui/react"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Input } from "@opengovsg/design-system-react"
@@ -11,22 +11,10 @@ import { DATE_FILTER_STATUS } from "@opengovsg/isomer-components"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 
-const STATUS_ROW_META: Record<
-  DateFilterStatusId,
-  { name: string; description: string }
-> = {
-  UPCOMING: {
-    name: "Upcoming",
-    description: "Shown before the item's date has arrived",
-  },
-  ONGOING: {
-    name: "Ongoing",
-    description: "Shown on and between the item's date(s)",
-  },
-  ENDED: {
-    name: "Ended",
-    description: "Shown after the item's date has passed",
-  },
+const STATUS_ROW_LABELS: Record<DateFilterStatusId, string> = {
+  ENDED: "If date is in the past, show",
+  ONGOING: "If date is now, show",
+  UPCOMING: "If date is in the future, show",
 }
 
 interface DateFilterStatusLabelsControlProps extends Omit<
@@ -40,21 +28,27 @@ function JsonFormsDateFilterStatusLabelsControlInner({
   data,
   path,
   handleChange,
+  label,
+  description,
 }: DateFilterStatusLabelsControlProps) {
   return (
     <VStack align="stretch" spacing="1rem" w="full">
-      <FormControl>
-        <FormLabel description="If you don't want to show a label, leave fields empty.">
-          Custom labels
+      <VStack align="stretch" spacing={0}>
+        <FormLabel mb={0} isRequired>
+          {label}
         </FormLabel>
-      </FormControl>
-      {Object.values(DATE_FILTER_STATUS).map(({ id, defaultLabel }) => {
-        const meta = STATUS_ROW_META[id]
-        const value = data?.[id] ?? defaultLabel
+        {description && (
+          <Text textStyle="body-2" textColor="base.content.default">
+            {description}
+          </Text>
+        )}
+      </VStack>
+      {Object.values(DATE_FILTER_STATUS).map(({ id }) => {
+        const value = data?.[id] ?? ""
 
         return (
-          <FormControl key={id}>
-            <FormLabel description={meta.description}>{meta.name}</FormLabel>
+          <FormControl key={id} gap="0.5rem">
+            <FormLabel>{STATUS_ROW_LABELS[id]}</FormLabel>
             <Input
               value={value}
               onChange={(e) =>
