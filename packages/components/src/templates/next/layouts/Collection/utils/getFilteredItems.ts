@@ -13,8 +13,8 @@ export const getFilteredItems = (
   appliedFilters: AppliedFilter[],
   searchValue: string,
   tagCategories?: CollectionPagePageProps["tagCategories"],
-  today: string = getSingaporeDateYYYYMMDD(),
 ): ProcessedCollectionCardProps[] => {
+  const today = getSingaporeDateYYYYMMDD()
   const normalizedSearchValue =
     searchValue !== "" ? normalizeCollectionSearchText(searchValue) : ""
 
