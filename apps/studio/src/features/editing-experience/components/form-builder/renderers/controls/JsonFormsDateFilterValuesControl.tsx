@@ -9,10 +9,7 @@ import {
   FormErrorMessage,
   FormLabel,
 } from "@opengovsg/design-system-react"
-import {
-  resolveTagCategoryType,
-  TAG_CATEGORY_TYPE,
-} from "@opengovsg/isomer-components"
+import { isDateFilter } from "@opengovsg/isomer-components"
 import { format, parseISO } from "date-fns"
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -68,9 +65,7 @@ const SuspendableJsonFormsDateFilterValuesControl = ({
   const resourceId = linkId ?? pageId ?? 1
   const [tags] = useSuspenseCollectionTags({ resourceId, siteId })
 
-  const dateFilters = tags.filter(
-    (tag) => resolveTagCategoryType(tag.type) === TAG_CATEGORY_TYPE.Date,
-  )
+  const dateFilters = tags.filter(isDateFilter)
 
   // NOTE: Because we render according to the schema, this will also be
   // rendered for Article pages that are not part of a collection. Hence, we

@@ -1,8 +1,5 @@
 import type { ArticlePagePageProps } from "@opengovsg/isomer-components"
-import {
-  resolveTagCategoryType,
-  TAG_CATEGORY_TYPE,
-} from "@opengovsg/isomer-components"
+import { isDateFilter } from "@opengovsg/isomer-components"
 
 import type { CollectionTags } from "../hooks/useCollectionTags"
 
@@ -13,12 +10,13 @@ export function validateRequiredDateFilters(
   tags: CollectionTags,
   dateTagged: ArticlePagePageProps["dateTagged"],
 ) {
-  const unfilledRequiredDateFilters = tags.filter(
-    ({ id, isRequired, type }) =>
-      resolveTagCategoryType(type) === TAG_CATEGORY_TYPE.Date &&
-      isRequired &&
-      !dateTagged?.some((value) => value.id === id && value.date),
-  )
+  const unfilledRequiredDateFilters = tags
+    .filter(isDateFilter)
+    .filter(
+      ({ id, isRequired }) =>
+        isRequired &&
+        !dateTagged?.some((value) => value.id === id && value.date),
+    )
 
   return {
     unfilledRequiredDateFilters,

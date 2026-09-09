@@ -61,3 +61,10 @@ export const DATE_FILTER_STATUS = {
 
 export type DateFilterStatusId =
   (typeof DATE_FILTER_STATUS)[keyof typeof DATE_FILTER_STATUS]["id"]
+
+export const DEFAULT_DATE_FILTER_STATUS_LABELS = Object.fromEntries(
+  Object.values(DATE_FILTER_STATUS).map(({ id, defaultLabel }) => [
+    id,
+    defaultLabel,
+  ]),
+) as Record<DateFilterStatusId, string>

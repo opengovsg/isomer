@@ -10,11 +10,11 @@ const requiredDateFilter: CollectionTags[number] = {
   label: "Event Date",
   type: "date",
   isRequired: true,
-  statusLabels: [
-    { id: "ENDED", label: "Event ended" },
-    { id: "ONGOING", label: "Ongoing" },
-    { id: "UPCOMING", label: "Upcoming" },
-  ],
+  statusLabels: {
+    ENDED: "Event ended",
+    ONGOING: "Ongoing",
+    UPCOMING: "Upcoming",
+  },
 }
 
 const optionalDateFilter: CollectionTags[number] = {
