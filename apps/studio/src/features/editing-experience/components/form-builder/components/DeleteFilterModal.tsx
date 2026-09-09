@@ -38,44 +38,19 @@ interface DeleteFilterModalProps {
 const DELETE_FILTER_UNDO_TEXT =
   "To undo this change, you will need to recreate this filter and assign options to each item individually."
 
-function TextFilterUsageInfobox({
+function FilterUsageInfobox({
   siteId,
   pageId,
-  tagOptionIds,
+  target,
 }: {
   siteId: number
   pageId: number
-  tagOptionIds: string[]
+  target: DeleteFilterModalTarget
 }) {
-  const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
+  const [{ count }] = trpc.collection.countFilterUsage.useSuspenseQuery({
     siteId,
     pageId,
-    tagOptionIds,
-  })
-
-  return (
-    <Text textStyle="body-1" color="base.content.strong">
-      {count > 0
-        ? `It’s being used on ${count === 1 ? "1 item" : `${count} items`}. `
-        : ""}
-      {DELETE_FILTER_UNDO_TEXT}
-    </Text>
-  )
-}
-
-function DateFilterUsageInfobox({
-  siteId,
-  pageId,
-  dateFilterId,
-}: {
-  siteId: number
-  pageId: number
-  dateFilterId: string
-}) {
-  const [{ count }] = trpc.collection.countDateFilterUsage.useSuspenseQuery({
-    siteId,
-    pageId,
-    dateFilterId,
+    ...target,
   })
 
   return (
@@ -131,19 +106,11 @@ export function DeleteFilterModal({
                   </Text>
                 ) : (
                   <Suspense fallback={<Skeleton height="2.5em" width="100%" />}>
-                    {target.type === TAG_CATEGORY_TYPE.Text ? (
-                      <TextFilterUsageInfobox
-                        siteId={siteId}
-                        pageId={pageId}
-                        tagOptionIds={target.tagOptionIds}
-                      />
-                    ) : (
-                      <DateFilterUsageInfobox
-                        siteId={siteId}
-                        pageId={pageId}
-                        dateFilterId={target.dateFilterId}
-                      />
-                    )}
+                    <FilterUsageInfobox
+                      siteId={siteId}
+                      pageId={pageId}
+                      target={target}
+                    />
                   </Suspense>
                 )}
               </ErrorBoundary>

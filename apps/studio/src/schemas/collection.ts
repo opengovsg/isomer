@@ -1,5 +1,6 @@
 import type { LinkRefPageSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
+import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { format, parse } from "date-fns"
 import { z } from "zod"
 
@@ -119,25 +120,29 @@ export const readCollectionSchema = z
 // Arbitrary limit to prevent abuse; adjust if legitimate collections exceed this.
 export const MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT = 100
 
-/** Counts child collection pages/links whose `tagged` includes any of these option ids. */
-export const countTagOptionsUsageSchema = z.object({
+const countFilterUsageBaseSchema = z.object({
   siteId: z.number().min(1),
   pageId: z.number().min(1), // pageId is the collection index page resource id
-  tagOptionIds: z
-    .array(z.string().uuid())
-    .max(MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT, {
-      message: `At most ${MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT} tag options can be queried at once`,
-    }),
 })
 
 /**
- * Counts child collection pages/links that have a `dateTagged` entry
- * for this date filter. Unlike `countTagOptionsUsageSchema`, there's no
- * per-option granularity to query — a date filter's "usage" is simply
- * whether an item has a value for it at all.
+ * Counts child collection pages/links that use the given filter.
+ * Text filters match `tagged` against option ids; date filters match
+ * a `dateTagged` entry for the filter id (no per-option granularity).
  */
-export const countDateFilterUsageSchema = z.object({
-  siteId: z.number().min(1),
-  pageId: z.number().min(1), // pageId is the collection index page resource id
-  dateFilterId: z.string().uuid(),
-})
+export const countFilterUsageSchema = z.discriminatedUnion("type", [
+  countFilterUsageBaseSchema.extend({
+    type: z.literal(TAG_CATEGORY_TYPE.Text),
+    tagOptionIds: z
+      .array(z.string().uuid())
+      .max(MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT, {
+        message: `At most ${MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT} tag options can be queried at once`,
+      }),
+  }),
+  countFilterUsageBaseSchema.extend({
+    type: z.literal(TAG_CATEGORY_TYPE.Date),
+    dateFilterId: z.string().uuid(),
+  }),
+])
+
+export type CountFilterUsageInput = z.infer<typeof countFilterUsageSchema>
