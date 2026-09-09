@@ -24,6 +24,12 @@ zip artifact naming) the tickets settle on.
 
 ## Notes
 
+- **Stacking dependency (confirmed while resolving ticket 04)**: this map's
+  destination code (`maybeSendAuditLogExportBatchEmail`, `batchId`,
+  `batchEmailedAt`) exists only on `origin/fix/batch-audit-logs` (commit
+  `c573c2208`), not on `main`. This map's own branch was cut fresh from
+  `main` (a wayfinder charting artifact, docs-only), but any
+  implementation must branch from `fix/batch-audit-logs` instead.
 - Touches: `apps/studio/src/server/modules/audit/auditLogExport.service.ts`,
   `apps/studio/src/server/modules/audit/auditLogExport.query.ts`,
   `apps/studio/src/features/mail/templates/templates.ts`,
@@ -58,6 +64,7 @@ zip artifact naming) the tickets settle on.
 
 - [Select a streaming Node zip library for batch export assembly](tickets/01-zip-library-research.md): use `archiver` — streams directly into the existing S3 multipart-upload sink, no full-archive buffering.
 - [Confirm Postman.gov.sg attachment support and limits](tickets/02-postman-attachment-research.md): attachments exist but are capped at 2MB/file and need a sending domain Isomer hasn't provisioned — confirmed, stay link-based (zip in S3 behind the existing download-token link).
+- [Design zip assembly, storage, and its interaction with existing CSV reuse](tickets/04-zip-assembly-storage-design.md): recorded as [ADR 0009](../../docs/adr/0009-batch-audit-log-exports-delivered-as-one-zip.md) — extends `maybeSendAuditLogExportBatchEmail` in place with `archiver`, moves the `batchEmailedAt` claim to after send succeeds, new `AuditLogExportBatch` table for zip metadata. Confirmed this whole map stacks on `fix/batch-audit-logs`, not `main`.
 
 ## Not yet specified
 

@@ -2,7 +2,7 @@
 id: 04-zip-assembly-storage-design
 title: Design zip assembly, storage, and its interaction with existing CSV reuse
 label: wayfinder:grilling
-status: in-progress
+status: closed
 assignee: claude
 blocked_by: []  # was [01-zip-library-research, 02-postman-attachment-research], both closed — see their Resolutions
 map: ../MAP.md
@@ -48,3 +48,33 @@ Cover:
 Resolving this unblocks ticket 05 (Download Token flow) and ticket 06
 (failure/retry handling), both of which need the object-key and
 assembly-point decisions made here.
+
+## Resolution
+
+Full design recorded as [ADR 0009](../../../docs/adr/0009-batch-audit-log-exports-delivered-as-one-zip.md).
+
+- Zip assembly extends `maybeSendAuditLogExportBatchEmail` in place
+  (same advisory-lock transaction), using `archiver` (ticket 01) piped
+  into the existing S3 `Upload` sink.
+- The "already emailed" claim (`batchEmailedAt`) moves from before the
+  slow work to after it succeeds — the locked transaction becomes
+  read-only, zip-build/upload/send happen outside it, and the claim is
+  written in a follow-up update only once send succeeds. **This exposes a
+  real gap for ticket 06**: batch email dispatch is only triggered as a
+  side effect of a sibling row going terminal, not on its own cron
+  cadence — once every sibling is terminal, nothing will naturally retry
+  a failed attempt on "the next tick" without a dedicated sweep. Ticket 06
+  must add that sweep, not just assume reprocessing will happen.
+- New `AuditLogExportBatch` table (keyed by `batchId`: `zipObjectKey`,
+  `zipSizeInBytes`, `emailedAt`) instead of redundant columns on every
+  sibling row.
+- S3 key: `audit-log-exports/batch/{batchId}/{reportType}-{rangeSlug}.zip`.
+- `sizeInBytes` read via `HeadObject` post-upload.
+- `uploadAuditLogExport` (`apps/studio/src/lib/s3.ts`) needs a
+  `contentType` param (default `text/csv`) to also accept
+  `application/zip`.
+- Confirmed stacking dependency: this and everything downstream builds on
+  the not-yet-merged batching feature (`batchId`/`batchEmailedAt`/
+  `maybeSendAuditLogExportBatchEmail`), which exists only on
+  `fix/batch-audit-logs`, not `main`. Implementation must branch from
+  there.
