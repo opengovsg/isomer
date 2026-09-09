@@ -2227,6 +2227,419 @@ describe("collection.router", async () => {
     })
   })
 
+  describe("countDateFilterUsage", () => {
+    const DATE_FILTER_ID = "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13"
+
+    async function setupCollectionWithIndexPage() {
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.IndexPage,
+        parentId: collection.id,
+      })
+      return { collection, site, indexPage }
+    }
+
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionWithIndexPage()
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = unauthedCaller.countDateFilterUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        dateFilterId: DATE_FILTER_ID,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionWithIndexPage()
+
+      // Act
+      const result = caller.countDateFilterUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        dateFilterId: DATE_FILTER_ID,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should throw 404 if index page does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.countDateFilterUsage({
+        siteId: site.id,
+        pageId: 99999,
+        dateFilterId: DATE_FILTER_ID,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page not found",
+        }),
+      )
+    })
+
+    it("should throw 404 if indexPageId is not a collection index page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.countDateFilterUsage({
+        siteId: site.id,
+        pageId: Number(page.id),
+        dateFilterId: DATE_FILTER_ID,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page not found",
+        }),
+      )
+    })
+
+    it("should throw 404 when index page belongs to another site", async () => {
+      // Arrange
+      const { site: siteA, indexPage } = await setupCollectionWithIndexPage()
+      const { site: siteB } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: siteA.id })
+      await setupEditorPermissions({ userId: session.userId, siteId: siteB.id })
+
+      // Act
+      const result = caller.countDateFilterUsage({
+        siteId: siteB.id,
+        pageId: Number(indexPage.id),
+        dateFilterId: DATE_FILTER_ID,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page not found",
+        }),
+      )
+    })
+
+    it("should throw 404 when index page has no parent collection", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await db
+        .updateTable("Resource")
+        .set({ parentId: null })
+        .where("id", "=", indexPage.id)
+        .execute()
+
+      // Act
+      const result = caller.countDateFilterUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        dateFilterId: DATE_FILTER_ID,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page has no parent collection",
+        }),
+      )
+    })
+
+    it("should throw 404 when the index page's parent is not a collection", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.countDateFilterUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        dateFilterId: DATE_FILTER_ID,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection not found",
+        }),
+      )
+    })
+
+    it("should return 0 when there are no child items", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.countDateFilterUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        dateFilterId: DATE_FILTER_ID,
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 0 })
+    })
+
+    it("should return 0 when no item references the date filter", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupCollectionPage({
+        siteId: site.id,
+        parentId: collection.id,
+        permalink: "page-a",
+      })
+
+      // Act
+      const result = await caller.countDateFilterUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        dateFilterId: DATE_FILTER_ID,
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 0 })
+    })
+
+    it("should return 1 when a collection page draft blob has a dateTagged entry for the filter", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupCollectionPage({
+        siteId: site.id,
+        parentId: collection.id,
+        permalink: "date-tagged-page",
+        dateTagged: [{ id: DATE_FILTER_ID, date: "2026-01-01" }],
+      })
+
+      // Act
+      const result = await caller.countDateFilterUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        dateFilterId: DATE_FILTER_ID,
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 1 })
+    })
+
+    it("should return 1 when only the published blob has a dateTagged entry for the filter", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        permalink: "pub-only",
+      })
+
+      const draftContent = collectionPageBlobContent()
+      const publishedContent = collectionPageBlobContent(undefined, [
+        { id: DATE_FILTER_ID, date: "2026-01-01" },
+      ])
+
+      const draftBlob = await db
+        .insertInto("Blob")
+        .values({ content: jsonb(draftContent) })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      const publishedBlob = await db
+        .insertInto("Blob")
+        .values({ content: jsonb(publishedContent) })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      const version = await db
+        .insertInto("Version")
+        .values({
+          versionNum: 1,
+          resourceId: page.id,
+          blobId: publishedBlob.id,
+          publishedBy: session.userId!,
+        })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+
+      await db
+        .updateTable("Resource")
+        .set({
+          draftBlobId: draftBlob.id,
+          publishedVersionId: version.id,
+        })
+        .where("id", "=", page.id)
+        .execute()
+
+      // Act
+      const result = await caller.countDateFilterUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        dateFilterId: DATE_FILTER_ID,
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 1 })
+    })
+
+    it("should count a resource once when both draft and published have a dateTagged entry for the filter", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        permalink: "both-blobs",
+      })
+
+      const dateTaggedBlob = collectionPageBlobContent(undefined, [
+        { id: DATE_FILTER_ID, date: "2026-01-01" },
+      ])
+      const draftBlob = await db
+        .insertInto("Blob")
+        .values({ content: jsonb(dateTaggedBlob) })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      const publishedBlob = await db
+        .insertInto("Blob")
+        .values({ content: jsonb(dateTaggedBlob) })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      const version = await db
+        .insertInto("Version")
+        .values({
+          versionNum: 1,
+          resourceId: page.id,
+          blobId: publishedBlob.id,
+          publishedBy: session.userId!,
+        })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+
+      await db
+        .updateTable("Resource")
+        .set({
+          draftBlobId: draftBlob.id,
+          publishedVersionId: version.id,
+        })
+        .where("id", "=", page.id)
+        .execute()
+
+      // Act
+      const result = await caller.countDateFilterUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        dateFilterId: DATE_FILTER_ID,
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 1 })
+    })
+
+    it("should return 2 when two child items reference the date filter", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      const { blob: blobA } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        permalink: "page-1",
+      })
+      const { blob: blobB } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionLink,
+        parentId: collection.id,
+        permalink: "page-2",
+      })
+
+      const dateTaggedBlob = collectionPageBlobContent(undefined, [
+        { id: DATE_FILTER_ID, date: "2026-01-01" },
+      ])
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(dateTaggedBlob) })
+        .where("id", "=", blobA.id)
+        .execute()
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(dateTaggedBlob) })
+        .where("id", "=", blobB.id)
+        .execute()
+
+      // Act
+      const result = await caller.countDateFilterUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        dateFilterId: DATE_FILTER_ID,
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 2 })
+    })
+
+    it("should return 1 when a dateTagged entry has an endDate (range) for the filter", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupCollectionPage({
+        siteId: site.id,
+        parentId: collection.id,
+        permalink: "range-page",
+        dateTagged: [
+          { id: DATE_FILTER_ID, date: "2026-01-01", endDate: "2026-01-05" },
+        ],
+      })
+
+      // Act
+      const result = await caller.countDateFilterUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        dateFilterId: DATE_FILTER_ID,
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 1 })
+    })
+  })
+
   describe("getCollectionTags", () => {
     const TAG_CATEGORY_ID = "f47ac10b-58cc-4372-a567-0e02b2c3d479"
     const TAG_OPTION_ID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"

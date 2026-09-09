@@ -21,11 +21,15 @@ import { ErrorBoundary } from "react-error-boundary"
 import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "~/schemas/collection"
 import { trpc } from "~/utils/trpc"
 
+type DeleteFilterModalTarget =
+  | { type: "text"; tagOptionIds: string[] }
+  | { type: "date"; dateFilterId: string }
+
 interface DeleteFilterModalProps {
   isOpen: boolean
   siteId: number
   pageId: number
-  tagOptionIds: string[]
+  target: DeleteFilterModalTarget
   onClose: () => void
   onConfirm: () => void
 }
@@ -33,7 +37,7 @@ interface DeleteFilterModalProps {
 const DELETE_FILTER_UNDO_TEXT =
   "To undo this change, you will need to recreate this filter and assign options to each item individually."
 
-function FilterUsageInfobox({
+function TextFilterUsageInfobox({
   siteId,
   pageId,
   tagOptionIds,
@@ -58,11 +62,36 @@ function FilterUsageInfobox({
   )
 }
 
+function DateFilterUsageInfobox({
+  siteId,
+  pageId,
+  dateFilterId,
+}: {
+  siteId: number
+  pageId: number
+  dateFilterId: string
+}) {
+  const [{ count }] = trpc.collection.countDateFilterUsage.useSuspenseQuery({
+    siteId,
+    pageId,
+    dateFilterId,
+  })
+
+  return (
+    <Text textStyle="body-1" color="base.content.strong">
+      {count > 0
+        ? `It’s being used on ${count === 1 ? "1 item" : `${count} items`}. `
+        : ""}
+      {DELETE_FILTER_UNDO_TEXT}
+    </Text>
+  )
+}
+
 export function DeleteFilterModal({
   isOpen,
   siteId,
   pageId,
-  tagOptionIds,
+  target,
   onClose,
   onConfirm,
 }: DeleteFilterModalProps) {
@@ -92,18 +121,28 @@ export function DeleteFilterModal({
                 request/SQL cost at that scale. Skip the query entirely and say so, rather
                 than sending a request we know will fail or truncating to a misleading
                 capped number like "999+". */}
-                {tagOptionIds.length > MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT ? (
+                {target.type === "text" &&
+                target.tagOptionIds.length >
+                  MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT ? (
                   <Text textStyle="body-1" color="base.content.strong">
                     It’s being used on a large number of results.{" "}
                     {DELETE_FILTER_UNDO_TEXT}
                   </Text>
                 ) : (
                   <Suspense fallback={<Skeleton height="2.5em" width="100%" />}>
-                    <FilterUsageInfobox
-                      siteId={siteId}
-                      pageId={pageId}
-                      tagOptionIds={tagOptionIds}
-                    />
+                    {target.type === "text" ? (
+                      <TextFilterUsageInfobox
+                        siteId={siteId}
+                        pageId={pageId}
+                        tagOptionIds={target.tagOptionIds}
+                      />
+                    ) : (
+                      <DateFilterUsageInfobox
+                        siteId={siteId}
+                        pageId={pageId}
+                        dateFilterId={target.dateFilterId}
+                      />
+                    )}
                   </Suspense>
                 )}
               </ErrorBoundary>

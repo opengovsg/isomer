@@ -1,7 +1,11 @@
 import type { DelayMode } from "msw"
 import type { getPageById } from "~/server/modules/resource/resource.service"
 import type { RouterOutput } from "~/utils/trpc"
-import { DEFAULT_TAG_CATEGORY_DISPLAY } from "@opengovsg/isomer-components"
+import {
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  DEFAULT_TAG_CATEGORY_DISPLAY,
+  TAG_CATEGORY_TYPE,
+} from "@opengovsg/isomer-components"
 import { delay } from "msw"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -245,6 +249,19 @@ export const pageHandlers = {
                 id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
               },
             ],
+          },
+        ]
+      })
+    },
+    withDateFilter: () => {
+      return trpcMsw.collection.getCollectionTags.query(() => {
+        return [
+          {
+            label: "Event date",
+            id: "f47ac10b-58cc-4372-a567-0e02b2c3d480",
+            type: TAG_CATEGORY_TYPE.Date,
+            isRequired: true,
+            statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
           },
         ]
       })

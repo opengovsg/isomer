@@ -3,6 +3,12 @@ export const JSON_FORMS_RANKING = {
   ArrayControl: 4,
   TagCategoryControl: 5,
   TagCategoryOptionsControl: 5,
+  DateFilterStatusLabelsControl: 5,
+  DateFilterValuesControl: 4,
+  // NOTE: needs to have higher priority than OneOfControl (bypasses the
+  // generic oneOf "Variant" picker for tagCategories items — see
+  // JsonFormsTagCategoryItemControl)
+  TagCategoryItemControl: 5,
   TaggedControl: 4,
   BooleanControl: 2,
   ConstControl: 2,
