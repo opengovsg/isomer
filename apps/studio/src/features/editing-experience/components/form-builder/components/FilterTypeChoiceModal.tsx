@@ -17,7 +17,9 @@ import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
 import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { useState } from "react"
 import { BiCalendar, BiFont } from "react-icons/bi"
-import { DateFilter, TextFilter } from "~/components/Svg"
+
+import { DateFilter } from "./DateFilter"
+import { TextFilter } from "./TextFilter"
 
 export type FilterType = TagCategoryType
 

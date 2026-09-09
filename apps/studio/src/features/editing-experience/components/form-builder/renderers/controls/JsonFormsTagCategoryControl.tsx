@@ -1,6 +1,6 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
-import { Box, HStack, Text, VStack } from "@chakra-ui/react"
+import { Box, HStack, Text, useDisclosure, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
@@ -9,7 +9,7 @@ import {
   isTextFilter,
   TAG_CATEGORY_TYPE,
 } from "@opengovsg/isomer-components"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { BiCalendar, BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
@@ -55,7 +55,11 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const { pageId, siteId } = useQueryParse(pageSchema)
   const page = core?.data as CollectionPagePageProps | undefined
   const { duplicate: duplicateFilterIndices } = useLiveLabelIssues({ path })
-  const [isTypeChoiceModalOpen, setIsTypeChoiceModalOpen] = useState(false)
+  const {
+    isOpen: isTypeChoiceModalOpen,
+    onOpen: onTypeChoiceModalOpen,
+    onClose: onTypeChoiceModalClose,
+  } = useDisclosure()
   const isDateFiltersEnabled = useDateFiltersEnabled()
 
   const arrayResult = useArray({
@@ -126,7 +130,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
         : createDefaultTagCategory(),
     )()
     setSelectedIndex(newIndex)
-    setIsTypeChoiceModalOpen(false)
+    onTypeChoiceModalClose()
   }
 
   return (
@@ -140,7 +144,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
             <AddItemButton
               onClick={() =>
                 isDateFiltersEnabled
-                  ? setIsTypeChoiceModalOpen(true)
+                  ? onTypeChoiceModalOpen()
                   : handleAddFilter(TAG_CATEGORY_TYPE.Text)
               }
               isDisabled={isAddItemDisabled}
@@ -274,7 +278,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
       )}
       <FilterTypeChoiceModal
         isOpen={isTypeChoiceModalOpen}
-        onClose={() => setIsTypeChoiceModalOpen(false)}
+        onClose={onTypeChoiceModalClose}
         onSelect={handleAddFilter}
         isDateFilterEnabled={isDateFiltersEnabled}
       />
