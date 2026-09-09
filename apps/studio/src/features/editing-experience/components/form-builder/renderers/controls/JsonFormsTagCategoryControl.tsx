@@ -223,12 +223,10 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                                   enabled={enabled}
                                   removeItem={handleRemoveSelectedItem}
                                   // NOTE: `schema` here is the oneOf-wrapped
-                                  // TagCategorySchema (see
-                                  // JsonFormsTagCategoryItemControl) — it has
-                                  // no top-level `properties`, so JSONForms'
-                                  // default "first primitive property"
-                                  // fallback can't find a label to show
-                                  // without this explicit hint.
+                                  // TagCategorySchema — it has no top-level
+                                  // `properties`, so JSONForms' default "first
+                                  // primitive property" fallback can't find a
+                                  // label to show without this explicit hint.
                                   childLabelProp="label"
                                 />
                                 <DraggableTagButton.Subtitle>

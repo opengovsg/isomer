@@ -117,10 +117,6 @@ export {
   jsonFormsDateFilterValuesControlTester,
 } from "./JsonFormsDateFilterValuesControl"
 export {
-  default as JsonFormsTagCategoryItemControl,
-  jsonFormsTagCategoryItemControlTester,
-} from "./JsonFormsTagCategoryItemControl"
-export {
   default as JsonFormsNavbarControl,
   jsonFormsNavbarControlTester,
 } from "./JsonFormsNavbarControl"

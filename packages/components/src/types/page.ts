@@ -3,6 +3,7 @@ import { Type } from "@sinclair/typebox"
 import {
   AltTextSchema,
   ARRAY_RADIO_FORMAT,
+  TAG_CATEGORY_ITEM_FORMAT,
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
   generateImageSrcSchema,
@@ -190,12 +191,13 @@ export const isTextFilter = (
 ): category is TextFilterSchemaType => category.type !== TAG_CATEGORY_TYPE.Date
 
 // oneOf, not a flat object with every field optional. Order: text=0, date=1.
-// format "tag-category-item" routes to JsonFormsTagCategoryItemControl.
+// TAG_CATEGORY_ITEM_FORMAT tells JsonFormsCombinatorControl to skip the Variant
+// picker — type is chosen at creation, not switched here.
 const TagCategorySchema = Type.Unsafe<
   Static<typeof TextFilterSchema> | Static<typeof DateFilterSchema>
 >({
   oneOf: [TextFilterSchema, DateFilterSchema],
-  format: "tag-category-item",
+  format: TAG_CATEGORY_ITEM_FORMAT,
 })
 // NOTE: can be optional because the categories might not exist
 const TagCategoriesSchema = Type.Object({
