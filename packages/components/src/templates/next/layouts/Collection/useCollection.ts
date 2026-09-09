@@ -9,7 +9,7 @@ import { isAppliedFilters } from "../../types/Filter"
 import {
   getFilteredItems,
   getPaginatedItems,
-  updateAppliedFilters,
+  toggleAppliedFilterItem,
 } from "./utils"
 
 export const ITEMS_PER_PAGE = 10
@@ -73,7 +73,12 @@ export const useCollection = ({
 
   const handleFilterToggle = useCallback(
     (id: string, itemId: string) => {
-      return updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
+      return toggleAppliedFilterItem({
+        appliedFilters,
+        setAppliedFilters,
+        filterId: id,
+        itemId,
+      })
     },
     [appliedFilters, setAppliedFilters],
   )

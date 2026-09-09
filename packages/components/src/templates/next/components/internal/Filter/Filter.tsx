@@ -6,7 +6,7 @@ import { mergeProps } from "@react-aria/utils"
 import { useRef, useState } from "react"
 import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
-import { updateAppliedFilters } from "~/templates/next/layouts/Collection/utils"
+import { updateAppliedFilterDateRange } from "~/templates/next/layouts/Collection/utils"
 import { TAG_CATEGORY_TYPE } from "~/types/constants"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 
@@ -136,12 +136,12 @@ export const Filter = ({
                     appliedFilters.find((filter) => filter.id === id)?.dateRange
                   }
                   onDateRangeChange={(dateRange) =>
-                    updateAppliedFilters(
+                    updateAppliedFilterDateRange({
                       appliedFilters,
                       setAppliedFilters,
-                      id,
+                      filterId: id,
                       dateRange,
-                    )
+                    })
                   }
                 />
               ) : (
