@@ -138,31 +138,26 @@ const DateFilterSchema = Type.Object(
     ...tagCategoryIsRequiredSchemaObject,
     // Always "date" on new filters. Keeps oneOf exclusive with TextFilterSchema.
     type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
-    // Optional for backward compatibility. Missing/`undefined` must be read as
-    // `DEFAULT_DATE_FILTER_STATUS_LABELS` at render time. Per-field schema
-    // `default`s are safe here: date filters are new-only (no legacy rows).
-    statusLabels: Type.Optional(
-      Type.Object(
-        {
-          ENDED: createDateFilterStatusLabelSchema({
-            defaultValue:
-              DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Ended],
-          }),
-          ONGOING: createDateFilterStatusLabelSchema({
-            defaultValue:
-              DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Ongoing],
-          }),
-          UPCOMING: createDateFilterStatusLabelSchema({
-            defaultValue:
-              DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Upcoming],
-          }),
-        },
-        {
-          title: "Custom labels",
-          description: "If you don't want to show a label, leave fields empty.",
-          format: "date-filter-status-labels",
-        },
-      ),
+    statusLabels: Type.Object(
+      {
+        ENDED: createDateFilterStatusLabelSchema({
+          defaultValue:
+            DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Ended],
+        }),
+        ONGOING: createDateFilterStatusLabelSchema({
+          defaultValue:
+            DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Ongoing],
+        }),
+        UPCOMING: createDateFilterStatusLabelSchema({
+          defaultValue:
+            DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Upcoming],
+        }),
+      },
+      {
+        title: "Custom labels",
+        description: "If you don't want to show a label, leave fields empty.",
+        format: "date-filter-status-labels",
+      },
     ),
   },
   { title: "Date filter" },
