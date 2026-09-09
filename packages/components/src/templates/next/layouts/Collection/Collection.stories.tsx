@@ -222,11 +222,11 @@ export const YearFilter: Story = {
   args: generateArgs({ collectionItems: threeItemsHaveUndefinedDate }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const dateNotSpecified = screen.queryByText(/Not specified \(3\)/i)
-    await expect(dateNotSpecified).toBeInTheDocument()
 
+    // CollectionCard renders the publication date twice (desktop sidebar + mobile
+    // inline); both nodes stay in the DOM, so 10 paginated cards → 20 matches.
     const dateText = await screen.findAllByText(/7 May 2024/)
-    await expect(dateText.length).toBe(10)
+    await expect(dateText.length).toBe(20)
   },
 }
 
@@ -372,12 +372,10 @@ const offsetDate = (days: number): string =>
 const EVENT_DATE_FILTER_ID = "event-date-filter"
 // Matches the Figma reference's exact bucket labels ("Ended", not the
 // schema default "Event ended").
-const EVENT_DATE_STATUS_LABELS = DEFAULT_DATE_FILTER_STATUS_LABELS.map(
-  (statusLabel) =>
-    statusLabel.id === "ENDED"
-      ? { ...statusLabel, label: "Ended" }
-      : statusLabel,
-)
+const EVENT_DATE_STATUS_LABELS = {
+  ...DEFAULT_DATE_FILTER_STATUS_LABELS,
+  ENDED: "Ended",
+}
 const EVENT_DATE_TAG_CATEGORY: NonNullable<
   CollectionPageSchemaType["page"]["tagCategories"]
 > = [

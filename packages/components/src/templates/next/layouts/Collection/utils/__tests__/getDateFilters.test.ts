@@ -1,7 +1,11 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
-import { DEFAULT_DATE_RANGE_FILTER_LABEL } from "~/types/constants"
+import {
+  DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY,
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  TAG_CATEGORY_TYPE,
+} from "~/types/constants"
 
 import { getDateFilters } from "../getDateFilters"
 
@@ -14,12 +18,8 @@ const tagCategories: NonNullable<
   {
     id: EVENT_DATE_FILTER_ID,
     label: "Event Date",
-    type: "date",
-    statusLabels: [
-      { id: "ENDED", label: "Event ended" },
-      { id: "ONGOING", label: "Ongoing" },
-      { id: "UPCOMING", label: "Upcoming" },
-    ],
+    type: TAG_CATEGORY_TYPE.Date,
+    statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
   },
 ]
 
@@ -37,7 +37,6 @@ describe("getDateFilters", () => {
   })
 
   it("counts items into their computed status bucket, dropping empty buckets", () => {
-    // Arrange
     const items: ProcessedCollectionCardProps[] = [
       {
         dateTagged: [
@@ -68,16 +67,18 @@ describe("getDateFilters", () => {
       } as ProcessedCollectionCardProps,
     ]
 
-    // Act
     const result = getDateFilters(items, tagCategories, TODAY)
 
-    // Assert — no ENDED bucket since count is 0, order follows statusLabels
     expect(result).toEqual([
       {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
-        type: "date",
-        dateRangeFilterLabel: DEFAULT_DATE_RANGE_FILTER_LABEL,
+        type: TAG_CATEGORY_TYPE.Date,
+        showStatusLabelsFilter:
+          DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabelsFilter,
+        showDateRangeFilter:
+          DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRangeFilter,
+        dateTaggedItemCount: 3,
         items: [
           { id: "ONGOING", label: "Ongoing", count: 2 },
           { id: "UPCOMING", label: "Upcoming", count: 1 },
@@ -95,8 +96,12 @@ describe("getDateFilters", () => {
       {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
-        type: "date",
-        dateRangeFilterLabel: DEFAULT_DATE_RANGE_FILTER_LABEL,
+        type: TAG_CATEGORY_TYPE.Date,
+        showStatusLabelsFilter:
+          DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabelsFilter,
+        showDateRangeFilter:
+          DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRangeFilter,
+        dateTaggedItemCount: 0,
         items: [],
       },
     ])
@@ -109,12 +114,11 @@ describe("getDateFilters", () => {
       {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
-        type: "date",
-        statusLabels: [
-          { id: "ENDED", label: "" },
-          { id: "ONGOING", label: "Ongoing" },
-          { id: "UPCOMING", label: "Upcoming" },
-        ],
+        type: TAG_CATEGORY_TYPE.Date,
+        statusLabels: {
+          ...DEFAULT_DATE_FILTER_STATUS_LABELS,
+          ENDED: "",
+        },
       },
     ]
     const items: ProcessedCollectionCardProps[] = [
@@ -133,36 +137,12 @@ describe("getDateFilters", () => {
       {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
-        type: "date",
-        dateRangeFilterLabel: DEFAULT_DATE_RANGE_FILTER_LABEL,
-        items: [],
-      },
-    ])
-  })
-
-  it("uses the configured date range label when provided", () => {
-    const categories: NonNullable<
-      CollectionPageSchemaType["page"]["tagCategories"]
-    > = [
-      {
-        id: EVENT_DATE_FILTER_ID,
-        label: "Event Date",
-        type: "date",
-        statusLabels: [
-          { id: "ENDED", label: "Event ended" },
-          { id: "ONGOING", label: "Ongoing" },
-          { id: "UPCOMING", label: "Upcoming" },
-        ],
-        dateRangeFilterLabel: "Pick a custom date",
-      },
-    ]
-
-    expect(getDateFilters([], categories, TODAY)).toEqual([
-      {
-        id: EVENT_DATE_FILTER_ID,
-        label: "Event Date",
-        type: "date",
-        dateRangeFilterLabel: "Pick a custom date",
+        type: TAG_CATEGORY_TYPE.Date,
+        showStatusLabelsFilter:
+          DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabelsFilter,
+        showDateRangeFilter:
+          DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRangeFilter,
+        dateTaggedItemCount: 1,
         items: [],
       },
     ])

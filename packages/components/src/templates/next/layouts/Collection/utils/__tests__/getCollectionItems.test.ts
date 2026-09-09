@@ -427,11 +427,11 @@ describe("getCollectionItems", () => {
         label: "Event Date",
         id: "date-1",
         type: "date",
-        statusLabels: [
-          { id: "ENDED", label: "Ended" },
-          { id: "ONGOING", label: "Ongoing" },
-          { id: "UPCOMING", label: "Upcoming" },
-        ],
+        statusLabels: {
+          ENDED: "Ended",
+          ONGOING: "Ongoing",
+          UPCOMING: "Upcoming",
+        },
       },
       {
         label: "Category",

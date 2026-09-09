@@ -4,6 +4,7 @@ import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { Skeleton } from "../Skeleton"
 import { CollectionClient } from "./CollectionClient"
 import {
+  getAvailableFilters,
   getCollectionItems,
   processCollectionItems,
   shouldShowDate,
@@ -35,6 +36,7 @@ export const CollectionLayout = ({
     showThumbnail,
   })
   const processedItems = processCollectionItems(items)
+  const filters = getAvailableFilters(processedItems, tagCategories)
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
@@ -46,6 +48,7 @@ export const CollectionLayout = ({
         page={page}
         breadcrumb={breadcrumb}
         items={processedItems}
+        filters={filters}
         shouldShowDate={shouldShowDate(processedItems)}
         siteAssetsBaseUrl={site.assetsBaseUrl}
       />
