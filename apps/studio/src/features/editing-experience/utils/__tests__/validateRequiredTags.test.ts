@@ -1,3 +1,5 @@
+import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
+
 import type { CollectionTags } from "../../hooks/useCollectionTags"
 import { validateRequiredTags } from "../validateRequiredTags"
 
@@ -124,7 +126,7 @@ describe("validateRequiredTags", () => {
     const requiredDateFilter: CollectionTags[number] = {
       id: "e92f065f-0dhh-98c7-f0bc-5j57g7h8i924",
       label: "Event Date",
-      type: "date",
+      type: TAG_CATEGORY_TYPE.Date,
       isRequired: true,
       statusLabels: {
         ENDED: "Event ended",

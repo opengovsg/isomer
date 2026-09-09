@@ -1,14 +1,14 @@
 import { ThemeProvider } from "@opengovsg/design-system-react"
+import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { render } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "~/schemas/collection"
 import { theme } from "~/theme"
 
-import { DeleteFilterModal } from "../DeleteFilterModal"
-
-type DeleteFilterModalTarget =
-  | { type: "text"; tagOptionIds: string[] }
-  | { type: "date"; dateFilterId: string }
+import {
+  DeleteFilterModal,
+  type DeleteFilterModalTarget,
+} from "../DeleteFilterModal"
 
 const countTagOptionsUsage = vi.fn()
 const countDateFilterUsage = vi.fn()
@@ -51,7 +51,10 @@ describe("DeleteFilterModal", () => {
   it("queries countTagOptionsUsage (not countDateFilterUsage) for a text filter target", () => {
     countTagOptionsUsage.mockReturnValue([{ count: 3 }])
 
-    renderModal({ type: "text", tagOptionIds: ["opt-1"] })
+    renderModal({
+      type: TAG_CATEGORY_TYPE.Text,
+      tagOptionIds: ["opt-1"],
+    })
 
     expect(document.body.textContent).toContain("3 items")
     expect(countTagOptionsUsage).toHaveBeenCalledExactlyOnceWith({
@@ -65,7 +68,10 @@ describe("DeleteFilterModal", () => {
   it("queries countDateFilterUsage (not countTagOptionsUsage) for a date filter target", () => {
     countDateFilterUsage.mockReturnValue([{ count: 2 }])
 
-    renderModal({ type: "date", dateFilterId: "date-1" })
+    renderModal({
+      type: TAG_CATEGORY_TYPE.Date,
+      dateFilterId: "date-1",
+    })
 
     expect(document.body.textContent).toContain("2 items")
     expect(countDateFilterUsage).toHaveBeenCalledExactlyOnceWith({
@@ -82,7 +88,7 @@ describe("DeleteFilterModal", () => {
       (_, i) => `opt-${i}`,
     )
 
-    renderModal({ type: "text", tagOptionIds })
+    renderModal({ type: TAG_CATEGORY_TYPE.Text, tagOptionIds })
 
     expect(document.body.textContent).toContain(
       "It’s being used on a large number of results.",

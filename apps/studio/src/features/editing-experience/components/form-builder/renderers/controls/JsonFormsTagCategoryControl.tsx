@@ -4,7 +4,11 @@ import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { isDateFilter, isTextFilter } from "@opengovsg/isomer-components"
+import {
+  isDateFilter,
+  isTextFilter,
+  TAG_CATEGORY_TYPE,
+} from "@opengovsg/isomer-components"
 import { useMemo, useState } from "react"
 import { BiCalendar, BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -14,7 +18,10 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 
 import type { FilterType } from "../../components/FilterTypeChoiceModal"
 import { AddItemButton } from "../../components/AddItemButton"
-import { DeleteFilterModal } from "../../components/DeleteFilterModal"
+import {
+  DeleteFilterModal,
+  type DeleteFilterModalTarget,
+} from "../../components/DeleteFilterModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { EmptyCategory } from "../../components/EmptyCategory"
 import { FilterTypeChoiceModal } from "../../components/FilterTypeChoiceModal"
@@ -87,18 +94,20 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   })
 
   const deleteFilterModalTarget = useMemo(():
-    | { type: "text"; tagOptionIds: string[] }
-    | { type: "date"; dateFilterId: string }
+    | DeleteFilterModalTarget
     | undefined => {
     if (!deleteTarget) return undefined
 
     const tagCategory = page?.tagCategories?.[deleteTarget.index]
     if (tagCategory && isDateFilter(tagCategory)) {
-      return { type: "date", dateFilterId: tagCategory.id }
+      return {
+        type: TAG_CATEGORY_TYPE.Date,
+        dateFilterId: tagCategory.id,
+      }
     }
 
     return {
-      type: "text",
+      type: TAG_CATEGORY_TYPE.Text,
       tagOptionIds:
         tagCategory && isTextFilter(tagCategory)
           ? tagCategory.options
@@ -112,7 +121,9 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     const newIndex = data
     addItem(
       path,
-      type === "date" ? createDefaultDateFilter() : createDefaultTagCategory(),
+      type === TAG_CATEGORY_TYPE.Date
+        ? createDefaultDateFilter()
+        : createDefaultTagCategory(),
     )()
     setSelectedIndex(newIndex)
     setIsTypeChoiceModalOpen(false)
@@ -130,7 +141,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               onClick={() =>
                 isDateFiltersEnabled
                   ? setIsTypeChoiceModalOpen(true)
-                  : handleAddFilter("text")
+                  : handleAddFilter(TAG_CATEGORY_TYPE.Text)
               }
               isDisabled={isAddItemDisabled}
             >

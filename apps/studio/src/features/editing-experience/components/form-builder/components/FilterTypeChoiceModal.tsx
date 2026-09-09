@@ -1,3 +1,4 @@
+import type { TagCategoryType } from "@opengovsg/isomer-components"
 import {
   Box,
   Button,
@@ -12,10 +13,11 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { ModalCloseButton } from "@opengovsg/design-system-react"
+import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { useState } from "react"
 import { BiCalendar, BiPurchaseTag } from "react-icons/bi"
 
-export type FilterType = "text" | "date"
+export type FilterType = TagCategoryType
 
 interface FilterTypeChoiceModalProps {
   isOpen: boolean
@@ -85,16 +87,18 @@ export function FilterTypeChoiceModal({
   onSelect,
   isDateFilterEnabled = true,
 }: FilterTypeChoiceModalProps) {
-  const [selectedType, setSelectedType] = useState<FilterType>("text")
+  const [selectedType, setSelectedType] = useState<FilterType>(
+    TAG_CATEGORY_TYPE.Text,
+  )
 
   const handleClose = () => {
-    setSelectedType("text")
+    setSelectedType(TAG_CATEGORY_TYPE.Text)
     onClose()
   }
 
   const handleAddFilter = () => {
     onSelect(selectedType)
-    setSelectedType("text")
+    setSelectedType(TAG_CATEGORY_TYPE.Text)
   }
 
   return (
@@ -109,15 +113,15 @@ export function FilterTypeChoiceModal({
               icon={BiPurchaseTag}
               label="Text filter"
               description="Let visitors filter by a list of options you define, e.g. topics or categories."
-              isSelected={selectedType === "text"}
-              onSelect={() => setSelectedType("text")}
+              isSelected={selectedType === TAG_CATEGORY_TYPE.Text}
+              onSelect={() => setSelectedType(TAG_CATEGORY_TYPE.Text)}
             />
             <FilterTypeCard
               icon={BiCalendar}
               label="Date filter"
               description="Let visitors filter by whether an item is upcoming, ongoing, or has ended — computed automatically from dates you enter on each item."
-              isSelected={selectedType === "date"}
-              onSelect={() => setSelectedType("date")}
+              isSelected={selectedType === TAG_CATEGORY_TYPE.Date}
+              onSelect={() => setSelectedType(TAG_CATEGORY_TYPE.Date)}
               isDisabled={!isDateFilterEnabled}
             />
           </HStack>
@@ -126,7 +130,9 @@ export function FilterTypeChoiceModal({
           <Button
             colorScheme="primary"
             onClick={handleAddFilter}
-            isDisabled={selectedType === "date" && !isDateFilterEnabled}
+            isDisabled={
+              selectedType === TAG_CATEGORY_TYPE.Date && !isDateFilterEnabled
+            }
           >
             Add filter
           </Button>
