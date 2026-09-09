@@ -69,6 +69,7 @@ function FilterTypeCard({
       cursor="pointer"
       overflow="hidden"
       p={0}
+      aria-pressed={isSelected}
       _hover={
         isSelected
           ? {
