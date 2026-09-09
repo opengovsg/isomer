@@ -5,6 +5,7 @@ import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
   FormErrorMessage,
   FormLabel,
+  Infobox,
   SingleSelect,
 } from "@opengovsg/design-system-react"
 import {
@@ -35,27 +36,41 @@ function JsonFormsCollectionSortOrderControl({
   handleChange,
 }: ControlProps): JSX.Element {
   const { siteId, pageId } = useQueryParse(pageSchema)
-  const { data: tagCategories = [], isLoading } = useCollectionTags({
+  const {
+    data: tagCategories,
+    isLoading,
+    isSuccess,
+    isError,
+  } = useCollectionTags({
     resourceId: pageId,
     siteId,
   })
-  const resolvedValue = resolveCollectionSortOrder(
-    typeof data === "string" ? data : undefined,
-    tagCategories,
-  )
+  const sortOrder = typeof data === "string" ? data : undefined
+  const resolvedValue = isSuccess
+    ? resolveCollectionSortOrder(sortOrder, tagCategories)
+    : (sortOrder ?? "date-desc")
 
   useEffect(() => {
-    if (isLoading) {
+    if (!isSuccess) {
       return
     }
 
     if (resolvedValue !== data) {
       handleChange(path, resolvedValue)
     }
-  }, [data, handleChange, isLoading, path, resolvedValue])
+  }, [data, handleChange, isSuccess, path, resolvedValue])
 
   if (isLoading) {
     return <Skeleton />
+  }
+
+  if (isError) {
+    return (
+      <Infobox variant="warning" size="sm">
+        We couldn&apos;t load collection filters, so sort options are
+        unavailable. Refresh the page to try again.
+      </Infobox>
+    )
   }
 
   return (
@@ -66,7 +81,7 @@ function JsonFormsCollectionSortOrderControl({
         <SingleSelect
           value={resolvedValue}
           name={label}
-          items={getCollectionSortOptions(tagCategories)}
+          items={getCollectionSortOptions(tagCategories ?? [])}
           isClearable={false}
           isDisabled={!enabled}
           onChange={(value) => {
