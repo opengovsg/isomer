@@ -19,12 +19,6 @@ minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   # If there is a CVE, exclude it here so we can update it immediately without waiting for the minimum release age to pass.
   - "@opengovsg/*"
-  - fast-uri@3.1.6
-  - browserslist@4.28.7
-  - baseline-browser-mapping@2.11.0
-  - joi@18.2.5
-  - qs@6.16.0
-  - next@16.3.3
 
 publicHoistPattern:
   - "*eslint-plugin*"
