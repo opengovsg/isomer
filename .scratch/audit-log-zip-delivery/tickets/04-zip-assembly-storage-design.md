@@ -4,7 +4,7 @@ title: Design zip assembly, storage, and its interaction with existing CSV reuse
 label: wayfinder:grilling
 status: open
 assignee: null
-blocked_by: [01-zip-library-research, 02-postman-attachment-research]
+blocked_by: []  # was [01-zip-library-research, 02-postman-attachment-research], both closed — see their Resolutions
 map: ../MAP.md
 ---
 

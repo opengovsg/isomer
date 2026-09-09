@@ -56,7 +56,8 @@ zip artifact naming) the tickets settle on.
 
 ## Decisions so far
 
-_(none yet — no tickets closed)_
+- [Select a streaming Node zip library for batch export assembly](tickets/01-zip-library-research.md): use `archiver` — streams directly into the existing S3 multipart-upload sink, no full-archive buffering.
+- [Confirm Postman.gov.sg attachment support and limits](tickets/02-postman-attachment-research.md): attachments exist but are capped at 2MB/file and need a sending domain Isomer hasn't provisioned — confirmed, stay link-based (zip in S3 behind the existing download-token link).
 
 ## Not yet specified
 
