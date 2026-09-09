@@ -212,9 +212,10 @@ describe("auditLogExport processor", () => {
     // Act
     await processPendingAuditLogExports()
 
-    // Assert: the S3 key renders the half-open range [2024-03-01,2024-04-01)
-    // with an inclusive end — `2024-03-01-to-2024-03-31`.
-    const expectedKey = `audit-log-exports/${site.id}/${request.id}/access-2024-03-01-to-2024-03-31.csv`
+    // Assert: the S3 key is prefixed with the site name and renders the
+    // half-open range [2024-03-01,2024-04-01) with an inclusive end —
+    // `<site name>-access-2024-03-01-to-2024-03-31`.
+    const expectedKey = `audit-log-exports/${site.id}/${request.id}/${site.name}-access-2024-03-01-to-2024-03-31.csv`
     expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
     expect(mockUploadAuditLogExport.mock.calls[0]![0].key).toBe(expectedKey)
 
@@ -352,13 +353,13 @@ describe("auditLogExport processor", () => {
     const updatedAccess = await getRequest(accessRequest.id)
     expect(updatedAccess.status).toBe("Done")
     expect(updatedAccess.objectKey).toBe(
-      `audit-log-exports/${site.id}/${accessRequest.id}/access-2024-03-01-to-2024-03-31.csv`,
+      `audit-log-exports/${site.id}/${accessRequest.id}/${site.name}-access-2024-03-01-to-2024-03-31.csv`,
     )
 
     const updatedActivity = await getRequest(activityRequest.id)
     expect(updatedActivity.status).toBe("Done")
     expect(updatedActivity.objectKey).toBe(
-      `audit-log-exports/${site.id}/${activityRequest.id}/activity-2024-03-01-to-2024-03-31.csv`,
+      `audit-log-exports/${site.id}/${activityRequest.id}/${site.name}-activity-2024-03-01-to-2024-03-31.csv`,
     )
   })
 
@@ -943,6 +944,71 @@ describe("auditLogExport processor", () => {
       expect(emailArg.links).toHaveLength(1)
       expect(emailArg.links[0]?.siteName).toBe(siteA.name)
       expect(emailArg.failedSiteNames).toEqual([siteB.name])
+    })
+
+    it("retries the combined email on a later sweep when the send fails, without reverting the already-Done rows", async () => {
+      // A transient batch-email failure must NOT permanently suppress the only
+      // combined email, and must NOT corrupt the sibling rows' export state:
+      // they are already Done before the (cross-row) email is attempted.
+      const batchId = randomUUID()
+      const admin = await setupUser({ email: "retry-batch@vendor.com.sg" })
+      const { site: siteA } = await setupSite()
+      const { site: siteB } = await setupSite()
+      await setupAdminPermissions({ userId: admin.id, siteId: siteA.id })
+      await setupAdminPermissions({ userId: admin.id, siteId: siteB.id })
+
+      await seedRequest({
+        siteId: siteA.id,
+        userId: admin.id,
+        reportType: "Access",
+        batchId,
+      })
+      await seedRequest({
+        siteId: siteB.id,
+        userId: admin.id,
+        reportType: "Access",
+        batchId,
+      })
+
+      // First send throws; subsequent sends succeed.
+      mockSendAuditLogExportBatchReadyEmail.mockRejectedValueOnce(
+        new Error("smtp down"),
+      )
+
+      // Sweep 1: both rows reach Done, the batch email is attempted and fails.
+      await processPendingAuditLogExports()
+      expect(mockSendAuditLogExportBatchReadyEmail).toHaveBeenCalledTimes(1)
+
+      const siteIds = [siteA.id, siteB.id]
+      const rowsAfterFailure = await db
+        .selectFrom("AuditLogExportRequest")
+        .where("siteId", "in", siteIds)
+        .selectAll()
+        .execute()
+      // Rows stay Done (not reverted to Pending/Failed) and the claim is
+      // released (batchEmailedAt back to null) so a later sweep can retry.
+      for (const row of rowsAfterFailure) {
+        expect(row.status).toBe("Done")
+        expect(row.batchEmailedAt).toBeNull()
+      }
+
+      // Sweep 2: no rows left to process, but the backstop finds the terminal,
+      // un-emailed batch and resends successfully.
+      await processPendingAuditLogExports()
+      expect(mockSendAuditLogExportBatchReadyEmail).toHaveBeenCalledTimes(2)
+
+      const rowsAfterRetry = await db
+        .selectFrom("AuditLogExportRequest")
+        .where("siteId", "in", siteIds)
+        .selectAll()
+        .execute()
+      for (const row of rowsAfterRetry) {
+        expect(row.status).toBe("Done")
+        expect(row.batchEmailedAt).not.toBeNull()
+      }
+      // Neither row ever fell back to its own per-row email.
+      expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
+      expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
     })
   })
 })
