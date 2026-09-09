@@ -39,12 +39,6 @@ const TagCategoryUuidSchema = generateUuidSchema({
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
 })
 
-const DateFilterStatusIdSchema = Type.Union([
-  Type.Literal(DATE_FILTER_STATUS_ID.Ended),
-  Type.Literal(DATE_FILTER_STATUS_ID.Ongoing),
-  Type.Literal(DATE_FILTER_STATUS_ID.Upcoming),
-])
-
 const tagCategoryLabelSchemaObject = {
   label: Type.String({
     title: "Filter name",
@@ -269,18 +263,19 @@ const TaggedSchema = Type.Optional(
 // in, not a selection from a list, so each entry needs to carry both the
 // key and the value together). `endDate` present = the item picked a range;
 // absent = a single date, treated as a 1-day event by status computation.
+const DateTaggedItemSchema = Type.Object({
+  id: TagCategoryUuidSchema,
+  date: Type.String({ format: "date" }),
+  endDate: Type.Optional(Type.String({ format: "date" })),
+})
+
+export type DateTaggedItem = Static<typeof DateTaggedItemSchema>
+
 const DateTaggedSchema = Type.Optional(
-  Type.Array(
-    Type.Object({
-      id: TagCategoryUuidSchema,
-      date: Type.String({ format: "date" }),
-      endDate: Type.Optional(Type.String({ format: "date" })),
-    }),
-    {
-      description: "Pick a single date or a range.",
-      format: "date-tagged",
-    },
-  ),
+  Type.Array(DateTaggedItemSchema, {
+    description: "Pick a single date or a range.",
+    format: "date-tagged",
+  }),
 )
 
 const categorySchemaObject = Type.Object({

@@ -5,6 +5,10 @@ import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getAvailableFilters } from "../getAvailableFilters"
 
+const EVENT_DATE_FILTER_ID = "event-date-filter-id"
+const TODAY = "2026-06-15"
+const ongoingDateTagged = [{ id: EVENT_DATE_FILTER_ID, date: TODAY }]
+
 describe("getAvailableFilters", () => {
   it("returns no filters when there are no items", () => {
     // Arrange
@@ -99,15 +103,15 @@ describe("getAvailableFilters", () => {
         type: "date",
         showStatusLabels: false,
         showDateRange: true,
-        statusLabels: [
-          { id: "ENDED", label: "Event ended" },
-          { id: "ONGOING", label: "Ongoing" },
-          { id: "UPCOMING", label: "Upcoming" },
-        ],
+        statusLabels: {
+          ENDED: "Event ended",
+          ONGOING: "Ongoing",
+          UPCOMING: "Upcoming",
+        },
       },
     ]
 
-    const result = getAvailableFilters(items, tagCategories, TODAY)
+    const result = getAvailableFilters(items, tagCategories)
 
     expect(result.map((filter) => filter.id)).toEqual([
       EVENT_DATE_FILTER_ID,
@@ -134,15 +138,15 @@ describe("getAvailableFilters", () => {
         type: "date",
         showStatusLabels: false,
         showDateRange: false,
-        statusLabels: [
-          { id: "ENDED", label: "Event ended" },
-          { id: "ONGOING", label: "Ongoing" },
-          { id: "UPCOMING", label: "Upcoming" },
-        ],
+        statusLabels: {
+          ENDED: "Event ended",
+          ONGOING: "Ongoing",
+          UPCOMING: "Upcoming",
+        },
       },
     ]
 
-    const result = getAvailableFilters(items, tagCategories, TODAY)
+    const result = getAvailableFilters(items, tagCategories)
 
     expect(result.map((filter) => filter.id)).toEqual(["year"])
   })
