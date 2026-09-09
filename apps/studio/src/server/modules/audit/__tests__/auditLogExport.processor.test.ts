@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto"
+import { Readable } from "node:stream"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
@@ -25,7 +26,8 @@ interface BatchReadyEmailArg {
   recipientEmail: string
   month: string
   reportLabel: "access" | "audit"
-  links: { siteName: string; url: string; sizeInBytes: number | null }[]
+  zipLink?: { url: string; sizeInBytes: number | null }
+  includedSiteNames: string[]
   failedSiteNames: string[]
 }
 
@@ -33,16 +35,29 @@ const {
   mockUploadAuditLogExport,
   mockGetStudioAssetsBucketName,
   mockGetFileSize,
+  mockGetObjectStream,
   mockSendAuditLogExportReadyEmail,
   mockSendAuditLogExportFailedEmail,
   mockSendAuditLogExportBatchReadyEmail,
 } = vi.hoisted(() => ({
   mockUploadAuditLogExport:
-    vi.fn<(args: { key: string; body: unknown }) => Promise<void>>(),
+    vi.fn<
+      (args: {
+        key: string
+        body: unknown
+        contentType?: string
+      }) => Promise<void>
+    >(),
   mockGetStudioAssetsBucketName: vi.fn<() => string>(),
   // HeadObject-backed existence probe used by the Complete-Artifact reuse
   // fork: a byte size means the object exists, null means it is gone.
   mockGetFileSize: vi.fn<() => Promise<number | null>>(),
+  // Re-reads an already-"uploaded" per-site CSV back out of S3 to fold it
+  // into a batch zip (ADR 0009) — there's no real S3 backing these tests, so
+  // this always hands back the same small fake CSV content regardless of
+  // which key was asked for.
+  mockGetObjectStream:
+    vi.fn<(args: { Bucket: string; Key: string }) => Promise<Readable>>(),
   mockSendAuditLogExportReadyEmail:
     vi.fn<(data: ReadyEmailArg) => Promise<void>>(),
   mockSendAuditLogExportFailedEmail:
@@ -83,6 +98,7 @@ vi.mock("~/lib/s3", () => ({
   uploadAuditLogExport: mockUploadAuditLogExport,
   getStudioAssetsBucketName: mockGetStudioAssetsBucketName,
   getFileSize: mockGetFileSize,
+  getObjectStream: mockGetObjectStream,
 }))
 
 vi.mock("~/features/mail/service", () => ({
@@ -95,7 +111,10 @@ import { getCurrentSingaporeMonth } from "~/schemas/audit"
 
 import { db } from "../../database"
 import { getMonthDateRange } from "../auditLogExport.query"
-import { processPendingAuditLogExports } from "../auditLogExport.service"
+import {
+  processPendingAuditLogExportBatchEmails,
+  processPendingAuditLogExports,
+} from "../auditLogExport.service"
 
 // A fixed past month, so the stored range is the full calendar month (the
 // current-month clamp is a no-op) and the expected S3 slug is deterministic.
@@ -187,6 +206,11 @@ describe("auditLogExport processor", () => {
     })
     // By default every candidate artifact still exists in S3.
     mockGetFileSize.mockResolvedValue(1024)
+    // Content is irrelevant to every assertion below — this only needs to be
+    // a valid readable so `archiver.append` has something to stream from.
+    mockGetObjectStream.mockImplementation(() =>
+      Promise.resolve(Readable.from(["mock,csv,content\n"])),
+    )
     mockSendAuditLogExportReadyEmail.mockResolvedValue(undefined)
     mockSendAuditLogExportFailedEmail.mockResolvedValue(undefined)
     mockSendAuditLogExportBatchReadyEmail.mockResolvedValue(undefined)
@@ -851,18 +875,27 @@ describe("auditLogExport processor", () => {
       expect(emailArg.recipientEmail).toBe("batch-admin@vendor.com.sg")
       expect(emailArg.reportLabel).toBe("access")
       expect(emailArg.failedSiteNames).toEqual([])
-      expect(emailArg.links).toHaveLength(2)
-      expect(emailArg.links.map((l) => l.siteName).sort()).toEqual(
+      expect(emailArg.includedSiteNames.sort()).toEqual(
         [siteA.name, siteB.name].sort(),
       )
-      for (const link of emailArg.links) {
-        expect(link.url).toContain(
-          "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
-        )
-      }
+      // One zip, not one link per site (ADR 0009).
+      expect(emailArg.zipLink).toBeDefined()
+      expect(emailArg.zipLink?.url).toContain(
+        "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
+      )
 
-      // Both rows are Done and stamped with the same batchEmailedAt (the
-      // durable "already sent" marker, not the advisory lock itself).
+      // Three uploads total: each site's own CSV, plus the assembled zip —
+      // keyed by batchId, not siteId/requestId, and zip-typed.
+      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(3)
+      const zipUploadCall = mockUploadAuditLogExport.mock.calls.find((call) =>
+        call[0].key.endsWith(".zip"),
+      )
+      expect(zipUploadCall).toBeDefined()
+      expect(zipUploadCall?.[0].key).toBe(
+        `audit-log-exports/batch/${batchId}/access-2024-03-01-to-2024-03-31.zip`,
+      )
+      expect(zipUploadCall?.[0].contentType).toBe("application/zip")
+
       const rowA = await getRequest(
         (
           await db
@@ -883,8 +916,16 @@ describe("auditLogExport processor", () => {
       )
       expect(rowA.status).toBe("Done")
       expect(rowB.status).toBe("Done")
-      expect(rowA.batchEmailedAt).not.toBeNull()
-      expect(rowA.batchEmailedAt).toEqual(rowB.batchEmailedAt)
+
+      // The durable "already sent" record now lives on AuditLogExportBatch,
+      // not on either sibling row — see ADR 0009.
+      const batch = await db
+        .selectFrom("AuditLogExportBatch")
+        .where("batchId", "=", batchId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(batch.emailedAt).not.toBeNull()
+      expect(batch.zipObjectKey).toBe(zipUploadCall?.[0].key)
     })
 
     it("waits for a failing sibling to exhaust retries before sending, then reports it as failed alongside the successful site's link", async () => {
@@ -940,9 +981,137 @@ describe("auditLogExport processor", () => {
       expect(mockSendAuditLogExportBatchReadyEmail).toHaveBeenCalledTimes(1)
 
       const emailArg = mockSendAuditLogExportBatchReadyEmail.mock.calls[0]![0]
-      expect(emailArg.links).toHaveLength(1)
-      expect(emailArg.links[0]?.siteName).toBe(siteA.name)
+      expect(emailArg.includedSiteNames).toEqual([siteA.name])
+      expect(emailArg.zipLink).toBeDefined()
       expect(emailArg.failedSiteNames).toEqual([siteB.name])
+
+      // The zip contains only site A's CSV — confirm by inspecting exactly
+      // which S3 keys were re-read to build it.
+      expect(mockGetObjectStream).toHaveBeenCalledTimes(1)
+      expect(mockGetObjectStream.mock.calls[0]![0].Key).toContain(
+        `/${siteA.id}/`,
+      )
+    })
+
+    it("a batch that fails on every site sends no zip, only the failure list", async () => {
+      const batchId = randomUUID()
+      const admin = await setupUser({ email: "all-fail-batch@vendor.com.sg" })
+      const { site: siteA } = await setupSite()
+      await setupAdminPermissions({ userId: admin.id, siteId: siteA.id })
+      await seedRequest({
+        siteId: siteA.id,
+        userId: admin.id,
+        reportType: "Access",
+        batchId,
+      })
+
+      mockUploadAuditLogExport.mockRejectedValue(new Error("s3 down"))
+
+      // 3 sweeps to exhaust MAX_ATTEMPTS and reach Failed.
+      await processPendingAuditLogExports()
+      await processPendingAuditLogExports()
+      await processPendingAuditLogExports()
+
+      expect(mockSendAuditLogExportBatchReadyEmail).toHaveBeenCalledTimes(1)
+      const emailArg = mockSendAuditLogExportBatchReadyEmail.mock.calls[0]![0]
+      expect(emailArg.zipLink).toBeUndefined()
+      expect(emailArg.includedSiteNames).toEqual([])
+      expect(emailArg.failedSiteNames).toEqual([siteA.name])
+
+      // Nothing to zip, so no re-read of any CSV and no AuditLogExportBatch
+      // zip key — only the emailedAt claim is stamped.
+      expect(mockGetObjectStream).not.toHaveBeenCalled()
+      const batch = await db
+        .selectFrom("AuditLogExportBatch")
+        .where("batchId", "=", batchId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(batch.zipObjectKey).toBeNull()
+      expect(batch.emailedAt).not.toBeNull()
+    })
+
+    it("retries a batch whose previous attempt died mid-flight, via the dedicated sweep", async () => {
+      // Arrange: both sibling rows are already terminal (as if a previous
+      // zip-build-and-email attempt started, claimed the batch, then died
+      // before finishing — e.g. the process was killed mid-upload), and the
+      // claim is stale (older than BATCH_EMAIL_LEASE_MS).
+      const batchId = randomUUID()
+      const admin = await setupUser({ email: "retry-batch@vendor.com.sg" })
+      const { site: siteA } = await setupSite()
+      const { site: siteB } = await setupSite()
+      await setupAdminPermissions({ userId: admin.id, siteId: siteA.id })
+      await setupAdminPermissions({ userId: admin.id, siteId: siteB.id })
+
+      await seedRequest({
+        siteId: siteA.id,
+        userId: admin.id,
+        reportType: "Access",
+        batchId,
+        status: "Done",
+        objectKey: `audit-log-exports/${siteA.id}/req-a/access-2024-03-01-to-2024-03-31.csv`,
+        completedAt: new Date(),
+      })
+      await seedRequest({
+        siteId: siteB.id,
+        userId: admin.id,
+        reportType: "Access",
+        batchId,
+        status: "Done",
+        objectKey: `audit-log-exports/${siteB.id}/req-b/access-2024-03-01-to-2024-03-31.csv`,
+        completedAt: new Date(),
+      })
+      await db
+        .insertInto("AuditLogExportBatch")
+        .values({
+          batchId,
+          claimedAt: new Date(Date.now() - 20 * 60 * 1000), // stale
+        })
+        .execute()
+
+      // Neither row's own completion will re-invoke the batch email (both
+      // were already terminal before this sweep ran) — only the dedicated
+      // sweep discovers and retries this stuck batch.
+      await processPendingAuditLogExportBatchEmails()
+
+      expect(mockSendAuditLogExportBatchReadyEmail).toHaveBeenCalledTimes(1)
+      const emailArg = mockSendAuditLogExportBatchReadyEmail.mock.calls[0]![0]
+      expect(emailArg.includedSiteNames.sort()).toEqual(
+        [siteA.name, siteB.name].sort(),
+      )
+
+      const batch = await db
+        .selectFrom("AuditLogExportBatch")
+        .where("batchId", "=", batchId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(batch.emailedAt).not.toBeNull()
+    })
+
+    it("the retry sweep leaves a batch with a fresh claim alone", async () => {
+      // A batch whose claim was stamped moments ago is assumed to be an
+      // attempt that's still actively in flight — the sweep must not build a
+      // second, duplicate zip for it.
+      const batchId = randomUUID()
+      const admin = await setupUser({ email: "in-flight-batch@vendor.com.sg" })
+      const { site: siteA } = await setupSite()
+      await setupAdminPermissions({ userId: admin.id, siteId: siteA.id })
+      await seedRequest({
+        siteId: siteA.id,
+        userId: admin.id,
+        reportType: "Access",
+        batchId,
+        status: "Done",
+        objectKey: `audit-log-exports/${siteA.id}/req-a/access-2024-03-01-to-2024-03-31.csv`,
+        completedAt: new Date(),
+      })
+      await db
+        .insertInto("AuditLogExportBatch")
+        .values({ batchId, claimedAt: new Date() })
+        .execute()
+
+      await processPendingAuditLogExportBatchEmails()
+
+      expect(mockSendAuditLogExportBatchReadyEmail).not.toHaveBeenCalled()
     })
   })
 })

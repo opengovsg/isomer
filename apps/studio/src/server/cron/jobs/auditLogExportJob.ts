@@ -1,5 +1,8 @@
 import { createBaseLogger } from "~/lib/logger"
-import { processPendingAuditLogExports } from "~/server/modules/audit/auditLogExport.service"
+import {
+  processPendingAuditLogExportBatchEmails,
+  processPendingAuditLogExports,
+} from "~/server/modules/audit/auditLogExport.service"
 
 import { registerPgbossJob } from "@isomer/pgboss"
 
@@ -10,6 +13,10 @@ const logger = createBaseLogger({ path: "cron:auditLogExportJob" })
 
 export const auditLogExportJobHandler = async () => {
   await processPendingAuditLogExports()
+  // Retries any batch whose zip-build-and-email attempt died mid-flight —
+  // see the doc comment on processPendingAuditLogExportBatchEmails for why
+  // this needs its own sweep rather than piggybacking on the one above.
+  await processPendingAuditLogExportBatchEmails()
 }
 
 export const auditLogExportJob = async () => {

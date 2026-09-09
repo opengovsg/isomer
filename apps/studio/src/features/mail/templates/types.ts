@@ -88,9 +88,14 @@ export interface AuditLogExportBatchReadyEmailTemplateData extends BaseEmailTemp
   // Human-readable month the export covers, e.g. "June 2026".
   month: string
   reportLabel: AuditLogExportDownloadLink["label"]
-  // One entry per site whose export succeeded — every site in the ask that
-  // didn't succeed is named (with no link) in `failedSiteNames` instead.
-  links: { siteName: string; url: string; sizeInBytes: number | null }[]
+  // One zip, containing every successfully-generated site's CSV (see ADR
+  // 0009) — not one link per site. Undefined when every site in the batch
+  // failed: there's nothing to zip, so no download link at all.
+  zipLink?: { url: string; sizeInBytes: number | null }
+  // Every site whose CSV made it into the zip — named here since the
+  // recipient can't preview the archive's contents before downloading it.
+  includedSiteNames: string[]
+  // Sites that didn't make it in; listed as plain text, never zipped.
   failedSiteNames: string[]
 }
 

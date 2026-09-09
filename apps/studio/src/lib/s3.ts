@@ -5,7 +5,7 @@ import type {
   PutObjectCommandInput,
   PutObjectTaggingCommandInput,
 } from "@aws-sdk/client-s3"
-import type { Readable } from "node:stream"
+import { Readable } from "node:stream"
 import {
   CopyObjectCommand,
   GetObjectCommand,
@@ -363,6 +363,23 @@ export const markScheduledAssetAsCancelled = async ({
   )
 }
 
+// Streams an S3 object's body back without buffering it — used to re-read an
+// already-uploaded audit-log CSV into a batch zip archive (see
+// maybeSendAuditLogExportBatchEmail, ADR 0009). Unlike `getBlob`, which
+// materialises the whole object into memory, this hands back the live
+// response stream so a caller can pipe it straight into another sink (an
+// `archiver` entry, in this case) with no full-file buffering at any stage.
+export const getObjectStream = async ({
+  Bucket,
+  Key,
+}: Pick<GetObjectCommandInput, "Bucket" | "Key">): Promise<Readable> => {
+  const response = await storage.send(new GetObjectCommand({ Bucket, Key }))
+  if (!(response.Body instanceof Readable)) {
+    throw new Error(`S3 object ${Key} did not return a Node stream body`)
+  }
+  return response.Body
+}
+
 export const getBlob = async (bucketName: string, key: string) => {
   try {
     const data = await storage.send(
@@ -409,22 +426,26 @@ export const getStudioAssetsBucketName = (): string => {
   return bucket
 }
 
-// Uploads a generated audit-log CSV export to the private studio assets
-// bucket. The download disposition uses the key's basename as the filename so
-// the browser saves a sensibly-named .csv rather than the full object key.
+// Uploads a generated audit-log export (a per-site CSV, or a batch zip
+// bundling several) to the private studio assets bucket. The download
+// disposition uses the key's basename as the filename so the browser saves a
+// sensibly-named file rather than the full object key.
 //
 // `body` is streamed (the fulfilment path pipes a Postgres cursor through CSV
-// serialisation straight into here), so we use lib-storage's `Upload` rather
-// than a one-shot `PutObjectCommand`: it consumes a `Readable` without
-// buffering the whole file, switching to a multipart upload automatically once
-// the stream exceeds a single part and falling back to a single `PutObject`
-// for small bodies. A plain string body is still accepted.
+// serialisation, or an `archiver` zip stream, straight into here), so we use
+// lib-storage's `Upload` rather than a one-shot `PutObjectCommand`: it
+// consumes a `Readable` without buffering the whole file, switching to a
+// multipart upload automatically once the stream exceeds a single part and
+// falling back to a single `PutObject` for small bodies. A plain string body
+// is still accepted.
 export const uploadAuditLogExport = async ({
   key,
   body,
+  contentType = "text/csv",
 }: {
   key: string
   body: Readable | string
+  contentType?: string
 }): Promise<void> => {
   const Bucket = getStudioAssetsBucketName()
   const filename = key.split("/").pop() ?? key
@@ -434,7 +455,7 @@ export const uploadAuditLogExport = async ({
       Bucket,
       Key: key,
       Body: body,
-      ContentType: "text/csv",
+      ContentType: contentType,
       ContentDisposition: `attachment; filename="${filename}"`,
     },
   })

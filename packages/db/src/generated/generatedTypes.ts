@@ -31,6 +31,13 @@ export interface AuditLog {
   delta: PrismaJson.AuditLogDeltaJsonContent
   ipAddress: string | null
 }
+export interface AuditLogExportBatch {
+  batchId: string
+  zipObjectKey: string | null
+  claimedAt: Timestamp | null
+  emailedAt: Timestamp | null
+  createdAt: Generated<Timestamp>
+}
 export interface AuditLogExportRequest {
   auditLogDateRange: string
   id: GeneratedAlways<string>
@@ -45,7 +52,6 @@ export interface AuditLogExportRequest {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
   batchId: string | null
-  batchEmailedAt: Timestamp | null
 }
 export interface Blob {
   id: GeneratedAlways<string>
@@ -200,6 +206,7 @@ export interface Whitelist {
 }
 export interface DB {
   AuditLog: AuditLog
+  AuditLogExportBatch: AuditLogExportBatch
   AuditLogExportRequest: AuditLogExportRequest
   Blob: Blob
   CodeBuildJobs: CodeBuildJobs

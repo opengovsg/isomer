@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next"
+import { randomUUID } from "crypto"
 import { addMinutes, subDays } from "date-fns"
 import { sealData } from "iron-session"
 import { createMocks } from "node-mocks-http"
@@ -40,7 +41,10 @@ vi.mock("~/lib/s3", () => ({
 }))
 
 import handler from "~/pages/api/audit-log-exports/download"
-import { sealAuditLogExportToken } from "~/server/modules/audit/auditLogExportToken"
+import {
+  sealAuditLogExportBatchToken,
+  sealAuditLogExportToken,
+} from "~/server/modules/audit/auditLogExportToken"
 import { db } from "~/server/modules/database"
 
 const EXPIRED_PAGE_PATH = "/audit-log-exports/expired"
@@ -92,9 +96,30 @@ const callRoute = async (
   }
 }
 
+const seedBatch = async ({
+  batchId,
+  zipObjectKey,
+  emailedAt,
+}: {
+  batchId: string
+  zipObjectKey?: string | null
+  emailedAt?: Date | null
+}) => {
+  return db
+    .insertInto("AuditLogExportBatch")
+    .values({
+      batchId,
+      ...(zipObjectKey !== undefined ? { zipObjectKey } : {}),
+      ...(emailedAt !== undefined ? { emailedAt } : {}),
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
 describe("GET /api/audit-log-exports/download", () => {
   beforeEach(async () => {
     await resetTables(
+      "AuditLogExportBatch",
       "AuditLogExportRequest",
       "ResourcePermission",
       "User",
@@ -278,5 +303,85 @@ describe("GET /api/audit-log-exports/download", () => {
     const repeated = await callRoute({ token: ["a", "b"] })
     expect(repeated.statusCode).toBe(302)
     expect(repeated._getRedirectUrl()).toBe(EXPIRED_PAGE_PATH)
+  })
+
+  // ADR 0009: a batch zip is delivered behind its own token kind, resolving
+  // against AuditLogExportBatch instead of a single AuditLogExportRequest row.
+  describe("batch zip tokens", () => {
+    it("302s to a fresh presigned URL for the batch's zip object (happy path)", async () => {
+      const batchId = randomUUID()
+      const zipObjectKey = `audit-log-exports/batch/${batchId}/access-2024-03-01-to-2024-03-31.zip`
+      mockGenerateSignedGetUrl.mockResolvedValue(signedUrlFor(zipObjectKey))
+      await seedBatch({ batchId, zipObjectKey, emailedAt: new Date() })
+
+      const token = await sealAuditLogExportBatchToken(batchId)
+      const res = await callRoute({ token })
+
+      expect(res.statusCode).toBe(302)
+      expect(mockGenerateSignedGetUrl).toHaveBeenCalledWith({
+        Bucket: BUCKET,
+        Key: zipObjectKey,
+      })
+      expect(res._getRedirectUrl()).toContain(zipObjectKey)
+    })
+
+    it("redirects to the expired page for a batch that hasn't been emailed yet", async () => {
+      const batchId = randomUUID()
+      // A claimed-but-not-yet-emailed batch (an attempt is in flight, or one
+      // is queued) has no zip ready to hand out.
+      await seedBatch({ batchId, zipObjectKey: null, emailedAt: null })
+
+      const token = await sealAuditLogExportBatchToken(batchId)
+      const res = await callRoute({ token })
+
+      expect(res.statusCode).toBe(302)
+      expect(res._getRedirectUrl()).toBe(EXPIRED_PAGE_PATH)
+      expect(mockGenerateSignedGetUrl).not.toHaveBeenCalled()
+    })
+
+    it("redirects to the expired page for an unknown batchId", async () => {
+      const token = await sealAuditLogExportBatchToken(randomUUID())
+      const res = await callRoute({ token })
+
+      expect(res.statusCode).toBe(302)
+      expect(res._getRedirectUrl()).toBe(EXPIRED_PAGE_PATH)
+      expect(mockGenerateSignedGetUrl).not.toHaveBeenCalled()
+    })
+
+    it("redirects to the expired page once the batch's Download Window (anchored to emailedAt) has elapsed", async () => {
+      const batchId = randomUUID()
+      const zipObjectKey = `audit-log-exports/batch/${batchId}/access-2024-03-01-to-2024-03-31.zip`
+      await seedBatch({
+        batchId,
+        zipObjectKey,
+        emailedAt: subDays(new Date(), 4),
+      })
+
+      const token = await sealAuditLogExportBatchToken(batchId)
+      const res = await callRoute({ token })
+
+      expect(res.statusCode).toBe(302)
+      expect(res._getRedirectUrl()).toBe(EXPIRED_PAGE_PATH)
+      expect(mockGenerateSignedGetUrl).not.toHaveBeenCalled()
+    })
+
+    it("a request-kind token never resolves against AuditLogExportBatch, and vice versa", async () => {
+      // Cross-kind confusion check: a batch token whose batchId happens to
+      // collide with nothing in AuditLogExportRequest (ids are BigInts, a
+      // UUID never matches) must still cleanly expire, not error.
+      const batchId = randomUUID()
+      await seedBatch({
+        batchId,
+        zipObjectKey: `audit-log-exports/batch/${batchId}/access.zip`,
+        emailedAt: new Date(),
+      })
+      // A request token minted for an id that happens to equal something —
+      // requestId is BigInt-shaped, so this is just an ordinary unknown row.
+      const requestToken = await sealAuditLogExportToken("123456789")
+      const res = await callRoute({ token: requestToken })
+
+      expect(res.statusCode).toBe(302)
+      expect(res._getRedirectUrl()).toBe(EXPIRED_PAGE_PATH)
+    })
   })
 })
