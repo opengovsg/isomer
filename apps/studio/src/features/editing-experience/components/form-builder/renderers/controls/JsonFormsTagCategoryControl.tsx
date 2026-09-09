@@ -31,7 +31,11 @@ import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
-import { createDefaultDateFilter, createDefaultTagCategory } from "./constants"
+import {
+  createDefaultDateFilter,
+  createDefaultTagCategory,
+  getManageFilterDrawerLabel,
+} from "./constants"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const {
@@ -133,10 +137,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     arrayResult.selectedIndex === undefined
       ? undefined
       : page?.tagCategories?.[arrayResult.selectedIndex]
-  const nestedDrawerHeaderLabel =
-    selectedFilter && isDateFilter(selectedFilter)
-      ? "Manage date filter"
-      : "Manage text filter"
+  const nestedDrawerHeaderLabel = getManageFilterDrawerLabel(selectedFilter)
 
   return (
     <NestedDrawerSwitch

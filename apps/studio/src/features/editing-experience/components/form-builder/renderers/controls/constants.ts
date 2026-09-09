@@ -6,6 +6,7 @@ import {
   DEFAULT_DATE_FILTER_STATUS_LABELS,
   DEFAULT_TAG_CATEGORY_DISPLAY,
   IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
+  isDateFilter,
   TAG_CATEGORY_TYPE,
 } from "@opengovsg/isomer-components"
 
@@ -37,3 +38,10 @@ export const createDefaultTagOption = (): TagOption => ({
   id: crypto.randomUUID(),
   label: "New option",
 })
+
+export const getManageFilterDrawerLabel = (
+  tagCategory: DateFilterSchemaType | TextFilterSchemaType | undefined,
+) =>
+  tagCategory && isDateFilter(tagCategory)
+    ? "Manage date filter"
+    : "Manage text filter"
