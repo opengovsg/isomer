@@ -31,6 +31,8 @@ import {
   jsonFormsConstControlTester,
   JsonFormsDateControl,
   jsonFormsDateControlTester,
+  JsonFormsDateFilterStatusLabelsControl,
+  jsonFormsDateFilterStatusLabelsControlTester,
   JsonFormsDgsDatasetIdControl,
   jsonFormsDgsDatasetIdControlTester,
   JsonFormsEmbedControl,
@@ -115,6 +117,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsTagCategoryOptionsControlTester,
     renderer: JsonFormsTagCategoryOptionsControl,
+  },
+  {
+    tester: jsonFormsDateFilterStatusLabelsControlTester,
+    renderer: JsonFormsDateFilterStatusLabelsControl,
   },
   { renderer: JsonFormsUuidControl, tester: jsonFormsUuidControlTester },
   { renderer: JsonFormsTaggedControl, tester: jsonFormsTaggedControlTester },
