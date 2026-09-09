@@ -10,7 +10,7 @@ export const DateFilterDates = ({ entries }: DateFilterDatesProps) => {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-y-2 md:grid-cols-2 md:gap-x-4">
+    <div className="flex flex-col gap-y-5">
       {entries.map(({ id, label, dateText }) => (
         <div key={id}>
           <p className="prose-label-sm-regular text-base-content-subtle">

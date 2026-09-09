@@ -15,6 +15,8 @@ export const ArticlePageHeader = ({
   pillTags,
   dateFilterDisplayEntries,
 }: ArticlePageHeaderProps) => {
+  const hasDateFilters = (dateFilterDisplayEntries?.length ?? 0) > 0
+
   return (
     <div className="mx-auto w-full">
       <div className="my-16">
@@ -37,13 +39,27 @@ export const ArticlePageHeader = ({
             {title}
           </h1>
 
-          {date && (
-            <p className="prose-label-sm-medium text-base-content">
-              {getFormattedDate(date)}
-            </p>
+          {hasDateFilters ? (
+            <div className="flex flex-col gap-y-5">
+              <DateFilterDates entries={dateFilterDisplayEntries} />
+              {date && (
+                <div>
+                  <p className="prose-label-sm-regular text-base-content-subtle">
+                    Page published
+                  </p>
+                  <p className="prose-label-md-medium text-base-content">
+                    {getFormattedDate(date)}
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            date && (
+              <p className="prose-label-sm-medium text-base-content">
+                {getFormattedDate(date)}
+              </p>
+            )
           )}
-
-          <DateFilterDates entries={dateFilterDisplayEntries} />
 
           <PillTags
             tags={pillTags}
