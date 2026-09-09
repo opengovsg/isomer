@@ -23,6 +23,7 @@ export const processCollectionItems = (
       url,
       tags,
       pillTags,
+      dateTagged,
       dateFilterDisplayEntries,
     } = item
     const file = variant === "file" ? item.fileDetails : null
@@ -36,6 +37,7 @@ export const processCollectionItems = (
       isContainNeeded,
       tags,
       pillTags,
+      dateTagged,
       dateFilterDisplayEntries,
       referenceLinkHref: getReferenceLinkHref(
         url,

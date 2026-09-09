@@ -149,6 +149,7 @@ export const getCollectionItems = ({
           ? getTagsFromTagged(item.tagged, tagCategories)
           : undefined,
       pillTags,
+      dateTagged: item.dateTagged,
       dateFilterDisplayEntries,
     }
 
