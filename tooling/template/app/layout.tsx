@@ -71,6 +71,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
             isomerMsClarityId:
               process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
           }}
+          themeColors={config.colors}
           ScriptComponent={Script}
         />
 
