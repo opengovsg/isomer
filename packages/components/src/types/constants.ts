@@ -40,6 +40,10 @@ export const TAG_CATEGORY_TYPE = {
   Date: "date",
 } as const
 
+export type TagCategoryType =
+  (typeof TAG_CATEGORY_TYPE)[keyof typeof TAG_CATEGORY_TYPE]
+export type TagCategoryDateType = (typeof TAG_CATEGORY_TYPE)["Date"]
+
 export const DATE_FILTER_STATUS = {
   Ended: {
     id: "ENDED",

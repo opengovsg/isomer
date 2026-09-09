@@ -7,6 +7,7 @@ export interface FilterItem {
   count: number
 }
 
+// TODO: refactor to use type union instead of type property
 export interface Filter {
   id: string
   label: string
