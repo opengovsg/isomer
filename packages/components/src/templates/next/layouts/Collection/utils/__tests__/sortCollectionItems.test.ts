@@ -556,6 +556,37 @@ describe("sortCollectionItems", () => {
       expect(sorted.map((item) => item.title)).toEqual(["Alpha", "Zebra"])
     })
 
+    it("should sort by last modified when date filter dates and titles are equal", () => {
+      const items = [
+        createItem({
+          title: "Same title",
+          lastModified: "2025-01-01T12:00:00Z",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+        createItem({
+          title: "Same title",
+          lastModified: "2025-03-01T12:00:00Z",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+        createItem({
+          title: "Same title",
+          lastModified: "2025-02-01T12:00:00Z",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+      ]
+
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: `date-filter-${filterId}-desc`,
+      })
+
+      expect(sorted.map((item) => item.lastModified)).toEqual([
+        "2025-03-01T12:00:00Z",
+        "2025-02-01T12:00:00Z",
+        "2025-01-01T12:00:00Z",
+      ])
+    })
+
     it("should fall back to publish date when both items lack the date filter value", () => {
       const items = [
         createItem({

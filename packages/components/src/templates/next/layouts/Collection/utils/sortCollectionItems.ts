@@ -182,6 +182,13 @@ const compareDateFilterStartDates = (
     }
   }
 
+  const bothSameLastModified =
+    getLastModifiedDate(a)?.getTime() === getLastModifiedDate(b)?.getTime()
+
+  if (!bothSameLastModified) {
+    return compareLastModified(a, b, sortDirection)
+  }
+
   return compareTitles(a, b, "asc")
 }
 
