@@ -99,3 +99,31 @@ export const WithUpcomingAndOngoingDateFilters: Story = {
     dateFilterDisplayEntries: upcomingAndOngoingDateFilterEntries,
   },
 }
+
+export const FullCombination: Story = {
+  args: {
+    breadcrumb: {
+      links: [
+        { title: "Events", url: "/events" },
+        { title: "Community", url: "/events/community" },
+        {
+          title: "Annual Community Charity Run 2026",
+          url: "/events/community/annual-charity-run-2026",
+        },
+      ],
+    },
+    plaintextTags: [
+      { category: "Category", selected: ["Community", "Sports"] },
+      { category: "Region", selected: ["Central", "East"] },
+    ],
+    title: "Annual Community Charity Run 2026",
+    date: "2025-06-01",
+    summary:
+      "Join us for a day of fitness and fundraising. All proceeds support local youth programmes.",
+    pillTags: [
+      { category: "Topic", selected: ["Running", "Charity"] },
+      { category: "Audience", selected: ["Family-friendly", "Youth"] },
+    ],
+    dateFilterDisplayEntries: upcomingAndOngoingDateFilterEntries,
+  },
+}

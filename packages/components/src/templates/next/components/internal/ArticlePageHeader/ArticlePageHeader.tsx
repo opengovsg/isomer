@@ -23,49 +23,46 @@ export const ArticlePageHeader = ({
         <Breadcrumb links={breadcrumb.links} />
       </div>
 
-      <DateFilterStatusClient
-        entries={dateFilterDisplayEntries}
-        className="mb-3"
-      />
-
-      <PlaintextTags
-        tags={plaintextTags}
-        className="prose-body-base mb-3 text-base-content"
-      />
-
       <div className="flex flex-col gap-5">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
+          <DateFilterStatusClient entries={dateFilterDisplayEntries} />
+
+          <PlaintextTags
+            tags={plaintextTags}
+            className="prose-body-base text-base-content"
+          />
+
           <h1 className="prose-display-md break-words text-base-content-strong">
             {title}
           </h1>
-
-          {hasDateFilters ? (
-            <div className="flex flex-col gap-y-5">
-              <DateFilterDates entries={dateFilterDisplayEntries} />
-              {date && (
-                <div>
-                  <p className="prose-label-sm-regular text-base-content-subtle">
-                    Page published
-                  </p>
-                  <p className="prose-label-md-medium text-base-content">
-                    {getFormattedDate(date)}
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : (
-            date && (
-              <p className="prose-label-sm-medium text-base-content">
-                {getFormattedDate(date)}
-              </p>
-            )
-          )}
-
-          <PillTags
-            tags={pillTags}
-            className="flex flex-wrap items-center gap-2"
-          />
         </div>
+
+        {hasDateFilters ? (
+          <>
+            <DateFilterDates entries={dateFilterDisplayEntries} />
+            {date && (
+              <div>
+                <p className="prose-label-sm-regular text-base-content-subtle">
+                  Page published
+                </p>
+                <p className="prose-label-md-medium text-base-content">
+                  {getFormattedDate(date)}
+                </p>
+              </div>
+            )}
+          </>
+        ) : (
+          date && (
+            <p className="prose-label-sm-medium text-base-content">
+              {getFormattedDate(date)}
+            </p>
+          )
+        )}
+
+        <PillTags
+          tags={pillTags}
+          className="flex flex-wrap items-center gap-2"
+        />
 
         {summary && (
           <p className="prose-title-lg whitespace-pre-wrap text-base-content-light">
