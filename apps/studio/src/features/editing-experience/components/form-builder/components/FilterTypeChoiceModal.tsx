@@ -1,8 +1,9 @@
 import type { TagCategoryType } from "@opengovsg/isomer-components"
+import type { IconType } from "react-icons"
 import {
   Box,
-  Button,
   HStack,
+  Icon as ChakraIcon,
   Modal,
   ModalBody,
   ModalContent,
@@ -12,10 +13,11 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { ModalCloseButton } from "@opengovsg/design-system-react"
+import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
 import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { useState } from "react"
-import { BiCalendar, BiPurchaseTag } from "react-icons/bi"
+import { BiCalendar, BiFont } from "react-icons/bi"
+import { DateFilter, TextFilter } from "~/components/Svg"
 
 export type FilterType = TagCategoryType
 
@@ -27,60 +29,79 @@ interface FilterTypeChoiceModalProps {
 }
 
 interface FilterTypeCardProps {
-  icon: typeof BiPurchaseTag
+  imageSrc: React.ReactNode
+  icon: IconType
   label: string
   description: string
   isSelected: boolean
   onSelect: () => void
-  isDisabled?: boolean
 }
 
 function FilterTypeCard({
-  icon: Icon,
+  imageSrc,
+  icon: IconComponent,
   label,
   description,
   isSelected,
   onSelect,
-  isDisabled = false,
 }: FilterTypeCardProps) {
+  const titleColor = isSelected ? "base.content.brand" : "base.content.default"
+  const iconColor = isSelected
+    ? "interaction.main.default"
+    : "base.content.default"
+
   return (
     <Box
       as="button"
       type="button"
-      flex="1"
+      display="flex"
+      flexDirection="column"
+      w="300px"
+      flexShrink={0}
       textAlign="left"
-      p="1rem"
       borderRadius="0.25rem"
-      border="1px solid"
-      borderColor={
-        isSelected ? "interaction.main.default" : "base.divider.medium"
-      }
-      bg={isSelected ? "grey.50" : "transparent"}
-      opacity={isDisabled ? 0.5 : 1}
-      cursor={isDisabled ? "not-allowed" : "pointer"}
+      border="0.125rem solid"
+      borderColor={isSelected ? "base.divider.brand" : "base.divider.medium"}
+      bg={isSelected ? "interaction.muted.main.active" : "transparent"}
+      boxShadow={isSelected ? "sm" : undefined}
+      cursor="pointer"
+      overflow="hidden"
+      p={0}
       _hover={
-        isDisabled
-          ? undefined
-          : { borderColor: "interaction.main.default", bg: "grey.50" }
+        isSelected
+          ? {
+              borderColor: "base.divider.brand",
+              bg: "interaction.muted.main.active",
+              boxShadow: "sm",
+            }
+          : {
+              borderColor: "base.divider.medium",
+              bg: "interaction.muted.main.hover",
+            }
       }
-      disabled={isDisabled}
-      onClick={isDisabled ? undefined : onSelect}
+      onClick={onSelect}
     >
-      <VStack align="start" spacing="0.5rem">
-        <Icon fontSize="1.5rem" />
-        <Text textStyle="subhead-1">{label}</Text>
-        <Text textStyle="body-2" textColor="base.content.medium">
-          {description}
-        </Text>
-      </VStack>
+      <Box bg="base.canvas.default">{imageSrc}</Box>
+      <Box p="1.25rem">
+        <VStack align="start" spacing="0.5rem">
+          <ChakraIcon
+            as={IconComponent}
+            fontSize="1.5rem"
+            color={iconColor}
+            aria-hidden
+          />
+          <Text textStyle="subhead-1" color={titleColor}>
+            {label}
+          </Text>
+          <Text textStyle="caption-2" color="base.content.medium">
+            {description}
+          </Text>
+        </VStack>
+      </Box>
     </Box>
   )
 }
 
-// Shown when the admin clicks "Add a filter" — a filter is one of two types
-// (text: an admin-defined option list; date: computed ended/ongoing/upcoming
-// status). The admin picks a type, then confirms with "Add filter" to create
-// the filter with sensible defaults and open its detail drawer.
 export function FilterTypeChoiceModal({
   isOpen,
   onClose,
@@ -107,28 +128,29 @@ export function FilterTypeChoiceModal({
       <ModalContent>
         <ModalHeader mr="3.5rem">Add a filter</ModalHeader>
         <ModalCloseButton size="lg" />
-        <ModalBody pb="1rem">
+        <ModalBody pb="1.5rem">
           <HStack spacing="1rem" align="stretch">
             <FilterTypeCard
-              icon={BiPurchaseTag}
+              imageSrc={<TextFilter />}
+              icon={BiFont}
               label="Text filter"
-              description="Let visitors filter by a list of options you define, e.g. topics or categories."
+              description="Use it for: Publication Type, Audience, Topic, Categories, Levels..."
               isSelected={selectedType === TAG_CATEGORY_TYPE.Text}
               onSelect={() => setSelectedType(TAG_CATEGORY_TYPE.Text)}
             />
             <FilterTypeCard
+              imageSrc={<DateFilter />}
               icon={BiCalendar}
               label="Date filter"
-              description="Let visitors filter by whether an item is upcoming, ongoing, or has ended — computed automatically from dates you enter on each item."
+              description="Use it for: Event date, Registration deadline, Consultation period, Procurement dates..."
               isSelected={selectedType === TAG_CATEGORY_TYPE.Date}
               onSelect={() => setSelectedType(TAG_CATEGORY_TYPE.Date)}
-              isDisabled={!isDateFilterEnabled}
             />
           </HStack>
         </ModalBody>
         <ModalFooter pt="0">
           <Button
-            colorScheme="primary"
+            variant="solid"
             onClick={handleAddFilter}
             isDisabled={
               selectedType === TAG_CATEGORY_TYPE.Date && !isDateFilterEnabled

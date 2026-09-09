@@ -1,5 +1,7 @@
 export * from "./BlockEditingPlaceholder"
+export * from "./DateFilter"
 export * from "./SingpassFullLogo"
 export * from "./LiftUnderRepair"
 export * from "./HeadScratch"
 export * from "./IsomerLogo"
+export * from "./TextFilter"
