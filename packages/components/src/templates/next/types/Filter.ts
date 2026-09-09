@@ -1,5 +1,5 @@
 import type { TagCategoryDisplay } from "~/types/constants"
-import { TAG_CATEGORY_TYPE } from "~/types/constants"
+import type { TAG_CATEGORY_TYPE } from "~/types/constants"
 
 export interface FilterItem {
   id: string
@@ -12,6 +12,7 @@ export interface Filter {
   id: string
   label: string
   items: FilterItem[]
+  // NOTE: only set for tag-category filters; category/year filters omit this.
   display?: TagCategoryDisplay
   type?: typeof TAG_CATEGORY_TYPE.Date
 }
