@@ -89,7 +89,7 @@ catalog:
   "@paralleldrive/cuid2": ^3.3.0
   "@sinclair/typebox": ^0.33.24
   "@tanstack/react-table": ^9.0.1
-  "@testing-library/react": ^16.3.2
+  "@testing-library/react": ^16.3.3
   pino: ^10.3.1
   pino-pretty: ^13.0.0
   postcss: ^8.5.26
