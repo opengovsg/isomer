@@ -29,7 +29,7 @@ const COMMON_HANDLERS = [
   pageHandlers.readPageAndBlob.collection(),
   pageHandlers.readPage.index(),
   pageHandlers.getFullPermalink.collection(),
-  collectionHandlers.countTagOptionsUsage.default(),
+  collectionHandlers.countFilterUsage.default(),
 ]
 
 const meta: Meta<typeof EditPage> = {
@@ -64,7 +64,7 @@ const zeroTagOptionsUsageParameters = {
   msw: {
     handlers: [
       ...COMMON_HANDLERS.slice(0, -1),
-      collectionHandlers.countTagOptionsUsage.zero(),
+      collectionHandlers.countFilterUsage.zero(),
     ],
   },
 } satisfies Story["parameters"]
