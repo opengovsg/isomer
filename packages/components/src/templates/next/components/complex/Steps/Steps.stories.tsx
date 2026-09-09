@@ -185,6 +185,33 @@ export const NoLinks: Story = {
   },
 }
 
+// The hover colour belongs to whatever reads as clickable: the CTA when there
+// is one, the title when the arrow sits beside it instead.
+export const HoverBehaviour: Story = {
+  args: {
+    title: "How to apply",
+    numberStyle: "numeral",
+    steps: [
+      {
+        title: "Has a link and a label",
+        description: "Only the link text should change colour on hover.",
+        buttonLabel: "See the checklist",
+        buttonUrl: "/faq",
+      },
+      {
+        title: "Has a link, no label",
+        description:
+          "The arrow sits beside the title, so the title changes colour instead.",
+        buttonUrl: "/faq",
+      },
+      {
+        title: "No link at all",
+        description: "Nothing should change colour on hover.",
+      },
+    ],
+  },
+}
+
 export const MinimumTwoSteps: Story = {
   args: {
     title: "Renewing your licence",

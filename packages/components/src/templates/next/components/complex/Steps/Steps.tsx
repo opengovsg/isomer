@@ -33,7 +33,7 @@ const createStepsStyles = tv({
     ],
     stepDescription: "prose-body-base text-base-content",
     stepButton:
-      "prose-headline-base-medium inline-flex items-center gap-1 pt-1 text-base-content-strong",
+      "prose-headline-base-medium inline-flex items-center gap-1 pt-1 text-base-content-strong group-hover:text-brand-interaction",
     stepButtonIcon:
       "mb-0.5 ml-1 inline text-[1.375rem] transition ease-in group-hover:translate-x-1",
   },
@@ -79,7 +79,11 @@ const createStepsStyles = tv({
         stepButtonIcon: "rotate-[-45deg]",
       },
     },
-    hasLink: {
+    // The call to action carries the hover colour, since that's the thing that
+    // reads as clickable. The title only takes it when there's no CTA label, in
+    // which case the arrow sits beside the title and there is nothing else to
+    // highlight.
+    hasTitleArrow: {
       true: {
         stepTitle: "group-hover:text-brand-interaction",
       },
@@ -169,7 +173,9 @@ export const Steps = ({
                       </span>
 
                       <StepTitleTag
-                        className={compoundStyles.stepTitle({ hasLink })}
+                        className={compoundStyles.stepTitle({
+                          hasTitleArrow: showTitleArrow,
+                        })}
                       >
                         {title}
                         {showTitleArrow && (
