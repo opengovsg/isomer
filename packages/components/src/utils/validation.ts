@@ -295,7 +295,7 @@ export const ASKGOV_ID_OR_URL_REGEX = `^\\s*(?:${ASKGOV_AGENCY_ID_REGEX}|${ASKGO
 export const GTM_ID_STRING_REGEX = "^(GTM|G|GT)-[A-Z0-9]+$"
 
 // Collection page `sortOrder`: the four base literals, or
-// `date-filter-{uuid}-asc|desc` for a published date filter.
+// `date-filter-{uuid}-asc|desc` for a collection date filter (tag category of type date).
 // ✅ "date-desc"
 // ✅ "date-filter-550e8400-e29b-41d4-a716-446655440000-asc"
 // ❌ "totally-made-up"
