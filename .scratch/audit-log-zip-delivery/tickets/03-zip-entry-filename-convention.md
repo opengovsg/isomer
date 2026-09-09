@@ -2,8 +2,8 @@
 id: 03-zip-entry-filename-convention
 title: Decide the zip entry filename convention
 label: wayfinder:grilling
-status: open
-assignee: null
+status: closed
+assignee: claude
 blocked_by: []
 map: ../MAP.md
 ---
@@ -31,3 +31,25 @@ Decide the exact filename format, e.g. something like
   there and this is a display-name derived from it, not a new domain
   concept in its own right — use `domain-modeling` judgment on whether it
   warrants an entry or is just an implementation detail).
+
+## Resolution
+
+Resolved directly during implementation (PR [feat: deliver batch audit log
+exports as a single zip file](https://github.com/opengovsg/isomer/pull/3367)),
+once the user asked to move from design to code.
+
+Format: `{sanitizedSiteName}-{siteId}-{reportKind}-{rangeSlug}.csv`
+(`getZipEntryName` in `auditLogExport.service.ts`).
+
+- Sanitization: non-alphanumeric runs replaced with a single `-`, leading/
+  trailing `-` trimmed; an empty result (e.g. an all-emoji site name) falls
+  back to the literal `site`. `siteId` is always appended regardless, so
+  sanitized collisions never cause a real collision.
+- `reportKind`/`rangeSlug` reuse the exact vocabulary the per-CSV S3 key
+  already uses (`access`/`activity`, and the same `getRangeSlug` inclusive-
+  range format), so the in-zip name stays recognizable against the
+  underlying artifact.
+- Not added to `CONTEXT.md` as its own glossary entry — it's a display-name
+  derivation of the already-defined Export Artifact, not a new domain
+  concept. The `CONTEXT.md` update this map's Notes anticipated instead
+  landed as the "Export Batch" entry (see ticket 04's resolution).

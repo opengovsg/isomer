@@ -13,14 +13,24 @@ delivering **batch** (all-sites) audit-log-export emails as a single zip
 archive per batch, with each CSV inside the zip named so the site it came
 from is unambiguous (siteName + siteId). Scope is the batch email only; the
 single-site/single-report ready email (`auditLogExportReadyTemplate`) is
-unchanged. This map produces the design; implementation is a separate
-follow-up pass (see [Plan, don't do](../../.claude/skills/wayfinder/SKILL.md)
-— no execution override for this map).
+unchanged.
+
+**Status: reached, then extended.** All 7 tickets are closed and ADR 0009
+records the full design. The map's original posture was design-only (no
+execution override in these Notes) — implementation was meant to be a
+separate follow-up pass — but partway through resolving ticket 04 the user
+explicitly asked to continue straight into code in the same session.
+Tickets 03/05/06/07 were consequently resolved as part of implementing,
+not one-at-a-time grilling sessions; each still records its own resolution
+below for the same reason a grilled ticket would. The implementation
+itself is [PR #3367](https://github.com/opengovsg/isomer/pull/3367)
+(`feat/audit-log-zip-delivery`, stacked on `fix/batch-audit-logs`).
 
 Reaching the end looks like: every ticket below closed, a new ADR written
 under `docs/adr/` recording the delivery-mechanism decision, and
-`CONTEXT.md` updated with whatever new vocabulary (e.g. "Export Batch" /
-zip artifact naming) the tickets settle on.
+`CONTEXT.md` updated with whatever new vocabulary the tickets settle on —
+all done. What's left is ordinary code review of PR #3367, not further
+wayfinding.
 
 ## Notes
 
@@ -65,12 +75,19 @@ zip artifact naming) the tickets settle on.
 - [Select a streaming Node zip library for batch export assembly](tickets/01-zip-library-research.md): use `archiver` — streams directly into the existing S3 multipart-upload sink, no full-archive buffering.
 - [Confirm Postman.gov.sg attachment support and limits](tickets/02-postman-attachment-research.md): attachments exist but are capped at 2MB/file and need a sending domain Isomer hasn't provisioned — confirmed, stay link-based (zip in S3 behind the existing download-token link).
 - [Design zip assembly, storage, and its interaction with existing CSV reuse](tickets/04-zip-assembly-storage-design.md): recorded as [ADR 0009](../../docs/adr/0009-batch-audit-log-exports-delivered-as-one-zip.md) — extends `maybeSendAuditLogExportBatchEmail` in place with `archiver`, moves the `batchEmailedAt` claim to after send succeeds, new `AuditLogExportBatch` table for zip metadata. Confirmed this whole map stacks on `fix/batch-audit-logs`, not `main`.
+- [Decide the zip entry filename convention](tickets/03-zip-entry-filename-convention.md): `{sanitizedSiteName}-{siteId}-{reportKind}-{rangeSlug}.csv`; siteId always appended so sanitized collisions can't collide.
+- [Extend the sealed Download Token flow to resolve a shared batch zip](tickets/05-download-token-flow-for-batch-zip.md): new `audit-log-export-batch` token purpose keyed on `batchId`; window anchors to `AuditLogExportBatch.emailedAt`.
+- [Design zip-build failure and retry handling in the cron job](tickets/06-zip-build-failure-retry-handling.md): `AuditLogExportBatch.claimedAt` as a 15-minute lease, plus a new `processPendingAuditLogExportBatchEmails` sweep — needed because a fully-terminal batch no longer self-triggers a retry.
+- [Rework the batch-ready email template for a single zip link](tickets/07-batch-email-template-rework.md): `zipLink` (optional — undefined when every site fails) + `includedSiteNames` replace the old per-site `links` array.
 
 ## Not yet specified
 
 - Rollout/feature-flag strategy for switching the batch email over to the
-  new zip format (fog until the design tickets below settle what "the new
-  format" actually is).
+  new zip format — **still genuinely open**: PR #3367 ships the new format
+  as the only behavior (no flag), which is a real gap this map flagged but
+  never explicitly closed. Worth a decision before merging, not fog
+  anymore now that the design is locked — a reviewer of PR #3367 should
+  weigh in rather than this map reopening it.
 
 ## Out of scope
 

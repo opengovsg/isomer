@@ -2,9 +2,9 @@
 id: 05-download-token-flow-for-batch-zip
 title: Extend the sealed Download Token flow to resolve a shared batch zip
 label: wayfinder:grilling
-status: open
-assignee: null
-blocked_by: [04-zip-assembly-storage-design]
+status: closed
+assignee: claude
+blocked_by: []  # was [04-zip-assembly-storage-design], closed
 map: ../MAP.md
 ---
 
@@ -39,3 +39,26 @@ This is the ADR-bearing decision ticket 04 sets up; write the outcome into
 the same ADR (or a clearly-linked follow-on section) rather than a
 separate document, since token semantics and zip storage are one design,
 not two.
+
+## Resolution
+
+Resolved directly during implementation (PR [feat: deliver batch audit log
+exports as a single zip file](https://github.com/opengovsg/isomer/pull/3367));
+outcome folded into [ADR 0009](../../../docs/adr/0009-batch-audit-log-exports-delivered-as-one-zip.md)
+per this ticket's own instruction, not a separate doc.
+
+- Payload identifies `batchId` — `{purpose: "audit-log-export-batch", batchId}`.
+- New `purpose` discriminator, `audit-log-export-batch`, alongside the
+  existing `audit-log-export` one. `unsealAuditLogExportToken` now returns
+  a tagged union (`{kind: "request", requestId} | {kind: "batch", batchId}`)
+  instead of a bare string, so the download route branches on kind.
+- Click-time re-read: `AuditLogExportBatch.zipObjectKey !== null &&
+  emailedAt !== null`, replacing the per-request `status === Done` check.
+- Window anchor: `AuditLogExportBatch.emailedAt` (stamped only once the
+  zip is built and the email sent) — the batch equivalent of a single
+  request's `completedAt`, exactly as this ticket anticipated.
+- Revocation: nulling `AuditLogExportBatch.zipObjectKey` or deleting the
+  zip object kills every outstanding link for that batch in one place —
+  the same guarantee ADR 0006 describes for a single request, now scoped
+  to the batch's one shared row instead of duplicated across N sibling
+  rows.
