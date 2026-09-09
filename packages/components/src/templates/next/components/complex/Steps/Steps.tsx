@@ -50,8 +50,7 @@ const createStepsStyles = tv({
         headerSubtitle: "prose-body-base",
       },
     },
-    // The three number treatments under evaluation. `numeral` is bare (no card),
-    // the other two sit inside a bordered card.
+    // `numeral` is bare (no card), the other two sit inside a bordered card.
     numberStyle: {
       numeral: {
         stepNumber: "prose-display-md text-base-content-strong",
