@@ -1,7 +1,11 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { getDateFilterStatus } from "~/templates/next/components/internal/CollectionCard/utils/getDateFilterStatus"
-import { DATE_FILTER_STATUS, TAG_CATEGORY_TYPE } from "~/types/constants"
+import {
+  DATE_FILTER_STATUS,
+  DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY,
+  TAG_CATEGORY_TYPE,
+} from "~/types/constants"
 import { isDateFilter } from "~/types/page"
 import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
@@ -31,6 +35,12 @@ export const getDateFilters = (
       id: category.id,
       label: category.label,
       type: TAG_CATEGORY_TYPE.Date,
+      showStatusLabels:
+        category.showStatusLabels ??
+        DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabels,
+      showDateRange:
+        category.showDateRange ??
+        DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRange,
       items: Object.values(DATE_FILTER_STATUS).flatMap(
         ({ id, defaultLabel }) => {
           const label = category.statusLabels?.[id] ?? defaultLabel

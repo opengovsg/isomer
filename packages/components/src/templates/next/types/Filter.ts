@@ -1,5 +1,5 @@
-import type { TagCategoryDisplay } from "~/types/constants"
-import type { TAG_CATEGORY_TYPE } from "~/types/constants"
+import type { TagCategoryDisplay, TAG_CATEGORY_TYPE } from "~/types/constants"
+import type { DateFilterSidebarVisibility } from "~/types/page"
 
 export interface FilterItem {
   id: string
@@ -14,7 +14,16 @@ export interface Filter {
   items: FilterItem[]
   // NOTE: only set for tag-category filters; category/year filters omit this.
   display?: TagCategoryDisplay
+  // NOTE: only set for date-type tag-category filters (see getDateFilters) —
+  // text-category/year filters omit this. `items` are the fixed status
+  // buckets (ended/ongoing/upcoming); the sidebar also renders a date-range
+  // control for this filter (see Filter.tsx), whose value lives in
+  // `AppliedFilter.dateRange`, not `items`.
   type?: typeof TAG_CATEGORY_TYPE.Date
+  // NOTE: only set for date-type tag-category filters — whether the status-label
+  // checkboxes and/or custom date-range input render in the sidebar.
+  showStatusLabels?: DateFilterSidebarVisibility["showStatusLabels"]
+  showDateRange?: DateFilterSidebarVisibility["showDateRange"]
 }
 
 interface AppliedFilterItem {

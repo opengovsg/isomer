@@ -39,6 +39,12 @@ const TagCategoryUuidSchema = generateUuidSchema({
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
 })
 
+const DateFilterStatusIdSchema = Type.Union([
+  Type.Literal(DATE_FILTER_STATUS_ID.Ended),
+  Type.Literal(DATE_FILTER_STATUS_ID.Ongoing),
+  Type.Literal(DATE_FILTER_STATUS_ID.Upcoming),
+])
+
 const tagCategoryLabelSchemaObject = {
   label: Type.String({
     title: "Filter name",
@@ -79,11 +85,14 @@ const dateFilterIsRequiredSchemaObject = {
 const TextFilterSchema = Type.Object(
   {
     ...tagCategoryLabelSchemaObject,
-    ...tagCategoryIsRequiredSchemaObject,
-    // Optional on old rows. Must be "text" or absent so oneOf picks TextFilterSchema.
+    // Optional for backward compatibility — every pre-existing `tagCategories`
+    // entry was a text filter before date filters existed. Must stay
+    // `"text"` or absent (never `"date"`) so this branch and `DateFilterSchema`
+    // remain mutually exclusive for `oneOf` resolution.
     type: Type.Optional(
       Type.Literal(TAG_CATEGORY_TYPE.Text, { format: "hidden" }),
     ),
+    ...tagCategoryIsRequiredSchemaObject,
     // Optional for backward compatibility. Missing/`undefined` must be read as
     // `DEFAULT_TAG_CATEGORY_DISPLAY` via `resolveTagCategoryDisplay`.
     // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
@@ -148,7 +157,10 @@ const DateFilterSchema = Type.Object(
   {
     ...tagCategoryLabelSchemaObject,
     ...dateFilterIsRequiredSchemaObject,
-    // Always "date" on new filters. Keeps oneOf exclusive with TextFilterSchema.
+    // Required (never absent) — a date filter is only ever created going
+    // forward via the type-choice modal, never a legacy row. Must stay
+    // `"date"` so this branch and `TextFilterSchema` remain mutually
+    // exclusive for `oneOf` resolution.
     type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
     // Optional for backward compatibility. Missing/`undefined` must be read from
     // `DATE_FILTER_STATUS` at render time. Per-field schema `default`s are safe
@@ -171,6 +183,24 @@ const DateFilterSchema = Type.Object(
         },
       ),
     ),
+    // Hidden toggles default true at render time via
+    // `DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY` — omit JSON Schema `default` for
+    // the same Studio AJV useDefaults reason as `isRequired` above.
+    showStatusLabels: Type.Optional(
+      Type.Boolean({
+        title: "Show status labels filter",
+        description:
+          "Let visitors filter by status labels (e.g. Upcoming, Ongoing, Ended).",
+        format: "hidden",
+      }),
+    ),
+    showDateRange: Type.Optional(
+      Type.Boolean({
+        title: "Show date range filter",
+        description: "Let visitors filter by a custom date range.",
+        format: "hidden",
+      }),
+    ),
   },
   { title: "Date filter" },
 )
@@ -179,6 +209,11 @@ export type DateFilterSchemaType = Static<typeof DateFilterSchema>
 export type TextFilterSchemaType = Static<typeof TextFilterSchema>
 
 type TagCategory = TextFilterSchemaType | DateFilterSchemaType
+
+export type DateFilterSidebarVisibility = Pick<
+  DateFilterSchemaType,
+  "showStatusLabels" | "showDateRange"
+>
 
 export const isDateFilter = (
   category: TagCategory,
@@ -189,10 +224,19 @@ export const isTextFilter = (
   category: TagCategory,
 ): category is TextFilterSchemaType => category.type !== TAG_CATEGORY_TYPE.Date
 
-// oneOf, not a flat object with every field optional. Order: text=0, date=1.
-// format "tag-category-item" routes to JsonFormsTagCategoryItemControl.
+// A real `oneOf` union rather than a flat object with every field optional:
+// each filter type only ever carries the fields that are meaningful for it
+// (a date filter genuinely has no `display`/`options`, not just a hidden
+// one). The dedicated `"tag-category-item"` format lets a custom Studio
+// control (JsonFormsTagCategoryItemControl) dispatch straight to whichever
+// branch already matches the data — bypassing JSONForms' generic `oneOf`
+// renderer, which would otherwise show an always-visible "Variant" picker
+// the admin has no reason to see (the type was already decided by the
+// type-choice modal on creation). `oneOf` order is load-bearing: index 0 is
+// text, index 1 is date — JsonFormsTagCategoryItemControl indexes into this
+// same array via JSONForms' own `indexOfFittingSchema`.
 const TagCategorySchema = Type.Unsafe<
-  Static<typeof TextFilterSchema> | Static<typeof DateFilterSchema>
+  TextFilterSchemaType | DateFilterSchemaType
 >({
   oneOf: [TextFilterSchema, DateFilterSchema],
   format: "tag-category-item",
@@ -218,20 +262,25 @@ const TaggedSchema = Type.Optional(
   }),
 )
 
-// id is the filter uuid. No endDate means a single-day event.
-const DateTaggedItemSchema = Type.Object({
-  id: TagCategoryUuidSchema,
-  date: Type.String({ format: "date" }),
-  endDate: Type.Optional(Type.String({ format: "date" })),
-})
-
-export type DateTaggedItem = Static<typeof DateTaggedItemSchema>
-
+// NOTE: one entry per date-type `tagCategories` filter the item has a value
+// for — `id` references that filter's `id` (distinct from `tagged`, which is
+// a flat list of *option* ids since text filters have no per-item value
+// shape to key by; a date filter's per-item value is data the editor typed
+// in, not a selection from a list, so each entry needs to carry both the
+// key and the value together). `endDate` present = the item picked a range;
+// absent = a single date, treated as a 1-day event by status computation.
 const DateTaggedSchema = Type.Optional(
-  Type.Array(DateTaggedItemSchema, {
-    description: "Pick a single date or a range.",
-    format: "date-tagged",
-  }),
+  Type.Array(
+    Type.Object({
+      id: TagCategoryUuidSchema,
+      date: Type.String({ format: "date" }),
+      endDate: Type.Optional(Type.String({ format: "date" })),
+    }),
+    {
+      description: "Pick a single date or a range.",
+      format: "date-tagged",
+    },
+  ),
 )
 
 const categorySchemaObject = Type.Object({
