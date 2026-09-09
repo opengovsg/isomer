@@ -43,8 +43,5 @@
     "node": "24.x",
     "pnpm": ">=11"
   },
-  "packageManager": "pnpm@11.5.1",
-  "pnpm": {
-    "resolutionMode": "highest"
-  }
+  "packageManager": "pnpm@11.5.1"
 }
