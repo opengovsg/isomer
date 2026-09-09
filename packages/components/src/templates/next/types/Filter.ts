@@ -11,6 +11,7 @@ export interface Filter {
   id: string
   label: string
   items: FilterItem[]
+  // NOTE: only set for tag-category filters; category/year filters omit this.
   display?: TagCategoryDisplay
   type?: typeof TAG_CATEGORY_TYPE.Date
 }

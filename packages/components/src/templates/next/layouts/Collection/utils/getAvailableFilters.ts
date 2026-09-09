@@ -24,13 +24,13 @@ export const getAvailableFilters = (
     ...getDateFilters(items, tagCategories),
   ]
 
-  const filtersByLookupKey = new Map(
+  const filtersByLookupKey = Object.fromEntries(
     categoryFilters.map((filter) => [filter.id, filter]),
-  )
+  ) as Record<string, Filter>
 
   const orderedCategoryFilters = tagCategories?.length
     ? tagCategories
-        .map((category) => filtersByLookupKey.get(filterLookupKey(category)))
+        .map((category) => filtersByLookupKey[filterLookupKey(category)])
         .filter((filter): filter is Filter => filter !== undefined)
     : categoryFilters
 

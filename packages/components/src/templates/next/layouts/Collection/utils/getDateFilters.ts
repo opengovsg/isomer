@@ -31,18 +31,16 @@ export const getDateFilters = (
       id: category.id,
       label: category.label,
       type: TAG_CATEGORY_TYPE.Date,
-      items: Object.values(DATE_FILTER_STATUS)
-        .map(({ id, defaultLabel }) => ({
-          id,
-          label: category.statusLabels?.[id] ?? defaultLabel,
-        }))
-        .filter(({ label }) => label.trim() !== "")
-        .map(({ id, label }) => ({
-          id,
-          label,
-          count: counts.get(id) ?? 0,
-        }))
-        .filter((item) => item.count >= 1),
+      items: Object.values(DATE_FILTER_STATUS).flatMap(
+        ({ id, defaultLabel }) => {
+          const label = category.statusLabels?.[id] ?? defaultLabel
+          const count = counts.get(id) ?? 0
+          if (label.trim() === "" || count < 1) {
+            return []
+          }
+          return [{ id, label, count }]
+        },
+      ),
     }
   })
 }
