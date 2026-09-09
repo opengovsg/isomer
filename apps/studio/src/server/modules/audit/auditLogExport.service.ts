@@ -492,25 +492,30 @@ const maybeSendAuditLogExportBatchEmail = async (
   const report = REPORT_BY_TYPE[reportType]
   const bucket = getStudioAssetsBucketName()
 
-  const links: { siteName: string; url: string; sizeInBytes: number | null }[] =
-    []
-  const failedSiteNames: string[] = []
+  const failedSiteNames = readySiblings
+    .filter(
+      (row) =>
+        row.status !== AuditLogExportStatus.Done || row.objectKey === null,
+    )
+    .map((row) => siteNameById.get(row.siteId) ?? `Site ${row.siteId}`)
 
-  for (const row of readySiblings) {
-    const siteName = siteNameById.get(row.siteId) ?? `Site ${row.siteId}`
-    if (row.status !== AuditLogExportStatus.Done || row.objectKey === null) {
-      failedSiteNames.push(siteName)
-      continue
-    }
-
-    const token = await sealAuditLogExportToken(row.id)
-    const url = `${env.NEXT_PUBLIC_APP_URL}/api/audit-log-exports/download?token=${encodeURIComponent(token)}`
-    const sizeInBytes = await getFileSize({
-      Bucket: bucket,
-      Key: row.objectKey,
-    })
-    links.push({ siteName, url, sizeInBytes })
-  }
+  const links = await Promise.all(
+    readySiblings
+      .filter(
+        (row): row is typeof row & { objectKey: string } =>
+          row.status === AuditLogExportStatus.Done && row.objectKey !== null,
+      )
+      .map(async (row) => {
+        const siteName = siteNameById.get(row.siteId) ?? `Site ${row.siteId}`
+        const token = await sealAuditLogExportToken(row.id)
+        const url = `${env.NEXT_PUBLIC_APP_URL}/api/audit-log-exports/download?token=${encodeURIComponent(token)}`
+        const sizeInBytes = await getFileSize({
+          Bucket: bucket,
+          Key: row.objectKey,
+        })
+        return { siteName, url, sizeInBytes }
+      }),
+  )
 
   await sendAuditLogExportBatchReadyEmail({
     recipientEmail: user.email,
@@ -722,8 +727,13 @@ export const processAuditLogExportRequest = async (
       rowStream.on("error", (error) => csvStream.destroy(error))
       rowStream.pipe(csvStream)
 
+      const site = await db
+        .selectFrom("Site")
+        .where("id", "=", request.siteId)
+        .select("name")
+        .executeTakeFirstOrThrow()
       const rangeSlug = getRangeSlug(request.auditLogDateRange)
-      objectKey = `audit-log-exports/${request.siteId}/${requestId}/${report.kind.toLowerCase()}-${rangeSlug}.csv`
+      objectKey = `audit-log-exports/${request.siteId}/${requestId}/${site.name}-${report.kind.toLowerCase()}-${rangeSlug}.csv`
 
       try {
         await uploadAuditLogExport({ key: objectKey, body: csvStream })
