@@ -1,7 +1,7 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPagePageProps } from "~/types"
 import { getDateFilterStatus } from "~/templates/next/components/internal/CollectionCard/utils/getDateFilterStatus"
-import { isDateFilter } from "~/types/page"
+import { isDateFilter, isTextFilter } from "~/types/page"
 import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
 import type { AppliedFilter } from "../../../types/Filter"
@@ -18,16 +18,24 @@ export const getFilteredItems = (
   const normalizedSearchValue =
     searchValue !== "" ? normalizeCollectionSearchText(searchValue) : ""
 
-  const dateFilterIds = new Set(
-    tagCategories?.filter(isDateFilter).map((category) => category.id) ?? [],
-  )
-
   const yearFilter = appliedFilters.find(
     (filter) => filter.id === FILTER_ID_YEAR,
   )
-  const dateFilters = appliedFilters.filter(({ id }) => dateFilterIds.has(id))
+
   const textFilters = appliedFilters.filter(
-    ({ id }) => id !== FILTER_ID_YEAR && !dateFilterIds.has(id),
+    ({ id }) =>
+      id !== FILTER_ID_YEAR &&
+      tagCategories?.some(
+        (category) => category.label === id && isTextFilter(category),
+      ),
+  )
+
+  const dateFilters = appliedFilters.filter(
+    ({ id }) =>
+      id !== FILTER_ID_YEAR &&
+      tagCategories?.some(
+        (category) => category.id === id && isDateFilter(category),
+      ),
   )
 
   return items.filter((item) => {

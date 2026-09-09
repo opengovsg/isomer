@@ -1,9 +1,34 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { AppliedFilter } from "~/templates/next/types/Filter"
+import type { CollectionPagePageProps } from "~/types"
 import { describe, expect, it } from "vitest"
 
 import { NO_SPECIFIED_YEAR_FILTER_ID } from "../constants"
 import { getFilteredItems } from "../getFilteredItems"
+
+const categoryTagCategories = [
+  {
+    label: "Category",
+    id: "cat-1",
+    options: [
+      { label: "Guides", id: "guides" },
+      { label: "Articles", id: "articles" },
+      { label: "Tutorials", id: "tutorials" },
+    ],
+  },
+] satisfies NonNullable<CollectionPagePageProps["tagCategories"]>
+
+const categoryAndTopicTagCategories = [
+  ...categoryTagCategories,
+  {
+    label: "Topic",
+    id: "topic-1",
+    options: [
+      { label: "Health", id: "health" },
+      { label: "Finance", id: "finance" },
+    ],
+  },
+] satisfies NonNullable<CollectionPagePageProps["tagCategories"]>
 
 describe("getFilteredItems", () => {
   it("returns all items when there is no search value and no applied filters", () => {
@@ -131,7 +156,12 @@ describe("getFilteredItems", () => {
     ]
 
     // Act
-    const result = getFilteredItems(items, appliedFilters, "")
+    const result = getFilteredItems(
+      items,
+      appliedFilters,
+      "",
+      categoryTagCategories,
+    )
 
     // Assert
     expect(result).toEqual([items[0], items[1]])
@@ -163,7 +193,12 @@ describe("getFilteredItems", () => {
     ]
 
     // Act
-    const result = getFilteredItems(items, appliedFilters, "")
+    const result = getFilteredItems(
+      items,
+      appliedFilters,
+      "",
+      categoryAndTopicTagCategories,
+    )
 
     // Assert
     expect(result).toEqual([items[0]])
@@ -183,7 +218,12 @@ describe("getFilteredItems", () => {
     ]
 
     // Act
-    const result = getFilteredItems(items, appliedFilters, "")
+    const result = getFilteredItems(
+      items,
+      appliedFilters,
+      "",
+      categoryTagCategories,
+    )
 
     // Assert
     expect(result).toEqual([])
@@ -208,7 +248,12 @@ describe("getFilteredItems", () => {
     ]
 
     // Act
-    const result = getFilteredItems(items, appliedFilters, "isomer")
+    const result = getFilteredItems(
+      items,
+      appliedFilters,
+      "isomer",
+      categoryTagCategories,
+    )
 
     // Assert
     expect(result).toEqual([items[0]])
