@@ -97,16 +97,9 @@ const createStepsStyles = tv({
 
 const compoundStyles = createStepsStyles()
 
-// `numeral` and `eyebrow` zero-pad to keep the numbers optically even in a row;
-// the badge is a fixed-size square, so padding would just look cramped.
-const formatStepNumber = (
-  index: number,
-  numberStyle: NonNullable<StepsProps["numberStyle"]>,
-): string => {
-  const number = index + 1
-  if (numberStyle === "badge") return `${number}`
-  return `${number}`.padStart(2, "0")
-}
+// Numbers are unpadded: the block caps at 6 steps so a leading zero never lines
+// anything up, and "step 2" is how the number gets referred to elsewhere on the
+// page and said out loud.
 
 export const Steps = ({
   id,
@@ -169,7 +162,7 @@ export const Steps = ({
                         aria-hidden
                         className={compoundStyles.stepNumber({ numberStyle })}
                       >
-                        {formatStepNumber(idx, numberStyle)}
+                        {idx + 1}
                       </span>
 
                       <StepTitleTag
