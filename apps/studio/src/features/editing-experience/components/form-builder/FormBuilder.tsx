@@ -33,6 +33,8 @@ import {
   jsonFormsDateControlTester,
   JsonFormsDateFilterStatusLabelsControl,
   jsonFormsDateFilterStatusLabelsControlTester,
+  JsonFormsDateFilterValuesControl,
+  jsonFormsDateFilterValuesControlTester,
   JsonFormsDgsDatasetIdControl,
   jsonFormsDgsDatasetIdControlTester,
   JsonFormsEmbedControl,
@@ -124,6 +126,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   },
   { renderer: JsonFormsUuidControl, tester: jsonFormsUuidControlTester },
   { renderer: JsonFormsTaggedControl, tester: jsonFormsTaggedControlTester },
+  {
+    renderer: JsonFormsDateFilterValuesControl,
+    tester: jsonFormsDateFilterValuesControlTester,
+  },
   {
     renderer: JsonFormsChildrenPagesOrderingControl,
     tester: jsonFormsChildrenPagesOrderingControlTester,

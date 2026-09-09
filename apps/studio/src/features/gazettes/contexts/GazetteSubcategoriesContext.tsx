@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from "react"
+import { isTextFilter } from "@opengovsg/isomer-components"
 import { filter } from "lodash-es"
 import { createContext, useContext, useMemo } from "react"
 import { trpc } from "~/utils/trpc"
@@ -39,12 +40,12 @@ export const GazetteSubcategoriesProvider = ({
   })
 
   const value = useMemo(() => {
-    const subcategoryCategory = tagCategories?.find(
-      (cat) => cat.label === GAZETTE_SUBCATEGORY_LABEL,
-    )
+    const subcategoryCategory = tagCategories
+      ?.filter(isTextFilter)
+      .find((cat) => cat.label === GAZETTE_SUBCATEGORY_LABEL)
 
     const subcategories =
-      subcategoryCategory?.options?.map((option) => ({
+      subcategoryCategory?.options.map((option) => ({
         label: option.label,
         value: option.id,
       })) ?? []

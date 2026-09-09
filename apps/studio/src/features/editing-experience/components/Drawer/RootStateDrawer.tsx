@@ -254,7 +254,7 @@ export default function RootStateDrawer() {
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
         if (type === ResourceType.CollectionPage) {
-          void utils.collection.countTagOptionsUsage.invalidate()
+          void utils.collection.countFilterUsage.invalidate()
         }
         toast({
           status: "success",
