@@ -16,6 +16,7 @@ vi.mock("~/env.mjs", () => ({
 }))
 
 import {
+  sealAuditLogExportBatchToken,
   sealAuditLogExportToken,
   unsealAuditLogExportToken,
 } from "../auditLogExportToken"
@@ -35,8 +36,27 @@ describe("auditLogExportToken", () => {
     expect(token).toBeTypeOf("string")
     expect(token.length).toBeGreaterThan(0)
 
-    const requestId = await unsealAuditLogExportToken(token)
-    expect(requestId).toBe("12345")
+    const unsealed = await unsealAuditLogExportToken(token)
+    expect(unsealed).toEqual({ kind: "request", requestId: "12345" })
+  })
+
+  it("roundtrips a batch token: unseal returns the exact batchId that was sealed", async () => {
+    const token = await sealAuditLogExportBatchToken("batch-abc-123")
+    expect(token).toBeTypeOf("string")
+    expect(token.length).toBeGreaterThan(0)
+
+    const unsealed = await unsealAuditLogExportToken(token)
+    expect(unsealed).toEqual({ kind: "batch", batchId: "batch-abc-123" })
+  })
+
+  it("rejects a correctly-purposed batch blob whose batchId is empty or the wrong type", async () => {
+    for (const batchId of ["", 12345]) {
+      const token = await sealData(
+        { purpose: "audit-log-export-batch", batchId },
+        { password: IRON_PASSWORD },
+      )
+      expect(await unsealAuditLogExportToken(token)).toBeNull()
+    }
   })
 
   it("rejects garbage that is not an iron seal at all", async () => {

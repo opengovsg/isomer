@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server"
+import archiver from "archiver"
 import { randomUUID } from "crypto"
 import { addDays, differenceInCalendarMonths, format, parseISO } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
@@ -13,6 +14,7 @@ import {
 import { createBaseLogger } from "~/lib/logger"
 import {
   getFileSize,
+  getObjectStream,
   getStudioAssetsBucketName,
   uploadAuditLogExport,
 } from "~/lib/s3"
@@ -39,7 +41,10 @@ import {
   getMonthDateRange,
   parseAuditLogDateRange,
 } from "./auditLogExport.query"
-import { sealAuditLogExportToken } from "./auditLogExportToken"
+import {
+  sealAuditLogExportBatchToken,
+  sealAuditLogExportToken,
+} from "./auditLogExportToken"
 
 // The user-facing fields of a create-export ask, independent of which site(s)
 // it resolves to — "scope"/"siteId" are a router-level concept resolved into
@@ -365,6 +370,14 @@ const STREAM_CHUNK_SIZE = 500
 // genuinely dead worker's rows are recovered within a couple of sweeps.
 const PROCESSING_LEASE_MS = 15 * 60 * 1000
 
+// Lease for a batch's zip-build-and-email attempt (see
+// AuditLogExportBatch.claimedAt). Same value and reasoning as
+// PROCESSING_LEASE_MS: comfortably longer than the worst-case time to
+// download every sibling CSV, zip them, upload, and send one email, so a
+// still-running attempt's claim is never stolen mid-flight, while a
+// genuinely dead attempt is retried within a couple of sweeps.
+const BATCH_EMAIL_LEASE_MS = 15 * 60 * 1000
+
 /**
  * Human-readable label for an export's period (e.g. "June 2026") for the email
  * subject/body, derived from the stored daterange's inclusive lower bound
@@ -392,21 +405,113 @@ const getRangeSlug = (auditLogDateRange: string): string => {
   return `${lowerInclusive}-to-${upperInclusive}`
 }
 
+// Ticket 03: turn a free-text, admin-chosen site name into a filesystem-safe
+// zip entry name. `siteId` is always appended, so two sites that sanitize to
+// the same string (or an empty one, e.g. a name that's entirely emoji/CJK
+// punctuation) can never collide.
+const sanitizeForFilename = (value: string): string => {
+  const sanitized = value.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+  return sanitized.length > 0 ? sanitized : "site"
+}
+
+const getZipEntryName = (
+  siteName: string,
+  siteId: number,
+  reportKind: AuditLogExportReportType,
+  rangeSlug: string,
+): string =>
+  `${sanitizeForFilename(siteName)}-${siteId}-${reportKind.toLowerCase()}-${rangeSlug}.csv`
+
+/**
+ * Streams every successful sibling's already-uploaded CSV back out of S3 and
+ * into one zip archive, uploaded to S3 as it's built (ADR 0009: `archiver`
+ * piped straight into the existing multipart-upload sink — no stage ever
+ * buffers a full CSV or the full archive in memory).
+ */
+const buildAndUploadBatchZip = async ({
+  batchId,
+  doneSiblings,
+  siteNameById,
+  reportKind,
+  rangeSlug,
+  bucket,
+}: {
+  batchId: string
+  doneSiblings: { siteId: number; objectKey: string }[]
+  siteNameById: Map<number, string>
+  reportKind: AuditLogExportReportType
+  rangeSlug: string
+  bucket: string
+}): Promise<string> => {
+  const zipObjectKey = `audit-log-exports/batch/${batchId}/${reportKind.toLowerCase()}-${rangeSlug}.zip`
+
+  const archive = archiver("zip", { zlib: { level: 9 } })
+  archive.on("warning", (warning) => {
+    logger.warn(
+      { warning, batchId },
+      "Non-fatal warning while building batch export zip",
+    )
+  })
+
+  const uploadDone = uploadAuditLogExport({
+    key: zipObjectKey,
+    body: archive,
+    contentType: "application/zip",
+  })
+
+  try {
+    for (const row of doneSiblings) {
+      const siteName = siteNameById.get(row.siteId) ?? `Site ${row.siteId}`
+      const entryStream = await getObjectStream({
+        Bucket: bucket,
+        Key: row.objectKey,
+      })
+      archive.append(entryStream, {
+        name: getZipEntryName(siteName, row.siteId, reportKind, rangeSlug),
+      })
+    }
+    await archive.finalize()
+    await uploadDone
+  } catch (error) {
+    archive.destroy()
+    // Destroying the archive almost always makes the Upload it's piped into
+    // reject too, once its source stream ends abnormally. That rejection is
+    // an expected side effect of the failure we're already about to
+    // propagate below, not a second distinct error — swallow it here so it
+    // never surfaces as an unhandled rejection.
+    uploadDone.catch(() => undefined)
+    throw error
+  }
+
+  return zipObjectKey
+}
+
 /**
  * Called every time a sibling row of `batchId` (see the column on
- * AuditLogExportRequest) reaches Done/Failed, to send ONE combined email for
- * the whole "allSites" ask once every site it covers is done — a no-op
- * unless THIS call is the one that finds every sibling terminal.
+ * AuditLogExportRequest) reaches Done/Failed, AND periodically by
+ * `processPendingAuditLogExportBatchEmails` to retry a batch whose previous
+ * attempt died mid-flight — to assemble one zip (ADR 0009) and send ONE
+ * combined email for the whole "allSites" ask once every site it covers is
+ * done. A no-op unless every sibling is terminal and the batch hasn't
+ * already been (or isn't currently being) emailed.
  *
- * The advisory lock (scoped to `batchId`, released when the transaction
- * ends) plus the atomic `batchEmailedAt IS NULL` check-and-stamp inside it
- * are what let two siblings finish near-simultaneously and still send
- * exactly one email: the second caller to acquire the lock always finds
- * `batchEmailedAt` already stamped by the first and returns early.
+ * Unlike the single-request path, the durable "already emailed" record
+ * (`AuditLogExportBatch.emailedAt`) is stamped AFTER the zip is built,
+ * uploaded, and the email actually sent — not before — because that slow,
+ * failable work now sits in what used to be an instant gap. Holding the
+ * advisory-lock transaction open for the whole of it would mean holding a DB
+ * connection through S3 reads/writes and an outbound email call, so instead
+ * the locked transaction only does a cheap claim: it stamps `claimedAt` (a
+ * lease, mirroring PROCESSING_LEASE_MS) and releases immediately. Two
+ * siblings finishing near-simultaneously, or a retry racing a still-running
+ * attempt, both see a fresh `claimedAt` and back off; only a stale or absent
+ * claim is taken.
  */
 const maybeSendAuditLogExportBatchEmail = async (
   batchId: string,
 ): Promise<void> => {
+  const staleCutoff = new Date(Date.now() - BATCH_EMAIL_LEASE_MS)
+
   const readySiblings = await db.transaction().execute(async (tx) => {
     // A bigint key is required by the single-argument overload of
     // pg_advisory_xact_lock, hence hashtextextended (bigint) over hashtext
@@ -427,20 +532,34 @@ const maybeSendAuditLogExportBatchEmail = async (
         row.status === AuditLogExportStatus.Done ||
         row.status === AuditLogExportStatus.Failed,
     )
-    const alreadyEmailed = siblings.some((row) => row.batchEmailedAt !== null)
-
-    if (!allTerminal || alreadyEmailed) {
+    if (!allTerminal) {
       return null
     }
 
-    // Stamped on every sibling at once, under the lock — this, not the
-    // lock itself, is the durable record that the batch email already went
-    // out (the lock only serialises the check; it remembers nothing once
-    // released).
-    await tx
-      .updateTable("AuditLogExportRequest")
-      .set({ batchEmailedAt: new Date() })
+    const existingBatch = await tx
+      .selectFrom("AuditLogExportBatch")
       .where("batchId", "=", batchId)
+      .select(["emailedAt", "claimedAt"])
+      .executeTakeFirst()
+
+    // Already fully delivered — never retry a batch that has an emailedAt.
+    if (existingBatch?.emailedAt) {
+      return null
+    }
+    // Someone else is actively working on it (a fresh, unexpired claim) —
+    // back off rather than build a duplicate zip / send a duplicate email.
+    if (existingBatch?.claimedAt && existingBatch.claimedAt >= staleCutoff) {
+      return null
+    }
+
+    // Claim it (first attempt) or re-claim it (previous attempt's lease
+    // expired), inside the lock, before releasing.
+    await tx
+      .insertInto("AuditLogExportBatch")
+      .values({ batchId, claimedAt: new Date() })
+      .onConflict((oc) =>
+        oc.column("batchId").doUpdateSet({ claimedAt: new Date() }),
+      )
       .execute()
 
     return siblings
@@ -491,10 +610,11 @@ const maybeSendAuditLogExportBatchEmail = async (
   )
   const report = REPORT_BY_TYPE[reportType]
   const bucket = getStudioAssetsBucketName()
+  const rangeSlug = getRangeSlug(auditLogDateRange)
 
-  const links: { siteName: string; url: string; sizeInBytes: number | null }[] =
-    []
+  const includedSiteNames: string[] = []
   const failedSiteNames: string[] = []
+  const doneSiblings: { siteId: number; objectKey: string }[] = []
 
   for (const row of readySiblings) {
     const siteName = siteNameById.get(row.siteId) ?? `Site ${row.siteId}`
@@ -502,23 +622,110 @@ const maybeSendAuditLogExportBatchEmail = async (
       failedSiteNames.push(siteName)
       continue
     }
+    includedSiteNames.push(siteName)
+    doneSiblings.push({ siteId: row.siteId, objectKey: row.objectKey })
+  }
 
-    const token = await sealAuditLogExportToken(row.id)
-    const url = `${env.NEXT_PUBLIC_APP_URL}/api/audit-log-exports/download?token=${encodeURIComponent(token)}`
-    const sizeInBytes = await getFileSize({
-      Bucket: bucket,
-      Key: row.objectKey,
+  // A batch whose sites all failed has nothing to zip — no zip, no download
+  // link, just the failure list. Otherwise, build the zip once (retrying a
+  // stale claim rebuilds it from scratch; see ADR 0009 — no reuse/caching of
+  // the zip itself, only the underlying per-site CSVs continue to be reused
+  // exactly as ADR 0005 already does).
+  let zipLink: { url: string; sizeInBytes: number | null } | undefined
+  if (doneSiblings.length > 0) {
+    const zipObjectKey = await buildAndUploadBatchZip({
+      batchId,
+      doneSiblings,
+      siteNameById,
+      reportKind: report.kind,
+      rangeSlug,
+      bucket,
     })
-    links.push({ siteName, url, sizeInBytes })
+
+    await db
+      .insertInto("AuditLogExportBatch")
+      .values({ batchId, zipObjectKey, claimedAt: new Date() })
+      .onConflict((oc) =>
+        oc.column("batchId").doUpdateSet({ zipObjectKey }),
+      )
+      .execute()
+
+    const token = await sealAuditLogExportBatchToken(batchId)
+    const url = `${env.NEXT_PUBLIC_APP_URL}/api/audit-log-exports/download?token=${encodeURIComponent(token)}`
+    const sizeInBytes = await getFileSize({ Bucket: bucket, Key: zipObjectKey })
+    zipLink = { url, sizeInBytes }
   }
 
   await sendAuditLogExportBatchReadyEmail({
     recipientEmail: user.email,
     month: getExportPeriodLabel(auditLogDateRange),
     reportLabel: report.label,
-    links,
+    zipLink,
+    includedSiteNames,
     failedSiteNames,
   })
+
+  // The durable "already emailed" record — written only now that the zip (if
+  // any) is built, uploaded, AND the email has actually sent. See the
+  // function-level note on why this is deliberately not stamped any earlier.
+  await db
+    .updateTable("AuditLogExportBatch")
+    .set({ emailedAt: new Date() })
+    .where("batchId", "=", batchId)
+    .execute()
+}
+
+/**
+ * Cron entry point (companion to `processPendingAuditLogExports`) for
+ * retrying a batch whose zip-build-and-email attempt died mid-flight.
+ * `maybeSendAuditLogExportBatchEmail` is otherwise only ever invoked as a
+ * side effect of a sibling row transitioning to terminal — once every
+ * sibling in a batch is ALREADY terminal, nothing will naturally re-invoke
+ * it again, since the per-row sweep never reprocesses a terminal row. This
+ * sweep is what makes "retry on the next attempt" (ADR 0009) real: it finds
+ * every batch that's fully terminal but not yet emailed and re-attempts it,
+ * relying on `maybeSendAuditLogExportBatchEmail`'s own lease-based claim to
+ * skip batches a still-running attempt already owns.
+ */
+export const processPendingAuditLogExportBatchEmails = async (): Promise<void> => {
+  const inProgressBatchIds = await db
+    .selectFrom("AuditLogExportRequest")
+    .where("batchId", "is not", null)
+    .where("status", "not in", [
+      AuditLogExportStatus.Done,
+      AuditLogExportStatus.Failed,
+    ])
+    .select("batchId")
+    .distinct()
+    .execute()
+  const inProgressBatchIdSet = new Set(
+    inProgressBatchIds.map((row) => row.batchId),
+  )
+
+  const candidateBatchIds = await db
+    .selectFrom("AuditLogExportRequest as r")
+    .leftJoin("AuditLogExportBatch as b", "b.batchId", "r.batchId")
+    .where("r.batchId", "is not", null)
+    .where((eb) =>
+      eb.or([eb("b.emailedAt", "is", null), eb("b.batchId", "is", null)]),
+    )
+    .select("r.batchId")
+    .distinct()
+    .execute()
+
+  for (const { batchId } of candidateBatchIds) {
+    if (batchId === null || inProgressBatchIdSet.has(batchId)) {
+      continue
+    }
+    try {
+      await maybeSendAuditLogExportBatchEmail(batchId)
+    } catch (error) {
+      logger.error(
+        { error, batchId },
+        "Failed to build/send batch export zip on retry sweep",
+      )
+    }
+  }
 }
 
 /**

@@ -412,15 +412,12 @@ model AuditLogExportRequest {
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @default(now()) @updatedAt
   // Correlates every per-site row created by ONE "allSites" ask so the
-  // fulfilment worker can wait for all of them and send a single combined
-  // email. Null for `scope: "site"` asks (and legacy rows), which keep
-  // sending their existing one-row-one-email path unchanged.
+  // fulfilment worker can wait for all of them, assemble one zip, and send a
+  // single combined email. Null for `scope: "site"` asks (and legacy rows),
+  // which keep sending their existing one-row-one-email path unchanged. The
+  // batch's own delivery state (zip location, whether it's been emailed)
+  // lives on `AuditLogExportBatch`, not here — see ADR 0009.
   batchId           String?
-  // Set once the combined batch email for `batchId` has been sent (stamped
-  // on every row sharing that batchId at once). Guards against sending the
-  // batch email twice when two sibling rows finish at nearly the same time -
-  // see the advisory-lock check in `processAuditLogExportRequest`.
-  batchEmailedAt    DateTime?
 
   @@index([status])
   // NOTE: the migration promotes this to a PARTIAL UNIQUE index
@@ -431,4 +428,38 @@ model AuditLogExportRequest {
   // existing DB will report drift here; that divergence is expected.
   @@index([siteId, userId, auditLogDateRange, reportType])
   @@index([batchId])
+}
+
+// One row per "allSites" batch export ask (see AuditLogExportRequest.batchId),
+// holding the delivery state that's inherently per-batch rather than
+// per-site-row: the assembled zip's S3 key, and whether the combined email
+// has been sent. Created (upserted) once the zip has been successfully built
+// and uploaded — see maybeSendAuditLogExportBatchEmail (ADR 0009). Keeping
+// this on its own row, rather than repeating it across every sibling
+// AuditLogExportRequest, avoids partial-write drift and gives the batch
+// Download Token one unambiguous row to key off.
+model AuditLogExportBatch {
+  batchId      String    @id
+  // S3 key of the assembled zip (one batch produces exactly one zip,
+  // containing every successfully-generated sibling's CSV). Null until the
+  // zip has been built; stays null forever for a batch whose sites all
+  // failed (nothing to zip).
+  zipObjectKey String?
+  // A lease, not a durable fact: stamped the moment a worker starts
+  // building the zip and sending the email (the "already emailed" claim
+  // deliberately lives on `emailedAt`, not here — see below), so a
+  // concurrent or later invocation can tell "someone is actively working on
+  // this" (claimedAt recent) apart from "an attempt died mid-flight"
+  // (claimedAt stale) and safely retry the stale case. Mirrors
+  // PROCESSING_LEASE_MS's role for individual AuditLogExportRequest rows.
+  claimedAt    DateTime?
+  // Set once the combined batch email has actually been sent — stamped
+  // AFTER zip build + upload + send all succeed, not before, so a failure
+  // partway leaves the batch retryable rather than permanently "claimed"
+  // with nothing delivered (see ADR 0009). Also anchors the batch's
+  // Download Window (mirroring how a single request's completedAt anchors
+  // its own window under ADR 0006), since a batch has no single per-row
+  // completion instant.
+  emailedAt    DateTime?
+  createdAt    DateTime  @default(now())
 }

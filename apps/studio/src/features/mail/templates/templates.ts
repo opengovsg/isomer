@@ -36,8 +36,9 @@ const getDownloadLinkLabel = (
   label: AuditLogExportDownloadLink["label"],
   longMonth: string,
   sizeInMb: string,
+  extension: "csv" | "zip" = "csv",
 ) => {
-  return `Download ${label} review logs for ${longMonth} [.csv, ${sizeInMb}MB]`
+  return `Download ${label} review logs for ${longMonth} [.${extension}, ${sizeInMb}MB]`
 }
 
 const constructStudioRedirect = () =>
@@ -332,23 +333,35 @@ const auditLogExportFailedTemplate = (
 
 // `data` is pre-escaped by `escapeTemplateArguments` — see the note on
 // `auditLogExportReadyTemplate`. One email covering every site an "allSites"
-// ask resolved to: `links` for sites whose export succeeded, `failedSiteNames`
-// for sites that exhausted retries.
+// ask resolved to: one zip (`zipLink`) bundling every site whose export
+// succeeded (named in `includedSiteNames` — the recipient can't preview a
+// zip's contents before downloading it), plus `failedSiteNames` for sites
+// that exhausted retries and never made it into the archive (see ADR 0009).
 const auditLogExportBatchReadyTemplate = (
   data: AuditLogExportBatchReadyEmailTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail, month, reportLabel, links, failedSiteNames } = data
+  const {
+    recipientEmail,
+    month,
+    reportLabel,
+    zipLink,
+    includedSiteNames,
+    failedSiteNames,
+  } = data
 
   const logName = reportLabel === "access" ? "Access" : "Audit"
 
-  const linkItems = links
-    .map(({ siteName, url, sizeInBytes }) => {
-      const sizeInMb = sizeInBytes
-        ? (sizeInBytes / ONE_MB_IN_BYTES).toFixed(2)
-        : "-"
-      return `<li><b>${siteName}</b>: <a href="${url}">${getDownloadLinkLabel(reportLabel, month, sizeInMb)}</a></li>`
-    })
-    .join("")
+  // `zipLink` is undefined only when every site in the batch failed — there
+  // was nothing to zip, so no download line at all, just the failure list.
+  const downloadSection = zipLink
+    ? `<p><a href="${zipLink.url}">${getDownloadLinkLabel(reportLabel, month, zipLink.sizeInBytes ? (zipLink.sizeInBytes / ONE_MB_IN_BYTES).toFixed(2) : "-", "zip")}</a></p>`
+    : ""
+
+  const includedSection =
+    includedSiteNames.length > 0
+      ? `<p>This zip includes ${logName.toLowerCase()} logs for:</p>
+<ul>${includedSiteNames.map((siteName) => `<li>${siteName}</li>`).join("")}</ul>`
+      : ""
 
   const failedSection =
     failedSiteNames.length > 0
@@ -359,8 +372,9 @@ const auditLogExportBatchReadyTemplate = (
   return {
     subject: `[Isomer] ${logName} logs for ${month} for your sites`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>You requested ${logName.toLowerCase()} logs for all your sites for ${month}. Each link below will expire after ${AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS} days.</p>
-${linkItems.length > 0 ? `<ul>${linkItems}</ul>` : ""}
+<p>You requested ${logName.toLowerCase()} logs for all your sites for ${month}, bundled into a single zip file. This link will expire after ${AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS} days.</p>
+${downloadSection}
+${includedSection}
 ${failedSection}
 <br/>
 <p>Best,</p>
