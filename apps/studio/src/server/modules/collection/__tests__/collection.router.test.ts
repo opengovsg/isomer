@@ -1613,6 +1613,34 @@ describe("collection.router", async () => {
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
+    it("should persist dateTagged on the collection link page blob", async () => {
+      const { page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      const dateTagged = [
+        {
+          id: "550e8400-e29b-41d4-a716-446655440000",
+          date: "2026-01-15",
+          endDate: "2026-01-20",
+        },
+      ]
+
+      const expected = await caller.updateCollectionLink({
+        siteId: site.id,
+        category: "category",
+        ref: "1",
+        linkId: Number(page.id),
+        dateTagged,
+      })
+
+      expect(
+        (expected.content.page as { dateTagged?: typeof dateTagged })
+          .dateTagged,
+      ).toEqual(dateTagged)
+    })
+
     it.skip("should throw when trying to update to a deleted `ref`")
 
     it.skip("should throw when trying to update to an invalid `ref`")

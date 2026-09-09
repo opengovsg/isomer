@@ -532,6 +532,7 @@ export const collectionRouter = router({
           image,
           tags,
           tagged,
+          dateTagged,
         },
         ctx,
       }) => {
@@ -585,6 +586,7 @@ export const collectionRouter = router({
                 image,
                 tags,
                 tagged,
+                dateTagged,
               },
             },
             pageId: linkId,
