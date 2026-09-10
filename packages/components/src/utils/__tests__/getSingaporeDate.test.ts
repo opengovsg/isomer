@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
-
-import { getSingaporeDateYYYYMMDD } from "../getSingaporeDate"
+import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
 describe("getSingaporeDateYYYYMMDD", () => {
   it("formats a known UTC instant as the Singapore calendar date", () => {
