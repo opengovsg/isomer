@@ -2,8 +2,7 @@ import type {
   DateFilterCard,
   DateFilterDisplayEntry,
 } from "~/interfaces/internal/DateFilter"
-
-import { getDateFilterStatus } from "../../layouts/Collection/utils/getDateFilterStatus"
+import { getDateFilterStatus } from "~/templates/next/layouts/Collection/utils/getDateFilterStatus"
 
 export const getDateFilterCardsFromEntries = (
   entries: DateFilterDisplayEntry[],
