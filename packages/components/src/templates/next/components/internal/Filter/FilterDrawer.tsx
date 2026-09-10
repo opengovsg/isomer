@@ -8,12 +8,14 @@ import { useEffect, useRef, useState } from "react"
 import { BiChevronDown, BiX } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
+import { TAG_CATEGORY_TYPE } from "~/types/constants"
 import { focusRing } from "~/utils/tailwind"
 
 import type { AppliedFilter, FilterProps } from "../../../types/Filter"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { IconButton } from "../IconButton"
+import { DateFilterControls } from "./DateFilterControls"
 
 const expandFilterButtonStyle = tv({
   extend: focusRing,
@@ -62,6 +64,17 @@ interface FilterDrawerProps extends FilterProps {
   onOpen: (isOpen: boolean) => void
 }
 
+type DateRangesById = Record<string, AppliedFilter["dateRange"]>
+
+const holdingDateRangesFromApplied = (
+  appliedFilters: AppliedFilter[],
+): DateRangesById =>
+  Object.fromEntries(
+    appliedFilters.flatMap(({ id, dateRange }) =>
+      dateRange ? [[id, dateRange]] : [],
+    ),
+  )
+
 const transform = {
   toCheckboxes: (appliedFilters: AppliedFilter[]) => {
     return appliedFilters.reduce(
@@ -69,13 +82,23 @@ const transform = {
       {} as Record<string, string[]>,
     )
   },
-  toAppliedFilters: (holdingFiltersById: Record<string, string[]>) => {
-    return Object.entries(holdingFiltersById)
-      .map(([id, items]) => ({
+  toAppliedFilters: (
+    holdingFiltersById: Record<string, string[]>,
+    holdingDateRangesById: DateRangesById,
+  ) => {
+    const ids = [
+      ...new Set([
+        ...Object.keys(holdingFiltersById),
+        ...Object.keys(holdingDateRangesById),
+      ]),
+    ]
+    return ids
+      .map((id) => ({
         id,
-        items: items.map((id) => ({ id })),
+        items: (holdingFiltersById[id] ?? []).map((itemId) => ({ id: itemId })),
+        dateRange: holdingDateRangesById[id],
       }))
-      .filter(({ items }) => items.length > 0)
+      .filter(({ items, dateRange }) => items.length > 0 || dateRange)
   },
 }
 
@@ -93,10 +116,16 @@ const FilterDrawerContent = ({
   const [holdingFiltersById, setHoldingFiltersById] = useState(
     transform.toCheckboxes(initialAppliedFilters),
   )
+  const [holdingDateRangesById, setHoldingDateRangesById] = useState(
+    holdingDateRangesFromApplied(initialAppliedFilters),
+  )
 
   // Synchronize the applied filters with the holding filters
   useEffect(() => {
     setHoldingFiltersById(transform.toCheckboxes(initialAppliedFilters))
+    setHoldingDateRangesById(
+      holdingDateRangesFromApplied(initialAppliedFilters),
+    )
   }, [initialAppliedFilters])
 
   const updateFilterToggle = (filterId: string) => {
@@ -107,7 +136,9 @@ const FilterDrawerContent = ({
   }
 
   const handleApplyFilters = () => {
-    setAppliedFilters(transform.toAppliedFilters(holdingFiltersById))
+    setAppliedFilters(
+      transform.toAppliedFilters(holdingFiltersById, holdingDateRangesById),
+    )
     onOpen(false)
   }
 
@@ -115,7 +146,7 @@ const FilterDrawerContent = ({
     <>
       {/* Filters */}
       <form className="flex-1 px-6 md:px-10">
-        {filters.map(({ id, label, items }) => (
+        {filters.map(({ id, label, items, type }) => (
           <CheckboxGroup
             className="border-b border-b-divider-medium py-4 last:border-0"
             key={id}
@@ -134,15 +165,28 @@ const FilterDrawerContent = ({
             />
 
             <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
-              {items.map(({ id: itemId, label: itemLabel, count }) => (
-                <Checkbox
-                  value={itemId}
-                  key={itemId}
-                  className="w-fit cursor-pointer p-2"
-                >
-                  {itemLabel} ({count.toLocaleString()})
-                </Checkbox>
-              ))}
+              {type === TAG_CATEGORY_TYPE.Date ? (
+                <DateFilterControls
+                  items={items}
+                  dateRange={holdingDateRangesById[id]}
+                  onDateRangeChange={(dateRange) =>
+                    setHoldingDateRangesById((prev) => ({
+                      ...prev,
+                      [id]: dateRange,
+                    }))
+                  }
+                />
+              ) : (
+                items.map(({ id: itemId, label: itemLabel, count }) => (
+                  <Checkbox
+                    value={itemId}
+                    key={itemId}
+                    className="w-fit cursor-pointer p-2"
+                  >
+                    {itemLabel} ({count.toLocaleString()})
+                  </Checkbox>
+                ))
+              )}
             </div>
           </CheckboxGroup>
         ))}

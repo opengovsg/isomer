@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { AppliedFilter } from "~/templates/next/types/Filter"
 import { useState } from "react"
 import { userEvent, within } from "storybook/test"
+import { toggleAppliedFilterItem } from "~/templates/next/layouts/Collection/utils"
 
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
@@ -13,40 +14,6 @@ const meta: Meta<typeof Filter> = {
   render: ({ filters, appliedFilters: _appliedFilters }) => {
     const [appliedFilters, setAppliedFilters] =
       useState<AppliedFilter[]>(_appliedFilters)
-    const updateAppliedFilters = (
-      appliedFilters: AppliedFilter[],
-      setAppliedFilters: (appliedFilters: AppliedFilter[]) => void,
-      filterId: string,
-      itemId: string,
-    ) => {
-      const filterIndex = appliedFilters.findIndex(
-        (filter) => filter.id === filterId,
-      )
-      if (filterIndex > -1) {
-        const itemIndex = appliedFilters[filterIndex]?.items.findIndex(
-          (item) => item.id === itemId,
-        )
-        if (itemIndex !== undefined && itemIndex > -1) {
-          const newAppliedFilters = [...appliedFilters]
-          newAppliedFilters[filterIndex]?.items.splice(itemIndex, 1)
-
-          if (newAppliedFilters[filterIndex]?.items.length === 0) {
-            newAppliedFilters.splice(filterIndex, 1)
-          }
-          setAppliedFilters(newAppliedFilters)
-        } else {
-          const newAppliedFilters = [...appliedFilters]
-          newAppliedFilters[filterIndex]?.items.push({ id: itemId })
-          setAppliedFilters(newAppliedFilters)
-        }
-      } else {
-        setAppliedFilters([
-          ...appliedFilters,
-          { id: filterId, items: [{ id: itemId }] },
-        ])
-      }
-    }
-
     const handleClearFilter = () => {
       setAppliedFilters([])
     }
@@ -57,7 +24,12 @@ const meta: Meta<typeof Filter> = {
         appliedFilters={appliedFilters}
         setAppliedFilters={setAppliedFilters}
         handleFilterToggle={(id: string, itemId: string) =>
-          updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
+          toggleAppliedFilterItem({
+            appliedFilters,
+            setAppliedFilters,
+            filterId: id,
+            itemId,
+          })
         }
         handleClearFilter={handleClearFilter}
       />

@@ -1,29 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ArticlePageHeaderProps } from "~/interfaces"
-import { DATE_FILTER_STATUS_ID } from "~/types/constants"
+import {
+  ongoingDateFilterEntry,
+  upcomingAndOngoingDateFilterEntries,
+} from "~/stories/helpers"
 
 import { ArticlePageHeader } from "./ArticlePageHeader"
-
-const pad = (n: number): string => n.toString().padStart(2, "0")
-const toDateString = (date: Date) =>
-  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
-const daysFromNow = (days: number) => {
-  const date = new Date()
-  date.setDate(date.getDate() + days)
-  return toDateString(date)
-}
-
-const EVENT_DATE_STATUS_LABELS = [
-  { id: DATE_FILTER_STATUS_ID.Ended, label: "Event ended" },
-  { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Ongoing" },
-  { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Upcoming" },
-]
-
-const REGISTRATION_DEADLINE_STATUS_LABELS = [
-  { id: DATE_FILTER_STATUS_ID.Ended, label: "Registration closed" },
-  { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Registration open" },
-  { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Registration upcoming" },
-]
 
 const meta: Meta<ArticlePageHeaderProps> = {
   title: "Next/Internal Components/ArticlePageHeader",
@@ -101,81 +83,47 @@ export const ArticleWithTags: Story = {
 }
 
 export const WithDateFilter: Story = {
+  name: "With Ongoing Date Filter",
   args: {
     ...ARTICLE,
     title: "Annual Community Charity Run 2026",
-    dateFilterDisplayEntries: [
-      {
-        id: "event-date",
-        label: "Event Date",
-        dateText: "27 Sep - 29 Sep 2026",
-        date: daysFromNow(-5),
-        endDate: daysFromNow(5),
-        statusLabels: EVENT_DATE_STATUS_LABELS,
-      },
-    ],
+    dateFilterDisplayEntries: [ongoingDateFilterEntry],
   },
 }
 
-export const WithMultipleDateFilters: Story = {
+export const WithUpcomingAndOngoingDateFilters: Story = {
+  name: "With Upcoming And Ongoing Date Filters",
   args: {
     ...ARTICLE,
-    title: "Item with two date filters",
-    dateFilterDisplayEntries: [
-      {
-        id: "event-date",
-        label: "Event Date",
-        dateText: "27 Sep - 29 Sep 2026",
-        date: daysFromNow(30),
-        endDate: daysFromNow(40),
-        statusLabels: EVENT_DATE_STATUS_LABELS,
-      },
-      {
-        id: "registration-deadline",
-        label: "Registration Deadline",
-        dateText: "1 Jan - 10 Sep 2026",
-        date: daysFromNow(-5),
-        endDate: daysFromNow(5),
-        statusLabels: REGISTRATION_DEADLINE_STATUS_LABELS,
-      },
-    ],
+    title: "Annual Community Charity Run 2026",
+    dateFilterDisplayEntries: upcomingAndOngoingDateFilterEntries,
   },
 }
 
-export const WithEverything: Story = {
+export const FullCombination: Story = {
   args: {
-    ...ARTICLE,
-    title: "Item with two date filters",
-    dateFilterDisplayEntries: [
-      {
-        id: "event-date",
-        label: "Event Date",
-        dateText: "27 Sep - 29 Sep 2026",
-        date: daysFromNow(30),
-        endDate: daysFromNow(40),
-        statusLabels: EVENT_DATE_STATUS_LABELS,
-      },
-      {
-        id: "registration-deadline",
-        label: "Registration Deadline",
-        dateText: "1 Jan - 10 Sep 2026",
-        date: daysFromNow(-5),
-        endDate: daysFromNow(5),
-        statusLabels: REGISTRATION_DEADLINE_STATUS_LABELS,
-      },
+    breadcrumb: {
+      links: [
+        { title: "Events", url: "/events" },
+        { title: "Community", url: "/events/community" },
+        {
+          title: "Annual Community Charity Run 2026",
+          url: "/events/community/annual-charity-run-2026",
+        },
+      ],
+    },
+    plaintextTags: [
+      { category: "Category", selected: ["Community", "Sports"] },
+      { category: "Region", selected: ["Central", "East"] },
     ],
-    // NOTE: `pillTags` here is expected to already exclude any
-    // `display: "plaintext"` groups (see Article.tsx's `pillTags`), so
-    // that they aren't duplicated as a pill.
+    title: "Annual Community Charity Run 2026",
+    date: "2025-06-01",
+    summary:
+      "Join us for a day of fitness and fundraising. All proceeds support local youth programmes.",
     pillTags: [
-      {
-        category: "Tags",
-        selected: ["NParks Happenings", "Wild dinosaur"],
-      },
-      {
-        category: "Topic",
-        selected: ["Health", "Community"],
-      },
+      { category: "Topic", selected: ["Running", "Charity"] },
+      { category: "Audience", selected: ["Family-friendly", "Youth"] },
     ],
+    dateFilterDisplayEntries: upcomingAndOngoingDateFilterEntries,
   },
 }
