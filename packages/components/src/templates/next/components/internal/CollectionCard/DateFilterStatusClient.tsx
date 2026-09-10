@@ -4,7 +4,6 @@ import type { DateFilterDisplayEntry } from "~/interfaces/internal/DateFilter"
 import { useMemo } from "react"
 
 import { getDateFilterCardsFromEntries } from "../../../layouts/Collection/utils/dateFilterCards"
-import { getTodayInSingapore } from "../../../layouts/Collection/utils/getDateFilterStatus"
 import { EventStatusPill } from "./EventStatusPill"
 
 interface DateFilterStatusClientProps {
@@ -16,11 +15,9 @@ export const DateFilterStatusClient = ({
 }: DateFilterStatusClientProps) => {
   const dateFilterCards = useMemo(
     () =>
-      entries?.length
-        ? getDateFilterCardsFromEntries(entries, getTodayInSingapore())
-        : undefined,
-    // NOTE: `today` is only recomputed when `entries` changes. Status can stay
-    // stale if the page stays mounted across Singapore midnight — accepted.
+      entries?.length ? getDateFilterCardsFromEntries(entries) : undefined,
+    // NOTE: status is only recomputed when `entries` changes. It can stay stale
+    // if the page stays mounted across Singapore midnight — accepted.
     [entries],
   )
 

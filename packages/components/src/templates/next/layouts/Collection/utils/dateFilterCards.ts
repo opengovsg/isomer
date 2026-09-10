@@ -3,15 +3,14 @@ import type {
   DateFilterDisplayEntry,
 } from "~/interfaces/internal/DateFilter"
 
-import { getDateFilterStatus, getTodayInSingapore } from "./getDateFilterStatus"
+import { getDateFilterStatus } from "./getDateFilterStatus"
 
 export const getDateFilterCardsFromEntries = (
   entries: DateFilterDisplayEntry[],
-  today: string = getTodayInSingapore(),
 ): DateFilterCard[] =>
   entries.map((entry) => {
     const { statusLabels, ...displayFields } = entry
-    const status = getDateFilterStatus(entry, today)
+    const status = getDateFilterStatus(entry)
     const statusLabel =
       statusLabels.find(({ id }) => id === status)?.label ?? status
 
