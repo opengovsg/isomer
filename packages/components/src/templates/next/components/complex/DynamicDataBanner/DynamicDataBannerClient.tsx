@@ -6,10 +6,13 @@ import { BiError } from "react-icons/bi"
 import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "~/interfaces/complex/DynamicDataBanner/constants"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
+import {
+  getSingaporeDateLong,
+  getSingaporeDateYYYYMMDD,
+} from "~/utils/getSingaporeDate"
 
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
-import { getSingaporeDateLong, getSingaporeDateYYYYMMDD } from "./utils"
 
 const createDynamicDataBannerStyles = tv({
   slots: {
