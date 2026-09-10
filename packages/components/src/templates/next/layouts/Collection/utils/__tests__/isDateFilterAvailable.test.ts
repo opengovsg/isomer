@@ -77,9 +77,24 @@ describe("isDateFilterAvailable", () => {
     expect(result).toBe(false)
   })
 
-  it("returns false when status labels are enabled but no buckets have counts", () => {
+  it("returns true when both controls are enabled, buckets are empty, but cards have dates", () => {
+    // Arrange — blank status labels can yield items: [] while dateTaggedItemCount > 0
+    const filter = dateFilter({ items: [], dateTaggedItemCount: 3 })
+
+    // Act
+    const result = isDateFilterAvailable(filter)
+
+    // Assert
+    expect(result).toBe(true)
+  })
+
+  it("returns false when only status labels are enabled and no buckets have counts", () => {
     // Arrange
-    const filter = dateFilter({ items: [] })
+    const filter = dateFilter({
+      items: [],
+      dateTaggedItemCount: 3,
+      showDateRangeFilter: false,
+    })
 
     // Act
     const result = isDateFilterAvailable(filter)

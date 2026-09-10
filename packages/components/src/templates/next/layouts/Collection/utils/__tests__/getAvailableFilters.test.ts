@@ -206,6 +206,46 @@ describe("getAvailableFilters", () => {
     })
   })
 
+  it("includes a date filter when both controls are enabled but status labels are blank", () => {
+    // Arrange
+    const items: ProcessedCollectionCardProps[] = [
+      {
+        title: "Item 1",
+        dateTagged: ongoingDateTagged,
+        date: new Date("2023-01-01"),
+      } as ProcessedCollectionCardProps,
+    ]
+    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        label: "Event Date",
+        type: "date",
+        showStatusLabelsFilter: true,
+        showDateRangeFilter: true,
+        statusLabels: {
+          ENDED: "",
+          ONGOING: "",
+          UPCOMING: "",
+        },
+      },
+    ]
+
+    // Act
+    const result = getAvailableFilters(items, tagCategories)
+
+    // Assert
+    expect(result.map((filter) => filter.id)).toEqual([
+      EVENT_DATE_FILTER_ID,
+      "year",
+    ])
+    expect(result[0]).toMatchObject({
+      items: [],
+      dateTaggedItemCount: 1,
+      showStatusLabelsFilter: true,
+      showDateRangeFilter: true,
+    })
+  })
+
   it("omits a date-range-only filter when no cards have dateTagged entries", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [

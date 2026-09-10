@@ -21,8 +21,8 @@ export const isDateFilterAvailable = (filter: Filter): boolean => {
     return false
   }
 
-  if (showStatusLabelsFilter) {
-    return filter.items.length >= 1
+  if (showStatusLabelsFilter && filter.items.length >= 1) {
+    return true
   }
 
   return showDateRangeFilter && (filter.dateTaggedItemCount ?? 0) >= 1
