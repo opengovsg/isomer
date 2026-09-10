@@ -268,7 +268,7 @@ const categorySchemaObject = Type.Object({
 const dateSchemaObject = Type.Object({
   date: Type.Optional(
     Type.String({
-      title: "Item date",
+      title: "Article date",
       format: "date",
     }),
   ),
