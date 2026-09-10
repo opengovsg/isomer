@@ -90,6 +90,14 @@ export const DateRangeFilterInput = ({
     commitIfValid({ nextStart: start, nextEnd })
   }
 
+  // Native date pickers close on Escape. Stop bubbling so a parent dialog
+  // (the mobile filter drawer) does not close at the same time.
+  const stopEscapeFromBubbling = (event: React.KeyboardEvent) => {
+    if (event.key === "Escape") {
+      event.stopPropagation()
+    }
+  }
+
   return (
     <fieldset className="mx-2 mb-2 flex min-w-0 flex-col gap-2 border-0 p-0">
       <legend className="prose-headline-base-medium mb-2 text-base-content">
@@ -111,6 +119,7 @@ export const DateRangeFilterInput = ({
             max={end || undefined}
             placeholder={DATE_PLACEHOLDER}
             onChange={handleStartChange}
+            onKeyDown={stopEscapeFromBubbling}
             className={dateRangeInputFieldStyles({
               isInvalid: !!validationError,
             })}
@@ -133,6 +142,7 @@ export const DateRangeFilterInput = ({
             min={start || undefined}
             placeholder={DATE_PLACEHOLDER}
             onChange={handleEndChange}
+            onKeyDown={stopEscapeFromBubbling}
             className={dateRangeInputFieldStyles({
               isInvalid: !!validationError,
             })}
