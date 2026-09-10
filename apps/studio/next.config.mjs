@@ -145,7 +145,11 @@ const ContentSecurityPolicy = `
  */
 /** @type {import("next").NextConfig} */
 const config = {
-  output: "standalone",
+  // Next 16.3 skips next-server.js.nft.json when an adapter is present (Vercel
+  // injects one via NEXT_ADAPTER_PATH), but standalone still reads it unguarded
+  // (vercel/next.js#96646). Vercel ignores the standalone directory; keep it
+  // for Docker / start:standalone.
+  output: process.env.VERCEL ? undefined : "standalone",
   // Pin the tracing root so the standalone layout is always
   // `.next/standalone/apps/studio/server.js` (what the Dockerfile and start:standalone expect).
   // Without this, Next infers the workspace root from the outermost lockfile, which varies by
