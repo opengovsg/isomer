@@ -4,7 +4,7 @@ import {
 } from "~/types/constants"
 import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
-export interface DateFilterValue {
+interface DateFilterValue {
   date: string
   endDate?: string
 }

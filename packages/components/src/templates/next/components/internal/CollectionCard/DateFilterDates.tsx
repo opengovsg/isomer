@@ -1,4 +1,4 @@
-import type { DateFilterDisplayEntry } from "~/interfaces/internal/CollectionCard"
+import type { DateFilterDisplayEntry } from "~/interfaces/internal/DateFilter"
 
 import { LabeledDate } from "./LabeledDate"
 

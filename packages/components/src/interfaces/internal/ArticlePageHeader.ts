@@ -5,6 +5,7 @@ import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 import type { BreadcrumbProps } from "./Breadcrumb"
 import type { CollectionCardProps } from "./CollectionCard"
+import type { DateFilterDisplayEntry } from "./DateFilter"
 
 export const ArticlePageHeaderSchema = Type.Object({
   summary: Type.String({
@@ -37,5 +38,5 @@ export type ArticlePageHeaderProps = Static<typeof ArticlePageHeaderSchema> & {
   plaintextTags?: CollectionCardProps["plaintextTags"]
   date?: string
   site: IsomerSiteProps
-  dateFilterDisplayEntries?: CollectionCardProps["dateFilterDisplayEntries"]
+  dateFilterDisplayEntries?: DateFilterDisplayEntry[]
 }

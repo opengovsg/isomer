@@ -1,7 +1,7 @@
 import type {
   DateFilterCard,
   DateFilterDisplayEntry,
-} from "~/interfaces/internal/CollectionCard"
+} from "~/interfaces/internal/DateFilter"
 
 import { getDateFilterStatus, getTodayInSingapore } from "./getDateFilterStatus"
 
