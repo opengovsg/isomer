@@ -1,32 +1,24 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionCardProps } from "~/interfaces"
-import type { CollectionPagePageProps } from "~/types"
+import type { DateFilterStatusLabel } from "~/interfaces/internal/CollectionCard"
 import { expect, within } from "storybook/test"
-import { isDateFilter } from "~/types/page"
+import { DATE_FILTER_STATUS_ID } from "~/types/constants"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import { BlogCard } from "./BlogCard"
 
-const DATE_FILTER_TAG_CATEGORIES: CollectionPagePageProps["tagCategories"] = [
-  {
-    id: "event-date",
-    label: "Event Date",
-    type: "date",
-    statusLabels: [
-      { id: "ENDED", label: "Event ended" },
-      { id: "ONGOING", label: "Ongoing" },
-      { id: "UPCOMING", label: "Upcoming" },
-    ],
-  },
+const EVENT_DATE_STATUS_LABELS: DateFilterStatusLabel[] = [
+  { id: DATE_FILTER_STATUS_ID.Ended, label: "Event ended" },
+  { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Ongoing" },
+  { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Upcoming" },
 ]
 
-const statusLabelsFor = (categoryId: string) => {
-  const category = DATE_FILTER_TAG_CATEGORIES?.find(
-    (entry) => entry.id === categoryId,
-  )
-  return category && isDateFilter(category) ? category.statusLabels : []
-}
+const REGISTRATION_DEADLINE_STATUS_LABELS: DateFilterStatusLabel[] = [
+  { id: DATE_FILTER_STATUS_ID.Ended, label: "Registration closed" },
+  { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Registration open" },
+  { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Registration upcoming" },
+]
 
 const pad = (n: number): string => n.toString().padStart(2, "0")
 const daysFromNow = (days: number) => {
@@ -214,7 +206,73 @@ export const WithDateFilter: Story = {
         dateText: "27 Sep - 29 Sep 2026",
         date: daysFromNow(-5),
         endDate: daysFromNow(5),
-        statusLabels: statusLabelsFor("event-date"),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+    ],
+  },
+}
+
+export const WithMultipleDateFilters: Story = {
+  args: {
+    ...generateArgs({
+      title: "Item with two date filters",
+    }),
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(30),
+        endDate: daysFromNow(40),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+      {
+        id: "registration-deadline",
+        label: "Registration Deadline",
+        dateText: "1 Jan - 10 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: REGISTRATION_DEADLINE_STATUS_LABELS,
+      },
+    ],
+  },
+}
+
+export const WithEverything: Story = {
+  args: {
+    ...generateArgs({
+      title: "Item with two date filters",
+    }),
+    plaintextTags: [
+      { category: "Category", selected: ["Research"] },
+      { category: "Region", selected: ["Guides"] },
+    ],
+    pillTags: [
+      {
+        category: "Tags",
+        selected: ["NParks Happenings", "Wild dinosaur"],
+      },
+      {
+        category: "Topic",
+        selected: ["Health", "Community"],
+      },
+    ],
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(30),
+        endDate: daysFromNow(40),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+      {
+        id: "registration-deadline",
+        label: "Registration Deadline",
+        dateText: "1 Jan - 10 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: REGISTRATION_DEADLINE_STATUS_LABELS,
       },
     ],
   },

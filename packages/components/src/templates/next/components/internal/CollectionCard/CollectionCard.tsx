@@ -5,7 +5,8 @@ import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
 import { PillTags, PlaintextTags } from "../Tags"
 import { cardImageStyles } from "./cardImageStyles"
-import { EventDateFilterDisplay } from "./EventDateFilterDisplay"
+import { DateFilterDates } from "./DateFilterDates"
+import { DateFilterStatusClient } from "./DateFilterStatusClient"
 import { Title } from "./Title"
 
 export const CollectionCard = ({
@@ -28,6 +29,7 @@ export const CollectionCard = ({
   headingLevel: number
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
+  const hasDateFilters = (dateFilterDisplayEntries?.length ?? 0) > 0
 
   return (
     <Link
@@ -41,22 +43,24 @@ export const CollectionCard = ({
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">
-        <EventDateFilterDisplay
-          entries={dateFilterDisplayEntries}
-          beforeTitle={
-            shouldShowDate ? (
-              <p className="prose-label-md-regular text-base-content-subtle md:hidden">
-                {formattedDate ? formattedDate : "-"}
-              </p>
-            ) : undefined
-          }
-        >
-          <Title
-            title={itemTitle}
-            isExternalLink={isExternalLink}
-            headingLevel={headingLevel}
-          />
-        </EventDateFilterDisplay>
+        {hasDateFilters && (
+          <DateFilterStatusClient entries={dateFilterDisplayEntries} />
+        )}
+        {shouldShowDate && (
+          <p className="prose-label-md-regular text-base-content-subtle md:hidden">
+            {formattedDate ? formattedDate : "-"}
+          </p>
+        )}
+        <Title
+          title={itemTitle}
+          isExternalLink={isExternalLink}
+          headingLevel={headingLevel}
+        />
+        {hasDateFilters && (
+          <div className="flex flex-col gap-y-3 md:grid md:grid-cols-[repeat(2,fit-content(100%))] md:grid-rows-[repeat(1,fit-content(100%))] md:gap-x-6">
+            <DateFilterDates entries={dateFilterDisplayEntries} />
+          </div>
+        )}
         <PillTags
           tags={pillTags}
           className="flex w-full flex-wrap items-center gap-2"
