@@ -773,7 +773,14 @@ export const processAuditLogExportRequest = async (
         .select("name")
         .executeTakeFirstOrThrow()
       const rangeSlug = getRangeSlug(request.auditLogDateRange)
-      objectKey = `audit-log-exports/${request.siteId}/${requestId}/${site.name}-${report.kind.toLowerCase()}-${rangeSlug}.csv`
+      // Site names are free text (schemas/site.ts enforces only non-empty
+      // after trim) and land directly in the S3 key; an unreplaced "/" would
+      // nest extra "directories" under this request's key prefix. Any other
+      // character (quotes, unicode, control chars) is safe here — it's the
+      // download filename derived from this key that needs escaping, which
+      // `uploadAuditLogExport` now handles via `content-disposition`.
+      const siteNameSlug = site.name.replace(/[/\\]/g, "-")
+      objectKey = `audit-log-exports/${request.siteId}/${requestId}/${siteNameSlug}-${report.kind.toLowerCase()}-${rangeSlug}.csv`
 
       try {
         await uploadAuditLogExport({ key: objectKey, body: csvStream })
