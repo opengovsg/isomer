@@ -81,14 +81,11 @@ const dateFilterIsRequiredSchemaObject = {
 const TextFilterSchema = Type.Object(
   {
     ...tagCategoryLabelSchemaObject,
-    // Optional for backward compatibility — every pre-existing `tagCategories`
-    // entry was a text filter before date filters existed. Must stay
-    // `"text"` or absent (never `"date"`) so this branch and `DateFilterSchema`
-    // remain mutually exclusive for `oneOf` resolution.
+    ...tagCategoryIsRequiredSchemaObject,
+    // Optional on old rows. Must be "text" or absent so oneOf picks TextFilterSchema.
     type: Type.Optional(
       Type.Literal(TAG_CATEGORY_TYPE.Text, { format: "hidden" }),
     ),
-    ...tagCategoryIsRequiredSchemaObject,
     // Optional for backward compatibility. Missing/`undefined` must be read as
     // `DEFAULT_TAG_CATEGORY_DISPLAY` via `resolveTagCategoryDisplay`.
     // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
