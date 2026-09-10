@@ -14,11 +14,8 @@ export {
   formatBytes,
   DGS_REQUEST_MAX_BYTES,
   getAskgovIdFromString,
-} from "./utils"
-export {
-  getCollectionSortOptions,
   resolveCollectionSortOrder,
-} from "./templates/next/layouts/Collection/utils/collectionSortOrder"
+} from "./utils"
 export * from "./schemas"
 export * from "./types"
 export * from "./interfaces"

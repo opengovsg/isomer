@@ -11,8 +11,6 @@ interface SortCollectionItemsProps extends Pick<
   items: AllCardProps[]
 }
 
-type SortDirection = NonNullable<SortCollectionItemsProps["sortDirection"]>
-
 const getLastModifiedDate = (item: AllCardProps): Date | undefined => {
   if (!item.lastModified) {
     return undefined
@@ -30,7 +28,7 @@ const getLastModifiedDate = (item: AllCardProps): Date | undefined => {
 const compareDates = (
   a: AllCardProps,
   b: AllCardProps,
-  sortDirection: SortDirection,
+  sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
 ): number => {
   // Type assertion because TS control-flow narrowing only works when
   // check is done inline and not when we define the variable
@@ -51,7 +49,7 @@ const compareDates = (
 const compareTitles = (
   a: AllCardProps,
   b: AllCardProps,
-  sortDirection: SortDirection,
+  sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
 ): number => {
   switch (sortDirection) {
     case "asc":
@@ -67,7 +65,7 @@ const compareTitles = (
 const compareLastModified = (
   a: AllCardProps,
   b: AllCardProps,
-  sortDirection: SortDirection,
+  sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
 ): number => {
   const aLastModified = getLastModifiedDate(a)
   const bLastModified = getLastModifiedDate(b)
@@ -106,7 +104,7 @@ const getDateFilterStartTime = (
 const compareByPublishDate = (
   a: AllCardProps,
   b: AllCardProps,
-  sortDirection: SortDirection,
+  sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
 ): number => {
   const bothHaveDates = a.date instanceof Date && b.date instanceof Date
   const bothSameDate = a.date?.getTime() === b.date?.getTime()
@@ -151,7 +149,7 @@ const compareDateFilterStartDates = (
   a: AllCardProps,
   b: AllCardProps,
   filterId: string,
-  sortDirection: SortDirection,
+  sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
 ): number => {
   const aDate = getDateFilterStartTime(a, filterId)
   const bDate = getDateFilterStartTime(b, filterId)
@@ -198,17 +196,14 @@ const compareDateFilterStartDates = (
 const sortCollectionItemsByDate = ({
   items,
   sortDirection = "desc",
-}: Omit<SortCollectionItemsProps, "sortBy" | "sortOrder"> & {
-  sortDirection?: SortDirection
-}) => items.sort((a, b) => compareByPublishDate(a, b, sortDirection))
+}: Omit<SortCollectionItemsProps, "sortBy" | "sortOrder">) =>
+  items.sort((a, b) => compareByPublishDate(a, b, sortDirection))
 
 // Sort by title, followed by published date, tiebreaker by last modified date
 const sortCollectionItemsByTitle = ({
   items,
   sortDirection = "asc",
-}: Omit<SortCollectionItemsProps, "sortBy" | "sortOrder"> & {
-  sortDirection?: SortDirection
-}) => {
+}: Omit<SortCollectionItemsProps, "sortBy" | "sortOrder">) => {
   return items.sort((a, b) => {
     const bothSameTitle = a.title === b.title
     const bothHaveDates = a.date instanceof Date && b.date instanceof Date
@@ -258,7 +253,7 @@ const sortCollectionItemsByDateFilter = ({
 }: {
   items: AllCardProps[]
   filterId: string
-  sortDirection?: SortDirection
+  sortDirection?: NonNullable<SortCollectionItemsProps["sortDirection"]>
 }) =>
   items.sort((a, b) =>
     compareDateFilterStartDates(a, b, filterId, sortDirection),

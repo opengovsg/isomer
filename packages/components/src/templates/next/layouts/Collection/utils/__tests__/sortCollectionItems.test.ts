@@ -610,4 +610,28 @@ describe("sortCollectionItems", () => {
       ])
     })
   })
+
+  describe("malformed sortOrder", () => {
+    it("should sort by published date newest first instead of trusting dirty data", () => {
+      // Arrange
+      const items = [
+        createItem({ title: "Oldest", date: new Date("2023-01-01") }),
+        createItem({ title: "Newest", date: new Date("2023-12-31") }),
+        createItem({ title: "Middle", date: new Date("2023-06-15") }),
+      ]
+
+      // Act
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: "totally-made-up",
+      })
+
+      // Assert
+      expect(sorted.map((item) => item.title)).toEqual([
+        "Newest",
+        "Middle",
+        "Oldest",
+      ])
+    })
+  })
 })

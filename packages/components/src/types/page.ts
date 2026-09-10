@@ -19,6 +19,7 @@ import {
 
 import {
   DATE_FILTER_STATUS,
+  DEFAULT_COLLECTION_SORT_ORDER,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   TAG_CATEGORY_TYPE,
   type DateFilterStatusId,
@@ -371,7 +372,7 @@ export const CollectionPagePageSchema = Type.Intersect([
         errorMessage: {
           pattern: "must be a valid collection sort order",
         },
-        default: "date-desc",
+        default: DEFAULT_COLLECTION_SORT_ORDER,
       }),
     ),
     // Deprecated, will be replaced with sortOrder above

@@ -1,10 +1,14 @@
 import type { CollectionPagePageProps } from "~/types/page"
 import { describe, expect, it } from "vitest"
-import { DATE_FILTER_STATUS, TAG_CATEGORY_TYPE } from "~/types/constants"
+import {
+  COLLECTION_SORT_ORDER,
+  DATE_FILTER_STATUS,
+  DEFAULT_COLLECTION_SORT_ORDER,
+  TAG_CATEGORY_TYPE,
+} from "~/types/constants"
 import { COLLECTION_SORT_ORDER_PATTERN } from "~/utils/validation"
 
 import {
-  getCollectionSortOptions,
   parseCollectionSortOrder,
   resolveCollectionSortOrder,
 } from "../collectionSortOrder"
@@ -41,8 +45,11 @@ describe("collectionSortOrder", () => {
   const sortOrderPattern = new RegExp(COLLECTION_SORT_ORDER_PATTERN)
 
   it("accepts syntactically valid sort orders", () => {
-    expect(sortOrderPattern.test("date-desc")).toBe(true)
-    expect(sortOrderPattern.test("title-asc")).toBe(true)
+    // Arrange / Act / Assert
+    expect(sortOrderPattern.test(COLLECTION_SORT_ORDER.DateDesc)).toBe(true)
+    expect(sortOrderPattern.test(COLLECTION_SORT_ORDER.DateAsc)).toBe(true)
+    expect(sortOrderPattern.test(COLLECTION_SORT_ORDER.TitleAsc)).toBe(true)
+    expect(sortOrderPattern.test(COLLECTION_SORT_ORDER.TitleDesc)).toBe(true)
     expect(sortOrderPattern.test(`date-filter-${EVENT_FILTER_ID}-desc`)).toBe(
       true,
     )
@@ -51,11 +58,12 @@ describe("collectionSortOrder", () => {
   })
 
   it("parses base and date-filter sort orders", () => {
-    expect(parseCollectionSortOrder("date-desc")).toEqual({
+    // Arrange / Act / Assert
+    expect(parseCollectionSortOrder(COLLECTION_SORT_ORDER.DateDesc)).toEqual({
       kind: "date",
       direction: "desc",
     })
-    expect(parseCollectionSortOrder("title-asc")).toEqual({
+    expect(parseCollectionSortOrder(COLLECTION_SORT_ORDER.TitleAsc)).toEqual({
       kind: "title",
       direction: "asc",
     })
@@ -68,29 +76,43 @@ describe("collectionSortOrder", () => {
     })
   })
 
-  it("builds base options plus two per date filter", () => {
-    expect(getCollectionSortOptions()).toHaveLength(4)
-
-    const options = getCollectionSortOptions(tagCategories)
-
-    expect(options).toHaveLength(8)
-    expect(options[4]).toEqual({
-      value: `date-filter-${EVENT_FILTER_ID}-desc`,
-      label: "By Event date, newest → oldest",
+  it("falls back to date-desc when sortOrder is missing or malformed", () => {
+    // Arrange / Act / Assert
+    expect(parseCollectionSortOrder(undefined)).toEqual({
+      kind: "date",
+      direction: "desc",
     })
-    expect(options[6]).toEqual({
-      value: `date-filter-${DEADLINE_FILTER_ID}-desc`,
-      label: "By Registration deadline, newest → oldest",
+    expect(parseCollectionSortOrder("totally-made-up")).toEqual({
+      kind: "date",
+      direction: "desc",
+    })
+    expect(parseCollectionSortOrder("date-filter-not-a-uuid-desc")).toEqual({
+      kind: "date",
+      direction: "desc",
+    })
+    expect(parseCollectionSortOrder("DATE-DESC")).toEqual({
+      kind: "date",
+      direction: "desc",
     })
   })
 
-  it("falls back to date-desc for missing or stale sort orders", () => {
+  it("falls back to date-desc for missing, malformed, or stale sort orders", () => {
+    // Arrange / Act / Assert
     expect(resolveCollectionSortOrder(undefined, tagCategories)).toBe(
-      "date-desc",
+      DEFAULT_COLLECTION_SORT_ORDER,
+    )
+    expect(resolveCollectionSortOrder("totally-made-up", tagCategories)).toBe(
+      DEFAULT_COLLECTION_SORT_ORDER,
     )
     expect(
       resolveCollectionSortOrder(`date-filter-${EVENT_FILTER_ID}-desc`, []),
-    ).toBe("date-desc")
+    ).toBe(DEFAULT_COLLECTION_SORT_ORDER)
+    expect(
+      resolveCollectionSortOrder(
+        `date-filter-${EVENT_FILTER_ID}-desc`,
+        undefined,
+      ),
+    ).toBe(DEFAULT_COLLECTION_SORT_ORDER)
     expect(
       resolveCollectionSortOrder(
         `date-filter-${DEADLINE_FILTER_ID}-asc`,

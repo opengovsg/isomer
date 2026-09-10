@@ -9,13 +9,14 @@ import {
   SingleSelect,
 } from "@opengovsg/design-system-react"
 import {
-  getCollectionSortOptions,
+  DEFAULT_COLLECTION_SORT_ORDER,
   resolveCollectionSortOrder,
 } from "@opengovsg/isomer-components"
 import { useEffect } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
 import { pageSchema } from "~/features/editing-experience/schema"
+import { getCollectionSortOptions } from "~/features/editing-experience/utils"
 import { useQueryParse } from "~/hooks/useQueryParse"
 
 import { getCustomErrorMessage } from "./utils"
@@ -37,7 +38,7 @@ function JsonFormsCollectionSortOrderControl({
 }: ControlProps): JSX.Element {
   const { siteId, pageId } = useQueryParse(pageSchema)
   const {
-    data: tagCategories,
+    data: tagCategories = [],
     isLoading,
     isSuccess,
     isError,
@@ -48,7 +49,7 @@ function JsonFormsCollectionSortOrderControl({
   const sortOrder = typeof data === "string" ? data : undefined
   const resolvedValue = isSuccess
     ? resolveCollectionSortOrder(sortOrder, tagCategories)
-    : (sortOrder ?? "date-desc")
+    : (sortOrder ?? DEFAULT_COLLECTION_SORT_ORDER)
 
   useEffect(() => {
     if (!isSuccess) {
@@ -81,7 +82,7 @@ function JsonFormsCollectionSortOrderControl({
         <SingleSelect
           value={resolvedValue}
           name={label}
-          items={getCollectionSortOptions(tagCategories ?? [])}
+          items={getCollectionSortOptions(tagCategories)}
           isClearable={false}
           isDisabled={!enabled}
           onChange={(value) => {
