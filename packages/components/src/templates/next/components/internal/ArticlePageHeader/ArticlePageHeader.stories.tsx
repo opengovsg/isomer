@@ -1,11 +1,26 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ArticlePageHeaderProps } from "~/interfaces"
-import {
-  ongoingDateFilterEntry,
-  upcomingAndOngoingDateFilterEntries,
-} from "~/stories/helpers"
+import { buildDateFilterStatusLabels } from "~/templates/next/layouts/Collection/utils/buildDateFilterStatusLabels"
+import { DATE_FILTER_STATUS } from "~/types/constants"
 
 import { ArticlePageHeader } from "./ArticlePageHeader"
+
+const pad = (n: number): string => n.toString().padStart(2, "0")
+const toDateString = (date: Date) =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+const daysFromNow = (days: number) => {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return toDateString(date)
+}
+
+const EVENT_DATE_STATUS_LABELS = buildDateFilterStatusLabels()
+
+const REGISTRATION_DEADLINE_STATUS_LABELS = buildDateFilterStatusLabels({
+  [DATE_FILTER_STATUS.Ended.id]: "Registration closed",
+  [DATE_FILTER_STATUS.Ongoing.id]: "Registration open",
+  [DATE_FILTER_STATUS.Upcoming.id]: "Registration upcoming",
+})
 
 const meta: Meta<ArticlePageHeaderProps> = {
   title: "Next/Internal Components/ArticlePageHeader",
@@ -83,47 +98,81 @@ export const ArticleWithTags: Story = {
 }
 
 export const WithDateFilter: Story = {
-  name: "With Ongoing Date Filter",
   args: {
     ...ARTICLE,
     title: "Annual Community Charity Run 2026",
-    dateFilterDisplayEntries: [ongoingDateFilterEntry],
-  },
-}
-
-export const WithUpcomingAndOngoingDateFilters: Story = {
-  name: "With Upcoming And Ongoing Date Filters",
-  args: {
-    ...ARTICLE,
-    title: "Annual Community Charity Run 2026",
-    dateFilterDisplayEntries: upcomingAndOngoingDateFilterEntries,
-  },
-}
-
-export const FullCombination: Story = {
-  args: {
-    breadcrumb: {
-      links: [
-        { title: "Events", url: "/events" },
-        { title: "Community", url: "/events/community" },
-        {
-          title: "Annual Community Charity Run 2026",
-          url: "/events/community/annual-charity-run-2026",
-        },
-      ],
-    },
-    plaintextTags: [
-      { category: "Category", selected: ["Community", "Sports"] },
-      { category: "Region", selected: ["Central", "East"] },
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
     ],
-    title: "Annual Community Charity Run 2026",
-    date: "2025-06-01",
-    summary:
-      "Join us for a day of fitness and fundraising. All proceeds support local youth programmes.",
+  },
+}
+
+export const WithMultipleDateFilters: Story = {
+  args: {
+    ...ARTICLE,
+    title: "Item with two date filters",
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(30),
+        endDate: daysFromNow(40),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+      {
+        id: "registration-deadline",
+        label: "Registration Deadline",
+        dateText: "1 Jan - 10 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: REGISTRATION_DEADLINE_STATUS_LABELS,
+      },
+    ],
+  },
+}
+
+export const WithEverything: Story = {
+  args: {
+    ...ARTICLE,
+    title: "Item with two date filters",
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(30),
+        endDate: daysFromNow(40),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+      {
+        id: "registration-deadline",
+        label: "Registration Deadline",
+        dateText: "1 Jan - 10 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: REGISTRATION_DEADLINE_STATUS_LABELS,
+      },
+    ],
+    // NOTE: `pillTags` here is expected to already exclude any
+    // `display: "plaintext"` groups (see Article.tsx's `pillTags`), so
+    // that they aren't duplicated as a pill.
     pillTags: [
-      { category: "Topic", selected: ["Running", "Charity"] },
-      { category: "Audience", selected: ["Family-friendly", "Youth"] },
+      {
+        category: "Tags",
+        selected: ["NParks Happenings", "Wild dinosaur"],
+      },
+      {
+        category: "Topic",
+        selected: ["Health", "Community"],
+      },
     ],
-    dateFilterDisplayEntries: upcomingAndOngoingDateFilterEntries,
   },
 }

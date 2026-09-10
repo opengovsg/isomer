@@ -1,11 +1,13 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
-import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
+import {
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+} from "~/types/constants"
 
 import { getAvailableFilters } from "../getAvailableFilters"
 
-const TODAY = "2026-06-15"
 const EVENT_DATE_FILTER_ID = "event-date-filter-id"
 
 const ongoingDateTagged = [
@@ -93,11 +95,7 @@ describe("getAvailableFilters", () => {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: "date",
-        statusLabels: [
-          { id: "ENDED", label: "Event ended" },
-          { id: "ONGOING", label: "Ongoing" },
-          { id: "UPCOMING", label: "Upcoming" },
-        ],
+        statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
       },
       {
         label: "Category",
@@ -109,7 +107,7 @@ describe("getAvailableFilters", () => {
     ]
 
     // Act
-    const result = getAvailableFilters(items, tagCategories, TODAY)
+    const result = getAvailableFilters(items, tagCategories)
 
     // Assert — matches tagCategories order (date before tag), not type-grouped
     expect(result.map((filter) => filter.id)).toEqual([
@@ -141,16 +139,12 @@ describe("getAvailableFilters", () => {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: "date",
-        statusLabels: [
-          { id: "ENDED", label: "Event ended" },
-          { id: "ONGOING", label: "Ongoing" },
-          { id: "UPCOMING", label: "Upcoming" },
-        ],
+        statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
       },
     ]
 
     // Act
-    const result = getAvailableFilters(items, tagCategories, TODAY)
+    const result = getAvailableFilters(items, tagCategories)
 
     // Assert
     expect(result.map((filter) => filter.id)).toEqual([

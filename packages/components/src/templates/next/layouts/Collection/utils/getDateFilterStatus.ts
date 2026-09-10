@@ -11,8 +11,8 @@ interface DateFilterValue {
 export const getDateFilterStatus = ({
   date,
   endDate,
-  today = getSingaporeDateYYYYMMDD(),
-}: DateFilterValue & { today?: string }): DateFilterStatusId => {
+}: DateFilterValue): DateFilterStatusId => {
+  const today = getSingaporeDateYYYYMMDD()
   const end = endDate ?? date
 
   if (today < date) {

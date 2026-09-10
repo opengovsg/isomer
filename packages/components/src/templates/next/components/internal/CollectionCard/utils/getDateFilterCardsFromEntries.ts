@@ -3,7 +3,7 @@ import type {
   DateFilterDisplayEntry,
 } from "~/interfaces/internal/DateFilter"
 
-import { getDateFilterStatus } from "./getDateFilterStatus"
+import { getDateFilterStatus } from "../../layouts/Collection/utils/getDateFilterStatus"
 
 export const getDateFilterCardsFromEntries = (
   entries: DateFilterDisplayEntry[],

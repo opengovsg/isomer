@@ -2,6 +2,10 @@ import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { AppliedFilter } from "~/templates/next/types/Filter"
 import type { CollectionPagePageProps } from "~/types"
 import { describe, expect, it } from "vitest"
+import {
+  DATE_FILTER_STATUS,
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+} from "~/types/constants"
 
 import { NO_SPECIFIED_YEAR_FILTER_ID } from "../constants"
 import { getFilteredItems } from "../getFilteredItems"
@@ -344,11 +348,7 @@ describe("getFilteredItems", () => {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: "date",
-        statusLabels: [
-          { id: "ENDED", label: "Ended" },
-          { id: "ONGOING", label: "Ongoing" },
-          { id: "UPCOMING", label: "Upcoming" },
-        ],
+        statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
       },
     ]
 
@@ -360,7 +360,6 @@ describe("getFilteredItems", () => {
     }
     const ONGOING_RANGE = { date: daysFromNow(-5), endDate: daysFromNow(5) }
     const ENDED_RANGE = { date: daysFromNow(-20), endDate: daysFromNow(-10) }
-    const today = daysFromNow(0)
 
     it("filters by bucket status (OR within the same date filter)", () => {
       // Arrange
@@ -377,7 +376,10 @@ describe("getFilteredItems", () => {
         } as ProcessedCollectionCardProps,
       ]
       const appliedFilters: AppliedFilter[] = [
-        { id: EVENT_DATE_FILTER_ID, items: [{ id: "ONGOING" }] },
+        {
+          id: EVENT_DATE_FILTER_ID,
+          items: [{ id: DATE_FILTER_STATUS.Ongoing.id }],
+        },
       ]
 
       // Act
@@ -386,7 +388,6 @@ describe("getFilteredItems", () => {
         appliedFilters,
         "",
         dateTagCategories,
-        today,
       )
 
       // Assert
@@ -433,7 +434,6 @@ describe("getFilteredItems", () => {
         appliedFilters,
         "",
         dateTagCategories,
-        today,
       )
 
       // Assert — the first item's range only partially overlaps the picked
@@ -458,7 +458,7 @@ describe("getFilteredItems", () => {
       const appliedFilters: AppliedFilter[] = [
         {
           id: EVENT_DATE_FILTER_ID,
-          items: [{ id: "ONGOING" }],
+          items: [{ id: DATE_FILTER_STATUS.Ongoing.id }],
           // Wide enough to overlap both fixtures' ranges, so only the
           // bucket-status check should be what excludes the second item.
           dateRange: { start: daysFromNow(-30), end: daysFromNow(30) },
@@ -471,7 +471,6 @@ describe("getFilteredItems", () => {
         appliedFilters,
         "",
         dateTagCategories,
-        today,
       )
 
       // Assert
@@ -493,7 +492,10 @@ describe("getFilteredItems", () => {
         } as ProcessedCollectionCardProps,
       ]
       const appliedFilters: AppliedFilter[] = [
-        { id: EVENT_DATE_FILTER_ID, items: [{ id: "ONGOING" }] },
+        {
+          id: EVENT_DATE_FILTER_ID,
+          items: [{ id: DATE_FILTER_STATUS.Ongoing.id }],
+        },
       ]
 
       // Act
@@ -502,7 +504,6 @@ describe("getFilteredItems", () => {
         appliedFilters,
         "",
         dateTagCategories,
-        today,
       )
 
       // Assert
@@ -518,7 +519,10 @@ describe("getFilteredItems", () => {
         } as ProcessedCollectionCardProps,
       ]
       const appliedFilters: AppliedFilter[] = [
-        { id: EVENT_DATE_FILTER_ID, items: [{ id: "ONGOING" }] },
+        {
+          id: EVENT_DATE_FILTER_ID,
+          items: [{ id: DATE_FILTER_STATUS.Ongoing.id }],
+        },
       ]
 
       const result = getFilteredItems(
@@ -526,7 +530,6 @@ describe("getFilteredItems", () => {
         appliedFilters,
         "",
         dateTagCategories,
-        today,
       )
 
       expect(result).toEqual([])

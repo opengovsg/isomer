@@ -1,7 +1,10 @@
 import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
 import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
-import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
+import {
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+} from "~/types/constants"
 
 import { getCollectionItems } from "../getCollectionItems"
 
@@ -427,11 +430,7 @@ describe("getCollectionItems", () => {
         label: "Event Date",
         id: "date-1",
         type: "date",
-        statusLabels: {
-          ENDED: "Ended",
-          ONGOING: "Ongoing",
-          UPCOMING: "Upcoming",
-        },
+        statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
       },
       {
         label: "Category",

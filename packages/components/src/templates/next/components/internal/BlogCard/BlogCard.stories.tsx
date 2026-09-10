@@ -1,14 +1,27 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionCardProps } from "~/interfaces"
 import { expect, within } from "storybook/test"
-import {
-  ongoingDateFilterEntry,
-  upcomingAndOngoingDateFilterEntries,
-} from "~/stories/helpers"
+import { buildDateFilterStatusLabels } from "~/templates/next/layouts/Collection/utils/buildDateFilterStatusLabels"
+import { DATE_FILTER_STATUS } from "~/types/constants"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import { BlogCard } from "./BlogCard"
+
+const EVENT_DATE_STATUS_LABELS = buildDateFilterStatusLabels()
+
+const REGISTRATION_DEADLINE_STATUS_LABELS = buildDateFilterStatusLabels({
+  [DATE_FILTER_STATUS.Ended.id]: "Registration closed",
+  [DATE_FILTER_STATUS.Ongoing.id]: "Registration open",
+  [DATE_FILTER_STATUS.Upcoming.id]: "Registration upcoming",
+})
+
+const pad = (n: number): string => n.toString().padStart(2, "0")
+const daysFromNow = (days: number) => {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
 
 const meta: Meta<typeof BlogCard> = {
   title: "Next/Internal Components/Blog Card",
@@ -178,21 +191,85 @@ export const MultiplePlaintextTags: Story = {
 }
 
 export const WithDateFilter: Story = {
-  name: "With Ongoing Date Filter",
   args: {
     ...generateArgs({
       title: "Annual Community Charity Run 2026",
     }),
-    dateFilterDisplayEntries: [ongoingDateFilterEntry],
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+    ],
   },
 }
 
-export const WithUpcomingAndOngoingDateFilters: Story = {
-  name: "With Upcoming And Ongoing Date Filters",
+export const WithMultipleDateFilters: Story = {
   args: {
     ...generateArgs({
-      title: "Annual Community Charity Run 2026",
+      title: "Item with two date filters",
     }),
-    dateFilterDisplayEntries: upcomingAndOngoingDateFilterEntries,
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(30),
+        endDate: daysFromNow(40),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+      {
+        id: "registration-deadline",
+        label: "Registration Deadline",
+        dateText: "1 Jan - 10 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: REGISTRATION_DEADLINE_STATUS_LABELS,
+      },
+    ],
+  },
+}
+
+export const WithEverything: Story = {
+  args: {
+    ...generateArgs({
+      title: "Item with two date filters",
+    }),
+    plaintextTags: [
+      { category: "Category", selected: ["Research"] },
+      { category: "Region", selected: ["Guides"] },
+    ],
+    pillTags: [
+      {
+        category: "Tags",
+        selected: ["NParks Happenings", "Wild dinosaur"],
+      },
+      {
+        category: "Topic",
+        selected: ["Health", "Community"],
+      },
+    ],
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(30),
+        endDate: daysFromNow(40),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+      {
+        id: "registration-deadline",
+        label: "Registration Deadline",
+        dateText: "1 Jan - 10 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: REGISTRATION_DEADLINE_STATUS_LABELS,
+      },
+    ],
   },
 }

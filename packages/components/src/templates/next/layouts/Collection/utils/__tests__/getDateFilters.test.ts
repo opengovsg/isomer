@@ -1,8 +1,8 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
-import { describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import {
-  DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY,
+  DATE_FILTER_STATUS,
   DEFAULT_DATE_FILTER_STATUS_LABELS,
   TAG_CATEGORY_TYPE,
 } from "~/types/constants"
@@ -24,8 +24,17 @@ const tagCategories: NonNullable<
 ]
 
 describe("getDateFilters", () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(`${TODAY}T12:00:00+08:00`))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it("returns no filters when there are no tagCategories", () => {
-    expect(getDateFilters([], undefined, TODAY)).toEqual([])
+    expect(getDateFilters([], undefined)).toEqual([])
   })
 
   it("ignores text-type tagCategories entirely", () => {
@@ -33,7 +42,7 @@ describe("getDateFilters", () => {
       CollectionPageSchemaType["page"]["tagCategories"]
     > = [{ id: "text-filter", label: "Category", options: [] }]
 
-    expect(getDateFilters([], textOnly, TODAY)).toEqual([])
+    expect(getDateFilters([], textOnly)).toEqual([])
   })
 
   it("counts items into their computed status bucket, dropping empty buckets", () => {
@@ -67,21 +76,22 @@ describe("getDateFilters", () => {
       } as ProcessedCollectionCardProps,
     ]
 
-    const result = getDateFilters(items, tagCategories, TODAY)
-
-    expect(result).toEqual([
+    expect(getDateFilters(items, tagCategories)).toEqual([
       {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: TAG_CATEGORY_TYPE.Date,
-        showStatusLabelsFilter:
-          DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabelsFilter,
-        showDateRangeFilter:
-          DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRangeFilter,
-        dateTaggedItemCount: 3,
         items: [
-          { id: "ONGOING", label: "Ongoing", count: 2 },
-          { id: "UPCOMING", label: "Upcoming", count: 1 },
+          {
+            id: DATE_FILTER_STATUS.Ongoing.id,
+            label: DATE_FILTER_STATUS.Ongoing.defaultLabel,
+            count: 2,
+          },
+          {
+            id: DATE_FILTER_STATUS.Upcoming.id,
+            label: DATE_FILTER_STATUS.Upcoming.defaultLabel,
+            count: 1,
+          },
         ],
       },
     ])
@@ -92,16 +102,11 @@ describe("getDateFilters", () => {
       { dateTagged: undefined } as ProcessedCollectionCardProps,
     ]
 
-    expect(getDateFilters(items, tagCategories, TODAY)).toEqual([
+    expect(getDateFilters(items, tagCategories)).toEqual([
       {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: TAG_CATEGORY_TYPE.Date,
-        showStatusLabelsFilter:
-          DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabelsFilter,
-        showDateRangeFilter:
-          DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRangeFilter,
-        dateTaggedItemCount: 0,
         items: [],
       },
     ])
@@ -117,7 +122,7 @@ describe("getDateFilters", () => {
         type: TAG_CATEGORY_TYPE.Date,
         statusLabels: {
           ...DEFAULT_DATE_FILTER_STATUS_LABELS,
-          ENDED: "",
+          [DATE_FILTER_STATUS.Ended.id]: "",
         },
       },
     ]
@@ -133,16 +138,11 @@ describe("getDateFilters", () => {
       } as ProcessedCollectionCardProps,
     ]
 
-    expect(getDateFilters(items, categoriesWithBlankLabel, TODAY)).toEqual([
+    expect(getDateFilters(items, categoriesWithBlankLabel)).toEqual([
       {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: TAG_CATEGORY_TYPE.Date,
-        showStatusLabelsFilter:
-          DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabelsFilter,
-        showDateRangeFilter:
-          DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRangeFilter,
-        dateTaggedItemCount: 1,
         items: [],
       },
     ])

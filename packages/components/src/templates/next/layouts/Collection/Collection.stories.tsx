@@ -5,6 +5,7 @@ import { flatten, times } from "lodash-es"
 import { expect, userEvent, within } from "storybook/test"
 import { generateSiteConfig } from "~/stories/helpers"
 import {
+  DATE_FILTER_STATUS,
   DEFAULT_DATE_FILTER_STATUS_LABELS,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   TAG_CATEGORY_TYPE,
@@ -374,7 +375,7 @@ const EVENT_DATE_FILTER_ID = "event-date-filter"
 // schema default "Event ended").
 const EVENT_DATE_STATUS_LABELS = {
   ...DEFAULT_DATE_FILTER_STATUS_LABELS,
-  ENDED: "Ended",
+  [DATE_FILTER_STATUS.Ended.id]: "Ended",
 }
 const EVENT_DATE_TAG_CATEGORY: NonNullable<
   CollectionPageSchemaType["page"]["tagCategories"]

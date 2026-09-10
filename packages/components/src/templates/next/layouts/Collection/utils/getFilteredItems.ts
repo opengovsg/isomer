@@ -1,11 +1,10 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPagePageProps } from "~/types"
-import { getDateFilterStatus } from "~/templates/next/components/internal/CollectionCard/utils/getDateFilterStatus"
 import { isDateFilter, isTextFilter } from "~/types/page"
-import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
 import type { AppliedFilter } from "../../../types/Filter"
 import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
+import { getDateFilterStatus } from "./getDateFilterStatus"
 import { normalizeCollectionSearchText } from "./normalizeCollectionSearchText"
 
 export const getFilteredItems = (
@@ -14,7 +13,6 @@ export const getFilteredItems = (
   searchValue: string,
   tagCategories?: CollectionPagePageProps["tagCategories"],
 ): ProcessedCollectionCardProps[] => {
-  const today = getSingaporeDateYYYYMMDD()
   const normalizedSearchValue =
     searchValue !== "" ? normalizeCollectionSearchText(searchValue) : ""
 
@@ -98,8 +96,7 @@ export const getFilteredItems = (
       const matchesBucket =
         appliedFilter.items.length === 0 ||
         appliedFilter.items.some(
-          ({ id: statusId }) =>
-            getDateFilterStatus({ ...value, today }) === statusId,
+          ({ id: statusId }) => getDateFilterStatus(value) === statusId,
         )
 
       const matchesRange =

@@ -26,6 +26,8 @@ interface BaseCardProps {
   // NOTE: Same shape as `pillTags`, but only includes groups shown as plaintext
   // — rendered as comma-joined text, dot-separated between groups (see PlaintextTags)
   plaintextTags?: TagGroup[]
+  // NOTE: one entry per date-type filter the item has a raw value for — used
+  // for filter matching (see getFilteredItems' range-overlap check).
   dateTagged?: DateTaggedItem[]
   // NOTE: server-precomputed label + date text for DateFilterDates.
   dateFilterDisplayEntries?: DateFilterDisplayEntry[]

@@ -52,13 +52,18 @@ export const BlogCard = ({
         </div>
       )}
       {shouldShowDate && (
-        <p className="prose-label-md-regular shrink-0 text-base-content-subtle">
+        <p className="prose-label-md-regular hidden shrink-0 text-base-content-subtle md:block">
           {formattedDate ? formattedDate : "-"}
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
         {hasDateFilters && (
           <DateFilterStatusClient entries={dateFilterDisplayEntries} />
+        )}
+        {shouldShowDate && (
+          <p className="prose-label-md-regular text-base-content-subtle md:hidden">
+            {formattedDate ? formattedDate : "-"}
+          </p>
         )}
         <Title
           title={itemTitle}

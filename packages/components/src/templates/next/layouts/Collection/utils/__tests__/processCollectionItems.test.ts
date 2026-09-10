@@ -2,6 +2,7 @@ import type { AllCardProps } from "~/interfaces"
 import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 
+import { buildDateFilterStatusLabels } from "../buildDateFilterStatusLabels"
 import { processCollectionItems } from "../processCollectionItems"
 
 const site = generateSiteConfig({
@@ -39,11 +40,7 @@ describe("processCollectionItems", () => {
         label: "Event Date",
         dateText: "27 Sep 2026",
         date: "2026-09-27",
-        statusLabels: {
-          ENDED: "Ended",
-          ONGOING: "Ongoing",
-          UPCOMING: "Upcoming",
-        },
+        statusLabels: buildDateFilterStatusLabels(),
       },
     ]
 
