@@ -149,7 +149,7 @@ const config = {
   // injects one via NEXT_ADAPTER_PATH), but standalone still reads it unguarded
   // (vercel/next.js#96646). Vercel ignores the standalone directory; keep it
   // for Docker / start:standalone.
-  // oxlint-disable-next-line node/no-process-env -- Vercel injects this; not an app env
+  // oxlint-disable-next-line node/no-process-env
   output: process.env.VERCEL ? undefined : "standalone",
   // Pin the tracing root so the standalone layout is always
   // `.next/standalone/apps/studio/server.js` (what the Dockerfile and start:standalone expect).
