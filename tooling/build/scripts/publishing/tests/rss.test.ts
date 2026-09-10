@@ -4,6 +4,11 @@ import type {
   IsomerSitemap,
 } from "@opengovsg/isomer-components/build-utils"
 import { getCollectionItems } from "@opengovsg/isomer-components/build-utils"
+import { execFileSync } from "node:child_process"
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 
 import {
@@ -83,6 +88,46 @@ const collectionNodeOf = (site: IsomerSiteProps): IsomerCollectionPageSitemap =>
   site.siteMap.children!.find(
     (c): c is IsomerCollectionPageSitemap => c.layout === "collection",
   )!
+
+it("writes populated and nested empty collection feeds beneath OUT_DIR", () => {
+  const site = makeSite([makeItem({ date: "2026-07-15" })])
+  collectionNodeOf(site).children!.push({
+    ...collectionNodeOf(makeSite([])),
+    id: "empty-collection",
+    permalink: "/newsroom/nested/empty/",
+  })
+  const tempDir = mkdtempSync(join(tmpdir(), "rss-cli-"))
+  const sitemapPath = join(tempDir, "sitemap.json")
+  const configPath = join(tempDir, "config.json")
+  const outDir = join(tempDir, "out")
+
+  try {
+    writeFileSync(sitemapPath, JSON.stringify(site.siteMap))
+    writeFileSync(configPath, JSON.stringify({ site }))
+    execFileSync(process.execPath, ["--import", "tsx", "rss.ts"], {
+      cwd: fileURLToPath(new URL("..", import.meta.url)),
+      env: {
+        SITEMAP_JSON: sitemapPath,
+        CONFIG_JSON: configPath,
+        OUT_DIR: outDir,
+      },
+    })
+
+    const populatedFeed = readFileSync(
+      join(outDir, "newsroom/rss.xml"),
+      "utf-8",
+    )
+    const emptyFeed = readFileSync(
+      join(outDir, "newsroom/nested/empty/rss.xml"),
+      "utf-8",
+    )
+    expect(populatedFeed).toContain("<item>")
+    expect(emptyFeed).toContain("<channel>")
+    expect(emptyFeed).not.toContain("<item>")
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
+  }
+})
 
 describe("escapeXml", () => {
   it("escapes the five XML special characters", () => {
