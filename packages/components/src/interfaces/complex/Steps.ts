@@ -3,10 +3,6 @@ import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
-// `numeral` is a bare number with no container; `eyebrow` and `badge` both sit
-// in a bordered card and differ in how the number itself is set.
-export const STEPS_NUMBER_STYLES = ["numeral", "eyebrow", "badge"] as const
-
 const StepSchema = Type.Object({
   title: Type.String({
     title: "Step title",
@@ -54,6 +50,8 @@ export const StepsSchema = Type.Object(
         title: "Description",
       }),
     ),
+    // `numeral` is a bare number with no container; `eyebrow` and `badge` both
+    // sit in a bordered card and differ in how the number itself is set.
     numberStyle: Type.Optional(
       Type.Union(
         [
@@ -79,8 +77,6 @@ export const StepsSchema = Type.Object(
     description: "A component that displays a sequence of numbered steps",
   },
 )
-
-export type StepsNumberStyle = (typeof STEPS_NUMBER_STYLES)[number]
 
 export type StepsProps = Static<typeof StepsSchema> & {
   layout: IsomerPageLayoutType
