@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { AppliedFilter } from "~/templates/next/types/Filter"
 import { useState } from "react"
-import { userEvent, within } from "storybook/test"
+import { expect, userEvent, within } from "storybook/test"
 import { toggleAppliedFilterItem } from "~/templates/next/layouts/Collection/utils"
 import { DATE_FILTER_STATUS, TAG_CATEGORY_TYPE } from "~/types/constants"
 
@@ -200,5 +200,123 @@ export const MobileDateFilterDrawer: Story = {
       name: /filter results/i,
     })
     await userEvent.click(button)
+  },
+}
+
+const dateFilterDesktopParameters = {
+  chromatic: withChromaticModes(["desktop"]),
+  globals: { viewport: getViewportByMode("desktop") },
+}
+
+const createDateFilter = (visibility: {
+  showStatusLabelsFilter: boolean
+  showDateRangeFilter: boolean
+}) => ({
+  ...DATE_FILTER,
+  ...visibility,
+})
+
+const assertDateFilterControls = async (
+  canvas: ReturnType<typeof within>,
+  {
+    showStatusLabelsFilter,
+    showDateRangeFilter,
+  }: {
+    showStatusLabelsFilter: boolean
+    showDateRangeFilter: boolean
+  },
+) => {
+  if (showStatusLabelsFilter) {
+    await expect(
+      await canvas.findByRole("checkbox", { name: /Ongoing \(10\)/i }),
+    ).toBeInTheDocument()
+  } else {
+    await expect(
+      canvas.queryByRole("checkbox", { name: /Ongoing \(10\)/i }),
+    ).not.toBeInTheDocument()
+  }
+
+  if (showDateRangeFilter) {
+    await expect(await canvas.findByLabelText(/^From$/i)).toBeInTheDocument()
+    await expect(await canvas.findByLabelText(/^To$/i)).toBeInTheDocument()
+  } else {
+    await expect(canvas.queryByLabelText(/^From$/i)).not.toBeInTheDocument()
+  }
+}
+
+export const DateFilterStatusLabelsOnly: Story = {
+  parameters: dateFilterDesktopParameters,
+  args: {
+    filters: [
+      createDateFilter({
+        showStatusLabelsFilter: true,
+        showDateRangeFilter: false,
+      }),
+    ],
+    appliedFilters: [],
+  },
+  play: async ({ canvasElement }) => {
+    await assertDateFilterControls(within(canvasElement), {
+      showStatusLabelsFilter: true,
+      showDateRangeFilter: false,
+    })
+  },
+}
+
+export const DateFilterDateRangeOnly: Story = {
+  parameters: dateFilterDesktopParameters,
+  args: {
+    filters: [
+      createDateFilter({
+        showStatusLabelsFilter: false,
+        showDateRangeFilter: true,
+      }),
+    ],
+    appliedFilters: [],
+  },
+  play: async ({ canvasElement }) => {
+    await assertDateFilterControls(within(canvasElement), {
+      showStatusLabelsFilter: false,
+      showDateRangeFilter: true,
+    })
+  },
+}
+
+export const DateFilterBothControls: Story = {
+  parameters: dateFilterDesktopParameters,
+  args: {
+    filters: [
+      createDateFilter({
+        showStatusLabelsFilter: true,
+        showDateRangeFilter: true,
+      }),
+    ],
+    appliedFilters: [],
+  },
+  play: async ({ canvasElement }) => {
+    await assertDateFilterControls(within(canvasElement), {
+      showStatusLabelsFilter: true,
+      showDateRangeFilter: true,
+    })
+  },
+}
+
+export const DateFilterDateRangeOnlyMobileDrawer: Story = {
+  parameters: {
+    chromatic: withChromaticModes(["mobile"]),
+    globals: { viewport: getViewportByMode("mobile") },
+  },
+  args: DateFilterDateRangeOnly.args,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /filter results/i }),
+    )
+    // Drawer renders in a portal outside the story canvas.
+    // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
+    await assertDateFilterControls(within(canvasElement.parentElement!), {
+      showStatusLabelsFilter: false,
+      showDateRangeFilter: true,
+    })
   },
 }

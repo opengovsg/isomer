@@ -6,6 +6,7 @@ import type { Filter } from "../../../types/Filter"
 import { getDateFilters } from "./getDateFilters"
 import { getTagFilters } from "./getTagFilters"
 import { getYearFilter } from "./getYearFilter"
+import { isAvailableFilter } from "./isDateFilterAvailable"
 
 type TagCategory = NonNullable<
   CollectionPageSchemaType["page"]["tagCategories"]
@@ -36,6 +37,6 @@ export const getAvailableFilters = (
 
   // TODO: Allow user to pass in order of filters to be shown
   return [...orderedCategoryFilters, getYearFilter(items)].filter(
-    (filter) => filter.items.length >= 1,
+    isAvailableFilter,
   )
 }

@@ -167,6 +167,24 @@ const DateFilterSchema = Type.Object(
         format: "date-filter-status-labels",
       },
     ),
+    // Hidden toggles default true at render time via
+    // `DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY` — omit JSON Schema `default` for
+    // the same Studio AJV useDefaults reason as `isRequired` above.
+    showStatusLabelsFilter: Type.Optional(
+      Type.Boolean({
+        title: "Show status labels filter",
+        description:
+          "Let visitors filter by status labels (e.g. Upcoming, Ongoing, Ended).",
+        format: "hidden",
+      }),
+    ),
+    showDateRangeFilter: Type.Optional(
+      Type.Boolean({
+        title: "Show date range filter",
+        description: "Let visitors filter by a custom date range.",
+        format: "hidden",
+      }),
+    ),
   },
   { title: "Date filter" },
 )
@@ -175,6 +193,11 @@ export type TextFilterSchemaType = Static<typeof TextFilterSchema>
 export type DateFilterSchemaType = Static<typeof DateFilterSchema>
 
 type TagCategory = TextFilterSchemaType | DateFilterSchemaType
+
+export type DateFilterSidebarVisibility = Pick<
+  DateFilterSchemaType,
+  "showStatusLabelsFilter" | "showDateRangeFilter"
+>
 
 export const isDateFilter = (
   category: TagCategory,
