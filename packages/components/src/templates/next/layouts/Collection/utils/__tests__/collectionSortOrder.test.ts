@@ -76,6 +76,25 @@ describe("collectionSortOrder", () => {
     })
   })
 
+  it("parses remaining base and date-filter directions", () => {
+    // Arrange / Act / Assert
+    expect(parseCollectionSortOrder(COLLECTION_SORT_ORDER.DateAsc)).toEqual({
+      kind: "date",
+      direction: "asc",
+    })
+    expect(parseCollectionSortOrder(COLLECTION_SORT_ORDER.TitleDesc)).toEqual({
+      kind: "title",
+      direction: "desc",
+    })
+    expect(
+      parseCollectionSortOrder(`date-filter-${EVENT_FILTER_ID}-asc`),
+    ).toEqual({
+      kind: "date-filter",
+      filterId: EVENT_FILTER_ID,
+      direction: "asc",
+    })
+  })
+
   it("falls back to date-desc when sortOrder is missing or malformed", () => {
     // Arrange / Act / Assert
     expect(parseCollectionSortOrder(undefined)).toEqual({
@@ -119,5 +138,38 @@ describe("collectionSortOrder", () => {
         tagCategories,
       ),
     ).toBe(`date-filter-${DEADLINE_FILTER_ID}-asc`)
+  })
+
+  it("keeps every base sort order unchanged when tagCategories is provided", () => {
+    // Arrange / Act / Assert
+    expect(
+      resolveCollectionSortOrder(COLLECTION_SORT_ORDER.DateDesc, tagCategories),
+    ).toBe(COLLECTION_SORT_ORDER.DateDesc)
+    expect(
+      resolveCollectionSortOrder(COLLECTION_SORT_ORDER.DateAsc, tagCategories),
+    ).toBe(COLLECTION_SORT_ORDER.DateAsc)
+    expect(
+      resolveCollectionSortOrder(COLLECTION_SORT_ORDER.TitleAsc, tagCategories),
+    ).toBe(COLLECTION_SORT_ORDER.TitleAsc)
+    expect(
+      resolveCollectionSortOrder(
+        COLLECTION_SORT_ORDER.TitleDesc,
+        tagCategories,
+      ),
+    ).toBe(COLLECTION_SORT_ORDER.TitleDesc)
+  })
+
+  it("falls back when the date-filter UUID is absent from a populated tagCategories list", () => {
+    // Arrange
+    const unknownFilterId = "00000000-0000-0000-0000-000000000000"
+
+    // Act
+    const result = resolveCollectionSortOrder(
+      `date-filter-${unknownFilterId}-desc`,
+      tagCategories,
+    )
+
+    // Assert
+    expect(result).toBe(DEFAULT_COLLECTION_SORT_ORDER)
   })
 })

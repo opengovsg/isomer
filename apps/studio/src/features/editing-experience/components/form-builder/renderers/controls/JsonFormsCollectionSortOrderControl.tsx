@@ -26,7 +26,7 @@ export const jsonFormsCollectionSortOrderControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "collection-sort-order"),
 )
 
-function JsonFormsCollectionSortOrderControl({
+export function JsonFormsCollectionSortOrderControlBase({
   data,
   label,
   description,
@@ -98,4 +98,6 @@ function JsonFormsCollectionSortOrderControl({
   )
 }
 
-export default withJsonFormsControlProps(JsonFormsCollectionSortOrderControl)
+export default withJsonFormsControlProps(
+  JsonFormsCollectionSortOrderControlBase,
+)
