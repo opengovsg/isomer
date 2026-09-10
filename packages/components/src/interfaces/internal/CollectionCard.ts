@@ -27,7 +27,7 @@ export interface DateFilterDisplayEntry {
 }
 
 // NOTE: fully resolved card display entry, including live status — only
-// produced on the client (see EventDateFilterDisplay).
+// produced on the client (see DateFilterStatusClient).
 export interface DateFilterCard {
   id: string
   label: string
@@ -56,7 +56,7 @@ interface BaseCardProps {
   plaintextTags?: TagGroup[]
   // NOTE: raw per-item date-filter values — used for filter matching only.
   dateTagged?: DateFilterValue[]
-  // NOTE: server-precomputed label + date text for EventDateFilterDisplay.
+  // NOTE: server-precomputed label + date text for DateFilterDates.
   dateFilterDisplayEntries?: DateFilterDisplayEntry[]
   title: string
   url: string

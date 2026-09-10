@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ArticlePageHeaderProps } from "~/interfaces"
-import type { CollectionPagePageProps } from "~/types"
-import { isDateFilter } from "~/types/page"
+import type { DateFilterStatusLabel } from "~/interfaces/internal/CollectionCard"
+import { DATE_FILTER_STATUS_ID } from "~/types/constants"
 
 import { ArticlePageHeader } from "./ArticlePageHeader"
 
@@ -14,35 +14,17 @@ const daysFromNow = (days: number) => {
   return toDateString(date)
 }
 
-const DATE_FILTER_TAG_CATEGORIES: CollectionPagePageProps["tagCategories"] = [
-  {
-    id: "event-date",
-    label: "Event Date",
-    type: "date",
-    statusLabels: [
-      { id: "ENDED", label: "Event ended" },
-      { id: "ONGOING", label: "Ongoing" },
-      { id: "UPCOMING", label: "Upcoming" },
-    ],
-  },
-  {
-    id: "registration-deadline",
-    label: "Registration Deadline",
-    type: "date",
-    statusLabels: [
-      { id: "ENDED", label: "Registration closed" },
-      { id: "ONGOING", label: "Registration open" },
-      { id: "UPCOMING", label: "Registration upcoming" },
-    ],
-  },
+const EVENT_DATE_STATUS_LABELS: DateFilterStatusLabel[] = [
+  { id: DATE_FILTER_STATUS_ID.Ended, label: "Event ended" },
+  { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Ongoing" },
+  { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Upcoming" },
 ]
 
-const statusLabelsFor = (categoryId: string) => {
-  const category = DATE_FILTER_TAG_CATEGORIES?.find(
-    (entry) => entry.id === categoryId,
-  )
-  return category && isDateFilter(category) ? category.statusLabels : []
-}
+const REGISTRATION_DEADLINE_STATUS_LABELS: DateFilterStatusLabel[] = [
+  { id: DATE_FILTER_STATUS_ID.Ended, label: "Registration closed" },
+  { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Registration open" },
+  { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Registration upcoming" },
+]
 
 const meta: Meta<ArticlePageHeaderProps> = {
   title: "Next/Internal Components/ArticlePageHeader",
@@ -130,7 +112,7 @@ export const WithDateFilter: Story = {
         dateText: "27 Sep - 29 Sep 2026",
         date: daysFromNow(-5),
         endDate: daysFromNow(5),
-        statusLabels: statusLabelsFor("event-date"),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
       },
     ],
   },
@@ -147,7 +129,7 @@ export const WithMultipleDateFilters: Story = {
         dateText: "27 Sep - 29 Sep 2026",
         date: daysFromNow(30),
         endDate: daysFromNow(40),
-        statusLabels: statusLabelsFor("event-date"),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
       },
       {
         id: "registration-deadline",
@@ -155,7 +137,45 @@ export const WithMultipleDateFilters: Story = {
         dateText: "1 Jan - 10 Sep 2026",
         date: daysFromNow(-5),
         endDate: daysFromNow(5),
-        statusLabels: statusLabelsFor("registration-deadline"),
+        statusLabels: REGISTRATION_DEADLINE_STATUS_LABELS,
+      },
+    ],
+  },
+}
+
+export const WithEverything: Story = {
+  args: {
+    ...ARTICLE,
+    title: "Item with two date filters",
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(30),
+        endDate: daysFromNow(40),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+      {
+        id: "registration-deadline",
+        label: "Registration Deadline",
+        dateText: "1 Jan - 10 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: REGISTRATION_DEADLINE_STATUS_LABELS,
+      },
+    ],
+    // NOTE: `pillTags` here is expected to already exclude any
+    // `display: "plaintext"` groups (see Article.tsx's `pillTags`), so
+    // that they aren't duplicated as a pill.
+    pillTags: [
+      {
+        category: "Tags",
+        selected: ["NParks Happenings", "Wild dinosaur"],
+      },
+      {
+        category: "Topic",
+        selected: ["Health", "Community"],
       },
     ],
   },
