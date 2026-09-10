@@ -1,4 +1,3 @@
-import type { DateTaggedItem } from "@opengovsg/isomer-components"
 import type { Resource as DbResource } from "~generated/selectableTypes"
 
 import type { PAGE_RESOURCE_TYPES } from "./constants"
@@ -19,6 +18,12 @@ interface Tag {
 interface Tagged {
   label: string
   id: string
+}
+
+interface DateTagged {
+  id: string
+  date: string
+  endDate?: string
 }
 
 type TagCategory = Tagged & {
@@ -53,7 +58,7 @@ export type SitemapEntry = Pick<
   children?: SitemapEntry[]
   tags?: Tag[]
   tagged?: Tagged[]
-  dateTagged?: DateTaggedItem[]
+  dateTagged?: DateTagged[]
   collectionPagePageProps?: CollectionPagePageProps
 }
 
