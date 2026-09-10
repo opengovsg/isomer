@@ -3,6 +3,7 @@ import type { AppliedFilter } from "~/templates/next/types/Filter"
 import { useState } from "react"
 import { userEvent, within } from "storybook/test"
 import { toggleAppliedFilterItem } from "~/templates/next/layouts/Collection/utils"
+import { DATE_FILTER_STATUS, TAG_CATEGORY_TYPE } from "~/types/constants"
 
 import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
@@ -145,5 +146,59 @@ export const NoFilters: Story = {
   args: {
     filters: [],
     appliedFilters: [],
+  },
+}
+
+const DATE_FILTER = {
+  id: "event-date",
+  label: "Event date",
+  type: TAG_CATEGORY_TYPE.Date,
+  items: [
+    {
+      id: DATE_FILTER_STATUS.Upcoming.id,
+      label: "Upcoming",
+      count: 12,
+    },
+    {
+      id: DATE_FILTER_STATUS.Ongoing.id,
+      label: "Ongoing",
+      count: 10,
+    },
+    {
+      id: DATE_FILTER_STATUS.Ended.id,
+      label: "Ended",
+      count: 2,
+    },
+  ],
+}
+
+export const WithDateFilter: Story = {
+  parameters: {
+    chromatic: withChromaticModes(["desktop"]),
+  },
+  args: {
+    filters: [DATE_FILTER],
+    appliedFilters: [
+      {
+        id: "event-date",
+        items: [{ id: DATE_FILTER_STATUS.Upcoming.id }],
+        dateRange: { start: "2026-04-01", end: "2026-04-30" },
+      },
+    ],
+  },
+}
+
+export const MobileDateFilterDrawer: Story = {
+  globals: { viewport: getViewportByMode("mobile") },
+  parameters: {
+    chromatic: withChromaticModes(["mobile"]),
+  },
+  args: WithDateFilter.args,
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    const button = await screen.findByRole("button", {
+      name: /filter results/i,
+    })
+    await userEvent.click(button)
   },
 }
