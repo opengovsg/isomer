@@ -162,12 +162,34 @@ async function assertThreeDefaultOptionRows(canvasElement: HTMLElement) {
 /** Ensures at least one filter row exists, opens nested "Edit Filters" editor. */
 async function playOpenFirstFilterEditor(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
-  if (!canvas.queryByText("New filter")) {
-    await userEvent.click(
-      await canvas.findByRole("button", { name: /Add a filter/i }),
-    )
+
+  if (!canvas.queryByText(/Edit Filters/i)) {
+    const hasFilterRow =
+      canvas.queryByText("New filter") ??
+      canvas.queryByRole("button", { name: /Filter 1 actions/i })
+
+    if (!hasFilterRow) {
+      await userEvent.click(
+        await canvas.findByRole("button", { name: /Add a filter/i }),
+      )
+
+      const confirmAddFilter = withinPortals(canvasElement).queryByRole(
+        "button",
+        { name: /^Add filter$/i },
+      )
+      if (confirmAddFilter) {
+        await userEvent.click(confirmAddFilter)
+      }
+    }
+
+    if (!canvas.queryByText(/Edit Filters/i)) {
+      const newFilterLabel = canvas.queryByText("New filter")
+      if (newFilterLabel) {
+        await userEvent.click(newFilterLabel)
+      }
+    }
   }
-  await userEvent.click(await canvas.findByText("New filter"))
+
   await canvas.findByText(/Edit Filters/i)
 }
 
