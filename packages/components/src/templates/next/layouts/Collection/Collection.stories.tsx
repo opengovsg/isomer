@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
 import { addDays, format } from "date-fns"
 import { flatten, times } from "lodash-es"
-import { expect, userEvent, within } from "storybook/test"
+import { expect, fireEvent, userEvent, within } from "storybook/test"
 import { generateSiteConfig } from "~/stories/helpers"
 import {
   DATE_FILTER_STATUS,
@@ -464,9 +464,9 @@ export const DateFiltersStatusFiltered: Story = {
   },
 }
 
-// These calendar-focused stories are exclusively about the date-range input
-// — no status checkbox (Upcoming/Ongoing/Ended) should ever end up checked,
-// since `updateAppliedDateRange` applies a range independently of `items`.
+// Date-range stories are exclusively about the date inputs — no status
+// checkbox (Upcoming/Ongoing/Ended) should ever end up checked, since
+// `updateAppliedDateRange` applies a range independently of `items`.
 const expectNoStatusChecked = async (canvasElement: HTMLElement) => {
   const checkedBoxes = canvasElement.querySelectorAll(
     'input[type="checkbox"]:checked',
@@ -474,56 +474,18 @@ const expectNoStatusChecked = async (canvasElement: HTMLElement) => {
   await expect(checkedBoxes.length).toBe(0)
 }
 
-export const DateFiltersCalendarOpen: Story = {
-  name: "Date Filters — Calendar Open (nothing selected)",
-  args: generateArgs({
-    tagCategories: EVENT_DATE_TAG_CATEGORY,
-    collectionItems: DATE_FILTER_COLLECTION_ITEMS,
-  }),
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement)
-    await userEvent.click(screen.getByLabelText("Open calendar"))
-    await screen.findByText("Apply")
-
-    await expectNoStatusChecked(canvasElement)
-  },
-}
-
-export const DateFiltersCalendarRangeSelected: Story = {
-  name: "Date Filters — Calendar Open (range selected)",
-  args: generateArgs({
-    tagCategories: EVENT_DATE_TAG_CATEGORY,
-    collectionItems: DATE_FILTER_COLLECTION_ITEMS,
-  }),
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement)
-    await userEvent.click(screen.getByLabelText("Open calendar"))
-    await screen.findByText("Apply")
-
-    // 4 and 14 August 2025 — the exact range the "ongoing" items above use
-    // (offsetDate(-5)/offsetDate(5) from the mocked "today" of 9 Aug 2025).
-    // Matched by aria-label rather than the visible day number, which is
-    // ambiguous — the grid also shows the trailing September overflow days
-    // (also labelled "4"/"14"), so a plain text match throws.
-    //
-    // The lookaheads match "August" and the day/year regardless of word
-    // order: the "en-SG" locale's day-month-year formatting isn't stable
-    // across browsers/CLDR versions — Chromium has rendered it as both
-    // "August 4, 2025" and "4 August 2025" — so anchoring to one fixed
-    // order is what actually broke here.
-    await userEvent.click(
-      screen.getByRole("button", {
-        name: /(?=.*\bAugust\b)(?=.*\b4\b)(?=.*\b2025\b)/i,
-      }),
-    )
-    await userEvent.click(
-      screen.getByRole("button", {
-        name: /(?=.*\bAugust\b)(?=.*\b14\b)(?=.*\b2025\b)/i,
-      }),
-    )
-
-    await expectNoStatusChecked(canvasElement)
-  },
+const fillDateRange = async (
+  canvasElement: HTMLElement,
+  start: string,
+  end: string,
+) => {
+  const screen = within(canvasElement)
+  await fireEvent.change(screen.getByLabelText("From"), {
+    target: { value: start },
+  })
+  await fireEvent.change(screen.getByLabelText("To"), {
+    target: { value: end },
+  })
 }
 
 export const DateFiltersDateFiltered: Story = {
@@ -532,17 +494,35 @@ export const DateFiltersDateFiltered: Story = {
     tagCategories: EVENT_DATE_TAG_CATEGORY,
     collectionItems: DATE_FILTER_COLLECTION_ITEMS,
   }),
-  play: async (context) => {
-    await DateFiltersCalendarRangeSelected.play?.(context)
+  play: async ({ canvasElement }) => {
+    // 4 and 14 August 2025 — the exact range the "ongoing" items above use
+    // (offsetDate(-5)/offsetDate(5) from the mocked "today" of 9 Aug 2025).
+    await fillDateRange(canvasElement, "2025-08-04", "2025-08-14")
 
-    const screen = within(context.canvasElement)
-    await userEvent.click(screen.getByText("Apply"))
-
-    // Only the 10 "ongoing" items (4 - 14 Aug 2025) overlap this range —
-    // the "ended" (Jun 2025) and "upcoming" (Sep 2025+) items don't.
+    const screen = within(canvasElement)
     const resultsHeader = await screen.findAllByText(/10 items/)
     await expect(resultsHeader.length).toBe(1)
 
-    await expectNoStatusChecked(context.canvasElement)
+    await expectNoStatusChecked(canvasElement)
+  },
+}
+
+export const DateFiltersBothFiltered: Story = {
+  name: "Date Filters — Both Filtered",
+  args: generateArgs({
+    tagCategories: EVENT_DATE_TAG_CATEGORY,
+    collectionItems: DATE_FILTER_COLLECTION_ITEMS,
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(screen.getByText(/Upcoming \(12\)/i))
+
+    // Wide enough to include all 10 ongoing (4–14 Aug) plus the first three
+    // upcoming (8–10 / 9–11 / 10–12 Sep). Upcoming alone is 12; this range
+    // alone is 13; AND'd together only those three upcoming items remain.
+    await fillDateRange(canvasElement, "2025-08-04", "2025-09-10")
+
+    const resultsHeader = await screen.findAllByText(/3 items/)
+    await expect(resultsHeader.length).toBe(1)
   },
 }
