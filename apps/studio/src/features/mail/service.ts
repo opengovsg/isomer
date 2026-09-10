@@ -4,6 +4,7 @@ import { isValidEmail } from "~/utils/email"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
+  AuditLogExportBatchReadyEmailTemplateData,
   AuditLogExportFailedEmailTemplateData,
   AuditLogExportReadyEmailTemplateData,
   BaseEmailTemplateData,
@@ -239,5 +240,15 @@ export async function sendAuditLogExportFailedEmail(
     data,
     template: templates.auditLogExportFailed(data),
     emailType: "audit log export failed",
+  })
+}
+
+export async function sendAuditLogExportBatchReadyEmail(
+  data: AuditLogExportBatchReadyEmailTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.auditLogExportBatchReady(data),
+    emailType: "audit log export batch ready",
   })
 }

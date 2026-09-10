@@ -45,6 +45,8 @@ export interface AuditLogExportRequest {
   completedAt: Timestamp | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
+  batchId: string | null
+  batchEmailedAt: Timestamp | null
 }
 export interface Blob {
   id: GeneratedAlways<string>

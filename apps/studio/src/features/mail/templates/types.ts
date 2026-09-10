@@ -106,6 +106,16 @@ export interface AuditLogExportFailedEmailTemplateData extends BaseEmailTemplate
   month: string
 }
 
+export interface AuditLogExportBatchReadyEmailTemplateData extends BaseEmailTemplateData {
+  // Human-readable month the export covers, e.g. "June 2026".
+  month: string
+  reportLabel: AuditLogExportDownloadLink["label"]
+  // One entry per site whose export succeeded — every site in the ask that
+  // didn't succeed is named (with no link) in `failedSiteNames` instead.
+  links: { siteName: string; url: string; sizeInBytes: number | null }[]
+  failedSiteNames: string[]
+}
+
 export interface EmailTemplate {
   subject: string
   body: string
