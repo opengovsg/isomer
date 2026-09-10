@@ -24,10 +24,12 @@ const FilterSectionButton = ({
   label,
   isOpen,
   onToggle,
+  panelId,
 }: {
   label: string
   isOpen: boolean
   onToggle: () => void
+  panelId: string
 }) => {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const { buttonProps } = useButton({ onPress: onToggle }, buttonRef)
@@ -38,9 +40,11 @@ const FilterSectionButton = ({
     <button
       {...mergedProps}
       ref={buttonRef}
+      aria-expanded={isOpen}
+      aria-controls={panelId}
       className="group prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-left text-base-content outline-0"
     >
-      <label className={filterSectionLabelStyle()}>{label}</label>
+      <span className={filterSectionLabelStyle()}>{label}</span>
       <BiChevronDown
         aria-hidden
         className={`h-6 w-6 flex-shrink-0 text-base-content-strong transition-all duration-300 ease-in-out ${
@@ -114,50 +118,60 @@ export const Filter = ({
             </Button>
           )}
         </div>
-        {filters.map(({ id, label, items, type }) => (
-          <CheckboxGroup
-            className="border-b border-b-divider-medium py-4"
-            key={id}
-            value={appliedItemsById[id] ?? []}
-          >
-            <FilterSectionButton
-              label={label}
-              isOpen={showFilter[id] ?? false}
-              onToggle={() => updateFilterToggle(id)}
-            />
+        {filters.map(({ id, label, items, type }) => {
+          const panelId = `filter-panel-${id}`
+          const isOpen = showFilter[id] ?? false
 
-            <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
-              {type === TAG_CATEGORY_TYPE.Date ? (
-                <DateFilterControls
-                  items={items}
-                  onBucketToggle={(itemId) => handleFilterToggle(id, itemId)}
-                  dateRange={
-                    appliedFilters.find((filter) => filter.id === id)?.dateRange
-                  }
-                  onDateRangeChange={(dateRange) =>
-                    updateAppliedFilterDateRange({
-                      appliedFilters,
-                      setAppliedFilters,
-                      filterId: id,
-                      dateRange,
-                    })
-                  }
-                />
-              ) : (
-                items.map(({ id: itemId, label: itemLabel, count }) => (
-                  <Checkbox
-                    key={itemId}
-                    className="w-fit cursor-pointer p-2"
-                    value={itemId}
-                    onChange={() => handleFilterToggle(id, itemId)}
+          return (
+            <div className="border-b border-b-divider-medium py-4" key={id}>
+              <FilterSectionButton
+                label={label}
+                isOpen={isOpen}
+                onToggle={() => updateFilterToggle(id)}
+                panelId={panelId}
+              />
+
+              <div id={panelId} className={isOpen ? "flex flex-col" : "hidden"}>
+                {type === TAG_CATEGORY_TYPE.Date ? (
+                  <DateFilterControls
+                    items={items}
+                    checkboxValue={appliedItemsById[id] ?? []}
+                    statusGroupLabel={`${label} status`}
+                    onBucketToggle={(itemId) => handleFilterToggle(id, itemId)}
+                    dateRange={
+                      appliedFilters.find((filter) => filter.id === id)
+                        ?.dateRange
+                    }
+                    onDateRangeChange={(dateRange) =>
+                      updateAppliedFilterDateRange({
+                        appliedFilters,
+                        setAppliedFilters,
+                        filterId: id,
+                        dateRange,
+                      })
+                    }
+                  />
+                ) : (
+                  <CheckboxGroup
+                    aria-label={label}
+                    value={appliedItemsById[id] ?? []}
                   >
-                    {itemLabel} ({count.toLocaleString()})
-                  </Checkbox>
-                ))
-              )}
+                    {items.map(({ id: itemId, label: itemLabel, count }) => (
+                      <Checkbox
+                        key={itemId}
+                        className="w-fit cursor-pointer p-2"
+                        value={itemId}
+                        onChange={() => handleFilterToggle(id, itemId)}
+                      >
+                        {itemLabel} ({count.toLocaleString()})
+                      </Checkbox>
+                    ))}
+                  </CheckboxGroup>
+                )}
+              </div>
             </div>
-          </CheckboxGroup>
-        ))}
+          )
+        })}
       </aside>
     </>
   )

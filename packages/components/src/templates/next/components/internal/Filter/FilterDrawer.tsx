@@ -26,12 +26,14 @@ interface ExpandFilterButtonProps {
   label: string
   isExpanded: boolean
   onPress: () => void
+  panelId: string
 }
 
 const ExpandFilterButton = ({
   label,
   isExpanded,
   onPress,
+  panelId,
 }: ExpandFilterButtonProps) => {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const { buttonProps } = useButton({ onPress }, buttonRef)
@@ -42,6 +44,8 @@ const ExpandFilterButton = ({
     <button
       {...mergedProps}
       ref={buttonRef}
+      aria-expanded={isExpanded}
+      aria-controls={panelId}
       className={twMerge(
         expandFilterButtonStyle({
           isFocusVisible,
@@ -142,66 +146,91 @@ const FilterDrawerContent = ({
     onOpen(false)
   }
 
-  return (
-    <>
-      {/* Filters */}
-      <form className="flex-1 px-6 md:px-10">
-        {filters.map(({ id, label, items, type }) => (
-          <CheckboxGroup
-            className="border-b border-b-divider-medium py-4 last:border-0"
-            key={id}
-            value={holdingFiltersById[id] ?? []}
-            onChange={(values) => {
-              setHoldingFiltersById((prev) => ({
-                ...prev,
-                [id]: values,
-              }))
-            }}
-          >
-            <ExpandFilterButton
-              label={label}
-              isExpanded={showFilter[id] ?? false}
-              onPress={() => updateFilterToggle(id)}
-            />
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    handleApplyFilters()
+  }
 
-            <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
-              {type === TAG_CATEGORY_TYPE.Date ? (
-                <DateFilterControls
-                  items={items}
-                  dateRange={holdingDateRangesById[id]}
-                  onDateRangeChange={(dateRange) =>
-                    setHoldingDateRangesById((prev) => ({
-                      ...prev,
-                      [id]: dateRange,
-                    }))
-                  }
-                />
-              ) : (
-                items.map(({ id: itemId, label: itemLabel, count }) => (
-                  <Checkbox
-                    value={itemId}
-                    key={itemId}
-                    className="w-fit cursor-pointer p-2"
+  return (
+    <form className="flex flex-1 flex-col" onSubmit={handleSubmit}>
+      <div className="flex-1 px-6 md:px-10">
+        {filters.map(({ id, label, items, type }) => {
+          const panelId = `drawer-filter-panel-${id}`
+          const isExpanded = showFilter[id] ?? false
+
+          return (
+            <div
+              className="border-b border-b-divider-medium py-4 last:border-0"
+              key={id}
+            >
+              <ExpandFilterButton
+                label={label}
+                isExpanded={isExpanded}
+                onPress={() => updateFilterToggle(id)}
+                panelId={panelId}
+              />
+
+              <div
+                id={panelId}
+                className={isExpanded ? "flex flex-col" : "hidden"}
+              >
+                {type === TAG_CATEGORY_TYPE.Date ? (
+                  <DateFilterControls
+                    items={items}
+                    checkboxValue={holdingFiltersById[id] ?? []}
+                    statusGroupLabel={`${label} status`}
+                    onCheckboxValuesChange={(values) => {
+                      setHoldingFiltersById((prev) => ({
+                        ...prev,
+                        [id]: values,
+                      }))
+                    }}
+                    dateRange={holdingDateRangesById[id]}
+                    onDateRangeChange={(dateRange) =>
+                      setHoldingDateRangesById((prev) => ({
+                        ...prev,
+                        [id]: dateRange,
+                      }))
+                    }
+                  />
+                ) : (
+                  <CheckboxGroup
+                    aria-label={label}
+                    value={holdingFiltersById[id] ?? []}
+                    onChange={(values) => {
+                      setHoldingFiltersById((prev) => ({
+                        ...prev,
+                        [id]: values,
+                      }))
+                    }}
                   >
-                    {itemLabel} ({count.toLocaleString()})
-                  </Checkbox>
-                ))
-              )}
+                    {items.map(({ id: itemId, label: itemLabel, count }) => (
+                      <Checkbox
+                        value={itemId}
+                        key={itemId}
+                        className="w-fit cursor-pointer p-2"
+                      >
+                        {itemLabel} ({count.toLocaleString()})
+                      </Checkbox>
+                    ))}
+                  </CheckboxGroup>
+                )}
+              </div>
             </div>
-          </CheckboxGroup>
-        ))}
-      </form>
-      {/* Sticky action bottom bar */}
+          )
+        })}
+      </div>
       <div className="sticky bottom-0 left-0 right-0 flex flex-col gap-3 border-t border-t-divider-medium bg-white px-6 pb-12 pt-8 md:px-10">
         <Button
           className="w-full justify-center"
           variant="solid"
           size="lg"
-          onPress={handleApplyFilters}
+          type="submit"
         >
           Apply filters
         </Button>
         <Button
+          type="button"
           size="lg"
           className="w-full justify-center"
           variant="outline"
@@ -210,7 +239,7 @@ const FilterDrawerContent = ({
           Clear all filters
         </Button>
       </div>
-    </>
+    </form>
   )
 }
 
