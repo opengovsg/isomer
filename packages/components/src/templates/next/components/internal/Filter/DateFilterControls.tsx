@@ -14,6 +14,8 @@ interface DateFilterControlsProps {
   onCheckboxValuesChange?: (values: string[]) => void
   dateRange: AppliedFilter["dateRange"]
   onDateRangeChange: (dateRange: AppliedFilter["dateRange"]) => void
+  showStatusLabelsFilter: boolean
+  showDateRangeFilter: boolean
 }
 
 export const DateFilterControls = ({
@@ -24,10 +26,12 @@ export const DateFilterControls = ({
   onCheckboxValuesChange,
   dateRange,
   onDateRangeChange,
+  showStatusLabelsFilter,
+  showDateRangeFilter,
 }: DateFilterControlsProps) => {
   return (
     <div className="flex flex-col gap-2">
-      {items.length > 0 && (
+      {showStatusLabelsFilter && items.length > 0 && (
         <CheckboxGroup
           aria-label={statusGroupLabel}
           className="gap-2"
@@ -48,7 +52,9 @@ export const DateFilterControls = ({
           ))}
         </CheckboxGroup>
       )}
-      <DateRangeFilterInput value={dateRange} onChange={onDateRangeChange} />
+      {showDateRangeFilter && (
+        <DateRangeFilterInput value={dateRange} onChange={onDateRangeChange} />
+      )}
     </div>
   )
 }

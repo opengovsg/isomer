@@ -9,6 +9,7 @@ import { isAppliedFilters } from "../../types/Filter"
 import {
   getFilteredItems,
   getPaginatedItems,
+  sanitizeAppliedFiltersForVisibility,
   toggleAppliedFilterItem,
 } from "./utils"
 import { refreshDateFilterCounts } from "./utils/refreshDateFilterCounts"
@@ -65,12 +66,15 @@ export const useCollection = ({
     }
     try {
       const parsed: unknown = JSON.parse(filters || "[]")
-      return isAppliedFilters(parsed) ? parsed : []
+      if (!isAppliedFilters(parsed)) {
+        return []
+      }
+      return sanitizeAppliedFiltersForVisibility(parsed, tagCategories)
     } catch {
       // Malformed URL param (e.g. ?filters=hello) — treat as no filters rather than crashing.
       return []
     }
-  }, [queryParams.filters])
+  }, [queryParams.filters, tagCategories])
   const setAppliedFilters = useCallback(
     (filters: AppliedFilter[]) => {
       updateQueryParams({
