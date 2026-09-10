@@ -1,6 +1,6 @@
 "use client"
 
-import type { DateFilterDisplayEntry } from "~/interfaces/internal/CollectionCard"
+import type { DateFilterDisplayEntry } from "~/interfaces/internal/DateFilter"
 import { useMemo } from "react"
 
 import { getDateFilterCardsFromEntries } from "../../../layouts/Collection/utils/dateFilterCards"

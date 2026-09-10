@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionCardProps } from "~/interfaces"
-import type { DateFilterStatusLabel } from "~/interfaces/internal/CollectionCard"
 import { expect, within } from "storybook/test"
 import { DATE_FILTER_STATUS_ID } from "~/types/constants"
 
@@ -8,13 +7,13 @@ import { withChromaticModes } from "@isomer/storybook-config"
 
 import { BlogCard } from "./BlogCard"
 
-const EVENT_DATE_STATUS_LABELS: DateFilterStatusLabel[] = [
+const EVENT_DATE_STATUS_LABELS = [
   { id: DATE_FILTER_STATUS_ID.Ended, label: "Event ended" },
   { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Ongoing" },
   { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Upcoming" },
 ]
 
-const REGISTRATION_DEADLINE_STATUS_LABELS: DateFilterStatusLabel[] = [
+const REGISTRATION_DEADLINE_STATUS_LABELS = [
   { id: DATE_FILTER_STATUS_ID.Ended, label: "Registration closed" },
   { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Registration open" },
   { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Registration upcoming" },
