@@ -35,8 +35,9 @@ export interface AppliedFilter {
   // NOTE: only meaningful when the filter is date-type. Independent of
   // `items` (the bucket selection) — both apply together (AND'd) when both
   // are set. Dates are "yyyy-MM-dd" strings, same convention as the
-  // underlying `dateTagged` schema field.
-  dateRange?: { start: string; end: string }
+  // underlying `dateTagged` schema field. Either bound may be omitted for
+  // an open-ended range.
+  dateRange?: { start?: string; end?: string }
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -53,14 +54,32 @@ const isIsoDateString = (value: string): boolean => {
   return isValid(parsed) && format(parsed, ISO_DATE_FORMAT) === value
 }
 
-const isValidDateRange = (value: unknown): boolean =>
-  value === undefined ||
-  (isRecord(value) &&
-    typeof value.start === "string" &&
-    typeof value.end === "string" &&
-    isIsoDateString(value.start) &&
-    isIsoDateString(value.end) &&
-    value.start <= value.end)
+const isOptionalIsoDateString = (value: unknown): value is string | undefined =>
+  value === undefined || (typeof value === "string" && isIsoDateString(value))
+
+const isValidDateRange = (value: unknown): boolean => {
+  if (value === undefined) {
+    return true
+  }
+
+  if (
+    !isRecord(value) ||
+    !isOptionalIsoDateString(value.start) ||
+    !isOptionalIsoDateString(value.end)
+  ) {
+    return false
+  }
+
+  if (value.start === undefined && value.end === undefined) {
+    return false
+  }
+
+  return (
+    value.start === undefined ||
+    value.end === undefined ||
+    value.start <= value.end
+  )
+}
 
 export const isAppliedFilters = (value: unknown): value is AppliedFilter[] =>
   Array.isArray(value) &&

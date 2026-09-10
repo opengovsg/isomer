@@ -2,10 +2,7 @@
 
 import type { AppliedFilter, FilterItem } from "../../../types/Filter"
 import { Checkbox } from "../Checkbox"
-import {
-  DateRangeFilterInput,
-  type DateRangeFilterValue,
-} from "./DateRangeFilterInput"
+import { DateRangeFilterInput } from "./DateRangeFilterInput"
 
 interface DateFilterControlsProps {
   items: FilterItem[]
@@ -21,16 +18,6 @@ export const DateFilterControls = ({
   dateRange,
   onDateRangeChange,
 }: DateFilterControlsProps) => {
-  // DateRangeFilterInput emits partial ranges while the user is still typing;
-  // AppliedFilter only stores a complete range (or none).
-  const handleDateRangeChange = (value: DateRangeFilterValue | undefined) => {
-    onDateRangeChange(
-      value?.start && value.end
-        ? { start: value.start, end: value.end }
-        : undefined,
-    )
-  }
-
   return (
     <div className="flex flex-col gap-2">
       {items.map(({ id: itemId, label: itemLabel, count }) => (
@@ -45,10 +32,7 @@ export const DateFilterControls = ({
           {itemLabel} ({count.toLocaleString()})
         </Checkbox>
       ))}
-      <DateRangeFilterInput
-        value={dateRange}
-        onChange={handleDateRangeChange}
-      />
+      <DateRangeFilterInput value={dateRange} onChange={onDateRangeChange} />
     </div>
   )
 }

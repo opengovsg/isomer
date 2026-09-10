@@ -62,6 +62,7 @@ describe("useCollection", () => {
     })
 
     it("parses valid JSON filters with a date range from the URL", () => {
+      // Arrange
       const filters = [
         {
           id: "event-date",
@@ -75,8 +76,32 @@ describe("useCollection", () => {
         `/?filters=${encodeURIComponent(JSON.stringify(filters))}`,
       )
 
+      // Act
       const { result } = renderHook(() => useCollection({ items: [] }))
 
+      // Assert
+      expect(result.current.appliedFilters).toEqual(filters)
+    })
+
+    it("parses a From-only date range from the URL", () => {
+      // Arrange
+      const filters = [
+        {
+          id: "event-date",
+          items: [],
+          dateRange: { start: "2026-01-01" },
+        },
+      ]
+      window.history.replaceState(
+        {},
+        "",
+        `/?filters=${encodeURIComponent(JSON.stringify(filters))}`,
+      )
+
+      // Act
+      const { result } = renderHook(() => useCollection({ items: [] }))
+
+      // Assert
       expect(result.current.appliedFilters).toEqual(filters)
     })
 

@@ -441,6 +441,98 @@ describe("getFilteredItems", () => {
       expect(result).toEqual([items[0]])
     })
 
+    it("filters by an open-ended From date", () => {
+      // Arrange
+      const items: ProcessedCollectionCardProps[] = [
+        {
+          title: "Overlaps from the start date",
+          description: "",
+          dateTagged: [
+            {
+              id: EVENT_DATE_FILTER_ID,
+              date: daysFromNow(-2),
+              endDate: daysFromNow(8),
+            },
+          ],
+        } as ProcessedCollectionCardProps,
+        {
+          title: "Ended before the start date",
+          description: "",
+          dateTagged: [
+            {
+              id: EVENT_DATE_FILTER_ID,
+              date: daysFromNow(-20),
+              endDate: daysFromNow(-10),
+            },
+          ],
+        } as ProcessedCollectionCardProps,
+      ]
+      const appliedFilters: AppliedFilter[] = [
+        {
+          id: EVENT_DATE_FILTER_ID,
+          items: [],
+          dateRange: { start: daysFromNow(-5) },
+        },
+      ]
+
+      // Act
+      const result = getFilteredItems(
+        items,
+        appliedFilters,
+        "",
+        dateTagCategories,
+      )
+
+      // Assert
+      expect(result).toEqual([items[0]])
+    })
+
+    it("filters by an open-ended To date", () => {
+      // Arrange
+      const items: ProcessedCollectionCardProps[] = [
+        {
+          title: "Overlaps until the end date",
+          description: "",
+          dateTagged: [
+            {
+              id: EVENT_DATE_FILTER_ID,
+              date: daysFromNow(-2),
+              endDate: daysFromNow(8),
+            },
+          ],
+        } as ProcessedCollectionCardProps,
+        {
+          title: "Starts after the end date",
+          description: "",
+          dateTagged: [
+            {
+              id: EVENT_DATE_FILTER_ID,
+              date: daysFromNow(50),
+              endDate: daysFromNow(51),
+            },
+          ],
+        } as ProcessedCollectionCardProps,
+      ]
+      const appliedFilters: AppliedFilter[] = [
+        {
+          id: EVENT_DATE_FILTER_ID,
+          items: [],
+          dateRange: { end: daysFromNow(5) },
+        },
+      ]
+
+      // Act
+      const result = getFilteredItems(
+        items,
+        appliedFilters,
+        "",
+        dateTagCategories,
+      )
+
+      // Assert
+      expect(result).toEqual([items[0]])
+    })
+
     it("ANDs bucket status and date-range together within one date filter", () => {
       // Arrange
       const items: ProcessedCollectionCardProps[] = [

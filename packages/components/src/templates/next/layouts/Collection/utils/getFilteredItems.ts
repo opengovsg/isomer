@@ -7,6 +7,24 @@ import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
 import { getDateFilterStatus } from "./getDateFilterStatus"
 import { normalizeCollectionSearchText } from "./normalizeCollectionSearchText"
 
+const itemOverlapsAppliedDateRange = (
+  value: { date: string; endDate?: string },
+  dateRange: AppliedFilter["dateRange"],
+) => {
+  if (!dateRange) {
+    return true
+  }
+
+  const itemEnd = value.endDate ?? value.date
+  if (dateRange.end !== undefined && value.date > dateRange.end) {
+    return false
+  }
+  if (dateRange.start !== undefined && itemEnd < dateRange.start) {
+    return false
+  }
+  return true
+}
+
 export const getFilteredItems = (
   items: ProcessedCollectionCardProps[],
   appliedFilters: AppliedFilter[],
@@ -99,10 +117,10 @@ export const getFilteredItems = (
           ({ id: statusId }) => getDateFilterStatus(value) === statusId,
         )
 
-      const matchesRange =
-        !appliedFilter.dateRange ||
-        (value.date <= appliedFilter.dateRange.end &&
-          (value.endDate ?? value.date) >= appliedFilter.dateRange.start)
+      const matchesRange = itemOverlapsAppliedDateRange(
+        value,
+        appliedFilter.dateRange,
+      )
 
       return matchesBucket && matchesRange
     })
