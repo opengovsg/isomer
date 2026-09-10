@@ -29,9 +29,15 @@ export const DateFilterControls = ({
   showStatusLabelsFilter,
   showDateRangeFilter,
 }: DateFilterControlsProps) => {
+  const showStatusCheckboxes = showStatusLabelsFilter && items.length > 0
+
+  if (!showStatusCheckboxes && !showDateRangeFilter) {
+    return null
+  }
+
   return (
     <div className="flex flex-col gap-2">
-      {showStatusLabelsFilter && items.length > 0 && (
+      {showStatusCheckboxes && (
         <CheckboxGroup
           aria-label={statusGroupLabel}
           className="gap-2"
