@@ -63,9 +63,13 @@ describe("uploadAuditLogExport", () => {
     expect(options.params.Key).toBe("site-1/2026-06/access.csv")
     expect(options.params.Body).toBe("a,b,c\n1,2,3")
     expect(options.params.ContentType).toBe("text/csv")
-    // Filename derived from the key's basename
+    // Filename derived from the key's basename. Built via
+    // `content-disposition`'s `create()` (not a raw template string) so
+    // quotes/backslashes in the filename are escaped and non-ASCII/control
+    // chars are RFC 5987-encoded; a plain token filename like this one comes
+    // out unquoted.
     expect(options.params.ContentDisposition).toBe(
-      `attachment; filename="access.csv"`,
+      `attachment; filename=access.csv`,
     )
   })
 
