@@ -1,9 +1,15 @@
-import type { JsonFormsRendererRegistryEntry } from "@jsonforms/core"
+import type {
+  JsonFormsRendererRegistryEntry,
+  JsonSchema,
+} from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { TAG_CATEGORY_ITEM_FORMAT } from "@opengovsg/isomer-components"
+import {
+  TAG_CATEGORY_ITEM_FORMAT,
+  TAG_CATEGORY_TYPE,
+} from "@opengovsg/isomer-components"
 import { Type } from "@sinclair/typebox"
-import { render } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 import { theme } from "~/theme"
 import { ajv } from "~/utils/ajv"
@@ -56,7 +62,29 @@ const lockedSchema = Type.Unsafe({
   format: TAG_CATEGORY_ITEM_FORMAT,
 })
 
-const renderForm = (schema: typeof unlockedSchema, data: unknown) =>
+// Distinct extra fields so we can tell which oneOf branch is mounted.
+const textBranchWithOptions = Type.Object(
+  {
+    label: Type.String({ title: "Filter name" }),
+    type: Type.Optional(Type.Literal(TAG_CATEGORY_TYPE.Text)),
+    options: Type.String({ title: "Text filter options" }),
+  },
+  { title: "Text filter" },
+)
+const dateBranchWithStatusLabels = Type.Object(
+  {
+    label: Type.String({ title: "Filter name" }),
+    type: Type.Literal(TAG_CATEGORY_TYPE.Date),
+    statusLabels: Type.String({ title: "Date filter custom labels" }),
+  },
+  { title: "Date filter" },
+)
+const lockedDiscriminatedSchema = Type.Unsafe({
+  oneOf: [textBranchWithOptions, dateBranchWithStatusLabels],
+  format: TAG_CATEGORY_ITEM_FORMAT,
+})
+
+const renderForm = (schema: JsonSchema, data: unknown) =>
   render(
     <ThemeProvider theme={theme}>
       <JsonForms schema={schema} data={data} renderers={renderers} ajv={ajv} />
@@ -76,5 +104,25 @@ describe("JsonFormsCombinatorControl", () => {
 
     expect(document.body.textContent).not.toContain("Variant")
     expect(document.body.textContent).toContain("Filter name")
+  })
+
+  it("keeps a date filter on the date branch when filter name is cleared", () => {
+    // Arrange
+    renderForm(lockedDiscriminatedSchema, {
+      label: "Events",
+      type: TAG_CATEGORY_TYPE.Date,
+      statusLabels: "Event ended",
+    })
+    expect(document.body.textContent).toContain("Date filter custom labels")
+    expect(document.body.textContent).not.toContain("Text filter options")
+
+    // Act
+    fireEvent.change(screen.getByPlaceholderText("Filter name"), {
+      target: { value: "" },
+    })
+
+    // Assert
+    expect(document.body.textContent).toContain("Date filter custom labels")
+    expect(document.body.textContent).not.toContain("Text filter options")
   })
 })

@@ -17,7 +17,7 @@ import {
   ARRAY_RADIO_FORMAT,
   TAG_CATEGORY_ITEM_FORMAT,
 } from "@opengovsg/isomer-components"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsOneOfControlTester: RankedTester = rankWith(
@@ -49,7 +49,6 @@ function JsonFormsCombinatorControl({
   data,
   combinatorType,
 }: JsonFormsCombinatorControlProps) {
-  const [variant, setVariant] = useState("")
   const hidePicker = schema.format === TAG_CATEGORY_ITEM_FORMAT
   const combinatorSchemas = schema[combinatorType] ?? []
   const renderInfos = createCombinatorRenderInfos(
@@ -76,6 +75,15 @@ function JsonFormsCombinatorControl({
     })
     .filter((option) => option !== null)
 
+  // Snapshot the fitting branch once. Re-reading indexOfFittingSchema on every
+  // change would jump to the first branch whenever a required field is cleared.
+  const [variant, setVariant] = useState(
+    () =>
+      (indexOfFittingSchema >= 0 && options[indexOfFittingSchema]
+        ? options[indexOfFittingSchema].label
+        : options[0]?.label) ?? "",
+  )
+
   const onChange = (value: string) => {
     setVariant(value)
 
@@ -98,29 +106,9 @@ function JsonFormsCombinatorControl({
     }
   }
 
-  useEffect(() => {
-    // Do nothing if there are no options
-    if (options.length === 0) {
-      return
-    }
-
-    if (indexOfFittingSchema >= 0 && options[indexOfFittingSchema]) {
-      setVariant(options[indexOfFittingSchema].label)
-      return
-    }
-
-    // Fallback to first option
-    if (options[0]) {
-      setVariant(options[0].label)
-    }
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const activeRenderInfo = hidePicker
-    ? ((indexOfFittingSchema >= 0
-        ? renderInfos[indexOfFittingSchema]
-        : undefined) ?? renderInfos[0])
-    : renderInfos.find((renderInfo) => variant === renderInfo.label)
+  const activeRenderInfo = renderInfos.find(
+    (renderInfo) => variant === renderInfo.label,
+  )
 
   return (
     <>
