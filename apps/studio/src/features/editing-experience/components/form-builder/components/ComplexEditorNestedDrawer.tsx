@@ -4,6 +4,7 @@ import type {
   JsonSchema,
   UISchemaElement,
 } from "@jsonforms/core"
+import type { ReactNode } from "react"
 import { Box, Stack, VStack } from "@chakra-ui/react"
 import { JsonFormsDispatch } from "@jsonforms/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
@@ -24,6 +25,7 @@ interface ComplexEditorNestedDrawerProps {
   maxIndex: number
   isRemoveItemDisabled: boolean
   handleRemoveItem: () => void
+  banner?: ReactNode
 }
 
 export function ComplexEditorNestedDrawer({
@@ -39,6 +41,7 @@ export function ComplexEditorNestedDrawer({
   handleRemoveItem,
   selectedIndex,
   maxIndex,
+  banner,
 }: ComplexEditorNestedDrawerProps) {
   return (
     <VStack
@@ -58,6 +61,7 @@ export function ComplexEditorNestedDrawer({
         backAriaLabel={`Return to ${label}`}
       />
       <Box w="100%" h="100%" px="1.5rem" py="1rem" flex={1} overflow="auto">
+        {banner}
         <JsonFormsDispatch
           renderers={renderers}
           cells={cells}

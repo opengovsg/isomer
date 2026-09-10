@@ -18,6 +18,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 
 import type { FilterType } from "../../components/FilterTypeChoiceModal"
 import { AddItemButton } from "../../components/AddItemButton"
+import { DateFilterOnboardingBanner } from "../../components/DateFilterOnboardingBanner"
 import {
   DeleteFilterModal,
   type DeleteFilterModalTarget,
@@ -32,6 +33,18 @@ import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
 import { createDefaultDateFilter, createDefaultTagCategory } from "./constants"
+
+const isDateFilterEditorOpen = (
+  tagCategories: CollectionPagePageProps["tagCategories"],
+  selectedIndex: number | undefined,
+): boolean => {
+  if (selectedIndex === undefined) {
+    return false
+  }
+
+  const selectedFilter = tagCategories?.[selectedIndex]
+  return selectedFilter !== undefined && isDateFilter(selectedFilter)
+}
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const {
@@ -75,6 +88,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     moveDown,
   })
   const {
+    selectedIndex,
     setSelectedIndex,
     isAddItemDisabled,
     isRemoveItemDisabled,
@@ -82,7 +96,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     handleRemoveSelectedItem,
     onDragEnd,
   } = arrayResult
-
   const {
     target: deleteTarget,
     openDeleteModal,
@@ -134,7 +147,15 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   }
 
   return (
-    <NestedDrawerSwitch {...props} {...arrayResult}>
+    <NestedDrawerSwitch
+      {...props}
+      {...arrayResult}
+      banner={
+        isDateFilterEditorOpen(page?.tagCategories, selectedIndex) ? (
+          <DateFilterOnboardingBanner />
+        ) : undefined
+      }
+    >
       <VStack spacing={0} align="start">
         <VStack align="start" spacing="0.25rem" w="full">
           <HStack w="full" justifyContent="space-between" align="center">
