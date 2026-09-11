@@ -55,7 +55,7 @@ const SearchButton = (props: ButtonProps) => {
           overflow="hidden"
           textOverflow="ellipsis"
         >
-          Search pages, collections, or folders by name. e.g. "Speech by
+          Search pages, collections, or folders by name or URL. e.g. "Speech by
           Minister"
         </Text>
         <CommandKey mr="1.25rem" />
