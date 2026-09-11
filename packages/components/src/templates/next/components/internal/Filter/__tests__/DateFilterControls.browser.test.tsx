@@ -28,6 +28,8 @@ const StatefulDateFilterControls = ({
         onDateRangeChange(next)
         setDateRange(next)
       }}
+      showStatusLabelsFilter={false}
+      showDateRangeFilter={true}
     />
   )
 }
@@ -62,6 +64,8 @@ describe("DateFilterControls", () => {
         items={[]}
         dateRange={undefined}
         onDateRangeChange={onDateRangeChange}
+        showStatusLabelsFilter={false}
+        showDateRangeFilter={true}
       />,
     )
 
@@ -102,6 +106,8 @@ describe("DateFilterControls", () => {
         items={[]}
         dateRange={APPLIED_RANGE}
         onDateRangeChange={vi.fn()}
+        showStatusLabelsFilter={false}
+        showDateRangeFilter={true}
       />,
     )
 
@@ -111,11 +117,29 @@ describe("DateFilterControls", () => {
         items={[]}
         dateRange={undefined}
         onDateRangeChange={vi.fn()}
+        showStatusLabelsFilter={false}
+        showDateRangeFilter={true}
       />,
     )
 
     // Assert
     expect((getFromInput() as HTMLInputElement).value).toBe("")
     expect((getToInput() as HTMLInputElement).value).toBe("")
+  })
+
+  it("renders nothing when both filters are hidden", () => {
+    // Arrange / Act
+    const { container } = render(
+      <DateFilterControls
+        items={[{ id: "upcoming", label: "Upcoming", count: 3 }]}
+        dateRange={undefined}
+        onDateRangeChange={vi.fn()}
+        showStatusLabelsFilter={false}
+        showDateRangeFilter={false}
+      />,
+    )
+
+    // Assert
+    expect(container.firstChild).toBeNull()
   })
 })

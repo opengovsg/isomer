@@ -7,7 +7,10 @@ import { useRef, useState } from "react"
 import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { updateAppliedFilterDateRange } from "~/templates/next/layouts/Collection/utils"
-import { TAG_CATEGORY_TYPE } from "~/types/constants"
+import {
+  DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY,
+  TAG_CATEGORY_TYPE,
+} from "~/types/constants"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 
 import type { FilterProps } from "../../../types/Filter"
@@ -118,60 +121,82 @@ export const Filter = ({
             </Button>
           )}
         </div>
-        {filters.map(({ id, label, items, type }) => {
-          const panelId = `filter-panel-${id}`
-          const isOpen = showFilter[id] ?? false
+        {filters.map(
+          ({
+            id,
+            label,
+            items,
+            type,
+            showStatusLabelsFilter,
+            showDateRangeFilter,
+          }) => {
+            const panelId = `filter-panel-${id}`
+            const isOpen = showFilter[id] ?? false
 
-          return (
-            <div className="border-b border-b-divider-medium py-4" key={id}>
-              <FilterSectionButton
-                label={label}
-                isOpen={isOpen}
-                onToggle={() => updateFilterToggle(id)}
-                panelId={panelId}
-              />
+            return (
+              <div className="border-b border-b-divider-medium py-4" key={id}>
+                <FilterSectionButton
+                  label={label}
+                  isOpen={isOpen}
+                  onToggle={() => updateFilterToggle(id)}
+                  panelId={panelId}
+                />
 
-              <div id={panelId} className={isOpen ? "flex flex-col" : "hidden"}>
-                {type === TAG_CATEGORY_TYPE.Date ? (
-                  <DateFilterControls
-                    items={items}
-                    checkboxValue={appliedItemsById[id] ?? []}
-                    statusGroupLabel={`${label} status`}
-                    onBucketToggle={(itemId) => handleFilterToggle(id, itemId)}
-                    dateRange={
-                      appliedFilters.find((filter) => filter.id === id)
-                        ?.dateRange
-                    }
-                    onDateRangeChange={(dateRange) =>
-                      updateAppliedFilterDateRange({
-                        appliedFilters,
-                        setAppliedFilters,
-                        filterId: id,
-                        dateRange,
-                      })
-                    }
-                  />
-                ) : (
-                  <CheckboxGroup
-                    aria-label={label}
-                    value={appliedItemsById[id] ?? []}
-                  >
-                    {items.map(({ id: itemId, label: itemLabel, count }) => (
-                      <Checkbox
-                        key={itemId}
-                        className="w-fit cursor-pointer p-2"
-                        value={itemId}
-                        onChange={() => handleFilterToggle(id, itemId)}
-                      >
-                        {itemLabel} ({count.toLocaleString()})
-                      </Checkbox>
-                    ))}
-                  </CheckboxGroup>
-                )}
+                <div
+                  id={panelId}
+                  className={isOpen ? "flex flex-col" : "hidden"}
+                >
+                  {type === TAG_CATEGORY_TYPE.Date ? (
+                    <DateFilterControls
+                      items={items}
+                      checkboxValue={appliedItemsById[id] ?? []}
+                      statusGroupLabel={`${label} status`}
+                      onBucketToggle={(itemId) =>
+                        handleFilterToggle(id, itemId)
+                      }
+                      dateRange={
+                        appliedFilters.find((filter) => filter.id === id)
+                          ?.dateRange
+                      }
+                      onDateRangeChange={(dateRange) =>
+                        updateAppliedFilterDateRange({
+                          appliedFilters,
+                          setAppliedFilters,
+                          filterId: id,
+                          dateRange,
+                        })
+                      }
+                      showStatusLabelsFilter={
+                        showStatusLabelsFilter ??
+                        DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabelsFilter
+                      }
+                      showDateRangeFilter={
+                        showDateRangeFilter ??
+                        DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRangeFilter
+                      }
+                    />
+                  ) : (
+                    <CheckboxGroup
+                      aria-label={label}
+                      value={appliedItemsById[id] ?? []}
+                    >
+                      {items.map(({ id: itemId, label: itemLabel, count }) => (
+                        <Checkbox
+                          key={itemId}
+                          className="w-fit cursor-pointer p-2"
+                          value={itemId}
+                          onChange={() => handleFilterToggle(id, itemId)}
+                        >
+                          {itemLabel} ({count.toLocaleString()})
+                        </Checkbox>
+                      ))}
+                    </CheckboxGroup>
+                  )}
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          },
+        )}
       </aside>
     </>
   )

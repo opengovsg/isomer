@@ -67,3 +67,8 @@ export const DEFAULT_DATE_FILTER_STATUS_LABELS = {
   [DATE_FILTER_STATUS.Ongoing.id]: DATE_FILTER_STATUS.Ongoing.defaultLabel,
   [DATE_FILTER_STATUS.Upcoming.id]: DATE_FILTER_STATUS.Upcoming.defaultLabel,
 } as const satisfies Record<DateFilterStatusId, string>
+
+export const DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY = {
+  showStatusLabelsFilter: true,
+  showDateRangeFilter: true,
+} as const
