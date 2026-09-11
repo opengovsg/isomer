@@ -31,7 +31,7 @@ const createStepsStyles = tv({
     },
     // Cap at 3 columns (~764px on Content pages). Four or more steps wrap. Two
     // steps use lg:grid-cols-2. Tailwind needs static class names.
-    isPair: {
+    hasTwo: {
       true: { list: "lg:grid-cols-2" },
     },
   },
@@ -54,7 +54,7 @@ export const Steps = ({
 }: StepsProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const TitleTag = getHeadingTag(headingLevel)
-  const isPair = steps.length === 2
+  const hasTwo = steps.length === 2
 
   return (
     <section id={id} className={styles.section()}>
@@ -74,7 +74,7 @@ export const Steps = ({
             )}
           </div>
 
-          <ol className={styles.list({ isPair })}>
+          <ol className={styles.list({ hasTwo })}>
             {steps.map((step, index) => (
               <Step
                 key={index}
