@@ -1,12 +1,14 @@
 import { chakra } from "@chakra-ui/react"
 
 // Content starts at x=48 to clear the radio indicator, which the image-radio
-// control absolutely positions 8px from the top-left at 20px across.
+// control absolutely positions 8px from the top-left at 20px across. The
+// description line is here so authors can see a step takes one, not just a
+// number and a title.
 export const IconStepsNumeral = chakra(
   (props: React.SVGProps<SVGSVGElement>) => {
     return (
       <svg
-        viewBox="0 0 400 84"
+        viewBox="0 0 400 108"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         {...props}
@@ -30,6 +32,15 @@ export const IconStepsNumeral = chakra(
           fill="#1B2A4A"
         >
           Check if you are eligible
+        </text>
+        <text
+          x="48"
+          y="94"
+          fontFamily="system-ui, sans-serif"
+          fontSize="12"
+          fill="#4A5568"
+        >
+          You must be 21 or above.
         </text>
       </svg>
     )
