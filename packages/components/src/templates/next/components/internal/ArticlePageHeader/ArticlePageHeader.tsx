@@ -1,7 +1,9 @@
 import type { ArticlePageHeaderProps } from "~/interfaces"
 import { getFormattedDate } from "~/utils/getFormattedDate"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { Breadcrumb } from "../Breadcrumb"
+import { LinkButton } from "../LinkButton"
 import { PillTags, PlaintextTags } from "../Tags"
 
 export const ArticlePageHeader = ({
@@ -11,6 +13,9 @@ export const ArticlePageHeader = ({
   date,
   summary,
   pillTags,
+  buttonLabel,
+  buttonUrl,
+  site,
 }: ArticlePageHeaderProps) => {
   return (
     <div className="mx-auto w-full">
@@ -44,6 +49,21 @@ export const ArticlePageHeader = ({
           <p className="prose-title-lg whitespace-pre-wrap text-base-content-light">
             {summary}
           </p>
+        )}
+
+        {buttonLabel && buttonUrl && (
+          <div className="mt-4">
+            <LinkButton
+              href={getReferenceLinkHref(
+                buttonUrl,
+                site.siteMapArray,
+                site.assetsBaseUrl,
+              )}
+              isWithFocusVisibleHighlight
+            >
+              {buttonLabel}
+            </LinkButton>
+          </div>
         )}
       </div>
     </div>
