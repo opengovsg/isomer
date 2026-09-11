@@ -190,6 +190,7 @@ export const Steps = ({
                         <div className={compoundStyles.stepButton()}>
                           {buttonLabel}
                           <BiRightArrowAlt
+                            aria-hidden
                             className={compoundStyles.stepButtonIcon({
                               isExternalLink,
                             })}
