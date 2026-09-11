@@ -150,55 +150,68 @@ export const Steps = ({
                 const hasLink = !!href
                 const isExternalLink = isExternalUrl(href)
                 const showTitleArrow = hasLink && !buttonLabel
+                const stepLinkClassName = compoundStyles.stepLink({
+                  numberStyle,
+                })
+
+                const stepContent = (
+                  <>
+                    <span
+                      aria-hidden
+                      className={compoundStyles.stepNumber({ numberStyle })}
+                    >
+                      {idx + 1}
+                    </span>
+
+                    <StepTitleTag
+                      className={compoundStyles.stepTitle({
+                        hasTitleArrow: showTitleArrow,
+                      })}
+                    >
+                      {title}
+                      {showTitleArrow && (
+                        <BiRightArrowAlt
+                          aria-hidden
+                          className={compoundStyles.stepButtonIcon({
+                            isExternalLink,
+                          })}
+                        />
+                      )}
+                    </StepTitleTag>
+
+                    {description && (
+                      <p className={compoundStyles.stepDescription()}>
+                        {description}
+                      </p>
+                    )}
+
+                    {hasLink && !showTitleArrow && (
+                      <div className={compoundStyles.stepButton()}>
+                        {buttonLabel}
+                        <BiRightArrowAlt
+                          aria-hidden
+                          className={compoundStyles.stepButtonIcon({
+                            isExternalLink,
+                          })}
+                        />
+                      </div>
+                    )}
+                  </>
+                )
 
                 return (
                   <li key={idx} className={compoundStyles.step()}>
-                    <Link
-                      href={href}
-                      className={compoundStyles.stepLink({ numberStyle })}
-                      isExternal={isExternalLink}
-                    >
-                      <span
-                        aria-hidden
-                        className={compoundStyles.stepNumber({ numberStyle })}
+                    {href ? (
+                      <Link
+                        href={href}
+                        className={stepLinkClassName}
+                        isExternal={isExternalLink}
                       >
-                        {idx + 1}
-                      </span>
-
-                      <StepTitleTag
-                        className={compoundStyles.stepTitle({
-                          hasTitleArrow: showTitleArrow,
-                        })}
-                      >
-                        {title}
-                        {showTitleArrow && (
-                          <BiRightArrowAlt
-                            aria-hidden
-                            className={compoundStyles.stepButtonIcon({
-                              isExternalLink,
-                            })}
-                          />
-                        )}
-                      </StepTitleTag>
-
-                      {description && (
-                        <p className={compoundStyles.stepDescription()}>
-                          {description}
-                        </p>
-                      )}
-
-                      {hasLink && !showTitleArrow && (
-                        <div className={compoundStyles.stepButton()}>
-                          {buttonLabel}
-                          <BiRightArrowAlt
-                            aria-hidden
-                            className={compoundStyles.stepButtonIcon({
-                              isExternalLink,
-                            })}
-                          />
-                        </div>
-                      )}
-                    </Link>
+                        {stepContent}
+                      </Link>
+                    ) : (
+                      <div className={stepLinkClassName}>{stepContent}</div>
+                    )}
                   </li>
                 )
               },
