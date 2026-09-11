@@ -2,6 +2,7 @@ import type { CollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
+import { cardImageStyles } from "../CollectionCard/cardImageStyles"
 import { Title } from "../CollectionCard/Title" // Reusing since the logic is the same for both
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
@@ -42,7 +43,7 @@ export const BlogCard = ({
               src={imageSrc || ""}
               alt={image.alt}
               width="100%"
-              className={`absolute left-0 h-full w-full rounded ${isContainNeeded ? "object-contain" : "object-cover"}`}
+              className={cardImageStyles({ contain: isContainNeeded })}
               assetsBaseUrl={siteAssetsBaseUrl}
             />
           }

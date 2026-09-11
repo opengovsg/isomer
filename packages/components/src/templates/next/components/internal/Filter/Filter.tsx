@@ -12,6 +12,7 @@ import type { FilterProps } from "../../../types/Filter"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { FilterDrawer } from "./FilterDrawer"
+import { filterChevronStyles, filterPanelStyles } from "./filterStyles"
 
 const filterSectionLabelStyle = tv({
   extend: groupFocusVisibleHighlight,
@@ -38,12 +39,7 @@ const FilterSectionButton = ({
       className="group prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-left text-base-content outline-0"
     >
       <label className={filterSectionLabelStyle()}>{label}</label>
-      <BiChevronDown
-        aria-hidden
-        className={`h-6 w-6 flex-shrink-0 text-base-content-strong transition-all duration-300 ease-in-out ${
-          isOpen ? "rotate-180" : "rotate-0"
-        }`}
-      />
+      <BiChevronDown aria-hidden className={filterChevronStyles({ isOpen })} />
     </button>
   )
 }
@@ -123,7 +119,7 @@ export const Filter = ({
               onToggle={() => updateFilterToggle(id)}
             />
 
-            <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
+            <div className={filterPanelStyles({ isOpen: showFilter[id] })}>
               {items.map(({ id: itemId, label: itemLabel, count }) => (
                 <Checkbox
                   key={itemId}

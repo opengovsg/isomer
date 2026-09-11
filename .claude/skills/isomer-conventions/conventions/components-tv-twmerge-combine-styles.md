@@ -48,8 +48,6 @@ const imageStyles = tv({
 })
 ```
 
-Real examples: `packages/components/src/templates/next/components/complex/Video/Video.tsx:106`, `packages/components/src/templates/next/components/internal/BlogCard/BlogCard.tsx:45`.
-
 ## Good
 
 ```tsx
@@ -84,8 +82,6 @@ const tableCellStyles = tv({
 // Plain string when there is no variance and nothing to merge
 <nav className="flex flex-col gap-3 rounded-lg bg-base-canvas-alt p-6" />
 ```
-
-Real examples: `packages/components/src/templates/next/components/native/Table/Table.tsx:22-29`, `packages/components/src/templates/next/components/internal/Tags/PlaintextTags.tsx:16`.
 
 ## Not required
 
