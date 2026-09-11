@@ -14,6 +14,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
+  AuditLogExportBatchReadyEmailTemplateData,
   AuditLogExportDownloadLink,
   AuditLogExportFailedEmailTemplateData,
   AuditLogExportReadyEmailTemplateData,
@@ -329,6 +330,44 @@ const auditLogExportFailedTemplate = (
   }
 }
 
+// `data` is pre-escaped by `escapeTemplateArguments` — see the note on
+// `auditLogExportReadyTemplate`. One email covering every site an "allSites"
+// ask resolved to: `links` for sites whose export succeeded, `failedSiteNames`
+// for sites that exhausted retries.
+const auditLogExportBatchReadyTemplate = (
+  data: AuditLogExportBatchReadyEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, month, reportLabel, links, failedSiteNames } = data
+
+  const logName = reportLabel === "access" ? "Access" : "Audit"
+
+  const linkItems = links
+    .map(({ siteName, url, sizeInBytes }) => {
+      const sizeInMb = sizeInBytes
+        ? (sizeInBytes / ONE_MB_IN_BYTES).toFixed(2)
+        : "-"
+      return `<li><b>${siteName}</b>: <a href="${url}">${getDownloadLinkLabel(reportLabel, month, sizeInMb)}</a></li>`
+    })
+    .join("")
+
+  const failedSection =
+    failedSiteNames.length > 0
+      ? `<p>We couldn't generate ${logName.toLowerCase()} logs for the following site(s). Please try requesting them again, and contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> if the problem persists:</p>
+<ul>${failedSiteNames.map((siteName) => `<li>${siteName}</li>`).join("")}</ul>`
+      : ""
+
+  return {
+    subject: `[Isomer] ${logName} logs for ${month} for your sites`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>You requested ${logName.toLowerCase()} logs for all your sites for ${month}. Each link below will expire after ${AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS} days.</p>
+${linkItems.length > 0 ? `<ul>${linkItems}</ul>` : ""}
+${failedSection}
+<br/>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
 const _templates = {
   invitation:
     invitationTemplate satisfies EmailTemplateFunction<InvitationEmailTemplateData>,
@@ -356,6 +395,8 @@ const _templates = {
     auditLogExportReadyTemplate satisfies EmailTemplateFunction<AuditLogExportReadyEmailTemplateData>,
   auditLogExportFailed:
     auditLogExportFailedTemplate satisfies EmailTemplateFunction<AuditLogExportFailedEmailTemplateData>,
+  auditLogExportBatchReady:
+    auditLogExportBatchReadyTemplate satisfies EmailTemplateFunction<AuditLogExportBatchReadyEmailTemplateData>,
 } as const
 
 export const templates = escapeTemplateArguments(_templates)
