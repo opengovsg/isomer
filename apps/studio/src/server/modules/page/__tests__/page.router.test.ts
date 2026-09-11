@@ -1460,6 +1460,45 @@ describe("page.router", async () => {
       await assertAuditLogRows()
     })
 
+    it("should return 422 if content contains stylized unicode text", async () => {
+      // Arrange
+      const pageUpdateArgs = createPageUpdateArgs(pageToUpdate)
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: pageToUpdate.siteId,
+      })
+      const contentWithStylizedUnicode: IsomerSchema["content"] = [
+        {
+          type: "accordion",
+          summary: "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥",
+          details: {
+            type: "prose",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Test accordion content" }],
+              },
+            ],
+          },
+        },
+      ]
+
+      // Act
+      const result = caller.updatePageBlob({
+        ...pageUpdateArgs,
+        content: JSON.stringify({
+          content: contentWithStylizedUnicode,
+          layout: "content",
+          page: pick(pageToUpdate, ["title", "permalink"]),
+          version: "0.1.0",
+        } satisfies UpdatePageOutput["content"]),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow("Schema validation failed")
+      await assertAuditLogRows()
+    })
+
     it("should update draft page blob if args are valid and has current draft", async () => {
       // Arrange
       const pageUpdateArgs = createPageUpdateArgs(pageToUpdate)

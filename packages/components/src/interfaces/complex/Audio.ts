@@ -2,6 +2,8 @@ import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 import { AUDIO_EMBED_URL_PATTERN } from "~/utils/validation"
 
+import { IsomerString } from "../primitives/IsomerString"
+
 export const AudioSchema = Type.Object(
   {
     type: Type.Literal("audio", { default: "audio" }),
@@ -12,7 +14,7 @@ export const AudioSchema = Type.Object(
       pattern: AUDIO_EMBED_URL_PATTERN,
       format: "embed",
     }),
-    title: Type.String({
+    title: IsomerString({
       title: "Label for screen readers",
       description:
         "This is not shown on the page, but is compulsory for accessibility",

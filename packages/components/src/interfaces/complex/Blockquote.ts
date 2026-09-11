@@ -2,16 +2,17 @@ import type { Static } from "@sinclair/typebox"
 import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
+import { IsomerString } from "../primitives/IsomerString"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const BlockquoteSchema = Type.Object(
   {
     type: Type.Literal("blockquote", { default: "blockquote" }),
-    quote: Type.String({
+    quote: IsomerString({
       title: "Quote",
       format: "textarea",
     }),
-    source: Type.String({
+    source: IsomerString({
       title: "Source",
       description: "Speaker, their designation, or when they said it",
     }),

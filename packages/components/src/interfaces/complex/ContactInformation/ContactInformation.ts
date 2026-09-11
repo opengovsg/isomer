@@ -6,6 +6,7 @@ import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 import { createDgsSchema, NativeDataSourceSchema } from "../../integration"
+import { IsomerString } from "../../primitives/IsomerString"
 import { CONTACT_INFORMATION_SUPPORT_METHODS } from "./constants"
 
 const BaseContactInformationSchema = Type.Object({
@@ -13,7 +14,7 @@ const BaseContactInformationSchema = Type.Object({
     default: "contactinformation",
   }),
   label: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Link text",
       maxLength: 50,
       description:
@@ -54,12 +55,12 @@ const CHARACTER_LIMIT = 30
 const InjectableContactInformationSchema = Type.Object(
   {
     title: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Title",
       }),
     ),
     description: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Description",
       }),
     ),
@@ -81,19 +82,19 @@ const InjectableContactInformationSchema = Type.Object(
           ),
         ),
         label: Type.Optional(
-          Type.String({
+          IsomerString({
             title: "Label",
             maxLength: CHARACTER_LIMIT,
           }),
         ),
         values: Type.Array(
-          Type.String({
+          IsomerString({
             maxLength: CHARACTER_LIMIT,
           }),
           { minItems: 1 },
         ),
         caption: Type.Optional(
-          Type.String({
+          IsomerString({
             title: "Caption",
             maxLength: CHARACTER_LIMIT,
           }),
@@ -108,11 +109,11 @@ const InjectableContactInformationSchema = Type.Object(
     otherInformation: Type.Optional(
       Type.Object({
         label: Type.Optional(
-          Type.String({
+          IsomerString({
             title: "Other Information",
           }),
         ),
-        value: Type.String(), // note: there can be HTML tags in this field
+        value: IsomerString(), // note: there can be HTML tags in this field
       }),
     ),
   },
