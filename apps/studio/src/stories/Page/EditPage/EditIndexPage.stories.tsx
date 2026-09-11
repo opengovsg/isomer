@@ -188,7 +188,7 @@ export const EditInfocardsLinkState: Story = {
 
     // Modal renders in a portal outside canvasElement, so query from document.body
     const body = within(document.body)
-    const page = await body.findByText("Page 1")
+    const page = await body.findByText("Test page 1")
     await userEvent.click(page)
 
     const addLinkButton = await body.findByRole("button", {
