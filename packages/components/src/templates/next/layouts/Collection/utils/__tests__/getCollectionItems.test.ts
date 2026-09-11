@@ -4,6 +4,7 @@ import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getCollectionItems } from "../getCollectionItems"
+import { processCollectionItems } from "../processCollectionItems"
 
 const SITE_LOGO_URL = "/isomer-logo.svg"
 const SITE_NAME = "Isomer Next"
@@ -50,6 +51,22 @@ const createSiteWithChildren = (children: IsomerSitemap[]) =>
   })
 
 describe("getCollectionItems", () => {
+  it("renders a link to a file using its reference URL and title", () => {
+    const ref = "https://example.com/report.pdf"
+    const site = createSiteWithChildren([
+      createArticleChild({ layout: "link", ref, title: "Annual report" }),
+    ])
+
+    const items = getCollectionItems({ site, permalink: "/collection" })
+
+    expect(items).toHaveLength(1)
+    expect(items[0]).toMatchObject({ variant: "link", url: ref })
+    expect(processCollectionItems(items)[0]).toMatchObject({
+      referenceLinkHref: ref,
+      itemTitle: "Annual report",
+    })
+  })
+
   describe("showThumbnail is undefined", () => {
     it("should not include image when showThumbnail is undefined, even if item has an image", () => {
       const itemImage = { src: "/images/thumbnail.png", alt: "Thumbnail" }

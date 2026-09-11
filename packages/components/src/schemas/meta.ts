@@ -5,7 +5,6 @@ import {
   CollectionPageMetaSchema,
   ContentPageMetaSchema,
   DatabasePageMetaSchema,
-  FileRefMetaSchema,
   HomePageMetaSchema,
   LinkRefMetaSchema,
   NotFoundPageMetaSchema,
@@ -22,7 +21,6 @@ const LAYOUT_METADATA_MAP = {
   search: SearchPageMetaSchema,
   link: LinkRefMetaSchema,
   collection: CollectionPageMetaSchema,
-  file: FileRefMetaSchema,
 }
 
 export const getLayoutMetadataSchema = (

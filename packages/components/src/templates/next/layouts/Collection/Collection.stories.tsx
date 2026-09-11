@@ -27,7 +27,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       title: `This is the title for a collection item that shows the Isomer hero banner-${index}`,
       permalink: `/publications/item-two-${index}`,
       lastModified: "",
-      layout: "file",
+      layout: "link",
       image: {
         src: "https://images.unsplash.com/photo-1728931710331-7f74dca643eb?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         alt: "placeholder",
@@ -37,7 +37,6 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       date: "07/05/2024",
       category: "Category Name",
       ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
-      fileDetails: { type: "png", size: "1.2MB" },
     },
     {
       id: `${index}`,
@@ -185,16 +184,12 @@ export const FilteredEmptyResults: Story = {
         title: `2025 File`,
         permalink: `/publications/item-twenty-twenty-five`,
         lastModified: "",
-        layout: "file",
+        layout: "link",
         summary:
           "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
         date: "2025-05-07",
         tagged: [CATEGORY_NAME_2_OPTION_ID],
         ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
-        fileDetails: {
-          type: "png",
-          size: "1.2MB",
-        },
       },
     ],
   }),
@@ -332,13 +327,13 @@ export const NoFiltersBlogCard: Story = {
   play: NoFiltersCollectionCard.play,
 }
 
-export const FileCard: Story = {
+export const LinkToFile: Story = {
   args: generateArgs({
     collectionItems: [COLLECTION_ITEMS[1]] as IsomerSitemap[],
   }),
 }
 
-export const FileCardNoImage: Story = {
+export const LinkToFileNoImage: Story = {
   args: generateArgs({
     collectionItems: [
       { ...COLLECTION_ITEMS[1], image: undefined } as IsomerSitemap,

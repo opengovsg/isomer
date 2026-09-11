@@ -5,7 +5,6 @@ import type {
   CollectionPagePageProps,
   ContentPagePageProps,
   DatabasePagePageProps,
-  FileRefPageProps,
   HomePagePageProps,
   LinkRefPageProps,
   NotFoundPagePageProps,
@@ -22,7 +21,6 @@ import {
   CollectionPageMetaSchema,
   ContentPageMetaSchema,
   DatabasePageMetaSchema,
-  FileRefMetaSchema,
   HomePageMetaSchema,
   LinkRefMetaSchema,
   SearchPageMetaSchema,
@@ -32,7 +30,6 @@ import {
   CollectionPagePageSchema,
   ContentPagePageSchema,
   DatabasePagePageSchema,
-  FileRefPageSchema,
   HomePagePageSchema,
   IndexPagePageSchema,
   LinkRefPageSchema,
@@ -174,29 +171,6 @@ export const DatabasePageSchema = Type.Object(
   },
 )
 
-export const FileRefSchema = Type.Object(
-  {
-    layout: Type.Literal(ISOMER_PAGE_LAYOUTS.File, {
-      default: ISOMER_PAGE_LAYOUTS.File,
-    }),
-    meta: Type.Optional(FileRefMetaSchema),
-    page: FileRefPageSchema,
-    content: Type.Array(IsomerComponentsSchemas, {
-      title: "Page content",
-      description:
-        "This should be empty for file pages, make sure to remove any items here.",
-      default: [],
-      minItems: 0,
-      maxItems: 0,
-    }),
-  },
-  {
-    title: "File Reference",
-    description:
-      "This is a layout used exclusively within collections. Use this layout if you want to link to a file, such as a PDF or a Word document, from within a Collection page.",
-  },
-)
-
 export const LinkRefSchema = Type.Object(
   {
     layout: Type.Literal(ISOMER_PAGE_LAYOUTS.Link, {
@@ -230,7 +204,6 @@ export const IsomerPageSchema = Type.Composite([
     HomePageSchema,
     SearchPageSchema,
     IndexPageSchema,
-    FileRefSchema,
     LinkRefSchema,
   ]),
 ])
@@ -280,10 +253,6 @@ export type IndexPageSchemaType = Static<typeof IndexPageSchema> &
   BasePageAdditionalProps & {
     page: ContentPagePageProps
   }
-export type FileRefSchemaType = Static<typeof FileRefSchema> &
-  BasePageAdditionalProps & {
-    page: FileRefPageProps
-  }
 export type LinkRefSchemaType = Static<typeof LinkRefSchema> &
   BasePageAdditionalProps & {
     page: LinkRefPageProps
@@ -298,7 +267,6 @@ export type IsomerPageSchemaType =
   | IndexPageSchemaType
   | NotFoundPageSchemaType
   | SearchPageSchemaType
-  | FileRefSchemaType
   | LinkRefSchemaType
 
 export type IsomerPageLayoutType = IsomerPageSchemaType["layout"]
