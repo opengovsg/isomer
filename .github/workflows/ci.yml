@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       template_or_components: ${{ steps.filter.outputs.template_or_components }}
+      studio_e2e_relevant: ${{ steps.filter.outputs.studio_e2e_relevant }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
@@ -37,6 +38,21 @@ jobs:
             template_or_components:
               - 'packages/components/**'
               - 'tooling/template/**'
+            # Anything the Studio app or its e2e run actually depend on at
+            # runtime, plus the CI config that runs it — so a doc-only PR
+            # skips e2e-tests, but editing this workflow still exercises it.
+            studio_e2e_relevant:
+              - 'apps/studio/**'
+              - 'packages/components/**'
+              - 'packages/db/**'
+              - 'packages/algolia/**'
+              - 'packages/pgboss/**'
+              - 'packages/logging/**'
+              - 'packages/validators/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.github/workflows/ci.yml'
+              - '.github/actions/**'
   build:
     runs-on: ubuntu-latest
     steps:
@@ -247,13 +263,34 @@ jobs:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
 
-  end-to-end-tests:
-    name: End-to-end tests
-    needs: optimize_ci
+  e2e-tests:
+    name: E2E tests (${{ matrix.feature }})
+    needs: [optimize_ci, changes]
     runs-on: ubuntu-latest
-    if: needs.optimize_ci.outputs.skip == 'false'
+    if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.studio_e2e_relevant == 'true'
     permissions:
       contents: read
+    strategy:
+      fail-fast: false # so all shards run and one shard failing doesn't cancel the rest
+      matrix:
+        # One job per tests/e2e/<feature> directory, except smoke/singpass
+        # (grouped as "root" since neither is role-tagged). `paths` are
+        # passed straight to `playwright test <paths>`; role/project grep
+        # filtering still applies on top. When you add a new
+        # tests/e2e/<feature> directory, add an entry for it here — the
+        # "declares every tests/e2e path" test in
+        # apps/studio/scripts/e2eCiCoverage.test.ts fails if you forget.
+        include:
+          - feature: site
+            paths: tests/e2e/site
+          - feature: resource
+            paths: tests/e2e/resource
+          - feature: user
+            paths: tests/e2e/user
+          - feature: godmode
+            paths: tests/e2e/godmode
+          - feature: root
+            paths: tests/e2e/smoke.test.ts tests/e2e/singpass.test.ts
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup
@@ -277,6 +314,15 @@ jobs:
           - name: Build Studio app
             # Loose env mode required for env vars to be passed to the run
             run: pnpm exec turbo build --filter=isomer-studio --env-mode=loose
+            env:
+              # These source maps exist for Datadog RUM error tracking on real
+              # deploys; e2e gets no benefit from them, and generating them is
+              # a meaningful chunk of build time.
+              SKIP_PRODUCTION_SOURCE_MAPS: "true"
+              # This job's build is served via plain `next start`, never
+              # `.next/standalone` — skip the dependency trace + copy that
+              # `output: standalone` requires for Docker/start:standalone deploys.
+              SKIP_STANDALONE_OUTPUT: "true"
           - name: Start test containers
             run: pnpm run setup:test
           - name: Configure Datadog Test Visibility
@@ -287,6 +333,8 @@ jobs:
               api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Run Playwright tests
         run: pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
+        env:
+          PLAYWRIGHT_TEST_PATHS: ${{ matrix.paths }}
 
       - name: Stop test containers
         run: pnpm run teardown
@@ -296,8 +344,8 @@ jobs:
         id: upload-test-results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          # Unique per run so that re-runs from the same PR don't collide.
-          name: e2e-test-results-${{ github.run_id }}
+          # Unique per run+feature so that re-runs and parallel jobs don't collide.
+          name: e2e-test-results-${{ github.run_id }}-${{ matrix.feature }}
           path: apps/studio/tests/e2e/test-results
           retention-days: 7
           if-no-files-found: warn
@@ -314,13 +362,15 @@ jobs:
         run: |
           mkdir -p /tmp/e2e-metadata
           echo "${{ github.event.pull_request.number }}" > /tmp/e2e-metadata/pr-number.txt
-          echo "${{ steps.upload-test-results.outputs.artifact-url }}" > /tmp/e2e-metadata/artifact-url.txt
+          echo "${{ steps.upload-test-results.outputs.artifact-url }}" > "/tmp/e2e-metadata/artifact-url-${{ matrix.feature }}.txt"
 
+      # Named per feature: with several jobs running in parallel, uploading a
+      # single shared "e2e-comment-metadata" name from every matrix job would collide.
       - name: Upload E2E comment metadata
         if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.upload-test-results.outputs.artifact-url != '' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: e2e-comment-metadata
+          name: e2e-comment-metadata-${{ matrix.feature }}
           path: /tmp/e2e-metadata/
           retention-days: 1
           if-no-files-found: error
