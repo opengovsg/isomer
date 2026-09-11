@@ -64,7 +64,8 @@ const SuspendablePublishButton = ({
       fireContentEditSurveyEvent(PUBLISHED_AFTER_EDITING_EVENT)
       toast({
         status: "success",
-        title: "Page published successfully",
+        title: "Publishing in progress",
+        description: "Changes will be live on your site in 5-10 minutes.",
         ...BRIEF_TOAST_SETTINGS,
       })
       if (publishNowDisclosure.isOpen) publishNowDisclosure.onClose()
