@@ -6,7 +6,6 @@ import { LINK_HREF_PATTERN } from "~/utils/validation"
 const StepSchema = Type.Object({
   title: Type.String({
     title: "Step title",
-    maxLength: 80,
   }),
   description: Type.Optional(
     Type.String({
