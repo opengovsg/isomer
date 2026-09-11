@@ -31,8 +31,10 @@ export const MenubarHorizontalList = ({
     return null
   }
   return (
-    <Popover placement="bottom">
-      {({ isOpen }) => (
+    // closeOnBlur=false pairs with mousedown preventDefault below — otherwise
+    // focus stays in the editor and Chakra dismisses the popover immediately.
+    <Popover placement="bottom" closeOnBlur={false} isLazy>
+      {({ isOpen, onClose }) => (
         <>
           <PopoverTrigger>
             <HStack>
@@ -47,6 +49,8 @@ export const MenubarHorizontalList = ({
                 _active={{
                   bg: "interaction.muted.main.active",
                 }}
+                // TipTap toolbar pattern: keep editor selection on open.
+                onMouseDown={(event) => event.preventDefault()}
               >
                 <HStack spacing={0}>
                   <Icon
@@ -71,7 +75,10 @@ export const MenubarHorizontalList = ({
                     key={index}
                     icon={subItem.icon}
                     title={subItem.title}
-                    action={subItem.action}
+                    action={() => {
+                      subItem.action()
+                      onClose()
+                    }}
                     isActive={subItem.isActive}
                   />
                 ))}
