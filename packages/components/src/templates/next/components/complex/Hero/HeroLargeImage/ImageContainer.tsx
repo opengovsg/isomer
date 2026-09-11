@@ -1,7 +1,9 @@
 "use client"
 
 import type { ImageClientProps } from "~/interfaces"
+import type { HeroLargeImageProps } from "~/interfaces/complex/Hero"
 import { useEffect, useRef, useState } from "react"
+import { IMAGE_FIT } from "~/interfaces/constants"
 
 import { ImageClient } from "../../../internal/ImageClient"
 import { ScrollForMoreButton } from "./ScrollForMoreButton"
@@ -9,6 +11,7 @@ import { ScrollForMoreButton } from "./ScrollForMoreButton"
 interface ImageContainerProps {
   imageSrc: ImageClientProps["src"]
   imageAlt: ImageClientProps["alt"]
+  imageFit?: HeroLargeImageProps["imageFit"]
   assetsBaseUrl: ImageClientProps["assetsBaseUrl"]
 }
 
@@ -18,6 +21,7 @@ const SCROLL_THRESHOLD = 120
 export const ImageContainer = ({
   imageSrc,
   imageAlt,
+  imageFit = IMAGE_FIT.Cover,
   assetsBaseUrl,
 }: ImageContainerProps) => {
   const imageRef = useRef<HTMLImageElement>(null)
@@ -56,13 +60,23 @@ export const ImageContainer = ({
   }, [])
 
   return (
-    <div className="relative w-full">
+    <div
+      className={
+        imageFit === IMAGE_FIT.Content
+          ? "relative w-full md:px-10"
+          : "relative w-full"
+      }
+    >
       <ImageClient
         ref={imageRef}
         src={imageSrc}
         alt={imageAlt}
         width="100%"
-        className="aspect-square max-h-[60rem] w-full object-cover object-center md:aspect-[2/1]"
+        className={
+          imageFit === IMAGE_FIT.Content
+            ? "aspect-square max-h-[60rem] w-full object-cover object-center md:mx-auto md:block md:aspect-auto md:h-auto md:max-h-[31.25rem] md:w-auto md:max-w-full md:rounded-lg"
+            : "aspect-square max-h-[60rem] w-full object-cover object-center md:aspect-[2/1]"
+        }
         assetsBaseUrl={assetsBaseUrl}
         lazyLoading={false} // hero is always above the fold
       />
