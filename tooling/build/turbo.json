@@ -1,0 +1,9 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "lint": {
+      "dependsOn": ["generate", "^build", "@opengovsg/isomer-components#build"]
+    }
+  }
+}

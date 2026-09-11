@@ -314,6 +314,17 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
     },
     alternates: {
       canonical: canonicalUrl,
+      types:
+        props.layout === ISOMER_PAGE_LAYOUTS.Collection
+          ? {
+              "application/rss+xml": [
+                {
+                  url: `${canonicalUrl.replace(/\/?$/, "/")}rss.xml`,
+                  title: `${props.site.siteName} — ${props.page.title}`,
+                },
+              ],
+            }
+          : undefined,
     },
   }
 

@@ -1594,6 +1594,15 @@ importers:
       '@aws-sdk/client-s3':
         specifier: catalog:aws-sdk
         version: 3.1124.0
+      '@opengovsg/isomer-components':
+        specifier: workspace:*
+        version: link:../../../../packages/components
+      date-fns:
+        specifier: 'catalog:'
+        version: 4.4.0
+      date-fns-tz:
+        specifier: 'catalog:'
+        version: 3.2.0(date-fns@4.4.0)
       dotenv:
         specifier: 'catalog:'
         version: 16.6.1
