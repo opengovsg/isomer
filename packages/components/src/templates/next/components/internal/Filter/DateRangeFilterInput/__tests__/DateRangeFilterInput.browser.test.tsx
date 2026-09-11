@@ -115,6 +115,22 @@ describe("DateRangeFilterInput", () => {
     })
   })
 
+  it("stops Escape from bubbling so a parent dialog does not close", () => {
+    // Arrange
+    const onParentKeyDown = vi.fn()
+    render(
+      <div onKeyDown={onParentKeyDown}>
+        <DateRangeFilterInput value={undefined} onChange={vi.fn()} />
+      </div>,
+    )
+
+    // Act
+    fireEvent.keyDown(getFromInput(), { key: "Escape" })
+
+    // Assert
+    expect(onParentKeyDown).not.toHaveBeenCalled()
+  })
+
   it("commits again after an invalid range is corrected", () => {
     // Arrange
     const onChange = vi.fn()

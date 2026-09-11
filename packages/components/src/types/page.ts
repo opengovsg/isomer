@@ -16,10 +16,10 @@ import {
 } from "~/utils/validation"
 
 import {
-  DATE_FILTER_STATUS_ID,
-  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  DATE_FILTER_STATUS,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   TAG_CATEGORY_TYPE,
+  type DateFilterStatusId,
   type TagCategoryDisplay,
 } from "./constants"
 
@@ -139,20 +139,15 @@ const DateFilterSchema = Type.Object(
     // Always "date" on new filters. Keeps oneOf exclusive with TextFilterSchema.
     type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
     statusLabels: Type.Object(
-      {
-        ENDED: createDateFilterStatusLabelSchema({
-          defaultValue:
-            DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Ended],
-        }),
-        ONGOING: createDateFilterStatusLabelSchema({
-          defaultValue:
-            DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Ongoing],
-        }),
-        UPCOMING: createDateFilterStatusLabelSchema({
-          defaultValue:
-            DEFAULT_DATE_FILTER_STATUS_LABELS[DATE_FILTER_STATUS_ID.Upcoming],
-        }),
-      },
+      Object.fromEntries(
+        Object.values(DATE_FILTER_STATUS).map(({ id, defaultLabel }) => [
+          id,
+          createDateFilterStatusLabelSchema({ defaultValue: defaultLabel }),
+        ]),
+      ) as Record<
+        DateFilterStatusId,
+        ReturnType<typeof createDateFilterStatusLabelSchema>
+      >,
       {
         title: "Custom labels",
         description: "If you don't want to show a label, leave fields empty.",

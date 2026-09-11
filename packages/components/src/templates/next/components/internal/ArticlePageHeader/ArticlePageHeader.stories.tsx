@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ArticlePageHeaderProps } from "~/interfaces"
-import { DATE_FILTER_STATUS_ID } from "~/types/constants"
+import { buildDateFilterStatusLabels } from "~/templates/next/layouts/Collection/utils/buildDateFilterStatusLabels"
+import { DATE_FILTER_STATUS } from "~/types/constants"
 
 import { ArticlePageHeader } from "./ArticlePageHeader"
 
@@ -13,17 +14,13 @@ const daysFromNow = (days: number) => {
   return toDateString(date)
 }
 
-const EVENT_DATE_STATUS_LABELS = [
-  { id: DATE_FILTER_STATUS_ID.Ended, label: "Event ended" },
-  { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Ongoing" },
-  { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Upcoming" },
-]
+const EVENT_DATE_STATUS_LABELS = buildDateFilterStatusLabels()
 
-const REGISTRATION_DEADLINE_STATUS_LABELS = [
-  { id: DATE_FILTER_STATUS_ID.Ended, label: "Registration closed" },
-  { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Registration open" },
-  { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Registration upcoming" },
-]
+const REGISTRATION_DEADLINE_STATUS_LABELS = buildDateFilterStatusLabels({
+  [DATE_FILTER_STATUS.Ended.id]: "Registration closed",
+  [DATE_FILTER_STATUS.Ongoing.id]: "Registration open",
+  [DATE_FILTER_STATUS.Upcoming.id]: "Registration upcoming",
+})
 
 const meta: Meta<ArticlePageHeaderProps> = {
   title: "Next/Internal Components/ArticlePageHeader",

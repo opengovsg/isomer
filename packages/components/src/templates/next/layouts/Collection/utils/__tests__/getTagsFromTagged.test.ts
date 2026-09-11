@@ -1,5 +1,6 @@
 import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
 import { describe, expect, it } from "vitest"
+import { DEFAULT_DATE_FILTER_STATUS_LABELS } from "~/types/constants"
 
 import { getTagsFromTagged } from "../getTagsFromTagged"
 
@@ -95,11 +96,7 @@ describe("getTagsFromTagged", () => {
           label: "Event Date",
           id: "date-1",
           type: "date",
-          statusLabels: [
-            { id: "ENDED", label: "Ended" },
-            { id: "ONGOING", label: "Ongoing" },
-            { id: "UPCOMING", label: "Upcoming" },
-          ],
+          statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
         },
         {
           label: "Topic",
