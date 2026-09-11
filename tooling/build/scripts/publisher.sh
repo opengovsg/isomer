@@ -54,6 +54,7 @@ start_time=$(date +%s)
 # NOTE: if no build repo branch was provided,
 # we will assume this is production and just clone from the bucket
 if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
+  echo "ISOMER_BUILD_REPO_BRANCH unset; using production cache from s3://$S3_CACHE_BUCKET_NAME/isomer/latest/"
   fetch_cached "s3://$S3_CACHE_BUCKET_NAME/isomer/latest/$REPO_TGZ" "$REPO_TGZ" ||
     { echo "Error: $REPO_TGZ not found in production cache"; exit 1; }
   cd isomer/
@@ -63,16 +64,21 @@ if [ -z "$ISOMER_BUILD_REPO_BRANCH" ]; then
   # "latest" so it's shared across every ref that happens to point at the same
   # commit. It's relinked into node_modules below, once pnpm is configured.
   GIT_SHA=$(cat .isomer-build-sha)
+  echo "Repository archive commit SHA: $GIT_SHA"
   fetch_cached "s3://$S3_CACHE_BUCKET_NAME/isomer/$GIT_SHA/$STORE_TGZ" "$STORE_TGZ" ||
     { echo "Error: $STORE_TGZ not found for commit $GIT_SHA"; exit 1; }
 else
+  echo "ISOMER_BUILD_REPO_BRANCH=$ISOMER_BUILD_REPO_BRANCH; checking branch-scoped cache first"
   # A manual/test build-components.yml run for this branch may have already archived
   # and published the repository to this ref-scoped prefix; reuse it if present instead
   # of re-cloning and re-installing from scratch.
   REPO_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/isomer/refs/$ISOMER_BUILD_REPO_BRANCH/$REPO_TGZ"
+  echo "Branch cache path: $REPO_CACHE_PATH"
   if fetch_cached "$REPO_CACHE_PATH" "$REPO_TGZ"; then
+    echo "Using cached repository archive for branch $ISOMER_BUILD_REPO_BRANCH"
     cd isomer/
   else
+    echo "Branch cache miss; cloning from GitHub (branch=$ISOMER_BUILD_REPO_BRANCH)"
     git clone --depth 1 --branch "$ISOMER_BUILD_REPO_BRANCH" https://github.com/opengovsg/isomer.git
     cd isomer/
     # Checkout specific branch

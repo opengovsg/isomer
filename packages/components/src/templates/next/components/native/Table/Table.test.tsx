@@ -271,3 +271,114 @@ describe("Table colgroup", () => {
     expect(html).not.toContain('rowspan="64"')
   })
 })
+
+describe("Table backgroundColor", () => {
+  it("paints palette colours on header and body cells", () => {
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{ caption: "Colours by kind" }}
+        content={[
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableHeader",
+                attrs: { backgroundColor: "pink" },
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Pink header" }],
+                  },
+                ],
+              },
+              {
+                type: "tableHeader",
+                attrs: { backgroundColor: "blue" },
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Blue header" }],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableCell",
+                attrs: { backgroundColor: "green" },
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Green body" }],
+                  },
+                ],
+              },
+              {
+                type: "tableCell",
+                attrs: { backgroundColor: "blue" },
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Blue body" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ]}
+      />,
+    )
+
+    const openTags = [...html.matchAll(/<(th|td)\b[^>]*>/g)].map((m) => m[0])
+    const [thPink, thBlue, tdGreen, tdBlue] = openTags
+
+    expect(thPink).toContain("background-color:#F7EBF1")
+    expect(thBlue).toContain("background-color:#EBECF7")
+    expect(tdGreen).toContain("background-color:#E9F6EC")
+    expect(tdBlue).toContain("background-color:#EBECF7")
+  })
+
+  it("renders th and td per cell in a header-column row", () => {
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{ caption: "Header column" }}
+        content={[
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableHeader",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Header" }],
+                  },
+                ],
+              },
+              {
+                type: "tableCell",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Body" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ]}
+      />,
+    )
+
+    const cellTags = [...html.matchAll(/<(th|td)\b/g)].map((match) => match[1])
+
+    expect(cellTags).toEqual(["th", "td"])
+  })
+})
