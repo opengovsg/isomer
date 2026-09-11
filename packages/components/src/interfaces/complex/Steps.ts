@@ -3,6 +3,8 @@ import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
+type StepsNumberStyle = "numeral" | "eyebrow" | "badge"
+
 const StepSchema = Type.Object({
   title: Type.String({
     title: "Step title",
@@ -51,18 +53,30 @@ export const StepsSchema = Type.Object(
     ),
     // `numeral` is a bare number with no container; `eyebrow` and `badge` both
     // sit in a bordered card and differ in how the number itself is set.
-    numberStyle: Type.Union(
-      [
-        Type.Literal("numeral", { title: "Large number" }),
-        Type.Literal("eyebrow", { title: "Small number above title" }),
-        Type.Literal("badge", { title: "Number in a filled square" }),
+    // `image` keys map to preview SVGs registered in Studio's image-radio
+    // control, so authors pick by looking rather than by reading a label.
+    numberStyle: Type.Unsafe<StepsNumberStyle>({
+      oneOf: [
+        {
+          const: "numeral",
+          title: "Large number",
+          image: "steps/numeral",
+        },
+        {
+          const: "eyebrow",
+          title: "Small number above title",
+          image: "steps/eyebrow",
+        },
+        {
+          const: "badge",
+          title: "Number in a filled square",
+          image: "steps/badge",
+        },
       ],
-      {
-        title: "Number style",
-        type: "string",
-        default: "numeral",
-      },
-    ),
+      title: "Number style",
+      default: "numeral",
+      format: "image-radio/1col",
+    }),
     steps: Type.Array(StepSchema, {
       title: "Steps",
       minItems: 2,
