@@ -3,6 +3,11 @@ import type { Transaction } from "@tiptap/pm/state"
 import type { EditorView } from "@tiptap/pm/view"
 import type { Editor } from "@tiptap/react"
 import { CellSelection, selectedRect, TableMap } from "@tiptap/pm/tables"
+import {
+  hasHeaderColumn,
+  hasHeaderRow,
+  type MappedTable,
+} from "~/features/editing-experience/utils/tableHeaderAxis"
 
 import type {
   SelectionKind,
@@ -10,12 +15,10 @@ import type {
   TableMovePlan,
 } from "./TableBubbleMenu.types"
 
-// Structural slice of selectedRect() for header overlap checks (no live EditorView).
-export interface TableHeaderOverlapRect {
+// selectedRect() fields needed for header overlap checks (no live EditorView).
+export interface TableHeaderOverlapRect extends MappedTable {
   top: number
   left: number
-  map: Pick<TableMap, "width" | "height" | "map">
-  table: Node
 }
 
 interface TableSelectionFacts {
@@ -30,38 +33,14 @@ interface TableSelectionFacts {
 
 type MovedBlockTableMap = Pick<TableMap, "width" | "height" | "positionAt">
 
-const cellTypeAt = (
-  rect: TableHeaderOverlapRect,
-  row: number,
-  col: number,
-): string | null => {
-  const cellPos = rect.map.map[row * rect.map.width + col]
-  if (cellPos === undefined) return null
-  return rect.table.nodeAt(cellPos)?.type.name ?? null
-}
-
-const isHeaderRowAtTop = (rect: TableHeaderOverlapRect): boolean => {
-  for (let col = 0; col < rect.map.width; col++) {
-    if (cellTypeAt(rect, 0, col) !== "tableHeader") return false
-  }
-  return rect.map.width > 0
-}
-
-const isHeaderColumnAtLeft = (rect: TableHeaderOverlapRect): boolean => {
-  for (let row = 0; row < rect.map.height; row++) {
-    if (cellTypeAt(rect, row, 0) !== "tableHeader") return false
-  }
-  return rect.map.height > 0
-}
-
 // Withhold delete/move when the selection overlaps a header axis so users unset the header first.
 export const selectionIncludesHeaderRow = (
   rect: TableHeaderOverlapRect,
-): boolean => rect.top === 0 && isHeaderRowAtTop(rect)
+): boolean => rect.top === 0 && hasHeaderRow(rect)
 
 export const selectionIncludesHeaderColumn = (
   rect: TableHeaderOverlapRect,
-): boolean => rect.left === 0 && isHeaderColumnAtLeft(rect)
+): boolean => rect.left === 0 && hasHeaderColumn(rect)
 
 export const selectionIsTopRow = (rect: {
   top: number
