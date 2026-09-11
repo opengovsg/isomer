@@ -41,6 +41,7 @@ import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
+import { serializePageBlob } from "~/utils/combinatorArrayFields"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -329,7 +330,7 @@ export default function RootStateDrawer() {
       {
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
+        content: serializePageBlob(previewPageState),
       },
       {
         onSuccess: () => {

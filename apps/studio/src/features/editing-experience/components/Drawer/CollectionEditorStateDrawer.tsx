@@ -14,6 +14,7 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
+import { serializePageBlob } from "~/utils/combinatorArrayFields"
 import { trpc } from "~/utils/trpc"
 
 import { pageSchema } from "../../schema"
@@ -107,7 +108,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
       {
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
+        content: serializePageBlob(previewPageState),
       },
       {
         onSuccess: () => {
