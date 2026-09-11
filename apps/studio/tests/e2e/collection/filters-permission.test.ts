@@ -1,6 +1,7 @@
 import { test } from "@playwright/test"
 import crypto from "crypto"
 import { db } from "~/server/modules/database"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, TEST_EMAILS } from "../fixtures/auth"
 import {
@@ -8,9 +9,16 @@ import {
   deleteCollection,
 } from "../fixtures/collection"
 import { CollectionPO } from "../fixtures/collection.po"
-import { getSeedSiteId } from "../fixtures/seed"
+import { provisionE2ESite } from "../fixtures/site"
 
-const siteId = getSeedSiteId()
+let siteId: number
+
+test.beforeAll(async () => {
+  const site = await provisionE2ESite({
+    roles: [RoleType.Admin, RoleType.Editor, RoleType.Publisher],
+  })
+  siteId = site.siteId
+})
 
 const dismissWelcomeModal = (email: string) =>
   db
@@ -20,14 +28,17 @@ const dismissWelcomeModal = (email: string) =>
     .execute()
 
 const seedCollection = () =>
-  createCollectionWithTagCategories([
-    {
-      id: crypto.randomUUID(),
-      label: "Topic",
-      isRequired: false,
-      options: [{ id: crypto.randomUUID(), label: "Technology" }],
-    },
-  ])
+  createCollectionWithTagCategories(
+    [
+      {
+        id: crypto.randomUUID(),
+        label: "Topic",
+        isRequired: false,
+        options: [{ id: crypto.randomUUID(), label: "Technology" }],
+      },
+    ],
+    siteId,
+  )
 
 test.describe("admin", () => {
   test.use({ storageState: storageStateFor("admin") })
