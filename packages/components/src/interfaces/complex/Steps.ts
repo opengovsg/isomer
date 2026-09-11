@@ -1,18 +1,26 @@
 import type { Static } from "@sinclair/typebox"
 import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
-import { LINK_HREF_PATTERN } from "~/utils/validation"
+import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
+
+const nonEmptyStringErrorMessage = {
+  pattern: "cannot be empty or contain only spaces",
+}
 
 type StepsNumberStyle = "numeral" | "eyebrow" | "badge"
 
 const StepSchema = Type.Object({
   title: Type.String({
     title: "Step title",
+    pattern: NON_EMPTY_STRING_REGEX,
+    errorMessage: nonEmptyStringErrorMessage,
   }),
   description: Type.Optional(
     Type.String({
       title: "Description",
       description: "Keep to 1–2 sentences so steps stay scannable.",
+      pattern: NON_EMPTY_STRING_REGEX,
+      errorMessage: nonEmptyStringErrorMessage,
     }),
   ),
   buttonLabel: Type.Optional(
@@ -45,10 +53,14 @@ export const StepsSchema = Type.Object(
     ),
     title: Type.String({
       title: "Title",
+      pattern: NON_EMPTY_STRING_REGEX,
+      errorMessage: nonEmptyStringErrorMessage,
     }),
     subtitle: Type.Optional(
       Type.String({
         title: "Description",
+        pattern: NON_EMPTY_STRING_REGEX,
+        errorMessage: nonEmptyStringErrorMessage,
       }),
     ),
     // image keys map to preview SVGs in JsonFormsImageRadioControl.
