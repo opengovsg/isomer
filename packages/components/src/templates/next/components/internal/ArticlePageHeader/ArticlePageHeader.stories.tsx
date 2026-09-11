@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ArticlePageHeaderProps } from "~/interfaces"
+import { generateSiteConfig } from "~/stories/helpers"
 
 import { ArticlePageHeader } from "./ArticlePageHeader"
 
@@ -11,6 +12,9 @@ const meta: Meta<ArticlePageHeaderProps> = {
     themes: {
       themeOverride: "Isomer Next",
     },
+  },
+  args: {
+    site: generateSiteConfig(),
   },
 }
 export default meta
@@ -75,5 +79,13 @@ export const ArticleWithTags: Story = {
         selected: ["NParks Happenings", "Wild dinosaur"],
       },
     ],
+  },
+}
+
+export const WithButton: Story = {
+  args: {
+    ...ARTICLE,
+    buttonLabel: "Report wildlife crime",
+    buttonUrl: "https://www.nparks.gov.sg/report-wildlife-crime",
   },
 }
