@@ -142,18 +142,19 @@ export const Steps = ({
           <ol className={compoundStyles.stepsContainer({ isPair })}>
             {steps.map(
               ({ title, description, buttonLabel, buttonUrl }, idx) => {
-                const hasLink = !!buttonUrl
-                const isExternalLink = isExternalUrl(buttonUrl)
+                const href = getReferenceLinkHref(
+                  buttonUrl,
+                  site.siteMapArray,
+                  site.assetsBaseUrl,
+                )
+                const hasLink = !!href
+                const isExternalLink = isExternalUrl(href)
                 const showTitleArrow = hasLink && !buttonLabel
 
                 return (
                   <li key={idx} className={compoundStyles.step()}>
                     <Link
-                      href={getReferenceLinkHref(
-                        buttonUrl,
-                        site.siteMapArray,
-                        site.assetsBaseUrl,
-                      )}
+                      href={href}
                       className={compoundStyles.stepLink({ numberStyle })}
                       isExternal={isExternalLink}
                     >
