@@ -1,4 +1,5 @@
 import type { JSONContent } from "@tiptap/react"
+import { TableRow } from "@tiptap/extension-table-row"
 import { Editor } from "@tiptap/react"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { page, userEvent } from "vitest/browser"
@@ -9,7 +10,6 @@ import {
   IsomerTableCell,
   IsomerTableHeader,
   PROSE_EXTENSIONS,
-  TableRow,
 } from "../constants"
 import { selectTableCellContent } from "../selectTableCellContent"
 
