@@ -19,12 +19,12 @@ const createStepsStyles = tv({
   variants: {
     layout: {
       homepage: {
-        outerContainer: "py-12 md:py-16",
+        outerContainer: "py-12 first:pt-0 md:py-16",
         header: "gap-2.5",
         headerSubtitle: "prose-headline-lg-regular",
       },
       default: {
-        outerContainer: "mt-14",
+        outerContainer: "mt-14 first:mt-0",
         header: "gap-6",
         headerSubtitle: "prose-body-base",
       },
