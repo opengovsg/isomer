@@ -32,7 +32,7 @@ import FormBuilder from "../form-builder/FormBuilder"
 import { DrawerHeader } from "./DrawerHeader"
 
 const HEADER_LABELS: Record<string, string> = {
-  article: "Edit article page header",
+  article: "Edit item page header",
   content: "Edit content page header",
   index: "Edit index page header",
   database: "Edit page header",
