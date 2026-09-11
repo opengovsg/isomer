@@ -7,6 +7,10 @@ import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "~/interfaces/complex/Dynamic
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 import { getSingaporeDateLong, getSingaporeDateYYYYMMDD } from "./utils"
@@ -43,9 +47,10 @@ const compoundStyles = createDynamicDataBannerStyles()
 type DynamicDataBannerClientProps = Omit<
   DynamicDataBannerProps,
   "type" | "site" | "errorMessage"
-> & {
-  errorMessageBaseParagraph?: React.ReactNode
-}
+> &
+  ContentBlockIndexProps & {
+    errorMessageBaseParagraph?: React.ReactNode
+  }
 
 const DynamicDataBannerUI = ({
   title,
@@ -53,9 +58,10 @@ const DynamicDataBannerUI = ({
   url,
   label,
   errorMessageBaseParagraph,
+  contentBlockIndex,
 }: Pick<
   DynamicDataBannerClientProps,
-  "title" | "label" | "url" | "errorMessageBaseParagraph"
+  "title" | "label" | "url" | "errorMessageBaseParagraph" | "contentBlockIndex"
 > & {
   data: { label: string; value?: string }[]
 }) => {
@@ -74,7 +80,10 @@ const DynamicDataBannerUI = ({
 
   if (errorMessageBaseParagraph) {
     return (
-      <div className={compoundStyles.screenWideOuterContainer()}>
+      <div
+        className={compoundStyles.screenWideOuterContainer()}
+        {...contentBlockIndexAttr(contentBlockIndex)}
+      >
         <div className={compoundStyles.errorMessageContainer()}>
           <BiError className={compoundStyles.errorIcon()} />
           {errorMessageBaseParagraph}
@@ -84,7 +93,10 @@ const DynamicDataBannerUI = ({
   }
 
   return (
-    <div className={compoundStyles.screenWideOuterContainer()}>
+    <div
+      className={compoundStyles.screenWideOuterContainer()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <div className={compoundStyles.outerContainer()}>
         <div className={compoundStyles.basicInfoContainer()}>
           {!!title && <div className={compoundStyles.title()}>{title}</div>}
@@ -130,6 +142,7 @@ export const DynamicDataBannerClient = ({
   url,
   label,
   errorMessageBaseParagraph,
+  contentBlockIndex,
 }: DynamicDataBannerClientProps) => {
   const [isLoading, setLoading] = useState(true)
   const [isError, setError] = useState(false)
@@ -165,12 +178,20 @@ export const DynamicDataBannerClient = ({
         url={url}
         label={label}
         errorMessageBaseParagraph={errorMessageBaseParagraph}
+        contentBlockIndex={contentBlockIndex}
       />
     )
   }
 
   if (data.length !== DYNAMIC_DATA_BANNER_NUMBER_OF_DATA)
-    return <DynamicDataBannerUI data={[]} url={url} label={label} />
+    return (
+      <DynamicDataBannerUI
+        data={[]}
+        url={url}
+        label={label}
+        contentBlockIndex={contentBlockIndex}
+      />
+    )
 
   return (
     <DynamicDataBannerUI
@@ -181,6 +202,7 @@ export const DynamicDataBannerClient = ({
       }))}
       url={url}
       label={label}
+      contentBlockIndex={contentBlockIndex}
     />
   )
 }

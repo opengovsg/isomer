@@ -2,9 +2,15 @@ import type { HeroLargeImageProps } from "~/interfaces/complex/Hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../../render/contentBlockIndex"
 import { ComponentContent } from "../../../internal/customCssClass"
 import { LinkButton } from "../../../internal/LinkButton/LinkButton"
 import { ImageContainer } from "./ImageContainer"
+
+type HeroLargeImageRenderProps = HeroLargeImageProps & ContentBlockIndexProps
 
 export const HeroLargeImage = ({
   title,
@@ -16,10 +22,14 @@ export const HeroLargeImage = ({
   backgroundUrl,
   site,
   headingLevel,
-}: HeroLargeImageProps) => {
+  contentBlockIndex,
+}: HeroLargeImageRenderProps) => {
   const Tag = getHeadingTag(headingLevel)
   return (
-    <section className="flex w-full flex-col">
+    <section
+      className="flex w-full flex-col"
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       {/* Text and button container */}
       <div
         className={`mx-auto flex w-full flex-col gap-6 px-6 pb-12 pt-10 md:gap-9 lg:pb-16 lg:pt-12 ${ComponentContent}`}

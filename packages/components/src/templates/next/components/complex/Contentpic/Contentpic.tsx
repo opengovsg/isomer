@@ -2,6 +2,10 @@ import type { VariantProps } from "tailwind-variants"
 import type { ContentpicProps as BaseContentpicProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ImageClient } from "../../internal/ImageClient"
 import { Prose } from "../../native/Prose"
 
@@ -20,6 +24,7 @@ const compoundStyles = contentpicStyles()
 interface ContentpicProps
   extends
     Omit<BaseContentpicProps, "type">,
+    ContentBlockIndexProps,
     VariantProps<typeof contentpicStyles> {}
 
 export const Contentpic = ({
@@ -29,9 +34,13 @@ export const Contentpic = ({
   site,
   shouldLazyLoad = true,
   headingLevel,
+  contentBlockIndex,
 }: ContentpicProps): JSX.Element => {
   return (
-    <div className={compoundStyles.container()}>
+    <div
+      className={compoundStyles.container()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <ImageClient
         src={imageSrc}
         alt={imageAlt || ""}

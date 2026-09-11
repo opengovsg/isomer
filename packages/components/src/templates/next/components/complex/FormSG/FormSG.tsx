@@ -1,16 +1,30 @@
 import type { FormSGProps } from "~/interfaces"
 import { isValidFormSGEmbedUrl } from "~/utils/validation"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { ComponentContent } from "../../internal/customCssClass"
 
-export const FormSG = ({ title, url, shouldLazyLoad = true }: FormSGProps) => {
+type FormSGRenderProps = FormSGProps & ContentBlockIndexProps
+
+export const FormSG = ({
+  title,
+  url,
+  shouldLazyLoad = true,
+  contentBlockIndex,
+}: FormSGRenderProps) => {
   if (!isValidFormSGEmbedUrl(url)) {
     return <></>
   }
 
   return (
-    <section className={`${ComponentContent} mt-7 first:mt-0`}>
+    <section
+      className={`${ComponentContent} mt-7 first:mt-0`}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <BaseParagraph
         content={`If the form below doesn't load, <a href="${url}" target="_blank">open it in a new window</a>.`}
         className="prose-body-base pb-2 pt-1 text-base-content opacity-90"

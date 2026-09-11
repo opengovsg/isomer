@@ -31,7 +31,7 @@ export const DraggableBlock = ({
   invalidProps,
   isHidden,
 }: DraggableBlockProps): JSX.Element => {
-  const { setHoveredBlockIndex } = useEditorDrawerContext()
+  const { hoveredBlockIndex, setHoveredBlockIndex } = useEditorDrawerContext()
 
   useEffect(() => {
     // If this row unmounts while hovered (e.g. clicking it navigates the
@@ -75,6 +75,7 @@ export const DraggableBlock = ({
           >
             <BaseBlock
               isHidden={isHidden}
+              isHighlighted={hoveredBlockIndex === index}
               onClick={onClick}
               onMouseEnter={() => setHoveredBlockIndex(index)}
               onMouseLeave={() => setHoveredBlockIndex(null)}

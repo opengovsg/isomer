@@ -2,6 +2,10 @@ import type { HeroBlockProps } from "~/interfaces/complex/Hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
@@ -20,6 +24,8 @@ const HERO_THEME_MAPPINGS = {
   },
 } as const
 
+type HeroBlockRenderProps = HeroBlockProps & ContentBlockIndexProps
+
 export const HeroBlock = ({
   title,
   subtitle,
@@ -31,14 +37,18 @@ export const HeroBlock = ({
   site,
   theme = "default",
   headingLevel,
-}: HeroBlockProps) => {
+  contentBlockIndex,
+}: HeroBlockRenderProps) => {
   const heroColour = HERO_THEME_MAPPINGS.hero[theme]
   const heroTextColour = HERO_THEME_MAPPINGS.text[theme]
   const heroButton = HERO_THEME_MAPPINGS.button[theme]
   const Tag = getHeadingTag(headingLevel)
 
   return (
-    <section className="flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row">
+    <section
+      className="flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row"
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <div
         className={`flex flex-row ${heroColour} px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-8`}
       >

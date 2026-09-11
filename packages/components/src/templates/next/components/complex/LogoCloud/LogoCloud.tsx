@@ -1,6 +1,10 @@
 import type { LogoCloudProps } from "~/interfaces/complex/LogoCloud"
 import { tv } from "~/lib/tv"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 
@@ -15,14 +19,20 @@ const createLogoCloudStyles = tv({
 })
 const compoundStyles = createLogoCloudStyles()
 
+type LogoCloudRenderProps = LogoCloudProps & ContentBlockIndexProps
+
 export const LogoCloud = ({
   images: baseImages,
   title,
   site: { assetsBaseUrl },
   shouldLazyLoad = true,
-}: LogoCloudProps) => {
+  contentBlockIndex,
+}: LogoCloudRenderProps) => {
   return (
-    <div className={compoundStyles.container()}>
+    <div
+      className={compoundStyles.container()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       {title && <p className={compoundStyles.title()}>{title}</p>}
       <div className={compoundStyles.logoContainer()}>
         {baseImages.map(({ src, alt }) => (

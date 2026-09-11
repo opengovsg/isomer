@@ -1,39 +1,76 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
+import {
+  CONTENT_BLOCK_INDEX_ATTR,
+  CONTENT_BLOCKS_SELECTOR,
+} from "~/features/editing-experience/constants"
 
-// packages/components' renderPageContent filters out hidden childrenpages
-// blocks before rendering, so a hidden childrenpages block never reaches the
-// DOM and every block after it is shifted up by one. Mirror that filter here
-// so we can translate a `content` index into the matching DOM child index.
-const isHiddenChildrenPagesBlock = (
-  block: IsomerSchema["content"][number],
-): boolean => block.type === "childrenpages" && !!block.isHidden
+export interface BlockHighlightRect {
+  top: number
+  left: number
+  width: number
+  height: number
+}
 
-// Blocks aren't individually wrapped (that broke the `first:mt-*`-style
-// spacing most block components use), so instead we index directly into
-// the children of the shared content container.
+export const getBlockElements = (
+  iframeDocument: Document | null,
+  index: number | null,
+): HTMLElement[] => {
+  if (index === null || !iframeDocument) {
+    return []
+  }
+
+  return Array.from(
+    iframeDocument.querySelectorAll<HTMLElement>(
+      `${CONTENT_BLOCKS_SELECTOR} [${CONTENT_BLOCK_INDEX_ATTR}="${index}"]`,
+    ),
+  )
+}
+
 export const getBlockElement = (
   iframeDocument: Document | null,
-  content: IsomerSchema["content"],
   index: number | null,
 ): HTMLElement | undefined => {
-  if (index === null || !iframeDocument) {
+  return getBlockElements(iframeDocument, index)[0]
+}
+
+export const getBlockHighlightRect = (
+  iframeDocument: Document | null,
+  index: number | null,
+): BlockHighlightRect | undefined => {
+  const elements = getBlockElements(iframeDocument, index)
+  if (elements.length === 0 || !iframeDocument) {
     return undefined
   }
 
-  const block = content[index]
-  if (!block || isHiddenChildrenPagesBlock(block)) {
-    return undefined
+  const scrollX = iframeDocument.defaultView?.scrollX ?? 0
+  const scrollY = iframeDocument.defaultView?.scrollY ?? 0
+
+  let top = Infinity
+  let left = Infinity
+  let right = -Infinity
+  let bottom = -Infinity
+
+  for (const el of elements) {
+    const r = el.getBoundingClientRect()
+    top = Math.min(top, r.top)
+    left = Math.min(left, r.left)
+    right = Math.max(right, r.right)
+    bottom = Math.max(bottom, r.bottom)
   }
 
-  const visibleIndex = content
-    .slice(0, index)
-    .filter((b) => !isHiddenChildrenPagesBlock(b)).length
+  return {
+    top: top + scrollY,
+    left: left + scrollX,
+    width: right - left,
+    height: bottom - top,
+  }
+}
 
-  const contentBlocksContainer = iframeDocument.querySelector(
-    "[data-isomer-content-blocks]",
-  )
+export const getContentIndexFromElement = (
+  element: Element | null,
+): number | null => {
+  const marked = element?.closest?.(`[${CONTENT_BLOCK_INDEX_ATTR}]`)
+  if (!marked) return null
 
-  return contentBlocksContainer?.children[visibleIndex] as
-    | HTMLElement
-    | undefined
+  const contentIndex = Number(marked.getAttribute(CONTENT_BLOCK_INDEX_ATTR))
+  return Number.isNaN(contentIndex) ? null : contentIndex
 }

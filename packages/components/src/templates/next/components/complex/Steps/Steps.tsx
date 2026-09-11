@@ -3,6 +3,10 @@ import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Step } from "./Step"
 
@@ -42,6 +46,8 @@ const createStepsStyles = tv({
 
 const styles = createStepsStyles()
 
+type StepsRenderProps = StepsProps & ContentBlockIndexProps
+
 export const Steps = ({
   id,
   title,
@@ -51,13 +57,18 @@ export const Steps = ({
   layout,
   site,
   headingLevel,
-}: StepsProps) => {
+  contentBlockIndex,
+}: StepsRenderProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const TitleTag = getHeadingTag(headingLevel)
   const hasTwo = steps.length === 2
 
   return (
-    <section id={id} className={styles.section()}>
+    <section
+      id={id}
+      className={styles.section()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <div className={styles.outerContainer({ layout: simplifiedLayout })}>
         <div className={styles.innerContainer()}>
           <div className={styles.header({ layout: simplifiedLayout })}>
