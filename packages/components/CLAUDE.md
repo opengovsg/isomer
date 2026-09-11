@@ -31,7 +31,7 @@ Things that violate the contract:
 - A component that branches behaviour on a Studio-internal feature flag.
 - Studio importing a private (un-exported) symbol from `packages/components/src/`.
 
-If you need new data on the rendering side, add it to the **schema and interfaces first**, ship that PR, then update Studio to produce the new shape in a follow-up PR. The schema PR must remain backward-compatible (new fields are optional) so Studio doesn't break in between.
+If you need new data on the rendering side, add it to the **schema and interfaces first**, then update Studio to produce the new shape in the same PR. New fields must remain backward-compatible (optional) so existing published content still validates.
 
 ## No UI logic in JSONForms components
 
@@ -74,7 +74,13 @@ src/
 3. Add the schema entry under `src/schemas/` — must be backward compatible.
 4. Add a Storybook story under `src/stories/` covering the new variants.
 5. Export from `src/index.ts` (or the relevant sub-index) so Studio can consume it.
-6. Bump the package version and update Studio in a follow-up PR.
+6. Register the block in Studio (picker entry, default content, layout allowlists) in the same PR.
+
+### Versioning
+
+Studio depends on this package via `workspace:*` in the monorepo. Ship new blocks and their Studio integration together in one PR — do **not** bump `packages/components/package.json` or split Studio changes into a follow-up PR for monorepo work.
+
+Bump the package version only when preparing an npm release for consumers outside this repo.
 
 ## Conventions
 
