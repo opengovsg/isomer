@@ -21,9 +21,8 @@ const createStepsStyles = tv({
     stepsContainer:
       "grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-2 lg:grid-cols-3",
     step: "flex",
-    // w-full because the <li> is a flex container: without it the card is a
-    // flex item sized to its own content, so a short step collapses to a
-    // narrower box than the grid column it sits in.
+    // stepLink needs w-full. As a flex child of <li>, a short step shrinks to
+    // its content width instead of filling the grid column.
     stepLink:
       "group flex h-full w-full flex-col items-start gap-3 text-left outline-0",
     stepNumber: "text-base-content-subtle",
@@ -50,7 +49,7 @@ const createStepsStyles = tv({
         headerSubtitle: "prose-body-base",
       },
     },
-    // `numeral` is bare (no card), the other two sit inside a bordered card.
+    // numeral has no card border. eyebrow and badge do.
     numberStyle: {
       numeral: {
         stepNumber: "prose-display-md text-base-content-strong",
@@ -65,11 +64,8 @@ const createStepsStyles = tv({
           "prose-display-xs flex h-11 w-11 items-center justify-center rounded-md bg-brand-canvas text-base-content-strong",
       },
     },
-    // Three to a row is the cap: a Content page only gives a block ~764px, and
-    // a fourth column would leave each step too narrow to hold a description.
-    // So 4, 5 and 6 wrap to a second row (3 + 1, 3 + 2, 3 + 3) and only a pair
-    // gets its own narrower grid. The column count has to be a static class for
-    // Tailwind to emit it.
+    // Cap at 3 columns (~764px on Content pages). Four or more steps wrap. Two
+    // steps use lg:grid-cols-2. Tailwind needs static class names.
     isPair: {
       true: { stepsContainer: "lg:grid-cols-2" },
     },
@@ -78,10 +74,8 @@ const createStepsStyles = tv({
         stepButtonIcon: "rotate-[-45deg]",
       },
     },
-    // The call to action carries the hover colour, since that's the thing that
-    // reads as clickable. The title only takes it when there's no CTA label, in
-    // which case the arrow sits beside the title and there is nothing else to
-    // highlight.
+    // Hover colour on the CTA. Without a CTA label, the title gets it because
+    // the arrow sits there.
     hasTitleArrow: {
       true: {
         stepTitle: "group-hover:text-brand-interaction",
@@ -95,10 +89,6 @@ const createStepsStyles = tv({
 })
 
 const compoundStyles = createStepsStyles()
-
-// Numbers are unpadded: the block caps at 6 steps so a leading zero never lines
-// anything up, and "step 2" is how the number gets referred to elsewhere on the
-// page and said out loud.
 
 export const Steps = ({
   id,
@@ -137,8 +127,6 @@ export const Steps = ({
             )}
           </div>
 
-          {/* An ordered list so screen readers announce the sequence and its
-              length; the rendered number is decorative and hidden from them. */}
           <ol className={compoundStyles.stepsContainer({ isPair })}>
             {steps.map(
               ({ title, description, buttonLabel, buttonUrl }, idx) => {

@@ -1,9 +1,7 @@
 import { chakra } from "@chakra-ui/react"
 
-// Sized for the two-column image-radio layout, where each option is roughly
-// 195px wide, so the 200-unit viewBox renders about 1:1. Content sits below the
-// radio indicator rather than beside it. The 1px stroke on half-pixel
-// coordinates matches the real card, which uses Tailwind's 1px `border`.
+// 200x138 viewBox for the 2-column image-radio (~195px per option). 1px stroke
+// on half-pixel coords matches the 1px Tailwind border on the real card.
 export const IconStepsBadge = chakra((props: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg

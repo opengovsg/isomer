@@ -51,10 +51,7 @@ export const StepsSchema = Type.Object(
         title: "Description",
       }),
     ),
-    // `numeral` is a bare number with no container; `eyebrow` and `badge` both
-    // sit in a bordered card and differ in how the number itself is set.
-    // `image` keys map to preview SVGs registered in Studio's image-radio
-    // control, so authors pick by looking rather than by reading a label.
+    // image keys map to preview SVGs in JsonFormsImageRadioControl.
     numberStyle: Type.Unsafe<StepsNumberStyle>({
       oneOf: [
         {

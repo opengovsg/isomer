@@ -48,8 +48,6 @@ const APPLICATION_STEPS: StepsProps["steps"] = [
   },
 ]
 
-// The three number treatments being compared. Everything else is held constant
-// so the only difference on screen is the number.
 export const LargeNumeral: Story = {
   args: {
     title: "How to apply",
@@ -83,15 +81,12 @@ export const ThreeSteps: Story = {
   },
 }
 
-// Wraps to 3 + 1. Three to a row is the cap, so the fourth step starts a new
-// row rather than squeezing a fourth column.
 export const FourSteps: Story = {
   args: {
     ...LargeNumeral.args,
   },
 }
 
-// Wraps to 3 + 2.
 export const FiveSteps: Story = {
   args: {
     title: "From enquiry to launch",
@@ -108,7 +103,6 @@ export const FiveSteps: Story = {
   },
 }
 
-// The maximum: two even rows of 3.
 export const SixSteps: Story = {
   args: {
     title: "From enquiry to launch",
@@ -135,7 +129,7 @@ export const LongContent: Story = {
     title:
       "How to apply for the Enhanced Support Scheme for Lower-Income Households",
     subtitle:
-      "This scheme replaces three earlier schemes. If you were receiving support under any of those, you do not need to reapply — your support continues automatically until the end of the transition period.",
+      "This scheme replaces three earlier schemes. If you were receiving support under any of those, you do not need to reapply. Your support continues automatically until the end of the transition period.",
     numberStyle: "eyebrow",
     steps: [
       {
@@ -161,7 +155,6 @@ export const LongContent: Story = {
   },
 }
 
-// Steps commonly have no link at all — the sequence is the content.
 export const NoLinks: Story = {
   args: {
     title: "What happens after you report a fallen tree",
@@ -185,8 +178,6 @@ export const NoLinks: Story = {
   },
 }
 
-// The hover colour belongs to whatever reads as clickable: the CTA when there
-// is one, the title when the arrow sits beside it instead.
 export const HoverBehaviour: Story = {
   args: {
     title: "How to apply",

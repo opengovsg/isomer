@@ -1,9 +1,6 @@
 import { chakra } from "@chakra-ui/react"
 
-// Sized for the two-column image-radio layout, where each option is roughly
-// 195px wide, so the 200-unit viewBox renders about 1:1. Content sits below the
-// radio indicator rather than beside it — the indicator is a fixed 20px at 8px
-// from the top-left, which would eat a tenth of the width at this size.
+// 200x138 viewBox for the 2-column image-radio (~195px per option).
 export const IconStepsNumeral = chakra(
   (props: React.SVGProps<SVGSVGElement>) => {
     return (
