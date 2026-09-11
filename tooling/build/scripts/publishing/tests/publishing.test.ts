@@ -14,7 +14,7 @@ import {
   seedPublishingSite,
   SITE_CONFIG,
   SITE_THEME,
-  TEST_DB_ENV,
+  TEST_DATABASE_URL,
 } from "./seed"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -68,7 +68,7 @@ beforeAll(async () => {
       // dd-trace (loaded via NODE_OPTIONS in CI) breaks spawned subprocesses
       NODE_OPTIONS: "",
       SITE_ID: String(siteId),
-      ...TEST_DB_ENV,
+      DATABASE_URL: TEST_DATABASE_URL,
       OUTPUT_DIR: outputDir,
     },
   })
