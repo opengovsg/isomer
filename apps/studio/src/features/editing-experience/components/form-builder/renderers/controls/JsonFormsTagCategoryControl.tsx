@@ -1,26 +1,37 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
-import { Box, HStack, Text, VStack } from "@chakra-ui/react"
+import { Box, HStack, Text, useDisclosure, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
+import {
+  isDateFilter,
+  isTextFilter,
+  TAG_CATEGORY_TYPE,
+} from "@opengovsg/isomer-components"
 import { useMemo } from "react"
-import { BiPurchaseTag } from "react-icons/bi"
+import { BiCalendar, BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
+import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 
+import type { FilterType } from "../../components/FilterTypeChoiceModal"
 import { AddItemButton } from "../../components/AddItemButton"
-import { DeleteFilterModal } from "../../components/DeleteFilterModal"
+import {
+  DeleteFilterModal,
+  type DeleteFilterModalTarget,
+} from "../../components/DeleteFilterModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { EmptyCategory } from "../../components/EmptyCategory"
+import { FilterTypeChoiceModal } from "../../components/FilterTypeChoiceModal"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
 import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
-import { createDefaultTagCategory } from "./constants"
+import { createDefaultDateFilter, createDefaultTagCategory } from "./constants"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const {
@@ -44,6 +55,12 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const { pageId, siteId } = useQueryParse(pageSchema)
   const page = core?.data as CollectionPagePageProps | undefined
   const { duplicate: duplicateFilterIndices } = useLiveLabelIssues({ path })
+  const {
+    isOpen: isTypeChoiceModalOpen,
+    onOpen: onTypeChoiceModalOpen,
+    onClose: onTypeChoiceModalClose,
+  } = useDisclosure()
+  const isDateFiltersEnabled = useDateFiltersEnabled()
 
   const arrayResult = useArray({
     data,
@@ -80,14 +97,41 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     }),
   })
 
-  const deleteTargetTagOptionIds = useMemo(() => {
-    if (!deleteTarget) return []
-    return (
-      page?.tagCategories?.[deleteTarget.index]?.options
-        ?.map((option) => option.id)
-        .filter((id): id is string => Boolean(id)) ?? []
-    )
+  const deleteFilterModalTarget = useMemo(():
+    | DeleteFilterModalTarget
+    | undefined => {
+    if (!deleteTarget) return undefined
+
+    const tagCategory = page?.tagCategories?.[deleteTarget.index]
+    if (tagCategory && isDateFilter(tagCategory)) {
+      return {
+        type: TAG_CATEGORY_TYPE.Date,
+        dateFilterId: tagCategory.id,
+      }
+    }
+
+    return {
+      type: TAG_CATEGORY_TYPE.Text,
+      tagOptionIds:
+        tagCategory && isTextFilter(tagCategory)
+          ? tagCategory.options
+              .map((option) => option.id)
+              .filter((id): id is string => Boolean(id))
+          : [],
+    }
   }, [deleteTarget, page?.tagCategories])
+
+  const handleAddFilter = (type: FilterType) => {
+    const newIndex = data
+    addItem(
+      path,
+      type === TAG_CATEGORY_TYPE.Date
+        ? createDefaultDateFilter()
+        : createDefaultTagCategory(),
+    )()
+    setSelectedIndex(newIndex)
+    onTypeChoiceModalClose()
+  }
 
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
@@ -98,7 +142,11 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               {label}
             </Text>
             <AddItemButton
-              onClick={addItem(path, createDefaultTagCategory())}
+              onClick={() =>
+                isDateFiltersEnabled
+                  ? onTypeChoiceModalOpen()
+                  : handleAddFilter(TAG_CATEGORY_TYPE.Text)
+              }
               isDisabled={isAddItemDisabled}
             >
               Add a filter
@@ -133,10 +181,18 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                     const childPath = composePaths(path, `${index}`)
                     const isDuplicate = duplicateFilterIndices.has(index)
                     const hasError = hasErrorAt(childPath) || isDuplicate
+                    const tagCategory = page?.tagCategories?.[index]
+                    const isDateFilterEntry =
+                      !!tagCategory && isDateFilter(tagCategory)
                     const count =
-                      page?.tagCategories?.[index]?.options?.length ?? 0
-                    const subtitle =
-                      count === 1 ? "1 option" : `${count} options`
+                      tagCategory && isTextFilter(tagCategory)
+                        ? tagCategory.options.length
+                        : 0
+                    const subtitle = isDateFilterEntry
+                      ? "Date filter"
+                      : count === 1
+                        ? "1 option"
+                        : `${count} options`
 
                     return (
                       <Draggable
@@ -157,7 +213,11 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                             <DraggableTagButton.Body
                               onClick={() => setSelectedIndex(index)}
                             >
-                              <DraggableTagButton.Icon icon={BiPurchaseTag} />
+                              <DraggableTagButton.Icon
+                                icon={
+                                  isDateFilterEntry ? BiCalendar : BiPurchaseTag
+                                }
+                              />
                               <DraggableTagButton.Content>
                                 <DraggableTagButton.Label
                                   index={index}
@@ -166,6 +226,12 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                                   uischema={childUiSchema}
                                   enabled={enabled}
                                   removeItem={handleRemoveSelectedItem}
+                                  // NOTE: `schema` here is the oneOf-wrapped
+                                  // TagCategorySchema — it has no top-level
+                                  // `properties`, so JSONForms' default "first
+                                  // primitive property" fallback can't find a
+                                  // label to show without this explicit hint.
+                                  childLabelProp="label"
                                 />
                                 <DraggableTagButton.Subtitle>
                                   {subtitle}
@@ -200,16 +266,22 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
           </DragDropContext>
         </Box>
       </VStack>
-      {deleteTarget && (
+      {deleteTarget && deleteFilterModalTarget && (
         <DeleteFilterModal
           isOpen
           siteId={siteId}
           pageId={pageId}
-          tagOptionIds={deleteTargetTagOptionIds}
+          target={deleteFilterModalTarget}
           onClose={closeDeleteModal}
           onConfirm={handleConfirmDelete}
         />
       )}
+      <FilterTypeChoiceModal
+        isOpen={isTypeChoiceModalOpen}
+        onClose={onTypeChoiceModalClose}
+        onSelect={handleAddFilter}
+        isDateFilterEnabled={isDateFiltersEnabled}
+      />
     </NestedDrawerSwitch>
   )
 }

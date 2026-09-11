@@ -13,8 +13,11 @@ import {
   withJsonFormsOneOfProps,
 } from "@jsonforms/react"
 import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
-import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
-import { useEffect, useState } from "react"
+import {
+  ARRAY_RADIO_FORMAT,
+  TAG_CATEGORY_ITEM_FORMAT,
+} from "@opengovsg/isomer-components"
+import { useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsOneOfControlTester: RankedTester = rankWith(
@@ -46,7 +49,7 @@ function JsonFormsCombinatorControl({
   data,
   combinatorType,
 }: JsonFormsCombinatorControlProps) {
-  const [variant, setVariant] = useState("")
+  const hidePicker = schema.format === TAG_CATEGORY_ITEM_FORMAT
   const combinatorSchemas = schema[combinatorType] ?? []
   const renderInfos = createCombinatorRenderInfos(
     combinatorSchemas,
@@ -72,6 +75,15 @@ function JsonFormsCombinatorControl({
     })
     .filter((option) => option !== null)
 
+  // Snapshot the fitting branch once. Re-reading indexOfFittingSchema on every
+  // change would jump to the first branch whenever a required field is cleared.
+  const [variant, setVariant] = useState(
+    () =>
+      (indexOfFittingSchema >= 0 && options[indexOfFittingSchema]
+        ? options[indexOfFittingSchema].label
+        : options[0]?.label) ?? "",
+  )
+
   const onChange = (value: string) => {
     setVariant(value)
 
@@ -94,69 +106,59 @@ function JsonFormsCombinatorControl({
     }
   }
 
-  useEffect(() => {
-    // Do nothing if there are no options
-    if (options.length === 0) {
-      return
-    }
-
-    if (indexOfFittingSchema >= 0 && options[indexOfFittingSchema]) {
-      setVariant(options[indexOfFittingSchema].label)
-      return
-    }
-
-    // Fallback to first option
-    if (options[0]) {
-      setVariant(options[0].label)
-    }
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const activeRenderInfo = renderInfos.find(
+    (renderInfo) => variant === renderInfo.label,
+  )
 
   return (
     <>
-      <Box>
-        <FormControl isRequired gap="0.5rem">
-          <FormLabel description={description}>{label || "Variant"}</FormLabel>
-          {schema.format === ARRAY_RADIO_FORMAT ? (
-            <RadioGroup
-              onChange={onChange}
-              value={options.find((option) => option.label === variant)?.value}
-            >
-              {options.map((option) => (
-                <Radio
-                  my="1px"
-                  key={option.label}
-                  value={option.value}
-                  allowDeselect={false}
-                >
-                  {option.label.charAt(0).toUpperCase() + option.label.slice(1)}
-                </Radio>
-              ))}
-            </RadioGroup>
-          ) : (
-            <SingleSelect
-              value={variant}
-              name={label}
-              items={options}
-              isClearable={false}
-              onChange={onChange}
-            />
-          )}
-        </FormControl>
-      </Box>
+      {!hidePicker && (
+        <Box>
+          <FormControl isRequired gap="0.5rem">
+            <FormLabel description={description}>
+              {label || "Variant"}
+            </FormLabel>
+            {schema.format === ARRAY_RADIO_FORMAT ? (
+              <RadioGroup
+                onChange={onChange}
+                value={
+                  options.find((option) => option.label === variant)?.value
+                }
+              >
+                {options.map((option) => (
+                  <Radio
+                    my="1px"
+                    key={option.label}
+                    value={option.value}
+                    allowDeselect={false}
+                  >
+                    {option.label.charAt(0).toUpperCase() +
+                      option.label.slice(1)}
+                  </Radio>
+                ))}
+              </RadioGroup>
+            ) : (
+              <SingleSelect
+                value={variant}
+                name={label}
+                items={options}
+                isClearable={false}
+                onChange={onChange}
+              />
+            )}
+          </FormControl>
+        </Box>
+      )}
 
-      {renderInfos.map(
-        (renderInfo) =>
-          variant === renderInfo.label && (
-            <JsonFormsDispatch
-              key={renderInfo.label}
-              uischema={renderInfo.uischema}
-              schema={renderInfo.schema}
-              path={path}
-              renderers={renderers}
-              cells={cells}
-            />
-          ),
+      {activeRenderInfo && (
+        <JsonFormsDispatch
+          key={activeRenderInfo.label}
+          uischema={activeRenderInfo.uischema}
+          schema={activeRenderInfo.schema}
+          path={path}
+          renderers={renderers}
+          cells={cells}
+        />
       )}
     </>
   )
