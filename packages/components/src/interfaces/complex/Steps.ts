@@ -51,19 +51,17 @@ export const StepsSchema = Type.Object(
     ),
     // `numeral` is a bare number with no container; `eyebrow` and `badge` both
     // sit in a bordered card and differ in how the number itself is set.
-    numberStyle: Type.Optional(
-      Type.Union(
-        [
-          Type.Literal("numeral", { title: "Large number" }),
-          Type.Literal("eyebrow", { title: "Small number above title" }),
-          Type.Literal("badge", { title: "Number in a filled square" }),
-        ],
-        {
-          title: "Number style",
-          type: "string",
-          default: "numeral",
-        },
-      ),
+    numberStyle: Type.Union(
+      [
+        Type.Literal("numeral", { title: "Large number" }),
+        Type.Literal("eyebrow", { title: "Small number above title" }),
+        Type.Literal("badge", { title: "Number in a filled square" }),
+      ],
+      {
+        title: "Number style",
+        type: "string",
+        default: "numeral",
+      },
     ),
     steps: Type.Array(StepSchema, {
       title: "Steps",

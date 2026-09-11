@@ -105,7 +105,7 @@ export const Steps = ({
   title,
   subtitle,
   steps,
-  numberStyle = "numeral",
+  numberStyle,
   layout,
   site,
   headingLevel,
