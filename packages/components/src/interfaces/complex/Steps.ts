@@ -75,10 +75,11 @@ export const StepsSchema = Type.Object(
       ],
       title: "Number style",
       default: "numeral",
-      format: "image-radio/1col",
+      format: "image-radio/2col",
     }),
     steps: Type.Array(StepSchema, {
       title: "Steps",
+      description: "You can add up to 6 steps.",
       minItems: 2,
       maxItems: 6,
     }),
