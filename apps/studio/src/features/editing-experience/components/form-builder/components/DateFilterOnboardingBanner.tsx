@@ -1,4 +1,4 @@
-import { Flex, HStack, Icon, Image, Stack, Text } from "@chakra-ui/react"
+import { Box, Flex, HStack, Icon, Image, Stack, Text } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
 import { BiRightArrowAlt } from "react-icons/bi"
@@ -49,13 +49,15 @@ export const DateFilterOnboardingBanner = (): JSX.Element | null => {
           </HStack>
         </Link>
       </Stack>
-      <Image
-        src="/assets/onboarding-images/DateFilterBanner.png"
-        alt="Illustration showing an onboarding banner for date filter"
-        flex={1}
-        w="full"
-        h="auto"
-      />
+      <Box flex={1}>
+        <Image
+          src="/assets/onboarding-images/DateFilterBanner.png"
+          alt=""
+          flex={1}
+          w="full"
+          h="auto"
+        />
+      </Box>
     </Flex>
   )
 }
