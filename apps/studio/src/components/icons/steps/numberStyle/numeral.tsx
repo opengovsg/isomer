@@ -1,18 +1,20 @@
 import { chakra } from "@chakra-ui/react"
 
-// 200x138 viewBox for the 2-column image-radio (~195px per option).
+// 200x102 viewBox for the 2-column image-radio (~195px per option). Content
+// sits below the radio indicator, not beside it, and shares baselines with the
+// carded variants so the three line up.
 export const IconStepsNumeral = chakra(
   (props: React.SVGProps<SVGSVGElement>) => {
     return (
       <svg
-        viewBox="0 0 200 138"
+        viewBox="0 0 200 102"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         {...props}
       >
         <text
           x="14"
-          y="66"
+          y="46"
           fontFamily="system-ui, sans-serif"
           fontSize="24"
           fontWeight="600"
@@ -22,7 +24,7 @@ export const IconStepsNumeral = chakra(
         </text>
         <text
           x="14"
-          y="92"
+          y="70"
           fontFamily="system-ui, sans-serif"
           fontSize="12"
           fontWeight="600"
@@ -32,7 +34,7 @@ export const IconStepsNumeral = chakra(
         </text>
         <text
           x="14"
-          y="110"
+          y="88"
           fontFamily="system-ui, sans-serif"
           fontSize="10.5"
           fill="#4A5568"
