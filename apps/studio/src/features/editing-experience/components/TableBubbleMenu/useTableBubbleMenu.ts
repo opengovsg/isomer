@@ -32,6 +32,7 @@ export interface TableBubbleMenuUiState {
   onMenuFocus: () => void
   onMenuBlur: (event: FocusEvent<HTMLElement>) => void
   toggleMenu: () => void
+  deactivateMenu: () => void
 }
 
 const isElement = (target: EventTarget | null): target is Element =>
@@ -157,6 +158,10 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
     })
   }
 
+  const deactivateMenu = () => {
+    setIsActivated(false)
+  }
+
   return {
     show,
     kind,
@@ -167,5 +172,6 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
     onMenuFocus,
     onMenuBlur,
     toggleMenu,
+    deactivateMenu,
   }
 }
