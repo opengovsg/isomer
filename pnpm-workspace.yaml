@@ -68,7 +68,7 @@ catalog:
   bootstrap-icons: ^1.13.1
   browserslist-useragent-regexp: ^4.1.4
   cheerio: ^1.2.0
-  chromatic: ^18.7.4
+  chromatic: ^18.7.2
   clean-webpack-plugin: ^4.0.0
   dayjs: ^1.11.23
   date-fns: ^4.4.0
@@ -110,9 +110,9 @@ catalog:
   usehooks-ts: ^3.1.1
   webpack-cli: ^7.2.3
   webpack-glob-entries: ^1.0.1
-  zod: ^4.6.1
+  zod: ^4.5.4
   "@types/lodash-es": ^4.17.12
-  "@types/node": ^26.5.1
+  "@types/node": ^26.5.0
   "@types/papaparse": ^5.5.2
   "@types/request": ^2.48.13
   "@types/validator": ^13.15.10
@@ -152,8 +152,8 @@ catalog:
   papaparse: ^5.7.0
   pg-boss: ^12.30.0
   postcss-load-config: ^6.0.1
-  posthog-js: ^1.429.1
-  posthog-node: ^5.51.8
+  posthog-js: ^1.428.6
+  posthog-node: ^5.51.7
   rate-limiter-flexible: ^11.2.0
   react-error-boundary: ^6.1.5
   react-frame-component: ^5.3.2
@@ -175,15 +175,15 @@ catalogs:
     "@atlaskit/pragmatic-drag-and-drop": ^2.0.2
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^2.2.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1129.0
-    "@aws-sdk/client-amplify": ^3.1129.0
-    "@aws-sdk/client-cloudfront": ^3.1129.0
-    "@aws-sdk/client-codebuild": ^3.1129.0
-    "@aws-sdk/client-s3": ^3.1129.0
-    "@aws-sdk/lib-storage": ^3.1129.0
-    "@aws-sdk/s3-request-presigner": ^3.1129.0
-    "@aws-sdk/credential-providers": ^3.1129.0
-    "@aws-sdk/rds-signer": ^3.1129.0
+    "@aws-sdk/client-acm": ^3.1127.0
+    "@aws-sdk/client-amplify": ^3.1127.0
+    "@aws-sdk/client-cloudfront": ^3.1127.0
+    "@aws-sdk/client-codebuild": ^3.1127.0
+    "@aws-sdk/client-s3": ^3.1127.0
+    "@aws-sdk/lib-storage": ^3.1127.0
+    "@aws-sdk/s3-request-presigner": ^3.1127.0
+    "@aws-sdk/credential-providers": ^3.1127.0
+    "@aws-sdk/rds-signer": ^3.1127.0
   babel:
     "@babel/plugin-transform-class-properties": ^8.0.1
     "@babel/plugin-transform-object-rest-spread": ^8.0.1
