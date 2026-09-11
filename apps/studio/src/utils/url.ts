@@ -11,10 +11,8 @@ export const appendWithRedirect = (url: string, redirectUrl?: string) => {
 }
 
 export const getRedirectUrl = (query: ParsedUrlQuery) => {
-  if (!query[CALLBACK_URL_KEY]) {
-    return undefined
-  }
-  return decodeURIComponent(String(query[CALLBACK_URL_KEY]))
+  const redirectUrl = query[CALLBACK_URL_KEY]
+  return typeof redirectUrl === "string" ? redirectUrl : undefined
 }
 
 const isRelativeUrl = (url: string) => {
