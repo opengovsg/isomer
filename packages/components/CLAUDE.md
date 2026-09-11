@@ -31,7 +31,7 @@ Things that violate the contract:
 - A component that branches behaviour on a Studio-internal feature flag.
 - Studio importing a private (un-exported) symbol from `packages/components/src/`.
 
-If you need new data on the rendering side, add it to the **schema and interfaces first**, ship that PR, then update Studio to produce the new shape in a follow-up PR. The schema PR must remain backward-compatible (new fields are optional) so Studio doesn't break in between.
+If you need new data on the rendering side, add it to the **schema and interfaces first**, then update Studio to produce the new shape in the same PR. New fields must remain backward-compatible (optional) so existing published content still validates.
 
 ## No UI logic in JSONForms components
 
