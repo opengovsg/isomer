@@ -2,7 +2,7 @@ version: "3"
 
 services:
   postgres:
-    image: postgres:15.10
+    image: postgres:15.10@sha256:d609c3005478af92bddad773423df829b7402ea0b356d5b72edd2fd54d1ad3ea
     ports:
       - 5432:5432
     environment:
@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres-volume:/var/lib/postgresql/data
   mockpass:
-    image: opengovsg/mockpass:4.5.1
+    image: opengovsg/mockpass:4.5.1@sha256:5f624baabe6dcb81c834a0d33651574226a190dee8c287001e5b05a2a3f4bb7e
     ports:
       - "5156:5156"
     extra_hosts:

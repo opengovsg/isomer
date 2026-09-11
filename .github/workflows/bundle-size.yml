@@ -16,6 +16,7 @@ on:
 jobs:
   optimize_ci:
     runs-on: ubuntu-latest # or whichever runner you use for your CI
+    permissions: {} # only talks to Graphite's API via graphite_token; no GITHUB_TOKEN use
     outputs:
       skip: ${{ steps.check_skip.outputs.skip }}
     steps:
@@ -28,6 +29,8 @@ jobs:
   # Detect which areas changed so components-bundle-size can opt out when irrelevant.
   changes:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       components: ${{ steps.filter.outputs.components }}
     steps:
