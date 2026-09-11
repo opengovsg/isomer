@@ -7,8 +7,8 @@ import { HStack, Text } from "@chakra-ui/react"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
-  getCoreRowModel,
-  useReactTable,
+  stockFeatures,
+  useTable,
 } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { TableHeader } from "~/components/Datatable"
@@ -119,10 +119,10 @@ export const ResourceTable = ({
   const totalCount = data?.totalCount ?? 0
   const pageCount = Math.ceil(totalCount / limit)
 
-  const tableInstance = useReactTable<ResourceTableData>({
+  const tableInstance = useTable({
+    features: stockFeatures,
     columns,
     data: data?.items ?? [],
-    getCoreRowModel: getCoreRowModel(),
     manualFiltering: true,
     manualPagination: true,
     autoResetPageIndex: false,

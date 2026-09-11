@@ -3120,7 +3120,9 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({ siteId: site.id })
+      const { items: result } = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
 
       // Assert
       expect(result.map(({ permalink }) => permalink)).toEqual(["about"])
