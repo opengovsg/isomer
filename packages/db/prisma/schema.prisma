@@ -47,6 +47,8 @@ model Version {
   publisher   User       @relation(fields: [publishedBy], references: [id])
 
   updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([resourceId, versionNum])
 }
 
 model Resource {
