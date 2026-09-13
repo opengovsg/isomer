@@ -1,5 +1,6 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { ThemeProvider } from "@opengovsg/design-system-react"
+import type * as DesignSystemReact from "@opengovsg/design-system-react"
 import { render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
@@ -9,6 +10,13 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import RootStateDrawer from "../RootStateDrawer"
 
 const noop = vi.hoisted(() => vi.fn())
+const toastMock = vi.hoisted(() => vi.fn())
+const capturedUpdateBlobOptions = vi.hoisted(() => [] as unknown[])
+
+vi.mock("@opengovsg/design-system-react", async (importOriginal) => {
+  const actual = await importOriginal<typeof DesignSystemReact>()
+  return { ...actual, useToast: () => toastMock }
+})
 
 vi.mock("next/router", () => ({
   useRouter: () => ({ query: { pageId: "1", siteId: "1" } }),
@@ -34,7 +42,10 @@ vi.mock("~/utils/trpc", () => ({
         useMutation: () => ({ mutate: noop }),
       },
       updatePageBlob: {
-        useMutation: () => ({ mutate: noop, isPending: false }),
+        useMutation: (options: unknown) => {
+          capturedUpdateBlobOptions.push(options)
+          return { mutate: noop, isPending: false }
+        },
       },
     },
     useUtils: () => ({
@@ -114,5 +125,29 @@ describe("RootStateDrawer", () => {
     // Assert
     expect(screen.queryByRole("button", { name: "Add block" })).not.toBeNull()
     expect(screen.queryByText("Custom blocks")).not.toBeNull()
+  })
+
+  it("shows an error toast when saving the index-page conversion fails", () => {
+    // Arrange
+    capturedUpdateBlobOptions.length = 0
+    renderDrawer({
+      pageState: CONTENT_PAGE,
+      permalink: "about-us",
+      title: "About us",
+    })
+    const savePageOptions = capturedUpdateBlobOptions.find(
+      (options): options is { onError: (error: Error) => void } =>
+        !!options &&
+        typeof (options as { onError?: unknown }).onError === "function",
+    )
+
+    // Act
+    expect(savePageOptions).toBeDefined()
+    savePageOptions?.onError(new Error("network down"))
+
+    // Assert — without an onError handler the failure is silent
+    expect(toastMock).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "error" }),
+    )
   })
 })
