@@ -1,7 +1,7 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import type * as DesignSystemReact from "@opengovsg/design-system-react"
-import { render, screen } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { theme } from "~/theme"
@@ -44,7 +44,16 @@ vi.mock("~/utils/trpc", () => ({
       updatePageBlob: {
         useMutation: (options: unknown) => {
           capturedUpdateBlobOptions.push(options)
-          return { mutate: noop, isPending: false }
+          return {
+            // Simulate a failed save: real tRPC would route the failure
+            // to the mutation-level onError handler.
+            mutate: () => {
+              const onError = (options as { onError?: (e: Error) => void })
+                ?.onError
+              onError?.(new Error("network down"))
+            },
+            isPending: false,
+          }
         },
       },
     },
@@ -78,16 +87,18 @@ const renderDrawer = ({
   pageState,
   permalink,
   title,
+  type = ResourceType.Page,
 }: {
   pageState: IsomerSchema
   permalink: string
   title: string
+  type?: ResourceType
 }) =>
   render(
     <ThemeProvider theme={theme}>
       <EditorDrawerProvider
         initialPageState={pageState}
-        type={ResourceType.Page}
+        type={type}
         permalink={permalink}
         siteId={1}
         pageId={1}
@@ -128,24 +139,26 @@ describe("RootStateDrawer", () => {
   })
 
   it("shows an error toast when saving the index-page conversion fails", () => {
-    // Arrange
-    capturedUpdateBlobOptions.length = 0
+    // Arrange — an IndexPage with a custom layout shows the conversion
+    // infobox; drive the real preview → accept → save path.
     renderDrawer({
       pageState: CONTENT_PAGE,
       permalink: "about-us",
       title: "About us",
+      type: ResourceType.IndexPage,
     })
-    const savePageOptions = capturedUpdateBlobOptions.find(
-      (options): options is { onError: (error: Error) => void } =>
-        !!options &&
-        typeof (options as { onError?: unknown }).onError === "function",
+    fireEvent.click(
+      screen.getByRole("button", { name: "Preview what this looks like" }),
+    )
+    fireEvent.click(
+      screen.getByRole("button", { name: "Accept this change" }),
     )
 
-    // Act
-    expect(savePageOptions).toBeDefined()
-    savePageOptions?.onError(new Error("network down"))
+    // Act — confirming runs handleSaveConversionToIndexPage; the mocked
+    // save fails and must surface an error toast instead of failing silent.
+    fireEvent.click(screen.getByRole("button", { name: "Accept changes" }))
 
-    // Assert — without an onError handler the failure is silent
+    // Assert
     expect(toastMock).toHaveBeenCalledWith(
       expect.objectContaining({ status: "error" }),
     )
