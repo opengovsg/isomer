@@ -91,7 +91,7 @@ export const ContentPageHeader = ({
             )}
             <div
               className={styles.lastUpdated()}
-            >{`Last updated ${getFormattedDate(lastUpdated)}`}</div>
+            >{`Last updated on ${getFormattedDate(lastUpdated)}`}</div>
           </div>
 
           {hasImage && showThumbnail && (
