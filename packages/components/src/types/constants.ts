@@ -72,3 +72,15 @@ export const DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY = {
   showStatusLabelsFilter: true,
   showDateRangeFilter: true,
 } as const
+
+export const COLLECTION_SORT_ORDER = {
+  DateDesc: "date-desc",
+  DateAsc: "date-asc",
+  TitleAsc: "title-asc",
+  TitleDesc: "title-desc",
+} as const
+
+export type CollectionSortOrder =
+  (typeof COLLECTION_SORT_ORDER)[keyof typeof COLLECTION_SORT_ORDER]
+
+export const DEFAULT_COLLECTION_SORT_ORDER = COLLECTION_SORT_ORDER.DateDesc

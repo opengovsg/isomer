@@ -152,6 +152,11 @@ export {
   default as JsonFormsCollectionVariantControl,
   jsonFormsCollectionVariantControlTester,
 } from "./JsonFormsCollectionVariantControl"
+export {
+  default as JsonFormsCollectionSortOrderControl,
+  JsonFormsCollectionSortOrderControlBase,
+  jsonFormsCollectionSortOrderControlTester,
+} from "./JsonFormsCollectionSortOrderControl"
 
 export {
   default as JsonFormsPrefillLinkControl,

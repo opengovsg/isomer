@@ -41,3 +41,4 @@ export {
 } from "./validation"
 
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
+export { resolveCollectionSortOrder } from "../templates/next/layouts/Collection/utils/collectionSortOrder"

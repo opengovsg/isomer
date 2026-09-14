@@ -312,9 +312,12 @@ export const DateFilterDateRangeOnlyMobileDrawer: Story = {
     await userEvent.click(
       await canvas.findByRole("button", { name: /filter results/i }),
     )
-    // Drawer renders in a portal outside the story canvas.
+    // Drawer renders in a portal outside the story canvas. Scope to the
+    // dialog so we don't also match the desktop aside (hidden in DOM on mobile).
     // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await assertDateFilterControls(within(canvasElement.parentElement!), {
+    const screen = within(canvasElement.parentElement!)
+    const dialog = await screen.findByRole("dialog")
+    await assertDateFilterControls(within(dialog), {
       showStatusLabelsFilter: false,
       showDateRangeFilter: true,
     })
