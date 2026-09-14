@@ -1,5 +1,10 @@
 import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
 import { describe, expect, it } from "vitest"
+import {
+  DEFAULT_TAG_CATEGORY_DISPLAY,
+  DEFAULT_TAG_CATEGORY_IS_REQUIRED,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+} from "~/types/constants"
 
 import { getTagsFromTagged } from "../getTagsFromTagged"
 
@@ -12,6 +17,8 @@ describe("getTagsFromTagged", () => {
         {
           label: "Topic",
           id: "topic-1",
+          isRequired: DEFAULT_TAG_CATEGORY_IS_REQUIRED,
+          display: DEFAULT_TAG_CATEGORY_DISPLAY,
           options: [
             { label: "Health", id: "topic-opt-1" },
             { label: "Education", id: "topic-opt-2" },
@@ -36,11 +43,15 @@ describe("getTagsFromTagged", () => {
         {
           label: "Topic",
           id: "topic-1",
+          isRequired: DEFAULT_TAG_CATEGORY_IS_REQUIRED,
+          display: DEFAULT_TAG_CATEGORY_DISPLAY,
           options: [{ label: "Health", id: "topic-opt-1" }],
         },
         {
           label: "Category",
           id: "cat-1",
+          isRequired: DEFAULT_TAG_CATEGORY_IS_REQUIRED,
+          display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
           options: [{ label: "Guides", id: "cat-opt-1" }],
         },
       ]
@@ -62,6 +73,8 @@ describe("getTagsFromTagged", () => {
         {
           label: "Topic",
           id: "topic-1",
+          isRequired: DEFAULT_TAG_CATEGORY_IS_REQUIRED,
+          display: DEFAULT_TAG_CATEGORY_DISPLAY,
           options: [{ label: "Health", id: "topic-opt-1" }],
         },
       ]
@@ -97,6 +110,8 @@ describe("getTagsFromTagged", () => {
         {
           label: "Category",
           id: "cat-1",
+          isRequired: DEFAULT_TAG_CATEGORY_IS_REQUIRED,
+          display: DEFAULT_TAG_CATEGORY_DISPLAY,
           options: [
             { label: "Guides", id: "cat-opt-1" },
             { label: "Articles", id: "cat-opt-2" },

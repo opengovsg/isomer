@@ -6,7 +6,6 @@ import { buildCollectionLinkPreviewSitemap } from "../buildCollectionLinkPreview
 
 const LINK: CollectionLinkProps = {
   ref: "[resource:1:2]",
-  category: "",
   description: "A summary",
 }
 

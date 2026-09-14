@@ -10,7 +10,8 @@ interface IsomerBaseSitemap {
   summary: string
   lastModified: string
   permalink: string
-  category?: string
+  // DEPRECATED — do not re-add. Legacy `page.category`; migrated to tagCategories.
+  // category?: string
   // TODO: we should aim to separate BaseSiteMap into different types
   // so that the properties that are exclusive to, for example, `CollectionCard`
   // will only be available there
@@ -18,9 +19,9 @@ interface IsomerBaseSitemap {
   firstImage?: CollectionCardProps["image"]
   date?: string
   children?: IsomerSitemap[]
-  // NOTE: the raw selections an editor made; combined with the parent Collection's
-  // `tagCategories` (see getPillAndPlaintextTags/getTagsFromTagged) to derive what's
-  // actually rendered. The legacy resolved `tags` field is no longer supported.
+  // NOTE: editor selections on the item. Combined with the parent collection's
+  // tagCategories (see getPillAndPlaintextTags/getTagsFromTagged) to build what
+  // renders. The legacy resolved `tags` field is gone.
   tagged?: ArticlePagePageProps["tagged"]
 }
 
@@ -48,6 +49,8 @@ interface IsomerFileSitemap extends IsomerBaseSitemap {
 interface IsomerLinkSitemap extends IsomerBaseSitemap {
   layout: "link"
   ref: string
+  // eGazette collection links. Not the ADR 0003 article filter field.
+  category?: string
 }
 
 export type IsomerSitemap =

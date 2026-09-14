@@ -1,6 +1,9 @@
 import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
-import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
+import {
+  DEFAULT_TAG_CATEGORY_IS_REQUIRED,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+} from "~/types/constants"
 
 import { getPillAndPlaintextTags } from "../getPillAndPlaintextTags"
 
@@ -11,6 +14,7 @@ describe("getPillAndPlaintextTags", () => {
       {
         label: "Topic",
         id: "topic-1",
+        isRequired: DEFAULT_TAG_CATEGORY_IS_REQUIRED,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
@@ -37,12 +41,14 @@ describe("getPillAndPlaintextTags", () => {
       {
         label: "Topic",
         id: "topic-1",
+        isRequired: DEFAULT_TAG_CATEGORY_IS_REQUIRED,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
+        isRequired: DEFAULT_TAG_CATEGORY_IS_REQUIRED,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [{ label: "Guides", id: "cat-opt-1" }],
       },
@@ -65,13 +71,13 @@ describe("getPillAndPlaintextTags", () => {
 
   it("treats a group without a display value as pills, per the default", () => {
     // Arrange
-    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+    const tagCategories = [
       {
         label: "Topic",
         id: "topic-1",
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
-    ]
+    ] as CollectionPageSchemaType["page"]["tagCategories"]
 
     // Act
     const result = getPillAndPlaintextTags(["topic-opt-1"], tagCategories)
@@ -89,12 +95,14 @@ describe("getPillAndPlaintextTags", () => {
       {
         label: "Topic",
         id: "topic-1",
+        isRequired: DEFAULT_TAG_CATEGORY_IS_REQUIRED,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
+        isRequired: DEFAULT_TAG_CATEGORY_IS_REQUIRED,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [{ label: "Guides", id: "cat-opt-1" }],
       },
@@ -114,6 +122,7 @@ describe("getPillAndPlaintextTags", () => {
       {
         label: "Category",
         id: "cat-1",
+        isRequired: DEFAULT_TAG_CATEGORY_IS_REQUIRED,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [
           { label: "Guides", id: "cat-opt-1" },
