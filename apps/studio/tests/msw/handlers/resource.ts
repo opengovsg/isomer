@@ -87,6 +87,22 @@ export const resourceHandlers = {
         }
       })
     },
+    collectionLink: () => {
+      return trpcMsw.resource.getParentOf.query(() => {
+        return {
+          type: "CollectionLink",
+          id: "1",
+          parentId: "1",
+          title: "yet another link",
+          parent: {
+            type: "Collection",
+            id: "1",
+            parentId: null,
+            title: "a collection",
+          },
+        }
+      })
+    },
   },
   getAncestryStack: {
     default: () => {
