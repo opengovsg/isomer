@@ -159,6 +159,7 @@ async function main() {
           category: resource.content.page.category,
           tags: resource.content.page.tags,
           tagged: resource.content.page.tagged,
+          dateTagged: resource.content.page.dateTagged,
           date: resource.content.page.date,
           image: resource.content.page.image,
           firstImage: getResourceFirstImage(resource),
