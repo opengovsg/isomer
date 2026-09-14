@@ -2,13 +2,18 @@ import type { TableProps } from "~/interfaces"
 import { useId } from "react"
 import { getTableCellBackgroundColorCss } from "~/constants/tableCellBackgroundColor"
 import { tv } from "~/lib/tv"
-import { resolveColumnWidths } from "~/utils/getTableColumnWidths"
+import {
+  isUsableColwidths,
+  resolveColumnWidths,
+} from "~/utils/getTableColumnWidths"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { Divider } from "../Divider"
 import { OrderedList } from "../OrderedList"
 import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
+import { getTableColumnCount } from "./getTableColumnCount"
+import { resolveTableLayout } from "./resolveTableLayout"
 import { normalizeColspan, normalizeRowspan } from "./tableLayoutLimits"
 
 const tableStyles = tv({
@@ -16,7 +21,6 @@ const tableStyles = tv({
   variants: {
     isFixedLayout: {
       true: "table-fixed",
-      false: "table-auto",
     },
   },
 })
@@ -31,27 +35,21 @@ const tableCellStyles = tv({
   },
 })
 
-const getColumnCount = (content: TableProps["content"]): number =>
-  Math.max(
-    ...content.map((row) =>
-      row.content.reduce((sum, cell) => sum + (cell.attrs?.colspan ?? 1), 0),
-    ),
-  )
-
 export const Table = ({
   attrs: { caption, colwidths },
   content,
   site,
 }: TableProps) => {
   const tableDescriptionId = useId()
-  // A column's width should only ever change because of an explicit resize
-  // drag, never because of how much text happens to be typed into a cell --
-  // which an equal split, rendered under `table-layout: fixed`, guarantees
-  // regardless of content. `resolveColumnWidths` falls back to that split
-  // whenever `colwidths` is missing (pre-feature content), `null` (never
-  // resized), or the wrong length (stale, from before a column add/remove
-  // was normalized) -- the same fallback the editor applies.
-  const columnWidths = resolveColumnWidths(colwidths, getColumnCount(content))
+  const columnCount = getTableColumnCount(content)
+  const layout = resolveTableLayout(content)
+  const useExplicitColwidths = isUsableColwidths({ colwidths, columnCount })
+  const isFixedLayout = useExplicitColwidths || layout.kind === "fixed"
+  const columnWidths = useExplicitColwidths
+    ? resolveColumnWidths(colwidths, columnCount).map((width) => `${width}%`)
+    : layout.kind === "fixed"
+      ? layout.columnWidths
+      : null
 
   return (
     <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
@@ -62,14 +60,16 @@ export const Table = ({
       />
       <div className="overflow-x-auto" tabIndex={0}>
         <table
-          className={tableStyles({ isFixedLayout: true })}
+          className={tableStyles({ isFixedLayout })}
           aria-describedby={tableDescriptionId}
         >
-          <colgroup>
-            {columnWidths.map((width, index) => (
-              <col key={index} style={{ width: `${width}%` }} />
-            ))}
-          </colgroup>
+          {isFixedLayout && columnWidths && (
+            <colgroup>
+              {columnWidths.map((width, index) => (
+                <col key={index} style={{ width }} />
+              ))}
+            </colgroup>
+          )}
           <tbody>
             {content.map((row, index) => (
               <tr key={index} className="text-left">
