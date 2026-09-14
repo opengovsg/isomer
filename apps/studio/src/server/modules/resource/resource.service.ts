@@ -2192,8 +2192,13 @@ export const publishPageResource = async ({
       siteId,
       by: await getUserById(userId),
       delta: {
-        before: previousVersion ? { versionId: previousVersion.id } : null,
-        after: { versionId: newVersion.id },
+        before: previousVersion
+          ? {
+              versionId: previousVersion.id,
+              versionNum: previousVersion.versionNum,
+            }
+          : null,
+        after: { versionId: newVersion.id, versionNum: newVersion.versionNum },
       },
       eventType: AuditLogEvent.Publish,
       metadata: fullResource,
