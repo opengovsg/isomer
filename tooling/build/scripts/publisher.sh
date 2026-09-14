@@ -226,6 +226,11 @@ calculate_duration $start_time
 #     that a retry resolves on its own.
 #   - anything else (path doesn't parse): not explained by a normal race
 #     (e.g. a manual or IaC change). Fail loudly rather than guess.
+#
+# Separately, CloudFront's control plane occasionally returns a transient
+# 5xx (ServiceUnavailable/InternalError) or throttles us - unrelated to the
+# ETag, and resolved by simply trying again rather than reasoning about
+# build numbers.
 echo "Updating CloudFront origin path..."
 echo "CloudFront distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
 
@@ -248,6 +253,19 @@ for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
   fi
 
   cat update-error.log
+
+  if grep -Eq "ServiceUnavailable|InternalError|Throttling|RequestLimitExceeded" update-error.log; then
+    echo "CloudFront returned a transient error, not an ETag conflict."
+    if [ "$attempt" -lt "$MAX_ATTEMPTS" ]; then
+      sleep_time=$(((2 ** attempt) + (RANDOM % 3)))
+      echo "Retrying in ${sleep_time}s..."
+      sleep "$sleep_time"
+      continue
+    fi
+    echo "Error: exhausted $MAX_ATTEMPTS attempts against transient CloudFront errors."
+    exit "$UPDATE_EXIT_CODE"
+  fi
+
   if ! grep -q "PreconditionFailed" update-error.log; then
     echo "Error: CloudFront update-distribution failed for a reason other than an ETag conflict."
     exit "$UPDATE_EXIT_CODE"
