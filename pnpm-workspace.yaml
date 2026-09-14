@@ -83,7 +83,7 @@ catalog:
   node-mocks-http: ^1.18.1
   npm-run-all2: ^9.0.3
   "@octokit/rest": ^22.0.0
-  "@inquirer/prompts": ^8.6.0
+  "@inquirer/prompts": ^8.7.1
   "@opengovsg/design-system-react": ^1.31.0
   "@opengovsg/validators": ^1.4.1
   "@paralleldrive/cuid2": ^3.3.0
@@ -117,7 +117,7 @@ catalog:
   "@types/request": ^2.48.12
   "@types/validator": ^13.15.2
   "@1password/sdk": ^0.5.0
-  "@datadog/browser-rum": ^7.7.0
+  "@datadog/browser-rum": ^7.12.0
   "@fontsource/ibm-plex-mono": ^5.3.0
   "@formkit/auto-animate": ^0.10.0
   "@headlessui/react": ^2.2.10
@@ -175,15 +175,15 @@ catalogs:
     "@atlaskit/pragmatic-drag-and-drop": ^2.0.2
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^2.0.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1125.0
-    "@aws-sdk/client-amplify": ^3.1125.0
-    "@aws-sdk/client-cloudfront": ^3.1125.0
-    "@aws-sdk/client-codebuild": ^3.1125.0
-    "@aws-sdk/client-s3": ^3.1125.0
-    "@aws-sdk/lib-storage": ^3.1125.0
-    "@aws-sdk/s3-request-presigner": ^3.1125.0
-    "@aws-sdk/credential-providers": ^3.1125.0
-    "@aws-sdk/rds-signer": ^3.1125.0
+    "@aws-sdk/client-acm": ^3.1126.0
+    "@aws-sdk/client-amplify": ^3.1126.0
+    "@aws-sdk/client-cloudfront": ^3.1126.0
+    "@aws-sdk/client-codebuild": ^3.1126.0
+    "@aws-sdk/client-s3": ^3.1126.0
+    "@aws-sdk/lib-storage": ^3.1126.0
+    "@aws-sdk/s3-request-presigner": ^3.1126.0
+    "@aws-sdk/credential-providers": ^3.1126.0
+    "@aws-sdk/rds-signer": ^3.1126.0
   babel:
     "@babel/plugin-transform-class-properties": ^8.0.1
     "@babel/plugin-transform-object-rest-spread": ^8.0.1
@@ -254,35 +254,35 @@ catalogs:
     "@tanstack/react-query": ^5.102.8
     "@tanstack/react-query-devtools": ^5.102.7
   tiptap:
-    "@tiptap/core": ^3.31.2
-    "@tiptap/extension-bold": ^3.31.2
-    "@tiptap/extension-bullet-list": ^3.31.2
-    "@tiptap/extension-character-count": ^3.31.2
-    "@tiptap/extension-document": ^3.31.2
-    "@tiptap/extension-dropcursor": ^3.31.2
-    "@tiptap/extension-gapcursor": ^3.31.2
-    "@tiptap/extension-hard-break": ^3.31.2
-    "@tiptap/extension-heading": ^3.31.2
-    "@tiptap/extension-history": ^3.31.2
-    "@tiptap/extension-horizontal-rule": ^3.31.2
-    "@tiptap/extension-image": ^3.31.2
-    "@tiptap/extension-italic": ^3.31.2
-    "@tiptap/extension-link": ^3.31.2
-    "@tiptap/extension-list-item": ^3.31.2
-    "@tiptap/extension-ordered-list": ^3.31.2
-    "@tiptap/extension-paragraph": ^3.31.2
-    "@tiptap/extension-strike": ^3.31.2
-    "@tiptap/extension-subscript": ^3.31.2
-    "@tiptap/extension-superscript": ^3.31.2
-    "@tiptap/extension-table": ^3.31.2
-    "@tiptap/extension-table-cell": ^3.31.2
-    "@tiptap/extension-table-header": ^3.31.2
-    "@tiptap/extension-table-row": ^3.31.2
-    "@tiptap/extension-text": ^3.31.2
-    "@tiptap/extension-underline": ^3.31.2
-    "@tiptap/html": ^3.31.2
-    "@tiptap/pm": ^3.31.2
-    "@tiptap/react": ^3.31.2
+    "@tiptap/core": ^3.31.3
+    "@tiptap/extension-bold": ^3.31.3
+    "@tiptap/extension-bullet-list": ^3.31.3
+    "@tiptap/extension-character-count": ^3.31.3
+    "@tiptap/extension-document": ^3.31.3
+    "@tiptap/extension-dropcursor": ^3.31.3
+    "@tiptap/extension-gapcursor": ^3.31.3
+    "@tiptap/extension-hard-break": ^3.31.3
+    "@tiptap/extension-heading": ^3.31.3
+    "@tiptap/extension-history": ^3.31.3
+    "@tiptap/extension-horizontal-rule": ^3.31.3
+    "@tiptap/extension-image": ^3.31.3
+    "@tiptap/extension-italic": ^3.31.3
+    "@tiptap/extension-link": ^3.31.3
+    "@tiptap/extension-list-item": ^3.31.3
+    "@tiptap/extension-ordered-list": ^3.31.3
+    "@tiptap/extension-paragraph": ^3.31.3
+    "@tiptap/extension-strike": ^3.31.3
+    "@tiptap/extension-subscript": ^3.31.3
+    "@tiptap/extension-superscript": ^3.31.3
+    "@tiptap/extension-table": ^3.31.3
+    "@tiptap/extension-table-cell": ^3.31.3
+    "@tiptap/extension-table-header": ^3.31.3
+    "@tiptap/extension-table-row": ^3.31.3
+    "@tiptap/extension-text": ^3.31.3
+    "@tiptap/extension-underline": ^3.31.3
+    "@tiptap/html": ^3.31.3
+    "@tiptap/pm": ^3.31.3
+    "@tiptap/react": ^3.31.3
   trpc:
     "@trpc/client": ^11.18.0
     "@trpc/next": ^11.18.0
