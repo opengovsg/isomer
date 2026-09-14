@@ -49,9 +49,9 @@ const TagCategorySchema = Type.Composite([
     id: TagCategoryUuidSchema,
   }),
   Type.Object({
-    // Required in schema (Studio JsonForms). Legacy published blobs may still
-    // omit it — runtime/publish must read via `?? DEFAULT_TAG_CATEGORY_IS_REQUIRED`.
-    // Schema `default` + AJV useDefaults backfills on edit in Studio.
+    // Required for Studio JsonForms. Published blobs may omit the key. Use
+    // resolveTagCategoryIsRequired or ?? DEFAULT_TAG_CATEGORY_IS_REQUIRED when
+    // reading for render or publish. AJV useDefaults fills it in Studio.
     isRequired: Type.Boolean({
       title: "This filter is required",
       description:
@@ -60,9 +60,9 @@ const TagCategorySchema = Type.Composite([
     }),
   }),
   Type.Object({
-    // Required in schema (Studio JsonForms). Legacy published blobs may still
-    // omit it — runtime/publish must read via `resolveTagCategoryDisplay`.
-    // Schema `default` + AJV useDefaults backfills on edit in Studio.
+    // Required for Studio JsonForms. Published blobs may omit the key. Use
+    // resolveTagCategoryDisplay when reading for render or publish. AJV
+    // useDefaults fills it in Studio.
     display: Type.Unsafe<TagCategoryDisplay>({
       oneOf: [
         {
@@ -121,9 +121,8 @@ const TaggedSchema = Type.Optional(
   }),
 )
 
-// DEPRECATED: legacy `page.category` — migrated to a "Category" tag group in
-// `tagCategories`/`tagged`. Do not re-add; see
-// docs/adr/0003-merge-category-into-tag-category.md.
+// DEPRECATED — do not re-add. Legacy `page.category`; migrated to tagCategories/tagged.
+// See docs/adr/0003-merge-category-into-tag-category.md.
 // const categorySchemaObject = Type.Object({
 //   category: Type.String({
 //     title: "Article category",
@@ -143,7 +142,7 @@ const dateSchemaObject = Type.Object({
 })
 
 const BaseRefPageSchema = Type.Composite([
-  // DEPRECATED: do not re-add; see docs/adr/0003-merge-category-into-tag-category.md
+  // DEPRECATED — do not re-add; see docs/adr/0003-merge-category-into-tag-category.md
   // categorySchemaObject
   Type.Object({ tagged: TaggedSchema }),
   dateSchemaObject,
@@ -167,9 +166,8 @@ const BaseRefPageSchema = Type.Composite([
   }),
 ])
 
-// DEPRECATED: legacy `page.tags` ({ category, selected[] }) — migrated to
-// `tagCategories`/`tagged`. Do not re-add; see
-// docs/adr/0003-merge-category-into-tag-category.md.
+// DEPRECATED — do not re-add. Legacy `page.tags` ({ category, selected[] }); migrated to tagCategories/tagged.
+// See docs/adr/0003-merge-category-into-tag-category.md.
 // const TagSchema = Type.Object({
 //   selected: Type.Array(Type.String()),
 //   category: Type.String(),
@@ -386,9 +384,8 @@ type BasePageAdditionalProps = BaseItemAdditionalProps & {
 }
 
 // NOTE: derived from `tagCategories` + `tagged` at render time (see
-// `getPillAndPlaintextTags`), not a JSON schema field itself. `id` is the tag
-// category's uuid, used as a stable React key — optional since the legacy
-// `tags` fallback predates tag category uuids.
+// `getPillAndPlaintextTags`). Not a JSON schema field. `id` is the tag category
+// uuid for React keys. Optional because legacy `tags` rows have no uuid.
 export interface TagGroup {
   id?: string
   category: string
