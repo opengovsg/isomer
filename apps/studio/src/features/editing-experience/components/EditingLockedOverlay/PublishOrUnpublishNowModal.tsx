@@ -32,7 +32,7 @@ const COPY: Record<
     title: "Are you sure you want to publish this page now?",
     showBetaBadge: false,
     description:
-      "Changes will be live on your site in approximately 5–10 minutes, and its status will change to Live.",
+      "Changes will be live on your site in approximately 5–10 minutes, and its status will change to Published.",
     confirmLabel: "Yes, publish now",
     successTitle: "Page published successfully",
     errorTitle: "Failed to publish page. Please contact Isomer support.",

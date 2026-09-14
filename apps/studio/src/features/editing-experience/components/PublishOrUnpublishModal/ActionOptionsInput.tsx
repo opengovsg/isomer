@@ -39,13 +39,13 @@ const COPY: Record<
       icon: BiHide,
       title: "Unpublish now",
       description:
-        "The page will be hidden from your site in approximately 5–10 minutes, and its status will change to Draft.",
+        "The page will be hidden from your site in approximately 5–10 minutes, and its status will change to Unpublished.",
     },
     later: {
       icon: BiTimeFive,
       title: "Unpublish later",
       description:
-        "Hide the page at a later time and change its status to Draft.",
+        "Hide the page at a later time and change its status to Unpublished.",
     },
   },
 }

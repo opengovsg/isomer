@@ -26,6 +26,7 @@ interface ResourceTableMenuProps {
   permalink: ResourceTableData["permalink"]
   resourceType: ResourceTableData["type"]
   parentId: ResourceTableData["parentId"]
+  liveStatus: ResourceTableData["liveStatus"]
 }
 
 // The default Search page (permalink /search, no parent) is a system-managed
@@ -68,6 +69,7 @@ export const ResourceTableMenu = ({
   permalink,
   resourceType,
   parentId,
+  liveStatus,
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
   const handleMoveResourceClick = () =>
@@ -149,6 +151,12 @@ export const ResourceTableMenu = ({
                     }}
                     colorScheme="critical"
                     icon={<BiTrash fontSize="1rem" />}
+                    isDisabled={liveStatus !== "notLive"}
+                    tooltip={
+                      liveStatus !== "notLive"
+                        ? `${resourceType === ResourceType.Folder || resourceType === ResourceType.Collection ? "This folder or collection has" : "This page has"} live content — unpublish before deleting`
+                        : undefined
+                    }
                   >
                     Delete
                   </MenuItem>

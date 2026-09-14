@@ -64,6 +64,7 @@ const getColumns = ({ siteId }: CollectionTableProps) => [
         resourceType={row.original.type}
         title={row.original.title}
         resourceId={row.original.id}
+        liveStatus={row.original.liveStatus}
       />
     ),
     size: 24,
