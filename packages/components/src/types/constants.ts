@@ -27,8 +27,8 @@ export const DEFAULT_TAG_CATEGORY_DISPLAY = TAG_CATEGORY_DISPLAY_OPTIONS.Pills
 
 export const DEFAULT_TAG_CATEGORY_IS_REQUIRED = true
 
-// Schema marks `display` / `isRequired` required for Studio JsonForms, but legacy
-// published blobs may still omit them. Normalize at runtime/publish read paths
+// The schema requires both fields for Studio JsonForms. Published blobs may omit
+// them. Call these helpers when reading data for render or publish.
 export const resolveTagCategoryDisplay = (
   display?: TagCategoryDisplay,
 ): TagCategoryDisplay => display ?? DEFAULT_TAG_CATEGORY_DISPLAY
