@@ -348,12 +348,14 @@ describe("getCollectionItems", () => {
       {
         label: "Topic",
         id: "topic-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [
           { label: "Guides", id: "cat-opt-1" },
@@ -443,12 +445,14 @@ describe("getCollectionItems", () => {
       {
         label: "Topic",
         id: "topic-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [
           { label: "Guides", id: "cat-opt-1" },
@@ -500,14 +504,14 @@ describe("getCollectionItems", () => {
     })
 
     it("treats legacy tag categories without display as pills in pillTags", () => {
-      // Arrange
+      // Arrange — legacy published blobs may omit schema-required fields
       const legacyTagCategories = [
         {
           label: "Topic",
           id: "topic-1",
           options: [{ label: "Health", id: "topic-opt-1" }],
         },
-      ] satisfies CollectionPageSchemaType["page"]["tagCategories"]
+      ] as CollectionPageSchemaType["page"]["tagCategories"]
       const site = createSiteWithChildren([
         createArticleChild({ tagged: ["topic-opt-1"] }),
       ])
@@ -533,6 +537,7 @@ describe("getCollectionItems", () => {
         {
           label: "Category",
           id: "cat-1",
+          isRequired: true,
           display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
           options: [{ label: "Guides", id: "cat-opt-1" }],
         },

@@ -67,12 +67,14 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Acute", id: "o-1" }],
       },
       {
         label: "Body parts",
         id: "b-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Brain", id: "o-2" }],
       },
@@ -121,6 +123,7 @@ describe("getTagFilters", () => {
       {
         label: "Body parts",
         id: "b-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Heart", id: "bp-heart" },
@@ -131,6 +134,7 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Chronic", id: "c-chronic" },
@@ -251,6 +255,7 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Acute", id: "c-acute" },
@@ -260,6 +265,7 @@ describe("getTagFilters", () => {
       {
         label: "Body parts",
         id: "b-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Heart", id: "bp-heart" },
@@ -317,12 +323,14 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [], // Empty options array
       },
       {
         label: "Body parts",
         id: "b-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Heart", id: "bp-heart" },
@@ -481,6 +489,7 @@ describe("getTagFilters", () => {
       {
         label: "Body parts",
         id: "b-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Heart", id: "bp-heart" },
