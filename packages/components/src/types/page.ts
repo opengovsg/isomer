@@ -3,6 +3,7 @@ import { Type } from "@sinclair/typebox"
 import {
   AltTextSchema,
   ARRAY_RADIO_FORMAT,
+  TAG_CATEGORY_ITEM_FORMAT,
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
   generateImageSrcSchema,
@@ -60,6 +61,18 @@ const tagCategoryIsRequiredSchemaObject = {
       title: "This filter is required",
       description:
         "Every item must have at least one option selected from this filter.",
+    }),
+  ),
+}
+
+const dateFilterIsRequiredSchemaObject = {
+  // Same semantics as `tagCategoryIsRequiredSchemaObject`, but date filters use
+  // item-specific copy in Studio because the requirement applies to dates, not
+  // tag options.
+  isRequired: Type.Optional(
+    Type.Boolean({
+      title: "This date is required",
+      description: "Every item must have a date entered for this filter.",
     }),
   ),
 }
@@ -135,7 +148,7 @@ const createDateFilterStatusLabelSchema = ({
 const DateFilterSchema = Type.Object(
   {
     ...tagCategoryLabelSchemaObject,
-    ...tagCategoryIsRequiredSchemaObject,
+    ...dateFilterIsRequiredSchemaObject,
     // Always "date" on new filters. Keeps oneOf exclusive with TextFilterSchema.
     type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
     statusLabels: Type.Object(
@@ -173,12 +186,13 @@ export const isTextFilter = (
 ): category is TextFilterSchemaType => category.type !== TAG_CATEGORY_TYPE.Date
 
 // oneOf, not a flat object with every field optional. Order: text=0, date=1.
-// format "tag-category-item" routes to JsonFormsTagCategoryItemControl.
+// TAG_CATEGORY_ITEM_FORMAT tells JsonFormsCombinatorControl to skip the Variant
+// picker — type is chosen at creation, not switched here.
 const TagCategorySchema = Type.Unsafe<
   Static<typeof TextFilterSchema> | Static<typeof DateFilterSchema>
 >({
   oneOf: [TextFilterSchema, DateFilterSchema],
-  format: "tag-category-item",
+  format: TAG_CATEGORY_ITEM_FORMAT,
 })
 // NOTE: can be optional because the categories might not exist
 const TagCategoriesSchema = Type.Object({

@@ -99,10 +99,9 @@ export const collectionHandlers = {
       }))
     },
   },
-  countTagOptionsUsage: {
+  countFilterUsage: {
     default: () =>
-      trpcMsw.collection.countTagOptionsUsage.query(() => ({ count: 3 })),
-    zero: () =>
-      trpcMsw.collection.countTagOptionsUsage.query(() => ({ count: 0 })),
+      trpcMsw.collection.countFilterUsage.query(() => ({ count: 3 })),
+    zero: () => trpcMsw.collection.countFilterUsage.query(() => ({ count: 0 })),
   },
 }

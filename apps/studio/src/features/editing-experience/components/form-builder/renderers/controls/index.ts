@@ -109,6 +109,10 @@ export {
   jsonFormsTagCategoryOptionsControlTester,
 } from "./JsonFormsTagCategoryOptionsControl"
 export {
+  default as JsonFormsDateFilterStatusLabelsControl,
+  jsonFormsDateFilterStatusLabelsControlTester,
+} from "./JsonFormsDateFilterStatusLabelsControl"
+export {
   default as JsonFormsNavbarControl,
   jsonFormsNavbarControlTester,
 } from "./JsonFormsNavbarControl"

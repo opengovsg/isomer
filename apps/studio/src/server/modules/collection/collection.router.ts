@@ -1,9 +1,10 @@
 import type { UnwrapTagged } from "type-fest"
+import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
-  countTagOptionsUsageSchema,
+  countFilterUsageSchema,
   createCollectionSchema,
   editLinkSchema,
   getCollectionsSchema,
@@ -42,6 +43,65 @@ import {
   createCollectionPageJson,
   getCollectionTagsForResource,
 } from "./collection.service"
+
+function taggedOverlapExists(tagOptionIds: string[]) {
+  const uniqueTagOptionIds = [...new Set(tagOptionIds)]
+  if (uniqueTagOptionIds.length === 0) {
+    return undefined
+  }
+
+  // Bound parameters as a Postgres text[] for use with = ANY(...).
+  // Compare as text: `tagged` is stored inside jsonb (no native uuid type),
+  // and jsonb_array_elements_text returns text. The z.string().uuid() validator
+  // is a request-boundary check, not a storage-type contract.
+  const optionIdsAsSqlArray = sql.join(
+    uniqueTagOptionIds.map((id) => sql`${id}::text`),
+    sql`, `,
+  )
+  const tagOptionIdArray = sql`ARRAY[${optionIdsAsSqlArray}]::text[]`
+
+  // Match child resources whose page.tagged JSON array overlaps the queried
+  // option ids. Postgres has no jsonb && jsonb overlap; unnest to text and use ANY.
+  return sql<boolean>`(
+    EXISTS (
+      SELECT 1
+      FROM jsonb_array_elements_text(
+        COALESCE("draftBlob"."content"->'page'->'tagged', '[]'::jsonb)
+      ) AS tag
+      WHERE tag = ANY(${tagOptionIdArray})
+    )
+    OR EXISTS (
+      SELECT 1
+      FROM jsonb_array_elements_text(
+        COALESCE("publishedBlob"."content"->'page'->'tagged', '[]'::jsonb)
+      ) AS tag
+      WHERE tag = ANY(${tagOptionIdArray})
+    )
+  )`
+}
+
+function dateTaggedExists(dateFilterId: string) {
+  // Match child resources with a `dateTagged` entry for this
+  // filter id — unlike `tagged` (a flat array of plain uuids), each
+  // entry is an object, so we unnest with jsonb_array_elements (not
+  // the _text variant) and read its `id` key.
+  return sql<boolean>`(
+    EXISTS (
+      SELECT 1
+      FROM jsonb_array_elements(
+        COALESCE("draftBlob"."content"->'page'->'dateTagged', '[]'::jsonb)
+      ) AS entry
+      WHERE entry->>'id' = ${dateFilterId}
+    )
+    OR EXISTS (
+      SELECT 1
+      FROM jsonb_array_elements(
+        COALESCE("publishedBlob"."content"->'page'->'dateTagged', '[]'::jsonb)
+      ) AS entry
+      WHERE entry->>'id' = ${dateFilterId}
+    )
+  )`
+}
 
 export const collectionRouter = router({
   getMetadata: protectedProcedure
@@ -306,9 +366,11 @@ export const collectionRouter = router({
       },
     ),
 
-  countTagOptionsUsage: protectedProcedure
-    .input(countTagOptionsUsageSchema)
-    .query(async ({ ctx, input: { siteId, pageId, tagOptionIds } }) => {
+  countFilterUsage: protectedProcedure
+    .input(countFilterUsageSchema)
+    .query(async ({ ctx, input }) => {
+      const { siteId, pageId } = input
+
       await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
@@ -348,20 +410,14 @@ export const collectionRouter = router({
         })
       }
 
-      const uniqueTagOptionIds = [...new Set(tagOptionIds)]
-      if (uniqueTagOptionIds.length === 0) {
+      const match =
+        input.type === TAG_CATEGORY_TYPE.Text
+          ? taggedOverlapExists(input.tagOptionIds)
+          : dateTaggedExists(input.dateFilterId)
+
+      if (!match) {
         return { count: 0 }
       }
-
-      // Bound parameters as a Postgres text[] for use with = ANY(...).
-      // Compare as text: `tagged` is stored inside jsonb (no native uuid type),
-      // and jsonb_array_elements_text returns text. The z.string().uuid() validator
-      // is a request-boundary check, not a storage-type contract.
-      const optionIdsAsSqlArray = sql.join(
-        uniqueTagOptionIds.map((id) => sql`${id}::text`),
-        sql`, `,
-      )
-      const tagOptionIdArray = sql`ARRAY[${optionIdsAsSqlArray}]::text[]`
 
       const row = await db
         .selectFrom("Resource as r")
@@ -374,27 +430,8 @@ export const collectionRouter = router({
           ResourceType.CollectionPage,
           ResourceType.CollectionLink,
         ])
-        // Match child resources whose page.tagged JSON array overlaps the queried
-        // option ids. Postgres has no jsonb && jsonb overlap; unnest to text and use ANY.
         // Draft or published blob alone is enough; one row per resource still counts once.
-        .where(
-          sql<boolean>`(
-            EXISTS (
-              SELECT 1
-              FROM jsonb_array_elements_text(
-                COALESCE("draftBlob"."content"->'page'->'tagged', '[]'::jsonb)
-              ) AS tag
-              WHERE tag = ANY(${tagOptionIdArray})
-            )
-            OR EXISTS (
-              SELECT 1
-              FROM jsonb_array_elements_text(
-                COALESCE("publishedBlob"."content"->'page'->'tagged', '[]'::jsonb)
-              ) AS tag
-              WHERE tag = ANY(${tagOptionIdArray})
-            )
-          )`,
-        )
+        .where(match)
         .select(sql<number>`cast(count(*) as int)`.as("count"))
         .executeTakeFirstOrThrow()
 
@@ -450,6 +487,7 @@ export const collectionRouter = router({
           image,
           tags,
           tagged,
+          dateTagged,
         },
         ctx,
       }) => {
@@ -503,6 +541,7 @@ export const collectionRouter = router({
                 image,
                 tags,
                 tagged,
+                dateTagged,
               },
             },
             pageId: linkId,
