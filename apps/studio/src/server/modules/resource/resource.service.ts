@@ -469,6 +469,13 @@ export const getLocalisedSitemap = async (
       ELSE NULL
     END
 `.as("tagged")
+  const dateTaggedSql = sql<string | null>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('article','link')
+      THEN (published.content -> 'page' ->> 'dateTagged')
+      ELSE NULL
+    END
+`.as("dateTagged")
 
   // Get the actual resource first
   const resource = await getById(db, { resourceId, siteId })
@@ -492,6 +499,7 @@ export const getLocalisedSitemap = async (
           dateSql,
           firstImageSql,
           taggedSql,
+          dateTaggedSql,
           ...defaultResourceSelect,
         ])
         .unionAll((fb) =>
@@ -513,6 +521,7 @@ export const getLocalisedSitemap = async (
                 .cast<FirstImage | null>(eb.val(null), "jsonb")
                 .as("firstImage"),
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
+              eb.cast<string | null>(eb.val(null), "text").as("dateTagged"),
               ...defaultResourceSelect,
             ]),
         ),
@@ -541,6 +550,7 @@ export const getLocalisedSitemap = async (
           dateSql,
           firstImageSql,
           taggedSql,
+          dateTaggedSql,
           ...defaultResourceSelect,
         ]),
     )
@@ -564,6 +574,7 @@ export const getLocalisedSitemap = async (
           dateSql,
           firstImageSql,
           eb.cast<string | null>(eb.val(null), "text").as("tagged"),
+          eb.cast<string | null>(eb.val(null), "text").as("dateTagged"),
           ...defaultResourceSelect,
         ])
         .unionAll((fb) =>
@@ -590,6 +601,7 @@ export const getLocalisedSitemap = async (
               dateSql,
               firstImageSql,
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
+              eb.cast<string | null>(eb.val(null), "text").as("dateTagged"),
               ...defaultResourceSelect,
             ]),
         ),
@@ -603,6 +615,7 @@ export const getLocalisedSitemap = async (
       "date",
       "firstImage",
       "tagged",
+      "dateTagged",
       ...defaultResourceSelect,
     ])
     .union((eb) =>
@@ -615,6 +628,7 @@ export const getLocalisedSitemap = async (
           "date",
           "firstImage",
           "tagged",
+          "dateTagged",
           ...defaultResourceSelect,
         ]),
     )
@@ -628,6 +642,7 @@ export const getLocalisedSitemap = async (
           "date",
           "firstImage",
           "tagged",
+          "dateTagged",
           ...defaultResourceSelect,
         ]),
     )
