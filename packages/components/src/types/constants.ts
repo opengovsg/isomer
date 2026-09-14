@@ -33,3 +33,24 @@ export const DEFAULT_TAG_CATEGORY_DISPLAY = TAG_CATEGORY_DISPLAY_OPTIONS.Pills
 export const resolveTagCategoryDisplay = (
   display?: TagCategoryDisplay,
 ): TagCategoryDisplay => display ?? DEFAULT_TAG_CATEGORY_DISPLAY
+
+// tagCategories entry is "text" (option list) or "date" (status buckets).
+export const TAG_CATEGORY_TYPE = {
+  Text: "text",
+  Date: "date",
+} as const
+
+export const DATE_FILTER_STATUS_ID = {
+  Ended: "ENDED",
+  Ongoing: "ONGOING",
+  Upcoming: "UPCOMING",
+} as const
+
+export type DateFilterStatusId =
+  (typeof DATE_FILTER_STATUS_ID)[keyof typeof DATE_FILTER_STATUS_ID]
+
+export const DEFAULT_DATE_FILTER_STATUS_LABELS = {
+  [DATE_FILTER_STATUS_ID.Ended]: "Event ended",
+  [DATE_FILTER_STATUS_ID.Ongoing]: "Ongoing",
+  [DATE_FILTER_STATUS_ID.Upcoming]: "Upcoming",
+} as const satisfies Record<DateFilterStatusId, string>
