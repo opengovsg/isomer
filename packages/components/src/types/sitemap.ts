@@ -43,6 +43,8 @@ export interface IsomerCollectionPageSitemap extends IsomerBaseSitemap {
 interface IsomerLinkSitemap extends IsomerBaseSitemap {
   layout: "link"
   ref: string
+  // eGazette collection links. Not the ADR 0003 article filter field.
+  category?: string
 }
 
 export type IsomerSitemap =

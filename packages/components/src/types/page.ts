@@ -370,7 +370,26 @@ export const HomePagePageSchema = Type.Object({})
 export const NotFoundPagePageSchema = Type.Object({})
 export const SearchPagePageSchema = Type.Object({})
 
-export const LinkRefPageSchema = BaseRefPageSchema
+export const FileRefPageSchema = BaseRefPageSchema
+
+// eGazette collection links still store supplement type here ("Government Gazette",
+// etc.). Not the ADR 0003 article filter field. Keep until gazette moves to
+// tagCategories.
+const linkCategorySchemaObject = Type.Object({
+  category: Type.Optional(
+    Type.String({
+      title: "Link category",
+      format: "hidden",
+      description:
+        "Used by eGazette collection links for supplement type and S3 paths",
+    }),
+  ),
+})
+
+export const LinkRefPageSchema = Type.Composite([
+  BaseRefPageSchema,
+  linkCategorySchemaObject,
+])
 
 // These are props that are required by the render engine, but not enforced by
 // the JSON schema (as the data is being stored outside of the page JSON)
