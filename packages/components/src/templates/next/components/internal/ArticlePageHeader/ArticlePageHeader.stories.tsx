@@ -1,7 +1,29 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ArticlePageHeaderProps } from "~/interfaces"
+import { DATE_FILTER_STATUS_ID } from "~/types/constants"
 
 import { ArticlePageHeader } from "./ArticlePageHeader"
+
+const pad = (n: number): string => n.toString().padStart(2, "0")
+const toDateString = (date: Date) =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+const daysFromNow = (days: number) => {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return toDateString(date)
+}
+
+const EVENT_DATE_STATUS_LABELS = [
+  { id: DATE_FILTER_STATUS_ID.Ended, label: "Event ended" },
+  { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Ongoing" },
+  { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Upcoming" },
+]
+
+const REGISTRATION_DEADLINE_STATUS_LABELS = [
+  { id: DATE_FILTER_STATUS_ID.Ended, label: "Registration closed" },
+  { id: DATE_FILTER_STATUS_ID.Ongoing, label: "Registration open" },
+  { id: DATE_FILTER_STATUS_ID.Upcoming, label: "Registration upcoming" },
+]
 
 const meta: Meta<ArticlePageHeaderProps> = {
   title: "Next/Internal Components/ArticlePageHeader",
@@ -73,6 +95,86 @@ export const ArticleWithTags: Story = {
       {
         category: "Tags",
         selected: ["NParks Happenings", "Wild dinosaur"],
+      },
+    ],
+  },
+}
+
+export const WithDateFilter: Story = {
+  args: {
+    ...ARTICLE,
+    title: "Annual Community Charity Run 2026",
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+    ],
+  },
+}
+
+export const WithMultipleDateFilters: Story = {
+  args: {
+    ...ARTICLE,
+    title: "Item with two date filters",
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(30),
+        endDate: daysFromNow(40),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+      {
+        id: "registration-deadline",
+        label: "Registration Deadline",
+        dateText: "1 Jan - 10 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: REGISTRATION_DEADLINE_STATUS_LABELS,
+      },
+    ],
+  },
+}
+
+export const WithEverything: Story = {
+  args: {
+    ...ARTICLE,
+    title: "Item with two date filters",
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(30),
+        endDate: daysFromNow(40),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+      {
+        id: "registration-deadline",
+        label: "Registration Deadline",
+        dateText: "1 Jan - 10 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: REGISTRATION_DEADLINE_STATUS_LABELS,
+      },
+    ],
+    // NOTE: `pillTags` here is expected to already exclude any
+    // `display: "plaintext"` groups (see Article.tsx's `pillTags`), so
+    // that they aren't duplicated as a pill.
+    pillTags: [
+      {
+        category: "Tags",
+        selected: ["NParks Happenings", "Wild dinosaur"],
+      },
+      {
+        category: "Topic",
+        selected: ["Health", "Community"],
       },
     ],
   },
