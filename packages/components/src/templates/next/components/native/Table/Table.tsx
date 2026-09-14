@@ -8,17 +8,7 @@ import { Divider } from "../Divider"
 import { OrderedList } from "../OrderedList"
 import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
-import { resolveTableLayout } from "./resolveTableLayout"
 import { normalizeColspan, normalizeRowspan } from "./tableLayoutLimits"
-
-const tableStyles = tv({
-  base: "w-full border-collapse border-spacing-0 border border-base-divider-medium",
-  variants: {
-    isFixedLayout: {
-      true: "table-fixed",
-    },
-  },
-})
 
 const tableCellStyles = tv({
   base: "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top [&_li]:mb-4 [&_li]:mt-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
