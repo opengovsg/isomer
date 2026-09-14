@@ -8,7 +8,10 @@ import { useEffect, useRef, useState } from "react"
 import { BiChevronDown, BiX } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { TAG_CATEGORY_TYPE } from "~/types/constants"
+import {
+  DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY,
+  TAG_CATEGORY_TYPE,
+} from "~/types/constants"
 import { focusRing } from "~/utils/tailwind"
 
 import type { AppliedFilter, FilterProps } from "../../../types/Filter"
@@ -154,71 +157,88 @@ const FilterDrawerContent = ({
   return (
     <form className="flex flex-1 flex-col" onSubmit={handleSubmit}>
       <div className="flex-1 px-6 md:px-10">
-        {filters.map(({ id, label, items, type }) => {
-          const panelId = `drawer-filter-panel-${id}`
-          const isExpanded = showFilter[id] ?? false
+        {filters.map(
+          ({
+            id,
+            label,
+            items,
+            type,
+            showStatusLabelsFilter,
+            showDateRangeFilter,
+          }) => {
+            const panelId = `drawer-filter-panel-${id}`
+            const isExpanded = showFilter[id] ?? false
 
-          return (
-            <div
-              className="border-b border-b-divider-medium py-4 last:border-0"
-              key={id}
-            >
-              <ExpandFilterButton
-                label={label}
-                isExpanded={isExpanded}
-                onPress={() => updateFilterToggle(id)}
-                panelId={panelId}
-              />
-
+            return (
               <div
-                id={panelId}
-                className={isExpanded ? "flex flex-col" : "hidden"}
+                className="border-b border-b-divider-medium py-4 last:border-0"
+                key={id}
               >
-                {type === TAG_CATEGORY_TYPE.Date ? (
-                  <DateFilterControls
-                    items={items}
-                    checkboxValue={holdingFiltersById[id] ?? []}
-                    statusGroupLabel={`${label} status`}
-                    onCheckboxValuesChange={(values) => {
-                      setHoldingFiltersById((prev) => ({
-                        ...prev,
-                        [id]: values,
-                      }))
-                    }}
-                    dateRange={holdingDateRangesById[id]}
-                    onDateRangeChange={(dateRange) =>
-                      setHoldingDateRangesById((prev) => ({
-                        ...prev,
-                        [id]: dateRange,
-                      }))
-                    }
-                  />
-                ) : (
-                  <CheckboxGroup
-                    aria-label={label}
-                    value={holdingFiltersById[id] ?? []}
-                    onChange={(values) => {
-                      setHoldingFiltersById((prev) => ({
-                        ...prev,
-                        [id]: values,
-                      }))
-                    }}
-                  >
-                    {items.map(({ id: itemId, label: itemLabel, count }) => (
-                      <Checkbox
-                        value={itemId}
-                        key={itemId}
-                        className="w-fit cursor-pointer p-2"
-                      >
-                        {itemLabel} ({count.toLocaleString()})
-                      </Checkbox>
-                    ))}
-                  </CheckboxGroup>
-                )}
+                <ExpandFilterButton
+                  label={label}
+                  isExpanded={isExpanded}
+                  onPress={() => updateFilterToggle(id)}
+                  panelId={panelId}
+                />
+
+                <div
+                  id={panelId}
+                  className={isExpanded ? "flex flex-col" : "hidden"}
+                >
+                  {type === TAG_CATEGORY_TYPE.Date ? (
+                    <DateFilterControls
+                      items={items}
+                      checkboxValue={holdingFiltersById[id] ?? []}
+                      statusGroupLabel={`${label} status`}
+                      onCheckboxValuesChange={(values) => {
+                        setHoldingFiltersById((prev) => ({
+                          ...prev,
+                          [id]: values,
+                        }))
+                      }}
+                      dateRange={holdingDateRangesById[id]}
+                      onDateRangeChange={(dateRange) =>
+                        setHoldingDateRangesById((prev) => ({
+                          ...prev,
+                          [id]: dateRange,
+                        }))
+                      }
+                      showStatusLabelsFilter={
+                        showStatusLabelsFilter ??
+                        DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabelsFilter
+                      }
+                      showDateRangeFilter={
+                        showDateRangeFilter ??
+                        DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRangeFilter
+                      }
+                    />
+                  ) : (
+                    <CheckboxGroup
+                      aria-label={label}
+                      value={holdingFiltersById[id] ?? []}
+                      onChange={(values) => {
+                        setHoldingFiltersById((prev) => ({
+                          ...prev,
+                          [id]: values,
+                        }))
+                      }}
+                    >
+                      {items.map(({ id: itemId, label: itemLabel, count }) => (
+                        <Checkbox
+                          value={itemId}
+                          key={itemId}
+                          className="w-fit cursor-pointer p-2"
+                        >
+                          {itemLabel} ({count.toLocaleString()})
+                        </Checkbox>
+                      ))}
+                    </CheckboxGroup>
+                  )}
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          },
+        )}
       </div>
       <div className="sticky bottom-0 left-0 right-0 flex flex-col gap-3 border-t border-t-divider-medium bg-white px-6 pb-12 pt-8 md:px-10">
         <Button

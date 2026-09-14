@@ -6,6 +6,7 @@ import type { AppliedFilter } from "../../../types/Filter"
 import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
 import { getDateFilterStatus } from "./getDateFilterStatus"
 import { normalizeCollectionSearchText } from "./normalizeCollectionSearchText"
+import { sanitizeAppliedFiltersForVisibility } from "./sanitizeAppliedFiltersForVisibility"
 
 const itemOverlapsAppliedDateRange = (
   value: { date: string; endDate?: string },
@@ -31,15 +32,19 @@ export const getFilteredItems = (
   searchValue: string,
   tagCategories?: CollectionPagePageProps["tagCategories"],
 ): ProcessedCollectionCardProps[] => {
+  const visibleAppliedFilters = sanitizeAppliedFiltersForVisibility(
+    appliedFilters,
+    tagCategories,
+  )
   const normalizedSearchValue =
     searchValue !== "" ? normalizeCollectionSearchText(searchValue) : ""
 
-  const yearFilter = appliedFilters.find(
+  const yearFilter = visibleAppliedFilters.find(
     (filter) => filter.id === FILTER_ID_YEAR,
   )
 
   // Text filters (isTextFilter): match on category.label; legacy rows omit `type`.
-  const textFilters = appliedFilters.filter(
+  const textFilters = visibleAppliedFilters.filter(
     ({ id }) =>
       id !== FILTER_ID_YEAR &&
       tagCategories?.some(
@@ -48,7 +53,7 @@ export const getFilteredItems = (
   )
 
   // Date filters (isDateFilter): match on category.id; always `type: "date"`.
-  const dateFilters = appliedFilters.filter(
+  const dateFilters = visibleAppliedFilters.filter(
     ({ id }) =>
       id !== FILTER_ID_YEAR &&
       tagCategories?.some(

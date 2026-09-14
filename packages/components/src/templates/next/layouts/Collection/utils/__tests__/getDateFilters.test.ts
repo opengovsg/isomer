@@ -81,6 +81,9 @@ describe("getDateFilters", () => {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: TAG_CATEGORY_TYPE.Date,
+        showStatusLabelsFilter: true,
+        showDateRangeFilter: true,
+        dateTaggedItemCount: 3,
         items: [
           {
             id: DATE_FILTER_STATUS.Ongoing.id,
@@ -107,6 +110,9 @@ describe("getDateFilters", () => {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: TAG_CATEGORY_TYPE.Date,
+        showStatusLabelsFilter: true,
+        showDateRangeFilter: true,
+        dateTaggedItemCount: 0,
         items: [],
       },
     ])
@@ -143,6 +149,9 @@ describe("getDateFilters", () => {
         id: EVENT_DATE_FILTER_ID,
         label: "Event Date",
         type: TAG_CATEGORY_TYPE.Date,
+        showStatusLabelsFilter: true,
+        showDateRangeFilter: true,
+        dateTaggedItemCount: 1,
         items: [],
       },
     ])

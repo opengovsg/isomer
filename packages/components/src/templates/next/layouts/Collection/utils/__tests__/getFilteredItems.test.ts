@@ -626,5 +626,54 @@ describe("getFilteredItems", () => {
 
       expect(result).toEqual([])
     })
+
+    it("ignores hidden date-filter criteria restored from the URL", () => {
+      // Arrange
+      const items: ProcessedCollectionCardProps[] = [
+        {
+          title: "Event A",
+          description: "",
+          dateTagged: [
+            {
+              id: EVENT_DATE_FILTER_ID,
+              date: "2026-06-15",
+            },
+          ],
+        } as ProcessedCollectionCardProps,
+        {
+          title: "Event B",
+          description: "",
+          dateTagged: [
+            {
+              id: EVENT_DATE_FILTER_ID,
+              date: "2026-01-01",
+            },
+          ],
+        } as ProcessedCollectionCardProps,
+      ]
+      const appliedFilters: AppliedFilter[] = [
+        {
+          id: EVENT_DATE_FILTER_ID,
+          items: [{ id: DATE_FILTER_STATUS.Ongoing.id }],
+          dateRange: { start: "2026-01-01", end: "2026-03-31" },
+        },
+      ]
+      const tagCategories = [
+        {
+          id: EVENT_DATE_FILTER_ID,
+          label: "Event Date",
+          type: "date" as const,
+          showStatusLabelsFilter: false,
+          showDateRangeFilter: true,
+          statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
+        },
+      ] satisfies NonNullable<CollectionPagePageProps["tagCategories"]>
+
+      // Act
+      const result = getFilteredItems(items, appliedFilters, "", tagCategories)
+
+      // Assert — hidden status buckets are ignored; only the visible date range applies
+      expect(result).toEqual([items[1]])
+    })
   })
 })
