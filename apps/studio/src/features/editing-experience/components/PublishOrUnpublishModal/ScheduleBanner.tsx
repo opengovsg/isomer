@@ -1,6 +1,6 @@
 import { HStack, Icon, Text } from "@chakra-ui/react"
 import { add, format } from "date-fns"
-import { BiHourglass } from "react-icons/bi"
+import { BiSolidInfoCircle } from "react-icons/bi"
 import { getTimezoneAbbreviation } from "~/lib/dates"
 
 import type { PublishOrUnpublishAction } from "./ActionOptionsInput"
@@ -31,7 +31,12 @@ export const ScheduleBanner = ({
       borderRadius="0.25rem"
       p="0.75rem"
     >
-      <Icon as={BiHourglass} boxSize="1rem" color="base.content.default" />
+      <Icon
+        as={BiSolidInfoCircle}
+        boxSize="1rem"
+        color="utility.feedback.info"
+        mt="0.125rem"
+      />
       <Text textStyle="body-2" color="base.content.strong" display="inline">
         {action === "publish" ? (
           <>
@@ -39,8 +44,7 @@ export const ScheduleBanner = ({
             <Text display="inline" textStyle="subhead-2">
               {format(scheduledAt, "hh:mm a")}
             </Text>
-            , {tzText}, on {dateText}. Changes will be live on your site
-            approximately 5-10 minutes after publishing.
+            , {tzText}, on {dateText}.
           </>
         ) : (
           <>

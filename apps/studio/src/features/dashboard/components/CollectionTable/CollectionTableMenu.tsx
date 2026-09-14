@@ -20,6 +20,7 @@ interface CollectionTableMenuProps {
   permalink: CollectionTableData["permalink"]
   resourceId: CollectionTableData["id"]
   resourceType: CollectionTableData["type"]
+  liveStatus: CollectionTableData["liveStatus"]
 }
 
 export const CollectionTableMenu = ({
@@ -28,6 +29,7 @@ export const CollectionTableMenu = ({
   resourceType,
   parentId,
   permalink,
+  liveStatus,
 }: CollectionTableMenuProps) => {
   const setValue = useSetAtom(deleteResourceModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
@@ -87,6 +89,12 @@ export const CollectionTableMenu = ({
               }}
               colorScheme="critical"
               icon={<BiTrash fontSize="1rem" />}
+              isDisabled={liveStatus !== "notLive"}
+              tooltip={
+                liveStatus !== "notLive"
+                  ? "Unpublish this page before deleting it"
+                  : undefined
+              }
             >
               Delete
             </MenuItem>

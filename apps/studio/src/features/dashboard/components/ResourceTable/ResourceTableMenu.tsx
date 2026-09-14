@@ -26,6 +26,7 @@ interface ResourceTableMenuProps {
   permalink: ResourceTableData["permalink"]
   resourceType: ResourceTableData["type"]
   parentId: ResourceTableData["parentId"]
+  liveStatus: ResourceTableData["liveStatus"]
 }
 
 export const ResourceTableMenu = ({
@@ -35,6 +36,7 @@ export const ResourceTableMenu = ({
   permalink,
   resourceType,
   parentId,
+  liveStatus,
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
   const handleMoveResourceClick = () =>
@@ -122,11 +124,13 @@ export const ResourceTableMenu = ({
                   }}
                   colorScheme="critical"
                   icon={<BiTrash fontSize="1rem" />}
-                  isDisabled={!isAllowed}
+                  isDisabled={!isAllowed || liveStatus !== "notLive"}
                   tooltip={
-                    isAllowed
-                      ? undefined
-                      : "You need to be an Admin to move or delete items under Home."
+                    !isAllowed
+                      ? "You need to be an Admin to move or delete items under Home."
+                      : liveStatus !== "notLive"
+                        ? `${resourceType === ResourceType.Folder || resourceType === ResourceType.Collection ? "This folder or collection has" : "This page has"} live content — unpublish before deleting`
+                        : undefined
                   }
                 >
                   Delete

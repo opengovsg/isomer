@@ -21,7 +21,7 @@ export const DraftIndicator = ({
       <Box as="span" display="inline-block">
         <Badge size="xs" variant="clear" colorScheme="warning">
           <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
-          <Text textStyle="legal">Has draft</Text>
+          <Text textStyle="legal">Draft</Text>
         </Badge>
       </Box>
     </Tooltip>
