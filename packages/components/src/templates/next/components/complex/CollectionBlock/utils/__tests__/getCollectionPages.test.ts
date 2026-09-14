@@ -52,7 +52,6 @@ describe("getCollectionPages", () => {
     date = "2021-01-01",
     image,
     firstImage,
-    category,
     tagged,
   }: {
     id: string
@@ -60,7 +59,6 @@ describe("getCollectionPages", () => {
     date?: string
     image?: { src: string; alt: string }
     firstImage?: { src: string; alt: string }
-    category?: string
     tagged?: string[]
   }): IsomerSitemap => ({
     id,
@@ -70,7 +68,6 @@ describe("getCollectionPages", () => {
     lastModified: date,
     layout: "article",
     date,
-    category,
     tagged,
     image,
     firstImage,
@@ -390,6 +387,7 @@ describe("getCollectionPages", () => {
             {
               label: "Category",
               id: "cat-1",
+              isRequired: true,
               display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
               options: [{ label: "Guides", id: "cat-opt-1" }],
             },
