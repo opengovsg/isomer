@@ -40,17 +40,30 @@ export const TAG_CATEGORY_TYPE = {
   Date: "date",
 } as const
 
-export const DATE_FILTER_STATUS_ID = {
-  Ended: "ENDED",
-  Ongoing: "ONGOING",
-  Upcoming: "UPCOMING",
+export type TagCategoryType =
+  (typeof TAG_CATEGORY_TYPE)[keyof typeof TAG_CATEGORY_TYPE]
+export type TagCategoryDateType = (typeof TAG_CATEGORY_TYPE)["Date"]
+
+export const DATE_FILTER_STATUS = {
+  Ended: {
+    id: "ENDED",
+    defaultLabel: "Event ended",
+  },
+  Ongoing: {
+    id: "ONGOING",
+    defaultLabel: "Ongoing",
+  },
+  Upcoming: {
+    id: "UPCOMING",
+    defaultLabel: "Upcoming",
+  },
 } as const
 
 export type DateFilterStatusId =
-  (typeof DATE_FILTER_STATUS_ID)[keyof typeof DATE_FILTER_STATUS_ID]
+  (typeof DATE_FILTER_STATUS)[keyof typeof DATE_FILTER_STATUS]["id"]
 
 export const DEFAULT_DATE_FILTER_STATUS_LABELS = {
-  [DATE_FILTER_STATUS_ID.Ended]: "Event ended",
-  [DATE_FILTER_STATUS_ID.Ongoing]: "Ongoing",
-  [DATE_FILTER_STATUS_ID.Upcoming]: "Upcoming",
+  [DATE_FILTER_STATUS.Ended.id]: DATE_FILTER_STATUS.Ended.defaultLabel,
+  [DATE_FILTER_STATUS.Ongoing.id]: DATE_FILTER_STATUS.Ongoing.defaultLabel,
+  [DATE_FILTER_STATUS.Upcoming.id]: DATE_FILTER_STATUS.Upcoming.defaultLabel,
 } as const satisfies Record<DateFilterStatusId, string>

@@ -1,7 +1,10 @@
 import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
 import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
-import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
+import {
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+} from "~/types/constants"
 
 import { getCollectionItems } from "../getCollectionItems"
 
@@ -418,6 +421,46 @@ describe("getCollectionItems", () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.plaintextTags).toBeUndefined()
+    })
+  })
+
+  describe("mixed text and date tagCategories", () => {
+    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+      {
+        label: "Event Date",
+        id: "date-1",
+        type: "date",
+        statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
+      },
+      {
+        label: "Category",
+        id: "cat-1",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+        options: [{ label: "Guides", id: "cat-opt-1" }],
+      },
+    ]
+
+    it("resolves tags/plaintextTags from the text category and skips the date category, without crashing", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({ tagged: ["cat-opt-1"] }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        tagCategories,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.tags).toEqual([
+        { id: "cat-1", category: "Category", selected: ["Guides"] },
+      ])
+      expect(result[0]!.plaintextTags).toEqual([
+        { id: "cat-1", category: "Category", selected: ["Guides"] },
+      ])
     })
   })
 

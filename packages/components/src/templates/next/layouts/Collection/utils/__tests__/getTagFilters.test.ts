@@ -1,7 +1,10 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
-import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
+import {
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+} from "~/types/constants"
 
 import { getTagFilters } from "../getTagFilters"
 
@@ -20,11 +23,7 @@ describe("getTagFilters", () => {
         label: "Event Date",
         id: "date-1",
         type: "date",
-        statusLabels: [
-          { id: "ENDED", label: "Ended" },
-          { id: "ONGOING", label: "Ongoing" },
-          { id: "UPCOMING", label: "Upcoming" },
-        ],
+        statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
       },
       {
         label: "Topic",

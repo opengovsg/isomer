@@ -1,4 +1,5 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
+import type { CollectionPagePageProps } from "~/types"
 import { isEmpty } from "lodash-es"
 import { useCallback, useMemo } from "react"
 import { useQueryParams } from "~/hooks/useQueryParams"
@@ -8,15 +9,17 @@ import { isAppliedFilters } from "../../types/Filter"
 import {
   getFilteredItems,
   getPaginatedItems,
-  updateAppliedFilters,
+  toggleAppliedFilterItem,
 } from "./utils"
 
 export const ITEMS_PER_PAGE = 10
 
 export const useCollection = ({
   items,
+  tagCategories,
 }: {
   items: ProcessedCollectionCardProps[]
+  tagCategories?: CollectionPagePageProps["tagCategories"]
 }) => {
   const [queryParams, updateQueryParams] = useQueryParams()
 
@@ -70,12 +73,20 @@ export const useCollection = ({
 
   const handleFilterToggle = useCallback(
     (id: string, itemId: string) => {
-      return updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
+      return toggleAppliedFilterItem({
+        appliedFilters,
+        setAppliedFilters,
+        filterId: id,
+        itemId,
+      })
     },
     [appliedFilters, setAppliedFilters],
   )
 
-  const filteredItems = getFilteredItems(items, appliedFilters, searchValue)
+  const filteredItems = useMemo(
+    () => getFilteredItems(items, appliedFilters, searchValue, tagCategories),
+    [items, appliedFilters, searchValue, tagCategories],
+  )
   const paginatedItems = useMemo(
     () => getPaginatedItems(filteredItems, ITEMS_PER_PAGE, currPage),
     [currPage, filteredItems],
