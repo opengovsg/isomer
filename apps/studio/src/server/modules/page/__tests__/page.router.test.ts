@@ -2065,6 +2065,9 @@ describe("page.router", async () => {
         .selectAll()
         .execute()
       expect(auditLogs.length).toEqual(1)
+      expect(auditLogs[0]?.delta).toMatchObject({
+        after: { versionId: newVersions[0]?.id, versionNum: 1 },
+      })
     })
 
     it("should block the first publish when a live redirect occupies the page's URL", async () => {
