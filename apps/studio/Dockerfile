@@ -49,8 +49,8 @@ WORKDIR /app
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME/bin:$PATH"
 RUN corepack enable && corepack install -g pnpm@12.0.0
-# fixed version to prevent supply chain attacks (to ensure it's same version as pnpm-workspace.yaml)
-RUN pnpm add -g turbo@2.10.7
+# Pin turbo to the resolved catalog version to prevent supply chain attacks
+RUN pnpm add -g turbo@2.10.13
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.
