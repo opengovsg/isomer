@@ -3,7 +3,6 @@ import { Button } from "@opengovsg/design-system-react"
 import Image from "next/image"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
 import {
   type NotFoundCta,
   getNotFoundCtaFromPath,
@@ -16,15 +15,12 @@ const Custom404 = () => {
   const router = useRouter()
 
   // This page has no data fetching, so Next prerenders it at build time with
-  // `asPath` fixed to "/404", while the client router reports the URL the user
-  // actually asked for. Deriving the CTA after mount keeps the first client
-  // render identical to the prerendered markup instead of tripping a
-  // hydration mismatch.
-  const [cta, setCta] = useState<NotFoundCta>(ALL_SITES_CTA)
-
-  useEffect(() => {
-    setCta(getNotFoundCtaFromPath(router.asPath))
-  }, [router.asPath])
+  // `asPath` fixed to "/404". Wait for router.isReady before reading the URL
+  // the user actually asked for so the first client render matches the
+  // prerendered markup instead of tripping a hydration mismatch.
+  const cta: NotFoundCta = router.isReady
+    ? getNotFoundCtaFromPath(router.asPath)
+    : ALL_SITES_CTA
 
   return (
     <Flex flexDirection="column" w="100%" flex={1}>
