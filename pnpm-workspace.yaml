@@ -206,8 +206,8 @@ catalogs:
     "@jsonforms/core": ^3.8.0
     "@jsonforms/react": ^3.8.0
   playwright:
-    "@playwright/test": ^1.62.0
-    playwright: ^1.62.0
+    "@playwright/test": ^1.63.0
+    playwright: ^1.63.0
   pg:
     pg: ^8.23.0
     pg-cursor: ^2.21.0
