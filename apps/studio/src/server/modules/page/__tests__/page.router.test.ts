@@ -370,57 +370,6 @@ describe("page.router", async () => {
       })
     })
 
-    it("should return prefill data for file ref page layout", async () => {
-      // Arrange
-      const fileBlob = await db
-        .insertInto("Blob")
-        .values({
-          content: jsonb({
-            layout: "file",
-            page: {
-              description: "File description text",
-              image: { src: "/images/file-thumb.png", alt: "File image" },
-            },
-            content: [],
-            version: "0.1.0",
-          }),
-        })
-        .returningAll()
-        .executeTakeFirstOrThrow()
-
-      const { site } = await setupSite()
-      const page = await db
-        .insertInto("Resource")
-        .values({
-          title: "Test File Page",
-          permalink: "test-file",
-          siteId: site.id,
-          draftBlobId: fileBlob.id,
-          type: ResourceType.Page,
-        })
-        .returningAll()
-        .executeTakeFirstOrThrow()
-
-      await setupEditorPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = await caller.getPrefill({
-        siteId: site.id,
-        resourceId: page.id,
-      })
-
-      // Assert
-      expect(result).toEqual({
-        title: "Test File Page",
-        description: "File description text",
-        thumbnail: "/images/file-thumb.png",
-        thumbnailAlt: "File image",
-      })
-    })
-
     it("should return prefill data for link ref page layout", async () => {
       // Arrange
       const linkBlob = await db

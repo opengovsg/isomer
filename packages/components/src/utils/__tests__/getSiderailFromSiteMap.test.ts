@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest"
 import { getSiderailFromSiteMap } from "../getSiderailFromSiteMap"
 
 describe("getSiderailFromSiteMap", () => {
-  it("excludes file and link layouts from the siderail", () => {
+  it("excludes link layouts, including file URLs, from the siderail", () => {
     // Arrange
     const sitemap: IsomerSitemap = {
       id: "root",
@@ -35,10 +35,9 @@ describe("getSiderailFromSiteMap", () => {
               title: "File",
               permalink: "/collection/file",
               lastModified: "",
-              layout: "file",
+              layout: "link",
               summary: "",
               ref: "file.pdf",
-              fileDetails: { type: "PDF", size: "1 MB" },
             },
             {
               id: "link",

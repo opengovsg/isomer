@@ -184,7 +184,6 @@ const getMetaDescription = (props: GetPageJsonLdProps) => {
         props.content.find((item) => item.type === "hero")?.subtitle ||
         props.site.siteName
       )
-    case ISOMER_PAGE_LAYOUTS.File:
     case ISOMER_PAGE_LAYOUTS.Link:
     case ISOMER_PAGE_LAYOUTS.Search:
     case ISOMER_PAGE_LAYOUTS.NotFound:
@@ -211,7 +210,6 @@ const getMetaImage = (props: IsomerPageSchemaType) => {
         props.meta?.image ||
         props.content.find((item) => item.type === "hero")?.backgroundUrl
       )
-    case ISOMER_PAGE_LAYOUTS.File:
     case ISOMER_PAGE_LAYOUTS.Link:
     case ISOMER_PAGE_LAYOUTS.Search:
     case ISOMER_PAGE_LAYOUTS.NotFound:
@@ -284,7 +282,6 @@ export const getMetadata = (props: IsomerPageSchemaType) => {
     description: getMetaDescription(props),
     robots: {
       index:
-        props.layout !== ISOMER_PAGE_LAYOUTS.File &&
         props.layout !== ISOMER_PAGE_LAYOUTS.Link &&
         props.layout !== ISOMER_PAGE_LAYOUTS.Search &&
         props.layout !== ISOMER_PAGE_LAYOUTS.NotFound &&
@@ -354,11 +351,7 @@ export const getRobotsTxt = (props: IsomerPageSchemaType) => {
 
 export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
   return getSitemapAsArray(sitemap)
-    .filter(
-      (item) =>
-        item.layout !== ISOMER_PAGE_LAYOUTS.File &&
-        item.layout !== ISOMER_PAGE_LAYOUTS.Link,
-    )
+    .filter((item) => item.layout !== ISOMER_PAGE_LAYOUTS.Link)
     .map(({ permalink, lastModified }) => {
       const permalinkWithTrailingSlash = permalink.endsWith("/")
         ? permalink

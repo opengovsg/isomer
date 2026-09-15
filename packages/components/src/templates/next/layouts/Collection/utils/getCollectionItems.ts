@@ -108,12 +108,7 @@ export const getCollectionItems = ({
 
   const items = currSitemap.children
     .flatMap((child) => getSitemapAsArray(child))
-    .filter(
-      (item) =>
-        item.layout === "file" ||
-        item.layout === "link" ||
-        item.layout === "article",
-    )
+    .filter((item) => item.layout === "link" || item.layout === "article")
 
   const transformedItems = items.map((item) => {
     const date =
@@ -146,14 +141,7 @@ export const getCollectionItems = ({
       pillTags,
     }
 
-    if (item.layout === "file") {
-      return {
-        ...baseItem,
-        variant: "file",
-        url: item.ref,
-        fileDetails: item.fileDetails,
-      }
-    } else if (item.layout === "link") {
+    if (item.layout === "link") {
       return {
         ...baseItem,
         variant: "link",
