@@ -11,7 +11,7 @@ export const SearchBar = ({ searchValue, setSearchValue }: SearchBarProps) => {
       value={searchValue}
       onChange={({ target }) => setSearchValue(target.value)}
       w="full"
-      placeholder="Search pages, collections, or folders by name, or choose from the list below"
+      placeholder="Search pages, collections, or folders by name or URL, or choose from the list below"
     />
   )
 }
