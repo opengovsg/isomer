@@ -6,6 +6,7 @@ import {
   AskgovSchema,
   EgazetteAlgoliaSearchSchema,
   generateImageSrcSchema,
+  IsomerString,
   LocalSearchSchema,
   SearchSGSearchSchema,
   VicaSchema,
@@ -121,7 +122,7 @@ export const SiteEntitySettingsSchema = Type.Object(
 )
 
 export const AgencySettingsSchema = Type.Object({
-  siteName: Type.String({
+  siteName: IsomerString({
     title: "Site name",
     description:
       "This is displayed on browser tabs, the footer, and the Search Results page. It’s also the default meta title of your homepage.",
