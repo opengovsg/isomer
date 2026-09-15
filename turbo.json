@@ -101,6 +101,9 @@
       ]
     },
     "teardown": {},
-    "test-start": {}
+    "test-start": {},
+    "test-ci:e2e": {
+      "cache": false
+    }
   }
 }
