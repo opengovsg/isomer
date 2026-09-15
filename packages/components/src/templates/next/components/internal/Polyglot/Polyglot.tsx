@@ -1,7 +1,7 @@
 "use client"
 
 import type { PolyglotProps } from "~/interfaces"
-import { useScript } from "usehooks-ts"
+import { useInteractionScriptLoader } from "~/hooks/useInteractionScriptLoader"
 
 // Reference: https://polyglot.gov.sg
 export const Polyglot = ({ environment }: PolyglotProps) => {
@@ -10,7 +10,7 @@ export const Polyglot = ({ environment }: PolyglotProps) => {
       ? "https://staging-assets.polyglot.gov.sg/widget.js"
       : "https://assets.polyglot.gov.sg/widget.js"
 
-  useScript(scriptUrl)
+  useInteractionScriptLoader({ src: scriptUrl })
 
   return <div id="polyglot-widget" />
 }
