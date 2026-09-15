@@ -3,7 +3,8 @@
   "compilerOptions": {
     "paths": {
       "~server/*": ["../../apps/studio/src/server/*"],
-      "~prisma/*": ["../../apps/studio/prisma/*"]
+      "~prisma/*": ["../../apps/studio/prisma/*"],
+      "utils": ["./utils.ts"]
     },
     "outDir": "dist/cjs",
     "rootDirs": ["src"],
@@ -30,8 +31,7 @@
     "listFiles": false /* Print names of files part of the compilation. */,
     "pretty": true /* Stylize errors and messages using color and context. */,
 
-    "typeRoots": ["node_modules/@types", "src/types"],
-    "baseUrl": "./"
+    "typeRoots": ["node_modules/@types", "src/types"]
   },
   "include": ["../../apps/studio/prisma/**/*.ts", "**/*"],
   "compileOnSave": false
