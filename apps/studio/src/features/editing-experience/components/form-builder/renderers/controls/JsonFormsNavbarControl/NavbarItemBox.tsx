@@ -37,6 +37,7 @@ import {
   BiGridVertical,
   BiPencil,
   BiSolidErrorCircle,
+  BiSubdirectoryRight,
   BiTrash,
 } from "react-icons/bi"
 
@@ -50,6 +51,7 @@ interface NavbarItemBoxProps {
   index: number
   onEditItem: () => void
   onDeleteItem: () => void
+  onNestItem?: () => void
   name?: string
   description?: string
   subItems?: Pick<NavbarItemBoxProps, "name" | "description">[]
@@ -66,6 +68,7 @@ export const NavbarItemBox = ({
   index,
   onEditItem,
   onDeleteItem,
+  onNestItem,
   name = DEFAULT_NAVBAR_ITEM_TITLE,
   description = DEFAULT_NAVBAR_ITEM_DESCRIPTION,
   subItems,
@@ -356,6 +359,19 @@ export const NavbarItemBox = ({
                   <Text textStyle="body-2">Edit link</Text>
                 </Flex>
               </MenuItem>
+              {onNestItem &&
+                (isSubItem || !subItems || subItems.length === 0) && (
+                  <MenuItem onClick={onNestItem}>
+                    <Flex
+                      alignItems="center"
+                      gap="0.5rem"
+                      color="base.content.strong"
+                    >
+                      <Icon as={BiSubdirectoryRight} />
+                      <Text textStyle="body-2">Move to</Text>
+                    </Flex>
+                  </MenuItem>
+                )}
               <MenuItem onClick={onDeleteItem}>
                 <Flex
                   alignItems="center"
