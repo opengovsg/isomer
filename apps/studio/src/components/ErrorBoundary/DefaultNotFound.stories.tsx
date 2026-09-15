@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
+import { expect, within } from "storybook/test"
 
 import { DefaultNotFound } from "./DefaultNotFound"
+import { ALL_SITES_CTA, type NotFoundCta } from "./getNotFoundCta"
 
 const meta: Meta<typeof DefaultNotFound> = {
   title: "Components/DefaultNotFound",
@@ -8,6 +10,12 @@ const meta: Meta<typeof DefaultNotFound> = {
 }
 
 type Story = StoryObj<typeof DefaultNotFound>
+
+const assertCta = async (canvasElement: HTMLElement, cta: NotFoundCta) => {
+  const canvas = within(canvasElement)
+  const link = await canvas.findByRole("link", { name: cta.label })
+  await expect(link).toHaveAttribute("href", cta.href)
+}
 
 // NOT_FOUND on a nested site route. CTA links to the site dashboard.
 export const InsideSite: Story = {
@@ -18,6 +26,12 @@ export const InsideSite: Story = {
         query: { siteId: "1", pageId: "2" },
       },
     },
+  },
+  play: async ({ canvasElement }) => {
+    await assertCta(canvasElement, {
+      href: "/sites/1",
+      label: "Back to your site",
+    })
   },
 }
 
@@ -31,6 +45,9 @@ export const OutsideSite: Story = {
       },
     },
   },
+  play: async ({ canvasElement }) => {
+    await assertCta(canvasElement, ALL_SITES_CTA)
+  },
 }
 
 // /sites/[siteId] with no RootPage. CTA links to /, not the dashboard.
@@ -42,6 +59,9 @@ export const OnSiteDashboard: Story = {
         query: { siteId: "1" },
       },
     },
+  },
+  play: async ({ canvasElement }) => {
+    await assertCta(canvasElement, ALL_SITES_CTA)
   },
 }
 
