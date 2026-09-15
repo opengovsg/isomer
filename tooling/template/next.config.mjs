@@ -40,6 +40,8 @@ const nextConfig = {
   typescript: { ignoreBuildErrors: true },
   webpack(config, { webpack }) {
     if (isDevelopment) {
+      // Directory replacement can leave native watchers attached to the old preview.
+      config.watchOptions = { ...config.watchOptions, poll: 1000 }
       config.plugins.push(
         new webpack.NormalModuleReplacementPlugin(
           /^@\/(?:data\/.*\.json|schema(?:\/.*)?|sitemap\.json)$/,

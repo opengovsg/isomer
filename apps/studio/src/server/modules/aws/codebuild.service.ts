@@ -30,7 +30,9 @@ const LOCAL_PUBLISH_DIR = path.join(
   "tooling/template/.local-publish",
 )
 const LOCAL_PUBLISH_BACKUP_DIR = `${LOCAL_PUBLISH_DIR}-backup`
+const LOCAL_PUBLISH_TIMEOUT_MS = 120_000
 let localPublishQueue = Promise.resolve()
+let localPublishWaitingCount = 0
 
 const publishLocalSite = async (logger: Logger<string>, siteId: number) => {
   const outputDir = await mkdtemp(`${LOCAL_PUBLISH_DIR}-`)
@@ -46,12 +48,43 @@ const publishLocalSite = async (logger: Logger<string>, siteId: number) => {
           OUTPUT_DIR: outputDir,
         },
         stdio: "inherit",
+        // Keep pnpm and its tsx descendants in one group so a timeout stops all of them.
+        detached: true,
       })
 
-      child.once("error", reject)
-      child.once("exit", (code) => {
-        if (code === 0) resolve()
-        else reject(new Error(`Local publisher exited with code ${code}`))
+      let timedOut = false
+      const timeout = setTimeout(() => {
+        timedOut = true
+        try {
+          if (child.pid) process.kill(-child.pid, "SIGKILL")
+        } catch (error) {
+          reject(
+            new Error("Could not stop timed-out local publisher", {
+              cause: error,
+            }),
+          )
+        }
+      }, LOCAL_PUBLISH_TIMEOUT_MS)
+
+      child.once("error", (error) => {
+        clearTimeout(timeout)
+        reject(error)
+      })
+      child.once("exit", (code, signal) => {
+        clearTimeout(timeout)
+        if (timedOut) {
+          reject(
+            new Error(
+              `Local publisher timed out after ${LOCAL_PUBLISH_TIMEOUT_MS}ms`,
+            ),
+          )
+        } else if (code === 0) resolve()
+        else
+          reject(
+            new Error(
+              `Local publisher exited with code ${code}, signal ${signal}`,
+            ),
+          )
       })
     })
 
@@ -88,9 +121,38 @@ export const publishSite = async (
   { siteId, codebuildJob }: PublishSiteArgs,
 ) => {
   if (env.NEXT_PUBLIC_APP_ENV === "development") {
-    localPublishQueue = localPublishQueue
-      .then(() => publishLocalSite(logger, siteId))
-      .catch((error) => logger.error({ error, siteId }, "Local publish failed"))
+    const queuedAt = performance.now()
+    localPublishWaitingCount += 1
+    logger.info(
+      { siteId, waitingCount: localPublishWaitingCount },
+      "Local publish queued",
+    )
+    localPublishQueue = localPublishQueue.then(async () => {
+      localPublishWaitingCount -= 1
+      const startedAt = performance.now()
+      logger.info(
+        {
+          siteId,
+          waitingCount: localPublishWaitingCount,
+          waitMs: Math.round(startedAt - queuedAt),
+        },
+        "Local publish started",
+      )
+      try {
+        await publishLocalSite(logger, siteId)
+      } catch (error) {
+        logger.error({ error, siteId }, "Local publish failed")
+      } finally {
+        logger.info(
+          {
+            siteId,
+            waitingCount: localPublishWaitingCount,
+            durationMs: Math.round(performance.now() - startedAt),
+          },
+          "Local publish finished",
+        )
+      }
+    })
     return
   }
 
