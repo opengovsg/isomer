@@ -14,7 +14,7 @@ export const Polyglot = ({ environment }: PolyglotProps) => {
 
   useInteractionScriptLoader({
     src: scriptUrl,
-    timeout: queryParams.lang !== undefined ? 500 : undefined,
+    timeout: queryParams.lang !== undefined ? 1 : undefined,
   })
 
   return <div id="polyglot-widget" />
