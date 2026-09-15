@@ -5,6 +5,10 @@ import { useCallback, useMemo, useRef, useState, useTransition } from "react"
 import { useBreakpoint } from "~/hooks/useBreakpoint"
 import { tv } from "~/lib/tv"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ImageClient } from "../../internal/ImageClient"
 import { LEFT_ARROW_SVG, RIGHT_ARROW_SVG } from "./assets"
 import { getEndingPreviewIndices, getPreviewIndices } from "./utils"
@@ -45,11 +49,15 @@ const createImagePreviewStyles = tv({
 
 const compoundStyles = createImagePreviewStyles()
 
+type ImageGalleryClientRenderProps = ImageGalleryClientProps &
+  ContentBlockIndexProps
+
 export const ImageGalleryClient = ({
   images,
   assetsBaseUrl,
   shouldLazyLoad,
-}: ImageGalleryClientProps) => {
+  contentBlockIndex,
+}: ImageGalleryClientRenderProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPending, startTransition] = useTransition()
 
@@ -175,6 +183,7 @@ export const ImageGalleryClient = ({
       className="mt-6 w-full first:mt-0"
       role="region"
       aria-label="Image gallery"
+      {...contentBlockIndexAttr(contentBlockIndex)}
     >
       {/* Main Slideshow */}
       <div className="relative h-[17rem] w-full overflow-hidden border bg-white sm:h-[28.5rem]">

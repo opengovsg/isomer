@@ -2,8 +2,12 @@ import type { DynamicDataBannerProps } from "~/interfaces"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
+import type { ContentBlockIndexProps } from "../../../render/contentBlockIndex"
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { DynamicDataBannerClient } from "./DynamicDataBannerClient"
+
+type DynamicDataBannerRenderProps = DynamicDataBannerProps &
+  ContentBlockIndexProps
 
 export const DynamicDataBanner = ({
   apiEndpoint,
@@ -13,7 +17,8 @@ export const DynamicDataBanner = ({
   label,
   errorMessage,
   site,
-}: DynamicDataBannerProps) => {
+  contentBlockIndex,
+}: DynamicDataBannerRenderProps) => {
   return (
     <DynamicDataBannerClient
       apiEndpoint={apiEndpoint}
@@ -21,6 +26,7 @@ export const DynamicDataBanner = ({
       data={data}
       url={getReferenceLinkHref(url, site.siteMapArray, site.assetsBaseUrl)}
       label={label}
+      contentBlockIndex={contentBlockIndex}
       errorMessageBaseParagraph={
         <BaseParagraph
           content={getTextAsHtml({

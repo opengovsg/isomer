@@ -1,6 +1,10 @@
 import type { VideoProps } from "~/interfaces"
 import { isValidVideoUrl, VALID_VIDEO_DOMAINS } from "~/utils/validation"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LiteVimeoEmbed } from "./LiteVimeoEmbed"
 import { LiteYouTubeEmbed } from "./LiteYouTubeEmbed"
@@ -50,7 +54,14 @@ const parseVideo = (url: string): ParsedVideo | null => {
   }
 }
 
-export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
+type VideoRenderProps = VideoProps & ContentBlockIndexProps
+
+export const Video = ({
+  title,
+  url,
+  shouldLazyLoad = true,
+  contentBlockIndex,
+}: VideoRenderProps) => {
   const parsedVideo = parseVideo(url)
   if (!parsedVideo) return null
 
@@ -101,7 +112,10 @@ export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
   }
 
   return (
-    <section className={`${ComponentContent} mt-7 first:mt-0`}>
+    <section
+      className={`${ComponentContent} mt-7 first:mt-0`}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <div
         className={isPortrait ? "mx-auto w-full max-w-[20.3125rem]" : "w-full"}
       >
