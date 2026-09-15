@@ -46,7 +46,11 @@ const SITE_PATH_ROOT = "sites"
 // Positive integers only, matching the `siteId: z.number().min(1)` the server
 // input schemas require (see ~/schemas/site). Coercing also canonicalises the
 // id, so "/sites/007/pages" links to "/sites/7".
-const siteIdSegmentSchema = z.coerce.number().int().positive()
+const siteIdSegmentSchema = z
+  .string()
+  .regex(/^\d+$/)
+  .transform(Number)
+  .pipe(z.number().int().positive())
 
 /**
  * Picks where the 404 page sends the user.
