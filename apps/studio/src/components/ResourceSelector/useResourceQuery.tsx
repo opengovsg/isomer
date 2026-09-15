@@ -78,10 +78,8 @@ export const useResourceQuery = ({
   )
 
   const isFetchingAncestry = ancestryQueries.some((query) => query.isLoading)
-  // A chunk that errored out has `data === undefined`, same shape as a chunk
-  // still loading. Without this check, `query.data ?? []` below would treat
-  // the failed chunk as a successful empty response and silently omit its
-  // resources instead of leaving the combined result unresolved.
+  // Keep failed chunks out of the combined result and expose the error so
+  // the picker can offer a retry instead of displaying partial results.
   const hasAncestryError = ancestryQueries.some((query) => query.isError)
 
   // Merge completed query results into the cache so subsequent renders (and
@@ -111,6 +109,13 @@ export const useResourceQuery = ({
 
   return {
     resourceItemsWithAncestryStack,
+    hasAncestryError,
+    isRetryingAncestry: ancestryQueries.some((query) => query.isFetching),
+    retryAncestry: () => {
+      for (const query of ancestryQueries) {
+        if (query.isError) void query.refetch()
+      }
+    },
     // oxlint-disable-next-line @typescript-eslint/no-empty-function
     fetchNextPage: useResourceIdsFromSearch ? () => {} : fetchNextPage,
     hasNextPage: useResourceIdsFromSearch ? false : hasNextPage,
