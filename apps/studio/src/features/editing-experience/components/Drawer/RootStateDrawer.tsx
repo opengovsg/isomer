@@ -262,6 +262,14 @@ export default function RootStateDrawer() {
           ...BRIEF_TOAST_SETTINGS,
         })
       },
+      onError: (error) => {
+        toast({
+          title: "Failed to convert page",
+          description: error.message,
+          status: "error",
+          ...BRIEF_TOAST_SETTINGS,
+        })
+      },
     })
 
   const onDragEnd = useCallback(
