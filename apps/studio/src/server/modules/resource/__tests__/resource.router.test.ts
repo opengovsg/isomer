@@ -3224,10 +3224,10 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrow(
         new TRPCError({ code: "BAD_REQUEST" }),
       )
+      expect(auditSpy).not.toHaveBeenCalled()
     })
 
     it("should return 400 if resource to delete is the search page (permalink /search, no parent)", async () => {
