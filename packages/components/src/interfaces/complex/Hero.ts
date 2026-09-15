@@ -4,6 +4,7 @@ import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { omit } from "lodash-es"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
+import { HeroImageFitSchema } from "~/schemas/internal"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
@@ -143,6 +144,7 @@ const HeroLargeImageSchema = Type.Composite(
         default: HERO_STYLE.largeImage,
       }),
       backgroundUrl: BackgroundUrlSchema,
+      imageFit: Type.Optional(HeroImageFitSchema),
     }),
     HeroBaseSchema,
     CallToActionsSchema,
