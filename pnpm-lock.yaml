@@ -278,8 +278,8 @@ catalogs:
       specifier: ^1.0.0
       version: 1.2.0
     chromatic:
-      specifier: ^18.2.0
-      version: 18.2.0
+      specifier: ^18.7.2
+      version: 18.8.1
     clean-webpack-plugin:
       specifier: ^4.0.0
       version: 4.0.0
@@ -1451,7 +1451,7 @@ importers:
         version: 4.1.4(browserslist@4.28.6)
       chromatic:
         specifier: 'catalog:'
-        version: 18.2.0
+        version: 18.8.1
       eslint-plugin-storybook:
         specifier: catalog:storybook
         version: 10.4.6(eslint@9.39.4(jiti@1.21.7)(supports-color@8.1.1))(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)
@@ -8019,8 +8019,8 @@ packages:
   chownr@1.1.4:
     resolution: {integrity: sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg==}
 
-  chromatic@18.2.0:
-    resolution: {integrity: sha512-xyTKDhBQPDd4qrsXhJK7GAJyIStpRoSTs4b7EtPyliSL0luej3DcqkeCZ9osHxbiLXiViNyWfMxo5Xgzejex8A==}
+  chromatic@18.8.1:
+    resolution: {integrity: sha512-ATJyUUuUrK1GA3bPNHPHgwQtqw/cSapC/hReF53EBO0HT0yYCl5jEeWBQP64+bAlZTK7zTSjzKe4109qbdKTvQ==}
     engines: {node: '>=22.0.0'}
     hasBin: true
     peerDependencies:
@@ -19228,7 +19228,7 @@ snapshots:
 
   chownr@1.1.4: {}
 
-  chromatic@18.2.0:
+  chromatic@18.8.1:
     dependencies:
       semver: 7.8.5
 
