@@ -12,6 +12,7 @@ import Suspense from "~/components/Suspense"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { serializePageBlob } from "~/utils/combinatorArrayFields"
 import { getIcon } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -250,7 +251,7 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
       {
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
+        content: serializePageBlob(previewPageState),
       },
       {
         onSuccess: () => {
