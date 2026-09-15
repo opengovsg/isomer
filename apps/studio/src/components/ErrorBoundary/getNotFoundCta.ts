@@ -10,26 +10,18 @@ export const ALL_SITES_CTA: NotFoundCta = {
   label: "Back to all sites",
 }
 
-// Not the parallel "Back to your sites": one character between the two labels
-// is too easy to misread when they mean different destinations.
+// "Back to your site", not "Back to your sites". One letter is easy to misread.
 const siteDashboardCta = (siteId: number | string): NotFoundCta => ({
   href: `/sites/${siteId}`,
   label: "Back to your site",
 })
 
-// The site dashboard throws NOT_FOUND itself (page.getRootPage for a site with
-// no RootPage row, resource.getChildrenOf), so linking "back" to it would
-// return the user to the screen that just failed.
+// /sites/[siteId] throws NOT_FOUND when getRootPage finds no RootPage row.
 const SITE_DASHBOARD_ROUTE = "/sites/[siteId]"
 
-/**
- * Picks where the not-found error boundary sends the user.
- *
- * Every site-scoped procedure validates site permissions before it throws
- * NOT_FOUND, so reaching that screen with a `siteId` in the route means the
- * site exists and the user may read it. `/sites/<siteId>` is a destination we
- * know loads, unlike the failing resource they asked for.
- */
+// DefaultNotFound: route matched, siteId is in router.query. Site-scoped
+// procedures check read permission before NOT_FOUND, so /sites/<siteId> is
+// safe when siteId is a single string.
 export const getNotFoundCta = (
   pathname: string,
   siteId: string | string[] | undefined,
@@ -43,26 +35,18 @@ export const getNotFoundCta = (
 
 const SITE_PATH_ROOT = "sites"
 
-// Positive integers only, matching the `siteId: z.number().min(1)` the server
-// input schemas require (see ~/schemas/site). Coercing also canonicalises the
-// id, so "/sites/007/pages" links to "/sites/7".
+// Positive integers only (see ~/schemas/site). "/sites/007/pages" -> "/sites/7".
 const siteIdSegmentSchema = z
   .string()
   .regex(/^\d+$/)
   .transform(Number)
   .pipe(z.number().int().positive())
 
-/**
- * Picks where the 404 page sends the user.
- *
- * No route matched, so `router.query` is empty and the site id has to come out
- * of the requested path instead. Nothing has verified that site exists or is
- * readable: a hand-typed `/sites/99999/pages` links to a dashboard that fails
- * its own permission check. Truncating a real URL is the far more common way
- * to reach a 404 inside a site, so we take the better destination for it.
- */
+// 404 page: no route params, parse site id from asPath. A guessed id like
+// /sites/99999/pages may 404 again; truncated URLs are common enough to link
+// to the site dashboard anyway.
 export const getNotFoundCtaFromPath = (path: string): NotFoundCta => {
-  // Placeholder origin so URL splits off any query string and hash for us.
+  // Fake origin strips query string and hash.
   const { pathname } = new URL(path, "https://studio.invalid")
   const [, root, siteIdSegment] = pathname.split("/")
 

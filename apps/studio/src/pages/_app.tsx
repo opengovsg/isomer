@@ -65,11 +65,8 @@ void gb.init({
 })
 
 const MyApp = ((props: AppPropsWithAuthAndLayout) => {
-  // Once it catches, react-error-boundary renders the fallback until either
-  // `resetErrorBoundary()` runs or an entry in `resetKeys` changes. Keying on
-  // the path means a client-side navigation out of an error screen (the CTAs
-  // on DefaultNotFound and DefaultServerError) re-mounts the children for the
-  // new route; without it the URL changes while the fallback stays on screen.
+  // ErrorBoundary keeps the fallback until resetKeys changes. asPath remounts
+  // children after the error-screen CTAs navigate away.
   const { asPath } = useRouter()
 
   return (

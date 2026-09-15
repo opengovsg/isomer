@@ -14,10 +14,8 @@ import { RestrictedMiniFooter } from "~/components/RestrictedMiniFooter"
 const Custom404 = () => {
   const router = useRouter()
 
-  // This page has no data fetching, so Next prerenders it at build time with
-  // `asPath` fixed to "/404". Wait for router.isReady before reading the URL
-  // the user actually asked for so the first client render matches the
-  // prerendered markup instead of tripping a hydration mismatch.
+  // Prerender uses asPath "/404". Wait for router.isReady before parsing the
+  // requested URL so the first client render matches the prerender.
   const cta: NotFoundCta = router.isReady
     ? getNotFoundCtaFromPath(router.asPath)
     : ALL_SITES_CTA
@@ -53,7 +51,7 @@ const Custom404 = () => {
             This page could not be found
           </Text>
           <Text textStyle="body-2" textAlign="center">
-            Double check to ensure that the URL is correct.
+            Check that the URL is correct.
           </Text>
           <Button mt="0.5rem" as={NextLink} href={cta.href}>
             {cta.label}

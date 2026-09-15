@@ -9,8 +9,7 @@ const meta: Meta<typeof DefaultNotFound> = {
 
 type Story = StoryObj<typeof DefaultNotFound>
 
-// A NOT_FOUND thrown from a site-scoped route. The site itself is known to
-// exist and be readable, so the CTA offers its dashboard.
+// NOT_FOUND on a nested site route. CTA links to the site dashboard.
 export const InsideSite: Story = {
   parameters: {
     nextjs: {
@@ -22,7 +21,7 @@ export const InsideSite: Story = {
   },
 }
 
-// No siteId in the route, so Home is the only destination we can offer.
+// No siteId in the route. CTA links to /.
 export const OutsideSite: Story = {
   parameters: {
     nextjs: {
@@ -34,8 +33,7 @@ export const OutsideSite: Story = {
   },
 }
 
-// The dashboard throws NOT_FOUND itself when a site has no RootPage row, so
-// the CTA must fall back to Home rather than link to the failing screen.
+// /sites/[siteId] with no RootPage. CTA links to /, not the dashboard.
 export const OnSiteDashboard: Story = {
   parameters: {
     nextjs: {
