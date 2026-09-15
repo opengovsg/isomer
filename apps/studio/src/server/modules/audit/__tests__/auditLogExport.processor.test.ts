@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
@@ -20,12 +21,21 @@ interface FailedEmailArg {
   month: string
 }
 
+interface BatchReadyEmailArg {
+  recipientEmail: string
+  month: string
+  reportLabel: "access" | "audit"
+  links: { siteName: string; url: string; sizeInBytes: number | null }[]
+  failedSiteNames: string[]
+}
+
 const {
   mockUploadAuditLogExport,
   mockGetStudioAssetsBucketName,
   mockGetFileSize,
   mockSendAuditLogExportReadyEmail,
   mockSendAuditLogExportFailedEmail,
+  mockSendAuditLogExportBatchReadyEmail,
 } = vi.hoisted(() => ({
   mockUploadAuditLogExport:
     vi.fn<(args: { key: string; body: unknown }) => Promise<void>>(),
@@ -37,6 +47,8 @@ const {
     vi.fn<(data: ReadyEmailArg) => Promise<void>>(),
   mockSendAuditLogExportFailedEmail:
     vi.fn<(data: FailedEmailArg) => Promise<void>>(),
+  mockSendAuditLogExportBatchReadyEmail:
+    vi.fn<(data: BatchReadyEmailArg) => Promise<void>>(),
 }))
 
 // `~/lib/s3` (mocked below) is the only thing in this service's import chain
@@ -76,6 +88,7 @@ vi.mock("~/lib/s3", () => ({
 vi.mock("~/features/mail/service", () => ({
   sendAuditLogExportReadyEmail: mockSendAuditLogExportReadyEmail,
   sendAuditLogExportFailedEmail: mockSendAuditLogExportFailedEmail,
+  sendAuditLogExportBatchReadyEmail: mockSendAuditLogExportBatchReadyEmail,
 }))
 
 import { getCurrentSingaporeMonth } from "~/schemas/audit"
@@ -102,6 +115,8 @@ const seedRequest = async ({
   auditLogDateRange = AUDIT_LOG_DATE_RANGE,
   objectKey,
   completedAt,
+  batchId,
+  batchEmailedAt,
 }: {
   siteId: number
   userId: string
@@ -115,6 +130,10 @@ const seedRequest = async ({
   // Used to seed pre-existing Done/Failed rows directly for the reuse tests.
   objectKey?: string
   completedAt?: Date
+  // Correlates this row with sibling rows into one "allSites"-style batch —
+  // see the batching describe block below.
+  batchId?: string
+  batchEmailedAt?: Date
 }) => {
   return db
     .insertInto("AuditLogExportRequest")
@@ -128,6 +147,8 @@ const seedRequest = async ({
       ...(updatedAt ? { updatedAt } : {}),
       ...(objectKey ? { objectKey } : {}),
       ...(completedAt ? { completedAt } : {}),
+      ...(batchId ? { batchId } : {}),
+      ...(batchEmailedAt ? { batchEmailedAt } : {}),
     })
     .returningAll()
     .executeTakeFirstOrThrow()
@@ -168,6 +189,7 @@ describe("auditLogExport processor", () => {
     mockGetFileSize.mockResolvedValue(1024)
     mockSendAuditLogExportReadyEmail.mockResolvedValue(undefined)
     mockSendAuditLogExportFailedEmail.mockResolvedValue(undefined)
+    mockSendAuditLogExportBatchReadyEmail.mockResolvedValue(undefined)
   })
 
   it("processes an Access request: one upload with an inclusive-end key, one link, status Done", async () => {
@@ -190,9 +212,10 @@ describe("auditLogExport processor", () => {
     // Act
     await processPendingAuditLogExports()
 
-    // Assert: the S3 key renders the half-open range [2024-03-01,2024-04-01)
-    // with an inclusive end — `2024-03-01-to-2024-03-31`.
-    const expectedKey = `audit-log-exports/${site.id}/${request.id}/access-2024-03-01-to-2024-03-31.csv`
+    // Assert: the S3 key is prefixed with the site name and renders the
+    // half-open range [2024-03-01,2024-04-01) with an inclusive end —
+    // `<site name>-access-2024-03-01-to-2024-03-31`.
+    const expectedKey = `audit-log-exports/${site.id}/${request.id}/${site.name}-access-2024-03-01-to-2024-03-31.csv`
     expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
     expect(mockUploadAuditLogExport.mock.calls[0]![0].key).toBe(expectedKey)
 
@@ -330,13 +353,13 @@ describe("auditLogExport processor", () => {
     const updatedAccess = await getRequest(accessRequest.id)
     expect(updatedAccess.status).toBe("Done")
     expect(updatedAccess.objectKey).toBe(
-      `audit-log-exports/${site.id}/${accessRequest.id}/access-2024-03-01-to-2024-03-31.csv`,
+      `audit-log-exports/${site.id}/${accessRequest.id}/${site.name}-access-2024-03-01-to-2024-03-31.csv`,
     )
 
     const updatedActivity = await getRequest(activityRequest.id)
     expect(updatedActivity.status).toBe("Done")
     expect(updatedActivity.objectKey).toBe(
-      `audit-log-exports/${site.id}/${activityRequest.id}/activity-2024-03-01-to-2024-03-31.csv`,
+      `audit-log-exports/${site.id}/${activityRequest.id}/${site.name}-activity-2024-03-01-to-2024-03-31.csv`,
     )
   })
 
@@ -789,6 +812,203 @@ describe("auditLogExport processor", () => {
       const updated = await getRequest(request.id)
       expect(updated.status).toBe("Pending")
       expect(updated.objectKey).toBeNull()
+    })
+  })
+
+  describe("batching (allSites)", () => {
+    it("sends one combined email once every sibling site is Done, skipping both rows' own per-row email", async () => {
+      // Arrange: two sites, one shared batchId — as if an "allSites" ask
+      // resolved to both sites for this admin.
+      const batchId = randomUUID()
+      const admin = await setupUser({ email: "batch-admin@vendor.com.sg" })
+      const { site: siteA } = await setupSite()
+      const { site: siteB } = await setupSite()
+      await setupAdminPermissions({ userId: admin.id, siteId: siteA.id })
+      await setupAdminPermissions({ userId: admin.id, siteId: siteB.id })
+
+      await seedRequest({
+        siteId: siteA.id,
+        userId: admin.id,
+        reportType: "Access",
+        batchId,
+      })
+      await seedRequest({
+        siteId: siteB.id,
+        userId: admin.id,
+        reportType: "Access",
+        batchId,
+      })
+
+      // Act: one sweep claims and processes both sibling rows.
+      await processPendingAuditLogExports()
+
+      // Assert: neither row sent its own ready email — the one combined
+      // batch email replaces both.
+      expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
+      expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+      expect(mockSendAuditLogExportBatchReadyEmail).toHaveBeenCalledTimes(1)
+
+      const emailArg = mockSendAuditLogExportBatchReadyEmail.mock.calls[0]![0]
+      expect(emailArg.recipientEmail).toBe("batch-admin@vendor.com.sg")
+      expect(emailArg.reportLabel).toBe("access")
+      expect(emailArg.failedSiteNames).toEqual([])
+      expect(emailArg.links).toHaveLength(2)
+      expect(emailArg.links.map((l) => l.siteName).sort()).toEqual(
+        [siteA.name, siteB.name].sort(),
+      )
+      for (const link of emailArg.links) {
+        expect(link.url).toContain(
+          "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
+        )
+      }
+
+      // Both rows are Done and stamped with the same batchEmailedAt (the
+      // durable "already sent" marker, not the advisory lock itself).
+      const rowA = await getRequest(
+        (
+          await db
+            .selectFrom("AuditLogExportRequest")
+            .where("siteId", "=", siteA.id)
+            .selectAll()
+            .executeTakeFirstOrThrow()
+        ).id,
+      )
+      const rowB = await getRequest(
+        (
+          await db
+            .selectFrom("AuditLogExportRequest")
+            .where("siteId", "=", siteB.id)
+            .selectAll()
+            .executeTakeFirstOrThrow()
+        ).id,
+      )
+      expect(rowA.status).toBe("Done")
+      expect(rowB.status).toBe("Done")
+      expect(rowA.batchEmailedAt).not.toBeNull()
+      expect(rowA.batchEmailedAt).toEqual(rowB.batchEmailedAt)
+    })
+
+    it("waits for a failing sibling to exhaust retries before sending, then reports it as failed alongside the successful site's link", async () => {
+      // Arrange: site A succeeds on the first sweep; site B's upload always
+      // fails, so it only reaches Failed (exhausting MAX_ATTEMPTS = 3) on the
+      // third sweep. `.../${siteB.id}/...` uniquely identifies site B's key
+      // among the two, so the mock can fail only that one site's uploads.
+      const batchId = randomUUID()
+      const admin = await setupUser({ email: "partial-batch@vendor.com.sg" })
+      const { site: siteA } = await setupSite()
+      const { site: siteB } = await setupSite()
+      await setupAdminPermissions({ userId: admin.id, siteId: siteA.id })
+      await setupAdminPermissions({ userId: admin.id, siteId: siteB.id })
+
+      await seedRequest({
+        siteId: siteA.id,
+        userId: admin.id,
+        reportType: "Access",
+        batchId,
+      })
+      await seedRequest({
+        siteId: siteB.id,
+        userId: admin.id,
+        reportType: "Access",
+        batchId,
+      })
+
+      mockUploadAuditLogExport.mockImplementation(async ({ key, body }) => {
+        if (key.includes(`/${siteB.id}/`)) {
+          throw new Error("s3 down for site B")
+        }
+        if (typeof body !== "string" && Symbol.asyncIterator in Object(body)) {
+          for await (const _chunk of body as AsyncIterable<unknown>) {
+            // drain
+          }
+        }
+      })
+
+      // Act: sweep 1 — site A goes Done, site B's attempt 1 fails & re-queues.
+      await processPendingAuditLogExports()
+      expect(mockSendAuditLogExportBatchReadyEmail).not.toHaveBeenCalled()
+
+      // Act: sweeps 2 and 3 — site B exhausts its retries and goes Failed.
+      await processPendingAuditLogExports()
+      expect(mockSendAuditLogExportBatchReadyEmail).not.toHaveBeenCalled()
+      await processPendingAuditLogExports()
+
+      // Assert: the batch only completes once site B is terminal too — sent
+      // exactly once, with site A's link and site B named as failed. Neither
+      // site ever got its own per-row email.
+      expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
+      expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+      expect(mockSendAuditLogExportBatchReadyEmail).toHaveBeenCalledTimes(1)
+
+      const emailArg = mockSendAuditLogExportBatchReadyEmail.mock.calls[0]![0]
+      expect(emailArg.links).toHaveLength(1)
+      expect(emailArg.links[0]?.siteName).toBe(siteA.name)
+      expect(emailArg.failedSiteNames).toEqual([siteB.name])
+    })
+
+    it("retries the combined email on a later sweep when the send fails, without reverting the already-Done rows", async () => {
+      // A transient batch-email failure must NOT permanently suppress the only
+      // combined email, and must NOT corrupt the sibling rows' export state:
+      // they are already Done before the (cross-row) email is attempted.
+      const batchId = randomUUID()
+      const admin = await setupUser({ email: "retry-batch@vendor.com.sg" })
+      const { site: siteA } = await setupSite()
+      const { site: siteB } = await setupSite()
+      await setupAdminPermissions({ userId: admin.id, siteId: siteA.id })
+      await setupAdminPermissions({ userId: admin.id, siteId: siteB.id })
+
+      await seedRequest({
+        siteId: siteA.id,
+        userId: admin.id,
+        reportType: "Access",
+        batchId,
+      })
+      await seedRequest({
+        siteId: siteB.id,
+        userId: admin.id,
+        reportType: "Access",
+        batchId,
+      })
+
+      // First send throws; subsequent sends succeed.
+      mockSendAuditLogExportBatchReadyEmail.mockRejectedValueOnce(
+        new Error("smtp down"),
+      )
+
+      // Sweep 1: both rows reach Done, the batch email is attempted and fails.
+      await processPendingAuditLogExports()
+      expect(mockSendAuditLogExportBatchReadyEmail).toHaveBeenCalledTimes(1)
+
+      const siteIds = [siteA.id, siteB.id]
+      const rowsAfterFailure = await db
+        .selectFrom("AuditLogExportRequest")
+        .where("siteId", "in", siteIds)
+        .selectAll()
+        .execute()
+      // Rows stay Done (not reverted to Pending/Failed) and the claim is
+      // released (batchEmailedAt back to null) so a later sweep can retry.
+      for (const row of rowsAfterFailure) {
+        expect(row.status).toBe("Done")
+        expect(row.batchEmailedAt).toBeNull()
+      }
+
+      // Sweep 2: no rows left to process, but the backstop finds the terminal,
+      // un-emailed batch and resends successfully.
+      await processPendingAuditLogExports()
+      expect(mockSendAuditLogExportBatchReadyEmail).toHaveBeenCalledTimes(2)
+
+      const rowsAfterRetry = await db
+        .selectFrom("AuditLogExportRequest")
+        .where("siteId", "in", siteIds)
+        .selectAll()
+        .execute()
+      for (const row of rowsAfterRetry) {
+        expect(row.status).toBe("Done")
+        expect(row.batchEmailedAt).not.toBeNull()
+      }
+      // Neither row ever fell back to its own per-row email.
+      expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
+      expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
     })
   })
 })
