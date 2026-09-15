@@ -1,4 +1,5 @@
 import type { VideoProps } from "~/interfaces"
+import { tv } from "~/lib/tv"
 import { isValidVideoUrl, VALID_VIDEO_DOMAINS } from "~/utils/validation"
 
 import { ComponentContent } from "../../internal/customCssClass"
@@ -49,6 +50,24 @@ const parseVideo = (url: string): ParsedVideo | null => {
     return null
   }
 }
+
+const videoOuterStyles = tv({
+  base: "w-full",
+  variants: {
+    isPortrait: {
+      true: "mx-auto max-w-[20.3125rem]",
+    },
+  },
+})
+
+const videoAspectStyles = tv({
+  base: "relative w-full overflow-hidden pt-[56.25%]",
+  variants: {
+    isPortrait: {
+      true: "pt-[177.78%]",
+    },
+  },
+})
 
 export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
   const parsedVideo = parseVideo(url)
@@ -102,17 +121,9 @@ export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
 
   return (
     <section className={`${ComponentContent} mt-7 first:mt-0`}>
-      <div
-        className={isPortrait ? "mx-auto w-full max-w-[20.3125rem]" : "w-full"}
-      >
+      <div className={videoOuterStyles({ isPortrait })}>
         {/* NOTE: 56.25% is a 16:9 (landscape) aspect ratio; 177.78% is a 9:16 (portrait) aspect ratio */}
-        <div
-          className={`relative w-full overflow-hidden ${
-            isPortrait ? "pt-[177.78%]" : "pt-[56.25%]"
-          }`}
-        >
-          {renderVideo()}
-        </div>
+        <div className={videoAspectStyles({ isPortrait })}>{renderVideo()}</div>
       </div>
     </section>
   )

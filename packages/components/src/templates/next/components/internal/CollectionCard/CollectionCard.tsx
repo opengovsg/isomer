@@ -4,6 +4,7 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
 import { PillTags, PlaintextTags } from "../Tags"
+import { cardImageStyles } from "./cardImageStyles"
 import { Title } from "./Title"
 
 export const CollectionCard = ({
@@ -63,7 +64,7 @@ export const CollectionCard = ({
             src={imageSrc || ""}
             alt={image.alt}
             width="100%"
-            className={`absolute left-0 h-full w-full rounded ${isContainNeeded ? "object-contain" : "object-cover"}`}
+            className={cardImageStyles({ contain: isContainNeeded })}
             assetsBaseUrl={siteAssetsBaseUrl}
           />
         </div>
