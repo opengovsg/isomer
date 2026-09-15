@@ -3,6 +3,7 @@ import { jsonObjectFrom } from "kysely/helpers/postgres"
 import { get } from "lodash-es"
 import { USER_LINKABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { SEARCH_PAGE_PERMALINK } from "~/constants/sitemap"
+import { IS_UNPUBLISH_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -716,6 +717,34 @@ export const resourceRouter = router({
           })
         }
 
+        // Block deleting anything still live. Deletion cascades (`parentId`
+        // is `onDelete: Cascade`), so a Folder/Collection needs its whole
+        // subtree checked, not just its own (always-null) publishedVersionId.
+        // Gated on the flag: with unpublish unreachable, a live resource
+        // could never become deletable, so skip the guard entirely rather
+        // than lock it out permanently.
+        if (ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+          const isContainer =
+            before.type === ResourceType.Folder ||
+            before.type === ResourceType.Collection
+
+          const isLive = isContainer
+            ? await hasPublishedDescendant(tx, {
+                siteId: Number(siteId),
+                resourceId,
+              })
+            : before.publishedVersionId !== null
+
+          if (isLive) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: isContainer
+                ? `This ${before.type === ResourceType.Folder ? "folder" : "collection"} has live pages inside it — unpublish them before deleting`
+                : "This page must be unpublished before it can be deleted",
+            })
+          }
+        }
+
         await logResourceEvent(tx, {
           siteId,
           delta: {
@@ -749,7 +778,13 @@ export const resourceRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST" })
       }
 
-      await publishResource(user.id, result, ctx.logger)
+      // Skip the rebuild when the guard above ran: it already proved nothing
+      // live was just deleted, so there's nothing for a rebuild to remove.
+      // Without the flag, a live resource can still reach here, so keep
+      // rebuilding in that case.
+      if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+        await publishResource(user.id, result, ctx.logger)
+      }
 
       // NOTE: We need to do this cast as the property is a `bigint`
       // and trpc cannot serialise it, which leads to errors
