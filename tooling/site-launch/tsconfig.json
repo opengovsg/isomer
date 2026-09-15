@@ -1,6 +1,11 @@
 {
   "extends": "@isomer/tsconfig/base.json",
   "compilerOptions": {
+    "paths": {
+      "github": ["./github.ts"],
+      "site": ["./site.ts"],
+      "utils": ["./utils.ts"]
+    },
     "outDir": "dist/cjs",
     "rootDirs": ["src"],
     "declaration": true,

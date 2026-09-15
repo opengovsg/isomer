@@ -63,8 +63,9 @@ const patchUnsupportedColumns = async () => {
 }
 
 const extractTableTypes = (source: string): string[] => {
+  // prisma-kysely emits either `export type DB = { ... };` or `export interface DB { ... }`.
   const dbBody =
-    source.match(/export type DB\s*=\s*\{([\s\S]*?)\};/)?.[1] ??
+    source.match(/export type DB\s*=\s*\{([\s\S]*?)\};?/)?.[1] ??
     source.match(/export interface DB\s*\{([\s\S]*?)\};?/)?.[1]
 
   if (!dbBody) {
@@ -73,7 +74,8 @@ const extractTableTypes = (source: string): string[] => {
 
   const tables: string[] = []
   for (const line of dbBody.split("\n")) {
-    const tableName = line.match(/^\s*(\w+)\s*:/)?.[1]
+    // Match `TableName: TableType` lines; Prisma model names are valid TS identifiers.
+    const tableName = line.match(/^\s*([A-Za-z_]\w*)\s*:/)?.[1]
     if (tableName) {
       tables.push(tableName)
     }

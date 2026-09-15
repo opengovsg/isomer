@@ -3,7 +3,8 @@
   "compilerOptions": {
     "paths": {
       "~server/*": ["../../apps/studio/src/server/*"],
-      "~prisma/*": ["../../apps/studio/prisma/*"]
+      "~prisma/*": ["../../apps/studio/prisma/*"],
+      "utils": ["./utils.ts"]
     },
     "outDir": "dist/cjs",
     "rootDirs": ["src"],
