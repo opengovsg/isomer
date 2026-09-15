@@ -5,6 +5,7 @@ import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import {
+  type NotFoundCta,
   getNotFoundCtaFromPath,
   ALL_SITES_CTA,
 } from "~/components/ErrorBoundary/getNotFoundCta"
@@ -19,7 +20,7 @@ const Custom404 = () => {
   // actually asked for. Deriving the CTA after mount keeps the first client
   // render identical to the prerendered markup instead of tripping a
   // hydration mismatch.
-  const [cta, setCta] = useState(ALL_SITES_CTA)
+  const [cta, setCta] = useState<NotFoundCta>(ALL_SITES_CTA)
 
   useEffect(() => {
     setCta(getNotFoundCtaFromPath(router.asPath))
