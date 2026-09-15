@@ -1,23 +1,14 @@
 import type { TableProps } from "~/interfaces"
 import { useId } from "react"
 import { tv } from "~/lib/tv"
+import { resolveColumnWidths } from "~/utils/getTableColumnWidths"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { Divider } from "../Divider"
 import { OrderedList } from "../OrderedList"
 import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
-import { resolveTableLayout } from "./resolveTableLayout"
 import { normalizeColspan, normalizeRowspan } from "./tableLayoutLimits"
-
-const tableStyles = tv({
-  base: "w-full border-collapse border-spacing-0 border border-base-divider-medium",
-  variants: {
-    isFixedLayout: {
-      true: "table-fixed",
-    },
-  },
-})
 
 const tableCellStyles = tv({
   base: "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top [&_li]:mb-4 [&_li]:mt-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
@@ -29,9 +20,27 @@ const tableCellStyles = tv({
   },
 })
 
-export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
+const getColumnCount = (content: TableProps["content"]): number =>
+  Math.max(
+    ...content.map((row) =>
+      row.content.reduce((sum, cell) => sum + (cell.attrs?.colspan ?? 1), 0),
+    ),
+  )
+
+export const Table = ({
+  attrs: { caption, colwidths },
+  content,
+  site,
+}: TableProps) => {
   const tableDescriptionId = useId()
-  const layout = resolveTableLayout(content)
+  // A column's width should only ever change because of an explicit resize
+  // drag, never because of how much text happens to be typed into a cell --
+  // which an equal split, rendered under `table-layout: fixed`, guarantees
+  // regardless of content. `resolveColumnWidths` falls back to that split
+  // whenever `colwidths` is missing (pre-feature content), `null` (never
+  // resized), or the wrong length (stale, from before a column add/remove
+  // was normalized) -- the same fallback the editor applies.
+  const columnWidths = resolveColumnWidths(colwidths, getColumnCount(content))
 
   return (
     <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
@@ -42,16 +51,14 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
       />
       <div className="overflow-x-auto" tabIndex={0}>
         <table
-          className={tableStyles({ isFixedLayout: layout.kind === "fixed" })}
+          className="w-full table-fixed border-collapse border-spacing-0 border border-base-divider-medium"
           aria-describedby={tableDescriptionId}
         >
-          {layout.kind === "fixed" && (
-            <colgroup>
-              {layout.columnWidths.map((width, index) => (
-                <col key={index} style={{ width }} />
-              ))}
-            </colgroup>
-          )}
+          <colgroup>
+            {columnWidths.map((width, index) => (
+              <col key={index} style={{ width: `${width}%` }} />
+            ))}
+          </colgroup>
           <tbody>
             {content.map((row, index) => {
               const TableCellTag =
