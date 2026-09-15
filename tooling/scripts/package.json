@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "egazette": "dotenv -e egazette/.env -- tsx egazette/index.ts",
+    "egazette:test": "tsx --test egazette/apps/create-static-page.test.ts",
     "isomer-admin": "dotenv -e isomer-admin/.env -- tsx isomer-admin/index.ts"
   },
   "dependencies": {
@@ -10,6 +12,7 @@
     "@aws-sdk/client-s3": "catalog:aws-sdk",
     "@inquirer/prompts": "catalog:",
     "@isomer/algolia": "workspace:*",
+    "@isomer/export-import": "workspace:*",
     "@paralleldrive/cuid2": "catalog:",
     "ajv": "catalog:",
     "dotenv": "catalog:",
