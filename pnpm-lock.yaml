@@ -1725,6 +1725,9 @@ importers:
       '@isomer/algolia':
         specifier: workspace:*
         version: link:../../packages/algolia
+      '@isomer/export-import':
+        specifier: workspace:*
+        version: link:../export-import
       '@paralleldrive/cuid2':
         specifier: 'catalog:'
         version: 3.3.0
