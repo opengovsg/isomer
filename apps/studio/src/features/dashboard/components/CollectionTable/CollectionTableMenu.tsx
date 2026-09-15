@@ -50,6 +50,7 @@ export const CollectionTableMenu = ({
         colorScheme="neutral"
         icon={<BiDotsHorizontalRounded />}
         variant="clear"
+        pointerEvents="auto"
         position="relative"
         zIndex={1}
       />

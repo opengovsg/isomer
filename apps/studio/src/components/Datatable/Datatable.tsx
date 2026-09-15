@@ -137,7 +137,11 @@ export const Datatable = <T extends RowData>({
                 >
                   {row.getVisibleCells().map((cell) => {
                     return (
-                      <Td key={cell.id} verticalAlign="center">
+                      <Td
+                        key={cell.id}
+                        verticalAlign="center"
+                        pointerEvents={isRowLink ? "none" : undefined}
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),

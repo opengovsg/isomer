@@ -55,6 +55,7 @@ export const TitleCell = ({
         fontSize="1.25rem"
         as={ResourceTypeIcon}
         color="base.content.strong"
+        pointerEvents="none"
       />
       <VStack spacing="0.25rem" align="start">
         <HStack align="center" spacing="0.5rem">
@@ -66,6 +67,7 @@ export const TitleCell = ({
             sx={{
               ...linkStyles,
               position: "static",
+              pointerEvents: "auto",
               p: 0,
               textStyle: "subhead-2",
             }}
@@ -81,6 +83,7 @@ export const TitleCell = ({
                 bgColor="utility.feedback.info-subtle"
                 color="utility.feedback.info"
                 cursor="pointer"
+                pointerEvents="auto"
                 position="relative"
                 zIndex={1}
               >
@@ -98,6 +101,7 @@ export const TitleCell = ({
             noOfLines={1}
             textStyle="caption-2"
             color="base.content.medium"
+            pointerEvents="none"
           >
             {permalink}
           </Text>

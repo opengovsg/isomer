@@ -51,6 +51,7 @@ export const ResourceTableMenu = ({
         colorScheme="neutral"
         icon={<BiDotsHorizontalRounded />}
         variant="clear"
+        pointerEvents="auto"
         position="relative"
         zIndex={1}
       />

@@ -1,5 +1,5 @@
 import type { StockFeatures } from "@tanstack/react-table"
-import { LinkOverlay } from "@chakra-ui/react"
+import { HStack, Icon, LinkOverlay, Text } from "@chakra-ui/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import {
   createColumnHelper,
@@ -7,29 +7,44 @@ import {
   useTable,
 } from "@tanstack/react-table"
 import { cleanup, render, screen } from "@testing-library/react"
+import { BiFile } from "react-icons/bi"
 import { afterEach, describe, expect, it } from "vitest"
+import { userEvent } from "vitest/browser"
 import { theme } from "~/theme"
 
 import { Datatable } from "./Datatable"
 
 interface TestRowData {
   title: string
+  permalink: string
 }
 
 const columnsHelper = createColumnHelper<StockFeatures, TestRowData>()
 const columns = columnsHelper.columns([
   columnsHelper.accessor("title", {
     header: "Title",
-    cell: ({ getValue }) => (
-      <LinkOverlay href="/test-page" sx={{ position: "static" }}>
-        {getValue()}
-      </LinkOverlay>
+    cell: ({ row }) => (
+      <HStack align="center" spacing="0.625rem">
+        <Icon
+          as={BiFile}
+          fontSize="1.25rem"
+          color="base.content.strong"
+          pointerEvents="none"
+        />
+        <LinkOverlay
+          href="/test-page"
+          sx={{ position: "static", pointerEvents: "auto" }}
+        >
+          {row.original.title}
+        </LinkOverlay>
+        <Text pointerEvents="none">{row.original.permalink}</Text>
+      </HStack>
     ),
   }),
 ])
 
 const LinkedRowTable = ({
-  data = [{ title: "Test page" }],
+  data = [{ title: "Test page", permalink: "/test-page" }],
 }: {
   data?: TestRowData[]
 }) => {
@@ -76,9 +91,39 @@ describe("Datatable linked rows", () => {
     ).toBeLessThanOrEqual(1)
   })
 
+  it("routes row clicks through the link overlay outside the title text", async () => {
+    render(<LinkedRowTable />)
+
+    const link = screen.getByRole("link", { name: "Test page" })
+    const row = link.closest("tr")
+
+    expect(row).not.toBeNull()
+    if (!row) throw new Error("Expected link to be inside a table row")
+
+    let linkClicked = false
+    link.addEventListener("click", (event) => {
+      linkClicked = true
+      event.preventDefault()
+    })
+
+    const rowBounds = row.getBoundingClientRect()
+    await userEvent.click(row, {
+      position: { x: rowBounds.width - 8, y: rowBounds.height / 2 },
+    })
+
+    expect(linkClicked).toBe(true)
+  })
+
   it("keeps the row styles that the Table theme applies to Tr", () => {
     // Arrange / Act
-    render(<LinkedRowTable data={[{ title: "First" }, { title: "Last" }]} />)
+    render(
+      <LinkedRowTable
+        data={[
+          { title: "First", permalink: "/first" },
+          { title: "Last", permalink: "/last" },
+        ]}
+      />,
+    )
 
     const [, ...bodyRows] = screen.getAllByRole("row")
     const [firstRow, lastRow] = bodyRows.map((row) => getComputedStyle(row))
