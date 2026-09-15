@@ -1,4 +1,5 @@
-FROM mcr.microsoft.com/devcontainers/javascript-node:0-18
+# 0-18
+FROM mcr.microsoft.com/devcontainers/javascript-node:0-18@sha256:ed57dd8755b4e75a0426bd10ab1d3a60a22bb21fc2e093801375990978c42fb5
 
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \

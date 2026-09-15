@@ -14,11 +14,42 @@ linkWorkspacePackages: true
 
 blockExoticSubdeps: true
 
+registries:
+  default: "https://registry.npmjs.org/"
+
 minimumReleaseAge: 1440
+
+minimumReleaseAgeIgnoreMissingTime: false
 
 minimumReleaseAgeExclude:
   # If there is a CVE, exclude it here so we can update it immediately without waiting for the minimum release age to pass.
   - "@opengovsg/*"
+
+trustPolicy: no-downgrade
+
+# 1 year: packages published before provenance was common don't retroactively need trust evidence.
+trustPolicyIgnoreAfter: 525600
+
+trustPolicyExclude:
+  # We deliberately pin algoliasearch to v4 (see catalog comment below re: egazette).
+  # The entire 4.x line has always published without provenance/trusted-publisher (verified
+  # against 4.26.0 and earlier) from long-standing listed maintainer accounts (eric-zaharia,
+  # fluf) — the "downgrade" is only relative to 5.x's newer OIDC-based publishing, not a change
+  # within 4.x itself. Not a compromise signal.
+  - "algoliasearch@4.27.0"
+  - "@algolia/client-analytics@4.27.0"
+  - "@algolia/client-common@4.27.0"
+  - "@algolia/client-personalization@4.27.0"
+  - "@algolia/client-search@4.27.0"
+  - "@algolia/logger-console@4.27.0"
+  - "@algolia/recommend@4.27.0"
+  - "@algolia/requester-browser-xhr@4.27.0"
+  - "@algolia/requester-node-http@4.27.0"
+  # Verified against GitHub: real commit (03778635) by maintainer dcastil, a genuine backport
+  # bugfix (color-mix regex) to the old 2.x line, published from a personal npm token the same
+  # day the maintainer migrated their publish workflow to GitHub Actions OIDC — hence no
+  # provenance on this one release while every release since (3.x) has it. Not a compromise.
+  - "tailwind-merge@2.6.1"
 
 publicHoistPattern:
   - "*eslint-plugin*"
