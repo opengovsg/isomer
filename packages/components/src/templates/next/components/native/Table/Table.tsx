@@ -3,6 +3,7 @@ import { useId } from "react"
 import { getTableCellBackgroundColorCss } from "~/constants/tableCellBackgroundColor"
 import { tv } from "~/lib/tv"
 import {
+  buildColgroupSpec,
   isUsableColwidths,
   resolveColumnWidths,
 } from "~/utils/getTableColumnWidths"
@@ -44,9 +45,12 @@ export const Table = ({
   const columnCount = getTableColumnCount(content)
   const layout = resolveTableLayout(content)
   const useExplicitColwidths = isUsableColwidths({ colwidths, columnCount })
+  const explicitColgroup = useExplicitColwidths
+    ? buildColgroupSpec(resolveColumnWidths(colwidths, columnCount))
+    : null
   const isFixedLayout = useExplicitColwidths || layout.kind === "fixed"
-  const columnWidths = useExplicitColwidths
-    ? resolveColumnWidths(colwidths, columnCount).map((width) => `${width}%`)
+  const columnWidths = explicitColgroup
+    ? explicitColgroup.columnWidths
     : layout.kind === "fixed"
       ? layout.columnWidths
       : null

@@ -8,7 +8,7 @@ import { act } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { ajv } from "~/utils/ajv"
 
-import { useTextEditor } from "../useTextEditor"
+import { useTextEditor } from "../../hooks/useTextEditor/useTextEditor"
 
 // Same schema and validator as EditPageDrawer.tsx.
 const validateProse = ajv.compile<ProseProps>(

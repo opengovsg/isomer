@@ -2,6 +2,7 @@ import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
 import { TableMap } from "@tiptap/pm/tables"
 
 export {
+  buildColgroupSpec,
   getEqualColumnWidths,
   resolveColumnWidths,
 } from "@opengovsg/isomer-components"

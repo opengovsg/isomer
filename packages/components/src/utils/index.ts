@@ -41,6 +41,7 @@ export {
 
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
 export {
+  buildColgroupSpec,
   getEqualColumnWidths,
   isUsableColwidths,
   resolveColumnWidths,

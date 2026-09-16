@@ -2,14 +2,10 @@ import type { NodeViewProps } from "@tiptap/react"
 import { Box } from "@chakra-ui/react"
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
 import { useRef } from "react"
-import { TableColumnResizeOverlay } from "~/features/editing-experience/hooks/useTextEditor/TableColumnResizeOverlay"
-import {
-  getColumnCount,
-  resolveColumnWidths,
-} from "~/features/editing-experience/hooks/useTextEditor/tableColumnWidths"
+import { TableCaption } from "~/features/editing-experience/components/TableCaption/TableCaption"
 import { TABLE_GUTTER_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 
-import { TableCaption } from "./TableCaption"
+import { TableColumnResizeOverlay } from "./TableColumnResizeOverlay"
 
 export const TableNodeView = ({
   node,
@@ -19,8 +15,6 @@ export const TableNodeView = ({
 }: NodeViewProps) => {
   const caption = (node.attrs.caption as string | undefined) ?? ""
   const tableRef = useRef<HTMLTableElement | null>(null)
-  const columnCount = getColumnCount(node)
-  const columnWidths = resolveColumnWidths(node.attrs.colwidths, columnCount)
 
   return (
     <Box as={NodeViewWrapper} display="flex" flexDirection="column" w="100%">
@@ -46,7 +40,6 @@ export const TableNodeView = ({
           */}
           <NodeViewContent<"table"> as="table" />
           <TableColumnResizeOverlay
-            widths={columnWidths}
             tableRef={tableRef}
             editor={editor}
             getPos={getPos}

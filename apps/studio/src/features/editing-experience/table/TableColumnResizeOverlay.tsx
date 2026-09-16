@@ -26,14 +26,12 @@ const applyHandlePositions = (
 }
 
 interface TableColumnResizeOverlayProps {
-  widths: number[]
   tableRef: RefObject<HTMLTableElement | null>
   editor: Editor
   getPos: () => number | undefined
 }
 
 export const TableColumnResizeOverlay = ({
-  widths,
   tableRef,
   editor,
   getPos,
@@ -48,7 +46,6 @@ export const TableColumnResizeOverlay = ({
     getPos,
     tableRef,
     overlayRootRef,
-    fallbackWidths: widths,
   })
 
   useLayoutEffect(() => {

@@ -5,6 +5,7 @@ import { useEditorState } from "@tiptap/react"
 import { useLayoutEffect } from "react"
 
 import {
+  buildColgroupSpec,
   getColumnCount,
   getEqualColumnWidths,
   resolveColumnWidths,
@@ -82,8 +83,11 @@ export const applyColumnWidths = (
   table: HTMLTableElement,
   columnWidths: number[],
 ) => {
+  const { tableLayout, columnWidths: widthStyles } =
+    buildColgroupSpec(columnWidths)
+
   table.style.width = "100%"
-  table.style.tableLayout = "fixed"
+  table.style.tableLayout = tableLayout
 
   let colgroup = table.querySelector("colgroup")
   if (!colgroup) {
@@ -92,21 +96,21 @@ export const applyColumnWidths = (
   }
 
   const cols = colgroup.children
-  if (cols.length !== columnWidths.length) {
+  if (cols.length !== widthStyles.length) {
     colgroup.replaceChildren(
-      ...columnWidths.map((width) => {
+      ...widthStyles.map((width) => {
         const col = document.createElement("col")
-        col.style.width = `${width}%`
+        col.style.width = width
         return col
       }),
     )
     return
   }
 
-  columnWidths.forEach((width, index) => {
+  widthStyles.forEach((width, index) => {
     const col = cols.item(index)
     if (col instanceof HTMLElement) {
-      col.style.width = `${width}%`
+      col.style.width = width
     }
   })
 }
@@ -124,7 +128,6 @@ interface UseTableLayoutSyncOptions {
   getPos: () => number | undefined
   tableRef: RefObject<HTMLTableElement | null>
   overlayRootRef: RefObject<HTMLDivElement | null>
-  fallbackWidths: number[]
 }
 
 export const useTableLayoutSync = ({
@@ -132,18 +135,17 @@ export const useTableLayoutSync = ({
   getPos,
   tableRef,
   overlayRootRef,
-  fallbackWidths,
 }: UseTableLayoutSyncOptions): number[] => {
   const liveWidths = useEditorState({
     editor,
     selector: ({ editor: current }) => {
       const tablePos = getPos()
       if (tablePos == null) {
-        return fallbackWidths
+        return []
       }
       const node = current.state.doc.nodeAt(tablePos)
       if (!node || node.type.name !== "table") {
-        return fallbackWidths
+        return []
       }
       return resolveColumnWidths(node.attrs.colwidths, getColumnCount(node))
     },

@@ -1,6 +1,16 @@
 export const getEqualColumnWidths = (columnCount: number): number[] =>
   Array.from({ length: columnCount }, () => 100 / columnCount)
 
+export interface ColgroupSpec {
+  tableLayout: "fixed"
+  columnWidths: string[]
+}
+
+export const buildColgroupSpec = (resolvedWidths: number[]): ColgroupSpec => ({
+  tableLayout: "fixed",
+  columnWidths: resolvedWidths.map((width) => `${width}%`),
+})
+
 export const isUsableColwidths = ({
   colwidths,
   columnCount,

@@ -1,6 +1,7 @@
 import type { Editor } from "@tiptap/react"
 import { describe, expect, it } from "vitest"
 
+import { buildColgroupSpec } from "../tableColumnWidths"
 import {
   applyColumnWidths,
   beginTableColumnResizeDrag,
@@ -68,5 +69,35 @@ describe("applyColumnWidths", () => {
     const cols = table.querySelectorAll("col")
     expect(cols).toHaveLength(3)
     expect(cols[0]?.style.width).toBe("34%")
+  })
+
+  it("should update existing col widths without rebuilding colgroup", () => {
+    // Arrange
+    const table = document.createElement("table")
+    applyColumnWidths(table, [50, 50])
+    const initialColgroup = table.querySelector("colgroup")
+
+    // Act
+    applyColumnWidths(table, [60, 40])
+
+    // Assert
+    expect(table.querySelector("colgroup")).toBe(initialColgroup)
+    const cols = table.querySelectorAll("col")
+    expect(cols).toHaveLength(2)
+    expect(cols[0]?.style.width).toBe("60%")
+    expect(cols[1]?.style.width).toBe("40%")
+  })
+
+  it("should use the shared colgroup spec for table layout", () => {
+    // Arrange
+    const table = document.createElement("table")
+    const spec = buildColgroupSpec([25, 75])
+
+    // Act
+    applyColumnWidths(table, [25, 75])
+
+    // Assert
+    expect(table.style.tableLayout).toBe(spec.tableLayout)
+    expect(table.querySelector("col")?.style.width).toBe(spec.columnWidths[0])
   })
 })

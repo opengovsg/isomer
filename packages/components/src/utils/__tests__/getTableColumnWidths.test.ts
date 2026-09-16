@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import {
+  buildColgroupSpec,
   getEqualColumnWidths,
   isUsableColwidths,
   resolveColumnWidths,
@@ -27,6 +28,22 @@ describe("getEqualColumnWidths", () => {
 
     // Assert
     expect(widths).toEqual([])
+  })
+})
+
+describe("buildColgroupSpec", () => {
+  it("should map resolved widths to fixed-layout percentage col styles", () => {
+    // Arrange
+    const resolvedWidths = [50, 30, 20]
+
+    // Act
+    const spec = buildColgroupSpec(resolvedWidths)
+
+    // Assert
+    expect(spec).toEqual({
+      tableLayout: "fixed",
+      columnWidths: ["50%", "30%", "20%"],
+    })
   })
 })
 
