@@ -3,7 +3,6 @@ import type { RefObject } from "react"
 import { useEditorState } from "@tiptap/react"
 import { useLayoutEffect, useRef } from "react"
 
-import { applyColumnWidths } from "./applyTableColumnWidths"
 import {
   getColumnCount,
   MIN_COLUMN_WIDTH_PX,
@@ -16,10 +15,43 @@ let columnResizeDragCount = 0
 export const isTableColumnResizeDragging = (): boolean =>
   columnResizeDragCount > 0
 
-const widthsEqual = (left: number[], right: number[] | null): boolean =>
-  right != null &&
-  left.length === right.length &&
-  left.every((width, index) => width === right[index])
+const applyColumnWidths = (table: HTMLTableElement, columnWidths: number[]) => {
+  table.style.width = "100%"
+  table.style.tableLayout = "fixed"
+
+  let colgroup = table.querySelector("colgroup")
+  if (!colgroup) {
+    colgroup = document.createElement("colgroup")
+    table.prepend(colgroup)
+  }
+
+  const cols = colgroup.children
+  if (cols.length !== columnWidths.length) {
+    colgroup.replaceChildren(
+      ...columnWidths.map((width) => {
+        const col = document.createElement("col")
+        col.style.width = `${width}%`
+        return col
+      }),
+    )
+    return
+  }
+
+  columnWidths.forEach((width, index) => {
+    const col = cols.item(index)
+    if (col instanceof HTMLElement) {
+      col.style.width = `${width}%`
+    }
+  })
+}
+
+const resolveTable = (
+  overlayRoot: HTMLDivElement | null,
+  tableRef: RefObject<HTMLTableElement | null>,
+): HTMLTableElement | null => {
+  const sibling = overlayRoot?.previousElementSibling
+  return sibling instanceof HTMLTableElement ? sibling : tableRef.current
+}
 
 const applyHandlePositions = (
   handles: (HTMLDivElement | null)[],
@@ -69,21 +101,17 @@ export const TableColumnResizeOverlay = ({
       }
       return resolveColumnWidths(node.attrs.colwidths, getColumnCount(node))
     },
-    equalityFn: widthsEqual,
+    equalityFn: (left, right) =>
+      right != null &&
+      left.length === right.length &&
+      left.every((width, index) => width === right[index]),
   })
-
-  const resolveTable = (): HTMLTableElement | null => {
-    const sibling = overlayRootRef.current?.previousElementSibling
-    return sibling instanceof HTMLTableElement ? sibling : tableRef.current
-  }
 
   useLayoutEffect(() => {
     if (isTableColumnResizeDragging()) {
       return
     }
-    const sibling = overlayRootRef.current?.previousElementSibling
-    const table =
-      sibling instanceof HTMLTableElement ? sibling : tableRef.current
+    const table = resolveTable(overlayRootRef.current, tableRef)
     if (table) {
       applyColumnWidths(table, liveWidths)
     }
@@ -139,7 +167,7 @@ export const TableColumnResizeOverlay = ({
       return
     }
 
-    const table = resolveTable()
+    const table = resolveTable(overlayRootRef.current, tableRef)
     if (!table) {
       return
     }

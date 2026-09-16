@@ -83,15 +83,6 @@ const resizeFirstColumn = async () => {
   })
 }
 
-const getTableJson = (editor: Editor): JSONContent | undefined =>
-  editor.getJSON().content?.[0]
-
-const getTableRowCount = (editor: Editor) =>
-  getTableJson(editor)?.content?.length ?? 0
-
-const getTableColumnCountFromDoc = (editor: Editor) =>
-  getTableJson(editor)?.content?.[0]?.content?.length ?? 0
-
 describe("table column-width resize", () => {
   afterEach(() => {
     vi.restoreAllMocks()
@@ -271,7 +262,9 @@ describe("table column-width resize", () => {
     })
 
     // Assert
-    expect(getTableRowCount(editor)).toBe(rowCountBefore + 1)
+    expect(editor.getJSON().content?.[0]?.content?.length ?? 0).toBe(
+      rowCountBefore + 1,
+    )
     const rows = table.querySelectorAll("tr")
     expect(rows).toHaveLength(rowCountBefore + 1)
     const lastRow = rows[rows.length - 1]
@@ -297,7 +290,10 @@ describe("table column-width resize", () => {
     })
 
     // Assert
-    expect(getTableColumnCountFromDoc(editor)).toBe(columnCountBefore + 1)
+    const tableJson: JSONContent | undefined = editor.getJSON().content?.[0]
+    expect(tableJson?.content?.[0]?.content?.length ?? 0).toBe(
+      columnCountBefore + 1,
+    )
     const colwidths =
       (editor.getJSON().content?.[0]?.attrs?.colwidths as
         | number[]
