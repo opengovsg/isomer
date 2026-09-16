@@ -139,15 +139,38 @@ describe("PageDiffModal", () => {
     renderModal(true)
 
     await waitFor(() => {
-      const iframes = document.querySelectorAll("iframe")
-      expect(iframes).toHaveLength(2)
+      expect(document.querySelectorAll("iframe")).toHaveLength(2)
     })
+
+    // Re-queried fresh each time rather than captured once: each render of
+    // `PreviewIframe` resets the underlying `<iframe>`'s `srcDoc`, which
+    // reloads its browsing context and replaces `contentDocument` — so a
+    // `body` reference grabbed before the toggle click would otherwise go
+    // stale as soon as the toggle's re-render fires.
+    const getBodies = () =>
+      Array.from(document.querySelectorAll("iframe")).map(
+        (f) => (f as HTMLIFrameElement).contentDocument?.body,
+      )
 
     const toggle = screen.getByRole("checkbox", { name: "Highlight changes" })
     // Default is on (per the approved design: highlights are on by default).
     expect(toggle).toBeChecked()
+    // `setHighlightsVisible` toggles this class on each iframe's body —
+    // check it directly rather than only the switch's own `checked`
+    // property, so this test fails if the wiring to `setHighlightsVisible`
+    // is ever broken or removed.
+    await waitFor(() => {
+      expect(
+        getBodies().every((b) => !b?.classList.contains("isomer-diff-hidden")),
+      ).toBe(true)
+    })
 
     toggle.click()
     expect(toggle).not.toBeChecked()
+    await waitFor(() => {
+      expect(
+        getBodies().every((b) => b?.classList.contains("isomer-diff-hidden")),
+      ).toBe(true)
+    })
   })
 })
