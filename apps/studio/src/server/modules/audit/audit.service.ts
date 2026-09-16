@@ -1,4 +1,7 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
+import { createBaseLogger } from "~/lib/logger"
+
+import type { BaseLogger } from "@isomer/logging"
 
 import type {
   AuditLogExportReportType,
@@ -17,6 +20,10 @@ import type {
   Version,
 } from "../database"
 import { AuditLogEvent, db, sql } from "../database"
+
+const logger: BaseLogger = createBaseLogger({
+  path: "modules/audit/audit.service",
+})
 
 type WithoutMeta<T> = Omit<T, "createdAt" | "updatedAt">
 
@@ -493,17 +500,41 @@ export const listResourceUpdates = async ({
   const hasMore = rows.length > limit
   const page = hasMore ? rows.slice(0, limit) : rows
 
-  const items = page.map((row): ResourceUpdateRow => {
-    const delta = row.delta as unknown as {
-      before: { blob: { content: IsomerSchema } }
-      after: { blob: { content: IsomerSchema } }
-    }
-    return {
-      id: row.id,
-      createdAt: row.createdAt,
-      actor: { id: row.actorId, name: row.actorName, email: row.actorEmail },
-      beforeContent: delta.before.blob.content,
-      afterContent: delta.after.blob.content,
+  const items = page.flatMap((row): ResourceUpdateRow[] => {
+    try {
+      // `delta`'s Kysely column type is `PrismaJson.AuditLogDeltaJsonContent`
+      // — an empty placeholder interface, since the column stores a
+      // different shape per `AuditLogEvent` — so it never statically matches
+      // the ResourceUpdate delta shape we expect here, and this cast has to
+      // go through `unknown`. The WHERE clauses above only prove `before`/
+      // `after` each have a `blob` KEY present; they say nothing about
+      // whether `blob.content` is actually a well-formed `IsomerSchema` (e.g.
+      // an old row written under a since-changed content-schema version).
+      // Guard the access in this try/catch so one malformed row can't 500
+      // the whole history panel — it's just dropped from the page below.
+      const delta = row.delta as unknown as {
+        before: { blob: { content: IsomerSchema } }
+        after: { blob: { content: IsomerSchema } }
+      }
+      return [
+        {
+          id: row.id,
+          createdAt: row.createdAt,
+          actor: {
+            id: row.actorId,
+            name: row.actorName,
+            email: row.actorEmail,
+          },
+          beforeContent: delta.before.blob.content,
+          afterContent: delta.after.blob.content,
+        },
+      ]
+    } catch (error) {
+      logger.error(
+        { error, auditLogId: row.id },
+        "Skipping ResourceUpdate audit log row with a malformed delta shape",
+      )
+      return []
     }
   })
 
