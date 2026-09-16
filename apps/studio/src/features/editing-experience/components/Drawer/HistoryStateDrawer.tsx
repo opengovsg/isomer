@@ -13,11 +13,17 @@ export default function HistoryStateDrawer(): JSX.Element {
   const { setDrawerState } = useEditorDrawerContext()
   const { pageId, siteId } = useQueryParse(pageSchema)
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    trpc.audit.listResourceUpdates.useInfiniteQuery(
-      { pageId, siteId, limit: PAGE_SIZE },
-      { getNextPageParam: (lastPage) => lastPage.nextOffset },
-    )
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+  } = trpc.audit.listResourceUpdates.useInfiniteQuery(
+    { pageId, siteId, limit: PAGE_SIZE },
+    { getNextPageParam: (lastPage) => lastPage.nextOffset },
+  )
 
   const rows = data?.pages.flatMap((resultPage) => resultPage.items) ?? []
 
@@ -35,7 +41,12 @@ export default function HistoryStateDrawer(): JSX.Element {
         flex={1}
       >
         {isLoading && <Text textStyle="body-2">Loading...</Text>}
-        {!isLoading && rows.length === 0 && (
+        {!isLoading && isError && (
+          <Text textStyle="body-2" color="utility.feedback.critical">
+            Something went wrong while loading page history. Please try again.
+          </Text>
+        )}
+        {!isLoading && !isError && rows.length === 0 && (
           <Text textStyle="body-2" color="base.content.medium">
             No changes yet
           </Text>
@@ -64,7 +75,7 @@ export default function HistoryStateDrawer(): JSX.Element {
             {index < rows.length - 1 && <Divider />}
           </Box>
         ))}
-        {hasNextPage && (
+        {!isError && hasNextPage && (
           <Button
             variant="link"
             size="xs"
