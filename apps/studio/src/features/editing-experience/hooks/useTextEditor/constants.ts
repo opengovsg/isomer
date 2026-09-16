@@ -45,8 +45,11 @@ import {
   type HeaderToggleCommand,
 } from "./clearTableCellBackgroundOnKindChange"
 import { selectTableCellContent } from "./selectTableCellContent"
-import { isTableColumnResizeDragging } from "./TableColumnResizeOverlay"
-import { tableColumnWidthNormalizerPlugin } from "./tableColumnWidthNormalizerPlugin"
+import {
+  createInitialTableColumnResizeStorage,
+  isTableColumnResizeDragging,
+  tableColumnWidthNormalizerPlugin,
+} from "./tableLayoutController"
 
 export { TableRow } from "@tiptap/extension-table-row"
 
@@ -174,6 +177,9 @@ export const IsomerTable = Table.extend({
       },
     }
   },
+  addStorage() {
+    return createInitialTableColumnResizeStorage()
+  },
   addProseMirrorPlugins() {
     return [
       tableColumnWidthNormalizerPlugin(),
@@ -189,7 +195,7 @@ export const IsomerTable = Table.extend({
       // Mid-drag colwidth commits should not remount the React caption/handles.
       update: ({ oldNode, newNode, updateProps }) => {
         if (
-          isTableColumnResizeDragging() &&
+          isTableColumnResizeDragging(this.editor) &&
           oldNode.content.eq(newNode.content) &&
           oldNode.attrs.caption === newNode.attrs.caption
         ) {

@@ -1,57 +1,15 @@
 import type { Editor } from "@tiptap/react"
 import type { RefObject } from "react"
-import { useEditorState } from "@tiptap/react"
 import { useLayoutEffect, useRef } from "react"
 
+import { MIN_COLUMN_WIDTH_PX, redistributeOnResize } from "./tableColumnWidths"
 import {
-  getColumnCount,
-  MIN_COLUMN_WIDTH_PX,
-  redistributeOnResize,
-  resolveColumnWidths,
-} from "./tableColumnWidths"
-
-let columnResizeDragCount = 0
-
-export const isTableColumnResizeDragging = (): boolean =>
-  columnResizeDragCount > 0
-
-const applyColumnWidths = (table: HTMLTableElement, columnWidths: number[]) => {
-  table.style.width = "100%"
-  table.style.tableLayout = "fixed"
-
-  let colgroup = table.querySelector("colgroup")
-  if (!colgroup) {
-    colgroup = document.createElement("colgroup")
-    table.prepend(colgroup)
-  }
-
-  const cols = colgroup.children
-  if (cols.length !== columnWidths.length) {
-    colgroup.replaceChildren(
-      ...columnWidths.map((width) => {
-        const col = document.createElement("col")
-        col.style.width = `${width}%`
-        return col
-      }),
-    )
-    return
-  }
-
-  columnWidths.forEach((width, index) => {
-    const col = cols.item(index)
-    if (col instanceof HTMLElement) {
-      col.style.width = `${width}%`
-    }
-  })
-}
-
-const resolveTable = (
-  overlayRoot: HTMLDivElement | null,
-  tableRef: RefObject<HTMLTableElement | null>,
-): HTMLTableElement | null => {
-  const sibling = overlayRoot?.previousElementSibling
-  return sibling instanceof HTMLTableElement ? sibling : tableRef.current
-}
+  applyColumnWidths,
+  beginTableColumnResizeDrag,
+  endTableColumnResizeDrag,
+  resolveTableElement,
+  useTableLayoutSync,
+} from "./tableLayoutController"
 
 const applyHandlePositions = (
   handles: (HTMLDivElement | null)[],
@@ -85,50 +43,17 @@ export const TableColumnResizeOverlay = ({
   const handlesRef = useRef<(HTMLDivElement | null)[]>([])
   const overlayRootRef = useRef<HTMLDivElement>(null)
 
-  // Subscribe to the editor, not the node-view props: after a column is added,
-  // TipTap may skip updateProps, so `widths` would stay stale and the extra
-  // column would collapse under table-layout:fixed.
-  const liveWidths = useEditorState({
+  const liveWidths = useTableLayoutSync({
     editor,
-    selector: ({ editor: current }) => {
-      const tablePos = getPos()
-      if (tablePos == null) {
-        return widths
-      }
-      const node = current.state.doc.nodeAt(tablePos)
-      if (!node || node.type.name !== "table") {
-        return widths
-      }
-      return resolveColumnWidths(node.attrs.colwidths, getColumnCount(node))
-    },
-    equalityFn: (left, right) =>
-      right != null &&
-      left.length === right.length &&
-      left.every((width, index) => width === right[index]),
+    getPos,
+    tableRef,
+    overlayRootRef,
+    fallbackWidths: widths,
   })
 
   useLayoutEffect(() => {
-    if (isTableColumnResizeDragging()) {
-      return
-    }
-    const table = resolveTable(overlayRootRef.current, tableRef)
-    if (table) {
-      applyColumnWidths(table, liveWidths)
-    }
     applyHandlePositions(handlesRef.current, liveWidths)
-
-    if (!table) {
-      return
-    }
-    const observer = new MutationObserver(() => {
-      if (isTableColumnResizeDragging()) {
-        return
-      }
-      applyColumnWidths(table, liveWidths)
-    })
-    observer.observe(table, { childList: true })
-    return () => observer.disconnect()
-  }, [liveWidths, tableRef])
+  }, [liveWidths])
 
   useLayoutEffect(() => {
     return () => {
@@ -167,7 +92,7 @@ export const TableColumnResizeOverlay = ({
       return
     }
 
-    const table = resolveTable(overlayRootRef.current, tableRef)
+    const table = resolveTableElement(overlayRootRef.current, tableRef)
     if (!table) {
       return
     }
@@ -178,7 +103,7 @@ export const TableColumnResizeOverlay = ({
     }
 
     event.preventDefault()
-    columnResizeDragCount += 1
+    beginTableColumnResizeDrag(editor)
 
     const startWidths = liveWidths
     const minPercent = (MIN_COLUMN_WIDTH_PX / tableWidthPx) * 100
@@ -221,7 +146,7 @@ export const TableColumnResizeOverlay = ({
       win.removeEventListener("pointerup", onPointerUp)
       stopDragRef.current = null
       cancelPendingCommit()
-      columnResizeDragCount = Math.max(0, columnResizeDragCount - 1)
+      endTableColumnResizeDrag(editor)
     }
 
     const onPointerUp = (upEvent: PointerEvent) => {
