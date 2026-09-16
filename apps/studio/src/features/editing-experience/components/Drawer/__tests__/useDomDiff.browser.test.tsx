@@ -1,7 +1,8 @@
 import type { ReactNode } from "react"
 import { render, waitFor } from "@testing-library/react"
+import { DiffDOM } from "diff-dom"
 import { useState } from "react"
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { PreviewIframe } from "../../preview/PreviewIframe"
 import { useDomDiff } from "../useDomDiff"
@@ -151,5 +152,105 @@ describe("useDomDiff", () => {
     expect(unchangedBefore?.classList.contains("isomer-diff-highlight")).toBe(
       false,
     )
+  })
+
+  // Regression pin, not a "correctness" assertion: this is the ORIGINAL
+  // combined fixture from this hook's initial draft — one paragraph's text
+  // changes ("Old paragraph" -> "New paragraph") *and* a new paragraph is
+  // appended ("Added paragraph") in the same edit, i.e. what a real Isomer
+  // page edit touching more than one block actually looks like. Per the
+  // file-level comment above, diff-dom's default heuristic is NOT
+  // content-aware across siblings once more than one difference exists at
+  // once, so this does not produce a clean removed/added pair. The
+  // assertions below pin the ACTUAL, verified-real output as of
+  // diff-dom@5.2.1 — including the parts that look wrong to a human reading
+  // the diff — so that a future diff-dom version bump or options change
+  // that alters this behavior gets caught here, and so Task 4's author has
+  // one concrete example of what a realistic multi-change diff looks like
+  // today:
+  //   - beforeDoc: "Unchanged paragraph" is untouched (no op targets it).
+  //   - beforeDoc: "Old paragraph" is marked "modified" — not "removed",
+  //     even though its content doesn't survive into the after tree.
+  //   - beforeDoc: nothing at all is marked "removed" — a real deletion
+  //     ("Old paragraph"'s content) produces no removed highlight when it
+  //     coincides with an addition elsewhere.
+  //   - afterDoc: "Unchanged paragraph" is marked "added" — WRONG/
+  //     misleading, since this paragraph's content is byte-identical to the
+  //     before tree. diff-dom anchors its structural addElement op at the
+  //     front of the child list rather than at the paragraph that's
+  //     actually new.
+  //   - afterDoc: "New paragraph" is marked "modified" (matches intuition).
+  //   - afterDoc: "Added paragraph" is marked "modified" — not "added",
+  //     even though this content did not exist in the before tree at all.
+  it("pins diff-dom's real (non-obvious) output for a realistic multi-change edit", async () => {
+    const { beforeDoc, afterDoc } = await renderDiff(
+      <div>
+        <p>Unchanged paragraph</p>
+        <p>Old paragraph</p>
+      </div>,
+      <div>
+        <p>Unchanged paragraph</p>
+        <p>New paragraph</p>
+        <p>Added paragraph</p>
+      </div>,
+    )
+
+    // "before" pane
+    const unchangedBefore = findParagraph(beforeDoc, "Unchanged paragraph")
+    expect(unchangedBefore?.classList.contains("isomer-diff-highlight")).toBe(
+      false,
+    )
+
+    const oldParagraph = findParagraph(beforeDoc, "Old paragraph")
+    expect(
+      oldParagraph?.classList.contains("isomer-diff-highlight--modified"),
+    ).toBe(true)
+
+    expect(
+      beforeDoc?.querySelectorAll(".isomer-diff-highlight--removed").length,
+    ).toBe(0)
+
+    // "after" pane
+    const unchangedAfter = findParagraph(afterDoc, "Unchanged paragraph")
+    expect(
+      unchangedAfter?.classList.contains("isomer-diff-highlight--added"),
+    ).toBe(true)
+
+    const newParagraph = findParagraph(afterDoc, "New paragraph")
+    expect(
+      newParagraph?.classList.contains("isomer-diff-highlight--modified"),
+    ).toBe(true)
+
+    const addedParagraph = findParagraph(afterDoc, "Added paragraph")
+    expect(
+      addedParagraph?.classList.contains("isomer-diff-highlight--modified"),
+    ).toBe(true)
+  })
+
+  describe("error status", () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it("surfaces an 'error' status when diff-dom throws, without crashing the hook", async () => {
+      // Force the try block in useDomDiff to throw by making the real
+      // DiffDOM#diff implementation throw once, rather than mocking the
+      // whole `diff-dom` module — this exercises useDomDiff's own
+      // try/catch, not a fake replacement of the library's behavior.
+      vi.spyOn(DiffDOM.prototype, "diff").mockImplementationOnce(() => {
+        throw new Error("boom: simulated diff-dom failure")
+      })
+
+      const { getByTestId } = render(
+        <Harness
+          beforeContent={<p>Before</p>}
+          afterContent={<p>After</p>}
+        />,
+      )
+
+      await waitFor(() => {
+        expect(getByTestId("status").textContent).toBe("error")
+      })
+    })
   })
 })
