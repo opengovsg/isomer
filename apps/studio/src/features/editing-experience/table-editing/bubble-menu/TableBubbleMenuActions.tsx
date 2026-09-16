@@ -123,6 +123,9 @@ const NONE_COLOR_SWATCH = {
   border: "#959595",
 } as const
 
+const colorSwatchLabel = (color: string) =>
+  `${color.charAt(0).toUpperCase()}${color.slice(1)}`
+
 const ColorSwatch = ({
   label,
   fill,
@@ -149,7 +152,6 @@ const ColorSwatch = ({
     borderRadius="0.25rem"
     border="none"
     aria-label={label}
-    textTransform="capitalize"
     bg={isActive ? "interaction.muted.main.active" : "transparent"}
     _hover={{
       bg: isActive
@@ -201,7 +203,7 @@ const BackgroundColorSection = ({
         {TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((color) => (
           <ColorSwatch
             key={color}
-            label={color}
+            label={colorSwatchLabel(color)}
             fill={TABLE_CELL_BACKGROUND_COLORS[color]}
             borderColor={TABLE_CELL_PALETTE_COLOR_BORDERS[color]}
             isActive={isUniform && activeColor === color}
