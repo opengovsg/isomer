@@ -39,6 +39,10 @@ interface SiderailOrderingEditorState {
   state: "siderailOrderingEditor"
 }
 
+interface HistoryDrawerState {
+  state: "history"
+}
+
 export type DrawerState =
   | RootDrawerState
   | RawJsonEditorModeDrawerState
@@ -50,3 +54,4 @@ export type DrawerState =
   | HeroEditorState
   | CollectionEditorState
   | SiderailOrderingEditorState
+  | HistoryDrawerState

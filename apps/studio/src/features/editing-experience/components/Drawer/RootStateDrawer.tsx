@@ -25,6 +25,7 @@ import { useCallback, useState } from "react"
 import {
   BiCog,
   BiData,
+  BiHistory,
   BiPin,
   BiPlus,
   BiPlusCircle,
@@ -392,6 +393,22 @@ export default function RootStateDrawer() {
       />
 
       <VStack gap="1.5rem" p="1.5rem" flex={1}>
+        <Button
+          variant="link"
+          gap="0.25rem"
+          alignSelf="flex-start"
+          onClick={() => setDrawerState({ state: "history" })}
+        >
+          <Icon
+            as={BiHistory}
+            color="interaction.main.default"
+            boxSize="1.25rem"
+          />
+          <Text textStyle="subhead-2" color="interaction.links.default">
+            View page history
+          </Text>
+        </Button>
+
         {isUserIsomerAdmin && (
           <ActivateRawJsonEditorMode
             onActivate={() => setDrawerState({ state: "rawJsonEditor" })}
