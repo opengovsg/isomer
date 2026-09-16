@@ -12,11 +12,10 @@ const clampToViewport = (el: HTMLElement) => {
 }
 
 // Popper.js positions the popover by writing `transform` directly onto its
-// `.chakra-popover__popper` ancestor — asynchronously, and (confirmed by
-// direct measurement) not necessarily within the same second the popover
-// mounts, so polling for a bounded window isn't reliable either. Instead of
-// guessing timing, watch that ancestor's `style` attribute directly and
-// (re-)clamp only when Popper actually writes a real position to it.
+// `.chakra-popover__popper` ancestor, asynchronously and not always within
+// the same tick the popover mounts, so a bounded polling window isn't
+// reliable. Watch that ancestor's `style` attribute instead and (re-)clamp
+// only once Popper actually writes a real position to it.
 const watchForPlacement = (contentEl: HTMLElement) => {
   const popperEl = contentEl.closest<HTMLElement>(POPPER_SELECTOR)
   if (!popperEl) return
@@ -41,13 +40,11 @@ const watchForPlacement = (contentEl: HTMLElement) => {
 }
 
 // Popper's flip/preventOverflow doesn't reliably keep the DatePicker's
-// calendar popover fully on-screen — it can settle at a position where the
-// popover still overflows past the viewport bottom (confirmed by direct
-// measurement). Rather than patch the vendor library's Popper config, this
-// watches for Popper's own positioning to land and caps the popover's
-// height to genuinely-available space at that point, so it scrolls
-// internally exactly when (and only when) it would otherwise run
-// off-screen.
+// calendar popover on-screen; it can settle at a position that still
+// overflows past the viewport bottom. Rather than patch Popper's config,
+// wait for its positioning to land and cap the popover's height to the
+// space actually available, so it only scrolls internally when it would
+// otherwise run off-screen.
 export const useClampDatePickerHeight = () => {
   useEffect(() => {
     const observer = new MutationObserver((mutations) => {

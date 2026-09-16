@@ -109,9 +109,9 @@ const ActionOptionRadio = forwardRef<HTMLInputElement, ActionOptionRadioProps>(
 
 type ActionOptionsInputProps = UseRadioGroupProps & {
   action: PublishOrUnpublishAction
-  // Set when "now" isn't a valid choice right now (e.g. a folder/collection
-  // landing page with other pages still live) — disables that option and
-  // shows this in place of its normal description, explaining why.
+  // Set when "now" isn't a valid choice (e.g. a folder/collection landing
+  // page with other pages still live). Disables that option and shows this
+  // in place of its normal description.
   disableNowReason?: string
 }
 

@@ -4014,7 +4014,7 @@ describe("page.router", async () => {
         eventType: AuditLogEvent.SchedulePublish,
         delta: {
           before: omit(expectedPage, ["updatedAt", "createdAt"]),
-          // NOTE: Need to convert expectedDate to ISO string as the comparison is done with the DB value which is in ISO format
+          // Convert expectedDate to ISO string since we're comparing against the DB value, which is in ISO format
           after: omit(
             {
               ...expectedPage,

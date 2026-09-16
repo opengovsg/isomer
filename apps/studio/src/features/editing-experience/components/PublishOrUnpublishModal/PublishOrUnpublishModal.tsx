@@ -45,12 +45,12 @@ interface PublishOrUnpublishModalProps extends UseDisclosureReturn {
   // Unpublish-only: whether the page has unsaved draft changes on top of its
   // published version.
   hasDraftChanges?: boolean
-  // Unpublish-only: set when this is a Folder/Collection's landing page —
-  // scheduling an unpublish here also requires its child pages to be
+  // Unpublish-only: set when this is a Folder/Collection's landing page.
+  // Scheduling an unpublish here also requires its child pages to be
   // unpublished by then. Undefined when this page isn't a container landing
   // page at all.
   containerType?: ResourceType
-  // Unpublish-only: set when "now" isn't a valid choice — some other
+  // Unpublish-only: set when "now" isn't a valid choice, because some other
   // currently-live page inside this container has no unpublish scheduled at
   // all, so an immediate unpublish would fail server-side. Scheduling is
   // still offered: once every live descendant has its own unpublish
@@ -80,8 +80,8 @@ export const PublishOrUnpublishModal = ({
   const toast = useToast()
   const utils = trpc.useUtils()
   const fireContentEditSurveyEvent = useFireContentEditSurveyEvent()
-  // Skip straight to "later" when "now" isn't an option — there's nothing
-  // else to pick.
+  // Skip straight to "later" when "now" isn't an option, since there's
+  // nothing else to pick.
   const [mode, setMode] = useState<ActionMode | undefined>(
     disableNow ? "later" : undefined,
   )
@@ -93,8 +93,8 @@ export const PublishOrUnpublishModal = ({
   const { date: dateField, time: timeField } = FIELD_NAMES[action]
 
   // Both schemas differ in shape (publishDate/publishTime vs unpublishDate/
-  // unpublishTime), so this can't be typed as a single concrete schema — it's
-  // deliberately loose here in exchange for the two flows sharing one modal.
+  // unpublishTime), so this can't be typed as a single concrete schema. It's
+  // deliberately loose here so the two flows can share one modal.
   const methods = useZodForm<typeof schedulePublishClientSchema>({
     schema: schema as typeof schedulePublishClientSchema,
     defaultValues: { pageId, siteId },
@@ -108,7 +108,7 @@ export const PublishOrUnpublishModal = ({
         siteId,
       }),
       // Publishing/unpublishing changes this resource's liveStatus, which the
-      // dashboard tables/index-page row derive from — refresh whichever of
+      // dashboard tables/index-page row derive from. Refresh whichever of
       // these is currently mounted (folder, collection item list, or index
       // page).
       utils.resource.listWithoutRoot.invalidate(),
@@ -134,8 +134,8 @@ export const PublishOrUnpublishModal = ({
       onError: (error) => {
         console.error(`Error occurred when publishing page: ${error.message}`)
         // The publish-block throws CONFLICT with an actionable message naming
-        // the redirect to remove; guards like the scheduled-unpublish
-        // ancestor lock throw PRECONDITION_FAILED — surface both verbatim
+        // the redirect to remove. Guards like the scheduled-unpublish
+        // ancestor lock throw PRECONDITION_FAILED. Surface both verbatim
         // rather than the generic failure copy.
         toast({
           status: "error",
@@ -166,7 +166,7 @@ export const PublishOrUnpublishModal = ({
       onError: (error) => {
         console.error(`Error occurred when scheduling page: ${error.message}`)
         // The scheduled-unpublish ancestor lock (and similar guards) throws
-        // PRECONDITION_FAILED with an actionable message — surface it
+        // PRECONDITION_FAILED with an actionable message. Surface it
         // verbatim rather than the generic failure copy.
         toast({
           status: "error",
@@ -195,7 +195,7 @@ export const PublishOrUnpublishModal = ({
       onError: (error) => {
         console.error(`Error occurred when unpublishing page: ${error.message}`)
         // Guards like "other pages inside are still live" throw
-        // PRECONDITION_FAILED with an actionable message — surface it
+        // PRECONDITION_FAILED with an actionable message. Surface it
         // verbatim rather than the generic failure copy.
         toast({
           status: "error",
@@ -228,7 +228,7 @@ export const PublishOrUnpublishModal = ({
         `Error occurred when scheduling unpublish: ${error.message}`,
       )
       // The "child pages won't be unpublished in time" guard throws
-      // PRECONDITION_FAILED with an actionable message — surface it
+      // PRECONDITION_FAILED with an actionable message. Surface it
       // verbatim rather than the generic failure copy.
       toast({
         status: "error",
@@ -273,7 +273,7 @@ export const PublishOrUnpublishModal = ({
   // subscribes this component to every field change, same as useWatch would.
   // Feeding that straight into the schema gives us both "is the schedule
   // complete" and the combined date in one place, instead of tracking
-  // validity as separate state and reassembling the date by hand — the
+  // validity as separate state and reassembling the date by hand: the
   // schema's own transform already does that.
   const parsedSchedule = schema.safeParse(methods.watch())
   const scheduledAt = parsedSchedule.success

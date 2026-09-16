@@ -13,7 +13,7 @@ const VALID_BASE = {
 
 describe("scheduleUnpublishClientSchema", () => {
   it("should combine unpublishDate and unpublishTime into a single scheduledAt Date", () => {
-    // Arrange — derive the time string from the future date itself so this
+    // Arrange: derive the time string from the future date itself so this
     // doesn't flake depending on the wall-clock time the test runs at.
     const unpublishDate = addMinutes(new Date(), 60)
     const unpublishTime = format(unpublishDate, "HH:mm")

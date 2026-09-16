@@ -134,7 +134,7 @@ export const schedulePublish = async ({
       resourceId: pageId,
       siteId,
     })
-    // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
+    // Fetch inside the transaction to avoid racing a concurrent update.
     const resource = await getPageById(tx, {
       resourceId: resolvedResourceId,
       siteId,

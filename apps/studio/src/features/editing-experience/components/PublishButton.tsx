@@ -34,7 +34,7 @@ const SuspendablePublishButton = ({
     currPage.scheduledAction === ScheduledAction.Unpublish
 
   // publishPageResource blocks an immediate publish while a scheduled
-  // unpublish is pending (opposite-direction conflict) — surface that here
+  // unpublish is pending (opposite-direction conflict). Surface that here
   // instead of letting the user hit the error after submitting.
   const disabledReason = isScheduledToUnpublish
     ? "This page has a scheduled unpublish. Cancel it before publishing."

@@ -76,7 +76,7 @@ export const PublishOrUnpublishNowModal = ({
       utils.page.readPage.refetch({ pageId, siteId }),
       utils.site.getLocalisedSitemap.invalidate({ resourceId: pageId, siteId }),
       // Publishing/unpublishing changes this resource's liveStatus, which the
-      // dashboard tables/index-page row derive from — refresh whichever of
+      // dashboard tables/index-page row derive from. Refresh whichever of
       // these is currently mounted (folder, collection item list, or index
       // page).
       utils.resource.listWithoutRoot.invalidate(),

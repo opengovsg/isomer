@@ -51,11 +51,10 @@ const SuspendablePageMoreActionsButton = ({
   const isIndexPage = currPage.type === ResourceType.IndexPage
 
   // Only an IndexPage can be blocked (a Folder/Collection's landing page, when
-  // other pages inside are still published) — and only when the button would
-  // otherwise be actionable, so this doesn't fire in states that are already
-  // disabled for another reason. Reusing the same query the dashboard uses to
-  // render this container's LiveStatusBadges means navigating here from the
-  // dashboard hits a warm cache instead of paying for a second round-trip.
+  // other pages inside are still published), and only when the button would
+  // otherwise be actionable, so this doesn't fire in states already disabled
+  // for another reason. Reuses the dashboard's LiveStatusBadges query so
+  // navigating here from the dashboard hits a warm cache.
   const { data: parentIndexPageInfo, isLoading: isBlockInfoLoading } =
     trpc.folder.getIndexpage.useQuery(
       { siteId, resourceId: currPage.parentId ?? "" },
@@ -69,18 +68,18 @@ const SuspendablePageMoreActionsButton = ({
   }
 
   // isIndexPage must gate both of these explicitly, not just the query's
-  // `enabled` — every child page in a folder shares the same query key as
+  // `enabled`. Every child page in a folder shares the same query key as
   // the folder's own index page (both key off `currPage.parentId`), so
   // `enabled: false` alone doesn't stop a child page from reading back
   // cached block-info left over from a prior visit to the index page (or the
   // dashboard).
   //
-  // These are two different questions with two different answers:
-  // - isBlockedFromUnpublishingNow: is anything live right now — blocks
+  // Two different questions with two different answers:
+  // - isBlockedFromUnpublishingNow: is anything live right now. Blocks
   //   "Unpublish now" (which has no grace period).
   // - isBlockedFromScheduling: would some descendant block this forever,
   //   regardless of what date is picked (live with no unpublish scheduled at
-  //   all) — blocks the "Unpublish later" flow entirely. A descendant that's
+  //   all). Blocks the "Unpublish later" flow entirely. A descendant that's
   //   merely live-but-already-scheduled-to-unpublish blocks the first but
   //   not the second.
   const isBlockedFromUnpublishingNow =

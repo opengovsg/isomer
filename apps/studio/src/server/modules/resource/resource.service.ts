@@ -1133,22 +1133,22 @@ export const getPublishedDescendantResourceIds = async (
 }
 
 // Ids of descendants that would still be live when a scheduled unpublish of
-// `resourceId` (an IndexPage) fires at `scheduledAt` — i.e. this is the
-// schedule-time analogue of getPublishedDescendantResourceIds's execution-time
-// check. A descendant is "safe" (excluded from the result) only if:
+// `resourceId` (an IndexPage) fires at `scheduledAt`. Schedule-time analogue
+// of getPublishedDescendantResourceIds's execution-time check. A descendant
+// is "safe" (excluded from the result) only if:
 //   - it's currently live AND has its own scheduled Unpublish at or before
-//     `scheduledAt` (so it'll be down by the time this one fires — the cron's
-//     depth-aware execution ordering, see schedulePublishingJob.ts, is what
-//     guarantees an exact-same-instant descendant actually lands first), or
+//     `scheduledAt` (the cron's depth-aware ordering, see
+//     schedulePublishingJob.ts, guarantees an exact-same-instant descendant
+//     lands first), or
 //   - it's currently not live AND has no scheduled Publish before
-//     `scheduledAt` (so it won't come back up before this one fires).
-// The second case matters even though the descendant isn't live right now:
-// without it, a descendant could be sitting on an already-scheduled Publish,
-// guaranteeing it'll be live again at some point — a fact fully knowable now,
-// not a race. This is intentionally conservative: a Publish scheduled to fire
-// *after* `scheduledAt` would still leave the descendant down in time, but is
-// flagged unsafe anyway rather than reasoning about relative ordering here —
-// this is only an early-feedback check, not the authoritative gate (that's
+//     `scheduledAt`.
+// The second case still matters for a descendant that isn't live right now:
+// an already-scheduled Publish means it'll be live again at some point, a
+// fact we can check now rather than guessing. This is intentionally
+// conservative: a Publish scheduled for *after* `scheduledAt` would still
+// leave the descendant down in time, but is flagged unsafe anyway rather
+// than reasoning about relative ordering here. This is only an
+// early-feedback check, not the authoritative gate (that's
 // unpublishPageResource's own execution-time check).
 // A currently-live descendant with no schedule, or one scheduled for a
 // *later* Unpublish, is unsafe; same for a currently-unpublished descendant
@@ -1549,26 +1549,23 @@ export const getMoveLockInfo = async (
 }
 
 // Tags every direct child of `resourceId` (or every top-level resource, when
-// `resourceId` is null) with its own id ("branchId"), then walks downward —
-// each descendant inherits its ancestor's tag as the recursion goes deeper.
-// Grouping by that tag at the end tells us, per child, whether it (or
-// anything nested under it, at any depth) is published — one query answers
-// this for every child at once, instead of walking one child's subtree per
-// call.
+// `resourceId` is null) with its own id ("branchId"), then walks downward so
+// each descendant inherits its ancestor's tag. Grouping by that tag tells us,
+// per child, whether it or anything nested under it is published, in one
+// query instead of walking each child's subtree separately.
 //
-// `hasLiveIndexPage` narrows that down to just the child's own immediate
-// IndexPage (one level under it): a Folder/Collection is genuinely "Live"
-// only when this is true, versus "Live · Template" when it's not published
-// but `hasLiveDescendant` is still true because something deeper is live.
+// `hasLiveIndexPage` narrows that to just the child's own immediate
+// IndexPage (one level under it): a Folder/Collection is "Live" only when
+// this is true, vs. "Live · Template" when it's not published but
+// `hasLiveDescendant` is still true because something deeper is live.
 //
-// `indexPageDraftBlobId`/`indexPageScheduledAt`/`indexPageScheduledAction` mirror
-// that same immediate IndexPage's own draft/schedule columns — a Folder/
-// Collection never carries its own draftBlobId/scheduledAt/scheduledAction,
-// so the Status badges and the dashboard status filter both need this to
-// read the container's actual draft/schedule state instead of always seeing
-// null. At most one row per branch can match (depth 1 + IndexPage), so the
-// conditional aggregates below resolve to that row's values, or null if the
-// container has no IndexPage yet.
+// `indexPageDraftBlobId`/`indexPageScheduledAt`/`indexPageScheduledAction`
+// mirror that same IndexPage's draft/schedule columns, since a Folder/
+// Collection never carries its own. The Status badges and dashboard status
+// filter need these to read the container's real draft/schedule state
+// instead of always seeing null. At most one row per branch can match
+// (depth 1 + IndexPage), so the conditional aggregates below resolve to
+// that row's values, or null if the container has no IndexPage yet.
 export const getChildLiveStatusMap = async (
   trx: SafeKysely,
   { siteId, resourceId }: { siteId: number; resourceId: string | null },

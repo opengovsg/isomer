@@ -51,7 +51,7 @@ export const CancelScheduleModal = ({
       utils.page.readPage.refetch({ pageId, siteId }),
       utils.site.getLocalisedSitemap.invalidate({ resourceId: pageId, siteId }),
       // Cancelling a schedule changes this resource's liveStatus, which the
-      // dashboard tables/index-page row derive from — refresh whichever of
+      // dashboard tables/index-page row derive from. Refresh whichever of
       // these is currently mounted (folder, collection item list, or index
       // page).
       utils.resource.listWithoutRoot.invalidate(),
@@ -59,7 +59,7 @@ export const CancelScheduleModal = ({
       utils.folder.getIndexpage.invalidate(),
     ])
   // The "cancel the scheduled action for its child pages first" guard throws
-  // PRECONDITION_FAILED with an actionable message — surface it verbatim
+  // PRECONDITION_FAILED with an actionable message. Surface it verbatim
   // rather than the generic failure copy. Both directions can hit this (see
   // cancelSchedulePublish/cancelScheduleUnpublish in page.service.ts).
   const onError = (error: {

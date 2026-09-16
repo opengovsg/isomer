@@ -56,12 +56,12 @@ const SuspendableEditingLockedOverlay = ({
       justify="center"
       // Chakra wraps every portaled element (Modal, Toast, Popover, Menu,
       // Tooltip...) in its own `chakra-portal-zIndex` container, hardcoded
-      // to z-index 40 — that wrapper establishes a stacking context, so a
+      // to z-index 40. That wrapper establishes a stacking context, so a
       // portaled component's own (much higher) theme z-index only competes
       // within it; as a unit it still sits at 40 against the rest of the
       // page. This overlay must stay below that 40 (not the "overlay"
-      // token's 1300) so any modal/toast opened while it's showing — e.g.
-      // CancelScheduleModal from the navbar's Cancel-schedule button —
+      // token's 1300) so any modal/toast opened while it's showing, e.g.
+      // CancelScheduleModal from the navbar's Cancel-schedule button,
       // still renders on top of it.
       zIndex="docked"
       px="1.5rem"
@@ -88,7 +88,7 @@ const SuspendableEditingLockedOverlay = ({
         {/* Both actions here require the same ability as the pending
             scheduled action itself (cancelSchedulePublish/Unpublish mirror
             publishPage/unpublishPage's permission), so one check covers both
-            buttons — a viewer without that ability just sees the lock
+            buttons. A viewer without that ability just sees the lock
             message with no action, matching PublishButton/
             PageMoreActionsButton's pattern elsewhere in this flow. */}
         <Can do={isScheduledToPublish ? "publish" : "unpublish"} on="Resource">
@@ -119,7 +119,7 @@ const SuspendableEditingLockedOverlay = ({
                 variant="reverse"
                 onClick={actionDisclosure.onOpen}
                 // Default reverse-variant hover is a near-white tint,
-                // invisible on this overlay's dark backdrop — match Cancel
+                // invisible on this overlay's dark backdrop. Match Cancel
                 // schedule's solid hover colour instead.
                 _hover={{
                   bg: "interaction.main.hover",
