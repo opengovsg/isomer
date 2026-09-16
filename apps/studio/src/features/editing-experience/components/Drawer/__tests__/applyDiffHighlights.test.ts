@@ -81,6 +81,33 @@ describe("applyDiffHighlights", () => {
       doc.head.querySelectorAll("#isomer-diff-highlight-styles"),
     ).toHaveLength(1)
   })
+
+  it("highlights the parent element when a route resolves to a text node", () => {
+    const textDoc = buildDoc("<p>hello</p>")
+    // body.childNodes: [0: p]
+    // p.childNodes: [0: text node "hello"]
+    applyDiffHighlights(textDoc, [{ route: [0, 0], kind: "added" }])
+
+    const p = textDoc.querySelector("p")
+    expect(p?.classList.contains("isomer-diff-highlight")).toBe(true)
+    expect(p?.classList.contains("isomer-diff-highlight--added")).toBe(true)
+    expect(p?.querySelector(".isomer-diff-badge--added")).not.toBeNull()
+  })
+
+  it("does not insert a duplicate badge when applied twice for the same route", () => {
+    applyDiffHighlights(doc, [{ route: [0, 0], kind: "added" }])
+    applyDiffHighlights(doc, [{ route: [0, 0], kind: "added" }])
+
+    const p = doc.querySelector("p")
+    expect(p?.querySelectorAll(".isomer-diff-badge")).toHaveLength(1)
+  })
+
+  it("marks the badge as aria-hidden so screen readers skip it", () => {
+    applyDiffHighlights(doc, [{ route: [0, 0], kind: "added" }])
+
+    const badge = doc.querySelector(".isomer-diff-badge")
+    expect(badge?.getAttribute("aria-hidden")).toBe("true")
+  })
 })
 
 describe("setHighlightsVisible", () => {
