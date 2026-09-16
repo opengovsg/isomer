@@ -286,12 +286,24 @@ describe("getSlotMovePlan", () => {
     },
   )
 
-  it("does not move a row beyond the table edge", () => {
-    // Arrange / Act / Assert
-    expect(getSlotMovePlan("row", rowRect(0, 2, 4), "backward")).toBeNull()
-    // Arrange / Act / Assert
-    expect(getSlotMovePlan("row", rowRect(2, 4, 4), "forward")).toBeNull()
-  })
+  it.each([
+    {
+      direction: "backward" as const,
+      rect: rowRect(0, 2, 4),
+      edge: "top",
+    },
+    {
+      direction: "forward" as const,
+      rect: rowRect(2, 4, 4),
+      edge: "bottom",
+    },
+  ])(
+    "does not move a row beyond the $edge table edge",
+    ({ direction, rect }) => {
+      // Arrange / Act / Assert
+      expect(getSlotMovePlan("row", rect, direction)).toBeNull()
+    },
+  )
 
   it.each([
     {
@@ -312,14 +324,24 @@ describe("getSlotMovePlan", () => {
     },
   )
 
-  it("does not move a column beyond the table edge", () => {
-    // Arrange / Act / Assert
-    expect(
-      getSlotMovePlan("column", columnRect(0, 2, 4), "backward"),
-    ).toBeNull()
-    // Arrange / Act / Assert
-    expect(getSlotMovePlan("column", columnRect(2, 4, 4), "forward")).toBeNull()
-  })
+  it.each([
+    {
+      direction: "backward" as const,
+      rect: columnRect(0, 2, 4),
+      edge: "left",
+    },
+    {
+      direction: "forward" as const,
+      rect: columnRect(2, 4, 4),
+      edge: "right",
+    },
+  ])(
+    "does not move a column beyond the $edge table edge",
+    ({ direction, rect }) => {
+      // Arrange / Act / Assert
+      expect(getSlotMovePlan("column", rect, direction)).toBeNull()
+    },
+  )
 })
 
 const tableMap = ({
