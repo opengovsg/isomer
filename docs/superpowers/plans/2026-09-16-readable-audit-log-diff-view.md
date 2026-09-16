@@ -13,41 +13,36 @@ Builds on: `docs/superpowers/specs/2026-09-16-readable-audit-log-history-panel-d
 
 ---
 
-## Task 1: Add the `diffdom` dependency and confirm its real shape
+## Task 1: Add the `diff-dom` dependency and confirm its real shape
 
 **Files:**
 - Modify: `apps/studio/package.json`
 
-`diffdom`'s TypeScript declarations are loosely typed (its `Diff` class is a dynamic property bag — `this[key] = value` — not a discriminated union per action), so the exact fields available per `action` aren't enforced by the type system. This step confirms the real shape by reading the installed package directly, rather than guessing.
+**Resolved (confirmed empirically against the real published package, 2026-09-16):** the correct npm package name is `diff-dom` (hyphenated), latest version `5.2.1`, exported class `DiffDOM`, import as `import { DiffDOM } from "diff-dom"`. A plain `diffdom` (no hyphen) does not exist on the npm registry — do not use it. Its `Diff` class is a dynamic property bag (`this[key] = value` in the constructor) rather than a discriminated union per action, so the exact fields available per `action` aren't enforced by the type system — but the field names (`action`, `route: number[]`, `oldValue`, `newValue`, `name`, `value`) and the 14 action strings (`addAttribute`, `modifyAttribute`, `removeAttribute`, `modifyTextElement`, `relocateGroup`, `removeElement`, `addElement`, `removeTextElement`, `addTextElement`, `replaceElement`, `modifyValue`, `modifyChecked`, `modifySelected`, `modifyComment`) were confirmed directly against the package's shipped `dist/index.js`/`dist/index.d.ts` — Task 3's code can rely on these as given, no further re-verification needed.
+
+Note: `diff-dom` is licensed LGPL-3.0. This is a normal OSS dependency consumed via `import` (not modified/redistributed as a modified library), the standard permitted LGPL use case — no action needed, just flagging for the record in case this repo has an automated license-compliance check that needs an allowlist entry.
 
 - [ ] **Step 1: Add the dependency**
 
 Open `apps/studio/package.json` and add to `dependencies` (alphabetical position), following the `pdfreader` precedent — this codebase mostly uses pnpm workspace `catalog:` references, but single-app dependencies with no catalog entry use a direct caret range:
 
 ```json
-"diffdom": "^4.0.5",
+"diff-dom": "^5.2.1",
 ```
 
-(Use whatever the latest stable major/minor actually is at install time — run `pnpm add diffdom` from `apps/studio` instead of hand-editing if you prefer; either way, land on a direct caret-range version, not a `catalog:` entry, since no other app in this monorepo needs it.)
+(Or run `pnpm add diff-dom` from `apps/studio` instead of hand-editing, then verify it landed as a direct caret-range dependency, not a `catalog:` entry, since no other app in this monorepo needs it.)
 
 Run: `pnpm install` (from repo root)
 
-- [ ] **Step 2: Read the installed type declarations**
+- [ ] **Step 2: Sanity-check the install**
 
-Run: `cat apps/studio/node_modules/diffdom/dist/index.d.ts` (or wherever `pnpm install` places it — check `apps/studio/node_modules/diffdom/package.json`'s `"types"` field if the path differs)
-
-Confirm:
-- The import is `import { DiffDOM } from "diffdom"` (not `"diff-dom"` — the npm package is published as `diffdom`, one word; double-check this from the actual installed `package.json` `"name"` field).
-- `new DiffDOM().diff(nodeA, nodeB)` returns an array of objects, each with at least `action: string` and (for most actions) `route: number[]`.
-- The action name strings actually present match this expected set: `addAttribute`, `modifyAttribute`, `removeAttribute`, `modifyTextElement`, `modifyComment`, `relocateGroup`, `removeElement`, `addElement`, `removeTextElement`, `addTextElement`, `replaceElement`, `modifyValue`, `modifyChecked`, `modifySelected`.
-
-If the real shape differs from the above (different package name, different field name for the path, e.g. `path` instead of `route`), **stop and report back** rather than silently adapting Task 2/3's code — those tasks assume `action`/`route` as written below.
+Run: `cat apps/studio/node_modules/diff-dom/package.json | grep '"name"\|"version"\|"types"'` — confirm `"name": "diff-dom"`, `"version": "5.2.1"` (or a newer patch), `"types": "dist/index.d.ts"`. This is a quick sanity check, not new discovery — the shape is already confirmed above. If anything about this contradicts the resolved facts above, stop and report back rather than proceeding.
 
 - [ ] **Step 3: Commit**
 
 ```bash
 git add apps/studio/package.json pnpm-lock.yaml
-git commit -m "chore(studio): add diffdom dependency for page diff view"
+git commit -m "chore(studio): add diff-dom dependency for page diff view"
 ```
 
 ---
@@ -416,7 +411,7 @@ Expected: FAIL — `../useDomDiff` does not exist.
 Create `apps/studio/src/features/editing-experience/components/Drawer/useDomDiff.ts`:
 
 ```ts
-import { DiffDOM } from "diffdom"
+import { DiffDOM } from "diff-dom"
 import { useEffect, useState } from "react"
 
 import type { DiffHighlight, DiffHighlightKind } from "./applyDiffHighlights"
@@ -969,7 +964,7 @@ EOF
 
 ## Self-review notes (for whoever executes this plan)
 
-- Task 1 Step 2 is a real, flagged uncertainty (diffdom's exact package name / field names weren't independently verifiable ahead of time) with an explicit instruction to stop and report if reality differs from what Tasks 2/3 assume — don't silently paper over a mismatch.
+- Task 1's package name (`diff-dom`, not `diffdom`) and field shape were empirically confirmed against the real published package before the rest of this plan was finalized — Tasks 2/3's code already reflects the corrected name throughout.
 - Task 3 Step 1's test similarly flags that the exact operation-type breakdown for a text change (single `modifyTextElement` vs a remove+add pair) is unverified until the real library runs — the fix-the-test-not-the-code instruction there is deliberate.
 - The "accepted limitation" from the design spec (no semantic move detection, e.g. `relocateGroup` just gets marked "modified" rather than reconstructed as a move) is implemented as designed in `useDomDiff.ts`'s `classify` function — don't expand scope to handle it more precisely without going back to the spec.
 - `PageDiffModal`'s `key={row.createdAt.toISOString()}` forces the whole pane tree (including both `PreviewIframe`s) to remount when a different row is viewed in the same session, so there's no risk of stale highlights from a previous row bleeding into a new one.
