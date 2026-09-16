@@ -1,20 +1,14 @@
-import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types"
-import type {
-  BaseEventPayload,
-  DropTargetLocalizedData,
-  ElementDragType,
-} from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types"
-import type { ErrorObject } from "ajv"
-import {
-  attachClosestEdge,
-  extractClosestEdge,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
-import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine"
+import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter"
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/utils/combine"
 import {
   draggable,
   dropTargetForElements,
-} from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
+} from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter"
+import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
+import { attachClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/attach-closest-edge"
+import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/extract-closest-edge"
+import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
+import type { ErrorObject } from "ajv"
 import {
   AccordionItem,
   AccordionPanel,
@@ -120,9 +114,7 @@ export const StackableNavbarItem = ({
       return
     }
 
-    const handleDrag = (
-      args: BaseEventPayload<ElementDragType> & DropTargetLocalizedData,
-    ) => {
+    const handleDrag = (args: ElementDropTargetEventBasePayload) => {
       const isDraggedItemTheSame =
         args.source.data.navbarId === getNavbarItemPath(index)
       const isDraggedItemDirectlyOver =
