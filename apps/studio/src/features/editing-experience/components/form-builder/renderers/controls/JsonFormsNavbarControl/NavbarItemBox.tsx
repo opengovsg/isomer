@@ -4,7 +4,7 @@ import {
   draggable,
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter"
-import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/types"
+import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
 import { attachClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/attach-closest-edge"
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/extract-closest-edge"
 import type { Dispatch, SetStateAction } from "react"

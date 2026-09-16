@@ -1,6 +1,6 @@
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter"
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/utils/combine"
-import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/types"
+import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/extract-closest-edge"
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
