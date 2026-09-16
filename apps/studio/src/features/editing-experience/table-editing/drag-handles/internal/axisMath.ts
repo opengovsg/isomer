@@ -1,12 +1,4 @@
-/**
- * The rect model the handles are positioned against, and every rule computed
- * from it: where a dragged slot may land, which boundary the pointer is nearest,
- * and the outer bounds of a table.
- *
- * No DOM or ProseMirror imports. Each axis passes an `AxisProjection` that
- * reads rects its own way, so the same math works for rows and columns and
- * tests can use plain numbers. `measure.ts` reads rects from the live editor.
- */
+/** Handle positioning and drop math from measured rects. No DOM or ProseMirror. */
 
 export interface Rect {
   top: number
@@ -22,18 +14,10 @@ export interface TableGeometry {
   colRects: (Rect | null)[]
 }
 
-/**
- * How one axis reads the geometry: which rect list belongs to it, and which
- * coordinate of a rect it runs along.
- */
 export interface AxisProjection {
-  /** The rects of every slot on this axis. */
   rectsOf: (geometry: TableGeometry) => (Rect | null)[]
-  /** Where a slot starts along the axis. */
   startOf: (rect: Rect) => number
-  /** How long a slot is along the axis. */
   sizeOf: (rect: Rect) => number
-  /** The pointer coordinate that matters for this axis. */
   pointerOf: (point: { x: number; y: number }) => number
 }
 
@@ -96,12 +80,7 @@ export const nearestBoundaryIndex = (
   return closest
 }
 
-/**
- * The slot index a drop lands on. Boundaries are indexed from the first movable
- * slot, so `lockMinIndex` shifts them back onto real slot indexes; landing past
- * the dragged slot's own trailing edge shifts back one more, because the slot
- * moves out of its old position on the way. A locked header axis is a floor.
- */
+/** Map pointer position to a slot index. Adjusts for lockMinIndex and the dragged slot moving. */
 export const resolveDropIndex = ({
   pointer,
   boundaries,

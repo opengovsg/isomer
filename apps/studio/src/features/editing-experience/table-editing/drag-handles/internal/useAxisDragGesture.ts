@@ -32,7 +32,7 @@ import { selectWholeSlot } from "./selection"
 export const TABLE_DRAGGING_ATTR = "data-table-drag-handles-dragging"
 
 export interface AxisDragGesture {
-  /** The gesture in flight, once it has become a drag. */
+  /** Active drag gesture, or null. */
   drag: DraggingGesture | null
   beginGesture: (
     axis: Axis,
@@ -41,14 +41,11 @@ export interface AxisDragGesture {
     rects: (Rect | null)[],
   ) => (event: ReactMouseEvent) => void
   isGestureActive: () => boolean
-  /** True when the click that follows a drop should be swallowed. */
+  /** True when the click after a drop should be ignored. */
   consumeClickSuppression: () => boolean
 }
 
-/**
- * Feeds pointer events to `dragMachine`, publishes the drag state for rendering,
- * and runs the intents the machine returns.
- */
+/** Wire pointer events to dragMachine and apply returned intents to the editor. */
 export const useAxisDragGesture = ({
   editor,
   containerRef,
@@ -61,8 +58,7 @@ export const useAxisDragGesture = ({
   onDragStateChange?: (isDragging: boolean) => void
 }): AxisDragGesture => {
   const [drag, setDrag] = useState<DraggingGesture | null>(null)
-  // The window listeners must read the current state without re-subscribing,
-  // so the machine's state lives in a ref and `drag` is derived output.
+  // stateRef holds machine state so window listeners do not resubscribe on every transition.
   const stateRef = useRef<GestureState>(IDLE_GESTURE)
   const suppressNextClickRef = useRef(false)
 
@@ -175,8 +171,7 @@ export const useAxisDragGesture = ({
 
   useEffect(() => {
     const onMouseMove = (event: MouseEvent) => {
-      // Skip the layout read when nothing is in flight. The machine would
-      // ignore the event anyway, and this fires on every mouse move.
+      // Skip layout reads when idle. This handler runs on every mousemove.
       if (!isGestureActive()) return
       const container = containerRef.current
       dispatch({

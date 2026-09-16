@@ -106,7 +106,7 @@ const ActionButton = ({
   </Button>
 )
 
-// Studio-only circle borders for palette swatches; published cells use fill.
+// Swatch border colors for the editor palette only.
 const TABLE_CELL_PALETTE_COLOR_BORDERS: Record<
   (typeof TABLE_CELL_BACKGROUND_COLOR_TOKENS)[number],
   string

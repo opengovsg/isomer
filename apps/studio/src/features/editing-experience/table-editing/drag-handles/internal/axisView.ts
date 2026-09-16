@@ -1,9 +1,4 @@
-/**
- * Row/column axis helpers that do not need the document: how a rect projects
- * onto the axis coordinate, and handle size.
- *
- * Split from `axisTableOps.ts` so layout math can run without ProseMirror.
- */
+/** Axis layout helpers that do not read the document. */
 
 import type { Axis } from "../../axis/types"
 import type { AxisProjection } from "./axisMath"

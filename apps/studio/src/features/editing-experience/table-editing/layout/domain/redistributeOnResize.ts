@@ -18,7 +18,7 @@ export const redistributeOnResize = ({
   const currentWidth = widths[columnIndex] ?? 0
   const neighborWidth = widths[neighborIndex] ?? 0
   const combinedWidth = currentWidth + neighborWidth
-  // When the pair is narrower than 2 * minPercent, min and max invert; fall back to [0, combinedWidth].
+  // When the pair is narrower than 2 * minPercent, clamp bounds to [0, combinedWidth].
   const minBound = Math.max(0, Math.min(minPercent, combinedWidth - minPercent))
   const maxBound = Math.min(
     combinedWidth,

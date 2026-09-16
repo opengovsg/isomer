@@ -3,8 +3,7 @@ import { Plugin } from "@tiptap/pm/state"
 import { getColumnCount } from "../domain/columnCount"
 import { rebalanceColwidths } from "../domain/rebalanceColwidths"
 
-// After a column add/remove, colwidths may be the wrong length. Rebalance to an
-// equal split. Skip tables that still have colwidths: null.
+// Rebalance colwidths to equal splits when column count changes. Skip tables with colwidths: null.
 export const tableColumnWidthNormalizerPlugin = () =>
   new Plugin({
     appendTransaction(transactions, _oldState, newState) {

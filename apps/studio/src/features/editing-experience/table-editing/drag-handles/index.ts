@@ -1,4 +1,3 @@
-// The public surface of this folder. Everything under `internal/` is private
-// to TableDragHandles and should not be imported from outside.
+// Only TableDragHandles is exported here. Do not import from internal/.
 export { TableDragHandles } from "./TableDragHandles"
 export type { TableDragHandlesProps } from "./TableDragHandles"

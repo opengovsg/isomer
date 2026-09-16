@@ -1,9 +1,4 @@
-/**
- * Row/column axis helpers that need the document: slot cells, selection, reorder.
- *
- * Prosemirror-tables adapter. Only file here that knows TableMap addresses
- * rows and columns differently.
- */
+/** ProseMirror-tables adapter for slot selection and reorder. */
 
 import type { Node as ProseMirrorNode, ResolvedPos } from "@tiptap/pm/model"
 import type { Command } from "@tiptap/pm/state"

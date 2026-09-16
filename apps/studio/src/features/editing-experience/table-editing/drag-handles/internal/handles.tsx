@@ -32,8 +32,7 @@ const handleBaseStyle = {
   transition: "background-color 0.15s, color 0.15s",
 } as const
 
-// While a drag is in flight `tiptap.scss` forces `grabbing` on everything in
-// the editor container, so only the idle cursors are set here.
+// tiptap.scss sets grabbing on the whole editor during drag, so idle cursors are set here only.
 const handleChrome = (isActive: boolean, isLocked: boolean) => ({
   cursor: isLocked ? "pointer" : "grab",
   sx: {
@@ -50,7 +49,7 @@ const handleChrome = (isActive: boolean, isLocked: boolean) => ({
   },
 })
 
-/** Sits in the gutter beside the slot it controls, centred on its length. */
+/** Gutter handle for one row or column slot. */
 export const AxisHandle = ({
   axis,
   rect,

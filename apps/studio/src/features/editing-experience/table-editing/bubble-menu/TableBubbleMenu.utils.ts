@@ -181,6 +181,6 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   })
 }
 
-// Hide the menu while a Chakra/modal dialog has focus.
+// Hide while a modal dialog has focus.
 export const isEditorModalOpen = () =>
   document.querySelector('[role="dialog"][aria-modal="true"]') != null

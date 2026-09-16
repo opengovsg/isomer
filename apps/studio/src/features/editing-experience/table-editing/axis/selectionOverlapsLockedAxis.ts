@@ -2,13 +2,13 @@ import type { MappedTable } from "./mappedTable"
 import type { Axis } from "./types"
 import { hasHeaderColumn, hasHeaderRow } from "./headerDetection"
 
-/** selectedRect() fields needed for header overlap checks (no live EditorView). */
+/** selectedRect() fields used for header overlap checks. */
 export interface TableHeaderOverlapRect extends MappedTable {
   top: number
   left: number
 }
 
-/** Withhold delete/move when the selection overlaps a header axis. */
+/** True when the selection overlaps a locked header row or column. */
 export const selectionOverlapsLockedAxis = (
   rect: TableHeaderOverlapRect,
   axis: Axis,

@@ -41,11 +41,7 @@ export interface TableDragHandlesProps {
   onDragStateChange?: (isDragging: boolean) => void
 }
 
-/**
- * Row and column handles rendered in the gutter around every table, for
- * selecting an axis or dragging it to a new position. Positioned absolutely
- * against `containerRef`, which must be a positioned ancestor of the editor.
- */
+/** Gutter handles for selecting and reordering rows/columns. containerRef must be positioned. */
 export const TableDragHandles = ({
   editor,
   containerRef,
@@ -96,7 +92,7 @@ export const TableDragHandles = ({
     return rects.map((rect, index) => {
       if (!rect) return null
       const isActive =
-        // A multi-slot selection leaves every handle passive.
+        // Multi-slot selections do not highlight individual handles.
         (selected.length === 1 && selected.includes(index)) ||
         (drag?.axis === axis &&
           drag.tablePos === geometry.pos &&

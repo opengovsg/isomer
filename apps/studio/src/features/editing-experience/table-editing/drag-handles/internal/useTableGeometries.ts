@@ -11,10 +11,7 @@ import {
 
 const EMPTY_GEOMETRIES: TableGeometry[] = []
 
-/**
- * Row and column rects for every table in the document, in container
- * coordinates, kept in step with editing, scrolling and layout changes.
- */
+/** Row and column rects for every table, updated on edit, scroll, and resize. */
 export const useTableGeometries = (
   editor: TiptapEditor | null,
   containerRef: RefObject<HTMLElement>,
@@ -61,7 +58,7 @@ export const useTableGeometries = (
     measure()
     observeLayout()
     const raf = requestAnimationFrame(onEditorChange)
-    // `transaction` covers document updates too, so one listener is enough.
+    // `transaction` also covers document updates.
     editor.on("transaction", onEditorChange)
     window.addEventListener("resize", measure)
     const container = containerRef.current

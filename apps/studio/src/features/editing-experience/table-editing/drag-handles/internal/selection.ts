@@ -11,7 +11,7 @@ export interface SelectionHandleTarget {
   cols: number[]
 }
 
-/** Selects the whole row or column at `index`, mirroring a handle click. */
+/** Select the whole row or column at index. Same as clicking the handle. */
 export const selectWholeSlot = (
   editor: TiptapEditor,
   tablePos: number,
@@ -30,7 +30,7 @@ export const selectWholeSlot = (
   editor.view.focus()
 }
 
-/** Appends a slot to the end of the axis, mirroring an add-pill click. */
+/** Append a slot at the end of the axis. Same as clicking the add pill. */
 export const addSlotAfter = (
   editor: TiptapEditor,
   tablePos: number,
@@ -49,10 +49,7 @@ export const addSlotAfter = (
   chain.addColumnAfter().run()
 }
 
-/**
- * The row or column indexes a full-axis CellSelection covers. Returns null for
- * anything else, so partial cell selections leave every handle passive.
- */
+/** Row or column indexes covered by a full-axis CellSelection, or null for partial selections. */
 export const getSelectionHandleTarget = (
   editor: TiptapEditor,
 ): SelectionHandleTarget | null => {

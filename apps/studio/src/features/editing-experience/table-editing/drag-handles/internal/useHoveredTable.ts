@@ -6,12 +6,7 @@ import type { TableGeometry } from "./axisMath"
 import { getTableBounds } from "./axisMath"
 import { viewportPointToContainerPoint } from "./measure"
 
-/**
- * Position of the table whose gutter contains the pointer, or null. Geometry is
- * held in container coordinates and the pointer arrives in viewport ones, so
- * the pointer is converted in through the container's scroll offset once and
- * hit-tested against every table's bounds.
- */
+/** Table pos under the pointer, or null. Converts viewport coords to container coords first. */
 export const findHoveredTablePos = ({
   geometries,
   clientX,
@@ -50,11 +45,7 @@ export const findHoveredTablePos = ({
   return match?.pos ?? null
 }
 
-/**
- * Position of the table the pointer is over, including the gutter that holds
- * the handles and add pills. Null while a gesture is in flight so the add pills
- * do not flicker mid-drag.
- */
+/** Hovered table pos, including gutter. Null during drag so add pills do not flicker. */
 export const useHoveredTable = (
   geometries: TableGeometry[],
   containerRef: RefObject<HTMLElement>,

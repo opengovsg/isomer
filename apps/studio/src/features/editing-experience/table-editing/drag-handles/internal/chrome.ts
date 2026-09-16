@@ -1,7 +1,4 @@
-/**
- * How the handles and add pills look. Private to `TableDragHandles`. Gutter
- * sizes are shared via `utils/tableEditorChrome.ts`.
- */
+/** Handle and add-pill sizing for TableDragHandles. Gutter sizes live in chrome/tableEditorChrome.ts. */
 
 import { TABLE_CHROME_THICKNESS_PX } from "~/features/editing-experience/table-editing/chrome/tableEditorChrome"
 

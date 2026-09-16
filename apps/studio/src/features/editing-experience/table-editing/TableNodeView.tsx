@@ -34,10 +34,7 @@ export const TableNodeView = ({
           position="relative"
           w="100%"
         >
-          {/*
-            TipTap appends a tbody (contentDOMElementTag) into this table.
-            Colgroup is applied via DOM so React does not replace that tbody.
-          */}
+          {/* Colgroup is applied via DOM so React does not replace TipTap's tbody. */}
           <NodeViewContent<"table"> as="table" />
           <TableColumnResizeOverlay
             tableRef={tableRef}

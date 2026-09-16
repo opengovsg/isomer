@@ -2,7 +2,7 @@ import type { MappedTable } from "./mappedTable"
 import type { Axis } from "./types"
 import { hasHeaderColumn, hasHeaderRow } from "./headerDetection"
 
-/** Minimum movable slot index. Locked header slots sit below this floor. */
+/** First slot index that can move. Returns 1 when that axis has a locked header row or column. */
 export const getAxisLockMinIndex = (
   mapped: MappedTable,
   axis: Axis,

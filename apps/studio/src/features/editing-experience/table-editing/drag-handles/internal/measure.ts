@@ -1,10 +1,4 @@
-/**
- * Reads table geometry out of a live editor: finds every table, measures its
- * rows and columns, and converts between viewport and container coordinates.
- *
- * This is the only part of the module that needs a real DOM. The rules built
- * from its output live in `axisMath.ts`.
- */
+/** Measure table row/column rects from the live editor DOM. Output is used by axisMath.ts. */
 
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
 import type { Editor as TiptapEditor } from "@tiptap/react"
@@ -133,14 +127,7 @@ const sameGeometry = (
   rectListsEqual(a.rowRects, b.rowRects) &&
   rectListsEqual(a.colRects, b.colRects)
 
-/**
- * Chooses what to publish after a fresh measurement.
- *
- * Measurement runs on every transaction, scroll and resize, and almost always
- * produces the same numbers. Handing back the previous array when nothing moved
- * keeps handles mounted and stops the effects keyed on the geometry identity
- * from re-subscribing.
- */
+/** Reuse the previous geometry array when rects are unchanged so dependent effects do not re-run. */
 export const reconcileGeometries = (
   previous: TableGeometry[],
   next: TableGeometry[],

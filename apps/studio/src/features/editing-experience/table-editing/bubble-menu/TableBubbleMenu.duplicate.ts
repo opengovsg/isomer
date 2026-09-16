@@ -12,15 +12,10 @@ import {
 import { selectionOverlapsLockedAxis } from "~/features/editing-experience/table-editing/axis"
 
 /**
- * Duplicate selected rows/columns with cell content preserved.
- *
- * prosemirror-tables (via `@tiptap/pm/tables`) ships `addRow` / `addColumn` but
- * no duplicate. Those commands insert empty cells (`createAndFill`). The insert
- * loops below mirror that package's TableMap handling; we reference source content
- * instead and flatten merges along the duplicate axis.
+ * Duplicate selected rows/columns with cell content.
+ * prosemirror-tables has addRow/addColumn but not duplicate; these loops follow its TableMap logic.
  *
  * @see https://github.com/ProseMirror/prosemirror-tables/blob/v1.8.5/src/commands.ts
- *      (`addRow`, `addColumn`)
  */
 
 interface TableInfo {
@@ -215,7 +210,7 @@ const selectBlockAndDispatch = ({
   editor.commands.focus()
 }
 
-// Same TableMap loop as prosemirror-tables `addRow`, but references source content.
+// TableMap loop from prosemirror-tables addRow, copying source cell content.
 const insertDuplicateRow = ({
   tr,
   info: { map, tableStart, table },
@@ -275,8 +270,8 @@ const insertDuplicateRow = ({
   return tr
 }
 
-// Same TableMap loop as prosemirror-tables `addColumn`, but references source content.
-// Refreshes the map each row because column inserts shift later positions.
+// TableMap loop from prosemirror-tables addColumn, copying source cell content.
+// Recompute the map each row because column inserts shift later positions.
 const insertDuplicateColumn = ({
   tr,
   tablePos,

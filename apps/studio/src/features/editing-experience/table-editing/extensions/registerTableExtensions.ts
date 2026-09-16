@@ -71,12 +71,11 @@ export const IsomerTable = Table.extend({
       createTableSelectionBorderPlugin(),
     ]
   },
-  // Caption + gutter (for drag-handle chrome) plus percent colgroup/resize.
-  // TipTap's TableView cannot host the caption or percentage widths.
+  // Custom node view for caption, gutter, and percent colwidths. TipTap TableView does not support these.
   addNodeView() {
     return ReactNodeViewRenderer(TableNodeView, {
       contentDOMElementTag: "tbody",
-      // Mid-drag colwidth commits should not remount the React caption/handles.
+      // Skip remount during colwidth drag so caption and handles stay mounted.
       update: ({ oldNode, newNode, updateProps }) => {
         if (
           isTableColumnResizeDragging(this.editor) &&

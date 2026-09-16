@@ -1,12 +1,4 @@
-/**
- * Press-and-drag rules for row and column handles, as a pure `(state, event)`
- * transition.
- *
- * A press starts *pending*; it becomes a *drag* after the pointer moves far
- * enough, unless the slot is locked. Release while pending selects the slot.
- * Release while dragging reorders. No DOM, editor, or React here.
- * `useAxisDragGesture` feeds events and runs the returned intents.
- */
+/** Pure `(state, event)` reducer for row/column handle press, drag, and drop. */
 
 import type { Axis } from "../../axis/types"
 import type { AxisProjection, Rect, TableGeometry } from "./axisMath"
@@ -15,7 +7,6 @@ import { collectAxisBoundaries, geometryAt, resolveDropIndex } from "./axisMath"
 /** How far the pointer must travel before a press counts as a drag. */
 export const DRAG_THRESHOLD_PX = 4
 
-/** What both live phases of a gesture remember about the slot being handled. */
 interface GestureSubject {
   axis: Axis
   tablePos: number
@@ -59,13 +50,12 @@ export type GestureEvent =
       type: "move"
       clientX: number
       clientY: number
-      /** Null when the container has gone away and cannot be measured. */
+      /** Null when the container is missing. */
       containerPoint: { x: number; y: number } | null
     }
   | { type: "release" }
   | { type: "geometryChanged"; geometries: TableGeometry[] }
 
-/** Work for the caller to carry out against the editor, in order. */
 export type GestureIntent =
   | { type: "selectSlot"; axis: Axis; tablePos: number; index: number }
   | {
@@ -84,8 +74,7 @@ export interface GestureTransition {
 
 const NO_INTENTS: GestureIntent[] = []
 
-// Returning the same state object signals "nothing moved", so the caller can
-// skip publishing a render.
+// Reuse the same state object when nothing changed so React skips an update.
 const unchanged = (state: GestureState): GestureTransition => ({
   state,
   intents: NO_INTENTS,
@@ -101,7 +90,7 @@ const reducePendingMove = (
   const dx = event.clientX - state.startClientX
   const dy = event.clientY - state.startClientY
   if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return unchanged(state)
-  // Header rows and columns reorder like body slots; types are normalized on drop.
+  // Header rows and columns reorder like body slots. Cell types are fixed on drop.
   if (!event.containerPoint) return unchanged(state)
 
   const { startClientX: _x, startClientY: _y, ...subject } = state
@@ -126,8 +115,7 @@ const reduceDraggingMove = (
   return { state: { ...state, pointer }, intents: NO_INTENTS }
 }
 
-// A resize mid-drag moves every boundary, so re-derive them from the new
-// geometry rather than dropping against stale positions.
+// Recompute drop boundaries when table geometry changes mid-drag.
 const reduceGeometryChanged = (
   state: DraggingGesture,
   geometries: TableGeometry[],
@@ -157,8 +145,7 @@ const reduceDraggingRelease = (state: DraggingGesture): GestureTransition => {
   })
   const { axis, tablePos, from } = state
 
-  // The drop is followed by a click on the handle, which would otherwise
-  // re-select the slot the pointer happens to be over.
+  // Drop triggers a click on the handle; suppress it so we do not re-select the slot under the pointer.
   const intents: GestureIntent[] = [{ type: "suppressNextClick" }]
   if (to !== from) intents.push({ type: "moveSlot", axis, tablePos, from, to })
   intents.push({ type: "selectSlot", axis, tablePos, index: to })
@@ -172,7 +159,7 @@ export const reduceGesture = (
 ): GestureTransition => {
   switch (event.type) {
     case "press":
-      // A fresh press abandons whatever was in flight.
+      // A fresh press resets any previous gesture.
       return {
         state: {
           phase: "pending",
