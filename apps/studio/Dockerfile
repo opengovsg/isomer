@@ -68,6 +68,12 @@ RUN corepack enable && corepack install -g pnpm@12.0.0
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml .
 COPY --from=builder /app/out/pnpm-workspace.yaml .
+RUN echo "=== ENV VAR NAMES ONLY (npm/pnpm related) ===" \
+    && env | grep -iE '^(npm|pnpm|corepack|node_auth)' | cut -d= -f1 | sort \
+    && echo "=== PNPM CONFIG (registry-related) ===" \
+    && (pnpm config list --json | grep -iE 'registry' || true) \
+    && echo "=== NPMRC FILES PRESENT ===" \
+    && (find / -xdev -iname ".npmrc" 2>/dev/null | grep -v node_modules || echo "none found")
 RUN pnpm install --frozen-lockfile
 
 # Build the project
