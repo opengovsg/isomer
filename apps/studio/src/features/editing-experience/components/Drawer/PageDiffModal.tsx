@@ -24,6 +24,7 @@ import { setHighlightsVisible } from "./applyDiffHighlights"
 import { useDomDiff } from "./useDomDiff"
 
 export interface PageDiffModalRow {
+  id: string
   createdAt: Date
   actor: { name: string }
   beforeContent: IsomerSchema
@@ -75,7 +76,7 @@ export const PageDiffModal = ({
     <Modal size="full" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent height="100vh" overflow="hidden">
-        <Flex direction="column" h="full" key={row.createdAt.toISOString()}>
+        <Flex direction="column" h="full" key={row.id}>
           <Flex
             justify="space-between"
             align="center"

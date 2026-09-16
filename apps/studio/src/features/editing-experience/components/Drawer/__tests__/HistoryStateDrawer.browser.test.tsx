@@ -1,6 +1,6 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { theme } from "~/theme"
@@ -240,8 +240,13 @@ describe("HistoryStateDrawer", () => {
     screen.getByRole("button", { name: "View changes" }).click()
 
     // Assert
-    await waitFor(() => {
-      expect(screen.queryByText("Alice")).not.toBeNull()
-    })
+    // Scoped to the dialog itself (not just "Alice" appearing anywhere —
+    // that text is already rendered unconditionally in the row list, so an
+    // unscoped assertion would pass even if the click handler did nothing).
+    // The highlight-toggle checkbox only exists once `PageDiffModal` mounts.
+    const dialog = await screen.findByRole("dialog")
+    expect(
+      within(dialog).getByRole("checkbox", { name: "Highlight changes" }),
+    ).not.toBeNull()
   })
 })
