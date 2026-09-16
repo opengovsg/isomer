@@ -88,6 +88,7 @@ export const recordUserLogin = async ({
     delta: {
       before: {
         ...verificationToken,
+        expires: new Date(verificationToken.expires),
         attempts: verificationToken.attempts + 1,
       },
       after: null,

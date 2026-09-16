@@ -11,7 +11,7 @@ import { env } from "~/env.mjs"
 import { AuditLogEvent, db } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
 
-import { toSessionVerificationToken } from "../session"
+import { toSessionVerificationToken } from "../../session"
 import { singpassRouter } from "../singpass.router"
 import * as SingpassService from "../singpass.service"
 

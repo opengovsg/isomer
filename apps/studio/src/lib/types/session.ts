@@ -8,7 +8,7 @@ type CurrentUserId = Tagged<User["id"], "CurrentUserId">
 type PotentialUserId = Tagged<User["id"], "PotentialUserId">
 
 // iron-session v9 rejects Date objects at seal time; store timestamps instead.
-export type SessionVerificationToken = {
+export interface SessionVerificationToken {
   identifier: string
   token: string
   attempts: number
