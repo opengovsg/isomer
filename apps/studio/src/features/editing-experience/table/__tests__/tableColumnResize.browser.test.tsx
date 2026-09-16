@@ -122,7 +122,7 @@ describe("table column-width resize", () => {
     })
   })
 
-  it("only changes the dragged column and its direct neighbour during a live drag, and persists on release", async () => {
+  it("only changes the dragged column and its direct neighbour during a live drag", async () => {
     // Arrange
     const consoleErrorSpy = vi.spyOn(console, "error")
     const editor = await renderEditor()
@@ -167,8 +167,39 @@ describe("table column-width resize", () => {
       100,
       5,
     )
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
+  })
+
+  it("persists resized column widths to the document on release", async () => {
+    // Arrange
+    const consoleErrorSpy = vi.spyOn(console, "error")
+    const editor = await renderEditor()
+    act(() => {
+      editor.commands.insertTable({ rows: 2, cols: 3, withHeaderRow: true })
+    })
+
+    const table = await waitFor(() => {
+      const element = document.querySelector("table")
+      expect(element).not.toBeNull()
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return element!
+    })
+
+    const firstHandle = document.querySelector(
+      '[data-testid="isomer-table-resize-handle"][data-column-index="0"]',
+    )
+    expect(firstHandle).not.toBeNull()
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const handle = firstHandle!
 
     // Act
+    act(() => {
+      dispatchPointer(handle, "pointerdown", 100)
+    })
+    act(() => {
+      dispatchPointer(window, "pointermove", 140)
+    })
+    const duringDragWidths = getColWidths(table)
     act(() => {
       dispatchPointer(window, "pointerup", 140)
     })
@@ -187,8 +218,6 @@ describe("table column-width resize", () => {
       // CSS width strings have less precision than doc attrs.
       expect(width).toBeCloseTo(duringDragWidths[index] ?? 0, 2)
     })
-
-    // Assert
     expect(consoleErrorSpy).not.toHaveBeenCalled()
   })
 

@@ -20,7 +20,7 @@ const createEditorWithTableStorage = (
   }) as Editor
 
 describe("tableLayoutController drag storage", () => {
-  it("should track drag state on editor storage", () => {
+  it("should mark editor storage as dragging when a resize drag begins", () => {
     // Arrange
     const storage = createInitialTableColumnResizeStorage()
     const editor = createEditorWithTableStorage(storage)
@@ -31,6 +31,13 @@ describe("tableLayoutController drag storage", () => {
     // Assert
     expect(isTableColumnResizeDragging(editor)).toBe(true)
     expect(storage.columnResizeDragCount).toBe(1)
+  })
+
+  it("should clear drag state from editor storage when a resize drag ends", () => {
+    // Arrange
+    const storage = createInitialTableColumnResizeStorage()
+    const editor = createEditorWithTableStorage(storage)
+    beginTableColumnResizeDrag(editor)
 
     // Act
     endTableColumnResizeDrag(editor)
