@@ -43,7 +43,7 @@ export const Table = ({
   const tableDescriptionId = useId()
   const columnCount = getTableColumnCount(content)
   const layout = resolveTableLayout(content)
-  const useExplicitColwidths = isUsableColwidths({ colwidths, columnCount })
+  const useExplicitColwidths = isUsableColwidths(colwidths, columnCount)
   const isFixedLayout = useExplicitColwidths || layout.kind === "fixed"
   const columnWidths = useExplicitColwidths
     ? resolveColumnWidths(colwidths, columnCount).map((width) => `${width}%`)

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
   getEqualColumnWidths,
+  isUsableColwidths,
   resolveColumnWidths,
 } from "~/utils/getTableColumnWidths"
 
@@ -85,5 +86,43 @@ describe("resolveColumnWidths", () => {
 
     // Assert
     expect(result).toEqual([50, 30, 20])
+  })
+})
+
+describe("isUsableColwidths", () => {
+  it("should return false when colwidths is null", () => {
+    // Arrange
+    const colwidths = null
+    const columnCount = 3
+
+    // Act
+    const result = isUsableColwidths(colwidths, columnCount)
+
+    // Assert
+    expect(result).toBe(false)
+  })
+
+  it("should return false when the length does not match the column count", () => {
+    // Arrange
+    const colwidths = [50, 30]
+    const columnCount = 3
+
+    // Act
+    const result = isUsableColwidths(colwidths, columnCount)
+
+    // Assert
+    expect(result).toBe(false)
+  })
+
+  it("should return true when every entry is a number and the length matches", () => {
+    // Arrange
+    const colwidths = [50, 30, 20]
+    const columnCount = 3
+
+    // Act
+    const result = isUsableColwidths(colwidths, columnCount)
+
+    // Assert
+    expect(result).toBe(true)
   })
 })

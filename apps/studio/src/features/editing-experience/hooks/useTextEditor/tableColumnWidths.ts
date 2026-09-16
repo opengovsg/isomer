@@ -12,9 +12,6 @@ export const MIN_COLUMN_WIDTH_PX = 25
 export const getColumnCount = (node: ProseMirrorNode): number =>
   node.firstChild ? TableMap.get(node).width : 0
 
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(Math.max(value, min), max)
-
 // Handle at columnIndex moves width only between that column and columnIndex + 1.
 // Caller must ensure columnIndex + 1 < widths.length.
 export const redistributeOnResize = ({
@@ -39,7 +36,11 @@ export const redistributeOnResize = ({
     Math.max(minPercent, combinedWidth - minPercent),
   )
 
-  const targetWidth = clamp(currentWidth + deltaPercent, minBound, maxBound)
+  // Keep targetWidth within [minBound, maxBound].
+  const targetWidth = Math.min(
+    Math.max(currentWidth + deltaPercent, minBound),
+    maxBound,
+  )
 
   const result = [...widths]
   result[columnIndex] = targetWidth

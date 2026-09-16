@@ -20,6 +20,7 @@ export class IsomerTableView implements NodeView {
   colgroup: HTMLTableColElement
   contentDOM: HTMLTableSectionElement
   handleContainer: HTMLDivElement
+  private handles: HTMLDivElement[] = []
   private stopDrag: (() => void) | null = null
   private pendingCommitFrame: number | null = null
 
@@ -106,6 +107,7 @@ export class IsomerTableView implements NodeView {
 
   private renderHandles(widths: number[]) {
     this.handleContainer.innerHTML = ""
+    this.handles = []
     if (widths.length < 2) {
       return
     }
@@ -127,6 +129,20 @@ export class IsomerTableView implements NodeView {
         this.startDrag(event, i)
       })
       this.handleContainer.appendChild(handle)
+      this.handles.push(handle)
+    }
+  }
+
+  private updateHandlePositions(widths: number[]) {
+    if (this.handles.length !== widths.length - 1) {
+      this.renderHandles(widths)
+      return
+    }
+
+    let cumulative = 0
+    for (let i = 0; i < widths.length - 1; i++) {
+      cumulative += widths[i] ?? 0
+      this.handles[i]!.style.left = `calc(${cumulative}% - 4px)`
     }
   }
 
@@ -172,7 +188,7 @@ export class IsomerTableView implements NodeView {
       const widths = computeWidths(moveEvent)
       // Update colgroup immediately for responsive drag feedback.
       this.renderColgroup(widths)
-      this.renderHandles(widths)
+      this.updateHandlePositions(widths)
 
       // Commit to the doc once per animation frame so the side-by-side preview
       // (TipTapProseComponent via editor.onUpdate) tracks the drag.

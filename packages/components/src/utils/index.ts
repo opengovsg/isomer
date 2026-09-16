@@ -42,5 +42,6 @@ export {
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
 export {
   getEqualColumnWidths,
+  isUsableColwidths,
   resolveColumnWidths,
 } from "./getTableColumnWidths"
