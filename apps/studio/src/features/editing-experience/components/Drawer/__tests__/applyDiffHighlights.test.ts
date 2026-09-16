@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
 import {
   applyDiffHighlights,
@@ -94,7 +94,7 @@ describe("applyDiffHighlights", () => {
     expect(p?.querySelector(".isomer-diff-badge--added")).not.toBeNull()
   })
 
-  it("does not insert a duplicate badge when applied twice for the same route", () => {
+  it("does not insert a duplicate badge when applied twice for the same route and kind", () => {
     applyDiffHighlights(doc, [{ route: [0, 0], kind: "added" }])
     applyDiffHighlights(doc, [{ route: [0, 0], kind: "added" }])
 
@@ -102,11 +102,56 @@ describe("applyDiffHighlights", () => {
     expect(p?.querySelectorAll(".isomer-diff-badge")).toHaveLength(1)
   })
 
+  it("replaces the previous highlight and badge when the same route is re-applied with a different kind", () => {
+    applyDiffHighlights(doc, [{ route: [0, 0], kind: "removed" }])
+    applyDiffHighlights(doc, [{ route: [0, 0], kind: "modified" }])
+
+    const p = doc.querySelector("p")
+    expect(p?.classList.contains("isomer-diff-highlight--modified")).toBe(
+      true,
+    )
+    expect(p?.classList.contains("isomer-diff-highlight--removed")).toBe(
+      false,
+    )
+    expect(p?.querySelectorAll(".isomer-diff-badge")).toHaveLength(1)
+    expect(p?.querySelector(".isomer-diff-badge--modified")).not.toBeNull()
+    expect(p?.querySelector(".isomer-diff-badge--removed")).toBeNull()
+  })
+
   it("marks the badge as aria-hidden so screen readers skip it", () => {
     applyDiffHighlights(doc, [{ route: [0, 0], kind: "added" }])
 
     const badge = doc.querySelector(".isomer-diff-badge")
     expect(badge?.getAttribute("aria-hidden")).toBe("true")
+  })
+})
+
+// These two tests use the real global `document` (not one built via
+// `document.implementation.createHTMLDocument`, which always has a null
+// `defaultView` in jsdom) so they actually exercise the
+// `getComputedStyle`-based branch of the positioning fix, rather than
+// only ever hitting its detached-document fallback.
+describe("applyDiffHighlights positioning (real jsdom document)", () => {
+  afterEach(() => {
+    document.body.innerHTML = ""
+  })
+
+  it("sets position: relative on an element with no explicit position", () => {
+    document.body.innerHTML = "<p>hello</p>"
+
+    applyDiffHighlights(document, [{ route: [0, 0], kind: "added" }])
+
+    const p = document.querySelector("p")
+    expect(p?.style.position).toBe("relative")
+  })
+
+  it("leaves an element's existing non-static position untouched", () => {
+    document.body.innerHTML = '<p style="position: absolute;">hello</p>'
+
+    applyDiffHighlights(document, [{ route: [0, 0], kind: "added" }])
+
+    const p = document.querySelector("p")
+    expect(p?.style.position).toBe("absolute")
   })
 })
 
