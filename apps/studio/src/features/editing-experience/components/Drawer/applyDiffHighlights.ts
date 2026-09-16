@@ -8,7 +8,6 @@ export interface DiffHighlight {
 const STYLE_ELEMENT_ID = "isomer-diff-highlight-styles"
 
 const HIGHLIGHT_CSS = `
-.isomer-diff-highlight { position: relative; }
 .isomer-diff-highlight--added { background-color: rgba(37, 99, 235, 0.18) !important; }
 .isomer-diff-highlight--removed { background-color: rgba(217, 119, 6, 0.18) !important; }
 .isomer-diff-highlight--modified { background-color: rgba(124, 58, 237, 0.18) !important; }
@@ -71,6 +70,33 @@ function ensureHighlightStylesInjected(doc: Document): void {
   doc.head.appendChild(style)
 }
 
+function hasDirectBadgeChild(element: HTMLElement): boolean {
+  return Array.from(element.children).some((child) =>
+    child.classList.contains("isomer-diff-badge"),
+  )
+}
+
+/**
+ * Establishes a positioning context for the badge's `position: absolute`
+ * placement, but only if the element doesn't already have one — forcibly
+ * setting `position: relative` on an arbitrary page element can silently
+ * reposition any `position: absolute` descendants that were relying on a
+ * further-up ancestor, which would corrupt the very preview we're
+ * rendering. When the element's computed style is unavailable (e.g. a
+ * detached document with no `defaultView`, as in unit tests), we can't
+ * check first, so we degrade to always setting it.
+ */
+function ensurePositioningContext(element: HTMLElement): void {
+  const view = element.ownerDocument.defaultView
+  if (!view) {
+    element.style.position = "relative"
+    return
+  }
+  if (view.getComputedStyle(element).position === "static") {
+    element.style.position = "relative"
+  }
+}
+
 /**
  * Resolves each highlight's route against `doc.body` and injects a
  * highlight class + badge at that node. Routes that don't resolve to an
@@ -92,10 +118,14 @@ export function applyDiffHighlights(
       "isomer-diff-highlight",
       `isomer-diff-highlight--${kind}`,
     )
+    ensurePositioningContext(element)
+
+    if (hasDirectBadgeChild(element)) continue
 
     const badge = doc.createElement("span")
     badge.className = `isomer-diff-badge isomer-diff-badge--${kind}`
     badge.textContent = BADGE_TEXT[kind]
+    badge.setAttribute("aria-hidden", "true")
     element.insertBefore(badge, element.firstChild)
   }
 }
