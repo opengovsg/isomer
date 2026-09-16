@@ -70,10 +70,25 @@ function ensureHighlightStylesInjected(doc: Document): void {
   doc.head.appendChild(style)
 }
 
-function hasDirectBadgeChild(element: HTMLElement): boolean {
-  return Array.from(element.children).some((child) =>
-    child.classList.contains("isomer-diff-badge"),
-  )
+/**
+ * Removes any highlight class and badge previously applied by
+ * `applyDiffHighlights` from `element`, so a repeated call for the same
+ * route (whether re-applying the same kind or switching to a different
+ * one) always converges on exactly one correct highlight + badge rather
+ * than accumulating stale classes/badges from earlier calls.
+ */
+function clearPreviousHighlight(element: HTMLElement): void {
+  element.classList.remove("isomer-diff-highlight")
+  for (const className of Array.from(element.classList)) {
+    if (className.startsWith("isomer-diff-highlight--")) {
+      element.classList.remove(className)
+    }
+  }
+  for (const child of Array.from(element.children)) {
+    if (child.classList.contains("isomer-diff-badge")) {
+      child.remove()
+    }
+  }
 }
 
 /**
@@ -114,13 +129,13 @@ export function applyDiffHighlights(
     const element = toHighlightableElement(node)
     if (!element) continue
 
+    clearPreviousHighlight(element)
+
     element.classList.add(
       "isomer-diff-highlight",
       `isomer-diff-highlight--${kind}`,
     )
     ensurePositioningContext(element)
-
-    if (hasDirectBadgeChild(element)) continue
 
     const badge = doc.createElement("span")
     badge.className = `isomer-diff-badge isomer-diff-badge--${kind}`
