@@ -181,7 +181,7 @@ catalog:
 
 catalogs:
   atlaskitPragmaticDnd:
-    "@atlaskit/pragmatic-drag-and-drop": ^2.0.2
+    "@atlaskit/pragmatic-drag-and-drop": ^3.1.0
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^2.2.0
   "aws-sdk":
     "@aws-sdk/client-acm": ^3.1129.0
