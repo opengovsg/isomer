@@ -12,6 +12,7 @@ export {
   createChildrenPagesComparator,
   formatBytes,
   DGS_REQUEST_MAX_BYTES,
+  getAskgovIdFromString,
   getEqualColumnWidths,
   resolveColumnWidths,
 } from "./utils"
