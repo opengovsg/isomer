@@ -47,7 +47,7 @@ describe("resolveColumnWidths", () => {
   })
 
   it("should fall back to an equal split when the length doesn't match the column count", () => {
-    // Arrange: stale from before a column was added, not yet normalized.
+    // Arrange
     const colwidths = [50, 30, 20]
 
     // Act

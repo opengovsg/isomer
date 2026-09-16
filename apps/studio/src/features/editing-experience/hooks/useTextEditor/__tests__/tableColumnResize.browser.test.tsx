@@ -10,16 +10,13 @@ import { ajv } from "~/utils/ajv"
 
 import { useTextEditor } from "../useTextEditor"
 
-// Same schema + validator EditPageDrawer.tsx uses to decide whether the
-// editor's content can be handed to the prose editor at all.
+// Same schema and validator as EditPageDrawer.tsx.
 const validateProse = ajv.compile<ProseProps>(
   getComponentSchema({ component: "prose" }),
 )
 
-// `useTextEditor` is wired through `~/utils/trpc` transitively via other
-// editing-experience modules; this test never calls a trpc procedure, but
-// the module reads `env.mjs` (`process.env`) at import time, which doesn't
-// exist under Vitest Browser Mode's real-browser runtime.
+// useTextEditor imports ~/utils/trpc, which reads env.mjs at load time.
+// Vitest Browser Mode has no process.env, so mock trpc even though this test never calls it.
 vi.mock("~/utils/trpc", () => ({ trpc: {} }))
 
 const TestEditor = ({ onReady }: { onReady: (editor: Editor) => void }) => {
@@ -59,11 +56,7 @@ describe("table column-width resize", () => {
   })
 
   it("produces a schema-valid document for a freshly inserted, unresized table", async () => {
-    // Arrange: a table that has never been dragged -- every cell's colwidth
-    // is TipTap's declared default (null), not an absent key. This is the
-    // exact shape EditPageDrawer.tsx re-validates on every subsequent
-    // transaction (e.g. clicking Bold), so it must pass on its own, with no
-    // resize interaction involved at all.
+    // Arrange: unresized table with colwidth null on every cell.
     const editor = await renderEditor()
 
     // Act
@@ -117,7 +110,7 @@ describe("table column-width resize", () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const handle = firstHandle!
 
-    // Act: drag the first boundary 40px to the right.
+    // Act: drag the first boundary 40px right.
     act(() => {
       dispatchPointer(handle, "pointerdown", 100)
     })
@@ -125,9 +118,7 @@ describe("table column-width resize", () => {
       dispatchPointer(window, "pointermove", 140)
     })
 
-    // Assert: live preview shows column 0 grown and column 1 (its direct
-    // neighbour) shrunk by the same amount, column 2 untouched, and the
-    // table's total width hasn't silently drifted off 100%.
+    // Assert: column 0 grows, column 1 shrinks, column 2 unchanged; total stays 100%.
     const duringDragWidths = getColWidths(tableEl)
     expect(duringDragWidths[0]).toBeGreaterThan(initialWidths[0] ?? 0)
     expect(duringDragWidths[1]).toBeLessThan(initialWidths[1] ?? 0)
@@ -142,8 +133,7 @@ describe("table column-width resize", () => {
       dispatchPointer(window, "pointerup", 140)
     })
 
-    // Assert: the commit persisted into the table node's own attrs, matching
-    // what was shown live, and the doc still sums to 100.
+    // Assert: persisted colwidths match the live preview and sum to 100%.
     const json = editor.getJSON()
     const tableJson: JSONContent | undefined = json.content?.[0]
     const persistedWidths: number[] =
@@ -154,23 +144,16 @@ describe("table column-width resize", () => {
       5,
     )
     persistedWidths.forEach((width, index) => {
-      // Only to 2 decimal places: duringDragWidths comes from the CSS
-      // `style.width` string, which the browser serializes with limited
-      // precision, unlike the raw float stored in the doc attrs.
+      // CSS width strings have less precision than doc attrs.
       expect(width).toBeCloseTo(duringDragWidths[index] ?? 0, 2)
     })
 
-    // Assert: no unexpected errors were logged during the whole interaction.
+    // Assert
     expect(consoleErrorSpy).not.toHaveBeenCalled()
   })
 
   it("commits mid-drag widths into the document (not just the DOM) so a live preview can track the drag", async () => {
-    // Arrange: this is the regression test for the "preview only updates on
-    // release" gap -- consumers like the page editor's side-by-side preview
-    // only re-render off committed transactions (`editor.onUpdate`), not off
-    // this NodeView's own DOM. Mid-drag widths are dispatched throttled to
-    // one commit per animation frame, so this test waits a frame before
-    // asserting.
+    // Arrange: preview re-renders from editor.onUpdate, not this NodeView's DOM.
     const editor = await renderEditor()
     act(() => {
       editor.commands.insertTable({ rows: 2, cols: 3, withHeaderRow: true })
@@ -180,10 +163,7 @@ describe("table column-width resize", () => {
       (editor.getJSON().content?.[0]?.attrs?.colwidths as
         | number[]
         | undefined) ?? []
-    // Force a history-group boundary so the drag's own undo step can be
-    // measured in isolation from `insertTable`'s -- without this, both
-    // happen within the history plugin's default 500ms grouping window and
-    // would otherwise be merged into a single undoable event.
+    // Arrange: close history so insertTable and the drag are separate undo steps.
     act(() => {
       editor.view.dispatch(closeHistory(editor.state.tr))
     })
@@ -196,7 +176,7 @@ describe("table column-width resize", () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const handle = firstHandle!
 
-    // Act: press down and move, but do not release.
+    // Act: pointerdown and pointermove, no pointerup yet.
     act(() => {
       dispatchPointer(handle, "pointerdown", 100)
     })
@@ -209,15 +189,12 @@ describe("table column-width resize", () => {
       )
     })
 
-    // Assert: the document already reflects the mid-drag widths, before any
-    // pointerup has fired.
+    // Assert: doc attrs updated before pointerup; mid-drag commit did not add an undo step.
     const midDragWidths: number[] =
       (editor.getJSON().content?.[0]?.attrs?.colwidths as
         | number[]
         | undefined) ?? []
     expect(midDragWidths[0]).toBeGreaterThan(initialWidths[0] ?? 0)
-    // The mid-drag commit was dispatched with `addToHistory: false`, so it
-    // must not have added a new undo step on top of `insertTable`'s.
     expect(undoDepth(editor.state)).toBe(depthBeforeDrag)
 
     // Act: release the drag.
@@ -225,7 +202,7 @@ describe("table column-width resize", () => {
       dispatchPointer(window, "pointerup", 140)
     })
 
-    // Assert: the whole drag collapses into exactly one undoable step.
+    // Assert: one undo step for the whole drag.
     expect(undoDepth(editor.state)).toBe(depthBeforeDrag + 1)
   })
 })

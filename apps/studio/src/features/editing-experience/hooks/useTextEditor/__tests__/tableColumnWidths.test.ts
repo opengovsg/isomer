@@ -20,7 +20,7 @@ describe("getEqualColumnWidths", () => {
   })
 
   it("should return an empty array without throwing when columnCount is 0", () => {
-    // Arrange: the table's last column was just deleted, leaving no columns.
+    // Arrange
     const columnCount = 0
 
     // Act
@@ -49,7 +49,7 @@ describe("resolveColumnWidths", () => {
   })
 
   it("should fall back to an equal split when the length doesn't match the column count", () => {
-    // Arrange: stale from before a column was added, not yet normalized.
+    // Arrange
     const colwidths = [50, 30, 20]
 
     // Act
@@ -98,8 +98,6 @@ describe("redistributeOnResize", () => {
     // Assert
     expect(result[0]).toBeCloseTo(37, 5)
     expect(result[1]).toBeCloseTo(13, 5)
-    // Columns 2 and 3 are untouched -- only the dragged column and its
-    // direct neighbour ever change.
     expect(result[2]).toBe(25)
     expect(result[3]).toBe(25)
     expect(result.reduce((sum, width) => sum + width, 0)).toBeCloseTo(100, 6)
@@ -120,13 +118,12 @@ describe("redistributeOnResize", () => {
     // Assert
     expect(result[0]).toBeCloseTo(40, 5)
     expect(result[1]).toBeCloseTo(40, 5)
-    // Column 2 is not the dragged column's neighbour, so it's untouched.
     expect(result[2]).toBe(20)
     expect(result.reduce((sum, width) => sum + width, 0)).toBeCloseTo(100, 6)
   })
 
   it("should affect the neighbour to the right of the dragged handle, not column 0", () => {
-    // Arrange: dragging the boundary between columns 1 and 2.
+    // Arrange
     const widths = [50, 30, 20]
 
     // Act
@@ -173,8 +170,7 @@ describe("redistributeOnResize", () => {
       minPercent: 10,
     })
 
-    // Assert: the pair combines for 50, so column 0 can grow to at most 40
-    // before column 1 hits the 10% floor. Columns 2 and 3 are untouched.
+    // Assert
     expect(result[0]).toBeCloseTo(40, 5)
     expect(result[1]).toBeCloseTo(10, 5)
     expect(result[2]).toBe(25)

@@ -90,7 +90,6 @@ describe("Table colgroup", () => {
     // Assert
     expect(html).toContain("table-fixed")
     expect(html).toContain("<colgroup>")
-    // SSR <col> with inline width; trailing /> is optional in React markup.
     const colWidths = [...html.matchAll(/<col style="width:([^"]+)"\/?>/g)].map(
       (match) => match[1],
     )
@@ -198,7 +197,6 @@ describe("Table colgroup", () => {
     // Assert
     expect(html).not.toContain("table-fixed")
     expect(html).not.toContain("<colgroup>")
-    // No <col> tags at all when colgroup is omitted.
     expect(html).not.toMatch(/<col[\s>]/)
   })
 

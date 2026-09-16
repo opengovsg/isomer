@@ -123,12 +123,8 @@ export const TableSchema = Type.Object(
         title: "Table caption",
         description: "The caption of the table",
       }),
-      // One entry per column, by index -- not a per-cell field, since a
-      // column's width belongs to the table, not to any particular cell.
-      // Optional (older content predates this field) and nullable as a
-      // whole (not yet resized) -- but once populated, every entry is a
-      // number: the editor only ever writes a full array or `null`, never a
-      // partial one.
+      // One width per column on table attrs. Optional on old content. null until resized.
+      // When set, every entry is a number (full array or null, never partial).
       colwidths: Type.Optional(
         Type.Union([
           Type.Array(

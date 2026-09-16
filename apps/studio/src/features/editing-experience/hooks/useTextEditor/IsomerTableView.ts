@@ -8,14 +8,9 @@ import {
   resolveColumnWidths,
 } from "./tableColumnWidths"
 
-// Replaces TipTap's stock TableView (see @tiptap/extension-table/src/table/TableView.ts)
-// because that view's colgroup rendering hardcodes every column width as `${px}px` with
-// no unit override hook, which can't represent this feature's percentage-of-table model
-// at all. This view renders the same colgroup/tbody DOM shape, but computes widths as
-// percentages (stored on the table node's own `colwidths` attribute, one entry per
-// column) and owns the resize-drag interaction directly, rather than reusing
-// prosemirror-tables' own columnResizing plugin (whose live-drag preview is DOM-only,
-// per-column, and grows/shrinks the table -- not what's needed here either).
+// TipTap TableView hardcodes column widths in px. This view reads percent widths
+// from the table node's colwidths attribute and handles resize drags without
+// prosemirror-tables' columnResizing plugin.
 export class IsomerTableView implements NodeView {
   node: ProseMirrorNode
   view: EditorView
@@ -136,9 +131,7 @@ export class IsomerTableView implements NodeView {
   }
 
   private startDrag(event: PointerEvent, columnIndex: number) {
-    // this.stopDrag is only non-null while a drag is in flight, so this also
-    // blocks a second pointerdown (e.g. on another handle) from starting an
-    // overlapping drag before the first one's pointerup/destroy clears it.
+    // stopDrag is set for the duration of a drag, so a second pointerdown cannot start another.
     if (!this.view.editable || this.stopDrag) {
       return
     }
@@ -177,20 +170,13 @@ export class IsomerTableView implements NodeView {
 
     const onPointerMove = (moveEvent: PointerEvent) => {
       const widths = computeWidths(moveEvent)
-      // Update this view's own DOM immediately so the drag itself feels
-      // responsive, independent of the throttled commit below.
+      // Update colgroup immediately for responsive drag feedback.
       this.renderColgroup(widths)
       this.renderHandles(widths)
 
-      // Also dispatch into the document -- not just this NodeView's own DOM
-      // -- so consumers that only react to committed transactions (e.g. the
-      // page editor's side-by-side preview, which re-renders off
-      // `editor.onUpdate` -> `previewPageState`, see TipTapProseComponent.tsx)
-      // track the drag live instead of jumping only on release. Throttled to
-      // one dispatch per animation frame, since that preview's re-render is
-      // wrapped in `flushSync` and would otherwise run once per raw
-      // pointermove. `addToHistory: false` keeps every intermediate frame out
-      // of the undo stack -- only the pointerup commit is undoable.
+      // Commit to the doc once per animation frame so the side-by-side preview
+      // (TipTapProseComponent via editor.onUpdate) tracks the drag.
+      // addToHistory: false keeps only the pointerup commit undoable.
       cancelPendingCommit()
       this.pendingCommitFrame = win.requestAnimationFrame(() => {
         this.pendingCommitFrame = null
@@ -220,9 +206,7 @@ export class IsomerTableView implements NodeView {
     options: { addToHistory?: boolean } = {},
   ) {
     const tablePos = this.getPos()
-    // undefined if this table node was removed from the doc (undo, concurrent
-    // edit, etc.) before this fires -- commits can arrive async via the
-    // requestAnimationFrame callback in onPointerMove.
+    // getPos() is undefined if the table node was removed before this runs (e.g. undo).
     if (tablePos == null) {
       return
     }

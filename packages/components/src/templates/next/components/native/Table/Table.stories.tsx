@@ -2254,10 +2254,7 @@ export const ColumnWidths: Story = {
   },
 }
 
-// Demonstrates the equal-split fallback in resolveColumnWidths: when
-// colwidths doesn't match the table's actual column count (e.g. stale data
-// left over from before a column was added/removed and rebalanced), the
-// widths are ignored and columns are rendered with an equal split instead.
+// Stale colwidths (wrong length) fall back to an equal split via resolveColumnWidths.
 export const ColumnWidthsFallback: Story = {
   args: {
     attrs: {
@@ -2454,10 +2451,7 @@ export const ListInTable: Story = {
   },
 }
 
-/**
- * Staggered merges: row 1 spans cols 2-3, row 2 spans cols 1-2 (rowspan 2).
- * No cell sits alone in column 2. Auto layout collapses that track without colgroup.
- */
+// Row 1 spans cols 2-3; row 2 spans cols 1-2 with rowspan 2. Column 2 has no solo cell.
 export const StaggeredMergesPhantomColumn: Story = {
   args: {
     attrs: {

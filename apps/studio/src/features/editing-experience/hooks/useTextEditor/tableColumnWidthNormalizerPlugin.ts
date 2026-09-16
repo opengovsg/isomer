@@ -6,15 +6,8 @@ const tableColumnWidthNormalizerPluginKey = new PluginKey(
   "isomerTableColumnWidthNormalizer",
 )
 
-// Whenever a column is added or removed on a table that's already been
-// resized at least once, the stored `colwidths` array no longer matches the
-// table's actual column count, breaking the "always sums to 100%"
-// invariant. This rebalances it back to an equal split whenever that
-// happens, keeping the editor's doc state and the published schema in
-// agreement -- IsomerTableView's own resolveColumnWidths fallback shows the
-// same equal split immediately, but only this transaction actually persists
-// it. Tables that have never been resized (colwidths still null) are left
-// alone; there's nothing to keep in sync yet.
+// After a column add/remove, colwidths may be the wrong length. Rebalance to an
+// equal split. Skip tables that still have colwidths: null.
 export const tableColumnWidthNormalizerPlugin = () =>
   new Plugin({
     key: tableColumnWidthNormalizerPluginKey,
