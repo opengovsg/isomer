@@ -73,6 +73,8 @@ const staggeredMergesContent = [
   },
 ]
 
+// SSR markup from renderToStaticMarkup: <col style="width:…%"> or <col style="width:…%" />.
+// Optional slash matches React's self-closing void-element output across test environments.
 const getColWidths = (html: string) =>
   [...html.matchAll(/<col style="width:([^"]+)"\/?>/g)].map((match) => match[1])
 
