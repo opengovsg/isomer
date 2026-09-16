@@ -139,7 +139,7 @@ const ColorSwatch = ({
   <Button
     variant="unstyled"
     display="inline-flex"
-    align="center"
+    alignItems="center"
     justifyContent="center"
     p="0.25rem"
     h="auto"
