@@ -5,7 +5,7 @@ import { getTimezoneAbbreviation } from "~/lib/dates"
 
 import type { PublishOrUnpublishAction } from "./ActionOptionsInput"
 
-const UNPUBLISH_WINDOW_MINUTES = 10
+export const UNPUBLISH_WINDOW_MINUTES = 10
 
 interface ScheduleBannerProps {
   action: PublishOrUnpublishAction

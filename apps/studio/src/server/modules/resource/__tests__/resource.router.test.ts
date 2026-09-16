@@ -4156,6 +4156,130 @@ describe("resource.router", async () => {
       expect(actual).not.toBeUndefined()
     })
 
+    it("should block deleting a page that is scheduled for a future publish", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt: new Date("2999-01-01T00:00:00Z"),
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.delete({ resourceId: page.id, siteId: site.id })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "This page is scheduled for a future publish or unpublish — cancel the schedule before deleting",
+        }),
+      )
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
+    })
+
+    it("should block deleting a page that is scheduled for a future unpublish", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: new Date("2999-01-01T00:00:00Z"),
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.delete({ resourceId: page.id, siteId: site.id })
+
+      // Assert — still-published also blocks deletion, so either check can
+      // trigger; just confirm it's rejected rather than pinning the message.
+      await expect(result).rejects.toThrow(TRPCError)
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
+    })
+
+    it("should block deleting a folder with a descendant page scheduled for a future publish", async () => {
+      // Arrange — the folder's own row never carries a scheduledAt; the
+      // nested page does.
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "scheduled-page",
+        scheduledAt: new Date("2999-01-01T00:00:00Z"),
+        scheduledAction: ScheduledAction.Publish,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "This folder has pages inside it scheduled for a future publish or unpublish — cancel the schedule before deleting",
+        }),
+      )
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
+    })
+
+    it("should allow deleting a folder whose descendants have no pending schedule", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+
+      // Act
+      const result = await caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actual).toBeUndefined()
+    })
+
     it("should soft-delete redirects pointing to the deleted page", async () => {
       // Arrange — a live redirect whose destination references the page
       const { page, site } = await setupPageResource({ resourceType: "Page" })
