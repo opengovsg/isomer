@@ -9,6 +9,7 @@ import {
 } from "react"
 import {
   getAxisLockMinIndex,
+  getTableAt,
   normalizeHeaderTypesAfterMove,
   shouldNormalizeHeaderAxis,
 } from "~/features/editing-experience/table-editing/axis"
@@ -22,7 +23,7 @@ import type {
   GestureIntent,
   GestureState,
 } from "./dragMachine"
-import { AXIS_TABLE_OPS, getTableAt } from "./axisTableOps"
+import { AXIS_TABLE_OPS } from "./axisTableOps"
 import { AXIS_VIEW } from "./axisView"
 import { IDLE_GESTURE, reduceGesture } from "./dragMachine"
 import { viewportPointToContainerPoint } from "./measure"

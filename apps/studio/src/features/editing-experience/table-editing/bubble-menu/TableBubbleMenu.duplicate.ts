@@ -9,12 +9,7 @@ import {
   TableMap,
   tableNodeTypes,
 } from "@tiptap/pm/tables"
-import {
-  selectionOverlapsLockedColumn,
-  selectionOverlapsLockedRow,
-} from "~/features/editing-experience/table-editing/axis"
-
-import {} from "./TableBubbleMenu.utils"
+import { selectionOverlapsLockedAxis } from "~/features/editing-experience/table-editing/axis"
 
 /**
  * Duplicate selected rows/columns with cell content preserved.
@@ -378,7 +373,7 @@ export const duplicateSelectedRows = (editor: Editor): void => {
   if (!isInTable(editor.state)) return
 
   const rect = selectedRect(editor.state)
-  if (selectionOverlapsLockedRow(rect)) return
+  if (selectionOverlapsLockedAxis(rect, "row")) return
   const span = rect.bottom - rect.top
 
   duplicateSelectedBlock({
@@ -418,7 +413,7 @@ export const duplicateSelectedColumns = (editor: Editor): void => {
   if (!isInTable(editor.state)) return
 
   const rect = selectedRect(editor.state)
-  if (selectionOverlapsLockedColumn(rect)) return
+  if (selectionOverlapsLockedAxis(rect, "column")) return
   const span = rect.right - rect.left
 
   duplicateSelectedBlock({

@@ -1,7 +1,6 @@
 import type { EditorState, Selection } from "@tiptap/pm/state"
 import type { EditorView } from "@tiptap/pm/view"
 import type { Editor } from "@tiptap/react"
-import { autoUpdate } from "@floating-ui/dom"
 import { CellSelection, selectedRect } from "@tiptap/pm/tables"
 import { useEffect, useRef, useState } from "react"
 
@@ -67,40 +66,6 @@ const computeMenuPosition = (
   }
 }
 
-const createVirtualReference = (
-  getView: () => EditorView,
-  getState: () => EditorState,
-) => {
-  const virtualReference = {
-    getBoundingClientRect: () => {
-      const rect = getBottomRightCellRect(getView(), getState())
-      if (!rect) return new DOMRect()
-      return new DOMRect(rect.right, rect.bottom, 0, 0)
-    },
-    getClientRects: () => [virtualReference.getBoundingClientRect()],
-  }
-
-  return virtualReference
-}
-
-const createPositionUpdater = (
-  getView: () => EditorView,
-  getState: () => EditorState,
-  menuEl: HTMLElement,
-  onPosition: (position: TableBubbleMenuPosition) => void,
-): (() => void) => {
-  return () => {
-    const cellRect = getBottomRightCellRect(getView(), getState())
-    if (!cellRect) return
-
-    const nextPosition = computeMenuPosition(cellRect, menuEl)
-    if (nextPosition) {
-      onPosition(nextPosition)
-    }
-  }
-}
-
-// autoUpdate does not track nested editor scroll containers.
 const attachScrollListeners = (
   view: EditorView,
   onUpdate: () => void,
@@ -150,24 +115,34 @@ export const useTableBubbleMenuPosition = ({
 
     const getView = () => editorRef.current.view
     const getState = () => editorRef.current.state
-    const virtualReference = createVirtualReference(getView, getState)
-    const updatePosition = createPositionUpdater(
-      getView,
-      getState,
-      menuEl,
-      setPosition,
-    )
+
+    const updatePosition = () => {
+      const cellRect = getBottomRightCellRect(getView(), getState())
+      if (!cellRect) return
+
+      const nextPosition = computeMenuPosition(cellRect, menuEl)
+      if (nextPosition) {
+        setPosition(nextPosition)
+      }
+    }
 
     updatePosition()
 
-    const stopAutoUpdate = autoUpdate(virtualReference, menuEl, updatePosition)
+    const resizeObserver = new ResizeObserver(updatePosition)
+    resizeObserver.observe(menuEl)
+    const cellPos = getBottomRightCellDocumentPos(getState())
+    const cellDom = cellPos === null ? null : getView().nodeDOM(cellPos)
+    if (cellDom instanceof HTMLElement) {
+      resizeObserver.observe(cellDom)
+    }
+
     const detachScrollListeners = attachScrollListeners(
       getView(),
       updatePosition,
     )
 
     return () => {
-      stopAutoUpdate()
+      resizeObserver.disconnect()
       detachScrollListeners()
     }
   }, [show, selection, menuEl])

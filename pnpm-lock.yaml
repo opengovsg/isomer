@@ -86,9 +86,6 @@ catalogs:
     '@datadog/browser-rum':
       specifier: ^7.7.0
       version: 7.8.0
-    '@floating-ui/dom':
-      specifier: ^1.8.0
-      version: 1.8.0
     '@fontsource/ibm-plex-mono':
       specifier: ^5.3.0
       version: 5.3.0
@@ -721,9 +718,6 @@ importers:
       '@datadog/browser-rum':
         specifier: 'catalog:'
         version: 7.8.0
-      '@floating-ui/dom':
-        specifier: 'catalog:'
-        version: 1.8.0
       '@fontsource/ibm-plex-mono':
         specifier: 'catalog:'
         version: 5.3.0
@@ -6952,9 +6946,6 @@ packages:
   '@types/node@18.19.130':
     resolution: {integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==}
 
-  '@types/node@22.20.2':
-    resolution: {integrity: sha512-xlvWf4Vs9n1PEVYwP1n4vvG07M6y8WgvJ2t0vbrWTmijsIHp1cS+uJ2kMIRdY3nHZK0nCYKrPeD171+SzF4/zw==}
-
   '@types/node@26.1.2':
     resolution: {integrity: sha512-Vu4a5UFA9rIIFJ7rB/Vaafh9lrCQszopTCx6KjFboXTGQbPNasehVR5TEiithSDGyd1DEiUByggTZsg8jukeIg==}
 
@@ -12451,9 +12442,6 @@ packages:
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
 
-  undici-types@6.21.0:
-    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
-
   undici-types@8.3.0:
     resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
 
@@ -15631,6 +15619,7 @@ snapshots:
   '@floating-ui/core@1.8.0':
     dependencies:
       '@floating-ui/utils': 0.2.12
+    optional: true
 
   '@floating-ui/dom@1.7.6':
     dependencies:
@@ -15641,6 +15630,7 @@ snapshots:
     dependencies:
       '@floating-ui/core': 1.8.0
       '@floating-ui/utils': 0.2.12
+    optional: true
 
   '@floating-ui/react-dom@2.1.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -15658,7 +15648,8 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@floating-ui/utils@0.2.12': {}
+  '@floating-ui/utils@0.2.12':
+    optional: true
 
   '@fontsource/ibm-plex-mono@5.3.0': {}
 
@@ -18121,10 +18112,6 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@22.20.2':
-    dependencies:
-      undici-types: 6.21.0
-
   '@types/node@26.1.2':
     dependencies:
       undici-types: 8.3.0
@@ -18136,7 +18123,6 @@ snapshots:
   '@types/node@26.5.0':
     dependencies:
       undici-types: 8.9.0
-    optional: true
 
   '@types/papaparse@5.5.2':
     dependencies:
@@ -18225,7 +18211,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 22.20.2
+      '@types/node': 26.5.0
 
   '@typescript-eslint/project-service@8.57.2(typescript@6.0.3)':
     dependencies:
@@ -19183,7 +19169,7 @@ snapshots:
 
   buffer-image-size@0.6.4:
     dependencies:
-      '@types/node': 22.20.2
+      '@types/node': 26.5.0
 
   buffer-xor@1.0.3: {}
 
@@ -20784,7 +20770,7 @@ snapshots:
 
   happy-dom@20.10.6:
     dependencies:
-      '@types/node': 22.20.2
+      '@types/node': 26.5.0
       '@types/whatwg-mimetype': 3.0.2
       '@types/ws': 8.18.1
       buffer-image-size: 0.6.4
@@ -24519,12 +24505,9 @@ snapshots:
 
   undici-types@5.26.5: {}
 
-  undici-types@6.21.0: {}
-
   undici-types@8.3.0: {}
 
-  undici-types@8.9.0:
-    optional: true
+  undici-types@8.9.0: {}
 
   undici@7.28.0: {}
 

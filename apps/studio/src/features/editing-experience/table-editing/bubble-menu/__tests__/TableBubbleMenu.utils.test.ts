@@ -2,15 +2,13 @@ import type { Node } from "@tiptap/pm/model"
 import type { TableMap } from "@tiptap/pm/tables"
 import { describe, expect, it } from "vitest"
 import {
-  selectionOverlapsLockedColumn,
-  selectionOverlapsLockedRow,
+  selectionOverlapsLockedAxis,
   type TableHeaderOverlapRect,
 } from "~/features/editing-experience/table-editing/axis"
 
 import {
-  getColumnMovePlan,
   getMovedBlockCellCorners,
-  getRowMovePlan,
+  getSlotMovePlan,
   getTableSelectionKind,
 } from "../TableBubbleMenu.utils"
 
@@ -140,7 +138,7 @@ describe("getTableSelectionKind", () => {
   })
 })
 
-describe("selectionOverlapsLockedRow", () => {
+describe("selectionOverlapsLockedAxis", () => {
   const headerThenBody = [
     "tableHeader",
     "tableHeader",
@@ -152,7 +150,7 @@ describe("selectionOverlapsLockedRow", () => {
 
   it("is true when the selection overlaps a header row at the top", () => {
     expect(
-      selectionOverlapsLockedRow(
+      selectionOverlapsLockedAxis(
         overlapRect({
           top: 0,
           left: 0,
@@ -160,13 +158,14 @@ describe("selectionOverlapsLockedRow", () => {
           height: 2,
           cellTypes: headerThenBody,
         }),
+        "row",
       ),
     ).toBe(true)
   })
 
   it("is false when the selection starts below the header row", () => {
     expect(
-      selectionOverlapsLockedRow(
+      selectionOverlapsLockedAxis(
         overlapRect({
           top: 1,
           left: 0,
@@ -174,13 +173,14 @@ describe("selectionOverlapsLockedRow", () => {
           height: 2,
           cellTypes: headerThenBody,
         }),
+        "row",
       ),
     ).toBe(false)
   })
 
   it("is false when the top row is ordinary body cells", () => {
     expect(
-      selectionOverlapsLockedRow(
+      selectionOverlapsLockedAxis(
         overlapRect({
           top: 0,
           left: 0,
@@ -188,12 +188,13 @@ describe("selectionOverlapsLockedRow", () => {
           height: 1,
           cellTypes: ["tableCell", "tableCell"],
         }),
+        "row",
       ),
     ).toBe(false)
   })
 })
 
-describe("selectionOverlapsLockedColumn", () => {
+describe("selectionOverlapsLockedAxis column", () => {
   const headerRowAndColumn = [
     "tableHeader",
     "tableHeader",
@@ -205,7 +206,7 @@ describe("selectionOverlapsLockedColumn", () => {
 
   it("is true when the selection overlaps a header column at the left", () => {
     expect(
-      selectionOverlapsLockedColumn(
+      selectionOverlapsLockedAxis(
         overlapRect({
           top: 0,
           left: 0,
@@ -213,13 +214,14 @@ describe("selectionOverlapsLockedColumn", () => {
           height: 3,
           cellTypes: headerRowAndColumn,
         }),
+        "column",
       ),
     ).toBe(true)
   })
 
   it("is false when the selection starts to the right of the header column", () => {
     expect(
-      selectionOverlapsLockedColumn(
+      selectionOverlapsLockedAxis(
         overlapRect({
           top: 0,
           left: 1,
@@ -227,13 +229,14 @@ describe("selectionOverlapsLockedColumn", () => {
           height: 3,
           cellTypes: headerRowAndColumn,
         }),
+        "column",
       ),
     ).toBe(false)
   })
 
   it("is false when only the first row is headers (header row, not column)", () => {
     expect(
-      selectionOverlapsLockedColumn(
+      selectionOverlapsLockedAxis(
         overlapRect({
           top: 0,
           left: 0,
@@ -241,37 +244,75 @@ describe("selectionOverlapsLockedColumn", () => {
           height: 2,
           cellTypes: ["tableHeader", "tableHeader", "tableCell", "tableCell"],
         }),
+        "column",
       ),
     ).toBe(false)
   })
 })
 
-describe("getRowMovePlan", () => {
+describe("getSlotMovePlan", () => {
+  const rowRect = (top: number, bottom: number, tableHeight: number) => ({
+    top,
+    bottom,
+    left: 0,
+    right: 1,
+    map: { width: 1, height: tableHeight },
+  })
+
+  const columnRect = (left: number, right: number, tableWidth: number) => ({
+    top: 0,
+    bottom: 1,
+    left,
+    right,
+    map: { width: tableWidth, height: 1 },
+  })
+
   it.each([
     {
-      direction: "up" as const,
+      direction: "backward" as const,
       expected: { from: 0, to: 2, newStart: 0, span: 2 },
     },
     {
-      direction: "down" as const,
+      direction: "forward" as const,
       expected: { from: 3, to: 1, newStart: 2, span: 2 },
     },
   ])(
     "moves the adjacent row $direction past the block",
     ({ direction, expected }) => {
-      expect(
-        getRowMovePlan({ top: 1, bottom: 3, tableHeight: 4 }, direction),
-      ).toEqual(expected)
+      expect(getSlotMovePlan("row", rowRect(1, 3, 4), direction)).toEqual(
+        expected,
+      )
     },
   )
 
-  it("does not move beyond the top or bottom table edge", () => {
+  it("does not move a row beyond the table edge", () => {
+    expect(getSlotMovePlan("row", rowRect(0, 2, 4), "backward")).toBeNull()
+    expect(getSlotMovePlan("row", rowRect(2, 4, 4), "forward")).toBeNull()
+  })
+
+  it.each([
+    {
+      direction: "backward" as const,
+      expected: { from: 0, to: 2, newStart: 0, span: 2 },
+    },
+    {
+      direction: "forward" as const,
+      expected: { from: 3, to: 1, newStart: 2, span: 2 },
+    },
+  ])(
+    "moves the adjacent column $direction past the block",
+    ({ direction, expected }) => {
+      expect(getSlotMovePlan("column", columnRect(1, 3, 4), direction)).toEqual(
+        expected,
+      )
+    },
+  )
+
+  it("does not move a column beyond the table edge", () => {
     expect(
-      getRowMovePlan({ top: 0, bottom: 2, tableHeight: 4 }, "up"),
+      getSlotMovePlan("column", columnRect(0, 2, 4), "backward"),
     ).toBeNull()
-    expect(
-      getRowMovePlan({ top: 2, bottom: 4, tableHeight: 4 }, "down"),
-    ).toBeNull()
+    expect(getSlotMovePlan("column", columnRect(2, 4, 4), "forward")).toBeNull()
   })
 })
 
@@ -306,34 +347,5 @@ describe("getMovedBlockCellCorners", () => {
       anchor: 9,
       head: 2,
     })
-  })
-})
-
-describe("getColumnMovePlan", () => {
-  it.each([
-    {
-      direction: "left" as const,
-      expected: { from: 0, to: 2, newStart: 0, span: 2 },
-    },
-    {
-      direction: "right" as const,
-      expected: { from: 3, to: 1, newStart: 2, span: 2 },
-    },
-  ])(
-    "moves the adjacent column $direction past the block",
-    ({ direction, expected }) => {
-      expect(
-        getColumnMovePlan({ left: 1, right: 3, tableWidth: 4 }, direction),
-      ).toEqual(expected)
-    },
-  )
-
-  it("does not move beyond the left or right table edge", () => {
-    expect(
-      getColumnMovePlan({ left: 0, right: 2, tableWidth: 4 }, "left"),
-    ).toBeNull()
-    expect(
-      getColumnMovePlan({ left: 2, right: 4, tableWidth: 4 }, "right"),
-    ).toBeNull()
   })
 })

@@ -4,15 +4,7 @@ import { TableMap } from "@tiptap/pm/tables"
 
 import type { Axis } from "./types"
 import { hasHeaderColumn, hasHeaderRow } from "./headerDetection"
-import { toMappedTable } from "./mappedTable"
-
-const getTableAt = (
-  doc: ProseMirrorNode,
-  tablePos: number,
-): ProseMirrorNode | null => {
-  const table = doc.nodeAt(tablePos)
-  return table && table.type.name === "table" ? table : null
-}
+import { getTableAt, toMappedTable } from "./mappedTable"
 
 const setCellKind = (
   tr: Transaction,

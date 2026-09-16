@@ -20,11 +20,11 @@ import { TableDragHandles } from "~/features/editing-experience/table-editing/dr
 import { theme } from "~/theme"
 
 import { TableBubbleMenu } from "../TableBubbleMenu"
-import { clearSelectedCells } from "../TableBubbleMenu.clear"
 import {
   duplicateSelectedColumns,
   duplicateSelectedRows,
 } from "../TableBubbleMenu.duplicate"
+import { clearSelectedCells } from "../TableBubbleMenu.utils"
 
 const createSeedTable = (
   caption: string,

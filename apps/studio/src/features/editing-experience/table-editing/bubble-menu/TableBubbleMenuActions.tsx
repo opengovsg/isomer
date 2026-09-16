@@ -1,6 +1,6 @@
 import type { TableCellBackgroundColorToken } from "@opengovsg/isomer-components"
 import type { Editor } from "@tiptap/react"
-import type { ReactElement, ReactNode } from "react"
+import type { ReactElement } from "react"
 import { Box, Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, Switch } from "@opengovsg/design-system-react"
 import {
@@ -33,37 +33,28 @@ import {
   IconSplitCell,
 } from "~/components/icons"
 import {
-  selectionOverlapsLockedColumn,
-  selectionOverlapsLockedRow,
+  selectionOverlapsLockedAxis,
+  type Axis,
 } from "~/features/editing-experience/table-editing/axis"
 import {
   getSelectionBackgroundColorState,
   setSelectedCellsBackgroundColor,
 } from "~/features/editing-experience/table-editing/tableCellBackground"
 
-import type {
-  SelectionKind,
-  TableMoveAxis,
-  TableMovePlan,
-} from "./TableBubbleMenu.types"
-import { clearSelectedCells } from "./TableBubbleMenu.clear"
+import type { SelectionKind, TableMovePlan } from "./TableBubbleMenu.types"
 import {
   duplicateSelectedColumns,
   duplicateSelectedRows,
 } from "./TableBubbleMenu.duplicate"
 import {
-  getColumnMovePlan,
-  getRowMovePlan,
+  clearSelectedCells,
+  getSlotMovePlan,
   restoreMovedBlockSelection,
   selectionIsLeftmostColumn,
   selectionIsTopRow,
 } from "./TableBubbleMenu.utils"
 
-const moveTableBlock = (
-  editor: Editor,
-  plan: TableMovePlan,
-  axis: TableMoveAxis,
-) => {
+const moveTableBlock = (editor: Editor, plan: TableMovePlan, axis: Axis) => {
   const { state, view } = editor
   const rect = selectedRect(state)
   const tablePos = rect.tableStart - 1
@@ -115,23 +106,6 @@ const ActionButton = ({
   </Button>
 )
 
-const ActionGroup = ({ children }: { children: ReactNode }) => (
-  <VStack align="stretch" gap="0" w="100%">
-    {children}
-  </VStack>
-)
-
-const ClearContentsButton = ({ editor }: { editor: Editor }) => (
-  <ActionButton
-    label="Clear contents"
-    icon={<BiX fontSize="1rem" />}
-    onClick={() => clearSelectedCells(editor)}
-  />
-)
-
-const colorSwatchLabel = (color: string) =>
-  `${color.charAt(0).toUpperCase()}${color.slice(1)}`
-
 // Studio-only circle borders for palette swatches; published cells use fill.
 const TABLE_CELL_PALETTE_COLOR_BORDERS: Record<
   (typeof TABLE_CELL_BACKGROUND_COLOR_TOKENS)[number],
@@ -165,7 +139,7 @@ const ColorSwatch = ({
   <Button
     variant="unstyled"
     display="inline-flex"
-    alignItems="center"
+    align="center"
     justifyContent="center"
     p="0.25rem"
     h="auto"
@@ -175,6 +149,7 @@ const ColorSwatch = ({
     borderRadius="0.25rem"
     border="none"
     aria-label={label}
+    textTransform="capitalize"
     bg={isActive ? "interaction.muted.main.active" : "transparent"}
     _hover={{
       bg: isActive
@@ -193,24 +168,6 @@ const ColorSwatch = ({
       borderColor={borderColor}
     />
   </Button>
-)
-
-const PaletteColorSwatch = ({
-  color,
-  isActive,
-  onSetColor,
-}: {
-  color: (typeof TABLE_CELL_BACKGROUND_COLOR_TOKENS)[number]
-  isActive: boolean
-  onSetColor: (color: TableCellBackgroundColorToken | null) => void
-}) => (
-  <ColorSwatch
-    label={colorSwatchLabel(color)}
-    fill={TABLE_CELL_BACKGROUND_COLORS[color]}
-    borderColor={TABLE_CELL_PALETTE_COLOR_BORDERS[color]}
-    isActive={isActive}
-    onClick={() => onSetColor(color)}
-  />
 )
 
 const BackgroundColorSection = ({
@@ -242,11 +199,13 @@ const BackgroundColorSection = ({
           onClick={() => onSetColor(null)}
         />
         {TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((color) => (
-          <PaletteColorSwatch
+          <ColorSwatch
             key={color}
-            color={color}
+            label={color}
+            fill={TABLE_CELL_BACKGROUND_COLORS[color]}
+            borderColor={TABLE_CELL_PALETTE_COLOR_BORDERS[color]}
             isActive={isUniform && activeColor === color}
-            onSetColor={onSetColor}
+            onClick={() => onSetColor(color)}
           />
         ))}
       </Flex>
@@ -316,22 +275,18 @@ type SelectionRect = ReturnType<typeof selectedRect>
 const RowSelectionActions = ({
   editor,
   rect,
+  onClear,
 }: {
   editor: Editor
   rect: SelectionRect
+  onClear: () => void
 }) => {
-  const includesHeader = selectionOverlapsLockedRow(rect)
-  const rowMoveUpPlan = getRowMovePlan(
-    { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
-    "up",
-  )
-  const rowMoveDownPlan = getRowMovePlan(
-    { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
-    "down",
-  )
+  const includesHeader = selectionOverlapsLockedAxis(rect, "row")
+  const moveUpPlan = getSlotMovePlan("row", rect, "backward")
+  const moveDownPlan = getSlotMovePlan("row", rect, "forward")
 
   return (
-    <ActionGroup>
+    <VStack align="stretch" gap="0" w="100%">
       {selectionIsTopRow(rect) && (
         <HeaderToggle
           label="Header row"
@@ -358,19 +313,23 @@ const RowSelectionActions = ({
           onClick={() => duplicateSelectedRows(editor)}
         />
       )}
-      <ClearContentsButton editor={editor} />
-      {rowMoveUpPlan && !includesHeader && (
+      <ActionButton
+        label="Clear contents"
+        icon={<BiX fontSize="1rem" />}
+        onClick={onClear}
+      />
+      {moveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
           icon={<BiUpArrowAlt fontSize="1rem" />}
-          onClick={() => moveTableBlock(editor, rowMoveUpPlan, "row")}
+          onClick={() => moveTableBlock(editor, moveUpPlan, "row")}
         />
       )}
-      {rowMoveDownPlan && !includesHeader && (
+      {moveDownPlan && !includesHeader && (
         <ActionButton
           label="Move down"
           icon={<BiDownArrowAlt fontSize="1rem" />}
-          onClick={() => moveTableBlock(editor, rowMoveDownPlan, "row")}
+          onClick={() => moveTableBlock(editor, moveDownPlan, "row")}
         />
       )}
       {!includesHeader && (
@@ -380,31 +339,25 @@ const RowSelectionActions = ({
           onClick={() => editor.chain().focus().deleteRow().run()}
         />
       )}
-    </ActionGroup>
+    </VStack>
   )
 }
 
 const ColumnSelectionActions = ({
   editor,
   rect,
+  onClear,
 }: {
   editor: Editor
   rect: SelectionRect
+  onClear: () => void
 }) => {
-  const includesHeader = selectionOverlapsLockedColumn(rect)
-
-  const columnMoveLeftPlan = getColumnMovePlan(
-    { left: rect.left, right: rect.right, tableWidth: rect.map.width },
-    "left",
-  )
-
-  const columnMoveRightPlan = getColumnMovePlan(
-    { left: rect.left, right: rect.right, tableWidth: rect.map.width },
-    "right",
-  )
+  const includesHeader = selectionOverlapsLockedAxis(rect, "column")
+  const moveLeftPlan = getSlotMovePlan("column", rect, "backward")
+  const moveRightPlan = getSlotMovePlan("column", rect, "forward")
 
   return (
-    <ActionGroup>
+    <VStack align="stretch" gap="0" w="100%">
       {selectionIsLeftmostColumn(rect) && (
         <HeaderToggle
           label="Header column"
@@ -431,19 +384,23 @@ const ColumnSelectionActions = ({
           onClick={() => duplicateSelectedColumns(editor)}
         />
       )}
-      <ClearContentsButton editor={editor} />
-      {columnMoveLeftPlan && !includesHeader && (
+      <ActionButton
+        label="Clear contents"
+        icon={<BiX fontSize="1rem" />}
+        onClick={onClear}
+      />
+      {moveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
           icon={<BiLeftArrowAlt fontSize="1rem" />}
-          onClick={() => moveTableBlock(editor, columnMoveLeftPlan, "column")}
+          onClick={() => moveTableBlock(editor, moveLeftPlan, "column")}
         />
       )}
-      {columnMoveRightPlan && !includesHeader && (
+      {moveRightPlan && !includesHeader && (
         <ActionButton
           label="Move right"
           icon={<BiRightArrowAlt fontSize="1rem" />}
-          onClick={() => moveTableBlock(editor, columnMoveRightPlan, "column")}
+          onClick={() => moveTableBlock(editor, moveRightPlan, "column")}
         />
       )}
       {!includesHeader && (
@@ -453,7 +410,7 @@ const ColumnSelectionActions = ({
           onClick={() => editor.chain().focus().deleteColumn().run()}
         />
       )}
-    </ActionGroup>
+    </VStack>
   )
 }
 
@@ -465,52 +422,73 @@ const SelectionActions = ({
   kind: SelectionKind
 }) => {
   const rect = selectedRect(editor.state)
+  const onClear = () => clearSelectedCells(editor)
 
   switch (kind) {
     case "row":
     case "header-row":
-      return <RowSelectionActions editor={editor} rect={rect} />
+      return (
+        <RowSelectionActions editor={editor} rect={rect} onClear={onClear} />
+      )
     case "column":
     case "header-column":
-      return <ColumnSelectionActions editor={editor} rect={rect} />
+      return (
+        <ColumnSelectionActions editor={editor} rect={rect} onClear={onClear} />
+      )
     case "table":
       return (
-        <ActionGroup>
-          <ClearContentsButton editor={editor} />
+        <VStack align="stretch" gap="0" w="100%">
+          <ActionButton
+            label="Clear contents"
+            icon={<BiX fontSize="1rem" />}
+            onClick={onClear}
+          />
           <ActionButton
             label="Delete table"
             icon={<BiTrash fontSize="1rem" />}
             onClick={() => editor.chain().focus().deleteTable().run()}
           />
-        </ActionGroup>
+        </VStack>
       )
     case "multi-cell":
       return (
-        <ActionGroup>
-          <ClearContentsButton editor={editor} />
+        <VStack align="stretch" gap="0" w="100%">
+          <ActionButton
+            label="Clear contents"
+            icon={<BiX fontSize="1rem" />}
+            onClick={onClear}
+          />
           <ActionButton
             label="Merge cells"
             icon={<IconMergeCells boxSize="1rem" />}
             onClick={() => editor.chain().focus().mergeCells().run()}
           />
-        </ActionGroup>
+        </VStack>
       )
     case "single-cell":
       return (
-        <ActionGroup>
-          <ClearContentsButton editor={editor} />
-        </ActionGroup>
+        <VStack align="stretch" gap="0" w="100%">
+          <ActionButton
+            label="Clear contents"
+            icon={<BiX fontSize="1rem" />}
+            onClick={onClear}
+          />
+        </VStack>
       )
     case "merged-cell":
       return (
-        <ActionGroup>
-          <ClearContentsButton editor={editor} />
+        <VStack align="stretch" gap="0" w="100%">
+          <ActionButton
+            label="Clear contents"
+            icon={<BiX fontSize="1rem" />}
+            onClick={onClear}
+          />
           <ActionButton
             label="Split cell"
             icon={<IconSplitCell boxSize="1rem" />}
             onClick={() => editor.chain().focus().splitCell().run()}
           />
-        </ActionGroup>
+        </VStack>
       )
     default:
       return null

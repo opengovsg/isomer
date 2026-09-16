@@ -1,14 +1,10 @@
-import type { Editor } from "@tiptap/react"
 import { Table } from "@tiptap/extension-table"
 import { TableCell } from "@tiptap/extension-table-cell"
 import { TableHeader } from "@tiptap/extension-table-header"
 import { ReactNodeViewRenderer } from "@tiptap/react"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
 import { selectTableCellContent } from "~/features/editing-experience/hooks/useTextEditor/selectTableCellContent"
-import {
-  focusTableBubbleMenuTrigger,
-  runTableBubbleMenuFocusTrigger,
-} from "~/features/editing-experience/table-editing/bubble-menu/tableBubbleMenuFocus"
+import { runTableBubbleMenuFocusTrigger } from "~/features/editing-experience/table-editing/bubble-menu/tableBubbleMenuFocus"
 import {
   createInitialTableColumnResizeStorage,
   isTableColumnResizeDragging,
@@ -32,10 +28,6 @@ export const IsomerTable = Table.extend({
 
     return {
       ...parent,
-      focusTableBubbleMenuTrigger:
-        () =>
-        ({ editor }: { editor: Editor }) =>
-          runTableBubbleMenuFocusTrigger(editor),
       toggleHeaderRow: wrapHeaderToggleCommand(
         parentToggleHeaderRow?.() as HeaderToggleCommand | undefined,
       ),
@@ -62,7 +54,7 @@ export const IsomerTable = Table.extend({
       "Mod-a": () =>
         selectTableCellContent(this.editor) || this.editor.commands.selectAll(),
       Tab: ({ editor }) => {
-        if (focusTableBubbleMenuTrigger(editor)) {
+        if (runTableBubbleMenuFocusTrigger(editor)) {
           return true
         }
         return parentShortcuts.Tab?.({ editor }) ?? false

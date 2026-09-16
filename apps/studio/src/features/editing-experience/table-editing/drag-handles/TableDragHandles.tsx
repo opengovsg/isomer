@@ -6,6 +6,7 @@ import { useEditorState } from "@tiptap/react"
 import { Fragment, useMemo } from "react"
 import {
   AXES,
+  getTableAt,
   isSlotLocked,
   toMappedTable,
 } from "~/features/editing-experience/table-editing/axis"
@@ -20,7 +21,6 @@ import {
   getTableBounds,
   nearestBoundaryIndex,
 } from "./internal/axisMath"
-import { getTableAt } from "./internal/axisTableOps"
 import { AXIS_VIEW } from "./internal/axisView"
 import { ADD_PILL_MIN_LENGTH_PX } from "./internal/chrome"
 import { AddPillButton, AxisHandle } from "./internal/handles"

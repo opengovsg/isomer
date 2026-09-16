@@ -39,12 +39,3 @@ export const AXIS_TABLE_OPS: Record<Axis, AxisTableOps> = {
     move: moveTableColumn,
   },
 }
-
-/** Resolves the table at `tablePos`, or null when the position moved on. */
-export const getTableAt = (
-  doc: ProseMirrorNode,
-  tablePos: number,
-): ProseMirrorNode | null => {
-  const table = doc.nodeAt(tablePos)
-  return table && table.type.name === "table" ? table : null
-}

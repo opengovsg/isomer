@@ -12,3 +12,12 @@ export const toMappedTable = (table: ProseMirrorNode): MappedTable => ({
   map: TableMapClass.get(table),
   table,
 })
+
+/** Resolves the table at `tablePos`, or null when the position moved on. */
+export const getTableAt = (
+  doc: ProseMirrorNode,
+  tablePos: number,
+): ProseMirrorNode | null => {
+  const table = doc.nodeAt(tablePos)
+  return table && table.type.name === "table" ? table : null
+}

@@ -2,13 +2,15 @@ import type { Node } from "@tiptap/pm/model"
 import type { Transaction } from "@tiptap/pm/state"
 import type { EditorView } from "@tiptap/pm/view"
 import type { Editor } from "@tiptap/react"
-import { CellSelection, selectedRect, TableMap } from "@tiptap/pm/tables"
+import type { Axis } from "~/features/editing-experience/table-editing/axis"
+import {
+  CellSelection,
+  deleteCellSelection,
+  selectedRect,
+  TableMap,
+} from "@tiptap/pm/tables"
 
-import type {
-  SelectionKind,
-  TableMoveAxis,
-  TableMovePlan,
-} from "./TableBubbleMenu.types"
+import type { SelectionKind, TableMovePlan } from "./TableBubbleMenu.types"
 
 interface TableSelectionFacts {
   spansEntireTableWidth: boolean
@@ -54,68 +56,37 @@ export const getTableSelectionKind = ({
   return "multi-cell"
 }
 
-export const getRowMovePlan = (
-  {
-    top,
-    bottom,
-    tableHeight,
-  }: {
+export const getSlotMovePlan = (
+  axis: Axis,
+  rect: {
     top: number
     bottom: number
-    tableHeight: number
-  },
-  direction: "up" | "down",
-): TableMovePlan | null => {
-  const span = bottom - top
-
-  if (direction === "up") {
-    if (top === 0) return null
-    return {
-      from: top - 1,
-      to: bottom - 1,
-      newStart: top - 1,
-      span,
-    }
-  }
-
-  if (bottom >= tableHeight) return null
-  return {
-    from: bottom,
-    to: top,
-    newStart: top + 1,
-    span,
-  }
-}
-
-export const getColumnMovePlan = (
-  {
-    left,
-    right,
-    tableWidth,
-  }: {
     left: number
     right: number
-    tableWidth: number
+    map: { width: number; height: number }
   },
-  direction: "left" | "right",
+  direction: "backward" | "forward",
 ): TableMovePlan | null => {
-  const span = right - left
+  const start = axis === "row" ? rect.top : rect.left
+  const end = axis === "row" ? rect.bottom : rect.right
+  const tableSize = axis === "row" ? rect.map.height : rect.map.width
+  const span = end - start
 
-  if (direction === "left") {
-    if (left === 0) return null
+  if (direction === "backward") {
+    if (start === 0) return null
     return {
-      from: left - 1,
-      to: right - 1,
-      newStart: left - 1,
+      from: start - 1,
+      to: end - 1,
+      newStart: start - 1,
       span,
     }
   }
 
-  if (right >= tableWidth) return null
+  if (end >= tableSize) return null
   return {
-    from: right,
-    to: left,
-    newStart: left + 1,
+    from: end,
+    to: start,
+    newStart: start + 1,
     span,
   }
 }
@@ -124,7 +95,7 @@ export const getMovedBlockCellCorners = (
   map: MovedBlockTableMap,
   table: Node,
   plan: TableMovePlan,
-  axis: TableMoveAxis,
+  axis: Axis,
 ) => {
   const newEnd = plan.newStart + plan.span
   if (axis === "row") {
@@ -144,7 +115,7 @@ export const restoreMovedBlockSelection = (
   tr: Transaction,
   tablePos: number,
   plan: TableMovePlan,
-  axis: TableMoveAxis,
+  axis: Axis,
 ) => {
   const table = tr.doc.nodeAt(tablePos)
   if (!table) {
@@ -158,6 +129,18 @@ export const restoreMovedBlockSelection = (
     CellSelection.create(tr.doc, tableStart + anchor, tableStart + head),
   )
   view.dispatch(tr)
+}
+
+export const clearSelectedCells = (editor: Editor): void => {
+  const { state, view } = editor
+  const { selection } = state
+  if (!(selection instanceof CellSelection)) return
+
+  deleteCellSelection(state, (tr) => {
+    const anchor = tr.mapping.map(selection.$anchorCell.pos)
+    const head = tr.mapping.map(selection.$headCell.pos)
+    view.dispatch(tr.setSelection(CellSelection.create(tr.doc, anchor, head)))
+  })
 }
 
 const isSingleCellSelection = (selection: CellSelection): boolean =>

@@ -15,5 +15,3 @@ export interface TableMovePlan {
   newStart: number
   span: number
 }
-
-export type TableMoveAxis = "row" | "column"

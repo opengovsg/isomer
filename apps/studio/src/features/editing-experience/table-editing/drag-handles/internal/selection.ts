@@ -1,8 +1,9 @@
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import { CellSelection, selectedRect, TableMap } from "@tiptap/pm/tables"
+import { getTableAt } from "~/features/editing-experience/table-editing/axis"
 
 import type { Axis } from "../../axis/types"
-import { AXIS_TABLE_OPS, getTableAt } from "./axisTableOps"
+import { AXIS_TABLE_OPS } from "./axisTableOps"
 
 export interface SelectionHandleTarget {
   tablePos: number
