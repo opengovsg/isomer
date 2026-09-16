@@ -1,6 +1,6 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { theme } from "~/theme"
@@ -24,7 +24,36 @@ vi.mock("~/utils/trpc", () => ({
           mockUseInfiniteQuery(...args),
       },
     },
+    site: {
+      getLocalisedSitemap: {
+        useSuspenseQuery: () => [{ id: "root", children: [] }],
+      },
+      getConfig: {
+        useSuspenseQuery: () => [{}],
+      },
+      getFooter: {
+        useSuspenseQuery: () => [{ content: {} }],
+      },
+      getNavbar: {
+        useSuspenseQuery: () => [{ content: {} }],
+      },
+    },
   },
+}))
+
+vi.mock("~/features/preview/hooks/useSiteThemeCssVars", () => ({
+  useSiteThemeCssVars: () => ({}),
+}))
+
+// `PreviewWithCustomSitemap` pulls in `~/utils/generateAssetUrl`, which reads
+// `~/env.mjs` at module-eval time. `env.mjs` accesses `process.env`, which
+// isn't defined in Vitest's real-browser (Chromium) mode — unlike a real
+// Next.js build, where these are statically inlined at compile time. Mocked
+// here purely to avoid that test-environment gap, not because this test
+// cares about asset URLs.
+vi.mock("~/utils/generateAssetUrl", () => ({
+  ASSETS_BASE_URL: "",
+  generateAssetUrl: (url: string) => url,
 }))
 
 const EMPTY_PAGE: IsomerSchema = {
@@ -178,5 +207,41 @@ describe("HistoryStateDrawer", () => {
       ),
     ).not.toBeNull()
     expect(screen.queryByText("No changes yet")).toBeNull()
+  })
+
+  it("opens the diff modal with the row's data when View changes is clicked", async () => {
+    // Arrange
+    mockUseInfiniteQuery.mockReturnValue({
+      data: {
+        pages: [
+          {
+            items: [
+              {
+                id: "1",
+                createdAt: new Date("2026-01-01T00:00:00Z"),
+                actor: { id: "u1", name: "Alice", email: "alice@example.com" },
+                beforeContent: EMPTY_PAGE,
+                afterContent: EMPTY_PAGE,
+              },
+            ],
+            nextOffset: null,
+          },
+        ],
+      },
+      fetchNextPage: noop,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      isLoading: false,
+      isError: false,
+    })
+
+    // Act
+    renderDrawer()
+    screen.getByRole("button", { name: "View changes" }).click()
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.queryByText("Alice")).not.toBeNull()
+    })
   })
 })
