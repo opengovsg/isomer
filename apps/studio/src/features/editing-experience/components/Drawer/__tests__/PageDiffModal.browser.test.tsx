@@ -151,7 +151,7 @@ describe("PageDiffModal", () => {
     // across re-renders). Re-querying avoids relying on that timing.
     const getBodies = () =>
       Array.from(document.querySelectorAll("iframe")).map(
-        (f) => (f as HTMLIFrameElement).contentDocument?.body,
+        (f) => f.contentDocument?.body,
       )
 
     const toggle = screen.getByRole("checkbox", { name: "Highlight changes" })
