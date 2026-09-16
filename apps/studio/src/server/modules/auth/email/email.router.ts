@@ -22,6 +22,7 @@ import { isUserDeleted } from "../../user/user.service"
 import { isEmailWhitelisted } from "../../whitelist/whitelist.service"
 import { VerificationError } from "../auth.error"
 import { recordUserLogin, verifyToken } from "../auth.service"
+import { clearSessionData } from "../session"
 import { createTokenHash, createVfnPrefix, createVfnToken } from "../auth.util"
 import { upsertUser } from "./email.service"
 import { getOtpFingerPrint } from "./utils"
@@ -202,7 +203,7 @@ export const emailSessionRouter = router({
           email,
         })
 
-        ctx.session.destroy()
+        clearSessionData(ctx.session)
         set(ctx.session, "singpass.sessionState", {
           userId: user.id,
           verificationToken: oldVerificationToken,
