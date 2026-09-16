@@ -370,6 +370,38 @@ describe("table column-width resize", () => {
     expect(lastCell?.getBoundingClientRect().width ?? 0).toBeGreaterThan(1)
   })
 
+  it("rebalances colwidths after a column is deleted following a resize", async () => {
+    // Arrange
+    const editor = await renderEditor()
+    act(() => {
+      editor.commands.insertTable({ rows: 2, cols: 3, withHeaderRow: true })
+    })
+    await resizeFirstColumn()
+    const table = getEditorTable(editor)
+    const columnCountBefore =
+      table.querySelectorAll("tr")[0]?.children.length ?? 0
+
+    // Act
+    act(() => {
+      editor.chain().focus().deleteColumn().run()
+    })
+
+    // Assert
+    const tableJson: JSONContent | undefined = editor.getJSON().content?.[0]
+    expect(tableJson?.content?.[0]?.content?.length ?? 0).toBe(
+      columnCountBefore - 1,
+    )
+    const colwidths =
+      (editor.getJSON().content?.[0]?.attrs?.colwidths as
+        | number[]
+        | undefined) ?? []
+    expect(colwidths).toHaveLength(columnCountBefore - 1)
+    expect(colwidths.reduce((sum, width) => sum + width, 0)).toBeCloseTo(100, 5)
+    const firstRowCells = table.querySelectorAll("tr")[0]?.children ?? []
+    expect(firstRowCells).toHaveLength(columnCountBefore - 1)
+    expect(table.querySelectorAll("col")).toHaveLength(columnCountBefore - 1)
+  })
+
   it("clears drag state and restores pre-drag widths when the pointer is cancelled", async () => {
     // Arrange
     const editor = await renderEditor()
