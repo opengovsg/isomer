@@ -32,12 +32,14 @@ export const redistributeOnResize = ({
   const currentWidth = widths[columnIndex] ?? 0
   const neighborWidth = widths[neighborIndex] ?? 0
   const combinedWidth = currentWidth + neighborWidth
-
-  const targetWidth = clamp(
-    currentWidth + deltaPercent,
-    minPercent,
-    combinedWidth - minPercent,
+  // When the pair is narrower than 2 * minPercent, min and max invert; fall back to [0, combinedWidth].
+  const minBound = Math.max(0, Math.min(minPercent, combinedWidth - minPercent))
+  const maxBound = Math.min(
+    combinedWidth,
+    Math.max(minPercent, combinedWidth - minPercent),
   )
+
+  const targetWidth = clamp(currentWidth + deltaPercent, minBound, maxBound)
 
   const result = [...widths]
   result[columnIndex] = targetWidth
