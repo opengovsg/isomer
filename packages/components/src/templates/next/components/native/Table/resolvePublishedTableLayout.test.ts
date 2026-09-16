@@ -140,29 +140,35 @@ describe("resolvePublishedTableLayout", () => {
     })
   })
 
-  it("returns auto layout for hostile colspan values without throwing", () => {
-    // Arrange
-    const cell = (colspan: unknown) => ({
-      type: "tableCell" as const,
-      attrs: colspan !== undefined ? { colspan } : undefined,
-      content: [
-        {
-          type: "paragraph" as const,
-          content: [{ type: "text" as const, text: "" }],
-        },
-      ],
-    })
-    const row = (...cells: ReturnType<typeof cell>[]) => ({
-      type: "tableRow" as const,
-      content: cells,
-    })
-    const hostileCases = [
-      { rows: [row(cell(4294967296))] as unknown as TableRows, kind: "fixed" },
-      { rows: [row(cell(-5))] as unknown as TableRows, kind: "auto" },
-      { rows: [row(cell("1e9"))] as unknown as TableRows, kind: "auto" },
-    ]
+  const hostileCell = (colspan: unknown) => ({
+    type: "tableCell" as const,
+    attrs: colspan !== undefined ? { colspan } : undefined,
+    content: [
+      {
+        type: "paragraph" as const,
+        content: [{ type: "text" as const, text: "" }],
+      },
+    ],
+  })
+  const hostileRow = (...cells: ReturnType<typeof hostileCell>[]) => ({
+    type: "tableRow" as const,
+    content: cells,
+  })
 
-    for (const { rows, kind } of hostileCases) {
+  it.each([
+    {
+      label: "overflowing numeric colspan",
+      colspan: 4294967296,
+      kind: "fixed",
+    },
+    { label: "negative colspan", colspan: -5, kind: "auto" },
+    { label: "string colspan", colspan: "1e9", kind: "auto" },
+  ] as const)(
+    "returns $kind layout for hostile colspan: $label",
+    ({ colspan, kind }) => {
+      // Arrange
+      const rows = [hostileRow(hostileCell(colspan))] as unknown as TableRows
+
       // Act
       const layout = resolvePublishedTableLayout({
         colwidths: null,
@@ -172,6 +178,6 @@ describe("resolvePublishedTableLayout", () => {
 
       // Assert
       expect(layout.kind).toBe(kind)
-    }
-  })
+    },
+  )
 })
