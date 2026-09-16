@@ -28,7 +28,8 @@ import { TableHeader } from "@tiptap/extension-table-header"
 import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
-import { textblockTypeInputRule } from "@tiptap/react"
+import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
+import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
 
 import {
@@ -43,8 +44,8 @@ import {
   wrapHeaderToggleCommand,
   type HeaderToggleCommand,
 } from "./clearTableCellBackgroundOnKindChange"
-import { IsomerTableView } from "./IsomerTableView"
 import { selectTableCellContent } from "./selectTableCellContent"
+import { isTableColumnResizeDragging } from "./TableColumnResizeOverlay"
 import { tableColumnWidthNormalizerPlugin } from "./tableColumnWidthNormalizerPlugin"
 
 export { TableRow } from "@tiptap/extension-table-row"
@@ -180,10 +181,24 @@ export const IsomerTable = Table.extend({
       createTableSelectionBorderPlugin(),
     ]
   },
-  // Replaces TipTap TableView. See IsomerTableView.ts.
+  // Caption + gutter (for drag-handle chrome) plus percent colgroup/resize.
+  // TipTap's TableView cannot host the caption or percentage widths.
   addNodeView() {
-    return ({ node, view, getPos, HTMLAttributes }) =>
-      new IsomerTableView(node, view, getPos, HTMLAttributes)
+    return ReactNodeViewRenderer(TableNodeView, {
+      contentDOMElementTag: "tbody",
+      // Mid-drag colwidth commits should not remount the React caption/handles.
+      update: ({ oldNode, newNode, updateProps }) => {
+        if (
+          isTableColumnResizeDragging() &&
+          oldNode.content.eq(newNode.content) &&
+          oldNode.attrs.caption === newNode.attrs.caption
+        ) {
+          return true
+        }
+        updateProps()
+        return true
+      },
+    })
   },
 })
 
