@@ -335,8 +335,8 @@ catalogs:
       specifier: ^6.2.12
       version: 6.2.12
     jotai:
-      specifier: ^2.20.3
-      version: 2.20.3
+      specifier: ^3.0.0
+      version: 3.0.0
     js-md5:
       specifier: ^0.9.2
       version: 0.9.2
@@ -1025,7 +1025,7 @@ importers:
         version: 6.2.12
       jotai:
         specifier: 'catalog:'
-        version: 2.20.3(@babel/core@8.0.1)(@babel/template@8.0.0)(@types/react@18.3.31)(react@18.3.1)
+        version: 3.0.0(@types/react@18.3.31)(react@18.3.1)
       jsdom:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@2.2.0)
@@ -9787,19 +9787,13 @@ packages:
   jose@6.2.12:
     resolution: {integrity: sha512-9NiFmJEex0sy2Dk58j2UGBSHgUs2ypF9eZSu4L6vjOX3Dp96Sw1F3uL+H+D1sx02jZZdzUT0HgvCy59CuvXcWw==}
 
-  jotai@2.20.3:
-    resolution: {integrity: sha512-N8L9FUbeGDP+0qNJw1FebOxt+5hk+jTOwUA2LlRE4C081jUcY6F1T/FSETp4DT2/INMtiSRZyNm2D+yZdzrSgA==}
-    engines: {node: '>=12.20.0'}
+  jotai@3.0.0:
+    resolution: {integrity: sha512-KxhbmsJUp/tmrv6aZgO+nzB3H9K8C0xmk5i3aGkwy/EANg73DVBkggv3zVHaAi5PlNlQgTgP4uiVepo+JC+wSA==}
+    engines: {node: '>=22.12.0'}
     peerDependencies:
-      '@babel/core': '>=7.0.0'
-      '@babel/template': '>=7.0.0'
-      '@types/react': '>=17.0.0'
-      react: '>=17.0.0'
+      '@types/react': '>=18.0.0'
+      react: '>=18.0.0'
     peerDependenciesMeta:
-      '@babel/core':
-        optional: true
-      '@babel/template':
-        optional: true
       '@types/react':
         optional: true
       react:
@@ -21239,10 +21233,8 @@ snapshots:
 
   jose@6.2.12: {}
 
-  jotai@2.20.3(@babel/core@8.0.1)(@babel/template@8.0.0)(@types/react@18.3.31)(react@18.3.1):
+  jotai@3.0.0(@types/react@18.3.31)(react@18.3.1):
     optionalDependencies:
-      '@babel/core': 8.0.1
-      '@babel/template': 8.0.0
       '@types/react': 18.3.31
       react: 18.3.1
 
