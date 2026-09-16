@@ -24,10 +24,7 @@ export const CancelSchedulePublishIndicator = ({
         />
       )}
       <TouchableTooltip label="This page is scheduled to publish. To make changes, cancel the schedule or wait until the page is published.">
-        <Button
-          colorScheme="critical"
-          onClick={cancelScheduleDisclosure.onOpen}
-        >
+        <Button onClick={cancelScheduleDisclosure.onOpen}>
           Cancel schedule
         </Button>
       </TouchableTooltip>

@@ -40,7 +40,7 @@ export const TitleCell = ({
         color="base.content.strong"
       />
       <VStack spacing="0.25rem" align="start">
-        <HStack align="center" spacing="0.5rem">
+        <HStack align="center" spacing="0.75rem">
           <Link
             as={NextLink}
             href={linkToResource}

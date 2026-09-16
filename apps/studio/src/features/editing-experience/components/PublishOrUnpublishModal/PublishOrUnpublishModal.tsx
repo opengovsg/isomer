@@ -16,9 +16,9 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import { add, set } from "date-fns"
+import { add, format, set } from "date-fns"
 import posthog from "posthog-js"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { BiSolidInfoCircle } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -35,7 +35,7 @@ import type { ActionMode, PublishOrUnpublishAction } from "./ActionOptionsInput"
 import { PUBLISHED_AFTER_EDITING_EVENT } from "../../constants"
 import { useFireContentEditSurveyEvent } from "../../hooks/useContentEditSurvey"
 import { ActionOptionsInput } from "./ActionOptionsInput"
-import { ScheduleBanner } from "./ScheduleBanner"
+import { ScheduleBanner, UNPUBLISH_WINDOW_MINUTES } from "./ScheduleBanner"
 import { ScheduleDateTimeFields } from "./ScheduleDateTimeFields"
 
 interface PublishOrUnpublishModalProps extends UseDisclosureReturn {
@@ -69,8 +69,11 @@ export const PublishOrUnpublishModal = ({
   const toast = useToast()
   const utils = trpc.useUtils()
   const fireContentEditSurveyEvent = useFireContentEditSurveyEvent()
-  const [mode, setMode] = useState<ActionMode | undefined>(undefined)
+  const [mode, setMode] = useState<ActionMode | undefined>(
+    action === "publish" ? "now" : undefined,
+  )
   const [isScheduleValid, setIsScheduleValid] = useState(false)
+  const lastScheduledAtRef = useRef<Date | null>(null)
 
   const schema =
     action === "publish"
@@ -148,9 +151,12 @@ export const PublishOrUnpublishModal = ({
       },
       onSuccess: () => {
         fireContentEditSurveyEvent(PUBLISHED_AFTER_EDITING_EVENT)
+        const formattedDate = lastScheduledAtRef.current
+          ? format(lastScheduledAtRef.current, "d MMM yyyy, h:mm a")
+          : ""
         toast({
           status: "success",
-          title: "Page scheduled successfully",
+          title: `This page is scheduled to publish on ${formattedDate}`,
           ...BRIEF_TOAST_SETTINGS,
         })
       },
@@ -206,9 +212,12 @@ export const PublishOrUnpublishModal = ({
       onClose()
     },
     onSuccess: () => {
+      const formattedDate = lastScheduledAtRef.current
+        ? format(lastScheduledAtRef.current, "d MMM yyyy, h:mm a")
+        : ""
       toast({
         status: "success",
-        title: "Page scheduled to unpublish successfully",
+        title: `This page is scheduled to unpublish on ${formattedDate}`,
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -243,6 +252,8 @@ export const PublishOrUnpublishModal = ({
       }
     } else if (mode === "later") {
       void methods.handleSubmit((res) => {
+        // Capture the scheduled date for use in the success toast
+        lastScheduledAtRef.current = res.scheduledAt
         if (action === "publish") {
           schedulePageMutation(res)
         } else {
@@ -277,7 +288,7 @@ export const PublishOrUnpublishModal = ({
     <Modal onClose={onClose} {...rest}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader mr="3.5rem">
+        <ModalHeader mr="3.5rem" fontWeight={600}>
           {action === "publish" ? "Publish this page?" : "Unpublish this page?"}
         </ModalHeader>
         <ModalCloseButton size="lg" />
@@ -305,7 +316,7 @@ export const PublishOrUnpublishModal = ({
                 </VStack>
               )}
               {action === "unpublish" && hasDraftChanges && (
-                <DraftChangesBanner />
+                <DraftChangesBanner mode={mode} scheduledAt={scheduledAt} />
               )}
             </VStack>
           </FormProvider>
@@ -338,7 +349,13 @@ export const PublishOrUnpublishModal = ({
   )
 }
 
-const DraftChangesBanner = () => (
+const DraftChangesBanner = ({
+  mode,
+  scheduledAt,
+}: {
+  mode: ActionMode | undefined
+  scheduledAt: Date | null
+}) => (
   <HStack
     spacing="0.5rem"
     alignItems="flex-start"
@@ -354,9 +371,27 @@ const DraftChangesBanner = () => (
     />
     <Text textStyle="body-2" color="base.content.strong" display="inline">
       <Text as="span" textStyle="subhead-2">
-        This page has unsaved draft changes.
+        This page has draft edits.
       </Text>{" "}
-      They'll be kept, and you can keep editing and publish them later.
+      {mode === "later" && scheduledAt ? (
+        <>
+          When it unpublishes between{" "}
+          <Text as="span" textStyle="subhead-2">
+            {format(scheduledAt, "h:mm a")} –{" "}
+            {format(
+              add(scheduledAt, { minutes: UNPUBLISH_WINDOW_MINUTES }),
+              "h:mm a",
+            )}
+          </Text>{" "}
+          on{" "}
+          <Text as="span" textStyle="subhead-2">
+            {format(scheduledAt, "MMMM d, yyyy")}
+          </Text>
+          , we will keep the version with the latest draft edits.
+        </>
+      ) : (
+        "Once you unpublish, we will keep the version with the latest draft edits."
+      )}
     </Text>
   </HStack>
 )

@@ -135,7 +135,7 @@ export const PageEditNavbar = (): JSX.Element => {
       {pageId && siteId && (
         <Flex justifyContent={"end"} alignItems={"center"} flex={1} gap="1rem">
           <PageStatusIndicators pageId={pageId} siteId={siteId} />
-          <PublishButton pageId={pageId} siteId={siteId} />
+          <PublishButton pageId={pageId} siteId={siteId} ms="0.5rem" />
           <PageMoreActionsButton pageId={pageId} siteId={siteId} />
         </Flex>
       )}

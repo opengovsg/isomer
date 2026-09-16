@@ -126,6 +126,7 @@ const SuspendablePageMoreActionsButton = ({
                           <VStack align="stretch" spacing="0.125rem">
                             <Text
                               textStyle="subhead-2"
+                              fontWeight={600}
                               color="base.content.strong"
                               whiteSpace="nowrap"
                             >

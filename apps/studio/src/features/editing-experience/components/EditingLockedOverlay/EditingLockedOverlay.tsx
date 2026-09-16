@@ -50,7 +50,7 @@ const SuspendableEditingLockedOverlay = ({
     <Flex
       position="absolute"
       inset={0}
-      bg="blackAlpha.700"
+      bg="blackAlpha.800"
       align="center"
       justify="center"
       // Must stay below Chakra's portal wrapper z-index (hardcoded 40, not
@@ -75,6 +75,7 @@ const SuspendableEditingLockedOverlay = ({
           action={isScheduledToPublish ? "publish" : "unpublish"}
           pageId={pageId}
           siteId={siteId}
+          isCurrentlyPublished={currPage.publishedVersionId !== null}
           {...cancelScheduleDisclosure}
         />
       )}
