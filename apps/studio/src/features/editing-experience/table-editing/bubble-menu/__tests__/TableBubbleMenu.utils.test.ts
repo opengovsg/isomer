@@ -279,6 +279,7 @@ describe("getSlotMovePlan", () => {
   ])(
     "moves the adjacent row $direction past the block",
     ({ direction, expected }) => {
+      // Arrange / Act / Assert
       expect(getSlotMovePlan("row", rowRect(1, 3, 4), direction)).toEqual(
         expected,
       )
@@ -286,7 +287,9 @@ describe("getSlotMovePlan", () => {
   )
 
   it("does not move a row beyond the table edge", () => {
+    // Arrange / Act / Assert
     expect(getSlotMovePlan("row", rowRect(0, 2, 4), "backward")).toBeNull()
+    // Arrange / Act / Assert
     expect(getSlotMovePlan("row", rowRect(2, 4, 4), "forward")).toBeNull()
   })
 
@@ -302,6 +305,7 @@ describe("getSlotMovePlan", () => {
   ])(
     "moves the adjacent column $direction past the block",
     ({ direction, expected }) => {
+      // Arrange / Act / Assert
       expect(getSlotMovePlan("column", columnRect(1, 3, 4), direction)).toEqual(
         expected,
       )
@@ -309,9 +313,11 @@ describe("getSlotMovePlan", () => {
   )
 
   it("does not move a column beyond the table edge", () => {
+    // Arrange / Act / Assert
     expect(
       getSlotMovePlan("column", columnRect(0, 2, 4), "backward"),
     ).toBeNull()
+    // Arrange / Act / Assert
     expect(getSlotMovePlan("column", columnRect(2, 4, 4), "forward")).toBeNull()
   })
 })

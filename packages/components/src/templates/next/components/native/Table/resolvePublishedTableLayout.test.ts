@@ -113,7 +113,7 @@ describe("resolvePublishedTableLayout", () => {
   })
 
   it("returns fixed equal-width tracks for staggered merges with a phantom column", () => {
-    // Act / Assert
+    // Arrange / Act / Assert
     expect(
       resolvePublishedTableLayout({
         colwidths: null,
@@ -127,7 +127,7 @@ describe("resolvePublishedTableLayout", () => {
   })
 
   it("prefers explicit editor colwidths over phantom-column equal widths", () => {
-    // Act / Assert
+    // Arrange / Act / Assert
     expect(
       resolvePublishedTableLayout({
         colwidths: [50, 25, 25],

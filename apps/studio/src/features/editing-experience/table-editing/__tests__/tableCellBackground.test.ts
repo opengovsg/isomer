@@ -134,6 +134,7 @@ const createEditor = (doc: ProseMirrorNode, selection: CellSelection) => {
 
 describe("appendClearBackgroundOnCellKindChange", () => {
   it("clears backgroundColor on cells that changed kind in the transaction", () => {
+    // Arrange
     const beforeDoc = createTableDoc([
       [{ type: "tableHeader", backgroundColor: "blue" }],
       [{ type: "tableCell", backgroundColor: "pink" }],
@@ -146,8 +147,11 @@ describe("appendClearBackgroundOnCellKindChange", () => {
 
     const state = EditorState.create({ doc: afterDoc })
     const transaction = state.tr
+
+    // Act
     appendClearBackgroundOnCellKindChange(beforeDoc, transaction)
 
+    // Assert
     expect(readCellColors(transaction.doc)).toEqual([
       { type: "tableCell", backgroundColor: null },
       { type: "tableCell", backgroundColor: "pink" },
