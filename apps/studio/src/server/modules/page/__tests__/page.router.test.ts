@@ -2065,6 +2065,9 @@ describe("page.router", async () => {
         .selectAll()
         .execute()
       expect(auditLogs.length).toEqual(1)
+      expect(auditLogs[0]?.delta).toMatchObject({
+        after: { versionId: newVersions[0]?.id, versionNum: 1 },
+      })
     })
 
     it("should block the first publish when a live redirect occupies the page's URL", async () => {
@@ -4677,7 +4680,7 @@ describe("page.router", async () => {
           new TRPCError({
             code: "PRECONDITION_FAILED",
             message:
-              "This folder or collection has other pages that won't be unpublished by then — unpublish or schedule them first.",
+              "Some pages in this folder/collection will still be live at that time. Schedule or unpublish those pages first.",
           }),
         )
       })

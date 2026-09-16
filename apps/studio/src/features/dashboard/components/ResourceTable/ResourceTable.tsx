@@ -65,6 +65,7 @@ const getColumns = ({ siteId }: ResourceTableProps) => [
         type={row.original.type}
         permalink={row.original.permalink}
         resourceType={row.original.type}
+        liveStatus={row.original.liveStatus}
       />
     ),
     size: 24,

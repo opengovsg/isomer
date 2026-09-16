@@ -1338,6 +1338,58 @@ export const assertResourceNotLive = async (
   }
 }
 
+// True when `resourceId` or any descendant has a pending scheduled
+// publish/unpublish. Deletion cascades and drops `scheduledAt`/`scheduledAction`
+// with the row, silently cancelling the schedule, so a Folder/Collection needs
+// its whole subtree checked, not just its own (always-null) scheduledAt.
+export const hasScheduledDescendant = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<boolean> => {
+  const scheduled = await withResourceSubtree(trx, { siteId, resourceId })
+    .selectFrom("subtree")
+    .innerJoin("Resource", "Resource.id", "subtree.id")
+    .where("Resource.scheduledAt", "is not", null)
+    .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS)
+    .select("Resource.id")
+    .executeTakeFirst()
+  return scheduled !== undefined
+}
+
+// Blocks deleting a resource that's still scheduled for a future
+// publish/unpublish, so the schedule doesn't silently vanish with the row.
+export const assertResourceNotScheduled = async (
+  tx: SafeKysely,
+  {
+    siteId,
+    resourceId,
+    resourceType,
+    scheduledAt,
+  }: {
+    siteId: number
+    resourceId: string
+    resourceType: ResourceType
+    scheduledAt: Date | null
+  },
+) => {
+  const isContainer =
+    resourceType === ResourceType.Folder ||
+    resourceType === ResourceType.Collection
+
+  const isScheduled = isContainer
+    ? await hasScheduledDescendant(tx, { siteId, resourceId })
+    : scheduledAt !== null
+
+  if (isScheduled) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: isContainer
+        ? `This ${resourceType === ResourceType.Folder ? "folder" : "collection"} has pages inside it scheduled for a future publish or unpublish — cancel the schedule before deleting`
+        : "This page is scheduled for a future publish or unpublish — cancel the schedule before deleting",
+    })
+  }
+}
+
 // Read-only mirror of the `move` mutation's unpublish-lock check, so the
 // destination picker can warn before submit. The mutation re-runs its own check.
 export const getMoveLockInfo = async (
@@ -2001,8 +2053,13 @@ export const publishPageResource = async ({
       siteId,
       by: await getUserById(userId),
       delta: {
-        before: previousVersion ? { versionId: previousVersion.id } : null,
-        after: { versionId: newVersion.id },
+        before: previousVersion
+          ? {
+              versionId: previousVersion.id,
+              versionNum: previousVersion.versionNum,
+            }
+          : null,
+        after: { versionId: newVersion.id, versionNum: newVersion.versionNum },
       },
       eventType: AuditLogEvent.Publish,
       metadata: fullResource,
@@ -2128,7 +2185,12 @@ export const unpublishPageResource = async ({
       }
     }
 
-    const previousVersionId = fullResource.publishedVersionId
+    // publishedVersionId is checked non-null above (PageAlreadyUnpublishedError).
+    const previousVersion = await tx
+      .selectFrom("Version")
+      .where("Version.id", "=", fullResource.publishedVersionId)
+      .select(["Version.id", "Version.versionNum"])
+      .executeTakeFirstOrThrow()
 
     let draftBlobId = fullResource.draftBlobId
 
@@ -2167,7 +2229,10 @@ export const unpublishPageResource = async ({
       siteId,
       by: await getUserById(userId),
       delta: {
-        before: { versionId: previousVersionId },
+        before: {
+          versionId: previousVersion.id,
+          versionNum: previousVersion.versionNum,
+        },
         after: null,
       },
       eventType: AuditLogEvent.Unpublish,

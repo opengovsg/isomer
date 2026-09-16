@@ -19,9 +19,18 @@ export const HasDraftIndicator = ({
       can't measure it for positioning without this wrapper — without it the
       tooltip renders pinned to the viewport's top-left. */}
       <Box as="span" display="inline-block">
-        <Badge size="xs" variant="clear" colorScheme="warning">
-          <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
-          <Text textStyle="legal">Has draft</Text>
+        <Badge
+          size="xs"
+          variant="clear"
+          colorScheme="warning"
+          color="yellow.500"
+        >
+          <BadgeLeftIcon
+            fontSize="0.5rem"
+            as={BiSolidCircle}
+            color="yellow.500"
+          />
+          <Text textStyle="legal">Draft</Text>
         </Badge>
       </Box>
     </Tooltip>

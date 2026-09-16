@@ -11,7 +11,11 @@ import {
   useDisclosure,
   VStack,
 } from "@chakra-ui/react"
-import { Button, IconButton } from "@opengovsg/design-system-react"
+import {
+  Button,
+  IconButton,
+  TouchableTooltip,
+} from "@opengovsg/design-system-react"
 import { BiDotsHorizontalRounded, BiHide } from "react-icons/bi"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
@@ -21,7 +25,6 @@ import { ResourceType, ScheduledAction } from "~prisma/generated/generatedEnums"
 
 import { CancelScheduleModal } from "./PublishingModal"
 import { PublishOrUnpublishModal } from "./PublishOrUnpublishModal"
-import { CantUnpublishModal } from "./UnpublishModal"
 
 interface PageMoreActionsButtonProps {
   pageId: number
@@ -34,7 +37,6 @@ const SuspendablePageMoreActionsButton = ({
 }: PageMoreActionsButtonProps): JSX.Element | null => {
   const isUnpublishEnabled = useIsUnpublishEnabled()
   const unpublishModalDisclosure = useDisclosure()
-  const cantUnpublishModalDisclosure = useDisclosure()
   const cancelScheduleDisclosure = useDisclosure()
 
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
@@ -49,12 +51,13 @@ const SuspendablePageMoreActionsButton = ({
     currPage.scheduledAction !== ScheduledAction.Unpublish
   const isIndexPage = currPage.type === ResourceType.IndexPage
 
-  // Shares the query the dashboard uses for LiveStatusBadges, so navigating
-  // here reuses a warm cache instead of a second round-trip.
+  // Shares the query the dashboard (and PageStatusIndicators) uses for
+  // LiveStatusBadges, so navigating here reuses a warm cache instead of a
+  // second round-trip.
   const { data: parentIndexPageInfo, isLoading: isBlockInfoLoading } =
     trpc.folder.getIndexpage.useQuery(
       { siteId, resourceId: currPage.parentId ?? "" },
-      { enabled: isIndexPage && isLive && !isScheduledToPublish },
+      { enabled: isIndexPage },
     )
 
   // RootPage can't be unpublished — mirrors the backend's rejection and the
@@ -73,9 +76,11 @@ const SuspendablePageMoreActionsButton = ({
 
   const disabledReason = !isLive
     ? "This page isn't live"
-    : isScheduledToPublish
-      ? "This page has a scheduled publish. Cancel it before unpublishing."
-      : undefined
+    : isBlockedByLiveDescendants
+      ? "There are child pages that are still live"
+      : isScheduledToPublish
+        ? "This page has a scheduled publish. Cancel it before unpublishing."
+        : undefined
 
   return (
     <Can do="unpublish" on="Resource" passThrough>
@@ -94,17 +99,6 @@ const SuspendablePageMoreActionsButton = ({
                 {...unpublishModalDisclosure}
               />
             )}
-            {cantUnpublishModalDisclosure.isOpen &&
-              currPage.parentId &&
-              parentIndexPageInfo && (
-                <CantUnpublishModal
-                  siteId={siteId}
-                  parentId={currPage.parentId}
-                  parentType={parentIndexPageInfo.parentType}
-                  count={parentIndexPageInfo.otherPublishedDescendantCount}
-                  {...cantUnpublishModalDisclosure}
-                />
-              )}
             {cancelScheduleDisclosure.isOpen && (
               <CancelScheduleModal
                 action="unpublish"
@@ -120,7 +114,7 @@ const SuspendablePageMoreActionsButton = ({
                     <IconButton
                       aria-label="More actions"
                       icon={<BiDotsHorizontalRounded />}
-                      variant="clear"
+                      variant="outline"
                       colorScheme="neutral"
                       size="sm"
                     />
@@ -132,12 +126,15 @@ const SuspendablePageMoreActionsButton = ({
                           <VStack align="stretch" spacing="0.125rem">
                             <Text
                               textStyle="subhead-2"
+                              fontWeight={600}
                               color="base.content.strong"
                               whiteSpace="nowrap"
                             >
                               {isScheduledToUnpublish
                                 ? "Scheduled to unpublish"
-                                : "Unpublish page"}
+                                : isBlockedByLiveDescendants
+                                  ? "This page can't be unpublished"
+                                  : "Unpublish page"}
                             </Text>
                             <Text
                               textStyle="body-2"
@@ -175,11 +172,7 @@ const SuspendablePageMoreActionsButton = ({
                               leftIcon={<Icon as={BiHide} boxSize="1rem" />}
                               onClick={() => {
                                 onClose()
-                                if (isBlockedByLiveDescendants) {
-                                  cantUnpublishModalDisclosure.onOpen()
-                                } else {
-                                  unpublishModalDisclosure.onOpen()
-                                }
+                                unpublishModalDisclosure.onOpen()
                               }}
                             >
                               Unpublish page
@@ -193,7 +186,18 @@ const SuspendablePageMoreActionsButton = ({
               )}
             </Popover>
           </>
-        ) : null
+        ) : (
+          <TouchableTooltip label="You don't have permission to unpublish pages">
+            <IconButton
+              aria-label="More actions"
+              icon={<BiDotsHorizontalRounded />}
+              variant="outline"
+              colorScheme="neutral"
+              size="sm"
+              isDisabled
+            />
+          </TouchableTooltip>
+        )
       }
     </Can>
   )

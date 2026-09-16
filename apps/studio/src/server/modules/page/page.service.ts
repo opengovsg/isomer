@@ -254,7 +254,7 @@ export const scheduleUnpublish = async ({
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           message:
-            "This folder or collection has other pages that won't be unpublished by then — unpublish or schedule them first.",
+            "Some pages in this folder/collection will still be live at that time. Schedule or unpublish those pages first.",
         })
       }
     }

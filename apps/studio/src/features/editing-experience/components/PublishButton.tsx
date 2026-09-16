@@ -59,6 +59,7 @@ const SuspendablePublishButton = ({
                 <CancelSchedulePublishIndicator
                   siteId={siteId}
                   pageId={pageId}
+                  isCurrentlyPublished={currPage.publishedVersionId !== null}
                 />
               ) : (
                 <Button
