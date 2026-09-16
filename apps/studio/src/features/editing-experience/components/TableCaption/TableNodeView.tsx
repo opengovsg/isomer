@@ -18,7 +18,7 @@ export const TableNodeView = ({
   getPos,
 }: NodeViewProps) => {
   const caption = (node.attrs.caption as string | undefined) ?? ""
-  const tableRef = useRef<HTMLTableElement>(null)
+  const tableRef = useRef<HTMLTableElement | null>(null)
   const columnCount = getColumnCount(node)
   const columnWidths = resolveColumnWidths(node.attrs.colwidths, columnCount)
 

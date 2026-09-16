@@ -50,6 +50,48 @@ const dispatchPointer = (
   )
 }
 
+const getEditorTable = (editor: Editor) => {
+  const table = editor.view.dom.querySelector("table")
+  if (!table) {
+    throw new Error("table not found")
+  }
+  return table
+}
+
+const resizeFirstColumn = async () => {
+  await waitFor(() => {
+    expect(
+      document.querySelector(
+        '[data-testid="isomer-table-resize-handle"][data-column-index="0"]',
+      ),
+    ).not.toBeNull()
+  })
+  const firstHandle = document.querySelector(
+    '[data-testid="isomer-table-resize-handle"][data-column-index="0"]',
+  )
+  if (!firstHandle) {
+    throw new Error("resize handle not found")
+  }
+  act(() => {
+    dispatchPointer(firstHandle, "pointerdown", 100)
+  })
+  act(() => {
+    dispatchPointer(window, "pointermove", 140)
+  })
+  act(() => {
+    dispatchPointer(window, "pointerup", 140)
+  })
+}
+
+const getTableJson = (editor: Editor): JSONContent | undefined =>
+  editor.getJSON().content?.[0]
+
+const getTableRowCount = (editor: Editor) =>
+  getTableJson(editor)?.content?.length ?? 0
+
+const getTableColumnCountFromDoc = (editor: Editor) =>
+  getTableJson(editor)?.content?.[0]?.content?.length ?? 0
+
 describe("table column-width resize", () => {
   afterEach(() => {
     vi.restoreAllMocks()
@@ -80,10 +122,12 @@ describe("table column-width resize", () => {
     })
 
     // Assert
-    const handles = document.querySelectorAll(
-      '[data-testid="isomer-table-resize-handle"]',
-    )
-    expect(handles.length).toBe(2) // 3 columns -> 2 interior boundaries
+    await waitFor(() => {
+      expect(
+        document.querySelectorAll('[data-testid="isomer-table-resize-handle"]')
+          .length,
+      ).toBe(2) // 3 columns -> 2 interior boundaries
+    })
   })
 
   it("only changes the dragged column and its direct neighbour during a live drag, and persists on release", async () => {
@@ -94,11 +138,15 @@ describe("table column-width resize", () => {
       editor.commands.insertTable({ rows: 2, cols: 3, withHeaderRow: true })
     })
 
-    const table = document.querySelector("table")
-    expect(table).not.toBeNull()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const tableEl = table!
-    const initialWidths = getColWidths(tableEl)
+    const table = await waitFor(() => {
+      const element = document.querySelector("table")
+      expect(element).not.toBeNull()
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const found = element!
+      expect(getColWidths(found)).toHaveLength(3)
+      return found
+    })
+    const initialWidths = getColWidths(table)
     initialWidths.forEach((width) => {
       expect(width).toBeCloseTo(100 / 3, 3)
     })
@@ -119,7 +167,7 @@ describe("table column-width resize", () => {
     })
 
     // Assert
-    const duringDragWidths = getColWidths(tableEl)
+    const duringDragWidths = getColWidths(table)
     expect(duringDragWidths[0]).toBeGreaterThan(initialWidths[0] ?? 0)
     expect(duringDragWidths[1]).toBeLessThan(initialWidths[1] ?? 0)
     expect(duringDragWidths[2]).toBeCloseTo(initialWidths[2] ?? 0, 3)
@@ -168,16 +216,18 @@ describe("table column-width resize", () => {
     })
     const depthBeforeDrag = undoDepth(editor.state)
 
-    const firstHandle = document.querySelector(
-      '[data-testid="isomer-table-resize-handle"][data-column-index="0"]',
-    )
-    expect(firstHandle).not.toBeNull()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const handle = firstHandle!
+    const firstHandle = await waitFor(() => {
+      const handle = document.querySelector(
+        '[data-testid="isomer-table-resize-handle"][data-column-index="0"]',
+      )
+      expect(handle).not.toBeNull()
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return handle!
+    })
 
     // Act
     act(() => {
-      dispatchPointer(handle, "pointerdown", 100)
+      dispatchPointer(firstHandle, "pointerdown", 100)
     })
     act(() => {
       dispatchPointer(window, "pointermove", 140)
@@ -203,5 +253,61 @@ describe("table column-width resize", () => {
 
     // Assert
     expect(undoDepth(editor.state)).toBe(depthBeforeDrag + 1)
+  })
+
+  it("shows a newly added row in the editor after the table has been resized", async () => {
+    // Arrange
+    const editor = await renderEditor()
+    act(() => {
+      editor.commands.insertTable({ rows: 2, cols: 3, withHeaderRow: true })
+    })
+    await resizeFirstColumn()
+    const table = getEditorTable(editor)
+    const rowCountBefore = table.querySelectorAll("tr").length
+
+    // Act
+    act(() => {
+      editor.chain().focus().addRowAfter().run()
+    })
+
+    // Assert
+    expect(getTableRowCount(editor)).toBe(rowCountBefore + 1)
+    const rows = table.querySelectorAll("tr")
+    expect(rows).toHaveLength(rowCountBefore + 1)
+    const lastRow = rows[rows.length - 1]
+    expect(lastRow).toBeDefined()
+    expect(lastRow?.getBoundingClientRect().height ?? 0).toBeGreaterThan(1)
+    expect(table.scrollHeight).toBe(table.clientHeight)
+  })
+
+  it("shows a newly added column in the editor after the table has been resized", async () => {
+    // Arrange
+    const editor = await renderEditor()
+    act(() => {
+      editor.commands.insertTable({ rows: 2, cols: 3, withHeaderRow: true })
+    })
+    await resizeFirstColumn()
+    const table = getEditorTable(editor)
+    const columnCountBefore =
+      table.querySelectorAll("tr")[0]?.children.length ?? 0
+
+    // Act
+    act(() => {
+      editor.chain().focus().addColumnAfter().run()
+    })
+
+    // Assert
+    expect(getTableColumnCountFromDoc(editor)).toBe(columnCountBefore + 1)
+    const colwidths =
+      (editor.getJSON().content?.[0]?.attrs?.colwidths as
+        | number[]
+        | undefined) ?? []
+    expect(colwidths).toHaveLength(columnCountBefore + 1)
+    const firstRowCells = table.querySelectorAll("tr")[0]?.children ?? []
+    expect(firstRowCells).toHaveLength(columnCountBefore + 1)
+    expect(table.querySelectorAll("col")).toHaveLength(columnCountBefore + 1)
+    const lastCell = firstRowCells[firstRowCells.length - 1]
+    expect(lastCell).toBeDefined()
+    expect(lastCell?.getBoundingClientRect().width ?? 0).toBeGreaterThan(1)
   })
 })
