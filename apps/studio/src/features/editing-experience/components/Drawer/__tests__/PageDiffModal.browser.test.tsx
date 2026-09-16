@@ -102,6 +102,7 @@ const renderModal = (isOpen: boolean) =>
           isOpen={isOpen}
           onClose={noop}
           row={{
+            id: "audit-log-1",
             createdAt: new Date("2026-01-01T00:00:00Z"),
             actor: { name: "Alice" },
             beforeContent: BEFORE_PAGE,
@@ -142,11 +143,12 @@ describe("PageDiffModal", () => {
       expect(document.querySelectorAll("iframe")).toHaveLength(2)
     })
 
-    // Re-queried fresh each time rather than captured once: each render of
-    // `PreviewIframe` resets the underlying `<iframe>`'s `srcDoc`, which
-    // reloads its browsing context and replaces `contentDocument` — so a
-    // `body` reference grabbed before the toggle click would otherwise go
-    // stale as soon as the toggle's re-render fires.
+    // Re-queried fresh each time rather than captured once: right after
+    // mount, the iframe's `srcdoc` document may still be parsing, so
+    // grabbing `contentDocument.body` too early can capture a reference
+    // from before `<body>` exists (an async load-timing race, not a
+    // per-render reload — the iframe/document/srcdoc are otherwise stable
+    // across re-renders). Re-querying avoids relying on that timing.
     const getBodies = () =>
       Array.from(document.querySelectorAll("iframe")).map(
         (f) => (f as HTMLIFrameElement).contentDocument?.body,
