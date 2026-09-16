@@ -402,6 +402,67 @@ describe("table column-width resize", () => {
     expect(table.querySelectorAll("col")).toHaveLength(columnCountBefore - 1)
   })
 
+  it("paints resolved equal widths on cancel when stored colwidths have an invalid total", async () => {
+    // Arrange
+    const editor = await renderEditor()
+    act(() => {
+      editor.commands.insertTable({ rows: 2, cols: 3, withHeaderRow: true })
+    })
+
+    const table = await waitFor(() => {
+      const element = document.querySelector("table")
+      expect(element).not.toBeNull()
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return element!
+    })
+
+    act(() => {
+      const tablePos = 0
+      const node = editor.state.doc.nodeAt(tablePos)
+      if (!node) {
+        throw new Error("table node not found")
+      }
+      editor.view.dispatch(
+        editor.state.tr.setNodeMarkup(tablePos, null, {
+          ...node.attrs,
+          colwidths: [50, 50, 50],
+        }),
+      )
+    })
+
+    await waitFor(() => {
+      getColWidths(table).forEach((width) => {
+        expect(width).toBeCloseTo(100 / 3, 2)
+      })
+    })
+
+    const handle = await waitFor(() => {
+      const element = document.querySelector(
+        '[data-testid="isomer-table-resize-handle"][data-column-index="0"]',
+      )
+      expect(element).not.toBeNull()
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return element!
+    })
+
+    // Act
+    act(() => {
+      dispatchPointer(handle, "pointerdown", 100)
+    })
+    act(() => {
+      dispatchPointer(window, "pointercancel", 100)
+    })
+
+    // Assert
+    expect(isTableColumnResizeDragging(editor)).toBe(false)
+    getColWidths(table).forEach((width) => {
+      expect(width).toBeCloseTo(100 / 3, 2)
+    })
+    expect(editor.getJSON().content?.[0]?.attrs?.colwidths).toEqual([
+      50, 50, 50,
+    ])
+  })
+
   it("clears drag state and restores pre-drag widths when the pointer is cancelled", async () => {
     // Arrange
     const editor = await renderEditor()

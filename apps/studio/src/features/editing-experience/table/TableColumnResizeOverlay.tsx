@@ -167,10 +167,9 @@ export const TableColumnResizeOverlay = ({
       afterEnd()
     }
 
-    const preDragResolvedWidths = preDragColwidths ?? startWidths
-
     const revertToPreDragWidths = () => {
-      paintWidths(preDragResolvedWidths)
+      // Paint resolved widths (what the editor was showing); restore raw attrs separately.
+      paintWidths(startWidths)
       commitWidths(preDragColwidths, { addToHistory: false })
     }
 
@@ -182,7 +181,7 @@ export const TableColumnResizeOverlay = ({
         commitWidths(preDragColwidths, { addToHistory: false })
         if (
           !finalWidths.every(
-            (width, index) => width === (preDragResolvedWidths[index] ?? 0),
+            (width, index) => width === (startWidths[index] ?? 0),
           )
         ) {
           commitWidths(finalWidths)
