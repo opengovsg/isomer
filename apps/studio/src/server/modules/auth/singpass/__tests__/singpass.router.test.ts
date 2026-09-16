@@ -11,6 +11,7 @@ import { env } from "~/env.mjs"
 import { AuditLogEvent, db } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
 
+import { toSessionVerificationToken } from "../session"
 import { singpassRouter } from "../singpass.router"
 import * as SingpassService from "../singpass.service"
 
@@ -63,7 +64,7 @@ describe("auth.singpass", () => {
           userId: "test-user-id" as NonNullable<
             NonNullable<SessionData["singpass"]>["sessionState"]
           >["userId"],
-          verificationToken,
+          verificationToken: toSessionVerificationToken(verificationToken),
           codeVerifier: "code-verifier",
           nonce: "nonce",
         },

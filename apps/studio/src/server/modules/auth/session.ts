@@ -1,6 +1,11 @@
 import { type SessionOptions } from "iron-session"
 import { env } from "~/env.mjs"
-import { type SessionData } from "~/lib/types/session"
+import {
+  type SessionData,
+  type SessionVerificationToken,
+} from "~/lib/types/session"
+
+import { type VerificationToken } from "../database"
 
 // The versioned iron-session password map used to seal/unseal every iron
 // blob Studio produces — session cookies AND audit-log-export Download
@@ -15,10 +20,23 @@ export const getIronPassword = (): SessionOptions["password"] => ({
 })
 
 /** Clear session fields without `destroy()` — v9 treats destroy as terminal. */
-export const clearSessionData = (session: { userId?: SessionData["userId"]; singpass?: SessionData["singpass"] }) => {
+export const clearSessionData = (session: {
+  userId?: SessionData["userId"]
+  singpass?: SessionData["singpass"]
+}) => {
   delete session.userId
   delete session.singpass
 }
+
+/** iron-session v9 rejects Date objects at seal time. */
+export const toSessionVerificationToken = (
+  token: VerificationToken,
+): SessionVerificationToken => ({
+  identifier: token.identifier,
+  token: token.token,
+  attempts: token.attempts,
+  expires: new Date(token.expires).getTime(),
+})
 
 interface GenerateSessionOptionsProps {
   ttlInHours?: number
