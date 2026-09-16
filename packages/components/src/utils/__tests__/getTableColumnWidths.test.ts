@@ -94,6 +94,17 @@ describe("resolveColumnWidths", () => {
     expect(result).toEqual(getEqualColumnWidths(3))
   })
 
+  it("should fall back to an equal split when widths do not sum to 100", () => {
+    // Arrange
+    const colwidths = [80, 10]
+
+    // Act
+    const result = resolveColumnWidths(colwidths, 2)
+
+    // Assert
+    expect(result).toEqual(getEqualColumnWidths(2))
+  })
+
   it("should return the explicit widths when the array is complete and the right length", () => {
     // Arrange
     const colwidths = [50, 30, 20]
@@ -141,5 +152,17 @@ describe("isUsableColwidths", () => {
 
     // Assert
     expect(result).toBe(true)
+  })
+
+  it("should return false when widths do not sum to 100", () => {
+    // Arrange
+    const colwidths = [80, 10]
+    const columnCount = 2
+
+    // Act
+    const result = isUsableColwidths({ colwidths, columnCount })
+
+    // Assert
+    expect(result).toBe(false)
   })
 })

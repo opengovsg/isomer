@@ -11,6 +11,9 @@ export const buildColgroupSpec = (resolvedWidths: number[]): ColgroupSpec => ({
   columnWidths: resolvedWidths.map((width) => `${width}%`),
 })
 
+const colwidthsSumToOneHundred = (colwidths: number[]): boolean =>
+  Math.abs(colwidths.reduce((sum, width) => sum + width, 0) - 100) < 1e-5
+
 export const isUsableColwidths = ({
   colwidths,
   columnCount,
@@ -20,9 +23,11 @@ export const isUsableColwidths = ({
 }): boolean =>
   Array.isArray(colwidths) &&
   colwidths.length === columnCount &&
-  colwidths.every((width) => typeof width === "number")
+  colwidths.every((width) => typeof width === "number") &&
+  colwidthsSumToOneHundred(colwidths)
 
-// Equal split when colwidths is missing, the wrong length, or has a non-number entry.
+// Equal split when colwidths is missing, the wrong length, has a non-number entry,
+// or does not sum to approximately 100.
 // Shared with apps/studio so both sides agree on valid colwidths.
 export const resolveColumnWidths = (
   colwidths: unknown,
