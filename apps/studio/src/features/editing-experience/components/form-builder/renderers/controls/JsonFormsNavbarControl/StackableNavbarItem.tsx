@@ -1,14 +1,14 @@
+import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
 import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter"
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/utils/combine"
+import type { ErrorObject } from "ajv"
+import { attachClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/attach-closest-edge"
+import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/extract-closest-edge"
+import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
 import {
   draggable,
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter"
-import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
-import { attachClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/attach-closest-edge"
-import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/extract-closest-edge"
-import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
-import type { ErrorObject } from "ajv"
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/utils/combine"
 import {
   AccordionItem,
   AccordionPanel,

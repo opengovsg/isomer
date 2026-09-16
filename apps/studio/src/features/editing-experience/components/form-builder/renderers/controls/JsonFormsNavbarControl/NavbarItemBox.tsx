@@ -1,13 +1,13 @@
+import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
 import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter"
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/utils/combine"
+import type { Dispatch, SetStateAction } from "react"
+import { attachClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/attach-closest-edge"
+import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/extract-closest-edge"
 import {
   draggable,
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter"
-import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
-import { attachClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/attach-closest-edge"
-import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/extract-closest-edge"
-import type { Dispatch, SetStateAction } from "react"
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/utils/combine"
 import {
   AccordionButton,
   AccordionIcon,
