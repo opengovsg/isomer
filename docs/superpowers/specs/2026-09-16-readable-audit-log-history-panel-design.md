@@ -47,7 +47,7 @@ New query procedure:
 ### Frontend: `PageHistoryPanel`
 
 - New component under `apps/studio/src/features/editing-experience/components/history/PageHistoryPanel.tsx`.
-- Entry point: a new "History" control in the page editor (near the existing publish/preview controls) that opens this panel as a **drawer** (chosen over a modal so the page stays visible underneath, consistent with other drawers already used in `editing-experience`).
+- Entry point: a new "View page history" button in the editor's root left-rail panel (`RootStateDrawer`), opening this panel as a **drawer** (chosen over a modal so the page stays visible underneath). Concretely, this means adding `"history"` as a new state in the existing `DrawerState` state machine that already drives this left rail (the same mechanism used for `"metadataEditor"`, `"rawJsonEditor"`, etc.), rather than a button in the top navbar next to Publish — the navbar renders outside the `EditorDrawerProvider` context boundary that this state machine depends on, so a navbar-triggered drawer would require a larger provider restructuring out of scope here.
 - Data: `trpc.audit.listResourceUpdates` via the app's standard infinite/cursor query pattern, wrapped in `withSuspense`.
 - Each row renders: formatted timestamp, actor name/email, and a "View changes" button.
 - A "Load more" button at the bottom calls `fetchNextPage()` while `hasNextPage` is true.
