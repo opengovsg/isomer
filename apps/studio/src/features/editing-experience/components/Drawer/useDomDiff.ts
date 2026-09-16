@@ -55,6 +55,15 @@ export function useDomDiff({
 }: UseDomDiffParams): UseDomDiffResult {
   const [status, setStatus] = useState<DomDiffStatus>("pending")
 
+  // This effect only recomputes when the `beforeDocument`/`afterDocument`
+  // object *references* change (per the dependency array below) — it does
+  // NOT observe in-place mutations of a document's content. That's fine
+  // today because every caller (via `PreviewIframe`'s mount callback) hands
+  // over fully-resolved static content synchronously, before the Document
+  // reference is exposed to this hook. If a future caller instead streamed
+  // or incrementally updated content into an already-mounted iframe, this
+  // hook would silently diff against stale content, since no new Document
+  // reference would arrive to re-trigger the effect.
   useEffect(() => {
     if (!beforeDocument?.body || !afterDocument?.body) return
 
