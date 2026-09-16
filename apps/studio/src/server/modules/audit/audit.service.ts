@@ -1,5 +1,6 @@
+import type { IsomerSchema } from "@opengovsg/isomer-components"
+
 import type {
-  AuditLogEvent,
   AuditLogExportReportType,
   Blob,
   DB,
@@ -15,12 +16,13 @@ import type {
   VerificationToken,
   Version,
 } from "../database"
+import { AuditLogEvent, db, sql } from "../database"
 
 type WithoutMeta<T> = Omit<T, "createdAt" | "updatedAt">
 
 // NOTE: Either a folder/collection that doesn't have a blob
 // or a page w/ blob
-type FullResource =
+export type FullResource =
   | WithoutMeta<Resource>
   | {
       blob: WithoutMeta<Blob>
@@ -428,4 +430,85 @@ export const logAuditLogExportEvents: AuditLogger<
       })),
     )
     .execute()
+}
+
+export interface ResourceUpdateRow {
+  id: string
+  createdAt: Date
+  actor: { id: string; name: string; email: string }
+  beforeContent: IsomerSchema
+  afterContent: IsomerSchema
+}
+
+interface ListResourceUpdatesProps {
+  resourceId: number
+  siteId: number
+  cursor: number
+  limit: number
+}
+
+interface ListResourceUpdatesResult {
+  items: ResourceUpdateRow[]
+  nextOffset: number | null
+}
+
+// Every `updatePageBlob` save logs a `ResourceUpdate` row even when the blob
+// content didn't actually change (e.g. re-saving with no edits) — see
+// `page.router.ts`. We filter those out here so the history panel only ever
+// shows rows with a real content diff to render.
+export const listResourceUpdates = async ({
+  resourceId,
+  siteId,
+  cursor: offset,
+  limit,
+}: ListResourceUpdatesProps): Promise<ListResourceUpdatesResult> => {
+  const resourceIdString = String(resourceId)
+
+  const rows = await db
+    .selectFrom("AuditLog")
+    .innerJoin("User", "User.id", "AuditLog.userId")
+    .select([
+      "AuditLog.id as id",
+      "AuditLog.createdAt",
+      "AuditLog.delta",
+      "User.id as actorId",
+      "User.name as actorName",
+      "User.email as actorEmail",
+    ])
+    .where("AuditLog.siteId", "=", siteId)
+    .where("AuditLog.eventType", "=", AuditLogEvent.ResourceUpdate)
+    .where(
+      sql<boolean>`"AuditLog"."delta" -> 'after' -> 'resource' ->> 'id' = ${resourceIdString}`,
+    )
+    .where(sql<boolean>`"AuditLog"."delta" -> 'before' ? 'blob'`)
+    .where(sql<boolean>`"AuditLog"."delta" -> 'after' ? 'blob'`)
+    .where(
+      sql<boolean>`"AuditLog"."delta" -> 'before' -> 'blob' -> 'content' IS DISTINCT FROM "AuditLog"."delta" -> 'after' -> 'blob' -> 'content'`,
+    )
+    .orderBy("AuditLog.createdAt", "desc")
+    .offset(offset)
+    .limit(limit + 1)
+    .execute()
+
+  const hasMore = rows.length > limit
+  const page = hasMore ? rows.slice(0, limit) : rows
+
+  const items = page.map((row): ResourceUpdateRow => {
+    const delta = row.delta as unknown as {
+      before: { blob: { content: IsomerSchema } }
+      after: { blob: { content: IsomerSchema } }
+    }
+    return {
+      id: row.id,
+      createdAt: row.createdAt,
+      actor: { id: row.actorId, name: row.actorName, email: row.actorEmail },
+      beforeContent: delta.before.blob.content,
+      afterContent: delta.after.blob.content,
+    }
+  })
+
+  return {
+    items,
+    nextOffset: hasMore ? offset + limit : null,
+  }
 }
