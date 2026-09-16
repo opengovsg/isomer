@@ -51,7 +51,7 @@ const SuspendableEditingLockedOverlay = ({
     <Flex
       position="absolute"
       inset={0}
-      bg="blackAlpha.700"
+      bg="blackAlpha.800"
       align="center"
       justify="center"
       // Chakra wraps every portaled element (Modal, Toast, Popover, Menu,
@@ -111,6 +111,7 @@ const SuspendableEditingLockedOverlay = ({
                 action={isScheduledToPublish ? "publish" : "unpublish"}
                 pageId={pageId}
                 siteId={siteId}
+                isCurrentlyPublished={currPage.publishedVersionId !== null}
                 {...cancelScheduleDisclosure}
               />
             )}

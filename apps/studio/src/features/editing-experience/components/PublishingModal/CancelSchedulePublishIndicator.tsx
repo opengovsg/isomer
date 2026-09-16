@@ -22,9 +22,7 @@ export const CancelSchedulePublishIndicator = ({
           pageId={pageId}
         />
       )}
-      <Button colorScheme="critical" onClick={cancelScheduleDisclosure.onOpen}>
-        Cancel schedule
-      </Button>
+      <Button onClick={cancelScheduleDisclosure.onOpen}>Cancel schedule</Button>
     </>
   )
 }
