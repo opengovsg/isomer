@@ -63,7 +63,7 @@ export const TableColumnResizeOverlay = ({
   }
 
   const commitWidths = (
-    nextWidths: number[],
+    nextWidths: number[] | null,
     options: { addToHistory?: boolean } = {},
   ) => {
     const tablePos = getPos()
@@ -102,6 +102,14 @@ export const TableColumnResizeOverlay = ({
     event.preventDefault()
     beginTableColumnResizeDrag(editor)
 
+    const tablePosAtDragStart = getPos()
+    const preDragColwidths =
+      tablePosAtDragStart == null
+        ? null
+        : ((editor.state.doc.nodeAt(tablePosAtDragStart)?.attrs.colwidths as
+            | number[]
+            | null
+            | undefined) ?? null)
     const startWidths = liveWidths
     const minPercent = (MIN_COLUMN_WIDTH_PX / tableWidthPx) * 100
     const startX = event.clientX
@@ -141,18 +149,59 @@ export const TableColumnResizeOverlay = ({
     const endDrag = () => {
       win.removeEventListener("pointermove", onPointerMove)
       win.removeEventListener("pointerup", onPointerUp)
+      win.removeEventListener("pointercancel", onPointerCancel)
+      win.removeEventListener("lostpointercapture", onLostPointerCapture)
       stopDragRef.current = null
       cancelPendingCommit()
       endTableColumnResizeDrag(editor)
     }
 
-    const onPointerUp = (upEvent: PointerEvent) => {
+    let dragFinished = false
+
+    const finishDrag = (afterEnd: () => void) => {
+      if (dragFinished) {
+        return
+      }
+      dragFinished = true
       endDrag()
-      commitWidths(computeWidths(upEvent))
+      afterEnd()
+    }
+
+    const preDragResolvedWidths = preDragColwidths ?? startWidths
+
+    const revertToPreDragWidths = () => {
+      paintWidths(preDragResolvedWidths)
+      commitWidths(preDragColwidths, { addToHistory: false })
+    }
+
+    const onPointerUp = (upEvent: PointerEvent) => {
+      const finalWidths = computeWidths(upEvent)
+      finishDrag(() => {
+        // Mid-drag commits leave preview widths in the doc without history. Reset to
+        // the pre-drag attrs first so the release commit is one undo step.
+        commitWidths(preDragColwidths, { addToHistory: false })
+        if (
+          !finalWidths.every(
+            (width, index) => width === (preDragResolvedWidths[index] ?? 0),
+          )
+        ) {
+          commitWidths(finalWidths)
+        }
+      })
+    }
+
+    const onPointerCancel = () => {
+      finishDrag(revertToPreDragWidths)
+    }
+
+    const onLostPointerCapture = () => {
+      finishDrag(revertToPreDragWidths)
     }
 
     win.addEventListener("pointermove", onPointerMove)
     win.addEventListener("pointerup", onPointerUp)
+    win.addEventListener("pointercancel", onPointerCancel)
+    win.addEventListener("lostpointercapture", onLostPointerCapture)
     stopDragRef.current = endDrag
   }
 

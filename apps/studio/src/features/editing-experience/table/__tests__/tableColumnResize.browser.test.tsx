@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { ajv } from "~/utils/ajv"
 
 import { useTextEditor } from "../../hooks/useTextEditor/useTextEditor"
+import { isTableColumnResizeDragging } from "../tableLayoutController"
 
 // Same schema and validator as EditPageDrawer.tsx.
 const validateProse = ajv.compile<ProseProps>(
@@ -246,6 +247,39 @@ describe("table column-width resize", () => {
     expect(undoDepth(editor.state)).toBe(depthBeforeDrag + 1)
   })
 
+  it("restores pre-drag column widths when undoing a completed resize", async () => {
+    // Arrange
+    const editor = await renderEditor()
+    act(() => {
+      editor.commands.insertTable({ rows: 2, cols: 3, withHeaderRow: true })
+    })
+
+    const initialColwidths = editor.getJSON().content?.[0]?.attrs?.colwidths as
+      | number[]
+      | null
+      | undefined
+    await resizeFirstColumn()
+
+    const resizedWidths: number[] =
+      (editor.getJSON().content?.[0]?.attrs?.colwidths as
+        | number[]
+        | undefined) ?? []
+    const baselineFirstColumnWidth = Array.isArray(initialColwidths)
+      ? (initialColwidths[0] ?? 0)
+      : 100 / 3
+    expect(resizedWidths[0]).toBeGreaterThan(baselineFirstColumnWidth)
+
+    // Act
+    act(() => {
+      editor.commands.undo()
+    })
+
+    // Assert
+    expect(editor.getJSON().content?.[0]?.attrs?.colwidths ?? null).toEqual(
+      initialColwidths ?? null,
+    )
+  })
+
   it("shows a newly added row in the editor after the table has been resized", async () => {
     // Arrange
     const editor = await renderEditor()
@@ -305,5 +339,70 @@ describe("table column-width resize", () => {
     const lastCell = firstRowCells[firstRowCells.length - 1]
     expect(lastCell).toBeDefined()
     expect(lastCell?.getBoundingClientRect().width ?? 0).toBeGreaterThan(1)
+  })
+
+  it("clears drag state and restores pre-drag widths when the pointer is cancelled", async () => {
+    // Arrange
+    const editor = await renderEditor()
+    act(() => {
+      editor.commands.insertTable({ rows: 2, cols: 3, withHeaderRow: true })
+    })
+
+    const table = await waitFor(() => {
+      const element = document.querySelector("table")
+      expect(element).not.toBeNull()
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return element!
+    })
+    const initialWidths = getColWidths(table)
+    const handle = await waitFor(() => {
+      const element = document.querySelector(
+        '[data-testid="isomer-table-resize-handle"][data-column-index="0"]',
+      )
+      expect(element).not.toBeNull()
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return element!
+    })
+
+    // Act
+    act(() => {
+      dispatchPointer(handle, "pointerdown", 100)
+    })
+    act(() => {
+      dispatchPointer(window, "pointermove", 140)
+    })
+    expect(isTableColumnResizeDragging(editor)).toBe(true)
+
+    act(() => {
+      dispatchPointer(window, "pointercancel", 140)
+    })
+
+    // Assert
+    expect(isTableColumnResizeDragging(editor)).toBe(false)
+    getColWidths(table).forEach((width, index) => {
+      expect(width).toBeCloseTo(initialWidths[index] ?? 0, 2)
+    })
+    const persistedWidths: number[] =
+      (editor.getJSON().content?.[0]?.attrs?.colwidths as
+        | number[]
+        | undefined) ?? []
+    persistedWidths.forEach((width, index) => {
+      expect(width).toBeCloseTo(initialWidths[index] ?? 0, 2)
+    })
+
+    // Act
+    act(() => {
+      dispatchPointer(handle, "pointerdown", 100)
+    })
+    act(() => {
+      dispatchPointer(window, "pointermove", 160)
+    })
+    act(() => {
+      dispatchPointer(window, "pointerup", 160)
+    })
+
+    // Assert
+    expect(isTableColumnResizeDragging(editor)).toBe(false)
+    expect(getColWidths(table)[0]).toBeGreaterThan(initialWidths[0] ?? 0)
   })
 })
