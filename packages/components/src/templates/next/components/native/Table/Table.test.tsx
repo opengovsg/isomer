@@ -99,6 +99,67 @@ describe("Table colgroup", () => {
     expect(html).toContain('rowspan="2"')
   })
 
+  it("uses explicit colwidths on a plain table without forcing phantom equal split", () => {
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{ caption: "Resized two columns", colwidths: [70, 30] }}
+        content={[
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableHeader",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "A" }],
+                  },
+                ],
+              },
+              {
+                type: "tableHeader",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "B" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ]}
+      />,
+    )
+
+    expect(html).toContain("table-fixed")
+    const colWidths = [...html.matchAll(/<col style="width:([^"]+)"\/?>/g)].map(
+      (match) => match[1],
+    )
+    expect(colWidths).toEqual(["70%", "30%"])
+  })
+
+  it("prefers explicit colwidths over phantom equal split on staggered merges", () => {
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{
+          caption: "Resized staggered merges",
+          colwidths: [50, 25, 25],
+        }}
+        content={staggeredMergesContent}
+      />,
+    )
+
+    expect(html).toContain("table-fixed")
+    const colWidths = [...html.matchAll(/<col style="width:([^"]+)"\/?>/g)].map(
+      (match) => match[1],
+    )
+    expect(colWidths).toEqual(["50%", "25%", "25%"])
+  })
+
   it("keeps auto layout and omits colgroup for a plain 2-column table", () => {
     // Arrange / Act
     const html = renderToStaticMarkup(
@@ -237,6 +298,10 @@ describe("Table colgroup", () => {
     expect(html).toContain(`rowspan="${MAX_TABLE_ROWS}"`)
     expect(html).not.toContain('colSpan="1000000"')
     expect(html).not.toContain('rowspan="1000000"')
+    const colWidths = [...html.matchAll(/<col style="width:([^"]+)"\/?>/g)].map(
+      (match) => match[1],
+    )
+    expect(colWidths).toHaveLength(MAX_TABLE_COLUMNS)
   })
 
   it("preserves legitimate rowspans above the column cap", () => {
