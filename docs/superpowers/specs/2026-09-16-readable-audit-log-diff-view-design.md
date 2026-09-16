@@ -56,6 +56,10 @@ New files, all under `apps/studio/src/features/editing-experience/components/Dra
 - `PageDiffModal` / `useDomDiff`: a Vitest Browser Mode component test using two small, deliberately different static HTML fixtures rendered via real iframes, verifying end-to-end that a known before/after difference produces the expected highlight in the expected pane. Running the real `diffDOM` against small fixtures is more trustworthy here than mocking its output.
 - A toggle test: switching the highlight `Switch` off makes the highlight elements invisible/inert; switching it on makes them reappear.
 
+## Known follow-up (non-blocking, identified in final review)
+
+`useDomDiff` assumes callers hand it fully-resolved iframe content synchronously (documented as a comment in the hook itself). In practice, `PreviewWithCustomSitemap` has its own internal `Suspense` boundary around three tRPC queries, and the iframe-mount callback that feeds `useDomDiff` fires independently of whether that suspended content has actually resolved. Today this is masked because `PageDiffModal`'s `getLocalisedSitemap` query shares a cache key with `EditPagePreview`, which is always mounted first in the only current entry point (the History panel is only reachable from within the page editor, which has already warmed that cache). If this pattern is ever reused from an entry point that doesn't guarantee a warm cache, `useDomDiff` could silently diff two loading skeletons instead of real content, and — since it keys off `Document` object identity rather than content readiness — would never recompute once the real content resolved in place. Fix before reusing this pattern elsewhere: either surface loading state through `useDomDiff`'s `status`, or make the cache-warmth dependency explicit and tested at the `PageDiffModal` call site.
+
 ## Open questions carried over from the source doc (unaddressed by this phase)
 
 1. Whether users actually want a true audit log vs. a change log — unchanged from Phase 1's framing.
