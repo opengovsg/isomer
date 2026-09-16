@@ -1,10 +1,5 @@
 import type { Level } from "@tiptap/extension-heading"
 import type { Extensions } from "@tiptap/react"
-import type { Editor } from "@tiptap/react"
-import {
-  getTableCellBackgroundColorCss,
-  isTableCellBackgroundColorToken,
-} from "@opengovsg/isomer-components"
 import { Bold } from "@tiptap/extension-bold"
 import { BulletList } from "@tiptap/extension-bullet-list"
 import { Document } from "@tiptap/extension-document"
@@ -22,34 +17,12 @@ import { Paragraph } from "@tiptap/extension-paragraph"
 import { Strike } from "@tiptap/extension-strike"
 import { Subscript } from "@tiptap/extension-subscript"
 import { Superscript } from "@tiptap/extension-superscript"
-import { Table } from "@tiptap/extension-table"
-import { TableCell } from "@tiptap/extension-table-cell"
-import { TableHeader } from "@tiptap/extension-table-header"
 import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
-import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
-import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
-import {
-  createInitialTableColumnResizeStorage,
-  isTableColumnResizeDragging,
-  tableColumnWidthNormalizerPlugin,
-} from "~/features/editing-experience/table/tableLayoutController"
-import { TableNodeView } from "~/features/editing-experience/table/TableNodeView"
+import { textblockTypeInputRule } from "@tiptap/react"
 
-import {
-  focusTableBubbleMenuTrigger,
-  runTableBubbleMenuFocusTrigger,
-} from "../../components/TableBubbleMenu/tableBubbleMenuFocus"
-import {
-  createTableSelectionBorderPlugin,
-  getHtmlWithRelativeReferenceLinks,
-} from "../../utils"
-import {
-  wrapHeaderToggleCommand,
-  type HeaderToggleCommand,
-} from "./clearTableCellBackgroundOnKindChange"
-import { selectTableCellContent } from "./selectTableCellContent"
+import { getHtmlWithRelativeReferenceLinks } from "../../utils"
 
 export { TableRow } from "@tiptap/extension-table-row"
 
@@ -129,123 +102,6 @@ export const PROSE_EXTENSIONS: Extensions = [
   Superscript,
   Subscript,
 ]
-
-export const IsomerTable = Table.extend({
-  // Higher than TipTap's default keymap so Mod-a is handled here first.
-  priority: 101,
-  addCommands() {
-    const parent = this.parent?.()
-    const parentToggleHeaderRow = parent?.toggleHeaderRow
-    const parentToggleHeaderColumn = parent?.toggleHeaderColumn
-
-    return {
-      ...parent,
-      focusTableBubbleMenuTrigger:
-        () =>
-        ({ editor }: { editor: Editor }) =>
-          runTableBubbleMenuFocusTrigger(editor),
-      toggleHeaderRow: wrapHeaderToggleCommand(
-        parentToggleHeaderRow?.() as HeaderToggleCommand | undefined,
-      ),
-      toggleHeaderColumn: wrapHeaderToggleCommand(
-        parentToggleHeaderColumn?.() as HeaderToggleCommand | undefined,
-      ),
-    }
-  },
-  addAttributes() {
-    return {
-      caption: {
-        default: DEFAULT_TABLE_CAPTION,
-      },
-      // Percent width per column index, stored on the table node. JSON only, not HTML.
-      colwidths: {
-        default: null,
-      },
-    }
-  },
-  addKeyboardShortcuts() {
-    const parentShortcuts = this.parent?.() ?? {}
-    return {
-      ...parentShortcuts,
-      "Mod-a": () =>
-        selectTableCellContent(this.editor) || this.editor.commands.selectAll(),
-      Tab: ({ editor }) => {
-        if (focusTableBubbleMenuTrigger(editor)) {
-          return true
-        }
-        return parentShortcuts.Tab?.({ editor }) ?? false
-      },
-    }
-  },
-  addStorage() {
-    return createInitialTableColumnResizeStorage()
-  },
-  addProseMirrorPlugins() {
-    return [
-      tableColumnWidthNormalizerPlugin(),
-      ...(this.parent?.() ?? []),
-      createTableSelectionBorderPlugin(),
-    ]
-  },
-  // Caption + gutter (for drag-handle chrome) plus percent colgroup/resize.
-  // TipTap's TableView cannot host the caption or percentage widths.
-  addNodeView() {
-    return ReactNodeViewRenderer(TableNodeView, {
-      contentDOMElementTag: "tbody",
-      // Mid-drag colwidth commits should not remount the React caption/handles.
-      update: ({ oldNode, newNode, updateProps }) => {
-        if (
-          isTableColumnResizeDragging(this.editor) &&
-          oldNode.content.eq(newNode.content) &&
-          oldNode.attrs.caption === newNode.attrs.caption
-        ) {
-          return true
-        }
-        updateProps()
-        return true
-      },
-    })
-  },
-})
-
-const tableCellBackgroundColorAttribute = {
-  default: null as string | null,
-  parseHTML: (element: HTMLElement) => {
-    const value = element.getAttribute("data-background-color")
-    return isTableCellBackgroundColorToken(value) ? value : null
-  },
-  renderHTML: (attributes: Record<string, unknown>) => {
-    const css = getTableCellBackgroundColorCss(attributes.backgroundColor)
-    if (!css || !isTableCellBackgroundColorToken(attributes.backgroundColor)) {
-      return {}
-    }
-
-    return {
-      "data-background-color": attributes.backgroundColor,
-      style: `background-color: ${css}`,
-    }
-  },
-}
-
-export const IsomerTableCell = TableCell.extend({
-  content: "(paragraph|list)+",
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      backgroundColor: tableCellBackgroundColorAttribute,
-    }
-  },
-})
-
-export const IsomerTableHeader = TableHeader.extend({
-  content: "paragraph+",
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      backgroundColor: tableCellBackgroundColorAttribute,
-    }
-  },
-})
 
 export const IsomerHeading = Heading.extend({
   content: "text*",
