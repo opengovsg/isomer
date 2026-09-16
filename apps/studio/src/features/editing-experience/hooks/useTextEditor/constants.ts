@@ -28,8 +28,7 @@ import { TableHeader } from "@tiptap/extension-table-header"
 import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
-import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
-import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
+import { textblockTypeInputRule } from "@tiptap/react"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
 
 import {
@@ -44,7 +43,9 @@ import {
   wrapHeaderToggleCommand,
   type HeaderToggleCommand,
 } from "./clearTableCellBackgroundOnKindChange"
+import { IsomerTableView } from "./IsomerTableView"
 import { selectTableCellContent } from "./selectTableCellContent"
+import { tableColumnWidthNormalizerPlugin } from "./tableColumnWidthNormalizerPlugin"
 
 export { TableRow } from "@tiptap/extension-table-row"
 
@@ -152,13 +153,11 @@ export const IsomerTable = Table.extend({
       caption: {
         default: DEFAULT_TABLE_CAPTION,
       },
+      // Percent width per column index, stored on the table node. JSON only, not HTML.
+      colwidths: {
+        default: null,
+      },
     }
-  },
-  // Custom node view renders the caption above the table.
-  addNodeView() {
-    return ReactNodeViewRenderer(TableNodeView, {
-      contentDOMElementTag: "tbody",
-    })
   },
   addKeyboardShortcuts() {
     const parentShortcuts = this.parent?.() ?? {}
@@ -175,7 +174,16 @@ export const IsomerTable = Table.extend({
     }
   },
   addProseMirrorPlugins() {
-    return [...(this.parent?.() ?? []), createTableSelectionBorderPlugin()]
+    return [
+      tableColumnWidthNormalizerPlugin(),
+      ...(this.parent?.() ?? []),
+      createTableSelectionBorderPlugin(),
+    ]
+  },
+  // Replaces TipTap TableView. See IsomerTableView.ts.
+  addNodeView() {
+    return ({ node, view, getPos, HTMLAttributes }) =>
+      new IsomerTableView(node, view, getPos, HTMLAttributes)
   },
 })
 

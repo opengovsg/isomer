@@ -123,6 +123,24 @@ export const TableSchema = Type.Object(
         title: "Table caption",
         description: "The caption of the table",
       }),
+      // One width per column on table attrs. Optional on old content. null until resized.
+      // When set, every entry is a number (full array or null, never partial).
+      colwidths: Type.Optional(
+        Type.Union([
+          Type.Array(
+            Type.Number({
+              minimum: 0,
+              maximum: 100,
+            }),
+            {
+              title: "Table column widths",
+              description:
+                "The width of each column, as a percentage of the table's total width",
+            },
+          ),
+          Type.Null(),
+        ]),
+      ),
     }),
     content: Type.Array(
       Type.Union([TableHeaderRowSchema, TableContentRowSchema]),

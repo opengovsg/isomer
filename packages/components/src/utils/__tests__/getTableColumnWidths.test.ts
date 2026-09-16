@@ -1,0 +1,128 @@
+import { describe, expect, it } from "vitest"
+import {
+  getEqualColumnWidths,
+  isUsableColwidths,
+  resolveColumnWidths,
+} from "~/utils/getTableColumnWidths"
+
+describe("getEqualColumnWidths", () => {
+  it("should split evenly and sum to 100", () => {
+    // Arrange
+    const columnCount = 4
+
+    // Act
+    const widths = getEqualColumnWidths(columnCount)
+
+    // Assert
+    expect(widths).toEqual([25, 25, 25, 25])
+    expect(widths.reduce((sum, width) => sum + width, 0)).toBe(100)
+  })
+
+  it("should return an empty array without throwing when columnCount is 0", () => {
+    // Arrange
+    const columnCount = 0
+
+    // Act
+    const widths = getEqualColumnWidths(columnCount)
+
+    // Assert
+    expect(widths).toEqual([])
+  })
+})
+
+describe("resolveColumnWidths", () => {
+  it("should fall back to an equal split when colwidths is null", () => {
+    // Arrange
+    const colwidths = null
+    const columnCount = 3
+
+    // Act
+    const result = resolveColumnWidths(colwidths, columnCount)
+
+    // Assert
+    expect(result).toEqual(getEqualColumnWidths(3))
+  })
+
+  it("should fall back to an equal split when colwidths is not an array", () => {
+    // Arrange
+    const colwidths = "not-an-array"
+    const columnCount = 3
+
+    // Act
+    const result = resolveColumnWidths(colwidths, columnCount)
+
+    // Assert
+    expect(result).toEqual(getEqualColumnWidths(3))
+  })
+
+  it("should fall back to an equal split when the length doesn't match the column count", () => {
+    // Arrange
+    const colwidths = [50, 30, 20]
+
+    // Act
+    const result = resolveColumnWidths(colwidths, 4)
+
+    // Assert
+    expect(result).toEqual(getEqualColumnWidths(4))
+  })
+
+  it("should fall back to an equal split when any entry is not a number", () => {
+    // Arrange
+    const colwidths = [50, null, 20]
+
+    // Act
+    const result = resolveColumnWidths(colwidths, 3)
+
+    // Assert
+    expect(result).toEqual(getEqualColumnWidths(3))
+  })
+
+  it("should return the explicit widths when the array is complete and the right length", () => {
+    // Arrange
+    const colwidths = [50, 30, 20]
+
+    // Act
+    const result = resolveColumnWidths(colwidths, 3)
+
+    // Assert
+    expect(result).toEqual([50, 30, 20])
+  })
+})
+
+describe("isUsableColwidths", () => {
+  it("should return false when colwidths is null", () => {
+    // Arrange
+    const colwidths = null
+    const columnCount = 3
+
+    // Act
+    const result = isUsableColwidths({ colwidths, columnCount })
+
+    // Assert
+    expect(result).toBe(false)
+  })
+
+  it("should return false when the length does not match the column count", () => {
+    // Arrange
+    const colwidths = [50, 30]
+    const columnCount = 3
+
+    // Act
+    const result = isUsableColwidths({ colwidths, columnCount })
+
+    // Assert
+    expect(result).toBe(false)
+  })
+
+  it("should return true when every entry is a number and the length matches", () => {
+    // Arrange
+    const colwidths = [50, 30, 20]
+    const columnCount = 3
+
+    // Act
+    const result = isUsableColwidths({ colwidths, columnCount })
+
+    // Assert
+    expect(result).toBe(true)
+  })
+})
