@@ -60,6 +60,7 @@ describe("HistoryStateDrawer", () => {
       hasNextPage: false,
       isFetchingNextPage: false,
       isLoading: false,
+      isError: false,
     })
 
     // Act
@@ -103,6 +104,7 @@ describe("HistoryStateDrawer", () => {
       hasNextPage: false,
       isFetchingNextPage: false,
       isLoading: false,
+      isError: false,
     })
 
     // Act
@@ -125,6 +127,7 @@ describe("HistoryStateDrawer", () => {
       hasNextPage: true,
       isFetchingNextPage: false,
       isLoading: false,
+      isError: false,
     })
     renderDrawer()
 
@@ -133,5 +136,47 @@ describe("HistoryStateDrawer", () => {
 
     // Assert
     expect(fetchNextPage).toHaveBeenCalledOnce()
+  })
+
+  it("shows a loading state while the query is in flight", () => {
+    // Arrange
+    mockUseInfiniteQuery.mockReturnValue({
+      data: undefined,
+      fetchNextPage: noop,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      isLoading: true,
+      isError: false,
+    })
+
+    // Act
+    renderDrawer()
+
+    // Assert
+    expect(screen.queryByText("Loading...")).not.toBeNull()
+    expect(screen.queryByText("No changes yet")).toBeNull()
+  })
+
+  it("shows an error state when the query fails, not the empty state", () => {
+    // Arrange
+    mockUseInfiniteQuery.mockReturnValue({
+      data: undefined,
+      fetchNextPage: noop,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      isLoading: false,
+      isError: true,
+    })
+
+    // Act
+    renderDrawer()
+
+    // Assert
+    expect(
+      screen.queryByText(
+        "Something went wrong while loading page history. Please try again.",
+      ),
+    ).not.toBeNull()
+    expect(screen.queryByText("No changes yet")).toBeNull()
   })
 })
