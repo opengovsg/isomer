@@ -14,7 +14,7 @@
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
-    "typecheck": "tsgo"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "dd-trace": "catalog:",
@@ -27,7 +27,6 @@
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
-    "@typescript/native-preview": "catalog:",
     "typescript": "catalog:"
   }
 }

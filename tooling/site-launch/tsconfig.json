@@ -1,6 +1,11 @@
 {
   "extends": "@isomer/tsconfig/base.json",
   "compilerOptions": {
+    "paths": {
+      "github": ["./github.ts"],
+      "site": ["./site.ts"],
+      "utils": ["./utils.ts"]
+    },
     "outDir": "dist/cjs",
     "rootDirs": ["src"],
     "declaration": true,
@@ -26,8 +31,7 @@
     "listFiles": false /* Print names of files part of the compilation. */,
     "pretty": true /* Stylize errors and messages using color and context. */,
 
-    "typeRoots": ["node_modules/@types", "src/types"],
-    "baseUrl": "./"
+    "typeRoots": ["node_modules/@types", "src/types"]
   },
   "compileOnSave": false
 }
