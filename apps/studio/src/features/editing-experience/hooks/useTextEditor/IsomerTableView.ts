@@ -142,7 +142,10 @@ export class IsomerTableView implements NodeView {
     let cumulative = 0
     for (let i = 0; i < widths.length - 1; i++) {
       cumulative += widths[i] ?? 0
-      this.handles[i]!.style.left = `calc(${cumulative}% - 4px)`
+      const handle = this.handles[i]
+      if (handle) {
+        handle.style.left = `calc(${cumulative}% - 4px)`
+      }
     }
   }
 

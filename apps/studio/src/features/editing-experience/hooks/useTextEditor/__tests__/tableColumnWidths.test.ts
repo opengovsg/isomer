@@ -95,7 +95,10 @@ describe("redistributeOnResize", () => {
     // Assert
     expect(result[0]).toBeGreaterThanOrEqual(0)
     expect(result[1]).toBeGreaterThanOrEqual(0)
-    expect(result[0] + result[1]).toBeCloseTo(200 / columnCount, 5)
+    expect((result[0] ?? 0) + (result[1] ?? 0)).toBeCloseTo(
+      200 / columnCount,
+      5,
+    )
     expect(result.reduce((sum, width) => sum + width, 0)).toBeCloseTo(100, 5)
   })
 
