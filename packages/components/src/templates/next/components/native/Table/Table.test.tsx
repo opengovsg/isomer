@@ -99,6 +99,7 @@ describe("Table colgroup", () => {
   })
 
   it("uses explicit colwidths on a plain table without forcing phantom equal split", () => {
+    // Arrange / Act
     const html = renderToStaticMarkup(
       <Table
         type="table"
@@ -132,6 +133,7 @@ describe("Table colgroup", () => {
       />,
     )
 
+    // Assert
     expect(html).toContain("table-fixed")
     const colWidths = [...html.matchAll(/<col style="width:([^"]+)"\/?>/g)].map(
       (match) => match[1],
@@ -140,6 +142,7 @@ describe("Table colgroup", () => {
   })
 
   it("prefers explicit colwidths over phantom equal split on staggered merges", () => {
+    // Arrange / Act
     const html = renderToStaticMarkup(
       <Table
         type="table"
@@ -152,6 +155,7 @@ describe("Table colgroup", () => {
       />,
     )
 
+    // Assert
     expect(html).toContain("table-fixed")
     const colWidths = [...html.matchAll(/<col style="width:([^"]+)"\/?>/g)].map(
       (match) => match[1],

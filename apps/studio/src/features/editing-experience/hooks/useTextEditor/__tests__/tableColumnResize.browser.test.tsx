@@ -56,7 +56,7 @@ describe("table column-width resize", () => {
   })
 
   it("produces a schema-valid document for a freshly inserted, unresized table", async () => {
-    // Arrange: unresized table with colwidth null on every cell.
+    // Arrange
     const editor = await renderEditor()
 
     // Act
@@ -110,7 +110,7 @@ describe("table column-width resize", () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const handle = firstHandle!
 
-    // Act: drag the first boundary 40px right.
+    // Act
     act(() => {
       dispatchPointer(handle, "pointerdown", 100)
     })
@@ -118,7 +118,7 @@ describe("table column-width resize", () => {
       dispatchPointer(window, "pointermove", 140)
     })
 
-    // Assert: column 0 grows, column 1 shrinks, column 2 unchanged; total stays 100%.
+    // Assert
     const duringDragWidths = getColWidths(tableEl)
     expect(duringDragWidths[0]).toBeGreaterThan(initialWidths[0] ?? 0)
     expect(duringDragWidths[1]).toBeLessThan(initialWidths[1] ?? 0)
@@ -128,12 +128,12 @@ describe("table column-width resize", () => {
       5,
     )
 
-    // Act: release the drag.
+    // Act
     act(() => {
       dispatchPointer(window, "pointerup", 140)
     })
 
-    // Assert: persisted colwidths match the live preview and sum to 100%.
+    // Assert
     const json = editor.getJSON()
     const tableJson: JSONContent | undefined = json.content?.[0]
     const persistedWidths: number[] =
@@ -153,7 +153,7 @@ describe("table column-width resize", () => {
   })
 
   it("commits mid-drag widths into the document (not just the DOM) so a live preview can track the drag", async () => {
-    // Arrange: preview re-renders from editor.onUpdate, not this NodeView's DOM.
+    // Arrange
     const editor = await renderEditor()
     act(() => {
       editor.commands.insertTable({ rows: 2, cols: 3, withHeaderRow: true })
@@ -163,7 +163,6 @@ describe("table column-width resize", () => {
       (editor.getJSON().content?.[0]?.attrs?.colwidths as
         | number[]
         | undefined) ?? []
-    // Arrange: close history so insertTable and the drag are separate undo steps.
     act(() => {
       editor.view.dispatch(closeHistory(editor.state.tr))
     })
@@ -176,7 +175,7 @@ describe("table column-width resize", () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const handle = firstHandle!
 
-    // Act: pointerdown and pointermove, no pointerup yet.
+    // Act
     act(() => {
       dispatchPointer(handle, "pointerdown", 100)
     })
@@ -189,7 +188,7 @@ describe("table column-width resize", () => {
       )
     })
 
-    // Assert: doc attrs updated before pointerup; mid-drag commit did not add an undo step.
+    // Assert
     const midDragWidths: number[] =
       (editor.getJSON().content?.[0]?.attrs?.colwidths as
         | number[]
@@ -197,12 +196,12 @@ describe("table column-width resize", () => {
     expect(midDragWidths[0]).toBeGreaterThan(initialWidths[0] ?? 0)
     expect(undoDepth(editor.state)).toBe(depthBeforeDrag)
 
-    // Act: release the drag.
+    // Act
     act(() => {
       dispatchPointer(window, "pointerup", 140)
     })
 
-    // Assert: one undo step for the whole drag.
+    // Assert
     expect(undoDepth(editor.state)).toBe(depthBeforeDrag + 1)
   })
 })

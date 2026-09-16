@@ -31,16 +31,24 @@ describe("getEqualColumnWidths", () => {
 
 describe("resolveColumnWidths", () => {
   it("should fall back to an equal split when colwidths is null", () => {
+    // Arrange
+    const colwidths = null
+    const columnCount = 3
+
     // Act
-    const result = resolveColumnWidths(null, 3)
+    const result = resolveColumnWidths(colwidths, columnCount)
 
     // Assert
     expect(result).toEqual(getEqualColumnWidths(3))
   })
 
   it("should fall back to an equal split when colwidths is not an array", () => {
+    // Arrange
+    const colwidths = "not-an-array"
+    const columnCount = 3
+
     // Act
-    const result = resolveColumnWidths("not-an-array", 3)
+    const result = resolveColumnWidths(colwidths, columnCount)
 
     // Assert
     expect(result).toEqual(getEqualColumnWidths(3))
