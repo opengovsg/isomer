@@ -2,11 +2,6 @@ import type { TableProps } from "~/interfaces"
 import { useId } from "react"
 import { getTableCellBackgroundColorCss } from "~/constants/tableCellBackgroundColor"
 import { tv } from "~/lib/tv"
-import {
-  buildColgroupSpec,
-  isUsableColwidths,
-  resolveColumnWidths,
-} from "~/utils/getTableColumnWidths"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { Divider } from "../Divider"
@@ -14,7 +9,7 @@ import { OrderedList } from "../OrderedList"
 import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
 import { getTableColumnCount } from "./getTableColumnCount"
-import { resolveTableLayout } from "./resolveTableLayout"
+import { resolvePublishedTableLayout } from "./resolvePublishedTableLayout"
 import { normalizeColspan, normalizeRowspan } from "./tableLayoutLimits"
 
 const tableStyles = tv({
@@ -43,17 +38,12 @@ export const Table = ({
 }: TableProps) => {
   const tableDescriptionId = useId()
   const columnCount = getTableColumnCount(content)
-  const layout = resolveTableLayout(content)
-  const useExplicitColwidths = isUsableColwidths({ colwidths, columnCount })
-  const explicitColgroup = useExplicitColwidths
-    ? buildColgroupSpec(resolveColumnWidths(colwidths, columnCount))
-    : null
-  const isFixedLayout = useExplicitColwidths || layout.kind === "fixed"
-  const columnWidths = explicitColgroup
-    ? explicitColgroup.columnWidths
-    : layout.kind === "fixed"
-      ? layout.columnWidths
-      : null
+  const layout = resolvePublishedTableLayout({
+    colwidths,
+    rows: content,
+    columnCount,
+  })
+  const isFixedLayout = layout.kind === "fixed"
 
   return (
     <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
@@ -67,9 +57,9 @@ export const Table = ({
           className={tableStyles({ isFixedLayout })}
           aria-describedby={tableDescriptionId}
         >
-          {isFixedLayout && columnWidths && (
+          {isFixedLayout && (
             <colgroup>
-              {columnWidths.map((width, index) => (
+              {layout.columnWidths.map((width, index) => (
                 <col key={index} style={{ width }} />
               ))}
             </colgroup>

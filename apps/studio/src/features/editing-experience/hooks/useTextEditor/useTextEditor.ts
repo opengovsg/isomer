@@ -3,15 +3,17 @@ import type { Extensions, JSONContent } from "@tiptap/react"
 import CharacterCount from "@tiptap/extension-character-count"
 import { useEditor } from "@tiptap/react"
 import TextDirection from "tiptap-text-direction"
+import {
+  IsomerTable,
+  IsomerTableCell,
+  IsomerTableHeader,
+} from "~/features/editing-experience/table-editing/extensions/registerTableExtensions"
 
 import { BANNER_MAX_CHARACTERS } from "../../components/constants"
 import {
   BASE_EXTENSIONS,
   HEADING_TYPE,
   IsomerHeading,
-  IsomerTable,
-  IsomerTableCell,
-  IsomerTableHeader,
   PARAGRAPH_TYPE,
   PROSE_EXTENSIONS,
   TableRow,

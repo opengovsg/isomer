@@ -5,8 +5,8 @@ import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
 import { useMemo, useRef, useState } from "react"
-import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
-import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles"
+import { TableBubbleMenu } from "~/features/editing-experience/table-editing/bubble-menu/TableBubbleMenu"
+import { TableDragHandles } from "~/features/editing-experience/table-editing/drag-handles"
 
 const EditorContainer = ({
   children,
