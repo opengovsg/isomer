@@ -14,6 +14,14 @@ linkWorkspacePackages: true
 
 blockExoticSubdeps: true
 
+# Pins the registries used for resolution/verification so a runner's ambient
+# npm config (env var, global .npmrc) can't silently redirect @opengovsg
+# packages to a registry that isn't authenticated in CI, which otherwise
+# fails pnpm 12's supply-chain lockfile verification with 401s.
+registries:
+  default: "https://registry.npmjs.org/"
+  "@opengovsg": "https://registry.npmjs.org/"
+
 minimumReleaseAge: 1440
 
 minimumReleaseAgeExclude:
