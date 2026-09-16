@@ -16,34 +16,37 @@ import { trpc } from "~/utils/trpc"
 
 type CancelScheduleAction = "publish" | "unpublish"
 
-const COPY: Record<
-  CancelScheduleAction,
-  { title: string; description: string }
-> = {
-  publish: {
-    title: "Are you sure you want to cancel the schedule to publish?",
-    description: "This page will go back to draft mode.",
-  },
-  unpublish: {
-    title: "Are you sure you want to cancel the schedule to unpublish?",
-    description: "This page will remain live.",
-  },
+const TITLE: Record<CancelScheduleAction, string> = {
+  publish: "Are you sure you want to cancel the schedule to publish?",
+  unpublish: "Are you sure you want to cancel the schedule to unpublish?",
 }
 
 interface CancelScheduleModalProps extends UseDisclosureReturn {
   action: CancelScheduleAction
   pageId: number
   siteId: number
+  // Publish-only: whether the page is currently live (as opposed to a new
+  // page that has never been published). Determines whether cancelling a
+  // scheduled publish leaves the page published-with-stale-draft or
+  // unpublished.
+  isCurrentlyPublished?: boolean
 }
 
 export const CancelScheduleModal = ({
   action,
   pageId,
   siteId,
+  isCurrentlyPublished = false,
   onClose,
   ...rest
 }: CancelScheduleModalProps): JSX.Element => {
-  const { title, description } = COPY[action]
+  const title = TITLE[action]
+  const description =
+    action === "unpublish"
+      ? "This page will remain published."
+      : isCurrentlyPublished
+        ? "The page will remain published and will not reflect the draft edits."
+        : "The page will remain unpublished."
   const utils = trpc.useUtils()
   const toast = useToast()
   const invalidateAfterAction = () =>

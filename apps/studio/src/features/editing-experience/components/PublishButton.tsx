@@ -64,7 +64,11 @@ const SuspendablePublishButton = ({
               />
             )}
             {isScheduledToPublish && isAllowed ? (
-              <CancelSchedulePublishIndicator siteId={siteId} pageId={pageId} />
+              <CancelSchedulePublishIndicator
+                siteId={siteId}
+                pageId={pageId}
+                isCurrentlyPublished={currPage.publishedVersionId !== null}
+              />
             ) : (
               <Button
                 variant="solid"

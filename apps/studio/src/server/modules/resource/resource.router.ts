@@ -54,6 +54,7 @@ import {
   applyResourceStatusFilter,
   assertMoveDestinationUnlocked,
   assertResourceNotLive,
+  assertResourceNotScheduled,
   defaultResourceSelect,
   getBatchAncestryWithSelfQuery,
   getChildLiveStatusMap,
@@ -874,6 +875,13 @@ export const resourceRouter = router({
             resourceId,
             resourceType: before.type,
             publishedVersionId: before.publishedVersionId,
+          })
+
+          await assertResourceNotScheduled(tx, {
+            siteId: Number(siteId),
+            resourceId,
+            resourceType: before.type,
+            scheduledAt: before.scheduledAt,
           })
         }
 
