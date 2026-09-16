@@ -96,7 +96,7 @@ describe("isUsableColwidths", () => {
     const columnCount = 3
 
     // Act
-    const result = isUsableColwidths(colwidths, columnCount)
+    const result = isUsableColwidths({ colwidths, columnCount })
 
     // Assert
     expect(result).toBe(false)
@@ -108,7 +108,7 @@ describe("isUsableColwidths", () => {
     const columnCount = 3
 
     // Act
-    const result = isUsableColwidths(colwidths, columnCount)
+    const result = isUsableColwidths({ colwidths, columnCount })
 
     // Assert
     expect(result).toBe(false)
@@ -120,7 +120,7 @@ describe("isUsableColwidths", () => {
     const columnCount = 3
 
     // Act
-    const result = isUsableColwidths(colwidths, columnCount)
+    const result = isUsableColwidths({ colwidths, columnCount })
 
     // Assert
     expect(result).toBe(true)

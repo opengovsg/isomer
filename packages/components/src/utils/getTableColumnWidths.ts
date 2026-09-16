@@ -1,10 +1,13 @@
 export const getEqualColumnWidths = (columnCount: number): number[] =>
   Array.from({ length: columnCount }, () => 100 / columnCount)
 
-export const isUsableColwidths = (
-  colwidths: unknown,
-  columnCount: number,
-): boolean =>
+export const isUsableColwidths = ({
+  colwidths,
+  columnCount,
+}: {
+  colwidths: unknown
+  columnCount: number
+}): boolean =>
   Array.isArray(colwidths) &&
   colwidths.length === columnCount &&
   colwidths.every((width) => typeof width === "number")
@@ -15,7 +18,7 @@ export const resolveColumnWidths = (
   colwidths: unknown,
   columnCount: number,
 ): number[] => {
-  if (!isUsableColwidths(colwidths, columnCount)) {
+  if (!isUsableColwidths({ colwidths, columnCount })) {
     return getEqualColumnWidths(columnCount)
   }
   return colwidths as number[]
