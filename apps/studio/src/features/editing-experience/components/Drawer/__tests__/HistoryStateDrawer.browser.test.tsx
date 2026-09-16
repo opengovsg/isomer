@@ -1,6 +1,6 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { theme } from "~/theme"
