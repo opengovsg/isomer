@@ -876,14 +876,18 @@ export const resourceRouter = router({
             resourceType: before.type,
             publishedVersionId: before.publishedVersionId,
           })
-
-          await assertResourceNotScheduled(tx, {
-            siteId: Number(siteId),
-            resourceId,
-            resourceType: before.type,
-            scheduledAt: before.scheduledAt,
-          })
         }
+
+        // Not gated on the flag: schedulePage (scheduling a publish) has no
+        // flag check of its own, so a pending schedule can exist even with
+        // unpublishing disabled. Always guard against it, or the delete
+        // silently discards the schedule along with the row.
+        await assertResourceNotScheduled(tx, {
+          siteId: Number(siteId),
+          resourceId,
+          resourceType: before.type,
+          scheduledAt: before.scheduledAt,
+        })
 
         await logResourceEvent(tx, {
           siteId,

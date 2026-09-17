@@ -30,7 +30,6 @@ const getColumns = ({ siteId }: CollectionTableProps) =>
       header: () => <TableHeader>Title</TableHeader>,
       cell: ({ row }) => (
         <TitleCell
-          scheduledAt={row.original.scheduledAt}
           draftBlobId={row.original.draftBlobId}
           siteId={siteId}
           id={row.original.id}
@@ -66,6 +65,7 @@ const getColumns = ({ siteId }: CollectionTableProps) =>
           title={row.original.title}
           resourceId={row.original.id}
           liveStatus={row.original.liveStatus}
+          scheduledAt={row.original.scheduledAt}
         />
       ),
       size: 24,

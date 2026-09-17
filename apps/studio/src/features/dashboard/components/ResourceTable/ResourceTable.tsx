@@ -39,7 +39,6 @@ const getColumns = ({ siteId }: ResourceTableProps) =>
           title={row.original.title}
           permalink={`/${row.original.permalink}`}
           type={row.original.type}
-          scheduledAt={row.original.scheduledAt}
           draftBlobId={row.original.draftBlobId}
         />
       ),
@@ -67,6 +66,7 @@ const getColumns = ({ siteId }: ResourceTableProps) =>
           permalink={row.original.permalink}
           resourceType={row.original.type}
           liveStatus={row.original.liveStatus}
+          scheduledAt={row.original.scheduledAt}
         />
       ),
       size: 24,

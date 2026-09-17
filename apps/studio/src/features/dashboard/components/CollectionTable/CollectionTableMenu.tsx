@@ -9,6 +9,7 @@ import {
 } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import { moveResourceAtom } from "~/features/editing-experience/atoms"
+import { useIsUnpublishEnabled } from "~/hooks/useIsUnpublishEnabled"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { CollectionTableData } from "./types"
@@ -21,6 +22,7 @@ interface CollectionTableMenuProps {
   resourceId: CollectionTableData["id"]
   resourceType: CollectionTableData["type"]
   liveStatus: CollectionTableData["liveStatus"]
+  scheduledAt: CollectionTableData["scheduledAt"]
 }
 
 export const CollectionTableMenu = ({
@@ -30,10 +32,12 @@ export const CollectionTableMenu = ({
   parentId,
   permalink,
   liveStatus,
+  scheduledAt,
 }: CollectionTableMenuProps) => {
   const setValue = useSetAtom(deleteResourceModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
   const setMoveResource = useSetAtom(moveResourceAtom)
+  const isUnpublishEnabled = useIsUnpublishEnabled()
   const handleMoveResourceClick = () => {
     setMoveResource({
       id: resourceId,
@@ -43,6 +47,18 @@ export const CollectionTableMenu = ({
       type: resourceType,
     })
   }
+
+  // With unpublishing disabled, the server treats deletion as the only way
+  // to remove live content, so live status alone must not block it here —
+  // only a pending schedule does (the server always guards against that).
+  const isBlockedByLiveStatus = isUnpublishEnabled && liveStatus !== "notLive"
+  const isBlockedBySchedule = scheduledAt !== null
+  const isDeleteBlocked = isBlockedByLiveStatus || isBlockedBySchedule
+  const deleteBlockedReason = isBlockedBySchedule
+    ? "This page has a pending schedule — cancel it before deleting"
+    : isBlockedByLiveStatus
+      ? "Unpublish this page before deleting it"
+      : undefined
 
   return (
     <Menu isLazy size="sm">
@@ -89,12 +105,8 @@ export const CollectionTableMenu = ({
               }}
               colorScheme="critical"
               icon={<BiTrash fontSize="1rem" />}
-              isDisabled={liveStatus !== "notLive"}
-              tooltip={
-                liveStatus !== "notLive"
-                  ? "Unpublish this page before deleting it"
-                  : undefined
-              }
+              isDisabled={isDeleteBlocked}
+              tooltip={deleteBlockedReason}
             >
               Delete
             </MenuItem>

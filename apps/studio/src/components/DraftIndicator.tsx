@@ -25,11 +25,7 @@ export const DraftIndicator = ({
           colorScheme="warning"
           color="yellow.500"
         >
-          <BadgeLeftIcon
-            fontSize="0.5rem"
-            as={BiSolidCircle}
-            color="yellow.500"
-          />
+          <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
           <Text textStyle="legal">Draft</Text>
         </Badge>
       </Box>

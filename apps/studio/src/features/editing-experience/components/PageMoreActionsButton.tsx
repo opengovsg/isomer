@@ -55,11 +55,20 @@ const SuspendablePageMoreActionsButton = ({
   // Shares the query the dashboard (and PageStatusIndicators) uses for
   // LiveStatusBadges, so navigating here reuses a warm cache instead of a
   // second round-trip.
-  const { data: parentIndexPageInfo, isLoading: isBlockInfoLoading } =
-    trpc.folder.getIndexpage.useQuery(
-      { siteId, resourceId: currPage.parentId ?? "" },
-      { enabled: isIndexPage },
-    )
+  const {
+    data: parentIndexPageInfo,
+    isLoading: isBlockInfoLoading,
+    isError: isBlockInfoError,
+  } = trpc.folder.getIndexpage.useQuery(
+    { siteId, resourceId: currPage.parentId ?? "" },
+    { enabled: isIndexPage },
+  )
+  // Fail closed: while we don't yet know (or failed to find out) whether a
+  // live descendant blocks unpublishing, don't let the button fall through
+  // to an unblocked state — `!!parentIndexPageInfo` alone would silently
+  // read as "nothing blocks this" on error.
+  const isBlockInfoPending =
+    isIndexPage && (isBlockInfoLoading || isBlockInfoError)
 
   // RootPage can't be unpublished — mirrors the backend's rejection and the
   // dashboard's equivalent exclusion (see RootpageRow.tsx).
@@ -91,13 +100,24 @@ const SuspendablePageMoreActionsButton = ({
     !!parentIndexPageInfo &&
     parentIndexPageInfo.unschedulableDescendantCount > 0
 
-  const disabledReason = !isLive
-    ? "This page isn't live"
-    : isBlockedFromScheduling
-      ? "There are child pages that are still live"
+  // isBlockedFromScheduling takes priority over !isLive: an IndexPage can
+  // read "not live" on its own while its container-aware badge still shows
+  // Live (because a descendant is), so leading with "isn't live" would
+  // contradict what the user just saw. Live descendants are the actionable
+  // blocker in that case.
+  const disabledReason = isBlockedFromScheduling
+    ? "There are child pages that are still live"
+    : !isLive
+      ? "This page isn't live"
       : isScheduledToPublish
         ? "This page has a scheduled publish. Cancel it before unpublishing."
         : undefined
+
+  // "Cancel schedule" has no disabled condition of its own, so the trigger
+  // reads as active whenever that's the action on offer. Otherwise it
+  // mirrors the "Unpublish page" button's own isDisabled condition below.
+  const isPrimaryActionAvailable =
+    isScheduledToUnpublish || (!disabledReason && !isBlockInfoPending)
 
   return (
     <Can do="unpublish" on="Resource" passThrough>
@@ -133,7 +153,21 @@ const SuspendablePageMoreActionsButton = ({
                       aria-label="More actions"
                       icon={<BiDotsHorizontalRounded />}
                       variant="outline"
-                      colorScheme="neutral"
+                      colorScheme={
+                        isPrimaryActionAvailable ? "main" : "neutral"
+                      }
+                      // Stays clickable either way (the popover explains why
+                      // when blocked), so we can't rely on isDisabled for the
+                      // grayed-out look — match its colours by hand instead.
+                      sx={
+                        isPrimaryActionAvailable
+                          ? undefined
+                          : {
+                              borderColor:
+                                "interaction.support.disabled-content",
+                              color: "interaction.support.disabled-content",
+                            }
+                      }
                       size="sm"
                     />
                   </PopoverTrigger>
@@ -162,7 +196,7 @@ const SuspendablePageMoreActionsButton = ({
                               {isScheduledToUnpublish
                                 ? "Cancel the schedule to make changes."
                                 : (disabledReason ??
-                                  "Hide this page from the public")}
+                                  "Hide this page from the public.")}
                             </Text>
                           </VStack>
                           {isScheduledToUnpublish ? (
@@ -184,7 +218,7 @@ const SuspendablePageMoreActionsButton = ({
                               size="xs"
                               flexShrink={0}
                               isDisabled={
-                                !!disabledReason || isBlockInfoLoading
+                                !!disabledReason || isBlockInfoPending
                               }
                               isLoading={isBlockInfoLoading}
                               leftIcon={<Icon as={BiHide} boxSize="1rem" />}
@@ -205,12 +239,16 @@ const SuspendablePageMoreActionsButton = ({
             </Popover>
           </>
         ) : (
-          <TouchableTooltip label="You don't have permission to unpublish pages">
+          <TouchableTooltip label="You need to be a Publisher or Admin to unpublish.">
             <IconButton
               aria-label="More actions"
               icon={<BiDotsHorizontalRounded />}
               variant="outline"
               colorScheme="neutral"
+              sx={{
+                borderColor: "interaction.support.disabled-content",
+                color: "interaction.support.disabled-content",
+              }}
               size="sm"
               isDisabled
             />

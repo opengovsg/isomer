@@ -17,6 +17,11 @@ const FilterCheckbox = ({ isChecked }: { isChecked: boolean }) => {
       __css={styles.control}
       data-checked={dataAttr(isChecked)}
       flexShrink={0}
+      // The Checkbox theme's "main" colorScheme borders the control blue even
+      // unchecked (see Checkbox.js's getColorProps). The higher-specificity
+      // [data-checked] rule from styles.control still wins once checked, so
+      // this only affects the unchecked look.
+      borderColor="base.content.strong"
     >
       <Icon as={BxCheckAnimated} __css={styles.icon} isChecked={isChecked} />
     </Box>

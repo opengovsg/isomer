@@ -10,6 +10,7 @@ import {
 import { MenuItem } from "~/components/Menu"
 import { moveResourceAtom } from "~/features/editing-experience/atoms"
 import { Can } from "~/features/permissions"
+import { useIsUnpublishEnabled } from "~/hooks/useIsUnpublishEnabled"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { ResourceTableData } from "./types"
@@ -27,6 +28,7 @@ interface ResourceTableMenuProps {
   resourceType: ResourceTableData["type"]
   parentId: ResourceTableData["parentId"]
   liveStatus: ResourceTableData["liveStatus"]
+  scheduledAt: ResourceTableData["scheduledAt"]
 }
 
 export const ResourceTableMenu = ({
@@ -37,6 +39,7 @@ export const ResourceTableMenu = ({
   resourceType,
   parentId,
   liveStatus,
+  scheduledAt,
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
   const handleMoveResourceClick = () =>
@@ -44,6 +47,22 @@ export const ResourceTableMenu = ({
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
+  const isUnpublishEnabled = useIsUnpublishEnabled()
+
+  // With unpublishing disabled, the server treats deletion as the only way
+  // to remove live content, so live status alone must not block it here —
+  // only a pending schedule does (the server always guards against that).
+  const isBlockedByLiveStatus = isUnpublishEnabled && liveStatus !== "notLive"
+  const isBlockedBySchedule = scheduledAt !== null
+  const isDeleteBlocked = isBlockedByLiveStatus || isBlockedBySchedule
+  const isContainer =
+    resourceType === ResourceType.Folder ||
+    resourceType === ResourceType.Collection
+  const deleteBlockedReason = isBlockedBySchedule
+    ? `${isContainer ? "This folder or collection has" : "This page has"} a pending schedule — cancel it before deleting`
+    : isBlockedByLiveStatus
+      ? `${isContainer ? "This folder or collection has" : "This page has"} live content — unpublish before deleting`
+      : undefined
 
   return (
     <Menu isLazy size="sm">
@@ -124,13 +143,11 @@ export const ResourceTableMenu = ({
                   }}
                   colorScheme="critical"
                   icon={<BiTrash fontSize="1rem" />}
-                  isDisabled={!isAllowed || liveStatus !== "notLive"}
+                  isDisabled={!isAllowed || isDeleteBlocked}
                   tooltip={
                     !isAllowed
                       ? "You need to be an Admin to move or delete items under Home."
-                      : liveStatus !== "notLive"
-                        ? `${resourceType === ResourceType.Folder || resourceType === ResourceType.Collection ? "This folder or collection has" : "This page has"} live content — unpublish before deleting`
-                        : undefined
+                      : deleteBlockedReason
                   }
                 >
                   Delete

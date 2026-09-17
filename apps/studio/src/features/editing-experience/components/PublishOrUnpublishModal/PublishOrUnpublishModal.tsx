@@ -16,12 +16,15 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import { add, format } from "date-fns"
+import { add, format, isSameDay } from "date-fns"
 import posthog from "posthog-js"
 import { useRef, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { BiSolidInfoCircle } from "react-icons/bi"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import {
+  ACTIONABLE_ERROR_TOAST_SETTINGS,
+  BRIEF_TOAST_SETTINGS,
+} from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
 import {
   MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
@@ -139,14 +142,17 @@ export const PublishOrUnpublishModal = ({
         // the redirect to remove. Guards like the scheduled-unpublish
         // ancestor lock throw PRECONDITION_FAILED. Surface both verbatim
         // rather than the generic failure copy.
+        const isActionableError =
+          error.data?.code === "CONFLICT" ||
+          error.data?.code === "PRECONDITION_FAILED"
         toast({
           status: "error",
-          title:
-            error.data?.code === "CONFLICT" ||
-            error.data?.code === "PRECONDITION_FAILED"
-              ? error.message
-              : "Failed to publish page. Please contact Isomer support.",
-          ...BRIEF_TOAST_SETTINGS,
+          title: isActionableError
+            ? error.message
+            : "Failed to publish page. Please contact Isomer support.",
+          ...(isActionableError
+            ? ACTIONABLE_ERROR_TOAST_SETTINGS
+            : BRIEF_TOAST_SETTINGS),
         })
       },
     })
@@ -173,13 +179,15 @@ export const PublishOrUnpublishModal = ({
         // The scheduled-unpublish ancestor lock (and similar guards) throws
         // PRECONDITION_FAILED with an actionable message. Surface it
         // verbatim rather than the generic failure copy.
+        const isActionableError = error.data?.code === "PRECONDITION_FAILED"
         toast({
           status: "error",
-          title:
-            error.data?.code === "PRECONDITION_FAILED"
-              ? error.message
-              : "Failed to schedule page. Please contact Isomer support.",
-          ...BRIEF_TOAST_SETTINGS,
+          title: isActionableError
+            ? error.message
+            : "Failed to schedule page. Please contact Isomer support.",
+          ...(isActionableError
+            ? ACTIONABLE_ERROR_TOAST_SETTINGS
+            : BRIEF_TOAST_SETTINGS),
         })
       },
     })
@@ -366,46 +374,54 @@ const DraftChangesBanner = ({
 }: {
   mode: ActionMode | undefined
   scheduledAt: Date | null
-}) => (
-  <HStack
-    spacing="0.5rem"
-    alignItems="flex-start"
-    bgColor="utility.feedback.info-subtle"
-    borderRadius="0.25rem"
-    p="0.75rem"
-  >
-    <Icon
-      as={BiSolidInfoCircle}
-      boxSize="1rem"
-      color="utility.feedback.info"
-      mt="0.125rem"
-    />
-    <Text textStyle="body-2" color="base.content.strong" display="inline">
-      <Text as="span" textStyle="subhead-2">
-        This page has draft edits.
-      </Text>{" "}
-      {mode === "later" && scheduledAt ? (
-        <>
-          When it unpublishes between{" "}
-          <Text as="span" textStyle="subhead-2">
-            {format(scheduledAt, "h:mm a")} –{" "}
-            {format(
-              add(scheduledAt, { minutes: UNPUBLISH_WINDOW_MINUTES }),
-              "h:mm a",
-            )}
-          </Text>{" "}
-          on{" "}
-          <Text as="span" textStyle="subhead-2">
-            {format(scheduledAt, "MMMM d, yyyy")}
-          </Text>
-          , we will keep the version with the latest draft edits.
-        </>
-      ) : (
-        "Once you unpublish, we will keep the version with the latest draft edits."
-      )}
-    </Text>
-  </HStack>
-)
+}) => {
+  const windowEnd = scheduledAt
+    ? add(scheduledAt, { minutes: UNPUBLISH_WINDOW_MINUTES })
+    : null
+  // The window can cross midnight, so the end time may fall on the next
+  // calendar day — attaching only the start date to both endpoints would
+  // then describe the end time as happening a day earlier than it does.
+  const spansTwoDays =
+    scheduledAt && windowEnd && !isSameDay(scheduledAt, windowEnd)
+
+  return (
+    <HStack
+      spacing="0.5rem"
+      alignItems="flex-start"
+      bgColor="utility.feedback.info-subtle"
+      borderRadius="0.25rem"
+      p="0.75rem"
+    >
+      <Icon
+        as={BiSolidInfoCircle}
+        boxSize="1rem"
+        color="utility.feedback.info"
+        mt="0.125rem"
+      />
+      <Text textStyle="body-2" color="base.content.strong" display="inline">
+        <Text as="span" textStyle="subhead-2">
+          This page has draft edits.
+        </Text>{" "}
+        {mode === "later" && scheduledAt && windowEnd ? (
+          <>
+            When it unpublishes between
+            <Text as="span" textStyle="subhead-2">
+              {" "}
+              {format(scheduledAt, "h:mm a")}
+              {spansTwoDays &&
+                ` on ${format(scheduledAt, "MMMM d, yyyy")}`} to{" "}
+              {format(windowEnd, "h:mm a")} on{" "}
+              {format(windowEnd, "MMMM d, yyyy")},
+            </Text>{" "}
+            we will keep the version with the latest draft edits.
+          </>
+        ) : (
+          "Once you unpublish, we will keep the version with the latest draft edits."
+        )}
+      </Text>
+    </HStack>
+  )
+}
 
 const ChildPagesDisclaimerBanner = ({
   containerType,

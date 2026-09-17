@@ -21,7 +21,6 @@ import {
   getDescendantResourceIdsUnsafeForScheduledUnpublish,
   getLockingAncestorIndexPages,
   getPageById,
-  hasDescendantWithPendingScheduledUnpublish,
   resolveEffectiveResourceId,
   UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
   updatePageById,
@@ -161,7 +160,10 @@ export const schedulePublish = async ({
     })
     const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
     if (lockingAncestor?.scheduledAt) {
-      throw new AncestorScheduledUnpublishLockError(lockingAncestor.scheduledAt)
+      throw new AncestorScheduledUnpublishLockError(
+        lockingAncestor.scheduledAt,
+        "publish this page",
+      )
     }
 
     const updatedPage = await updatePageById(
@@ -409,24 +411,24 @@ export const cancelScheduleUnpublish = async ({
       })
     }
 
-    // A child page may already be scheduled to unpublish assuming this
-    // container's unpublish lands first (or at the same time). Cancelling
-    // this schedule out from under it would leave the child's own schedule
-    // dangling, so require the child schedules to be cancelled first — a
-    // hard block, not an auto-cascade.
-    if (resource.type === ResourceType.IndexPage && resource.parentId) {
-      const hasPendingChildUnpublish =
-        await hasDescendantWithPendingScheduledUnpublish(tx, {
-          siteId,
-          resourceId: resource.parentId,
-          excludeResourceId: resource.id,
-        })
-      if (hasPendingChildUnpublish) {
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Cancel the scheduled unpublish for its child pages first.",
-        })
-      }
+    // Scheduling this container's own unpublish (or any ancestor's) required
+    // this resource to already be dark, or scheduled to go dark, by that
+    // time — see getDescendantResourceIdsUnsafeForScheduledUnpublish.
+    // Cancelling this resource's own scheduled unpublish while that ancestor
+    // lock still stands would leave it live past the ancestor's scheduled
+    // unpublish, so it's locked the same way scheduling a new publish
+    // underneath a locked ancestor is (see
+    // getLockingAncestorIndexPages/AncestorScheduledUnpublishLockError).
+    const ancestorIndexPages = await getAncestorIndexPages(tx, {
+      siteId,
+      resourceId: resource.id,
+    })
+    const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
+    if (lockingAncestor?.scheduledAt) {
+      throw new AncestorScheduledUnpublishLockError(
+        lockingAncestor.scheduledAt,
+        "cancel this page's scheduled unpublish",
+      )
     }
 
     const updatedPage = await updatePageById(
