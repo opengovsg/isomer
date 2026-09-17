@@ -303,4 +303,13 @@ export const GTM_ID_STRING_REGEX = "^(GTM|G|GT)-[A-Z0-9]+$"
 // ✅ "date-filter-550e8400-e29b-41d4-a716-446655440000-asc"
 // ❌ "totally-made-up"
 // ❌ "date-filter-not-a-uuid-desc"
-export const COLLECTION_SORT_ORDER_PATTERN = `^(${COLLECTION_SORT_ORDER.DateDesc}|${COLLECTION_SORT_ORDER.DateAsc}|${COLLECTION_SORT_ORDER.TitleAsc}|${COLLECTION_SORT_ORDER.TitleDesc}|date-filter-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-(?:asc|desc))$`
+const DATE_FILTER_SORT_ORDER_UUID =
+  "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
+const DATE_FILTER_SORT_ORDER_PATTERN = `date-filter-${DATE_FILTER_SORT_ORDER_UUID}-(?:asc|desc)`
+
+export const DATE_FILTER_SORT_ORDER_REGEX = new RegExp(
+  `^date-filter-(${DATE_FILTER_SORT_ORDER_UUID})-(asc|desc)$`,
+)
+
+export const COLLECTION_SORT_ORDER_PATTERN = `^(${COLLECTION_SORT_ORDER.DateDesc}|${COLLECTION_SORT_ORDER.DateAsc}|${COLLECTION_SORT_ORDER.TitleAsc}|${COLLECTION_SORT_ORDER.TitleDesc}|${DATE_FILTER_SORT_ORDER_PATTERN})$`

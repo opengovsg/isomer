@@ -5,11 +5,12 @@ import {
   type CollectionSortOrder,
 } from "~/types/constants"
 import { isDateFilter } from "~/types/page"
-import { COLLECTION_SORT_ORDER_PATTERN } from "~/utils/validation"
+import {
+  COLLECTION_SORT_ORDER_PATTERN,
+  DATE_FILTER_SORT_ORDER_REGEX,
+} from "~/utils/validation"
 
 const COLLECTION_SORT_ORDER_REGEX = new RegExp(COLLECTION_SORT_ORDER_PATTERN)
-const DATE_FILTER_SORT_ORDER_REGEX =
-  /^date-filter-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-(asc|desc)$/
 const BASE_COLLECTION_SORT_ORDERS = new Set<string>(
   Object.values(COLLECTION_SORT_ORDER),
 )
@@ -65,11 +66,7 @@ export const parseCollectionSortOrder = (
     CollectionSortDirection,
   ]
 
-  if (sortBy === "title") {
-    return { kind: "title", direction }
-  }
-
-  return { kind: "date", direction }
+  return { kind: sortBy, direction }
 }
 
 export const resolveCollectionSortOrder = (
