@@ -301,5 +301,5 @@ catalogs:
     "@vitejs/plugin-react": ^6.1.1
     "@vitest/browser-playwright": ^5.0.0
     "@vitest/coverage-istanbul": ^5.0.0
-    vite: ^8.2.2
+    vite: ^8.3.0
     vitest: ^5.0.0
