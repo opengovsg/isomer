@@ -15,6 +15,7 @@
     "@isomer/export-import": "workspace:*",
     "@paralleldrive/cuid2": "catalog:",
     "ajv": "catalog:",
+    "date-fns-tz": "catalog:",
     "dotenv": "catalog:",
     "dotenv-cli": "catalog:",
     "pg": "catalog:pg",
