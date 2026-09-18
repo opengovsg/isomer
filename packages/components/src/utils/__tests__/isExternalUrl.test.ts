@@ -23,4 +23,12 @@ describe("isExternalUrl", () => {
     expect(isExternalUrl(undefined)).toBe(false)
     expect(isExternalUrl("")).toBe(false)
   })
+
+  it("should return false for mailto: links", () => {
+    expect(isExternalUrl("mailto:test@example.com")).toBe(false)
+  })
+
+  it("should return false for tel: links", () => {
+    expect(isExternalUrl("tel:+6512345678")).toBe(false)
+  })
 })
