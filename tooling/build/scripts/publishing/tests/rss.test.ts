@@ -272,9 +272,8 @@ describe("buildFeedXml", () => {
         id: "file",
         permalink: `${COLLECTION_PERMALINK}/file-1`,
         title: "Report",
-        layout: "file",
+        layout: "link",
         ref: ASSET_REF,
-        fileDetails: { type: "pdf", size: "2MB" },
       }),
     ])
 
@@ -392,9 +391,8 @@ describe("buildFeedXml", () => {
       makeItem({
         id: "no-date",
         permalink: `${COLLECTION_PERMALINK}/no-date`,
-        layout: "file",
+        layout: "link",
         ref: ASSET_REF,
-        fileDetails: { type: "pdf", size: "1MB" },
       }),
     ])
 
