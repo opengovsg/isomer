@@ -65,6 +65,11 @@ export const auditRouter = router({
       try {
         return await createAuditLogExportRequestsForSites({
           siteIds,
+          // Only an "allSites" ask gets its new rows correlated into a batch
+          // (see createAuditLogExportRequestsForSites) so its admin gets one
+          // combined email instead of one per site; "site" keeps sending its
+          // existing one-row-one-email path unchanged.
+          scope,
           userId: ctx.user.id,
           month,
           reportType,
