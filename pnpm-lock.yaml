@@ -503,8 +503,8 @@ catalogs:
       specifier: ^3.0.9
       version: 3.0.9
     zod:
-      specifier: 4.5.4
-      version: 4.5.4
+      specifier: 4.6.2
+      version: 4.6.2
   growthbook:
     '@growthbook/growthbook':
       specifier: ^1.7.0
@@ -836,7 +836,7 @@ importers:
         version: 18.0.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@hookform/resolvers':
         specifier: 'catalog:'
-        version: 5.9.1(@sinclair/typebox@0.33.24)(@standard-schema/spec@1.1.0)(ajv-errors@3.0.0(ajv@8.20.0))(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(effect@3.20.0)(joi@18.2.3)(react-hook-form@7.88.0(react@18.3.1))(valibot@1.4.2(typescript@6.0.3))(zod@4.5.4)
+        version: 5.9.1(@sinclair/typebox@0.33.24)(@standard-schema/spec@1.1.0)(ajv-errors@3.0.0(ajv@8.20.0))(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(effect@3.20.0)(joi@18.2.3)(react-hook-form@7.88.0(react@18.3.1))(valibot@1.4.2(typescript@6.0.3))(zod@4.6.2)
       '@intercom/messenger-js-sdk':
         specifier: 'catalog:'
         version: 0.0.20
@@ -866,7 +866,7 @@ importers:
         version: link:../../packages/components
       '@opengovsg/validators':
         specifier: 'catalog:'
-        version: 1.4.1(zod@4.5.4)
+        version: 1.4.1(zod@4.6.2)
       '@paralleldrive/cuid2':
         specifier: 'catalog:'
         version: 3.3.0
@@ -1112,7 +1112,7 @@ importers:
         version: 3.0.9
       zod:
         specifier: 'catalog:'
-        version: 4.5.4
+        version: 4.6.2
     devDependencies:
       '@babel/plugin-transform-class-properties':
         specifier: catalog:babel
@@ -1393,7 +1393,7 @@ importers:
         version: 3.1.1(react@18.3.1)
       zod:
         specifier: 'catalog:'
-        version: 4.5.4
+        version: 4.6.2
     devDependencies:
       '@isomer/oxlint-config':
         specifier: workspace:*
@@ -1575,7 +1575,7 @@ importers:
         version: 13.1.3
       zod:
         specifier: 'catalog:'
-        version: 4.5.4
+        version: 4.6.2
     devDependencies:
       '@isomer/oxlint-config':
         specifier: workspace:*
@@ -1606,7 +1606,7 @@ importers:
         version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@5.0.0)(@vitest/coverage-istanbul@5.0.0)(@vitest/ui@5.0.0)(happy-dom@20.10.6)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.5.1)(typescript@6.0.3))(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
       zod:
         specifier: 'catalog:'
-        version: 4.5.4
+        version: 4.6.2
     devDependencies:
       '@isomer/oxlint-config':
         specifier: workspace:*
@@ -2001,7 +2001,7 @@ importers:
         version: 4.23.13
       zod:
         specifier: 'catalog:'
-        version: 4.5.4
+        version: 4.6.2
     devDependencies:
       '@isomer/migrate-tags':
         specifier: workspace:*
@@ -13137,8 +13137,8 @@ packages:
   zod@4.4.3:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
-  zod@4.5.4:
-    resolution: {integrity: sha512-sC95tT5iHHH9gtpj6A81kh+NEaRAUFN+qlUPDUbRfOMvNf5QCBqsb3WgvnpVtK5Y+4UfA6KqufotuTvMGiTlsA==}
+  zod@4.6.2:
+    resolution: {integrity: sha512-lh5RCAGFa1Cm2hjtNwLQhSs/AsqdWnTQaBER9fEwN/88pSh7KOtJavtBx/0VlkN/uFd61SwYmljLMDAsHlvzBQ==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -15876,7 +15876,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@hookform/resolvers@5.9.1(@sinclair/typebox@0.33.24)(@standard-schema/spec@1.1.0)(ajv-errors@3.0.0(ajv@8.20.0))(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(effect@3.20.0)(joi@18.2.3)(react-hook-form@7.88.0(react@18.3.1))(valibot@1.4.2(typescript@6.0.3))(zod@4.5.4)':
+  '@hookform/resolvers@5.9.1(@sinclair/typebox@0.33.24)(@standard-schema/spec@1.1.0)(ajv-errors@3.0.0(ajv@8.20.0))(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(effect@3.20.0)(joi@18.2.3)(react-hook-form@7.88.0(react@18.3.1))(valibot@1.4.2(typescript@6.0.3))(zod@4.6.2)':
     dependencies:
       '@standard-schema/utils': 0.3.0
       react-hook-form: 7.88.0(react@18.3.1)
@@ -15889,7 +15889,7 @@ snapshots:
       effect: 3.20.0
       joi: 18.2.3
       valibot: 1.4.2(typescript@6.0.3)
-      zod: 4.5.4
+      zod: 4.6.2
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -16425,11 +16425,11 @@ snapshots:
       - prop-types
       - supports-color
 
-  '@opengovsg/validators@1.4.1(zod@4.5.4)':
+  '@opengovsg/validators@1.4.1(zod@4.6.2)':
     dependencies:
       email-addresses: 5.0.0
-      zod: 4.5.4
-      zod-validation-error: 5.0.0(zod@4.5.4)
+      zod: 4.6.2
+      zod-validation-error: 5.0.0(zod@4.6.2)
 
   '@opentelemetry/api-logs@0.214.0':
     dependencies:
@@ -25077,14 +25077,14 @@ snapshots:
     dependencies:
       zod: 3.25.76
 
-  zod-validation-error@5.0.0(zod@4.5.4):
+  zod-validation-error@5.0.0(zod@4.6.2):
     dependencies:
-      zod: 4.5.4
+      zod: 4.6.2
 
   zod@3.25.76: {}
 
   zod@4.4.3: {}
 
-  zod@4.5.4: {}
+  zod@4.6.2: {}
 
   zwitch@2.0.4: {}
