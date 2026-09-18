@@ -129,7 +129,7 @@ if [[ -n "$ISOMER_BUILD_REPO_BRANCH" ]]; then
 
   echo "Installing workspace dependencies..."
   start_time=$(date +%s)
-  pnpm install --frozen-lockfile --filter isomer-base-template...
+  pnpm install --frozen-lockfile --filter isomer-base-template... --filter publishing...
   calculate_duration "$start_time"
 
   if [ "$RESTORED_STORE" -eq 0 ]; then
@@ -159,7 +159,7 @@ else
   # nothing needs to be built in a per-site job.
   echo "Re-linking workspace from cached store..."
   start_time=$(date +%s)
-  pnpm install --frozen-lockfile --filter isomer-base-template...
+  pnpm install --frozen-lockfile --filter isomer-base-template... --filter publishing...
   calculate_duration "$start_time"
 
   fetch_cached "s3://$S3_CACHE_BUCKET_NAME/isomer/$GIT_SHA/$COMPONENTS_DIST_TGZ" "$COMPONENTS_DIST_TGZ" packages/components ||
@@ -171,7 +171,6 @@ echo "Fetching from database..."
 start_time=$(date +%s)
 cd tooling/build/scripts/publishing
 pwd
-pnpm install --frozen-lockfile --filter publishing...
 pnpm run start
 calculate_duration "$start_time"
 
@@ -209,6 +208,25 @@ fi
 
 ls -al
 find ./out -type f | wc -l
+
+# Generate RSS feeds for collections into out/<permalink>/rss.xml so they ride
+# the S3 sync below. Fatal: collection pages already advertise <permalink>/rss.xml
+# via metadata baked in by the build step above, so a generation failure here
+# must halt the publish (via `set -e`) rather than ship pages that link to a
+# feed that doesn't exist.
+echo "Generating RSS feeds..."
+start_time=$(date +%s)
+RSS_SITEMAP_JSON="$(realpath sitemap.json)"
+RSS_CONFIG_JSON="$(realpath data/config.json)"
+RSS_OUT_DIR="$(realpath out)"
+(
+  cd ../build/scripts/publishing
+  SITEMAP_JSON="$RSS_SITEMAP_JSON" \
+    CONFIG_JSON="$RSS_CONFIG_JSON" \
+    OUT_DIR="$RSS_OUT_DIR" \
+    pnpm run generate-rss
+)
+calculate_duration $start_time
 
 cd out/
 pwd
