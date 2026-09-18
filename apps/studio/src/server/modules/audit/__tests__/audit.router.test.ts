@@ -1,4 +1,6 @@
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -10,6 +12,7 @@ import {
   setupAdminPermissions,
   setupEditorPermissions,
   setupIsomerAdmin,
+  setupPageResource,
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
@@ -17,11 +20,13 @@ import { getCurrentSingaporeMonth } from "~/schemas/audit"
 import { createCallerFactory } from "~/server/trpc"
 
 import type { User } from "../../database"
-import { db } from "../../database"
+import { db, jsonb } from "../../database"
+import { pageRouter } from "../../page/page.router"
 import { auditRouter } from "../audit.router"
 import { getMonthDateRange } from "../auditLogExport.query"
 
 const createCaller = createCallerFactory(auditRouter)
+const createPageCaller = createCallerFactory(pageRouter)
 
 // A month inside the allowed export window. The current Singapore-time month
 // is always valid: never in the future, and within the 12-month window — so
@@ -76,6 +81,9 @@ describe("audit.router", async () => {
       "AuditLog",
       "IsomerAdmin",
       "ResourcePermission",
+      "Blob",
+      "Version",
+      "Resource",
       "Site",
       "User",
     )
@@ -429,6 +437,219 @@ describe("audit.router", async () => {
         // Assert
         await expect(result).rejects.toMatchObject({ code: "FORBIDDEN" })
       })
+    })
+  })
+
+  describe("listResourceUpdates", () => {
+    const BLOCKS_A: IsomerSchema["content"] = [
+      {
+        type: "prose",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "First revision" }],
+          },
+        ],
+      },
+    ]
+    const BLOCKS_B: IsomerSchema["content"] = [
+      {
+        type: "prose",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Second revision" }],
+          },
+        ],
+      },
+    ]
+
+    const createUpdateArgs = (
+      page: Awaited<ReturnType<typeof setupPageResource>>["page"],
+      blocks: IsomerSchema["content"],
+    ) => ({
+      pageId: Number(page.id),
+      siteId: page.siteId,
+      content: JSON.stringify({
+        content: blocks,
+        layout: "content",
+        page: pick(page, ["title", "permalink"]),
+        version: "0.1.0",
+      }),
+    })
+
+    it("returns only ResourceUpdate rows where the blob content actually changed, newest first", async () => {
+      // Arrange
+      const { page } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: page.siteId,
+      })
+      const pageCaller = createPageCaller(createMockRequest(session))
+
+      await pageCaller.updatePageBlob(createUpdateArgs(page, BLOCKS_A))
+      // Re-saving identical content must not appear in the history list.
+      await pageCaller.updatePageBlob(createUpdateArgs(page, BLOCKS_A))
+      await pageCaller.updatePageBlob(createUpdateArgs(page, BLOCKS_B))
+
+      // Act
+      const result = await caller.listResourceUpdates({
+        pageId: Number(page.id),
+        siteId: page.siteId,
+        cursor: 0,
+        limit: 10,
+      })
+
+      // Assert
+      expect(result.items).toHaveLength(2)
+      expect(result.items[0]?.afterContent.content).toEqual(BLOCKS_B)
+      expect(result.items[1]?.afterContent.content).toEqual(BLOCKS_A)
+      expect(result.nextOffset).toBeNull()
+    })
+
+    it("paginates with cursor/limit", async () => {
+      // Arrange
+      const { page } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: page.siteId,
+      })
+      const pageCaller = createPageCaller(createMockRequest(session))
+      await pageCaller.updatePageBlob(createUpdateArgs(page, BLOCKS_A))
+      await pageCaller.updatePageBlob(createUpdateArgs(page, BLOCKS_B))
+
+      // Act
+      const firstPage = await caller.listResourceUpdates({
+        pageId: Number(page.id),
+        siteId: page.siteId,
+        cursor: 0,
+        limit: 1,
+      })
+      const secondPage = await caller.listResourceUpdates({
+        pageId: Number(page.id),
+        siteId: page.siteId,
+        cursor: firstPage.nextOffset ?? 0,
+        limit: 1,
+      })
+
+      // Assert
+      expect(firstPage.items).toHaveLength(1)
+      expect(firstPage.items[0]?.afterContent.content).toEqual(BLOCKS_B)
+      expect(firstPage.nextOffset).toBe(1)
+      expect(secondPage.items).toHaveLength(1)
+      expect(secondPage.items[0]?.afterContent.content).toEqual(BLOCKS_A)
+      expect(secondPage.nextOffset).toBeNull()
+    })
+
+    it("throws FORBIDDEN if the user has no permission on the site", async () => {
+      // Arrange
+      const { page } = await setupPageResource({ resourceType: "Page" })
+
+      // Act
+      const result = caller.listResourceUpdates({
+        pageId: Number(page.id),
+        siteId: page.siteId,
+        cursor: 0,
+        limit: 10,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("excludes ResourceUpdate rows belonging to a different resource on the same site", async () => {
+      // Arrange: two pages under the same site — page two is saved twice
+      // (once as a no-op re-save's counterpart, once as a real edit) and must
+      // never leak into page one's history.
+      const { page: pageOne } = await setupPageResource({
+        resourceType: "Page",
+      })
+      const { page: pageTwo } = await setupPageResource({
+        resourceType: "Page",
+        siteId: pageOne.siteId,
+        permalink: "page-two",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: pageOne.siteId,
+      })
+      const pageCaller = createPageCaller(createMockRequest(session))
+
+      await pageCaller.updatePageBlob(createUpdateArgs(pageOne, BLOCKS_A))
+      await pageCaller.updatePageBlob(createUpdateArgs(pageTwo, BLOCKS_A))
+      await pageCaller.updatePageBlob(createUpdateArgs(pageTwo, BLOCKS_B))
+
+      // Act
+      const result = await caller.listResourceUpdates({
+        pageId: Number(pageOne.id),
+        siteId: pageOne.siteId,
+        cursor: 0,
+        limit: 10,
+      })
+
+      // Assert: only page one's single update shows up — none of page two's,
+      // even though they share a site.
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0]?.afterContent.content).toEqual(BLOCKS_A)
+    })
+
+    it("silently drops a row whose delta doesn't match the expected blob.content shape", async () => {
+      // Arrange: one well-formed update, plus a row that passes every
+      // SQL-level filter (has 'blob' keys on both sides, with differing
+      // 'blob.content') but whose `before.blob` isn't actually an object —
+      // simulating a corrupted/legacy row. `updatePageBlob` can never
+      // produce this shape, so it's inserted directly.
+      const { page } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: page.siteId,
+      })
+      const pageCaller = createPageCaller(createMockRequest(session))
+      await pageCaller.updatePageBlob(createUpdateArgs(page, BLOCKS_A))
+
+      const malformedDelta = {
+        before: { blob: null, resource: { id: String(page.id) } },
+        after: {
+          blob: {
+            content: {
+              content: BLOCKS_B,
+              layout: "content",
+              page: pick(page, ["title", "permalink"]),
+              version: "0.1.0",
+            },
+          },
+          resource: { id: String(page.id) },
+        },
+      }
+      await db
+        .insertInto("AuditLog")
+        .values({
+          userId: user.id,
+          siteId: page.siteId,
+          eventType: "ResourceUpdate",
+          metadata: jsonb({}),
+          delta: jsonb(malformedDelta) as never,
+        })
+        .execute()
+
+      // Act
+      const result = await caller.listResourceUpdates({
+        pageId: Number(page.id),
+        siteId: page.siteId,
+        cursor: 0,
+        limit: 10,
+      })
+
+      // Assert: the malformed row is dropped, not thrown — only the
+      // well-formed update from `updatePageBlob` survives.
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0]?.afterContent.content).toEqual(BLOCKS_A)
     })
   })
 })
