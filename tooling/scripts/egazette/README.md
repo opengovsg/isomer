@@ -53,11 +53,10 @@ the eGazette site ID, gazette collection ID, and date range. The IDs are the sit
 and designated eGazette collection's numeric IDs in Studio. The script checks
 that the site exists and the collection belongs to it, then prints their names.
 
-The default range is **three calendar months before today through today**, in
-Singapore time, with both dates included. Dates are entered as `YYYY-MM-DD`.
-For a different end date, the default start date is three months before that
-date. Month ends are clamped (31 May → 28/29 February). You can also set
-`FROM_DATE`, `TO_DATE`, or `DEFAULT_MONTHS` in `apps/create-static-page.ts`.
+The default range is **the last 30 days**, in Singapore time, with both dates
+included. Dates are entered as `YYYY-MM-DD`. For a different end date, the
+default start date is 30 days before that date. You can also set `FROM_DATE`,
+`TO_DATE`, or `DEFAULT_WINDOW_DAYS` in `apps/create-static-page.ts`.
 
 The script reads the Isomer database:
 
