@@ -29,6 +29,7 @@ import {
   createTableSelectionBorderPlugin,
   getHtmlWithRelativeReferenceLinks,
 } from "../../utils"
+import { deleteEmptyTextblockBeforeTable } from "./deleteEmptyTextblockBeforeTable"
 import { selectTableCellContent } from "./selectTableCellContent"
 
 export { TableRow } from "@tiptap/extension-table-row"
@@ -121,10 +122,21 @@ export const IsomerTable = Table.extend({
     }
   },
   addKeyboardShortcuts() {
+    const parentShortcuts = this.parent?.() ?? {}
+    const deleteTableWhenAllCellsSelected = parentShortcuts.Backspace
+
+    const handleBackspace = () =>
+      deleteEmptyTextblockBeforeTable(this.editor) ||
+      deleteTableWhenAllCellsSelected?.({ editor: this.editor }) ||
+      false
+
     return {
-      ...this.parent?.(),
+      ...parentShortcuts,
       "Mod-a": () =>
         selectTableCellContent(this.editor) || this.editor.commands.selectAll(),
+      Backspace: handleBackspace,
+      "Mod-Backspace": handleBackspace,
+      "Shift-Backspace": handleBackspace,
     }
   },
   addProseMirrorPlugins() {
