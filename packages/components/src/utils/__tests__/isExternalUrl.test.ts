@@ -31,4 +31,11 @@ describe("isExternalUrl", () => {
   it("should return false for tel: links", () => {
     expect(isExternalUrl("tel:+6512345678")).toBe(false)
   })
+
+  it("should return false for mailto:/tel: links regardless of scheme casing", () => {
+    expect(isExternalUrl("MAILTO:test@example.com")).toBe(false)
+    expect(isExternalUrl("Mailto:test@example.com")).toBe(false)
+    expect(isExternalUrl("TEL:+6512345678")).toBe(false)
+    expect(isExternalUrl("Tel:+6512345678")).toBe(false)
+  })
 })
