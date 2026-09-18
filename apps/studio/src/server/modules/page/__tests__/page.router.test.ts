@@ -3000,6 +3000,12 @@ describe("page.router", async () => {
         .set({ draftBlobId: draftBlob.id })
         .execute()
 
+      const publishedVersion = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
       // Act
       await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
 
@@ -3020,6 +3026,12 @@ describe("page.router", async () => {
         .selectAll()
         .execute()
       expect(auditLogs.length).toEqual(1)
+      expect(auditLogs[0]?.delta).toMatchObject({
+        before: {
+          versionId: publishedVersion.id,
+          versionNum: publishedVersion.versionNum,
+        },
+      })
     })
 
     it("should backfill a draft from the published content when there is no pending draft", async () => {

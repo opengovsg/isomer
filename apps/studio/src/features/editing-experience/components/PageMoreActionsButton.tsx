@@ -106,7 +106,7 @@ const SuspendablePageMoreActionsButton = ({
   // contradict what the user just saw. Live descendants are the actionable
   // blocker in that case.
   const disabledReason = isBlockedFromScheduling
-    ? "There are child pages that are still live"
+    ? "There are child pages that are or will be live"
     : !isLive
       ? "This page isn't live"
       : isScheduledToPublish
