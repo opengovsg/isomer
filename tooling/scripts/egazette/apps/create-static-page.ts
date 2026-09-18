@@ -10,7 +10,7 @@ import { getDbClientConfig } from "@isomer/export-import/db"
 // Override either date here (YYYY-MM-DD), or accept/edit the defaults at the prompts.
 const FROM_DATE = ""
 const TO_DATE = ""
-const DEFAULT_MONTHS = 3
+const DEFAULT_WINDOW_DAYS = 30
 
 interface Gazette {
   title: string
@@ -43,12 +43,7 @@ export const getDefaultDateRange = (now = new Date()) => {
   // differently on minimal-ICU runtimes.
   const to = formatInTimeZone(now, "Asia/Singapore", "yyyy-MM-dd")
   const from = new Date(`${to}T00:00:00Z`)
-  const day = from.getUTCDate()
-  from.setUTCMonth(from.getUTCMonth() - DEFAULT_MONTHS, 1)
-  const lastDay = new Date(
-    Date.UTC(from.getUTCFullYear(), from.getUTCMonth() + 1, 0),
-  ).getUTCDate()
-  from.setUTCDate(Math.min(day, lastDay))
+  from.setUTCDate(from.getUTCDate() - (DEFAULT_WINDOW_DAYS - 1))
   return { from: from.toISOString().slice(0, 10), to }
 }
 

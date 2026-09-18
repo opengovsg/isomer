@@ -8,7 +8,7 @@ import {
   prepareGazettes,
 } from "./create-static-page"
 
-void test("getDefaultDateRange defaults to three Singapore-time calendar months back", () => {
+void test("getDefaultDateRange defaults to a 30-day Singapore-time window ending today", () => {
   // Arrange
   const now = new Date("2026-09-15T16:00:00Z")
 
@@ -16,29 +16,7 @@ void test("getDefaultDateRange defaults to three Singapore-time calendar months 
   const range = getDefaultDateRange(now)
 
   // Assert
-  assert.deepEqual(range, { from: "2026-06-16", to: "2026-09-16" })
-})
-
-void test("getDefaultDateRange clamps a 31-day start month to a shorter month's last day", () => {
-  // Arrange
-  const now = new Date("2026-05-31T00:00:00+08:00")
-
-  // Act
-  const range = getDefaultDateRange(now)
-
-  // Assert
-  assert.deepEqual(range, { from: "2026-02-28", to: "2026-05-31" })
-})
-
-void test("getDefaultDateRange clamps to 29 February in a leap year", () => {
-  // Arrange
-  const now = new Date("2024-05-31T00:00:00+08:00")
-
-  // Act
-  const range = getDefaultDateRange(now)
-
-  // Assert
-  assert.deepEqual(range, { from: "2024-02-29", to: "2024-05-31" })
+  assert.deepEqual(range, { from: "2026-08-18", to: "2026-09-16" })
 })
 
 void test("getDefaultDateRange crosses a year boundary", () => {
@@ -49,7 +27,18 @@ void test("getDefaultDateRange crosses a year boundary", () => {
   const range = getDefaultDateRange(now)
 
   // Assert
-  assert.deepEqual(range, { from: "2025-10-01", to: "2026-01-01" })
+  assert.deepEqual(range, { from: "2025-12-03", to: "2026-01-01" })
+})
+
+void test("getDefaultDateRange crosses a leap day", () => {
+  // Arrange
+  const now = new Date("2024-03-01T00:00:00+08:00")
+
+  // Act
+  const range = getDefaultDateRange(now)
+
+  // Assert
+  assert.deepEqual(range, { from: "2024-02-01", to: "2024-03-01" })
 })
 
 void test("isValidDate accepts a real calendar date, including a leap day", () => {
