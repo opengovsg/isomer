@@ -2,12 +2,13 @@ import type { Static } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
+import { IsomerString } from "../primitives/IsomerString"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const LogoCloudSchema = Type.Object(
   {
     type: Type.Literal("logocloud", { default: "logocloud" }),
-    title: Type.String({
+    title: IsomerString({
       title: "Title",
     }),
     images: Type.Array(

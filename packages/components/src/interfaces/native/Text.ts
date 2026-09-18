@@ -1,6 +1,8 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import { IsomerString } from "../primitives/IsomerString"
+
 const BoldMarkSchema = Type.Object(
   {
     type: Type.Literal("bold", { default: "bold" }),
@@ -106,7 +108,7 @@ export const TextSchema = Type.Object(
         ]),
       ),
     ),
-    text: Type.String(),
+    text: IsomerString(),
   },
   {
     title: "Text content",
