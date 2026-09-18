@@ -4,6 +4,8 @@ export const isExternalUrl = (url?: string): boolean => {
     !!url &&
     !url.startsWith("/") &&
     !url.startsWith("#") &&
-    !url.startsWith("[resource:")
+    !url.startsWith("[resource:") &&
+    !url.toLowerCase().startsWith("mailto:") &&
+    !url.toLowerCase().startsWith("tel:")
   )
 }
