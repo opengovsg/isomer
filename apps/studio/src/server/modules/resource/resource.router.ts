@@ -715,6 +715,14 @@ export const resourceRouter = router({
             message: "The search page cannot be deleted",
           })
         }
+        // prevents user from deleting root page(issue #2387)
+        if (before.type===ResourceType.RootPage) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "The root page cannot be deleted",
+            })
+        }
+
 
         await logResourceEvent(tx, {
           siteId,
