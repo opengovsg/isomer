@@ -37,6 +37,7 @@ export const AuditLogEvent = {
   UserUpdate: "UserUpdate",
   UserDelete: "UserDelete",
   Publish: "Publish",
+  Unpublish: "Unpublish",
   Login: "Login",
   Logout: "Logout",
   PermissionCreate: "PermissionCreate",
