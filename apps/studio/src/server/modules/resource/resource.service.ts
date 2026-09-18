@@ -9,8 +9,10 @@ import {
   type IsomerSitemap,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { format } from "date-fns"
 import chunk from "lodash-es/chunk"
 import get from "lodash-es/get"
+import { UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS } from "~/constants/resources"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   normalizeRedirectPath,
@@ -826,6 +828,15 @@ export const getDescendantResourceIds = async (
   return rows.map((row) => String(row.id))
 }
 
+// Both checks below filter by UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS
+// (the same allow-list unpublishPage validates against) rather than denying
+// FolderMeta/CollectionMeta by name. Those two are excluded because they're
+// ordering metadata that can carry a stray publishedVersionId despite never
+// being a real page (see `@deprecated pageOrderFromIndex` in the static-site
+// build script); RootPage's exclusion is moot since it's never a descendant.
+// Folder/Collection are in the allow-list too but never match here anyway —
+// they never carry their own publishedVersionId.
+
 // True when `resourceId` or any descendant is published — the folder analogue of
 // a page's `publishedVersionId !== null`, used to decide whether a folder/
 // collection move or rename should preserve its old URLs with a redirect (there
@@ -843,6 +854,7 @@ export const hasPublishedDescendant = async (
     .selectFrom("subtree")
     .innerJoin("Resource", "Resource.id", "subtree.id")
     .where("Resource.publishedVersionId", "is not", null)
+    .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS)
     .select("Resource.id")
     .executeTakeFirst()
   return published !== undefined
@@ -861,6 +873,7 @@ export const getPublishedDescendantResourceIds = async (
     .innerJoin("Resource", "Resource.id", "subtree.id")
     .where("Resource.id", "!=", resourceId)
     .where("Resource.publishedVersionId", "is not", null)
+    .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS)
     .select("Resource.id")
     .execute()
   return rows.map((row) => String(row.id))
@@ -1372,6 +1385,146 @@ export const publishPageResource = async ({
         ? {
             resourceWithUserIds: [{ resourceId, userId }],
             isScheduled: sitePublish.isScheduled,
+          }
+        : undefined,
+    })
+}
+
+interface UnpublishPageResourceArgs {
+  logger: Logger<string>
+  userId: string
+  siteId: number
+  resourceId: string
+  sitePublish?: {
+    enableCodebuildJobs: boolean
+  }
+}
+
+/**
+ * Takes a live page back to not-live. The draft (if any) and the Version
+ * history are left untouched — only `publishedVersionId` is cleared (and
+ * `state` flipped back to Draft, since several queries key "is this resource
+ * currently live" off `state` rather than `publishedVersionId`).
+ */
+export const unpublishPageResource = async ({
+  logger,
+  siteId,
+  resourceId,
+  userId,
+  sitePublish,
+}: UnpublishPageResourceArgs) => {
+  // May get swapped to the resolved IndexPage id below; declared out here so
+  // the post-transaction `publishSite` call uses the right id.
+  let targetResourceId = resourceId
+
+  await db.transaction().execute(async (tx) => {
+    const fullResource = await getFullPageById(tx, {
+      resourceId: Number(resourceId),
+      siteId,
+    })
+
+    if (!fullResource) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message:
+          "Please ensure you are attempting to unpublish a page that exists",
+      })
+    }
+
+    if (fullResource.publishedVersionId === null) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: "This page is not currently published",
+      })
+    }
+
+    // A scheduled publish isn't cleared by unpublishing — the schedule cron
+    // (schedulePublishingJob.ts) only checks scheduledAt, not the page's
+    // current state, so it would silently republish this page later from its
+    // draft blob. Make the caller cancel the schedule first.
+    if (fullResource.scheduledAt) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: `This page is scheduled to be published at ${format(
+          fullResource.scheduledAt,
+          "yyyy-MM-dd HH:mm",
+        )}. Cancel the schedule before unpublishing.`,
+      })
+    }
+
+    // Block unpublishing a container's landing page while a sibling or
+    // nested page elsewhere in it is still live — mirrors the delete guard's
+    // subtree check. fullResource's own id is filtered out since it's still
+    // published at this point in the transaction.
+    if (fullResource.type === ResourceType.IndexPage && fullResource.parentId) {
+      const publishedDescendantIds = (
+        await getPublishedDescendantResourceIds(tx, {
+          siteId,
+          resourceId: fullResource.parentId,
+        })
+      ).filter((id) => id !== fullResource.id)
+
+      if (publishedDescendantIds.length > 0) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "This folder or collection has other live pages inside it — unpublish them before unpublishing its landing page",
+        })
+      }
+    }
+
+    const previousVersionId = fullResource.publishedVersionId
+
+    let draftBlobId = fullResource.draftBlobId
+
+    if (draftBlobId === null) {
+      // No pending draft, so clone the published Blob into a fresh row
+      // rather than pointing draftBlobId straight at it — draft edits mutate
+      // a Blob in place (see updateBlobById), and the original is still
+      // owned by the now-unpublished, and supposedly immutable, Version.
+      const clonedBlob = await tx
+        .insertInto("Blob")
+        .values({ content: jsonb(fullResource.content) })
+        .returning("Blob.id")
+        .executeTakeFirstOrThrow()
+
+      draftBlobId = clonedBlob.id
+    }
+
+    targetResourceId = fullResource.id
+
+    await updatePageById(
+      {
+        id: Number(targetResourceId),
+        siteId,
+        publishedVersionId: null,
+        draftBlobId,
+        state: ResourceState.Draft,
+      },
+      tx,
+    )
+
+    await logPublishEvent(tx, {
+      siteId,
+      by: await getUserById(userId),
+      delta: {
+        before: { versionId: previousVersionId },
+        after: null,
+      },
+      eventType: AuditLogEvent.Unpublish,
+      metadata: fullResource,
+    })
+  })
+
+  // Trigger a rebuild of the site so the unpublished page's output is
+  // removed from the live site, same as resource deletion does today.
+  if (sitePublish)
+    await publishSite(logger, {
+      siteId,
+      codebuildJob: sitePublish.enableCodebuildJobs
+        ? {
+            resourceWithUserIds: [{ resourceId: targetResourceId, userId }],
+            isScheduled: false,
           }
         : undefined,
     })

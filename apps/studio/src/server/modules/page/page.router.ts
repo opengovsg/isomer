@@ -12,6 +12,7 @@ import {
 import { TRPCError } from "@trpc/server"
 import { format, isBefore } from "date-fns"
 import { get, isEmpty, isEqual, pick } from "lodash-es"
+import { UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS } from "~/constants/resources"
 import {
   INDEX_PAGE_PERMALINK,
   SEARCH_PAGE_PERMALINK,
@@ -23,6 +24,7 @@ import {
 import {
   ENABLE_CODEBUILD_JOBS,
   getIsSingpassDisabledInNonPreview,
+  IS_UNPUBLISH_ENABLED_FEATURE_KEY,
 } from "~/lib/growthbook"
 import {
   basePageSchema,
@@ -35,6 +37,7 @@ import {
   publishPageSchema,
   readPageOutputSchema,
   reorderBlobSchema,
+  unpublishPageSchema,
   updatePageBlobSchema,
   updatePageMetaSchema,
 } from "~/schemas/page"
@@ -65,6 +68,7 @@ import {
   getResourcePermalinkTree,
   publishPageResource,
   publishResource,
+  unpublishPageResource,
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
@@ -102,6 +106,11 @@ const validatedPageProcedure = protectedProcedure.use(
     return next()
   },
 )
+
+// Shared so the flag-off and wrong-type branches below throw an identical
+// error — the dark-launch trick depends on them being indistinguishable.
+const UNPUBLISH_PAGE_NOT_FOUND_MESSAGE =
+  "This page either does not exist or cannot be unpublished"
 
 export const pageRouter = router({
   getPrefill: protectedProcedure
@@ -642,6 +651,10 @@ export const pageRouter = router({
       return rootPage
     }),
 
+  // No resourceType guard here on purpose: a site must always be able to
+  // (re-)publish its homepage, even though unpublishPage below blocks the
+  // reverse for RootPage — see UNPUBLISHABLE_RESOURCE_TYPES in
+  // ~/constants/resources for why that asymmetry is intentional.
   publishPage: protectedProcedure
     .input(publishPageSchema)
     .mutation(
@@ -670,6 +683,65 @@ export const pageRouter = router({
             publisherEmail: user.email,
           })
         }
+      },
+    ),
+
+  // `pageId` isn't always the resource that ends up mutated: pass a
+  // Folder/Collection id and unpublishPageResource swaps in its child
+  // IndexPage's id first, since that's what's actually live at the
+  // container's URL.
+  unpublishPage: protectedProcedure
+    .input(unpublishPageSchema)
+    .mutation(
+      async ({ ctx: { user, gb, logger }, input: { siteId, pageId } }) => {
+        await bulkValidateUserPermissionsForResources({
+          siteId,
+          action: "unpublish",
+          userId: user.id,
+        })
+
+        // Dark-launched: same NOT_FOUND as the type-guard below, so a caller
+        // can't distinguish "flag off" from "wrong resource type" and infer
+        // the feature exists before it's rolled out.
+        if (!gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
+          })
+        }
+
+        // Allow-list: Page-like types, plus Folder/Collection (resolved to
+        // their child IndexPage below). See
+        // UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS for what's excluded
+        // and why.
+        const page = await db
+          .selectFrom("Resource")
+          .where("Resource.id", "=", String(pageId))
+          .where("Resource.siteId", "=", siteId)
+          .where(
+            "Resource.type",
+            "in",
+            UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS,
+          )
+          .select("Resource.id")
+          .executeTakeFirst()
+
+        if (!page) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
+          })
+        }
+
+        await unpublishPageResource({
+          logger,
+          siteId,
+          resourceId: String(pageId),
+          userId: user.id,
+          sitePublish: {
+            enableCodebuildJobs: gb.isOn(ENABLE_CODEBUILD_JOBS),
+          },
+        })
       },
     ),
 
