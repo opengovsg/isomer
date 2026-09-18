@@ -1,4 +1,5 @@
 import { confirm, input, select } from "@inquirer/prompts"
+import { formatInTimeZone } from "date-fns-tz"
 import { mkdirSync, renameSync, writeFileSync } from "node:fs"
 import path from "node:path"
 import { Client } from "pg"
@@ -37,7 +38,10 @@ export const isValidDate = (value: string): boolean => {
 }
 
 export const getDefaultDateRange = (now = new Date()) => {
-  const to = now.toLocaleDateString("en-CA", { timeZone: "Asia/Singapore" })
+  // Explicit "yyyy-MM-dd" token, rather than an Intl locale trick (e.g.
+  // "en-CA"), which depends on ICU locale data and can silently format
+  // differently on minimal-ICU runtimes.
+  const to = formatInTimeZone(now, "Asia/Singapore", "yyyy-MM-dd")
   const from = new Date(`${to}T00:00:00Z`)
   const day = from.getUTCDate()
   from.setUTCMonth(from.getUTCMonth() - DEFAULT_MONTHS, 1)
