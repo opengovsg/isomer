@@ -39,8 +39,8 @@ export type SitemapEntry = Pick<
   lastModified: string
   layout: string
   summary: string
-  // DEPRECATED: legacy page.category — migrated to tag categories. Do not re-add.
-  // category?: string
+  // eGazette collection links. Not the ADR 0003 article filter field.
+  category?: string
   date?: string
   image?: {
     src?: string

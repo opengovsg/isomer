@@ -29,6 +29,7 @@ interface SitemapEntry {
   lastModified: string
   layout: string
   summary: string
+  category?: string
   date?: string
   image?: { src?: string; alt?: string }
   firstImage?: { src?: string; alt?: string }
@@ -193,6 +194,7 @@ describe("sitemap.json", () => {
       layout: "link",
       ref: "https://example.com",
       date: "01/01/2026",
+      category: "Government Gazette",
       summary: "An external link",
     })
     expect(news?.children?.[1]).toMatchObject({
@@ -202,6 +204,7 @@ describe("sitemap.json", () => {
       summary: "Zebra article summary",
       image: { src: "/images/zebra.png", alt: "A zebra" },
     })
+    expect(news?.children?.[1]).not.toHaveProperty("category")
   })
 
   it("excludes draft-only pages", () => {

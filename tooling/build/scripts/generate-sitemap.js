@@ -84,6 +84,8 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
     return {
       ...siteMapEntry,
       ref: schemaData.page.ref,
+      // eGazette collection links still persist supplement type here (ADR 0003).
+      category: schemaData.page.category,
     }
   }
 

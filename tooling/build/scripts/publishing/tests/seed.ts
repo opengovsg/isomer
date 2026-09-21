@@ -316,6 +316,7 @@ export const seedPublishingSite = async () => {
       page: {
         ref: "https://example.com",
         date: "01/01/2026",
+        category: "Government Gazette",
         description: "An external link",
       },
       content: [],

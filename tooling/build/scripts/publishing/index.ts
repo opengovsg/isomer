@@ -168,6 +168,11 @@ async function main() {
             defaultSortDirection: resource.content.page?.defaultSortDirection,
             showThumbnail: resource.content.page?.showThumbnail,
           },
+          // eGazette collection links still persist supplement type here
+          // (ADR 0003). Article category was migrated to tagCategories/tagged.
+          ...(resource.content.layout === "link"
+            ? { category: resource.content.page.category }
+            : {}),
         }
 
         sitemapEntries.push(sitemapEntry)
