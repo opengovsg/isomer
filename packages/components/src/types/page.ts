@@ -49,15 +49,16 @@ const TagCategorySchema = Type.Composite([
     id: TagCategoryUuidSchema,
   }),
   Type.Object({
-    // Required for Studio JsonForms. Published blobs may omit the key. Use
-    // resolveTagCategoryIsRequired or ?? DEFAULT_TAG_CATEGORY_IS_REQUIRED when
-    // reading for render or publish. AJV useDefaults fills it in Studio.
-    isRequired: Type.Boolean({
-      title: "This filter is required",
-      description:
-        "Every item must have at least one option selected from this filter.",
-      default: DEFAULT_TAG_CATEGORY_IS_REQUIRED,
-    }),
+    // Optional so legacy blobs stay valid. Studio sets this when adding a
+    // filter (`createDefaultTagCategory`). Do not add a schema `default` — AJV
+    // `useDefaults` would persist `isRequired` onto rows that omit it.
+    isRequired: Type.Optional(
+      Type.Boolean({
+        title: "This filter is required",
+        description:
+          "Every item must have at least one option selected from this filter.",
+      }),
+    ),
   }),
   Type.Object({
     // Required for Studio JsonForms. Published blobs may omit the key. Use

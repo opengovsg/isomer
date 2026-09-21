@@ -24,13 +24,14 @@ export type TagCategoryDisplay =
 
 export const DEFAULT_TAG_CATEGORY_DISPLAY = TAG_CATEGORY_DISPLAY_OPTIONS.Pills
 
+// Default for new filters in Studio (`createDefaultTagCategory`), not for legacy blobs.
 export const DEFAULT_TAG_CATEGORY_IS_REQUIRED = true
 
-// The schema requires both fields for Studio JsonForms. Published blobs may omit
-// them. Call these helpers when reading data for render or publish.
+// Published blobs may omit `display` / `isRequired`. Call these when reading for
+// render or publish.
 export const resolveTagCategoryDisplay = (
   display?: TagCategoryDisplay,
 ): TagCategoryDisplay => display ?? DEFAULT_TAG_CATEGORY_DISPLAY
 
 export const resolveTagCategoryIsRequired = (isRequired?: boolean): boolean =>
-  isRequired ?? DEFAULT_TAG_CATEGORY_IS_REQUIRED
+  isRequired === true

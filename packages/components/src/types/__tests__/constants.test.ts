@@ -29,15 +29,12 @@ describe("resolveTagCategoryDisplay", () => {
 })
 
 describe("resolveTagCategoryIsRequired", () => {
-  it("defaults missing isRequired to true for legacy tag categories", () => {
-    expect(resolveTagCategoryIsRequired(undefined)).toBe(
-      DEFAULT_TAG_CATEGORY_IS_REQUIRED,
-    )
-    expect(resolveTagCategoryIsRequired(undefined)).toBe(true)
+  it("treats missing or false isRequired as optional", () => {
+    expect(resolveTagCategoryIsRequired(undefined)).toBe(false)
+    expect(resolveTagCategoryIsRequired(false)).toBe(false)
   })
 
-  it("returns the stored isRequired when present", () => {
+  it("returns true only when isRequired is explicitly true", () => {
     expect(resolveTagCategoryIsRequired(true)).toBe(true)
-    expect(resolveTagCategoryIsRequired(false)).toBe(false)
   })
 })
