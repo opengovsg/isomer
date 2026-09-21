@@ -26,6 +26,11 @@ export const IS_UNPUBLISH_ENABLED_FEATURE_KEY = "is-unpublish-enabled"
 // Gates the "Date filter" option when adding a new collection tag filter.
 export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY = "is-date-filters-enabled"
 export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
+// Preview iframe block hover/flash highlights and drawer reverse-highlight.
+// OFF by default; enable for allowlisted users via GrowthBook targeting on the
+// `email` attribute (already set client-side in AvatarMenu).
+export const IS_PREVIEW_BLOCK_HIGHLIGHT_ENABLED_FEATURE_KEY =
+  "is-preview-block-highlight-enabled"
 
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
