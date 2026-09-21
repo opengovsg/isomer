@@ -10,8 +10,6 @@ import { OrderedList } from "../OrderedList"
 import { Table } from "../Table"
 import { UnorderedList } from "../UnorderedList"
 
-type ProseRenderProps = ProseProps & ContentBlockIndexProps
-
 const ProseComponent = ({
   component,
   site,
@@ -80,7 +78,7 @@ export const Prose = ({
   shouldStripContentHtmlTags = false,
   headingLevel,
   contentBlockIndex,
-}: ProseRenderProps) => {
+}: ProseProps & ContentBlockIndexProps) => {
   if (!content) {
     return <></>
   }
