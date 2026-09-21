@@ -25,14 +25,12 @@ const createMapStyles = tv({
   },
 })
 
-type MapRenderProps = MapProps & ContentBlockIndexProps
-
 export const Map = ({
   title,
   url,
   shouldLazyLoad = true,
   contentBlockIndex,
-}: MapRenderProps) => {
+}: MapProps & ContentBlockIndexProps) => {
   if (!isValidMapEmbedUrl(url)) {
     return <></>
   }

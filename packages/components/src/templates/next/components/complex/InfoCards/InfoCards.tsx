@@ -21,8 +21,6 @@ import {
   InfoCardWithImage,
 } from "./components"
 
-type InfoCardsRenderProps = InfoCardsProps & ContentBlockIndexProps
-
 export const InfoCards = ({
   id,
   title,
@@ -37,7 +35,7 @@ export const InfoCards = ({
   shouldLazyLoad,
   headingLevel,
   contentBlockIndex,
-}: InfoCardsRenderProps): JSX.Element => {
+}: InfoCardsProps & ContentBlockIndexProps): JSX.Element => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const cardVariant =
     variant === CARDS_WITH_FULL_IMAGES

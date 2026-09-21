@@ -229,8 +229,6 @@ const RowLayout = ({
   )
 }
 
-type ChildrenPagesRenderProps = ChildrenPagesProps & ContentBlockIndexProps
-
 export const ChildrenPages = ({
   childrenPagesOrdering = [],
   permalink,
@@ -243,7 +241,7 @@ export const ChildrenPages = ({
   imageFit = IMAGE_FIT.Cover,
   headingLevel,
   contentBlockIndex,
-}: ChildrenPagesRenderProps) => {
+}: ChildrenPagesProps & ContentBlockIndexProps) => {
   const currentPageNode = getNodeFromSiteMap(site.siteMap, permalink)
 
   if (!currentPageNode?.children) {

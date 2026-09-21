@@ -29,8 +29,6 @@ const HERO_THEME_MAPPINGS = {
   },
 } as const
 
-type HeroFloatingRenderProps = HeroFloatingProps & ContentBlockIndexProps
-
 export const HeroFloating = ({
   title,
   subtitle,
@@ -43,7 +41,7 @@ export const HeroFloating = ({
   theme = "default",
   headingLevel,
   contentBlockIndex,
-}: HeroFloatingRenderProps) => {
+}: HeroFloatingProps & ContentBlockIndexProps) => {
   const heroColour = HERO_THEME_MAPPINGS.hero[theme]
   const heroTitleColour = HERO_THEME_MAPPINGS.title[theme]
   const heroSubtitleColour = HERO_THEME_MAPPINGS.subtitle[theme]

@@ -3,14 +3,11 @@ import type { NativeContactInformationProps } from "~/interfaces/complex/Contact
 import { type ContentBlockIndexProps } from "../../../../render/contentBlockIndex"
 import { ContactInformationUI } from "../components"
 
-type NativeContactInformationRenderProps = NativeContactInformationProps &
-  ContentBlockIndexProps
-
 export const NativeContactInformation = ({
   dataSource: _dataSource,
   contentBlockIndex,
   ...rest
-}: NativeContactInformationRenderProps) => {
+}: NativeContactInformationProps & ContentBlockIndexProps) => {
   return (
     <ContactInformationUI {...rest} contentBlockIndex={contentBlockIndex} />
   )

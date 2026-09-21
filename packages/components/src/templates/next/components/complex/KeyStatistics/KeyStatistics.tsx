@@ -63,8 +63,6 @@ const createKeyStatisticsStyles = tv({
 
 const compoundStyles = createKeyStatisticsStyles()
 
-type KeyStatisticsRenderProps = KeyStatisticsProps & ContentBlockIndexProps
-
 export const KeyStatistics = ({
   id,
   title,
@@ -75,7 +73,7 @@ export const KeyStatistics = ({
   site,
   headingLevel,
   contentBlockIndex,
-}: KeyStatisticsRenderProps) => {
+}: KeyStatisticsProps & ContentBlockIndexProps) => {
   const noOfItems = Math.min(MAX_ITEMS, statistics.length) as NoOfItemVariants
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const TitleTag = getHeadingTag(headingLevel)

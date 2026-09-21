@@ -155,8 +155,6 @@ const InfoBoxes = ({
   )
 }
 
-type InfoColsRenderProps = InfoColsProps & ContentBlockIndexProps
-
 export const InfoCols = ({
   id,
   title,
@@ -166,7 +164,7 @@ export const InfoCols = ({
   site,
   headingLevel,
   contentBlockIndex,
-}: InfoColsRenderProps) => {
+}: InfoColsProps & ContentBlockIndexProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const Tag = getHeadingTag(headingLevel)
 

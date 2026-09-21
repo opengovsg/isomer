@@ -24,8 +24,6 @@ const HERO_THEME_MAPPINGS = {
   },
 } as const
 
-type HeroBlockRenderProps = HeroBlockProps & ContentBlockIndexProps
-
 export const HeroBlock = ({
   title,
   subtitle,
@@ -38,7 +36,7 @@ export const HeroBlock = ({
   theme = "default",
   headingLevel,
   contentBlockIndex,
-}: HeroBlockRenderProps) => {
+}: HeroBlockProps & ContentBlockIndexProps) => {
   const heroColour = HERO_THEME_MAPPINGS.hero[theme]
   const heroTextColour = HERO_THEME_MAPPINGS.text[theme]
   const heroButton = HERO_THEME_MAPPINGS.button[theme]

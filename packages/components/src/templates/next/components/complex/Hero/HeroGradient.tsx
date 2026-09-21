@@ -10,8 +10,6 @@ import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
-type HeroGradientRenderProps = HeroGradientProps & ContentBlockIndexProps
-
 export const HeroGradient = ({
   title,
   subtitle,
@@ -23,7 +21,7 @@ export const HeroGradient = ({
   site,
   headingLevel,
   contentBlockIndex,
-}: HeroGradientRenderProps) => {
+}: HeroGradientProps & ContentBlockIndexProps) => {
   const Tag = getHeadingTag(headingLevel)
   return (
     <section

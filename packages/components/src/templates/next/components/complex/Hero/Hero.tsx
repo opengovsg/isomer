@@ -8,9 +8,7 @@ import { HeroGradient } from "./HeroGradient"
 import { HeroLargeImage } from "./HeroLargeImage"
 import { HeroSearchbar } from "./HeroSearchbar"
 
-type HeroRenderProps = HeroProps & ContentBlockIndexProps
-
-export const Hero = (props: HeroRenderProps) => {
+export const Hero = (props: HeroProps & ContentBlockIndexProps) => {
   const { variant } = props
   switch (variant) {
     case HERO_STYLE.gradient:

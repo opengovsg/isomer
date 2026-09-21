@@ -38,8 +38,6 @@ const getSizeWidth = (size: ImageProps["size"]) => {
   }
 }
 
-type ImageRenderProps = ImageProps & ContentBlockIndexProps
-
 export const Image = ({
   src,
   alt,
@@ -48,7 +46,7 @@ export const Image = ({
   site,
   shouldLazyLoad = true,
   contentBlockIndex,
-}: ImageRenderProps) => {
+}: ImageProps & ContentBlockIndexProps) => {
   return (
     <div
       className={compoundStyles.container()}

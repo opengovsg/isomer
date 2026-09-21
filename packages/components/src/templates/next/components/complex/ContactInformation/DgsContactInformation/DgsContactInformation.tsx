@@ -15,14 +15,11 @@ import { safeJsonParse } from "~/utils/safeJsonParse"
 import { type ContentBlockIndexProps } from "../../../../render/contentBlockIndex"
 import { ContactInformationUI } from "../components"
 
-type DgsContactInformationRenderProps = DgsContactInformationProps &
-  ContentBlockIndexProps
-
 export const DgsContactInformation = ({
   dataSource: { resourceId, filters },
   contentBlockIndex,
   ...rest
-}: DgsContactInformationRenderProps) => {
+}: DgsContactInformationProps & ContentBlockIndexProps) => {
   const params = useMemo(
     () => ({
       resourceId,

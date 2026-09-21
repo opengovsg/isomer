@@ -70,15 +70,13 @@ const calloutStyles = tv({
   },
 })
 
-type CalloutRenderProps = CalloutProps & ContentBlockIndexProps
-
 export const Callout = ({
   content,
   site,
   headingLevel,
   variant = DEFAULT_CALLOUT_VARIANT,
   contentBlockIndex,
-}: CalloutRenderProps) => {
+}: CalloutProps & ContentBlockIndexProps) => {
   const { icon: Icon, label } = CALLOUT_CONFIG[variant]
   const styles = calloutStyles({ variant, hasIcon: !!Icon })
 

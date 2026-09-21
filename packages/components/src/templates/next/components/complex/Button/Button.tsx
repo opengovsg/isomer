@@ -12,8 +12,6 @@ const ALIGNMENT_STYLES = {
   center: "justify-center",
 } as const
 
-type ButtonRenderProps = ButtonProps & ContentBlockIndexProps
-
 export const Button = ({
   alignment,
   buttonLabel,
@@ -22,7 +20,7 @@ export const Button = ({
   secondaryButtonUrl,
   site,
   contentBlockIndex,
-}: ButtonRenderProps) => {
+}: ButtonProps & ContentBlockIndexProps) => {
   const hasSecondaryCTA = !!secondaryButtonLabel && !!secondaryButtonUrl
 
   return (

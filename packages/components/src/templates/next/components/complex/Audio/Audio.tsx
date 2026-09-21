@@ -7,14 +7,12 @@ import {
 } from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 
-type AudioRenderProps = AudioProps & ContentBlockIndexProps
-
 export const Audio = ({
   title,
   url,
   shouldLazyLoad = true,
   contentBlockIndex,
-}: AudioRenderProps) => {
+}: AudioProps & ContentBlockIndexProps) => {
   if (!isValidAudioEmbedUrl(url)) {
     return <></>
   }
