@@ -60,15 +60,12 @@ const slideStyles = tv({
 
 const compoundStyles = createImagePreviewStyles()
 
-type ImageGalleryClientRenderProps = ImageGalleryClientProps &
-  ContentBlockIndexProps
-
 export const ImageGalleryClient = ({
   images,
   assetsBaseUrl,
   shouldLazyLoad,
   contentBlockIndex,
-}: ImageGalleryClientRenderProps) => {
+}: ImageGalleryClientProps & ContentBlockIndexProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPending, startTransition] = useTransition()
 

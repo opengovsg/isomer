@@ -6,9 +6,6 @@ import type { ContentBlockIndexProps } from "../../../render/contentBlockIndex"
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { DynamicDataBannerClient } from "./DynamicDataBannerClient"
 
-type DynamicDataBannerRenderProps = DynamicDataBannerProps &
-  ContentBlockIndexProps
-
 export const DynamicDataBanner = ({
   apiEndpoint,
   title,
@@ -18,7 +15,7 @@ export const DynamicDataBanner = ({
   errorMessage,
   site,
   contentBlockIndex,
-}: DynamicDataBannerRenderProps) => {
+}: DynamicDataBannerProps & ContentBlockIndexProps) => {
   return (
     <DynamicDataBannerClient
       apiEndpoint={apiEndpoint}

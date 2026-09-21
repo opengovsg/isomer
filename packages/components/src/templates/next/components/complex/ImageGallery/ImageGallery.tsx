@@ -4,9 +4,9 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 import { type ContentBlockIndexProps } from "../../../render/contentBlockIndex"
 import { ImageGalleryClient } from "./ImageGalleryClient"
 
-type ImageGalleryRenderProps = ImageGalleryProps & ContentBlockIndexProps
-
-export const ImageGallery = (props: ImageGalleryRenderProps) => {
+export const ImageGallery = (
+  props: ImageGalleryProps & ContentBlockIndexProps,
+) => {
   const { site, images, contentBlockIndex, ...rest } = props
 
   const processedImages = images.map((image) => ({

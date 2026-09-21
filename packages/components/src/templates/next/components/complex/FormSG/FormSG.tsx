@@ -8,14 +8,12 @@ import {
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { ComponentContent } from "../../internal/customCssClass"
 
-type FormSGRenderProps = FormSGProps & ContentBlockIndexProps
-
 export const FormSG = ({
   title,
   url,
   shouldLazyLoad = true,
   contentBlockIndex,
-}: FormSGRenderProps) => {
+}: FormSGProps & ContentBlockIndexProps) => {
   if (!isValidFormSGEmbedUrl(url)) {
     return <></>
   }

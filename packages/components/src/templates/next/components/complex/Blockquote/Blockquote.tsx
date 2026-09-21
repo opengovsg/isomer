@@ -51,8 +51,6 @@ const createBlockquoteStyles = tv({
   },
 })
 
-type BlockquoteRenderProps = BlockquoteProps & ContentBlockIndexProps
-
 export const Blockquote = ({
   quote,
   source,
@@ -62,7 +60,7 @@ export const Blockquote = ({
   shouldLazyLoad,
   site,
   contentBlockIndex,
-}: BlockquoteRenderProps) => {
+}: BlockquoteProps & ContentBlockIndexProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const variants = {
     layout: simplifiedLayout,

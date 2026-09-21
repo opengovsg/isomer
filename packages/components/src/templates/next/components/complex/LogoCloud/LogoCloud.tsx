@@ -19,15 +19,13 @@ const createLogoCloudStyles = tv({
 })
 const compoundStyles = createLogoCloudStyles()
 
-type LogoCloudRenderProps = LogoCloudProps & ContentBlockIndexProps
-
 export const LogoCloud = ({
   images: baseImages,
   title,
   site: { assetsBaseUrl },
   shouldLazyLoad = true,
   contentBlockIndex,
-}: LogoCloudRenderProps) => {
+}: LogoCloudProps & ContentBlockIndexProps) => {
   return (
     <div
       className={compoundStyles.container()}

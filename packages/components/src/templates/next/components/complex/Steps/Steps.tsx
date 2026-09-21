@@ -46,8 +46,6 @@ const createStepsStyles = tv({
 
 const styles = createStepsStyles()
 
-type StepsRenderProps = StepsProps & ContentBlockIndexProps
-
 export const Steps = ({
   id,
   title,
@@ -58,7 +56,7 @@ export const Steps = ({
   site,
   headingLevel,
   contentBlockIndex,
-}: StepsRenderProps) => {
+}: StepsProps & ContentBlockIndexProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const TitleTag = getHeadingTag(headingLevel)
   const hasTwo = steps.length === 2

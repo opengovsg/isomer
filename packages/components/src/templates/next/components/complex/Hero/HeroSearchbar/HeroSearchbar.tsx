@@ -7,9 +7,9 @@ import {
 import { ImageClient } from "../../../internal/ImageClient"
 import { SearchbarContent } from "./SearchbarContent"
 
-type HeroSearchbarRenderProps = HeroSearchbarProps & ContentBlockIndexProps
-
-export const HeroSearchbar = (props: HeroSearchbarRenderProps) => {
+export const HeroSearchbar = (
+  props: HeroSearchbarProps & ContentBlockIndexProps,
+) => {
   const { backgroundUrl, site, contentBlockIndex } = props
 
   if (backgroundUrl) {

@@ -6,8 +6,6 @@ import { type ContentBlockIndexProps } from "../../../render/contentBlockIndex"
 import { BlockInfopic } from "./components/BlockInfopic"
 import { FullInfopic } from "./components/FullInfopic"
 
-type InfopicRenderProps = InfopicProps & ContentBlockIndexProps
-
 export const Infopic = ({
   imageSrc,
   site,
@@ -15,7 +13,7 @@ export const Infopic = ({
   variant = InfopicVariants.Block.value,
   contentBlockIndex,
   ...rest
-}: InfopicRenderProps): JSX.Element => {
+}: InfopicProps & ContentBlockIndexProps): JSX.Element => {
   const imgSrc =
     isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
       ? imageSrc

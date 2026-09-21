@@ -89,8 +89,6 @@ export const createInfobarStyles = tv({
   },
 })
 
-type InfobarRenderProps = InfobarProps & ContentBlockIndexProps
-
 export const Infobar = ({
   variant,
   title,
@@ -103,7 +101,7 @@ export const Infobar = ({
   site,
   headingLevel,
   contentBlockIndex,
-}: InfobarRenderProps) => {
+}: InfobarProps & ContentBlockIndexProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const Tag = getHeadingTag(headingLevel)
   const hasPrimaryCTA = !!buttonLabel && !!buttonUrl

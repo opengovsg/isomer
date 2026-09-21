@@ -177,8 +177,6 @@ const CollectionBlockSkeleton = ({
   )
 }
 
-type CollectionBlockRenderProps = CollectionBlockProps & ContentBlockIndexProps
-
 export const CollectionBlock = ({
   site,
   collectionReferenceLink,
@@ -190,7 +188,7 @@ export const CollectionBlock = ({
   shouldLazyLoad,
   headingLevel,
   contentBlockIndex,
-}: CollectionBlockRenderProps): JSX.Element => {
+}: CollectionBlockProps & ContentBlockIndexProps): JSX.Element => {
   const collectionId = getResourceIdFromReferenceLink(collectionReferenceLink)
 
   // This happens when no collection is selected yet on Studio when the user just added the block

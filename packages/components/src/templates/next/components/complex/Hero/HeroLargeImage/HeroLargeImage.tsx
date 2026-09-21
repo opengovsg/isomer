@@ -10,8 +10,6 @@ import { ComponentContent } from "../../../internal/customCssClass"
 import { LinkButton } from "../../../internal/LinkButton/LinkButton"
 import { ImageContainer } from "./ImageContainer"
 
-type HeroLargeImageRenderProps = HeroLargeImageProps & ContentBlockIndexProps
-
 export const HeroLargeImage = ({
   title,
   subtitle,
@@ -23,7 +21,7 @@ export const HeroLargeImage = ({
   site,
   headingLevel,
   contentBlockIndex,
-}: HeroLargeImageRenderProps) => {
+}: HeroLargeImageProps & ContentBlockIndexProps) => {
   const Tag = getHeadingTag(headingLevel)
   return (
     <section

@@ -95,9 +95,6 @@ type NumberOfContactMethods =
 
 const MAX_CONTACT_METHODS_FOR_HOMEPAGE = 3
 
-type HomepageContactInformationUIRenderProps = ContactInformationUIProps &
-  ContentBlockIndexProps
-
 export const HomepageContactInformationUI = ({
   whitelistedMethods,
   title,
@@ -109,7 +106,7 @@ export const HomepageContactInformationUI = ({
   acceptHtmlTags = false,
   headingLevel,
   contentBlockIndex,
-}: HomepageContactInformationUIRenderProps) => {
+}: ContactInformationUIProps & ContentBlockIndexProps) => {
   const TitleTag = getHeadingTag(headingLevel)
   const filteredMethods = filterContactMethods({ methods, whitelistedMethods })
 

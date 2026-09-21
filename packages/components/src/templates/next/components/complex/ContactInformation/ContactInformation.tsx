@@ -7,14 +7,11 @@ import { type ContentBlockIndexProps } from "../../../render/contentBlockIndex"
 import { DgsContactInformation } from "./DgsContactInformation"
 import { NativeContactInformation } from "./NativeContactInformation"
 
-type ContactInformationRenderProps = ContactInformationProps &
-  ContentBlockIndexProps
-
 export const ContactInformation = ({
   dataSource,
   contentBlockIndex,
   ...rest
-}: ContactInformationRenderProps) => {
+}: ContactInformationProps & ContentBlockIndexProps) => {
   const uiProps = {
     ...omit(rest, ["url", "site"]),
     referenceLinkHref: getReferenceLinkHref(

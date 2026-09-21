@@ -73,14 +73,12 @@ const videoAspectStyles = tv({
   },
 })
 
-type VideoRenderProps = VideoProps & ContentBlockIndexProps
-
 export const Video = ({
   title,
   url,
   shouldLazyLoad = true,
   contentBlockIndex,
-}: VideoRenderProps) => {
+}: VideoProps & ContentBlockIndexProps) => {
   const parsedVideo = parseVideo(url)
   if (!parsedVideo) return null
 

@@ -30,8 +30,6 @@ const getPaddingForEmbed = (url: string | null) => {
   return "pt-[56.25%]"
 }
 
-type IframeRenderProps = IframeProps & ContentBlockIndexProps
-
 /**
  * @deprecated Replaced with individual website embed components
  */
@@ -40,7 +38,7 @@ export const Iframe = ({
   content,
   shouldLazyLoad = true,
   contentBlockIndex,
-}: IframeRenderProps) => {
+}: IframeProps & ContentBlockIndexProps) => {
   const sanitizedIframe = getSanitizedIframeWithTitle(content, title)
 
   if (!sanitizedIframe) {
