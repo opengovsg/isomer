@@ -100,16 +100,11 @@ export const createCollectionPageFormSchema = z
     }),
   ])
   .and(
-    createPageSchema
-      .omit({
-        layout: true,
-        folderId: true,
-        siteId: true,
-      })
-      .extend({
-        // DEPRECATED legacy article page.category. Use tag categories on the index page.
-        // category: z.string().optional(),
-      }),
+    createPageSchema.omit({
+      layout: true,
+      folderId: true,
+      siteId: true,
+    }),
   )
 
 export const createCollectionPageSchema = createCollectionPageFormSchema.and(
