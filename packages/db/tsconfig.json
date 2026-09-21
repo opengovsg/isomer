@@ -17,5 +17,11 @@
     "prisma/**/*.cts",
     "prisma.config.ts"
   ],
-  "exclude": ["node_modules"]
+  // `prisma/generated/` is the gitignored Prisma client, regenerated at build
+  // time and emitted as `@ts-nocheck` code — it is not meant to be
+  // type-checked, and nothing in this package's own source imports it (we only
+  // expose the committed Kysely types under `src/generated/`). Excluding it
+  // also avoids spurious errors from the JSON-types generator occasionally
+  // injecting its import above the file's `@ts-nocheck` directive.
+  "exclude": ["node_modules", "prisma/generated/**"]
 }
