@@ -3,7 +3,13 @@ import { DEFAULT_TAG_CATEGORY_DISPLAY } from "@opengovsg/isomer-components"
 import { delay } from "msw"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import { MOCK_STORY_DATE } from "../constants"
+import {
+  MOCK_STORY_DATE,
+  MOCK_TAG_CATEGORY_TOPIC_ID,
+  MOCK_TAG_OPTION_HEALTH_ID,
+  MOCK_TAG_OPTION_SCIENCE_ID,
+  MOCK_TAG_OPTION_TECHNOLOGY_ID,
+} from "../constants"
 import { trpcMsw } from "../mockTrpc"
 
 const siteListQuery = ({
@@ -351,7 +357,7 @@ export const sitesHandlers = {
                   layout: "article",
                   title: "article layout",
                   summary: "This is a summary for the article page.",
-                  tagged: ["6ba7b810-9dad-11d1-80b4-00c04fd430c8"],
+                  tagged: [MOCK_TAG_OPTION_TECHNOLOGY_ID],
                   date: "16/09/2024",
                   lastModified: "2024-09-16T04:34:54.838Z",
                   permalink: "/collection/article-layout",
@@ -366,7 +372,7 @@ export const sitesHandlers = {
                   layout: "article",
                   title: "Page title here",
                   summary: "This is a placeholder summary.",
-                  tagged: ["6ba7b811-9dad-11d1-80b4-00c04fd430c8"],
+                  tagged: [MOCK_TAG_OPTION_SCIENCE_ID],
                   date: "12/04/2023",
                   lastModified: "2024-09-16T04:34:54.838Z",
                   permalink: "/collection/page-title-here",
@@ -376,21 +382,21 @@ export const sitesHandlers = {
                 tagCategories: [
                   {
                     label: "Topic",
-                    id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                    id: MOCK_TAG_CATEGORY_TOPIC_ID,
                     isRequired: true,
                     display: DEFAULT_TAG_CATEGORY_DISPLAY,
                     options: [
                       {
                         label: "Technology",
-                        id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+                        id: MOCK_TAG_OPTION_TECHNOLOGY_ID,
                       },
                       {
                         label: "Science",
-                        id: "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
+                        id: MOCK_TAG_OPTION_SCIENCE_ID,
                       },
                       {
                         label: "Health",
-                        id: "6ba7b812-9dad-11d1-80b4-00c04fd430c8",
+                        id: MOCK_TAG_OPTION_HEALTH_ID,
                       },
                     ],
                   },

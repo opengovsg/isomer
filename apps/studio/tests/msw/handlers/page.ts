@@ -5,6 +5,12 @@ import { DEFAULT_TAG_CATEGORY_DISPLAY } from "@opengovsg/isomer-components"
 import { delay } from "msw"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+import {
+  MOCK_TAG_CATEGORY_TOPIC_ID,
+  MOCK_TAG_OPTION_HEALTH_ID,
+  MOCK_TAG_OPTION_SCIENCE_ID,
+  MOCK_TAG_OPTION_TECHNOLOGY_ID,
+} from "../constants"
 import { trpcMsw } from "../mockTrpc"
 
 const getRootPageQuery = (wait?: DelayMode | number) => {
