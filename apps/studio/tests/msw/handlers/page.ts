@@ -84,16 +84,16 @@ export const pageHandlers = {
         return [
           {
             label: "Topic",
-            id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+            id: MOCK_TAG_CATEGORY_TOPIC_ID,
             isRequired: true,
             display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [
               {
                 label: "Technology",
-                id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+                id: MOCK_TAG_OPTION_TECHNOLOGY_ID,
               },
-              { label: "Science", id: "6ba7b811-9dad-11d1-80b4-00c04fd430c8" },
-              { label: "Health", id: "6ba7b812-9dad-11d1-80b4-00c04fd430c8" },
+              { label: "Science", id: MOCK_TAG_OPTION_SCIENCE_ID },
+              { label: "Health", id: MOCK_TAG_OPTION_HEALTH_ID },
             ],
           },
           {
@@ -219,15 +219,15 @@ export const pageHandlers = {
         return [
           {
             label: "Topic",
-            id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+            id: MOCK_TAG_CATEGORY_TOPIC_ID,
             isRequired: true,
             display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [
               {
                 label: "Technology",
-                id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+                id: MOCK_TAG_OPTION_TECHNOLOGY_ID,
               },
-              { label: "Science", id: "6ba7b811-9dad-11d1-80b4-00c04fd430c8" },
+              { label: "Science", id: MOCK_TAG_OPTION_SCIENCE_ID },
             ],
           },
           {
