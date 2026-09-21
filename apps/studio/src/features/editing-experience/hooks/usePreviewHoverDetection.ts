@@ -7,9 +7,10 @@ export const usePreviewHoverDetection = (
   iframeDocument: Document | null,
   content: IsomerSchema["content"],
   setHoveredBlockIndex: (index: number | null) => void,
+  enabled = true,
 ): void => {
   useEffect(() => {
-    if (!iframeDocument) return
+    if (!iframeDocument || !enabled) return
 
     let container = iframeDocument.querySelector(CONTENT_BLOCKS_SELECTOR)
 
@@ -55,5 +56,5 @@ export const usePreviewHoverDetection = (
       iframeDocument.removeEventListener("mouseover", handleMouseOver)
       iframeDocument.removeEventListener("mouseout", handleMouseOut)
     }
-  }, [iframeDocument, content, setHoveredBlockIndex])
+  }, [iframeDocument, content, setHoveredBlockIndex, enabled])
 }
