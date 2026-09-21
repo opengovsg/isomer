@@ -7,6 +7,7 @@ import { createPortal } from "react-dom"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useBlockFlashHighlight } from "~/features/editing-experience/hooks/useBlockFlashHighlight"
 import { useBlockHighlight } from "~/features/editing-experience/hooks/useBlockHighlight"
+import { useIsPreviewBlockHighlightEnabled } from "~/features/editing-experience/hooks/useIsPreviewBlockHighlightEnabled"
 import { usePreviewHoverDetection } from "~/features/editing-experience/hooks/usePreviewHoverDetection"
 import { useSelectBlock } from "~/features/editing-experience/hooks/useSelectBlock"
 import { getDrawerStateForBlock } from "~/features/editing-experience/utils/getDrawerStateForBlock"
@@ -16,8 +17,8 @@ import { trpc } from "~/utils/trpc"
 import { DiscardChangesModal } from "../DiscardChangesModal"
 import { BlockHighlightOverlay } from "./BlockHighlightOverlay"
 import { LoadingPreview } from "./LoadingPreview"
-import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import type { ViewportOptions } from "./IframeToolbar"
+import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
 
 interface PendingBlockSelection {
@@ -69,7 +70,9 @@ const SuspendableEditPagePreview = (): JSX.Element => {
   const [pendingBlockSelection, setPendingBlockSelection] =
     useState<PendingBlockSelection | null>(null)
   const [viewport, setViewport] = useState<ViewportOptions>("responsive")
-  const showPreviewBlockHighlights = viewport !== "fullscreen"
+  const isPreviewBlockHighlightEnabled = useIsPreviewBlockHighlightEnabled()
+  const showPreviewBlockHighlights =
+    isPreviewBlockHighlightEnabled && viewport !== "fullscreen"
 
   const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
     siteId,
