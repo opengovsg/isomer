@@ -1,5 +1,5 @@
-import { useEffect } from "react"
 import { useFeatureValue } from "@growthbook/growthbook-react"
+import { useEffect } from "react"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { IS_PREVIEW_BLOCK_HIGHLIGHT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 
