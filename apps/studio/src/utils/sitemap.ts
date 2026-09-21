@@ -136,9 +136,10 @@ const getSitemapTreeFromArray = (
         summary: resource.summary ?? "",
         lastModified: resource.updatedAt.toISOString(),
         permalink,
+        // Collection links still store supplement type in page.category (eGazette).
+        category: resource.category ?? "Others",
         tagged: parseTagged(resource.tagged),
         date: resource.date ?? "",
-        category: resource.category,
         image: {
           src: resource.thumbnail ?? "",
           alt: "",
