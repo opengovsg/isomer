@@ -116,7 +116,6 @@ const seedRequest = async ({
   objectKey,
   completedAt,
   batchId,
-  batchEmailedAt,
 }: {
   siteId: number
   userId: string
@@ -131,10 +130,17 @@ const seedRequest = async ({
   objectKey?: string
   completedAt?: Date
   // Correlates this row with sibling rows into one "allSites"-style batch —
-  // see the batching describe block below.
+  // see the batching describe block below. The parent AuditLogExportBatch row
+  // is created on demand (siblings share one id, hence ON CONFLICT DO NOTHING).
   batchId?: string
-  batchEmailedAt?: Date
 }) => {
+  if (batchId) {
+    await db
+      .insertInto("AuditLogExportBatch")
+      .values({ id: batchId })
+      .onConflict((oc) => oc.column("id").doNothing())
+      .execute()
+  }
   return db
     .insertInto("AuditLogExportRequest")
     .values({
@@ -148,9 +154,17 @@ const seedRequest = async ({
       ...(objectKey ? { objectKey } : {}),
       ...(completedAt ? { completedAt } : {}),
       ...(batchId ? { batchId } : {}),
-      ...(batchEmailedAt ? { batchEmailedAt } : {}),
     })
     .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+// Fetch the batch row holding the shared per-batch email state.
+const getBatch = async (id: string) => {
+  return db
+    .selectFrom("AuditLogExportBatch")
+    .where("id", "=", id)
+    .selectAll()
     .executeTakeFirstOrThrow()
 }
 
@@ -166,6 +180,7 @@ describe("auditLogExport processor", () => {
   beforeEach(async () => {
     await resetTables(
       "AuditLogExportRequest",
+      "AuditLogExportBatch",
       "IsomerAdmin",
       "ResourcePermission",
       "User",
@@ -899,30 +914,18 @@ describe("auditLogExport processor", () => {
         )
       }
 
-      // Both rows are Done and stamped with the same batchEmailedAt (the
-      // durable "already sent" marker, not the advisory lock itself).
-      const rowA = await getRequest(
-        (
-          await db
-            .selectFrom("AuditLogExportRequest")
-            .where("siteId", "=", siteA.id)
-            .selectAll()
-            .executeTakeFirstOrThrow()
-        ).id,
-      )
-      const rowB = await getRequest(
-        (
-          await db
-            .selectFrom("AuditLogExportRequest")
-            .where("siteId", "=", siteB.id)
-            .selectAll()
-            .executeTakeFirstOrThrow()
-        ).id,
-      )
-      expect(rowA.status).toBe("Done")
-      expect(rowB.status).toBe("Done")
-      expect(rowA.batchEmailedAt).not.toBeNull()
-      expect(rowA.batchEmailedAt).toEqual(rowB.batchEmailedAt)
+      // Both rows are Done, and the batch is stamped as emailed (the durable
+      // "already sent" marker on the batch row, not the advisory lock itself).
+      const rows = await db
+        .selectFrom("AuditLogExportRequest")
+        .where("siteId", "in", [siteA.id, siteB.id])
+        .selectAll()
+        .execute()
+      expect(rows).toHaveLength(2)
+      expect(rows.every((r) => r.status === "Done")).toBe(true)
+      const batch = await getBatch(batchId)
+      expect(batch.emailedAt).not.toBeNull()
+      expect(batch.emailAttempts).toBe(1)
     })
 
     it("waits for a failing sibling to exhaust retries before sending, then reports it as failed alongside the successful site's link", async () => {
@@ -1022,12 +1025,13 @@ describe("auditLogExport processor", () => {
         .where("siteId", "in", siteIds)
         .selectAll()
         .execute()
-      // Rows stay Done (not reverted to Pending/Failed) and the claim is
-      // released (batchEmailedAt back to null) so a later sweep can retry.
-      for (const row of rowsAfterFailure) {
-        expect(row.status).toBe("Done")
-        expect(row.batchEmailedAt).toBeNull()
-      }
+      // Rows stay Done (not reverted to Pending/Failed)...
+      expect(rowsAfterFailure.every((r) => r.status === "Done")).toBe(true)
+      // ...and the batch claim is released (emailedAt back to null) so a later
+      // sweep can retry.
+      const batchAfterFailure = await getBatch(batchId)
+      expect(batchAfterFailure.emailedAt).toBeNull()
+      expect(batchAfterFailure.emailAttempts).toBe(1)
 
       // Sweep 2: no rows left to process, but the backstop finds the terminal,
       // un-emailed batch and resends successfully.
@@ -1039,10 +1043,10 @@ describe("auditLogExport processor", () => {
         .where("siteId", "in", siteIds)
         .selectAll()
         .execute()
-      for (const row of rowsAfterRetry) {
-        expect(row.status).toBe("Done")
-        expect(row.batchEmailedAt).not.toBeNull()
-      }
+      expect(rowsAfterRetry.every((r) => r.status === "Done")).toBe(true)
+      const batchAfterRetry = await getBatch(batchId)
+      expect(batchAfterRetry.emailedAt).not.toBeNull()
+      expect(batchAfterRetry.emailAttempts).toBe(2)
       // Neither row ever fell back to its own per-row email.
       expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
       expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
@@ -1094,12 +1098,12 @@ describe("auditLogExport processor", () => {
         .where("siteId", "in", [siteA.id, siteB.id])
         .selectAll()
         .execute()
-      for (const row of rows) {
-        expect(row.status).toBe("Done")
-        // Stamped (given up), and charged exactly MAX_ATTEMPTS attempts.
-        expect(row.batchEmailedAt).not.toBeNull()
-        expect(row.batchEmailAttempts).toBe(3)
-      }
+      // The exports themselves succeeded and stay Done.
+      expect(rows.every((r) => r.status === "Done")).toBe(true)
+      // The batch is stamped (given up) and charged exactly MAX_ATTEMPTS.
+      const batch = await getBatch(batchId)
+      expect(batch.emailedAt).not.toBeNull()
+      expect(batch.emailAttempts).toBe(3)
     })
   })
 })

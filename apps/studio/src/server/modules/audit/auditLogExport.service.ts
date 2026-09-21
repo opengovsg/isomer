@@ -198,6 +198,17 @@ export const createAuditLogExportRequestsForSites = async ({
     // already-claimed row's captured batchId; not worth that complexity here.
     const batchId = scope === AuditLogExportScope.AllSites ? randomUUID() : null
 
+    // Create the parent batch row before inserting the request rows that FK to
+    // it. Only for an "allSites" ask that actually inserts at least one fresh
+    // row — a "site" ask never batches, and an "allSites" ask whose sites were
+    // all reused stamps no new rows, so it needs no batch row either.
+    if (batchId !== null && siteIdsToInsert.length > 0) {
+      await tx
+        .insertInto("AuditLogExportBatch")
+        .values({ id: batchId })
+        .execute()
+    }
+
     const insertedRows =
       siteIdsToInsert.length === 0
         ? []
@@ -421,20 +432,22 @@ const getRangeSlug = (auditLogDateRange: string): string => {
  * path: a row never calls this inline, so a transient send failure here does
  * not touch any row's export state and simply retries on the next sweep.
  *
- * Exactly-once + bounded-retry is a claim/send/release cycle:
+ * Exactly-once + bounded-retry is a claim/send/release cycle, all keyed off the
+ * single AuditLogExportBatch row (its `emailedAt`/`emailAttempts`), not the
+ * sibling request rows:
  *   1. Under an advisory lock scoped to `batchId`, atomically claim the send by
- *      stamping `batchEmailedAt` and charging `batchEmailAttempts += 1` — but
- *      only if every sibling is terminal and `batchEmailedAt` is still null.
- *      Two siblings finishing near-simultaneously (or two sweeps) can't both
- *      claim: the second to acquire the lock sees the stamp and returns early.
+ *      stamping `emailedAt` and charging `emailAttempts += 1` on the batch row
+ *      — but only if every sibling request is terminal and `emailedAt` is still
+ *      null. Two siblings finishing near-simultaneously (or two sweeps) can't
+ *      both claim: the second to acquire the lock sees the stamp and returns.
  *   2. Gather download metadata and send the email OUTSIDE the lock (no DB
  *      connection is held across S3/SMTP).
- *   3. If the send throws, either release the claim (reset `batchEmailedAt` to
- *      null) so the next sweep retries, or — once `batchEmailAttempts` has
- *      reached MAX_ATTEMPTS — leave it stamped and give up, so a permanently
- *      failing email (bad recipient, template error) is not retried forever.
- *      Mirrors the per-row `attempts` cap. The claim in (1) guarantees no other
- *      caller is mid-send while we release.
+ *   3. If the send throws, either release the claim (reset `emailedAt` to null)
+ *      so the next sweep retries, or — once `emailAttempts` has reached
+ *      MAX_ATTEMPTS — leave it stamped and give up, so a permanently failing
+ *      email (bad recipient, template error) is not retried forever. Mirrors
+ *      the per-row `attempts` cap. The claim in (1) guarantees no other caller
+ *      is mid-send while we release.
  *
  * Residual window: a crash between the successful send and (nothing) — or
  * between a failed send and the reset in (3) — mirrors the crash-window the
@@ -452,6 +465,17 @@ const maybeSendAuditLogExportBatchEmail = async (
       tx,
     )
 
+    const batch = await tx
+      .selectFrom("AuditLogExportBatch")
+      .where("id", "=", batchId)
+      .selectAll()
+      .executeTakeFirst()
+
+    // No such batch, or already claimed/sent/given-up.
+    if (!batch || batch.emailedAt !== null) {
+      return null
+    }
+
     const siblings = await tx
       .selectFrom("AuditLogExportRequest")
       .where("batchId", "=", batchId)
@@ -467,32 +491,28 @@ const maybeSendAuditLogExportBatchEmail = async (
         row.status === AuditLogExportStatus.Done ||
         row.status === AuditLogExportStatus.Failed,
     )
-    const alreadyEmailed = siblings.some((row) => row.batchEmailedAt !== null)
 
-    if (!allTerminal || alreadyEmailed) {
+    if (!allTerminal) {
       return null
     }
 
-    // Claim the send and charge the attempt, on every sibling at once under
-    // the lock. The `batchEmailedAt` stamp — not the lock itself — is the
-    // durable record that the send is claimed (the lock only serialises the
-    // check; it remembers nothing once released). `batchEmailAttempts` is the
-    // durable retry counter; all siblings carry the same value because they
-    // are always updated together, so reading any one post-increment is the
-    // attempt number of THIS send.
+    // Claim the send and charge the attempt on the batch row under the lock.
+    // The `emailedAt` stamp — not the lock itself — is the durable record that
+    // the send is claimed (the lock only serialises the check; it remembers
+    // nothing once released).
     await tx
-      .updateTable("AuditLogExportRequest")
+      .updateTable("AuditLogExportBatch")
       .set({
-        batchEmailedAt: new Date(),
-        batchEmailAttempts: sql<number>`"batchEmailAttempts" + 1`,
+        emailedAt: new Date(),
+        emailAttempts: sql<number>`"emailAttempts" + 1`,
       })
-      .where("batchId", "=", batchId)
+      .where("id", "=", batchId)
       .execute()
 
     return {
       siblings,
-      // Post-increment attempt number for this send (all siblings share it).
-      attempt: (siblings[0]?.batchEmailAttempts ?? 0) + 1,
+      // Post-increment attempt number for this send.
+      attempt: batch.emailAttempts + 1,
     }
   })
 
@@ -585,12 +605,12 @@ const maybeSendAuditLogExportBatchEmail = async (
     if (attempt < MAX_ATTEMPTS) {
       // Release the claim so the next sweep retries this batch's email. Only
       // this call holds the claim (the atomic stamp above serialises callers),
-      // so resetting to null cannot race a concurrent send. `batchEmailAttempts`
-      // was already charged under the lock, so the retry count carries over.
+      // so resetting to null cannot race a concurrent send. `emailAttempts` was
+      // already charged under the lock, so the retry count carries over.
       await db
-        .updateTable("AuditLogExportRequest")
-        .set({ batchEmailedAt: null })
-        .where("batchId", "=", batchId)
+        .updateTable("AuditLogExportBatch")
+        .set({ emailedAt: null })
+        .where("id", "=", batchId)
         .execute()
       logger.warn(
         { error, batchId, attempt },
@@ -599,10 +619,10 @@ const maybeSendAuditLogExportBatchEmail = async (
       return
     }
 
-    // Exhausted retries — leave `batchEmailedAt` stamped so no later sweep
-    // picks this batch up again. A permanently-failing send (bad recipient,
-    // template error) is given up here rather than retried forever, mirroring
-    // the per-row `attempts` cap.
+    // Exhausted retries — leave `emailedAt` stamped so no later sweep picks
+    // this batch up again. A permanently-failing send (bad recipient, template
+    // error) is given up here rather than retried forever, mirroring the
+    // per-row `attempts` cap.
     logger.error(
       { error, batchId, attempt },
       "Batch audit log export email exhausted retries; giving up",
@@ -1013,38 +1033,52 @@ export const processPendingAuditLogExports = async (): Promise<void> => {
     }
   }
 
-  // Batches ready for their combined email: a batchId with no sibling still
-  // in-flight and no email sent yet. NOT IN is safe here — the sub-select only
-  // yields non-null batchIds, so it never contains NULL. `maybeSend...` re-checks
-  // "all terminal" and claims atomically under a lock, so this list only needs
-  // to be a superset of what's actually sendable.
+  // Batches ready for their combined email: not yet emailed, with at least one
+  // sibling request and none still in-flight (so every sibling is terminal — a
+  // request is either in-flight or terminal). `maybeSend...` re-checks this and
+  // claims atomically under a lock, so this list only needs to be a superset of
+  // what's actually sendable.
   const batchesToEmail = await db
-    .selectFrom("AuditLogExportRequest")
-    .where("batchId", "is not", null)
-    .where("batchEmailedAt", "is", null)
-    .where(
-      "batchId",
-      "not in",
-      db
-        .selectFrom("AuditLogExportRequest")
-        .where("batchId", "is not", null)
-        .where("status", "in", IN_FLIGHT_STATUSES)
-        .select("batchId")
-        .distinct(),
+    .selectFrom("AuditLogExportBatch")
+    .where("emailedAt", "is", null)
+    .where((eb) =>
+      eb.and([
+        eb.exists(
+          eb
+            .selectFrom("AuditLogExportRequest")
+            .whereRef(
+              "AuditLogExportRequest.batchId",
+              "=",
+              "AuditLogExportBatch.id",
+            )
+            .select("id"),
+        ),
+        eb.not(
+          eb.exists(
+            eb
+              .selectFrom("AuditLogExportRequest")
+              .whereRef(
+                "AuditLogExportRequest.batchId",
+                "=",
+                "AuditLogExportBatch.id",
+              )
+              .where("status", "in", IN_FLIGHT_STATUSES)
+              .select("id"),
+          ),
+        ),
+      ]),
     )
-    .select("batchId")
-    .distinct()
+    .select("id")
     .execute()
 
-  for (const { batchId } of batchesToEmail) {
-    if (batchId === null) continue
+  for (const { id } of batchesToEmail) {
     try {
-      await maybeSendAuditLogExportBatchEmail(batchId)
+      await maybeSendAuditLogExportBatchEmail(id)
     } catch (error) {
       // Left un-emailed; the next sweep retries. Guard the loop so one failing
       // batch can't halt the rest.
       logger.error(
-        { error, batchId },
+        { error, batchId: id },
         "Failed to send audit log export batch email",
       )
     }

@@ -43,11 +43,9 @@ export const auditHandlers = {
               completedAt: null,
               createdAt: MOCK_STORY_DATE,
               updatedAt: MOCK_STORY_DATE,
-              // Batch correlation columns — null/0 for a mocked single-row
-              // insert (the UI never reads them; see the auditLogDateRange note).
+              // Batch correlation column — null for a mocked single-row insert
+              // (the UI never reads it; see the auditLogDateRange note).
               batchId: null,
-              batchEmailedAt: null,
-              batchEmailAttempts: 0,
             },
           ]
         },

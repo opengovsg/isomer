@@ -157,6 +157,12 @@ const makeTx = (script: TxScript) => {
             return Promise.resolve([])
           }
 
+          if (table === "AuditLogExportBatch") {
+            // The parent batch row inserted before the request rows for an
+            // "allSites" ask. Nothing to assert on it here; just succeed.
+            return Promise.resolve([])
+          }
+
           if (table !== "AuditLogExportRequest") {
             return Promise.reject(
               new Error(`Unexpected execute() INSERT into ${table}`),

@@ -73,6 +73,7 @@ describe("audit.router", async () => {
   beforeEach(async () => {
     await resetTables(
       "AuditLogExportRequest",
+      "AuditLogExportBatch",
       "AuditLog",
       "IsomerAdmin",
       "ResourcePermission",
