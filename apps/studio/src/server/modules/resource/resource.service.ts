@@ -428,14 +428,6 @@ export const getLocalisedSitemap = async (
   const thumbnailSql = sql<string>`
         published.content->'page'->'image'->> 'src'
     `.as("thumbnail")
-  // Link layout only: page.category is eGazette supplement type. Articles use tagCategories.
-  const categorySql = sql<string>`
-    CASE
-      WHEN (published.content ->> 'layout') = 'link'
-      THEN (published.content -> 'page' ->> 'category')
-      ELSE ''
-    END
-`.as("category")
   const dateSql = sql<string>`
     CASE
       WHEN (published.content ->> 'layout') IN ('article','link')
@@ -489,7 +481,6 @@ export const getLocalisedSitemap = async (
         .select(() => [
           headerSql,
           thumbnailSql,
-          categorySql,
           dateSql,
           firstImageSql,
           taggedSql,
@@ -508,7 +499,6 @@ export const getLocalisedSitemap = async (
             .select(({ eb }) => [
               eb.cast<string>(eb.val(""), "text").as("summary"),
               eb.cast<string>(eb.val(""), "text").as("thumbnail"),
-              eb.cast<string>(eb.val(""), "text").as("category"),
               eb.cast<string>(eb.val(""), "text").as("date"),
               eb
                 .cast<FirstImage | null>(eb.val(null), "jsonb")
@@ -538,7 +528,6 @@ export const getLocalisedSitemap = async (
         .select(() => [
           headerSql,
           thumbnailSql,
-          categorySql,
           dateSql,
           firstImageSql,
           taggedSql,
@@ -561,7 +550,6 @@ export const getLocalisedSitemap = async (
         .select(({ eb }) => [
           headerSql,
           thumbnailSql,
-          categorySql,
           dateSql,
           firstImageSql,
           eb.cast<string | null>(eb.val(null), "text").as("tagged"),
@@ -587,7 +575,6 @@ export const getLocalisedSitemap = async (
             .select(({ eb }) => [
               headerSql,
               thumbnailSql,
-              categorySql,
               dateSql,
               firstImageSql,
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
@@ -600,7 +587,6 @@ export const getLocalisedSitemap = async (
     .select([
       "summary",
       "thumbnail",
-      "category",
       "date",
       "firstImage",
       "tagged",
@@ -612,7 +598,6 @@ export const getLocalisedSitemap = async (
         .select([
           "summary",
           "thumbnail",
-          "category",
           "date",
           "firstImage",
           "tagged",
@@ -625,7 +610,6 @@ export const getLocalisedSitemap = async (
         .select([
           "summary",
           "thumbnail",
-          "category",
           "date",
           "firstImage",
           "tagged",

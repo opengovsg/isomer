@@ -30,7 +30,6 @@ type ResourceDto = Omit<
   parentId: string | null
   summary?: string
   thumbnail?: string
-  category?: string
   tagged?: string | null
   date?: string
   firstImage?: FirstImage | null
@@ -136,8 +135,6 @@ const getSitemapTreeFromArray = (
         summary: resource.summary ?? "",
         lastModified: resource.updatedAt.toISOString(),
         permalink,
-        // Collection links still store supplement type in page.category (eGazette).
-        category: resource.category ?? "Others",
         tagged: parseTagged(resource.tagged),
         date: resource.date ?? "",
         image: {
