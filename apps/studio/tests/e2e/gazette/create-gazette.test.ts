@@ -33,12 +33,13 @@ test.describe("eGazette", () => {
   test("creates a gazette and shows category in the table", async ({
     page,
   }) => {
+    // Arrange
     const title = uniqueGazetteTitle()
     const notificationNumber = `e2e-${Date.now()}`
     const fileId = `e2e-gazette-${Date.now()}.pdf`
 
+    // Act
     await page.goto(`/sites/${siteId}/gazettes`)
-
     await expect(
       page.getByRole("heading", { name: "Government Gazettes" }),
     ).toBeVisible()
@@ -73,6 +74,7 @@ test.describe("eGazette", () => {
 
     await page.getByRole("button", { name: "Add Gazette" }).click()
 
+    // Assert
     await expect(page.getByText("Gazette created successfully")).toBeVisible()
 
     const row = page.getByRole("row").filter({ hasText: title })

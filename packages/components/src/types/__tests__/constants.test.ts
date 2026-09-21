@@ -10,31 +10,43 @@ import {
 
 describe("resolveTagCategoryDisplay", () => {
   it("defaults missing display to pills for legacy tag categories", () => {
-    expect(resolveTagCategoryDisplay(undefined)).toBe(
-      DEFAULT_TAG_CATEGORY_DISPLAY,
-    )
-    expect(resolveTagCategoryDisplay(undefined)).toBe(
-      TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-    )
+    // Act
+    const resolved = resolveTagCategoryDisplay(undefined)
+
+    // Assert
+    expect(resolved).toBe(DEFAULT_TAG_CATEGORY_DISPLAY)
+    expect(resolved).toBe(TAG_CATEGORY_DISPLAY_OPTIONS.Pills)
   })
 
   it("returns the stored display when present", () => {
-    expect(resolveTagCategoryDisplay(TAG_CATEGORY_DISPLAY_OPTIONS.Pills)).toBe(
-      TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+    // Act
+    const pills = resolveTagCategoryDisplay(TAG_CATEGORY_DISPLAY_OPTIONS.Pills)
+    const plaintext = resolveTagCategoryDisplay(
+      TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
     )
-    expect(
-      resolveTagCategoryDisplay(TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext),
-    ).toBe(TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext)
+
+    // Assert
+    expect(pills).toBe(TAG_CATEGORY_DISPLAY_OPTIONS.Pills)
+    expect(plaintext).toBe(TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext)
   })
 })
 
 describe("resolveTagCategoryIsRequired", () => {
-  it("treats missing or false isRequired as optional", () => {
-    expect(resolveTagCategoryIsRequired(undefined)).toBe(false)
-    expect(resolveTagCategoryIsRequired(false)).toBe(false)
+  it("defaults missing isRequired to DEFAULT_TAG_CATEGORY_IS_REQUIRED", () => {
+    // Act
+    const resolved = resolveTagCategoryIsRequired(undefined)
+
+    // Assert
+    expect(resolved).toBe(DEFAULT_TAG_CATEGORY_IS_REQUIRED)
   })
 
-  it("returns true only when isRequired is explicitly true", () => {
-    expect(resolveTagCategoryIsRequired(true)).toBe(true)
+  it("returns the stored isRequired when present", () => {
+    // Act
+    const required = resolveTagCategoryIsRequired(true)
+    const optional = resolveTagCategoryIsRequired(false)
+
+    // Assert
+    expect(required).toBe(true)
+    expect(optional).toBe(false)
   })
 })

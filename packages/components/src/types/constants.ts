@@ -24,14 +24,13 @@ export type TagCategoryDisplay =
 
 export const DEFAULT_TAG_CATEGORY_DISPLAY = TAG_CATEGORY_DISPLAY_OPTIONS.Pills
 
-// Default for new filters in Studio (`createDefaultTagCategory`), not for legacy blobs.
 export const DEFAULT_TAG_CATEGORY_IS_REQUIRED = true
 
 // Published blobs may omit `display` / `isRequired`. Call these when reading for
-// render or publish.
+// render or publish (not Studio Save validation — that uses the stored flag only).
 export const resolveTagCategoryDisplay = (
   display?: TagCategoryDisplay,
 ): TagCategoryDisplay => display ?? DEFAULT_TAG_CATEGORY_DISPLAY
 
 export const resolveTagCategoryIsRequired = (isRequired?: boolean): boolean =>
-  isRequired === true
+  isRequired ?? DEFAULT_TAG_CATEGORY_IS_REQUIRED
