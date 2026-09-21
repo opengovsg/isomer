@@ -1,6 +1,6 @@
-import crypto from "crypto"
 import type { Page } from "@playwright/test"
 import { DEFAULT_TAG_CATEGORY_DISPLAY } from "@opengovsg/isomer-components"
+import crypto from "crypto"
 import {
   GAZETTE_SUBCATEGORY_LABEL,
   governmentGazetteSubcategories,
