@@ -1,6 +1,6 @@
 import { useCallback } from "react"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { useIsPreviewBlockHighlightEnabled } from "~/features/editing-experience/hooks/useIsPreviewBlockHighlightEnabled"
+import { useShowPreviewBlockHighlight } from "~/features/editing-experience/hooks/useShowPreviewBlockHighlight"
 import { scrollToBlockElement } from "~/features/editing-experience/utils/scrollToBlockElement"
 import { type DrawerState } from "~/types/editorDrawer"
 
@@ -13,13 +13,13 @@ export const useSelectBlock = () => {
     setFlashBlockIndex,
     iframeDocument,
   } = useEditorDrawerContext()
-  const isPreviewBlockHighlightEnabled = useIsPreviewBlockHighlightEnabled()
+  const showPreviewBlockHighlight = useShowPreviewBlockHighlight()
 
   return useCallback(
     (index: number, drawerState: DrawerState) => {
       setCurrActiveIdx(index)
       setDrawerState(drawerState)
-      if (isPreviewBlockHighlightEnabled) {
+      if (showPreviewBlockHighlight) {
         setFlashBlockIndex(index)
       }
       scrollToBlockElement({
@@ -32,7 +32,7 @@ export const useSelectBlock = () => {
       setDrawerState,
       setFlashBlockIndex,
       iframeDocument,
-      isPreviewBlockHighlightEnabled,
+      showPreviewBlockHighlight,
     ],
   )
 }

@@ -7,8 +7,8 @@ import { createPortal } from "react-dom"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useBlockFlashHighlight } from "~/features/editing-experience/hooks/useBlockFlashHighlight"
 import { useBlockHighlight } from "~/features/editing-experience/hooks/useBlockHighlight"
-import { useIsPreviewBlockHighlightEnabled } from "~/features/editing-experience/hooks/useIsPreviewBlockHighlightEnabled"
 import { usePreviewHoverDetection } from "~/features/editing-experience/hooks/usePreviewHoverDetection"
+import { useShowPreviewBlockHighlight } from "~/features/editing-experience/hooks/useShowPreviewBlockHighlight"
 import { useSelectBlock } from "~/features/editing-experience/hooks/useSelectBlock"
 import { getDrawerStateForBlock } from "~/features/editing-experience/utils/getDrawerStateForBlock"
 import { withSuspense } from "~/hocs/withSuspense"
@@ -60,6 +60,7 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     setFlashBlockIndex,
     iframeDocument,
     setIframeDocument,
+    setPreviewViewport,
   } = useEditorDrawerContext()
 
   const {
@@ -70,9 +71,7 @@ const SuspendableEditPagePreview = (): JSX.Element => {
   const [pendingBlockSelection, setPendingBlockSelection] =
     useState<PendingBlockSelection | null>(null)
   const [viewport, setViewport] = useState<ViewportOptions>("responsive")
-  const isPreviewBlockHighlightEnabled = useIsPreviewBlockHighlightEnabled()
-  const showPreviewBlockHighlights =
-    isPreviewBlockHighlightEnabled && viewport !== "fullscreen"
+  const showPreviewBlockHighlight = useShowPreviewBlockHighlight()
 
   const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
     siteId,
@@ -87,16 +86,14 @@ const SuspendableEditPagePreview = (): JSX.Element => {
   )
 
   useEffect(() => {
-    if (!showPreviewBlockHighlights) {
-      setHoveredBlockIndex(null)
-    }
-  }, [showPreviewBlockHighlights, setHoveredBlockIndex])
+    setPreviewViewport(viewport)
+  }, [viewport, setPreviewViewport])
 
   usePreviewHoverDetection(
     iframeDocument,
     previewPageState.content,
     setHoveredBlockIndex,
-    showPreviewBlockHighlights,
+    showPreviewBlockHighlight,
   )
 
   const { rect: highlightRect, label: highlightLabel } = useBlockHighlight({
@@ -199,7 +196,7 @@ const SuspendableEditPagePreview = (): JSX.Element => {
         (invisible over opaque images/video), and an outline drawn on the
         block itself can only sit inside or across its edge, overlapping
         its content either way. */}
-        {showPreviewBlockHighlights &&
+        {showPreviewBlockHighlight &&
           iframeDocument &&
           highlightRect &&
           createPortal(
@@ -216,7 +213,7 @@ const SuspendableEditPagePreview = (): JSX.Element => {
         on hover would let the timer run out before the block stops being
         hovered, cutting the flash short or skipping it entirely. Overlapping
         the identical hover overlay is visually a no-op. */}
-        {showPreviewBlockHighlights &&
+        {showPreviewBlockHighlight &&
           iframeDocument &&
           flashRect &&
           createPortal(
