@@ -502,6 +502,7 @@ export const collectionRouter = router({
                 description,
                 ref,
                 date,
+                // eGazette link pages still store supplement type in page.category.
                 category: category ?? existingPage.category,
                 image,
                 tagged,
