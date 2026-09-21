@@ -2368,7 +2368,7 @@ describe("collection.router", async () => {
       const { collection, site, indexBlob } =
         await setupCollectionWithIndexPage()
       await setupEditorPermissions({ userId: session.userId, siteId: site.id })
-      // Put tags in draft only — no published version
+      // Tag categories exist on the draft blob only (index not published).
       await db
         .updateTable("Blob")
         .set({ content: jsonb(indexPageBlobWithTags()) })
@@ -2386,8 +2386,7 @@ describe("collection.router", async () => {
         resourceId: Number(collectionPage.id),
       })
 
-      // Assert: editor flows read draft index config so required-tag validation
-      // matches unpublished filter changes.
+      // Assert
       expect(result).toHaveLength(1)
       expect(result[0]).toMatchObject({ id: TAG_CATEGORY_ID, label: "Topic" })
     })

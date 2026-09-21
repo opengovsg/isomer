@@ -37,8 +37,7 @@ const slashDateSchema = z
 
 export const editLinkSchema = z.object({
   date: slashDateSchema.optional(),
-  // eGazette collection links still persist supplement type here. Not the ADR
-  // 0003 article filter field; see LinkRefPageSchema.
+  // eGazette link pages store supplement type in page.category (see LinkRefPageSchema).
   category: z.string().optional(),
   linkId: z.number().min(1),
   siteId: z.number().min(1),

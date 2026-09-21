@@ -581,7 +581,7 @@ describe("buildArticleBlob", () => {
     })
   })
 
-  it("applies the supplied default category as tagged option ids", () => {
+  it("sets tagged to the default category option id", () => {
     // Arrange
     const current = makeContentBlob()
     const tagging = createDefaultCategoryTagging("Feature Articles")
@@ -669,7 +669,7 @@ describe("buildArticleBlob", () => {
     expect(current).toEqual(snapshot)
   })
 
-  it("replaces legacy category with tagged on an already-article blob while preserving article fields", () => {
+  it("drops legacy page.category and sets tagged on an existing article blob", () => {
     // Arrange
     const current = {
       ...makeArticleBlob({

@@ -107,7 +107,7 @@ export const createCollectionPageFormSchema = z
         siteId: true,
       })
       .extend({
-        // DEPRECATED: legacy category — use tag categories on the collection index.
+        // DEPRECATED legacy article page.category. Use tag categories on the index page.
         // category: z.string().optional(),
       }),
   )
