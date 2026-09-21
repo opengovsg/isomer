@@ -2,7 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Box, useDisclosure } from "@chakra-ui/react"
 import { isEqual, merge } from "lodash-es"
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useBlockFlashHighlight } from "~/features/editing-experience/hooks/useBlockFlashHighlight"
@@ -17,6 +17,7 @@ import { DiscardChangesModal } from "../DiscardChangesModal"
 import { BlockHighlightOverlay } from "./BlockHighlightOverlay"
 import { LoadingPreview } from "./LoadingPreview"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
+import type { ViewportOptions } from "./IframeToolbar"
 import { ViewportContainer } from "./ViewportContainer"
 
 interface PendingBlockSelection {
@@ -67,6 +68,8 @@ const SuspendableEditPagePreview = (): JSX.Element => {
   } = useDisclosure()
   const [pendingBlockSelection, setPendingBlockSelection] =
     useState<PendingBlockSelection | null>(null)
+  const [viewport, setViewport] = useState<ViewportOptions>("responsive")
+  const showPreviewBlockHighlights = viewport !== "fullscreen"
 
   const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
     siteId,
@@ -80,10 +83,17 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     [setIframeDocument],
   )
 
+  useEffect(() => {
+    if (!showPreviewBlockHighlights) {
+      setHoveredBlockIndex(null)
+    }
+  }, [showPreviewBlockHighlights, setHoveredBlockIndex])
+
   usePreviewHoverDetection(
     iframeDocument,
     previewPageState.content,
     setHoveredBlockIndex,
+    showPreviewBlockHighlights,
   )
 
   const { rect: highlightRect, label: highlightLabel } = useBlockHighlight({
@@ -167,7 +177,12 @@ const SuspendableEditPagePreview = (): JSX.Element => {
 
   return (
     <>
-      <ViewportContainer siteId={siteId} callback={handleIframeMount}>
+      <ViewportContainer
+        siteId={siteId}
+        callback={handleIframeMount}
+        viewport={viewport}
+        onViewportChange={setViewport}
+      >
         <PreviewWithCustomSitemap
           {...merge(previewPageState, { page: { title } })}
           siteId={siteId}
@@ -181,7 +196,8 @@ const SuspendableEditPagePreview = (): JSX.Element => {
         (invisible over opaque images/video), and an outline drawn on the
         block itself can only sit inside or across its edge, overlapping
         its content either way. */}
-        {iframeDocument &&
+        {showPreviewBlockHighlights &&
+          iframeDocument &&
           highlightRect &&
           createPortal(
             <BlockHighlightOverlay
@@ -197,7 +213,8 @@ const SuspendableEditPagePreview = (): JSX.Element => {
         on hover would let the timer run out before the block stops being
         hovered, cutting the flash short or skipping it entirely. Overlapping
         the identical hover overlay is visually a no-op. */}
-        {iframeDocument &&
+        {showPreviewBlockHighlights &&
+          iframeDocument &&
           flashRect &&
           createPortal(
             <BlockHighlightOverlay
