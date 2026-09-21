@@ -1,5 +1,6 @@
 -- AlterTable
 ALTER TABLE "AuditLogExportRequest" ADD COLUMN     "batchEmailedAt" TIMESTAMP(3),
+ADD COLUMN     "batchEmailAttempts" INTEGER NOT NULL DEFAULT 0,
 ADD COLUMN     "batchId" TEXT;
 
 -- CreateIndex

@@ -419,8 +419,15 @@ model AuditLogExportRequest {
   // Set once the combined batch email for `batchId` has been sent (stamped
   // on every row sharing that batchId at once). Guards against sending the
   // batch email twice when two sibling rows finish at nearly the same time -
-  // see the advisory-lock check in `processAuditLogExportRequest`.
+  // see the advisory-lock check in `maybeSendAuditLogExportBatchEmail`. Also
+  // stamped (without a send) once batch-email delivery has exhausted its
+  // retries, so a permanently-failing email is not retried forever.
   batchEmailedAt    DateTime?
+  // How many times the combined batch email for `batchId` has been attempted
+  // (charged once per attempt under the batch advisory lock). Mirrors
+  // `attempts` for per-row sends: after MAX_ATTEMPTS failures the sweep stops
+  // retrying. Stays 0 for `scope: "site"` rows, which never batch-email.
+  batchEmailAttempts Int                     @default(0)
 
   @@index([status])
   // NOTE: the migration promotes this to a PARTIAL UNIQUE index

@@ -366,6 +366,13 @@ const BATCH_SIZE = 20
 // multipart upload, so a large export never fully materialises in memory.
 const STREAM_CHUNK_SIZE = 500
 
+// Max characters of the (free-text) site name kept in the S3 object key. The
+// key must stay under S3's 1024-byte limit; the rest of the key (prefix, ids,
+// report kind, range slug, extension) is small and bounded, so capping the
+// name here keeps the whole key comfortably within the limit. Uniqueness does
+// not depend on the name — `${requestId}` is already in the key prefix.
+const MAX_SITE_NAME_KEY_SLUG_LENGTH = 100
+
 // A row is moved to `Processing` the moment a sweep claims it, and only moved
 // back to `Pending` by the in-process `catch`. If the worker is killed or
 // redeployed after the claim but before that catch runs, the row would
@@ -414,17 +421,20 @@ const getRangeSlug = (auditLogDateRange: string): string => {
  * path: a row never calls this inline, so a transient send failure here does
  * not touch any row's export state and simply retries on the next sweep.
  *
- * Exactly-once + retriable is a claim/send/release cycle:
+ * Exactly-once + bounded-retry is a claim/send/release cycle:
  *   1. Under an advisory lock scoped to `batchId`, atomically claim the send by
- *      stamping `batchEmailedAt` — but only if every sibling is terminal and it
- *      is still null. Two siblings finishing near-simultaneously (or two
- *      sweeps) can't both claim: the second to acquire the lock sees the stamp
- *      and returns early.
+ *      stamping `batchEmailedAt` and charging `batchEmailAttempts += 1` — but
+ *      only if every sibling is terminal and `batchEmailedAt` is still null.
+ *      Two siblings finishing near-simultaneously (or two sweeps) can't both
+ *      claim: the second to acquire the lock sees the stamp and returns early.
  *   2. Gather download metadata and send the email OUTSIDE the lock (no DB
  *      connection is held across S3/SMTP).
- *   3. If the send throws, release the claim by resetting `batchEmailedAt` to
- *      null so the next sweep retries, then rethrow for the caller to log. The
- *      claim in (1) guarantees no other caller is mid-send while we do this.
+ *   3. If the send throws, either release the claim (reset `batchEmailedAt` to
+ *      null) so the next sweep retries, or — once `batchEmailAttempts` has
+ *      reached MAX_ATTEMPTS — leave it stamped and give up, so a permanently
+ *      failing email (bad recipient, template error) is not retried forever.
+ *      Mirrors the per-row `attempts` cap. The claim in (1) guarantees no other
+ *      caller is mid-send while we release.
  *
  * Residual window: a crash between the successful send and (nothing) — or
  * between a failed send and the reset in (3) — mirrors the crash-window the
@@ -433,7 +443,7 @@ const getRangeSlug = (auditLogDateRange: string): string => {
 const maybeSendAuditLogExportBatchEmail = async (
   batchId: string,
 ): Promise<void> => {
-  const readySiblings = await db.transaction().execute(async (tx) => {
+  const claim = await db.transaction().execute(async (tx) => {
     // A bigint key is required by the single-argument overload of
     // pg_advisory_xact_lock, hence hashtextextended (bigint) over hashtext
     // (int4). Scoped to this batchId so unrelated batches never contend on
@@ -448,6 +458,10 @@ const maybeSendAuditLogExportBatchEmail = async (
       .selectAll()
       .execute()
 
+    if (siblings.length === 0) {
+      return null
+    }
+
     const allTerminal = siblings.every(
       (row) =>
         row.status === AuditLogExportStatus.Done ||
@@ -459,27 +473,39 @@ const maybeSendAuditLogExportBatchEmail = async (
       return null
     }
 
-    // Stamped on every sibling at once, under the lock — this, not the
-    // lock itself, is the durable record that the batch email already went
-    // out (the lock only serialises the check; it remembers nothing once
-    // released).
+    // Claim the send and charge the attempt, on every sibling at once under
+    // the lock. The `batchEmailedAt` stamp — not the lock itself — is the
+    // durable record that the send is claimed (the lock only serialises the
+    // check; it remembers nothing once released). `batchEmailAttempts` is the
+    // durable retry counter; all siblings carry the same value because they
+    // are always updated together, so reading any one post-increment is the
+    // attempt number of THIS send.
     await tx
       .updateTable("AuditLogExportRequest")
-      .set({ batchEmailedAt: new Date() })
+      .set({
+        batchEmailedAt: new Date(),
+        batchEmailAttempts: sql<number>`"batchEmailAttempts" + 1`,
+      })
       .where("batchId", "=", batchId)
       .execute()
 
-    return siblings
+    return {
+      siblings,
+      // Post-increment attempt number for this send (all siblings share it).
+      attempt: (siblings[0]?.batchEmailAttempts ?? 0) + 1,
+    }
   })
 
-  if (readySiblings === null || readySiblings.length === 0) {
+  if (claim === null) {
     return
   }
 
+  const { siblings: readySiblings, attempt } = claim
+
   // The claim (batchEmailedAt) is now stamped and committed. If anything below
-  // — token sealing, S3 metadata, or the send itself — throws, release the
-  // claim so the next sweep retries; without this, a transient failure would
-  // permanently suppress the batch's only email.
+  // — token sealing, S3 metadata, or the send itself — throws, we either
+  // release the claim so a later sweep retries, or (once attempts are
+  // exhausted) leave it stamped and give up — see the catch below.
   try {
     // Every row in a batch shares the same requester, month, and report type —
     // they're all created by one "allSites" ask (see
@@ -556,15 +582,31 @@ const maybeSendAuditLogExportBatchEmail = async (
       failedSiteNames,
     })
   } catch (error) {
-    // Release the claim so the next sweep retries this batch's email. Only
-    // this call holds the claim (the atomic stamp above serialises callers),
-    // so resetting to null cannot race a concurrent send.
-    await db
-      .updateTable("AuditLogExportRequest")
-      .set({ batchEmailedAt: null })
-      .where("batchId", "=", batchId)
-      .execute()
-    throw error
+    if (attempt < MAX_ATTEMPTS) {
+      // Release the claim so the next sweep retries this batch's email. Only
+      // this call holds the claim (the atomic stamp above serialises callers),
+      // so resetting to null cannot race a concurrent send. `batchEmailAttempts`
+      // was already charged under the lock, so the retry count carries over.
+      await db
+        .updateTable("AuditLogExportRequest")
+        .set({ batchEmailedAt: null })
+        .where("batchId", "=", batchId)
+        .execute()
+      logger.warn(
+        { error, batchId, attempt },
+        "Batch audit log export email failed; will retry on a later sweep",
+      )
+      return
+    }
+
+    // Exhausted retries — leave `batchEmailedAt` stamped so no later sweep
+    // picks this batch up again. A permanently-failing send (bad recipient,
+    // template error) is given up here rather than retried forever, mirroring
+    // the per-row `attempts` cap.
+    logger.error(
+      { error, batchId, attempt },
+      "Batch audit log export email exhausted retries; giving up",
+    )
   }
 }
 
@@ -767,19 +809,21 @@ export const processAuditLogExportRequest = async (
       rowStream.on("error", (error) => csvStream.destroy(error))
       rowStream.pipe(csvStream)
 
-      const site = await db
-        .selectFrom("Site")
-        .where("id", "=", request.siteId)
-        .select("name")
-        .executeTakeFirstOrThrow()
+      // Reuse the `site` already loaded above (Step 2) instead of re-querying.
       const rangeSlug = getRangeSlug(request.auditLogDateRange)
       // Site names are free text (schemas/site.ts enforces only non-empty
       // after trim) and land directly in the S3 key; an unreplaced "/" would
       // nest extra "directories" under this request's key prefix. Any other
       // character (quotes, unicode, control chars) is safe here — it's the
       // download filename derived from this key that needs escaping, which
-      // `uploadAuditLogExport` now handles via `content-disposition`.
-      const siteNameSlug = site.name.replace(/[/\\]/g, "-")
+      // `uploadAuditLogExport` now handles via `content-disposition`. The name
+      // is also truncated: a valid but very long name could otherwise push the
+      // key past S3's 1024-byte limit and fail an otherwise-fine export. The
+      // key stays unique regardless — `${requestId}` is already in the prefix,
+      // so the (possibly truncated) name is purely a human-readable label.
+      const siteNameSlug = site.name
+        .replace(/[/\\]/g, "-")
+        .slice(0, MAX_SITE_NAME_KEY_SLUG_LENGTH)
       objectKey = `audit-log-exports/${request.siteId}/${requestId}/${siteNameSlug}-${report.kind.toLowerCase()}-${rangeSlug}.csv`
 
       try {

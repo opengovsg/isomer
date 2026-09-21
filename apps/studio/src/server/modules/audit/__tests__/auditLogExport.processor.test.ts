@@ -552,6 +552,43 @@ describe("auditLogExport processor", () => {
     expect(updated.updatedAt.getTime()).toBe(freshUpdatedAt.getTime())
   })
 
+  it("bounds an oversized (and slash-containing) site name in the S3 key", async () => {
+    // Site names are free text; a very long one would otherwise push the S3
+    // key past its 1024-byte limit and fail an otherwise-valid export. The key
+    // keeps at most the first 100 chars of the (slash-sanitised) name; the
+    // requestId in the prefix keeps the key unique regardless of truncation.
+    const admin = await setupUser({ email: "long-name@vendor.com.sg" })
+    const { site } = await setupSite()
+    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+
+    // A "/" early in the name (sanitised to "-") plus enough trailing chars to
+    // exceed the 100-char cap.
+    const longName = "a/b" + "z".repeat(300)
+    await db
+      .updateTable("Site")
+      .set({ name: longName })
+      .where("id", "=", site.id)
+      .execute()
+
+    const request = await seedRequest({
+      siteId: site.id,
+      userId: admin.id,
+      reportType: "Activity",
+    })
+
+    await processPendingAuditLogExports()
+
+    const row = await getRequest(request.id)
+    expect(row.status).toBe("Done")
+    const expectedSlug = longName.replace(/[/\\]/g, "-").slice(0, 100)
+    expect(row.objectKey).toBe(
+      `audit-log-exports/${site.id}/${request.id}/${expectedSlug}-activity-2024-03-01-to-2024-03-31.csv`,
+    )
+    // The bounded slug is exactly the cap length and carries no path separators.
+    expect(expectedSlug).toHaveLength(100)
+    expect(row.objectKey).not.toContain("/b")
+  })
+
   // Complete-Artifact reuse (ADR docs/adr/0005): an identical (site, range,
   // report type) request is fulfilled by re-delivering an existing Done row's
   // artifact — with a fresh signed URL and email — instead of regenerating,
@@ -1009,6 +1046,60 @@ describe("auditLogExport processor", () => {
       // Neither row ever fell back to its own per-row email.
       expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
       expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    })
+
+    it("gives up on the combined email after MAX_ATTEMPTS failures instead of retrying forever", async () => {
+      // A permanently-failing send (e.g. a bad recipient) must not be retried
+      // indefinitely: after MAX_ATTEMPTS (3) the batch is given up and no later
+      // sweep re-attempts it.
+      const batchId = randomUUID()
+      const admin = await setupUser({ email: "giveup-batch@vendor.com.sg" })
+      const { site: siteA } = await setupSite()
+      const { site: siteB } = await setupSite()
+      await setupAdminPermissions({ userId: admin.id, siteId: siteA.id })
+      await setupAdminPermissions({ userId: admin.id, siteId: siteB.id })
+
+      await seedRequest({
+        siteId: siteA.id,
+        userId: admin.id,
+        reportType: "Access",
+        batchId,
+      })
+      await seedRequest({
+        siteId: siteB.id,
+        userId: admin.id,
+        reportType: "Access",
+        batchId,
+      })
+
+      // Every send attempt fails.
+      mockSendAuditLogExportBatchReadyEmail.mockRejectedValue(
+        new Error("recipient permanently rejected"),
+      )
+
+      // Sweep 1 processes both rows to Done and attempts (and fails) the email;
+      // sweeps 2 and 3 re-attempt it. That exhausts MAX_ATTEMPTS.
+      await processPendingAuditLogExports()
+      await processPendingAuditLogExports()
+      await processPendingAuditLogExports()
+      expect(mockSendAuditLogExportBatchReadyEmail).toHaveBeenCalledTimes(3)
+
+      // A 4th sweep must NOT re-attempt: the batch was given up and stays
+      // stamped so it drops out of the ready-to-email backstop.
+      await processPendingAuditLogExports()
+      expect(mockSendAuditLogExportBatchReadyEmail).toHaveBeenCalledTimes(3)
+
+      const rows = await db
+        .selectFrom("AuditLogExportRequest")
+        .where("siteId", "in", [siteA.id, siteB.id])
+        .selectAll()
+        .execute()
+      for (const row of rows) {
+        expect(row.status).toBe("Done")
+        // Stamped (given up), and charged exactly MAX_ATTEMPTS attempts.
+        expect(row.batchEmailedAt).not.toBeNull()
+        expect(row.batchEmailAttempts).toBe(3)
+      }
     })
   })
 })
