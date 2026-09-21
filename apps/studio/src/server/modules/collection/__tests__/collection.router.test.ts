@@ -1584,6 +1584,27 @@ describe("collection.router", async () => {
       )
     })
 
+    it("should persist eGazette collection-link category", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const expected = await caller.updateCollectionLink({
+        siteId: site.id,
+        ref: "1",
+        linkId: Number(page.id),
+        category: "Government Gazette",
+      })
+
+      // Assert
+      expect((expected.content.page as { category?: string }).category).toEqual(
+        "Government Gazette",
+      )
+    })
+
     it("should reject an invalid date", async () => {
       // Arrange
       const { page, site } = await setupPageResource({
