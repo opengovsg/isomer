@@ -5,7 +5,7 @@ import { DATE_FILTER_STATUS_ID } from "~/types/constants"
 // Deliberate one-off design colours — not theme tokens.
 const STATUS_STYLES = {
   [DATE_FILTER_STATUS_ID.Upcoming]: "bg-[#358257] text-white",
-  [DATE_FILTER_STATUS_ID.Ongoing]: "bg-[#A88651] text-white",
+  [DATE_FILTER_STATUS_ID.Ongoing]: "bg-[#9D6101] text-white",
   [DATE_FILTER_STATUS_ID.Ended]: "bg-[#E6E6E6] text-base-content",
 } as const satisfies Record<DateFilterStatusId, string>
 
