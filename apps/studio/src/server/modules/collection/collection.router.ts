@@ -491,6 +491,10 @@ export const collectionRouter = router({
             resourceId: resource.id,
           })
 
+          const existingPage = oldBlob.content.page as {
+            category?: string
+          }
+
           const blob = await updateBlobById(tx, {
             content: {
               ...content,
@@ -498,7 +502,7 @@ export const collectionRouter = router({
                 description,
                 ref,
                 date,
-                category,
+                category: category ?? existingPage.category,
                 image,
                 tagged,
               },

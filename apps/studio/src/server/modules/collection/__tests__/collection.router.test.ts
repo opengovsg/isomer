@@ -1605,6 +1605,34 @@ describe("collection.router", async () => {
       )
     })
 
+    it("should preserve collection-link category when category is omitted", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      await caller.updateCollectionLink({
+        siteId: site.id,
+        ref: "1",
+        linkId: Number(page.id),
+        category: "Government Gazette",
+      })
+
+      // Act
+      const expected = await caller.updateCollectionLink({
+        siteId: site.id,
+        ref: "2",
+        linkId: Number(page.id),
+        date: "01/02/2024",
+      })
+
+      // Assert
+      expect((expected.content.page as { category?: string }).category).toEqual(
+        "Government Gazette",
+      )
+      expect((expected.content.page as { ref?: string }).ref).toEqual("2")
+    })
+
     it("should reject an invalid date", async () => {
       // Arrange
       const { page, site } = await setupPageResource({
