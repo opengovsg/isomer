@@ -174,6 +174,7 @@ export const readPageOutputSchema = z.object({
   scheduledAt: z.date().nullable(),
   scheduledBy: z.string().nullable(),
   scheduledAction: z.nativeEnum(ScheduledAction).nullable(),
+  lastPublishedAt: z.date().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

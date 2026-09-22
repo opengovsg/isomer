@@ -36,8 +36,8 @@ export const UNPUBLISHABLE_RESOURCE_TYPES: ResourceType[] = [
 ]
 
 // Folder/Collection ids are also accepted by unpublishPage: they never carry
-// their own publishedVersionId — their liveness is entirely their child
-// IndexPage's — so unpublishPageResource resolves them to that child
+// their own publishedVersionId. Their liveness is entirely their child
+// IndexPage's, so unpublishPageResource resolves them to that child
 // IndexPage before doing anything else.
 export const UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS: ResourceType[] = [
   ...UNPUBLISHABLE_RESOURCE_TYPES,

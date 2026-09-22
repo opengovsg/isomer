@@ -15,8 +15,11 @@ import {
 import type { Resource } from "../database"
 import { logResourceEvent } from "../audit/audit.service"
 import { db } from "../database"
+import { AncestorScheduledUnpublishLockError } from "../resource/resource.error"
 import {
+  getAncestorIndexPages,
   getDescendantResourceIdsUnsafeForScheduledUnpublish,
+  getLockingAncestorIndexPages,
   getPageById,
   resolveEffectiveResourceId,
   UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
@@ -130,7 +133,7 @@ export const schedulePublish = async ({
       resourceId: pageId,
       siteId,
     })
-    // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
+    // Fetch inside the transaction to avoid racing a concurrent update.
     const resource = await getPageById(tx, {
       resourceId: resolvedResourceId,
       siteId,
@@ -146,6 +149,21 @@ export const schedulePublish = async ({
         code: "BAD_REQUEST",
         message: `Page already has a scheduled action at ${format(resource.scheduledAt, "yyyy-MM-dd HH:mm")}`,
       })
+    }
+
+    // A pending ancestor scheduled-unpublish locks out scheduling a publish
+    // underneath it, at any nesting depth, regardless of timing (see
+    // getLockingAncestorIndexPages).
+    const ancestorIndexPages = await getAncestorIndexPages(tx, {
+      siteId,
+      resourceId: resource.id,
+    })
+    const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
+    if (lockingAncestor?.scheduledAt) {
+      throw new AncestorScheduledUnpublishLockError(
+        lockingAncestor.scheduledAt,
+        "publish this page",
+      )
     }
 
     const updatedPage = await updatePageById(
@@ -250,7 +268,7 @@ export const scheduleUnpublish = async ({
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           message:
-            "This folder or collection has other pages that won't be unpublished by then — unpublish or schedule them first.",
+            "Some pages in this folder/collection will still be live at that time. Schedule or unpublish those pages first.",
         })
       }
     }
@@ -391,6 +409,26 @@ export const cancelScheduleUnpublish = async ({
         message:
           "Unable to cancel schedule for a page that is not scheduled to be unpublished",
       })
+    }
+
+    // Scheduling this container's own unpublish (or any ancestor's) required
+    // this resource to already be dark, or scheduled to go dark, by that
+    // time — see getDescendantResourceIdsUnsafeForScheduledUnpublish.
+    // Cancelling this resource's own scheduled unpublish while that ancestor
+    // lock still stands would leave it live past the ancestor's scheduled
+    // unpublish, so it's locked the same way scheduling a new publish
+    // underneath a locked ancestor is (see
+    // getLockingAncestorIndexPages/AncestorScheduledUnpublishLockError).
+    const ancestorIndexPages = await getAncestorIndexPages(tx, {
+      siteId,
+      resourceId: resource.id,
+    })
+    const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
+    if (lockingAncestor?.scheduledAt) {
+      throw new AncestorScheduledUnpublishLockError(
+        lockingAncestor.scheduledAt,
+        "cancel this page's scheduled unpublish",
+      )
     }
 
     const updatedPage = await updatePageById(

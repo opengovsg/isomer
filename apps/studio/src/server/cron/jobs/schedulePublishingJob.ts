@@ -13,10 +13,11 @@ import {
 import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
 import { publishSite } from "~/server/modules/aws/codebuild.service"
-import { db, ScheduledAction } from "~/server/modules/database"
+import { db, ResourceType, ScheduledAction } from "~/server/modules/database"
 import { bulkValidateUserPermissionsForResources } from "~/server/modules/permissions/permissions.service"
 import {
   defaultResourceSelect,
+  getContainerAncestorCounts,
   publishPageResource,
   unpublishPageResource,
 } from "~/server/modules/resource/resource.service"
@@ -81,7 +82,7 @@ type ResourceWithUser = Omit<Resource, "scheduledBy"> & {
 }
 
 // Dispatch table so publish/unpublish share one code path instead of
-// parallel if/else branches — adding a third scheduled action only means
+// parallel if/else branches. Adding a third scheduled action only means
 // adding a case here. Resolved lazily (not a module-scope constant) so it
 // always calls through the current `publishPageResource`/`unpublishPageResource`
 // bindings, which tests replace via `vi.spyOn`.
@@ -114,7 +115,7 @@ const getScheduledActionHandler = (
 export const publishScheduledResources = async (
   enableEmailsForScheduledPublishes: boolean,
   scheduledAtCutoff: Date,
-  // Dark-launched, same flag as unpublishPage/scheduleUnpublish — but unlike
+  // Dark-launched, same flag as unpublishPage/scheduleUnpublish, but unlike
   // those, this is re-checked at execution time rather than trusted from
   // schedule time, since the flag (or a kill-switch) could be flipped off
   // between when a resource was scheduled and when the cron picks it up.
@@ -123,14 +124,6 @@ export const publishScheduledResources = async (
 ) => {
   // A mapping from siteId to array of resourceIds, to determine which sites need to be published after their resources have been published
   const siteResourcesMap: Record<string, ResourceWithUser[]> = {}
-  // Fetch all resources that are scheduled to be published at or before the current time, along with the user who scheduled them.
-  // Ordered by scheduledAt: the loop below processes resources sequentially
-  // (one transaction at a time, awaited in order), and the container-siblings
-  // guard on a scheduled IndexPage unpublish only holds if a sibling scheduled
-  // strictly earlier has actually committed its own unpublish first. Without
-  // this order, both being due in the same cron tick would let the DB return
-  // them in an arbitrary order, and the IndexPage's unpublish could spuriously
-  // fail against a sibling that "should" already be down but hasn't run yet.
   const resourcesWithUser = await db
     .selectFrom("Resource")
     .leftJoin("User as u", "Resource.scheduledBy", "u.id")
@@ -140,14 +133,82 @@ export const publishScheduledResources = async (
       "u.email as email",
       "u.deletedAt as userDeletedAt",
     ])
-    .orderBy("Resource.scheduledAt", "asc")
-    .orderBy("Resource.id", "asc")
     .execute()
+
+  // The loop below processes resources sequentially (one transaction at a
+  // time, awaited in order), so anything due in the same cron tick needs a
+  // deterministic execution order, not whatever order the DB happened to
+  // return rows in:
+  //   1. scheduledAt ascending: a resource due earlier must run first,
+  //      since the container-siblings guard on a scheduled IndexPage
+  //      unpublish only holds if a sibling due earlier has actually
+  //      committed its own unpublish first.
+  //   2. a depth-based tiebreak for resources due at the *exact same*
+  //      instant (the case restriction 4 explicitly asks us to support:
+  //      scheduling an index page and its children together). Publish must
+  //      run ancestors-before-descendants (a child can't go live before its
+  //      container), Unpublish must run descendants-before-ancestors (a
+  //      container's IndexPage can't go dark while a child is still live).
+  //      `depth` here treats an IndexPage as sharing its own container's
+  //      depth rather than being one level deeper than its sibling pages.
+  //      Structurally they're siblings under the same parentId, but the
+  //      IndexPage stands in for the container itself for ordering
+  //      purposes. This holds at any nesting depth: a grandparent's
+  //      IndexPage always ends up with a strictly smaller depth than
+  //      anything inside it, however deep. Harmless (a no-op) for any pair
+  //      of due resources that aren't actually ancestor/descendant of each
+  //      other.
+  //   3. id ascending, as a final deterministic tiebreak.
+  // Batched per site (one recursive-CTE query per distinct site due this
+  // tick) rather than one query per due resource, since the ancestor walk
+  // is scoped to a single site anyway.
+  const resourceIdsBySite = new Map<number, string[]>()
+  for (const resource of resourcesWithUser) {
+    const ids = resourceIdsBySite.get(resource.siteId) ?? []
+    ids.push(resource.id)
+    resourceIdsBySite.set(resource.siteId, ids)
+  }
+  const ancestorCountsBySite = new Map<number, Map<string, number>>()
+  for (const [siteId, resourceIds] of resourceIdsBySite) {
+    ancestorCountsBySite.set(
+      siteId,
+      await getContainerAncestorCounts(db, { siteId, resourceIds }),
+    )
+  }
+
+  const resourcesWithDepth = resourcesWithUser.map((resource) => {
+    const containerAncestorCount =
+      ancestorCountsBySite.get(resource.siteId)?.get(resource.id) ?? 0
+    const depth =
+      containerAncestorCount -
+      (resource.type === ResourceType.IndexPage ? 1 : 0)
+    // The query above only selects rows with scheduledAt <=
+    // scheduledAtCutoff, so this is never actually null.
+    const scheduledAt = resource.scheduledAt ?? scheduledAtCutoff
+    return { resource, depth, scheduledAt }
+  })
+  resourcesWithDepth.sort((a, b) => {
+    const scheduledAtDiff = a.scheduledAt.getTime() - b.scheduledAt.getTime()
+    if (scheduledAtDiff !== 0) return scheduledAtDiff
+
+    const aAction = a.resource.scheduledAction ?? ScheduledAction.Publish
+    const bAction = b.resource.scheduledAction ?? ScheduledAction.Publish
+    const aKey = aAction === ScheduledAction.Unpublish ? -a.depth : a.depth
+    const bKey = bAction === ScheduledAction.Unpublish ? -b.depth : b.depth
+    if (aKey !== bKey) return aKey - bKey
+
+    // Resource.id is a BigInt (serialized as a numeric string), compare as
+    // BigInt rather than Number to avoid precision loss for very large ids.
+    const aId = BigInt(a.resource.id)
+    const bId = BigInt(b.resource.id)
+    return aId < bId ? -1 : aId > bId ? 1 : 0
+  })
+  const orderedResources = resourcesWithDepth.map(({ resource }) => resource)
 
   // Reset the scheduledAt and scheduledBy fields for all resources that are being published
   await resetScheduledAtForPublishedResources(scheduledAtCutoff)
 
-  for (const resource of resourcesWithUser) {
+  for (const resource of orderedResources) {
     const { id: resourceId, siteId, scheduledBy } = resource
     if (!scheduledBy) {
       logger.error(
@@ -158,7 +219,7 @@ export const publishScheduledResources = async (
     const scheduledAction = resource.scheduledAction ?? ScheduledAction.Publish
     const handler = getScheduledActionHandler(scheduledAction)
 
-    // The user who scheduled this may have been deactivated since — don't
+    // The user who scheduled this may have been deactivated since, don't
     // execute an authenticated action on their behalf if so.
     if (resource.userDeletedAt) {
       logger.warn(
@@ -167,7 +228,7 @@ export const publishScheduledResources = async (
       continue
     }
 
-    // The unpublish flag may have been turned off since this was scheduled —
+    // The unpublish flag may have been turned off since this was scheduled,
     // don't execute an unpublish the feature no longer allows.
     if (scheduledAction === ScheduledAction.Unpublish && !isUnpublishEnabled) {
       logger.warn(
@@ -177,7 +238,7 @@ export const publishScheduledResources = async (
     }
 
     try {
-      // Permissions may have been revoked since this was scheduled — the
+      // Permissions may have been revoked since this was scheduled. The
       // check made at schedule time doesn't hold at execution time, so
       // re-validate rather than trusting it.
       await bulkValidateUserPermissionsForResources({
@@ -261,11 +322,11 @@ export const publishScheduledSites = async (
           continue
         }
         // Every resource here already had its own publish/unpublish succeed
-        // (that's why it's in siteResourcesMap) — only the site rebuild
+        // (that's why it's in siteResourcesMap); only the site rebuild
         // failed. Use the site-rebuild-specific email, not the "we couldn't
-        // {verb} your page" one: that would tell the user to retry an action
-        // that already succeeded (and for unpublish, retrying would just
-        // throw PageAlreadyUnpublishedError).
+        // {verb} your page" one, since that would tell the user to retry an
+        // action that already succeeded (and for unpublish, retrying would
+        // just throw PageAlreadyUnpublishedError).
         const { verb } = getScheduledActionHandler(
           resource.scheduledAction ?? ScheduledAction.Publish,
         )
