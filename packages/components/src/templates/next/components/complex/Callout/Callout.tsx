@@ -4,6 +4,10 @@ import { BiCheckCircle, BiError, BiErrorCircle } from "react-icons/bi"
 import { DEFAULT_CALLOUT_VARIANT } from "~/interfaces/complex/Callout"
 import { tv } from "~/lib/tv"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { Prose } from "../../native/Prose"
 
 const CALLOUT_CONFIG: Record<
@@ -71,12 +75,18 @@ export const Callout = ({
   site,
   headingLevel,
   variant = DEFAULT_CALLOUT_VARIANT,
-}: CalloutProps) => {
+  contentBlockIndex,
+}: CalloutProps & ContentBlockIndexProps) => {
   const { icon: Icon, label } = CALLOUT_CONFIG[variant]
   const styles = calloutStyles({ variant, hasIcon: !!Icon })
 
   return (
-    <div className={styles.container()} role="group" aria-label={label}>
+    <div
+      className={styles.container()}
+      role="group"
+      aria-label={label}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       {Icon && <Icon aria-hidden className={styles.icon()} />}
       <div className={styles.content()} tabIndex={0}>
         <Prose {...content} site={site} headingLevel={headingLevel} />

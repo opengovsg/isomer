@@ -2,6 +2,10 @@ import type { MapProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { isValidMapEmbedUrl, isValidOGPMapsEmbedUrl } from "~/utils/validation"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { ComponentContent } from "../../internal/customCssClass"
 
@@ -21,7 +25,12 @@ const createMapStyles = tv({
   },
 })
 
-export const Map = ({ title, url, shouldLazyLoad = true }: MapProps) => {
+export const Map = ({
+  title,
+  url,
+  shouldLazyLoad = true,
+  contentBlockIndex,
+}: MapProps & ContentBlockIndexProps) => {
   if (!isValidMapEmbedUrl(url)) {
     return <></>
   }
@@ -33,7 +42,10 @@ export const Map = ({ title, url, shouldLazyLoad = true }: MapProps) => {
   })
 
   return (
-    <section className={compoundStyles.outerContainer()}>
+    <section
+      className={compoundStyles.outerContainer()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       {isOgpMapsEmbed && (
         <BaseParagraph
           content={`You can also view the map below on <a href="${url}">Maps.gov.sg</a>.`}

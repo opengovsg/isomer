@@ -9,6 +9,10 @@ import { getNodeFromSiteMap } from "~/utils/getNodeFromSiteMap"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
@@ -34,7 +38,8 @@ interface ChildpageLayoutProps
       | "maxColumns"
       | "headingLevel"
     >,
-    Pick<ImageClientProps, "assetsBaseUrl"> {
+    Pick<ImageClientProps, "assetsBaseUrl">,
+    ContentBlockIndexProps {
   childpages: Childpage[]
   fallback: Required<NonNullable<IsomerSitemap["image"]>>
 }
@@ -49,6 +54,7 @@ const BoxLayout = ({
   maxColumns = "2",
   imageFit = "cover",
   headingLevel,
+  contentBlockIndex,
 }: ChildpageLayoutProps) => {
   return (
     <div
@@ -57,6 +63,7 @@ const BoxLayout = ({
         variant: "default",
         class: "[&:not(:first-child)]:mt-7",
       })}
+      {...contentBlockIndexAttr(contentBlockIndex)}
     >
       {childpages.map(({ title, description, url, image }, idx) => {
         if (showThumbnail) {
@@ -155,11 +162,15 @@ const RowLayout = ({
   shouldLazyLoad,
   site,
   imageFit,
+  contentBlockIndex,
 }: ChildpageLayoutProps): JSX.Element => {
   const styles = createRowStyles()
 
   return (
-    <div className={styles.container()}>
+    <div
+      className={styles.container()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       {childpages.map(({ title, description, url, image }, idx) => {
         const renderedImage = image?.src ? image : fallback
 
@@ -229,7 +240,8 @@ export const ChildrenPages = ({
   maxColumns = "2",
   imageFit = IMAGE_FIT.Cover,
   headingLevel,
-}: ChildrenPagesProps) => {
+  contentBlockIndex,
+}: ChildrenPagesProps & ContentBlockIndexProps) => {
   const currentPageNode = getNodeFromSiteMap(site.siteMap, permalink)
 
   if (!currentPageNode?.children) {
@@ -260,6 +272,7 @@ export const ChildrenPages = ({
         maxColumns={maxColumns}
         imageFit={imageFit}
         headingLevel={headingLevel}
+        contentBlockIndex={contentBlockIndex}
       />
     )
   }
@@ -279,6 +292,7 @@ export const ChildrenPages = ({
       site={site}
       imageFit={imageFit}
       headingLevel={headingLevel}
+      contentBlockIndex={contentBlockIndex}
     />
   )
 }

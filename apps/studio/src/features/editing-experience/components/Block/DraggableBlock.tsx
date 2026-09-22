@@ -8,6 +8,7 @@ import {
 import { useEffect, useMemo } from "react"
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useShowPreviewBlockHighlight } from "~/features/editing-experience/hooks/useShowPreviewBlockHighlight"
 
 import type { BaseBlockProps } from "./BaseBlock"
 import { TYPE_TO_ICON } from "../../constants"
@@ -31,7 +32,8 @@ export const DraggableBlock = ({
   invalidProps,
   isHidden,
 }: DraggableBlockProps): JSX.Element => {
-  const { setHoveredBlockIndex } = useEditorDrawerContext()
+  const { hoveredBlockIndex, setHoveredBlockIndex } = useEditorDrawerContext()
+  const showPreviewBlockHighlight = useShowPreviewBlockHighlight()
 
   useEffect(() => {
     // If this row unmounts while hovered (e.g. clicking it navigates the
@@ -75,9 +77,20 @@ export const DraggableBlock = ({
           >
             <BaseBlock
               isHidden={isHidden}
+              isHighlighted={
+                showPreviewBlockHighlight && hoveredBlockIndex === index
+              }
               onClick={onClick}
-              onMouseEnter={() => setHoveredBlockIndex(index)}
-              onMouseLeave={() => setHoveredBlockIndex(null)}
+              onMouseEnter={
+                showPreviewBlockHighlight
+                  ? () => setHoveredBlockIndex(index)
+                  : undefined
+              }
+              onMouseLeave={
+                showPreviewBlockHighlight
+                  ? () => setHoveredBlockIndex(null)
+                  : undefined
+              }
               dragHandle={
                 <BaseBlockDragHandle
                   isDragging={isDragging}

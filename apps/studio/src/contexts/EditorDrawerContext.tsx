@@ -1,5 +1,6 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
+import type { ViewportOptions } from "~/features/editing-experience/components/preview/IframeToolbar"
 import type { ModifiedAsset } from "~/types/assets"
 import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { createContext, useCallback, useContext, useState } from "react"
@@ -18,6 +19,8 @@ interface PreviewInteractionState {
   setFlashBlockIndex: Dispatch<SetStateAction<number | null>>
   iframeDocument: Document | null
   setIframeDocument: Dispatch<SetStateAction<Document | null>>
+  previewViewport: ViewportOptions
+  setPreviewViewport: Dispatch<SetStateAction<ViewportOptions>>
 }
 
 interface DrawerContextType
@@ -81,6 +84,8 @@ export function EditorDrawerProvider({
   )
   const [flashBlockIndex, setFlashBlockIndex] = useState<number | null>(null)
   const [iframeDocument, setIframeDocument] = useState<Document | null>(null)
+  const [previewViewport, setPreviewViewport] =
+    useState<ViewportOptions>("responsive")
 
   const setPreviewPageState = useCallback(
     (previewPageState: SetStateAction<IsomerSchema>) => {
@@ -118,6 +123,8 @@ export function EditorDrawerProvider({
         setFlashBlockIndex,
         iframeDocument,
         setIframeDocument,
+        previewViewport,
+        setPreviewViewport,
         type,
         permalink,
         siteId,

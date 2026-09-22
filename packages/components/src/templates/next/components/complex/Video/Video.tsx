@@ -2,6 +2,10 @@ import type { VideoProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { isValidVideoUrl, VALID_VIDEO_DOMAINS } from "~/utils/validation"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 import { LiteVimeoEmbed } from "./LiteVimeoEmbed"
 import { LiteYouTubeEmbed } from "./LiteYouTubeEmbed"
@@ -69,7 +73,12 @@ const videoAspectStyles = tv({
   },
 })
 
-export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
+export const Video = ({
+  title,
+  url,
+  shouldLazyLoad = true,
+  contentBlockIndex,
+}: VideoProps & ContentBlockIndexProps) => {
   const parsedVideo = parseVideo(url)
   if (!parsedVideo) return null
 
@@ -120,7 +129,10 @@ export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
   }
 
   return (
-    <section className={`${ComponentContent} mt-7 first:mt-0`}>
+    <section
+      className={`${ComponentContent} mt-7 first:mt-0`}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <div className={videoOuterStyles({ isPortrait })}>
         {/* NOTE: 56.25% is a 16:9 (landscape) aspect ratio; 177.78% is a 9:16 (portrait) aspect ratio */}
         <div className={videoAspectStyles({ isPortrait })}>{renderVideo()}</div>

@@ -1,6 +1,10 @@
 import type { OrderedListProps } from "~/interfaces"
 import { twMerge } from "~/lib/twMerge"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ListItem } from "../ListItem"
 import { listStyles } from "../listStyles"
 
@@ -20,7 +24,8 @@ export const OrderedList = ({
   content,
   level,
   site,
-}: OrderedListProps) => {
+  contentBlockIndex,
+}: OrderedListProps & ContentBlockIndexProps) => {
   return (
     // Nested sublists (level set) use `mt-3` to match the item rhythm (`my-3`
     // on ListItem). Top-level lists keep `mt-6` because preceding blocks like
@@ -31,6 +36,7 @@ export const OrderedList = ({
         getOrderedListType(level),
       )}
       start={attrs?.start}
+      {...contentBlockIndexAttr(contentBlockIndex)}
     >
       {content.map((item, index) => (
         <ListItem key={index} {...item} level={level} site={site} />
