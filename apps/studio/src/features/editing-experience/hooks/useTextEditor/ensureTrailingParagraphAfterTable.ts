@@ -5,9 +5,7 @@ const getContentBounds = (view: EditorView) => {
   const { doc } = view.state
   if (doc.childCount === 0) return null
 
-  const last = doc.lastChild
-  if (!last) return null
-
+  const last = doc.child(doc.childCount - 1)
   const contentEndBottom = view.coordsAtPos(doc.content.size - 1).bottom
   const lastBlockPos = doc.content.size - last.nodeSize
   const nodeDom = view.nodeDOM(lastBlockPos)
@@ -48,11 +46,7 @@ export const tryFocusBelowEditorContent = (
   const belowLastText = event.clientY > contentEndBottom + 2
   const belowLastBlock = event.clientY > blockBottom + 2
 
-  if (lastType === "table" && belowLastText) {
-    return focusEndOfDocument(view)
-  }
-
-  if (belowLastBlock) {
+  if ((lastType === "table" && belowLastText) || belowLastBlock) {
     return focusEndOfDocument(view)
   }
 
@@ -72,7 +66,9 @@ export const ensureTrailingParagraphAfterTablePlugin = new Plugin({
   key: new PluginKey("ensureTrailingParagraphAfterTable"),
   props: {
     handleDOMEvents: {
-      mousedown: (view, event) => tryFocusBelowEditorContent(view, event),
+      mousedown(view, event) {
+        return tryFocusBelowEditorContent(view, event)
+      },
     },
   },
 })

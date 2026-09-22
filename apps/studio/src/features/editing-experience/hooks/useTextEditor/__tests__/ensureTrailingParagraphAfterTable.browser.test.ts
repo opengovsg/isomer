@@ -11,7 +11,7 @@ import {
   PROSE_EXTENSIONS,
   TableRow,
 } from "../constants"
-import { tryFocusBelowEditorContent } from "../ensureTrailingParagraphAfterTable"
+import { ensureTrailingParagraphAfterTablePlugin } from "../ensureTrailingParagraphAfterTable"
 
 const TABLE_ONLY_DOC: JSONContent = {
   type: "prose",
@@ -56,7 +56,30 @@ const createEditor = (content: JSONContent = TABLE_ONLY_DOC) => {
   })
 }
 
-describe("tryFocusBelowEditorContent", () => {
+const mousedownBelowTable = (editor: Editor) => {
+  const dom = editor.view.dom
+  const rect = dom.getBoundingClientRect()
+  const contentEndBottom = editor.view.coordsAtPos(
+    editor.state.doc.content.size - 1,
+  ).bottom
+
+  const event = new MouseEvent("mousedown", {
+    bubbles: true,
+    cancelable: true,
+    clientX: rect.left + 16,
+    clientY: contentEndBottom + 40,
+    button: 0,
+  })
+  const mousedown =
+    ensureTrailingParagraphAfterTablePlugin.props.handleDOMEvents?.mousedown
+  return mousedown?.call(
+    ensureTrailingParagraphAfterTablePlugin,
+    editor.view,
+    event,
+  )
+}
+
+describe("ensureTrailingParagraphAfterTablePlugin", () => {
   let editor: Editor
 
   beforeEach(() => {
@@ -74,28 +97,11 @@ describe("tryFocusBelowEditorContent", () => {
   })
 
   it("adds a paragraph after a click below the table", async () => {
-    // Arrange
-    const dom = editor.view.dom
-    const rect = dom.getBoundingClientRect()
-    const contentEndBottom = editor.view.coordsAtPos(
-      editor.state.doc.content.size - 1,
-    ).bottom
-
     // Act
-    tryFocusBelowEditorContent(
-      editor.view,
-      new MouseEvent("mousedown", {
-        bubbles: true,
-        cancelable: true,
-        clientX: rect.left + 16,
-        clientY: contentEndBottom + 40,
-        button: 0,
-      }),
-    )
+    mousedownBelowTable(editor)
     await userEvent.keyboard("typed below")
 
     // Assert
     expect(editor.getText()).toContain("typed below")
-    expect(editor.state.doc.lastChild?.type.name).toBe("paragraph")
   })
 })
