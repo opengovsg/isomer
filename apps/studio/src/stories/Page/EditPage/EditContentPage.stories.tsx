@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { expect, fireEvent, userEvent, within } from "storybook/test"
+import { expect, userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -176,34 +176,24 @@ export const ActiveTableToolbar: Story = {
       name: /^more options$/i,
     })
     await userEvent.click(overflowTrigger)
-    // Overflow items mount after the popover opens and can stay
-    // `visibility: hidden` to the accessibility tree until then.
-    await canvas.findByRole(
-      "button",
-      { name: /^superscript$/i, hidden: true },
-      { timeout: 5000 },
-    )
+    await expect(overflowTrigger).toHaveAttribute("aria-expanded", "true")
+    await canvas.findByRole("button", { name: /^superscript$/i })
     await expect(
-      canvas.queryAllByRole("button", {
-        name: /^superscript$/i,
-        hidden: true,
-      }),
+      canvas.queryAllByRole("button", { name: /^superscript$/i }),
     ).toHaveLength(1)
     await userEvent.keyboard("{Escape}")
 
     // Clicking "Table" only opens the size-picker popover — a cell still
     // needs to be picked to actually insert a table and put the cursor
-    // inside it (see TableSizePicker.tsx). The grid is portaled and may
-    // stay hidden to the a11y tree.
+    // inside it (see TableSizePicker.tsx).
+    const tableButton = await canvas.findByRole("button", {
+      name: /^table$/i,
+    })
+    await userEvent.click(tableButton)
+    await expect(tableButton).toHaveAttribute("aria-expanded", "true")
     await userEvent.click(
-      await canvas.findByRole("button", { name: /^table$/i }),
+      await canvas.findByRole("button", { name: /^1 by 1 table$/i }),
     )
-    const tableCell = await canvas.findByRole(
-      "button",
-      { name: /^1 by 1 table$/i, hidden: true },
-      { timeout: 5000 },
-    )
-    await fireEvent.click(tableCell)
 
     // Inside a table: promoted directly onto the main toolbar, and no longer
     // duplicated under "More options" (removed from that list entirely).
