@@ -36,7 +36,7 @@ jobs:
           filters: |
             template_or_components:
               - 'packages/components/**'
-              - 'tooling/template/**'
+              - 'apps/template/**'
   build:
     runs-on: ubuntu-latest
     steps:

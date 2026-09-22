@@ -48,7 +48,7 @@ const nextConfig = {
           useLocalJson,
         ),
         new webpack.ContextReplacementPlugin(
-          /[\\/]tooling[\\/]template[\\/]schema$/,
+          /[\\/]apps[\\/]template[\\/]schema$/,
           path.join(localPublishDir, "schema"),
         ),
       )

@@ -68,4 +68,4 @@ packages/db/prisma/generated/
 apps/studio/public/assets/css/preview-tw.css
 
 # JSON generated when publishing from the local Studio to the local template
-tooling/template/.local-publish*/
+apps/template/.local-publish*/
