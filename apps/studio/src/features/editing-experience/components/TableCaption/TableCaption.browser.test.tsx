@@ -126,7 +126,7 @@ describe("TableCaption", () => {
     const captionText = await screen.findByText("Existing caption")
     expect(captionText).toBeInTheDocument()
     expect(await getCaptionButton("Edit table caption")).toHaveTextContent(
-      "Edit",
+      "Edit caption",
     )
   })
 
@@ -295,7 +295,7 @@ describe("TableCaption", () => {
     })
     expect(editButtons).toHaveLength(2)
     for (const editButton of editButtons) {
-      expect(editButton).toHaveTextContent("Edit")
+      expect(editButton).toHaveTextContent("Edit caption")
     }
   })
 })
