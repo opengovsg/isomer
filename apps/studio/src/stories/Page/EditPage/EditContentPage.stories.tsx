@@ -203,7 +203,7 @@ export const ActiveTableToolbar: Story = {
       { name: /^1 by 1 table$/i, hidden: true },
       { timeout: 5000 },
     )
-    fireEvent.click(tableCell)
+    await fireEvent.click(tableCell)
 
     // Inside a table: promoted directly onto the main toolbar, and no longer
     // duplicated under "More options" (removed from that list entirely).
