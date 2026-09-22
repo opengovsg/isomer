@@ -48,10 +48,10 @@ async function renderDiff(beforeContent: ReactNode, afterContent: ReactNode) {
     expect(getByTestId("status").textContent).toBe("ready")
   })
 
-  const beforeDoc = getByTestId("before-pane").querySelector("iframe")
-    ?.contentDocument
-  const afterDoc = getByTestId("after-pane").querySelector("iframe")
-    ?.contentDocument
+  const beforeDoc =
+    getByTestId("before-pane").querySelector("iframe")?.contentDocument
+  const afterDoc =
+    getByTestId("after-pane").querySelector("iframe")?.contentDocument
 
   return { beforeDoc, afterDoc }
 }
@@ -96,9 +96,9 @@ describe("useDomDiff", () => {
     )
 
     const removed = findParagraph(beforeDoc, "Removed paragraph")
-    expect(
-      removed?.classList.contains("isomer-diff-highlight--removed"),
-    ).toBe(true)
+    expect(removed?.classList.contains("isomer-diff-highlight--removed")).toBe(
+      true,
+    )
 
     const kept = findParagraph(afterDoc, "Kept paragraph")
     expect(kept?.classList.contains("isomer-diff-highlight")).toBe(false)
@@ -116,14 +116,10 @@ describe("useDomDiff", () => {
     )
 
     const added = findParagraph(afterDoc, "Added paragraph")
-    expect(added?.classList.contains("isomer-diff-highlight--added")).toBe(
-      true,
-    )
+    expect(added?.classList.contains("isomer-diff-highlight--added")).toBe(true)
 
     const keptBefore = findParagraph(beforeDoc, "Kept paragraph")
-    expect(keptBefore?.classList.contains("isomer-diff-highlight")).toBe(
-      false,
-    )
+    expect(keptBefore?.classList.contains("isomer-diff-highlight")).toBe(false)
   })
 
   it("highlights changed text as modified in both panes, leaving an untouched sibling unhighlighted", async () => {
@@ -242,10 +238,7 @@ describe("useDomDiff", () => {
       })
 
       const { getByTestId } = render(
-        <Harness
-          beforeContent={<p>Before</p>}
-          afterContent={<p>After</p>}
-        />,
+        <Harness beforeContent={<p>Before</p>} afterContent={<p>After</p>} />,
       )
 
       await waitFor(() => {

@@ -5,9 +5,9 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 
+import type { PageDiffModalRow } from "./PageDiffModal"
 import { pageSchema } from "../../schema"
 import { DrawerHeader } from "./DrawerHeader"
-import type { PageDiffModalRow } from "./PageDiffModal"
 import { PageDiffModal } from "./PageDiffModal"
 
 const PAGE_SIZE = 20
@@ -15,9 +15,7 @@ const PAGE_SIZE = 20
 export default function HistoryStateDrawer(): JSX.Element {
   const { setDrawerState } = useEditorDrawerContext()
   const { pageId, siteId } = useQueryParse(pageSchema)
-  const [selectedRow, setSelectedRow] = useState<PageDiffModalRow | null>(
-    null,
-  )
+  const [selectedRow, setSelectedRow] = useState<PageDiffModalRow | null>(null)
 
   const {
     data,
@@ -50,8 +48,7 @@ export default function HistoryStateDrawer(): JSX.Element {
           {isLoading && <Text textStyle="body-2">Loading...</Text>}
           {!isLoading && isError && (
             <Text textStyle="body-2" color="utility.feedback.critical">
-              Something went wrong while loading page history. Please try
-              again.
+              Something went wrong while loading page history. Please try again.
             </Text>
           )}
           {!isLoading && !isError && rows.length === 0 && (
