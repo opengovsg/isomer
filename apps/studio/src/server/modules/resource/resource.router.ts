@@ -54,6 +54,7 @@ import {
   applyResourceStatusFilter,
   assertMoveDestinationUnlocked,
   assertResourceNotLive,
+  assertResourceNotScheduled,
   defaultResourceSelect,
   getBatchAncestryWithSelfQuery,
   getChildLiveStatusMap,
@@ -722,12 +723,11 @@ export const resourceRouter = router({
 
         query = applyResourceOrderBy(query, orderBy)
 
-        // A Folder/Collection never carries its own publishedVersionId — its
-        // live content is its child IndexPage's — so its status needs the
-        // recursive descendant check; every other type is live iff its own
-        // publishedVersionId is set. Computed up front (rather than after
-        // the rows query, as before) since the live/notLive status filter
-        // needs it too.
+        // A Folder/Collection's live content is its child IndexPage's, not its
+        // own publishedVersionId, so its status needs the recursive descendant
+        // check; every other type is live iff its own publishedVersionId is
+        // set. Computed up front (rather than after the rows query, as
+        // before) since the live/notLive status filter needs it too.
         const childLiveStatus = await getChildLiveStatusMap(db, {
           siteId,
           resourceId: resourceId ? String(resourceId) : null,
@@ -793,9 +793,9 @@ export const resourceRouter = router({
               : status?.hasLiveDescendant
                 ? "liveTemplate"
                 : "notLive",
-            // A Folder/Collection never carries its own draftBlobId/
-            // scheduledAt/scheduledAction — that state lives on its child
-            // IndexPage — so the Status badges need those substituted in.
+            // A Folder/Collection's draftBlobId/scheduledAt/scheduledAction
+            // live on its child IndexPage instead, so the Status badges need
+            // those substituted in.
             draftBlobId: status?.indexPageDraftBlobId ?? null,
             scheduledAt: status?.indexPageScheduledAt ?? null,
             scheduledAction: status?.indexPageScheduledAction ?? null,
@@ -877,6 +877,17 @@ export const resourceRouter = router({
             publishedVersionId: before.publishedVersionId,
           })
         }
+
+        // Not gated on the flag: schedulePage (scheduling a publish) has no
+        // flag check of its own, so a pending schedule can exist even with
+        // unpublishing disabled. Always guard against it, or the delete
+        // silently discards the schedule along with the row.
+        await assertResourceNotScheduled(tx, {
+          siteId: Number(siteId),
+          resourceId,
+          resourceType: before.type,
+          scheduledAt: before.scheduledAt,
+        })
 
         await logResourceEvent(tx, {
           siteId,

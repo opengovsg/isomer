@@ -5,11 +5,11 @@ import { BxCheckAnimated, Menu } from "@opengovsg/design-system-react"
 
 import { RESOURCE_TABLE_STATUS_FILTER_OPTIONS } from "./constants"
 
-// Decorative only — the surrounding Menu.Item's onClick drives the actual
+// Decorative only. The surrounding Menu.Item's onClick drives the actual
 // toggle. Renders just the design system Checkbox's `control`/`icon` parts
 // (skipping `container`/`label`, whose padding doesn't collapse to zero even
 // with no label and was eating into the row's width, wrapping longer option
-// labels onto two lines) — same pattern as MultiSelect's ItemCheckboxIcon.
+// labels onto two lines). Same pattern as MultiSelect's ItemCheckboxIcon.
 const FilterCheckbox = ({ isChecked }: { isChecked: boolean }) => {
   const styles = useMultiStyleConfig("Checkbox", { size: "sm" })
   return (
@@ -17,6 +17,11 @@ const FilterCheckbox = ({ isChecked }: { isChecked: boolean }) => {
       __css={styles.control}
       data-checked={dataAttr(isChecked)}
       flexShrink={0}
+      // The Checkbox theme's "main" colorScheme borders the control blue even
+      // unchecked (see Checkbox.js's getColorProps). The higher-specificity
+      // [data-checked] rule from styles.control still wins once checked, so
+      // this only affects the unchecked look.
+      borderColor="base.content.strong"
     >
       <Icon as={BxCheckAnimated} __css={styles.icon} isChecked={isChecked} />
     </Box>

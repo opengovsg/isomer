@@ -39,7 +39,6 @@ const getColumns = ({ siteId }: ResourceTableProps) =>
           title={row.original.title}
           permalink={`/${row.original.permalink}`}
           type={row.original.type}
-          scheduledAt={row.original.scheduledAt}
           draftBlobId={row.original.draftBlobId}
         />
       ),
@@ -66,6 +65,8 @@ const getColumns = ({ siteId }: ResourceTableProps) =>
           type={row.original.type}
           permalink={row.original.permalink}
           resourceType={row.original.type}
+          liveStatus={row.original.liveStatus}
+          scheduledAt={row.original.scheduledAt}
         />
       ),
       size: 24,
@@ -93,7 +94,7 @@ export const ResourceTable = ({
   )
 
   // `limit`/`skip` only depend on local pagination state (pageIndex/pageSize),
-  // not on `totalCount` — so it's safe for `totalCount` to come from the same
+  // not on `totalCount`, so it's safe for `totalCount` to come from the same
   // query this feeds into, with no circular dependency. `pageCount` from this
   // call is discarded (it'd be stuck at 0) and recomputed below once the
   // query's own `totalCount` is available.

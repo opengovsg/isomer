@@ -1090,9 +1090,7 @@ export const hasPublishedDescendant = async (
 }
 
 // True when `resourceId` itself, or any descendant, has a pending scheduled
-// Publish — self-inclusive (unlike hasDescendantWithPendingScheduledUnpublish,
-// which excludes a given id for the cancel-guard use case, this checks the
-// resource passed in too). A null scheduledAction is legacy data and
+// Publish — self-inclusive. A null scheduledAction is legacy data and
 // defaults to Publish, matching the convention used throughout this module.
 export const hasPendingScheduledPublish = async (
   trx: SafeKysely,
@@ -1133,22 +1131,22 @@ export const getPublishedDescendantResourceIds = async (
 }
 
 // Ids of descendants that would still be live when a scheduled unpublish of
-// `resourceId` (an IndexPage) fires at `scheduledAt` — i.e. this is the
-// schedule-time analogue of getPublishedDescendantResourceIds's execution-time
-// check. A descendant is "safe" (excluded from the result) only if:
+// `resourceId` (an IndexPage) fires at `scheduledAt`. Schedule-time analogue
+// of getPublishedDescendantResourceIds's execution-time check. A descendant
+// is "safe" (excluded from the result) only if:
 //   - it's currently live AND has its own scheduled Unpublish at or before
-//     `scheduledAt` (so it'll be down by the time this one fires — the cron's
-//     depth-aware execution ordering, see schedulePublishingJob.ts, is what
-//     guarantees an exact-same-instant descendant actually lands first), or
+//     `scheduledAt` (the cron's depth-aware ordering, see
+//     schedulePublishingJob.ts, guarantees an exact-same-instant descendant
+//     lands first), or
 //   - it's currently not live AND has no scheduled Publish before
-//     `scheduledAt` (so it won't come back up before this one fires).
-// The second case matters even though the descendant isn't live right now:
-// without it, a descendant could be sitting on an already-scheduled Publish,
-// guaranteeing it'll be live again at some point — a fact fully knowable now,
-// not a race. This is intentionally conservative: a Publish scheduled to fire
-// *after* `scheduledAt` would still leave the descendant down in time, but is
-// flagged unsafe anyway rather than reasoning about relative ordering here —
-// this is only an early-feedback check, not the authoritative gate (that's
+//     `scheduledAt`.
+// The second case still matters for a descendant that isn't live right now:
+// an already-scheduled Publish means it'll be live again at some point, a
+// fact we can check now rather than guessing. This is intentionally
+// conservative: a Publish scheduled for *after* `scheduledAt` would still
+// leave the descendant down in time, but is flagged unsafe anyway rather
+// than reasoning about relative ordering here. This is only an
+// early-feedback check, not the authoritative gate (that's
 // unpublishPageResource's own execution-time check).
 // A currently-live descendant with no schedule, or one scheduled for a
 // *later* Unpublish, is unsafe; same for a currently-unpublished descendant
@@ -1207,41 +1205,6 @@ export const getDescendantResourceIdsUnsafeForScheduledUnpublish = async (
     .select("Resource.id")
     .execute()
   return rows.map((row) => String(row.id))
-}
-
-// True when some descendant of `resourceId` (excluding `excludeResourceId`)
-// has a pending scheduled Unpublish — a plain existence check, unlike the
-// "unsafe for scheduled X" functions above: there's no time cutoff to
-// compare against, just "does anything downstream still depend on this
-// happening". Used to hard-block cancelling an IndexPage's own scheduled
-// unpublish out from under dependents (see cancelScheduleUnpublish in
-// page.service.ts) — the caller must cancel the descendants' schedules
-// first. `excludeResourceId` is the IndexPage whose own schedule is being
-// cancelled: it's still part of `resourceId`'s (its container's) subtree and
-// still has `scheduledAt` set at the point this check runs (the cancel
-// hasn't been applied yet), so it must be excluded or the check would
-// always find "itself" as a blocking dependent.
-export const hasDescendantWithPendingScheduledUnpublish = async (
-  trx: SafeKysely,
-  {
-    siteId,
-    resourceId,
-    excludeResourceId,
-  }: {
-    siteId: number
-    resourceId: string
-    excludeResourceId: string
-  },
-): Promise<boolean> => {
-  const row = await withResourceSubtree(trx, { siteId, resourceId })
-    .selectFrom("subtree")
-    .innerJoin("Resource", "Resource.id", "subtree.id")
-    .where("Resource.id", "!=", excludeResourceId)
-    .where("Resource.scheduledAt", "is not", null)
-    .where("Resource.scheduledAction", "=", ScheduledAction.Unpublish)
-    .select("Resource.id")
-    .executeTakeFirst()
-  return row !== undefined
 }
 
 // The upward analogue of withResourceSubtree: walks from `resourceId` up
@@ -1498,6 +1461,58 @@ export const assertResourceNotLive = async (
   }
 }
 
+// True when `resourceId` or any descendant has a pending scheduled
+// publish/unpublish. Deletion cascades and drops `scheduledAt`/`scheduledAction`
+// with the row, silently cancelling the schedule, so a Folder/Collection needs
+// its whole subtree checked, not just its own (always-null) scheduledAt.
+export const hasScheduledDescendant = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<boolean> => {
+  const scheduled = await withResourceSubtree(trx, { siteId, resourceId })
+    .selectFrom("subtree")
+    .innerJoin("Resource", "Resource.id", "subtree.id")
+    .where("Resource.scheduledAt", "is not", null)
+    .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS)
+    .select("Resource.id")
+    .executeTakeFirst()
+  return scheduled !== undefined
+}
+
+// Blocks deleting a resource that's still scheduled for a future
+// publish/unpublish, so the schedule doesn't silently vanish with the row.
+export const assertResourceNotScheduled = async (
+  tx: SafeKysely,
+  {
+    siteId,
+    resourceId,
+    resourceType,
+    scheduledAt,
+  }: {
+    siteId: number
+    resourceId: string
+    resourceType: ResourceType
+    scheduledAt: Date | null
+  },
+) => {
+  const isContainer =
+    resourceType === ResourceType.Folder ||
+    resourceType === ResourceType.Collection
+
+  const isScheduled = isContainer
+    ? await hasScheduledDescendant(tx, { siteId, resourceId })
+    : scheduledAt !== null
+
+  if (isScheduled) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: isContainer
+        ? `This ${resourceType === ResourceType.Folder ? "folder" : "collection"} has pages inside it scheduled for a future publish or unpublish — cancel the schedule before deleting`
+        : "This page is scheduled for a future publish or unpublish — cancel the schedule before deleting",
+    })
+  }
+}
+
 // Read-only mirror of the `move` mutation's unpublish-lock check, so the
 // destination picker can warn as soon as a destination is selected instead
 // of only surfacing the error on submit. The mutation still re-runs its own
@@ -1549,26 +1564,23 @@ export const getMoveLockInfo = async (
 }
 
 // Tags every direct child of `resourceId` (or every top-level resource, when
-// `resourceId` is null) with its own id ("branchId"), then walks downward —
-// each descendant inherits its ancestor's tag as the recursion goes deeper.
-// Grouping by that tag at the end tells us, per child, whether it (or
-// anything nested under it, at any depth) is published — one query answers
-// this for every child at once, instead of walking one child's subtree per
-// call.
+// `resourceId` is null) with its own id ("branchId"), then walks downward so
+// each descendant inherits its ancestor's tag. Grouping by that tag tells us,
+// per child, whether it or anything nested under it is published, in one
+// query instead of walking each child's subtree separately.
 //
-// `hasLiveIndexPage` narrows that down to just the child's own immediate
-// IndexPage (one level under it): a Folder/Collection is genuinely "Live"
-// only when this is true, versus "Live · Template" when it's not published
-// but `hasLiveDescendant` is still true because something deeper is live.
+// `hasLiveIndexPage` narrows that to just the child's own immediate
+// IndexPage (one level under it): a Folder/Collection is "Live" only when
+// this is true, vs. "Live · Template" when it's not published but
+// `hasLiveDescendant` is still true because something deeper is live.
 //
-// `indexPageDraftBlobId`/`indexPageScheduledAt`/`indexPageScheduledAction` mirror
-// that same immediate IndexPage's own draft/schedule columns — a Folder/
-// Collection never carries its own draftBlobId/scheduledAt/scheduledAction,
-// so the Status badges and the dashboard status filter both need this to
-// read the container's actual draft/schedule state instead of always seeing
-// null. At most one row per branch can match (depth 1 + IndexPage), so the
-// conditional aggregates below resolve to that row's values, or null if the
-// container has no IndexPage yet.
+// `indexPageDraftBlobId`/`indexPageScheduledAt`/`indexPageScheduledAction`
+// mirror that same IndexPage's draft/schedule columns, since a Folder/
+// Collection never carries its own. The Status badges and dashboard status
+// filter need these to read the container's real draft/schedule state
+// instead of always seeing null. At most one row per branch can match
+// (depth 1 + IndexPage), so the conditional aggregates below resolve to
+// that row's values, or null if the container has no IndexPage yet.
 export const getChildLiveStatusMap = async (
   trx: SafeKysely,
   { siteId, resourceId }: { siteId: number; resourceId: string | null },
@@ -2088,7 +2100,10 @@ export const publishPageResource = async ({
     })
     const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
     if (lockingAncestor?.scheduledAt) {
-      throw new AncestorScheduledUnpublishLockError(lockingAncestor.scheduledAt)
+      throw new AncestorScheduledUnpublishLockError(
+        lockingAncestor.scheduledAt,
+        "publish this page",
+      )
     }
 
     // Only the first publish needs the redirect handling below: the shadow
@@ -2195,8 +2210,13 @@ export const publishPageResource = async ({
       siteId,
       by: await getUserById(userId),
       delta: {
-        before: previousVersion ? { versionId: previousVersion.id } : null,
-        after: { versionId: newVersion.id },
+        before: previousVersion
+          ? {
+              versionId: previousVersion.id,
+              versionNum: previousVersion.versionNum,
+            }
+          : null,
+        after: { versionId: newVersion.id, versionNum: newVersion.versionNum },
       },
       eventType: AuditLogEvent.Publish,
       metadata: fullResource,
@@ -2344,7 +2364,12 @@ export const unpublishPageResource = async ({
       }
     }
 
-    const previousVersionId = fullResource.publishedVersionId
+    // publishedVersionId is checked non-null above (PageAlreadyUnpublishedError).
+    const previousVersion = await tx
+      .selectFrom("Version")
+      .where("Version.id", "=", fullResource.publishedVersionId)
+      .select(["Version.id", "Version.versionNum"])
+      .executeTakeFirstOrThrow()
 
     let draftBlobId = fullResource.draftBlobId
 
@@ -2384,7 +2409,10 @@ export const unpublishPageResource = async ({
       siteId,
       by: await getUserById(userId),
       delta: {
-        before: { versionId: previousVersionId },
+        before: {
+          versionId: previousVersion.id,
+          versionNum: previousVersion.versionNum,
+        },
         after: null,
       },
       eventType: AuditLogEvent.Unpublish,

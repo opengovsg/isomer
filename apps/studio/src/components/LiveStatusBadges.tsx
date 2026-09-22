@@ -18,8 +18,8 @@ interface LiveStatusBadgesProps {
 }
 
 // liveTemplate (a Folder/Collection whose own landing page isn't published,
-// but something nested inside it still is) is shown identically to live —
-// callers no longer need to distinguish the two in the UI.
+// but something nested inside it still is) is shown identically to live.
+// Callers no longer need to distinguish the two in the UI.
 const LIVE_STATUS_CONFIG: Record<
   LiveStatus,
   // bgColor/color override the design system's own subtle-variant styling,
@@ -80,7 +80,7 @@ export const LiveStatusBadges = ({
         >
           <Badge
             // Scheduled-to-unpublish is styled to match the "Not live" pill,
-            // since that's where the page is headed; scheduled-to-publish
+            // since that's where the page is headed. Scheduled-to-publish
             // matches the "Published" pill's styling.
             bgColor={
               scheduledAction === ScheduledAction.Unpublish

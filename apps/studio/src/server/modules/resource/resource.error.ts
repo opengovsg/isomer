@@ -46,13 +46,13 @@ export class ScheduledActionConflictError extends TRPCError {
  * future schedule, until that schedule fires or is cancelled.
  */
 export class AncestorScheduledUnpublishLockError extends TRPCError {
-  constructor(scheduledAt: Date) {
+  constructor(scheduledAt: Date, callToAction: string) {
     super({
       code: "PRECONDITION_FAILED",
-      message: `A folder or collection above this page is scheduled to be unpublished at ${format(
+      message: `The folder/collection that this page is in has been scheduled to be unpublished at ${format(
         scheduledAt,
-        "yyyy-MM-dd HH:mm",
-      )}. Cancel that schedule before publishing or scheduling this page.`,
+        "d MMM yyyy, h:mm a",
+      )}. Cancel that schedule to ${callToAction}.`,
     })
     this.name = "AncestorScheduledUnpublishLockError"
   }

@@ -10,7 +10,7 @@ interface RootpageRowProps {
 }
 
 // No menu/unpublish action here today. If one is ever added, exclude
-// RootPage the same way ResourceTableMenu already excludes it from Delete —
+// RootPage the same way ResourceTableMenu already excludes it from Delete.
 // unpublishPage rejects RootPage server-side (see UNPUBLISHABLE_RESOURCE_TYPES
 // in ~/constants/resources), so a client-side affordance would just surface
 // a confusing error instead of failing silently.
@@ -45,7 +45,7 @@ export const RootpageRow = ({ siteId }: RootpageRowProps) => {
     >
       <BiHomeAlt fontSize={"1.25rem"} />
       <VStack flex={1} gap="0.25rem" alignItems="flex-start">
-        <HStack gap="0.25rem">
+        <HStack gap="0.75rem">
           <Text textStyle="subhead-2">{title}</Text>
           <LiveStatusBadges
             liveStatus={publishedVersionId !== null ? "live" : "notLive"}

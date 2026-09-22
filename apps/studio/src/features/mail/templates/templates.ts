@@ -236,11 +236,10 @@ const failedUnpublishTemplate = (
   }
 }
 
-// Distinct from failedPublish/failedUnpublish: here the page-level action
-// (publish or unpublish) already succeeded — only the follow-up site rebuild
-// failed. The copy must not tell the reader to retry the page action, since
-// retrying e.g. unpublish on an already-unpublished page just throws
-// PageAlreadyUnpublishedError.
+// Unlike failedPublish/failedUnpublish, the page-level action here already
+// succeeded and only the follow-up site rebuild failed. The copy must not
+// tell the reader to retry the page action, since retrying e.g. unpublish on
+// an already-unpublished page just throws PageAlreadyUnpublishedError.
 const failedSiteRebuildTemplate = (
   data: FailedSiteRebuildTemplateData,
 ): EmailTemplate => {
@@ -285,8 +284,8 @@ const siteUpdatedTemplate = (data: SiteUpdatedTemplateData): EmailTemplate => {
   }
 }
 
-// Failure counterpart to siteUpdatedTemplate above — same ambiguity (webhook.
-// utils.ts doesn't know if the failed build was for a publish or an
+// Failure counterpart to siteUpdatedTemplate above, with the same ambiguity
+// (webhook.utils.ts doesn't know if the failed build was for a publish or an
 // unpublish), so this uses generic "update" copy instead of failedPublish's
 // "publish" wording, which would be wrong for an unpublish-triggered build.
 const siteUpdateFailedTemplate = (
