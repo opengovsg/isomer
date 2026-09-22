@@ -4,7 +4,7 @@
 import type { Editor, JSONContent } from "@tiptap/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { act, cleanup, render, waitFor } from "@testing-library/react"
-import { tableEditingKey } from "@tiptap/pm/tables"
+import { selectedRect, tableEditingKey } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
 import { useEffect, useState } from "react"
 import { afterEach, describe, expect, it } from "vitest"
@@ -507,6 +507,14 @@ describe("TableBubbleMenu", () => {
     expect(duplicatedMerged).toBe(originalMerged)
     expect(originalMerged).toContain("Row 1, A")
     expect(originalMerged).toContain("Row 2, A")
+
+    const { left, right, top, bottom } = selectedRect(editor.state)
+    expect({ left, right, top, bottom }).toEqual({
+      left: 1,
+      right: 2,
+      top: 0,
+      bottom: 3,
+    })
   })
 
   it("withholds Duplicate row for header row selections", async () => {

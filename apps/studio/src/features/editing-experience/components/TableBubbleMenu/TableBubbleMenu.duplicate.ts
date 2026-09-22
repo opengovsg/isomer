@@ -439,13 +439,15 @@ export const duplicateSelectedColumns = (editor: Editor): void => {
       }
       return tr
     },
-    selectCorners: ({ info, rect: selectionRect }) => ({
-      anchor: info.map.positionAt(
-        info.map.height - 1,
-        selectionRect.right,
-        info.table,
-      ),
-      head: info.map.positionAt(0, selectionRect.right + span - 1, info.table),
-    }),
+    // map.map keeps a slot covered by a rowspan from an earlier row. positionAt
+    // skips those slots and lands on the next cell in the row, which widens
+    // the selection by one column.
+    selectCorners: ({ info, rect: selectionRect }) => {
+      const { map } = info
+      return {
+        anchor: map.map[(map.height - 1) * map.width + selectionRect.right],
+        head: map.map[selectionRect.right + span - 1],
+      }
+    },
   })
 }
