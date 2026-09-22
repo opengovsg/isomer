@@ -17,6 +17,8 @@ import {
   getIndexPageOutputSchema,
   getIndexPageSchema,
   getMetadataSchema,
+  getMoveLockInfoOutputSchema,
+  getMoveLockInfoSchema,
   getNestedFolderChildrenOutputSchema,
   getNestedFolderChildrenSchema,
   getParentSchema,
@@ -49,10 +51,14 @@ import {
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
   applyResourceOrderBy,
+  applyResourceStatusFilter,
   assertMoveDestinationUnlocked,
   assertResourceNotLive,
+  assertResourceNotScheduled,
   defaultResourceSelect,
   getBatchAncestryWithSelfQuery,
+  getChildLiveStatusMap,
+  getMoveLockInfo,
   getResourceFullPermalink,
   getSearchRecentlyEdited,
   getSearchResults,
@@ -60,6 +66,8 @@ import {
   getWithFullPermalink,
   hasPublishedDescendant,
   publishResource,
+  selectLastPublishedAt,
+  splitContainerIdsByStatus,
 } from "./resource.service"
 
 const fetchResource = async (resourceId: string | null) => {
@@ -579,9 +587,39 @@ export const resourceRouter = router({
       },
     ),
 
+  // Read-only mirror of the `move` mutation's unpublish-lock check (see the
+  // comment there), so the destination picker can warn as soon as a
+  // destination is selected instead of only surfacing the error on submit.
+  // The mutation still re-runs this check itself as the source of truth.
+  getMoveLockInfo: protectedProcedure
+    .input(getMoveLockInfoSchema)
+    .output(getMoveLockInfoOutputSchema)
+    .query(
+      async ({
+        ctx,
+        input: { siteId, movedResourceId, destinationResourceId },
+      }) => {
+        await bulkValidateUserPermissionsForResources({
+          action: "read",
+          resourceIds: [
+            movedResourceId,
+            ...(destinationResourceId ? [destinationResourceId] : []),
+          ],
+          userId: ctx.user.id,
+          siteId: Number(siteId),
+        })
+
+        return getMoveLockInfo(db, {
+          siteId,
+          movedResourceId,
+          destinationResourceId,
+        })
+      },
+    ),
+
   countWithoutRoot: protectedProcedure
     .input(countResourceSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+    .query(async ({ ctx, input: { siteId, resourceId, statusFilter } }) => {
       await bulkValidateUserPermissionsForResources({
         action: "read",
         resourceIds: [resourceId ? String(resourceId) : null],
@@ -622,6 +660,33 @@ export const resourceRouter = router({
           .where("Resource.permalink", "!=", SEARCH_PAGE_PERMALINK)
       }
 
+      if (statusFilter.length > 0) {
+        // Every tag needs the container-id sets — a Folder/Collection's own
+        // publishedVersionId/scheduledAt/scheduledAction/draftBlobId are
+        // never set, so all five tags key off its child IndexPage instead.
+        const {
+          liveContainerIds,
+          notLiveContainerIds,
+          hasDraftContainerIds,
+          scheduledToPublishContainerIds,
+          scheduledToUnpublishContainerIds,
+        } = splitContainerIdsByStatus(
+          await getChildLiveStatusMap(db, {
+            siteId,
+            resourceId: resourceId ? String(resourceId) : null,
+          }),
+        )
+
+        query = applyResourceStatusFilter(query, {
+          statusFilter,
+          liveContainerIds,
+          notLiveContainerIds,
+          hasDraftContainerIds,
+          scheduledToPublishContainerIds,
+          scheduledToUnpublishContainerIds,
+        })
+      }
+
       const result = await query.executeTakeFirst()
       return Number(result?.totalCount ?? 0)
     }),
@@ -631,7 +696,7 @@ export const resourceRouter = router({
     .query(
       async ({
         ctx,
-        input: { siteId, resourceId, offset, limit, orderBy },
+        input: { siteId, resourceId, offset, limit, orderBy, statusFilter },
       }) => {
         await bulkValidateUserPermissionsForResources({
           action: "read",
@@ -658,11 +723,38 @@ export const resourceRouter = router({
 
         query = applyResourceOrderBy(query, orderBy)
 
-        // TODO: Add pagination support
-        return query
+        // A Folder/Collection's live content is its child IndexPage's, not its
+        // own publishedVersionId, so its status needs the recursive descendant
+        // check; every other type is live iff its own publishedVersionId is
+        // set. Computed up front (rather than after the rows query, as
+        // before) since the live/notLive status filter needs it too.
+        const childLiveStatus = await getChildLiveStatusMap(db, {
+          siteId,
+          resourceId: resourceId ? String(resourceId) : null,
+        })
+
+        if (statusFilter.length > 0) {
+          const {
+            liveContainerIds,
+            notLiveContainerIds,
+            hasDraftContainerIds,
+            scheduledToPublishContainerIds,
+            scheduledToUnpublishContainerIds,
+          } = splitContainerIdsByStatus(childLiveStatus)
+          query = applyResourceStatusFilter(query, {
+            statusFilter,
+            liveContainerIds,
+            notLiveContainerIds,
+            hasDraftContainerIds,
+            scheduledToPublishContainerIds,
+            scheduledToUnpublishContainerIds,
+          })
+        }
+
+        const rows = await query
           .offset(offset)
           .limit(limit)
-          .select([
+          .select((eb) => [
             "Resource.id",
             "Resource.permalink",
             "Resource.title",
@@ -672,8 +764,56 @@ export const resourceRouter = router({
             "Resource.parentId",
             "Resource.updatedAt",
             "Resource.scheduledAt",
+            "Resource.scheduledAction",
+            selectLastPublishedAt(eb),
+            // A window function count avoids a second round-trip for the
+            // common case. It rides along on every returned row, so it's
+            // unavailable when the page itself comes back empty (e.g. a
+            // stale `offset` past the true end) — see the fallback below.
+            eb.fn.countAll<string>().over().as("totalCount"),
           ])
           .execute()
+
+        const items = rows.map(({ totalCount: _totalCount, ...row }) => {
+          const isContainer =
+            row.type === ResourceType.Folder ||
+            row.type === ResourceType.Collection
+          if (!isContainer) {
+            return {
+              ...row,
+              liveStatus: row.publishedVersionId !== null ? "live" : "notLive",
+            } as const
+          }
+
+          const status = childLiveStatus.get(String(row.id))
+          return {
+            ...row,
+            liveStatus: status?.hasLiveIndexPage
+              ? "live"
+              : status?.hasLiveDescendant
+                ? "liveTemplate"
+                : "notLive",
+            // A Folder/Collection's draftBlobId/scheduledAt/scheduledAction
+            // live on its child IndexPage instead, so the Status badges need
+            // those substituted in.
+            draftBlobId: status?.indexPageDraftBlobId ?? null,
+            scheduledAt: status?.indexPageScheduledAt ?? null,
+            scheduledAction: status?.indexPageScheduledAction ?? null,
+          } as const
+        })
+
+        const totalCount = rows[0]
+          ? Number(rows[0].totalCount)
+          : Number(
+              (
+                await query
+                  .clearOrderBy()
+                  .select((eb) => [eb.fn.countAll<string>().as("totalCount")])
+                  .executeTakeFirst()
+              )?.totalCount ?? 0,
+            )
+
+        return { items, totalCount }
       },
     ),
 
@@ -737,6 +877,17 @@ export const resourceRouter = router({
             publishedVersionId: before.publishedVersionId,
           })
         }
+
+        // Not gated on the flag: schedulePage (scheduling a publish) has no
+        // flag check of its own, so a pending schedule can exist even with
+        // unpublishing disabled. Always guard against it, or the delete
+        // silently discards the schedule along with the row.
+        await assertResourceNotScheduled(tx, {
+          siteId: Number(siteId),
+          resourceId,
+          resourceType: before.type,
+          scheduledAt: before.scheduledAt,
+        })
 
         await logResourceEvent(tx, {
           siteId,

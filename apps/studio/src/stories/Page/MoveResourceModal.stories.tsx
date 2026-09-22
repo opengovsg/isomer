@@ -25,6 +25,7 @@ const SHARED_HANDLERS_WITHOUT_METADATA = [
 const SHARED_HANDLERS = [
   ...SHARED_HANDLERS_WITHOUT_METADATA,
   resourceHandlers.getMetadataById.content(),
+  resourceHandlers.getMoveLockInfo.default(),
 ]
 
 // "Test page 1" (id 4) moved into "Folder 1" (id 1). Both resolve to concrete
