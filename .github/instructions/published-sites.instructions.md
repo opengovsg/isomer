@@ -1,5 +1,5 @@
 ---
-applyTo: "packages/components/src/**/*,tooling/template/**/*"
+applyTo: "packages/components/src/**/*,apps/template/**/*"
 ---
 
 # Published-site compatibility review instructions

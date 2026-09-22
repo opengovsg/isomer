@@ -33,10 +33,10 @@
       }
     },
     {
-      "files": ["tooling/template/**"],
+      "files": ["apps/template/**"],
       "options": {
         "sortTailwindcss": {
-          "config": "./tooling/template/tailwind.config.js",
+          "config": "./apps/template/tailwind.config.js",
           "functions": ["tv"]
         }
       }

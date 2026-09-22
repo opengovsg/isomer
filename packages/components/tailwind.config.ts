@@ -3,8 +3,8 @@ import plugin from "tailwindcss/plugin"
 import { NextPreset } from "./src/presets/next"
 
 /**
- * This file is only used for storybook. The actual tailwind configuration that
- * built sites used is in the `tailwind.config.js` file in tooling/templates package.
+ * This file is only used for Storybook. Published sites use the Tailwind config
+ * in `apps/template/tailwind.config.js`.
  */
 
 /** @type {import('tailwindcss').Config} */

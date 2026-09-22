@@ -35,7 +35,7 @@ const BUCKET_GLOBS = {
     "apps/studio/tests/msw/**",
     "apps/studio/tests/load/**",
     "tooling/build/scripts/publishing/tests/**",
-    "tooling/template/tests/**",
+    "apps/template/tests/**",
     "**/*.stories.ts",
     "**/*.stories.tsx",
     "**/stories/**",
