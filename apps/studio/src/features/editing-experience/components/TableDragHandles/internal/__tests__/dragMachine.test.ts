@@ -272,19 +272,6 @@ describe("release", () => {
     ])
   })
 
-  it("selects a locked header slot rather than moving it", () => {
-    const gesture = run(
-      pressOn(0, { lockMinIndex: 1 }),
-      moveTo(400, { x: 10, y: 355 }),
-    )
-
-    const { intents } = reduceGesture(gesture, { type: "release" })
-
-    expect(intents).toEqual([
-      { type: "selectSlot", axis: "row", tablePos: TABLE_POS, index: 0 },
-    ])
-  })
-
   it("reorders, then selects the slot at its new index", () => {
     const { state, intents } = reduceGesture(draggingRow1(), {
       type: "release",

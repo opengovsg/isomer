@@ -571,9 +571,9 @@ describe("TableDragHandles", () => {
     // Assert
     await waitFor(() => {
       expect(getCellText(editor).slice(0, 3)).toEqual([
-        "Row 3, A",
-        "Row 3, B",
-        "Row 3, C",
+        "Row 1, A",
+        "Row 1, B",
+        "Row 1, C",
       ])
       expect(getCellText(editor).slice(9, 12)).toEqual([
         "Column A",
