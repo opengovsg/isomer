@@ -46,13 +46,17 @@ export const tryFocusBelowEditorContent = (
   const belowLastText = event.clientY > contentEndBottom + 2
   const belowLastBlock = event.clientY > blockBottom + 2
 
-  if ((lastType === "table" && belowLastText) || belowLastBlock) {
-    return focusEndOfDocument(view)
-  }
-
   const editorRect = view.dom.getBoundingClientRect()
   const inEditorColumn =
     event.clientX >= editorRect.left && event.clientX <= editorRect.right
+
+  if (
+    inEditorColumn &&
+    ((lastType === "table" && belowLastText) || belowLastBlock)
+  ) {
+    return focusEndOfDocument(view)
+  }
+
   const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })
 
   if (inEditorColumn && pos === null && event.clientY > contentEndBottom) {

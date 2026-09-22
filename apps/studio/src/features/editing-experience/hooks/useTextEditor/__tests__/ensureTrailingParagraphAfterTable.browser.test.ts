@@ -120,4 +120,34 @@ describe("ensureTrailingParagraphAfterTablePlugin", () => {
     expect(updatedDoc.child(0).textContent).toBe("Cell")
     expect(updatedDoc.lastChild?.textContent).toBe("typed below")
   })
+
+  it("ignores mousedown below the last block but outside the editor column", () => {
+    // Arrange
+    const dom = editor.view.dom
+    const rect = dom.getBoundingClientRect()
+    const contentEndBottom = editor.view.coordsAtPos(
+      editor.state.doc.content.size - 1,
+    ).bottom
+
+    const event = new MouseEvent("mousedown", {
+      bubbles: true,
+      cancelable: true,
+      clientX: rect.right + 20,
+      clientY: contentEndBottom + 40,
+      button: 0,
+    })
+
+    // Act
+    const mousedown =
+      ensureTrailingParagraphAfterTablePlugin.props.handleDOMEvents?.mousedown
+    const handled = mousedown?.call(
+      ensureTrailingParagraphAfterTablePlugin,
+      editor.view,
+      event,
+    )
+
+    // Assert
+    expect(handled).toBe(false)
+    expect(editor.state.doc.lastChild?.type.name).toBe("table")
+  })
 })
