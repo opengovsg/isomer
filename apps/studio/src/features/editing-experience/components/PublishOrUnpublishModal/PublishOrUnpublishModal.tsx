@@ -16,12 +16,15 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import { add } from "date-fns"
+import { add, format, isSameDay } from "date-fns"
 import posthog from "posthog-js"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { BiSolidInfoCircle } from "react-icons/bi"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import {
+  ACTIONABLE_ERROR_TOAST_SETTINGS,
+  BRIEF_TOAST_SETTINGS,
+} from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
 import {
   MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
@@ -35,7 +38,7 @@ import type { ActionMode, PublishOrUnpublishAction } from "./ActionOptionsInput"
 import { PUBLISHED_AFTER_EDITING_EVENT } from "../../constants"
 import { useFireContentEditSurveyEvent } from "../../hooks/useContentEditSurvey"
 import { ActionOptionsInput } from "./ActionOptionsInput"
-import { ScheduleBanner } from "./ScheduleBanner"
+import { ScheduleBanner, UNPUBLISH_WINDOW_MINUTES } from "./ScheduleBanner"
 import { ScheduleDateTimeFields } from "./ScheduleDateTimeFields"
 
 interface PublishOrUnpublishModalProps extends UseDisclosureReturn {
@@ -45,12 +48,12 @@ interface PublishOrUnpublishModalProps extends UseDisclosureReturn {
   // Unpublish-only: whether the page has unsaved draft changes on top of its
   // published version.
   hasDraftChanges?: boolean
-  // Unpublish-only: set when this is a Folder/Collection's landing page —
-  // scheduling an unpublish here also requires its child pages to be
+  // Unpublish-only: set when this is a Folder/Collection's landing page.
+  // Scheduling an unpublish here also requires its child pages to be
   // unpublished by then. Undefined when this page isn't a container landing
   // page at all.
   containerType?: ResourceType
-  // Unpublish-only: set when "now" isn't a valid choice — some other
+  // Unpublish-only: set when "now" isn't a valid choice, because some other
   // currently-live page inside this container has no unpublish scheduled at
   // all, so an immediate unpublish would fail server-side. Scheduling is
   // still offered: once every live descendant has its own unpublish
@@ -80,11 +83,13 @@ export const PublishOrUnpublishModal = ({
   const toast = useToast()
   const utils = trpc.useUtils()
   const fireContentEditSurveyEvent = useFireContentEditSurveyEvent()
-  // Skip straight to "later" when "now" isn't an option — there's nothing
-  // else to pick.
+  // Skip straight to "later" when "now" isn't an option, since there's
+  // nothing else to pick. Otherwise default publish to "now" (unpublish
+  // keeps no default, per product call).
   const [mode, setMode] = useState<ActionMode | undefined>(
-    disableNow ? "later" : undefined,
+    disableNow ? "later" : action === "publish" ? "now" : undefined,
   )
+  const lastScheduledAtRef = useRef<Date | null>(null)
 
   const schema =
     action === "publish"
@@ -93,8 +98,8 @@ export const PublishOrUnpublishModal = ({
   const { date: dateField, time: timeField } = FIELD_NAMES[action]
 
   // Both schemas differ in shape (publishDate/publishTime vs unpublishDate/
-  // unpublishTime), so this can't be typed as a single concrete schema — it's
-  // deliberately loose here in exchange for the two flows sharing one modal.
+  // unpublishTime), so this can't be typed as a single concrete schema. It's
+  // deliberately loose here so the two flows can share one modal.
   const methods = useZodForm<typeof schedulePublishClientSchema>({
     schema: schema as typeof schedulePublishClientSchema,
     defaultValues: { pageId, siteId },
@@ -108,7 +113,7 @@ export const PublishOrUnpublishModal = ({
         siteId,
       }),
       // Publishing/unpublishing changes this resource's liveStatus, which the
-      // dashboard tables/index-page row derive from — refresh whichever of
+      // dashboard tables/index-page row derive from. Refresh whichever of
       // these is currently mounted (folder, collection item list, or index
       // page).
       utils.resource.listWithoutRoot.invalidate(),
@@ -134,17 +139,20 @@ export const PublishOrUnpublishModal = ({
       onError: (error) => {
         console.error(`Error occurred when publishing page: ${error.message}`)
         // The publish-block throws CONFLICT with an actionable message naming
-        // the redirect to remove; guards like the scheduled-unpublish
-        // ancestor lock throw PRECONDITION_FAILED — surface both verbatim
+        // the redirect to remove. Guards like the scheduled-unpublish
+        // ancestor lock throw PRECONDITION_FAILED. Surface both verbatim
         // rather than the generic failure copy.
+        const isActionableError =
+          error.data?.code === "CONFLICT" ||
+          error.data?.code === "PRECONDITION_FAILED"
         toast({
           status: "error",
-          title:
-            error.data?.code === "CONFLICT" ||
-            error.data?.code === "PRECONDITION_FAILED"
-              ? error.message
-              : "Failed to publish page. Please contact Isomer support.",
-          ...BRIEF_TOAST_SETTINGS,
+          title: isActionableError
+            ? error.message
+            : "Failed to publish page. Please contact Isomer support.",
+          ...(isActionableError
+            ? ACTIONABLE_ERROR_TOAST_SETTINGS
+            : BRIEF_TOAST_SETTINGS),
         })
       },
     })
@@ -157,24 +165,29 @@ export const PublishOrUnpublishModal = ({
       },
       onSuccess: () => {
         fireContentEditSurveyEvent(PUBLISHED_AFTER_EDITING_EVENT)
+        const formattedDate = lastScheduledAtRef.current
+          ? format(lastScheduledAtRef.current, "d MMM yyyy, h:mm a")
+          : ""
         toast({
           status: "success",
-          title: "Page scheduled successfully",
+          title: `This page is scheduled to publish on ${formattedDate}`,
           ...BRIEF_TOAST_SETTINGS,
         })
       },
       onError: (error) => {
         console.error(`Error occurred when scheduling page: ${error.message}`)
         // The scheduled-unpublish ancestor lock (and similar guards) throws
-        // PRECONDITION_FAILED with an actionable message — surface it
+        // PRECONDITION_FAILED with an actionable message. Surface it
         // verbatim rather than the generic failure copy.
+        const isActionableError = error.data?.code === "PRECONDITION_FAILED"
         toast({
           status: "error",
-          title:
-            error.data?.code === "PRECONDITION_FAILED"
-              ? error.message
-              : "Failed to schedule page. Please contact Isomer support.",
-          ...BRIEF_TOAST_SETTINGS,
+          title: isActionableError
+            ? error.message
+            : "Failed to schedule page. Please contact Isomer support.",
+          ...(isActionableError
+            ? ACTIONABLE_ERROR_TOAST_SETTINGS
+            : BRIEF_TOAST_SETTINGS),
         })
       },
     })
@@ -195,7 +208,7 @@ export const PublishOrUnpublishModal = ({
       onError: (error) => {
         console.error(`Error occurred when unpublishing page: ${error.message}`)
         // Guards like "other pages inside are still live" throw
-        // PRECONDITION_FAILED with an actionable message — surface it
+        // PRECONDITION_FAILED with an actionable message. Surface it
         // verbatim rather than the generic failure copy.
         toast({
           status: "error",
@@ -217,9 +230,12 @@ export const PublishOrUnpublishModal = ({
       onClose()
     },
     onSuccess: () => {
+      const formattedDate = lastScheduledAtRef.current
+        ? format(lastScheduledAtRef.current, "d MMM yyyy, h:mm a")
+        : ""
       toast({
         status: "success",
-        title: "Page scheduled to unpublish successfully",
+        title: `This page is scheduled to unpublish on ${formattedDate}`,
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -228,7 +244,7 @@ export const PublishOrUnpublishModal = ({
         `Error occurred when scheduling unpublish: ${error.message}`,
       )
       // The "child pages won't be unpublished in time" guard throws
-      // PRECONDITION_FAILED with an actionable message — surface it
+      // PRECONDITION_FAILED with an actionable message. Surface it
       // verbatim rather than the generic failure copy.
       toast({
         status: "error",
@@ -256,6 +272,8 @@ export const PublishOrUnpublishModal = ({
       }
     } else if (mode === "later") {
       void methods.handleSubmit((res) => {
+        // Capture the scheduled date for use in the success toast
+        lastScheduledAtRef.current = res.scheduledAt
         if (action === "publish") {
           schedulePageMutation(res)
         } else {
@@ -273,7 +291,7 @@ export const PublishOrUnpublishModal = ({
   // subscribes this component to every field change, same as useWatch would.
   // Feeding that straight into the schema gives us both "is the schedule
   // complete" and the combined date in one place, instead of tracking
-  // validity as separate state and reassembling the date by hand — the
+  // validity as separate state and reassembling the date by hand: the
   // schema's own transform already does that.
   const parsedSchedule = schema.safeParse(methods.watch())
   const scheduledAt = parsedSchedule.success
@@ -284,7 +302,7 @@ export const PublishOrUnpublishModal = ({
     <Modal onClose={onClose} {...rest}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader mr="3.5rem">
+        <ModalHeader mr="3.5rem" fontWeight={600}>
           {action === "publish" ? "Publish this page?" : "Unpublish this page?"}
         </ModalHeader>
         <ModalCloseButton size="lg" />
@@ -317,7 +335,7 @@ export const PublishOrUnpublishModal = ({
                 </VStack>
               )}
               {action === "unpublish" && hasDraftChanges && (
-                <DraftChangesBanner />
+                <DraftChangesBanner mode={mode} scheduledAt={scheduledAt} />
               )}
             </VStack>
           </FormProvider>
@@ -350,28 +368,60 @@ export const PublishOrUnpublishModal = ({
   )
 }
 
-const DraftChangesBanner = () => (
-  <HStack
-    spacing="0.5rem"
-    alignItems="flex-start"
-    bgColor="utility.feedback.info-subtle"
-    borderRadius="0.25rem"
-    p="0.75rem"
-  >
-    <Icon
-      as={BiSolidInfoCircle}
-      boxSize="1rem"
-      color="utility.feedback.info"
-      mt="0.125rem"
-    />
-    <Text textStyle="body-2" color="base.content.strong" display="inline">
-      <Text as="span" textStyle="subhead-2">
-        This page has unsaved draft changes.
-      </Text>{" "}
-      They'll be kept, and you can keep editing and publish them later.
-    </Text>
-  </HStack>
-)
+const DraftChangesBanner = ({
+  mode,
+  scheduledAt,
+}: {
+  mode: ActionMode | undefined
+  scheduledAt: Date | null
+}) => {
+  const windowEnd = scheduledAt
+    ? add(scheduledAt, { minutes: UNPUBLISH_WINDOW_MINUTES })
+    : null
+  // The window can cross midnight, so the end time may fall on the next
+  // calendar day — attaching only the start date to both endpoints would
+  // then describe the end time as happening a day earlier than it does.
+  const spansTwoDays =
+    scheduledAt && windowEnd && !isSameDay(scheduledAt, windowEnd)
+
+  return (
+    <HStack
+      spacing="0.5rem"
+      alignItems="flex-start"
+      bgColor="utility.feedback.info-subtle"
+      borderRadius="0.25rem"
+      p="0.75rem"
+    >
+      <Icon
+        as={BiSolidInfoCircle}
+        boxSize="1rem"
+        color="utility.feedback.info"
+        mt="0.125rem"
+      />
+      <Text textStyle="body-2" color="base.content.strong" display="inline">
+        <Text as="span" textStyle="subhead-2">
+          This page has draft edits.
+        </Text>{" "}
+        {mode === "later" && scheduledAt && windowEnd ? (
+          <>
+            When it unpublishes between
+            <Text as="span" textStyle="subhead-2">
+              {" "}
+              {format(scheduledAt, "h:mm a")}
+              {spansTwoDays &&
+                ` on ${format(scheduledAt, "MMMM d, yyyy")}`} to{" "}
+              {format(windowEnd, "h:mm a")} on{" "}
+              {format(windowEnd, "MMMM d, yyyy")},
+            </Text>{" "}
+            we will keep the version with the latest draft edits.
+          </>
+        ) : (
+          "Once you unpublish, we will keep the version with the latest draft edits."
+        )}
+      </Text>
+    </HStack>
+  )
+}
 
 const ChildPagesDisclaimerBanner = ({
   containerType,

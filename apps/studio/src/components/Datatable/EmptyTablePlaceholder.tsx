@@ -13,7 +13,7 @@ export const EmptyTablePlaceholder = ({
   hasSearchTerm: boolean
   groupLabel: string
   // When set (and non-empty), a status filter is active and yielded no
-  // rows — takes priority over the plain empty-group copy below.
+  // rows. Takes priority over the plain empty-group copy below.
   activeFilterLabels?: string[]
   onClearFilter?: () => void
 }) => {

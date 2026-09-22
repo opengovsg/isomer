@@ -7,7 +7,7 @@ import { basePageSchema } from "./page"
 export const MINIMUM_SCHEDULE_LEAD_TIME_MINUTES = 2
 
 // Publish/unpublish client schemas only differ in their date/time field
-// names (so each flow's form fields read naturally) — the actual validation
+// names (so each flow's form fields read naturally). The actual validation
 // logic below is shared so the two definitions can't drift apart.
 const isValidTimeString = (time: string) => {
   const parsed = parseTimeStringToDate(time)

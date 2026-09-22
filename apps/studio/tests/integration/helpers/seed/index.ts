@@ -273,7 +273,7 @@ interface SetupPageResourceProps {
   scheduledAt?: Date | null
   scheduledBy?: string | null
   // Defaults to Publish when scheduledAt is set, matching the assumption the
-  // pre-scheduledAction migration backfill made — most callers scheduling a
+  // pre-scheduledAction migration backfill made. Most callers scheduling a
   // page mean "scheduled to publish" unless they say otherwise.
   scheduledAction?: ScheduledAction | null
 }

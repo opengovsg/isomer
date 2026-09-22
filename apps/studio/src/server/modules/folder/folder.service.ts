@@ -65,19 +65,17 @@ export const getFolderIndexPageInfo = async (
     await getPublishedDescendantResourceIds(trx, { siteId, resourceId })
   ).filter((id) => id !== indexPage.id).length
 
-  // Whether some descendant would block this landing page's unpublish no
-  // matter how far out it's scheduled — i.e. it's live with no unpublish
-  // scheduled at all (or scheduled to come back up). Checked against a
-  // stand-in date 100 years out: if a descendant is still unsafe against a
-  // cutoff that far away, no real scheduled date could ever save it, so it's
-  // a true blocker rather than a "will resolve itself, just not yet" case. A
-  // descendant that's live today but already has its own scheduled
-  // unpublish doesn't count here — scheduling this landing page's unpublish
-  // for on/after that time will work once it's picked, which
-  // scheduleUnpublish validates for real against the actual chosen date
-  // (see getDescendantResourceIdsUnsafeForScheduledUnpublish's other call
-  // site in page.service.ts). This only decides whether the "Unpublish
-  // later" flow is worth offering at all.
+  // Whether some descendant would permanently block this landing page's
+  // unpublish, no matter how far out it's scheduled: it's live with no
+  // unpublish scheduled at all, or scheduled to come back up. Checked
+  // against a stand-in date 100 years out, since if a descendant is still
+  // unsafe against a cutoff that far away, no real scheduled date could ever
+  // save it. A descendant that's live today but already has its own
+  // scheduled unpublish doesn't count; scheduleUnpublish validates that for
+  // real against the actual chosen date (see
+  // getDescendantResourceIdsUnsafeForScheduledUnpublish's other call site in
+  // page.service.ts). This only decides whether the "Unpublish later" flow
+  // is worth offering at all.
   const unschedulableDescendantCount = (
     await getDescendantResourceIdsUnsafeForScheduledUnpublish(trx, {
       siteId,

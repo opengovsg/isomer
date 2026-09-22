@@ -30,8 +30,7 @@ const COPY: Record<
     later: {
       icon: BiTimeFive,
       title: "Publish later",
-      description:
-        "Publish the page at a later time and change its status to Live.",
+      description: "Publish the page at a later time.",
     },
   },
   unpublish: {
@@ -39,13 +38,12 @@ const COPY: Record<
       icon: BiHide,
       title: "Unpublish now",
       description:
-        "The page will be hidden from your site in approximately 5–10 minutes, and its status will change to Draft.",
+        "The page will be hidden from your site in approximately 5–10 minutes, and its status will change to Unpublished.",
     },
     later: {
       icon: BiTimeFive,
       title: "Unpublish later",
-      description:
-        "Hide the page at a later time and change its status to Draft.",
+      description: "Hide the page at a later time.",
     },
   },
 }
@@ -94,7 +92,11 @@ const ActionOptionRadio = forwardRef<HTMLInputElement, ActionOptionRadioProps>(
             color="base.content.default"
           />
           <Stack spacing="0.25rem">
-            <Text textStyle="subhead-2" color="base.content.strong">
+            <Text
+              textStyle="subhead-2"
+              fontWeight={600}
+              color="base.content.strong"
+            >
               {title}
             </Text>
             <Text textStyle="body-2" color="base.content.default">
@@ -109,9 +111,9 @@ const ActionOptionRadio = forwardRef<HTMLInputElement, ActionOptionRadioProps>(
 
 type ActionOptionsInputProps = UseRadioGroupProps & {
   action: PublishOrUnpublishAction
-  // Set when "now" isn't a valid choice right now (e.g. a folder/collection
-  // landing page with other pages still live) — disables that option and
-  // shows this in place of its normal description, explaining why.
+  // Set when "now" isn't a valid choice (e.g. a folder/collection landing
+  // page with other pages still live). Disables that option and shows this
+  // in place of its normal description.
   disableNowReason?: string
 }
 

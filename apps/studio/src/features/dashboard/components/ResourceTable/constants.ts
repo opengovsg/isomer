@@ -20,5 +20,5 @@ export const RESOURCE_TABLE_STATUS_FILTER_OPTIONS: Record<
   notLive: "Unpublished",
   scheduledToPublish: "Scheduled to publish",
   scheduledToUnpublish: "Scheduled to unpublish",
-  hasDraft: "Has draft",
+  hasDraft: "Draft",
 }

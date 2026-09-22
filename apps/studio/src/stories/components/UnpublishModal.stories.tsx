@@ -63,15 +63,15 @@ const meta: Meta<typeof PublishOrUnpublishModal> = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-// Neither option selected yet — the CTA is disabled.
+// Neither option selected yet, so the CTA is disabled.
 export const Default: Story = {}
 
-// The page has unsaved draft changes — shows the "will be kept" disclaimer.
+// The page has unsaved draft changes, shows the "will be kept" disclaimer.
 export const WithDraftChanges: Story = {
   render: () => <OpenedUnpublishModal hasDraftChanges />,
 }
 
-// "Unpublish now" selected — the CTA activates.
+// "Unpublish now" selected, so the CTA activates.
 export const UnpublishNowSelected: Story = {
   play: async ({ canvasElement }) => {
     const rootScreen = within(canvasElement.ownerDocument.body)
@@ -82,7 +82,7 @@ export const UnpublishNowSelected: Story = {
   },
 }
 
-// "Unpublish later" selected — reveals the date/time fields.
+// "Unpublish later" selected, reveals the date/time fields.
 export const UnpublishLaterSelected: Story = {
   play: async ({ canvasElement }) => {
     const rootScreen = within(canvasElement.ownerDocument.body)
@@ -94,7 +94,7 @@ export const UnpublishLaterSelected: Story = {
   },
 }
 
-// "Unpublish later" selected on a Folder's landing page — shows the "child
+// "Unpublish later" selected on a Folder's landing page, shows the "child
 // pages must also be unpublished by this time" disclaimer, worded for a folder.
 export const UnpublishLaterSelectedOnFolderLandingPage: Story = {
   render: () => <OpenedUnpublishModal containerType={ResourceType.Folder} />,
@@ -103,7 +103,7 @@ export const UnpublishLaterSelectedOnFolderLandingPage: Story = {
   },
 }
 
-// Same as above, but on a Collection's landing page — the disclaimer wording
+// Same as above, but on a Collection's landing page, the disclaimer wording
 // switches to "collection".
 export const UnpublishLaterSelectedOnCollectionLandingPage: Story = {
   render: () => (
@@ -114,7 +114,7 @@ export const UnpublishLaterSelectedOnCollectionLandingPage: Story = {
   },
 }
 
-// "Unpublish now" submitted — the CTA shows its loading state.
+// "Unpublish now" submitted, so the CTA shows its loading state.
 export const Loading: Story = {
   parameters: {
     msw: {
