@@ -1238,19 +1238,24 @@ describe("TableBubbleMenu", () => {
     const { editor, findByRole } = await renderHarness()
     selectCells(editor, 4, 4)
     const trigger = await findByRole("button", { name: "Table actions" })
-    const menuEl = document.querySelector("[data-table-bubble-menu]")
-    if (!(menuEl instanceof HTMLElement)) throw new Error("menu missing")
     await waitFor(() => {
-      expect(getComputedStyle(menuEl).visibility).toBe("visible")
+      expect(getComputedStyle(trigger).visibility).toBe("visible")
     })
+
+    const menuRoot = trigger.parentElement
+    if (!(menuRoot instanceof HTMLElement)) throw new Error("menu root missing")
 
     const visibleFrames: { top: number; left: number }[] = []
     const observer = new MutationObserver(() => {
-      if (getComputedStyle(menuEl).visibility !== "visible") return
-      const rect = menuEl.getBoundingClientRect()
+      const actionsEl = menuRoot.querySelector(
+        "[data-table-bubble-menu-actions]",
+      )
+      if (!(actionsEl instanceof HTMLElement)) return
+      if (getComputedStyle(actionsEl).visibility !== "visible") return
+      const rect = actionsEl.getBoundingClientRect()
       visibleFrames.push({ top: rect.top, left: rect.left })
     })
-    observer.observe(menuEl, {
+    observer.observe(menuRoot, {
       attributes: true,
       childList: true,
       subtree: true,
@@ -1266,7 +1271,9 @@ describe("TableBubbleMenu", () => {
 
     // Assert: every painted-visible frame is already the settled open position.
     expect(trigger).toHaveAttribute("aria-pressed", "true")
-    const settled = menuEl.getBoundingClientRect()
+    const actionsEl = menuRoot.querySelector("[data-table-bubble-menu-actions]")
+    if (!(actionsEl instanceof HTMLElement)) throw new Error("actions missing")
+    const settled = actionsEl.getBoundingClientRect()
     expect(visibleFrames.length).toBeGreaterThan(0)
     for (const frame of visibleFrames) {
       expect(Math.abs(frame.top - settled.top)).toBeLessThan(1)
