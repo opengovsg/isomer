@@ -5,7 +5,7 @@
     "db:seed": {},
     "test:watch": {},
     "test:unit": {
-      "dependsOn": ["generate"]
+      "dependsOn": ["^generate"]
     },
     "test-ci:unit": {},
     "test-ci:e2e": {
@@ -16,7 +16,6 @@
     },
     "generate": {
       "dependsOn": ["@opengovsg/isomer-components#build", "@isomer/db#generate"],
-      "inputs": ["prisma/schema.prisma"],
       "cache": false
     },
     "build:preview-tw": {
@@ -24,13 +23,13 @@
       "outputs": ["public/assets/css/preview-tw.css"]
     },
     "format": {
-      "dependsOn": ["generate"]
+      "dependsOn": ["^generate"]
     },
     "lint": {
-      "dependsOn": ["generate"]
+      "dependsOn": ["^generate"]
     },
     "typecheck": {
-      "dependsOn": ["generate"]
+      "dependsOn": ["^generate"]
     },
     "dev": {
       "dependsOn": ["services:setup", "build:preview-tw"],
@@ -54,7 +53,7 @@
     "build": {
       "dependsOn": [
         "@opengovsg/isomer-components#build",
-        "generate",
+        "^generate",
         "build:theme",
         "build:preview-tw"
       ],
