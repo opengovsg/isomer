@@ -4,7 +4,7 @@ import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 import type { BreadcrumbProps } from "./Breadcrumb"
-import type { CollectionCardProps } from "./CollectionCard"
+import type { CollectionCardProps, DateFilterCard } from "./CollectionCard"
 
 export const ArticlePageHeaderSchema = Type.Object({
   summary: Type.String({
@@ -37,4 +37,5 @@ export type ArticlePageHeaderProps = Static<typeof ArticlePageHeaderSchema> & {
   plaintextTags?: CollectionCardProps["plaintextTags"]
   date?: string
   site: IsomerSiteProps
+  dateFilterCards?: DateFilterCard[]
 }
