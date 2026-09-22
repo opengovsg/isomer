@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { expect, userEvent, within } from "storybook/test"
+import { expect, fireEvent, userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -167,42 +167,56 @@ export const ActiveTableToolbar: Story = {
     const canvas = within(canvasElement)
     await AddTextBlock.play?.(context)
 
-    // Outside a table: superscript/subscript live only under "More options".
-    // (The page also has an unrelated page-actions "More options" `Menu`
-    // button; the RTE toolbar's overflow list is a `Popover`, so
-    // disambiguate on aria-haspopup.)
-    const overflowTrigger = canvas
-      .getAllByRole("button", { name: /more options/i })
-      .find((button) => button.getAttribute("aria-haspopup") === "dialog")
-    if (!overflowTrigger) throw new Error("Overflow trigger not found")
-    await userEvent.click(overflowTrigger)
-    await canvas.findByRole("button", { name: /^superscript$/i })
+    // Outside a table: superscript/subscript are not on the main toolbar.
+    // They live in the RTE overflow popover (aria-label "More options").
     await expect(
       canvas.queryAllByRole("button", { name: /^superscript$/i }),
+    ).toHaveLength(0)
+    const overflowTrigger = await canvas.findByRole("button", {
+      name: /^more options$/i,
+    })
+    await userEvent.click(overflowTrigger)
+    // Overflow items mount after the popover opens and can stay
+    // `visibility: hidden` to the accessibility tree until then.
+    await canvas.findByRole(
+      "button",
+      { name: /^superscript$/i, hidden: true },
+      { timeout: 5000 },
+    )
+    await expect(
+      canvas.queryAllByRole("button", {
+        name: /^superscript$/i,
+        hidden: true,
+      }),
     ).toHaveLength(1)
     await userEvent.keyboard("{Escape}")
 
     // Clicking "Table" only opens the size-picker popover — a cell still
     // needs to be picked to actually insert a table and put the cursor
-    // inside it (see TableSizePicker.tsx).
-    await userEvent.click(canvas.getByRole("button", { name: /^table$/i }))
+    // inside it (see TableSizePicker.tsx). The grid is portaled and may
+    // stay hidden to the a11y tree.
     await userEvent.click(
-      await canvas.findByRole("button", { name: /^1 by 1 table$/i }),
+      await canvas.findByRole("button", { name: /^table$/i }),
     )
+    const tableCell = await canvas.findByRole(
+      "button",
+      { name: /^1 by 1 table$/i, hidden: true },
+      { timeout: 5000 },
+    )
+    fireEvent.click(tableCell)
 
     // Inside a table: promoted directly onto the main toolbar, and no longer
     // duplicated under "More options" (removed from that list entirely).
     await canvas.findByRole("button", { name: /^superscript$/i })
     await canvas.findByRole("button", { name: /^subscript$/i })
     await expect(
-      canvas.getAllByRole("button", { name: /^superscript$/i }),
+      canvas.queryAllByRole("button", { name: /^superscript$/i }),
     ).toHaveLength(1)
 
-    // Divider is also table-inapplicable, so "More options" has nothing left
-    // to show and disappears entirely — only the unrelated page-actions menu
-    // button remains.
+    // Divider is also table-inapplicable, so the RTE overflow menu unmounts
+    // entirely while the cursor is inside a table.
     await expect(
-      canvas.getAllByRole("button", { name: /more options/i }),
-    ).toHaveLength(1)
+      canvas.queryAllByRole("button", { name: /^more options$/i }),
+    ).toHaveLength(0)
   },
 }
