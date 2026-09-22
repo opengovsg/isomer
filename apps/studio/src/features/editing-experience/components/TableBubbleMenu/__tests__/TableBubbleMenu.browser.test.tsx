@@ -375,6 +375,16 @@ describe("TableBubbleMenu", () => {
     expect(await findByText("Merge cells")).toBeTruthy()
   })
 
+  it("shows Merge cells for a full row selection", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    selectCells(editor, 3, 5) // first body row: cells 3-5
+    await activateTableBubbleMenu(findByRole)
+
+    expect(await findByText("Delete row")).toBeTruthy()
+    expect(await findByText("Merge cells")).toBeTruthy()
+  })
+
   it("shows Merge cells for a full column selection", async () => {
     const { editor, findByText, findByRole } = await renderHarness()
 
