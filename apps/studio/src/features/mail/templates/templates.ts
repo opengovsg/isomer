@@ -6,8 +6,8 @@ import {
 } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { formatScheduledAtDate } from "~/lib/dates"
-import { ONE_MB_IN_BYTES } from "~/lib/fileUpload"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
+import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 import { getStudioResourceUrl } from "~/utils/resources"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
@@ -37,12 +37,21 @@ import type {
 } from "./types"
 import { escapeHtml, escapeTemplateArguments, unescapeHtml } from "../utils"
 
+// `sizeInBytes` is `null` only when the size genuinely couldn't be
+// determined (e.g. a HEAD request failing) — a real 0-byte file must still
+// format as a size, not fall into the same placeholder, or an empty-but-valid
+// CSV becomes indistinguishable from a lookup failure.
+const formatExportSize = (sizeInBytes: number | null): string =>
+  sizeInBytes !== null
+    ? formatFileSizeLimit({ bytes: sizeInBytes })
+    : "unknown size"
+
 const getDownloadLinkLabel = (
   label: AuditLogExportDownloadLink["label"],
   longMonth: string,
-  sizeInMb: string,
+  sizeInBytes: number | null,
 ) => {
-  return `Download ${label} review logs for ${longMonth} [.csv, ${sizeInMb}MB]`
+  return `Download ${label} review logs for ${longMonth} [.csv, ${formatExportSize(sizeInBytes)}]`
 }
 
 const constructStudioRedirect = () =>
@@ -413,7 +422,7 @@ const auditLogExportReadyTemplate = (
 
   const logName = link.label === "access" ? "Access" : "Audit"
 
-  const downloadLink = `<a href="${link.url}">${getDownloadLinkLabel(link.label, month, sizeInBytes ? (sizeInBytes / ONE_MB_IN_BYTES).toFixed(2) : "-")}</a>`
+  const downloadLink = `<a href="${link.url}">${getDownloadLinkLabel(link.label, month, sizeInBytes)}</a>`
 
   return {
     subject: `[Isomer] ${logName} logs for ${month} for your site (${unescapeHtml(siteName)}) is ready`,
@@ -457,10 +466,7 @@ const auditLogExportBatchReadyTemplate = (
 
   const linkItems = links
     .map(({ siteName, url, sizeInBytes }) => {
-      const sizeInMb = sizeInBytes
-        ? (sizeInBytes / ONE_MB_IN_BYTES).toFixed(2)
-        : "-"
-      return `<li><b>${siteName}</b>: <a href="${url}">${getDownloadLinkLabel(reportLabel, month, sizeInMb)}</a></li>`
+      return `<li><b>${siteName}</b>: <a href="${url}">${getDownloadLinkLabel(reportLabel, month, sizeInBytes)}</a></li>`
     })
     .join("")
 
