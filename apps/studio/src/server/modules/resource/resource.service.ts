@@ -1090,9 +1090,7 @@ export const hasPublishedDescendant = async (
 }
 
 // True when `resourceId` itself, or any descendant, has a pending scheduled
-// Publish — self-inclusive (unlike hasDescendantWithPendingScheduledUnpublish,
-// which excludes a given id for the cancel-guard use case, this checks the
-// resource passed in too). A null scheduledAction is legacy data and
+// Publish — self-inclusive. A null scheduledAction is legacy data and
 // defaults to Publish, matching the convention used throughout this module.
 export const hasPendingScheduledPublish = async (
   trx: SafeKysely,
@@ -1207,41 +1205,6 @@ export const getDescendantResourceIdsUnsafeForScheduledUnpublish = async (
     .select("Resource.id")
     .execute()
   return rows.map((row) => String(row.id))
-}
-
-// True when some descendant of `resourceId` (excluding `excludeResourceId`)
-// has a pending scheduled Unpublish — a plain existence check, unlike the
-// "unsafe for scheduled X" functions above: there's no time cutoff to
-// compare against, just "does anything downstream still depend on this
-// happening". Used to hard-block cancelling an IndexPage's own scheduled
-// unpublish out from under dependents (see cancelScheduleUnpublish in
-// page.service.ts) — the caller must cancel the descendants' schedules
-// first. `excludeResourceId` is the IndexPage whose own schedule is being
-// cancelled: it's still part of `resourceId`'s (its container's) subtree and
-// still has `scheduledAt` set at the point this check runs (the cancel
-// hasn't been applied yet), so it must be excluded or the check would
-// always find "itself" as a blocking dependent.
-export const hasDescendantWithPendingScheduledUnpublish = async (
-  trx: SafeKysely,
-  {
-    siteId,
-    resourceId,
-    excludeResourceId,
-  }: {
-    siteId: number
-    resourceId: string
-    excludeResourceId: string
-  },
-): Promise<boolean> => {
-  const row = await withResourceSubtree(trx, { siteId, resourceId })
-    .selectFrom("subtree")
-    .innerJoin("Resource", "Resource.id", "subtree.id")
-    .where("Resource.id", "!=", excludeResourceId)
-    .where("Resource.scheduledAt", "is not", null)
-    .where("Resource.scheduledAction", "=", ScheduledAction.Unpublish)
-    .select("Resource.id")
-    .executeTakeFirst()
-  return row !== undefined
 }
 
 // The upward analogue of withResourceSubtree: walks from `resourceId` up
@@ -1494,6 +1457,58 @@ export const assertResourceNotLive = async (
       message: isContainer
         ? `This ${resourceType === ResourceType.Folder ? "folder" : "collection"} has live pages inside it — unpublish them before deleting`
         : "This page must be unpublished before it can be deleted",
+    })
+  }
+}
+
+// True when `resourceId` or any descendant has a pending scheduled
+// publish/unpublish. Deletion cascades and drops `scheduledAt`/`scheduledAction`
+// with the row, silently cancelling the schedule, so a Folder/Collection needs
+// its whole subtree checked, not just its own (always-null) scheduledAt.
+export const hasScheduledDescendant = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<boolean> => {
+  const scheduled = await withResourceSubtree(trx, { siteId, resourceId })
+    .selectFrom("subtree")
+    .innerJoin("Resource", "Resource.id", "subtree.id")
+    .where("Resource.scheduledAt", "is not", null)
+    .where("Resource.type", "in", UNPUBLISHABLE_RESOURCE_TYPES_WITH_CONTAINERS)
+    .select("Resource.id")
+    .executeTakeFirst()
+  return scheduled !== undefined
+}
+
+// Blocks deleting a resource that's still scheduled for a future
+// publish/unpublish, so the schedule doesn't silently vanish with the row.
+export const assertResourceNotScheduled = async (
+  tx: SafeKysely,
+  {
+    siteId,
+    resourceId,
+    resourceType,
+    scheduledAt,
+  }: {
+    siteId: number
+    resourceId: string
+    resourceType: ResourceType
+    scheduledAt: Date | null
+  },
+) => {
+  const isContainer =
+    resourceType === ResourceType.Folder ||
+    resourceType === ResourceType.Collection
+
+  const isScheduled = isContainer
+    ? await hasScheduledDescendant(tx, { siteId, resourceId })
+    : scheduledAt !== null
+
+  if (isScheduled) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: isContainer
+        ? `This ${resourceType === ResourceType.Folder ? "folder" : "collection"} has pages inside it scheduled for a future publish or unpublish — cancel the schedule before deleting`
+        : "This page is scheduled for a future publish or unpublish — cancel the schedule before deleting",
     })
   }
 }
@@ -2085,7 +2100,10 @@ export const publishPageResource = async ({
     })
     const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
     if (lockingAncestor?.scheduledAt) {
-      throw new AncestorScheduledUnpublishLockError(lockingAncestor.scheduledAt)
+      throw new AncestorScheduledUnpublishLockError(
+        lockingAncestor.scheduledAt,
+        "publish this page",
+      )
     }
 
     // Only the first publish needs the redirect handling below: the shadow
@@ -2192,8 +2210,13 @@ export const publishPageResource = async ({
       siteId,
       by: await getUserById(userId),
       delta: {
-        before: previousVersion ? { versionId: previousVersion.id } : null,
-        after: { versionId: newVersion.id },
+        before: previousVersion
+          ? {
+              versionId: previousVersion.id,
+              versionNum: previousVersion.versionNum,
+            }
+          : null,
+        after: { versionId: newVersion.id, versionNum: newVersion.versionNum },
       },
       eventType: AuditLogEvent.Publish,
       metadata: fullResource,
@@ -2341,7 +2364,12 @@ export const unpublishPageResource = async ({
       }
     }
 
-    const previousVersionId = fullResource.publishedVersionId
+    // publishedVersionId is checked non-null above (PageAlreadyUnpublishedError).
+    const previousVersion = await tx
+      .selectFrom("Version")
+      .where("Version.id", "=", fullResource.publishedVersionId)
+      .select(["Version.id", "Version.versionNum"])
+      .executeTakeFirstOrThrow()
 
     let draftBlobId = fullResource.draftBlobId
 
@@ -2381,7 +2409,10 @@ export const unpublishPageResource = async ({
       siteId,
       by: await getUserById(userId),
       delta: {
-        before: { versionId: previousVersionId },
+        before: {
+          versionId: previousVersion.id,
+          versionNum: previousVersion.versionNum,
+        },
         after: null,
       },
       eventType: AuditLogEvent.Unpublish,

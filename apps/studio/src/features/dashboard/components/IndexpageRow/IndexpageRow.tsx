@@ -70,7 +70,7 @@ export const IndexpageRow = ({
       >
         <Icon as={getIndexPageIcon(type)} fontSize="1.25rem" />
         <VStack flex={1} gap="0.25rem" alignItems="flex-start">
-          <HStack gap="0.25rem">
+          <HStack gap="0.75rem">
             <Text textStyle="subhead-2">{data?.title}</Text>
             {data && (
               <LiveStatusBadges

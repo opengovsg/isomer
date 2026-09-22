@@ -4,7 +4,8 @@ import { theme as ogpDsTheme } from "@opengovsg/design-system-react"
 // text styles). extendTheme can't merge a function with a plain object
 // override, so overriding it directly drops the original header/field/
 // calendarButton styling. Wrapping the function preserves it.
-const originalDatePicker = ogpDsTheme.components.DatePicker as {
+const dsThemeComponents = ogpDsTheme.components as Record<string, unknown>
+const originalDatePicker = dsThemeComponents.DatePicker as {
   baseStyle: (props: Record<string, unknown>) => Record<string, unknown>
   sizes?: unknown
 }

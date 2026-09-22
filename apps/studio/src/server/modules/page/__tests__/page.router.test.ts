@@ -2065,6 +2065,9 @@ describe("page.router", async () => {
         .selectAll()
         .execute()
       expect(auditLogs.length).toEqual(1)
+      expect(auditLogs[0]?.delta).toMatchObject({
+        after: { versionId: newVersions[0]?.id, versionNum: 1 },
+      })
     })
 
     it("should block the first publish when a live redirect occupies the page's URL", async () => {
@@ -2997,6 +3000,12 @@ describe("page.router", async () => {
         .set({ draftBlobId: draftBlob.id })
         .execute()
 
+      const publishedVersion = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
       // Act
       await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
 
@@ -3017,6 +3026,12 @@ describe("page.router", async () => {
         .selectAll()
         .execute()
       expect(auditLogs.length).toEqual(1)
+      expect(auditLogs[0]?.delta).toMatchObject({
+        before: {
+          versionId: publishedVersion.id,
+          versionNum: publishedVersion.versionNum,
+        },
+      })
     })
 
     it("should backfill a draft from the published content when there is no pending draft", async () => {
@@ -4703,7 +4718,7 @@ describe("page.router", async () => {
           new TRPCError({
             code: "PRECONDITION_FAILED",
             message:
-              "This folder or collection has other pages that won't be unpublished by then — unpublish or schedule them first.",
+              "Some pages in this folder/collection will still be live at that time. Schedule or unpublish those pages first.",
           }),
         )
       })
@@ -5175,7 +5190,10 @@ describe("page.router", async () => {
       expect(updatedIndexPage.scheduledAction).toBeNull()
     })
 
-    it("should throw if a child page still has a pending scheduled unpublish", async () => {
+    it("should allow cancelling the index page's own scheduled unpublish even while a child page still has a pending scheduled unpublish", async () => {
+      // Cancelling the container's own unpublish doesn't strand the child's
+      // schedule — the child still unpublishes on its own, independent of
+      // whether the container also goes dark.
       const { site, folder } = await setupFolder({})
       const { page: indexPage } = await setupPageResource({
         siteId: site.id,
@@ -5203,22 +5221,35 @@ describe("page.router", async () => {
         siteId: site.id,
       })
 
-      const result = caller.cancelScheduleUnpublish({
-        siteId: site.id,
-        pageId: Number(indexPage.id),
-      })
-
-      await expect(result).rejects.toThrow(
-        expect.objectContaining({ code: "PRECONDITION_FAILED" }),
-      )
+      await expect(
+        caller.cancelScheduleUnpublish({
+          siteId: site.id,
+          pageId: Number(indexPage.id),
+        }),
+      ).resolves.not.toThrow()
     })
 
-    it("should allow cancelling once the child page's scheduled unpublish is cancelled", async () => {
+    it("should throw if an ancestor container's IndexPage has a pending scheduled unpublish", async () => {
+      // The ancestor's own scheduled unpublish was only safe to schedule
+      // because this child was already dark, or scheduled to go dark, by
+      // then. Cancelling the child's schedule out from under that would
+      // leave it live past the ancestor's scheduled unpublish.
       const { site, folder } = await setupFolder({})
-      const { page: indexPage } = await setupPageResource({
+      await setupPageResource({
         siteId: site.id,
         parentId: folder.id,
         resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      const { page: childPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "child-page",
         state: ResourceState.Published,
         userId: session.userId ?? undefined,
         scheduledAt: futureDate,
@@ -5230,12 +5261,14 @@ describe("page.router", async () => {
         siteId: site.id,
       })
 
-      await expect(
-        caller.cancelScheduleUnpublish({
-          siteId: site.id,
-          pageId: Number(indexPage.id),
-        }),
-      ).resolves.not.toThrow()
+      const result = caller.cancelScheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(childPage.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+      )
     })
   })
 })

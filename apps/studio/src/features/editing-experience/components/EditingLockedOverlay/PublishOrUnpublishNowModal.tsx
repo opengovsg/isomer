@@ -1,7 +1,6 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import {
   Button,
-  HStack,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -11,7 +10,7 @@ import {
   ModalOverlay,
   Text,
 } from "@chakra-ui/react"
-import { Badge, useToast } from "@opengovsg/design-system-react"
+import { useToast } from "@opengovsg/design-system-react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { trpc } from "~/utils/trpc"
 
@@ -21,7 +20,6 @@ const COPY: Record<
   PublishOrUnpublishNowAction,
   {
     title: string
-    showBetaBadge: boolean
     description: string
     confirmLabel: string
     successTitle: string
@@ -30,16 +28,14 @@ const COPY: Record<
 > = {
   publish: {
     title: "Are you sure you want to publish this page now?",
-    showBetaBadge: false,
     description:
-      "Changes will be live on your site in approximately 5–10 minutes, and its status will change to Live.",
+      "Changes will be live on your site in approximately 5–10 minutes, and its status will change to Published.",
     confirmLabel: "Yes, publish now",
     successTitle: "Page published successfully",
     errorTitle: "Failed to publish page. Please contact Isomer support.",
   },
   unpublish: {
     title: "Are you sure you want to unpublish this page now?",
-    showBetaBadge: true,
     description:
       "It may still appear in search results until search engines next crawl your site. Any unsaved draft changes will be kept. This will also cancel the existing scheduled unpublish.",
     confirmLabel: "Yes, unpublish now",
@@ -61,14 +57,8 @@ export const PublishOrUnpublishNowModal = ({
   onClose,
   ...rest
 }: PublishOrUnpublishNowModalProps): JSX.Element => {
-  const {
-    title,
-    showBetaBadge,
-    description,
-    confirmLabel,
-    successTitle,
-    errorTitle,
-  } = COPY[action]
+  const { title, description, confirmLabel, successTitle, errorTitle } =
+    COPY[action]
   const utils = trpc.useUtils()
   const toast = useToast()
   const invalidateAfterAction = () =>
@@ -131,18 +121,7 @@ export const PublishOrUnpublishNowModal = ({
     <Modal onClose={onClose} {...rest}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader mr="3.5rem">
-          {showBetaBadge ? (
-            <HStack spacing="0.5rem">
-              <Text as="span">{title}</Text>
-              <Badge size="xs" variant="subtle" colorScheme="neutral">
-                Beta
-              </Badge>
-            </HStack>
-          ) : (
-            title
-          )}
-        </ModalHeader>
+        <ModalHeader mr="3.5rem">{title}</ModalHeader>
         <ModalCloseButton size="lg" />
         <ModalBody>
           <Text textStyle="body-2">{description}</Text>
