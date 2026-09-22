@@ -2,6 +2,7 @@ import type { TableCellBackgroundColorToken } from "@opengovsg/isomer-components
 import type { Editor } from "@tiptap/react"
 import type { ReactElement, ReactNode } from "react"
 import {
+  Box,
   chakra,
   Flex,
   Icon,
