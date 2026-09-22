@@ -1,24 +1,47 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
+import type { CollectionPagePageProps } from "~/types"
 import { isEmpty } from "lodash-es"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useQueryParams } from "~/hooks/useQueryParams"
 
-import type { AppliedFilter } from "../../types/Filter"
+import type { AppliedFilter, Filter } from "../../types/Filter"
 import { isAppliedFilters } from "../../types/Filter"
 import {
   getFilteredItems,
   getPaginatedItems,
-  updateAppliedFilters,
+  toggleAppliedFilterItem,
 } from "./utils"
+import {
+  areCollectionFiltersEqual,
+  refreshDateFilterCounts,
+} from "./utils/refreshDateFilterCounts"
+
+const EMPTY_FILTERS: Filter[] = []
 
 export const ITEMS_PER_PAGE = 10
 
 export const useCollection = ({
   items,
+  tagCategories,
+  filters = EMPTY_FILTERS,
 }: {
   items: ProcessedCollectionCardProps[]
+  tagCategories?: CollectionPagePageProps["tagCategories"]
+  // Precomputed sidebar. Date-bucket counts in it are from publish time.
+  filters?: Filter[]
 }) => {
   const [queryParams, updateQueryParams] = useQueryParams()
+
+  const [availableFilters, setAvailableFilters] = useState(filters)
+
+  // Once on load (and if this page's items or filters change). Not on a timer:
+  // tag and year filters stay precomputed; only date-bucket counts are refreshed.
+  useEffect(() => {
+    const next = refreshDateFilterCounts(filters, items, tagCategories)
+    setAvailableFilters((current) =>
+      areCollectionFiltersEqual(current, next) ? current : next,
+    )
+  }, [filters, items, tagCategories])
 
   const currPage = useMemo(
     () => parseInt(queryParams.page || "1", 10),
@@ -70,12 +93,20 @@ export const useCollection = ({
 
   const handleFilterToggle = useCallback(
     (id: string, itemId: string) => {
-      return updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
+      return toggleAppliedFilterItem({
+        appliedFilters,
+        setAppliedFilters,
+        filterId: id,
+        itemId,
+      })
     },
     [appliedFilters, setAppliedFilters],
   )
 
-  const filteredItems = getFilteredItems(items, appliedFilters, searchValue)
+  const filteredItems = useMemo(
+    () => getFilteredItems(items, appliedFilters, searchValue, tagCategories),
+    [items, appliedFilters, searchValue, tagCategories],
+  )
   const paginatedItems = useMemo(
     () => getPaginatedItems(filteredItems, ITEMS_PER_PAGE, currPage),
     [currPage, filteredItems],
@@ -94,6 +125,7 @@ export const useCollection = ({
     searchValue,
     handleSearchValueChange,
     handleClearFilter,
+    availableFilters,
     appliedFilters,
     handleFilterToggle,
     setAppliedFilters,
