@@ -376,21 +376,27 @@ describe("TableBubbleMenu", () => {
   })
 
   it("shows Merge cells for a full row selection", async () => {
+    // Arrange
     const { editor, findByText, findByRole } = await renderHarness()
-
     selectCells(editor, 3, 5) // first body row: cells 3-5
+
+    // Act
     await activateTableBubbleMenu(findByRole)
 
+    // Assert
     expect(await findByText("Delete row")).toBeTruthy()
     expect(await findByText("Merge cells")).toBeTruthy()
   })
 
   it("shows Merge cells for a full column selection", async () => {
+    // Arrange
     const { editor, findByText, findByRole } = await renderHarness()
-
     selectCells(editor, 1, 7) // column B (header + both body rows)
+
+    // Act
     await activateTableBubbleMenu(findByRole)
 
+    // Assert
     expect(await findByText("Delete column")).toBeTruthy()
     expect(await findByText("Merge cells")).toBeTruthy()
   })
