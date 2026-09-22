@@ -246,7 +246,9 @@ describe("auditLogExport processor", () => {
     )
     expect(emailArg.link.url).not.toContain("amazonaws.com")
     expect(emailArg.recipientEmail).toBe("admin@vendor.com.sg")
-    expect(emailArg.month).toBe("March 2024")
+    // Access reports always show the day boundary (not just "March 2024"),
+    // since two same-month Access requests can otherwise be indistinguishable.
+    expect(emailArg.month).toBe("1–31 March 2024")
     expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
 
     const updated = await getRequest(request.id)
@@ -441,8 +443,9 @@ describe("auditLogExport processor", () => {
     expect(mockSendAuditLogExportFailedEmail).toHaveBeenCalledTimes(1)
     const failedArg = mockSendAuditLogExportFailedEmail.mock.calls[0]![0]
     expect(failedArg.recipientEmail).toBe("admin4@vendor.com.sg")
-    // The failure email's month label derives from the daterange lower bound.
-    expect(failedArg.month).toBe("March 2024")
+    // The failure email's month label derives from the daterange, with the
+    // day boundary included for Access reports.
+    expect(failedArg.month).toBe("1–31 March 2024")
 
     // The ready email must never have been sent.
     expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()

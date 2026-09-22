@@ -4,12 +4,14 @@ import { addDays, differenceInCalendarMonths, format, parseISO } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { sql } from "kysely"
 import { Readable } from "node:stream"
+import { AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import {
   sendAuditLogExportBatchReadyEmail,
   sendAuditLogExportFailedEmail,
   sendAuditLogExportReadyEmail,
 } from "~/features/mail/service"
+import { formatScheduledAtDate } from "~/lib/dates"
 import { createBaseLogger } from "~/lib/logger"
 import {
   getFileSize,
@@ -409,6 +411,43 @@ const getExportPeriodLabel = (auditLogDateRange: string): string => {
 }
 
 /**
+ * Email-facing period label. An Activity export always covers the whole
+ * picked month (see `resolveAuditLogDateRange`), so the month name alone is
+ * unambiguous. An Access export always runs from the 1st of the CURRENT
+ * month through "now", so two same-month requests produce the identical
+ * `getExportPeriodLabel` output despite covering different day ranges —
+ * include the day boundary so repeat requests aren't indistinguishable in
+ * the subject/body.
+ */
+const getExportPeriodBoundaryLabel = (
+  auditLogDateRange: string,
+  reportType: AuditLogExportReportType,
+): string => {
+  if (reportType !== AuditLogExportReportType.Access) {
+    return getExportPeriodLabel(auditLogDateRange)
+  }
+
+  const { lowerInclusive, upperExclusive } =
+    parseAuditLogDateRange(auditLogDateRange)
+  const lower = parseISO(lowerInclusive)
+  const upperInclusive = addDays(parseISO(upperExclusive), -1)
+
+  if (format(lower, "MMMM yyyy") === format(upperInclusive, "MMMM yyyy")) {
+    return `${format(lower, "d")}–${format(upperInclusive, "d MMMM yyyy")}`
+  }
+  return `${format(lower, "d MMMM yyyy")} – ${format(upperInclusive, "d MMMM yyyy")}`
+}
+
+/**
+ * Absolute, timezone-labelled expiry instant for a Download Window that
+ * started at `completedAt` — dogfooding feedback flagged the previous
+ * relative "expires in N days" copy as ambiguous (relative to an anchor the
+ * recipient never sees).
+ */
+const getExpiryLabel = (completedAt: Date): string =>
+  formatScheduledAtDate(addDays(completedAt, AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS))
+
+/**
  * Slug for the S3 object key, rendering the half-open stored range with an
  * INCLUSIVE end for human readability: `[2026-04-01,2026-05-01)` →
  * `2026-04-01-to-2026-04-30`. Plain calendar arithmetic on the date string —
@@ -582,8 +621,12 @@ const maybeSendAuditLogExportBatchEmail = async (
     const links = (
       await Promise.all(
         readySiblings
+          // A Done row always has both `objectKey` and `completedAt` stamped
+          // together (see the single-export path above) — narrow both here.
           .filter(
-            (row): row is typeof row & { objectKey: string } =>
+            (
+              row,
+            ): row is typeof row & { objectKey: string; completedAt: Date } =>
               row.status === AuditLogExportStatus.Done &&
               row.objectKey !== null,
           )
@@ -596,14 +639,19 @@ const maybeSendAuditLogExportBatchEmail = async (
               Bucket: bucket,
               Key: row.objectKey,
             })
-            return { siteName, url, sizeInBytes }
+            return {
+              siteName,
+              url,
+              sizeInBytes,
+              expiresAt: getExpiryLabel(row.completedAt),
+            }
           }),
       )
     ).sort((a, b) => a.siteName.localeCompare(b.siteName))
 
     await sendAuditLogExportBatchReadyEmail({
       recipientEmail: user.email,
-      month: getExportPeriodLabel(auditLogDateRange),
+      month: getExportPeriodBoundaryLabel(auditLogDateRange, reportType),
       reportLabel: report.label,
       links,
       failedSiteNames,
@@ -895,12 +943,13 @@ export const processAuditLogExportRequest = async (
     // Done row whose email never went out (sweeps skip Done rows); that window
     // is two adjacent awaits, versus the deterministic dead-link window the
     // old ordering had on every single request.
+    const completedAt = queriedAt ?? new Date()
     await db
       .updateTable("AuditLogExportRequest")
       .set({
         status: AuditLogExportStatus.Done,
         objectKey,
-        completedAt: queriedAt ?? new Date(),
+        completedAt,
         errorMessage: null,
         updatedAt: new Date(),
       })
@@ -921,9 +970,13 @@ export const processAuditLogExportRequest = async (
       await sendAuditLogExportReadyEmail({
         recipientEmail,
         siteName,
-        month: getExportPeriodLabel(request.auditLogDateRange),
+        month: getExportPeriodBoundaryLabel(
+          request.auditLogDateRange,
+          request.reportType,
+        ),
         link: { label: report.label, url },
         sizeInBytes: objectSize,
+        expiresAt: getExpiryLabel(completedAt),
       })
     }
   } catch (error) {
@@ -972,7 +1025,10 @@ export const processAuditLogExportRequest = async (
         await sendAuditLogExportFailedEmail({
           recipientEmail,
           siteName,
-          month: getExportPeriodLabel(request.auditLogDateRange),
+          month: getExportPeriodBoundaryLabel(
+            request.auditLogDateRange,
+            request.reportType,
+          ),
         })
       } catch (emailError) {
         // The row is already Failed; a failed failure-email must not throw.
