@@ -378,7 +378,10 @@ describe("Table backgroundColor", () => {
     )
 
     const cellTags = [...html.matchAll(/<(th|td)\b/g)].map((match) => match[1])
+    const openTags = [...html.matchAll(/<(th|td)\b[^>]*>/g)].map((m) => m[0])
 
     expect(cellTags).toEqual(["th", "td"])
+    expect(openTags[0]).toContain("prose-label-md-bold")
+    expect(openTags[1]).not.toContain("prose-label-md-bold")
   })
 })
