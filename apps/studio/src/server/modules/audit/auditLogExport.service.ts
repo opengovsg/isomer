@@ -1003,6 +1003,21 @@ export const processPendingAuditLogExports = async (): Promise<void> => {
   // per-row atomic claim must agree on what counts as "stale".
   const staleCutoff = new Date(Date.now() - PROCESSING_LEASE_MS)
 
+  // NOTE: If a job dies at the third attempt in the processing state,
+  // we need to manually mark it as failed here so that it is not skipped forever
+  // as the `pending` query omits `Processing` requests that are beyond the stale time.
+  await db
+    .updateTable("AuditLogExportRequest")
+    .set({
+      status: AuditLogExportStatus.Failed,
+      errorMessage: "Export processing lease expired after exhausting retries",
+      updatedAt: new Date(),
+    })
+    .where("status", "=", AuditLogExportStatus.Processing)
+    .where("updatedAt", "<", staleCutoff)
+    .where("attempts", ">=", MAX_ATTEMPTS)
+    .execute()
+
   const pending = await db
     .selectFrom("AuditLogExportRequest")
     .where((eb) =>
