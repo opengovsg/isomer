@@ -61,9 +61,9 @@ describe("applyDiffHighlights", () => {
     expect(first?.classList.contains("isomer-diff-highlight--removed")).toBe(
       true,
     )
-    expect(
-      second?.classList.contains("isomer-diff-highlight--modified"),
-    ).toBe(true)
+    expect(second?.classList.contains("isomer-diff-highlight--modified")).toBe(
+      true,
+    )
   })
 
   it("silently skips a route that doesn't resolve to a node", () => {
@@ -107,12 +107,8 @@ describe("applyDiffHighlights", () => {
     applyDiffHighlights(doc, [{ route: [0, 0], kind: "modified" }])
 
     const p = doc.querySelector("p")
-    expect(p?.classList.contains("isomer-diff-highlight--modified")).toBe(
-      true,
-    )
-    expect(p?.classList.contains("isomer-diff-highlight--removed")).toBe(
-      false,
-    )
+    expect(p?.classList.contains("isomer-diff-highlight--modified")).toBe(true)
+    expect(p?.classList.contains("isomer-diff-highlight--removed")).toBe(false)
     expect(p?.querySelectorAll(".isomer-diff-badge")).toHaveLength(1)
     expect(p?.querySelector(".isomer-diff-badge--modified")).not.toBeNull()
     expect(p?.querySelector(".isomer-diff-badge--removed")).toBeNull()
