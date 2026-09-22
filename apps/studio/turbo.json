@@ -15,7 +15,7 @@
       "outputs": ["e2e/test-results/**"]
     },
     "generate": {
-      "dependsOn": ["@opengovsg/isomer-components#build"],
+      "dependsOn": ["@opengovsg/isomer-components#build", "@isomer/db#generate"],
       "inputs": ["prisma/schema.prisma"],
       "cache": false
     },
