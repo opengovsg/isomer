@@ -31,8 +31,10 @@ export interface PageDiffModalRow {
   afterContent: IsomerSchema
 }
 
-interface PageDiffModalProps
-  extends Pick<UseDisclosureReturn, "isOpen" | "onClose"> {
+interface PageDiffModalProps extends Pick<
+  UseDisclosureReturn,
+  "isOpen" | "onClose"
+> {
   row: PageDiffModalRow | null
 }
 
@@ -58,8 +60,7 @@ export const PageDiffModal = ({
     [],
   )
   const handleAfterMount = useCallback(
-    ({ document }: IframeCallbackFnProps) =>
-      setAfterDocument(document ?? null),
+    ({ document }: IframeCallbackFnProps) => setAfterDocument(document ?? null),
     [],
   )
 
@@ -96,15 +97,10 @@ export const PageDiffModal = ({
             <Flex align="center" gap="0.75rem">
               {status === "error" && (
                 <Text textStyle="caption-2" color="utility.feedback.critical">
-                  Couldn't compute a detailed diff — showing before/after
-                  only.
+                  Couldn't compute a detailed diff — showing before/after only.
                 </Text>
               )}
-              <Text
-                textStyle="caption-2"
-                as="label"
-                htmlFor="highlight-toggle"
-              >
+              <Text textStyle="caption-2" as="label" htmlFor="highlight-toggle">
                 Highlight changes
               </Text>
               <Switch
