@@ -57,6 +57,14 @@ interface ResourceEventDeltaMap {
         before: WithoutMeta<PushDocumentJob>
         after: null
       }
+  ScheduleUnpublish: {
+    before: FullResource
+    after: FullResource
+  }
+  CancelScheduleUnpublish: {
+    before: FullResource
+    after: FullResource
+  }
 }
 
 interface BaseResourceEventLogProps {
@@ -233,6 +241,7 @@ export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
 
 interface VersionPointer {
   versionId: Version["id"]
+  versionNum: Version["versionNum"]
 }
 
 type BlobPublishEvent = Resource & Blob

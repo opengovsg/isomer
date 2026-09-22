@@ -71,11 +71,14 @@ model Resource {
   state ResourceState? @default(Draft)
   type  ResourceType
 
-  // This is only set if the resource is scheduled to be published at a later date
-  // If set, this indicates the time at which the resource should be published
-  scheduledAt DateTime?
-  scheduledBy String?
-  scheduler   User?     @relation(fields: [scheduledBy], references: [id])
+  // This is only set if the resource is scheduled for a publish/unpublish at
+  // a later date. If set, scheduledAt indicates when the action should run,
+  // and scheduledAction indicates which action (Publish or Unpublish) — the
+  // cron job branches on this rather than assuming publish.
+  scheduledAt     DateTime?
+  scheduledBy     String?
+  scheduledAction ScheduledAction?
+  scheduler       User?            @relation(fields: [scheduledBy], references: [id])
 
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @default(now()) @updatedAt
@@ -110,6 +113,11 @@ model Blob {
 enum ResourceState {
   Draft
   Published
+}
+
+enum ScheduledAction {
+  Publish
+  Unpublish
 }
 
 enum ResourceType {
@@ -284,6 +292,8 @@ enum AuditLogEvent {
   ResourceDelete
   SchedulePublish
   CancelSchedulePublish
+  ScheduleUnpublish
+  CancelScheduleUnpublish
   UserCreate
   UserUpdate
   UserDelete
