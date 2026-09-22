@@ -1,10 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalDependencies": [
-    "**/.env",
-    "tsconfig.json"
-  ],
+  "globalDependencies": ["**/.env", "tsconfig.json"],
   "globalEnv": [
     "NODE_ENV",
     "DATABASE_URL",
@@ -48,9 +45,7 @@
       "cache": false
     },
     "dev": {
-      "dependsOn": [
-        "services:setup"
-      ],
+      "dependsOn": ["services:setup"],
       "cache": false,
       "persistent": true
     },
@@ -64,43 +59,27 @@
       "cache": false
     },
     "build-storybook": {
-      "inputs": [
-        "!storybook-static/**"
-      ],
-      "outputs": [
-        "storybook-static/**"
-      ]
+      "inputs": ["!storybook-static/**"],
+      "outputs": ["storybook-static/**"]
     },
     "generate": {
       "dependsOn": ["^generate"]
     },
     "format": {
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": ["^build"],
       "outputs": []
     },
     "format:fix": {
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": ["^build"],
       "outputs": []
     },
     "lint": {
-      "dependsOn": [
-        "generate",
-        "^build"
-      ],
+      "dependsOn": ["generate", "^build"],
       "outputs": []
     },
     "typecheck": {
-      "dependsOn": [
-        "generate",
-        "^build"
-      ],
-      "outputs": [
-        "node_modules/.cache/tsbuildinfo.json"
-      ]
+      "dependsOn": ["generate", "^build"],
+      "outputs": ["node_modules/.cache/tsbuildinfo.json"]
     },
     "teardown": {},
     "test-start": {}

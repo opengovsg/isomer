@@ -15,7 +15,10 @@
       "outputs": ["e2e/test-results/**"]
     },
     "generate": {
-      "dependsOn": ["@opengovsg/isomer-components#build", "@isomer/db#generate"],
+      "dependsOn": [
+        "@opengovsg/isomer-components#build",
+        "@isomer/db#generate"
+      ],
       "cache": false
     },
     "build:preview-tw": {
