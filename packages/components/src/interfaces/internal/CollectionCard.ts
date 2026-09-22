@@ -1,10 +1,6 @@
 import type { ImageProps } from "~/interfaces"
 import type { FormattedDate, IsomerSiteProps, TagGroup } from "~/types"
 
-interface FileDetails {
-  type: string
-  size: string
-}
 interface BaseCardProps {
   // NOTE: All groups (pills + plaintext combined), used for filter matching
   // (see getFilteredItems/getTagFilters) — derived from `tagged` + `tagCategories`,
@@ -31,16 +27,11 @@ interface ArticleCardProps extends BaseCardProps {
   variant: "article"
 }
 
-export interface FileCardProps extends BaseCardProps {
-  variant: "file"
-  fileDetails: FileDetails
-}
-
 interface LinkCardProps extends BaseCardProps {
   variant: "link"
 }
 
-export type AllCardProps = ArticleCardProps | FileCardProps | LinkCardProps
+export type AllCardProps = ArticleCardProps | LinkCardProps
 
 // NOTE: This is client-side rendering and we want as much pre-processing
 // on the server as possible to improve performance + reduce file and bandwidth size

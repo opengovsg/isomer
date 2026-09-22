@@ -43,6 +43,7 @@ export const ArticleLayout = ({
           title={page.title}
           date={page.date}
           pillTags={pillTags}
+          site={site}
         />
 
         <div className="mx-auto w-full gap-10 pb-20">

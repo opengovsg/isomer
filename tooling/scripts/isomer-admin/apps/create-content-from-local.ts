@@ -41,17 +41,9 @@ const getChildPageType = (
   return content.layout === "link" ? "CollectionLink" : "CollectionPage"
 }
 
-const normalizePageContent = (content: PageContent): PageContent => {
-  if (content.layout === "file") {
-    return { ...content, layout: "link" }
-  }
-
-  return content
-}
-
 const readJsonFile = (filePath: string): PageContent => {
   const rawContent = fs.readFileSync(filePath, "utf-8")
-  return normalizePageContent(JSON.parse(rawContent) as PageContent)
+  return JSON.parse(rawContent) as PageContent
 }
 
 const getDefaultIndexPageContent = (title: string): PageContent => ({

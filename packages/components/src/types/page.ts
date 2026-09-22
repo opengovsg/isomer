@@ -371,7 +371,6 @@ export const HomePagePageSchema = Type.Object({})
 export const NotFoundPagePageSchema = Type.Object({})
 export const SearchPagePageSchema = Type.Object({})
 
-export const FileRefPageSchema = BaseRefPageSchema
 export const LinkRefPageSchema = BaseRefPageSchema
 
 // These are props that are required by the render engine, but not enforced by
@@ -417,7 +416,5 @@ export type NotFoundPagePageProps = Static<typeof NotFoundPagePageSchema> &
 export type SearchPagePageProps = Static<typeof SearchPagePageSchema> &
   BasePageAdditionalProps
 
-export type FileRefPageProps = Static<typeof FileRefPageSchema> &
-  BaseItemAdditionalProps
 export type LinkRefPageProps = Static<typeof LinkRefPageSchema> &
   BaseItemAdditionalProps
