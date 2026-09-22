@@ -1,4 +1,5 @@
 import type { TableProps } from "~/interfaces"
+import { getEqualColumnWidths } from "~/utils/getTableColumnWidths"
 
 import { checkPhantomColumns } from "./hasPhantomColumns"
 
@@ -15,10 +16,8 @@ export const resolveTableLayout = (rows: TableRows): TableLayout => {
     return { kind: "auto" }
   }
 
-  const columnWidth = `${100 / columnCount}%`
-
   return {
     kind: "fixed",
-    columnWidths: Array.from({ length: columnCount }, () => columnWidth),
+    columnWidths: getEqualColumnWidths(columnCount).map((width) => `${width}%`),
   }
 }

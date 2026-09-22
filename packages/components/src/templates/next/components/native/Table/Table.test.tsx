@@ -73,6 +73,11 @@ const staggeredMergesContent = [
   },
 ]
 
+// SSR markup from renderToStaticMarkup: <col style="width:…%"> or <col style="width:…%" />.
+// Optional slash matches React's self-closing void-element output across test environments.
+const getColWidths = (html: string) =>
+  [...html.matchAll(/<col style="width:([^"]+)"\/?>/g)].map((match) => match[1])
+
 describe("Table colgroup", () => {
   it("uses fixed equal-width cols for staggered merges with a phantom middle column", () => {
     // Arrange / Act
@@ -90,13 +95,148 @@ describe("Table colgroup", () => {
     // Assert
     expect(html).toContain("table-fixed")
     expect(html).toContain("<colgroup>")
-    // SSR <col> with inline width; trailing /> is optional in React markup.
-    const colWidths = [...html.matchAll(/<col style="width:([^"]+)"\/?>/g)].map(
-      (match) => match[1],
-    )
-    expect(colWidths).toEqual([`${100 / 3}%`, `${100 / 3}%`, `${100 / 3}%`])
+    expect(getColWidths(html)).toEqual([
+      `${100 / 3}%`,
+      `${100 / 3}%`,
+      `${100 / 3}%`,
+    ])
     expect(html).toContain('colSpan="2"')
     expect(html).toContain('rowspan="2"')
+  })
+
+  it("uses explicit colwidths on a plain table without forcing phantom equal split", () => {
+    // Arrange / Act
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{ caption: "Resized two columns", colwidths: [70, 30] }}
+        content={[
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableHeader",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "A" }],
+                  },
+                ],
+              },
+              {
+                type: "tableHeader",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "B" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ]}
+      />,
+    )
+
+    // Assert
+    expect(html).toContain("table-fixed")
+    expect(getColWidths(html)).toEqual(["70%", "30%"])
+  })
+
+  it("prefers explicit colwidths over phantom equal split on staggered merges", () => {
+    // Arrange / Act
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{
+          caption: "Resized staggered merges",
+          colwidths: [50, 25, 25],
+        }}
+        content={staggeredMergesContent}
+      />,
+    )
+
+    // Assert
+    expect(html).toContain("table-fixed")
+    expect(getColWidths(html)).toEqual(["50%", "25%", "25%"])
+  })
+
+  it("ignores stale colwidths on a plain table and keeps auto layout", () => {
+    // Arrange / Act
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{
+          caption: "Stale widths on a plain table",
+          colwidths: [50, 30],
+        }}
+        content={[
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableHeader",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "A" }],
+                  },
+                ],
+              },
+              {
+                type: "tableHeader",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "B" }],
+                  },
+                ],
+              },
+              {
+                type: "tableHeader",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "C" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ]}
+      />,
+    )
+
+    // Assert
+    expect(html).not.toContain("table-fixed")
+    expect(html).not.toContain("<colgroup>")
+    expect(html).not.toMatch(/<col[\s>]/)
+  })
+
+  it("ignores stale colwidths on staggered merges and uses phantom equal split", () => {
+    // Arrange / Act
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{
+          caption: "Stale widths on staggered merges",
+          colwidths: [50, 30],
+        }}
+        content={staggeredMergesContent}
+      />,
+    )
+
+    // Assert
+    expect(html).toContain("table-fixed")
+    expect(getColWidths(html)).toEqual([
+      `${100 / 3}%`,
+      `${100 / 3}%`,
+      `${100 / 3}%`,
+    ])
   })
 
   it("keeps auto layout and omits colgroup for a plain 2-column table", () => {
@@ -137,7 +277,6 @@ describe("Table colgroup", () => {
     // Assert
     expect(html).not.toContain("table-fixed")
     expect(html).not.toContain("<colgroup>")
-    // No <col> tags at all when colgroup is omitted.
     expect(html).not.toMatch(/<col[\s>]/)
   })
 
@@ -237,6 +376,7 @@ describe("Table colgroup", () => {
     expect(html).toContain(`rowspan="${MAX_TABLE_ROWS}"`)
     expect(html).not.toContain('colSpan="1000000"')
     expect(html).not.toContain('rowspan="1000000"')
+    expect(getColWidths(html)).toHaveLength(MAX_TABLE_COLUMNS)
   })
 
   it("preserves legitimate rowspans above the column cap", () => {

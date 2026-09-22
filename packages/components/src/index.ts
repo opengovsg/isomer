@@ -13,6 +13,10 @@ export {
   formatBytes,
   DGS_REQUEST_MAX_BYTES,
   getAskgovIdFromString,
+  getEqualColumnWidths,
+  buildColgroupSpec,
+  isUsableColwidths,
+  resolveColumnWidths,
 } from "./utils"
 export * from "./schemas"
 export * from "./types"

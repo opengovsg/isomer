@@ -29,8 +29,13 @@ import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
-import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
+import {
+  createInitialTableColumnResizeStorage,
+  isTableColumnResizeDragging,
+  tableColumnWidthNormalizerPlugin,
+} from "~/features/editing-experience/table/tableLayoutController"
+import { TableNodeView } from "~/features/editing-experience/table/TableNodeView"
 
 import {
   focusTableBubbleMenuTrigger,
@@ -152,13 +157,11 @@ export const IsomerTable = Table.extend({
       caption: {
         default: DEFAULT_TABLE_CAPTION,
       },
+      // Percent width per column index, stored on the table node. JSON only, not HTML.
+      colwidths: {
+        default: null,
+      },
     }
-  },
-  // Custom node view renders the caption above the table.
-  addNodeView() {
-    return ReactNodeViewRenderer(TableNodeView, {
-      contentDOMElementTag: "tbody",
-    })
   },
   addKeyboardShortcuts() {
     const parentShortcuts = this.parent?.() ?? {}
@@ -174,8 +177,34 @@ export const IsomerTable = Table.extend({
       },
     }
   },
+  addStorage() {
+    return createInitialTableColumnResizeStorage()
+  },
   addProseMirrorPlugins() {
-    return [...(this.parent?.() ?? []), createTableSelectionBorderPlugin()]
+    return [
+      tableColumnWidthNormalizerPlugin(),
+      ...(this.parent?.() ?? []),
+      createTableSelectionBorderPlugin(),
+    ]
+  },
+  // Caption + gutter (for drag-handle chrome) plus percent colgroup/resize.
+  // TipTap's TableView cannot host the caption or percentage widths.
+  addNodeView() {
+    return ReactNodeViewRenderer(TableNodeView, {
+      contentDOMElementTag: "tbody",
+      // Mid-drag colwidth commits should not remount the React caption/handles.
+      update: ({ oldNode, newNode, updateProps }) => {
+        if (
+          isTableColumnResizeDragging(this.editor) &&
+          oldNode.content.eq(newNode.content) &&
+          oldNode.attrs.caption === newNode.attrs.caption
+        ) {
+          return true
+        }
+        updateProps()
+        return true
+      },
+    })
   },
 })
 

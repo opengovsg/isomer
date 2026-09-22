@@ -2180,6 +2180,155 @@ export const WithBackgroundColors: Story = {
   },
 }
 
+export const ColumnWidths: Story = {
+  args: {
+    attrs: {
+      caption: "A table with explicit column widths",
+      colwidths: [50, 30, 20],
+    },
+    content: [
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "A wide column" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "A medium column" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "A narrow column" }],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "This column takes up half the table's width, regardless of how much text is in it.",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              { type: "paragraph", content: [{ type: "text", text: "30%" }] },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              { type: "paragraph", content: [{ type: "text", text: "20%" }] },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+
+// Stale colwidths (wrong length) fall back to an equal split via resolveColumnWidths.
+export const ColumnWidthsFallback: Story = {
+  args: {
+    attrs: {
+      caption: "A table with stale column widths that no longer match",
+      colwidths: [50, 30],
+    },
+    content: [
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Column one" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Column two" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Column three" }],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "colwidths only has 2 entries for 3 columns, so it falls back to an equal split.",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              { type: "paragraph", content: [{ type: "text", text: "33%" }] },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              { type: "paragraph", content: [{ type: "text", text: "33%" }] },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+
 export const ListInTable: Story = {
   args: {
     attrs: {
@@ -2302,10 +2451,7 @@ export const ListInTable: Story = {
   },
 }
 
-/**
- * Staggered merges: row 1 spans cols 2-3, row 2 spans cols 1-2 (rowspan 2).
- * No cell sits alone in column 2. Auto layout collapses that track without colgroup.
- */
+// Row 1 spans cols 2-3; row 2 spans cols 1-2 with rowspan 2. Column 2 has no solo cell.
 export const StaggeredMergesPhantomColumn: Story = {
   args: {
     attrs: {
