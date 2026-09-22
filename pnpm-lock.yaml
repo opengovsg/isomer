@@ -115,32 +115,32 @@ catalogs:
       version: 2.2.1
   aws-sdk:
     '@aws-sdk/client-acm':
-      specifier: ^3.1129.0
-      version: 3.1131.0
+      specifier: ^3.1132.0
+      version: 3.1136.0
     '@aws-sdk/client-amplify':
-      specifier: ^3.1129.0
-      version: 3.1131.0
+      specifier: ^3.1132.0
+      version: 3.1136.0
     '@aws-sdk/client-cloudfront':
-      specifier: ^3.1129.0
-      version: 3.1131.0
+      specifier: ^3.1132.0
+      version: 3.1136.0
     '@aws-sdk/client-codebuild':
-      specifier: ^3.1129.0
-      version: 3.1131.0
+      specifier: ^3.1132.0
+      version: 3.1136.0
     '@aws-sdk/client-s3':
-      specifier: ^3.1129.0
-      version: 3.1131.0
+      specifier: ^3.1132.0
+      version: 3.1136.0
     '@aws-sdk/credential-providers':
-      specifier: ^3.1129.0
-      version: 3.1131.0
+      specifier: ^3.1132.0
+      version: 3.1136.0
     '@aws-sdk/lib-storage':
-      specifier: ^3.1129.0
-      version: 3.1131.0
+      specifier: ^3.1132.0
+      version: 3.1136.0
     '@aws-sdk/rds-signer':
-      specifier: ^3.1129.0
-      version: 3.1131.0
+      specifier: ^3.1132.0
+      version: 3.1136.0
     '@aws-sdk/s3-request-presigner':
-      specifier: ^3.1129.0
-      version: 3.1131.0
+      specifier: ^3.1132.0
+      version: 3.1136.0
   babel:
     '@babel/plugin-transform-class-properties':
       specifier: ^8.0.1
@@ -782,19 +782,19 @@ importers:
         version: 2.2.1
       '@aws-sdk/client-cloudfront':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@aws-sdk/client-codebuild':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@aws-sdk/client-s3':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@aws-sdk/lib-storage':
         specifier: catalog:aws-sdk
-        version: 3.1131.0(@aws-sdk/client-s3@3.1131.0)
+        version: 3.1136.0(@aws-sdk/client-s3@3.1136.0)
       '@aws-sdk/s3-request-presigner':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@casl/ability':
         specifier: catalog:casl
         version: 7.0.1
@@ -1676,7 +1676,7 @@ importers:
     dependencies:
       '@aws-sdk/client-amplify':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       dotenv:
         specifier: 'catalog:'
         version: 16.6.1
@@ -1694,7 +1694,7 @@ importers:
     dependencies:
       '@aws-sdk/client-s3':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@opengovsg/isomer-components':
         specifier: workspace:*
         version: link:../../../../packages/components
@@ -1734,10 +1734,10 @@ importers:
     dependencies:
       '@aws-sdk/credential-providers':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@aws-sdk/rds-signer':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@inquirer/prompts':
         specifier: 'catalog:'
         version: 8.7.2(@types/node@26.5.1)
@@ -1771,10 +1771,10 @@ importers:
     dependencies:
       '@aws-sdk/client-acm':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@aws-sdk/client-cloudfront':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@inquirer/prompts':
         specifier: 'catalog:'
         version: 8.7.2(@types/node@26.5.1)
@@ -1825,10 +1825,10 @@ importers:
     dependencies:
       '@aws-sdk/client-codebuild':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@aws-sdk/client-s3':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@inquirer/prompts':
         specifier: 'catalog:'
         version: 8.7.2(@types/node@26.5.1)
@@ -1980,16 +1980,16 @@ importers:
     dependencies:
       '@aws-sdk/client-acm':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@aws-sdk/client-amplify':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@aws-sdk/client-cloudfront':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@aws-sdk/credential-providers':
         specifier: catalog:aws-sdk
-        version: 3.1131.0
+        version: 3.1136.0
       '@inquirer/prompts':
         specifier: 'catalog:'
         version: 8.7.2(@types/node@26.5.1)
@@ -2181,24 +2181,24 @@ packages:
     resolution: {integrity: sha512-6uTniZc87q+B5eXouGTl+7Tmc482rEeCcvxpsvREP8EfF0gvloRZ41UOA9sbSJlyy8TbqIBXb3kKfKarEArUQA==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-acm@3.1131.0':
-    resolution: {integrity: sha512-Dr5K+JlcxM5rOFPvadvZJdEUCdNCmuO2RATRq8yoEP/YpBGIdfFGlKv0vCs5n8ytEzcQO2gcAL5Od+Xk8m6o5A==}
+  '@aws-sdk/client-acm@3.1136.0':
+    resolution: {integrity: sha512-+8huMT/6xcr8wr0d/Xu3kkjSalWnIgOQfe9B2kAaWEKAIICHDcv/S0QQ8bT7A2i/pJ8rThQ6nzfuq0pHP47JzQ==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-amplify@3.1131.0':
-    resolution: {integrity: sha512-1GGZjcMEgqlcGi06M0bMaJksLNkyR5yM6ilyy0aLo3+eEAkqh0ZaCB3g/DcrH0BobVwaP+8W5fwabgqSz5QRmw==}
+  '@aws-sdk/client-amplify@3.1136.0':
+    resolution: {integrity: sha512-mnMnDgIT0m29EsFBKjUYm5K3ExbHd0uliSdxeHMh10/rrThHmMtt9szn5Ls1tJpIoLCUvkQgRILqmV19xiJ9DA==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-cloudfront@3.1131.0':
-    resolution: {integrity: sha512-/92dl430DxQixblo1Y+wEVzxDNa0BDVWys+fn8H+Tsd7IY/jqbOqmeYE/rR5OyFLjkjw3iTemYhiAJcdbhuuZA==}
+  '@aws-sdk/client-cloudfront@3.1136.0':
+    resolution: {integrity: sha512-6HOtib5K0v85sVNcWEFma/uVUPkXi12pm2C2RenM+tt+noUVBF1CuySo+sDTPGuuHxB38GYnxAuKa7LfkgEV6Q==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-codebuild@3.1131.0':
-    resolution: {integrity: sha512-vEOuSqc37A6kEO5OPSylnzHJPws+wzsD8HuM+YufadAKQfHMDxdZdQ2yAjHzzviqKuE8ZvKfwL3gWY/27Jssnw==}
+  '@aws-sdk/client-codebuild@3.1136.0':
+    resolution: {integrity: sha512-1S0nyWa7h2uozQ7nZNz1ay01M2wderZFlR9cdrxLdzDMtlK0nfAZWTT4AiwDE6JbkAYc5yWoAstiooYf2PdDuA==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-s3@3.1131.0':
-    resolution: {integrity: sha512-jMw3q5sYNvWJRngkNwdS3H2WPBcdqhdrOez+7fBUB26fpH/2+TaJcDdlzdjgLTMhFTq2eOyXBSy1T/4A6CL/Lw==}
+  '@aws-sdk/client-s3@3.1136.0':
+    resolution: {integrity: sha512-1FUvu6nuUi3y9VjQAYootkfWKQqZ8aT8wZoV5I0bpeMkGVgntYpJ11xLicGotGE6E1qtLXB+GdOJM9B+OQYWDA==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.978.0':
@@ -2241,15 +2241,15 @@ packages:
     resolution: {integrity: sha512-uylIQSUWpfLuH2LovxEEfwzJGM/SabLOfLMg6YXu/E8jJEKUdpdILCVCQCdFvHyu/7dLJOHPMfrSwduxO56NkQ==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/credential-providers@3.1131.0':
-    resolution: {integrity: sha512-9AHwJuS5tmTUprvZcC5kQDsqiIp2N8Uu2vk9BlCM+koIn19/8VgKiZXVkResgbIvZ3nS0Km1T2wdpOA76Q7OYQ==}
+  '@aws-sdk/credential-providers@3.1136.0':
+    resolution: {integrity: sha512-taBAAQBJzR2GQl1mHTanWxw8iJxs209U4z6jioQLvHRH4d7T5BtrcN5mzgQKHsJusy6W3YPv0nCxv6benIINUg==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/lib-storage@3.1131.0':
-    resolution: {integrity: sha512-CchKA58bQhrkNsWOAB5UDYvYmeB5RUpuh6ZtdwUd6jBaRDWRtoe2H1DoBjSt262zyeAvXN/1Jm66gIuEsKSUPw==}
+  '@aws-sdk/lib-storage@3.1136.0':
+    resolution: {integrity: sha512-oosImwm5kgYTDySuQZ/bCCCISf6cETUDS6Q1MhIyZ7+oZLiacKxKqqQz59/Ic+V9iiNZOXXbEgANChm2WveXsg==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
-      '@aws-sdk/client-s3': ^3.1131.0
+      '@aws-sdk/client-s3': ^3.1136.0
 
   '@aws-sdk/middleware-sdk-s3@3.972.76':
     resolution: {integrity: sha512-NfnTkVUTBKTBuBgqaapFK9r3YdkKt1b2oRvgLzZq91bwNKh6ZS0S7sEcheguttREaL4iyfs/xQnqD7Z7AsWSsA==}
@@ -2259,12 +2259,12 @@ packages:
     resolution: {integrity: sha512-mooq9Q+jLa18VoM7HouczmslZU60iiB0aKc/Ztnq/luIL1ud0z4DnYprLR/ZO1gp331S9tJctM1HZr7u6YKBXQ==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/rds-signer@3.1131.0':
-    resolution: {integrity: sha512-7Sht+oaWNTWYj6uQcsNdZhy5PoyDnIDQRqLuqBwOew0XRKtROZleTuURETIr4APIQyY7qAXgcupCuavHnH2Wmw==}
+  '@aws-sdk/rds-signer@3.1136.0':
+    resolution: {integrity: sha512-nRlY3wpzB04LkjdC4UtgXZqDneuf+1EXIRbx0y6mLwjaSaFmFgI8ngP4l4+SlZAyE2vJAN/IZ3STnz/Fv2ayow==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/s3-request-presigner@3.1131.0':
-    resolution: {integrity: sha512-n22qXGWwWmngjM0LVY6RU6KkZ29W5BbD6FfwLSBYHTWqXX/bK/2RIFXSCBS9J8b1D+mtcylB9kiYZadb61rEFw==}
+  '@aws-sdk/s3-request-presigner@3.1136.0':
+    resolution: {integrity: sha512-SYH0+Eg8+4Tb03s3rfpNVtWEtgqmSf9LCieuCam/hk9bTib72uTjVz5dENCIkRkw3baq1QsePmjiN7IRyqHcnQ==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/signature-v4-multi-region@3.996.46':
@@ -13334,7 +13334,7 @@ snapshots:
       '@smithy/types': 4.17.2
       tslib: 2.8.1
 
-  '@aws-sdk/client-acm@3.1131.0':
+  '@aws-sdk/client-acm@3.1136.0':
     dependencies:
       '@aws-sdk/core': 3.978.0
       '@aws-sdk/credential-provider-node': 3.972.83
@@ -13345,7 +13345,7 @@ snapshots:
       '@smithy/types': 4.17.2
       tslib: 2.8.1
 
-  '@aws-sdk/client-amplify@3.1131.0':
+  '@aws-sdk/client-amplify@3.1136.0':
     dependencies:
       '@aws-sdk/core': 3.978.0
       '@aws-sdk/credential-provider-node': 3.972.83
@@ -13356,7 +13356,7 @@ snapshots:
       '@smithy/types': 4.17.2
       tslib: 2.8.1
 
-  '@aws-sdk/client-cloudfront@3.1131.0':
+  '@aws-sdk/client-cloudfront@3.1136.0':
     dependencies:
       '@aws-sdk/core': 3.978.0
       '@aws-sdk/credential-provider-node': 3.972.83
@@ -13367,7 +13367,7 @@ snapshots:
       '@smithy/types': 4.17.2
       tslib: 2.8.1
 
-  '@aws-sdk/client-codebuild@3.1131.0':
+  '@aws-sdk/client-codebuild@3.1136.0':
     dependencies:
       '@aws-sdk/core': 3.978.0
       '@aws-sdk/credential-provider-node': 3.972.83
@@ -13378,7 +13378,7 @@ snapshots:
       '@smithy/types': 4.17.2
       tslib: 2.8.1
 
-  '@aws-sdk/client-s3@3.1131.0':
+  '@aws-sdk/client-s3@3.1136.0':
     dependencies:
       '@aws-sdk/checksums': 3.1001.0
       '@aws-sdk/core': 3.978.0
@@ -13495,7 +13495,7 @@ snapshots:
       '@smithy/types': 4.17.2
       tslib: 2.8.1
 
-  '@aws-sdk/credential-providers@3.1131.0':
+  '@aws-sdk/credential-providers@3.1136.0':
     dependencies:
       '@aws-sdk/core': 3.978.0
       '@aws-sdk/credential-provider-cognito-identity': 3.972.70
@@ -13514,9 +13514,9 @@ snapshots:
       '@smithy/types': 4.17.2
       tslib: 2.8.1
 
-  '@aws-sdk/lib-storage@3.1131.0(@aws-sdk/client-s3@3.1131.0)':
+  '@aws-sdk/lib-storage@3.1136.0(@aws-sdk/client-s3@3.1136.0)':
     dependencies:
-      '@aws-sdk/client-s3': 3.1131.0
+      '@aws-sdk/client-s3': 3.1136.0
       '@smithy/core': 3.33.3
       '@smithy/types': 4.17.2
       buffer: 5.6.0
@@ -13544,16 +13544,16 @@ snapshots:
       '@smithy/types': 4.17.2
       tslib: 2.8.1
 
-  '@aws-sdk/rds-signer@3.1131.0':
+  '@aws-sdk/rds-signer@3.1136.0':
     dependencies:
       '@aws-sdk/core': 3.978.0
-      '@aws-sdk/credential-providers': 3.1131.0
+      '@aws-sdk/credential-providers': 3.1136.0
       '@smithy/core': 3.33.3
       '@smithy/signature-v4': 5.6.12
       '@smithy/types': 4.17.2
       tslib: 2.8.1
 
-  '@aws-sdk/s3-request-presigner@3.1131.0':
+  '@aws-sdk/s3-request-presigner@3.1136.0':
     dependencies:
       '@aws-sdk/core': 3.978.0
       '@aws-sdk/signature-v4-multi-region': 3.996.46
