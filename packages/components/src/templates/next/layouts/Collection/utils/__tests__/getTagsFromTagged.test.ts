@@ -86,6 +86,37 @@ describe("getTagsFromTagged", () => {
     expect(result).toEqual([])
   })
 
+  it("skips date-type categories entirely, resolving only text categories", () => {
+    // Arrange
+    const tagged: NonNullable<ArticlePagePageProps["tagged"]> = ["topic-opt-1"]
+    const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> =
+      [
+        {
+          label: "Event Date",
+          id: "date-1",
+          type: "date",
+          statusLabels: {
+            ENDED: "Ended",
+            ONGOING: "Ongoing",
+            UPCOMING: "Upcoming",
+          },
+        },
+        {
+          label: "Topic",
+          id: "topic-1",
+          options: [{ label: "Health", id: "topic-opt-1" }],
+        },
+      ]
+
+    // Act
+    const result = getTagsFromTagged(tagged, tagCategories)
+
+    // Assert
+    expect(result).toEqual([
+      { id: "topic-1", category: "Topic", selected: ["Health"] },
+    ])
+  })
+
   it("keeps all tagged options for a category, uncombined", () => {
     // Arrange
     const tagged: NonNullable<ArticlePagePageProps["tagged"]> = [
