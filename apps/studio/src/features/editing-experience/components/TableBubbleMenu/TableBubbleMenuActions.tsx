@@ -279,6 +279,14 @@ const BackgroundColor = ({
   )
 }
 
+const MergeCellsButton = ({ editor }: { editor: Editor }) => (
+  <ActionButton
+    label="Merge cells"
+    icon={<IconMergeCells boxSize="1rem" />}
+    onClick={() => editor.chain().focus().mergeCells().run()}
+  />
+)
+
 const HeaderToggle = ({
   label,
   isChecked,
@@ -357,6 +365,7 @@ const RowSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
+      <MergeCellsButton editor={editor} />
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
@@ -430,6 +439,7 @@ const ColumnSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
+      <MergeCellsButton editor={editor} />
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
@@ -486,11 +496,7 @@ const SelectionActions = ({
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          <ActionButton
-            label="Merge cells"
-            icon={<IconMergeCells boxSize="1rem" />}
-            onClick={() => editor.chain().focus().mergeCells().run()}
-          />
+          <MergeCellsButton editor={editor} />
         </ActionGroup>
       )
     case "single-cell":
