@@ -3,7 +3,7 @@
   "extends": ["//"],
   "tasks": {
     "generate": {
-      "cache": false
+      "outputs": ["prisma/generated/**", "src/generated/**"]
     }
   }
 }
