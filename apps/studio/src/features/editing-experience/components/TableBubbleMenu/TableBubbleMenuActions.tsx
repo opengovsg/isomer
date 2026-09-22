@@ -288,24 +288,33 @@ const HeaderToggle = ({
   isChecked: boolean
   onToggle: () => void
 }) => (
+  // The row cancels mousedown so the editor keeps its cell selection. A
+  // Switch is a checkbox, and that cancel swallows its first change event.
   <Flex
+    as="button"
+    type="button"
+    role="switch"
+    aria-checked={isChecked}
     w="100%"
     minH="2.25rem"
     align="center"
     justify="space-between"
     px="0.75rem"
     gap="0.5rem"
+    bg="transparent"
+    border="none"
+    borderRadius="0"
+    cursor="pointer"
+    sx={{ appearance: "none" }}
     onMouseDown={(event) => event.preventDefault()}
+    onClick={onToggle}
   >
     <Text textStyle="body-2" color="base.content.strong">
       {label}
     </Text>
-    <Switch
-      size="sm"
-      isChecked={isChecked}
-      onChange={onToggle}
-      aria-label={label}
-    />
+    <Box pointerEvents="none" aria-hidden>
+      <Switch size="sm" isChecked={isChecked} tabIndex={-1} />
+    </Box>
   </Flex>
 )
 
