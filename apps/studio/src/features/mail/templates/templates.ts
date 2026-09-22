@@ -464,9 +464,13 @@ const auditLogExportBatchReadyTemplate = (
 
   const logName = reportLabel === "access" ? "Access" : "Audit"
 
+  // The link text is the site name itself — not a repeated "Download {label}
+  // review logs for {month} [.csv, ...]" string on every row, which carries
+  // no distinguishing information when every row shares the same month and
+  // label (already stated in the intro above).
   const linkItems = links
     .map(({ siteName, url, sizeInBytes }) => {
-      return `<li><b>${siteName}</b>: <a href="${url}">${getDownloadLinkLabel(reportLabel, month, sizeInBytes)}</a></li>`
+      return `<li><a href="${url}">${siteName}</a> (${formatExportSize(sizeInBytes)})</li>`
     })
     .join("")
 
@@ -480,7 +484,7 @@ const auditLogExportBatchReadyTemplate = (
     subject: `[Isomer] ${logName} logs for ${month} for your sites`,
     body: `<p>Hi ${recipientEmail},</p>
 <p>You requested ${logName.toLowerCase()} logs for all your sites for ${month}. Each link below will expire after ${AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS} days.</p>
-${linkItems.length > 0 ? `<ul>${linkItems}</ul>` : ""}
+${linkItems.length > 0 ? `<ol>${linkItems}</ol>` : ""}
 ${failedSection}
 <br/>
 <p>Best,</p>
