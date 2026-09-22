@@ -1,8 +1,15 @@
 import type { TableCellBackgroundColorToken } from "@opengovsg/isomer-components"
 import type { Editor } from "@tiptap/react"
 import type { ReactElement, ReactNode } from "react"
-import { Box, Flex, Text, VStack } from "@chakra-ui/react"
-import { Button, Switch } from "@opengovsg/design-system-react"
+import {
+  chakra,
+  Flex,
+  Icon,
+  Text,
+  useMultiStyleConfig,
+  VStack,
+} from "@chakra-ui/react"
+import { BxCheck, BxX, Button } from "@opengovsg/design-system-react"
 import {
   TABLE_CELL_BACKGROUND_COLORS,
   TABLE_CELL_BACKGROUND_COLOR_TOKENS,
@@ -279,6 +286,38 @@ const BackgroundColor = ({
   )
 }
 
+const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
+  const styles = useMultiStyleConfig("Switch", { size: "sm" })
+  const ThumbIcon = isChecked ? BxCheck : BxX
+
+  return (
+    <chakra.span
+      aria-hidden
+      className="chakra-switch__track"
+      data-checked={isChecked}
+      __css={{
+        display: "inline-flex",
+        flexShrink: 0,
+        justifyContent: "flex-start",
+        boxSizing: "content-box",
+        ...styles.track,
+      }}
+    >
+      <chakra.span
+        className="chakra-switch__thumb"
+        data-checked={isChecked}
+        __css={styles.thumb}
+      >
+        <Icon
+          as={ThumbIcon}
+          data-checked={isChecked}
+          __css={styles.thumbIcon}
+        />
+      </chakra.span>
+    </chakra.span>
+  )
+}
+
 const HeaderToggle = ({
   label,
   isChecked,
@@ -312,9 +351,7 @@ const HeaderToggle = ({
     <Text textStyle="body-2" color="base.content.strong">
       {label}
     </Text>
-    <Box pointerEvents="none" aria-hidden>
-      <Switch size="sm" isChecked={isChecked} tabIndex={-1} />
-    </Box>
+    <HeaderSwitchVisual isChecked={isChecked} />
   </Flex>
 )
 

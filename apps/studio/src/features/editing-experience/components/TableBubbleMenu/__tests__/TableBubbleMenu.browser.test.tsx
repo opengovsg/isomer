@@ -733,8 +733,12 @@ describe("TableBubbleMenu", () => {
     expect(headerToggle).toBeChecked()
     expect(queryByText("Delete row")).toBeNull()
 
-    // Act: real pointer sequence, including the mousedown the row cancels.
-    await userEvent.click(headerToggle)
+    // Act: pointer sequence including the mousedown the row cancels (Playwright
+    // userEvent.click fails when the portaled menu is outside the viewport).
+    act(() => {
+      fireEvent.mouseDown(headerToggle)
+      fireEvent.click(headerToggle)
+    })
 
     // Assert
     await waitFor(() => {
