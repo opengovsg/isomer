@@ -215,10 +215,43 @@ describe("auditLogExportBatchReady template", () => {
     })
 
     // Assert
-    expect(template.body).toContain("[.csv, 2.5 MB]")
-    expect(template.body).toContain("[.csv, 14 KB]")
-    expect(template.body).toContain("[.csv, 0 KB]")
-    expect(template.body).toContain("[.csv, unknown size]")
+    expect(template.body).toContain("(2.5 MB)")
+    expect(template.body).toContain("(14 KB)")
+    expect(template.body).toContain("(0 KB)")
+    expect(template.body).toContain("(unknown size)")
+  })
+
+  it("uses the site name as the link text instead of a repeated download label", () => {
+    // Act
+    const template = templates.auditLogExportBatchReady({
+      ...baseData,
+      links: [
+        {
+          siteName: "Hack for Public Good",
+          url: "https://s3.example/hfpg",
+          sizeInBytes: 14_000,
+        },
+      ],
+    })
+
+    // Assert
+    expect(template.body).toContain(
+      `<a href="https://s3.example/hfpg">Hack for Public Good</a> (14 KB)`,
+    )
+  })
+
+  it("renders the link list as a numbered list so long batches are trackable", () => {
+    // Act
+    const template = templates.auditLogExportBatchReady({
+      ...baseData,
+      links: [
+        { siteName: "A Site", url: "https://s3.example/a", sizeInBytes: 100 },
+      ],
+    })
+
+    // Assert
+    expect(template.body).toContain("<ol>")
+    expect(template.body).not.toContain("<ul><li>")
   })
 })
 

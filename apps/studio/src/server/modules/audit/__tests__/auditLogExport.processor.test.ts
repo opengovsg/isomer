@@ -905,8 +905,10 @@ describe("auditLogExport processor", () => {
       expect(emailArg.reportLabel).toBe("access")
       expect(emailArg.failedSiteNames).toEqual([])
       expect(emailArg.links).toHaveLength(2)
-      expect(emailArg.links.map((l) => l.siteName).sort()).toEqual(
-        [siteA.name, siteB.name].sort(),
+      // Sites must come back sorted alphabetically by name (not DB query
+      // order), so a batch of many sites is scannable in the email.
+      expect(emailArg.links.map((l) => l.siteName)).toEqual(
+        [siteA.name, siteB.name].sort((a, b) => a.localeCompare(b)),
       )
       for (const link of emailArg.links) {
         expect(link.url).toContain(

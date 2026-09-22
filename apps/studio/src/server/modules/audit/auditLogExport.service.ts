@@ -569,30 +569,37 @@ const maybeSendAuditLogExportBatchEmail = async (
     const report = REPORT_BY_TYPE[reportType]
     const bucket = getStudioAssetsBucketName()
 
+    // Sorted alphabetically by site name so a batch of dozens of sites is
+    // scannable rather than left in arbitrary DB query order.
     const failedSiteNames = readySiblings
       .filter(
         (row) =>
           row.status !== AuditLogExportStatus.Done || row.objectKey === null,
       )
       .map((row) => siteNameById.get(row.siteId) ?? `Site ${row.siteId}`)
+      .sort((a, b) => a.localeCompare(b))
 
-    const links = await Promise.all(
-      readySiblings
-        .filter(
-          (row): row is typeof row & { objectKey: string } =>
-            row.status === AuditLogExportStatus.Done && row.objectKey !== null,
-        )
-        .map(async (row) => {
-          const siteName = siteNameById.get(row.siteId) ?? `Site ${row.siteId}`
-          const token = await sealAuditLogExportToken(row.id)
-          const url = `${env.NEXT_PUBLIC_APP_URL}/api/audit-log-exports/download?token=${encodeURIComponent(token)}`
-          const sizeInBytes = await getFileSize({
-            Bucket: bucket,
-            Key: row.objectKey,
-          })
-          return { siteName, url, sizeInBytes }
-        }),
-    )
+    const links = (
+      await Promise.all(
+        readySiblings
+          .filter(
+            (row): row is typeof row & { objectKey: string } =>
+              row.status === AuditLogExportStatus.Done &&
+              row.objectKey !== null,
+          )
+          .map(async (row) => {
+            const siteName =
+              siteNameById.get(row.siteId) ?? `Site ${row.siteId}`
+            const token = await sealAuditLogExportToken(row.id)
+            const url = `${env.NEXT_PUBLIC_APP_URL}/api/audit-log-exports/download?token=${encodeURIComponent(token)}`
+            const sizeInBytes = await getFileSize({
+              Bucket: bucket,
+              Key: row.objectKey,
+            })
+            return { siteName, url, sizeInBytes }
+          }),
+      )
+    ).sort((a, b) => a.siteName.localeCompare(b.siteName))
 
     await sendAuditLogExportBatchReadyEmail({
       recipientEmail: user.email,
