@@ -18,8 +18,10 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
     kind,
     isActivated,
     menuRef,
+    actionsRef,
     triggerRef,
-    position,
+    triggerPosition,
+    actionsPosition,
     onMenuFocus,
     onMenuBlur,
     toggleMenu,
@@ -32,26 +34,22 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
 
   return (
     <Portal>
-      <VStack
+      <div
         ref={menuRef}
-        align="flex-end"
-        gap="0.25rem"
-        data-table-bubble-menu
         // Lets focus move between this portaled menu and Chakra modals (e.g. Table Settings).
         data-no-focus-lock
-        position="fixed"
-        left={position ? `${position.x}px` : 0}
-        top={position ? `${position.y}px` : 0}
-        visibility={position ? "visible" : "hidden"}
-        zIndex="dropdown"
         onFocus={onMenuFocus}
         onBlur={onMenuBlur}
       >
         {isActivated && (
           <VStack
+            ref={actionsRef}
             align="stretch"
             textAlign="left"
-            position="relative"
+            position="fixed"
+            left={actionsPosition ? `${actionsPosition.x}px` : 0}
+            top={actionsPosition ? `${actionsPosition.y}px` : 0}
+            visibility={actionsPosition ? "visible" : "hidden"}
             zIndex="dropdown"
             data-table-bubble-menu-actions
             bg="base.canvas.default"
@@ -76,7 +74,13 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
           type="button"
           aria-label="Table actions"
           aria-pressed={isActivated}
+          data-table-bubble-menu
           data-table-bubble-menu-trigger
+          position="fixed"
+          left={triggerPosition ? `${triggerPosition.x}px` : 0}
+          top={triggerPosition ? `${triggerPosition.y}px` : 0}
+          visibility={triggerPosition ? "visible" : "hidden"}
+          zIndex="dropdown"
           p="0.5rem"
           borderRadius="full"
           cursor="pointer"
@@ -100,7 +104,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
             color={isActivated ? "white" : "interaction.main.default"}
           />
         </Flex>
-      </VStack>
+      </div>
     </Portal>
   )
 })

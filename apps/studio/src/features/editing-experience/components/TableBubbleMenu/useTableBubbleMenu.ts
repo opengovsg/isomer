@@ -20,15 +20,20 @@ import {
   registerTableBubbleMenuFocusTrigger,
   unregisterTableBubbleMenuFocusTrigger,
 } from "./tableBubbleMenuFocus"
-import { useTableBubbleMenuPosition } from "./useTableBubbleMenuPosition"
+import {
+  useTableBubbleMenuPosition,
+  type TableBubbleMenuPosition,
+} from "./useTableBubbleMenuPosition"
 
 export interface TableBubbleMenuUiState {
   show: boolean
   kind: SelectionKind
   isActivated: boolean
   menuRef: RefCallback<HTMLDivElement>
+  actionsRef: RefCallback<HTMLDivElement>
   triggerRef: RefObject<HTMLButtonElement>
-  position: { x: number; y: number } | null
+  triggerPosition: TableBubbleMenuPosition | null
+  actionsPosition: TableBubbleMenuPosition | null
   onMenuFocus: () => void
   onMenuBlur: (event: FocusEvent<HTMLElement>) => void
   toggleMenu: () => void
@@ -51,6 +56,10 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
   const menuRef = useCallback((node: HTMLDivElement | null) => {
     menuElRef.current = node
     setMenuEl(node)
+  }, [])
+  const [actionsEl, setActionsEl] = useState<HTMLDivElement | null>(null)
+  const actionsRef = useCallback((node: HTMLDivElement | null) => {
+    setActionsEl(node)
   }, [])
 
   const [isActivated, setIsActivated] = useState(false)
@@ -79,10 +88,15 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
     (isFocused || menuHasFocus)
 
   const selectionRangeKey = getSelectionRangeKey(selection)
-
-  useEffect(() => {
+  const [activatedForSelection, setActivatedForSelection] =
+    useState(selectionRangeKey)
+  // Close in this render, not after paint, so positioning measures the pencil
+  // and not the still-open actions list.
+  const selectionMoved = activatedForSelection !== selectionRangeKey
+  if (selectionMoved) {
+    setActivatedForSelection(selectionRangeKey)
     setIsActivated(false)
-  }, [selectionRangeKey])
+  }
 
   useEffect(() => {
     if (!show) {
@@ -90,12 +104,14 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
     }
   }, [show])
 
-  const position = useTableBubbleMenuPosition({
-    editor,
-    menuEl,
-    show,
-    selection,
-  })
+  const { trigger: triggerPosition, actions: actionsPosition } =
+    useTableBubbleMenuPosition({
+      editor,
+      menuEl,
+      actionsEl,
+      show,
+      layoutKey: selectionRangeKey,
+    })
 
   useEffect(() => {
     registerTableBubbleMenuFocusTrigger(editor, () => {
@@ -167,8 +183,10 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
     kind,
     isActivated,
     menuRef,
+    actionsRef,
     triggerRef,
-    position,
+    triggerPosition,
+    actionsPosition,
     onMenuFocus,
     onMenuBlur,
     toggleMenu,
