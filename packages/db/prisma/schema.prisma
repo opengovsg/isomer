@@ -288,6 +288,7 @@ enum AuditLogEvent {
   UserUpdate
   UserDelete
   Publish
+  Unpublish
   Login
   Logout
   PermissionCreate
