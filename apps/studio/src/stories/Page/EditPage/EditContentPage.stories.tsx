@@ -206,7 +206,10 @@ export const ActiveTableToolbar: Story = {
     // Divider is also table-inapplicable, so the RTE overflow menu unmounts
     // entirely while the cursor is inside a table.
     await expect(
-      canvas.queryAllByRole("button", { name: /^more options$/i }),
+      canvas.queryAllByRole("button", {
+        name: /^more options$/i,
+        hidden: true,
+      }),
     ).toHaveLength(0)
   },
 }
