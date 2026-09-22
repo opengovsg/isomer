@@ -6,7 +6,11 @@ import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
 import { useMemo, useRef, useState } from "react"
 import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
+<<<<<<< HEAD
 import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles"
+=======
+import { tryFocusBelowEditorContent } from "~/features/editing-experience/hooks/useTextEditor/ensureTrailingParagraphAfterTable"
+>>>>>>> 57e747165 (fix(rte-table): insert paragraph when clicking below a table-last block)
 
 const EditorContainer = ({
   children,
@@ -62,6 +66,7 @@ const EditorContentWrapper = ({
       flex="1 1 auto"
       overflowX="hidden"
       overflowY="auto"
+<<<<<<< HEAD
     >
       <Box
         as={EditorContent}
@@ -80,6 +85,24 @@ const EditorContentWrapper = ({
         />
       )}
     </Box>
+=======
+      backgroundColor="white"
+      onClick={() => editor?.chain().focus().run()}
+      cursor="text"
+      onMouseDown={(event) => {
+        if (!editor || event.button !== 0) return
+
+        const target = event.target
+        if (target instanceof Node && editor.view.dom.contains(target)) {
+          return
+        }
+
+        if (tryFocusBelowEditorContent(editor.view, event.nativeEvent)) {
+          event.preventDefault()
+        }
+      }}
+    />
+>>>>>>> 57e747165 (fix(rte-table): insert paragraph when clicking below a table-last block)
   )
 }
 
