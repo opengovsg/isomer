@@ -1,9 +1,5 @@
 import { toZonedTime } from "date-fns-tz"
-import {
-  AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS,
-  ISOMER_SUPPORT_EMAIL,
-  ISOMER_SUPPORT_LINK,
-} from "~/constants/misc"
+import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { formatScheduledAtDate } from "~/lib/dates"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
@@ -418,7 +414,7 @@ const accountDeactivationTemplate = (
 const auditLogExportReadyTemplate = (
   data: AuditLogExportReadyEmailTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail, siteName, month, link, sizeInBytes } = data
+  const { recipientEmail, siteName, month, link, sizeInBytes, expiresAt } = data
 
   const logName = link.label === "access" ? "Access" : "Audit"
 
@@ -427,7 +423,7 @@ const auditLogExportReadyTemplate = (
   return {
     subject: `[Isomer] ${logName} logs for ${month} for your site (${unescapeHtml(siteName)}) is ready`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>You requested for audit logs for your site(s) for ${month}. This link will expire after ${AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS} days.</p>
+<p>You requested for audit logs for your site(s) for ${month}. This link will expire on ${expiresAt}.</p>
 <p>${downloadLink}</p>
 <br/>
 <p>Best,</p>
@@ -463,14 +459,24 @@ const auditLogExportBatchReadyTemplate = (
   const { recipientEmail, month, reportLabel, links, failedSiteNames } = data
 
   const logName = reportLabel === "access" ? "Access" : "Audit"
+  const totalCount = links.length + failedSiteNames.length
+
+  // Each sibling site completes independently, so its Download Window can
+  // expire at a slightly different instant. Most batches finish in one sweep
+  // and share a single expiry — keep the common case a plain sentence, and
+  // only fall back to per-link expiry text when they genuinely differ.
+  const distinctExpiries = new Set(links.map((link) => link.expiresAt))
+  const sharedExpiry =
+    distinctExpiries.size === 1 ? links[0]?.expiresAt : undefined
 
   // The link text is the site name itself — not a repeated "Download {label}
   // review logs for {month} [.csv, ...]" string on every row, which carries
   // no distinguishing information when every row shares the same month and
   // label (already stated in the intro above).
   const linkItems = links
-    .map(({ siteName, url, sizeInBytes }) => {
-      return `<li><a href="${url}">${siteName}</a> (${formatExportSize(sizeInBytes)})</li>`
+    .map(({ siteName, url, sizeInBytes, expiresAt }) => {
+      const expiryText = sharedExpiry ? "" : `, expires ${expiresAt}`
+      return `<li><a href="${url}">${siteName}</a> (${formatExportSize(sizeInBytes)}${expiryText})</li>`
     })
     .join("")
 
@@ -483,7 +489,7 @@ const auditLogExportBatchReadyTemplate = (
   return {
     subject: `[Isomer] ${logName} logs for ${month} for your sites`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>You requested ${logName.toLowerCase()} logs for all your sites for ${month}. Each link below will expire after ${AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS} days.</p>
+<p>You requested ${logName.toLowerCase()} logs for all your sites for ${month}. ${links.length} of ${totalCount} site(s) succeeded.${sharedExpiry ? ` Each link below will expire on ${sharedExpiry}.` : ""}</p>
 ${linkItems.length > 0 ? `<ol>${linkItems}</ol>` : ""}
 ${failedSection}
 <br/>

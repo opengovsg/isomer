@@ -9,6 +9,7 @@ describe("auditLogExportReady template", () => {
     month: "June 2026",
     // 2.5 MB with ONE_MB_IN_BYTES = 1_000_000, so the label reads "2.5 MB".
     sizeInBytes: 2_500_000,
+    expiresAt: "22/09/2026, 11:59pm (SGT)",
   }
 
   it("maps the access label to its display text and keeps its signed URL", () => {
@@ -120,15 +121,17 @@ describe("auditLogExportReady template", () => {
     )
   })
 
-  it("notes that the link expires after 3 days", () => {
-    // Act
+  it("states an absolute expiry instant instead of a relative day count", () => {
+    // Act: a relative "expires in 3 days" has no fixed anchor the recipient
+    // can see — dogfooding feedback asked for an absolute date/time/timezone.
     const template = templates.auditLogExportReady({
       ...baseData,
       link: { label: "access", url: "https://s3.example/x" },
     })
 
     // Assert
-    expect(template.body).toContain("expire after 3 days")
+    expect(template.body).toContain("expire on 22/09/2026, 11:59pm (SGT)")
+    expect(template.body).not.toContain("days")
   })
 
   it("escapes special chars in the link href so it can't break out of the attribute", () => {
@@ -186,6 +189,8 @@ describe("auditLogExportBatchReady template", () => {
     failedSiteNames: [],
   }
 
+  const expiresAt = "22/09/2026, 11:59pm (SGT)"
+
   it("formats each link's size independently, distinguishing 0 bytes from an unknown size", () => {
     // Act
     const template = templates.auditLogExportBatchReady({
@@ -195,21 +200,25 @@ describe("auditLogExportBatchReady template", () => {
           siteName: "Big Site",
           url: "https://s3.example/big",
           sizeInBytes: 2_500_000,
+          expiresAt,
         },
         {
           siteName: "Small Site",
           url: "https://s3.example/small",
           sizeInBytes: 14_000,
+          expiresAt,
         },
         {
           siteName: "Empty Site",
           url: "https://s3.example/empty",
           sizeInBytes: 0,
+          expiresAt,
         },
         {
           siteName: "Unmeasured Site",
           url: "https://s3.example/unknown",
           sizeInBytes: null,
+          expiresAt,
         },
       ],
     })
@@ -230,6 +239,7 @@ describe("auditLogExportBatchReady template", () => {
           siteName: "Hack for Public Good",
           url: "https://s3.example/hfpg",
           sizeInBytes: 14_000,
+          expiresAt,
         },
       ],
     })
@@ -245,13 +255,94 @@ describe("auditLogExportBatchReady template", () => {
     const template = templates.auditLogExportBatchReady({
       ...baseData,
       links: [
-        { siteName: "A Site", url: "https://s3.example/a", sizeInBytes: 100 },
+        {
+          siteName: "A Site",
+          url: "https://s3.example/a",
+          sizeInBytes: 100,
+          expiresAt,
+        },
       ],
     })
 
     // Assert
     expect(template.body).toContain("<ol>")
     expect(template.body).not.toContain("<ul><li>")
+  })
+
+  it("states a single absolute expiry once when every link shares one", () => {
+    // Act
+    const template = templates.auditLogExportBatchReady({
+      ...baseData,
+      links: [
+        {
+          siteName: "A",
+          url: "https://s3.example/a",
+          sizeInBytes: 100,
+          expiresAt,
+        },
+        {
+          siteName: "B",
+          url: "https://s3.example/b",
+          sizeInBytes: 200,
+          expiresAt,
+        },
+      ],
+    })
+
+    // Assert: one blanket sentence, not repeated per link.
+    expect(template.body).toContain(
+      `Each link below will expire on ${expiresAt}.`,
+    )
+    expect(template.body).not.toContain("expires 22/09/2026")
+  })
+
+  it("states each link's own expiry when they differ across the batch", () => {
+    // Act: sibling sites can complete (and so expire) at different instants.
+    const template = templates.auditLogExportBatchReady({
+      ...baseData,
+      links: [
+        {
+          siteName: "A",
+          url: "https://s3.example/a",
+          sizeInBytes: 100,
+          expiresAt: "22/09/2026, 11:59pm (SGT)",
+        },
+        {
+          siteName: "B",
+          url: "https://s3.example/b",
+          sizeInBytes: 200,
+          expiresAt: "23/09/2026, 09:00am (SGT)",
+        },
+      ],
+    })
+
+    // Assert
+    expect(template.body).toContain(
+      "(0.1 KB, expires 22/09/2026, 11:59pm (SGT))",
+    )
+    expect(template.body).toContain(
+      "(0.2 KB, expires 23/09/2026, 09:00am (SGT))",
+    )
+    expect(template.body).not.toContain("Each link below will expire on")
+  })
+
+  it("tells the requester how many of the requested sites succeeded", () => {
+    // Act
+    const template = templates.auditLogExportBatchReady({
+      ...baseData,
+      links: [
+        {
+          siteName: "A",
+          url: "https://s3.example/a",
+          sizeInBytes: 100,
+          expiresAt,
+        },
+      ],
+      failedSiteNames: ["Broken Site"],
+    })
+
+    // Assert
+    expect(template.body).toContain("1 of 2 site(s) succeeded")
   })
 })
 
