@@ -285,5 +285,44 @@ export const TableBubbleMenu: Story = {
       expect(portals.getByText("Delete row")).toBeInTheDocument(),
     )
     await expect(portals.getByText("Add row above")).toBeInTheDocument()
+    await expect(portals.getByText("Merge cells")).toBeInTheDocument()
+  },
+}
+
+// Full column selection: column actions include Merge cells (same as row axis).
+export const TableBubbleMenuColumnSelection: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    const canvas = within(canvasElement)
+    await AddTextBlock.play?.(context)
+
+    await userEvent.click(canvas.getByRole("button", { name: /^table$/i }))
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /^3 by 3 table$/i }),
+    )
+
+    await waitFor(() =>
+      expect(canvasElement.querySelector("table")).toBeTruthy(),
+    )
+
+    const editor = getEditorFromCanvas(canvasElement)
+    editor
+      .chain()
+      .focus()
+      .setCellSelection({
+        anchorCell: nthCellPos(editor, 1),
+        headCell: nthCellPos(editor, 7),
+      })
+      .run()
+
+    const portals = withinPortals(canvasElement)
+    await userEvent.click(
+      await portals.findByRole("button", { name: "Table actions" }),
+    )
+
+    await waitFor(() =>
+      expect(portals.getByText("Delete column")).toBeInTheDocument(),
+    )
+    await expect(portals.getByText("Merge cells")).toBeInTheDocument()
   },
 }
