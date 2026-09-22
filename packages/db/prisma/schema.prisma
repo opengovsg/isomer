@@ -424,6 +424,13 @@ model AuditLogExportRequest {
   completedAt       DateTime?
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @default(now()) @updatedAt
+  // Correlates every per-site row created by ONE "allSites" ask so the
+  // fulfilment worker can wait for all of them and send a single combined
+  // email. Null for `scope: "site"` asks (and legacy rows), which keep
+  // sending their existing one-row-one-email path unchanged. FKs to the
+  // AuditLogExportBatch row that holds the shared per-batch email state.
+  batchId           String?
+  batch             AuditLogExportBatch?     @relation(fields: [batchId], references: [id])
 
   @@index([status])
   // NOTE: the migration promotes this to a PARTIAL UNIQUE index
@@ -433,4 +440,26 @@ model AuditLogExportRequest {
   // this stays a plain `@@index`. As a result `prisma migrate dev` against an
   // existing DB will report drift here; that divergence is expected.
   @@index([siteId, userId, auditLogDateRange, reportType])
+  @@index([batchId])
+}
+
+// One row per "allSites" ask, holding the shared state for that ask's single
+// combined email so it is not duplicated across every sibling
+// AuditLogExportRequest. Rows are created only for `scope: "allSites"` asks
+// that insert at least one fresh request row; `scope: "site"` asks never batch.
+model AuditLogExportBatch {
+  // The batchId minted once per "allSites" ask (a UUID). Referenced by every
+  // sibling request row's `batchId`.
+  id            String                  @id
+  // Set once the combined email has been sent — or, without a send, once
+  // delivery has exhausted its retries — so it is never sent twice and a
+  // permanently-failing email is not retried forever. The advisory lock scoped
+  // to this id serialises the check-and-stamp; null until claimed.
+  emailedAt     DateTime?
+  // How many times the combined email has been attempted (charged under the
+  // advisory lock). Mirrors AuditLogExportRequest.attempts for per-row sends:
+  // after MAX_ATTEMPTS failures the sweep stops retrying.
+  emailAttempts Int                     @default(0)
+  createdAt     DateTime                @default(now())
+  requests      AuditLogExportRequest[]
 }
