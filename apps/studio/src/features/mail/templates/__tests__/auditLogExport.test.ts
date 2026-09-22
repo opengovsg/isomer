@@ -7,7 +7,7 @@ describe("auditLogExportReady template", () => {
     recipientEmail: "test@example.com",
     siteName: "Test Site",
     month: "June 2026",
-    // 2.5 MB with ONE_MB_IN_BYTES = 1_000_000, so the label reads "2.50MB".
+    // 2.5 MB with ONE_MB_IN_BYTES = 1_000_000, so the label reads "2.5 MB".
     sizeInBytes: 2_500_000,
   }
 
@@ -20,7 +20,7 @@ describe("auditLogExportReady template", () => {
 
     // Assert: the label renders its mapped text against its own signed URL
     expect(template.body).toContain(
-      `<a href="https://s3.example/access?sig=abc">Download access review logs for June 2026 [.csv, 2.50MB]</a>`,
+      `<a href="https://s3.example/access?sig=abc">Download access review logs for June 2026 [.csv, 2.5 MB]</a>`,
     )
   })
 
@@ -33,7 +33,7 @@ describe("auditLogExportReady template", () => {
 
     // Assert: the label renders its mapped text against its own signed URL
     expect(template.body).toContain(
-      `<a href="https://s3.example/audit?sig=def">Download audit review logs for June 2026 [.csv, 2.50MB]</a>`,
+      `<a href="https://s3.example/audit?sig=def">Download audit review logs for June 2026 [.csv, 2.5 MB]</a>`,
     )
   })
 
@@ -50,7 +50,7 @@ describe("auditLogExportReady template", () => {
     ).length
     expect(hrefCount).toBe(1)
     expect(template.body).toContain(
-      `<a href="https://s3.example/only?sig=1">Download access review logs for June 2026 [.csv, 2.50MB]</a>`,
+      `<a href="https://s3.example/only?sig=1">Download access review logs for June 2026 [.csv, 2.5 MB]</a>`,
     )
   })
 
@@ -64,8 +64,34 @@ describe("auditLogExportReady template", () => {
     })
 
     // Assert
-    expect(template.body).toContain("[.csv, -MB]")
+    expect(template.body).toContain("[.csv, unknown size]")
     expect(template.body).not.toContain("NaN")
+  })
+
+  it("renders a real 0-byte export as a size, not the unknown-size placeholder", () => {
+    // Act: a genuinely empty (but successfully generated) CSV must be
+    // distinguishable from a failed size lookup — see formatExportSize.
+    const template = templates.auditLogExportReady({
+      ...baseData,
+      sizeInBytes: 0,
+      link: { label: "access", url: "https://s3.example/empty" },
+    })
+
+    // Assert
+    expect(template.body).toContain("[.csv, 0 KB]")
+    expect(template.body).not.toContain("unknown size")
+  })
+
+  it("renders sub-megabyte sizes in KB instead of a rounded-away 0.00MB/0.01MB", () => {
+    // Act: 14 KB previously rendered as the misleading "0.01MB".
+    const template = templates.auditLogExportReady({
+      ...baseData,
+      sizeInBytes: 14_000,
+      link: { label: "access", url: "https://s3.example/small" },
+    })
+
+    // Assert
+    expect(template.body).toContain("[.csv, 14 KB]")
   })
 
   it("uses an access-logs subject for an access report", () => {
@@ -149,6 +175,50 @@ describe("auditLogExportReady template", () => {
       `<a href="https://s3.example/k?X-Amz-Signature=abc&amp;X-Amz-Expires=259200">`,
     )
     expect(template.body).not.toContain("&amp;amp;")
+  })
+})
+
+describe("auditLogExportBatchReady template", () => {
+  const baseData = {
+    recipientEmail: "test@example.com",
+    month: "June 2026",
+    reportLabel: "access" as const,
+    failedSiteNames: [],
+  }
+
+  it("formats each link's size independently, distinguishing 0 bytes from an unknown size", () => {
+    // Act
+    const template = templates.auditLogExportBatchReady({
+      ...baseData,
+      links: [
+        {
+          siteName: "Big Site",
+          url: "https://s3.example/big",
+          sizeInBytes: 2_500_000,
+        },
+        {
+          siteName: "Small Site",
+          url: "https://s3.example/small",
+          sizeInBytes: 14_000,
+        },
+        {
+          siteName: "Empty Site",
+          url: "https://s3.example/empty",
+          sizeInBytes: 0,
+        },
+        {
+          siteName: "Unmeasured Site",
+          url: "https://s3.example/unknown",
+          sizeInBytes: null,
+        },
+      ],
+    })
+
+    // Assert
+    expect(template.body).toContain("[.csv, 2.5 MB]")
+    expect(template.body).toContain("[.csv, 14 KB]")
+    expect(template.body).toContain("[.csv, 0 KB]")
+    expect(template.body).toContain("[.csv, unknown size]")
   })
 })
 
