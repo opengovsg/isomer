@@ -56,6 +56,14 @@ const tableInfoAt = ({
   }
 }
 
+const mapPositionAt = ({ map, index }: { map: TableMap; index: number }) => {
+  const pos = map.map[index]
+  if (pos === undefined) {
+    throw new Error(`Table map index ${index} out of bounds`)
+  }
+  return pos
+}
+
 const resolveCell = ({
   table,
   map,
@@ -445,8 +453,11 @@ export const duplicateSelectedColumns = (editor: Editor): void => {
     selectCorners: ({ info, rect: selectionRect }) => {
       const { map } = info
       return {
-        anchor: map.map[(map.height - 1) * map.width + selectionRect.right],
-        head: map.map[selectionRect.right + span - 1],
+        anchor: mapPositionAt({
+          map,
+          index: (map.height - 1) * map.width + selectionRect.right,
+        }),
+        head: mapPositionAt({ map, index: selectionRect.right + span - 1 }),
       }
     },
   })
