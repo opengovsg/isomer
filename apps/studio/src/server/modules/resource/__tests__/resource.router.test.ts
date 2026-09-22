@@ -2,6 +2,8 @@ import { TRPCError } from "@trpc/server"
 import { omit, pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
+import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
+import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
   applySession,
@@ -23,6 +25,7 @@ import {
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
+import { IS_UNPUBLISH_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
@@ -3032,6 +3035,329 @@ describe("resource.router", async () => {
         .executeTakeFirst()
       expect(actual).toBeUndefined()
       expect(result).toEqual(page)
+    })
+
+    it("should block deleting a page that is still published", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: page.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This page must be unpublished before it can be deleted",
+        }),
+      )
+      expect(auditSpy).not.toHaveBeenCalled()
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
+    })
+
+    describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
+      afterEach(() => {
+        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
+      })
+
+      it("should allow deleting a still-published page, falling back to pre-unpublish behaviour", async () => {
+        // Arrange — with unpublish dark-launched off, a live page has no way
+        // to stop being live, so the unpublish-before-delete guard must not
+        // apply, or every currently-published page becomes permanently
+        // undeletable.
+        mockGrowthBook.setForcedFeatures(
+          new Map([
+            ...mockFeatureFlags,
+            [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
+          ]),
+        )
+        const { page, site } = await setupPageResource({
+          resourceType: "Page",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        // Act
+        const result = await caller.delete({
+          resourceId: page.id,
+          siteId: site.id,
+        })
+
+        // Assert
+        expect(result).toBeDefined()
+        const actual = await db
+          .selectFrom("Resource")
+          .where("id", "=", page.id)
+          .executeTakeFirst()
+        expect(actual).toBeUndefined()
+      })
+    })
+
+    it("should block deleting a folder whose IndexPage is still published", async () => {
+      // Arrange — the folder's own row never carries a publishedVersionId;
+      // it's the child IndexPage that's actually live.
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "This folder has live pages inside it — unpublish them before deleting",
+        }),
+      )
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
+    })
+
+    it("should allow deleting a folder whose IndexPage is not published", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+
+      // Act
+      const result = await caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actual).toBeUndefined()
+    })
+
+    it("should allow deleting a folder whose FolderMeta has a stray publishedVersionId", async () => {
+      // Arrange — FolderMeta is internal ordering metadata that never renders
+      // as visitor-facing content; a stray publishedVersionId on it (seen in
+      // production) must not block deleting an otherwise fully-unpublished folder
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+      const { folderMeta } = await setupFolderMeta({
+        siteId: site.id,
+        folderId: folder.id,
+      })
+      const blob = await setupBlob()
+      const version = await db
+        .insertInto("Version")
+        .values({
+          versionNum: 1,
+          resourceId: folderMeta.id,
+          blobId: blob.id,
+          publishedBy: session.userId!,
+        })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+      await db
+        .updateTable("Resource")
+        .where("id", "=", folderMeta.id)
+        .set({ publishedVersionId: version.id })
+        .execute()
+
+      // Act
+      const result = await caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actual).toBeUndefined()
+    })
+
+    it("should block deleting a folder whose IndexPage is unpublished but has a live nested page", async () => {
+      // Arrange — `parentId` is `onDelete: Cascade`, so deleting the folder
+      // would silently take the nested page down with it if this weren't blocked
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+      const { page: nestedPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "nested-page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "This folder has live pages inside it — unpublish them before deleting",
+        }),
+      )
+      const actualFolder = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actualFolder).not.toBeUndefined()
+      const actualNestedPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", nestedPage.id)
+        .executeTakeFirst()
+      expect(actualNestedPage).not.toBeUndefined()
+    })
+
+    it("should block deleting a folder whose IndexPage is unpublished but has a live page nested inside a subfolder", async () => {
+      // Arrange — the live descendant is two levels down, not a direct child
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "subfolder",
+      })
+      const { page: nestedPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: subfolder.id,
+        resourceType: ResourceType.Page,
+        permalink: "nested-page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "This folder has live pages inside it — unpublish them before deleting",
+        }),
+      )
+      const actualNestedPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", nestedPage.id)
+        .executeTakeFirst()
+      expect(actualNestedPage).not.toBeUndefined()
+    })
+
+    it("should block deleting a collection whose IndexPage is still published", async () => {
+      const { site, collection } = await setupCollection({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+
+      const result = caller.delete({
+        resourceId: collection.id,
+        siteId: site.id,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "This collection has live pages inside it — unpublish them before deleting",
+        }),
+      )
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", collection.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
     })
 
     it("should soft-delete redirects pointing to the deleted page", async () => {

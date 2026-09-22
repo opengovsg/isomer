@@ -90,6 +90,11 @@ export const publishPageSchema = z.object({
   siteId: z.number().min(1),
 })
 
+export const unpublishPageSchema = z.object({
+  pageId: z.number().min(1),
+  siteId: z.number().min(1),
+})
+
 export const createCollectionPageFormSchema = z
   .discriminatedUnion("type", [
     z.object({
