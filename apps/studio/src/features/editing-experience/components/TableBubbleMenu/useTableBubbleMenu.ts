@@ -14,7 +14,6 @@ import {
 import type { SelectionKind } from "./TableBubbleMenu.types"
 import {
   detectTableSelectionKind,
-  isActionableTableSelectionKind,
   isEditorModalOpen,
 } from "./TableBubbleMenu.utils"
 import {
@@ -73,7 +72,7 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
   })
 
   const show =
-    isActionableTableSelectionKind(kind) &&
+    kind !== "none" &&
     !isDragging &&
     !isEditorModalOpen() &&
     (isFocused || menuHasFocus)
