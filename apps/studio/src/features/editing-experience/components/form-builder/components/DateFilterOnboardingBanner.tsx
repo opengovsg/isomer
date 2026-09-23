@@ -1,18 +1,10 @@
 import { Box, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
-import { useEffect } from "react"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { NextImage } from "~/components/NextImage"
-import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
-import {
-  captureDateFilterOnboardingBannerShown,
-  captureDateFilterOnboardingBannerSupportLinkClicked,
-} from "~/lib/analytics/dateFilters"
-
-const DATE_FILTER_ONBOARDING_BANNER_SHOWN_KEY =
-  "date-filter-onboarding-banner-shown"
+import { captureDateFilterOnboardingBannerSupportLinkClicked } from "~/lib/analytics/dateFilters"
 
 interface DateFilterOnboardingBannerProps {
   siteId: number
@@ -21,26 +13,10 @@ interface DateFilterOnboardingBannerProps {
 export const DateFilterOnboardingBanner = ({
   siteId,
 }: DateFilterOnboardingBannerProps): JSX.Element | null => {
-  const isDateFiltersEnabled = useDateFiltersEnabled()
   const [hasSeenOnboardingBanner, setHasSeenOnboardingBanner] = useLocalStorage(
     "date-filter-onboarding-banner-seen",
     false,
   )
-
-  useEffect(() => {
-    if (hasSeenOnboardingBanner) {
-      return
-    }
-    if (
-      sessionStorage.getItem(DATE_FILTER_ONBOARDING_BANNER_SHOWN_KEY) ===
-      "true"
-    ) {
-      return
-    }
-
-    sessionStorage.setItem(DATE_FILTER_ONBOARDING_BANNER_SHOWN_KEY, "true")
-    captureDateFilterOnboardingBannerShown({ siteId, isDateFiltersEnabled })
-  }, [hasSeenOnboardingBanner, isDateFiltersEnabled, siteId])
 
   if (hasSeenOnboardingBanner) {
     return null
@@ -72,10 +48,7 @@ export const DateFilterOnboardingBanner = ({
           color="interaction.links.default"
           onClick={() => {
             setHasSeenOnboardingBanner(true)
-            captureDateFilterOnboardingBannerSupportLinkClicked({
-              siteId,
-              isDateFiltersEnabled,
-            })
+            captureDateFilterOnboardingBannerSupportLinkClicked({ siteId })
           }}
         >
           <HStack as="span" spacing="0.25rem">

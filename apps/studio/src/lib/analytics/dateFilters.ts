@@ -26,20 +26,11 @@ const dateFilterContext = ({
   is_date_filters_enabled: isDateFiltersEnabled,
 })
 
-export const captureDateFilterOnboardingBannerShown = (
-  context: DateFilterAnalyticsContext,
-) => {
+export const captureDateFilterOnboardingBannerSupportLinkClicked = ({
+  siteId,
+}: Pick<DateFilterAnalyticsContext, "siteId">) => {
   posthog.capture("date_filter_onboarding_banner", {
-    ...dateFilterContext(context),
-    action: "shown",
-  })
-}
-
-export const captureDateFilterOnboardingBannerSupportLinkClicked = (
-  context: DateFilterAnalyticsContext,
-) => {
-  posthog.capture("date_filter_onboarding_banner", {
-    ...dateFilterContext(context),
+    site_id: siteId,
     action: "support_link_clicked",
   })
 }
