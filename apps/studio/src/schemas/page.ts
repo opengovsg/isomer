@@ -1,6 +1,6 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
-import { z, ZodError } from "zod"
+import { z } from "zod"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import {
@@ -12,37 +12,6 @@ import {
 import { generateBasePermalinkSchema } from "./common"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
-
-export interface PageContentAjvError {
-  instancePath: string
-  keyword: string
-}
-
-const isPageContentAjvError = (
-  value: unknown,
-): value is PageContentAjvError => {
-  if (typeof value !== "object" || value === null) return false
-  if (!("instancePath" in value) || !("keyword" in value)) return false
-
-  return (
-    typeof value.instancePath === "string" && typeof value.keyword === "string"
-  )
-}
-
-/** AJV path and rule from a failed `updatePageBlobSchema` parse. */
-export const pageContentAjvErrors = (error: unknown): PageContentAjvError[] => {
-  if (!(error instanceof ZodError)) return []
-
-  return error.issues.flatMap((issue) => {
-    if (issue.code !== z.ZodIssueCode.custom) return []
-    const params: unknown = issue.params
-    if (typeof params !== "object" || params === null) return []
-
-    const ajvErrors = Reflect.get(params, "ajvErrors") as unknown
-    if (!Array.isArray(ajvErrors)) return []
-    return ajvErrors.filter(isPageContentAjvError)
-  })
-}
 
 export const NEW_PAGE_LAYOUT_VALUES = [
   "content",

@@ -16,7 +16,6 @@ import { APP_VERSION_HEADER_KEY } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 import { redactLogInput } from "~/lib/redact-log-input"
-import { pageContentAjvErrors } from "~/schemas/page"
 
 import type { RateLimitMetaOptions } from "./modules/rate-limit/types"
 import { type Context } from "./context"
@@ -86,10 +85,6 @@ const loggerMiddleware = t.middleware(
         },
         `[${type}]: ${path} - ${durationInMs}ms - ${result.error.code} ${result.error.message} - ERROR`,
       )
-      const ajvErrors = pageContentAjvErrors(result.error.cause)
-      if (ajvErrors.length > 0) {
-        logger.error({ ajvErrors }, "Invalid page content")
-      }
     }
 
     return result
