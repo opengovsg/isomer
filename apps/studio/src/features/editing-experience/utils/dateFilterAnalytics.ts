@@ -25,7 +25,7 @@ export type DateFilterSavedProperties = Required<
   statusLabelsCustomized: boolean
 }
 
-export interface CollectionItemDateProperties {
+interface CollectionItemDateProperties {
   datesFilled: number
   dateFilterCount: number
   hasRange: boolean
@@ -45,7 +45,7 @@ const isStatusLabelsCustomized = ({
     },
   )
 
-export const toDateFilterSavedProperties = ({
+const toDateFilterSavedProperties = ({
   filter,
 }: {
   filter: DateFilterSchemaType
