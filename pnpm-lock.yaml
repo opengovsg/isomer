@@ -111,8 +111,8 @@ catalogs:
       specifier: ^3.1.0
       version: 3.1.0
     '@atlaskit/pragmatic-drag-and-drop-hitbox':
-      specifier: ^2.2.0
-      version: 2.2.1
+      specifier: ^2.2.2
+      version: 2.2.2
   aws-sdk:
     '@aws-sdk/client-acm':
       specifier: ^3.1132.0
@@ -779,7 +779,7 @@ importers:
         version: 3.1.0
       '@atlaskit/pragmatic-drag-and-drop-hitbox':
         specifier: catalog:atlaskitPragmaticDnd
-        version: 2.2.1
+        version: 2.2.2
       '@aws-sdk/client-cloudfront':
         specifier: catalog:aws-sdk
         version: 3.1136.0
@@ -2171,8 +2171,8 @@ packages:
     resolution: {integrity: sha512-93Z1N+BQNXysodoicpOIyNh2drHfz/CTf9nnT0FEx72GJcIiwgydD7tGAr78j41LsYn3hlRn+LdGPuBLn1Bl8Q==}
     engines: {node: ^22.13.0 || >=24.0.0}
 
-  '@atlaskit/pragmatic-drag-and-drop-hitbox@2.2.1':
-    resolution: {integrity: sha512-EIyL+2DRe0vep+kiugGfgbWTKpkjUbUINiZtK0Xc69g1G68i+4bV18D7vYDTxcE5z12DzkFz3ADLP0O3CMvLqQ==}
+  '@atlaskit/pragmatic-drag-and-drop-hitbox@2.2.2':
+    resolution: {integrity: sha512-2Or4BWVX9ZlgsCCvgbmGEwjv2134vZARL5SezP8Dsrh3ayPYThU55Ug4dBzDAqiIJE2q8aPn+zO8YYoATa4wuA==}
 
   '@atlaskit/pragmatic-drag-and-drop@3.1.0':
     resolution: {integrity: sha512-VU+2Oh6OgvC6D1xiX3lfm1gZJsaSPD+ZKjAHodOQ9IO6RfOvAyReLlK5ut9gIUpPmbD8d09wlCs7y4A6/I8c5Q==}
@@ -13438,7 +13438,7 @@ snapshots:
       is-potential-custom-element-name: 1.0.1
       lru-cache: 11.5.2
 
-  '@atlaskit/pragmatic-drag-and-drop-hitbox@2.2.1':
+  '@atlaskit/pragmatic-drag-and-drop-hitbox@2.2.2':
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop': 3.1.0
       '@babel/runtime': 7.29.7
