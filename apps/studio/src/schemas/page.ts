@@ -70,14 +70,9 @@ export const updatePageBlobSchema = basePageSchema.extend({
     if (schemaValidator(parsed)) {
       return parsed
     }
-    const ajvErrors = (schemaValidator.errors ?? []).map((error) => ({
-      instancePath: error.instancePath,
-      keyword: error.keyword,
-    }))
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: "Invalid page content",
-      params: { ajvErrors },
     })
     return z.NEVER
   }),
