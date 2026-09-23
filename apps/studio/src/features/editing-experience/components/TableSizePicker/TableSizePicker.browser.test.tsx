@@ -7,11 +7,15 @@ import {
   waitFor,
 } from "@testing-library/react"
 import { EditorContent } from "@tiptap/react"
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { theme } from "~/theme"
 
 import { useTextEditor } from "../../hooks/useTextEditor"
 import { TableSizePicker } from "./TableSizePicker"
+
+vi.mock("~/hooks/useQueryParse", () => ({
+  useQueryParse: () => ({ siteId: 1, pageId: 1 }),
+}))
 
 // A minimal harness that mounts a real TipTap editor (the same extensions
 // used in the actual page editor, via `useTextEditor`) so these tests exercise

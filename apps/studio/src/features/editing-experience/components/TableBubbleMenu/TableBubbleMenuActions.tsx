@@ -32,6 +32,13 @@ import {
   IconMergeCells,
   IconSplitCell,
 } from "~/components/icons"
+import { pageSchema } from "~/features/editing-experience/schema"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import {
+  captureTableCommand,
+  type TableAction,
+  type TableCommandOutcome,
+} from "~/lib/analytics/tables"
 
 import type {
   SelectionKind,
@@ -61,13 +68,13 @@ const moveTableBlock = (
   editor: Editor,
   plan: TableMovePlan,
   axis: TableMoveAxis,
-) => {
+): TableCommandOutcome => {
   const { state, view } = editor
   const rect = selectedRect(state)
   const tablePos = rect.tableStart - 1
   const move = axis === "row" ? moveTableRow : moveTableColumn
 
-  move({
+  const moved = move({
     from: plan.from,
     to: plan.to,
     select: false,
@@ -75,8 +82,29 @@ const moveTableBlock = (
   })(state, (tr) => {
     restoreMovedBlockSelection(view, tr, tablePos, plan, axis)
   })
+  if (!moved) return "rejected"
+
   editor.commands.focus()
+  return "applied"
 }
+
+const recordBubbleCommand = (
+  siteId: number,
+  kind: SelectionKind,
+  action: TableAction,
+  outcome: TableCommandOutcome,
+) => {
+  captureTableCommand({
+    siteId,
+    outcome,
+    action,
+    source: "bubble_menu",
+    selectionKind: kind,
+  })
+}
+
+const chainOutcome = (applied: boolean): TableCommandOutcome =>
+  applied ? "applied" : "rejected"
 
 const ActionButton = ({
   label,
@@ -119,13 +147,30 @@ const ActionGroup = ({ children }: { children: ReactNode }) => (
   </VStack>
 )
 
-const ClearContentsButton = ({ editor }: { editor: Editor }) => (
-  <ActionButton
-    label="Clear contents"
-    icon={<BiX fontSize="1rem" />}
-    onClick={() => clearSelectedCells(editor)}
-  />
-)
+const ClearContentsButton = ({
+  editor,
+  kind,
+}: {
+  editor: Editor
+  kind: SelectionKind
+}) => {
+  const { siteId } = useQueryParse(pageSchema)
+
+  return (
+    <ActionButton
+      label="Clear contents"
+      icon={<BiX fontSize="1rem" />}
+      onClick={() =>
+        recordBubbleCommand(
+          siteId,
+          kind,
+          "clear_contents",
+          clearSelectedCells(editor),
+        )
+      }
+    />
+  )
+}
 
 const colorSwatchLabel = (color: string) =>
   `${color.charAt(0).toUpperCase()}${color.slice(1)}`
@@ -261,6 +306,7 @@ const BackgroundColor = ({
   kind: SelectionKind
   onColorSet: () => void
 }) => {
+  const { siteId } = useQueryParse(pageSchema)
   if (kind === "none") return null
 
   const { selection } = editor.state
@@ -272,20 +318,42 @@ const BackgroundColor = ({
     <BackgroundColorSection
       state={state}
       onSetColor={(color) => {
-        setSelectedCellsBackgroundColor(editor, color)
+        recordBubbleCommand(
+          siteId,
+          kind,
+          "set_cell_background",
+          setSelectedCellsBackgroundColor(editor, color),
+        )
         onColorSet()
       }}
     />
   )
 }
 
-const MergeCellsButton = ({ editor }: { editor: Editor }) => (
-  <ActionButton
-    label="Merge cells"
-    icon={<IconMergeCells boxSize="1rem" />}
-    onClick={() => editor.chain().focus().mergeCells().run()}
-  />
-)
+const MergeCellsButton = ({
+  editor,
+  kind,
+}: {
+  editor: Editor
+  kind: SelectionKind
+}) => {
+  const { siteId } = useQueryParse(pageSchema)
+
+  return (
+    <ActionButton
+      label="Merge cells"
+      icon={<IconMergeCells boxSize="1rem" />}
+      onClick={() =>
+        recordBubbleCommand(
+          siteId,
+          kind,
+          "merge_cells",
+          chainOutcome(editor.chain().focus().mergeCells().run()),
+        )
+      }
+    />
+  )
+}
 
 const HeaderToggle = ({
   label,
@@ -322,10 +390,13 @@ type SelectionRect = ReturnType<typeof selectedRect>
 const RowSelectionActions = ({
   editor,
   rect,
+  kind,
 }: {
   editor: Editor
   rect: SelectionRect
+  kind: SelectionKind
 }) => {
+  const { siteId } = useQueryParse(pageSchema)
   const includesHeader = selectionIncludesHeaderRow(rect)
   const rowMoveUpPlan = getRowMovePlan(
     { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
@@ -342,49 +413,98 @@ const RowSelectionActions = ({
         <HeaderToggle
           label="Header row"
           isChecked={includesHeader}
-          onToggle={() => editor.chain().focus().toggleHeaderRow().run()}
+          onToggle={() =>
+            recordBubbleCommand(
+              siteId,
+              kind,
+              "toggle_header_row",
+              chainOutcome(editor.chain().focus().toggleHeaderRow().run()),
+            )
+          }
         />
       )}
       {!includesHeader && (
         <ActionButton
           label="Add row above"
           icon={<IconAddRowAbove boxSize="1rem" />}
-          onClick={() => editor.chain().focus().addRowBefore().run()}
+          onClick={() =>
+            recordBubbleCommand(
+              siteId,
+              kind,
+              "add_row",
+              chainOutcome(editor.chain().focus().addRowBefore().run()),
+            )
+          }
         />
       )}
       <ActionButton
         label="Add row below"
         icon={<IconAddRowBelow boxSize="1rem" />}
-        onClick={() => editor.chain().focus().addRowAfter().run()}
+        onClick={() =>
+          recordBubbleCommand(
+            siteId,
+            kind,
+            "add_row",
+            chainOutcome(editor.chain().focus().addRowAfter().run()),
+          )
+        }
       />
       {!includesHeader && (
         <ActionButton
           label="Duplicate row"
           icon={<BiCopy fontSize="1rem" />}
-          onClick={() => duplicateSelectedRows(editor)}
+          onClick={() =>
+            recordBubbleCommand(
+              siteId,
+              kind,
+              "duplicate_row",
+              duplicateSelectedRows(editor),
+            )
+          }
         />
       )}
-      <ClearContentsButton editor={editor} />
-      <MergeCellsButton editor={editor} />
+      <ClearContentsButton editor={editor} kind={kind} />
+      <MergeCellsButton editor={editor} kind={kind} />
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
           icon={<BiUpArrowAlt fontSize="1rem" />}
-          onClick={() => moveTableBlock(editor, rowMoveUpPlan, "row")}
+          onClick={() =>
+            recordBubbleCommand(
+              siteId,
+              kind,
+              "move_row",
+              moveTableBlock(editor, rowMoveUpPlan, "row"),
+            )
+          }
         />
       )}
       {rowMoveDownPlan && !includesHeader && (
         <ActionButton
           label="Move down"
           icon={<BiDownArrowAlt fontSize="1rem" />}
-          onClick={() => moveTableBlock(editor, rowMoveDownPlan, "row")}
+          onClick={() =>
+            recordBubbleCommand(
+              siteId,
+              kind,
+              "move_row",
+              moveTableBlock(editor, rowMoveDownPlan, "row"),
+            )
+          }
         />
       )}
       {!includesHeader && (
         <ActionButton
           label="Delete row"
           icon={<IconDelRow boxSize="1rem" />}
-          onClick={() => editor.chain().focus().deleteRow().run()}
+          onClick={() =>
+            recordBubbleCommand(
+              siteId,
+              kind,
+              "delete_row",
+              chainOutcome(editor.chain().focus().deleteRow().run()),
+            )
+          }
         />
       )}
     </ActionGroup>
@@ -394,10 +514,13 @@ const RowSelectionActions = ({
 const ColumnSelectionActions = ({
   editor,
   rect,
+  kind,
 }: {
   editor: Editor
   rect: SelectionRect
+  kind: SelectionKind
 }) => {
+  const { siteId } = useQueryParse(pageSchema)
   const includesHeader = selectionIncludesHeaderColumn(rect)
 
   const columnMoveLeftPlan = getColumnMovePlan(
@@ -416,49 +539,98 @@ const ColumnSelectionActions = ({
         <HeaderToggle
           label="Header column"
           isChecked={includesHeader}
-          onToggle={() => editor.chain().focus().toggleHeaderColumn().run()}
+          onToggle={() =>
+            recordBubbleCommand(
+              siteId,
+              kind,
+              "toggle_header_column",
+              chainOutcome(editor.chain().focus().toggleHeaderColumn().run()),
+            )
+          }
         />
       )}
       {!includesHeader && (
         <ActionButton
           label="Add column left"
           icon={<IconAddColLeft boxSize="1rem" />}
-          onClick={() => editor.chain().focus().addColumnBefore().run()}
+          onClick={() =>
+            recordBubbleCommand(
+              siteId,
+              kind,
+              "add_column",
+              chainOutcome(editor.chain().focus().addColumnBefore().run()),
+            )
+          }
         />
       )}
       <ActionButton
         label="Add column right"
         icon={<IconAddColRight boxSize="1rem" />}
-        onClick={() => editor.chain().focus().addColumnAfter().run()}
+        onClick={() =>
+          recordBubbleCommand(
+            siteId,
+            kind,
+            "add_column",
+            chainOutcome(editor.chain().focus().addColumnAfter().run()),
+          )
+        }
       />
       {!includesHeader && (
         <ActionButton
           label="Duplicate column"
           icon={<BiCopy fontSize="1rem" />}
-          onClick={() => duplicateSelectedColumns(editor)}
+          onClick={() =>
+            recordBubbleCommand(
+              siteId,
+              kind,
+              "duplicate_column",
+              duplicateSelectedColumns(editor),
+            )
+          }
         />
       )}
-      <ClearContentsButton editor={editor} />
-      <MergeCellsButton editor={editor} />
+      <ClearContentsButton editor={editor} kind={kind} />
+      <MergeCellsButton editor={editor} kind={kind} />
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
           icon={<BiLeftArrowAlt fontSize="1rem" />}
-          onClick={() => moveTableBlock(editor, columnMoveLeftPlan, "column")}
+          onClick={() =>
+            recordBubbleCommand(
+              siteId,
+              kind,
+              "move_column",
+              moveTableBlock(editor, columnMoveLeftPlan, "column"),
+            )
+          }
         />
       )}
       {columnMoveRightPlan && !includesHeader && (
         <ActionButton
           label="Move right"
           icon={<BiRightArrowAlt fontSize="1rem" />}
-          onClick={() => moveTableBlock(editor, columnMoveRightPlan, "column")}
+          onClick={() =>
+            recordBubbleCommand(
+              siteId,
+              kind,
+              "move_column",
+              moveTableBlock(editor, columnMoveRightPlan, "column"),
+            )
+          }
         />
       )}
       {!includesHeader && (
         <ActionButton
           label="Delete column"
           icon={<IconDelCol boxSize="1rem" />}
-          onClick={() => editor.chain().focus().deleteColumn().run()}
+          onClick={() =>
+            recordBubbleCommand(
+              siteId,
+              kind,
+              "delete_column",
+              chainOutcome(editor.chain().focus().deleteColumn().run()),
+            )
+          }
         />
       )}
     </ActionGroup>
@@ -472,47 +644,62 @@ const SelectionActions = ({
   editor: Editor
   kind: SelectionKind
 }) => {
+  const { siteId } = useQueryParse(pageSchema)
   const rect = selectedRect(editor.state)
 
   switch (kind) {
     case "row":
     case "header-row":
-      return <RowSelectionActions editor={editor} rect={rect} />
+      return <RowSelectionActions editor={editor} rect={rect} kind={kind} />
     case "column":
     case "header-column":
-      return <ColumnSelectionActions editor={editor} rect={rect} />
+      return <ColumnSelectionActions editor={editor} rect={rect} kind={kind} />
     case "table":
       return (
         <ActionGroup>
-          <ClearContentsButton editor={editor} />
+          <ClearContentsButton editor={editor} kind={kind} />
           <ActionButton
             label="Delete table"
             icon={<BiTrash fontSize="1rem" />}
-            onClick={() => editor.chain().focus().deleteTable().run()}
+            onClick={() =>
+              recordBubbleCommand(
+                siteId,
+                kind,
+                "delete_table",
+                chainOutcome(editor.chain().focus().deleteTable().run()),
+              )
+            }
           />
         </ActionGroup>
       )
     case "multi-cell":
       return (
         <ActionGroup>
-          <ClearContentsButton editor={editor} />
-          <MergeCellsButton editor={editor} />
+          <ClearContentsButton editor={editor} kind={kind} />
+          <MergeCellsButton editor={editor} kind={kind} />
         </ActionGroup>
       )
     case "single-cell":
       return (
         <ActionGroup>
-          <ClearContentsButton editor={editor} />
+          <ClearContentsButton editor={editor} kind={kind} />
         </ActionGroup>
       )
     case "merged-cell":
       return (
         <ActionGroup>
-          <ClearContentsButton editor={editor} />
+          <ClearContentsButton editor={editor} kind={kind} />
           <ActionButton
             label="Split cell"
             icon={<IconSplitCell boxSize="1rem" />}
-            onClick={() => editor.chain().focus().splitCell().run()}
+            onClick={() =>
+              recordBubbleCommand(
+                siteId,
+                kind,
+                "split_cell",
+                chainOutcome(editor.chain().focus().splitCell().run()),
+              )
+            }
           />
         </ActionGroup>
       )

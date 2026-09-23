@@ -1,4 +1,5 @@
 import type { Editor } from "@tiptap/react"
+import type { TableCommandOutcome } from "~/lib/analytics/tables"
 import {
   isTableCellBackgroundColorToken,
   type TableCellBackgroundColorToken,
@@ -40,10 +41,11 @@ export const getSelectionBackgroundColorState = (selection: CellSelection) => {
 export const setSelectedCellsBackgroundColor = (
   editor: Editor,
   color: TableCellBackgroundColorToken | null,
-): void => {
+): TableCommandOutcome => {
   const { selection } = editor.state
-  if (!(selection instanceof CellSelection)) return
-  if (color !== null && !isTableCellBackgroundColorToken(color)) return
+  if (!(selection instanceof CellSelection)) return "skipped"
+  if (color !== null && !isTableCellBackgroundColorToken(color))
+    return "skipped"
 
   const transaction = editor.state.tr
   selection.forEachCell((node, pos) => {
@@ -55,7 +57,8 @@ export const setSelectedCellsBackgroundColor = (
     })
   })
 
-  if (transaction.docChanged) {
-    editor.view.dispatch(transaction)
-  }
+  if (!transaction.docChanged) return "skipped"
+
+  editor.view.dispatch(transaction)
+  return "applied"
 }

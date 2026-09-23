@@ -7,6 +7,13 @@ import {
   useRef,
   useState,
 } from "react"
+import { detectTableSelectionKind } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.utils"
+import { pageSchema } from "~/features/editing-experience/schema"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import {
+  captureTableCommand,
+  captureTableCommandFailed,
+} from "~/lib/analytics/tables"
 
 import type { Rect, TableGeometry } from "./axisMath"
 import type { Axis } from "./axisView"
@@ -57,6 +64,7 @@ export const useAxisDragGesture = ({
   geometries: TableGeometry[]
   onDragStateChange?: (isDragging: boolean) => void
 }): AxisDragGesture => {
+  const { siteId } = useQueryParse(pageSchema)
   const [drag, setDrag] = useState<DraggingGesture | null>(null)
   // The window listeners must read the current state without re-subscribing,
   // so the machine's state lives in a ref and `drag` is derived output.
@@ -75,6 +83,10 @@ export const useAxisDragGesture = ({
         return
       }
       if (intent.type === "moveSlot") {
+        const action = intent.axis === "row" ? "move_row" : "move_column"
+        const detectedKind = detectTableSelectionKind(editor)
+        const selectionKind =
+          detectedKind === "none" ? intent.axis : detectedKind
         const tableBefore = getTableAt(editor.state.doc, intent.tablePos)
         const normalize =
           !!tableBefore && shouldNormalizeHeaderAxis(tableBefore, intent.axis)
@@ -89,7 +101,15 @@ export const useAxisDragGesture = ({
           transaction = tr
           return true
         })
-        if (!moved) return
+        if (!moved) {
+          captureTableCommandFailed({
+            siteId,
+            action,
+            source: "drag_handle",
+            reason: "move_noop",
+          })
+          return
+        }
         if (normalize) {
           transaction = applyHeaderAxisNormalization(
             transaction,
@@ -99,10 +119,17 @@ export const useAxisDragGesture = ({
           )
         }
         editor.view.dispatch(transaction)
+        captureTableCommand({
+          siteId,
+          outcome: "applied",
+          action,
+          source: "drag_handle",
+          selectionKind,
+        })
         return
       }
     },
-    [editor],
+    [editor, siteId],
   )
 
   const dispatch = useCallback(

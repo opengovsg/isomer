@@ -3,10 +3,13 @@ import type { RefObject } from "react"
 import { Box } from "@chakra-ui/react"
 import { useEditorState } from "@tiptap/react"
 import { Fragment, useMemo } from "react"
+import { pageSchema } from "~/features/editing-experience/schema"
 import {
   TABLE_CHROME_GAP_PX,
   TABLE_CHROME_THICKNESS_PX,
 } from "~/features/editing-experience/utils/tableEditorChrome"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { captureTableCommand } from "~/lib/analytics/tables"
 
 import type { TableGeometry } from "./internal/axisMath"
 import type { Axis } from "./internal/axisView"
@@ -45,6 +48,7 @@ export const TableDragHandles = ({
   containerRef,
   onDragStateChange,
 }: TableDragHandlesProps) => {
+  const { siteId } = useQueryParse(pageSchema)
   const geometries = useTableGeometries(editor, containerRef)
   const { drag, beginGesture, isGestureActive, consumeClickSuppression } =
     useAxisDragGesture({ editor, containerRef, geometries, onDragStateChange })
@@ -122,7 +126,17 @@ export const TableDragHandles = ({
           top={bounds.top + bounds.height + TABLE_CHROME_GAP_PX}
           width={rowPillWidth}
           height={TABLE_CHROME_THICKNESS_PX}
-          onClick={() => addSlotAfter(editor, geometry.pos, "row")}
+          onClick={() => {
+            const applied = addSlotAfter(editor, geometry.pos, "row")
+            if (applied === undefined) return
+            captureTableCommand({
+              siteId,
+              outcome: applied ? "applied" : "rejected",
+              action: "add_row",
+              source: "add_pill",
+              selectionKind: "row",
+            })
+          }}
         />
         <AddPillButton
           axis="column"
@@ -130,7 +144,17 @@ export const TableDragHandles = ({
           top={bounds.top + (bounds.height - colPillHeight) / 2}
           width={TABLE_CHROME_THICKNESS_PX}
           height={colPillHeight}
-          onClick={() => addSlotAfter(editor, geometry.pos, "column")}
+          onClick={() => {
+            const applied = addSlotAfter(editor, geometry.pos, "column")
+            if (applied === undefined) return
+            captureTableCommand({
+              siteId,
+              outcome: applied ? "applied" : "rejected",
+              action: "add_column",
+              source: "add_pill",
+              selectionKind: "column",
+            })
+          }}
         />
       </>
     )

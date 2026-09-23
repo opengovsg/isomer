@@ -4,12 +4,16 @@ import { ThemeProvider } from "@opengovsg/design-system-react"
 import { render, screen, waitFor } from "@testing-library/react"
 import { EditorContent } from "@tiptap/react"
 import { useState } from "react"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { userEvent } from "vitest/browser"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { theme } from "~/theme"
 
 import { DEFAULT_TABLE_CAPTION, LEGACY_DEFAULT_TABLE_CAPTION } from "./utils"
+
+vi.mock("~/hooks/useQueryParse", () => ({
+  useQueryParse: () => ({ siteId: 1, pageId: 1 }),
+}))
 
 const tableContent = (caption: string) => ({
   type: "table",

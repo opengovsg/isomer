@@ -13,11 +13,15 @@ import {
 import { CellSelection, selectedRect, tableEditingKey } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
 import { useEffect, useRef, useState } from "react"
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { userEvent } from "vitest/browser"
 import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { theme } from "~/theme"
+
+vi.mock("~/hooks/useQueryParse", () => ({
+  useQueryParse: () => ({ siteId: 1, pageId: 1 }),
+}))
 
 import { TableBubbleMenu } from "../TableBubbleMenu"
 import { clearSelectedCells } from "../TableBubbleMenu.clear"

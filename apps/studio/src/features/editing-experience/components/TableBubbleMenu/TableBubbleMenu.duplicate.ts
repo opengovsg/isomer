@@ -1,6 +1,7 @@
 import type { Node } from "@tiptap/pm/model"
 import type { Transaction } from "@tiptap/pm/state"
 import type { Editor } from "@tiptap/react"
+import type { TableCommandOutcome } from "~/lib/analytics/tables"
 import {
   addColSpan,
   CellSelection,
@@ -366,12 +367,12 @@ const duplicateSelectedBlock = ({
     anchor: number
     head: number
   }
-}): void => {
-  if (span <= 0) return
+}): TableCommandOutcome => {
+  if (span <= 0) return "skipped"
 
   const tablePos = rect.tableStart - 1
   const result = mutate({ tr: editor.state.tr, tablePos })
-  if (result === false) return
+  if (result === false) return "rejected"
 
   selectBlockAndDispatch({
     editor,
@@ -379,16 +380,17 @@ const duplicateSelectedBlock = ({
     tablePos,
     corners: (info) => selectCorners({ info, rect }),
   })
+  return "applied"
 }
 
-export const duplicateSelectedRows = (editor: Editor): void => {
-  if (!isInTable(editor.state)) return
+export const duplicateSelectedRows = (editor: Editor): TableCommandOutcome => {
+  if (!isInTable(editor.state)) return "skipped"
 
   const rect = selectedRect(editor.state)
-  if (selectionIncludesHeaderRow(rect)) return
+  if (selectionIncludesHeaderRow(rect)) return "skipped"
   const span = rect.bottom - rect.top
 
-  duplicateSelectedBlock({
+  return duplicateSelectedBlock({
     editor,
     rect,
     span,
@@ -421,14 +423,16 @@ export const duplicateSelectedRows = (editor: Editor): void => {
   })
 }
 
-export const duplicateSelectedColumns = (editor: Editor): void => {
-  if (!isInTable(editor.state)) return
+export const duplicateSelectedColumns = (
+  editor: Editor,
+): TableCommandOutcome => {
+  if (!isInTable(editor.state)) return "skipped"
 
   const rect = selectedRect(editor.state)
-  if (selectionIncludesHeaderColumn(rect)) return
+  if (selectionIncludesHeaderColumn(rect)) return "skipped"
   const span = rect.right - rect.left
 
-  duplicateSelectedBlock({
+  return duplicateSelectedBlock({
     editor,
     rect,
     span,

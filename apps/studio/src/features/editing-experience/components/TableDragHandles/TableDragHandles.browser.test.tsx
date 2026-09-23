@@ -7,7 +7,7 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react"
 import { CellSelection } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
 import { useRef } from "react"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import {
   TABLE_CHROME_GAP_PX,
@@ -17,6 +17,10 @@ import { theme } from "~/theme"
 
 import { ADD_PILL_ICON_SIZE_PX, ADD_PILL_RADIUS_PX } from "./internal/chrome"
 import { TableDragHandles } from "./TableDragHandles"
+
+vi.mock("~/hooks/useQueryParse", () => ({
+  useQueryParse: () => ({ siteId: 1, pageId: 1 }),
+}))
 
 const SEED_CONTENT: JSONContent = {
   type: "prose",

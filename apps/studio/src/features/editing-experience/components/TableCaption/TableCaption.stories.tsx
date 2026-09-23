@@ -59,6 +59,14 @@ const TableCaptionHarness = ({
 const meta: Meta<typeof TableCaptionHarness> = {
   title: "Features/EditingExperience/TableCaption",
   component: TableCaptionHarness,
+  parameters: {
+    nextjs: {
+      router: {
+        query: { siteId: "1", pageId: "1" },
+        pathname: "/sites/[siteId]/pages/[pageId]",
+      },
+    },
+  },
 }
 
 export default meta

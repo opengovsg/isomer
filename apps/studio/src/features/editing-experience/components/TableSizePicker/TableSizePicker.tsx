@@ -13,6 +13,14 @@ import {
 import { IconButton } from "@opengovsg/design-system-react"
 import { useState } from "react"
 import { BiTable } from "react-icons/bi"
+import { detectTableSelectionKind } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.utils"
+import { pageSchema } from "~/features/editing-experience/schema"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import {
+  captureTableCommand,
+  captureTableCommandFailed,
+  captureTableInserted,
+} from "~/lib/analytics/tables"
 
 export interface TableSizePickerProps {
   editor: Editor
@@ -40,7 +48,13 @@ const TABLE_BUTTON_PROPS = {
 //
 // Always rendered while a table is active, so it stays in the "active"
 // visual state like the old single Table button did.
-const DeleteTableButton = ({ editor }: { editor: Editor }) => (
+const DeleteTableButton = ({
+  editor,
+  siteId,
+}: {
+  editor: Editor
+  siteId: number
+}) => (
   <IconButton
     {...TABLE_BUTTON_PROPS}
     isActive
@@ -48,21 +62,49 @@ const DeleteTableButton = ({ editor }: { editor: Editor }) => (
       bg: "interaction.muted.main.active",
     }}
     aria-label="Delete table"
-    onClick={() => editor.chain().focus().deleteTable().run()}
+    onClick={() =>
+      captureTableCommand({
+        siteId,
+        outcome: editor.chain().focus().deleteTable().run()
+          ? "applied"
+          : "rejected",
+        action: "delete_table",
+        source: "toolbar",
+        selectionKind: detectTableSelectionKind(editor),
+      })
+    }
   >
     <Icon as={BiTable} fontSize="1.25rem" color="base.content.medium" />
   </IconButton>
 )
 
-const TableSizeGridPicker = ({ editor }: { editor: Editor }) => {
+const TableSizeGridPicker = ({
+  editor,
+  siteId,
+}: {
+  editor: Editor
+  siteId: number
+}) => {
   const [hoveredCell, setHoveredCell] = useState<HoveredCell | null>(null)
 
   const insertTable = (row: number, col: number, onClose: () => void) => {
-    editor
+    const rows = row + 1
+    const cols = col + 1
+    const inserted = editor
       .chain()
       .focus()
-      .insertTable({ rows: row + 1, cols: col + 1, withHeaderRow: true })
+      .insertTable({ rows, cols, withHeaderRow: true })
       .run()
+    if (inserted) {
+      captureTableInserted({ siteId, rows, cols })
+    } else {
+      captureTableCommandFailed({
+        siteId,
+        action: "insert_table",
+        source: "toolbar",
+        reason: "command_rejected",
+      })
+    }
     setHoveredCell(null)
     onClose()
   }
@@ -150,8 +192,10 @@ const TableSizeGridPicker = ({ editor }: { editor: Editor }) => {
 export const TableSizePicker = ({
   editor,
 }: TableSizePickerProps): JSX.Element => {
+  const { siteId } = useQueryParse(pageSchema)
+
   if (editor.isActive("table")) {
-    return <DeleteTableButton editor={editor} />
+    return <DeleteTableButton editor={editor} siteId={siteId} />
   }
-  return <TableSizeGridPicker editor={editor} />
+  return <TableSizeGridPicker editor={editor} siteId={siteId} />
 }
