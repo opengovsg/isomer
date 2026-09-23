@@ -239,8 +239,6 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   })
 }
 
-export const isActionableTableSelectionKind = (kind: SelectionKind) =>
-  kind !== "none" && kind !== "single-cell"
-
+// Hide the menu while a Chakra/modal dialog has focus.
 export const isEditorModalOpen = () =>
   document.querySelector('[role="dialog"][aria-modal="true"]') != null
