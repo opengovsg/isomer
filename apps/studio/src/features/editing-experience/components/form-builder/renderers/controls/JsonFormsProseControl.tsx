@@ -16,7 +16,7 @@ import {
   useProseEditor,
 } from "~/features/editing-experience/hooks/useTextEditor"
 import { useSimpleProseEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
-import { pageSchema } from "~/features/editing-experience/schema"
+import { siteSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 
 import {
@@ -77,7 +77,8 @@ function JsonFormsProseControl({
   schema,
   required,
 }: ControlProps) {
-  const { siteId } = useQueryParse(pageSchema)
+  const { siteId: rawSiteId } = useQueryParse(siteSchema)
+  const siteId = Number(rawSiteId)
   const { EditorHook, Editor } = useMemo(
     () => getEditorHookAndEditor(schema.format as ComponentsWithProse),
     [schema.format],
