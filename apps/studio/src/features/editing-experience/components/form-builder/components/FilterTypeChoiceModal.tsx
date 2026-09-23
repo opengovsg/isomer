@@ -45,11 +45,6 @@ function FilterTypeCard({
   isSelected,
   onSelect,
 }: FilterTypeCardProps) {
-  const titleColor = isSelected ? "base.content.brand" : "base.content.default"
-  const iconColor = isSelected
-    ? "interaction.main.default"
-    : "base.content.default"
-
   return (
     <Box
       as="button"
@@ -88,10 +83,15 @@ function FilterTypeCard({
           <ChakraIcon
             as={IconComponent}
             fontSize="1.5rem"
-            color={iconColor}
+            color={
+              isSelected ? "interaction.main.default" : "base.content.default"
+            }
             aria-hidden
           />
-          <Text textStyle="subhead-1" color={titleColor}>
+          <Text
+            textStyle="subhead-1"
+            color={isSelected ? "base.content.brand" : "base.content.default"}
+          >
             {label}
           </Text>
           <Text textStyle="caption-2" color="base.content.medium">
