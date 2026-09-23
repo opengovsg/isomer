@@ -113,11 +113,12 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 
   const handleSaveChanges = useCallback(() => {
     const itemDateProperties = isCollectionItem
-      ? getCollectionItemDateProperties(
-          collectionTags,
-          (previewPageState.page as Pick<ArticlePagePageProps, "dateTagged">)
-            .dateTagged,
-        )
+      ? getCollectionItemDateProperties({
+          tags: collectionTags,
+          dateTagged: (
+            previewPageState.page as Pick<ArticlePagePageProps, "dateTagged">
+          ).dateTagged,
+        })
       : undefined
 
     setSavedPageState(previewPageState)

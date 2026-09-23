@@ -111,21 +111,23 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   )
 
   const handleSaveChanges = useCallback(() => {
-    const savedCollectionPage = getCollectionPage(savedPageState)
-    const previewCollectionPage = getCollectionPage(previewPageState)
+    const savedCollectionPage = getCollectionPage({ state: savedPageState })
+    const previewCollectionPage = getCollectionPage({
+      state: previewPageState,
+    })
     const changedDateFilters =
       drawerStateType === "filter"
-        ? listChangedDateFilters(
-            savedCollectionPage?.tagCategories,
-            previewCollectionPage?.tagCategories,
-          )
+        ? listChangedDateFilters({
+            before: savedCollectionPage?.tagCategories,
+            after: previewCollectionPage?.tagCategories,
+          })
         : []
     const sortDirection =
       drawerStateType === "display"
-        ? getChangedDateFilterSortDirection(
-            savedCollectionPage?.sortOrder,
-            previewCollectionPage?.sortOrder,
-          )
+        ? getChangedDateFilterSortDirection({
+            before: savedCollectionPage?.sortOrder,
+            after: previewCollectionPage?.sortOrder,
+          })
         : undefined
 
     setSavedPageState(previewPageState)

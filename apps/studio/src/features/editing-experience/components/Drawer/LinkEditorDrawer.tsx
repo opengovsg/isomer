@@ -224,10 +224,10 @@ export const LinkEditorDrawer = ({
         isLoading={isPending}
         handleChange={(data) => setLink(data)}
         handleSaveChanges={() => {
-          const itemDateProperties = getCollectionItemDateProperties(
-            collectionTags,
-            link.dateTagged,
-          )
+          const itemDateProperties = getCollectionItemDateProperties({
+            tags: collectionTags,
+            dateTagged: link.dateTagged,
+          })
           mutate(
             { siteId, linkId, ...link },
             {

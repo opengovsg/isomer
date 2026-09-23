@@ -31,9 +31,11 @@ export interface CollectionItemDateProperties {
   hasRange: boolean
 }
 
-const isStatusLabelsCustomized = (
-  statusLabels: DateFilterSchemaType["statusLabels"],
-): boolean =>
+const isStatusLabelsCustomized = ({
+  statusLabels,
+}: {
+  statusLabels: DateFilterSchemaType["statusLabels"]
+}): boolean =>
   (Object.keys(DEFAULT_DATE_FILTER_STATUS_LABELS) as DateFilterStatusId[]).some(
     (id) => {
       const label = statusLabels[id]
@@ -43,9 +45,11 @@ const isStatusLabelsCustomized = (
     },
   )
 
-export const toDateFilterSavedProperties = (
-  filter: DateFilterSchemaType,
-): DateFilterSavedProperties => ({
+export const toDateFilterSavedProperties = ({
+  filter,
+}: {
+  filter: DateFilterSchemaType
+}): DateFilterSavedProperties => ({
   isRequired: filter.isRequired ?? DEFAULT_FILTER_IS_REQUIRED,
   showStatusLabelsFilter:
     filter.showStatusLabelsFilter ??
@@ -53,42 +57,53 @@ export const toDateFilterSavedProperties = (
   showDateRangeFilter:
     filter.showDateRangeFilter ??
     DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRangeFilter,
-  statusLabelsCustomized: isStatusLabelsCustomized(filter.statusLabels),
+  statusLabelsCustomized: isStatusLabelsCustomized({
+    statusLabels: filter.statusLabels,
+  }),
 })
 
-const sameSavedProperties = (
-  left: DateFilterSavedProperties,
-  right: DateFilterSavedProperties,
-): boolean =>
+const sameSavedProperties = ({
+  left,
+  right,
+}: {
+  left: DateFilterSavedProperties
+  right: DateFilterSavedProperties
+}): boolean =>
   left.isRequired === right.isRequired &&
   left.showStatusLabelsFilter === right.showStatusLabelsFilter &&
   left.showDateRangeFilter === right.showDateRangeFilter &&
   left.statusLabelsCustomized === right.statusLabelsCustomized
 
-export const listChangedDateFilters = (
-  before: CollectionPagePageProps["tagCategories"],
-  after: CollectionPagePageProps["tagCategories"],
-): DateFilterSavedProperties[] => {
+export const listChangedDateFilters = ({
+  before,
+  after,
+}: {
+  before: CollectionPagePageProps["tagCategories"]
+  after: CollectionPagePageProps["tagCategories"]
+}): DateFilterSavedProperties[] => {
   const previous = new Map(
     (before ?? [])
       .filter(isDateFilter)
-      .map((filter) => [filter.id, toDateFilterSavedProperties(filter)]),
+      .map((filter) => [filter.id, toDateFilterSavedProperties({ filter })]),
   )
 
   return (after ?? []).filter(isDateFilter).flatMap((filter) => {
-    const next = toDateFilterSavedProperties(filter)
+    const next = toDateFilterSavedProperties({ filter })
     const prev = previous.get(filter.id)
-    if (prev && sameSavedProperties(prev, next)) {
+    if (prev && sameSavedProperties({ left: prev, right: next })) {
       return []
     }
     return [next]
   })
 }
 
-export const getCollectionItemDateProperties = (
-  tags: CollectionTags,
-  dateTagged: ArticlePagePageProps["dateTagged"],
-): CollectionItemDateProperties | undefined => {
+export const getCollectionItemDateProperties = ({
+  tags,
+  dateTagged,
+}: {
+  tags: CollectionTags
+  dateTagged: ArticlePagePageProps["dateTagged"]
+}): CollectionItemDateProperties | undefined => {
   const dateFilterIds = new Set(
     tags.filter(isDateFilter).map((filter) => filter.id),
   )
@@ -107,10 +122,13 @@ export const getCollectionItemDateProperties = (
   }
 }
 
-export const getChangedDateFilterSortDirection = (
-  before: string | undefined,
-  after: string | undefined,
-): "asc" | "desc" | undefined => {
+export const getChangedDateFilterSortDirection = ({
+  before,
+  after,
+}: {
+  before: string | undefined
+  after: string | undefined
+}): "asc" | "desc" | undefined => {
   if (!after || before === after) {
     return undefined
   }
@@ -124,9 +142,11 @@ export const getChangedDateFilterSortDirection = (
   return undefined
 }
 
-export const getCollectionPage = (
-  state: IsomerSchema,
-): CollectionPagePageProps | undefined => {
+export const getCollectionPage = ({
+  state,
+}: {
+  state: IsomerSchema
+}): CollectionPagePageProps | undefined => {
   if (state.layout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
     return undefined
   }
