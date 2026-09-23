@@ -86,12 +86,17 @@ const moveTableBlock = (
   return "applied"
 }
 
-const recordBubbleCommand = (
-  siteId: number,
-  kind: SelectionKind,
-  action: TableAction,
-  outcome: TableCommandOutcome,
-) => {
+const recordBubbleCommand = ({
+  siteId,
+  kind,
+  action,
+  outcome,
+}: {
+  siteId: number
+  kind: SelectionKind
+  action: TableAction
+  outcome: TableCommandOutcome
+}) => {
   captureTableCommand({
     siteId,
     outcome,
@@ -159,12 +164,12 @@ const ClearContentsButton = ({
       label="Clear contents"
       icon={<BiX fontSize="1rem" />}
       onClick={() =>
-        recordBubbleCommand(
+        recordBubbleCommand({
           siteId,
           kind,
-          "clear_contents",
-          clearSelectedCells(editor),
-        )
+          action: "clear_contents",
+          outcome: clearSelectedCells(editor),
+        })
       }
     />
   )
@@ -317,12 +322,12 @@ const BackgroundColor = ({
     <BackgroundColorSection
       state={state}
       onSetColor={(color) => {
-        recordBubbleCommand(
+        recordBubbleCommand({
           siteId,
           kind,
-          "set_cell_background",
-          setSelectedCellsBackgroundColor(editor, color),
-        )
+          action: "set_cell_background",
+          outcome: setSelectedCellsBackgroundColor(editor, color),
+        })
         onColorSet()
       }}
     />
@@ -343,12 +348,12 @@ const MergeCellsButton = ({
       label="Merge cells"
       icon={<IconMergeCells boxSize="1rem" />}
       onClick={() =>
-        recordBubbleCommand(
+        recordBubbleCommand({
           siteId,
           kind,
-          "merge_cells",
-          chainOutcome(editor.chain().focus().mergeCells().run()),
-        )
+          action: "merge_cells",
+          outcome: chainOutcome(editor.chain().focus().mergeCells().run()),
+        })
       }
     />
   )
@@ -414,12 +419,14 @@ const RowSelectionActions = ({
           label="Header row"
           isChecked={includesHeader}
           onToggle={() =>
-            recordBubbleCommand(
+            recordBubbleCommand({
               siteId,
               kind,
-              "toggle_header_row",
-              chainOutcome(editor.chain().focus().toggleHeaderRow().run()),
-            )
+              action: "toggle_header_row",
+              outcome: chainOutcome(
+                editor.chain().focus().toggleHeaderRow().run(),
+              ),
+            })
           }
         />
       )}
@@ -428,12 +435,14 @@ const RowSelectionActions = ({
           label="Add row above"
           icon={<IconAddRowAbove boxSize="1rem" />}
           onClick={() =>
-            recordBubbleCommand(
+            recordBubbleCommand({
               siteId,
               kind,
-              "add_row",
-              chainOutcome(editor.chain().focus().addRowBefore().run()),
-            )
+              action: "add_row",
+              outcome: chainOutcome(
+                editor.chain().focus().addRowBefore().run(),
+              ),
+            })
           }
         />
       )}
@@ -441,12 +450,12 @@ const RowSelectionActions = ({
         label="Add row below"
         icon={<IconAddRowBelow boxSize="1rem" />}
         onClick={() =>
-          recordBubbleCommand(
+          recordBubbleCommand({
             siteId,
             kind,
-            "add_row",
-            chainOutcome(editor.chain().focus().addRowAfter().run()),
-          )
+            action: "add_row",
+            outcome: chainOutcome(editor.chain().focus().addRowAfter().run()),
+          })
         }
       />
       {!includesHeader && (
@@ -454,12 +463,12 @@ const RowSelectionActions = ({
           label="Duplicate row"
           icon={<BiCopy fontSize="1rem" />}
           onClick={() =>
-            recordBubbleCommand(
+            recordBubbleCommand({
               siteId,
               kind,
-              "duplicate_row",
-              duplicateSelectedRows(editor),
-            )
+              action: "duplicate_row",
+              outcome: duplicateSelectedRows(editor),
+            })
           }
         />
       )}
@@ -470,12 +479,12 @@ const RowSelectionActions = ({
           label="Move up"
           icon={<BiUpArrowAlt fontSize="1rem" />}
           onClick={() =>
-            recordBubbleCommand(
+            recordBubbleCommand({
               siteId,
               kind,
-              "move_row",
-              moveTableBlock(editor, rowMoveUpPlan, "row"),
-            )
+              action: "move_row",
+              outcome: moveTableBlock(editor, rowMoveUpPlan, "row"),
+            })
           }
         />
       )}
@@ -484,12 +493,12 @@ const RowSelectionActions = ({
           label="Move down"
           icon={<BiDownArrowAlt fontSize="1rem" />}
           onClick={() =>
-            recordBubbleCommand(
+            recordBubbleCommand({
               siteId,
               kind,
-              "move_row",
-              moveTableBlock(editor, rowMoveDownPlan, "row"),
-            )
+              action: "move_row",
+              outcome: moveTableBlock(editor, rowMoveDownPlan, "row"),
+            })
           }
         />
       )}
@@ -498,12 +507,12 @@ const RowSelectionActions = ({
           label="Delete row"
           icon={<IconDelRow boxSize="1rem" />}
           onClick={() =>
-            recordBubbleCommand(
+            recordBubbleCommand({
               siteId,
               kind,
-              "delete_row",
-              chainOutcome(editor.chain().focus().deleteRow().run()),
-            )
+              action: "delete_row",
+              outcome: chainOutcome(editor.chain().focus().deleteRow().run()),
+            })
           }
         />
       )}
@@ -541,12 +550,14 @@ const ColumnSelectionActions = ({
           label="Header column"
           isChecked={includesHeader}
           onToggle={() =>
-            recordBubbleCommand(
+            recordBubbleCommand({
               siteId,
               kind,
-              "toggle_header_column",
-              chainOutcome(editor.chain().focus().toggleHeaderColumn().run()),
-            )
+              action: "toggle_header_column",
+              outcome: chainOutcome(
+                editor.chain().focus().toggleHeaderColumn().run(),
+              ),
+            })
           }
         />
       )}
@@ -555,12 +566,14 @@ const ColumnSelectionActions = ({
           label="Add column left"
           icon={<IconAddColLeft boxSize="1rem" />}
           onClick={() =>
-            recordBubbleCommand(
+            recordBubbleCommand({
               siteId,
               kind,
-              "add_column",
-              chainOutcome(editor.chain().focus().addColumnBefore().run()),
-            )
+              action: "add_column",
+              outcome: chainOutcome(
+                editor.chain().focus().addColumnBefore().run(),
+              ),
+            })
           }
         />
       )}
@@ -568,12 +581,14 @@ const ColumnSelectionActions = ({
         label="Add column right"
         icon={<IconAddColRight boxSize="1rem" />}
         onClick={() =>
-          recordBubbleCommand(
+          recordBubbleCommand({
             siteId,
             kind,
-            "add_column",
-            chainOutcome(editor.chain().focus().addColumnAfter().run()),
-          )
+            action: "add_column",
+            outcome: chainOutcome(
+              editor.chain().focus().addColumnAfter().run(),
+            ),
+          })
         }
       />
       {!includesHeader && (
@@ -581,12 +596,12 @@ const ColumnSelectionActions = ({
           label="Duplicate column"
           icon={<BiCopy fontSize="1rem" />}
           onClick={() =>
-            recordBubbleCommand(
+            recordBubbleCommand({
               siteId,
               kind,
-              "duplicate_column",
-              duplicateSelectedColumns(editor),
-            )
+              action: "duplicate_column",
+              outcome: duplicateSelectedColumns(editor),
+            })
           }
         />
       )}
@@ -597,12 +612,12 @@ const ColumnSelectionActions = ({
           label="Move left"
           icon={<BiLeftArrowAlt fontSize="1rem" />}
           onClick={() =>
-            recordBubbleCommand(
+            recordBubbleCommand({
               siteId,
               kind,
-              "move_column",
-              moveTableBlock(editor, columnMoveLeftPlan, "column"),
-            )
+              action: "move_column",
+              outcome: moveTableBlock(editor, columnMoveLeftPlan, "column"),
+            })
           }
         />
       )}
@@ -611,12 +626,12 @@ const ColumnSelectionActions = ({
           label="Move right"
           icon={<BiRightArrowAlt fontSize="1rem" />}
           onClick={() =>
-            recordBubbleCommand(
+            recordBubbleCommand({
               siteId,
               kind,
-              "move_column",
-              moveTableBlock(editor, columnMoveRightPlan, "column"),
-            )
+              action: "move_column",
+              outcome: moveTableBlock(editor, columnMoveRightPlan, "column"),
+            })
           }
         />
       )}
@@ -625,12 +640,14 @@ const ColumnSelectionActions = ({
           label="Delete column"
           icon={<IconDelCol boxSize="1rem" />}
           onClick={() =>
-            recordBubbleCommand(
+            recordBubbleCommand({
               siteId,
               kind,
-              "delete_column",
-              chainOutcome(editor.chain().focus().deleteColumn().run()),
-            )
+              action: "delete_column",
+              outcome: chainOutcome(
+                editor.chain().focus().deleteColumn().run(),
+              ),
+            })
           }
         />
       )}
@@ -678,12 +695,14 @@ const SelectionActions = ({
             label="Delete table"
             icon={<BiTrash fontSize="1rem" />}
             onClick={() =>
-              recordBubbleCommand(
+              recordBubbleCommand({
                 siteId,
                 kind,
-                "delete_table",
-                chainOutcome(editor.chain().focus().deleteTable().run()),
-              )
+                action: "delete_table",
+                outcome: chainOutcome(
+                  editor.chain().focus().deleteTable().run(),
+                ),
+              })
             }
           />
         </ActionGroup>
@@ -709,12 +728,12 @@ const SelectionActions = ({
             label="Split cell"
             icon={<IconSplitCell boxSize="1rem" />}
             onClick={() =>
-              recordBubbleCommand(
+              recordBubbleCommand({
                 siteId,
                 kind,
-                "split_cell",
-                chainOutcome(editor.chain().focus().splitCell().run()),
-              )
+                action: "split_cell",
+                outcome: chainOutcome(editor.chain().focus().splitCell().run()),
+              })
             }
           />
         </ActionGroup>
