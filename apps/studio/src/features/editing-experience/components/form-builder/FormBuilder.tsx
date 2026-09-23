@@ -25,6 +25,8 @@ import {
   jsonFormsCollectionDropdownControlTester,
   JsonFormsCollectionVariantControl,
   jsonFormsCollectionVariantControlTester,
+  JsonFormsCollectionSortOrderControl,
+  jsonFormsCollectionSortOrderControlTester,
   JsonFormsColourPickerControl,
   jsonFormsColourPickerControlTester,
   JsonFormsConstControl,
@@ -209,6 +211,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsCollectionVariantControlTester,
     renderer: JsonFormsCollectionVariantControl,
+  },
+  {
+    tester: jsonFormsCollectionSortOrderControlTester,
+    renderer: JsonFormsCollectionSortOrderControl,
   },
   {
     // NOTE: If we fall through all our previous testers,
