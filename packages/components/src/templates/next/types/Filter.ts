@@ -1,4 +1,5 @@
 import type { TagCategoryDisplay } from "~/types/constants"
+import type { DateFilterSidebarVisibility } from "~/types/page"
 import { format, isValid, parse } from "date-fns"
 import { TAG_CATEGORY_TYPE } from "~/types/constants"
 
@@ -23,6 +24,10 @@ export interface Filter {
   // control for this filter (see Filter.tsx), whose value lives in
   // `AppliedFilter.dateRange`, not `items`.
   type?: typeof TAG_CATEGORY_TYPE.Date
+  showStatusLabelsFilter?: DateFilterSidebarVisibility["showStatusLabelsFilter"]
+  showDateRangeFilter?: DateFilterSidebarVisibility["showDateRangeFilter"]
+  /** Cards with a dateTagged entry for this filter; set by getDateFilters. */
+  dateTaggedItemCount?: number
 }
 
 interface AppliedFilterItem {

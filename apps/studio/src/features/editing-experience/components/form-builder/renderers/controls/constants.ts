@@ -3,6 +3,7 @@ import type {
   TextFilterSchemaType,
 } from "@opengovsg/isomer-components"
 import {
+  DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY,
   DEFAULT_DATE_FILTER_STATUS_LABELS,
   DEFAULT_TAG_CATEGORY_DISPLAY,
   IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
@@ -28,6 +29,7 @@ export const createDefaultDateFilter = (): DateFilterSchemaType => ({
   type: TAG_CATEGORY_TYPE.Date,
   isRequired: true,
   statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
+  ...DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY,
 })
 
 type TagOption = TextFilterSchemaType["options"][number]
