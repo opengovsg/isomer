@@ -32,8 +32,6 @@ import {
   IconMergeCells,
   IconSplitCell,
 } from "~/components/icons"
-import { pageSchema } from "~/features/editing-experience/schema"
-import { useQueryParse } from "~/hooks/useQueryParse"
 import {
   captureTableCommand,
   type TableAction,
@@ -150,12 +148,12 @@ const ActionGroup = ({ children }: { children: ReactNode }) => (
 const ClearContentsButton = ({
   editor,
   kind,
+  siteId,
 }: {
   editor: Editor
   kind: SelectionKind
+  siteId: number
 }) => {
-  const { siteId } = useQueryParse(pageSchema)
-
   return (
     <ActionButton
       label="Clear contents"
@@ -301,12 +299,13 @@ const BackgroundColor = ({
   editor,
   kind,
   onColorSet,
+  siteId,
 }: {
   editor: Editor
   kind: SelectionKind
   onColorSet: () => void
+  siteId: number
 }) => {
-  const { siteId } = useQueryParse(pageSchema)
   if (kind === "none") return null
 
   const { selection } = editor.state
@@ -333,12 +332,12 @@ const BackgroundColor = ({
 const MergeCellsButton = ({
   editor,
   kind,
+  siteId,
 }: {
   editor: Editor
   kind: SelectionKind
+  siteId: number
 }) => {
-  const { siteId } = useQueryParse(pageSchema)
-
   return (
     <ActionButton
       label="Merge cells"
@@ -391,12 +390,13 @@ const RowSelectionActions = ({
   editor,
   rect,
   kind,
+  siteId,
 }: {
   editor: Editor
   rect: SelectionRect
   kind: SelectionKind
+  siteId: number
 }) => {
-  const { siteId } = useQueryParse(pageSchema)
   const includesHeader = selectionIncludesHeaderRow(rect)
   const rowMoveUpPlan = getRowMovePlan(
     { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
@@ -463,8 +463,8 @@ const RowSelectionActions = ({
           }
         />
       )}
-      <ClearContentsButton editor={editor} kind={kind} />
-      <MergeCellsButton editor={editor} kind={kind} />
+      <ClearContentsButton editor={editor} kind={kind} siteId={siteId} />
+      <MergeCellsButton editor={editor} kind={kind} siteId={siteId} />
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
@@ -515,12 +515,13 @@ const ColumnSelectionActions = ({
   editor,
   rect,
   kind,
+  siteId,
 }: {
   editor: Editor
   rect: SelectionRect
   kind: SelectionKind
+  siteId: number
 }) => {
-  const { siteId } = useQueryParse(pageSchema)
   const includesHeader = selectionIncludesHeaderColumn(rect)
 
   const columnMoveLeftPlan = getColumnMovePlan(
@@ -589,8 +590,8 @@ const ColumnSelectionActions = ({
           }
         />
       )}
-      <ClearContentsButton editor={editor} kind={kind} />
-      <MergeCellsButton editor={editor} kind={kind} />
+      <ClearContentsButton editor={editor} kind={kind} siteId={siteId} />
+      <MergeCellsButton editor={editor} kind={kind} siteId={siteId} />
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
@@ -640,24 +641,39 @@ const ColumnSelectionActions = ({
 const SelectionActions = ({
   editor,
   kind,
+  siteId,
 }: {
   editor: Editor
   kind: SelectionKind
+  siteId: number
 }) => {
-  const { siteId } = useQueryParse(pageSchema)
   const rect = selectedRect(editor.state)
 
   switch (kind) {
     case "row":
     case "header-row":
-      return <RowSelectionActions editor={editor} rect={rect} kind={kind} />
+      return (
+        <RowSelectionActions
+          editor={editor}
+          rect={rect}
+          kind={kind}
+          siteId={siteId}
+        />
+      )
     case "column":
     case "header-column":
-      return <ColumnSelectionActions editor={editor} rect={rect} kind={kind} />
+      return (
+        <ColumnSelectionActions
+          editor={editor}
+          rect={rect}
+          kind={kind}
+          siteId={siteId}
+        />
+      )
     case "table":
       return (
         <ActionGroup>
-          <ClearContentsButton editor={editor} kind={kind} />
+          <ClearContentsButton editor={editor} kind={kind} siteId={siteId} />
           <ActionButton
             label="Delete table"
             icon={<BiTrash fontSize="1rem" />}
@@ -675,20 +691,20 @@ const SelectionActions = ({
     case "multi-cell":
       return (
         <ActionGroup>
-          <ClearContentsButton editor={editor} kind={kind} />
-          <MergeCellsButton editor={editor} kind={kind} />
+          <ClearContentsButton editor={editor} kind={kind} siteId={siteId} />
+          <MergeCellsButton editor={editor} kind={kind} siteId={siteId} />
         </ActionGroup>
       )
     case "single-cell":
       return (
         <ActionGroup>
-          <ClearContentsButton editor={editor} kind={kind} />
+          <ClearContentsButton editor={editor} kind={kind} siteId={siteId} />
         </ActionGroup>
       )
     case "merged-cell":
       return (
         <ActionGroup>
-          <ClearContentsButton editor={editor} kind={kind} />
+          <ClearContentsButton editor={editor} kind={kind} siteId={siteId} />
           <ActionButton
             label="Split cell"
             icon={<IconSplitCell boxSize="1rem" />}
@@ -712,13 +728,20 @@ export const TableBubbleMenuActions = ({
   editor,
   kind,
   onColorSet,
+  siteId,
 }: {
   editor: Editor
   kind: SelectionKind
   onColorSet: () => void
+  siteId: number
 }) => (
   <>
-    <SelectionActions editor={editor} kind={kind} />
-    <BackgroundColor editor={editor} kind={kind} onColorSet={onColorSet} />
+    <SelectionActions editor={editor} kind={kind} siteId={siteId} />
+    <BackgroundColor
+      editor={editor}
+      kind={kind}
+      onColorSet={onColorSet}
+      siteId={siteId}
+    />
   </>
 )

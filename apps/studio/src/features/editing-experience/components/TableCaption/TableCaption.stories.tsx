@@ -47,11 +47,15 @@ const TableCaptionHarness = ({
   const [content, setContent] = useState<JSONContent | undefined>(
     initialContent,
   )
-  const editor = useTextEditor({ data: content, handleChange: setContent })
+  const editor = useTextEditor({
+    data: content,
+    handleChange: setContent,
+    siteId: 1,
+  })
 
   return (
     <Box p="3rem" maxW="48rem" mx="auto">
-      <TiptapProseEditor editor={editor} />
+      <TiptapProseEditor editor={editor} siteId={1} />
     </Box>
   )
 }
@@ -59,14 +63,6 @@ const TableCaptionHarness = ({
 const meta: Meta<typeof TableCaptionHarness> = {
   title: "Features/EditingExperience/TableCaption",
   component: TableCaptionHarness,
-  parameters: {
-    nextjs: {
-      router: {
-        query: { siteId: "1", pageId: "1" },
-        pathname: "/sites/[siteId]/pages/[pageId]",
-      },
-    },
-  },
 }
 
 export default meta

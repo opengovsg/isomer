@@ -8,8 +8,6 @@ import {
   useState,
 } from "react"
 import { detectTableSelectionKind } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.utils"
-import { pageSchema } from "~/features/editing-experience/schema"
-import { useQueryParse } from "~/hooks/useQueryParse"
 import {
   captureTableCommand,
   captureTableCommandFailed,
@@ -58,13 +56,14 @@ export const useAxisDragGesture = ({
   containerRef,
   geometries,
   onDragStateChange,
+  siteId,
 }: {
   editor: TiptapEditor | null
   containerRef: RefObject<HTMLElement>
   geometries: TableGeometry[]
   onDragStateChange?: (isDragging: boolean) => void
+  siteId: number
 }): AxisDragGesture => {
-  const { siteId } = useQueryParse(pageSchema)
   const [drag, setDrag] = useState<DraggingGesture | null>(null)
   // The window listeners must read the current state without re-subscribing,
   // so the machine's state lives in a ref and `drag` is derived output.

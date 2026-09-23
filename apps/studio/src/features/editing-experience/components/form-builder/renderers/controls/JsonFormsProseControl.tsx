@@ -16,6 +16,8 @@ import {
   useProseEditor,
 } from "~/features/editing-experience/hooks/useTextEditor"
 import { useSimpleProseEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
+import { pageSchema } from "~/features/editing-experience/schema"
+import { useQueryParse } from "~/hooks/useQueryParse"
 
 import {
   TiptapAccordionEditor,
@@ -75,6 +77,7 @@ function JsonFormsProseControl({
   schema,
   required,
 }: ControlProps) {
+  const { siteId } = useQueryParse(pageSchema)
   const { EditorHook, Editor } = useMemo(
     () => getEditorHookAndEditor(schema.format as ComponentsWithProse),
     [schema.format],
@@ -83,6 +86,7 @@ function JsonFormsProseControl({
   const editor = EditorHook({
     // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
     data,
+    siteId,
     handleChange: useCallback(
       (content) => {
         if (required && isTiptapEditorEmpty(content)) {
@@ -111,7 +115,7 @@ function JsonFormsProseControl({
     <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
-        <Editor editor={editor} />
+        <Editor editor={editor} siteId={siteId} />
         <FormErrorMessage>
           {label} {getCustomErrorMessage(errors)}
         </FormErrorMessage>

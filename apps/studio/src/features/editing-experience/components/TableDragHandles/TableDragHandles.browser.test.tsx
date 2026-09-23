@@ -7,7 +7,7 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react"
 import { CellSelection } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
 import { useRef } from "react"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import {
   TABLE_CHROME_GAP_PX,
@@ -17,10 +17,6 @@ import { theme } from "~/theme"
 
 import { ADD_PILL_ICON_SIZE_PX, ADD_PILL_RADIUS_PX } from "./internal/chrome"
 import { TableDragHandles } from "./TableDragHandles"
-
-vi.mock("~/hooks/useQueryParse", () => ({
-  useQueryParse: () => ({ siteId: 1, pageId: 1 }),
-}))
 
 const SEED_CONTENT: JSONContent = {
   type: "prose",
@@ -66,13 +62,21 @@ const getCellText = (editor: Editor): string[] => {
 }
 
 const Harness = ({ onReady }: { onReady: (editor: Editor) => void }) => {
-  const editor = useTextEditor({ data: SEED_CONTENT, handleChange: () => null })
+  const editor = useTextEditor({
+    data: SEED_CONTENT,
+    handleChange: () => null,
+    siteId: 1,
+  })
   const containerRef = useRef<HTMLDivElement>(null)
   if (editor) onReady(editor)
   return (
     <div ref={containerRef} style={{ position: "relative" }}>
       {editor && (
-        <TableDragHandles editor={editor} containerRef={containerRef} />
+        <TableDragHandles
+          editor={editor}
+          containerRef={containerRef}
+          siteId={1}
+        />
       )}
       {editor && <EditorContent editor={editor} />}
     </div>
@@ -290,13 +294,18 @@ describe("TableDragHandles", () => {
       const tipTap = useTextEditor({
         data: twoTables,
         handleChange: () => null,
+        siteId: 1,
       })
       const containerRef = useRef<HTMLDivElement>(null)
       if (tipTap) editor = tipTap
       return (
         <div ref={containerRef} style={{ position: "relative" }}>
           {tipTap && (
-            <TableDragHandles editor={tipTap} containerRef={containerRef} />
+            <TableDragHandles
+              editor={tipTap}
+              containerRef={containerRef}
+              siteId={1}
+            />
           )}
           {tipTap && <EditorContent editor={tipTap} />}
         </div>
@@ -710,6 +719,7 @@ describe("TableDragHandles", () => {
       const tipTap = useTextEditor({
         data: SEED_CONTENT,
         handleChange: () => null,
+        siteId: 1,
       })
       const containerRef = useRef<HTMLDivElement>(null)
       if (tipTap) editor = tipTap
@@ -720,7 +730,11 @@ describe("TableDragHandles", () => {
           style={{ position: "relative", overflowX: "hidden", width: 420 }}
         >
           {tipTap && (
-            <TableDragHandles editor={tipTap} containerRef={containerRef} />
+            <TableDragHandles
+              editor={tipTap}
+              containerRef={containerRef}
+              siteId={1}
+            />
           )}
           {tipTap && <EditorContent editor={tipTap} />}
         </div>

@@ -5,7 +5,11 @@ import { TABLE_GUTTER_PX } from "~/features/editing-experience/utils/tableEditor
 
 import { TableCaption } from "./TableCaption"
 
-export const TableNodeView = ({ node, updateAttributes }: NodeViewProps) => {
+export const TableNodeView = ({
+  node,
+  updateAttributes,
+  siteId,
+}: NodeViewProps & { siteId: number }) => {
   const caption = (node.attrs.caption as string | undefined) ?? ""
 
   return (
@@ -13,6 +17,7 @@ export const TableNodeView = ({ node, updateAttributes }: NodeViewProps) => {
       <Box contentEditable={false}>
         <TableCaption
           caption={caption}
+          siteId={siteId}
           onCaptionChange={(nextCaption) =>
             updateAttributes({ caption: nextCaption })
           }

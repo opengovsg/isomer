@@ -13,15 +13,11 @@ import {
 import { CellSelection, selectedRect, tableEditingKey } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
 import { useEffect, useRef, useState } from "react"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
 import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { theme } from "~/theme"
-
-vi.mock("~/hooks/useQueryParse", () => ({
-  useQueryParse: () => ({ siteId: 1, pageId: 1 }),
-}))
 
 import { TableBubbleMenu } from "../TableBubbleMenu"
 import { clearSelectedCells } from "../TableBubbleMenu.clear"
@@ -182,13 +178,13 @@ const Harness = ({
   showMenu?: boolean
   data?: JSONContent
 }) => {
-  const editor = useTextEditor({ data, handleChange: () => null })
+  const editor = useTextEditor({ data, handleChange: () => null, siteId: 1 })
   useEffect(() => {
     if (editor) onReady(editor)
   }, [editor, onReady])
   return (
     <>
-      {editor && showMenu && <TableBubbleMenu editor={editor} />}
+      {editor && showMenu && <TableBubbleMenu editor={editor} siteId={1} />}
       {editor && <EditorContent editor={editor} />}
     </>
   )
@@ -231,7 +227,11 @@ const renderWithDragHandles = async () => {
   let editor: Editor | undefined
 
   const DragHandlesHarness = () => {
-    const e = useTextEditor({ data: SEED_CONTENT, handleChange: () => null })
+    const e = useTextEditor({
+      data: SEED_CONTENT,
+      handleChange: () => null,
+      siteId: 1,
+    })
     const containerRef = useRef<HTMLDivElement>(null)
     const [isDragReordering, setIsDragReordering] = useState(false)
     useEffect(() => {
@@ -240,13 +240,18 @@ const renderWithDragHandles = async () => {
     return (
       <div ref={containerRef} style={{ position: "relative" }}>
         {e && (
-          <TableBubbleMenu editor={e} isDragReordering={isDragReordering} />
+          <TableBubbleMenu
+            editor={e}
+            isDragReordering={isDragReordering}
+            siteId={1}
+          />
         )}
         {e && (
           <TableDragHandles
             editor={e}
             containerRef={containerRef}
             onDragStateChange={setIsDragReordering}
+            siteId={1}
           />
         )}
         {e && <EditorContent editor={e} />}
@@ -1388,7 +1393,11 @@ describe("TableBubbleMenu", () => {
     let editor: Editor | undefined
 
     const ScrollingHarness = () => {
-      const e = useTextEditor({ data: SEED_CONTENT, handleChange: () => null })
+      const e = useTextEditor({
+        data: SEED_CONTENT,
+        handleChange: () => null,
+        siteId: 1,
+      })
       useEffect(() => {
         if (e) editor = e
       }, [e])
@@ -1398,7 +1407,7 @@ describe("TableBubbleMenu", () => {
           style={{ height: "80px", overflowY: "auto" }}
         >
           <div style={{ height: "600px" }} />
-          {e && <TableBubbleMenu editor={e} />}
+          {e && <TableBubbleMenu editor={e} siteId={1} />}
           {e && <EditorContent editor={e} />}
         </div>
       )

@@ -3,12 +3,10 @@ import type { RefObject } from "react"
 import { Box } from "@chakra-ui/react"
 import { useEditorState } from "@tiptap/react"
 import { Fragment, useMemo } from "react"
-import { pageSchema } from "~/features/editing-experience/schema"
 import {
   TABLE_CHROME_GAP_PX,
   TABLE_CHROME_THICKNESS_PX,
 } from "~/features/editing-experience/utils/tableEditorChrome"
-import { useQueryParse } from "~/hooks/useQueryParse"
 import { captureTableCommand } from "~/lib/analytics/rteTable"
 
 import type { TableGeometry } from "./internal/axisMath"
@@ -36,6 +34,7 @@ export interface TableDragHandlesProps {
   editor: TiptapEditor | null
   containerRef: RefObject<HTMLElement>
   onDragStateChange?: (isDragging: boolean) => void
+  siteId: number
 }
 
 /**
@@ -47,11 +46,17 @@ export const TableDragHandles = ({
   editor,
   containerRef,
   onDragStateChange,
+  siteId,
 }: TableDragHandlesProps) => {
-  const { siteId } = useQueryParse(pageSchema)
   const geometries = useTableGeometries(editor, containerRef)
   const { drag, beginGesture, isGestureActive, consumeClickSuppression } =
-    useAxisDragGesture({ editor, containerRef, geometries, onDragStateChange })
+    useAxisDragGesture({
+      editor,
+      containerRef,
+      geometries,
+      onDragStateChange,
+      siteId,
+    })
   const hoverTablePos = useHoveredTable(
     geometries,
     containerRef,

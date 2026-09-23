@@ -9,7 +9,7 @@ import {
   BASE_EXTENSIONS,
   HEADING_TYPE,
   IsomerHeading,
-  IsomerTable,
+  createIsomerTable,
   IsomerTableCell,
   IsomerTableHeader,
   PARAGRAPH_TYPE,
@@ -20,6 +20,7 @@ import {
 export interface BaseEditorProps {
   data: ControlProps["data"]
   handleChange: (content: JSONContent | undefined) => void
+  siteId: number
 }
 
 const useBaseEditor = ({
@@ -46,13 +47,14 @@ const useBaseEditor = ({
   })
 export type BaseEditorType = ReturnType<typeof useBaseEditor>
 
-export const useTextEditor = (props: BaseEditorProps) =>
+export const useTextEditor = ({ siteId, ...props }: BaseEditorProps) =>
   useBaseEditor({
     ...props,
+    siteId,
     extensions: [
       ...PROSE_EXTENSIONS,
       TableRow,
-      IsomerTable,
+      createIsomerTable(siteId),
       IsomerTableCell,
       IsomerTableHeader,
       IsomerHeading,
@@ -65,13 +67,14 @@ export const useCalloutEditor = (props: BaseEditorProps) =>
     extensions: PROSE_EXTENSIONS,
   })
 
-export const useAccordionEditor = (props: BaseEditorProps) =>
+export const useAccordionEditor = ({ siteId, ...props }: BaseEditorProps) =>
   useBaseEditor({
     ...props,
+    siteId,
     extensions: [
       ...PROSE_EXTENSIONS,
       TableRow,
-      IsomerTable,
+      createIsomerTable(siteId),
       IsomerTableCell,
       IsomerTableHeader,
     ],

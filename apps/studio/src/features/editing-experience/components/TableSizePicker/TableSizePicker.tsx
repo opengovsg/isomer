@@ -14,8 +14,6 @@ import { IconButton } from "@opengovsg/design-system-react"
 import { useState } from "react"
 import { BiTable } from "react-icons/bi"
 import { detectTableSelectionKind } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.utils"
-import { pageSchema } from "~/features/editing-experience/schema"
-import { useQueryParse } from "~/hooks/useQueryParse"
 import {
   captureTableCommand,
   captureTableCommandFailed,
@@ -24,6 +22,7 @@ import {
 
 export interface TableSizePickerProps {
   editor: Editor
+  siteId: number
 }
 
 const GRID_SIZE = 6
@@ -191,9 +190,8 @@ const TableSizeGridPicker = ({
 
 export const TableSizePicker = ({
   editor,
+  siteId,
 }: TableSizePickerProps): JSX.Element => {
-  const { siteId } = useQueryParse(pageSchema)
-
   if (editor.isActive("table")) {
     return <DeleteTableButton editor={editor} siteId={siteId} />
   }

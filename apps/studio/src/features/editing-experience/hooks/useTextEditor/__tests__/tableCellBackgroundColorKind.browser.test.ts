@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it } from "vitest"
 
 import {
   BASE_EXTENSIONS,
-  IsomerTable,
+  createIsomerTable,
   IsomerTableCell,
   IsomerTableHeader,
   PROSE_EXTENSIONS,
@@ -67,7 +67,7 @@ const createEditor = (content: JSONContent) => {
     extensions: [
       ...BASE_EXTENSIONS,
       ...PROSE_EXTENSIONS,
-      IsomerTable,
+      createIsomerTable(1),
       TableRow,
       IsomerTableHeader,
       IsomerTableCell,
