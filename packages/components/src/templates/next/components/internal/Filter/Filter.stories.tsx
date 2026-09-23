@@ -302,9 +302,9 @@ export const DateFilterBothControls: Story = {
 }
 
 export const DateFilterDateRangeOnlyMobileDrawer: Story = {
+  globals: { viewport: getViewportByMode("mobile") },
   parameters: {
     chromatic: withChromaticModes(["mobile"]),
-    globals: { viewport: getViewportByMode("mobile") },
   },
   args: DateFilterDateRangeOnly.args,
   play: async ({ canvasElement }) => {
@@ -312,9 +312,12 @@ export const DateFilterDateRangeOnlyMobileDrawer: Story = {
     await userEvent.click(
       await canvas.findByRole("button", { name: /filter results/i }),
     )
-    // Drawer renders in a portal outside the story canvas.
+    // Drawer portals outside the story canvas. findByLabelText still matches
+    // the desktop aside, which stays mounted with display:none on mobile.
     // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await assertDateFilterControls(within(canvasElement.parentElement!), {
+    const screen = within(canvasElement.parentElement!)
+    const dialog = await screen.findByRole("dialog")
+    await assertDateFilterControls(within(dialog), {
       showStatusLabelsFilter: false,
       showDateRangeFilter: true,
     })
