@@ -17,9 +17,7 @@ import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
 import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { useState } from "react"
 import { BiCalendar, BiFont } from "react-icons/bi"
-
-import { DateFilter } from "./DateFilter"
-import { TextFilter } from "./TextFilter"
+import { NextImage } from "~/components/NextImage"
 
 export type FilterType = TagCategoryType
 
@@ -134,7 +132,16 @@ export function FilterTypeChoiceModal({
         <ModalBody pb="1.5rem">
           <HStack spacing="1rem" align="stretch">
             <FilterTypeCard
-              imageSrc={<TextFilter />}
+              imageSrc={
+                <NextImage
+                  src="/assets/filter-type-card/text_filter_card.png"
+                  width={300}
+                  height={137}
+                  alt=""
+                  aria-hidden
+                  pointerEvents="none"
+                />
+              }
               icon={BiFont}
               label="Text filter"
               description="Use it for: Publication Type, Audience, Topic, Categories, Levels..."
@@ -142,7 +149,16 @@ export function FilterTypeChoiceModal({
               onSelect={() => setSelectedType(TAG_CATEGORY_TYPE.Text)}
             />
             <FilterTypeCard
-              imageSrc={<DateFilter />}
+              imageSrc={
+                <NextImage
+                  src="/assets/filter-type-card/date_filter_card.png"
+                  width={300}
+                  height={150}
+                  alt=""
+                  aria-hidden
+                  pointerEvents="none"
+                />
+              }
               icon={BiCalendar}
               label="Date filter"
               description="Use it for: Event date, Registration deadline, Consultation period, Procurement dates..."
