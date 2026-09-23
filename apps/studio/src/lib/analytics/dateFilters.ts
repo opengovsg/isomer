@@ -31,7 +31,6 @@ export const captureDateFilterOnboardingBannerSupportLinkClicked = ({
 }: Pick<DateFilterAnalyticsContext, "siteId">) => {
   posthog.capture("date_filter_onboarding_banner", {
     site_id: siteId,
-    action: "support_link_clicked",
   })
 }
 
