@@ -74,13 +74,26 @@ const getCellDom = (
   return dom instanceof HTMLElement ? dom : null
 }
 
-const getRowDom = (
+// The React node view wraps the `<table>`, so `nodeDOM` on the table position
+// is that wrapper. A plain table element is returned as-is.
+const getTableElement = (
   editor: TiptapEditor,
   tablePos: number,
-  map: TableMap,
+): HTMLTableElement | null => {
+  const dom = editor.view.nodeDOM(tablePos)
+  if (dom instanceof HTMLTableElement) return dom
+  if (!(dom instanceof HTMLElement)) return null
+  const table = dom.querySelector("table")
+  return table instanceof HTMLTableElement ? table : null
+}
+
+// `rows` is every `<tr>` in order. A rowspan cell lives in the row where the
+// span starts, so measuring column 0's cell would repeat that upper row and
+// lift the add-row pill.
+const getRowDom = (
+  table: HTMLTableElement | null,
   row: number,
-): HTMLElement | null =>
-  getCellDom(editor, tablePos, map, row, 0)?.closest("tr") ?? null
+): HTMLElement | null => table?.rows[row] ?? null
 
 export const measureTableGeometry = (
   editor: TiptapEditor,
@@ -89,6 +102,7 @@ export const measureTableGeometry = (
   containerRect: DOMRect,
 ): TableGeometry => {
   const map = TableMap.get(table.node)
+  const tableElement = getTableElement(editor, table.pos)
   const toContainerRect = (dom: HTMLElement | null): Rect | null =>
     dom
       ? viewportRectToContainerRect({
@@ -102,7 +116,7 @@ export const measureTableGeometry = (
   return {
     pos: table.pos,
     rowRects: Array.from({ length: map.height }, (_, row) =>
-      toContainerRect(getRowDom(editor, table.pos, map, row)),
+      toContainerRect(getRowDom(tableElement, row)),
     ),
     colRects: Array.from({ length: map.width }, (_, col) =>
       toContainerRect(getCellDom(editor, table.pos, map, 0, col)),
