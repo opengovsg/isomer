@@ -42,16 +42,21 @@ const TagCategoryUuidSchema = generateUuidSchema({
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
 })
 
-const tagCategoryLabelSchemaObject = {
+const createFilterLabelSchemaObject = ({
+  description,
+}: {
+  description?: string
+} = {}) => ({
   label: Type.String({
     title: "Filter name",
+    ...(description ? { description } : {}),
     pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
     errorMessage: {
       pattern: "cannot be empty or have leading/trailing spaces",
     },
   }),
   id: TagCategoryUuidSchema,
-}
+})
 
 const tagCategoryIsRequiredSchemaObject = {
   // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
@@ -81,7 +86,7 @@ const dateFilterIsRequiredSchemaObject = {
 
 const TextFilterSchema = Type.Object(
   {
-    ...tagCategoryLabelSchemaObject,
+    ...createFilterLabelSchemaObject(),
     ...tagCategoryIsRequiredSchemaObject,
     // Optional on old rows. Must be "text" or absent so oneOf picks TextFilterSchema.
     type: Type.Optional(
@@ -149,7 +154,9 @@ const createDateFilterStatusLabelSchema = ({
 
 const DateFilterSchema = Type.Object(
   {
-    ...tagCategoryLabelSchemaObject,
+    ...createFilterLabelSchemaObject({
+      description: "The label that visitors see. e.g. Registration date",
+    }),
     ...dateFilterIsRequiredSchemaObject,
     // Always "date" on new filters. Keeps oneOf exclusive with TextFilterSchema.
     type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
