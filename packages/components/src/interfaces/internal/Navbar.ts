@@ -7,14 +7,15 @@ import { LINK_HREF_PATTERN } from "~/utils/validation"
 import type { ImageClientProps } from "./Image"
 import type { LocalSearchProps } from "./LocalSearchInputBox"
 import type { NavbarSearchSGInputBoxProps } from "./SearchSGInputBox"
+import { IsomerString } from "../primitives/IsomerString"
 
 const NavbarItemSchema = Type.Object({
-  name: Type.String({
+  name: IsomerString({
     title: "Menu item label",
     maxLength: 80,
   }),
   description: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Add an optional description",
       maxLength: 270,
     }),
@@ -29,12 +30,12 @@ const NavbarItemSchema = Type.Object({
   items: Type.Optional(
     Type.Array(
       Type.Object({
-        name: Type.String({
+        name: IsomerString({
           title: "Name of the sub-item",
           maxLength: 80,
         }),
         description: Type.Optional(
-          Type.String({
+          IsomerString({
             title: "Description of the sub-item",
             maxLength: 270,
           }),
@@ -70,7 +71,7 @@ export const NavbarAddonsSchema = Type.Object({
   callToAction: Type.Optional(
     Type.Object(
       {
-        label: Type.String({
+        label: IsomerString({
           title: "Button text",
           maxLength: 25,
         }),
@@ -101,14 +102,14 @@ export const NavbarAddonsSchema = Type.Object({
     Type.Object(
       {
         label: Type.Optional(
-          Type.String({
+          IsomerString({
             title: "Label for links",
             maxLength: 50,
           }),
         ),
         items: Type.Array(
           Type.Object({
-            name: Type.String({
+            name: IsomerString({
               title: "Name of the utility link",
               maxLength: 50,
             }),

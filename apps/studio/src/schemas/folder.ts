@@ -1,6 +1,10 @@
 import { z } from "zod"
 
-import { generateBasePermalinkSchema } from "./common"
+import {
+  generateBasePermalinkSchema,
+  NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
+  noStylizedUnicodeTitleRegex,
+} from "./common"
 import { offsetPaginationSchema } from "./pagination"
 
 export const MAX_FOLDER_TITLE_LENGTH = 250
@@ -20,6 +24,9 @@ export const createFolderSchema = z.object({
     .min(1, { message: "Enter a title for this folder" })
     .max(MAX_FOLDER_TITLE_LENGTH, {
       message: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
+    })
+    .regex(noStylizedUnicodeTitleRegex, {
+      message: NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
     }),
   permalink: permalinkSchema,
   siteId: z.number().min(1),
@@ -46,6 +53,9 @@ export const baseEditFolderSchema = baseFolderSchema.extend({
     .min(1, { message: "Enter a title for this folder" })
     .max(MAX_FOLDER_TITLE_LENGTH, {
       message: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
+    })
+    .regex(noStylizedUnicodeTitleRegex, {
+      message: NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
     }),
   // When the permalink changes, preserve the old URLs of everything under this
   // folder with a wildcard redirect. Defaults true (matches the move flow); the

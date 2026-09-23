@@ -286,3 +286,34 @@ export const ASKGOV_ID_OR_URL_REGEX = `^\\s*(?:${ASKGOV_AGENCY_ID_REGEX}|${ASKGO
 // NOTE: Official documentation does not specify allowed length,
 // so we use ^GTM-[A-Z0-9]+$ (one or more chars) for future proofing.
 export const GTM_ID_STRING_REGEX = "^(GTM|G|GT)-[A-Z0-9]+$"
+
+// Blocks "fancy text generator" lookalike characters (e.g. "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥") while
+// leaving all other languages, emoji, and punctuation untouched. Ranges are
+// expressed as UTF-16 (surrogate pairs for the two astral-plane blocks) so
+// this works as a plain `new RegExp(...)` without needing the `u` flag.
+// Blocked:
+//   - Mathematical Alphanumeric Symbols (bold/italic/script/fraktur/double-struck/
+//     sans-serif/monospace letters & digits), e.g. 𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥, 𝓕𝓪𝓷𝓬𝔂
+//   - Enclosed Alphanumerics (circled/parenthesized), e.g. ⓐⓑⓒ, ①②③, Ⓒ
+//   - Enclosed Alphanumeric Supplement letters (squared/negative-circled),
+//     e.g. 🄰🄱🄲, 🅐🅑🅒 — deliberately stops short of Regional Indicator
+//     Symbols (U+1F1E6-U+1F1FF), which are what flag emoji (e.g. 🇸🇬) are built from
+//   - Fullwidth Latin letters/digits only, e.g. Ａｂｃ１２３ — NOT the rest of the
+//     Halfwidth/Fullwidth Forms block, which also contains fullwidth CJK
+//     punctuation (，。！？) used legitimately in Chinese/Japanese text
+//   - Letterlike Symbols that are script/black-letter/double-struck stand-ins
+//     for Latin letters (the pre-Unicode-3.2 letters that predate the
+//     Mathematical Alphanumeric Symbols block above), e.g. ℂℍℕℝℤ, ℬℰℱℋℐℒℳℛℯℊℴ —
+//     deliberately excludes the rest of the Letterlike Symbols block (U+2100-U+214F),
+//     which is legitimate symbols like ℃℉№℠℡™Åℓ℮Ωℹ, not letter substitutes
+// ✅ "Official Unveiling"
+// ✅ "海报" / "Selamat datang" / "வணக்கம்" / "🇸🇬🎉"
+// ✅ "© 2026 Government of Singapore ® ™" / "25℃" / "No. 1 → №1"
+// ❌ "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥 𝐔𝐧𝐯𝐞𝐢𝐥𝐢𝐧𝐠"
+// ❌ "Ⓒⓞⓟⓨ" / "🅁🄴🅂🄴🅁🅅🄴🄳" / "Ａｄｍｉｎ" / "ℂℍℕℝℤ"
+// Consumed by `IsomerString` (src/interfaces/IsomerString.ts). Kept here as a
+// plain string, with no `@sinclair/typebox` dependency, so client-rendered
+// template components that only need runtime validators from this file
+// (e.g. `isValidVideoUrl`) don't transitively pull in typebox for treeshaking.
+export const NO_STYLIZED_UNICODE_REGEX =
+  "^(?![\\s\\S]*(?:\\uD835[\\uDC00-\\uDFFF]|[\\u2460-\\u24FF]|\\uD83C[\\uDD10-\\uDD89]|[\\uFF10-\\uFF19\\uFF21-\\uFF3A\\uFF41-\\uFF5A]|[\\u2102\\u210A-\\u210E\\u2110-\\u2112\\u2115\\u2119-\\u211D\\u2124\\u2128\\u212C\\u212D\\u212F-\\u2134\\u2141-\\u2144\\u2145-\\u2149\\u214E]))"

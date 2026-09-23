@@ -5,17 +5,18 @@ import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 import type { BreadcrumbProps } from "./Breadcrumb"
+import { IsomerString } from "../primitives/IsomerString"
 
 export const ContentPageHeaderSchema = Type.Object(
   {
-    summary: Type.String({
+    summary: IsomerString({
       title: "Page summary",
       description: "Help users understand what this page is about",
       format: "textarea",
       maxLength: 500,
     }),
     buttonLabel: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Button label",
         description:
           "A descriptive text. Avoid generic text like “Here”, “Click here”, or “Learn more”",

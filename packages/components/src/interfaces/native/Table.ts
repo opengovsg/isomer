@@ -6,6 +6,7 @@ import type { DividerProps } from "./Divider"
 import type { OrderedListProps } from "./OrderedList"
 import type { ParagraphProps } from "./Paragraph"
 import type { UnorderedListProps } from "./UnorderedList"
+import { IsomerString } from "../primitives/IsomerString"
 import { OrderedListSchema } from "./OrderedList"
 import { ParagraphSchema } from "./Paragraph"
 import { UnorderedListSchema } from "./UnorderedList"
@@ -102,7 +103,7 @@ export const TableSchema = Type.Object(
   {
     type: Type.Literal("table", { default: "table" }),
     attrs: Type.Object({
-      caption: Type.String({
+      caption: IsomerString({
         title: "Table caption",
         description: "The caption of the table",
       }),

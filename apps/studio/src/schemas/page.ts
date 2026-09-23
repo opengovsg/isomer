@@ -9,7 +9,11 @@ import {
   ScheduledAction,
 } from "~prisma/generated/generatedEnums"
 
-import { generateBasePermalinkSchema } from "./common"
+import {
+  generateBasePermalinkSchema,
+  NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
+  noStylizedUnicodeTitleRegex,
+} from "./common"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -31,6 +35,9 @@ const pageTitleSchema = z
   .min(1, { message: "Enter a title for this page" })
   .max(MAX_TITLE_LENGTH, {
     message: `Page title should be shorter than ${MAX_TITLE_LENGTH} characters.`,
+  })
+  .regex(noStylizedUnicodeTitleRegex, {
+    message: NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
   })
 
 const permalinkSchema = generateBasePermalinkSchema("page")

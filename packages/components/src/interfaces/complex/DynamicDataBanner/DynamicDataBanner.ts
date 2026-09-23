@@ -4,6 +4,7 @@ import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 import { TextSchema } from "../../native/Text"
+import { IsomerString } from "../../primitives/IsomerString"
 import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "./constants"
 
 export const DynamicDataBannerSchema = Type.Object(
@@ -26,7 +27,7 @@ export const DynamicDataBannerSchema = Type.Object(
     ),
     data: Type.Array(
       Type.Object({
-        label: Type.String({
+        label: IsomerString({
           title: "Description",
           description: "Descriptive label e.g. 'Maghrib'",
           maxLength: 100,
@@ -48,7 +49,7 @@ export const DynamicDataBannerSchema = Type.Object(
       description: "The error message to display if the data is not loaded",
     }),
     label: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Link text",
         maxLength: 50,
         description:
