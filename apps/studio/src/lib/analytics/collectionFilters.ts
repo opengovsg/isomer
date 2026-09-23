@@ -23,11 +23,11 @@ const collectionFilterContext = ({
   site_id: siteId,
 })
 
-export const captureDateFilterOnboardingBannerSupportLinkClicked = ({
-  siteId,
-}: CollectionFilterAnalyticsContext) => {
+export const captureDateFilterOnboardingBannerSupportLinkClicked = (
+  context: CollectionFilterAnalyticsContext,
+) => {
   posthog.capture("date_filter_onboarding_banner_clicked", {
-    ...collectionFilterContext({ siteId }),
+    ...collectionFilterContext(context),
   })
 }
 
