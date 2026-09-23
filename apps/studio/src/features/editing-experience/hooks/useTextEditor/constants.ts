@@ -1,5 +1,5 @@
 import type { Level } from "@tiptap/extension-heading"
-import type { Extensions } from "@tiptap/react"
+import type { Extensions, NodeViewProps } from "@tiptap/react"
 import type { Editor } from "@tiptap/react"
 import {
   getTableCellBackgroundColorCss,
@@ -29,6 +29,7 @@ import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
+import { createElement } from "react"
 import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
 
@@ -125,32 +126,8 @@ export const PROSE_EXTENSIONS: Extensions = [
   Subscript,
 ]
 
-export interface IsomerTableStorage {
-  siteId: number
-}
-
-const tableStorageOf = (storage: object) =>
-  (storage as { table?: IsomerTableStorage }).table
-
-export const readTableSiteId = (editor: { storage: object }) =>
-  tableStorageOf(editor.storage)?.siteId ?? 0
-
-export const writeTableSiteId = (
-  editor: { storage: object } | null,
-  siteId: number,
-) => {
-  const tableStorage = editor ? tableStorageOf(editor.storage) : undefined
-  if (!tableStorage) return
-  tableStorage.siteId = siteId
-}
-
-export const createIsomerTable = () =>
+export const createIsomerTable = (siteId: number) =>
   Table.extend({
-    addStorage() {
-      return {
-        siteId: 0,
-      }
-    },
     // Higher than TipTap's default keymap so Mod-a is handled here first.
     priority: 101,
     addCommands() {
@@ -181,9 +158,11 @@ export const createIsomerTable = () =>
     },
     // Custom node view renders the caption above the table.
     addNodeView() {
-      return ReactNodeViewRenderer(TableNodeView, {
-        contentDOMElementTag: "tbody",
-      })
+      return ReactNodeViewRenderer(
+        (props: NodeViewProps) =>
+          createElement(TableNodeView, { ...props, siteId }),
+        { contentDOMElementTag: "tbody" },
+      )
     },
     addKeyboardShortcuts() {
       const parentShortcuts = this.parent?.() ?? {}

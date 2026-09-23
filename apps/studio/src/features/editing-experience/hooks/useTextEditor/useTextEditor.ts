@@ -10,7 +10,6 @@ import {
   HEADING_TYPE,
   IsomerHeading,
   createIsomerTable,
-  writeTableSiteId,
   IsomerTableCell,
   IsomerTableHeader,
   PARAGRAPH_TYPE,
@@ -48,22 +47,19 @@ const useBaseEditor = ({
   })
 export type BaseEditorType = ReturnType<typeof useBaseEditor>
 
-export const useTextEditor = ({ siteId, ...props }: BaseEditorProps) => {
-  const editor = useBaseEditor({
+export const useTextEditor = ({ siteId, ...props }: BaseEditorProps) =>
+  useBaseEditor({
     ...props,
     siteId,
     extensions: [
       ...PROSE_EXTENSIONS,
       TableRow,
-      createIsomerTable(),
+      createIsomerTable(siteId),
       IsomerTableCell,
       IsomerTableHeader,
       IsomerHeading,
     ],
   })
-  writeTableSiteId(editor, siteId)
-  return editor
-}
 
 export const useCalloutEditor = (props: BaseEditorProps) =>
   useBaseEditor({
@@ -71,21 +67,18 @@ export const useCalloutEditor = (props: BaseEditorProps) =>
     extensions: PROSE_EXTENSIONS,
   })
 
-export const useAccordionEditor = ({ siteId, ...props }: BaseEditorProps) => {
-  const editor = useBaseEditor({
+export const useAccordionEditor = ({ siteId, ...props }: BaseEditorProps) =>
+  useBaseEditor({
     ...props,
     siteId,
     extensions: [
       ...PROSE_EXTENSIONS,
       TableRow,
-      createIsomerTable(),
+      createIsomerTable(siteId),
       IsomerTableCell,
       IsomerTableHeader,
     ],
   })
-  writeTableSiteId(editor, siteId)
-  return editor
-}
 
 export const useProseEditor = (props: BaseEditorProps) =>
   useBaseEditor({

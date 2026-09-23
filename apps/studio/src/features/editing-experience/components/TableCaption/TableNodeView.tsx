@@ -1,16 +1,15 @@
 import type { NodeViewProps } from "@tiptap/react"
 import { Box } from "@chakra-ui/react"
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
-import { readTableSiteId } from "~/features/editing-experience/hooks/useTextEditor/constants"
 import { TABLE_GUTTER_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import { TableCaption } from "./TableCaption"
 
 export const TableNodeView = ({
-  editor,
   node,
   updateAttributes,
-}: NodeViewProps) => {
+  siteId,
+}: NodeViewProps & { siteId: number }) => {
   const caption = (node.attrs.caption as string | undefined) ?? ""
 
   return (
@@ -18,7 +17,7 @@ export const TableNodeView = ({
       <Box contentEditable={false}>
         <TableCaption
           caption={caption}
-          getSiteId={() => readTableSiteId(editor)}
+          siteId={siteId}
           onCaptionChange={(nextCaption) =>
             updateAttributes({ caption: nextCaption })
           }

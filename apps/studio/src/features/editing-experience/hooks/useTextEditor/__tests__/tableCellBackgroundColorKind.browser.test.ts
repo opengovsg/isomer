@@ -67,7 +67,7 @@ const createEditor = (content: JSONContent) => {
     extensions: [
       ...BASE_EXTENSIONS,
       ...PROSE_EXTENSIONS,
-      createIsomerTable(),
+      createIsomerTable(1),
       TableRow,
       IsomerTableHeader,
       IsomerTableCell,

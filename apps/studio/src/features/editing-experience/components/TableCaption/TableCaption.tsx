@@ -9,13 +9,13 @@ import { isPlaceholderTableCaption } from "./utils"
 export interface TableCaptionProps {
   caption: string
   onCaptionChange: (caption: string) => void
-  getSiteId: () => number
+  siteId: number
 }
 
 export const TableCaption = ({
   caption,
   onCaptionChange,
-  getSiteId,
+  siteId,
 }: TableCaptionProps) => {
   const {
     isOpen: isTableSettingsModalOpen,
@@ -68,7 +68,7 @@ export const TableCaption = ({
           onSave={(nextCaption) => {
             onCaptionChange(nextCaption)
             captureTableCaptionSaved({
-              siteId: getSiteId(),
+              siteId,
               replacedPlaceholder: isPlaceholderTableCaption(caption),
             })
           }}
