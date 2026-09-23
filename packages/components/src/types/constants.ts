@@ -67,6 +67,10 @@ export const DEFAULT_DATE_FILTER_STATUS_LABELS = {
   [DATE_FILTER_STATUS.Ended.id]: DATE_FILTER_STATUS.Ended.defaultLabel,
 } as const satisfies Record<DateFilterStatusId, string>
 
+// Missing `isRequired` on a text or date filter is not required. Not a JSON
+// Schema default: Studio AJV useDefaults would write it onto legacy rows.
+export const DEFAULT_FILTER_IS_REQUIRED = false
+
 export const DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY = {
   showStatusLabelsFilter: true,
   showDateRangeFilter: true,

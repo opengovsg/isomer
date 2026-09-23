@@ -9,6 +9,7 @@ import {
   DATE_FILTER_SORT_ORDER_REGEX,
   DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY,
   DEFAULT_DATE_FILTER_STATUS_LABELS,
+  DEFAULT_FILTER_IS_REQUIRED,
   ISOMER_USABLE_PAGE_LAYOUTS,
   isDateFilter,
 } from "@opengovsg/isomer-components"
@@ -45,7 +46,7 @@ const isStatusLabelsCustomized = (
 export const toDateFilterSavedProperties = (
   filter: DateFilterSchemaType,
 ): DateFilterSavedProperties => ({
-  isRequired: filter.isRequired ?? false,
+  isRequired: filter.isRequired ?? DEFAULT_FILTER_IS_REQUIRED,
   showStatusLabelsFilter:
     filter.showStatusLabelsFilter ??
     DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabelsFilter,
