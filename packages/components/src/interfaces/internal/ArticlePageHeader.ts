@@ -15,7 +15,7 @@ export const ArticlePageHeaderSchema = Type.Object({
     maxLength: 500,
   }),
   buttonLabel: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Button label",
       description:
         "A descriptive text. Avoid generic text like “Here”, “Click here”, or “Learn more”",
