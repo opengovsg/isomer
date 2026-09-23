@@ -1,11 +1,12 @@
 import type { BoxProps } from "@chakra-ui/react"
 import type { EditorContentProps, Editor as TiptapEditor } from "@tiptap/react"
-import type { PropsWithChildren } from "react"
+import type { PropsWithChildren, RefObject } from "react"
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
-import { useMemo } from "react"
+import { useMemo, useRef, useState } from "react"
 import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
+import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles"
 
 const EditorContainer = ({
   children,
@@ -45,20 +46,40 @@ const EditorContainer = ({
 
 const EditorContentWrapper = ({
   editor,
-}: Pick<EditorContentProps, "editor">) => {
+  containerRef,
+  showTableExtras,
+  onDragStateChange,
+}: Pick<EditorContentProps, "editor"> & {
+  containerRef: RefObject<HTMLDivElement>
+  showTableExtras?: boolean
+  onDragStateChange?: (isDragging: boolean) => void
+}) => {
   return (
     <Box
-      as={EditorContent}
-      editor={editor}
+      ref={containerRef}
+      position="relative"
       w="100%"
-      p="1rem"
       flex="1 1 auto"
       overflowX="hidden"
       overflowY="auto"
-      backgroundColor="white"
-      onClick={() => editor?.chain().focus().run()}
-      cursor="text"
-    />
+    >
+      <Box
+        as={EditorContent}
+        editor={editor}
+        w="100%"
+        p="1rem"
+        backgroundColor="white"
+        onClick={() => editor?.chain().focus().run()}
+        cursor="text"
+      />
+      {showTableExtras && (
+        <TableDragHandles
+          editor={editor}
+          containerRef={containerRef}
+          onDragStateChange={onDragStateChange}
+        />
+      )}
+    </Box>
   )
 }
 
@@ -69,6 +90,8 @@ interface EditorProps {
 }
 
 export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isDragReordering, setIsDragReordering] = useState(false)
   const isTableEditor = editor.extensionManager.extensions.some(
     (ext) => ext.name === "table",
   )
@@ -76,8 +99,15 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
   return (
     <EditorContainer isNested={isNested}>
       {menubar({ editor })}
-      {isTableEditor && <TableBubbleMenu editor={editor} />}
-      <EditorContentWrapper editor={editor} />
+      {isTableEditor && (
+        <TableBubbleMenu editor={editor} isDragReordering={isDragReordering} />
+      )}
+      <EditorContentWrapper
+        editor={editor}
+        containerRef={containerRef}
+        showTableExtras={isTableEditor}
+        onDragStateChange={setIsDragReordering}
+      />
     </EditorContainer>
   )
 }

@@ -43,7 +43,10 @@ const getSelectionRangeKey = (selection: Editor["state"]["selection"]) =>
     ? `${selection.$anchorCell.pos}:${selection.$headCell.pos}`
     : `${selection.from}:${selection.to}`
 
-export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
+export const useTableBubbleMenu = (
+  editor: Editor,
+  isDragReordering = false,
+): TableBubbleMenuUiState => {
   const menuElRef = useRef<HTMLDivElement | null>(null)
   const [menuEl, setMenuEl] = useState<HTMLDivElement | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -75,6 +78,7 @@ export const useTableBubbleMenu = (editor: Editor): TableBubbleMenuUiState => {
   const show =
     kind !== "none" &&
     !isDragging &&
+    !isDragReordering &&
     !isEditorModalOpen() &&
     (isFocused || menuHasFocus)
 
