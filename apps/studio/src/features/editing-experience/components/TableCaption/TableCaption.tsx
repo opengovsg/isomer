@@ -66,11 +66,11 @@ export const TableCaption = ({
           isOpen
           onClose={onTableSettingsModalClose}
           onSave={(nextCaption) => {
+            onCaptionChange(nextCaption)
             captureTableCaptionSaved({
               siteId,
               replacedPlaceholder: isPlaceholderTableCaption(caption),
             })
-            onCaptionChange(nextCaption)
           }}
         />
       )}
