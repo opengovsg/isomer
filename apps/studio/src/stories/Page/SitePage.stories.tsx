@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { userEvent, within } from "storybook/test"
+import { MOCK_TEST_USER_NAME } from "tests/msw/constants"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -93,10 +94,9 @@ export const PageSettings: Story = {
 export const ExpandedProfileDropdown: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const testUserSelector = await screen.findByText(/TU/i)
-    const testUserSelectorButton = testUserSelector.closest("button")
-    if (testUserSelectorButton) {
-      await userEvent.click(testUserSelectorButton)
-    }
+    const profileMenuButton = await screen.findByRole("button", {
+      name: MOCK_TEST_USER_NAME,
+    })
+    await userEvent.click(profileMenuButton)
   },
 }

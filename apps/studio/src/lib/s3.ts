@@ -18,6 +18,7 @@ import {
 } from "@aws-sdk/client-s3"
 import { Upload } from "@aws-sdk/lib-storage"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
+import { create as createContentDisposition } from "content-disposition"
 import { addDays } from "date-fns"
 import { env } from "~/env.mjs"
 
@@ -217,9 +218,16 @@ export const setAssetAsPublished = async ({
           CopySource: getEncodedCopySource(Bucket, Key),
           Key,
           MetadataDirective: "REPLACE",
-          ContentType: head.ContentType,
-          Metadata: head.Metadata,
           ContentDisposition,
+          // Only re-supply ContentType/Metadata when HeadObject actually
+          // returned them. Passing an explicit `undefined` value (rather
+          // than omitting the key) for these fields is a known
+          // aws-sdk-js-v3 SignatureDoesNotMatch trigger on
+          // CopyObjectCommand.
+          ...(head.ContentType ? { ContentType: head.ContentType } : {}),
+          ...(head.Metadata && Object.keys(head.Metadata).length > 0
+            ? { Metadata: head.Metadata }
+            : {}),
         }),
       )
     }
@@ -266,7 +274,7 @@ export const setAssetAsPublished = async ({
 // or an HTTP 404. Every other failure (throttling, network blips, auth) is
 // transient/operational and MUST propagate — swallowing it as `null` would let
 // callers mistake a present object for a missing one.
-const isNotFoundError = (error: unknown): boolean => {
+export const isNotFoundError = (error: unknown): boolean => {
   if (typeof error !== "object" || error === null) return false
   const { name, $metadata } = error as {
     name?: unknown
@@ -428,7 +436,15 @@ export const uploadAuditLogExport = async ({
       Key: key,
       Body: body,
       ContentType: "text/csv",
-      ContentDisposition: `attachment; filename="${filename}"`,
+      // Key segments can carry arbitrary site names (see
+      // auditLogExport.service.ts); a raw template string would let a `"` in
+      // `filename` break out of the quoted value. `createContentDisposition`
+      // escapes quotes/backslashes and RFC 5987-encodes non-ASCII/control
+      // chars instead (same fix as getContentDispositionForTitle in
+      // packages/algolia/src/gazette.ts).
+      ContentDisposition: createContentDisposition(filename, {
+        type: "attachment",
+      }),
     },
   })
   await upload.done()

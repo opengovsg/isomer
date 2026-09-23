@@ -230,6 +230,31 @@ describe("setAssetAsPublished", () => {
     })
   })
 
+  it("omits ContentType/Metadata from the self-copy when HeadObject didn't return them", async () => {
+    // Arrange: HeadObject with no ContentType/Metadata set (e.g. an object
+    // uploaded without either). Passing them through as explicit `undefined`
+    // values (rather than omitting the keys) is a known aws-sdk-js-v3
+    // SignatureDoesNotMatch trigger on CopyObjectCommand.
+    sendMock.mockResolvedValue({})
+    sendMock.mockResolvedValueOnce({ TagSet: [] })
+    sendMock.mockResolvedValueOnce({})
+
+    // Act
+    await setAssetAsPublished({
+      Key: "2024/category/sub/file.pdf",
+      Bucket: "test-bucket",
+      ContentDisposition: "inline; filename*=UTF-8''My%20Gazette.pdf",
+    })
+
+    // Assert
+    const copyCommand = sendMock.mock.calls
+      .map(([command]) => command as unknown)
+      .find((command) => command instanceof CopyObjectCommand)
+    expect(copyCommand).toBeDefined()
+    expect(copyCommand?.input).not.toHaveProperty("ContentType")
+    expect(copyCommand?.input).not.toHaveProperty("Metadata")
+  })
+
   it("skips the self-copy when the disposition is already correct", async () => {
     // Arrange: HeadObject reports the target disposition already set — e.g.
     // a pg-boss retry after an earlier attempt already rewrote it.

@@ -38,6 +38,11 @@ const GODMODE_LINKS: readonly GodModeLink[] = [
     label: "Whitelist",
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   },
+  {
+    href: "/godmode/delete-assets",
+    label: "Delete assets",
+    roles: [IsomerAdminRole.Core],
+  },
 ]
 
 export const getServerSideProps: GetServerSideProps<GodModeAdminRoleProps> = (

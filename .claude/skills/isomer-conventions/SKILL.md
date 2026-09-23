@@ -43,6 +43,10 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 
 ## Catalog
 
+### Components
+
+- [Combine component styles with tv or twMerge in packages/components](conventions/components-tv-twmerge-combine-styles.md) — best practice: use tv/twMerge for variant/merge logic; plain className when there is no variance
+
 ### React
 
 - [Prefer a new component over overloading props](conventions/react-new-component-over-prop-overload.md) — smell: flag soup / single-caller props bending one component into two jobs

@@ -45,7 +45,6 @@ export const HomePageMetaSchema = BasePageMetaSchema
 export const NotFoundPageMetaSchema = BasePageMetaSchema
 export const SearchPageMetaSchema = BasePageMetaSchema
 
-export const FileRefMetaSchema = BaseItemMetaSchema
 export const LinkRefMetaSchema = BaseItemMetaSchema
 
 export type ArticlePageMetaProps = Static<typeof ArticlePageMetaSchema>
@@ -55,5 +54,4 @@ export type HomePageMetaProps = Static<typeof HomePageMetaSchema>
 export type NotFoundPageMetaProps = Static<typeof NotFoundPageMetaSchema>
 export type SearchPageMetaProps = Static<typeof SearchPageMetaSchema>
 
-export type FileRefMetaProps = Static<typeof FileRefMetaSchema>
 export type LinkRefMetaProps = Static<typeof LinkRefMetaSchema>

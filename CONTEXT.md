@@ -6,8 +6,8 @@ A government CMS and site builder for Singapore public agencies. Editors create 
 
 ### Collection structure
 
-**Collection Item**: An article (CollectionPage) or link (CollectionLink) that lives inside a collection. Both support tag assignment, including the migrated "Category" tag group (see below).
-_Avoid_: article (when referring to both types), page (ambiguous)
+**Collection Item**: An article (CollectionPage) or link (CollectionLink) that lives inside a collection. A link may target an external URL or an uploaded file — a "file item" is a CollectionLink variant, not a separate resource type. Both support tag assignment, including the migrated "Category" tag group (see below).
+_Avoid_: article (when referring to both types), page (ambiguous), file (as a distinct item type — it is a link variant)
 
 **Collection Index**: The parent page of a collection. Stores the admin-defined taxonomy — Tag Categories — in its blob.
 _Avoid_: collection page, index page (ambiguous across layouts)
@@ -40,6 +40,14 @@ _Avoid_: trigger point (overloaded), exit (window close is not a Measuring Point
 
 **Measuring Period**: The recurrence window within which a given user is shown the editing survey at most once. Defined and enforced in the survey tool's frequency settings, not by Studio.
 _Avoid_: survey cooldown, quarter (the period is configurable, not fixed)
+
+### Gazette search
+
+**Search Record**: One Algolia record for a gazette, holding a single chunk of the gazette PDF's text plus its classification fields. A gazette produces one Search Record per text chunk; records are what search queries match against.
+_Avoid_: document (ambiguous with the SearchSG "document", which is one-per-gazette, not one-per-chunk), search object
+
+**Object Group**: The identity shared by all Search Records of one gazette — its S3 object key. Used to address a gazette's records as a unit (e.g. removing them all).
+_Avoid_: object key (true but hides the grouping role), ref (that's the leading-slash page field the Object Group is derived from)
 
 ### Roles and surfaces
 

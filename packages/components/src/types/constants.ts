@@ -5,7 +5,6 @@ export const ISOMER_USABLE_PAGE_LAYOUTS = {
   Homepage: "homepage",
   Index: "index",
   Database: "database",
-  File: "file",
   Link: "link",
 } as const
 

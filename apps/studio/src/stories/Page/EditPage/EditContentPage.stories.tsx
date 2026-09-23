@@ -167,15 +167,16 @@ export const ActiveTableToolbar: Story = {
     const canvas = within(canvasElement)
     await AddTextBlock.play?.(context)
 
-    // Outside a table: superscript/subscript live only under "More options".
-    // (The page also has an unrelated page-actions "More options" `Menu`
-    // button; the RTE toolbar's overflow list is a `Popover`, so
-    // disambiguate on aria-haspopup.)
-    const overflowTrigger = canvas
-      .getAllByRole("button", { name: /more options/i })
-      .find((button) => button.getAttribute("aria-haspopup") === "dialog")
-    if (!overflowTrigger) throw new Error("Overflow trigger not found")
+    // Outside a table: superscript/subscript are not on the main toolbar.
+    // They live in the RTE overflow popover (aria-label "More options").
+    await expect(
+      canvas.queryAllByRole("button", { name: /^superscript$/i }),
+    ).toHaveLength(0)
+    const overflowTrigger = await canvas.findByRole("button", {
+      name: /^more options$/i,
+    })
     await userEvent.click(overflowTrigger)
+    await expect(overflowTrigger).toHaveAttribute("aria-expanded", "true")
     await canvas.findByRole("button", { name: /^superscript$/i })
     await expect(
       canvas.queryAllByRole("button", { name: /^superscript$/i }),
@@ -185,7 +186,11 @@ export const ActiveTableToolbar: Story = {
     // Clicking "Table" only opens the size-picker popover — a cell still
     // needs to be picked to actually insert a table and put the cursor
     // inside it (see TableSizePicker.tsx).
-    await userEvent.click(canvas.getByRole("button", { name: /^table$/i }))
+    const tableButton = await canvas.findByRole("button", {
+      name: /^table$/i,
+    })
+    await userEvent.click(tableButton)
+    await expect(tableButton).toHaveAttribute("aria-expanded", "true")
     await userEvent.click(
       await canvas.findByRole("button", { name: /^1 by 1 table$/i }),
     )
@@ -195,14 +200,16 @@ export const ActiveTableToolbar: Story = {
     await canvas.findByRole("button", { name: /^superscript$/i })
     await canvas.findByRole("button", { name: /^subscript$/i })
     await expect(
-      canvas.getAllByRole("button", { name: /^superscript$/i }),
+      canvas.queryAllByRole("button", { name: /^superscript$/i }),
     ).toHaveLength(1)
 
-    // Divider is also table-inapplicable, so "More options" has nothing left
-    // to show and disappears entirely — only the unrelated page-actions menu
-    // button remains.
+    // Divider is also table-inapplicable, so the RTE overflow menu unmounts
+    // entirely while the cursor is inside a table.
     await expect(
-      canvas.getAllByRole("button", { name: /more options/i }),
-    ).toHaveLength(1)
+      canvas.queryAllByRole("button", {
+        name: /^more options$/i,
+        hidden: true,
+      }),
+    ).toHaveLength(0)
   },
 }

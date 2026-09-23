@@ -11,6 +11,8 @@ export type BaseBlockProps = {
   variant?: "horizontal" | "vertical"
   containerProps?: StackProps
   onClick?: () => void
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
   draggableProps?: DraggableProvidedDragHandleProps | null
   invalidProps?: {
     description: string
@@ -34,6 +36,8 @@ export const BaseBlock = ({
   draggableProps,
   containerProps,
   onClick,
+  onMouseEnter,
+  onMouseLeave,
   invalidProps,
   isHidden,
 }: BaseBlockProps): JSX.Element | null => {
@@ -109,6 +113,8 @@ export const BaseBlock = ({
       align={variant === "vertical" ? "flex-start" : "center"}
       textAlign="start"
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       {...actualDraggableProps}
       {...containerProps}
     >

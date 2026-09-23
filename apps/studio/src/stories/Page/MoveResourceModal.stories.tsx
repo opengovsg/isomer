@@ -25,7 +25,33 @@ const SHARED_HANDLERS_WITHOUT_METADATA = [
 const SHARED_HANDLERS = [
   ...SHARED_HANDLERS_WITHOUT_METADATA,
   resourceHandlers.getMetadataById.content(),
+  resourceHandlers.getMoveLockInfo.default(),
 ]
+
+// "Test page 1" (id 4) moved into "Folder 1" (id 1). Both resolve to concrete
+// types so isResourceMoveValid accepts the move and the modal shows the URL
+// change + redirect UI — the generic content() mock returns a Page for every
+// id, which the validation rejects as an invalid destination.
+const PAGE_INTO_FOLDER_METADATA = resourceHandlers.getMetadataById.byId({
+  "4": {
+    id: "4",
+    type: "Page",
+    title: "Test page 1",
+    permalink: "test-page-1",
+    parentId: null,
+    siteId: 1,
+    publishedVersionId: "1",
+  },
+  "1": {
+    id: "1",
+    type: "Folder",
+    title: "Folder 1",
+    permalink: "folder-1",
+    parentId: null,
+    siteId: 1,
+    publishedVersionId: null,
+  },
+})
 
 const meta: Meta<typeof SitePage> = {
   title: "Pages/Site Management/Move Resource Modal",
@@ -74,7 +100,8 @@ export const SingleClick: Story = {
   parameters: {
     msw: {
       handlers: [
-        ...SHARED_HANDLERS,
+        ...SHARED_HANDLERS_WITHOUT_METADATA,
+        PAGE_INTO_FOLDER_METADATA,
         resourceHandlers.getBatchAncestryWithSelf.foldersOnly(),
         redirectHandlers.getBySource.none(),
       ],
@@ -175,14 +202,20 @@ export const RedirectShadowWarning: Story = {
   parameters: {
     msw: {
       handlers: [
-        ...SHARED_HANDLERS,
+        ...SHARED_HANDLERS_WITHOUT_METADATA,
+        PAGE_INTO_FOLDER_METADATA,
         resourceHandlers.getBatchAncestryWithSelf.foldersOnly(),
         redirectHandlers.getBySource.existing(),
       ],
     },
   },
   play: async (context) => {
+    const { canvasElement } = context
     await SingleClick.play?.(context)
+
+    await within(canvasElement.ownerDocument.body).findByText(
+      /This URL already redirects to/,
+    )
   },
 }
 
@@ -229,6 +262,11 @@ export const CollectionItemInvalidDestination: Story = {
     await within(canvasElement.ownerDocument.body).findByText(
       "Collection items can only be moved to another collection",
     )
+    // The destination is invalid, so the resulting page URL must not be shown
+    // alongside the error. (ISOM-2556)
+    await expect(
+      within(canvasElement.ownerDocument.body).queryByText(/will change to/i),
+    ).toBeNull()
   },
 }
 
