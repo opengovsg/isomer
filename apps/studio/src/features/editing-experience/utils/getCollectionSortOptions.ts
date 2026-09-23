@@ -8,11 +8,11 @@ import type { CollectionTags } from "../hooks/useCollectionTags"
 const BASE_COLLECTION_SORT_OPTIONS = [
   {
     value: COLLECTION_SORT_ORDER.DateDesc,
-    label: "By article date, newest → oldest",
+    label: "By item date, newest → oldest",
   },
   {
     value: COLLECTION_SORT_ORDER.DateAsc,
-    label: "By article date, oldest → newest",
+    label: "By item date, oldest → newest",
   },
   {
     value: COLLECTION_SORT_ORDER.TitleAsc,
