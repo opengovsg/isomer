@@ -3,8 +3,8 @@
 import type { DateFilterDisplayEntry } from "~/interfaces/internal/DateFilter"
 import { useMemo } from "react"
 
-import { getDateFilterCardsFromEntries } from "../../../layouts/Collection/utils/dateFilterCards"
 import { EventStatusPill } from "./EventStatusPill"
+import { getDateFilterCardsFromEntries } from "./utils/getDateFilterCardsFromEntries"
 
 interface DateFilterStatusClientProps {
   entries?: DateFilterDisplayEntry[]

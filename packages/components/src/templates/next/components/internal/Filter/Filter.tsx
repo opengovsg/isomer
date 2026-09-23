@@ -6,11 +6,14 @@ import { mergeProps } from "@react-aria/utils"
 import { useRef, useState } from "react"
 import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
+import { updateAppliedFilterDateRange } from "~/templates/next/layouts/Collection/utils"
+import { TAG_CATEGORY_TYPE } from "~/types/constants"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 
 import type { FilterProps } from "../../../types/Filter"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
+import { DateFilterControls } from "./DateFilterControls"
 import { FilterDrawer } from "./FilterDrawer"
 import { filterChevronStyles, filterPanelStyles } from "./filterStyles"
 
@@ -22,10 +25,12 @@ const FilterSectionButton = ({
   label,
   isOpen,
   onToggle,
+  panelId,
 }: {
   label: string
   isOpen: boolean
   onToggle: () => void
+  panelId: string
 }) => {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const { buttonProps } = useButton({ onPress: onToggle }, buttonRef)
@@ -36,9 +41,11 @@ const FilterSectionButton = ({
     <button
       {...mergedProps}
       ref={buttonRef}
+      aria-expanded={isOpen}
+      aria-controls={panelId}
       className="group prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-left text-base-content outline-0"
     >
-      <label className={filterSectionLabelStyle()}>{label}</label>
+      <span className={filterSectionLabelStyle()}>{label}</span>
       <BiChevronDown aria-hidden className={filterChevronStyles({ isOpen })} />
     </button>
   )
@@ -107,32 +114,60 @@ export const Filter = ({
             </Button>
           )}
         </div>
-        {filters.map(({ id, label, items }) => (
-          <CheckboxGroup
-            className="border-b border-b-divider-medium py-4"
-            key={id}
-            value={appliedItemsById[id] ?? []}
-          >
-            <FilterSectionButton
-              label={label}
-              isOpen={showFilter[id] ?? false}
-              onToggle={() => updateFilterToggle(id)}
-            />
+        {filters.map(({ id, label, items, type }) => {
+          const panelId = `filter-panel-${id}`
+          const isOpen = showFilter[id] ?? false
 
-            <div className={filterPanelStyles({ isOpen: showFilter[id] })}>
-              {items.map(({ id: itemId, label: itemLabel, count }) => (
-                <Checkbox
-                  key={itemId}
-                  className="w-fit cursor-pointer p-2"
-                  value={itemId}
-                  onChange={() => handleFilterToggle(id, itemId)}
-                >
-                  {itemLabel} ({count.toLocaleString()})
-                </Checkbox>
-              ))}
+          return (
+            <div className="border-b border-b-divider-medium py-4" key={id}>
+              <FilterSectionButton
+                label={label}
+                isOpen={isOpen}
+                onToggle={() => updateFilterToggle(id)}
+                panelId={panelId}
+              />
+
+              <div id={panelId} className={filterPanelStyles({ isOpen })}>
+                {type === TAG_CATEGORY_TYPE.Date ? (
+                  <DateFilterControls
+                    items={items}
+                    checkboxValue={appliedItemsById[id] ?? []}
+                    statusGroupLabel={`${label} status`}
+                    onBucketToggle={(itemId) => handleFilterToggle(id, itemId)}
+                    dateRange={
+                      appliedFilters.find((filter) => filter.id === id)
+                        ?.dateRange
+                    }
+                    onDateRangeChange={(dateRange) =>
+                      updateAppliedFilterDateRange({
+                        appliedFilters,
+                        setAppliedFilters,
+                        filterId: id,
+                        dateRange,
+                      })
+                    }
+                  />
+                ) : (
+                  <CheckboxGroup
+                    aria-label={label}
+                    value={appliedItemsById[id] ?? []}
+                  >
+                    {items.map(({ id: itemId, label: itemLabel, count }) => (
+                      <Checkbox
+                        key={itemId}
+                        className="w-fit cursor-pointer p-2"
+                        value={itemId}
+                        onChange={() => handleFilterToggle(id, itemId)}
+                      >
+                        {itemLabel} ({count.toLocaleString()})
+                      </Checkbox>
+                    ))}
+                  </CheckboxGroup>
+                )}
+              </div>
             </div>
-          </CheckboxGroup>
-        ))}
+          )
+        })}
       </aside>
     </>
   )
