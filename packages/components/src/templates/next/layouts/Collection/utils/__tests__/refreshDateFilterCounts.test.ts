@@ -66,11 +66,11 @@ describe("refreshDateFilterCounts", () => {
     }
 
     // Act
-    const result = refreshDateFilterCounts(
-      [categoryFilter, publishedDateFilter],
+    const result = refreshDateFilterCounts({
+      filters: [categoryFilter, publishedDateFilter],
       items,
       tagCategories,
-    )
+    })
 
     // Assert
     expect(result[0]).toBe(categoryFilter)
@@ -118,11 +118,11 @@ describe("refreshDateFilterCounts", () => {
     }
 
     // Act
-    const result = refreshDateFilterCounts(
-      [categoryFilter, publishedDateFilter],
+    const result = refreshDateFilterCounts({
+      filters: [categoryFilter, publishedDateFilter],
       items,
-      categoriesWithBlankLabels,
-    )
+      tagCategories: categoriesWithBlankLabels,
+    })
 
     // Assert
     expect(result).toEqual([categoryFilter])
@@ -182,11 +182,11 @@ describe("refreshDateFilterCounts", () => {
     ]
 
     // Act
-    const result = refreshDateFilterCounts(
-      [categoryFilter, publishedDateFilter, yearFilter],
-      endedItems,
-      categoriesWithBlankEndedLabel,
-    )
+    const result = refreshDateFilterCounts({
+      filters: [categoryFilter, publishedDateFilter, yearFilter],
+      items: endedItems,
+      tagCategories: categoriesWithBlankEndedLabel,
+    })
 
     // Assert — load time: the date section is gone; other filters are untouched
     expect(result.map(({ id, type }) => ({ id, type }))).toEqual([
@@ -240,11 +240,11 @@ describe("refreshDateFilterCounts", () => {
     ]
 
     // Act
-    const result = refreshDateFilterCounts(
-      [categoryFilter, publishedDateFilter],
-      mixedItems,
-      categoriesWithBlankEndedLabel,
-    )
+    const result = refreshDateFilterCounts({
+      filters: [categoryFilter, publishedDateFilter],
+      items: mixedItems,
+      tagCategories: categoriesWithBlankEndedLabel,
+    })
 
     // Assert — load time: Ongoing remains; the published Upcoming bucket does not
     expect(result[0]).toBe(categoryFilter)

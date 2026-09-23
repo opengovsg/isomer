@@ -11,10 +11,7 @@ import {
   getPaginatedItems,
   toggleAppliedFilterItem,
 } from "./utils"
-import {
-  areCollectionFiltersEqual,
-  refreshDateFilterCounts,
-} from "./utils/refreshDateFilterCounts"
+import { refreshDateFilterCounts } from "./utils/refreshDateFilterCounts"
 
 const EMPTY_FILTERS: Filter[] = []
 
@@ -37,9 +34,8 @@ export const useCollection = ({
   // Once on load (and if this page's items or filters change). Not on a timer:
   // tag and year filters stay precomputed; only date-bucket counts are refreshed.
   useEffect(() => {
-    const next = refreshDateFilterCounts(filters, items, tagCategories)
-    setAvailableFilters((current) =>
-      areCollectionFiltersEqual(current, next) ? current : next,
+    setAvailableFilters(
+      refreshDateFilterCounts({ filters, items, tagCategories }),
     )
   }, [filters, items, tagCategories])
 
