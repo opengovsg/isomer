@@ -9,7 +9,7 @@ import {
   TABLE_CHROME_THICKNESS_PX,
 } from "~/features/editing-experience/utils/tableEditorChrome"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { captureTableCommand } from "~/lib/analytics/tables"
+import { captureTableCommand } from "~/lib/analytics/rteTable"
 
 import type { TableGeometry } from "./internal/axisMath"
 import type { Axis } from "./internal/axisView"

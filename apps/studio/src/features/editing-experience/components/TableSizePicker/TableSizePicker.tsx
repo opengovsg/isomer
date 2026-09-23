@@ -20,7 +20,7 @@ import {
   captureTableCommand,
   captureTableCommandFailed,
   captureTableInserted,
-} from "~/lib/analytics/tables"
+} from "~/lib/analytics/rteTable"
 
 export interface TableSizePickerProps {
   editor: Editor

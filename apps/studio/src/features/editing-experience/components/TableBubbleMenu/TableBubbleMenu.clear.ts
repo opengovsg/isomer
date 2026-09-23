@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/react"
-import type { TableCommandOutcome } from "~/lib/analytics/tables"
+import type { TableCommandOutcome } from "~/lib/analytics/rteTable"
 import { CellSelection, deleteCellSelection } from "@tiptap/pm/tables"
 
 export const clearSelectedCells = (editor: Editor): TableCommandOutcome => {

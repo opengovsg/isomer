@@ -4,7 +4,7 @@ import { BiPencil } from "react-icons/bi"
 import { TableSettingsModal } from "~/features/editing-experience/components/TableSettingsModal/TableSettingsModal"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { captureTableCaptionSaved } from "~/lib/analytics/tables"
+import { captureTableCaptionSaved } from "~/lib/analytics/rteTable"
 
 import { isPlaceholderTableCaption } from "./utils"
 

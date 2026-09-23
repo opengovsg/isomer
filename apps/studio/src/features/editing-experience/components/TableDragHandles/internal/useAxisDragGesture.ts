@@ -13,7 +13,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import {
   captureTableCommand,
   captureTableCommandFailed,
-} from "~/lib/analytics/tables"
+} from "~/lib/analytics/rteTable"
 
 import type { Rect, TableGeometry } from "./axisMath"
 import type { Axis } from "./axisView"

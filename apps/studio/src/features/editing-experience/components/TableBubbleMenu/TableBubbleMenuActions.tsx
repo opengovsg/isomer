@@ -38,7 +38,7 @@ import {
   captureTableCommand,
   type TableAction,
   type TableCommandOutcome,
-} from "~/lib/analytics/tables"
+} from "~/lib/analytics/rteTable"
 
 import type {
   SelectionKind,
