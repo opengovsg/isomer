@@ -1,3 +1,4 @@
+import type { SelectionKind } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.types"
 import posthog from "posthog-js"
 
 export type TableCommandOutcome = "applied" | "rejected" | "skipped"
@@ -26,17 +27,6 @@ export type TableActionSource =
   | "toolbar"
 
 export type TableCommandFailureReason = "command_rejected" | "move_noop"
-
-type TableSelectionKind =
-  | "none"
-  | "single-cell"
-  | "merged-cell"
-  | "row"
-  | "header-row"
-  | "column"
-  | "header-column"
-  | "table"
-  | "multi-cell"
 
 interface TableAnalyticsContext {
   siteId: number
@@ -97,7 +87,7 @@ export const captureTableCommand = ({
   outcome: TableCommandOutcome
   action: TableAction
   source: TableActionSource
-  selectionKind: TableSelectionKind
+  selectionKind: SelectionKind
   reason?: TableCommandFailureReason
 }) => {
   if (outcome === "skipped") return
