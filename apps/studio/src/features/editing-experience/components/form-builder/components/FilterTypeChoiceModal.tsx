@@ -77,7 +77,16 @@ function FilterTypeCard({
       }
       onClick={onSelect}
     >
-      <Box bg="base.canvas.default">{imageSrc}</Box>
+      <Box
+        bg="base.canvas.default"
+        h="9.375rem"
+        w="full"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+      >
+        {imageSrc}
+      </Box>
       <Box p="1.25rem">
         <VStack align="start" spacing="0.5rem">
           <ChakraIcon
