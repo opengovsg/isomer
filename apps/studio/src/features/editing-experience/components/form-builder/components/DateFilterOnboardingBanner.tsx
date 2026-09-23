@@ -1,15 +1,46 @@
 import { Box, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
+import { useEffect } from "react"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { NextImage } from "~/components/NextImage"
+import {
+  captureDateFilterOnboardingBannerShown,
+  captureDateFilterOnboardingBannerSupportLinkClicked,
+} from "~/lib/analytics/dateFilters"
+import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
 
-export const DateFilterOnboardingBanner = (): JSX.Element | null => {
+const DATE_FILTER_ONBOARDING_BANNER_SHOWN_KEY =
+  "date-filter-onboarding-banner-shown"
+
+interface DateFilterOnboardingBannerProps {
+  siteId: number
+}
+
+export const DateFilterOnboardingBanner = ({
+  siteId,
+}: DateFilterOnboardingBannerProps): JSX.Element | null => {
+  const isDateFiltersEnabled = useDateFiltersEnabled()
   const [hasSeenOnboardingBanner, setHasSeenOnboardingBanner] = useLocalStorage(
     "date-filter-onboarding-banner-seen",
     false,
   )
+
+  useEffect(() => {
+    if (hasSeenOnboardingBanner) {
+      return
+    }
+    if (
+      sessionStorage.getItem(DATE_FILTER_ONBOARDING_BANNER_SHOWN_KEY) ===
+      "true"
+    ) {
+      return
+    }
+
+    sessionStorage.setItem(DATE_FILTER_ONBOARDING_BANNER_SHOWN_KEY, "true")
+    captureDateFilterOnboardingBannerShown({ siteId, isDateFiltersEnabled })
+  }, [hasSeenOnboardingBanner, isDateFiltersEnabled, siteId])
 
   if (hasSeenOnboardingBanner) {
     return null
@@ -39,7 +70,13 @@ export const DateFilterOnboardingBanner = (): JSX.Element | null => {
           as={NextLink}
           href="https://support.isomer.gov.sg/en/articles/15461505-how-to-manage-collection-filters"
           color="interaction.links.default"
-          onClick={() => setHasSeenOnboardingBanner(true)}
+          onClick={() => {
+            setHasSeenOnboardingBanner(true)
+            captureDateFilterOnboardingBannerSupportLinkClicked({
+              siteId,
+              isDateFiltersEnabled,
+            })
+          }}
         >
           <HStack as="span" spacing="0.25rem">
             <Text as="span" textStyle="caption-1">

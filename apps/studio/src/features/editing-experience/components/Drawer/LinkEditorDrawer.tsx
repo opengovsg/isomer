@@ -7,7 +7,12 @@ import { isEmpty, isEqual } from "lodash-es"
 import { useMemo, useState } from "react"
 import { z } from "zod"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import {
+  captureCollectionItemDateSaveBlocked,
+  captureCollectionItemDateSaved,
+} from "~/lib/analytics/dateFilters"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -15,6 +20,7 @@ import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { useCollectionTags } from "../../hooks/useCollectionTags"
+import { getCollectionItemDateProperties } from "../../utils/dateFilterAnalytics"
 import { validateRequiredDateFilters } from "../../utils/validateRequiredDateFilters"
 import { validateRequiredTags } from "../../utils/validateRequiredTags"
 import { ActivateRawJsonEditorMode } from "../ActivateRawJsonEditorMode"
@@ -52,6 +58,7 @@ const InnerDrawer = ({
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
   const { linkId, siteId } = useQueryParse(editLinkSchema)
+  const isDateFiltersEnabled = useDateFiltersEnabled()
   const { data: collectionTags = [], isLoading: isCollectionTagsLoading } =
     useCollectionTags({
       resourceId: linkId,
@@ -98,20 +105,41 @@ const InnerDrawer = ({
         px="2rem"
         pos="relative"
       >
-        <Button
+        <Box
           w="full"
-          alignSelf="flex-start"
-          onClick={handleSaveChanges}
-          isDisabled={
-            !isEmpty(errors) ||
-            !previewPageState.ref ||
-            !isTagsValid ||
-            isCollectionTagsLoading
-          }
-          isLoading={isLoading}
+          onClick={() => {
+            if (isDateTaggedValid) {
+              return
+            }
+            const itemDateProperties = getCollectionItemDateProperties(
+              collectionTags,
+              previewPageState.dateTagged,
+            )
+            if (!itemDateProperties) {
+              return
+            }
+            captureCollectionItemDateSaveBlocked({
+              siteId,
+              isDateFiltersEnabled,
+              ...itemDateProperties,
+            })
+          }}
         >
-          Save
-        </Button>
+          <Button
+            w="full"
+            alignSelf="flex-start"
+            onClick={handleSaveChanges}
+            isDisabled={
+              !isEmpty(errors) ||
+              !previewPageState.ref ||
+              !isTagsValid ||
+              isCollectionTagsLoading
+            }
+            isLoading={isLoading}
+          >
+            Save
+          </Button>
+        </Box>
       </Box>
     </Flex>
   )
@@ -193,6 +221,11 @@ export const LinkEditorDrawer = ({
   setLink,
 }: LinkEditorDrawerProps) => {
   const { linkId, siteId } = useQueryParse(editLinkSchema)
+  const isDateFiltersEnabled = useDateFiltersEnabled()
+  const { data: collectionTags = [] } = useCollectionTags({
+    resourceId: linkId,
+    siteId,
+  })
   const utils = trpc.useUtils()
   const toast = useToast()
 
@@ -217,7 +250,27 @@ export const LinkEditorDrawer = ({
         previewPageState={link}
         isLoading={isPending}
         handleChange={(data) => setLink(data)}
-        handleSaveChanges={() => mutate({ siteId, linkId, ...link })}
+        handleSaveChanges={() => {
+          const itemDateProperties = getCollectionItemDateProperties(
+            collectionTags,
+            link.dateTagged,
+          )
+          mutate(
+            { siteId, linkId, ...link },
+            {
+              onSuccess: () => {
+                if (!itemDateProperties) {
+                  return
+                }
+                captureCollectionItemDateSaved({
+                  siteId,
+                  isDateFiltersEnabled,
+                  ...itemDateProperties,
+                })
+              },
+            },
+          )
+        }}
       />
     </ErrorProvider>
   )

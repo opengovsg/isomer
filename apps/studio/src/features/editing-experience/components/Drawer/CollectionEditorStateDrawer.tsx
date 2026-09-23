@@ -12,6 +12,16 @@ import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
+import {
+  getChangedDateFilterSortDirection,
+  getCollectionPage,
+  listChangedDateFilters,
+} from "~/features/editing-experience/utils/dateFilterAnalytics"
+import {
+  captureCollectionDateFilterSortSaved,
+  captureDateFilterSaved,
+} from "~/lib/analytics/dateFilters"
+import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
@@ -42,6 +52,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   } = useEditorDrawerContext()
 
   const canManageFilters = useCanManageCollectionFilters()
+  const isDateFiltersEnabled = useDateFiltersEnabled()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
   const utils = trpc.useUtils()
@@ -102,6 +113,23 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   )
 
   const handleSaveChanges = useCallback(() => {
+    const savedCollectionPage = getCollectionPage(savedPageState)
+    const previewCollectionPage = getCollectionPage(previewPageState)
+    const changedDateFilters =
+      drawerStateType === "filter"
+        ? listChangedDateFilters(
+            savedCollectionPage?.tagCategories,
+            previewCollectionPage?.tagCategories,
+          )
+        : []
+    const sortDirection =
+      drawerStateType === "display"
+        ? getChangedDateFilterSortDirection(
+            savedCollectionPage?.sortOrder,
+            previewCollectionPage?.sortOrder,
+          )
+        : undefined
+
     setSavedPageState(previewPageState)
     mutate(
       {
@@ -111,14 +139,31 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
       },
       {
         onSuccess: () => {
+          changedDateFilters.forEach((properties) => {
+            captureDateFilterSaved({
+              siteId,
+              isDateFiltersEnabled,
+              ...properties,
+            })
+          })
+          if (sortDirection) {
+            captureCollectionDateFilterSortSaved({
+              siteId,
+              isDateFiltersEnabled,
+              direction: sortDirection,
+            })
+          }
           setDrawerState({ state: "root" })
         },
       },
     )
   }, [
+    drawerStateType,
+    isDateFiltersEnabled,
     mutate,
     pageId,
     previewPageState,
+    savedPageState,
     setDrawerState,
     setSavedPageState,
     siteId,

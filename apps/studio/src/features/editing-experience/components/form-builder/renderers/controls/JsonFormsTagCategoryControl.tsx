@@ -13,6 +13,7 @@ import { useMemo } from "react"
 import { BiCalendar, BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
+import { captureDateFilterCreated } from "~/lib/analytics/dateFilters"
 import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 
@@ -144,6 +145,11 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     )()
     setSelectedIndex(newIndex)
     onTypeChoiceModalClose()
+    captureDateFilterCreated({
+      siteId,
+      isDateFiltersEnabled,
+      filterType: type,
+    })
   }
 
   return (
@@ -152,7 +158,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
       {...arrayResult}
       banner={
         isDateFilterEditorOpen(page?.tagCategories, selectedIndex) ? (
-          <DateFilterOnboardingBanner />
+          <DateFilterOnboardingBanner siteId={siteId} />
         ) : undefined
       }
     >

@@ -15,6 +15,12 @@ import posthog from "posthog-js"
 import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { getCollectionItemDateProperties } from "~/features/editing-experience/utils/dateFilterAnalytics"
+import {
+  captureCollectionItemDateSaveBlocked,
+  captureCollectionItemDateSaved,
+} from "~/lib/analytics/dateFilters"
+import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
@@ -57,6 +63,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 
   const isCollectionItem =
     type === ResourceType.CollectionPage || type === ResourceType.CollectionLink
+  const isDateFiltersEnabled = useDateFiltersEnabled()
 
   const { data: collectionTags = [], isLoading: isCollectionTagsLoading } =
     useCollectionTags({
@@ -110,6 +117,14 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const validateFn = ajv.compile<Static<typeof metadataSchema>>(filteredSchema)
 
   const handleSaveChanges = useCallback(() => {
+    const itemDateProperties = isCollectionItem
+      ? getCollectionItemDateProperties(
+          collectionTags,
+          (previewPageState.page as Pick<ArticlePagePageProps, "dateTagged">)
+            .dateTagged,
+        )
+      : undefined
+
     setSavedPageState(previewPageState)
     mutate(
       {
@@ -118,10 +133,22 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
         content: JSON.stringify(previewPageState),
       },
       {
-        onSuccess: () => setDrawerState({ state: "root" }),
+        onSuccess: () => {
+          if (itemDateProperties) {
+            captureCollectionItemDateSaved({
+              siteId,
+              isDateFiltersEnabled,
+              ...itemDateProperties,
+            })
+          }
+          setDrawerState({ state: "root" })
+        },
       },
     )
   }, [
+    collectionTags,
+    isCollectionItem,
+    isDateFiltersEnabled,
     mutate,
     pageId,
     previewPageState,
@@ -267,6 +294,8 @@ const TagsAwareSaveButton = ({
   tagged: string[] | undefined
   dateTagged: ArticlePagePageProps["dateTagged"]
 }) => {
+  const { siteId } = useQueryParse(pageSchema)
+  const isDateFiltersEnabled = useDateFiltersEnabled()
   const { isValid: isTaggedValid } = validateRequiredTags(tags, tagged)
   const { isValid: isDateTaggedValid } = validateRequiredDateFilters(
     tags,
@@ -274,10 +303,33 @@ const TagsAwareSaveButton = ({
   )
 
   return (
-    <SaveButton
-      isLoading={isLoading}
-      onClick={onClick}
-      isTagsValid={isTaggedValid && isDateTaggedValid}
-    />
+    // A disabled save button is not a click target, so the wrapper receives
+    // the attempt when a required date is still empty.
+    <Box
+      w="100%"
+      onClick={() => {
+        if (isDateTaggedValid) {
+          return
+        }
+        const itemDateProperties = getCollectionItemDateProperties(
+          tags,
+          dateTagged,
+        )
+        if (!itemDateProperties) {
+          return
+        }
+        captureCollectionItemDateSaveBlocked({
+          siteId,
+          isDateFiltersEnabled,
+          ...itemDateProperties,
+        })
+      }}
+    >
+      <SaveButton
+        isLoading={isLoading}
+        onClick={onClick}
+        isTagsValid={isTaggedValid && isDateTaggedValid}
+      />
+    </Box>
   )
 }
