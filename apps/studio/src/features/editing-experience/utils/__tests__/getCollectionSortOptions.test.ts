@@ -49,7 +49,7 @@ describe("getCollectionSortOptions", () => {
     expect(options).toHaveLength(4)
     expect(options[0]).toEqual({
       value: COLLECTION_SORT_ORDER.DateDesc,
-      label: "By article date, newest → oldest",
+      label: "By item date, newest → oldest",
     })
   })
 
