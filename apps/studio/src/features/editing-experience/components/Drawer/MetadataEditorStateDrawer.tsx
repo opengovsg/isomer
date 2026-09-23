@@ -135,6 +135,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
           if (itemDateProperties) {
             captureCollectionItemDateSaved({
               siteId,
+              resourceId: pageId,
               ...itemDateProperties,
             })
           }
@@ -290,7 +291,7 @@ const TagsAwareSaveButton = ({
   tagged: string[] | undefined
   dateTagged: ArticlePagePageProps["dateTagged"]
 }) => {
-  const { siteId } = useQueryParse(pageSchema)
+  const { siteId, pageId } = useQueryParse(pageSchema)
   const { isValid: isTaggedValid } = validateRequiredTags(tags, tagged)
   const { isValid: isDateTaggedValid } = validateRequiredDateFilters(
     tags,
@@ -315,6 +316,7 @@ const TagsAwareSaveButton = ({
         }
         captureCollectionItemDateSaveBlocked({
           siteId,
+          resourceId: pageId,
           ...itemDateProperties,
         })
       }}

@@ -6,6 +6,7 @@ import posthog from "posthog-js"
 
 interface CollectionFilterAnalyticsContext {
   siteId: number
+  resourceId: number
 }
 
 type DateFilterSavedProperties = Required<
@@ -19,8 +20,10 @@ type DateFilterSavedProperties = Required<
 
 const collectionFilterContext = ({
   siteId,
+  resourceId,
 }: CollectionFilterAnalyticsContext) => ({
   site_id: siteId,
+  resource_id: resourceId,
 })
 
 export const captureDateFilterOnboardingBannerSupportLinkClicked = (

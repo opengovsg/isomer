@@ -118,6 +118,7 @@ const InnerDrawer = ({
             }
             captureCollectionItemDateSaveBlocked({
               siteId,
+              resourceId: linkId,
               ...itemDateProperties,
             })
           }}
@@ -260,6 +261,7 @@ export const LinkEditorDrawer = ({
                 }
                 captureCollectionItemDateSaved({
                   siteId,
+                  resourceId: linkId,
                   ...itemDateProperties,
                 })
               },

@@ -140,12 +140,14 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
           changedDateFilters.forEach((properties) => {
             captureDateFilterSaved({
               siteId,
+              resourceId: pageId,
               ...properties,
             })
           })
           if (sortDirection) {
             captureCollectionDateFilterSortSaved({
               siteId,
+              resourceId: pageId,
               direction: sortDirection,
             })
           }

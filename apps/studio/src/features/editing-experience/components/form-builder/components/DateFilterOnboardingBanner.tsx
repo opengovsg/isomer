@@ -8,10 +8,12 @@ import { captureDateFilterOnboardingBannerSupportLinkClicked } from "~/lib/analy
 
 interface DateFilterOnboardingBannerProps {
   siteId: number
+  resourceId: number
 }
 
 export const DateFilterOnboardingBanner = ({
   siteId,
+  resourceId,
 }: DateFilterOnboardingBannerProps): JSX.Element | null => {
   const [hasSeenOnboardingBanner, setHasSeenOnboardingBanner] = useLocalStorage(
     "date-filter-onboarding-banner-seen",
@@ -48,7 +50,10 @@ export const DateFilterOnboardingBanner = ({
           color="interaction.links.default"
           onClick={() => {
             setHasSeenOnboardingBanner(true)
-            captureDateFilterOnboardingBannerSupportLinkClicked({ siteId })
+            captureDateFilterOnboardingBannerSupportLinkClicked({
+              siteId,
+              resourceId,
+            })
           }}
         >
           <HStack as="span" spacing="0.25rem">

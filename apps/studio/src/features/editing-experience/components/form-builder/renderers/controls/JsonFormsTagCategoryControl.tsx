@@ -147,6 +147,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     onTypeChoiceModalClose()
     captureFilterCreated({
       siteId,
+      resourceId: pageId,
       filterType: type,
     })
   }
@@ -157,7 +158,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
       {...arrayResult}
       banner={
         isDateFilterEditorOpen(page?.tagCategories, selectedIndex) ? (
-          <DateFilterOnboardingBanner siteId={siteId} />
+          <DateFilterOnboardingBanner siteId={siteId} resourceId={pageId} />
         ) : undefined
       }
     >
