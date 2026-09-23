@@ -114,6 +114,7 @@ const SuspendableJsonFormsDateFilterValuesControl = ({
                 value={value}
                 onChange={handleDateChange}
                 monthsToDisplay={1}
+                allowInvalidDates={false}
               />
               {isInvalid && (
                 <FormErrorMessage>A date must be selected</FormErrorMessage>
