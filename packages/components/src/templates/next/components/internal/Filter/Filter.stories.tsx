@@ -155,14 +155,14 @@ const DATE_FILTER = {
   type: TAG_CATEGORY_TYPE.Date,
   items: [
     {
-      id: DATE_FILTER_STATUS.Upcoming.id,
-      label: "Upcoming",
-      count: 12,
-    },
-    {
       id: DATE_FILTER_STATUS.Ongoing.id,
       label: "Ongoing",
       count: 10,
+    },
+    {
+      id: DATE_FILTER_STATUS.Upcoming.id,
+      label: "Upcoming",
+      count: 12,
     },
     {
       id: DATE_FILTER_STATUS.Ended.id,

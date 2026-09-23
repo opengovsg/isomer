@@ -176,7 +176,7 @@ const DateFilterSchema = Type.Object(
       Type.Boolean({
         title: "Show status labels filter",
         description:
-          "Let visitors filter by status labels (e.g. Upcoming, Ongoing, Ended).",
+          "Let visitors filter by status labels (e.g. Ongoing, Upcoming, Ended).",
         format: "hidden",
       }),
     ),

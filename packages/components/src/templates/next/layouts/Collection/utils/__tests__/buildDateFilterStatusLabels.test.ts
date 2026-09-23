@@ -5,16 +5,16 @@ import { buildDateFilterStatusLabels } from "../buildDateFilterStatusLabels"
 
 const DEFAULT_STATUS_LABELS = [
   {
-    id: DATE_FILTER_STATUS.Ended.id,
-    label: DATE_FILTER_STATUS.Ended.defaultLabel,
-  },
-  {
     id: DATE_FILTER_STATUS.Ongoing.id,
     label: DATE_FILTER_STATUS.Ongoing.defaultLabel,
   },
   {
     id: DATE_FILTER_STATUS.Upcoming.id,
     label: DATE_FILTER_STATUS.Upcoming.defaultLabel,
+  },
+  {
+    id: DATE_FILTER_STATUS.Ended.id,
+    label: DATE_FILTER_STATUS.Ended.defaultLabel,
   },
 ]
 
@@ -50,16 +50,16 @@ describe("buildDateFilterStatusLabels", () => {
     // Assert
     expect(result).toEqual([
       {
-        id: DATE_FILTER_STATUS.Ended.id,
-        label: "Registration closed",
-      },
-      {
         id: DATE_FILTER_STATUS.Ongoing.id,
         label: DATE_FILTER_STATUS.Ongoing.defaultLabel,
       },
       {
         id: DATE_FILTER_STATUS.Upcoming.id,
         label: DATE_FILTER_STATUS.Upcoming.defaultLabel,
+      },
+      {
+        id: DATE_FILTER_STATUS.Ended.id,
+        label: "Registration closed",
       },
     ])
   })
@@ -78,16 +78,16 @@ describe("buildDateFilterStatusLabels", () => {
     // Assert
     expect(result).toEqual([
       {
-        id: DATE_FILTER_STATUS.Ended.id,
-        label: "Registration closed",
-      },
-      {
         id: DATE_FILTER_STATUS.Ongoing.id,
         label: "Registration open",
       },
       {
         id: DATE_FILTER_STATUS.Upcoming.id,
         label: "Registration upcoming",
+      },
+      {
+        id: DATE_FILTER_STATUS.Ended.id,
+        label: "Registration closed",
       },
     ])
   })
