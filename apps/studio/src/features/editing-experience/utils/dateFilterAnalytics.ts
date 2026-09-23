@@ -6,6 +6,7 @@ import type {
   IsomerSchema,
 } from "@opengovsg/isomer-components"
 import {
+  DATE_FILTER_SORT_ORDER_REGEX,
   DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY,
   DEFAULT_DATE_FILTER_STATUS_LABELS,
   ISOMER_USABLE_PAGE_LAYOUTS,
@@ -14,16 +15,12 @@ import {
 
 import type { CollectionTags } from "../hooks/useCollectionTags"
 
-// Collection `sortOrder` for a date filter, `date-filter-{uuid}-asc|desc`.
-// Same shape as DATE_FILTER_SORT_ORDER_REGEX in isomer-components, which is
-// not part of the package's public exports. Capture group 1 is asc or desc.
-const DATE_FILTER_SORT_ORDER_REGEX =
-  /^date-filter-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-(asc|desc)$/
-
-export interface DateFilterSavedProperties {
-  isRequired: boolean
-  showStatusLabelsFilter: boolean
-  showDateRangeFilter: boolean
+export type DateFilterSavedProperties = Required<
+  Pick<
+    DateFilterSchemaType,
+    "isRequired" | "showStatusLabelsFilter" | "showDateRangeFilter"
+  >
+> & {
   statusLabelsCustomized: boolean
 }
 
@@ -117,7 +114,8 @@ export const getChangedDateFilterSortDirection = (
     return undefined
   }
 
-  const direction = DATE_FILTER_SORT_ORDER_REGEX.exec(after)?.[1]
+  // Group 2 is asc|desc. Group 1 is the filter uuid.
+  const direction = DATE_FILTER_SORT_ORDER_REGEX.exec(after)?.[2]
   if (direction === "asc" || direction === "desc") {
     return direction
   }

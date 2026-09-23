@@ -308,6 +308,7 @@ const DATE_FILTER_SORT_ORDER_UUID =
 
 const DATE_FILTER_SORT_ORDER_PATTERN = `date-filter-${DATE_FILTER_SORT_ORDER_UUID}-(?:asc|desc)`
 
+// Capture group 1 is the filter uuid. Capture group 2 is `asc` or `desc`.
 export const DATE_FILTER_SORT_ORDER_REGEX = new RegExp(
   `^date-filter-(${DATE_FILTER_SORT_ORDER_UUID})-(asc|desc)$`,
 )

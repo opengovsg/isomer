@@ -1,9 +1,21 @@
-import type { TagCategoryType } from "@opengovsg/isomer-components"
+import type {
+  DateFilterSchemaType,
+  TagCategoryType,
+} from "@opengovsg/isomer-components"
 import posthog from "posthog-js"
 
 interface DateFilterAnalyticsContext {
   siteId: number
   isDateFiltersEnabled: boolean
+}
+
+type DateFilterSavedProperties = Required<
+  Pick<
+    DateFilterSchemaType,
+    "isRequired" | "showStatusLabelsFilter" | "showDateRangeFilter"
+  >
+> & {
+  statusLabelsCustomized: boolean
 }
 
 const dateFilterContext = ({
@@ -48,12 +60,7 @@ export const captureDateFilterSaved = ({
   showDateRangeFilter,
   statusLabelsCustomized,
   ...context
-}: DateFilterAnalyticsContext & {
-  isRequired: boolean
-  showStatusLabelsFilter: boolean
-  showDateRangeFilter: boolean
-  statusLabelsCustomized: boolean
-}) => {
+}: DateFilterAnalyticsContext & DateFilterSavedProperties) => {
   posthog.capture("date_filter_saved", {
     ...dateFilterContext(context),
     is_required: isRequired,
