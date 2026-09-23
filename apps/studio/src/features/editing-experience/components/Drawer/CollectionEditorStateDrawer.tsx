@@ -14,7 +14,7 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import {
   getChangedDateFilterSortDirection,
-  getCollectionPage,
+  getCollectionIndex,
   listChangedDateFilters,
 } from "~/features/editing-experience/utils/dateFilterAnalytics"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -111,22 +111,22 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   )
 
   const handleSaveChanges = useCallback(() => {
-    const savedCollectionPage = getCollectionPage({ state: savedPageState })
-    const previewCollectionPage = getCollectionPage({
+    const savedCollectionIndex = getCollectionIndex({ state: savedPageState })
+    const previewCollectionIndex = getCollectionIndex({
       state: previewPageState,
     })
     const changedDateFilters =
       drawerStateType === "filter"
         ? listChangedDateFilters({
-            before: savedCollectionPage?.tagCategories,
-            after: previewCollectionPage?.tagCategories,
+            before: savedCollectionIndex?.tagCategories,
+            after: previewCollectionIndex?.tagCategories,
           })
         : []
     const sortDirection =
       drawerStateType === "display"
         ? getChangedDateFilterSortDirection({
-            before: savedCollectionPage?.sortOrder,
-            after: previewCollectionPage?.sortOrder,
+            before: savedCollectionIndex?.sortOrder,
+            after: previewCollectionIndex?.sortOrder,
           })
         : undefined
 

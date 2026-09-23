@@ -60,12 +60,16 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const isCollectionItem =
     type === ResourceType.CollectionPage || type === ResourceType.CollectionLink
 
-  const { data: collectionTags = [], isLoading: isCollectionTagsLoading } =
-    useCollectionTags({
-      resourceId: pageId,
-      siteId,
-      enabled: isCollectionItem,
-    })
+  const {
+    data: collectionTags = [],
+    isLoading: isCollectionTagsLoading,
+    isSuccess: hasCollectionTags,
+    refetch: refetchCollectionTags,
+  } = useCollectionTags({
+    resourceId: pageId,
+    siteId,
+    enabled: isCollectionItem,
+  })
 
   const toast = useToast()
   const utils = trpc.useUtils()
@@ -112,14 +116,26 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const validateFn = ajv.compile<Static<typeof metadataSchema>>(filteredSchema)
 
   const handleSaveChanges = useCallback(() => {
-    const itemDateProperties = isCollectionItem
-      ? getCollectionItemDateProperties({
-          tags: collectionTags,
-          dateTagged: (
-            previewPageState.page as Pick<ArticlePagePageProps, "dateTagged">
-          ).dateTagged,
-        })
-      : undefined
+    const dateTagged = (
+      previewPageState.page as Pick<ArticlePagePageProps, "dateTagged">
+    ).dateTagged
+    const captureItemDates = (tags: CollectionTags | undefined) => {
+      if (!isCollectionItem || !tags) {
+        return
+      }
+      const itemDateProperties = getCollectionItemDateProperties({
+        tags,
+        dateTagged,
+      })
+      if (!itemDateProperties) {
+        return
+      }
+      captureCollectionItemDateSaved({
+        siteId,
+        resourceId: pageId,
+        ...itemDateProperties,
+      })
+    }
 
     setSavedPageState(previewPageState)
     mutate(
@@ -130,11 +146,11 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
       },
       {
         onSuccess: () => {
-          if (itemDateProperties) {
-            captureCollectionItemDateSaved({
-              siteId,
-              resourceId: pageId,
-              ...itemDateProperties,
+          if (hasCollectionTags) {
+            captureItemDates(collectionTags)
+          } else if (isCollectionItem) {
+            void refetchCollectionTags().then((result) => {
+              captureItemDates(result.data)
             })
           }
           setDrawerState({ state: "root" })
@@ -143,10 +159,12 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     )
   }, [
     collectionTags,
+    hasCollectionTags,
     isCollectionItem,
     mutate,
     pageId,
     previewPageState,
+    refetchCollectionTags,
     setDrawerState,
     setSavedPageState,
     siteId,

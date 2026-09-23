@@ -181,6 +181,38 @@ describe("listChangedDateFilters", () => {
     ])
   })
 
+  it("reports a filter when one custom status label replaces another", () => {
+    // Arrange — both sides are customized, so the boolean alone would match.
+    const before = dateFilter(EVENT_DATE_ID, {
+      statusLabels: {
+        ...DEFAULT_DATE_FILTER_STATUS_LABELS,
+        ONGOING: "In progress",
+      },
+    })
+    const after = dateFilter(EVENT_DATE_ID, {
+      statusLabels: {
+        ...DEFAULT_DATE_FILTER_STATUS_LABELS,
+        ONGOING: "Happening now",
+      },
+    })
+
+    // Act
+    const changed = listChangedDateFilters({
+      before: [before],
+      after: [after],
+    })
+
+    // Assert
+    expect(changed).toEqual([
+      {
+        isRequired: false,
+        showStatusLabelsFilter: true,
+        showDateRangeFilter: true,
+        statusLabelsCustomized: true,
+      },
+    ])
+  })
+
   it("treats a blank status label as customized", () => {
     // Arrange
     const added = dateFilter(EVENT_DATE_ID, {

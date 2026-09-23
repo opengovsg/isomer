@@ -74,6 +74,31 @@ const sameSavedProperties = ({
   left.showDateRangeFilter === right.showDateRangeFilter &&
   left.statusLabelsCustomized === right.statusLabelsCustomized
 
+const resolvedStatusLabel = ({
+  statusLabels,
+  id,
+}: {
+  statusLabels: DateFilterSchemaType["statusLabels"]
+  id: DateFilterStatusId
+}): string => statusLabels[id] ?? DEFAULT_DATE_FILTER_STATUS_LABELS[id]
+
+// The event payload only records whether labels are customized. Change
+// detection still has to see one custom string replace another.
+const sameStatusLabels = ({
+  left,
+  right,
+}: {
+  left: DateFilterSchemaType["statusLabels"]
+  right: DateFilterSchemaType["statusLabels"]
+}): boolean =>
+  (
+    Object.keys(DEFAULT_DATE_FILTER_STATUS_LABELS) as DateFilterStatusId[]
+  ).every(
+    (id) =>
+      resolvedStatusLabel({ statusLabels: left, id }) ===
+      resolvedStatusLabel({ statusLabels: right, id }),
+  )
+
 export const listChangedDateFilters = ({
   before,
   after,
@@ -82,15 +107,26 @@ export const listChangedDateFilters = ({
   after: CollectionPagePageProps["tagCategories"]
 }): DateFilterSavedProperties[] => {
   const previous = new Map(
-    (before ?? [])
-      .filter(isDateFilter)
-      .map((filter) => [filter.id, toDateFilterSavedProperties({ filter })]),
+    (before ?? []).filter(isDateFilter).map((filter) => [
+      filter.id,
+      {
+        properties: toDateFilterSavedProperties({ filter }),
+        statusLabels: filter.statusLabels,
+      },
+    ]),
   )
 
   return (after ?? []).filter(isDateFilter).flatMap((filter) => {
     const next = toDateFilterSavedProperties({ filter })
     const prev = previous.get(filter.id)
-    if (prev && sameSavedProperties({ left: prev, right: next })) {
+    if (
+      prev &&
+      sameSavedProperties({ left: prev.properties, right: next }) &&
+      sameStatusLabels({
+        left: prev.statusLabels,
+        right: filter.statusLabels,
+      })
+    ) {
       return []
     }
     return [next]
@@ -148,7 +184,7 @@ export const getChangedDateFilterSortDirection = ({
   return undefined
 }
 
-export const getCollectionPage = ({
+export const getCollectionIndex = ({
   state,
 }: {
   state: IsomerSchema
