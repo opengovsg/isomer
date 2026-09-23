@@ -2,17 +2,20 @@ import { Flex, Icon, Text, useDisclosure } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { BiPencil } from "react-icons/bi"
 import { TableSettingsModal } from "~/features/editing-experience/components/TableSettingsModal/TableSettingsModal"
+import { captureTableCaptionSaved } from "~/lib/analytics/rteTable"
 
 import { isPlaceholderTableCaption } from "./utils"
 
 export interface TableCaptionProps {
   caption: string
   onCaptionChange: (caption: string) => void
+  siteId: number
 }
 
 export const TableCaption = ({
   caption,
   onCaptionChange,
+  siteId,
 }: TableCaptionProps) => {
   const {
     isOpen: isTableSettingsModalOpen,
@@ -62,7 +65,13 @@ export const TableCaption = ({
           caption={caption}
           isOpen
           onClose={onTableSettingsModalClose}
-          onSave={onCaptionChange}
+          onSave={(nextCaption) => {
+            onCaptionChange(nextCaption)
+            captureTableCaptionSaved({
+              siteId,
+              replacedPlaceholder: isPlaceholderTableCaption(caption),
+            })
+          }}
         />
       )}
     </>

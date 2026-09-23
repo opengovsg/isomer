@@ -1,5 +1,5 @@
 import type { Level } from "@tiptap/extension-heading"
-import type { Extensions } from "@tiptap/react"
+import type { Extensions, NodeViewProps } from "@tiptap/react"
 import type { Editor } from "@tiptap/react"
 import {
   getTableCellBackgroundColorCss,
@@ -29,6 +29,7 @@ import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
+import { createElement } from "react"
 import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
 
@@ -125,59 +126,63 @@ export const PROSE_EXTENSIONS: Extensions = [
   Subscript,
 ]
 
-export const IsomerTable = Table.extend({
-  // Higher than TipTap's default keymap so Mod-a is handled here first.
-  priority: 101,
-  addCommands() {
-    const parent = this.parent?.()
-    const parentToggleHeaderRow = parent?.toggleHeaderRow
-    const parentToggleHeaderColumn = parent?.toggleHeaderColumn
+export const createIsomerTable = (siteId: number) =>
+  Table.extend({
+    // Higher than TipTap's default keymap so Mod-a is handled here first.
+    priority: 101,
+    addCommands() {
+      const parent = this.parent?.()
+      const parentToggleHeaderRow = parent?.toggleHeaderRow
+      const parentToggleHeaderColumn = parent?.toggleHeaderColumn
 
-    return {
-      ...parent,
-      focusTableBubbleMenuTrigger:
-        () =>
-        ({ editor }: { editor: Editor }) =>
-          runTableBubbleMenuFocusTrigger(editor),
-      toggleHeaderRow: wrapHeaderToggleCommand(
-        parentToggleHeaderRow?.() as HeaderToggleCommand | undefined,
-      ),
-      toggleHeaderColumn: wrapHeaderToggleCommand(
-        parentToggleHeaderColumn?.() as HeaderToggleCommand | undefined,
-      ),
-    }
-  },
-  addAttributes() {
-    return {
-      caption: {
-        default: DEFAULT_TABLE_CAPTION,
-      },
-    }
-  },
-  // Custom node view renders the caption above the table.
-  addNodeView() {
-    return ReactNodeViewRenderer(TableNodeView, {
-      contentDOMElementTag: "tbody",
-    })
-  },
-  addKeyboardShortcuts() {
-    const parentShortcuts = this.parent?.() ?? {}
-    return {
-      ...parentShortcuts,
-      "Mod-a": () =>
-        selectTableCellContent(this.editor) || this.editor.commands.selectAll(),
-      Tab: ({ editor }) => {
-        if (focusTableBubbleMenuTrigger(editor)) {
-          return true
-        }
-        return parentShortcuts.Tab?.({ editor }) ?? false
-      },
-    }
-  },
-  addProseMirrorPlugins() {
-    return [...(this.parent?.() ?? []), createTableSelectionBorderPlugin()]
-  },
-})
+      return {
+        ...parent,
+        focusTableBubbleMenuTrigger:
+          () =>
+          ({ editor }: { editor: Editor }) =>
+            runTableBubbleMenuFocusTrigger(editor),
+        toggleHeaderRow: wrapHeaderToggleCommand(
+          parentToggleHeaderRow?.() as HeaderToggleCommand | undefined,
+        ),
+        toggleHeaderColumn: wrapHeaderToggleCommand(
+          parentToggleHeaderColumn?.() as HeaderToggleCommand | undefined,
+        ),
+      }
+    },
+    addAttributes() {
+      return {
+        caption: {
+          default: DEFAULT_TABLE_CAPTION,
+        },
+      }
+    },
+    // Custom node view renders the caption above the table.
+    addNodeView() {
+      return ReactNodeViewRenderer(
+        (props: NodeViewProps) =>
+          createElement(TableNodeView, { ...props, siteId }),
+        { contentDOMElementTag: "tbody" },
+      )
+    },
+    addKeyboardShortcuts() {
+      const parentShortcuts = this.parent?.() ?? {}
+      return {
+        ...parentShortcuts,
+        "Mod-a": () =>
+          selectTableCellContent(this.editor) ||
+          this.editor.commands.selectAll(),
+        Tab: ({ editor }) => {
+          if (focusTableBubbleMenuTrigger(editor)) {
+            return true
+          }
+          return parentShortcuts.Tab?.({ editor }) ?? false
+        },
+      }
+    },
+    addProseMirrorPlugins() {
+      return [...(this.parent?.() ?? []), createTableSelectionBorderPlugin()]
+    },
+  })
 
 const tableCellBackgroundColorAttribute = {
   default: null as string | null,

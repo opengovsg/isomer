@@ -32,6 +32,10 @@ import {
   IconMergeCells,
   IconSplitCell,
 } from "~/components/icons"
+import {
+  captureTableCommand,
+  type TableCommandOutcome,
+} from "~/lib/analytics/rteTable"
 
 import type {
   SelectionKind,
@@ -61,13 +65,13 @@ const moveTableBlock = (
   editor: Editor,
   plan: TableMovePlan,
   axis: TableMoveAxis,
-) => {
+): TableCommandOutcome => {
   const { state, view } = editor
   const rect = selectedRect(state)
   const tablePos = rect.tableStart - 1
   const move = axis === "row" ? moveTableRow : moveTableColumn
 
-  move({
+  const moved = move({
     from: plan.from,
     to: plan.to,
     select: false,
@@ -75,7 +79,10 @@ const moveTableBlock = (
   })(state, (tr) => {
     restoreMovedBlockSelection(view, tr, tablePos, plan, axis)
   })
+  if (!moved) return "rejected"
+
   editor.commands.focus()
+  return "applied"
 }
 
 const ActionButton = ({
@@ -119,13 +126,32 @@ const ActionGroup = ({ children }: { children: ReactNode }) => (
   </VStack>
 )
 
-const ClearContentsButton = ({ editor }: { editor: Editor }) => (
-  <ActionButton
-    label="Clear contents"
-    icon={<BiX fontSize="1rem" />}
-    onClick={() => clearSelectedCells(editor)}
-  />
-)
+const ClearContentsButton = ({
+  editor,
+  kind,
+  siteId,
+}: {
+  editor: Editor
+  kind: SelectionKind
+  siteId: number
+}) => {
+  return (
+    <ActionButton
+      label="Clear contents"
+      icon={<BiX fontSize="1rem" />}
+      onClick={() => {
+        const outcome = clearSelectedCells(editor)
+        captureTableCommand({
+          siteId,
+          selectionKind: kind,
+          source: "bubble_menu",
+          action: "clear_contents",
+          outcome,
+        })
+      }}
+    />
+  )
+}
 
 const colorSwatchLabel = (color: string) =>
   `${color.charAt(0).toUpperCase()}${color.slice(1)}`
@@ -256,10 +282,12 @@ const BackgroundColor = ({
   editor,
   kind,
   onColorSet,
+  siteId,
 }: {
   editor: Editor
   kind: SelectionKind
   onColorSet: () => void
+  siteId: number
 }) => {
   if (kind === "none") return null
 
@@ -272,20 +300,46 @@ const BackgroundColor = ({
     <BackgroundColorSection
       state={state}
       onSetColor={(color) => {
-        setSelectedCellsBackgroundColor(editor, color)
+        const outcome = setSelectedCellsBackgroundColor(editor, color)
+        captureTableCommand({
+          siteId,
+          selectionKind: kind,
+          source: "bubble_menu",
+          action: "set_cell_background",
+          outcome,
+        })
         onColorSet()
       }}
     />
   )
 }
 
-const MergeCellsButton = ({ editor }: { editor: Editor }) => (
-  <ActionButton
-    label="Merge cells"
-    icon={<IconMergeCells boxSize="1rem" />}
-    onClick={() => editor.chain().focus().mergeCells().run()}
-  />
-)
+const MergeCellsButton = ({
+  editor,
+  kind,
+  siteId,
+}: {
+  editor: Editor
+  kind: SelectionKind
+  siteId: number
+}) => {
+  return (
+    <ActionButton
+      label="Merge cells"
+      icon={<IconMergeCells boxSize="1rem" />}
+      onClick={() => {
+        const applied = editor.chain().focus().mergeCells().run()
+        captureTableCommand({
+          siteId,
+          selectionKind: kind,
+          source: "bubble_menu",
+          action: "merge_cells",
+          outcome: applied ? "applied" : "rejected",
+        })
+      }}
+    />
+  )
+}
 
 const HeaderToggle = ({
   label,
@@ -322,9 +376,13 @@ type SelectionRect = ReturnType<typeof selectedRect>
 const RowSelectionActions = ({
   editor,
   rect,
+  kind,
+  siteId,
 }: {
   editor: Editor
   rect: SelectionRect
+  kind: SelectionKind
+  siteId: number
 }) => {
   const includesHeader = selectionIncludesHeaderRow(rect)
   const rowMoveUpPlan = getRowMovePlan(
@@ -342,49 +400,112 @@ const RowSelectionActions = ({
         <HeaderToggle
           label="Header row"
           isChecked={includesHeader}
-          onToggle={() => editor.chain().focus().toggleHeaderRow().run()}
+          onToggle={() => {
+            const applied = editor.chain().focus().toggleHeaderRow().run()
+            captureTableCommand({
+              siteId,
+              selectionKind: kind,
+              source: "bubble_menu",
+              action: "toggle_header_row",
+              outcome: applied ? "applied" : "rejected",
+            })
+          }}
         />
       )}
       {!includesHeader && (
         <ActionButton
           label="Add row above"
           icon={<IconAddRowAbove boxSize="1rem" />}
-          onClick={() => editor.chain().focus().addRowBefore().run()}
+          onClick={() => {
+            const applied = editor.chain().focus().addRowBefore().run()
+            captureTableCommand({
+              siteId,
+              selectionKind: kind,
+              source: "bubble_menu",
+              action: "add_row",
+              outcome: applied ? "applied" : "rejected",
+            })
+          }}
         />
       )}
       <ActionButton
         label="Add row below"
         icon={<IconAddRowBelow boxSize="1rem" />}
-        onClick={() => editor.chain().focus().addRowAfter().run()}
+        onClick={() => {
+          const applied = editor.chain().focus().addRowAfter().run()
+          captureTableCommand({
+            siteId,
+            selectionKind: kind,
+            source: "bubble_menu",
+            action: "add_row",
+            outcome: applied ? "applied" : "rejected",
+          })
+        }}
       />
       {!includesHeader && (
         <ActionButton
           label="Duplicate row"
           icon={<BiCopy fontSize="1rem" />}
-          onClick={() => duplicateSelectedRows(editor)}
+          onClick={() => {
+            const outcome = duplicateSelectedRows(editor)
+            captureTableCommand({
+              siteId,
+              selectionKind: kind,
+              source: "bubble_menu",
+              action: "duplicate_row",
+              outcome,
+            })
+          }}
         />
       )}
-      <ClearContentsButton editor={editor} />
-      <MergeCellsButton editor={editor} />
+      <ClearContentsButton editor={editor} kind={kind} siteId={siteId} />
+      <MergeCellsButton editor={editor} kind={kind} siteId={siteId} />
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
           icon={<BiUpArrowAlt fontSize="1rem" />}
-          onClick={() => moveTableBlock(editor, rowMoveUpPlan, "row")}
+          onClick={() => {
+            const outcome = moveTableBlock(editor, rowMoveUpPlan, "row")
+            captureTableCommand({
+              siteId,
+              selectionKind: kind,
+              source: "bubble_menu",
+              action: "move_row",
+              outcome,
+            })
+          }}
         />
       )}
       {rowMoveDownPlan && !includesHeader && (
         <ActionButton
           label="Move down"
           icon={<BiDownArrowAlt fontSize="1rem" />}
-          onClick={() => moveTableBlock(editor, rowMoveDownPlan, "row")}
+          onClick={() => {
+            const outcome = moveTableBlock(editor, rowMoveDownPlan, "row")
+            captureTableCommand({
+              siteId,
+              selectionKind: kind,
+              source: "bubble_menu",
+              action: "move_row",
+              outcome,
+            })
+          }}
         />
       )}
       {!includesHeader && (
         <ActionButton
           label="Delete row"
           icon={<IconDelRow boxSize="1rem" />}
-          onClick={() => editor.chain().focus().deleteRow().run()}
+          onClick={() => {
+            const applied = editor.chain().focus().deleteRow().run()
+            captureTableCommand({
+              siteId,
+              selectionKind: kind,
+              source: "bubble_menu",
+              action: "delete_row",
+              outcome: applied ? "applied" : "rejected",
+            })
+          }}
         />
       )}
     </ActionGroup>
@@ -394,9 +515,13 @@ const RowSelectionActions = ({
 const ColumnSelectionActions = ({
   editor,
   rect,
+  kind,
+  siteId,
 }: {
   editor: Editor
   rect: SelectionRect
+  kind: SelectionKind
+  siteId: number
 }) => {
   const includesHeader = selectionIncludesHeaderColumn(rect)
 
@@ -416,49 +541,116 @@ const ColumnSelectionActions = ({
         <HeaderToggle
           label="Header column"
           isChecked={includesHeader}
-          onToggle={() => editor.chain().focus().toggleHeaderColumn().run()}
+          onToggle={() => {
+            const applied = editor.chain().focus().toggleHeaderColumn().run()
+            captureTableCommand({
+              siteId,
+              selectionKind: kind,
+              source: "bubble_menu",
+              action: "toggle_header_column",
+              outcome: applied ? "applied" : "rejected",
+            })
+          }}
         />
       )}
       {!includesHeader && (
         <ActionButton
           label="Add column left"
           icon={<IconAddColLeft boxSize="1rem" />}
-          onClick={() => editor.chain().focus().addColumnBefore().run()}
+          onClick={() => {
+            const applied = editor.chain().focus().addColumnBefore().run()
+            captureTableCommand({
+              siteId,
+              selectionKind: kind,
+              source: "bubble_menu",
+              action: "add_column",
+              outcome: applied ? "applied" : "rejected",
+            })
+          }}
         />
       )}
       <ActionButton
         label="Add column right"
         icon={<IconAddColRight boxSize="1rem" />}
-        onClick={() => editor.chain().focus().addColumnAfter().run()}
+        onClick={() => {
+          const applied = editor.chain().focus().addColumnAfter().run()
+          captureTableCommand({
+            siteId,
+            selectionKind: kind,
+            source: "bubble_menu",
+            action: "add_column",
+            outcome: applied ? "applied" : "rejected",
+          })
+        }}
       />
       {!includesHeader && (
         <ActionButton
           label="Duplicate column"
           icon={<BiCopy fontSize="1rem" />}
-          onClick={() => duplicateSelectedColumns(editor)}
+          onClick={() => {
+            const outcome = duplicateSelectedColumns(editor)
+            captureTableCommand({
+              siteId,
+              selectionKind: kind,
+              source: "bubble_menu",
+              action: "duplicate_column",
+              outcome,
+            })
+          }}
         />
       )}
-      <ClearContentsButton editor={editor} />
-      <MergeCellsButton editor={editor} />
+      <ClearContentsButton editor={editor} kind={kind} siteId={siteId} />
+      <MergeCellsButton editor={editor} kind={kind} siteId={siteId} />
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
           icon={<BiLeftArrowAlt fontSize="1rem" />}
-          onClick={() => moveTableBlock(editor, columnMoveLeftPlan, "column")}
+          onClick={() => {
+            const outcome = moveTableBlock(editor, columnMoveLeftPlan, "column")
+            captureTableCommand({
+              siteId,
+              selectionKind: kind,
+              source: "bubble_menu",
+              action: "move_column",
+              outcome,
+            })
+          }}
         />
       )}
       {columnMoveRightPlan && !includesHeader && (
         <ActionButton
           label="Move right"
           icon={<BiRightArrowAlt fontSize="1rem" />}
-          onClick={() => moveTableBlock(editor, columnMoveRightPlan, "column")}
+          onClick={() => {
+            const outcome = moveTableBlock(
+              editor,
+              columnMoveRightPlan,
+              "column",
+            )
+            captureTableCommand({
+              siteId,
+              selectionKind: kind,
+              source: "bubble_menu",
+              action: "move_column",
+              outcome,
+            })
+          }}
         />
       )}
       {!includesHeader && (
         <ActionButton
           label="Delete column"
           icon={<IconDelCol boxSize="1rem" />}
-          onClick={() => editor.chain().focus().deleteColumn().run()}
+          onClick={() => {
+            const applied = editor.chain().focus().deleteColumn().run()
+            captureTableCommand({
+              siteId,
+              selectionKind: kind,
+              source: "bubble_menu",
+              action: "delete_column",
+              outcome: applied ? "applied" : "rejected",
+            })
+          }}
         />
       )}
     </ActionGroup>
@@ -468,51 +660,85 @@ const ColumnSelectionActions = ({
 const SelectionActions = ({
   editor,
   kind,
+  siteId,
 }: {
   editor: Editor
   kind: SelectionKind
+  siteId: number
 }) => {
   const rect = selectedRect(editor.state)
 
   switch (kind) {
     case "row":
     case "header-row":
-      return <RowSelectionActions editor={editor} rect={rect} />
+      return (
+        <RowSelectionActions
+          editor={editor}
+          rect={rect}
+          kind={kind}
+          siteId={siteId}
+        />
+      )
     case "column":
     case "header-column":
-      return <ColumnSelectionActions editor={editor} rect={rect} />
+      return (
+        <ColumnSelectionActions
+          editor={editor}
+          rect={rect}
+          kind={kind}
+          siteId={siteId}
+        />
+      )
     case "table":
       return (
         <ActionGroup>
-          <ClearContentsButton editor={editor} />
+          <ClearContentsButton editor={editor} kind={kind} siteId={siteId} />
           <ActionButton
             label="Delete table"
             icon={<BiTrash fontSize="1rem" />}
-            onClick={() => editor.chain().focus().deleteTable().run()}
+            onClick={() => {
+              const applied = editor.chain().focus().deleteTable().run()
+              captureTableCommand({
+                siteId,
+                selectionKind: kind,
+                source: "bubble_menu",
+                action: "delete_table",
+                outcome: applied ? "applied" : "rejected",
+              })
+            }}
           />
         </ActionGroup>
       )
     case "multi-cell":
       return (
         <ActionGroup>
-          <ClearContentsButton editor={editor} />
-          <MergeCellsButton editor={editor} />
+          <ClearContentsButton editor={editor} kind={kind} siteId={siteId} />
+          <MergeCellsButton editor={editor} kind={kind} siteId={siteId} />
         </ActionGroup>
       )
     case "single-cell":
       return (
         <ActionGroup>
-          <ClearContentsButton editor={editor} />
+          <ClearContentsButton editor={editor} kind={kind} siteId={siteId} />
         </ActionGroup>
       )
     case "merged-cell":
       return (
         <ActionGroup>
-          <ClearContentsButton editor={editor} />
+          <ClearContentsButton editor={editor} kind={kind} siteId={siteId} />
           <ActionButton
             label="Split cell"
             icon={<IconSplitCell boxSize="1rem" />}
-            onClick={() => editor.chain().focus().splitCell().run()}
+            onClick={() => {
+              const applied = editor.chain().focus().splitCell().run()
+              captureTableCommand({
+                siteId,
+                selectionKind: kind,
+                source: "bubble_menu",
+                action: "split_cell",
+                outcome: applied ? "applied" : "rejected",
+              })
+            }}
           />
         </ActionGroup>
       )
@@ -525,13 +751,20 @@ export const TableBubbleMenuActions = ({
   editor,
   kind,
   onColorSet,
+  siteId,
 }: {
   editor: Editor
   kind: SelectionKind
   onColorSet: () => void
+  siteId: number
 }) => (
   <>
-    <SelectionActions editor={editor} kind={kind} />
-    <BackgroundColor editor={editor} kind={kind} onColorSet={onColorSet} />
+    <SelectionActions editor={editor} kind={kind} siteId={siteId} />
+    <BackgroundColor
+      editor={editor}
+      kind={kind}
+      onColorSet={onColorSet}
+      siteId={siteId}
+    />
   </>
 )

@@ -42,7 +42,11 @@ const Harness = ({
   const [content, setContent] = useState<JSONContent | undefined>(
     initialContent,
   )
-  const editor = useTextEditor({ data: content, handleChange: setContent })
+  const editor = useTextEditor({
+    data: content,
+    handleChange: setContent,
+    siteId: 1,
+  })
 
   if (editor) onEditorReady?.(editor)
 

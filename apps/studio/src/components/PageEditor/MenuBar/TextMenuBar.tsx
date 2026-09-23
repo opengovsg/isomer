@@ -18,7 +18,13 @@ import { MenuBar } from "./MenuBar"
 import { TiptapLinkBubbleMenu } from "./TiptapLinkBubbleMenu"
 import { TiptapLinkEditorModal } from "./TiptapLinkEditorModal"
 
-export const TextMenuBar = ({ editor }: { editor: Editor }) => {
+export const TextMenuBar = ({
+  editor,
+  siteId,
+}: {
+  editor: Editor
+  siteId: number
+}) => {
   const {
     isOpen: isLinkModalOpen,
     onOpen: onLinkModalOpen,
@@ -146,7 +152,7 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         // A grid-based size picker when not in a table (insert), or a plain
         // delete button when a table is selected. See TableSizePicker.
         type: "custom",
-        render: () => <TableSizePicker editor={editor} />,
+        render: () => <TableSizePicker editor={editor} siteId={siteId} />,
       },
       // Table-scoped: promoted onto the main toolbar instead of the overflow
       // menu while editing inside a table, same as the "Table" group above.
@@ -201,7 +207,7 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         ],
       },
     ],
-    [editor, onLinkModalOpen],
+    [editor, onLinkModalOpen, siteId],
   )
   return (
     <>

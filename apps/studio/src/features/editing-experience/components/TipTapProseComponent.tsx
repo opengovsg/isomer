@@ -69,7 +69,11 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
     setPreviewPageState(newPageState)
   }
 
-  const editor = useTextEditor({ data: content, handleChange: updatePageState })
+  const editor = useTextEditor({
+    data: content,
+    handleChange: updatePageState,
+    siteId,
+  })
 
   const handleDeleteBlock = () => {
     const updatedBlocks = Array.from(savedPageState.content)
@@ -142,7 +146,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
           label={`Edit ${PROSE_COMPONENT_NAME}`}
         />
         <Box w="100%" overflow="auto" flex={1}>
-          <TiptapTextEditor editor={editor} />
+          <TiptapTextEditor editor={editor} siteId={siteId} />
         </Box>
         <Box
           bgColor="base.canvas.default"

@@ -62,13 +62,21 @@ const getCellText = (editor: Editor): string[] => {
 }
 
 const Harness = ({ onReady }: { onReady: (editor: Editor) => void }) => {
-  const editor = useTextEditor({ data: SEED_CONTENT, handleChange: () => null })
+  const editor = useTextEditor({
+    data: SEED_CONTENT,
+    handleChange: () => null,
+    siteId: 1,
+  })
   const containerRef = useRef<HTMLDivElement>(null)
   if (editor) onReady(editor)
   return (
     <div ref={containerRef} style={{ position: "relative" }}>
       {editor && (
-        <TableDragHandles editor={editor} containerRef={containerRef} />
+        <TableDragHandles
+          editor={editor}
+          containerRef={containerRef}
+          siteId={1}
+        />
       )}
       {editor && <EditorContent editor={editor} />}
     </div>
@@ -286,13 +294,18 @@ describe("TableDragHandles", () => {
       const tipTap = useTextEditor({
         data: twoTables,
         handleChange: () => null,
+        siteId: 1,
       })
       const containerRef = useRef<HTMLDivElement>(null)
       if (tipTap) editor = tipTap
       return (
         <div ref={containerRef} style={{ position: "relative" }}>
           {tipTap && (
-            <TableDragHandles editor={tipTap} containerRef={containerRef} />
+            <TableDragHandles
+              editor={tipTap}
+              containerRef={containerRef}
+              siteId={1}
+            />
           )}
           {tipTap && <EditorContent editor={tipTap} />}
         </div>
@@ -706,6 +719,7 @@ describe("TableDragHandles", () => {
       const tipTap = useTextEditor({
         data: SEED_CONTENT,
         handleChange: () => null,
+        siteId: 1,
       })
       const containerRef = useRef<HTMLDivElement>(null)
       if (tipTap) editor = tipTap
@@ -716,7 +730,11 @@ describe("TableDragHandles", () => {
           style={{ position: "relative", overflowX: "hidden", width: 420 }}
         >
           {tipTap && (
-            <TableDragHandles editor={tipTap} containerRef={containerRef} />
+            <TableDragHandles
+              editor={tipTap}
+              containerRef={containerRef}
+              siteId={1}
+            />
           )}
           {tipTap && <EditorContent editor={tipTap} />}
         </div>

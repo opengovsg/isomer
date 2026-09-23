@@ -4,7 +4,13 @@ import { HStack } from "@chakra-ui/react"
 import type { PossibleMenubarItemProps } from "./MenubarItem/types"
 import { MenubarItemFactory } from "./MenubarItem"
 
-export type EditorMenuBar = ({ editor }: { editor: Editor }) => JSX.Element
+export type EditorMenuBar = ({
+  editor,
+  siteId,
+}: {
+  editor: Editor
+  siteId: number
+}) => JSX.Element
 
 export const MenuBar = ({ items }: { items: PossibleMenubarItemProps[] }) => {
   return (

@@ -5,7 +5,7 @@ import { page, userEvent } from "vitest/browser"
 
 import {
   BASE_EXTENSIONS,
-  IsomerTable,
+  createIsomerTable,
   IsomerTableCell,
   IsomerTableHeader,
   PROSE_EXTENSIONS,
@@ -126,7 +126,7 @@ const createEditor = (content: JSONContent = TABLE_DOC) => {
       ...BASE_EXTENSIONS,
       ...PROSE_EXTENSIONS,
       TableRow,
-      IsomerTable,
+      createIsomerTable(1),
       IsomerTableCell,
       IsomerTableHeader,
     ],

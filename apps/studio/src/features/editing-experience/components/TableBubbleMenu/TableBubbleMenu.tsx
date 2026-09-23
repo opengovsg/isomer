@@ -9,11 +9,13 @@ import { useTableBubbleMenu } from "./useTableBubbleMenu"
 export interface TableBubbleMenuProps {
   editor: Editor
   isDragReordering?: boolean
+  siteId: number
 }
 
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
   isDragReordering = false,
+  siteId,
 }: TableBubbleMenuProps) {
   const {
     show,
@@ -69,6 +71,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
               editor={editor}
               kind={kind}
               onColorSet={deactivateMenu}
+              siteId={siteId}
             />
           </VStack>
         )}

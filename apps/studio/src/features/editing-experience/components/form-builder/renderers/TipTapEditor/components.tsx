@@ -49,10 +49,12 @@ const EditorContentWrapper = ({
   containerRef,
   showTableExtras,
   onDragStateChange,
+  siteId,
 }: Pick<EditorContentProps, "editor"> & {
   containerRef: RefObject<HTMLDivElement>
   showTableExtras?: boolean
   onDragStateChange?: (isDragging: boolean) => void
+  siteId: number
 }) => {
   return (
     <Box
@@ -77,6 +79,7 @@ const EditorContentWrapper = ({
           editor={editor}
           containerRef={containerRef}
           onDragStateChange={onDragStateChange}
+          siteId={siteId}
         />
       )}
     </Box>
@@ -87,9 +90,10 @@ interface EditorProps {
   menubar: EditorMenuBar
   editor: TiptapEditor
   isNested?: boolean
+  siteId: number
 }
 
-export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
+export const Editor = ({ editor, menubar, isNested, siteId }: EditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isDragReordering, setIsDragReordering] = useState(false)
   const isTableEditor = editor.extensionManager.extensions.some(
@@ -98,15 +102,20 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
 
   return (
     <EditorContainer isNested={isNested}>
-      {menubar({ editor })}
+      {menubar({ editor, siteId })}
       {isTableEditor && (
-        <TableBubbleMenu editor={editor} isDragReordering={isDragReordering} />
+        <TableBubbleMenu
+          editor={editor}
+          isDragReordering={isDragReordering}
+          siteId={siteId}
+        />
       )}
       <EditorContentWrapper
         editor={editor}
         containerRef={containerRef}
         showTableExtras={isTableEditor}
         onDragStateChange={setIsDragReordering}
+        siteId={siteId}
       />
     </EditorContainer>
   )

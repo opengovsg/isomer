@@ -23,6 +23,7 @@ const TableSizePickerHarness = () => {
     handleChange: () => {
       // no-op: tests only assert on the editor's own document state
     },
+    siteId: 1,
   })
 
   if (!editor) {
@@ -31,7 +32,7 @@ const TableSizePickerHarness = () => {
 
   return (
     <>
-      <TableSizePicker editor={editor} />
+      <TableSizePicker editor={editor} siteId={1} />
       <EditorContent editor={editor} />
     </>
   )

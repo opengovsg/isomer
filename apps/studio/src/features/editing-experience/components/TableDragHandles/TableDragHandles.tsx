@@ -7,6 +7,7 @@ import {
   TABLE_CHROME_GAP_PX,
   TABLE_CHROME_THICKNESS_PX,
 } from "~/features/editing-experience/utils/tableEditorChrome"
+import { captureTableCommand } from "~/lib/analytics/rteTable"
 
 import type { TableGeometry } from "./internal/axisMath"
 import type { Axis } from "./internal/axisView"
@@ -33,6 +34,7 @@ export interface TableDragHandlesProps {
   editor: TiptapEditor | null
   containerRef: RefObject<HTMLElement>
   onDragStateChange?: (isDragging: boolean) => void
+  siteId: number
 }
 
 /**
@@ -44,10 +46,17 @@ export const TableDragHandles = ({
   editor,
   containerRef,
   onDragStateChange,
+  siteId,
 }: TableDragHandlesProps) => {
   const geometries = useTableGeometries(editor, containerRef)
   const { drag, beginGesture, isGestureActive, consumeClickSuppression } =
-    useAxisDragGesture({ editor, containerRef, geometries, onDragStateChange })
+    useAxisDragGesture({
+      editor,
+      containerRef,
+      geometries,
+      onDragStateChange,
+      siteId,
+    })
   const hoverTablePos = useHoveredTable(
     geometries,
     containerRef,
@@ -122,7 +131,17 @@ export const TableDragHandles = ({
           top={bounds.top + bounds.height + TABLE_CHROME_GAP_PX}
           width={rowPillWidth}
           height={TABLE_CHROME_THICKNESS_PX}
-          onClick={() => addSlotAfter(editor, geometry.pos, "row")}
+          onClick={() => {
+            const applied = addSlotAfter(editor, geometry.pos, "row")
+            if (applied === undefined) return
+            captureTableCommand({
+              siteId,
+              outcome: applied ? "applied" : "rejected",
+              action: "add_row",
+              source: "add_pill",
+              selectionKind: "row",
+            })
+          }}
         />
         <AddPillButton
           axis="column"
@@ -130,7 +149,17 @@ export const TableDragHandles = ({
           top={bounds.top + (bounds.height - colPillHeight) / 2}
           width={TABLE_CHROME_THICKNESS_PX}
           height={colPillHeight}
-          onClick={() => addSlotAfter(editor, geometry.pos, "column")}
+          onClick={() => {
+            const applied = addSlotAfter(editor, geometry.pos, "column")
+            if (applied === undefined) return
+            captureTableCommand({
+              siteId,
+              outcome: applied ? "applied" : "rejected",
+              action: "add_column",
+              source: "add_pill",
+              selectionKind: "column",
+            })
+          }}
         />
       </>
     )

@@ -34,18 +34,16 @@ export const addSlotAfter = (
   editor: TiptapEditor,
   tablePos: number,
   axis: Axis,
-) => {
+): boolean | undefined => {
   if (editor.isDestroyed) return
   const table = getTableAt(editor.state.doc, tablePos)
   if (!table) return
   const map = TableMap.get(table)
   const cellPos = tablePos + 1 + AXIS_TABLE_OPS[axis].lastCellOffset(map, table)
   const chain = editor.chain().focus().setTextSelection(cellPos)
-  if (axis === "row") {
-    chain.addRowAfter().run()
-    return
-  }
-  chain.addColumnAfter().run()
+  return axis === "row"
+    ? chain.addRowAfter().run()
+    : chain.addColumnAfter().run()
 }
 
 /**
