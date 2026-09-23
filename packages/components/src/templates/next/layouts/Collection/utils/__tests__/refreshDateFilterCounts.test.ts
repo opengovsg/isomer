@@ -127,4 +127,133 @@ describe("refreshDateFilterCounts", () => {
     // Assert
     expect(result).toEqual([categoryFilter])
   })
+
+  it("drops the date section on load when every event is ended and that label is blank", () => {
+    // Arrange — build-time sidebar still lists these events as Upcoming.
+    // On load they have all ended, and the Ended label was left empty.
+    const categoryFilter: Filter = {
+      id: "Category",
+      label: "Category",
+      items: [{ id: "guides", label: "Guides", count: 2 }],
+    }
+    const yearFilter: Filter = {
+      id: "year",
+      label: "Year",
+      items: [{ id: "2026", label: "2026", count: 2 }],
+    }
+    const publishedDateFilter: Filter = {
+      id: EVENT_DATE_FILTER_ID,
+      label: "Event Date",
+      type: TAG_CATEGORY_TYPE.Date,
+      items: [
+        {
+          id: DATE_FILTER_STATUS.Upcoming.id,
+          label: DATE_FILTER_STATUS.Upcoming.defaultLabel,
+          count: 2,
+        },
+      ],
+    }
+    const endedItems: ProcessedCollectionCardProps[] = [
+      {
+        dateTagged: [{ id: EVENT_DATE_FILTER_ID, date: "2026-05-01" }],
+      } as ProcessedCollectionCardProps,
+      {
+        dateTagged: [
+          {
+            id: EVENT_DATE_FILTER_ID,
+            date: "2026-05-10",
+            endDate: "2026-05-12",
+          },
+        ],
+      } as ProcessedCollectionCardProps,
+    ]
+    const categoriesWithBlankEndedLabel: NonNullable<
+      CollectionPageSchemaType["page"]["tagCategories"]
+    > = [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        label: "Event Date",
+        type: TAG_CATEGORY_TYPE.Date,
+        statusLabels: {
+          ...DEFAULT_DATE_FILTER_STATUS_LABELS,
+          [DATE_FILTER_STATUS.Ended.id]: "",
+        },
+      },
+    ]
+
+    // Act
+    const result = refreshDateFilterCounts(
+      [categoryFilter, publishedDateFilter, yearFilter],
+      endedItems,
+      categoriesWithBlankEndedLabel,
+    )
+
+    // Assert — load time: the date section is gone; other filters are untouched
+    expect(result.map(({ id, type }) => ({ id, type }))).toEqual([
+      { id: "Category", type: undefined },
+      { id: "year", type: undefined },
+    ])
+    expect(result[0]).toBe(categoryFilter)
+    expect(result[1]).toBe(yearFilter)
+  })
+
+  it("keeps only buckets that still have a label and items on load", () => {
+    // Arrange — build-time sidebar lists both events as Upcoming.
+    // On load one has ended (label blank) and one is ongoing.
+    const categoryFilter: Filter = {
+      id: "Category",
+      label: "Category",
+      items: [{ id: "guides", label: "Guides", count: 2 }],
+    }
+    const publishedDateFilter: Filter = {
+      id: EVENT_DATE_FILTER_ID,
+      label: "Event Date",
+      type: TAG_CATEGORY_TYPE.Date,
+      items: [
+        {
+          id: DATE_FILTER_STATUS.Upcoming.id,
+          label: DATE_FILTER_STATUS.Upcoming.defaultLabel,
+          count: 2,
+        },
+      ],
+    }
+    const mixedItems: ProcessedCollectionCardProps[] = [
+      {
+        dateTagged: [{ id: EVENT_DATE_FILTER_ID, date: "2026-05-01" }],
+      } as ProcessedCollectionCardProps,
+      {
+        dateTagged: [{ id: EVENT_DATE_FILTER_ID, date: TODAY }],
+      } as ProcessedCollectionCardProps,
+    ]
+    const categoriesWithBlankEndedLabel: NonNullable<
+      CollectionPageSchemaType["page"]["tagCategories"]
+    > = [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        label: "Event Date",
+        type: TAG_CATEGORY_TYPE.Date,
+        statusLabels: {
+          ...DEFAULT_DATE_FILTER_STATUS_LABELS,
+          [DATE_FILTER_STATUS.Ended.id]: "",
+        },
+      },
+    ]
+
+    // Act
+    const result = refreshDateFilterCounts(
+      [categoryFilter, publishedDateFilter],
+      mixedItems,
+      categoriesWithBlankEndedLabel,
+    )
+
+    // Assert — load time: Ongoing remains; the published Upcoming bucket does not
+    expect(result[0]).toBe(categoryFilter)
+    expect(result[1]?.items).toEqual([
+      {
+        id: DATE_FILTER_STATUS.Ongoing.id,
+        label: DATE_FILTER_STATUS.Ongoing.defaultLabel,
+        count: 1,
+      },
+    ])
+  })
 })
