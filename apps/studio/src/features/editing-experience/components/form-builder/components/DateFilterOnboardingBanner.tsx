@@ -37,8 +37,7 @@ export const DateFilterOnboardingBanner = (): JSX.Element | null => {
           externalLinkIcon={<></>}
           p={0}
           as={NextLink}
-          // TODO: Update to the date filters support article URL when available.
-          href="https://support.isomer.gov.sg"
+          href="https://support.isomer.gov.sg/en/articles/15461505-how-to-manage-collection-filters"
           color="interaction.links.default"
           onClick={() => setHasSeenOnboardingBanner(true)}
         >
