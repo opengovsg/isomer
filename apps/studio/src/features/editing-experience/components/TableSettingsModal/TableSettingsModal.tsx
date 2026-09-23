@@ -1,4 +1,3 @@
-import type { Editor } from "@tiptap/react"
 import {
   FormControl,
   HStack,
@@ -17,16 +16,16 @@ import {
   ModalCloseButton,
   Textarea,
 } from "@opengovsg/design-system-react"
-import { useEffect } from "react"
 import { z } from "zod"
+import { MAX_CAPTION_LENGTH } from "~/features/editing-experience/components/TableCaption/utils"
 import { useZodForm } from "~/lib/form"
 
-const MAX_CAPTION_LENGTH = 200
 const tableSettingsSchema = z.object({
   caption: z
     .string({
       error: "Enter a caption for this table",
     })
+    .trim()
     .min(1, { message: "Enter a caption for this table" })
     .max(MAX_CAPTION_LENGTH, {
       message: `Table caption should be shorter than ${MAX_CAPTION_LENGTH} characters.`,
@@ -34,41 +33,36 @@ const tableSettingsSchema = z.object({
 })
 
 interface TableSettingsModalProps {
-  editor: Editor
+  caption: string
   isOpen: boolean
   onClose: () => void
+  onSave: (caption: string) => void
 }
 
 export const TableSettingsModal = ({
-  editor,
+  caption: currentCaption,
   isOpen,
   onClose,
+  onSave,
 }: TableSettingsModalProps): JSX.Element => {
   const {
     register,
     watch,
     formState: { errors, isValid },
-    setValue,
     handleSubmit,
   } = useZodForm({
     schema: tableSettingsSchema,
+    mode: "onChange",
     defaultValues: {
-      caption: "",
+      caption: currentCaption,
     },
   })
 
   const caption = watch("caption")
 
-  useEffect(() => {
-    // set default values here instead
-    const { caption } = editor.getAttributes("table")
-    setValue("caption", String(caption || ""))
-    // only done once per every time the modal is opened
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen])
-
+  // trapFocus off: Chakra FocusLock hangs Tab when focus moves from TipTap's BubbleMenu into this modal.
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} trapFocus={false}>
       <ModalOverlay />
 
       <ModalContent>
@@ -109,12 +103,8 @@ export const TableSettingsModal = ({
               type="submit"
               isDisabled={!isValid}
               onClick={handleSubmit(({ caption }) => {
+                onSave(caption)
                 onClose()
-                editor
-                  .chain()
-                  .focus()
-                  .updateAttributes("table", { caption })
-                  .run()
               })}
             >
               Save changes
