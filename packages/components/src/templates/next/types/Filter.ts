@@ -20,7 +20,7 @@ export interface Filter {
   display?: TagCategoryDisplay
   // NOTE: only set for date-type tag-category filters (see getDateFilters) —
   // text-category/year filters omit this. `items` are the fixed status
-  // buckets (ended/ongoing/upcoming); the sidebar also renders a date-range
+  // buckets (ongoing/upcoming/ended); the sidebar also renders a date-range
   // control for this filter (see Filter.tsx), whose value lives in
   // `AppliedFilter.dateRange`, not `items`.
   type?: typeof TAG_CATEGORY_TYPE.Date

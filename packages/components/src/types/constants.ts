@@ -44,10 +44,6 @@ export type TagCategoryType =
 export type TagCategoryDateType = (typeof TAG_CATEGORY_TYPE)["Date"]
 
 export const DATE_FILTER_STATUS = {
-  Ended: {
-    id: "ENDED",
-    defaultLabel: "Event ended",
-  },
   Ongoing: {
     id: "ONGOING",
     defaultLabel: "Ongoing",
@@ -56,15 +52,19 @@ export const DATE_FILTER_STATUS = {
     id: "UPCOMING",
     defaultLabel: "Upcoming",
   },
+  Ended: {
+    id: "ENDED",
+    defaultLabel: "Event ended",
+  },
 } as const
 
 export type DateFilterStatusId =
   (typeof DATE_FILTER_STATUS)[keyof typeof DATE_FILTER_STATUS]["id"]
 
 export const DEFAULT_DATE_FILTER_STATUS_LABELS = {
-  [DATE_FILTER_STATUS.Ended.id]: DATE_FILTER_STATUS.Ended.defaultLabel,
   [DATE_FILTER_STATUS.Ongoing.id]: DATE_FILTER_STATUS.Ongoing.defaultLabel,
   [DATE_FILTER_STATUS.Upcoming.id]: DATE_FILTER_STATUS.Upcoming.defaultLabel,
+  [DATE_FILTER_STATUS.Ended.id]: DATE_FILTER_STATUS.Ended.defaultLabel,
 } as const satisfies Record<DateFilterStatusId, string>
 
 export const DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY = {

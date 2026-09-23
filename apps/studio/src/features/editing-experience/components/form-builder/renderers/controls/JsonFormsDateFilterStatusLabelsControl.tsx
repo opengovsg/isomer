@@ -12,9 +12,9 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 
 const STATUS_ROW_LABELS: Record<DateFilterStatusId, string> = {
-  ENDED: "If date is in the past, show",
   ONGOING: "If date is now, show",
   UPCOMING: "If date is in the future, show",
+  ENDED: "If date is in the past, show",
 }
 
 interface DateFilterStatusLabelsControlProps extends Omit<
