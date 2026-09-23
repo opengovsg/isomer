@@ -16,17 +16,18 @@ const site = generateSiteConfig({
   },
 })
 
-const createArticleItem = (overrides?: Partial<AllCardProps>): AllCardProps =>
-  ({
-    variant: "article",
-    id: "article-1",
-    title: "Article 1",
-    description: "Summary",
-    lastModified: "2024-01-01",
-    url: "/collection/article-1",
-    site,
-    ...overrides,
-  }) as AllCardProps
+const createArticleItem = (
+  overrides?: Partial<AllCardProps>,
+): AllCardProps => ({
+  variant: "article",
+  id: "article-1",
+  title: "Article 1",
+  description: "Summary",
+  lastModified: "2024-01-01",
+  url: "/collection/article-1",
+  site,
+  ...overrides,
+})
 
 describe("processCollectionItems", () => {
   // Regression test: an earlier version of this function rebuilt the item
