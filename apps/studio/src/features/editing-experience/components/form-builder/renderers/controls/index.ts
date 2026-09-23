@@ -113,6 +113,10 @@ export {
   jsonFormsDateFilterStatusLabelsControlTester,
 } from "./JsonFormsDateFilterStatusLabelsControl"
 export {
+  default as JsonFormsDateFilterValuesControl,
+  jsonFormsDateFilterValuesControlTester,
+} from "./JsonFormsDateFilterValuesControl"
+export {
   default as JsonFormsNavbarControl,
   jsonFormsNavbarControlTester,
 } from "./JsonFormsNavbarControl"

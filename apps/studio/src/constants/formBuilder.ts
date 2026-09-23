@@ -4,6 +4,7 @@ export const JSON_FORMS_RANKING = {
   TagCategoryControl: 5,
   TagCategoryOptionsControl: 5,
   DateFilterStatusLabelsControl: 5,
+  DateFilterValuesControl: 4,
   TaggedControl: 4,
   BooleanControl: 2,
   ConstControl: 2,
