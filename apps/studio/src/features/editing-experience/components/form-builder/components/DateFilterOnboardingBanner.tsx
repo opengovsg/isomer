@@ -4,12 +4,12 @@ import NextLink from "next/link"
 import { useEffect } from "react"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { NextImage } from "~/components/NextImage"
+import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
+import { useLocalStorage } from "~/hooks/useLocalStorage"
 import {
   captureDateFilterOnboardingBannerShown,
   captureDateFilterOnboardingBannerSupportLinkClicked,
 } from "~/lib/analytics/dateFilters"
-import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
-import { useLocalStorage } from "~/hooks/useLocalStorage"
 
 const DATE_FILTER_ONBOARDING_BANNER_SHOWN_KEY =
   "date-filter-onboarding-banner-shown"
