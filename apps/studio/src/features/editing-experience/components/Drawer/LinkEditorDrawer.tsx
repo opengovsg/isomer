@@ -9,10 +9,7 @@ import { z } from "zod"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import {
-  captureCollectionItemDateSaveBlocked,
-  captureCollectionItemDateSaved,
-} from "~/lib/analytics/collectionFilters"
+import { captureCollectionItemDateSaved } from "~/lib/analytics/collectionFilters"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
@@ -103,41 +100,20 @@ const InnerDrawer = ({
         px="2rem"
         pos="relative"
       >
-        <Box
+        <Button
           w="full"
-          onClick={() => {
-            if (isDateTaggedValid) {
-              return
-            }
-            const itemDateProperties = getCollectionItemDateProperties(
-              collectionTags,
-              previewPageState.dateTagged,
-            )
-            if (!itemDateProperties) {
-              return
-            }
-            captureCollectionItemDateSaveBlocked({
-              siteId,
-              resourceId: linkId,
-              ...itemDateProperties,
-            })
-          }}
+          alignSelf="flex-start"
+          onClick={handleSaveChanges}
+          isDisabled={
+            !isEmpty(errors) ||
+            !previewPageState.ref ||
+            !isTagsValid ||
+            isCollectionTagsLoading
+          }
+          isLoading={isLoading}
         >
-          <Button
-            w="full"
-            alignSelf="flex-start"
-            onClick={handleSaveChanges}
-            isDisabled={
-              !isEmpty(errors) ||
-              !previewPageState.ref ||
-              !isTagsValid ||
-              isCollectionTagsLoading
-            }
-            isLoading={isLoading}
-          >
-            Save
-          </Button>
-        </Box>
+          Save
+        </Button>
       </Box>
     </Flex>
   )

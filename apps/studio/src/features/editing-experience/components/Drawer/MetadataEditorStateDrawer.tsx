@@ -17,10 +17,7 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { getCollectionItemDateProperties } from "~/features/editing-experience/utils/dateFilterAnalytics"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import {
-  captureCollectionItemDateSaveBlocked,
-  captureCollectionItemDateSaved,
-} from "~/lib/analytics/collectionFilters"
+import { captureCollectionItemDateSaved } from "~/lib/analytics/collectionFilters"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -291,7 +288,6 @@ const TagsAwareSaveButton = ({
   tagged: string[] | undefined
   dateTagged: ArticlePagePageProps["dateTagged"]
 }) => {
-  const { siteId, pageId } = useQueryParse(pageSchema)
   const { isValid: isTaggedValid } = validateRequiredTags(tags, tagged)
   const { isValid: isDateTaggedValid } = validateRequiredDateFilters(
     tags,
@@ -299,33 +295,10 @@ const TagsAwareSaveButton = ({
   )
 
   return (
-    // A disabled save button is not a click target, so the wrapper receives
-    // the attempt when a required date is still empty.
-    <Box
-      w="100%"
-      onClick={() => {
-        if (isDateTaggedValid) {
-          return
-        }
-        const itemDateProperties = getCollectionItemDateProperties(
-          tags,
-          dateTagged,
-        )
-        if (!itemDateProperties) {
-          return
-        }
-        captureCollectionItemDateSaveBlocked({
-          siteId,
-          resourceId: pageId,
-          ...itemDateProperties,
-        })
-      }}
-    >
-      <SaveButton
-        isLoading={isLoading}
-        onClick={onClick}
-        isTagsValid={isTaggedValid && isDateTaggedValid}
-      />
-    </Box>
+    <SaveButton
+      isLoading={isLoading}
+      onClick={onClick}
+      isTagsValid={isTaggedValid && isDateTaggedValid}
+    />
   )
 }

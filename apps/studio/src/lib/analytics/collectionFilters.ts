@@ -78,24 +78,6 @@ export const captureCollectionItemDateSaved = ({
   })
 }
 
-export const captureCollectionItemDateSaveBlocked = ({
-  datesFilled,
-  dateFilterCount,
-  hasRange,
-  ...context
-}: CollectionFilterAnalyticsContext & {
-  datesFilled: number
-  dateFilterCount: number
-  hasRange: boolean
-}) => {
-  posthog.capture("collection_item_date_save_blocked", {
-    ...collectionFilterContext(context),
-    dates_filled: datesFilled,
-    date_filter_count: dateFilterCount,
-    has_range: hasRange,
-  })
-}
-
 export const captureCollectionDateFilterSortSaved = ({
   direction,
   ...context
