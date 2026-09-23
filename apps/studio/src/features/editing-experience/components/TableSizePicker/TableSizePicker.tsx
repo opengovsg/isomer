@@ -61,17 +61,17 @@ const DeleteTableButton = ({
       bg: "interaction.muted.main.active",
     }}
     aria-label="Delete table"
-    onClick={() =>
+    onClick={() => {
+      const selectionKind = detectTableSelectionKind(editor)
+      const applied = editor.chain().focus().deleteTable().run()
       captureTableCommand({
         siteId,
-        outcome: editor.chain().focus().deleteTable().run()
-          ? "applied"
-          : "rejected",
+        outcome: applied ? "applied" : "rejected",
         action: "delete_table",
         source: "toolbar",
-        selectionKind: detectTableSelectionKind(editor),
+        selectionKind,
       })
-    }
+    }}
   >
     <Icon as={BiTable} fontSize="1.25rem" color="base.content.medium" />
   </IconButton>

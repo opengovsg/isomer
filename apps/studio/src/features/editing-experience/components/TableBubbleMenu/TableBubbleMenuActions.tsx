@@ -139,15 +139,16 @@ const ClearContentsButton = ({
     <ActionButton
       label="Clear contents"
       icon={<BiX fontSize="1rem" />}
-      onClick={() =>
+      onClick={() => {
+        const outcome = clearSelectedCells(editor)
         captureTableCommand({
           siteId,
           selectionKind: kind,
           source: "bubble_menu",
           action: "clear_contents",
-          outcome: clearSelectedCells(editor),
+          outcome,
         })
-      }
+      }}
     />
   )
 }
@@ -299,12 +300,13 @@ const BackgroundColor = ({
     <BackgroundColorSection
       state={state}
       onSetColor={(color) => {
+        const outcome = setSelectedCellsBackgroundColor(editor, color)
         captureTableCommand({
           siteId,
           selectionKind: kind,
           source: "bubble_menu",
           action: "set_cell_background",
-          outcome: setSelectedCellsBackgroundColor(editor, color),
+          outcome,
         })
         onColorSet()
       }}
@@ -325,17 +327,16 @@ const MergeCellsButton = ({
     <ActionButton
       label="Merge cells"
       icon={<IconMergeCells boxSize="1rem" />}
-      onClick={() =>
+      onClick={() => {
+        const applied = editor.chain().focus().mergeCells().run()
         captureTableCommand({
           siteId,
           selectionKind: kind,
           source: "bubble_menu",
           action: "merge_cells",
-          outcome: editor.chain().focus().mergeCells().run()
-            ? "applied"
-            : "rejected",
+          outcome: applied ? "applied" : "rejected",
         })
-      }
+      }}
     />
   )
 }
@@ -399,64 +400,62 @@ const RowSelectionActions = ({
         <HeaderToggle
           label="Header row"
           isChecked={includesHeader}
-          onToggle={() =>
+          onToggle={() => {
+            const applied = editor.chain().focus().toggleHeaderRow().run()
             captureTableCommand({
               siteId,
               selectionKind: kind,
               source: "bubble_menu",
               action: "toggle_header_row",
-              outcome: editor.chain().focus().toggleHeaderRow().run()
-                ? "applied"
-                : "rejected",
+              outcome: applied ? "applied" : "rejected",
             })
-          }
+          }}
         />
       )}
       {!includesHeader && (
         <ActionButton
           label="Add row above"
           icon={<IconAddRowAbove boxSize="1rem" />}
-          onClick={() =>
+          onClick={() => {
+            const applied = editor.chain().focus().addRowBefore().run()
             captureTableCommand({
               siteId,
               selectionKind: kind,
               source: "bubble_menu",
               action: "add_row",
-              outcome: editor.chain().focus().addRowBefore().run()
-                ? "applied"
-                : "rejected",
+              outcome: applied ? "applied" : "rejected",
             })
-          }
+          }}
         />
       )}
       <ActionButton
         label="Add row below"
         icon={<IconAddRowBelow boxSize="1rem" />}
-        onClick={() =>
+        onClick={() => {
+          const applied = editor.chain().focus().addRowAfter().run()
           captureTableCommand({
             siteId,
             selectionKind: kind,
             source: "bubble_menu",
             action: "add_row",
-            outcome: editor.chain().focus().addRowAfter().run()
-              ? "applied"
-              : "rejected",
+            outcome: applied ? "applied" : "rejected",
           })
-        }
+        }}
       />
       {!includesHeader && (
         <ActionButton
           label="Duplicate row"
           icon={<BiCopy fontSize="1rem" />}
-          onClick={() =>
+          onClick={() => {
+            const outcome = duplicateSelectedRows(editor)
             captureTableCommand({
               siteId,
               selectionKind: kind,
               source: "bubble_menu",
               action: "duplicate_row",
-              outcome: duplicateSelectedRows(editor),
+              outcome,
             })
-          }
+          }}
         />
       )}
       <ClearContentsButton editor={editor} kind={kind} siteId={siteId} />
@@ -465,47 +464,48 @@ const RowSelectionActions = ({
         <ActionButton
           label="Move up"
           icon={<BiUpArrowAlt fontSize="1rem" />}
-          onClick={() =>
+          onClick={() => {
+            const outcome = moveTableBlock(editor, rowMoveUpPlan, "row")
             captureTableCommand({
               siteId,
               selectionKind: kind,
               source: "bubble_menu",
               action: "move_row",
-              outcome: moveTableBlock(editor, rowMoveUpPlan, "row"),
+              outcome,
             })
-          }
+          }}
         />
       )}
       {rowMoveDownPlan && !includesHeader && (
         <ActionButton
           label="Move down"
           icon={<BiDownArrowAlt fontSize="1rem" />}
-          onClick={() =>
+          onClick={() => {
+            const outcome = moveTableBlock(editor, rowMoveDownPlan, "row")
             captureTableCommand({
               siteId,
               selectionKind: kind,
               source: "bubble_menu",
               action: "move_row",
-              outcome: moveTableBlock(editor, rowMoveDownPlan, "row"),
+              outcome,
             })
-          }
+          }}
         />
       )}
       {!includesHeader && (
         <ActionButton
           label="Delete row"
           icon={<IconDelRow boxSize="1rem" />}
-          onClick={() =>
+          onClick={() => {
+            const applied = editor.chain().focus().deleteRow().run()
             captureTableCommand({
               siteId,
               selectionKind: kind,
               source: "bubble_menu",
               action: "delete_row",
-              outcome: editor.chain().focus().deleteRow().run()
-                ? "applied"
-                : "rejected",
+              outcome: applied ? "applied" : "rejected",
             })
-          }
+          }}
         />
       )}
     </ActionGroup>
@@ -541,64 +541,62 @@ const ColumnSelectionActions = ({
         <HeaderToggle
           label="Header column"
           isChecked={includesHeader}
-          onToggle={() =>
+          onToggle={() => {
+            const applied = editor.chain().focus().toggleHeaderColumn().run()
             captureTableCommand({
               siteId,
               selectionKind: kind,
               source: "bubble_menu",
               action: "toggle_header_column",
-              outcome: editor.chain().focus().toggleHeaderColumn().run()
-                ? "applied"
-                : "rejected",
+              outcome: applied ? "applied" : "rejected",
             })
-          }
+          }}
         />
       )}
       {!includesHeader && (
         <ActionButton
           label="Add column left"
           icon={<IconAddColLeft boxSize="1rem" />}
-          onClick={() =>
+          onClick={() => {
+            const applied = editor.chain().focus().addColumnBefore().run()
             captureTableCommand({
               siteId,
               selectionKind: kind,
               source: "bubble_menu",
               action: "add_column",
-              outcome: editor.chain().focus().addColumnBefore().run()
-                ? "applied"
-                : "rejected",
+              outcome: applied ? "applied" : "rejected",
             })
-          }
+          }}
         />
       )}
       <ActionButton
         label="Add column right"
         icon={<IconAddColRight boxSize="1rem" />}
-        onClick={() =>
+        onClick={() => {
+          const applied = editor.chain().focus().addColumnAfter().run()
           captureTableCommand({
             siteId,
             selectionKind: kind,
             source: "bubble_menu",
             action: "add_column",
-            outcome: editor.chain().focus().addColumnAfter().run()
-              ? "applied"
-              : "rejected",
+            outcome: applied ? "applied" : "rejected",
           })
-        }
+        }}
       />
       {!includesHeader && (
         <ActionButton
           label="Duplicate column"
           icon={<BiCopy fontSize="1rem" />}
-          onClick={() =>
+          onClick={() => {
+            const outcome = duplicateSelectedColumns(editor)
             captureTableCommand({
               siteId,
               selectionKind: kind,
               source: "bubble_menu",
               action: "duplicate_column",
-              outcome: duplicateSelectedColumns(editor),
+              outcome,
             })
-          }
+          }}
         />
       )}
       <ClearContentsButton editor={editor} kind={kind} siteId={siteId} />
@@ -607,47 +605,52 @@ const ColumnSelectionActions = ({
         <ActionButton
           label="Move left"
           icon={<BiLeftArrowAlt fontSize="1rem" />}
-          onClick={() =>
+          onClick={() => {
+            const outcome = moveTableBlock(editor, columnMoveLeftPlan, "column")
             captureTableCommand({
               siteId,
               selectionKind: kind,
               source: "bubble_menu",
               action: "move_column",
-              outcome: moveTableBlock(editor, columnMoveLeftPlan, "column"),
+              outcome,
             })
-          }
+          }}
         />
       )}
       {columnMoveRightPlan && !includesHeader && (
         <ActionButton
           label="Move right"
           icon={<BiRightArrowAlt fontSize="1rem" />}
-          onClick={() =>
+          onClick={() => {
+            const outcome = moveTableBlock(
+              editor,
+              columnMoveRightPlan,
+              "column",
+            )
             captureTableCommand({
               siteId,
               selectionKind: kind,
               source: "bubble_menu",
               action: "move_column",
-              outcome: moveTableBlock(editor, columnMoveRightPlan, "column"),
+              outcome,
             })
-          }
+          }}
         />
       )}
       {!includesHeader && (
         <ActionButton
           label="Delete column"
           icon={<IconDelCol boxSize="1rem" />}
-          onClick={() =>
+          onClick={() => {
+            const applied = editor.chain().focus().deleteColumn().run()
             captureTableCommand({
               siteId,
               selectionKind: kind,
               source: "bubble_menu",
               action: "delete_column",
-              outcome: editor.chain().focus().deleteColumn().run()
-                ? "applied"
-                : "rejected",
+              outcome: applied ? "applied" : "rejected",
             })
-          }
+          }}
         />
       )}
     </ActionGroup>
@@ -693,17 +696,16 @@ const SelectionActions = ({
           <ActionButton
             label="Delete table"
             icon={<BiTrash fontSize="1rem" />}
-            onClick={() =>
+            onClick={() => {
+              const applied = editor.chain().focus().deleteTable().run()
               captureTableCommand({
                 siteId,
                 selectionKind: kind,
                 source: "bubble_menu",
                 action: "delete_table",
-                outcome: editor.chain().focus().deleteTable().run()
-                  ? "applied"
-                  : "rejected",
+                outcome: applied ? "applied" : "rejected",
               })
-            }
+            }}
           />
         </ActionGroup>
       )
@@ -727,17 +729,16 @@ const SelectionActions = ({
           <ActionButton
             label="Split cell"
             icon={<IconSplitCell boxSize="1rem" />}
-            onClick={() =>
+            onClick={() => {
+              const applied = editor.chain().focus().splitCell().run()
               captureTableCommand({
                 siteId,
                 selectionKind: kind,
                 source: "bubble_menu",
                 action: "split_cell",
-                outcome: editor.chain().focus().splitCell().run()
-                  ? "applied"
-                  : "rejected",
+                outcome: applied ? "applied" : "rejected",
               })
-            }
+            }}
           />
         </ActionGroup>
       )
