@@ -10,12 +10,12 @@ import {
   FormLabel,
 } from "@opengovsg/design-system-react"
 import { isDateFilter } from "@opengovsg/isomer-components"
-import { format, parseISO } from "date-fns"
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { formatSlashDate, parseSlashDate } from "~/schemas/collection"
 
 export const jsonFormsDateFilterValuesControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.DateFilterValuesControl,
@@ -75,11 +75,12 @@ const SuspendableJsonFormsDateFilterValuesControl = ({
       <VStack spacing="1.25rem">
         {dateFilters.map(({ id, label, isRequired: dateIsRequired }) => {
           const existing = data?.find((value) => value.id === id)
-          const value: DateRangeValue = existing
-            ? [
-                parseISO(existing.date),
-                existing.endDate ? parseISO(existing.endDate) : null,
-              ]
+          const startDate = existing ? parseSlashDate(existing.date) : undefined
+          const endDate = existing?.endDate
+            ? parseSlashDate(existing.endDate)
+            : undefined
+          const value: DateRangeValue = startDate
+            ? [startDate, endDate ?? null]
             : [null, null]
 
           const isInvalid = !!dateIsRequired && !existing?.date
@@ -96,8 +97,8 @@ const SuspendableJsonFormsDateFilterValuesControl = ({
               ...others,
               {
                 id,
-                date: format(start, "yyyy-MM-dd"),
-                ...(end ? { endDate: format(end, "yyyy-MM-dd") } : {}),
+                date: formatSlashDate(start),
+                ...(end ? { endDate: formatSlashDate(end) } : {}),
               },
             ])
           }

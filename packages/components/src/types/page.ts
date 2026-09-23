@@ -248,6 +248,8 @@ const TaggedSchema = Type.Optional(
 )
 
 // id is the filter uuid. No endDate means a single-day event.
+// `date` and `endDate` are stored as `dd/MM/yyyy`, same as an article date.
+// `format: "date"` here is the JSONForms widget hint, not an ISO date string.
 const DateTaggedItemSchema = Type.Object({
   id: TagCategoryUuidSchema,
   date: Type.String({ format: "date" }),

@@ -57,7 +57,7 @@ describe("validateRequiredDateFilters", () => {
   it("returns valid when a required date filter has a value", () => {
     const result = validateRequiredDateFilters(
       [requiredDateFilter],
-      [{ id: REQUIRED_DATE_FILTER_ID, date: "2026-06-15" }],
+      [{ id: REQUIRED_DATE_FILTER_ID, date: "15/06/2026" }],
     )
 
     expect(result.isValid).toBe(true)
@@ -94,7 +94,7 @@ describe("validateRequiredDateFilters", () => {
   it("returns only unfilled required date filters when multiple are configured", () => {
     const result = validateRequiredDateFilters(
       [requiredDateFilter, otherRequiredDateFilter, optionalDateFilter],
-      [{ id: REQUIRED_DATE_FILTER_ID, date: "2026-06-15" }],
+      [{ id: REQUIRED_DATE_FILTER_ID, date: "15/06/2026" }],
     )
 
     expect(result.isValid).toBe(false)

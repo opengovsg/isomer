@@ -13,8 +13,8 @@ const EVENT_DATE_FILTER_ID = "event-date-filter-id"
 const ongoingDateTagged = [
   {
     id: EVENT_DATE_FILTER_ID,
-    date: "2026-06-10",
-    endDate: "2026-06-20",
+    date: "10/06/2026",
+    endDate: "20/06/2026",
   },
 ]
 

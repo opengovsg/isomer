@@ -10,7 +10,7 @@ import {
 import { getDateFilters } from "../getDateFilters"
 
 const EVENT_DATE_FILTER_ID = "event-date-filter-id"
-const TODAY = "2026-06-15"
+const TODAY_ISO = "2026-06-15"
 
 const tagCategories: NonNullable<
   CollectionPageSchemaType["page"]["tagCategories"]
@@ -26,7 +26,7 @@ const tagCategories: NonNullable<
 describe("getDateFilters", () => {
   beforeEach(() => {
     vi.useFakeTimers()
-    vi.setSystemTime(new Date(`${TODAY}T12:00:00+08:00`))
+    vi.setSystemTime(new Date(`${TODAY_ISO}T12:00:00+08:00`))
   })
 
   afterEach(() => {
@@ -51,8 +51,8 @@ describe("getDateFilters", () => {
         dateTagged: [
           {
             id: EVENT_DATE_FILTER_ID,
-            date: "2026-06-10",
-            endDate: "2026-06-20",
+            date: "10/06/2026",
+            endDate: "20/06/2026",
           },
         ],
       } as ProcessedCollectionCardProps,
@@ -60,8 +60,8 @@ describe("getDateFilters", () => {
         dateTagged: [
           {
             id: EVENT_DATE_FILTER_ID,
-            date: "2026-06-10",
-            endDate: "2026-06-20",
+            date: "10/06/2026",
+            endDate: "20/06/2026",
           },
         ],
       } as ProcessedCollectionCardProps,
@@ -69,8 +69,8 @@ describe("getDateFilters", () => {
         dateTagged: [
           {
             id: EVENT_DATE_FILTER_ID,
-            date: "2026-07-01",
-            endDate: "2026-07-10",
+            date: "01/07/2026",
+            endDate: "10/07/2026",
           },
         ],
       } as ProcessedCollectionCardProps,
@@ -137,8 +137,8 @@ describe("getDateFilters", () => {
         dateTagged: [
           {
             id: EVENT_DATE_FILTER_ID,
-            date: "2026-05-01",
-            endDate: "2026-05-10",
+            date: "01/05/2026",
+            endDate: "10/05/2026",
           },
         ],
       } as ProcessedCollectionCardProps,

@@ -1673,8 +1673,8 @@ describe("collection.router", async () => {
       const dateTagged = [
         {
           id: "550e8400-e29b-41d4-a716-446655440000",
-          date: "2026-01-15",
-          endDate: "2026-01-20",
+          date: "15/01/2026",
+          endDate: "20/01/2026",
         },
       ]
 
@@ -2620,7 +2620,7 @@ describe("collection.router", async () => {
           siteId: site.id,
           parentId: collection.id,
           permalink: "date-tagged-page",
-          dateTagged: [{ id: DATE_FILTER_ID, date: "2026-01-01" }],
+          dateTagged: [{ id: DATE_FILTER_ID, date: "01/01/2026" }],
         })
 
         // Act
@@ -2652,7 +2652,7 @@ describe("collection.router", async () => {
 
         const draftContent = collectionPageBlobContent()
         const publishedContent = collectionPageBlobContent(undefined, [
-          { id: DATE_FILTER_ID, date: "2026-01-01" },
+          { id: DATE_FILTER_ID, date: "01/01/2026" },
         ])
 
         const draftBlob = await db
@@ -2713,7 +2713,7 @@ describe("collection.router", async () => {
         })
 
         const dateTaggedBlob = collectionPageBlobContent(undefined, [
-          { id: DATE_FILTER_ID, date: "2026-01-01" },
+          { id: DATE_FILTER_ID, date: "01/01/2026" },
         ])
         const draftBlob = await db
           .insertInto("Blob")
@@ -2779,7 +2779,7 @@ describe("collection.router", async () => {
         })
 
         const dateTaggedBlob = collectionPageBlobContent(undefined, [
-          { id: DATE_FILTER_ID, date: "2026-01-01" },
+          { id: DATE_FILTER_ID, date: "01/01/2026" },
         ])
         await db
           .updateTable("Blob")
@@ -2817,7 +2817,7 @@ describe("collection.router", async () => {
           parentId: collection.id,
           permalink: "range-page",
           dateTagged: [
-            { id: DATE_FILTER_ID, date: "2026-01-01", endDate: "2026-01-05" },
+            { id: DATE_FILTER_ID, date: "01/01/2026", endDate: "05/01/2026" },
           ],
         })
 

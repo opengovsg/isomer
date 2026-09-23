@@ -34,13 +34,13 @@ describe("processCollectionItems", () => {
   // object via destructuring without including date-filter fields, silently
   // dropping them.
   it("carries dateTagged and dateFilterDisplayEntries through to the processed item", () => {
-    const dateTagged = [{ id: "event-date-filter", date: "2026-09-27" }]
+    const dateTagged = [{ id: "event-date-filter", date: "27/09/2026" }]
     const dateFilterDisplayEntries = [
       {
         id: "event-date-filter",
         label: "Event Date",
         dateText: "27 Sep 2026",
-        date: "2026-09-27",
+        date: "27/09/2026",
         statusLabels: buildDateFilterStatusLabels(),
       },
     ]

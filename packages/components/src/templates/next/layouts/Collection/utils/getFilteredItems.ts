@@ -1,6 +1,7 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPagePageProps } from "~/types"
 import { isDateFilter, isTextFilter } from "~/types/page"
+import { storedDateToIso } from "~/utils/storedDate"
 
 import type { AppliedFilter } from "../../../types/Filter"
 import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
@@ -16,8 +17,12 @@ const itemOverlapsAppliedDateRange = (
     return true
   }
 
-  const itemEnd = value.endDate ?? value.date
-  if (dateRange.end !== undefined && value.date > dateRange.end) {
+  const itemStart = storedDateToIso(value.date)
+  const itemEnd = storedDateToIso(value.endDate ?? value.date)
+  if (!itemStart || !itemEnd) {
+    return false
+  }
+  if (dateRange.end !== undefined && itemStart > dateRange.end) {
     return false
   }
   if (dateRange.start !== undefined && itemEnd < dateRange.start) {

@@ -186,11 +186,12 @@ describe("useCollection", () => {
 
   describe("availableFilters", () => {
     const eventDateFilterId = "event-date-filter-id"
-    const today = "2026-06-15"
+    const todayIso = "2026-06-15"
+    const today = "15/06/2026"
 
     beforeEach(() => {
       vi.useFakeTimers()
-      vi.setSystemTime(new Date(`${today}T12:00:00+08:00`))
+      vi.setSystemTime(new Date(`${todayIso}T12:00:00+08:00`))
     })
 
     afterEach(() => {

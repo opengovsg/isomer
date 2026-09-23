@@ -1,5 +1,5 @@
 import type { AllCardProps } from "~/interfaces"
-import { parseISO } from "date-fns"
+import { parseStoredDate } from "~/utils/storedDate"
 
 import type { GetCollectionItemsProps } from "./getCollectionItems"
 import { parseCollectionSortOrder } from "./collectionSortOrder"
@@ -98,7 +98,7 @@ const getDateFilterStartTime = (
     return undefined
   }
 
-  return parseISO(dateValue).getTime()
+  return parseStoredDate(dateValue)?.getTime()
 }
 
 const compareByPublishDate = (

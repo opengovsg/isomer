@@ -493,15 +493,15 @@ describe("sortCollectionItems", () => {
       const items = [
         createItem({
           title: "Oldest",
-          dateTagged: [{ id: filterId, date: "2023-01-01" }],
+          dateTagged: [{ id: filterId, date: "01/01/2023" }],
         }),
         createItem({
           title: "Newest",
-          dateTagged: [{ id: filterId, date: "2023-12-31" }],
+          dateTagged: [{ id: filterId, date: "31/12/2023" }],
         }),
         createItem({
           title: "Middle",
-          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+          dateTagged: [{ id: filterId, date: "15/06/2023" }],
         }),
       ]
 
@@ -522,15 +522,15 @@ describe("sortCollectionItems", () => {
       const items = [
         createItem({
           title: "Oldest",
-          dateTagged: [{ id: filterId, date: "2023-01-01" }],
+          dateTagged: [{ id: filterId, date: "01/01/2023" }],
         }),
         createItem({
           title: "Newest",
-          dateTagged: [{ id: filterId, date: "2023-12-31" }],
+          dateTagged: [{ id: filterId, date: "31/12/2023" }],
         }),
         createItem({
           title: "Middle",
-          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+          dateTagged: [{ id: filterId, date: "15/06/2023" }],
         }),
       ]
 
@@ -555,7 +555,7 @@ describe("sortCollectionItems", () => {
         }),
         createItem({
           title: "Has date",
-          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+          dateTagged: [{ id: filterId, date: "15/06/2023" }],
         }),
       ]
 
@@ -571,11 +571,11 @@ describe("sortCollectionItems", () => {
       const items = [
         createItem({
           title: "Zebra",
-          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+          dateTagged: [{ id: filterId, date: "15/06/2023" }],
         }),
         createItem({
           title: "Alpha",
-          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+          dateTagged: [{ id: filterId, date: "15/06/2023" }],
         }),
       ]
 
@@ -592,17 +592,17 @@ describe("sortCollectionItems", () => {
         createItem({
           title: "Same title",
           lastModified: "2025-01-01T12:00:00Z",
-          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+          dateTagged: [{ id: filterId, date: "15/06/2023" }],
         }),
         createItem({
           title: "Same title",
           lastModified: "2025-03-01T12:00:00Z",
-          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+          dateTagged: [{ id: filterId, date: "15/06/2023" }],
         }),
         createItem({
           title: "Same title",
           lastModified: "2025-02-01T12:00:00Z",
-          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+          dateTagged: [{ id: filterId, date: "15/06/2023" }],
         }),
       ]
 
@@ -624,12 +624,12 @@ describe("sortCollectionItems", () => {
         createItem({
           title: "Alpha",
           lastModified: "2025-01-01T12:00:00Z",
-          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+          dateTagged: [{ id: filterId, date: "15/06/2023" }],
         }),
         createItem({
           title: "Zebra",
           lastModified: "2025-03-01T12:00:00Z",
-          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+          dateTagged: [{ id: filterId, date: "15/06/2023" }],
         }),
       ]
 

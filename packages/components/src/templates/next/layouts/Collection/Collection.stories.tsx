@@ -363,7 +363,7 @@ export const Blog: Story = {
 // actually sees, landing every item in the same bucket regardless of intent.
 const STORYBOOK_MOCKED_DATE = "2025-08-09T12:00:00.000Z"
 const offsetDate = (days: number): string =>
-  format(addDays(new Date(STORYBOOK_MOCKED_DATE), days), "yyyy-MM-dd")
+  format(addDays(new Date(STORYBOOK_MOCKED_DATE), days), "dd/MM/yyyy")
 
 const EVENT_DATE_FILTER_ID = "event-date-filter"
 // Matches the Figma reference's exact bucket labels ("Ended", not the

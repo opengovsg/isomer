@@ -1,7 +1,7 @@
 import type { LinkRefPageSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
-import { format, parse } from "date-fns"
+import { format, isValid, parse } from "date-fns"
 import { z } from "zod"
 
 import { generateBasePermalinkSchema } from "./common"
@@ -16,6 +16,24 @@ export type CollectionLinkProps = Static<typeof LinkRefPageSchema>
 // our format -> zod then zod -> our format
 // If the date is nullish, then we will return as undefined
 const SLASH_DATE_FORMAT = "dd/MM/yyyy"
+
+export const parseSlashDate = (value: string): Date | undefined => {
+  const parsed = parse(value, SLASH_DATE_FORMAT, new Date())
+  if (!isValid(parsed) || format(parsed, SLASH_DATE_FORMAT) !== value) {
+    return undefined
+  }
+
+  return parsed
+}
+
+export const formatSlashDate = (date: Date): string =>
+  format(date, SLASH_DATE_FORMAT)
+
+const storedDateSchema = z
+  .string()
+  .refine((value) => parseSlashDate(value) !== undefined, {
+    message: "Enter a date in dd/MM/yyyy format",
+  })
 
 const slashDateSchema = z
   .string()
@@ -38,8 +56,8 @@ const slashDateSchema = z
 
 const dateTaggedEntrySchema = z.object({
   id: z.string().uuid(),
-  date: z.string().min(1),
-  endDate: z.string().optional(),
+  date: storedDateSchema,
+  endDate: storedDateSchema.optional(),
 })
 
 export const editLinkSchema = z.object({

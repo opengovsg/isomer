@@ -11,7 +11,8 @@ import type { Filter } from "../../../../types/Filter"
 import { refreshDateFilterCounts } from "../refreshDateFilterCounts"
 
 const EVENT_DATE_FILTER_ID = "event-date-filter-id"
-const TODAY = "2026-06-15"
+const TODAY_ISO = "2026-06-15"
+const TODAY = "15/06/2026"
 
 const tagCategories: NonNullable<
   CollectionPageSchemaType["page"]["tagCategories"]
@@ -38,7 +39,7 @@ const items: ProcessedCollectionCardProps[] = [
 describe("refreshDateFilterCounts", () => {
   beforeEach(() => {
     vi.useFakeTimers()
-    vi.setSystemTime(new Date(`${TODAY}T12:00:00+08:00`))
+    vi.setSystemTime(new Date(`${TODAY_ISO}T12:00:00+08:00`))
   })
 
   afterEach(() => {
@@ -155,14 +156,14 @@ describe("refreshDateFilterCounts", () => {
     }
     const endedItems: ProcessedCollectionCardProps[] = [
       {
-        dateTagged: [{ id: EVENT_DATE_FILTER_ID, date: "2026-05-01" }],
+        dateTagged: [{ id: EVENT_DATE_FILTER_ID, date: "01/05/2026" }],
       } as ProcessedCollectionCardProps,
       {
         dateTagged: [
           {
             id: EVENT_DATE_FILTER_ID,
-            date: "2026-05-10",
-            endDate: "2026-05-12",
+            date: "10/05/2026",
+            endDate: "12/05/2026",
           },
         ],
       } as ProcessedCollectionCardProps,
@@ -219,7 +220,7 @@ describe("refreshDateFilterCounts", () => {
     }
     const mixedItems: ProcessedCollectionCardProps[] = [
       {
-        dateTagged: [{ id: EVENT_DATE_FILTER_ID, date: "2026-05-01" }],
+        dateTagged: [{ id: EVENT_DATE_FILTER_ID, date: "01/05/2026" }],
       } as ProcessedCollectionCardProps,
       {
         dateTagged: [{ id: EVENT_DATE_FILTER_ID, date: TODAY }],

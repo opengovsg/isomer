@@ -28,7 +28,7 @@ describe("getDateFilterDisplayEntries", () => {
 
   it("returns static entries with status labels and no live status", () => {
     const result = getDateFilterDisplayEntries(
-      [{ id: EVENT_DATE_FILTER_ID, date: "2026-09-27" }],
+      [{ id: EVENT_DATE_FILTER_ID, date: "27/09/2026" }],
       tagCategories,
     )
 
@@ -38,7 +38,7 @@ describe("getDateFilterDisplayEntries", () => {
           id: EVENT_DATE_FILTER_ID,
           label: "Event Date",
           dateText: "27 Sep 2026",
-          date: "2026-09-27",
+          date: "27/09/2026",
           statusLabels: buildDateFilterStatusLabels(
             tagCategories[0]!.statusLabels,
           ),
@@ -50,7 +50,7 @@ describe("getDateFilterDisplayEntries", () => {
   it("drops orphaned entries whose filter no longer exists", () => {
     expect(
       getDateFilterDisplayEntries(
-        [{ id: "deleted-filter-id", date: "2026-06-15" }],
+        [{ id: "deleted-filter-id", date: "15/06/2026" }],
         tagCategories,
       ),
     ).toEqual({ dateFilterDisplayEntries: undefined })
@@ -61,8 +61,8 @@ describe("getDateFilterDisplayEntries", () => {
       [
         {
           id: EVENT_DATE_FILTER_ID,
-          date: "2026-09-27",
-          endDate: "2026-09-29",
+          date: "27/09/2026",
+          endDate: "29/09/2026",
         },
       ],
       tagCategories,
@@ -78,8 +78,8 @@ describe("getDateFilterDisplayEntries", () => {
       [
         {
           id: EVENT_DATE_FILTER_ID,
-          date: "2026-08-04",
-          endDate: "2026-08-04",
+          date: "04/08/2026",
+          endDate: "04/08/2026",
         },
       ],
       tagCategories,
@@ -93,8 +93,8 @@ describe("getDateFilterDisplayEntries", () => {
       [
         {
           id: EVENT_DATE_FILTER_ID,
-          date: "2025-07-27",
-          endDate: "2026-10-25",
+          date: "27/07/2025",
+          endDate: "25/10/2026",
         },
       ],
       tagCategories,
@@ -107,11 +107,12 @@ describe("getDateFilterDisplayEntries", () => {
 })
 
 describe("getDateFilterCardsFromEntries", () => {
-  const TODAY = "2026-06-15"
+  const TODAY_ISO = "2026-06-15"
+  const TODAY = "15/06/2026"
 
   beforeEach(() => {
     vi.useFakeTimers()
-    vi.setSystemTime(new Date(`${TODAY}T12:00:00+08:00`))
+    vi.setSystemTime(new Date(`${TODAY_ISO}T12:00:00+08:00`))
   })
 
   afterEach(() => {

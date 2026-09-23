@@ -39,9 +39,10 @@ export interface AppliedFilter {
   items: AppliedFilterItem[]
   // NOTE: only meaningful when the filter is date-type. Independent of
   // `items` (the bucket selection) — both apply together (AND'd) when both
-  // are set. Dates are "yyyy-MM-dd" strings, same convention as the
-  // underlying `dateTagged` schema field. Either bound may be omitted for
-  // an open-ended range.
+  // are set. Dates are "yyyy-MM-dd" strings because the sidebar uses
+  // `<input type="date">`. Stored `dateTagged` values are "dd/MM/yyyy"
+  // and are converted before this comparison. Either bound may be omitted
+  // for an open-ended range.
   dateRange?: { start?: string; end?: string }
 }
 

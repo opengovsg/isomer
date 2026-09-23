@@ -1,7 +1,8 @@
 import type { DateFilterDisplayEntry } from "~/interfaces/internal/DateFilter"
 import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
-import { format, isSameDay, parseISO } from "date-fns"
+import { format, isSameDay } from "date-fns"
 import { isDateFilter } from "~/types/page"
+import { parseStoredDate } from "~/utils/storedDate"
 
 import { buildDateFilterStatusLabels } from "./buildDateFilterStatusLabels"
 
@@ -13,13 +14,19 @@ const formatDateFilterDateText = (
   dateStr: string,
   endDateStr?: string,
 ): string => {
-  const date = parseISO(dateStr)
+  const date = parseStoredDate(dateStr)
+  if (!date) {
+    return ""
+  }
 
   if (!endDateStr) {
     return format(date, "d MMM yyyy")
   }
 
-  const endDate = parseISO(endDateStr)
+  const endDate = parseStoredDate(endDateStr)
+  if (!endDate) {
+    return format(date, "d MMM yyyy")
+  }
 
   if (isSameDay(date, endDate)) {
     return format(date, "d MMM yyyy")

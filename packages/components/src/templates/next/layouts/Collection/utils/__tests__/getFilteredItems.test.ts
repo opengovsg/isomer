@@ -352,11 +352,16 @@ describe("getFilteredItems", () => {
       },
     ]
 
-    const toDateString = (date: Date) => date.toISOString().slice(0, 10)
-    const daysFromNow = (days: number) => {
+    const toIsoDateString = (date: Date) => date.toISOString().slice(0, 10)
+    const shiftDays = (days: number) => {
       const date = new Date()
       date.setDate(date.getDate() + days)
-      return toDateString(date)
+      return date
+    }
+    const daysFromNowIso = (days: number) => toIsoDateString(shiftDays(days))
+    const daysFromNow = (days: number) => {
+      const [year, month, day] = toIsoDateString(shiftDays(days)).split("-")
+      return `${day}/${month}/${year}`
     }
     const ONGOING_RANGE = { date: daysFromNow(-5), endDate: daysFromNow(5) }
     const ENDED_RANGE = { date: daysFromNow(-20), endDate: daysFromNow(-10) }
@@ -424,7 +429,7 @@ describe("getFilteredItems", () => {
         {
           id: EVENT_DATE_FILTER_ID,
           items: [],
-          dateRange: { start: daysFromNow(-5), end: daysFromNow(5) },
+          dateRange: { start: daysFromNowIso(-5), end: daysFromNowIso(5) },
         },
       ]
 
@@ -471,7 +476,7 @@ describe("getFilteredItems", () => {
         {
           id: EVENT_DATE_FILTER_ID,
           items: [],
-          dateRange: { start: daysFromNow(-5) },
+          dateRange: { start: daysFromNowIso(-5) },
         },
       ]
 
@@ -517,7 +522,7 @@ describe("getFilteredItems", () => {
         {
           id: EVENT_DATE_FILTER_ID,
           items: [],
-          dateRange: { end: daysFromNow(5) },
+          dateRange: { end: daysFromNowIso(5) },
         },
       ]
 
@@ -553,7 +558,7 @@ describe("getFilteredItems", () => {
           items: [{ id: DATE_FILTER_STATUS.Ongoing.id }],
           // Wide enough to overlap both fixtures' ranges, so only the
           // bucket-status check should be what excludes the second item.
-          dateRange: { start: daysFromNow(-30), end: daysFromNow(30) },
+          dateRange: { start: daysFromNowIso(-30), end: daysFromNowIso(30) },
         },
       ]
 
@@ -636,7 +641,7 @@ describe("getFilteredItems", () => {
           dateTagged: [
             {
               id: EVENT_DATE_FILTER_ID,
-              date: "2026-06-15",
+              date: "15/06/2026",
             },
           ],
         } as ProcessedCollectionCardProps,
@@ -646,7 +651,7 @@ describe("getFilteredItems", () => {
           dateTagged: [
             {
               id: EVENT_DATE_FILTER_ID,
-              date: "2026-01-01",
+              date: "01/01/2026",
             },
           ],
         } as ProcessedCollectionCardProps,

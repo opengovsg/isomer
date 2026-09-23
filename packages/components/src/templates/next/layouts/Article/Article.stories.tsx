@@ -847,8 +847,8 @@ export const WithDateFilter: Story = {
       dateTagged: [
         {
           id: DATE_FILTER_ID,
-          date: "2099-09-27",
-          endDate: "2099-09-29",
+          date: "27/09/2099",
+          endDate: "29/09/2099",
         },
       ],
       articlePageHeader: {
