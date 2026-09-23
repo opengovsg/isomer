@@ -126,7 +126,7 @@ const createEditor = (content: JSONContent = TABLE_DOC) => {
       ...BASE_EXTENSIONS,
       ...PROSE_EXTENSIONS,
       TableRow,
-      createIsomerTable(1),
+      createIsomerTable(),
       IsomerTableCell,
       IsomerTableHeader,
     ],
