@@ -133,6 +133,12 @@ export const getChangedDateFilterSortDirection = ({
     return undefined
   }
 
+  // Prefix is checked here as well as in DATE_FILTER_SORT_ORDER_REGEX so a
+  // looser pattern cannot treat a built-in order like `date-asc` as a date filter.
+  if (!after.startsWith("date-filter-")) {
+    return undefined
+  }
+
   // Group 2 is asc|desc. Group 1 is the filter uuid.
   const direction = DATE_FILTER_SORT_ORDER_REGEX.exec(after)?.[2]
   if (direction === "asc" || direction === "desc") {
