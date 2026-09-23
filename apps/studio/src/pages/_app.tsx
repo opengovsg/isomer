@@ -11,7 +11,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { useRouter } from "next/router"
 import { ErrorBoundary } from "react-error-boundary"
 import { AppBanner } from "~/components/AppBanner"
-import { EnvProvider } from "~/components/AppProviders"
+import { EnvProvider, Intercom } from "~/components/AppProviders"
 import { DefaultFallback } from "~/components/ErrorBoundary/DefaultFallback"
 import Suspense from "~/components/Suspense"
 import { VersionWrapper } from "~/components/VersionWrapper"
@@ -80,6 +80,7 @@ const MyApp = ((props: AppPropsWithAuthAndLayout) => {
             >
               <Suspense fallback={<Skeleton width="100%" height="$100vh" />}>
                 <Stack spacing={0} height="$100vh" flexDirection="column">
+                  <Intercom />
                   <AppBanner />
                   <VersionWrapper />
                   <ChildWithLayout {...props} />

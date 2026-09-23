@@ -194,7 +194,11 @@ const config = {
           },
           {
             key: "Cross-Origin-Opener-Policy",
-            value: "unsafe-none",
+            // Intercom tour authoring requires an opener connection on staging.
+            value:
+              env.NEXT_PUBLIC_APP_ENV === "staging"
+                ? "unsafe-none"
+                : "same-origin",
           },
           {
             key: "Cross-Origin-Resource-Policy",

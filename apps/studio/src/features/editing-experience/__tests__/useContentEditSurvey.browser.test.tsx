@@ -2,11 +2,12 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { act, render, renderHook } from "@testing-library/react"
 import { createStore, Provider } from "jotai"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import {
   EditorDrawerProvider,
   useEditorDrawerContext,
 } from "~/contexts/EditorDrawerContext"
+import { bootIntercom, shutdownIntercom } from "~/lib/intercom"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { hasContentEditAtom } from "../atoms"
@@ -21,7 +22,13 @@ import {
 } from "../hooks/useContentEditSurvey"
 
 const trackEventMock = vi.hoisted(() => vi.fn())
-vi.mock("@intercom/messenger-js-sdk", () => ({ trackEvent: trackEventMock }))
+vi.mock("@intercom/messenger-js-sdk", () => ({
+  Intercom: vi.fn(),
+  boot: vi.fn(),
+  shutdown: vi.fn(),
+  update: vi.fn(),
+  trackEvent: trackEventMock,
+}))
 
 const mockEnv = vi.hoisted<{
   env: { NEXT_PUBLIC_INTERCOM_APP_ID: string | undefined }
@@ -87,8 +94,11 @@ const renderTracker = (store: ReturnType<typeof createStore>) =>
 beforeEach(() => {
   trackEventMock.mockClear()
   mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
+  bootIntercom({ user_id: "test-user" })
   routeChangeStartHandlers.length = 0
 })
+
+afterEach(shutdownIntercom)
 
 describe("useFireContentEditSurveyEvent", () => {
   it("does nothing when no content edit has been made", () => {
