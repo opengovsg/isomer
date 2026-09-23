@@ -23,6 +23,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
     onMenuFocus,
     onMenuBlur,
     toggleMenu,
+    deactivateMenu,
   } = useTableBubbleMenu(editor)
 
   if (!show) {
@@ -62,7 +63,11 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
             gap="0"
             minW="10rem"
           >
-            <TableBubbleMenuActions editor={editor} kind={kind} />
+            <TableBubbleMenuActions
+              editor={editor}
+              kind={kind}
+              onColorSet={deactivateMenu}
+            />
           </VStack>
         )}
         <Flex

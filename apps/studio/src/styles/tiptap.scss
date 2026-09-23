@@ -150,7 +150,8 @@ $max-depth: 13;
 
     td,
     th {
-      border: 1px solid #d6d6d6;
+      // Match packages/components Table: border-base-divider-medium (gray-300).
+      border: 1px solid #d1d5db;
       box-sizing: border-box;
       min-width: 1em;
       padding: 0.5em 0.75em;
@@ -162,8 +163,14 @@ $max-depth: 13;
       }
     }
 
+    // Match packages/components Table defaults:
+    // header → bg-base-canvas-backdrop, body → bg-base-canvas-alt.
+    td {
+      background-color: #f9fafb;
+    }
+
     th {
-      background-color: #f8f9f9;
+      background-color: #f3f4f6;
       color: #323232;
       font-weight: bold;
       text-align: left;

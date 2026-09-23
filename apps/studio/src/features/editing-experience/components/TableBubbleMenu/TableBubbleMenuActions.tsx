@@ -1,8 +1,18 @@
+import type { TableCellBackgroundColorToken } from "@opengovsg/isomer-components"
 import type { Editor } from "@tiptap/react"
 import type { ReactElement, ReactNode } from "react"
-import { Flex, Text, VStack } from "@chakra-ui/react"
+import { Box, Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, Switch } from "@opengovsg/design-system-react"
-import { moveTableColumn, moveTableRow, selectedRect } from "@tiptap/pm/tables"
+import {
+  TABLE_CELL_BACKGROUND_COLORS,
+  TABLE_CELL_BACKGROUND_COLOR_TOKENS,
+} from "@opengovsg/isomer-components"
+import {
+  CellSelection,
+  moveTableColumn,
+  moveTableRow,
+  selectedRect,
+} from "@tiptap/pm/tables"
 import {
   BiCopy,
   BiDownArrowAlt,
@@ -28,6 +38,10 @@ import type {
   TableMoveAxis,
   TableMovePlan,
 } from "./TableBubbleMenu.types"
+import {
+  getSelectionBackgroundColorState,
+  setSelectedCellsBackgroundColor,
+} from "./TableBubbleMenu.backgroundColor"
 import { clearSelectedCells } from "./TableBubbleMenu.clear"
 import {
   duplicateSelectedColumns,
@@ -112,6 +126,158 @@ const ClearContentsButton = ({ editor }: { editor: Editor }) => (
     onClick={() => clearSelectedCells(editor)}
   />
 )
+
+const colorSwatchLabel = (color: string) =>
+  `${color.charAt(0).toUpperCase()}${color.slice(1)}`
+
+// Studio-only circle borders for palette swatches; published cells use fill.
+const TABLE_CELL_PALETTE_COLOR_BORDERS: Record<
+  (typeof TABLE_CELL_BACKGROUND_COLOR_TOKENS)[number],
+  string
+> = {
+  pink: "#F59BDD",
+  yellow: "#F8BE22",
+  green: "#7FB894",
+  blue: "#8C93E4",
+  purple: "#BE8CE4",
+}
+
+const NONE_COLOR_SWATCH = {
+  fill: "#F7F7F7",
+  border: "#959595",
+} as const
+
+const ColorSwatch = ({
+  label,
+  fill,
+  borderColor,
+  isActive,
+  onClick,
+}: {
+  label: string
+  fill: string
+  borderColor: string
+  isActive: boolean
+  onClick: () => void
+}) => (
+  <Button
+    variant="unstyled"
+    display="inline-flex"
+    alignItems="center"
+    justifyContent="center"
+    p="0.25rem"
+    h="auto"
+    minH="unset"
+    minW="unset"
+    flexShrink={0}
+    borderRadius="0.25rem"
+    border="none"
+    aria-label={label}
+    bg={isActive ? "interaction.muted.main.active" : "transparent"}
+    _hover={{
+      bg: isActive
+        ? "interaction.muted.main.active"
+        : "interaction.muted.main.hover",
+    }}
+    onMouseDown={(event) => event.preventDefault()}
+    onClick={onClick}
+  >
+    <Box
+      as="span"
+      boxSize="1.25rem"
+      borderRadius="full"
+      backgroundColor={fill}
+      border="1px solid"
+      borderColor={borderColor}
+    />
+  </Button>
+)
+
+const PaletteColorSwatch = ({
+  color,
+  isActive,
+  onSetColor,
+}: {
+  color: (typeof TABLE_CELL_BACKGROUND_COLOR_TOKENS)[number]
+  isActive: boolean
+  onSetColor: (color: TableCellBackgroundColorToken | null) => void
+}) => (
+  <ColorSwatch
+    label={colorSwatchLabel(color)}
+    fill={TABLE_CELL_BACKGROUND_COLORS[color]}
+    borderColor={TABLE_CELL_PALETTE_COLOR_BORDERS[color]}
+    isActive={isActive}
+    onClick={() => onSetColor(color)}
+  />
+)
+
+const BackgroundColorSection = ({
+  state,
+  onSetColor,
+}: {
+  state: ReturnType<typeof getSelectionBackgroundColorState>
+  onSetColor: (color: TableCellBackgroundColorToken | null) => void
+}) => {
+  const { isUniform, uniformColor: activeColor } = state
+
+  return (
+    <VStack align="stretch" gap="0">
+      <Text
+        textStyle="caption-3"
+        color="base.content.medium"
+        pt="0.625rem"
+        pb="0.375rem"
+        px="0.75rem"
+      >
+        Set background color
+      </Text>
+      <Flex gap="0.5rem" align="center" wrap="wrap" px="0.75rem">
+        <ColorSwatch
+          label="None"
+          fill={NONE_COLOR_SWATCH.fill}
+          borderColor={NONE_COLOR_SWATCH.border}
+          isActive={isUniform && activeColor === null}
+          onClick={() => onSetColor(null)}
+        />
+        {TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((color) => (
+          <PaletteColorSwatch
+            key={color}
+            color={color}
+            isActive={isUniform && activeColor === color}
+            onSetColor={onSetColor}
+          />
+        ))}
+      </Flex>
+    </VStack>
+  )
+}
+
+const BackgroundColor = ({
+  editor,
+  kind,
+  onColorSet,
+}: {
+  editor: Editor
+  kind: SelectionKind
+  onColorSet: () => void
+}) => {
+  if (kind === "none") return null
+
+  const { selection } = editor.state
+  if (!(selection instanceof CellSelection)) return null
+
+  const state = getSelectionBackgroundColorState(selection)
+
+  return (
+    <BackgroundColorSection
+      state={state}
+      onSetColor={(color) => {
+        setSelectedCellsBackgroundColor(editor, color)
+        onColorSet()
+      }}
+    />
+  )
+}
 
 const HeaderToggle = ({
   label,
@@ -289,7 +455,7 @@ const ColumnSelectionActions = ({
   )
 }
 
-export const TableBubbleMenuActions = ({
+const SelectionActions = ({
   editor,
   kind,
 }: {
@@ -348,3 +514,18 @@ export const TableBubbleMenuActions = ({
       return null
   }
 }
+
+export const TableBubbleMenuActions = ({
+  editor,
+  kind,
+  onColorSet,
+}: {
+  editor: Editor
+  kind: SelectionKind
+  onColorSet: () => void
+}) => (
+  <>
+    <SelectionActions editor={editor} kind={kind} />
+    <BackgroundColor editor={editor} kind={kind} onColorSet={onColorSet} />
+  </>
+)
