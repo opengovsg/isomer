@@ -21,7 +21,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import {
   captureCollectionItemDateSaveBlocked,
   captureCollectionItemDateSaved,
-} from "~/lib/analytics/dateFilters"
+} from "~/lib/analytics/collectionFilters"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"

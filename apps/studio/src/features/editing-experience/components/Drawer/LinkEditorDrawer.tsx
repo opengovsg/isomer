@@ -13,7 +13,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import {
   captureCollectionItemDateSaveBlocked,
   captureCollectionItemDateSaved,
-} from "~/lib/analytics/dateFilters"
+} from "~/lib/analytics/collectionFilters"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"

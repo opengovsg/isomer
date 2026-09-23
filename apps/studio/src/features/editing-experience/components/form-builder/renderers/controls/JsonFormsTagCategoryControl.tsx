@@ -15,7 +15,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { captureDateFilterCreated } from "~/lib/analytics/dateFilters"
+import { captureFilterCreated } from "~/lib/analytics/collectionFilters"
 
 import type { FilterType } from "../../components/FilterTypeChoiceModal"
 import { AddItemButton } from "../../components/AddItemButton"
@@ -145,7 +145,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     )()
     setSelectedIndex(newIndex)
     onTypeChoiceModalClose()
-    captureDateFilterCreated({
+    captureFilterCreated({
       siteId,
       isDateFiltersEnabled,
       filterType: type,

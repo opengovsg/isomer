@@ -4,7 +4,7 @@ import NextLink from "next/link"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { NextImage } from "~/components/NextImage"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
-import { captureDateFilterOnboardingBannerSupportLinkClicked } from "~/lib/analytics/dateFilters"
+import { captureDateFilterOnboardingBannerSupportLinkClicked } from "~/lib/analytics/collectionFilters"
 
 interface DateFilterOnboardingBannerProps {
   siteId: number

@@ -22,7 +22,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import {
   captureCollectionDateFilterSortSaved,
   captureDateFilterSaved,
-} from "~/lib/analytics/dateFilters"
+} from "~/lib/analytics/collectionFilters"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 

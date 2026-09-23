@@ -4,7 +4,7 @@ import type {
 } from "@opengovsg/isomer-components"
 import posthog from "posthog-js"
 
-interface DateFilterAnalyticsContext {
+interface CollectionFilterAnalyticsContext {
   siteId: number
   isDateFiltersEnabled: boolean
 }
@@ -18,28 +18,28 @@ type DateFilterSavedProperties = Required<
   statusLabelsCustomized: boolean
 }
 
-const dateFilterContext = ({
+const collectionFilterContext = ({
   siteId,
   isDateFiltersEnabled,
-}: DateFilterAnalyticsContext) => ({
+}: CollectionFilterAnalyticsContext) => ({
   site_id: siteId,
   is_date_filters_enabled: isDateFiltersEnabled,
 })
 
 export const captureDateFilterOnboardingBannerSupportLinkClicked = ({
   siteId,
-}: Pick<DateFilterAnalyticsContext, "siteId">) => {
-  posthog.capture("date_filter_onboarding_banner", {
+}: Pick<CollectionFilterAnalyticsContext, "siteId">) => {
+  posthog.capture("date_filter_onboarding_banner_clicked", {
     site_id: siteId,
   })
 }
 
-export const captureDateFilterCreated = ({
+export const captureFilterCreated = ({
   filterType,
   ...context
-}: DateFilterAnalyticsContext & { filterType: TagCategoryType }) => {
-  posthog.capture("date_filter_created", {
-    ...dateFilterContext(context),
+}: CollectionFilterAnalyticsContext & { filterType: TagCategoryType }) => {
+  posthog.capture("collection_filter_created", {
+    ...collectionFilterContext(context),
     filter_type: filterType,
   })
 }
@@ -50,9 +50,9 @@ export const captureDateFilterSaved = ({
   showDateRangeFilter,
   statusLabelsCustomized,
   ...context
-}: DateFilterAnalyticsContext & DateFilterSavedProperties) => {
+}: CollectionFilterAnalyticsContext & DateFilterSavedProperties) => {
   posthog.capture("date_filter_saved", {
-    ...dateFilterContext(context),
+    ...collectionFilterContext(context),
     is_required: isRequired,
     show_status_labels_filter: showStatusLabelsFilter,
     show_date_range_filter: showDateRangeFilter,
@@ -65,13 +65,13 @@ export const captureCollectionItemDateSaved = ({
   dateFilterCount,
   hasRange,
   ...context
-}: DateFilterAnalyticsContext & {
+}: CollectionFilterAnalyticsContext & {
   datesFilled: number
   dateFilterCount: number
   hasRange: boolean
 }) => {
   posthog.capture("collection_item_date_saved", {
-    ...dateFilterContext(context),
+    ...collectionFilterContext(context),
     dates_filled: datesFilled,
     date_filter_count: dateFilterCount,
     has_range: hasRange,
@@ -83,13 +83,13 @@ export const captureCollectionItemDateSaveBlocked = ({
   dateFilterCount,
   hasRange,
   ...context
-}: DateFilterAnalyticsContext & {
+}: CollectionFilterAnalyticsContext & {
   datesFilled: number
   dateFilterCount: number
   hasRange: boolean
 }) => {
   posthog.capture("collection_item_date_save_blocked", {
-    ...dateFilterContext(context),
+    ...collectionFilterContext(context),
     dates_filled: datesFilled,
     date_filter_count: dateFilterCount,
     has_range: hasRange,
@@ -99,9 +99,9 @@ export const captureCollectionItemDateSaveBlocked = ({
 export const captureCollectionDateFilterSortSaved = ({
   direction,
   ...context
-}: DateFilterAnalyticsContext & { direction: "asc" | "desc" }) => {
+}: CollectionFilterAnalyticsContext & { direction: "asc" | "desc" }) => {
   posthog.capture("collection_date_filter_sort_saved", {
-    ...dateFilterContext(context),
+    ...collectionFilterContext(context),
     direction,
   })
 }
