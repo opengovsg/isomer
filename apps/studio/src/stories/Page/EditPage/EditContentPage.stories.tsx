@@ -62,7 +62,7 @@ function withinPortals(canvasElement: HTMLElement) {
 
 // Document position at the start of the nth table cell (tableCell /
 // tableHeader), 0-indexed in reading order. Used to forge a CellSelection
-// in play functions — Storybook can't drive a real mouse drag across cells.
+// in play functions. Storybook can't drive a real mouse drag across cells.
 const nthCellPos = (editor: Editor, index: number): number => {
   let seen = 0
   let found: number | null = null
@@ -220,7 +220,7 @@ export const ActiveTableToolbar: Story = {
     ).toHaveLength(1)
     await userEvent.keyboard("{Escape}")
 
-    // Clicking "Table" only opens the size-picker popover — a cell still
+    // Clicking "Table" only opens the size-picker popover. A cell still
     // needs to be picked to actually insert a table and put the cursor
     // inside it (see TableSizePicker.tsx).
     await userEvent.click(canvas.getByRole("button", { name: /^table$/i }))
@@ -237,7 +237,7 @@ export const ActiveTableToolbar: Story = {
     ).toHaveLength(1)
 
     // Divider is also table-inapplicable, so "More options" has nothing left
-    // to show and disappears entirely — only the unrelated page-actions menu
+    // to show and disappears entirely. Only the unrelated page-actions menu
     // button remains.
     await expect(
       canvas.getAllByRole("button", { name: /more options/i }),
@@ -245,7 +245,7 @@ export const ActiveTableToolbar: Story = {
   },
 }
 
-// Navigate into a text block, insert a table, select a body row — the
+// Navigate into a text block, insert a table, select a body row. The
 // contextual TableBubbleMenu should appear with row actions.
 export const TableBubbleMenu: Story = {
   play: async (context) => {
@@ -253,7 +253,7 @@ export const TableBubbleMenu: Story = {
     const canvas = within(canvasElement)
     await AddTextBlock.play?.(context)
 
-    // Clicking "Table" only opens the size-picker popover — a cell still
+    // Clicking "Table" only opens the size-picker popover. A cell still
     // needs to be picked to actually insert a table (see TableSizePicker.tsx).
     await userEvent.click(canvas.getByRole("button", { name: /^table$/i }))
     await userEvent.click(
@@ -265,7 +265,7 @@ export const TableBubbleMenu: Story = {
     )
 
     const editor = getEditorFromCanvas(canvasElement)
-    // Default insertTable is 3x3 with a header row; cells 3–5 are the first body row.
+    // Default insertTable is 3x3 with a header row; cells 3-5 are the first body row.
     editor
       .chain()
       .focus()
@@ -276,7 +276,7 @@ export const TableBubbleMenu: Story = {
       .run()
 
     const portals = withinPortals(canvasElement)
-    // Row/column actions live behind the portaled pencil trigger — click to open.
+    // Row/column actions live behind the portaled pencil trigger. Click to open.
     await userEvent.click(
       await portals.findByRole("button", { name: "Table actions" }),
     )
