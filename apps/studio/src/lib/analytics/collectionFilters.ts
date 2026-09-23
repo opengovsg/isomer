@@ -6,7 +6,6 @@ import posthog from "posthog-js"
 
 interface CollectionFilterAnalyticsContext {
   siteId: number
-  isDateFiltersEnabled: boolean
 }
 
 type DateFilterSavedProperties = Required<
@@ -20,17 +19,15 @@ type DateFilterSavedProperties = Required<
 
 const collectionFilterContext = ({
   siteId,
-  isDateFiltersEnabled,
 }: CollectionFilterAnalyticsContext) => ({
   site_id: siteId,
-  is_date_filters_enabled: isDateFiltersEnabled,
 })
 
 export const captureDateFilterOnboardingBannerSupportLinkClicked = ({
   siteId,
-}: Pick<CollectionFilterAnalyticsContext, "siteId">) => {
+}: CollectionFilterAnalyticsContext) => {
   posthog.capture("date_filter_onboarding_banner_clicked", {
-    site_id: siteId,
+    ...collectionFilterContext({ siteId }),
   })
 }
 

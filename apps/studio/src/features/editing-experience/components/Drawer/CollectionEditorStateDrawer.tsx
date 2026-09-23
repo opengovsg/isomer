@@ -17,7 +17,6 @@ import {
   getCollectionPage,
   listChangedDateFilters,
 } from "~/features/editing-experience/utils/dateFilterAnalytics"
-import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import {
   captureCollectionDateFilterSortSaved,
@@ -52,7 +51,6 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   } = useEditorDrawerContext()
 
   const canManageFilters = useCanManageCollectionFilters()
-  const isDateFiltersEnabled = useDateFiltersEnabled()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
   const utils = trpc.useUtils()
@@ -142,14 +140,12 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
           changedDateFilters.forEach((properties) => {
             captureDateFilterSaved({
               siteId,
-              isDateFiltersEnabled,
               ...properties,
             })
           })
           if (sortDirection) {
             captureCollectionDateFilterSortSaved({
               siteId,
-              isDateFiltersEnabled,
               direction: sortDirection,
             })
           }
@@ -159,7 +155,6 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     )
   }, [
     drawerStateType,
-    isDateFiltersEnabled,
     mutate,
     pageId,
     previewPageState,

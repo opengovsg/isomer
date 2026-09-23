@@ -7,7 +7,6 @@ import { isEmpty, isEqual } from "lodash-es"
 import { useMemo, useState } from "react"
 import { z } from "zod"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import {
@@ -58,7 +57,6 @@ const InnerDrawer = ({
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
   const { linkId, siteId } = useQueryParse(editLinkSchema)
-  const isDateFiltersEnabled = useDateFiltersEnabled()
   const { data: collectionTags = [], isLoading: isCollectionTagsLoading } =
     useCollectionTags({
       resourceId: linkId,
@@ -120,7 +118,6 @@ const InnerDrawer = ({
             }
             captureCollectionItemDateSaveBlocked({
               siteId,
-              isDateFiltersEnabled,
               ...itemDateProperties,
             })
           }}
@@ -221,7 +218,6 @@ export const LinkEditorDrawer = ({
   setLink,
 }: LinkEditorDrawerProps) => {
   const { linkId, siteId } = useQueryParse(editLinkSchema)
-  const isDateFiltersEnabled = useDateFiltersEnabled()
   const { data: collectionTags = [] } = useCollectionTags({
     resourceId: linkId,
     siteId,
@@ -264,7 +260,6 @@ export const LinkEditorDrawer = ({
                 }
                 captureCollectionItemDateSaved({
                   siteId,
-                  isDateFiltersEnabled,
                   ...itemDateProperties,
                 })
               },

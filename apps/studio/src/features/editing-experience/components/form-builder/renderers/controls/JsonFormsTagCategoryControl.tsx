@@ -147,7 +147,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     onTypeChoiceModalClose()
     captureFilterCreated({
       siteId,
-      isDateFiltersEnabled,
       filterType: type,
     })
   }

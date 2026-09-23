@@ -16,7 +16,6 @@ import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { getCollectionItemDateProperties } from "~/features/editing-experience/utils/dateFilterAnalytics"
-import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import {
   captureCollectionItemDateSaveBlocked,
@@ -63,7 +62,6 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 
   const isCollectionItem =
     type === ResourceType.CollectionPage || type === ResourceType.CollectionLink
-  const isDateFiltersEnabled = useDateFiltersEnabled()
 
   const { data: collectionTags = [], isLoading: isCollectionTagsLoading } =
     useCollectionTags({
@@ -137,7 +135,6 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
           if (itemDateProperties) {
             captureCollectionItemDateSaved({
               siteId,
-              isDateFiltersEnabled,
               ...itemDateProperties,
             })
           }
@@ -148,7 +145,6 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   }, [
     collectionTags,
     isCollectionItem,
-    isDateFiltersEnabled,
     mutate,
     pageId,
     previewPageState,
@@ -295,7 +291,6 @@ const TagsAwareSaveButton = ({
   dateTagged: ArticlePagePageProps["dateTagged"]
 }) => {
   const { siteId } = useQueryParse(pageSchema)
-  const isDateFiltersEnabled = useDateFiltersEnabled()
   const { isValid: isTaggedValid } = validateRequiredTags(tags, tagged)
   const { isValid: isDateTaggedValid } = validateRequiredDateFilters(
     tags,
@@ -320,7 +315,6 @@ const TagsAwareSaveButton = ({
         }
         captureCollectionItemDateSaveBlocked({
           siteId,
-          isDateFiltersEnabled,
           ...itemDateProperties,
         })
       }}
