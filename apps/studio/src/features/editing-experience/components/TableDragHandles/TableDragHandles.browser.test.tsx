@@ -9,7 +9,10 @@ import { EditorContent } from "@tiptap/react"
 import { useRef } from "react"
 import { describe, expect, it } from "vitest"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
-import { TABLE_CHROME_THICKNESS_PX } from "~/features/editing-experience/utils/tableEditorChrome"
+import {
+  TABLE_CHROME_GAP_PX,
+  TABLE_CHROME_THICKNESS_PX,
+} from "~/features/editing-experience/utils/tableEditorChrome"
 import { theme } from "~/theme"
 
 import { ADD_PILL_ICON_SIZE_PX, ADD_PILL_RADIUS_PX } from "./internal/chrome"
@@ -628,6 +631,30 @@ describe("TableDragHandles", () => {
         "Column A",
       ])
     })
+  })
+
+  it("keeps the add-row pill under the table after a vertical merge", async () => {
+    // Arrange
+    // Merging the bottom two cells in column A makes column 0 of the last row
+    // a rowspan continuation. The pill must still sit under the real table.
+    const { editor, container, getByLabelText } = await renderHarness()
+    selectCells(editor, 6, 9)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const { x, y } = centreOf(findByCellText(container, "Column A"))
+
+    // Act
+    const pill = await hoverUntil(x, y, () => getByLabelText("Add row below"))
+
+    // Assert
+    const pillTop = pill.getBoundingClientRect().top
+    const tableBottom = table.getBoundingClientRect().bottom
+    expect(
+      Math.abs(pillTop - (tableBottom + TABLE_CHROME_GAP_PX)),
+    ).toBeLessThan(2)
   })
 
   it("keeps add pills visible when the pointer moves into the gap below the table", async () => {
