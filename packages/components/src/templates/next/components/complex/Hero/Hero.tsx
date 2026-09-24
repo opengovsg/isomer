@@ -19,10 +19,10 @@ export const Hero = (props: HeroProps) => {
       return <HeroLargeImage {...props} />
     case HERO_STYLE.floating:
       return <HeroFloating {...props} />
-    case HERO_STYLE.searchbar:
-      return <HeroSearchbar {...props} />
     case HERO_STYLE.taskTray:
       return <HeroTaskTray {...props} />
+    case HERO_STYLE.searchbar:
+      return <HeroSearchbar {...props} />
     default:
       const _exhaustiveCheck: never = variant
       return null

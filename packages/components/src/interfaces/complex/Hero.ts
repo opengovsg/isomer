@@ -184,23 +184,6 @@ const HeroFloatingSchema = Type.Composite(
   },
 )
 
-const HeroSearchbarSchema = Type.Composite(
-  [
-    Type.Object({
-      variant: Type.Literal(HERO_STYLE.searchbar, {
-        default: HERO_STYLE.searchbar,
-      }),
-      backgroundUrl: Type.Optional(BackgroundUrlSchema),
-    }),
-    HeroBaseSchema,
-  ],
-  {
-    title: "Search bar",
-    format: "hidden", // beta: we don't want to show this in the UI yet
-    groups: [GROUPINGS.TEXT],
-  },
-)
-
 const TaskTrayItemSchema = Type.Object({
   title: Type.String({
     title: "Title",
@@ -281,6 +264,23 @@ const HeroTaskTraySchema = Type.Composite(
   },
 )
 
+const HeroSearchbarSchema = Type.Composite(
+  [
+    Type.Object({
+      variant: Type.Literal(HERO_STYLE.searchbar, {
+        default: HERO_STYLE.searchbar,
+      }),
+      backgroundUrl: Type.Optional(BackgroundUrlSchema),
+    }),
+    HeroBaseSchema,
+  ],
+  {
+    title: "Search bar",
+    format: "hidden", // beta: we don't want to show this in the UI yet
+    groups: [GROUPINGS.TEXT],
+  },
+)
+
 export const HeroSchema = Type.Intersect(
   [
     Type.Union(
@@ -289,8 +289,8 @@ export const HeroSchema = Type.Intersect(
         HeroBlockSchema,
         HeroLargeImageSchema,
         HeroFloatingSchema,
-        HeroSearchbarSchema,
         HeroTaskTraySchema,
+        HeroSearchbarSchema,
       ],
       {
         title: "Hero banner style",
@@ -325,12 +325,12 @@ export type HeroFloatingProps = Simplify<
   CommonProps & Static<typeof HeroFloatingSchema>
 >
 
-export type HeroSearchbarProps = Simplify<
-  CommonProps & Static<typeof HeroSearchbarSchema>
->
-
 export type HeroTaskTrayProps = Simplify<
   CommonProps & Static<typeof HeroTaskTraySchema>
+>
+
+export type HeroSearchbarProps = Simplify<
+  CommonProps & Static<typeof HeroSearchbarSchema>
 >
 
 export type HeroProps =
@@ -338,5 +338,5 @@ export type HeroProps =
   | HeroBlockProps
   | HeroLargeImageProps
   | HeroFloatingProps
-  | HeroSearchbarProps
   | HeroTaskTrayProps
+  | HeroSearchbarProps
