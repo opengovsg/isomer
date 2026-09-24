@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { ComponentProps } from "react"
 import { generateSiteConfig } from "~/stories/helpers"
 
 import { Table } from "./Table"
@@ -2406,6 +2407,6 @@ export const RowspanRowWithoutCells: Story = {
       {
         type: "tableRow",
       },
-    ],
+    ] as ComponentProps<typeof Table>["content"],
   },
 }
