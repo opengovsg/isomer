@@ -7,6 +7,7 @@ import {
   Flex,
   Icon,
   Text,
+  useCheckbox,
   useMultiStyleConfig,
   VStack,
 } from "@chakra-ui/react"
@@ -40,6 +41,10 @@ import {
   IconMergeCells,
   IconSplitCell,
 } from "~/components/icons"
+import {
+  hasHeaderColumn,
+  hasHeaderRow,
+} from "~/features/editing-experience/utils/tableHeaderAxis"
 
 import type {
   SelectionKind,
@@ -289,13 +294,17 @@ const BackgroundColor = ({
 
 const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
   const styles = useMultiStyleConfig("Switch", { size: "sm" })
+  const { getCheckboxProps, getIndicatorProps } = useCheckbox({
+    isChecked,
+    isReadOnly: true,
+  })
   const ThumbIcon = isChecked ? BxCheck : BxX
 
   return (
     <chakra.span
       aria-hidden
       className="chakra-switch__track"
-      data-checked={isChecked}
+      {...getCheckboxProps()}
       __css={{
         display: "inline-flex",
         flexShrink: 0,
@@ -306,14 +315,10 @@ const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
     >
       <chakra.span
         className="chakra-switch__thumb"
-        data-checked={isChecked}
+        {...getIndicatorProps()}
         __css={styles.thumb}
       >
-        <Icon
-          as={ThumbIcon}
-          data-checked={isChecked}
-          __css={styles.thumbIcon}
-        />
+        <Icon as={ThumbIcon} __css={styles.thumbIcon} />
       </chakra.span>
     </chakra.span>
   )
@@ -388,7 +393,7 @@ const RowSelectionActions = ({
       {selectionIsTopRow(rect) && (
         <HeaderToggle
           label="Header row"
-          isChecked={includesHeader}
+          isChecked={hasHeaderRow(rect)}
           onToggle={() => editor.chain().focus().toggleHeaderRow().run()}
         />
       )}
@@ -462,7 +467,7 @@ const ColumnSelectionActions = ({
       {selectionIsLeftmostColumn(rect) && (
         <HeaderToggle
           label="Header column"
-          isChecked={includesHeader}
+          isChecked={hasHeaderColumn(rect)}
           onToggle={() => editor.chain().focus().toggleHeaderColumn().run()}
         />
       )}
