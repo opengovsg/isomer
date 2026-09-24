@@ -172,7 +172,7 @@ catalog:
   rehype-external-links: ^3.0.0
   sass: ^1.104.0
   superjson: ^2.2.6
-  tailwind-merge: ^2.6.1
+  tailwind-merge: ^3.7.0
   tailwind-variants: ^3.3.1
   tailwindcss-react-aria-components: ^1.2.0
   tiptap-text-direction: ^0.5.0
