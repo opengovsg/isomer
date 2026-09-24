@@ -10,9 +10,9 @@ import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
 import { resolveTableLayout } from "./resolveTableLayout"
 import {
-  cellsIn,
   normalizeColspan,
   normalizeRowspan,
+  rowCells,
 } from "./tableLayoutLimits"
 
 const tableStyles = tv({
@@ -60,7 +60,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
           <tbody>
             {content.map((row, index) => (
               <tr key={index} className="text-left">
-                {cellsIn(row).map((cell, cellIndex) => {
+                {rowCells(row).map((cell, cellIndex) => {
                   const isHeader = cell.type === "tableHeader"
                   const CellTag = isHeader ? "th" : "td"
                   const backgroundColor = getTableCellBackgroundColorCss(
@@ -75,7 +75,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                       className={tableCellStyles({ isHeader })}
                       style={backgroundColor ? { backgroundColor } : undefined}
                     >
-                      {cellsIn(cell).map((cellContent, index) => {
+                      {cell.content.map((cellContent, index) => {
                         switch (cellContent.type) {
                           case "divider":
                             return <Divider key={index} {...cellContent} />

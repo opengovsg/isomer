@@ -22,9 +22,6 @@ export const normalizeColspan = (value: unknown): number =>
 export const normalizeRowspan = (value: unknown): number =>
   normalizeBoundedSpan(value, MAX_TABLE_ROWS)
 
-/**
- * TipTap `getJSON()` omits `content` when a row has no cells (a rowspan from
- * above covers every column). Treat that as an empty cell list.
- */
-export const cellsIn = <T>(node: { content?: T[] | null }): T[] =>
-  node.content ?? []
+/** `getJSON()` drops `content` when a row has no cells. */
+export const rowCells = <T>(row: { content?: T[] | null }): T[] =>
+  row.content ?? []

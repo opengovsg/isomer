@@ -2,11 +2,11 @@ import type { TableProps } from "~/interfaces"
 
 import { getTableColumnCount } from "./getTableColumnCount"
 import {
-  cellsIn,
   MAX_TABLE_COLUMNS,
   MAX_TABLE_ROWS,
   normalizeColspan,
   normalizeRowspan,
+  rowCells,
 } from "./tableLayoutLimits"
 
 type TableRows = TableProps["content"]
@@ -49,7 +49,7 @@ export const checkPhantomColumns = (rows: TableRows): PhantomColumnsResult => {
     }
 
     let columnIndex = 0
-    for (const cell of cellsIn(row)) {
+    for (const cell of rowCells(row)) {
       // Rowspan slots omitted from this row's JSON; skip to the next free column.
       while (columnIndex < columnCount && grid[rowIndex]?.[columnIndex]) {
         columnIndex += 1

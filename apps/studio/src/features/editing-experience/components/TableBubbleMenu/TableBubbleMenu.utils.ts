@@ -60,8 +60,7 @@ interface MergeSelectionRect {
   map: { width: number; height: number }
 }
 
-// Merging several full rows (or columns) leaves a row with no cells. TipTap
-// then omits `content` on that row, which published-table layout cannot walk.
+// Two or more full rows, or two or more full columns, leave a row with no cells.
 export const canMergeCellSelection = (rect: MergeSelectionRect): boolean => {
   const coversMultipleWholeRows =
     rect.left === 0 &&

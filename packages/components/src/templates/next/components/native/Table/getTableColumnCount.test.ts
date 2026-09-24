@@ -303,7 +303,7 @@ describe("getTableColumnCount", () => {
   })
 
   it("counts columns when a covered row omits content", () => {
-    // Arrange: TipTap drops `content` on a row whose cells are all covered by rowspan.
+    // Arrange: the second row has no `content`.
     const rows = [
       {
         type: "tableRow" as const,

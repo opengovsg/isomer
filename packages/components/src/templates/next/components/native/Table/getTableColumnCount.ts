@@ -1,9 +1,9 @@
 import type { TableProps } from "~/interfaces"
 
 import {
-  cellsIn,
   normalizeColspan,
   normalizeRowspan,
+  rowCells,
 } from "./tableLayoutLimits"
 
 type TableRows = TableProps["content"]
@@ -54,7 +54,7 @@ export const getTableColumnCount = (rows: TableRows): number => {
     // Carry from earlier rows' rowspans, plus this row's own cells (each may
     // span multiple columns).
     let rowWidth = activeCarry
-    for (const cell of cellsIn(row)) {
+    for (const cell of rowCells(row)) {
       const colspan = normalizeColspan(cell.attrs?.colspan)
       const rowspan = normalizeRowspan(cell.attrs?.rowspan)
       rowWidth += colspan

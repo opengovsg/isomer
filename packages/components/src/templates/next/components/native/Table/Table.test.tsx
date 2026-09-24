@@ -387,7 +387,7 @@ describe("Table backgroundColor", () => {
   })
 
   it("renders a rowspan row that omits content", () => {
-    // Arrange: TipTap drops `content` when a row has no cells of its own.
+    // Arrange: the second row has no `content`.
     const html = renderToStaticMarkup(
       <Table
         type="table"
