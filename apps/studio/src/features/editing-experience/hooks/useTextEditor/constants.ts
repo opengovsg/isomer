@@ -44,6 +44,7 @@ import {
   wrapHeaderToggleCommand,
   type HeaderToggleCommand,
 } from "./clearTableCellBackgroundOnKindChange"
+import { ensureTrailingParagraphAfterTablePlugin } from "./ensureTrailingParagraphAfterTable"
 import { selectTableCellContent } from "./selectTableCellContent"
 
 export { TableRow } from "@tiptap/extension-table-row"
@@ -175,7 +176,11 @@ export const IsomerTable = Table.extend({
     }
   },
   addProseMirrorPlugins() {
-    return [...(this.parent?.() ?? []), createTableSelectionBorderPlugin()]
+    return [
+      ...(this.parent?.() ?? []),
+      createTableSelectionBorderPlugin(),
+      ensureTrailingParagraphAfterTablePlugin,
+    ]
   },
 })
 

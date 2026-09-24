@@ -7,6 +7,7 @@ import { EditorContent } from "@tiptap/react"
 import { useMemo, useRef, useState } from "react"
 import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
 import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles"
+import { tryFocusBelowEditorContent } from "~/features/editing-experience/hooks/useTextEditor/ensureTrailingParagraphAfterTable"
 
 const EditorContainer = ({
   children,
@@ -62,6 +63,25 @@ const EditorContentWrapper = ({
       flex="1 1 auto"
       overflowX="hidden"
       overflowY="auto"
+      onMouseDown={(event) => {
+        if (!editor || event.button !== 0) return
+
+        const target = event.target
+        if (
+          target instanceof Element &&
+          target.closest("[data-table-add-handle], [data-table-drag-handle]")
+        ) {
+          return
+        }
+
+        if (target instanceof Node && editor.view.dom.contains(target)) {
+          return
+        }
+
+        if (tryFocusBelowEditorContent(editor.view, event.nativeEvent)) {
+          event.preventDefault()
+        }
+      }}
     >
       <Box
         as={EditorContent}
