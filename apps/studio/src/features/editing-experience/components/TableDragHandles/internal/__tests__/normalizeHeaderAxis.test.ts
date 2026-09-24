@@ -170,9 +170,11 @@ describe("applyHeaderAxisNormalization", () => {
 
   it("keeps a merged corner header cell when both axes are preserved", () => {
     // Arrange: top-left header spans two rows; only one physical cell in column 0 row 1
-    const paragraph = schema.nodes.paragraph!
-    const tableRow = schema.nodes.tableRow!
-    const table = schema.nodes.table!
+    const paragraph = schema.nodes.paragraph
+    const tableRow = schema.nodes.tableRow
+    const table = schema.nodes.table
+    if (!paragraph || !tableRow || !table)
+      throw new Error("Invalid test schema")
     const doc = schema.node("doc", null, [
       table.create(null, [
         tableRow.create(null, [
