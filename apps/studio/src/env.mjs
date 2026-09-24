@@ -3,6 +3,26 @@ import { z } from "zod"
 
 const SYSTEM_USER_EMAIL = "system@isomer.gov.sg"
 
+const storybookInjectedEnv = process.env.STORYBOOK
+  ? JSON.parse(process.env.STORYBOOK_ENVIRONMENT ?? "{}")
+  : null
+
+/** @param {string} key */
+const readProcessEnv = (key) => {
+  if (
+    storybookInjectedEnv &&
+    Object.prototype.hasOwnProperty.call(storybookInjectedEnv, key)
+  ) {
+    const value = storybookInjectedEnv[key]
+    if (value === undefined || value === null) return undefined
+    return String(value)
+  }
+  return process.env[key]
+}
+
+const cronWorkersSchema = z.stringbool().optional().default(false)
+const skipSingpassSchema = z.stringbool().optional().default(false)
+
 const shouldSkipEnvValidation =
   !!process.env.SKIP_ENV_VALIDATION ||
   process.env.npm_lifecycle_event === "lint" ||
@@ -90,35 +110,64 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   experimental__runtimeEnv: {
-    NODE_ENV: process.env.NODE_ENV,
+    NODE_ENV: readProcessEnv("NODE_ENV") ?? process.env.NODE_ENV,
     NEXT_PUBLIC_APP_ENV:
-      process.env.NEXT_PUBLIC_APP_ENV ??
+      readProcessEnv("NEXT_PUBLIC_APP_ENV") ??
       (process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
         ? "preview"
         : undefined),
     NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS:
+      readProcessEnv("NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS") ??
       process.env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+    NEXT_PUBLIC_APP_URL:
+      readProcessEnv("NEXT_PUBLIC_APP_URL") ?? process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_APP_NAME:
+      readProcessEnv("NEXT_PUBLIC_APP_NAME") ??
+      process.env.NEXT_PUBLIC_APP_NAME,
     NEXT_PUBLIC_APP_VERSION:
+      readProcessEnv("NEXT_PUBLIC_APP_VERSION") ??
       process.env.NEXT_PUBLIC_APP_VERSION ??
       process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
     NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY:
+      readProcessEnv("NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY") ??
       process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
-    NEXT_PUBLIC_INTERCOM_APP_ID: process.env.NEXT_PUBLIC_INTERCOM_APP_ID,
+    NEXT_PUBLIC_INTERCOM_APP_ID:
+      readProcessEnv("NEXT_PUBLIC_INTERCOM_APP_ID") ??
+      process.env.NEXT_PUBLIC_INTERCOM_APP_ID,
     NEXT_PUBLIC_POSTHOG_ASSETS_HOST:
-      process.env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST || undefined,
-    NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST || undefined,
+      readProcessEnv("NEXT_PUBLIC_POSTHOG_ASSETS_HOST") ||
+      process.env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST ||
+      undefined,
+    NEXT_PUBLIC_POSTHOG_HOST:
+      readProcessEnv("NEXT_PUBLIC_POSTHOG_HOST") ||
+      process.env.NEXT_PUBLIC_POSTHOG_HOST ||
+      undefined,
     NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:
-      process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN || undefined,
-    NEXT_PUBLIC_S3_REGION: process.env.NEXT_PUBLIC_S3_REGION,
+      readProcessEnv("NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN") ||
+      process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN ||
+      undefined,
+    NEXT_PUBLIC_S3_REGION:
+      readProcessEnv("NEXT_PUBLIC_S3_REGION") ??
+      process.env.NEXT_PUBLIC_S3_REGION,
     NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME:
+      readProcessEnv("NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME") ??
       process.env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
     NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME:
+      readProcessEnv("NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME") ??
       process.env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
   },
   skipValidation: shouldSkipEnvValidation,
 })
+
+if (shouldSkipEnvValidation) {
+  env.ENABLE_CRON_WORKERS = cronWorkersSchema.parse(
+    readProcessEnv("ENABLE_CRON_WORKERS") ?? process.env.ENABLE_CRON_WORKERS,
+  )
+  env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS = skipSingpassSchema.parse(
+    readProcessEnv("NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS") ??
+      process.env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS,
+  )
+}
 
 if (!shouldSkipEnvValidation && typeof window === "undefined") {
   const r2Vars = [

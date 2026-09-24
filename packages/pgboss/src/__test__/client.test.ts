@@ -34,9 +34,11 @@ describe("client", () => {
   })
   describe("registerPgbossJob", () => {
     it("does not start PgBoss or register a job when cron workers are disabled", async () => {
+      // Arrange
       mockEnv.ENABLE_CRON_WORKERS = false
       const handler = vi.fn().mockResolvedValue(undefined)
 
+      // Act
       const { stop } = await registerPgbossJob(
         logger,
         "disabled-job",
@@ -44,6 +46,7 @@ describe("client", () => {
         handler,
       )
 
+      // Assert
       expect(globalForPgboss.pgBoss).toBeUndefined()
       expect(globalForPgboss.registeredPgbossJobs).toEqual(new Set())
       expect(handler).not.toHaveBeenCalled()

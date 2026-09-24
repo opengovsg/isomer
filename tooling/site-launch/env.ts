@@ -17,7 +17,6 @@ export const env = createEnv({
     AWS_PROFILE: z.string().min(1, "AWS_PROFILE is required"),
   },
   runtimeEnv: process.env,
-  skipValidation:
-    !!process.env.SKIP_ENV_VALIDATION ||
-    process.env.npm_lifecycle_event === "lint",
+  // Launch tooling must always validate; do not inherit Studio's build-time skip flag.
+  skipValidation: process.env.npm_lifecycle_event === "lint",
 })
