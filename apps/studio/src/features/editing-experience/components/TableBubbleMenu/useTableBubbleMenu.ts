@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/react"
-import { CellSelection, tableEditingKey } from "@tiptap/pm/tables"
+import { CellSelection, selectedRect, tableEditingKey } from "@tiptap/pm/tables"
 import { useEditorState } from "@tiptap/react"
 import {
   useCallback,
@@ -10,6 +10,10 @@ import {
   type RefCallback,
   type RefObject,
 } from "react"
+import {
+  hasHeaderColumn,
+  hasHeaderRow,
+} from "~/features/editing-experience/utils/tableHeaderAxis"
 
 import type { SelectionKind } from "./TableBubbleMenu.types"
 import {
@@ -48,6 +52,13 @@ const getSelectionRangeKey = (selection: Editor["state"]["selection"]) =>
     ? `${selection.$anchorCell.pos}:${selection.$headCell.pos}`
     : `${selection.from}:${selection.to}`
 
+const getTableHeaderAxisKey = (editor: Editor) => {
+  const { selection } = editor.state
+  if (!(selection instanceof CellSelection)) return ""
+  const rect = selectedRect(editor.state)
+  return `${hasHeaderRow(rect) ? "r" : ""}${hasHeaderColumn(rect) ? "c" : ""}`
+}
+
 export const useTableBubbleMenu = (
   editor: Editor,
   isDragReordering = false,
@@ -73,6 +84,7 @@ export const useTableBubbleMenu = (
     selector: ({ editor: currentEditor }) => ({
       kind: detectTableSelectionKind(currentEditor),
       selection: currentEditor.state.selection,
+      headerAxisKey: getTableHeaderAxisKey(currentEditor),
       isFocused: currentEditor.isFocused,
       isDragging: tableEditingKey.getState(currentEditor.state) != null,
     }),
@@ -80,6 +92,7 @@ export const useTableBubbleMenu = (
       next !== null &&
       previous.kind === next.kind &&
       previous.selection.eq(next.selection) &&
+      previous.headerAxisKey === next.headerAxisKey &&
       previous.isFocused === next.isFocused &&
       previous.isDragging === next.isDragging,
   })

@@ -290,12 +290,13 @@ const BackgroundColor = ({
 const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
   const styles = useMultiStyleConfig("Switch", { size: "sm" })
   const ThumbIcon = isChecked ? BxCheck : BxX
+  const checkedDataAttr = isChecked ? "" : undefined
 
   return (
     <chakra.span
       aria-hidden
       className="chakra-switch__track"
-      data-checked={isChecked}
+      data-checked={checkedDataAttr}
       __css={{
         display: "inline-flex",
         flexShrink: 0,
@@ -306,12 +307,12 @@ const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
     >
       <chakra.span
         className="chakra-switch__thumb"
-        data-checked={isChecked}
+        data-checked={checkedDataAttr}
         __css={styles.thumb}
       >
         <Icon
           as={ThumbIcon}
-          data-checked={isChecked}
+          data-checked={checkedDataAttr}
           __css={styles.thumbIcon}
         />
       </chakra.span>
