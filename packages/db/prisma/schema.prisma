@@ -1,0 +1,465 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider   = "prisma-client"
+  output     = "./generated/prisma"
+  engineType = "client"
+}
+
+/// Always after the prisma-client-js generator
+/// Generates types for the JSON columns
+/// The PrismaJson namespace is declared in @isomer/db at
+/// packages/db/src/prisma-json-types.ts.
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
+generator kysely {
+  provider     = "prisma-kysely"
+  readOnlyIds  = true
+  output       = "../src/generated"
+  fileName     = "generatedTypes.ts"
+  // Optionally generate runtime enums to a separate file
+  enumFileName = "generatedEnums.ts"
+}
+
+model VerificationToken {
+  identifier String   @id
+  token      String
+  attempts   Int      @default(0)
+  expires    DateTime
+}
+
+model Version {
+  id          BigInt     @id @default(autoincrement())
+  versionNum  Int
+  resourceId  BigInt
+  resources   Resource[]
+  blobId      BigInt     @unique
+  blob        Blob       @relation(fields: [blobId], references: [id])
+  publishedAt DateTime   @default(now())
+  publishedBy String
+  publisher   User       @relation(fields: [publishedBy], references: [id])
+
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([resourceId, versionNum])
+}
+
+model Resource {
+  id        BigInt    @id @default(autoincrement())
+  title     String
+  permalink String
+  siteId    Int
+  site      Site      @relation(fields: [siteId], references: [id])
+  parentId  BigInt?
+  parent    Resource? @relation("ParentRelation", fields: [parentId], references: [id], onDelete: Cascade)
+
+  children Resource[] @relation("ParentRelation")
+
+  publishedVersionId BigInt?  @unique
+  publishedVersion   Version? @relation(fields: [publishedVersionId], references: [id])
+
+  draftBlobId BigInt? @unique
+  draftBlob   Blob?   @relation(fields: [draftBlobId], references: [id])
+
+  state ResourceState? @default(Draft)
+  type  ResourceType
+
+  // This is only set if the resource is scheduled for a publish/unpublish at
+  // a later date. If set, scheduledAt indicates when the action should run,
+  // and scheduledAction indicates which action (Publish or Unpublish) — the
+  // cron job branches on this rather than assuming publish.
+  scheduledAt     DateTime?
+  scheduledBy     String?
+  scheduledAction ScheduledAction?
+  scheduler       User?            @relation(fields: [scheduledBy], references: [id])
+
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @default(now()) @updatedAt
+  ResourcePermission ResourcePermission[]
+  CodeBuildJobs      CodeBuildJobs[]
+  pushDocumentJobs   PushDocumentJob[]
+
+  // This unique index is subsequently replaced with a custom index that
+  // treats nulls as not distinct.
+  // This is required so prisma does not attempt to drop the custom index.
+  @@unique([siteId, parentId, permalink])
+  @@index([siteId, id, parentId]) // note: ordering is important here!
+  @@index([type])
+  // NOTE: This is used to create a inverted index using text trigrams for the title
+  // so that we can perform searches on the title quickly
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, name: "resource_title_trgm_idx")
+}
+
+model Blob {
+  id      BigInt @id @default(autoincrement())
+  /// @kyselyType(PrismaJson.BlobJsonContent)
+  /// [BlobJsonContent]
+  content Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  draftResource Resource?
+  version       Version?
+}
+
+enum ResourceState {
+  Draft
+  Published
+}
+
+enum ScheduledAction {
+  Publish
+  Unpublish
+}
+
+enum ResourceType {
+  RootPage
+  Page
+  Folder
+  Collection
+  CollectionMeta // Can only ever be inside collection
+  CollectionLink // Can only ever be inside collection
+  CollectionPage // Can only live inside `Collection` resources
+  IndexPage // This denotes the index page of a folder or a collection
+  FolderMeta // This denotes some of the metadata of a folder (e.g. page ordering)
+}
+
+model User {
+  id    String @id @default(cuid())
+  name  String
+  email String
+  phone String
+
+  singpassUuid String? @db.Uuid // UUID of the user's Singpass account
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  deletedAt   DateTime?
+  lastLoginAt DateTime?
+
+  ResourcePermission    ResourcePermission[]
+  IsomerAdmin           IsomerAdmin[]
+  versions              Version[]
+  AuditLog              AuditLog[]
+  CodeBuildJobs         CodeBuildJobs[]
+  ScheduledResources    Resource[]
+  pushDocumentJobs      PushDocumentJob[]
+  AuditLogExportRequest AuditLogExportRequest[]
+
+  // This unique index is subsequently replaced with a custom index that
+  // treats nulls as not distinct.
+  // This is required so prisma does not attempt to drop the custom index.
+  @@unique([email, deletedAt])
+  @@index([lastLoginAt])
+}
+
+model Site {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  resources   Resource[]
+  // NOTE: This is `theme/isGovernment/sitemap`
+  // This is currently put as `Json` for ease of extensibility
+  // when we lock in what we actually want for site-wide config,
+  // we should put this in our db table.
+  /// @kyselyType(PrismaJson.SiteJsonConfig)
+  /// [SiteJsonConfig]
+  config      Json
+  /// @kyselyType(PrismaJson.SiteThemeJson)
+  /// [SiteThemeJson]
+  theme       Json?
+  navbar      Navbar?
+  footer      Footer?
+  codeBuildId String?
+
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @default(now()) @updatedAt
+  ResourcePermission    ResourcePermission[]
+  AuditLog              AuditLog[]
+  CodeBuildJobs         CodeBuildJobs[]
+  Redirect              Redirect[]
+  AuditLogExportRequest AuditLogExportRequest[]
+}
+
+model Redirect {
+  id          BigInt    @id @default(autoincrement())
+  siteId      Int
+  site        Site      @relation(fields: [siteId], references: [id])
+  source      String
+  destination String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  deletedAt   DateTime?
+
+  @@unique([siteId, source])
+  @@index([siteId])
+}
+
+model Navbar {
+  id     Int  @id @default(autoincrement())
+  siteId Int  @unique
+  site   Site @relation(fields: [siteId], references: [id])
+
+  /// @kyselyType(PrismaJson.NavbarJsonContent)
+  /// [NavbarJsonContent]
+  content Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Footer {
+  id     Int  @id @default(autoincrement())
+  siteId Int  @unique
+  site   Site @relation(fields: [siteId], references: [id])
+
+  /// @kyselyType(PrismaJson.FooterJsonContent)
+  /// [FooterJsonContent]
+  content Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model ResourcePermission {
+  id         BigInt    @id @default(autoincrement())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  siteId     Int
+  site       Site      @relation(fields: [siteId], references: [id])
+  resourceId BigInt?
+  resource   Resource? @relation(fields: [resourceId], references: [id])
+  role       RoleType
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+  deletedAt  DateTime?
+
+  // This unique index is subsequently replaced with a custom index that
+  // treats nulls as not distinct.
+  // This is required so prisma does not attempt to drop the custom index.
+  @@unique([userId, siteId, resourceId, deletedAt])
+}
+
+enum RoleType {
+  Admin
+  Editor
+  Publisher
+}
+
+enum IsomerAdminRole {
+  Core
+  Migrator
+}
+
+model IsomerAdmin {
+  id        BigInt          @id @default(autoincrement())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id])
+  role      IsomerAdminRole
+  expiry    DateTime?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @default(now()) @updatedAt
+
+  @@unique([userId, role])
+}
+
+model RateLimiterFlexible {
+  key    String    @id
+  points Int
+  expire DateTime?
+}
+
+model Whitelist {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  expiry    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+
+  @@index([email])
+}
+
+enum AuditLogEvent {
+  ResourceCreate
+  ResourceUpdate
+  ResourceDelete
+  SchedulePublish
+  CancelSchedulePublish
+  ScheduleUnpublish
+  CancelScheduleUnpublish
+  UserCreate
+  UserUpdate
+  UserDelete
+  Publish
+  Unpublish
+  Login
+  Logout
+  PermissionCreate
+  PermissionUpdate
+  PermissionDelete
+  SiteConfigUpdate
+  FooterUpdate
+  NavbarUpdate
+  RedirectCreate
+  RedirectDelete
+  AuditLogExportCreate
+}
+
+model AuditLog {
+  id        BigInt        @id @default(autoincrement())
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String
+  site      Site?         @relation(fields: [siteId], references: [id], onDelete: Restrict)
+  siteId    Int?
+  eventType AuditLogEvent
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now()) @updatedAt
+  metadata  Json
+  /// @kyselyType(PrismaJson.AuditLogDeltaJsonContent)
+  /// [AuditLogDeltaJsonContent]
+  delta     Json
+  ipAddress String?       @db.Inet
+}
+
+// Stores CodeBuild job information for auditing and tracking purposes
+// Each time a site is published, a new entry is created in this table
+// When the webhook from CodeBuild is received, the corresponding entry is updated and the email etc is sent
+enum BuildStatusType {
+  IN_PROGRESS
+  SUCCEEDED
+  FAILED
+  STOPPED
+}
+
+model CodeBuildJobs {
+  id                  BigInt          @id @default(autoincrement())
+  buildId             String // The AWS CodeBuild build ID
+  siteId              Int
+  site                Site            @relation(fields: [siteId], references: [id])
+  userId              String
+  user                User            @relation(fields: [userId], references: [id])
+  status              BuildStatusType @default(IN_PROGRESS)
+  // the resource that triggered this build, or null if it was a manual publish
+  resourceId          BigInt?
+  resource            Resource?       @relation(fields: [resourceId], references: [id])
+  startedAt           DateTime        @default(now())
+  // Whether the email notification has successfully been sent (can be retried if failed)
+  emailSent           Boolean         @default(false)
+  // Is the build triggered by a scheduled publish or a manual publish
+  isScheduled         Boolean         @default(false)
+  // Has the build been superseded by a later build for the same site
+  supersededByBuildId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([siteId])
+  @@index([userId])
+  @@index([buildId])
+}
+
+// Schedules a document (a Resource pointing at a PDF in S3) for ingestion
+// into the SearchSG index at scheduledAt. Worker reads, dispatches to
+// SearchSG, and deletes the row on success.
+model PushDocumentJob {
+  id          BigInt   @id @default(autoincrement())
+  resourceId  BigInt
+  resource    Resource @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  scheduledAt DateTime
+  scheduledBy String
+  scheduler   User     @relation(fields: [scheduledBy], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([scheduledAt])
+  @@index([resourceId])
+}
+
+enum AuditLogExportReportType {
+  Access // who had access (point-in-time)
+  Activity // what happened (events)
+  // NOTE: a "both" user request is fanned out by the service into two rows
+  // (one Access, one Activity), so there is no `Both` variant here.
+}
+
+enum AuditLogExportStatus {
+  Pending
+  Processing
+  Done
+  Failed
+}
+
+model AuditLogExportRequest {
+  id                BigInt                   @id @default(autoincrement())
+  site              Site                     @relation(fields: [siteId], references: [id], onDelete: Restrict)
+  siteId            Int
+  user              User                     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  userId            String
+  // Export range: bounds are SGT calendar dates, half-open [) (Postgres
+  // canonicalizes daterange to this form). A full month is e.g.
+  // [2026-04-01,2026-05-01); current-month requests are clamped to today+1
+  // at insert time.
+  /// @kyselyType(string)
+  auditLogDateRange Unsupported("daterange")
+  reportType        AuditLogExportReportType
+  status            AuditLogExportStatus     @default(Pending)
+  attempts          Int                      @default(0)
+  errorMessage      String?
+  objectKey         String? // S3 key of the generated CSV (one job produces exactly one CSV)
+  // Set when the request reaches Done. On the generate path its VALUE is the
+  // instant captured just before the report query (the data-freeze moment),
+  // not the finish time — a row qualifies as a Complete Artifact for reuse
+  // only if completedAt >= the end of its auditLogDateRange, and stamping at
+  // finish time would let a job that straddles that boundary (SGT midnight,
+  // retries) advertise an incomplete CSV as complete. The reuse path stamps
+  // delivery time (sound: it only ever hands out already-complete artifacts).
+  completedAt       DateTime?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @default(now()) @updatedAt
+  // Correlates every per-site row created by ONE "allSites" ask so the
+  // fulfilment worker can wait for all of them and send a single combined
+  // email. Null for `scope: "site"` asks (and legacy rows), which keep
+  // sending their existing one-row-one-email path unchanged. FKs to the
+  // AuditLogExportBatch row that holds the shared per-batch email state.
+  batchId           String?
+  batch             AuditLogExportBatch?     @relation(fields: [batchId], references: [id])
+
+  @@index([status])
+  // NOTE: the migration promotes this to a PARTIAL UNIQUE index
+  // (`WHERE status IN ('Pending', 'Processing')`) to prevent duplicate
+  // in-flight requests for the same range. Prisma's schema DSL cannot express
+  // a partial unique index, so it is defined as raw SQL in the migration and
+  // this stays a plain `@@index`. As a result `prisma migrate dev` against an
+  // existing DB will report drift here; that divergence is expected.
+  @@index([siteId, userId, auditLogDateRange, reportType])
+  @@index([batchId])
+}
+
+// One row per "allSites" ask, holding the shared state for that ask's single
+// combined email so it is not duplicated across every sibling
+// AuditLogExportRequest. Rows are created only for `scope: "allSites"` asks
+// that insert at least one fresh request row; `scope: "site"` asks never batch.
+model AuditLogExportBatch {
+  // The batchId minted once per "allSites" ask (a UUID). Referenced by every
+  // sibling request row's `batchId`.
+  id            String                  @id
+  // Set once the combined email has been sent — or, without a send, once
+  // delivery has exhausted its retries — so it is never sent twice and a
+  // permanently-failing email is not retried forever. The advisory lock scoped
+  // to this id serialises the check-and-stamp; null until claimed.
+  emailedAt     DateTime?
+  // How many times the combined email has been attempted (charged under the
+  // advisory lock). Mirrors AuditLogExportRequest.attempts for per-row sends:
+  // after MAX_ATTEMPTS failures the sweep stops retrying.
+  emailAttempts Int                     @default(0)
+  createdAt     DateTime                @default(now())
+  requests      AuditLogExportRequest[]
+}

@@ -7,7 +7,7 @@ interface UseResourceQueryProps {
   moveDest: ResourceItemContent | undefined
   parentDest: ResourceItemContent | undefined
   isResourceHighlighted: boolean
-  onlyShowFolders: boolean
+  showOnlyContainers: boolean
   resourceIds?: ResourceItemContent["id"][]
 }
 
@@ -16,10 +16,10 @@ export const useResourceQuery = ({
   moveDest,
   parentDest,
   isResourceHighlighted,
-  onlyShowFolders,
+  showOnlyContainers,
   resourceIds,
 }: UseResourceQueryProps) => {
-  const queryFn = onlyShowFolders
+  const queryFn = showOnlyContainers
     ? trpc.resource.getFolderChildrenOf.useInfiniteQuery
     : trpc.resource.getChildrenOf.useInfiniteQuery
   const {

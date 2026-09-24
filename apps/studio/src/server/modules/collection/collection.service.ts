@@ -1,9 +1,12 @@
-import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
-import type { UnwrapTagged } from "type-fest"
+import type {
+  CollectionPagePageProps,
+  CollectionPageSchemaType,
+} from "@opengovsg/isomer-components"
+import type { MergeExclusive, UnwrapTagged } from "type-fest"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { format } from "date-fns"
 
-import type { ResourceType } from "../database"
+import { db, ResourceType, sql } from "../database"
 
 export const createCollectionPageJson = ({}: {
   type: typeof ResourceType.CollectionPage // Act as soft typeguard
@@ -51,4 +54,53 @@ export const createCollectionIndexJson = (title: string) => {
     content: [],
     version: "0.1.0",
   }
+}
+
+export const getCollectionTagsForResource = async ({
+  resourceId,
+  collectionId,
+  siteId,
+  isPublishedOnly = false,
+}: { siteId: number; isPublishedOnly?: boolean } & MergeExclusive<
+  { resourceId: number },
+  { collectionId: number }
+>): Promise<NonNullable<CollectionPageSchemaType["page"]["tagCategories"]>> => {
+  const row = await db
+    .selectFrom("Resource as r")
+    .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
+    .leftJoin("Version as v", "r.publishedVersionId", "v.id")
+    .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
+    .where("r.type", "=", ResourceType.IndexPage)
+    .where("r.siteId", "=", siteId)
+    .$if(collectionId !== undefined, (qb) =>
+      qb.where("r.parentId", "=", String(collectionId)),
+    )
+    .$if(resourceId !== undefined, (qb) =>
+      qb.where("r.parentId", "=", (eb) =>
+        eb
+          .selectFrom("Resource")
+          .where("id", "=", String(resourceId))
+          .where("siteId", "=", siteId)
+          .select("parentId"),
+      ),
+    )
+    .select([
+      sql<CollectionPageSchemaType | null>`"publishedBlob"."content"`.as(
+        "publishedContent",
+      ),
+      sql<CollectionPageSchemaType | null>`"draftBlob"."content"`.as(
+        "draftContent",
+      ),
+    ])
+    .executeTakeFirst()
+
+  if (!row) {
+    return []
+  }
+
+  return isPublishedOnly
+    ? (row.publishedContent?.page.tagCategories ?? [])
+    : (row.publishedContent?.page.tagCategories ??
+        row.draftContent?.page.tagCategories ??
+        [])
 }

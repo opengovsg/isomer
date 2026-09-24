@@ -1,5 +1,6 @@
 import type { PageSettingsState } from "~/features/dashboard/atoms"
 import {
+  Box,
   chakra,
   FormControl,
   Input,
@@ -15,6 +16,7 @@ import {
 } from "@chakra-ui/react"
 import {
   Button,
+  Checkbox,
   FormErrorMessage,
   FormHelperText,
   FormLabel,
@@ -22,6 +24,7 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
+import { useDebounce } from "@uidotdev/usehooks"
 import { useAtom } from "jotai"
 import { Suspense, useMemo } from "react"
 import { Controller } from "react-hook-form"
@@ -52,10 +55,11 @@ const PageSettingsModalContent = ({
   onClose,
 }: PageSettingsState & { onClose: () => void }) => {
   const { siteId } = useQueryParse(editSettingsSchema)
-  const [{ title: originalTitle }] = trpc.page.readPage.useSuspenseQuery({
-    pageId: Number(pageId),
-    siteId,
-  })
+  const [{ title: originalTitle, publishedVersionId }] =
+    trpc.page.readPage.useSuspenseQuery({
+      pageId: Number(pageId),
+      siteId,
+    })
   const [permalinkTree] = trpc.page.getPermalinkTree.useSuspenseQuery({
     pageId: Number(pageId),
     siteId,
@@ -80,6 +84,7 @@ const PageSettingsModalContent = ({
     defaultValues: {
       title: originalTitle,
       permalink: permalinkTree[permalinkTree.length - 1] || "",
+      shouldCreateRedirect: true,
     },
   })
 
@@ -109,6 +114,33 @@ const PageSettingsModalContent = ({
     }
   }, [permalink, permalinkTree])
 
+  // The full URL the page would live at — used to warn (non-blocking) when it
+  // is already a redirect source. Debounced so we don't query on every
+  // keystroke. CollectionLinks have no URL of their own, so skip them.
+  const candidateFullPermalink = `${permalinksToRender.parentPermalinks}${permalinksToRender.permalink}`
+  const debouncedPermalink = useDebounce(candidateFullPermalink, 300)
+
+  const { data: existingRedirect } = trpc.redirect.getBySource.useQuery(
+    { siteId, source: debouncedPermalink },
+    {
+      enabled:
+        type !== ResourceType.CollectionLink &&
+        debouncedPermalink.length > 0 &&
+        debouncedPermalink !== "/",
+    },
+  )
+
+  const originalPermalink = permalinkTree[permalinkTree.length - 1] ?? ""
+  const isPagePublished = publishedVersionId !== null
+  // Offer the redirect only when a published Page/CollectionPage URL actually
+  // changes — an unpublished page has no live URL to preserve, so the server
+  // skips redirect creation for it anyway.
+  const showRedirectOption =
+    (type === ResourceType.Page || type === ResourceType.CollectionPage) &&
+    permalink !== originalPermalink &&
+    isPagePublished
+  const oldFullPermalink = `${permalinksToRender.parentPermalinks}${originalPermalink}`
+
   const utils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
 
@@ -121,11 +153,18 @@ const PageSettingsModalContent = ({
         await utils.folder.invalidate()
         await utils.collection.invalidate()
 
-        toast({
-          title: "Saved and published settings",
-          description: "Check your site in 5-10 minutes to view it live.",
-          status: "success",
-        })
+        toast(
+          isPagePublished
+            ? {
+                title: "Saved and published settings",
+                description: "Check your site in 5-10 minutes to view it live.",
+                status: "success",
+              }
+            : {
+                title: "Saved settings",
+                status: "success",
+              },
+        )
       },
       onError: (error) => {
         toast({
@@ -219,13 +258,57 @@ const PageSettingsModalContent = ({
                 {MAX_PAGE_URL_LENGTH - permalink.length} characters left
               </FormHelperText>
               <FormErrorMessage>{errors.permalink?.message}</FormErrorMessage>
+              {/* Suppressed when the redirect points back at this page —
+                  saving auto-clears it, so it won't actually shadow. */}
+              {existingRedirect &&
+                existingRedirect.destinationResourceId !== Number(pageId) && (
+                  <Infobox my="0.5rem" variant="warning" size="sm">
+                    {`This URL already redirects to ${existingRedirect.destination}. Visitors will end up there instead.`}
+                  </Infobox>
+                )}
+              {showRedirectOption && (
+                <Controller
+                  control={control}
+                  name="shouldCreateRedirect"
+                  render={({ field: { value, onChange, ref, ...field } }) => (
+                    <Box
+                      mt="0.75rem"
+                      w="full"
+                      bg="utility.feedback.info-subtle"
+                      borderRadius="0.5rem"
+                      p="1rem"
+                    >
+                      <Checkbox
+                        alignItems="flex-start"
+                        size="lg"
+                        isChecked={!!value}
+                        onChange={(e) => onChange(e.target.checked)}
+                        ref={ref}
+                        {...field}
+                      >
+                        <VStack align="flex-start" spacing="0.25rem">
+                          <Text textStyle="subhead-2">
+                            Redirect page automatically
+                          </Text>
+                          <Text textStyle="body-2" color="base.content.medium">
+                            Check this box to redirect visitors from{" "}
+                            {oldFullPermalink} to {candidateFullPermalink}.
+                          </Text>
+                        </VStack>
+                      </Checkbox>
+                    </Box>
+                  )}
+                />
+              )}
             </FormControl>
           )}
 
-          <Infobox variant="warning">
-            {`Changes to your title${type === ResourceType.CollectionLink ? "" : " and URL"} will get published immediately. If you
+          {isPagePublished && (
+            <Infobox variant="warning" size="sm">
+              {`Changes to your title${type === ResourceType.CollectionLink ? "" : " and URL"} will get published immediately. If you
             don't want to publish ${type === ResourceType.CollectionLink ? "it" : "them"}, make this change later.`}
-          </Infobox>
+            </Infobox>
+          )}
         </VStack>
       </ModalBody>
 
@@ -234,7 +317,7 @@ const PageSettingsModalContent = ({
           Close
         </Button>
         <Button onClick={onSubmit} isLoading={isPending}>
-          Publish immediately
+          {isPagePublished ? "Publish immediately" : "Save"}
         </Button>
       </ModalFooter>
     </ModalContent>

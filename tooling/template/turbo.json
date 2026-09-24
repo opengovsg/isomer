@@ -3,7 +3,10 @@
   "extends": ["//"],
   "tasks": {
     "build:template": {
-      "dependsOn": ["@opengovsg/isomer-components#build"]
+      "dependsOn": ["@opengovsg/isomer-components#build:module"]
+    },
+    "test-ci:e2e": {
+      "dependsOn": ["@opengovsg/isomer-components#build:module"]
     }
   }
 }

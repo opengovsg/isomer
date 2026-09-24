@@ -29,6 +29,7 @@ const useBaseEditor = ({
 }: BaseEditorProps & { extensions: Extensions }) =>
   useEditor({
     immediatelyRender: false,
+    shouldRerenderOnTransaction: true,
     extensions: [
       ...BASE_EXTENSIONS,
       ...extensions,

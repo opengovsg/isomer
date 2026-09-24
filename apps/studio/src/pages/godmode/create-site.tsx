@@ -1,3 +1,4 @@
+import type { GetServerSideProps } from "next"
 import {
   Box,
   Breadcrumb,
@@ -20,7 +21,7 @@ import {
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { requireGodModeAdmin } from "~/features/godmode/serverSideProps"
 import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
 import { createSiteSchema } from "~/schemas/site"
@@ -28,21 +29,12 @@ import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
+export const getServerSideProps: GetServerSideProps = (context) =>
+  requireGodModeAdmin(context, [IsomerAdminRole.Core])
+
 const GodModeCreateSitePage: NextPageWithLayout = () => {
   const toast = useToast()
   const router = useRouter()
-  const { isAdmin: isUserIsomerAdmin, isLoading } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core],
-  })
-
-  if (!isLoading && !isUserIsomerAdmin) {
-    toast({
-      title: "You do not have permission to access this page.",
-      status: "error",
-      ...BRIEF_TOAST_SETTINGS,
-    })
-    void router.push(`/`)
-  }
 
   const createSiteMutation = trpc.site.create.useMutation({
     onSuccess: ({ siteId, siteName }) => {

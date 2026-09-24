@@ -1,10 +1,43 @@
 import { type NextApiRequest } from "next"
 
-export default function getIP(request: Request | NextApiRequest) {
-  const xff =
-    request instanceof Request
-      ? request.headers.get("x-forwarded-for")
-      : request.headers["x-forwarded-for"]
+const LOCALHOST_IP = "127.0.0.1"
 
-  return xff ? (Array.isArray(xff) ? xff[0] : xff.split(",")[0]) : "127.0.0.1"
+const getIpList = (header: string | string[] | null | undefined) =>
+  (Array.isArray(header) ? header : [header])
+    .flatMap((value) => value?.split(",") ?? [])
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0)
+
+const getFirstIp = (header: string | string[] | null | undefined) =>
+  getIpList(header)[0]
+
+const getLastIp = (header: string | string[] | null | undefined) => {
+  const ips = getIpList(header)
+  return ips[ips.length - 1]
+}
+
+const isRequest = (request: Request | NextApiRequest): request is Request =>
+  request instanceof Request
+
+export default function getIP(request: Request | NextApiRequest) {
+  const cfConnectingIp = isRequest(request)
+    ? request.headers.get("cf-connecting-ip")
+    : request.headers["cf-connecting-ip"]
+  const remoteAddress = isRequest(request)
+    ? undefined
+    : request.socket.remoteAddress?.trim() || undefined
+  const xForwardedFor = isRequest(request)
+    ? request.headers.get("x-forwarded-for")
+    : request.headers["x-forwarded-for"]
+
+  // Prefer values set by our edge/proxy infrastructure before consulting
+  // X-Forwarded-For, which may contain client-supplied entries. Rightmost XFF
+  // (appended by our L7 proxy/LB) is preferred over socket.remoteAddress,
+  // which in a containerised deployment is the load-balancer IP, not the client.
+  return (
+    getFirstIp(cfConnectingIp) ??
+    getLastIp(xForwardedFor) ??
+    remoteAddress ??
+    LOCALHOST_IP
+  )
 }

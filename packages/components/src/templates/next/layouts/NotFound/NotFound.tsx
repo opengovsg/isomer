@@ -31,7 +31,7 @@ export const NotFoundLayout = ({
           <div className={infobarStyles.outerContainer()}>
             <div className={infobarStyles.innerContainer()}>
               <div className={infobarStyles.headingContainer()}>
-                <h2 className={infobarStyles.title()}>Page not found</h2>
+                <h1 className={infobarStyles.title()}>Page not found</h1>
                 <p className={infobarStyles.description()}>
                   This page might have been moved or deleted. Try searching for
                   this page instead.

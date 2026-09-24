@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
+import { ASKGOV_ID_OR_URL_REGEX } from "~/utils/validation"
 
 export const AskgovSchema = Type.Object(
   {
@@ -8,6 +9,10 @@ export const AskgovSchema = Type.Object(
       title: "AskGov ID",
       description:
         'This is what comes after ask.gov.sg. For example, for https://ask.gov.sg/help, "help" is the ID.',
+      pattern: ASKGOV_ID_OR_URL_REGEX,
+      errorMessage: {
+        pattern: "must be an ID or a valid ask.gov.sg URL",
+      },
     }),
     "data-topic": Type.Optional(
       Type.String({

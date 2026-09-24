@@ -1,4 +1,5 @@
 import type { HeroSearchbarProps } from "~/interfaces/complex/Hero"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 
 import { ComponentContent } from "../../../internal/customCssClass"
 import { LocalSearchInputBox } from "../../../internal/LocalSearchInputBox"
@@ -22,6 +23,9 @@ const SearchInputBox = ({ search }: SearchInputBoxProps) => {
       return (
         <LocalSearchInputBox searchUrl={search.searchUrl} {...commonProps} />
       )
+    case "egazette-algolia":
+      // Egazette Algolia search runs on a dedicated search page, not from the Hero searchbar.
+      return null
     default:
       const _exhaustiveCheck: never = search
       return null
@@ -32,13 +36,15 @@ export const SearchbarContent = ({
   title,
   subtitle,
   site,
+  headingLevel,
 }: HeroSearchbarProps) => {
+  const Tag = getHeadingTag(headingLevel)
   return (
     <div
       className={`relative mx-auto flex w-full flex-col items-center gap-6 px-6 pb-12 pt-11 md:gap-9 lg:pb-20 lg:pt-16 ${ComponentContent}`}
     >
       <div className="flex w-full max-w-[760px] flex-col items-center gap-5 text-center md:gap-6">
-        <h1 className="prose-display-lg w-full text-center">{title}</h1>
+        <Tag className="prose-display-lg w-full text-center">{title}</Tag>
         {!!subtitle && (
           <p className="prose-title-lg-regular w-full text-center">
             {subtitle}

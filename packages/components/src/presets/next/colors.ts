@@ -57,11 +57,21 @@ export const colors = {
         subtle: twColors.blue["100"],
         faint: "#EAF2FF",
       },
-      warning: {
-        DEFAULT: twColors.yellow["600"],
-        subtle: twColors.yellow["100"],
+      success: {
+        DEFAULT: "#009D47",
+        subtle: "#A5E1CD",
+        faint: "#F6FCFA",
       },
-      alert: "#B91C1C",
+      warning: {
+        DEFAULT: "#A97C00",
+        subtle: "#FAEBB7",
+        faint: "#FEF9DA",
+      },
+      alert: {
+        DEFAULT: "#E51111",
+        subtle: "#F8D4D4",
+        faint: "#FFF8F8",
+      },
     },
   },
 }

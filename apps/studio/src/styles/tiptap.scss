@@ -117,7 +117,9 @@ $max-depth: 13;
     width: 100%;
 
     .selectedCell:after {
-      background: rgba(200, 200, 255, 0.2);
+      border-color: #2164da;
+      border-style: solid;
+      border-width: 0;
       content: "";
       left: 0;
       right: 0;
@@ -128,9 +130,28 @@ $max-depth: 13;
       z-index: 2;
     }
 
+    // Side classes come from createTableSelectionBorderPlugin so only the
+    // outer perimeter of a CellSelection is stroked — not internal seams.
+    .selectedCell.selectedCell-border-top:after {
+      border-top-width: 2px;
+    }
+
+    .selectedCell.selectedCell-border-right:after {
+      border-right-width: 2px;
+    }
+
+    .selectedCell.selectedCell-border-bottom:after {
+      border-bottom-width: 2px;
+    }
+
+    .selectedCell.selectedCell-border-left:after {
+      border-left-width: 2px;
+    }
+
     td,
     th {
-      border: 1px solid #d6d6d6;
+      // Match packages/components Table: border-base-divider-medium (gray-300).
+      border: 1px solid #d1d5db;
       box-sizing: border-box;
       min-width: 1em;
       padding: 0.5em 0.75em;
@@ -142,7 +163,14 @@ $max-depth: 13;
       }
     }
 
+    // Match packages/components Table defaults:
+    // header → bg-base-canvas-backdrop, body → bg-base-canvas-alt.
+    td {
+      background-color: #f9fafb;
+    }
+
     th {
+      background-color: #f3f4f6;
       color: #323232;
       font-weight: bold;
       text-align: left;
@@ -150,8 +178,12 @@ $max-depth: 13;
   }
 
   a {
-    color: #68cef8;
+    color: var(--chakra-colors-interaction-links-default);
     text-decoration: underline;
+
+    &:hover {
+      color: var(--chakra-colors-interaction-links-hover);
+    }
   }
 
   ul,
@@ -222,4 +254,11 @@ $max-depth: 13;
       }
     }
   }
+}
+
+// Keep the grabbing cursor while a table row or column is being dragged.
+// `TableDragHandles` toggles this attribute on the editor container.
+[data-table-drag-handles-dragging],
+[data-table-drag-handles-dragging] * {
+  cursor: grabbing !important;
 }

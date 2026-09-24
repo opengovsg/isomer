@@ -24,7 +24,10 @@ export const NotificationClient = ({
             <BiInfoCircle className="mt-[3px] h-4 w-4 shrink-0" />
             <div className="flex flex-1 flex-col gap-0.5">
               {!!title && (
-                <h2 className="prose-headline-base-medium">{title}</h2>
+                // Not a heading: Notification always renders above the
+                // page's h1 (it's site-wide chrome via Skeleton), so a real
+                // heading tag here would sit before any h1 in DOM order.
+                <div className="prose-headline-base-medium">{title}</div>
               )}
               <div className="[&_p]:!mb-0 [&_p]:!mt-0">{children}</div>
             </div>

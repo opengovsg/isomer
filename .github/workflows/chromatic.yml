@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Optimize CI
         id: check_skip
-        uses: withgraphite/graphite-ci-action@9bc969adfd43bb790da3b64b543c78c75cef9689
+        uses: withgraphite/graphite-ci-action@402a89bc8aa6db18ae1f9c61953d001d5f9d828f
         with:
           graphite_token: ${{ secrets.GRAPHITE_CI_OPTIMIZER_TOKEN }}
   # JOB to run change detection
@@ -30,9 +30,9 @@ jobs:
       ui: ${{ steps.filter.outputs.ui }}
       studio: ${{ steps.filter.outputs.studio }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # For pull requests it's not necessary to checkout the code
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
         id: filter
         with:
           filters: |
@@ -51,14 +51,14 @@ jobs:
     environment: staging
     # Job steps
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # Required for v4
       - name: Setup
         uses: ./.github/actions/setup
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@latest
+        uses: chromaui/action@e9f884eb0e6f75fcd1350e4d9666a9434ff26f2d # v18.7.4
         # Chromatic GitHub Action options
         with:
           workingDir: packages/components
@@ -67,8 +67,6 @@ jobs:
           onlyChanged: true
           exitOnceUploaded: true
           autoAcceptChanges: main
-          # Skip running Chromatic on dependabot PRs
-          skip: dependabot/**
   studio:
     needs: [changes, optimize_ci]
     # Only run if the user is not a bot and has changes
@@ -78,7 +76,7 @@ jobs:
     environment: staging
     # Job steps
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # Required for v4
       - name: Setup
@@ -87,10 +85,12 @@ jobs:
         run: pnpm --filter @opengovsg/isomer-components run build
       # Storybook bundles @prisma/client; Prisma's browser shim requires a generated client (not created by pnpm install).
       - name: Generate Prisma client
-        run: pnpm --filter isomer-studio exec prisma generate
+        run: pnpm --filter @isomer/db generate
+      - name: Build preview-tw CSS
+        run: pnpm --filter isomer-studio run build:preview-tw
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@latest
+        uses: chromaui/action@e9f884eb0e6f75fcd1350e4d9666a9434ff26f2d # v18.7.4
         # Chromatic GitHub Action options
         with:
           workingDir: apps/studio
@@ -99,5 +99,3 @@ jobs:
           onlyChanged: true
           exitOnceUploaded: true
           autoAcceptChanges: main
-          # Skip running Chromatic on dependabot PRs
-          skip: dependabot/**

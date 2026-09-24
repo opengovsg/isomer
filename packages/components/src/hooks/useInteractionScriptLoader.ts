@@ -3,6 +3,7 @@ import { useEventListener, useScript, useTimeout } from "usehooks-ts"
 
 interface UseInteractionScriptLoaderOptions {
   src: string
+  id?: string
   timeout?: number
 }
 
@@ -12,6 +13,7 @@ interface UseInteractionScriptLoaderOptions {
 // Thus we use a custom loader hook to delay loading until after Wogaa has stopped measuring TBT.
 export const useInteractionScriptLoader = ({
   src,
+  id,
   timeout = 3000, // 3 seconds from manual testing
 }: UseInteractionScriptLoaderOptions) => {
   const documentRef = useRef<Document | null>(
@@ -31,5 +33,5 @@ export const useInteractionScriptLoader = ({
   // Load script after timeout if user doesn't interact
   useTimeout(triggerLoad, timeout)
 
-  useScript(shouldLoad ? src : null)
+  useScript(shouldLoad ? src : null, { id })
 }

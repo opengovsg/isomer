@@ -1,6 +1,7 @@
 import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
+import posthog from "posthog-js"
 import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -95,19 +96,37 @@ const FolderPage: NextPageWithLayout = () => {
                   <Portal>
                     <Menu.List>
                       <Menu.Item
-                        onClick={onFolderCreateModalOpen}
+                        onClick={() => {
+                          posthog.capture("folder_create_modal_opened", {
+                            site_id: siteId,
+                            parent_type: "folder",
+                          })
+                          onFolderCreateModalOpen()
+                        }}
                         icon={<BiFolder fontSize="1rem" />}
                       >
                         Folder
                       </Menu.Item>
                       <Menu.Item
-                        onClick={onPageCreateModalOpen}
+                        onClick={() => {
+                          posthog.capture("page_create_modal_opened", {
+                            site_id: siteId,
+                            parent_type: "folder",
+                          })
+                          onPageCreateModalOpen()
+                        }}
                         icon={<BiFileBlank fontSize="1rem" />}
                       >
                         Page
                       </Menu.Item>
                       <Menu.Item
-                        onClick={onCollectionCreateModalOpen}
+                        onClick={() => {
+                          posthog.capture("collection_create_modal_opened", {
+                            site_id: siteId,
+                            parent_type: "folder",
+                          })
+                          onCollectionCreateModalOpen()
+                        }}
                         icon={<BiData fontSize="1rem" />}
                       >
                         Collection

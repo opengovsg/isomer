@@ -17,8 +17,6 @@ import {
   jsonFormsArrayControlTester,
   JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
-  JsonFormsCategoryControl,
-  jsonFormsCategoryControlTester,
   JsonFormsChildrenPagesLayoutControl,
   jsonFormsChildrenPagesLayoutControlTester,
   JsonFormsChildrenPagesOrderingControl,
@@ -27,12 +25,18 @@ import {
   jsonFormsCollectionDropdownControlTester,
   JsonFormsCollectionVariantControl,
   jsonFormsCollectionVariantControlTester,
+  JsonFormsCollectionSortOrderControl,
+  jsonFormsCollectionSortOrderControlTester,
   JsonFormsColourPickerControl,
   jsonFormsColourPickerControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
   JsonFormsDateControl,
   jsonFormsDateControlTester,
+  JsonFormsDateFilterStatusLabelsControl,
+  jsonFormsDateFilterStatusLabelsControlTester,
+  JsonFormsDateFilterValuesControl,
+  jsonFormsDateFilterValuesControlTester,
   JsonFormsDgsDatasetIdControl,
   jsonFormsDgsDatasetIdControlTester,
   JsonFormsEmbedControl,
@@ -45,6 +49,8 @@ import {
   jsonFormsHiddenControlTester,
   JsonFormsImageControl,
   jsonFormsImageControlTester,
+  JsonFormsImageRadioControl,
+  jsonFormsImageRadioControlTester,
   JsonFormsIntegerControl,
   jsonFormsIntegerControlTester,
   JsonFormsLinkArrayControl,
@@ -61,6 +67,8 @@ import {
   jsonFormsObjectControlTester,
   JsonFormsOneOfControl,
   jsonFormsOneOfControlTester,
+  JsonFormsBoxedGroupControl,
+  jsonFormsBoxedGroupControlTester,
   JsonFormsPrefillLinkControl,
   jsonFormsPrefillLinkControlTester,
   JsonFormsProseControl,
@@ -73,6 +81,8 @@ import {
   jsonFormsSocialMediaControlTester,
   JsonFormsTagCategoriesControl,
   jsonFormsTagCategoriesControlTester,
+  JsonFormsTagCategoryOptionsControl,
+  jsonFormsTagCategoryOptionsControlTester,
   JsonFormsTaggedControl,
   jsonFormsTaggedControlTester,
   JsonFormsTextAreaControl,
@@ -108,8 +118,20 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     tester: jsonFormsTagCategoriesControlTester,
     renderer: JsonFormsTagCategoriesControl,
   },
+  {
+    tester: jsonFormsTagCategoryOptionsControlTester,
+    renderer: JsonFormsTagCategoryOptionsControl,
+  },
+  {
+    tester: jsonFormsDateFilterStatusLabelsControlTester,
+    renderer: JsonFormsDateFilterStatusLabelsControl,
+  },
   { renderer: JsonFormsUuidControl, tester: jsonFormsUuidControlTester },
   { renderer: JsonFormsTaggedControl, tester: jsonFormsTaggedControlTester },
+  {
+    renderer: JsonFormsDateFilterValuesControl,
+    tester: jsonFormsDateFilterValuesControlTester,
+  },
   {
     renderer: JsonFormsChildrenPagesOrderingControl,
     tester: jsonFormsChildrenPagesOrderingControlTester,
@@ -146,6 +168,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   },
   { tester: jsonFormsHiddenControlTester, renderer: JsonFormsHiddenControl },
   { tester: jsonFormsIntegerControlTester, renderer: JsonFormsIntegerControl },
+  {
+    tester: jsonFormsImageRadioControlTester,
+    renderer: JsonFormsImageRadioControl,
+  },
   { tester: jsonFormsImageControlTester, renderer: JsonFormsImageControl },
   { tester: jsonFormsLinkControlTester, renderer: JsonFormsLinkControl },
   { tester: jsonFormsEnumControlTester, renderer: JsonFormsEnumControl },
@@ -187,14 +213,14 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: JsonFormsCollectionVariantControl,
   },
   {
+    tester: jsonFormsCollectionSortOrderControlTester,
+    renderer: JsonFormsCollectionSortOrderControl,
+  },
+  {
     // NOTE: If we fall through all our previous testers,
     // we render null so that the users don't get visual noise
     tester: rankWith(JSON_FORMS_RANKING.Catchall, () => true),
     renderer: () => null,
-  },
-  {
-    tester: jsonFormsCategoryControlTester,
-    renderer: JsonFormsCategoryControl,
   },
   {
     tester: jsonFormsCollectionDropdownControlTester,
@@ -203,6 +229,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsPrefillLinkControlTester,
     renderer: JsonFormsPrefillLinkControl,
+  },
+  {
+    tester: jsonFormsBoxedGroupControlTester,
+    renderer: JsonFormsBoxedGroupControl,
   },
 ]
 

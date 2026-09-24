@@ -1,5 +1,14 @@
-import type { LinkTypes } from "./constants"
+import type { LinkTypes, LinkTypesWithHrefFormat } from "./constants"
 import { LINK_TYPES } from "./constants"
+
+export const parseHref = (href: string, pageType: LinkTypesWithHrefFormat) => {
+  switch (pageType) {
+    case LINK_TYPES.File:
+      return href.split("/").pop()
+    default:
+      return href
+  }
+}
 
 export const getLinkHrefType = (href: string | undefined): LinkTypes => {
   if (!href) {

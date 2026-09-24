@@ -19,10 +19,18 @@ export interface MenubarOverflowListProps {
 
 export const MenubarOverflowList = ({
   items,
-}: MenubarOverflowListProps): JSX.Element => {
+}: MenubarOverflowListProps): JSX.Element | null => {
+  const visibleItems = items.filter((item) => !item.isHidden?.())
+  if (visibleItems.length === 0) {
+    return null
+  }
   return (
-    <Popover placement="bottom">
-      {({ isOpen }) => (
+    // TipTap toolbar pattern: preventDefault on mousedown so the trigger
+    // does not steal focus from the editor. Pair with closeOnBlur=false.
+    // Otherwise focus never enters the popover and closeOnBlur immediately
+    // dismisses (or fights) the open state.
+    <Popover placement="bottom" closeOnBlur={false} isLazy>
+      {({ isOpen, onClose }) => (
         <>
           <PopoverTrigger>
             <IconButton
@@ -38,6 +46,7 @@ export const MenubarOverflowList = ({
               minW="1.75rem"
               p="0.25rem"
               aria-label="More options"
+              onMouseDown={(event) => event.preventDefault()}
             >
               <Icon
                 as={BiDotsHorizontalRounded}
@@ -49,12 +58,15 @@ export const MenubarOverflowList = ({
           <PopoverContent w="fit-content">
             <PopoverBody>
               <HStack>
-                {items.map((subItem, index) => (
+                {visibleItems.map((subItem, index) => (
                   <MenuItem
                     key={index}
                     icon={subItem.icon}
                     title={subItem.title}
-                    action={subItem.action}
+                    action={() => {
+                      subItem.action()
+                      onClose()
+                    }}
                     isActive={subItem.isActive}
                   />
                 ))}

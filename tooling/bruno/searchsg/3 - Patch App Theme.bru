@@ -1,0 +1,44 @@
+meta {
+  name: Patch App Theme
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/v2/sites/{{siteClientId}}/apps/{{appId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  User-Agent: {{userAgent}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "config": {
+      "theme": {
+        "primary": "#000000",
+        "fontFamily": "Inter"
+      }
+    }
+  }
+}
+
+docs {
+  Updates the theme for a SearchSG websiteSearch app.
+
+  Prerequisites:
+  1. Run **1 - Auth Token** to obtain an access token.
+  2. Run **2 - Get Site** and copy the `appId` for the `websiteSearch` app into the
+     environment var `appId`.
+
+  Update `primary` in the request body to the site's brand colour (hex).
+
+  SearchSG has no non-production environment — use caution when running against a live site.
+}

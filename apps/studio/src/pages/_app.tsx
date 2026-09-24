@@ -8,6 +8,7 @@ import { GrowthBook } from "@growthbook/growthbook"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { useRouter } from "next/router"
 import { ErrorBoundary } from "react-error-boundary"
 import { AppBanner } from "~/components/AppBanner"
 import { EnvProvider } from "~/components/AppProviders"
@@ -64,12 +65,19 @@ void gb.init({
 })
 
 const MyApp = ((props: AppPropsWithAuthAndLayout) => {
+  // ErrorBoundary keeps the fallback until resetKeys changes. asPath remounts
+  // children after the error-screen CTAs navigate away.
+  const { asPath } = useRouter()
+
   return (
     <EnvProvider env={env}>
       <LoginStateProvider>
         <ThemeProvider theme={theme}>
           <GrowthBookProvider growthbook={gb}>
-            <ErrorBoundary FallbackComponent={DefaultFallback}>
+            <ErrorBoundary
+              FallbackComponent={DefaultFallback}
+              resetKeys={[asPath]}
+            >
               <Suspense fallback={<Skeleton width="100%" height="$100vh" />}>
                 <Stack spacing={0} height="$100vh" flexDirection="column">
                   <AppBanner />

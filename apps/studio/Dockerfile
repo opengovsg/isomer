@@ -1,7 +1,4 @@
-# needed to pin to 3.20 because Prisma uses OpenSSL but it has been shifted to another location in 3.21
-# Ref: https://github.com/prisma/prisma/issues/25817
-# Solution: https://github.com/prisma/prisma/issues/25817#issuecomment-2529926082
-FROM node:22-alpine3.20 AS base
+FROM node:24-alpine AS base
 
 ARG NEXT_PUBLIC_APP_ENV
 ENV NEXT_PUBLIC_APP_ENV=$NEXT_PUBLIC_APP_ENV
@@ -30,22 +27,30 @@ ENV NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=$NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY
 ARG NEXT_PUBLIC_INTERCOM_APP_ID
 ENV NEXT_PUBLIC_INTERCOM_APP_ID=$NEXT_PUBLIC_INTERCOM_APP_ID
 
+ARG NEXT_PUBLIC_POSTHOG_ASSETS_HOST
+ENV NEXT_PUBLIC_POSTHOG_ASSETS_HOST=$NEXT_PUBLIC_POSTHOG_ASSETS_HOST
+
+ARG NEXT_PUBLIC_POSTHOG_HOST
+ENV NEXT_PUBLIC_POSTHOG_HOST=$NEXT_PUBLIC_POSTHOG_HOST
+
+ARG NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
+ENV NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=$NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
+
 # Refer to this PR for the env var and why we need this.
 # https://github.com/vercel/next.js/pull/46052/changes
 ENV KEEP_ALIVE_TIMEOUT 70000
 
 FROM base AS builder
-RUN apk update
-RUN apk add --no-cache libc6-compat
+RUN apk update && apk add --no-cache libc6-compat
 
 # Set working directory
 WORKDIR /app
-# pnpm global bin is under PNPM_HOME (not on PATH by default); npm's -g used /usr/local/bin.
+# pnpm global bin is under PNPM_HOME/bin (not on PATH by default); npm's -g used /usr/local/bin.
 ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack install -g pnpm@10.33.0
-# fixed version to prevent supply chain attacks (to ensure it's same version as pnpm-workspace.yaml)
-RUN pnpm add -g turbo@2.9.6
+ENV PATH="$PNPM_HOME/bin:$PATH"
+RUN corepack enable && corepack install -g pnpm@12.0.0
+# Pin turbo to the resolved catalog version to prevent supply chain attacks
+RUN pnpm add -g turbo@2.10.13
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.
@@ -54,11 +59,10 @@ RUN turbo prune isomer-studio --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
-RUN apk update
-RUN apk add --no-cache libc6-compat
+RUN apk update && apk add --no-cache libc6-compat
 WORKDIR /app
 
-RUN corepack enable && corepack install -g pnpm@10.33.0
+RUN corepack enable && corepack install -g pnpm@12.0.0
 
 # First install the dependencies (as they change less often)
 COPY --from=builder /app/out/json/ .

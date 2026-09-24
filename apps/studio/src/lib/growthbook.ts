@@ -1,4 +1,5 @@
 import type { GrowthBook } from "@growthbook/growthbook-react"
+import { env } from "~/env.mjs"
 
 export const ENABLE_CODEBUILD_JOBS = "enable-codebuild-jobs"
 export const ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY =
@@ -8,12 +9,27 @@ export const ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY =
 export const BANNER_FEATURE_KEY = "isomer-next-banner"
 export const IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY =
   "is-new-collection-tags-management-enabled"
-export const CATEGORY_DROPDOWN_FEATURE_KEY = "category-dropdown"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
 export const IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY =
   "homepage-antiscam-banner-enabled"
 export const EGAZETTE_INFO_FEATURE_KEY = "egazette-info"
-export const IS_REDIRECTIONS_ENABLED_FEATURE_KEY = "is-redirections-enabled"
+// Gates the audit-log export surface (settings sidenav entry + page). OFF by
+// default so the feature can ship dark and be enabled per-environment.
+export const IS_AUDIT_LOG_ENABLED_FEATURE_KEY = "is-audit-log-enabled"
+// When OFF (default): gazette ingestion targets Algolia directly.
+// When ON: gazette ingestion is routed to SearchSG instead.
+export const ENABLE_SEARCHSG_GAZETTE_INGESTION =
+  "enable-searchsg-gazette-ingestion"
+// Gates the whole unpublish feature: manual (unpublishPage, which also
+// handles Folder/Collection ids) and scheduled (scheduleUnpublish/
+// cancelScheduleUnpublish) alike, since the latter presupposes the former
+// exists. OFF by default so the feature can ship dark and be enabled
+// per-environment.
+export const IS_UNPUBLISH_ENABLED_FEATURE_KEY = "is-unpublish-enabled"
+
+// Gates the "Date filter" option when adding a new collection tag filter.
+export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY = "is-date-filters-enabled"
+export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
 
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
@@ -24,7 +40,21 @@ interface GetIsSingpassEnabledProps {
 export const getIsSingpassEnabled = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
+  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) return false
   return gb.getFeatureValue(
+    IS_SINGPASS_ENABLED_FEATURE_KEY,
+    IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
+  )
+}
+
+// Whether singpass-off side effects (e.g. login alert email) should activate.
+// False when SingPass is skipped (preview) even though SingPass is also
+// disabled there.
+export const getIsSingpassDisabledInNonPreview = ({
+  gb,
+}: GetIsSingpassEnabledProps): boolean => {
+  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) return false
+  return !gb.getFeatureValue(
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
   )

@@ -1,41 +1,23 @@
 import type { Editor } from "@tiptap/react"
-import { Icon, useDisclosure } from "@chakra-ui/react"
+import { useDisclosure } from "@chakra-ui/react"
 import { useMemo } from "react"
 import {
   BiBold,
-  BiCog,
   BiItalic,
   BiLink,
   BiListOl,
   BiListUl,
   BiStrikethrough,
-  BiTable,
   BiUnderline,
-  BiWrench,
 } from "react-icons/bi"
 import { MdHorizontalRule, MdSubscript, MdSuperscript } from "react-icons/md"
-import {
-  IconAddColLeft,
-  IconAddColRight,
-  IconAddRowAbove,
-  IconAddRowBelow,
-  IconDelCol,
-  IconDelRow,
-  IconMergeCells,
-  IconSplitCell,
-} from "~/components/icons"
+import { TableSizePicker } from "~/features/editing-experience/components/TableSizePicker/TableSizePicker"
 
 import type { PossibleMenubarItemProps } from "./MenubarItem/types"
-import { TableSettingsModal } from "../TableSettingsModal"
 import { MenuBar } from "./MenuBar"
 import { TiptapLinkEditorModal } from "./TiptapLinkEditorModal"
 
 export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
-  const {
-    isOpen: isTableSettingsModalOpen,
-    onOpen: onTableSettingsModalOpen,
-    onClose: onTableSettingsModalClose,
-  } = useDisclosure()
   const {
     isOpen: isLinkModalOpen,
     onOpen: onLinkModalOpen,
@@ -111,82 +93,30 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
         type: "divider",
       },
       {
+        // A grid-based size picker when not in a table (insert), or a plain
+        // delete button when a table is selected. See TableSizePicker.
+        type: "custom",
+        render: () => <TableSizePicker editor={editor} />,
+      },
+      // Table-scoped: promoted onto the main toolbar instead of the overflow
+      // menu while editing inside a table, same as the "Table" group above.
+      {
         type: "item",
-        icon: BiTable,
-        title: "Table",
-        action: () => {
-          if (editor.isActive("table")) {
-            return editor.chain().focus().deleteTable().run()
-          }
-          return editor.chain().focus().insertTable().run()
-        },
-        isActive: () => editor.isActive("table"),
+        icon: MdSuperscript,
+        title: "Superscript",
+        isHidden: () => !editor.isActive("table"),
+        action: () =>
+          editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
+        isActive: () => editor.isActive("superscript"),
       },
       {
-        type: "horizontal-list",
-        label: "Table",
-        defaultIcon: BiWrench,
+        type: "item",
+        icon: MdSubscript,
+        title: "Subscript",
         isHidden: () => !editor.isActive("table"),
-        items: [
-          {
-            type: "item",
-            icon: () => (
-              <Icon color="base.content.medium" as={IconAddColRight} />
-            ),
-            title: "Add column after",
-            action: () => editor.chain().focus().addColumnAfter().run(),
-          },
-          {
-            type: "item",
-            icon: () => (
-              <Icon as={IconAddColLeft} color="base.content.medium" />
-            ),
-            title: "Add column before",
-            action: () => editor.chain().focus().addColumnBefore().run(),
-          },
-          {
-            type: "item",
-            icon: () => <Icon as={IconDelCol} />,
-            title: "Delete column",
-            action: () => editor.chain().focus().deleteColumn().run(),
-          },
-          {
-            type: "item",
-            icon: () => <Icon as={IconAddRowAbove} />,
-            title: "Add row before",
-            action: () => editor.chain().focus().addRowBefore().run(),
-          },
-          {
-            type: "item",
-            icon: () => <Icon as={IconAddRowBelow} />,
-            title: "Add row after",
-            action: () => editor.chain().focus().addRowAfter().run(),
-          },
-          {
-            type: "item",
-            icon: () => <Icon as={IconDelRow} />,
-            title: "Delete row",
-            action: () => editor.chain().focus().deleteRow().run(),
-          },
-          {
-            type: "item",
-            icon: () => <Icon as={IconMergeCells} />,
-            title: "Merge cells",
-            action: () => editor.chain().focus().mergeCells().run(),
-          },
-          {
-            type: "item",
-            icon: () => <Icon as={IconSplitCell} />,
-            title: "Split cell",
-            action: () => editor.chain().focus().splitCell().run(),
-          },
-          {
-            type: "item",
-            icon: BiCog,
-            title: "Table settings",
-            action: onTableSettingsModalOpen,
-          },
-        ],
+        action: () =>
+          editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
+        isActive: () => editor.isActive("subscript"),
       },
       // Lesser-used commands are kept inside the overflow items list
       {
@@ -196,6 +126,7 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
             type: "item",
             icon: MdSuperscript,
             title: "Superscript",
+            isHidden: () => editor.isActive("table"),
             action: () =>
               editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
             isActive: () => editor.isActive("superscript"),
@@ -204,6 +135,7 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
             type: "item",
             icon: MdSubscript,
             title: "Subscript",
+            isHidden: () => editor.isActive("table"),
             action: () =>
               editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
             isActive: () => editor.isActive("subscript"),
@@ -212,22 +144,17 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
             type: "item",
             icon: MdHorizontalRule,
             title: "Divider",
+            isHidden: () => editor.isActive("table"),
             action: () => editor.chain().focus().setHorizontalRule().run(),
             isActive: () => editor.isActive("divider"),
           },
         ],
       },
     ],
-    [editor, onLinkModalOpen, onTableSettingsModalOpen],
+    [editor, onLinkModalOpen],
   )
   return (
     <>
-      <TableSettingsModal
-        editor={editor}
-        isOpen={isTableSettingsModalOpen}
-        onClose={onTableSettingsModalClose}
-      />
-
       <TiptapLinkEditorModal
         editor={editor}
         isOpen={isLinkModalOpen}

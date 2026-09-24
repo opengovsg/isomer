@@ -1,0 +1,143 @@
+import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
+import { describe, expect, it } from "vitest"
+import { DEFAULT_DATE_FILTER_STATUS_LABELS } from "~/types/constants"
+
+import { getTagsFromTagged } from "../getTagsFromTagged"
+
+describe("getTagsFromTagged", () => {
+  it("returns a group with only the selected options' labels", () => {
+    // Arrange
+    const tagged: NonNullable<ArticlePagePageProps["tagged"]> = ["topic-opt-1"]
+    const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> =
+      [
+        {
+          label: "Topic",
+          id: "topic-1",
+          options: [
+            { label: "Health", id: "topic-opt-1" },
+            { label: "Education", id: "topic-opt-2" },
+          ],
+        },
+      ]
+
+    // Act
+    const result = getTagsFromTagged(tagged, tagCategories)
+
+    // Assert
+    expect(result).toEqual([
+      { id: "topic-1", category: "Topic", selected: ["Health"] },
+    ])
+  })
+
+  it("excludes a category entirely when none of its options are tagged", () => {
+    // Arrange
+    const tagged: NonNullable<ArticlePagePageProps["tagged"]> = ["topic-opt-1"]
+    const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> =
+      [
+        {
+          label: "Topic",
+          id: "topic-1",
+          options: [{ label: "Health", id: "topic-opt-1" }],
+        },
+        {
+          label: "Category",
+          id: "cat-1",
+          options: [{ label: "Guides", id: "cat-opt-1" }],
+        },
+      ]
+
+    // Act
+    const result = getTagsFromTagged(tagged, tagCategories)
+
+    // Assert
+    expect(result).toEqual([
+      { id: "topic-1", category: "Topic", selected: ["Health"] },
+    ])
+  })
+
+  it("returns an empty array when tagged is empty", () => {
+    // Arrange
+    const tagged: NonNullable<ArticlePagePageProps["tagged"]> = []
+    const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> =
+      [
+        {
+          label: "Topic",
+          id: "topic-1",
+          options: [{ label: "Health", id: "topic-opt-1" }],
+        },
+      ]
+
+    // Act
+    const result = getTagsFromTagged(tagged, tagCategories)
+
+    // Assert
+    expect(result).toEqual([])
+  })
+
+  it("returns an empty array when tagCategories is empty", () => {
+    // Arrange
+    const tagged: NonNullable<ArticlePagePageProps["tagged"]> = ["topic-opt-1"]
+    const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> =
+      []
+
+    // Act
+    const result = getTagsFromTagged(tagged, tagCategories)
+
+    // Assert
+    expect(result).toEqual([])
+  })
+
+  it("skips date-type categories entirely, resolving only text categories", () => {
+    // Arrange
+    const tagged: NonNullable<ArticlePagePageProps["tagged"]> = ["topic-opt-1"]
+    const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> =
+      [
+        {
+          label: "Event Date",
+          id: "date-1",
+          type: "date",
+          statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
+        },
+        {
+          label: "Topic",
+          id: "topic-1",
+          options: [{ label: "Health", id: "topic-opt-1" }],
+        },
+      ]
+
+    // Act
+    const result = getTagsFromTagged(tagged, tagCategories)
+
+    // Assert
+    expect(result).toEqual([
+      { id: "topic-1", category: "Topic", selected: ["Health"] },
+    ])
+  })
+
+  it("keeps all tagged options for a category, uncombined", () => {
+    // Arrange
+    const tagged: NonNullable<ArticlePagePageProps["tagged"]> = [
+      "cat-opt-1",
+      "cat-opt-2",
+    ]
+    const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> =
+      [
+        {
+          label: "Category",
+          id: "cat-1",
+          options: [
+            { label: "Guides", id: "cat-opt-1" },
+            { label: "Articles", id: "cat-opt-2" },
+          ],
+        },
+      ]
+
+    // Act
+    const result = getTagsFromTagged(tagged, tagCategories)
+
+    // Assert
+    expect(result).toEqual([
+      { id: "cat-1", category: "Category", selected: ["Guides", "Articles"] },
+    ])
+  })
+})

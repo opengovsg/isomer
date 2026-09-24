@@ -12,7 +12,7 @@ import {
 import { Button } from "@opengovsg/design-system-react"
 import { FooterSchema } from "@opengovsg/isomer-components"
 import { isEmpty, isEqual } from "lodash-es"
-import { useCallback, useState } from "react"
+import { useCallback, useMemo } from "react"
 import { BiDirections } from "react-icons/bi"
 import { FORM_BUILDER_PARENT_ID } from "~/features/editing-experience/components/form-builder/constants"
 import {
@@ -24,6 +24,7 @@ import { Can } from "~/features/permissions"
 import { ajv } from "~/utils/ajv"
 
 interface FooterEditorProps {
+  savedFooterState: FooterSchemaType
   previewFooterState?: FooterSchemaType
   setPreviewFooterState: Dispatch<SetStateAction<FooterSchemaType | undefined>>
   onSave: (data?: FooterSchemaType) => void
@@ -31,12 +32,15 @@ interface FooterEditorProps {
 }
 
 export const FooterEditor = ({
+  savedFooterState,
   previewFooterState,
   setPreviewFooterState,
   onSave,
   isSaving,
 }: FooterEditorProps) => {
-  const [isDirty, setIsDirty] = useState(false)
+  const isDirty = useMemo(() => {
+    return !isEqual(previewFooterState, savedFooterState)
+  }, [previewFooterState, savedFooterState])
 
   const validateFn = ajv.compile<FooterSchemaType>(FooterSchema)
 
@@ -44,7 +48,6 @@ export const FooterEditor = ({
     (data: FooterSchemaType) => {
       if (!isEqual(previewFooterState, data)) {
         setPreviewFooterState(data)
-        setIsDirty(true)
       }
     },
     [previewFooterState, setPreviewFooterState],
@@ -52,7 +55,6 @@ export const FooterEditor = ({
 
   const handleSave = () => {
     onSave(previewFooterState)
-    setIsDirty(false)
   }
 
   return (

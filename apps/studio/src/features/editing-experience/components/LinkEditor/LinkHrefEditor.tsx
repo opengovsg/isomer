@@ -64,6 +64,7 @@ export const LinkHrefEditor = ({
               onChange={(e) => {
                 if (!e.target.value) {
                   setHref(e.target.value)
+                  return
                 }
                 setHref(generateHttpsLink(e.target.value))
               }}
@@ -84,6 +85,7 @@ export const LinkHrefEditor = ({
               onChange={(e) => {
                 if (!e.target.value) {
                   setHref(e.target.value)
+                  return
                 }
                 setHref(`mailto:${e.target.value}`)
               }}

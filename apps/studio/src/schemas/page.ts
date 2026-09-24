@@ -3,7 +3,11 @@ import { schema } from "@opengovsg/isomer-components"
 import { z } from "zod"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+import {
+  ResourceState,
+  ResourceType,
+  ScheduledAction,
+} from "~prisma/generated/generatedEnums"
 
 import { generateBasePermalinkSchema } from "./common"
 
@@ -16,7 +20,9 @@ export const NEW_PAGE_LAYOUT_VALUES = [
 ] as const satisfies readonly PrismaJson.BlobJsonContent["layout"][]
 
 export const MAX_TITLE_LENGTH = 250
-export const MAX_PAGE_URL_LENGTH = 500
+// NOTE: 250 characters is the hard limit as file names have a max limit of 255
+// characters, and the file name includes ".json" suffix
+export const MAX_PAGE_URL_LENGTH = 250
 
 const pageTitleSchema = z
   .string({
@@ -88,6 +94,11 @@ export const publishPageSchema = z.object({
   siteId: z.number().min(1),
 })
 
+export const unpublishPageSchema = z.object({
+  pageId: z.number().min(1, { message: "Select a page to unpublish" }),
+  siteId: z.number().min(1, { message: "Select a site" }),
+})
+
 export const createCollectionPageFormSchema = z
   .discriminatedUnion("type", [
     z.object({
@@ -122,6 +133,10 @@ export const getRootPageSchema = z.object({
 
 export const basePageSettingsSchema = basePageSchema.extend({
   title: pageTitleSchema,
+  // Create a redirect from the page's old URL when its permalink changes (acted
+  // on only for Page/CollectionPage). On the base so the union destructures
+  // cleanly. Defaults on, matching the checkbox's default-checked state.
+  shouldCreateRedirect: z.boolean().optional().default(true),
 })
 
 const rootPageSettingsSchema = basePageSettingsSchema.extend({
@@ -158,6 +173,8 @@ export const readPageOutputSchema = z.object({
   type: z.nativeEnum(ResourceType),
   scheduledAt: z.date().nullable(),
   scheduledBy: z.string().nullable(),
+  scheduledAction: z.nativeEnum(ScheduledAction).nullable(),
+  lastPublishedAt: z.date().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

@@ -9,6 +9,7 @@ import { TRPCError } from "@trpc/server"
 
 import type { Logger } from "@isomer/logging"
 
+import type { SafeKysely } from "../database/types"
 import type {
   BuildChanges,
   RequiresNewBuild,
@@ -42,27 +43,30 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
     buildStartTime = buildChanges.latestRunningBuild.startTime
   }
 
-  // Insert a new row into CodeBuildJobs to link the resourceId, userId, siteId to the build
-  await db
-    .insertInto("CodeBuildJobs")
-    .values(
-      resourceWithUserIds.map(({ resourceId, userId }) => ({
-        siteId,
-        userId,
-        buildId: buildIdToLink,
-        startedAt: buildStartTime,
-        resourceId,
-        isScheduled,
-      })),
-    )
-    .execute()
-  // If a new build was started, mark the stopped build (if any) as being superseded by the new build
-  if (buildChanges.isNewBuildNeeded && buildChanges.stoppedBuild?.id) {
-    await updateStoppedBuild({
-      startedBuildId: buildChanges.startedBuild.id,
-      stoppedBuildId: buildChanges.stoppedBuild.id,
-    })
-  }
+  await db.transaction().execute(async (tx) => {
+    // Insert a new row into CodeBuildJobs to link the resourceId, userId, siteId to the build
+    await tx
+      .insertInto("CodeBuildJobs")
+      .values(
+        resourceWithUserIds.map(({ resourceId, userId }) => ({
+          siteId,
+          userId,
+          buildId: buildIdToLink,
+          startedAt: buildStartTime,
+          resourceId,
+          isScheduled,
+        })),
+      )
+      .execute()
+    // If a new build was started, mark the stopped build (if any) as being superseded by the new build
+    if (buildChanges.isNewBuildNeeded && buildChanges.stoppedBuild?.id) {
+      await updateStoppedBuild({
+        startedBuildId: buildChanges.startedBuild.id,
+        stoppedBuildId: buildChanges.stoppedBuild.id,
+        trx: tx,
+      })
+    }
+  })
 }
 
 /**
@@ -75,22 +79,24 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
 export const updateStoppedBuild = async ({
   startedBuildId,
   stoppedBuildId,
+  trx = db,
 }: {
   startedBuildId: string
   stoppedBuildId: string
+  trx?: SafeKysely
 }) => {
-  await db
+  await trx
     .updateTable("CodeBuildJobs")
     .set({ supersededByBuildId: startedBuildId, status: "STOPPED" })
     .where(
       "buildId",
       "in",
-      db
+      trx
         .selectFrom("CodeBuildJobs")
         .select("buildId")
         .where("supersededByBuildId", "=", stoppedBuildId)
         .unionAll(
-          db.selectNoFrom((eb) => [eb.val(stoppedBuildId).as("buildId")]),
+          trx.selectNoFrom((eb) => [eb.val(stoppedBuildId).as("buildId")]),
         ),
     )
     .execute()

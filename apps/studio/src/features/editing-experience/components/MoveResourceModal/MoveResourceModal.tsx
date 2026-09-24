@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Modal,
   ModalBody,
@@ -8,9 +9,10 @@ import {
   ModalHeader,
   ModalOverlay,
   Skeleton,
+  Text,
   VStack,
 } from "@chakra-ui/react"
-import { Infobox, useToast } from "@opengovsg/design-system-react"
+import { Checkbox, Infobox, useToast } from "@opengovsg/design-system-react"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { useState } from "react"
 import { ResourceSelector } from "~/components/ResourceSelector/ResourceSelector"
@@ -19,9 +21,12 @@ import { usePermissions } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
+import { normalizeRedirectPath } from "~/schemas/redirect"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { moveResourceAtom } from "../../atoms"
+import { useValidateResourceMove } from "../../hooks/useValidateResourceMove"
 
 export const MoveResourceModal = () => {
   // NOTE: This is what we are trying to move
@@ -48,10 +53,11 @@ const MoveResourceContent = withSuspense(
     >(undefined)
     const { siteId } = useQueryParse(sitePageSchema)
     const setMovedItem = useSetAtom(moveResourceAtom)
-    const [{ title }] = trpc.resource.getMetadataById.useSuspenseQuery({
-      siteId: Number(siteId),
-      resourceId,
-    })
+    const [{ title, type, permalink: movedSlug, publishedVersionId }] =
+      trpc.resource.getMetadataById.useSuspenseQuery({
+        siteId: Number(siteId),
+        resourceId,
+      })
     const ability = usePermissions()
     const utils = trpc.useUtils()
     const toast = useToast({ status: "success" })
@@ -111,6 +117,78 @@ const MoveResourceContent = withSuspense(
     })
 
     const movedItem = useAtomValue(moveResourceAtom)
+    const {
+      isLoading: isValidMoveLoading,
+      isValidMove,
+      errorMessage,
+    } = useValidateResourceMove({
+      sourceId: movedItem?.id,
+      destinationId: curResourceId ?? null,
+    })
+
+    const [shouldCreateRedirect, setShouldCreateRedirect] = useState(true)
+    const [{ fullPermalink: movedFullPermalink }] =
+      trpc.resource.getWithFullPermalink.useSuspenseQuery({
+        siteId: Number(siteId),
+        resourceId,
+      })
+    const { data: destination } = trpc.resource.getWithFullPermalink.useQuery(
+      { siteId: Number(siteId), resourceId: curResourceId ?? "" },
+      { enabled: !!curResourceId },
+    )
+    // Pre-flight the move mutation's unpublish-lock check as soon as a
+    // destination is picked, rather than only surfacing it as an error
+    // toast after "Move here" is clicked.
+    const { data: moveLockInfo, isFetching: isMoveLockInfoFetching } =
+      trpc.resource.getMoveLockInfo.useQuery(
+        {
+          siteId: Number(siteId),
+          movedResourceId: resourceId,
+          destinationResourceId: curResourceId ?? null,
+        },
+        { enabled: curResourceId !== undefined },
+      )
+    const isMoveBlocked = !!moveLockInfo?.isBlocked
+
+    // Only published Page/CollectionPage have a live URL worth preserving — the
+    // server skips redirect creation for unpublished pages, so don't offer it.
+    const isPageRedirectable =
+      (type === ResourceType.Page || type === ResourceType.CollectionPage) &&
+      publishedVersionId !== null
+    // A Folder/Collection preserves its subtree with one wildcard redirect. It
+    // has no publishedVersionId of its own, so the server decides based on
+    // published descendants.
+    const isFolderRedirect =
+      type === ResourceType.Folder || type === ResourceType.Collection
+    const isRedirectableType = isPageRedirectable || isFolderRedirect
+    const oldFullPermalink = normalizeRedirectPath(movedFullPermalink)
+    const newFullPermalink = normalizeRedirectPath(
+      `${curResourceId && destination ? destination.fullPermalink : ""}/${movedSlug}`,
+    )
+    // The new path is known once a destination is picked (the root needs no
+    // lookup); until then the computed permalink is provisional.
+    const isDestinationResolved =
+      curResourceId === null || (curResourceId !== undefined && !!destination)
+    // Moving a page into its current parent leaves the URL unchanged, so there's
+    // nothing to redirect — only offer the option when the URL actually changes.
+    // An invalid destination has no resulting URL, so gate on a valid move too.
+    const showRedirectOption =
+      isValidMove === true &&
+      isRedirectableType &&
+      isDestinationResolved &&
+      oldFullPermalink !== newFullPermalink
+    // CollectionLinks have no URL of their own (their permalink is a hidden
+    // random UUID), so skip the notice even though their permalink changes.
+    // An invalid destination has no resulting URL, so gate on a valid move too.
+    const showUrlChangeNotice =
+      isValidMove === true &&
+      type !== ResourceType.CollectionLink &&
+      isDestinationResolved &&
+      oldFullPermalink !== newFullPermalink
+    const { data: existingRedirect } = trpc.redirect.getBySource.useQuery(
+      { siteId: Number(siteId), source: newFullPermalink },
+      { enabled: showRedirectOption },
+    )
 
     return (
       <ModalContent>
@@ -118,16 +196,72 @@ const MoveResourceContent = withSuspense(
         <ModalCloseButton size="lg" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.25rem">
-            <Infobox size="sm" w="full">
-              Moving a page or folder changes its URL, effective immediately
-            </Infobox>
             <ResourceSelector
               interactionType="move"
               siteId={siteId}
-              onlyShowFolders
+              showSelectedResourcePreview={false}
               existingResource={movedItem ?? undefined}
               onChange={(resourceId) => setCurResourceId(resourceId)}
             />
+            {curResourceId !== undefined &&
+              errorMessage &&
+              !isValidMoveLoading && (
+                <Infobox variant="error" size="sm" w="full">
+                  {errorMessage}
+                </Infobox>
+              )}
+            {isMoveBlocked && (
+              <Infobox variant="warning" size="sm" w="full">
+                This destination (or a folder/collection above it) is scheduled
+                to be unpublished, so a published page can't be moved here.
+              </Infobox>
+            )}
+            {showUrlChangeNotice && (
+              <VStack alignItems="flex-start" spacing="0.75rem" w="full">
+                <Box
+                  w="full"
+                  bg="utility.feedback.info-subtle"
+                  borderRadius="0.5rem"
+                  p="1rem"
+                >
+                  <Text textStyle="body-2" color="base.content.strong">
+                    {isFolderRedirect
+                      ? `The URL will change to ${newFullPermalink}, and every page under it will move too.`
+                      : `The page URL will change to ${newFullPermalink}.`}
+                  </Text>
+                </Box>
+                {showRedirectOption && (
+                  <>
+                    {/* Suppressed when the redirect points back at this page —
+                        the move auto-clears it, so it won't actually shadow. */}
+                    {existingRedirect &&
+                      existingRedirect.destinationResourceId !==
+                        Number(resourceId) && (
+                        <Infobox variant="warning" size="sm" w="full">
+                          This URL already redirects to{" "}
+                          {existingRedirect.destination}. Visitors will end up
+                          there instead.
+                        </Infobox>
+                      )}
+                    <Checkbox
+                      alignItems="flex-start"
+                      size="sm"
+                      px="0.25rem"
+                      isChecked={shouldCreateRedirect}
+                      onChange={(e) =>
+                        setShouldCreateRedirect(e.target.checked)
+                      }
+                    >
+                      <Text textStyle="body-2" color="base.content.strong">
+                        {isFolderRedirect
+                          ? `Check this box to redirect visitors from everything under ${oldFullPermalink}/ to the new location.`
+                          : `Check this box to automatically redirect visitors from ${oldFullPermalink} to this new URL.`}
+                      </Text>
+                    </Checkbox>
+                  </>
+                )}
+              </VStack>
+            )}
           </VStack>
         </ModalBody>
         <ModalFooter>
@@ -140,22 +274,30 @@ const MoveResourceContent = withSuspense(
             Cancel
           </Button>
           <Button
-            // NOTE: disable this button if the resourceId to be moved is missing
-            // or if the user does not have sufficient permissions to move to the destination
+            // NOTE: disable this button if the resourceId to be moved is missing,
+            // if the user does not have sufficient permissions to move to the
+            // destination, if the move is blocked by the unpublish-lock check
+            // (or that check hasn't resolved yet)
             isDisabled={
               curResourceId === undefined ||
               ability.cannot("move", {
                 parentId: curResourceId ?? null,
               }) ||
-              ability.cannot("move", { parentId: movedItem?.parentId ?? null })
+              ability.cannot("move", {
+                parentId: movedItem?.parentId ?? null,
+              }) ||
+              isValidMove !== true ||
+              isMoveLockInfoFetching ||
+              isMoveBlocked
             }
-            isLoading={isPending}
+            isLoading={isPending || isValidMoveLoading}
             onClick={() =>
               movedItem?.id &&
               mutate({
                 siteId,
                 movedResourceId: movedItem.id,
                 destinationResourceId: curResourceId ?? null,
+                shouldCreateRedirect,
               })
             }
           >

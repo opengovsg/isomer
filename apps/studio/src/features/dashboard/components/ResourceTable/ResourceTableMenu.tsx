@@ -10,6 +10,7 @@ import {
 import { MenuItem } from "~/components/Menu"
 import { moveResourceAtom } from "~/features/editing-experience/atoms"
 import { Can } from "~/features/permissions"
+import { useIsUnpublishEnabled } from "~/hooks/useIsUnpublishEnabled"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { ResourceTableData } from "./types"
@@ -26,39 +27,8 @@ interface ResourceTableMenuProps {
   permalink: ResourceTableData["permalink"]
   resourceType: ResourceTableData["type"]
   parentId: ResourceTableData["parentId"]
-}
-
-// The default Search page (permalink /search, no parent) is a system-managed
-// page used to render SearchSG results. Its slug is hardcoded into the site
-// renderer, so users must not be able to edit its settings, move it, or
-// delete it — any of those would break search on the published site.
-const SearchPageMenuItems = () => {
-  return (
-    <>
-      <MenuItem
-        isDisabled
-        icon={<BiCog fontSize="1rem" />}
-        tooltip="This is a default page and its settings cannot be edited."
-      >
-        Edit settings
-      </MenuItem>
-      <MenuItem
-        isDisabled
-        icon={<BiFolderOpen fontSize="1rem" />}
-        tooltip="This is a default page that cannot be moved."
-      >
-        Move to...
-      </MenuItem>
-      <MenuItem
-        isDisabled
-        colorScheme="critical"
-        icon={<BiTrash fontSize="1rem" />}
-        tooltip="This is a default page that cannot be removed."
-      >
-        Delete
-      </MenuItem>
-    </>
-  )
+  liveStatus: ResourceTableData["liveStatus"]
+  scheduledAt: ResourceTableData["scheduledAt"]
 }
 
 export const ResourceTableMenu = ({
@@ -68,6 +38,8 @@ export const ResourceTableMenu = ({
   permalink,
   resourceType,
   parentId,
+  liveStatus,
+  scheduledAt,
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
   const handleMoveResourceClick = () =>
@@ -75,7 +47,22 @@ export const ResourceTableMenu = ({
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
-  const isSearchPage = permalink === "search" && parentId === null
+  const isUnpublishEnabled = useIsUnpublishEnabled()
+
+  // With unpublishing disabled, the server treats deletion as the only way
+  // to remove live content, so live status alone must not block it here —
+  // only a pending schedule does (the server always guards against that).
+  const isBlockedByLiveStatus = isUnpublishEnabled && liveStatus !== "notLive"
+  const isBlockedBySchedule = scheduledAt !== null
+  const isDeleteBlocked = isBlockedByLiveStatus || isBlockedBySchedule
+  const isContainer =
+    resourceType === ResourceType.Folder ||
+    resourceType === ResourceType.Collection
+  const deleteBlockedReason = isBlockedBySchedule
+    ? `${isContainer ? "This folder or collection has" : "This page has"} a pending schedule — cancel it before deleting`
+    : isBlockedByLiveStatus
+      ? `${isContainer ? "This folder or collection has" : "This page has"} live content — unpublish before deleting`
+      : undefined
 
   return (
     <Menu isLazy size="sm">
@@ -85,70 +72,88 @@ export const ResourceTableMenu = ({
         colorScheme="neutral"
         icon={<BiDotsHorizontalRounded />}
         variant="clear"
+        position="relative"
+        zIndex={1}
       />
       <Portal>
         <MenuList minWidth="8rem">
-          {isSearchPage ? (
-            <SearchPageMenuItems />
-          ) : (
-            <>
-              {/* TODO: Open edit modal depending on resource  */}
-              {type === ResourceType.Page && (
+          {/* TODO: Open edit modal depending on resource  */}
+          {(type === ResourceType.Page ||
+            type === ResourceType.CollectionPage ||
+            type === ResourceType.CollectionLink) && (
+            <MenuItem
+              onClick={() =>
+                setPageSettingsModalState({
+                  pageId: resourceId,
+                  type,
+                })
+              }
+              icon={<BiCog fontSize="1rem" />}
+            >
+              Edit settings
+            </MenuItem>
+          )}
+          {type === ResourceType.Folder && (
+            <MenuItem
+              onClick={() =>
+                setFolderSettingsModalState({
+                  folderId: resourceId,
+                })
+              }
+              icon={<BiCog fontSize="1rem" />}
+            >
+              Edit folder settings
+            </MenuItem>
+          )}
+          {(type === ResourceType.Page ||
+            type === ResourceType.CollectionPage ||
+            type === ResourceType.CollectionLink ||
+            type === ResourceType.Folder ||
+            type === ResourceType.Collection) && (
+            // TODO: we need to change the resourceid next time when we implement root level permissions
+            <Can do="move" on={{ parentId }} passThrough>
+              {({ isAllowed }) => (
                 <MenuItem
-                  onClick={() =>
-                    setPageSettingsModalState({
-                      pageId: resourceId,
-                      type,
-                    })
+                  as="button"
+                  onClick={handleMoveResourceClick}
+                  icon={<BiFolderOpen fontSize="1rem" />}
+                  aria-label={`Move resource to another location for ${title}`}
+                  isDisabled={!isAllowed}
+                  tooltip={
+                    isAllowed
+                      ? undefined
+                      : "You need to be an Admin to move or delete items under Home."
                   }
-                  icon={<BiCog fontSize="1rem" />}
                 >
-                  Edit settings
+                  Move to...
                 </MenuItem>
               )}
-              {type === ResourceType.Folder && (
+            </Can>
+          )}
+          {resourceType !== ResourceType.RootPage && (
+            <Can do="delete" on={{ parentId }} passThrough>
+              {({ isAllowed }) => (
                 <MenuItem
-                  onClick={() =>
-                    setFolderSettingsModalState({
-                      folderId: resourceId,
+                  onClick={() => {
+                    setResourceModalState({
+                      title,
+                      resourceId,
+                      resourceType,
                     })
+                  }}
+                  colorScheme="critical"
+                  icon={<BiTrash fontSize="1rem" />}
+                  isDisabled={!isAllowed || isDeleteBlocked}
+                  tooltip={
+                    !isAllowed
+                      ? "You need to be an Admin to move or delete items under Home."
+                      : deleteBlockedReason
                   }
-                  icon={<BiCog fontSize="1rem" />}
                 >
-                  Edit folder settings
+                  Delete
                 </MenuItem>
               )}
-              {(type === ResourceType.Page || type === ResourceType.Folder) && (
-                // TODO: we need to change the resourceid next time when we implement root level permissions
-                <Can do="move" on={{ parentId }}>
-                  <MenuItem
-                    as="button"
-                    onClick={handleMoveResourceClick}
-                    icon={<BiFolderOpen fontSize="1rem" />}
-                    aria-label={`Move resource to another location for ${title}`}
-                  >
-                    Move to...
-                  </MenuItem>
-                </Can>
-              )}
-              {resourceType !== ResourceType.RootPage && (
-                <Can do="delete" on={{ parentId }}>
-                  <MenuItem
-                    onClick={() => {
-                      setResourceModalState({
-                        title,
-                        resourceId,
-                        resourceType,
-                      })
-                    }}
-                    colorScheme="critical"
-                    icon={<BiTrash fontSize="1rem" />}
-                  >
-                    Delete
-                  </MenuItem>
-                </Can>
-              )}
-            </>
+            </Can>
           )}
         </MenuList>
       </Portal>

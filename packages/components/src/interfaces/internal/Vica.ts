@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type { IsomerSiteProps } from "~/types"
+import type { IsomerSiteProps, IsomerSiteThemeProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 // We can only pass in string values to the Vica script
@@ -83,6 +83,7 @@ export type VicaWidgetClientProps = VicaProps
 
 export type VicaWidgetProps = VicaProps & {
   site: Pick<IsomerSiteProps, "siteMapArray" | "assetsBaseUrl">
+  themeColors: IsomerSiteThemeProps["colors"]
 }
 
 export type VicaStylesheetProps = Pick<VicaProps, "useDevStagingScript">

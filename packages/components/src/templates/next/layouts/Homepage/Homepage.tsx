@@ -15,12 +15,17 @@ export const HomepageLayout = ({
         // ComponentContent = "component-content" (customCssClass.ts) is imported by all Homepage components,
         // but cannot be used here as tailwind does not support dynamic class names
         className={`break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10`}
+        data-isomer-content-blocks
       >
         {renderPageContent({
           content,
           layout,
           site,
           permalink: page.permalink,
+          // renderPageContent special-cases layout === "homepage" to treat
+          // the first block (expected to be a Hero) as the page's h1, since
+          // this is the only layout with no dedicated page header.
+          headingLevel: 2,
         })}
       </div>
     </Skeleton>

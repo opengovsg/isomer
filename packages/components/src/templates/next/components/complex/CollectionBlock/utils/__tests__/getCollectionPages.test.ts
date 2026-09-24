@@ -1,5 +1,6 @@
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import { describe, expect, it } from "vitest"
+import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getCollectionPages } from "../getCollectionPages"
 
@@ -51,12 +52,16 @@ describe("getCollectionPages", () => {
     date = "2021-01-01",
     image,
     firstImage,
+    category,
+    tagged,
   }: {
     id: string
     permalink: string
     date?: string
     image?: { src: string; alt: string }
     firstImage?: { src: string; alt: string }
+    category?: string
+    tagged?: string[]
   }): IsomerSitemap => ({
     id,
     title: `${id} title`,
@@ -65,6 +70,8 @@ describe("getCollectionPages", () => {
     lastModified: date,
     layout: "article",
     date,
+    category,
+    tagged,
     image,
     firstImage,
   })
@@ -359,5 +366,83 @@ describe("getCollectionPages", () => {
     // Assert
     expect(result[0]?.itemTitle).toEqual(`${collectionId}2 title`)
     expect(result[1]?.itemTitle).toEqual(`${collectionId}1 title`)
+  })
+
+  describe("plaintextTags resolution", () => {
+    it("threads the referenced Collection's tagCategories through to derive each card's plaintextTags from its tagged options", () => {
+      // Arrange
+      const collectionParent: IsomerSitemap = {
+        id: collectionId,
+        title: "Collection 1",
+        permalink: collectionPermalink,
+        layout: "collection",
+        summary: "Collection 1 summary",
+        lastModified: new Date("2021-01-01").toISOString(),
+        children: [
+          createMockCollectionItem({
+            id: `${collectionId}1`,
+            permalink: `${collectionPermalink}/1`,
+            tagged: ["cat-opt-1"],
+          }),
+        ],
+        collectionPagePageProps: {
+          tagCategories: [
+            {
+              label: "Category",
+              id: "cat-1",
+              display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+              options: [{ label: "Guides", id: "cat-opt-1" }],
+            },
+          ],
+        },
+      }
+      site = {
+        ...site,
+        siteMap: {
+          ...site.siteMap,
+          children: [collectionParent],
+        },
+      }
+
+      // Act
+      const result = getCollectionPages({ site, collectionParent })
+
+      // Assert
+      expect(result[0]?.plaintextTags).toEqual([
+        { id: "cat-1", category: "Category", selected: ["Guides"] },
+      ])
+    })
+
+    it("resolves plaintextTags to undefined when the referenced Collection has no tagCategories", () => {
+      // Arrange
+      const collectionParent: IsomerSitemap = {
+        id: collectionId,
+        title: "Collection 1",
+        permalink: collectionPermalink,
+        layout: "collection",
+        summary: "Collection 1 summary",
+        lastModified: new Date("2021-01-01").toISOString(),
+        children: [
+          createMockCollectionItem({
+            id: `${collectionId}1`,
+            permalink: `${collectionPermalink}/1`,
+            tagged: ["cat-opt-1"],
+          }),
+        ],
+      }
+      site = {
+        ...site,
+        siteMap: {
+          ...site.siteMap,
+          children: [collectionParent],
+        },
+      }
+
+      // Act
+      const result = getCollectionPages({ site, collectionParent })
+
+      // Assert
+      expect(result[0]?.plaintextTags).toBeUndefined()
+    })
   })
 })

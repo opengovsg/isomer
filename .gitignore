@@ -47,6 +47,8 @@ dist/
 # env file
 .env
 .env.local.*
+.env.*
+**/.env.*
 
 # Compiled components package
 **/*.tgz
@@ -58,3 +60,9 @@ storybook-static/
 
 .claude/worktrees/*
 .worktrees/*
+
+# Prisma generated client (regenerated at build time)
+packages/db/prisma/generated/
+
+# Generated Tailwind CSS for the editor preview iframe (built by `build:preview-tw`)
+apps/studio/public/assets/css/preview-tw.css

@@ -1,4 +1,5 @@
 import type { PossibleMenubarItemProps } from "./types"
+import { MenubarCustom } from "./Custom"
 import { MenubarDetailedList } from "./DetailedList"
 import { MenubarDivider } from "./Divider"
 import { MenubarHorizontalList } from "./HorizontalList"
@@ -22,6 +23,8 @@ export const MenubarItemFactory = (
       return <MenubarItem {...item} />
     case "overflow-list":
       return <MenubarOverflowList {...item} />
+    case "custom":
+      return <MenubarCustom {...item} />
     default:
       const _: never = item
       return <></>

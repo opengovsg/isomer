@@ -6,12 +6,19 @@ import { mergeProps } from "@react-aria/utils"
 import { useRef, useState } from "react"
 import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
+import { updateAppliedFilterDateRange } from "~/templates/next/layouts/Collection/utils"
+import {
+  DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY,
+  TAG_CATEGORY_TYPE,
+} from "~/types/constants"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 
 import type { FilterProps } from "../../../types/Filter"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
+import { DateFilterControls } from "./DateFilterControls"
 import { FilterDrawer } from "./FilterDrawer"
+import { filterChevronStyles, filterPanelStyles } from "./filterStyles"
 
 const filterSectionLabelStyle = tv({
   extend: groupFocusVisibleHighlight,
@@ -21,10 +28,12 @@ const FilterSectionButton = ({
   label,
   isOpen,
   onToggle,
+  panelId,
 }: {
   label: string
   isOpen: boolean
   onToggle: () => void
+  panelId: string
 }) => {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const { buttonProps } = useButton({ onPress: onToggle }, buttonRef)
@@ -35,15 +44,12 @@ const FilterSectionButton = ({
     <button
       {...mergedProps}
       ref={buttonRef}
+      aria-expanded={isOpen}
+      aria-controls={panelId}
       className="group prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-left text-base-content outline-0"
     >
-      <label className={filterSectionLabelStyle()}>{label}</label>
-      <BiChevronDown
-        aria-hidden
-        className={`h-6 w-6 flex-shrink-0 text-base-content-strong transition-all duration-300 ease-in-out ${
-          isOpen ? "rotate-180" : "rotate-0"
-        }`}
-      />
+      <span className={filterSectionLabelStyle()}>{label}</span>
+      <BiChevronDown aria-hidden className={filterChevronStyles({ isOpen })} />
     </button>
   )
 }
@@ -73,18 +79,20 @@ export const Filter = ({
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
 
+  if (filters.length === 0) {
+    return null
+  }
+
   return (
     <>
-      {filters.length > 0 && (
-        <Button
-          className="prose-headline-lg-semibold flex w-full items-center justify-between gap-1 rounded border-[1.5px] border-base-content-strong bg-white px-4 py-3.5 text-base-content-strong lg:hidden"
-          variant="unstyled"
-          onPress={() => setMobileFiltersOpen(true)}
-        >
-          Filter results
-          <BiChevronRight className="h-6 w-6 shrink-0" />
-        </Button>
-      )}
+      <Button
+        className="prose-headline-lg-semibold flex w-full items-center justify-between gap-1 rounded border-[1.5px] border-base-content-strong bg-white px-4 py-3.5 text-base-content-strong lg:hidden"
+        variant="unstyled"
+        onPress={() => setMobileFiltersOpen(true)}
+      >
+        Filter results
+        <BiChevronRight className="h-6 w-6 shrink-0" />
+      </Button>
       <FilterDrawer
         appliedFilters={appliedFilters}
         filters={filters}
@@ -109,36 +117,79 @@ export const Filter = ({
             </Button>
           )}
         </div>
-        {filters.map(({ id, label, items }) => (
-          <CheckboxGroup
-            className="border-b border-b-divider-medium py-4"
-            key={id}
-            value={appliedItemsById[id] ?? []}
-          >
-            <FilterSectionButton
-              label={label}
-              isOpen={showFilter[id] ?? false}
-              onToggle={() => updateFilterToggle(id)}
-            />
+        {filters.map(
+          ({
+            id,
+            label,
+            items,
+            type,
+            showStatusLabelsFilter,
+            showDateRangeFilter,
+          }) => {
+            const panelId = `filter-panel-${id}`
+            const isOpen = showFilter[id] ?? false
 
-            <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
-              {items.map(({ id: itemId, label: itemLabel, count }) => (
-                <Checkbox
-                  key={itemId}
-                  className="w-fit cursor-pointer p-2"
-                  value={itemId}
-                  onChange={() => handleFilterToggle(id, itemId)}
-                >
-                  {itemLabel} ({count.toLocaleString()})
-                </Checkbox>
-              ))}
-            </div>
-          </CheckboxGroup>
-        ))}
-        {filters.length === 0 && (
-          <p className="prose-body-base py-4 italic text-base-content">
-            Nothing to filter by
-          </p>
+            return (
+              <div className="border-b border-b-divider-medium py-4" key={id}>
+                <FilterSectionButton
+                  label={label}
+                  isOpen={isOpen}
+                  onToggle={() => updateFilterToggle(id)}
+                  panelId={panelId}
+                />
+
+                <div id={panelId} className={filterPanelStyles({ isOpen })}>
+                  {type === TAG_CATEGORY_TYPE.Date ? (
+                    <DateFilterControls
+                      items={items}
+                      checkboxValue={appliedItemsById[id] ?? []}
+                      statusGroupLabel={`${label} status`}
+                      onBucketToggle={(itemId) =>
+                        handleFilterToggle(id, itemId)
+                      }
+                      dateRange={
+                        appliedFilters.find((filter) => filter.id === id)
+                          ?.dateRange
+                      }
+                      onDateRangeChange={(dateRange) =>
+                        updateAppliedFilterDateRange({
+                          appliedFilters,
+                          setAppliedFilters,
+                          filterId: id,
+                          dateRange,
+                        })
+                      }
+                      showStatusLabelsFilter={
+                        showStatusLabelsFilter ??
+                        DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showStatusLabelsFilter
+                      }
+                      showDateRangeFilter={
+                        showDateRangeFilter ??
+                        DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY.showDateRangeFilter
+                      }
+                    />
+                  ) : (
+                    <CheckboxGroup
+                      aria-label={label}
+                      className="mt-4 gap-0"
+                      value={appliedItemsById[id] ?? []}
+                    >
+                      {items.map(({ id: itemId, label: itemLabel, count }) => (
+                        <Checkbox
+                          key={itemId}
+                          className="w-fit cursor-pointer p-2"
+                          value={itemId}
+                          onChange={() => handleFilterToggle(id, itemId)}
+                        >
+                          {itemLabel} ({count.toLocaleString()})
+                        </Checkbox>
+                      ))}
+                    </CheckboxGroup>
+                  )}
+                </div>
+              </div>
+            )
+          },
         )}
       </aside>
     </>

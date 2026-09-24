@@ -1,4 +1,4 @@
-import { createEmailSchema } from "@opengovsg/starter-kitty-validators/email"
+import { createEmailSchema } from "@opengovsg/validators/email"
 import { z } from "zod"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
@@ -78,6 +78,8 @@ export const listUsersOutputSchema = z.array(
     lastLoginAt: z.date().nullable(),
     createdAt: z.date().nullable(),
     role: z.nativeEnum(RoleType),
+    // Only returned to core Isomer admins
+    phone: z.string().optional(),
   }),
 )
 

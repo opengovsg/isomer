@@ -1,9 +1,10 @@
 import type { GrowthBook } from "@growthbook/growthbook"
-import type { BuildStatusType } from "@prisma/client"
+import type { BuildStatusType } from "~prisma/generated/prisma/client"
 import { compact } from "lodash-es"
+import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import {
-  sendFailedPublishEmail,
-  sendSuccessfulPublishEmail,
+  sendSiteUpdateFailedEmail,
+  sendSiteUpdatedEmail,
 } from "~/features/mail/service"
 import {
   ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY,
@@ -113,9 +114,21 @@ const sendEmails = async (
       .map((info) => {
         switch (buildStatus) {
           case "SUCCEEDED":
+            // Toppan users can only access gazettes in studio, and the
+            // successful publish email links to the raw studio resource which
+            // they cannot view. Suppress the email for them (Toppan users only
+            // ever publish gazettes).
+            if (info.email?.endsWith(TOPPAN_EMAIL_DOMAIN)) {
+              // Skip sending. This job's id is intentionally NOT added to
+              // `codebuildJobIdsForSentEmails`, so its `emailSent` stays `false` —
+              // no email was sent. This is deliberate, not a pending notification:
+              // the suppression is idempotent on every webhook retry, so a Toppan
+              // job is never emailed.
+              return
+            }
             return {
               id: info.codeBuildJobId, // codebuild job id
-              promise: sendSuccessfulPublishEmail({
+              promise: sendSiteUpdatedEmail({
                 isScheduled: info.isScheduled,
                 recipientEmail: info.email,
                 resource: info,
@@ -124,7 +137,7 @@ const sendEmails = async (
           case "FAILED":
             return {
               id: info.codeBuildJobId, // codebuild job id
-              promise: sendFailedPublishEmail({
+              promise: sendSiteUpdateFailedEmail({
                 isScheduled: info.isScheduled,
                 recipientEmail: info.email,
                 resource: info,

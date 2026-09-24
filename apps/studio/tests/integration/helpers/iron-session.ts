@@ -61,7 +61,7 @@ export const createMockRequest = (
 ): Context => {
   const innerContext = createContextInner({ session })
 
-  const mocks = createMocks(
+  const { req, res } = createMocks(
     {
       ...reqOptions,
       headers: {
@@ -70,12 +70,12 @@ export const createMockRequest = (
       },
     },
     resOptions,
-  )
+  ) as unknown as { req: NextApiRequest; res: NextApiResponse }
 
   return {
     ...innerContext,
-    req: mocks.req as unknown as NextApiRequest,
-    res: mocks.res as unknown as NextApiResponse,
+    req,
+    res,
     gb: mockGrowthBook,
   }
 }

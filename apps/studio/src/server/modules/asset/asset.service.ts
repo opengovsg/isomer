@@ -1,23 +1,37 @@
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
-import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
+import {
+  IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
+  SUPPORTED_OPTIMIZABLE_FORMATS,
+} from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { create as createContentDisposition } from "content-disposition"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
 import { env } from "~/env.mjs"
-import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/lib/fileUpload"
+import { createBaseLogger } from "~/lib/logger"
 import {
-  copyFile,
   deleteFile,
   generateSignedGetUrl,
   generateSignedPutUrl,
+  isNotFoundError,
+  putObjectDirect,
 } from "~/lib/s3"
+import { getServerDomPurify } from "~/lib/server-dom-purify"
 
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
 import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
-const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
+const logger = createBaseLogger({ path: "asset.service" })
+const bucket = env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME
+
+export interface UploadConfig {
+  presignedPutUrl: string
+  contentType: string
+  contentDisposition: string
+}
 
 // Server-side allowlist: extension (lowercase, e.g. ".jpg") -> MIME (used for signed upload metadata)
 const EXTENSION_TO_MIME: Record<string, string> = {
@@ -25,14 +39,26 @@ const EXTENSION_TO_MIME: Record<string, string> = {
   ...FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 }
 
+// NOTE: The format that s3 expects is in this format:
+// Tagging: "key1=value1&key2=value2"
+export const generateTagsQueryString = (
+  tags: { key: string; value: string }[],
+) => {
+  const entries = tags.map(({ key, value }) => `${key}=${value}`)
+  return entries.join("&")
+}
+
+const getFilenameFromKey = (key: string): string => key.split("/").pop() ?? ""
+
+const getExtensionFromFilename = (filename: string): string =>
+  filename.includes(".") ? filename.substring(filename.lastIndexOf(".")) : ""
+
 /**
  * Derive trusted Content-Type from key. Key is only produced after schema validation,
  * so the file extension is always from the allowlist.
  */
 export const getContentTypeFromKey = (key: string): string => {
-  const segment = key.split("/").pop() ?? ""
-  const lower = segment.toLowerCase()
-  const ext = lower.includes(".") ? lower.substring(lower.lastIndexOf(".")) : ""
+  const ext = getExtensionFromFilename(getFilenameFromKey(key).toLowerCase())
   return EXTENSION_TO_MIME[ext] ?? "application/octet-stream"
 }
 
@@ -40,9 +66,7 @@ export const getContentTypeFromKey = (key: string): string => {
  * Build Content-Disposition for signed upload (inline; filename for download hint).
  */
 export const getContentDispositionForKey = (key: string): string => {
-  const segment = key.split("/").pop() ?? ""
-  const encoded = encodeURIComponent(segment)
-  return `inline; filename*=UTF-8''${encoded}`
+  return createContentDisposition(getFilenameFromKey(key), { type: "inline" })
 }
 
 // Permissions for assets share the same permissions as resources preferentially
@@ -111,29 +135,150 @@ export const doAllFileKeysBelongToSite = ({
 
 export const getPresignedPutUrl = async ({
   key,
+  fileSize,
+  tags,
 }: {
   key: string
-}): Promise<{
-  presignedPutUrl: string
-  contentType: string
-  contentDisposition: string
-}> => {
+  fileSize: number
+  tags?: { key: string; value: string }[]
+}): Promise<UploadConfig> => {
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
   const presignedPutUrl = await generateSignedPutUrl({
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+    Bucket: bucket,
     Key: key,
     ContentType: contentType,
     ContentDisposition: contentDisposition,
+    ContentLength: fileSize,
+    Tagging: tags && generateTagsQueryString(tags),
   })
   return { presignedPutUrl, contentType, contentDisposition }
 }
 
+// Best-effort delete: the derived format may not exist for every asset
+// (e.g. it was never generated), so a missing key is not an error.
+const deleteFileIfExists = async ({ Key }: { Key: string }) => {
+  try {
+    await deleteFile({ Key, Bucket: bucket })
+  } catch (error) {
+    if (!isNotFoundError(error)) throw error
+  }
+}
+
+// NOTE: Check if the key ends in one of our image optimisation formats.
+// If it does, we need to also delete all of the related formats.
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
-  await deleteFile({
-    Key: key,
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+  const _suffix = key.split(".").pop()
+  const suffix = _suffix === "jpg" ? "jpeg" : _suffix
+  if (!suffix) return
+
+  if (
+    SUPPORTED_OPTIMIZABLE_FORMATS.includes(
+      suffix as (typeof SUPPORTED_OPTIMIZABLE_FORMATS)[number],
+    )
+  ) {
+    // NOTE: We only convert to webp and avif
+    const prefix = key.substring(0, key.lastIndexOf("."))
+    await deleteFileIfExists({ Key: `${prefix}.webp` })
+    await deleteFileIfExists({ Key: `${prefix}.avif` })
+  }
+
+  await deleteFile({ Key: key, Bucket: bucket })
+}
+
+export interface DeleteAssetByUrlResult {
+  url: string
+  key?: string
+  success: boolean
+  error?: string
+}
+
+// Matches the key shape produced by getFileKey: `${siteId}/${uuid}/${fileName}`.
+// Rejects anything else (extra/missing path segments, a non-UUID folder) so an
+// admin-submitted URL can only ever resolve to a key in that canonical shape,
+// never to an arbitrary object that happens to share a pathname.
+const ASSET_KEY_PATTERN =
+  /^\d+\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[^/]+$/i
+
+// `decodeURIComponent` throws on a raw '%' that isn't part of a valid
+// escape — but filenamify doesn't strip '%' from filenames, so a
+// legitimately uploaded "cover-100%.png" produces a URL `decodeURIComponent`
+// can't parse whole. Decoding only maximal runs of valid %XX triplets (a
+// multi-byte UTF-8 character is exactly such a run, e.g. "%C3%A9") and
+// leaving everything else — including a stray '%' — untouched handles both
+// without throwing.
+const decodePercentEncodedRuns = (input: string): string =>
+  input.replace(/(?:%[0-9a-fA-F]{2})+/g, (run) => {
+    try {
+      return decodeURIComponent(run)
+    } catch {
+      return run
+    }
   })
+
+// Parses a full asset URL (e.g.
+// https://isomer-user-content.by.gov.sg/36/uuid/picture.png) into its S3 key.
+// Only URLs on the configured asset domain, with a pathname in the canonical
+// `${siteId}/${uuid}/${fileName}` shape, resolve to a key — anything else
+// (wrong host, extra path segments, a non-UUID folder) returns null so a
+// mistyped or malicious URL can't be mapped onto an unrelated S3 object.
+export const parseAssetUrlToKey = (url: string): string | null => {
+  const trimmed = url.trim()
+  let parsed: URL
+  try {
+    parsed = new URL(trimmed)
+  } catch {
+    return null
+  }
+
+  if (parsed.hostname !== env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME) {
+    return null
+  }
+
+  // `parsed.pathname` alone drops everything from an unescaped `#` onward
+  // — WHATWG treats it as the start of a fragment. Isomer never appends a
+  // real navigational fragment to an asset URL (these are direct file
+  // links, not page links with anchors), and filenamify's
+  // reserved-character list doesn't strip `#`, so a `#` here is always a
+  // literal filename character produced by Studio's own (unencoded) URL
+  // generation — reattaching `.hash` recovers it. `.search` (a real
+  // `?query`) is deliberately left out: filenamify does strip `?`, so a
+  // real asset key can never contain one.
+  const rawPath = parsed.pathname + parsed.hash
+  const key = decodePercentEncodedRuns(rawPath.slice(1))
+  return ASSET_KEY_PATTERN.test(key) ? key : null
+}
+
+// Admin-only counterpart to markFileAsDeleted: takes arbitrary asset URLs
+// (not scoped to a single site the caller is permissioned on) and soft-deletes
+// each one, tolerating per-URL failures so one bad URL doesn't abort the rest.
+export const deleteAssetsByUrl = async (
+  urls: string[],
+): Promise<DeleteAssetByUrlResult[]> => {
+  return Promise.all(
+    urls.map(async (url): Promise<DeleteAssetByUrlResult> => {
+      const key = parseAssetUrlToKey(url)
+      if (!key) {
+        return { url, success: false, error: "Invalid asset URL" }
+      }
+
+      try {
+        await markFileAsDeleted({ key })
+        return { url, key, success: true }
+      } catch (error) {
+        logger.error(
+          { url, key, error },
+          "Failed to soft-delete asset via deleteAssetsByUrl",
+        )
+        return {
+          url,
+          key,
+          success: false,
+          error: "Failed to delete asset",
+        }
+      }
+    }),
+  )
 }
 
 export const getPresignedGetUrl = async ({
@@ -141,48 +286,78 @@ export const getPresignedGetUrl = async ({
 }: {
   key: string
 }): Promise<string> => {
-  return generateSignedGetUrl({
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
-    Key: key,
-  })
+  return generateSignedGetUrl({ Bucket: bucket, Key: key })
 }
 
-/**
- * Copy `sourceKey` to a new key derived by replacing the filename segment with
- * `newFileName`. Does NOT delete the source — the caller is responsible for
- * scheduling the soft-delete *after* whatever DB write references the new key
- * has committed, so a tx rollback never leaves a resource pointing at a
- * tombstoned object.
- */
-export const copyFileWithNewName = async ({
-  sourceKey,
-  newFileName,
-}: {
-  sourceKey: string
-  newFileName: string
-}): Promise<string> => {
-  // Extract siteId/uuid prefix from source key (format: siteId/uuid/filename)
-  const parts = sourceKey.split("/")
-  if (parts.length < 3) {
+export const sanitizeSvg = (content: string): string => {
+  // Must run BEFORE parsing. Entity expansion (e.g. billion-laughs) happens
+  // inside DOMParser.parseFromString — DOMPurify only sees the resulting DOM
+  // and cannot intercept it. No sanitization library operates at this layer.
+  if (/<!ENTITY/i.test(content)) {
+    logger.error("SVG rejected: contains disallowed XML entities")
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Invalid source key format",
+      message: "SVG contains disallowed XML entities",
     })
   }
-  const prefix = parts.slice(0, 2).join("/")
 
-  // Build new key with sanitized new filename
-  const sanitizedFileName = filenamify(newFileName, { replacement: "-" })
-  const newKey = `${prefix}/${sanitizedFileName}`
+  const { DOMParser, DOMPurify } = getServerDomPurify()
 
-  // Copy to new location. The aws-sdk v3 CopyObjectCommand defaults
-  // `TaggingDirective` to `COPY`, so the ISOMER_STATUS tag (and any other
-  // object tags) carry over without us having to set them explicitly.
-  await copyFile({
-    SourceKey: sourceKey,
-    DestKey: newKey,
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+  const doc = new DOMParser().parseFromString(content, "image/svg+xml")
+
+  if (doc.getElementsByTagName("parsererror").length > 0) {
+    logger.error("SVG rejected: failed to parse as valid XML")
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "SVG failed to parse as valid XML",
+    })
+  }
+
+  const root = doc.documentElement
+  if (
+    root.localName !== "svg" ||
+    root.namespaceURI !== "http://www.w3.org/2000/svg"
+  ) {
+    logger.error(
+      { localName: root.localName, namespaceURI: root.namespaceURI },
+      "SVG rejected: root element is not a valid SVG element",
+    )
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Root element is not a valid SVG element",
+    })
+  }
+
+  // DOMPurify's svg+svgFilters profile is the actual security boundary — it strips
+  // all on* event handlers and dangerous elements by default. The explicit lists
+  // below are defense-in-depth for the highest-risk items; do not treat them as
+  // exhaustive. Adding an entry here does not replace the profile's coverage.
+  const sanitized = DOMPurify.sanitize(content, {
+    USE_PROFILES: { svg: true, svgFilters: true },
+    FORBID_TAGS: ["script", "foreignObject", "use"],
+    FORBID_ATTR: ["onload", "onclick", "onerror", "onmouseover"],
   })
 
-  return newKey
+  return sanitized
+}
+
+export const putFileDirect = async ({
+  key,
+  body,
+  tags,
+}: {
+  key: string
+  body: string
+  tags?: { key: string; value: string }[]
+}): Promise<void> => {
+  const contentType = getContentTypeFromKey(key)
+  const contentDisposition = getContentDispositionForKey(key)
+  await putObjectDirect({
+    Bucket: bucket,
+    Key: key,
+    Body: body,
+    ContentType: contentType,
+    ContentDisposition: contentDisposition,
+    Tagging: tags && generateTagsQueryString(tags),
+  })
 }

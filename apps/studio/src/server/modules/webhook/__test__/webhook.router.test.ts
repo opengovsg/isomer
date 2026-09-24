@@ -1,7 +1,8 @@
 import type { GrowthBook } from "@growthbook/growthbook"
-import type { User } from "@prisma/client"
 import type { Mock } from "vitest"
+import type { env } from "~/env.mjs"
 import type { Session } from "~/lib/types/session"
+import type { User } from "~prisma/generated/prisma/client"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
@@ -16,27 +17,47 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import {
-  sendFailedPublishEmail,
-  sendSuccessfulPublishEmail,
+  sendSiteUpdateFailedEmail,
+  sendSiteUpdatedEmail,
 } from "~/features/mail/service"
 import { buildIdFromArn } from "~/schemas/webhook"
-import { createCallerFactory } from "~/server/trpc"
+import { WEBHOOK_X_API_KEY_HEADER, createCallerFactory } from "~/server/trpc"
 
 import { db } from "../../database"
 import { webhookRouter } from "../webhook.router"
 
+vi.mock("~/env.mjs", async () => {
+  const actual = await vi.importActual<{ env: typeof env }>("~/env.mjs")
+  return {
+    env: {
+      ...actual.env,
+      STUDIO_SSM_WEBHOOK_API_KEY: "test-webhook-api-key",
+    },
+  }
+})
+
 // Mock the publishSite function to avoid sending emails
 vi.mock("~/features/mail/service", () => ({
-  sendSuccessfulPublishEmail: vi.fn(),
-  sendFailedPublishEmail: vi.fn(),
+  sendSiteUpdatedEmail: vi.fn(),
+  sendSiteUpdateFailedEmail: vi.fn(),
 }))
 
 const getCallerWithMockGrowthbook = (
   session: Session,
   mockReturnValue = true,
+  apiKey: string | null = "test-webhook-api-key",
 ): ReturnType<typeof createCaller> => {
-  const mockRequest = createMockRequest(session)
+  const mockRequest = createMockRequest(session, {
+    headers:
+      apiKey === null
+        ? undefined
+        : {
+            [WEBHOOK_X_API_KEY_HEADER]: apiKey,
+          },
+    method: "GET",
+  })
   const mockGrowthBook: Partial<GrowthBook> = {
     isOn: vi.fn().mockReturnValue(mockReturnValue),
     destroy: vi.fn(),
@@ -87,8 +108,8 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledOnce()
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledWith({
+      expect(sendSiteUpdatedEmail).toHaveBeenCalledOnce()
+      expect(sendSiteUpdatedEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
         isScheduled: true,
         resource: expect.objectContaining(page),
@@ -107,6 +128,60 @@ describe("webhook.router", async () => {
           emailSent: true,
         }),
       )
+    })
+    it("does not send a success email to toppan users", async () => {
+      // Arrange
+      const toppanUser = await setupUser({
+        email: `toppan-user${TOPPAN_EMAIL_DOMAIN}`,
+      })
+      const { codebuildJob } = await setupCodeBuildJob({
+        userId: toppanUser.id,
+        arn: "build/test-id",
+        startedAt: FIXED_NOW,
+        isScheduled: true,
+      })
+      const caller = getCallerWithMockGrowthbook(session)
+
+      // Act
+      await caller.updateCodebuildWebhook({
+        projectName: "test-project",
+        arn: "build/test-id", // saved in the db
+        status: "SUCCEEDED",
+      })
+
+      // Assert
+      expect(sendSiteUpdatedEmail).not.toHaveBeenCalled()
+      // the build status should still be updated, but no email should be sent
+      const job = await db
+        .selectFrom("CodeBuildJobs")
+        .where("buildId", "=", codebuildJob.buildId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(job).toEqual(
+        expect.objectContaining({
+          status: "SUCCEEDED",
+          emailSent: false, // emailSent should remain false
+        }),
+      )
+    })
+    it("rejects authenticated callers that do not provide the webhook API key", async () => {
+      // Arrange
+      await setupCodeBuildJob({
+        userId: user.id,
+        arn: "build/test-id",
+        startedAt: FIXED_NOW,
+      })
+      const caller = getCallerWithMockGrowthbook(session, true, null)
+
+      // Act + Assert
+      await expect(
+        caller.updateCodebuildWebhook({
+          projectName: "test-project",
+          arn: "build/test-id",
+          status: "SUCCEEDED",
+        }),
+      ).rejects.toThrow("Invalid Webhook API key provided")
+      expect(sendSiteUpdatedEmail).not.toHaveBeenCalled()
     })
     it("it should update the codebuildjobs table when multiple resources specify the same buildId", async () => {
       // Arrange
@@ -136,7 +211,7 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledTimes(
+      expect(sendSiteUpdatedEmail).toHaveBeenCalledTimes(
         NUM_RESOURCES_WITH_SAME_BUILD_ID,
       )
       // check the codebuildjobs table to see if the status has been updated for all the jobs with the same buildId
@@ -170,8 +245,8 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendFailedPublishEmail).toHaveBeenCalledOnce()
-      expect(sendFailedPublishEmail).toHaveBeenCalledWith({
+      expect(sendSiteUpdateFailedEmail).toHaveBeenCalledOnce()
+      expect(sendSiteUpdateFailedEmail).toHaveBeenCalledWith({
         isScheduled: true,
         recipientEmail: user.email,
         resource: expect.objectContaining(page),
@@ -211,7 +286,7 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
+      expect(sendSiteUpdatedEmail).not.toHaveBeenCalled()
     })
     it("sends a success email with the correct isScheduled flag", async () => {
       // Arrange
@@ -232,8 +307,8 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledOnce()
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledWith({
+      expect(sendSiteUpdatedEmail).toHaveBeenCalledOnce()
+      expect(sendSiteUpdatedEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
         isScheduled: false,
         resource: expect.objectContaining(page),
@@ -258,8 +333,8 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendFailedPublishEmail).toHaveBeenCalledOnce()
-      expect(sendFailedPublishEmail).toHaveBeenCalledWith({
+      expect(sendSiteUpdateFailedEmail).toHaveBeenCalledOnce()
+      expect(sendSiteUpdateFailedEmail).toHaveBeenCalledWith({
         recipientEmail: user.email,
         isScheduled: false,
         resource: expect.objectContaining(page),
@@ -284,7 +359,7 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
+      expect(sendSiteUpdatedEmail).not.toHaveBeenCalled()
     })
     it("does not send a failure email if the feature flag is disabled", async () => {
       // Arrange
@@ -305,7 +380,7 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendFailedPublishEmail).not.toHaveBeenCalled()
+      expect(sendSiteUpdateFailedEmail).not.toHaveBeenCalled()
     })
     it("sends a success email to multiple users if multiple builds are superseded by the same build id", async () => {
       // Arrange
@@ -339,17 +414,17 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).toHaveBeenCalledTimes(5) // once for the original build + 4 for the superseded builds
-      const calls = (sendSuccessfulPublishEmail as Mock).mock.calls
+      expect(sendSiteUpdatedEmail).toHaveBeenCalledTimes(5) // once for the original build + 4 for the superseded builds
+      const calls = (sendSiteUpdatedEmail as Mock).mock.calls
       // check that an email was sent to the original user
       const callsWithOriginalUser = calls
-        .map(([arg]) => arg as Parameters<typeof sendSuccessfulPublishEmail>[0])
+        .map(([arg]) => arg as Parameters<typeof sendSiteUpdatedEmail>[0])
         .filter((call) => {
           return call.recipientEmail === user.email
         })
       // check that emails were sent to the user with the superseded builds
       const callsWithSupersededUser = calls
-        .map(([arg]) => arg as Parameters<typeof sendSuccessfulPublishEmail>[0])
+        .map(([arg]) => arg as Parameters<typeof sendSiteUpdatedEmail>[0])
         .filter((call) => {
           return call.recipientEmail === userForSupersededBuilds.email
         })
@@ -399,7 +474,7 @@ describe("webhook.router", async () => {
       })
 
       // Assert
-      expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
+      expect(sendSiteUpdatedEmail).not.toHaveBeenCalled()
       // check the codebuildjobs table to see if the status has been updated
       await db
         .selectFrom("CodeBuildJobs")

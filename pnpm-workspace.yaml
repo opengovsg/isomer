@@ -7,10 +7,20 @@ packages:
   - "tooling/build/amplify"
   - "tooling/build/1password"
   - "tooling/build/scripts/publishing"
+  # Bruno API collections, not an npm package
+  - "!tooling/bruno"
 
 linkWorkspacePackages: true
 
 blockExoticSubdeps: true
+
+# Pins the registries used for resolution/verification so a runner's ambient
+# npm config (env var, global .npmrc) can't silently redirect @opengovsg
+# packages to a registry that isn't authenticated in CI, which otherwise
+# fails pnpm 12's supply-chain lockfile verification with 401s.
+registries:
+  default: "https://registry.npmjs.org/"
+  "@opengovsg": "https://registry.npmjs.org/"
 
 minimumReleaseAge: 1440
 
@@ -29,237 +39,271 @@ publicHoistPattern:
   - rimraf
   - tsc-alias
 
-onlyBuiltDependencies:
-  - "@prisma/client"
-  - "@prisma/engines"
-  - esbuild
-  - prisma
+allowBuilds:
+  "@prisma/client": true
+  "@prisma/engines": true
+  esbuild: true
+  prisma: true
+  # pnpm 11 made strictDepBuilds true by default — any transitive dep with an
+  # install script that isn't explicitly allowed/ignored fails the install with
+  # ERR_PNPM_IGNORED_BUILDS. The entries below preserve the pre-pnpm-11 behavior
+  # of skipping these scripts (none are needed for our build).
+  "@datadog/native-appsec": false
+  "@datadog/native-iast-taint-tracking": false
+  "@datadog/native-metrics": false
+  "@datadog/pprof": false
+  "@parcel/watcher": false
+  core-js-pure: false
+  cpu-features: false
+  dd-trace: false
+  msw: false
+  protobufjs: false
+  sharp: false
+  ssh2: false
+  core-js: false
 
 patchedDependencies:
-  next@16.2.6: patches/next@16.2.6.patch
+  next@16.3.3: patches/next@16.3.3.patch
 
 catalog:
+  # v4 is pinned deliberately: the legacy egazette integration uses the v4 client API
+  # (algoliasearch(appId, key).initIndex(name), index.saveObjects, index.deleteBy).
+  # v5 changed the client API — do not "upgrade" this without reviewing egazette compatibility.
+  algoliasearch: ^4.27.0
   ajv: ^8.20.0
-  autoprefixer: ^10.4.21
-  axios: ^1.16.1
+  autoprefixer: ^10.6.1
+  axios: ^1.20.0
   bootstrap-icons: ^1.13.1
-  browserslist-useragent-regexp: ^4.1.3
-  cheerio: ^1.0.0
-  chromatic: ^16.8.0
+  browserslist-useragent-regexp: ^4.1.4
+  cheerio: ^1.2.0
+  chromatic: ^18.7.4
   clean-webpack-plugin: ^4.0.0
-  commander-ts: ^0.2.0
-  dayjs: ^1.11.13
-  date-fns: ^4.1.0
-  dotenv: ^16.4.5
+  dayjs: ^1.11.23
+  date-fns: ^4.4.0
+  dotenv: ^16.6.1
   dotenv-cli: ^11.0.0
-  jsdom: ^29.1.1
-  isomorphic-dompurify: ^3.12.0
+  jsdom: ^30.0.1
+  isomorphic-dompurify: ^4.2.0
   mockdate: ^3.0.5
-  msw: ^2.14.6
-  msw-storybook-addon: ^2.0.7
+  msw: ^2.15.0
+  msw-storybook-addon: ^3.0.0
   msw-trpc: ^2.0.1
-  node-mocks-http: ^1.16.2
-  npm-run-all2: ^8.0.4
-  "@octokit/rest": ^22.0.0
-  "@inquirer/prompts": ^8.4.3
-  "@opengovsg/design-system-react": ^1.31.0
-  "@opengovsg/starter-kitty-validators": ^1.2.13
+  node-mocks-http: ^1.18.1
+  npm-run-all2: ^9.0.3
+  "@octokit/rest": ^22.0.1
+  "@inquirer/prompts": ^8.7.2
+  "@opengovsg/design-system-react": ^1.35.0
+  "@opengovsg/validators": ^1.4.1
   "@paralleldrive/cuid2": ^3.3.0
-  "@sinclair/typebox": ^0.33.12
-  "@tanstack/react-table": ^8.21.2
-  pg: ^8.16.2
+  "@sinclair/typebox": ^0.33.24
+  "@tanstack/react-table": ^9.2.4
+  "@testing-library/react": ^16.3.3
   pino: ^10.3.1
-  pino-pretty: ^13.0.0
-  postcss: ^8.5.14
-  postcss-preset-env: ^11.2.1
-  react-icons: ^5.2.0
-  rimraf: ^5.0.10
-  sherif: ^1.11.1
-  start-server-and-test: ^3.0.2
-  tailwindcss: ^3.4.4
-  testcontainers: ^11.14.0
-  tsc-alias: ^1.8.16
-  "@typescript/native-preview": 7.0.0-dev.20260513.1
-  type-fest: ^4.23.0
-  tsx: ^4.20.4
-  turbo: ^2.9.14
+  pino-pretty: ^13.1.3
+  postcss: ^8.5.28
+  postcss-preset-env: ^11.5.2
+  react-icons: ^5.7.0
+  rimraf: ^6.1.3
+  react-instantsearch: ^7.49.0
+  sherif: ^1.13.0
+  start-server-and-test: ^3.0.12
+  tailwindcss: ^3.4.19
+  testcontainers: ^12.1.0
+  tsc-alias: ^1.9.4
+  "@typescript/native-preview": 7.0.0-dev.20260707.2
+  type-fest: ^5.9.0
+  tsx: ^4.23.13
+  turbo: ^2.10.12
   typescript: ^6.0.3
   usehooks-ts: ^3.1.1
-  webpack-cli: ^7.0.2
+  webpack-cli: ^7.2.3
   webpack-glob-entries: ^1.0.1
-  zod: ^4.4.3
-  "@types/jsdom": ^21.1.7
+  # 4.6.x breaks Tailwind/jiti: `import { z } from "zod"` yields undefined (`z.object`).
+  zod: 4.5.4
   "@types/lodash-es": ^4.17.12
-  "@types/lunr": ^2.3.7
-  "@types/node": ^25.7.0
-  "@types/papaparse": ^5.5.0
-  "@types/pg": ^8.15.4
-  "@types/request": ^2.48.12
-  "@types/validator": ^13.15.2
-  globals: ^11.12.0
-  "@1password/sdk": ^0.4.0
-  "@datadog/browser-rum": ^5.29.1
-  "@fontsource/ibm-plex-mono": ^5.1.1
-  "@formkit/auto-animate": ^0.8.2
-  "@govtechsg/sgds-react": ^2.7.6
+  "@types/node": ^26.5.1
+  "@types/papaparse": ^5.5.2
+  "@types/request": ^2.48.13
+  "@types/validator": ^13.15.10
+  "@1password/sdk": ^0.5.0
+  "@datadog/browser-rum": ^7.13.0
+  "@fontsource/ibm-plex-mono": ^5.3.0
+  "@floating-ui/dom": ^1.8.0
+  "@formkit/auto-animate": ^0.10.0
   "@headlessui/react": ^2.2.10
   "@hello-pangea/dnd": ^18.0.1
-  "@hookform/resolvers": ^5.2.2
-  "@intercom/messenger-js-sdk": ^0.0.19
-  "@playwright/test": ^1.60.0
+  "@hookform/resolvers": ^5.9.1
+  "@intercom/messenger-js-sdk": ^0.0.20
   "@uidotdev/usehooks": ^2.4.1
   ajv-errors: ^3.0.0
-  chakra-react-select: ^5.0.5
-  commander: ^12.1.0
-  date-fns-tz: ^3.1.3
-  dd-trace: ^5.102.0
-  exponential-backoff: ^3.1.2
-  filenamify: ^6.0.0
+  chakra-react-select: ^5.1.1
+  commander: ^15.0.0
+  content-disposition: ^3.0.0
+  date-fns-tz: ^3.2.0
+  dd-trace: ^6.15.0
+  exponential-backoff: ^3.1.3
+  filenamify: ^7.0.3
   flat: ^6.0.1
   inter-ui: ^4.1.1
-  interweave: ^13.1.0
+  interweave: ^13.1.1
   interweave-ssr: ^2.0.0
   iron-session: ^8.0.4
-  jose: ^6.0.11
-  jotai: ^2.20.0
-  js-base64: ^3.7.7
-  js-md5: ^0.8.3
-  kysely: ^0.28.17
+  jose: ^6.2.12
+  jotai: ^3.0.0
+  js-md5: ^0.9.2
+  kysely: ^0.29.5
   lodash-es: ^4.18.1
-  markdown-to-jsx: ^7.7.8
-  minisearch: ^7.1.2
-  nanoid: ^5.1.11
-  next: 16.2.6
+  nanoid: ^6.0.1
+  next: 16.3.3
   openid-client: ^5.7.1
-  oxfmt: ^0.48.0
-  oxlint: ^1.64.0
-  oxlint-tsgolint: ^0.22.1
-  papaparse: ^5.5.3
-  pg-boss: ^12.3.0
+  oxfmt: ^0.68.0
+  oxlint: ^1.82.0
+  oxlint-tsgolint: ^7.0.2001
+  papaparse: ^5.7.0
+  pg-boss: ^12.30.0
   postcss-load-config: ^6.0.1
-  rate-limiter-flexible: ^5.0.3
-  react-error-boundary: ^5.0.0
-  react-frame-component: ^5.2.7
-  react-hook-form: ^7.75.0
+  posthog-js: ^1.429.1
+  posthog-node: ^5.52.4
+  rate-limiter-flexible: ^11.2.0
+  react-error-boundary: ^6.1.5
+  react-frame-component: ^5.3.2
+  react-hook-form: ^7.87.0
   react-markdown: ^10.1.0
   rehype-external-links: ^3.0.0
-  sass: ^1.99.0
-  superjson: ^2.2.1
-  tailwind-merge: ^2.4.0
-  tailwind-variants: ^0.3.1
-  tailwindcss-react-aria-components: ^1.1.4
-  tiptap-text-direction: ^0.4.0
+  sass: ^1.104.0
+  superjson: ^2.2.6
+  tailwind-merge: ^2.6.1
+  tailwind-variants: ^3.3.1
+  tailwindcss-react-aria-components: ^1.2.0
+  tiptap-text-direction: ^0.5.0
   transliteration: ^2.6.1
   validator: ^13.15.35
-  wretch: ^3.0.7
+  wretch: ^3.0.9
 
 catalogs:
   env:
     "@t3-oss/env-core": ^0.13.8
     "@t3-oss/env-nextjs": ^0.13.8
   atlaskitPragmaticDnd:
-    "@atlaskit/pragmatic-drag-and-drop": ^1.7.7
-    "@atlaskit/pragmatic-drag-and-drop-hitbox": ^1.1.0
+    "@atlaskit/pragmatic-drag-and-drop": ^3.1.0
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": ^2.2.2
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1046.0
-    "@aws-sdk/client-amplify": ^3.1046.0
-    "@aws-sdk/client-cloudfront": ^3.1046.0
-    "@aws-sdk/client-codebuild": ^3.1046.0
-    "@aws-sdk/client-s3": ^3.1046.0
-    "@aws-sdk/s3-request-presigner": ^3.1046.0
-    "@aws-sdk/credential-providers": ^3.1046.0
+    "@aws-sdk/client-acm": ^3.1132.0
+    "@aws-sdk/client-amplify": ^3.1132.0
+    "@aws-sdk/client-cloudfront": ^3.1132.0
+    "@aws-sdk/client-codebuild": ^3.1132.0
+    "@aws-sdk/client-s3": ^3.1132.0
+    "@aws-sdk/lib-storage": ^3.1132.0
+    "@aws-sdk/s3-request-presigner": ^3.1132.0
+    "@aws-sdk/credential-providers": ^3.1132.0
+    "@aws-sdk/rds-signer": ^3.1132.0
   babel:
-    "@babel/plugin-transform-class-properties": ^7.27.1
-    "@babel/plugin-transform-object-rest-spread": ^7.27.3
-    "@babel/preset-env": ^7.29.3
-    "@babel/preset-typescript": ^7.27.1
+    "@babel/plugin-transform-class-properties": ^8.0.1
+    "@babel/plugin-transform-object-rest-spread": ^8.0.1
+    "@babel/preset-env": ^8.0.5
+    "@babel/preset-typescript": ^8.0.1
   casl:
-    "@casl/ability": ^6.8.1
-    "@casl/react": ^5.0.0
+    "@casl/ability": ^7.0.1
+    "@casl/react": ^7.0.1
   chakra:
     "@chakra-ui/anatomy": ^2.3.4
     "@chakra-ui/cli": ^2.5.8
-    "@chakra-ui/react": ^2.10.5
-    "@chakra-ui/styled-system": ^2.9.2
+    "@chakra-ui/react": ^2.10.10
+    "@chakra-ui/styled-system": ^2.12.0
     "@chakra-ui/theme-tools": ^2.2.6
     "@chakra-ui/utils": ^2.2.2
   growthbook:
-    "@growthbook/growthbook": ^1.2.0
-    "@growthbook/growthbook-react": ^1.2.0
+    "@growthbook/growthbook": ^1.7.0
+    "@growthbook/growthbook-react": ^1.7.0
   jsonforms:
-    "@jsonforms/core": ^3.5.1
-    "@jsonforms/react": ^3.5.1
+    "@jsonforms/core": ^3.8.0
+    "@jsonforms/react": ^3.8.0
+  playwright:
+    "@playwright/test": ^1.63.0
+    playwright: ^1.63.0
+  pg:
+    pg: ^8.23.0
+    pg-cursor: ^2.22.0
+    "@types/pg": ^8.23.1
+    "@types/pg-cursor": ^2.7.2
   prisma:
-    "@prisma/client": 5.22.0
-    prisma: 5.22.0
-    prisma-json-types-generator: 3.2.3
-    prisma-kysely: ^1.8.0
+    "@prisma/adapter-pg": 7.10.0
+    "@prisma/client": 7.10.0
+    prisma: 7.10.0
+    prisma-json-types-generator: 5.1.1
+    prisma-kysely: 3.2.1
   react:
     react: ^18.3.1
     react-dom: ^18.3.1
-    "@types/react": ^18.3.26
+    "@types/react": ^18.3.31
     "@types/react-dom": ^18.3.7
   "react-aria":
-    "@react-aria/button": ^3.15.0
-    "@react-aria/checkbox": ^3.17.0
-    "@react-aria/focus": ^3.22.0
-    "@react-aria/interactions": ^3.28.0
-    "@react-aria/textfield": ^3.18.2
-    "@react-aria/utils": ^3.34.0
-    "@react-stately/checkbox": ^3.8.0
-    "@react-stately/toggle": ^3.10.0
+    "@react-aria/button": ^3.15.1
+    "@react-aria/checkbox": ^3.17.1
+    "@react-aria/focus": ^3.22.1
+    "@react-aria/interactions": ^3.28.1
+    "@react-aria/textfield": ^3.19.1
+    "@react-aria/utils": ^3.34.1
+    "@react-stately/checkbox": ^3.8.1
+    "@react-stately/toggle": ^3.10.1
+  # Pinned (not a caret range) to keep pnpm from resolving to 10.5.x: Storybook
+  # 10.5's instrumented HTMLElement.prototype.focus getter breaks
+  # @zag-js/focus-visible's assumption that `focus` is a plain function
+  # (used internally by Chakra/@opengovsg/design-system-react), throwing
+  # "Illegal invocation" and crashing any story that opens a Chakra Menu.
+  # Unpin once fixed upstream.
   storybook:
-    storybook: ^10.4.0
-    "@storybook/addon-a11y": ^10.4.0
-    "@storybook/addon-docs": ^10.4.0
-    "@storybook/addon-links": ^10.4.0
-    "@storybook/addon-themes": ^10.4.0
-    "@storybook/nextjs": ^10.4.0
-    "@storybook/react-vite": ^10.4.0
-    eslint-plugin-storybook: ^10.4.0
-    storybook-addon-pseudo-states: ^10.3.6
+    storybook: 10.4.6
+    "@storybook/addon-a11y": 10.4.6
+    "@storybook/addon-docs": 10.4.6
+    "@storybook/addon-links": 10.4.6
+    "@storybook/addon-themes": 10.4.6
+    "@storybook/nextjs": 10.4.6
+    "@storybook/react-vite": 10.4.6
+    eslint-plugin-storybook: 10.4.6
+    storybook-addon-pseudo-states: 10.4.6
   tanstack-query:
-    "@tanstack/query-devtools": ^5.100.10
-    "@tanstack/react-query": ^5.100.10
-    "@tanstack/react-query-devtools": ^5.100.10
+    "@tanstack/query-devtools": ^5.103.1
+    "@tanstack/react-query": ^5.103.1
+    "@tanstack/react-query-devtools": ^5.103.1
   tiptap:
-    "@tiptap/core": ^2.22.3
-    "@tiptap/extension-bold": ^2.22.3
-    "@tiptap/extension-bullet-list": ^2.22.3
-    "@tiptap/extension-character-count": ^2.22.3
-    "@tiptap/extension-document": ^2.22.3
-    "@tiptap/extension-dropcursor": ^2.22.3
-    "@tiptap/extension-gapcursor": ^2.22.3
-    "@tiptap/extension-hard-break": ^2.22.3
-    "@tiptap/extension-heading": ^2.22.3
-    "@tiptap/extension-history": ^2.22.3
-    "@tiptap/extension-horizontal-rule": ^2.22.3
-    "@tiptap/extension-image": ^2.22.3
-    "@tiptap/extension-italic": ^2.22.3
-    "@tiptap/extension-link": 2.22.3
-    "@tiptap/extension-list-item": ^2.22.3
-    "@tiptap/extension-ordered-list": ^2.22.3
-    "@tiptap/extension-paragraph": ^2.22.3
-    "@tiptap/extension-strike": ^2.22.3
-    "@tiptap/extension-subscript": ^2.22.3
-    "@tiptap/extension-superscript": ^2.22.3
-    "@tiptap/extension-table": ^2.22.3
-    "@tiptap/extension-table-cell": ^2.22.3
-    "@tiptap/extension-table-header": ^2.22.3
-    "@tiptap/extension-table-row": ^2.22.3
-    "@tiptap/extension-text": ^2.22.3
-    "@tiptap/extension-underline": ^2.22.3
-    "@tiptap/html": ^2.22.3
-    "@tiptap/pm": 2.22.3
-    "@tiptap/react": 2.22.3
+    "@tiptap/core": ^3.31.3
+    "@tiptap/extension-bold": ^3.31.3
+    "@tiptap/extension-bullet-list": ^3.31.3
+    "@tiptap/extension-character-count": ^3.31.3
+    "@tiptap/extension-document": ^3.31.3
+    "@tiptap/extension-dropcursor": ^3.31.3
+    "@tiptap/extension-gapcursor": ^3.31.3
+    "@tiptap/extension-hard-break": ^3.31.3
+    "@tiptap/extension-heading": ^3.31.3
+    "@tiptap/extension-history": ^3.31.3
+    "@tiptap/extension-horizontal-rule": ^3.31.3
+    "@tiptap/extension-image": ^3.31.3
+    "@tiptap/extension-italic": ^3.31.3
+    "@tiptap/extension-link": ^3.31.3
+    "@tiptap/extension-list-item": ^3.31.3
+    "@tiptap/extension-ordered-list": ^3.31.3
+    "@tiptap/extension-paragraph": ^3.31.3
+    "@tiptap/extension-strike": ^3.31.3
+    "@tiptap/extension-subscript": ^3.31.3
+    "@tiptap/extension-superscript": ^3.31.3
+    "@tiptap/extension-table": ^3.31.3
+    "@tiptap/extension-table-cell": ^3.31.3
+    "@tiptap/extension-table-header": ^3.31.3
+    "@tiptap/extension-table-row": ^3.31.3
+    "@tiptap/extension-text": ^3.31.3
+    "@tiptap/extension-underline": ^3.31.3
+    "@tiptap/html": ^3.31.3
+    "@tiptap/pm": ^3.31.3
+    "@tiptap/react": ^3.31.3
   trpc:
-    "@trpc/client": ^11.17.0
-    "@trpc/next": ^11.17.0
-    "@trpc/react-query": ^11.17.0
-    "@trpc/server": ^11.17.0
+    "@trpc/client": ^11.18.0
+    "@trpc/next": ^11.18.0
+    "@trpc/react-query": ^11.18.0
+    "@trpc/server": ^11.18.0
   vitest:
-    "@vitejs/plugin-react": ^4.3.1
-    "@vitest/coverage-istanbul": ^2.1.2
-    vite: ^5.4.21
-    vite-tsconfig-paths: ^5.1.4
-    vitest: ^2.1.1
+    "@vitejs/plugin-react": ^6.1.1
+    "@vitest/browser-playwright": ^5.0.1
+    "@vitest/coverage-istanbul": ^5.0.1
+    vite: ^8.3.0
+    vitest: ^5.0.1

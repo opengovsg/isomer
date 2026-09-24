@@ -60,6 +60,9 @@ export const NavbarItemsSchema = Type.Object({
     format: "navbar",
     minItems: 1,
     maxItems: 8,
+    errorMessage: {
+      maxItems: "You can only have up to 8 first-level links.",
+    },
   }),
 })
 
@@ -69,7 +72,7 @@ export const NavbarAddonsSchema = Type.Object({
       {
         label: Type.String({
           title: "Button text",
-          maxLength: 50,
+          maxLength: 25,
         }),
         url: Type.String({
           title: "Button destination",
@@ -77,11 +80,20 @@ export const NavbarAddonsSchema = Type.Object({
           format: "link",
           pattern: LINK_HREF_PATTERN,
         }),
+        isPinnedOnMobile: Type.Optional(
+          Type.Boolean({
+            title: "Pin Call-to-Action on mobile",
+            description:
+              "Button will appear next to your site logo. Search will move into the menu.",
+            default: false,
+          }),
+        ),
       },
       {
         title: "Primary Call-to-Action",
         description:
           "You can highlight a key Call-to-Action using a prominent button.",
+        format: "boxedGroup",
       },
     ),
   ),
@@ -116,6 +128,7 @@ export const NavbarAddonsSchema = Type.Object({
         title: "Utility links",
         description:
           "Make frequent actions (like login) easily accessible using utility links.",
+        format: "boxedGroup",
       },
     ),
   ),

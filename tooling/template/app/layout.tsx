@@ -1,13 +1,18 @@
 import type { Metadata } from "next"
 import config from "@/data/config.json"
+import footer from "@/data/footer.json"
 import "@/styles/globals.css"
 import sitemap from "@/sitemap.json"
 import {
+  getSiteJsonLd,
+  type IsomerSitemap,
   RenderApplicationHeadScripts,
   RenderApplicationScripts,
 } from "@opengovsg/isomer-components"
 import { Inter } from "next/font/google"
 import Script from "next/script"
+
+import { serializeForInlineScript } from "@isomer/validators"
 
 import { IsomerProviders } from "./providers"
 
@@ -20,12 +25,14 @@ const inter = Inter({
   variable: "--font-inter",
 })
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: config.site.siteName || "Isomer",
-  url: config.site.url || "https://www.isomer.gov.sg",
-}
+const jsonLd = getSiteJsonLd({
+  site: {
+    ...config.site,
+    assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
+  },
+  footer,
+  sitemap: sitemap as IsomerSitemap,
+})
 
 export const dynamic = "force-static"
 
@@ -64,13 +71,14 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
             isomerMsClarityId:
               process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
           }}
+          themeColors={config.colors}
           ScriptComponent={Script}
         />
 
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+            __html: serializeForInlineScript(jsonLd),
           }}
         />
       </body>

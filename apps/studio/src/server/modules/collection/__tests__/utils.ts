@@ -1,4 +1,4 @@
-import { ResourceType } from "@prisma/client"
+import { ResourceType } from "~prisma/generated/prisma/client"
 
 import { db } from "../../database"
 

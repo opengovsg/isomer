@@ -18,7 +18,7 @@ export const CategoryCell = ({
       <Text textStyle="subhead-2" color="base.content.strong">
         {category}
       </Text>
-      <Text textStyle="caption-2" color="base.content.medium">
+      <Text textStyle="caption-2" color="base.content.medium" fontSize="sm">
         {subcategoryMap[subcategory] ?? subcategory}
       </Text>
     </VStack>

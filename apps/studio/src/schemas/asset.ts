@@ -1,6 +1,12 @@
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { z } from "zod"
-import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import {
+  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+  MAX_FILE_SIZE_BYTES,
+  MAX_IMG_FILE_SIZE_BYTES,
+  MAX_SVG_FILE_SIZE_BYTES,
+} from "~/lib/fileUpload"
+import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 
 // Combine allowed extensions from existing constants
 const ALLOWED_EXTENSIONS = [
@@ -8,52 +14,132 @@ const ALLOWED_EXTENSIONS = [
   ...Object.keys(FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING),
 ]
 
-export const getPresignedPutUrlSchema = z.object({
-  siteId: z.number().min(1),
-  resourceId: z.string().optional(),
-  fileName: z
-    .string({
-      error: "Missing file name",
-    })
-    .refine(
-      (s) => {
-        const allowedStartingChars = new RegExp(/^[a-zA-Z0-9-_]/)
-        return allowedStartingChars.test(s)
-      },
-      {
-        message:
-          "File name must start with a letter, number, hyphen, or underscore",
-      },
-    )
-    // Check if extension is in allowed list (whitelist approach)
-    // To ensure we don't allow any other file types that can have security implications
-    .refine(
-      (fileName) => {
-        // Must have an extension
-        if (!fileName.includes(".")) {
-          return false
-        }
+const fileNameStartingCharRefine = (s: string) => /^[a-zA-Z0-9\-_]/.test(s)
+const fileNameStartingCharMessage =
+  "File name must start with a letter, number, hyphen, or underscore"
 
-        // Check if extension is in allowed list (whitelist approach)
-        const extension = fileName
-          .toLowerCase()
-          .substring(fileName.lastIndexOf("."))
-        return ALLOWED_EXTENSIONS.includes(extension)
-      },
-      {
-        message: "File type not allowed. Please upload a supported file type.",
-      },
-    ),
+const fileNameSchema = z
+  .string({
+    error: "Missing file name",
+  })
+  .refine(fileNameStartingCharRefine, {
+    message: fileNameStartingCharMessage,
+  })
+  .refine(
+    (fileName) => {
+      if (!fileName.includes(".")) {
+        return false
+      }
+
+      const extension = fileName
+        .toLowerCase()
+        .substring(fileName.lastIndexOf("."))
+
+      // SVGs must go through the dedicated uploadSvg endpoint which
+      // sanitizes the content server-side before uploading to S3.
+      // The presigned PUT path never sees the file bytes, so it cannot
+      // validate or strip embedded scripts/event handlers.
+      if (extension === ".svg") return false
+
+      return ALLOWED_EXTENSIONS.includes(extension)
+    },
+    {
+      message: "File type not allowed. Please upload a supported file type.",
+    },
+  )
+
+const fileSizeSchema = z
+  .number({ error: "Missing file size" })
+  .int()
+  .min(1, { message: "File size must be greater than 0 bytes" })
+
+// Cross-field: the size limit that applies to `fileSize` depends on `fileName`'s
+// extension, so it can't be expressed as a per-field constraint. Shared between
+// `getPresignedPutUrlSchema` and `fileNameAndSizeSchema` so both stay in sync.
+const fileSizeRefine = (
+  { fileName, fileSize }: { fileName: string; fileSize: number },
+  ctx: z.RefinementCtx,
+) => {
+  const extension = fileName.toLowerCase().substring(fileName.lastIndexOf("."))
+  const maxFileSize =
+    extension in IMAGE_ACCEPTED_MIME_TYPE_MAPPING
+      ? MAX_IMG_FILE_SIZE_BYTES
+      : MAX_FILE_SIZE_BYTES
+  if (fileSize <= maxFileSize) return
+
+  ctx.addIssue({
+    code: "custom",
+    path: ["fileSize"],
+    message: `File size must not exceed ${formatFileSizeLimit({ bytes: maxFileSize })}`,
+  })
+}
+
+const getPresignedPutUrlBaseSchema = z.object({
+  siteId: z.number().min(1),
+  tags: z
+    .array(
+      z.object({
+        key: z.string(),
+        value: z.string(),
+      }),
+    )
+    .optional(),
+  resourceId: z.string().optional(),
+  fileSize: fileSizeSchema,
+  fileName: fileNameSchema,
 })
+
+export const getPresignedPutUrlSchema =
+  getPresignedPutUrlBaseSchema.superRefine(fileSizeRefine)
+
+// Subset of getPresignedPutUrlSchema for client-side pre-upload validation
+// (previewing fileName/fileSize errors before the mutation fires). Picked from
+// the same unrefined base so field shapes can't drift from the full schema,
+// and doesn't require siteId/resourceId, which the size/name check never uses.
+export const fileNameAndSizeSchema = getPresignedPutUrlBaseSchema
+  .pick({ fileName: true, fileSize: true })
+  .superRefine(fileSizeRefine)
+
+export const uploadSvgSchema = z.object({
+  siteId: z.number().min(1),
+  fileName: z
+    .string()
+    .refine(fileNameStartingCharRefine, {
+      message: fileNameStartingCharMessage,
+    })
+    .refine((s) => s.toLowerCase().endsWith(".svg"), {
+      message: "Only .svg files are allowed",
+    })
+    .max(255),
+  // z.string().max() counts UTF-16 code units (JS string length), not bytes.
+  // Multi-byte characters can exceed the intended byte budget, but the difference
+  // is bounded: worst case is 3× (4-byte UTF-8 chars are 2 code units). Acceptable
+  // as a rough upper bound; use Buffer.byteLength for an exact byte check if needed.
+  content: z.string().max(MAX_SVG_FILE_SIZE_BYTES, {
+    message: `SVG file size must not exceed ${MAX_SVG_FILE_SIZE_BYTES / 1_000_000} MB`,
+  }),
+  resourceId: z.string().optional(),
+  tags: z.array(z.object({ key: z.string(), value: z.string() })).optional(),
+})
+
+// Upper bound on how many assets a single deleteAssets call may target.
+// Each key fans out to paid S3 tagging calls, so an uncapped array lets one
+// authenticated caller drive an unbounded number of S3 operations. Legitimate
+// saves only delete a handful of keys, so 100 sits far above real usage.
+export const MAX_DELETE_FILE_KEYS = 100
 
 export const deleteAssetsSchema = z.object({
   siteId: z.number().min(1),
   resourceId: z.string(),
-  fileKeys: z.array(
-    z.string({
-      error: "Missing file keys",
+  fileKeys: z
+    .array(
+      z.string({
+        error: "Missing file keys",
+      }),
+    )
+    .max(MAX_DELETE_FILE_KEYS, {
+      message: `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
     }),
-  ),
 })
 
 export const getPresignedGetUrlSchema = z.object({
@@ -61,4 +147,23 @@ export const getPresignedGetUrlSchema = z.object({
   fileKey: z.string({
     error: "Missing file key",
   }),
+})
+
+// Upper bound on how many asset URLs a single admin deleteAssetsByUrl call
+// may target. Mirrors MAX_DELETE_FILE_KEYS's rationale: each URL fans out to
+// a paid S3 tagging call, so an uncapped array lets one caller drive an
+// unbounded number of S3 operations across every site.
+export const MAX_DELETE_ASSET_URLS = 50
+
+export const deleteAssetsByUrlSchema = z.object({
+  urls: z
+    .array(
+      z.string({
+        error: "Missing asset URL",
+      }),
+    )
+    .min(1, { message: "Enter at least one asset URL" })
+    .max(MAX_DELETE_ASSET_URLS, {
+      message: `You can only delete up to ${MAX_DELETE_ASSET_URLS} assets at a time`,
+    }),
 })

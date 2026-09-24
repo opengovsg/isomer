@@ -15,6 +15,7 @@ const meta: Meta<InfoColsProps> = {
   },
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
   },
 }
 export default meta
@@ -135,6 +136,17 @@ export const HoverBehaviour: Story = {
         title: "No Link",
         description: "Should NOT change appearance on hover",
         icon: "bar-chart",
+      },
+      {
+        title: "Has Link, No Label, Has Description",
+        description: "Should show the arrow beside the title, not below",
+        icon: "bar-chart",
+        buttonUrl: "/faq",
+      },
+      {
+        title: "Has Link, No Label, No Description",
+        icon: "bar-chart",
+        buttonUrl: "/faq",
       },
     ],
   },

@@ -55,6 +55,7 @@ export const DirectorySidebarContent = ({
         resourceId,
         siteId,
         limit: 25,
+        includeSearchPage: false,
       },
       {
         getNextPageParam: (lastPage) => lastPage.nextOffset,

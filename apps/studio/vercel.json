@@ -1,3 +1,5 @@
 {
-  "regions": ["sin1"]
+  "regions": ["sin1"],
+  "installCommand": "bash scripts/vercel-pnpm-install.sh",
+  "buildCommand": "source scripts/vercel-pnpm-env.sh && pnpm run vercel-build"
 }

@@ -1,12 +1,14 @@
 import type { DB } from "~/server/modules/database"
-import { PrismaClient } from "@prisma/client"
-import { randomUUID } from "crypto"
-import { readdirSync, readFileSync, statSync } from "fs"
+import { PrismaPg } from "@prisma/adapter-pg"
 import { Kysely, PostgresDialect } from "kysely"
-import { dirname, join } from "path"
+import { randomUUID } from "node:crypto"
+import { readdirSync, readFileSync, statSync } from "node:fs"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { Client, Pool } from "pg"
+import Cursor from "pg-cursor"
 import { parse } from "superjson"
-import { fileURLToPath } from "url"
+import { PrismaClient } from "~prisma/generated/prisma/client"
 
 import { CONTAINER_INFORMATION_SCHEMA } from "../common"
 
@@ -14,6 +16,10 @@ const prismaMigrationDir = join(
   fileURLToPath(dirname(import.meta.url)),
   "..",
   "..",
+  "..",
+  "..",
+  "packages",
+  "db",
   "prisma",
   "migrations",
 )
@@ -76,11 +82,15 @@ const db = new Kysely<DB>({
     pool: new Pool({
       connectionString,
     }),
+    // Without this, any query using `.stream()` (see auditLogExport.service.ts)
+    // throws "cursor is not present in your postgres dialect config" — matches
+    // the cursor wiring in packages/db/src/createDb.ts.
+    cursor: Cursor,
   }),
 })
 
 const prisma: PrismaClient = new PrismaClient({
-  datasourceUrl: connectionString,
+  adapter: new PrismaPg({ connectionString }),
 })
 
 vi.mock("../../src/server/modules/database/database", () => ({

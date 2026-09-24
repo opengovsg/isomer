@@ -48,7 +48,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -69,7 +69,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -131,7 +131,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -146,7 +146,7 @@ describe("whitelist.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:

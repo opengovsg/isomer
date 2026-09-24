@@ -4,7 +4,6 @@ export const IMAGE_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
   ".png": "image/png",
   ".gif": "image/gif",
   ".svg": "image/svg+xml",
-  ".tiff": "image/tiff",
   ".bmp": "image/bmp",
   ".webp": "image/webp",
   ".avif": "image/avif",
@@ -20,3 +19,19 @@ export const FAVICON_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
   ".jpeg": "image/jpeg",
   ".webp": "image/webp",
 }
+
+// NOTE: Taken from `isomer-next-infra`:
+// this is the list of content types that we can
+// optimise the image for
+export const CONTENT_TYPE_TO_FORMAT = {
+  "image/jpeg": "jpeg",
+  "image/jpg": "jpeg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/avif": "avif",
+  "image/tiff": "tiff",
+} as const
+
+export const SUPPORTED_OPTIMIZABLE_FORMATS = Object.values(
+  CONTENT_TYPE_TO_FORMAT,
+)

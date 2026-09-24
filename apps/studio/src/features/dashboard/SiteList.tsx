@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
+import posthog from "posthog-js"
 import { NoResultIcon } from "~/components/Svg/NoResultIcon"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { withSuspense } from "~/hocs/withSuspense"
@@ -31,7 +32,11 @@ const Site = ({
 }): JSX.Element => {
   return (
     <LinkBox cursor="pointer" role="group">
-      <LinkOverlay href={`/sites/${siteId}`} as={NextLink}>
+      <LinkOverlay
+        href={`/sites/${siteId}`}
+        as={NextLink}
+        onClick={() => posthog.capture("site_selected", { site_id: siteId })}
+      >
         <Flex key={siteId} flexDirection="column" gap="1rem" width="100%">
           <Box position="relative">
             <Image

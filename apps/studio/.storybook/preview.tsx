@@ -1,6 +1,7 @@
 import "@fontsource/ibm-plex-mono"
 import type { EnvContextReturn } from "~/components/AppProviders"
 import "inter-ui/inter.css"
+import "~/styles/tiptap.scss"
 import type { AppRouter } from "~/server/modules/_app"
 import { Skeleton, Stack } from "@chakra-ui/react"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
@@ -17,7 +18,8 @@ import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"
 import { merge } from "lodash-es"
 import mockdate from "mockdate"
-import { initialize, mswLoader } from "msw-storybook-addon"
+import { mswLoader } from "msw-storybook-addon/csf3"
+import { setupWorker } from "msw/browser"
 import { useCallback, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import superjson from "superjson"
@@ -31,11 +33,6 @@ import { createMockGrowthBook } from "~/stories/utils/growthbook"
 import { theme } from "~/theme"
 
 import { viewport, withChromaticModes } from "@isomer/storybook-config"
-
-// Initialize MSW
-initialize({
-  onUnhandledRequest: "bypass",
-})
 
 const trpc = createTRPCReact<AppRouter>()
 
@@ -148,7 +145,7 @@ const conditionalMockDateDecorator: Decorator = (story, context) => {
   if (date !== undefined) {
     mockdate.set(date)
   }
-  return story() as JSX.Element
+  return story()
 }
 
 const decorators: Decorator[] = [
@@ -160,13 +157,19 @@ const decorators: Decorator[] = [
       default: theme,
     },
     Provider: ThemeProvider,
-  }) as Decorator, // FIXME: Remove this cast when types are fixed
+  }),
   LoginStateDecorator,
   conditionalMockDateDecorator,
 ]
 
 const preview: Preview = {
-  loaders: [mswLoader],
+  loaders: [
+    mswLoader(async () => {
+      const worker = setupWorker()
+      await worker.start({ onUnhandledRequest: "bypass" })
+      return worker
+    }),
+  ],
   decorators,
   parameters: {
     // More on how to position stories at: https://storybook.js.org/docs/react/configure/story-layout

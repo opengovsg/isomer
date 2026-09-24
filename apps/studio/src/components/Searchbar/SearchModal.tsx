@@ -25,6 +25,7 @@ interface SearchModalProps {
   onClose: () => void
   siteId: string
 }
+
 export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
   const [queryCount, setQueryCount] = useState(0)
   const {

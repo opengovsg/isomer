@@ -2,28 +2,15 @@ import { z } from "zod"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { SearchResultResource } from "../server/modules/resource/resource.types"
+import { generateBigIntSchema } from "./common"
 import {
   infiniteOffsetPaginationSchema,
   offsetPaginationSchema,
 } from "./pagination"
 
-const resourceSchema = z
-  .string()
-  .min(1)
-  .regex(/[0-9]+/)
-  .refine((s) => !s.startsWith("0"))
-
-// NOTE: We want to accept string
-// but validate that the string conforms to bigint.
-// Oddly enough, kysely doesn't allow `bigint` to query
-const bigIntSchema = z
-  // NOTE: A valid `bigint` is one that
-  // begins with a non-zero digit
-  // and has length > 1
-  .string()
-  .min(1)
-  .regex(/^[0-9]+$/)
-  .refine((v) => v.at(0) !== "0")
+// A bigint resource id, surfaced as a string by kysely. Shared shape lives in
+// common.ts so other modules (e.g. redirects) validate ids identically.
+const bigIntSchema = generateBigIntSchema("ID")
 
 export const getMetadataSchema = z.object({
   siteId: z.number(),
@@ -34,6 +21,7 @@ export const getChildrenSchema = z
   .object({
     resourceId: z.union([bigIntSchema, z.null()]),
     siteId: z.string().min(0),
+    includeSearchPage: z.boolean().optional().default(true),
   })
   .merge(infiniteOffsetPaginationSchema)
 
@@ -55,27 +43,70 @@ export const moveSchema = z.object({
   siteId: z.number(),
   movedResourceId: bigIntSchema,
   destinationResourceId: bigIntSchema.nullable(),
+  // Create a redirect from the resource's old URL on move. Defaults on,
+  // matching the checkbox's default-checked state.
+  shouldCreateRedirect: z.boolean().optional().default(true),
 })
+
+// Read-only pre-flight for the move mutation's unpublish-lock check, so the
+// UI can warn as soon as a destination is picked instead of only on submit.
+export const getMoveLockInfoSchema = z.object({
+  siteId: z.number(),
+  movedResourceId: bigIntSchema,
+  destinationResourceId: bigIntSchema.nullable(),
+})
+
+export const getMoveLockInfoOutputSchema = z.object({
+  isBlocked: z.boolean(),
+})
+
+export const resourceStatusFilterOptions = [
+  "live",
+  "notLive",
+  "scheduledToPublish",
+  "scheduledToUnpublish",
+  "hasDraft",
+] as const
+
+export type ResourceStatusFilterOption =
+  (typeof resourceStatusFilterOptions)[number]
 
 export const countResourceSchema = z.object({
   siteId: z.number(),
   resourceId: z.number().optional(),
+  statusFilter: z
+    .array(z.enum(resourceStatusFilterOptions))
+    .optional()
+    .default([]),
 })
 
 export const deleteResourceSchema = z.object({
   siteId: z.number(),
-  resourceId: resourceSchema,
+  resourceId: bigIntSchema,
 })
 
 export const getParentSchema = z.object({
   siteId: z.number().min(0),
-  resourceId: resourceSchema,
+  resourceId: bigIntSchema,
 })
+
+export const resourceOrderByOptions = [
+  "updated-desc",
+  "title-asc",
+  "permalink-asc",
+] as const
+
+export type ResourceOrderByOption = (typeof resourceOrderByOptions)[number]
 
 export const listResourceSchema = z
   .object({
     siteId: z.number(),
     resourceId: z.number().optional(),
+    orderBy: z.enum(resourceOrderByOptions).optional().default("updated-desc"),
+    statusFilter: z
+      .array(z.enum(resourceStatusFilterOptions))
+      .optional()
+      .default([]),
   })
   .merge(offsetPaginationSchema)
 

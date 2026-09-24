@@ -1,6 +1,5 @@
 import plugin from "tailwindcss/plugin"
 
-import classicPreset from "./src/presets/classic"
 import { NextPreset } from "./src/presets/next"
 
 /**
@@ -16,12 +15,7 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
     "./.storybook/**/*.{js,ts,jsx,tsx}",
   ],
-  presets: [
-    // Note: This is here temporarily until we can figure out how to load the
-    // presets dynamically depending on the template being used.
-    classicPreset,
-    NextPreset,
-  ],
+  presets: [NextPreset],
   theme: {
     extend: {
       colors: {

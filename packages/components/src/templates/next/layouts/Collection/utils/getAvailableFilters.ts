@@ -1,19 +1,42 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
+import { isDateFilter } from "~/types/page"
 
 import type { Filter } from "../../../types/Filter"
-import { getCategoryFilter } from "./getCategoryFilter"
+import { getDateFilters } from "./getDateFilters"
 import { getTagFilters } from "./getTagFilters"
 import { getYearFilter } from "./getYearFilter"
+import { isAvailableFilter } from "./isDateFilterAvailable"
+
+type TagCategory = NonNullable<
+  CollectionPageSchemaType["page"]["tagCategories"]
+>[number]
+
+// Tag filters use category.label as filter.id; date filters use category.id.
+const filterLookupKey = (category: TagCategory) =>
+  isDateFilter(category) ? category.id : category.label
 
 export const getAvailableFilters = (
   items: ProcessedCollectionCardProps[],
   tagCategories?: CollectionPageSchemaType["page"]["tagCategories"],
 ): Filter[] => {
-  // TODO: Allow user to pass in order of filters to be shown
-  return [
+  const categoryFilters = [
     ...getTagFilters(items, tagCategories),
-    getCategoryFilter(items),
-    getYearFilter(items),
-  ].filter((filter) => filter.items.length >= 1)
+    ...getDateFilters(items, tagCategories),
+  ]
+
+  const filtersByLookupKey = Object.fromEntries(
+    categoryFilters.map((filter) => [filter.id, filter]),
+  ) as Record<string, Filter>
+
+  const orderedCategoryFilters = tagCategories?.length
+    ? tagCategories
+        .map((category) => filtersByLookupKey[filterLookupKey(category)])
+        .filter((filter): filter is Filter => filter !== undefined)
+    : categoryFilters
+
+  // TODO: Allow user to pass in order of filters to be shown
+  return [...orderedCategoryFilters, getYearFilter(items)].filter(
+    isAvailableFilter,
+  )
 }

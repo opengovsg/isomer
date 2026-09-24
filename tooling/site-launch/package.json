@@ -14,7 +14,6 @@
     "@octokit/rest": "catalog:",
     "@t3-oss/env-core": "catalog:env",
     "axios": "catalog:",
-    "commander-ts": "catalog:",
     "dotenv-cli": "catalog:",
     "tsx": "catalog:",
     "zod": "catalog:"

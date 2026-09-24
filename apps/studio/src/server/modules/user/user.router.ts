@@ -24,6 +24,7 @@ import {
   updateUserInputSchema,
   updateUserOutputSchema,
 } from "~/schemas/user"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { protectedProcedure, router } from "../../trpc"
 import { db, RoleType } from "../database"
@@ -39,7 +40,6 @@ import {
   deleteUserPermission,
   getUsersQuery,
   updateUserDetails,
-  validateEmailRoleCombination,
 } from "./user.service"
 
 const throwSingpassDisabledError = () => {
@@ -53,6 +53,8 @@ export const userRouter = router({
   create: protectedProcedure
     .input(createUserInputSchema)
     .output(createUserOutputSchema)
+    // Arbitrary limit to prevent invite email abuse; tune if legitimate usage is blocked
+    .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { siteId, users } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
@@ -225,6 +227,11 @@ export const userRouter = router({
         action: "read",
       })
 
+      // Phone numbers are PII, so only core Isomer admins may see them
+      const canViewPhone = await isActiveIsomerAdmin(ctx.user.id, [
+        IsomerAdminRole.Core,
+      ])
+
       return getUsersQuery({ siteId, adminType })
         .orderBy("ActiveUser.email", "asc")
         .select((eb) => [
@@ -244,6 +251,7 @@ export const userRouter = router({
               )
           ).as("role"),
         ])
+        .$if(canViewPhone, (qb) => qb.select("ActiveUser.phone"))
         .limit(limit)
         .offset(offset)
         .execute()
@@ -304,8 +312,6 @@ export const userRouter = router({
         })
       }
 
-      validateEmailRoleCombination({ email: user.email, role })
-
       const updatedUserPermission = await updateUserSitewidePermission({
         byUserId: ctx.user.id,
         userId,
@@ -342,6 +348,8 @@ export const userRouter = router({
   resendInvite: protectedProcedure
     .input(resendInviteInputSchema)
     .output(resendInviteOutputSchema)
+    // Arbitrary limit to prevent invite email abuse; tune if legitimate usage is blocked
+    .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { siteId, userId } }) => {
       await validatePermissionsForManagingUsers({
         siteId,

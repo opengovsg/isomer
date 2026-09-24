@@ -9,6 +9,7 @@ import {
 import {
   setupAdminPermissions,
   setupEditorPermissions,
+  setupIsomerAdmin,
   setupPublisherPermissions,
   setupSite,
   setupUser,
@@ -61,7 +62,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
 
@@ -83,7 +84,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -107,7 +108,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
 
       // Assert DB - audit logs
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
@@ -223,7 +224,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "User already has permission for this site",
@@ -247,7 +248,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "There are non-gov.sg domains that need to be whitelisted.",
@@ -259,11 +260,10 @@ describe("user.router", () => {
       expect(auditLogs).toHaveLength(0)
     })
 
-    it("should throw 403 if assigning a whitelisted non-gov.sg email with admin role", async () => {
+    it("should throw 403 if assigning a non-whitelisted non-gov.sg email with admin role", async () => {
       // Arrange
       const nonGovSgEmail = "test@coolvendor.com"
       await setupAdminPermissions({ userId: session.userId, siteId })
-      await setUpWhitelist({ email: nonGovSgEmail })
 
       // Act
       const result = caller.create({
@@ -272,17 +272,50 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
-          message:
-            "Non-gov.sg emails cannot be added as admin. Select another role.",
+          message: "There are non-gov.sg domains that need to be whitelisted.",
         }),
       )
 
       // Assert DB - audit logs
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(0)
+    })
+
+    it("should create a temporarily (vendor) whitelisted non-gov.sg email with admin role", async () => {
+      // Arrange
+      const nonGovSgEmail = "test-vendor-whitelisted@coolvendor.com"
+      const oneYearFromNow = new Date()
+      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
+      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setUpWhitelist({ email: nonGovSgEmail, expiry: oneYearFromNow })
+
+      // Act
+      const result = await caller.create({
+        siteId,
+        users: [{ email: nonGovSgEmail, role: RoleType.Admin }],
+      })
+
+      // Assert
+      expect(result).toEqual(expect.anything())
+    })
+
+    it("should create a whitelisted non-gov.sg email with admin role", async () => {
+      // Arrange
+      const nonGovSgEmail = "test@coolvendor.com"
+      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setUpWhitelist({ email: nonGovSgEmail })
+
+      // Act
+      const result = await caller.create({
+        siteId,
+        users: [{ email: nonGovSgEmail, role: RoleType.Admin }],
+      })
+
+      // Assert
+      expect(result).toEqual(expect.anything())
     })
 
     it("should create a whitelisted non-gov.sg email with non-admin role", async () => {
@@ -512,7 +545,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
 
@@ -538,7 +571,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -562,7 +595,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -584,7 +617,7 @@ describe("user.router", () => {
       const result = caller.delete({ siteId, userId: user.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User permissions not found",
@@ -614,7 +647,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User permissions not found",
@@ -637,7 +670,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You cannot delete your own account",
@@ -671,7 +704,7 @@ describe("user.router", () => {
       const result = caller.delete({ siteId, userId: isomerAdmin.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have permission to delete this user",
@@ -849,7 +882,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -862,7 +895,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -882,7 +915,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -905,7 +938,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -927,7 +960,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -972,7 +1005,7 @@ describe("user.router", () => {
       const result = unauthedCaller.list({ siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -982,7 +1015,7 @@ describe("user.router", () => {
       const result = caller.list({ siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1157,6 +1190,57 @@ describe("user.router", () => {
       )
     })
 
+    it("should return phone numbers if requester is a core isomer admin", async () => {
+      // Arrange
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
+      const user = await setupUser({ email: TEST_EMAIL, phone: "91234567" })
+      await setupEditorPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toEqual([
+        expect.objectContaining({ id: user.id, phone: "91234567" }),
+      ])
+    })
+
+    it("should not return phone numbers if requester is not a core isomer admin", async () => {
+      // Arrange
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Migrator,
+      })
+      const user = await setupUser({ email: TEST_EMAIL, phone: "91234567" })
+      await setupEditorPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]).not.toHaveProperty("phone")
+    })
+
+    it("should not return phone numbers if requester is not an isomer admin", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+      const user = await setupUser({ email: TEST_EMAIL, phone: "91234567" })
+      await setupEditorPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toHaveLength(2) // the current admin user and the editor
+      for (const listedUser of result) {
+        expect(listedUser).not.toHaveProperty("phone")
+      }
+    })
+
     it("should return paginated results (10 users per page)", async () => {
       // Arrange
       await setupEditorPermissions({ userId: session.userId, siteId })
@@ -1240,7 +1324,7 @@ describe("user.router", () => {
       const result = unauthedCaller.count({ siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1250,7 +1334,7 @@ describe("user.router", () => {
       const result = caller.count({ siteId })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1375,7 +1459,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
 
@@ -1398,7 +1482,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1423,7 +1507,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -1449,7 +1533,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User permission not found",
@@ -1480,7 +1564,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User permission not found",
@@ -1506,7 +1590,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -1530,7 +1614,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You cannot update your own role",
@@ -1542,7 +1626,40 @@ describe("user.router", () => {
       expect(auditLogs).toHaveLength(0)
     })
 
-    it("should throw 403 if assigning a non-gov.sg email with admin role", async () => {
+    // Unlike createUserWithPermission, the update flow has never checked
+    // whitelist status for any role, including Admin -- it only cares that
+    // the caller has permission to manage users on the site. This means a
+    // user whose whitelist entry later expires keeps whatever role they
+    // already have, and if they're re-whitelisted (even temporarily), they
+    // don't need to go through this check again to keep/regain that role.
+    it("should update a non-whitelisted non-gov.sg email to admin role successfully", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const userToUpdate = await setupUser({
+        email: "test-not-whitelisted@coolvendor.com",
+        isDeleted: false,
+      })
+      await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+
+      // Act
+      const result = await caller.update({
+        siteId,
+        userId: userToUpdate.id,
+        role: RoleType.Admin,
+      })
+
+      // Assert
+      expect(result).toEqual(
+        expect.objectContaining({
+          siteId,
+          userId: userToUpdate.id,
+          role: RoleType.Admin,
+        }),
+      )
+    })
+
+    it("should update a whitelisted non-gov.sg email to admin role successfully", async () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
@@ -1551,26 +1668,56 @@ describe("user.router", () => {
         isDeleted: false,
       })
       await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+      await setUpWhitelist({ email: userToUpdate.email })
 
       // Act
-      const result = caller.update({
+      const result = await caller.update({
         siteId,
         userId: userToUpdate.id,
         role: RoleType.Admin,
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "Non-gov.sg emails cannot be added as admin. Select another role.",
+      expect(result).toEqual(
+        expect.objectContaining({
+          siteId,
+          userId: userToUpdate.id,
+          role: RoleType.Admin,
         }),
       )
+    })
 
-      // Assert DB - audit logs
-      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
-      expect(auditLogs).toHaveLength(0)
+    it("should update a temporarily (vendor) whitelisted non-gov.sg email to admin role successfully", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const userToUpdate = await setupUser({
+        email: "test-vendor-whitelisted@coolvendor.com",
+        isDeleted: false,
+      })
+      await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+      const oneYearFromNow = new Date()
+      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
+      await setUpWhitelist({
+        email: userToUpdate.email,
+        expiry: oneYearFromNow,
+      })
+
+      // Act
+      const result = await caller.update({
+        siteId,
+        userId: userToUpdate.id,
+        role: RoleType.Admin,
+      })
+
+      // Assert
+      expect(result).toEqual(
+        expect.objectContaining({
+          siteId,
+          userId: userToUpdate.id,
+          role: RoleType.Admin,
+        }),
+      )
     })
 
     it("should update a non-gov.sg email with non-admin role successfully", async () => {
@@ -1878,7 +2025,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
 
@@ -2175,7 +2322,7 @@ describe("user.router", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2188,7 +2335,7 @@ describe("user.router", () => {
       const result = caller.resendInvite({ siteId, userId: "123" })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2205,7 +2352,7 @@ describe("user.router", () => {
       const result = caller.resendInvite({ siteId, userId: "123" })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
@@ -2228,7 +2375,7 @@ describe("user.router", () => {
       const result = caller.resendInvite({ siteId, userId: user.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "User has already logged in",
@@ -2256,7 +2403,7 @@ describe("user.router", () => {
       const result = caller.resendInvite({ siteId, userId: user.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "User has already logged in",
@@ -2283,7 +2430,7 @@ describe("user.router", () => {
       const result = caller.resendInvite({ siteId, userId: user.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "User has no permissions",

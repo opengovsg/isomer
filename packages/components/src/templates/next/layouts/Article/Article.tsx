@@ -5,7 +5,8 @@ import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { renderPageContent } from "../../render"
-import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
+import { getDateFilterDisplayEntries } from "../Collection/utils/getDateFilterDisplayEntries"
+import { getPillAndPlaintextTags } from "../Collection/utils/getPillAndPlaintextTags"
 import { Skeleton } from "../Skeleton"
 
 export const ArticleLayout = ({
@@ -20,15 +21,18 @@ export const ArticleLayout = ({
   )
 
   const parent = getIndexByPermalink(page.permalink, site.siteMap)
-  const tagged = page.tagged
-  const tags = page.tags
 
-  const resolvedTags =
-    tagged &&
-    parent?.layout === "collection" &&
-    parent.collectionPagePageProps?.tagCategories
-      ? getTagsFromTagged(tagged, parent.collectionPagePageProps?.tagCategories)
-      : tags
+  const parentTagCategories =
+    parent?.layout === "collection"
+      ? parent.collectionPagePageProps?.tagCategories
+      : undefined
+
+  // NOTE: No longer falls back to the legacy `page.tags` field — Article Pages are
+  // expected to carry `tagged` + the parent Collection's `tagCategories` going forward.
+  const { pillTags, plaintextTags } = getPillAndPlaintextTags(
+    page.tagged,
+    parentTagCategories,
+  )
 
   return (
     <Skeleton site={site} page={page} layout={layout}>
@@ -36,19 +40,29 @@ export const ArticleLayout = ({
         <ArticlePageHeader
           {...page.articlePageHeader}
           breadcrumb={breadcrumb}
-          category={page.category}
+          plaintextTags={plaintextTags}
           title={page.title}
           date={page.date}
-          tags={resolvedTags}
+          pillTags={pillTags}
+          site={site}
+          dateFilterDisplayEntries={
+            getDateFilterDisplayEntries(page.dateTagged, parentTagCategories)
+              .dateFilterDisplayEntries
+          }
         />
 
         <div className="mx-auto w-full gap-10 pb-20">
-          <div className="w-full overflow-x-auto break-words lg:max-w-[660px]">
+          <div
+            className="w-full overflow-x-auto break-words lg:max-w-[660px]"
+            data-isomer-content-blocks
+          >
             {renderPageContent({
               site,
               layout,
               content,
               permalink: page.permalink,
+              // ArticlePageHeader above already owns the page's h1.
+              headingLevel: 2,
             })}
           </div>
           <BackToTopLink />

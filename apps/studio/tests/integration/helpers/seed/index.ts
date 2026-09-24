@@ -1,4 +1,5 @@
-import type { CodeBuildJobs } from "@prisma/client"
+import type { UnwrapTagged } from "type-fest"
+import type { CodeBuildJobs } from "~prisma/generated/prisma/client"
 import { nanoid } from "nanoid"
 import { INDEX_PAGE_PERMALINK } from "src/constants/sitemap"
 import { MOCK_STORY_DATE } from "tests/msw/constants"
@@ -8,6 +9,7 @@ import {
   ResourceState,
   ResourceType,
   RoleType,
+  ScheduledAction,
 } from "~prisma/generated/generatedEnums"
 import { db, jsonb } from "~server/db"
 
@@ -259,6 +261,23 @@ const getFallbackPermalink = (resourceType: ResourceType) => {
   }
 }
 
+interface SetupPageResourceProps {
+  siteId?: number
+  blobId?: string
+  resourceType: ResourceType
+  state?: ResourceState
+  userId?: string
+  permalink?: string
+  parentId?: string | null
+  title?: string
+  scheduledAt?: Date | null
+  scheduledBy?: string | null
+  // Defaults to Publish when scheduledAt is set, matching the assumption the
+  // pre-scheduledAction migration backfill made. Most callers scheduling a
+  // page mean "scheduled to publish" unless they say otherwise.
+  scheduledAction?: ScheduledAction | null
+}
+
 export const setupPageResource = async ({
   siteId: siteIdProp,
   blobId: blobIdProp,
@@ -270,18 +289,8 @@ export const setupPageResource = async ({
   title,
   scheduledAt = null,
   scheduledBy = null,
-}: {
-  siteId?: number
-  blobId?: string
-  resourceType: ResourceType
-  state?: ResourceState
-  userId?: string
-  permalink?: string
-  parentId?: string | null
-  title?: string
-  scheduledAt?: Date | null
-  scheduledBy?: string | null
-}) => {
+  scheduledAction = scheduledAt ? ScheduledAction.Publish : null,
+}: SetupPageResourceProps) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
   const blob = await setupBlob(blobIdProp)
 
@@ -295,6 +304,7 @@ export const setupPageResource = async ({
       publishedVersionId: null,
       scheduledAt,
       scheduledBy,
+      scheduledAction,
       draftBlobId: blob.id,
       type: resourceType,
       state,
@@ -414,6 +424,49 @@ export const setupCollection = async ({
     footer,
     collection,
   }
+}
+
+export const collectionPageBlobContent = (
+  tagged: string[] = [],
+  dateTagged: { id: string; date: string; endDate?: string }[] = [],
+): UnwrapTagged<PrismaJson.BlobJsonContent> => ({
+  layout: "article",
+  page: {
+    date: "01/01/2026",
+    category: "Feature Articles",
+    articlePageHeader: {
+      summary: "A concise summary of the main points regarding this article.",
+    },
+    tagged,
+    dateTagged,
+  },
+  content: [],
+  version: "0.1.0",
+})
+
+export const setupCollectionPage = async (
+  args: Omit<SetupPageResourceProps, "resourceType" | "blobId"> & {
+    tagged?: string[]
+    dateTagged?: { id: string; date: string; endDate?: string }[]
+  },
+) => {
+  const { tagged = [], dateTagged = [], ...rest } = args
+
+  const blob = await db
+    .insertInto("Blob")
+    .values({
+      content: jsonb(collectionPageBlobContent(tagged, dateTagged)),
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  const { page } = await setupPageResource({
+    ...rest,
+    resourceType: ResourceType.CollectionPage,
+    blobId: blob.id,
+  })
+
+  return { page, blob }
 }
 
 export const setupCollectionLink = async ({

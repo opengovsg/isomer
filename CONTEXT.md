@@ -1,0 +1,127 @@
+# Isomer Studio
+
+A government CMS and site builder for Singapore public agencies. Editors create and publish pages within collections; admins control the structure and taxonomy of those collections.
+
+## Language
+
+### Collection structure
+
+**Collection Item**: An article (CollectionPage) or link (CollectionLink) that lives inside a collection. A link may target an external URL or an uploaded file — a "file item" is a CollectionLink variant, not a separate resource type. Both support tag assignment, including the migrated "Category" tag group (see below).
+_Avoid_: article (when referring to both types), page (ambiguous), file (as a distinct item type — it is a link variant)
+
+**Collection Index**: The parent page of a collection. Stores the admin-defined taxonomy — Tag Categories — in its blob.
+_Avoid_: collection page, index page (ambiguous across layouts)
+
+### Taxonomy — categories
+
+Category is no longer a distinct concept — it has been merged into an ordinary **Tag Category** group labelled `"Category"`, with multi-select replacing the old single-select constraint (see ADR 0003).
+
+**Legacy Category** (`category`): The deprecated free-text string field on Collection Items. Preserved in blobs, and read only as a fallback when a Collection Item hasn't yet been migrated to the "Category" tag group.
+_Avoid_: category (now ambiguous — prefer "legacy category" or "category string" when the distinction matters), Category Option, Category ID (an earlier, unshipped single-select replacement that this merge superseded)
+
+### Taxonomy — tags
+
+**Tag Category**: A named filter group defined by an Isomer Admin on a Collection Index. Contains ordered Tag Options. Can be marked required, meaning editors must select at least one option before publishing.
+_Avoid_: filter category, tag group, tag type
+
+**Tag Option**: A selectable value within a Tag Category, identified by a UUID and a label. Editors pick from Tag Options when tagging a Collection Item.
+_Avoid_: tag, filter option, tag value
+
+**Tagged** (`tagged`): The array of Tag Option UUIDs stored on a Collection Item representing the editor's selections across all Tag Categories.
+_Avoid_: tags (the legacy resolved format using string labels), selected tags
+
+### Page editing survey
+
+**Content Edit**: Any change an editor makes to a page's content blocks in the page editor — adding, deleting, reordering, or modifying a block (including hero and prose). Counts the moment the change is made, whether or not it is later saved or discarded. Excludes changes made via raw JSON mode, and excludes page metadata, siderail ordering, database configuration, and collection settings — those edit page properties, not content blocks.
+_Avoid_: edit (ambiguous — could mean any interaction), saved edit (a Content Edit need not be saved)
+
+**Measuring Point**: The moment a user who has made at least one Content Edit ends that editing burst by either (a) successfully publishing or scheduling the page for publication, or (b) navigating anywhere else within Studio. Each burst of Content Edits produces exactly one Measuring Point — reaching one re-arms only after a fresh Content Edit. Closing the window or tab is not a Measuring Point.
+_Avoid_: trigger point (overloaded), exit (window close is not a Measuring Point)
+
+**Measuring Period**: The recurrence window within which a given user is shown the editing survey at most once. Defined and enforced in the survey tool's frequency settings, not by Studio.
+_Avoid_: survey cooldown, quarter (the period is configurable, not fixed)
+
+### Gazette search
+
+**Search Record**: One Algolia record for a gazette, holding a single chunk of the gazette PDF's text plus its classification fields. A gazette produces one Search Record per text chunk; records are what search queries match against.
+_Avoid_: document (ambiguous with the SearchSG "document", which is one-per-gazette, not one-per-chunk), search object
+
+**Object Group**: The identity shared by all Search Records of one gazette — its S3 object key. Used to address a gazette's records as a unit (e.g. removing them all).
+_Avoid_: object key (true but hides the grouping role), ref (that's the leading-slash page field the Object Group is derived from)
+
+### Page editor — tables
+
+**Axis** (`Axis`): Whether a slot is a `"row"` or `"column"`. Most table editing rules take an axis instead of duplicating row and column logic.
+_Avoid_: direction, orientation, dimension
+
+**Slot**: A whole row or a whole column. Drag handles select, reorder, and append slots.
+_Avoid_: row/column (when the statement applies to both), line, track, cell (a slot is a whole row or column, never a single cell)
+
+**Locked slot**: A slot you can select but not reorder. Today that means a header row or header column. Each axis has a minimum movable index; drags cannot start from a locked slot or drop above one.
+_Avoid_: header (the cells themselves, not the constraint on them), frozen row/column (implies scroll pinning, which is unrelated)
+
+**Gutter** (`TABLE_GUTTER_PX`): The band on every side of a table where drag handles and add pills sit. The table node view reserves it; `TableDragHandles` draws into it. The pointer counts as hovering a table anywhere inside the gutter.
+_Avoid_: margin, padding (each is only one side's implementation), chrome (broader, includes the handles themselves)
+
+**Add pill**: The rounded control in the gutter below and to the right of a table. Appends a slot on that axis. Visible while the pointer is over the table or its gutter.
+_Avoid_: add button, plus button, insert control
+
+### Roles and surfaces
+
+**Isomer Admin**: A user with the Core or Migrator role. The only role that can manage taxonomy (create, edit, delete Tag Categories and Tag Options) via the Manage Filters panel.
+_Avoid_: admin, site admin (different concept — refers to site-level admin permissions)
+
+**Site Admin**: A user holding the `Admin` role on a specific site (`ResourcePermission.role = Admin`). Can manage that site's users and permissions. Distinct from Isomer Admin.
+_Avoid_: admin (ambiguous), Isomer Admin (a different, platform-level role)
+
+### Redirects
+
+**Redirect**: A rule that sends a visitor from an old path on this site to another location. Created and published by a site admin; publishing rebuilds the site so the rule goes live.
+_Avoid_: forward, rewrite, alias
+
+**Source**: The old on-site path a Redirect matches — what comes *behind* the domain (e.g. `/contact-us`). Always a path, never a full URL. Shown to editors as **"When someone visits"**.
+_Avoid_: from, origin, old URL (it is a path, not a URL)
+
+**Destination**: Where a Redirect sends the visitor — an on-site path, an external `https://` URL, or a Page reference. Shown to editors as **"Redirect them to"**.
+_Avoid_: to, target, new URL
+
+**Page reference**: A Destination that points at a specific page rather than a fixed path, so the Redirect keeps working when that page is moved or renamed. Used when the destination path matches a live published page.
+_Avoid_: internal link, resource link
+
+**Redirects template**: The downloadable `.csv` skeleton (header row: "When someone visits", "Redirect them to") an editor fills in for a Bulk upload. The errors file returned after validation is this same shape plus an explanation column, so it can be corrected and re-uploaded directly.
+_Avoid_: sample file, example CSV
+
+**Bulk upload**: Creating many Redirects at once by uploading a filled-in Redirects template — every row is validated, and the whole batch publishes in one step.
+_Avoid_: import, mass create, batch add
+
+### Audit and access logging
+
+**Audit Log** (`AuditLog`): The append-only record of site events — resource create/update/delete, publish, login/logout, permission and config changes — each carrying a `delta` (before/after) and `metadata`, scoped by `siteId` and `createdAt`.
+_Avoid_: access log (a derived view, not the raw record), history
+
+**Audit Log Export**: The Site-Admin-initiated, asynchronous workflow that produces a downloadable report of a site's audit/access data for a selected month and emails the requester a link. Comprises one or both report types below.
+_Avoid_: audit log (the underlying record, not the export), download
+
+**Export Request** (`AuditLogExportRequest`): A Site Admin's recorded ask for an Audit Log Export — who asked, for which Export Range and report type, and its fulfilment status. Every ask is recorded both as an Export Request and as an Audit Log event; a request may be fulfilled by generating a new Export Artifact or by delivering an existing one.
+_Avoid_: audit log request (ambiguous with the Audit Log itself), job (the queue mechanics, not the domain ask)
+
+**Export Artifact**: The generated CSV file for one report type over one Export Range of a site, stored durably and delivered by emailed link. Identified by site, Export Range, and report type — never by who requested it; identical asks reuse the same Artifact.
+_Avoid_: the export (ambiguous with the request or the workflow), file, link (the delivery mechanism, not the artifact)
+
+**Export Range**: The half-open span of SGT calendar days an Export covers. A full past month, or — for the in-progress month — the month's start through the day of the request (inclusive).
+_Avoid_: month (the picker's input, not the stored span), start/duration
+
+**Complete Artifact**: An Export Artifact generated after its Export Range had fully elapsed. Its content is final — audit records are append-only, so no later event can fall inside the range. Only Complete Artifacts may be reused to fulfil later Export Requests; an artifact generated mid-range (any in-progress-month export) is a point-in-time snapshot and is never reused.
+_Avoid_: cached export (reuse is a correctness rule, not a cache), stale/fresh (snapshots aren't stale — they're complete-as-of-generation)
+
+**Access report** (`type: "users"`): The export view answering *who has access* to a site — derived from `ResourcePermission` joined with `User` (email, role, date added, last login).
+_Avoid_: user list, access log
+
+**Activity report** (`type: "events"`): The export view answering *what happened* on a site during the selected month — derived from `AuditLog` events.
+_Avoid_: event log (ambiguous with the table), audit report
+
+**Download Token**: The sealed, tamper-proof credential embedded in the export-ready email link. Identifies exactly one Audit Log Export request; possession of the link suffices to download — no Studio login. Opaque to the recipient and unforgeable.
+_Avoid_: presigned URL (the short-lived S3 URL minted at download time, a different thing), encrypted URL (the token is sealed — encrypted *and* authenticated)
+
+**Download Window**: The period during which a Download Token is honoured — 3 days from the request's fulfilment (`completedAt`), not from the CSV file's creation. Under Complete-Artifact reuse, each request gets its own Download Window even when several requests share one CSV.
+_Avoid_: URL expiry (conflates the emailed link with the S3 URL's lifetime), CSV creation time (wrong anchor under reuse)

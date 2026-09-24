@@ -1,4 +1,3 @@
-import type { StackProps, IconProps } from "@chakra-ui/react"
 import type { DropResult } from "@hello-pangea/dnd"
 import type {
   IsomerComponent,
@@ -17,9 +16,11 @@ import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
 import {
   getComponentSchema,
+  ISOMER_PAGE_LAYOUTS,
   ISOMER_USABLE_PAGE_LAYOUTS,
   schema,
 } from "@opengovsg/isomer-components"
+import posthog from "posthog-js"
 import { useCallback, useState } from "react"
 import {
   BiCog,
@@ -34,6 +35,8 @@ import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { CanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
+import { useSelectBlock } from "~/features/editing-experience/hooks/useSelectBlock"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -66,7 +69,7 @@ interface FixedBlockContent {
 const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
   article: {
     label: "Article page header",
-    description: "Category, Date, and Summary",
+    description: "Filters, Date, and Summary",
   },
   content: {
     label: "Content page header",
@@ -83,12 +86,8 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
 }
 
 const FixedBlock = () => {
-  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  })
-
-  const { setCurrActiveIdx, setDrawerState, previewPageState } =
-    useEditorDrawerContext()
+  const { setDrawerState, previewPageState } = useEditorDrawerContext()
+  const selectBlock = useSelectBlock()
   const pageLayout = previewPageState.layout
   const isHeroFixedBlock = getIsHeroFirstBlock(pageLayout, previewPageState)
   const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
@@ -99,10 +98,7 @@ const FixedBlock = () => {
     const isValid = validateHeroComponentFn(fixedBlock)
     return (
       <BaseBlock
-        onClick={() => {
-          setCurrActiveIdx(0)
-          setDrawerState({ state: "heroEditor" })
-        }}
+        onClick={() => selectBlock(0, { state: "heroEditor" })}
         label="Hero banner"
         description="Title, subtitle, and Call-to-Action"
         icon={TYPE_TO_ICON.hero}
@@ -118,39 +114,28 @@ const FixedBlock = () => {
     isNewCollectionTagsManagementEnabled
   ) {
     // New collection editing UI introduced in https://github.com/opengovsg/isomer/pull/2002
-    const containerProps: StackProps = {
-      px: "1.25rem",
-      py: "1.25rem",
-      flexDirection: "column",
-      gap: "0.75rem",
-      align: "flex-start",
-    }
-    const iconProps: IconProps = {
-      boxSize: "1.25rem",
-    }
     return (
       <>
         <BaseBlock
-          onClick={() => {
-            setCurrActiveIdx(0)
-            setDrawerState({ state: "collectionEditor" })
-          }}
+          variant="vertical"
+          onClick={() =>
+            selectBlock(0, { state: "collectionEditor", type: "display" })
+          }
           label="Collection display"
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
-          containerProps={containerProps}
           icon={BiCog}
-          iconProps={iconProps}
         />
-        {isUserIsomerAdmin && (
+        <CanManageCollectionFilters>
           <BaseBlock
-            onClick={() => console.log("to implement")}
+            variant="vertical"
+            onClick={() =>
+              selectBlock(0, { state: "collectionEditor", type: "filter" })
+            }
             label="Filters"
             description="Define and manage filters for this Collection."
-            containerProps={containerProps}
             icon={BiSlider}
-            iconProps={iconProps}
           />
-        )}
+        </CanManageCollectionFilters>
       </>
     )
   }
@@ -158,10 +143,9 @@ const FixedBlock = () => {
   if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
     return (
       <BaseBlock
-        onClick={() => {
-          setCurrActiveIdx(0)
-          setDrawerState({ state: "collectionEditor" })
-        }}
+        onClick={() =>
+          selectBlock(0, { state: "collectionEditor", type: "display" })
+        }
         label="Collection settings"
         description="Summary, style, categories and sorting"
         icon={BiPin}
@@ -212,12 +196,12 @@ export default function RootStateDrawer() {
   const {
     type,
     setDrawerState,
-    setCurrActiveIdx,
     savedPageState,
     setSavedPageState,
     previewPageState,
     setPreviewPageState,
   } = useEditorDrawerContext()
+  const selectBlock = useSelectBlock()
   const [isPreviewingIndexPage, setIsPreviewingIndexPage] = useState(false)
   const {
     isOpen: isConfirmConvertIndexPageModalOpen,
@@ -266,8 +250,12 @@ export default function RootStateDrawer() {
   const { mutate: savePage, isPending: isSavingPage } =
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
+        posthog.capture("page_changes_saved", { site_id: siteId })
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
+        if (type === ResourceType.CollectionPage) {
+          void utils.collection.countFilterUsage.invalidate()
+        }
         toast({
           status: "success",
           title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
@@ -388,12 +376,10 @@ export default function RootStateDrawer() {
       .map(Number),
   )
 
-  // NOTE: if a page has either of these `layouts`,
-  // we should disable them from adding blocks
-  // because folder index pages aren't intended to have
-  // content yet and components don't render content
-  // for collection index pages
-  const canAddBlocks = pageLayout !== "collection"
+  // Collection and system-managed Search pages do not render custom content.
+  const canAddBlocks =
+    pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
+    pageLayout !== ISOMER_PAGE_LAYOUTS.Search
 
   const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
 
@@ -476,9 +462,15 @@ export default function RootStateDrawer() {
             <Disable when={disableBlocks}>
               <VStack gap="1rem" w="100%" align="start">
                 <VStack gap="0.25rem" align="start">
-                  <Text textStyle="subhead-1">Manage Collection</Text>
+                  <Text textStyle="subhead-1">
+                    {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection
+                      ? "Manage Collection"
+                      : "Fixed blocks"}
+                  </Text>
                   <Text textStyle="caption-2" color="base.content.medium">
-                    Modify the Collection’s look and feel or manage filters.
+                    {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection
+                      ? "Modify the Collection’s look and feel or manage filters."
+                      : "These are built into the layout, so you can’t delete them."}
                   </Text>
                 </VStack>
 
@@ -530,7 +522,7 @@ export default function RootStateDrawer() {
                 <VStack gap="1.5rem" w="100%">
                   <VStack w="100%" h="100%" gap="1rem">
                     <Flex flexDirection="row" w="100%">
-                      {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection && (
+                      {canAddBlocks && (
                         <VStack gap="0.25rem" align="start" flex={1}>
                           <Text textStyle="subhead-1">Custom blocks</Text>
                           <Text
@@ -633,7 +625,6 @@ export default function RootStateDrawer() {
                                         draggableId={`${block.type}-${index}`}
                                         index={index}
                                         onClick={() => {
-                                          setCurrActiveIdx(index)
                                           // TODO: we should automatically do this probably?
                                           const nextState =
                                             savedPageState.content[index]
@@ -641,7 +632,9 @@ export default function RootStateDrawer() {
                                               ? "nativeEditor"
                                               : "complexEditor"
                                           // NOTE: SNAPSHOT
-                                          setDrawerState({ state: nextState })
+                                          selectBlock(index, {
+                                            state: nextState,
+                                          })
                                         }}
                                         invalidProps={
                                           invalidBlockIndexes.has(index)

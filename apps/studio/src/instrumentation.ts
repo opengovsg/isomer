@@ -1,3 +1,5 @@
+import { env } from "~/env.mjs"
+
 export async function register() {
   // make sure you only run on nodejs runtime or you will have errors with built-in modules not being defined
   // oxlint-disable-next-line node/no-process-env
@@ -9,20 +11,20 @@ export async function register() {
     // oxlint-disable-next-line node/no-process-env
     initTracer({ service: process.env.DD_SERVICE ?? "isomer-next" })
 
-    // Import only if runtime is nodejs. This avoids running it on the browser, build time etc.
-    const { initializeCronJobs, stopCronJobs } = await import("~/server/cron")
+    if (env.ENABLE_CRON_WORKERS) {
+      // Import only if runtime is nodejs. This avoids running it on the browser, build time etc.
+      const { initializeCronJobs, stopCronJobs } = await import("~/server/cron")
+      await initializeCronJobs()
 
-    // Initialize cron jobs when server starts
-    await initializeCronJobs()
-
-    // Handle graceful shutdown
-    const gracefulShutdown = () => {
-      console.log("Received shutdown signal, stopping cron jobs...")
-      stopCronJobs()
-      process.exit(0)
+      const gracefulShutdown = () => {
+        console.log("Received shutdown signal, stopping cron jobs...")
+        stopCronJobs()
+        process.exit(0)
+      }
+      process.on("SIGTERM", gracefulShutdown)
+      process.on("SIGINT", gracefulShutdown)
+    } else {
+      console.log("Cron workers are disabled")
     }
-    // Listen for shutdown signals
-    process.on("SIGTERM", gracefulShutdown)
-    process.on("SIGINT", gracefulShutdown)
   }
 }

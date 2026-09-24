@@ -7,6 +7,7 @@ import type {
   SingleValue,
 } from "chakra-react-select"
 import { Select } from "chakra-react-select"
+import React from "react"
 
 export interface BaseSelectOption<T> extends OptionBase {
   value: T
@@ -33,20 +34,28 @@ export interface BaseSelectProps<T> {
   >
 }
 
-export const BaseSelect = <T,>({
-  formatOptionLabel,
-  options,
-  value,
-  onChange,
-  isDisabled,
-  isClearable,
-  isSearchable = true,
-  customComponents,
-  ref,
-  ...rest
-}: BaseSelectProps<T> & {
-  ref?: React.Ref<SelectInstance<BaseSelectOption<T>>>
-}) => {
+interface BaseSelectComponent {
+  <T>(
+    props: BaseSelectProps<T> &
+      React.RefAttributes<SelectInstance<BaseSelectOption<T>>>,
+  ): JSX.Element
+  displayName?: string
+}
+
+const BaseSelectComponent = <T,>(
+  {
+    formatOptionLabel,
+    options,
+    value,
+    onChange,
+    isDisabled,
+    isClearable,
+    isSearchable = true,
+    customComponents,
+    ...rest
+  }: BaseSelectProps<T>,
+  ref: React.ForwardedRef<SelectInstance<BaseSelectOption<T>>>,
+) => {
   const transformSelect = {
     // mapping from the value to the option
     input: (value: T | null): BaseSelectOption<T> | null => {
@@ -75,5 +84,9 @@ export const BaseSelect = <T,>({
     />
   )
 }
+
+export const BaseSelect = React.forwardRef(
+  BaseSelectComponent,
+) as BaseSelectComponent
 
 BaseSelect.displayName = "BaseSelect"

@@ -1,19 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { userEvent, waitFor, within } from "storybook/test"
+import { userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
-import {
-  createBannerGbParameters,
-  createDropdownGbParameters,
-} from "~/stories/utils/growthbook"
+import { createBannerGbParameters } from "~/stories/utils/growthbook"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
-  pageHandlers.getCategories.default(),
   pageHandlers.updatePageBlob.default(),
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),
@@ -150,27 +146,33 @@ export const LinkModal: Story = {
   },
 }
 
-export const Dropdown: Story = {
-  parameters: {
-    growthbook: [createDropdownGbParameters("1")],
-  },
-  play: async ({ canvasElement, ...rest }) => {
-    const canvas = within(canvasElement)
-    await EditFixedBlockState.play?.({ canvasElement, ...rest })
-    // waitFor used as we can override the default timeout of findByRole (1000ms)
-    // this is needed as growthbook might take more than 1000ms to initialise
-    const button = await waitFor(() => canvas.findByRole("combobox"), {
-      timeout: 5000,
-    })
-    await userEvent.click(button)
-  },
-}
-
 export const WithTags: Story = {
   parameters: {
     msw: {
       handlers: [
         pageHandlers.getCollectionTags.default(),
+        sitesHandlers.getLocalisedSitemap.collection(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", {
+      name: /article page header/i,
+    })
+
+    await userEvent.click(button)
+  },
+}
+
+// Shows the date filter's date picker within the collection item's metadata
+// drawer, when the parent collection index page has a date filter enabled.
+export const WithDateFilter: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        pageHandlers.getCollectionTags.withDateFilter(),
         sitesHandlers.getLocalisedSitemap.collection(),
         ...COMMON_HANDLERS,
       ],

@@ -8,6 +8,7 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupAdminPermissions,
+  setupCollection,
   setupEditorPermissions,
   setupFolder,
   setupPageResource,
@@ -15,8 +16,15 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import { createCallerFactory } from "~/server/trpc"
+import { getReferenceLink } from "~/utils/link"
 
-import { AuditLogEvent, db, ResourceState, ResourceType } from "../../database"
+import {
+  AuditLogEvent,
+  db,
+  ResourceState,
+  ResourceType,
+  ScheduledAction,
+} from "../../database"
 import { folderRouter } from "../folder.router"
 
 const createCaller = createCallerFactory(folderRouter)
@@ -57,7 +65,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await expect(
@@ -82,7 +90,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A resource with the same permalink already exists",
@@ -93,7 +101,7 @@ describe("folder.router", async () => {
       ).resolves.toHaveLength(0)
     })
 
-    it("should throw 404 if `siteId` does not exist", async () => {
+    it("should throw 403 if `siteId` does not exist (no access to that site)", async () => {
       // Arrange
       const invalidSiteId = 999
       const { site } = await setupSite()
@@ -111,9 +119,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -137,7 +145,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Parent folder does not exist",
@@ -167,7 +175,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Resource ID does not point to a folder",
@@ -290,9 +298,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -316,9 +324,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -340,12 +348,12 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
 
-    it("should throw 404 if `siteId` does not exist", async () => {
+    it("should throw 403 if `siteId` does not exist (no access to that site)", async () => {
       // Arrange
       const invalidSiteId = 999
       const { site } = await setupSite()
@@ -362,9 +370,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -386,7 +394,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "This folder does not exist",
@@ -405,9 +413,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -447,7 +455,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await expect(
@@ -476,7 +484,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A resource with the same permalink already exists",
@@ -519,7 +527,7 @@ describe("folder.router", async () => {
       expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
     })
 
-    it("should throw 404 if `siteId` does not exist", async () => {
+    it("should throw 403 if `siteId` does not exist (no access to that site)", async () => {
       // Arrange
       const invalidSiteId = 999
       const { site, folder } = await setupFolder()
@@ -538,9 +546,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -561,7 +569,11 @@ describe("folder.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      await db.updateTable("Resource").set({ parentId: page.id }).execute()
+      await db
+        .updateTable("Resource")
+        .set({ parentId: page.id })
+        .where("id", "=", folder.id)
+        .execute()
       const permalink = "tempora-link"
 
       // Act
@@ -606,9 +618,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -633,7 +645,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource does not exist",
@@ -658,7 +670,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource does not exist",
@@ -736,6 +748,247 @@ describe("folder.router", async () => {
       expect(auditLogs?.userId).toEqual(session.userId)
       expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
     })
+
+    describe("redirects on rename", () => {
+      // Sets up a root folder with one published child page, plus admin
+      // permissions on the site. Returns the ids needed to rename it.
+      const setupFolderWithPublishedChild = async ({
+        folderPermalink = "old-folder",
+        childPermalink = "child",
+      }: { folderPermalink?: string; childPermalink?: string } = {}) => {
+        const { site, folder } = await setupFolder({
+          permalink: folderPermalink,
+        })
+        const { page: child } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: childPermalink,
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+        return { site, folder, child }
+      }
+
+      it("blocks the rename when a published descendant would land under an existing redirect", async () => {
+        // Arrange — a published child sits at /old-folder/child. Renaming the
+        // folder to /new-folder would move it to /new-folder/child, where an
+        // existing exact redirect (pointing elsewhere) already lives and would
+        // shadow the relocated page.
+        const { site, folder } = await setupFolderWithPublishedChild()
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/new-folder/child",
+            destination: "/somewhere-else",
+          })
+          .execute()
+
+        // Act
+        const result = caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "new folder",
+          permalink: "new-folder",
+        })
+
+        // Assert — the move is rejected and rolled back (folder keeps its old
+        // permalink), rather than silently shadowing the descendant.
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "CONFLICT" }),
+        )
+        const unchanged = await db
+          .selectFrom("Resource")
+          .select("permalink")
+          .where("id", "=", folder.id)
+          .executeTakeFirstOrThrow()
+        expect(unchanged.permalink).toBe("old-folder")
+      })
+
+      it("creates a wildcard redirect from the OLD path when a published descendant exists", async () => {
+        // Arrange
+        const { site, folder } = await setupFolderWithPublishedChild()
+
+        // Act
+        await caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "new folder",
+          permalink: "new-folder",
+        })
+
+        // Assert — the wildcard source is the folder's OLD full permalink
+        // (captured before Resource.permalink was rewritten), pointing back at
+        // the folder as a reference so it follows future renames.
+        const redirect = await db
+          .selectFrom("Redirect")
+          .select(["source", "destination", "deletedAt"])
+          .where("siteId", "=", site.id)
+          .executeTakeFirstOrThrow()
+        expect(redirect.source).toBe("/old-folder/*")
+        expect(redirect.destination).toBe(
+          getReferenceLink({
+            siteId: String(site.id),
+            resourceId: folder.id,
+          }),
+        )
+        expect(redirect.deletedAt).toBeNull()
+      })
+
+      it("does not create a redirect when the folder has no published descendant", async () => {
+        // Arrange — the only child is a draft, so nothing is live to preserve.
+        const { site, folder } = await setupFolder({ permalink: "old-folder" })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "child",
+          state: ResourceState.Draft,
+        })
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+        // Act
+        await caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "new folder",
+          permalink: "new-folder",
+        })
+
+        // Assert
+        const redirects = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .execute()
+        expect(redirects).toHaveLength(0)
+      })
+
+      it("does not create a redirect when shouldCreateRedirect is false", async () => {
+        // Arrange
+        const { site, folder } = await setupFolderWithPublishedChild()
+
+        // Act
+        await caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "new folder",
+          permalink: "new-folder",
+          shouldCreateRedirect: false,
+        })
+
+        // Assert
+        const redirects = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .execute()
+        expect(redirects).toHaveLength(0)
+      })
+
+      it("reclaims redirects that point back at descendants after a folder rename", async () => {
+        // Arrange — reproduces the folder-swap sequence from ISOM-2525. Pages
+        // were first moved from /students to /students1, creating exact
+        // /students/... redirects to those pages. Renaming the new folder back
+        // to /students makes those sources the pages' live URLs again.
+        const { site, folder, child } = await setupFolderWithPublishedChild({
+          folderPermalink: "students1",
+          childPermalink: "class-exam-timetable",
+        })
+        const { page: sibling } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "quick-links-information",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await db
+          .insertInto("Redirect")
+          .values(
+            [child, sibling].map((page) => ({
+              siteId: site.id,
+              source: `/students/${page.permalink}`,
+              destination: getReferenceLink({
+                siteId: String(site.id),
+                resourceId: page.id,
+              }),
+            })),
+          )
+          .execute()
+
+        // Act
+        await caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "Students",
+          permalink: "students",
+          shouldCreateRedirect: false,
+        })
+
+        // Assert — both self-referential redirects are soft-deleted in the
+        // rename transaction, so neither can shadow its now-live page.
+        const redirects = await db
+          .selectFrom("Redirect")
+          .select(["source", "deletedAt"])
+          .where("siteId", "=", site.id)
+          .orderBy("source")
+          .execute()
+        expect(redirects).toEqual([
+          {
+            source: "/students/class-exam-timetable",
+            deletedAt: expect.any(Date),
+          },
+          {
+            source: "/students/quick-links-information",
+            deletedAt: expect.any(Date),
+          },
+        ])
+      })
+
+      it("allows moving a folder back to its old path, reclaiming its own wildcard", async () => {
+        // Arrange — first move /old-folder -> /new-folder creates the wildcard
+        // /old-folder/* -> folder.
+        const { site, folder } = await setupFolderWithPublishedChild()
+        await caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "new folder",
+          permalink: "new-folder",
+        })
+        const folderRef = getReferenceLink({
+          siteId: String(site.id),
+          resourceId: folder.id,
+        })
+
+        // Act — roll back /new-folder -> /old-folder. The folder's own
+        // /old-folder/* wildcard from the first move must be reclaimed, not
+        // treated as a descendant shadow that blocks the move.
+        const result = caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "old folder",
+          permalink: "old-folder",
+        })
+
+        // Assert — the rollback succeeds and the folder is back at /old-folder.
+        await expect(result).resolves.toMatchObject({ permalink: "old-folder" })
+
+        // The old-folder wildcard is reclaimed (no live redirect at /old-folder/*),
+        // and a fresh /new-folder/* wildcard preserves the vacated path.
+        const live = await db
+          .selectFrom("Redirect")
+          .select(["source", "destination"])
+          .where("siteId", "=", site.id)
+          .where("deletedAt", "is", null)
+          .execute()
+        expect(live).toEqual([
+          { source: "/new-folder/*", destination: folderRef },
+        ])
+      })
+    })
   })
 
   describe("getIndexpage", () => {
@@ -747,7 +1000,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -768,7 +1021,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -777,7 +1030,7 @@ describe("folder.router", async () => {
       )
     })
 
-    it("should return 200", async () => {
+    it("should return 200 with liveStatus 'notLive' when nothing under the folder is published", async () => {
       // Arrange
       const { folder, site } = await setupFolder()
       const { page, blob } = await setupPageResource({
@@ -798,10 +1051,203 @@ describe("folder.router", async () => {
         title: folder.title,
         id: page.id,
         draftBlobId: blob.id,
+        publishedVersionId: null,
+        liveStatus: "notLive",
+        scheduledAt: null,
+        scheduledAction: null,
+        lastPublishedAt: null,
+        parentType: ResourceType.Folder,
+        otherPublishedDescendantCount: 0,
+        unschedulableDescendantCount: 0,
       })
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)
+    })
+
+    it("should return liveStatus 'live' when the folder's own index page is published", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.liveStatus).toEqual("live")
+      expect(result.publishedVersionId).toEqual(page.publishedVersionId)
+    })
+
+    it("should return liveStatus 'liveTemplate' when the index page itself isn't published but a nested descendant is", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "nested-folder",
+      })
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: subfolder.id,
+        permalink: "nested-index",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.liveStatus).toEqual("liveTemplate")
+    })
+
+    it("should surface the index page's own scheduledAt/scheduledAction", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const scheduledAt = new Date(Date.now() + 60 * 60 * 1000)
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        scheduledAt,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.id).toEqual(page.id)
+      expect(result.scheduledAt).toEqual(scheduledAt)
+      expect(result.scheduledAction).toEqual(ScheduledAction.Unpublish)
+    })
+
+    it("should return otherPublishedDescendantCount: 0 when nothing else under the folder is published", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPageResource({
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "draft-nested-page",
+        state: ResourceState.Draft,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.otherPublishedDescendantCount).toEqual(0)
+    })
+
+    it("should count published descendants (at any depth) other than the index page itself", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const { page: indexPage } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPageResource({
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "nested-page-1",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "subfolder",
+      })
+      await setupPageResource({
+        resourceType: ResourceType.Page,
+        siteId: site.id,
+        parentId: subfolder.id,
+        permalink: "nested-page-2",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: folder.id,
+      })
+
+      // Assert
+      expect(result.id).toEqual(indexPage.id)
+      expect(result.otherPublishedDescendantCount).toEqual(2)
+    })
+
+    it("should return parentType Collection for a collection's index page", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection({})
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: collection.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        permalink: "nested-collection-page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.getIndexpage({
+        siteId: site.id,
+        resourceId: collection.id,
+      })
+
+      // Assert
+      expect(result.parentType).toEqual(ResourceType.Collection)
+      expect(result.otherPublishedDescendantCount).toEqual(1)
     })
   })
 
@@ -828,7 +1274,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -880,9 +1326,9 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -906,7 +1352,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "No index page with the specified id could be found",
@@ -929,7 +1375,7 @@ describe("folder.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",

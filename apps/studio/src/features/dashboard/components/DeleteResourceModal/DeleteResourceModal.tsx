@@ -11,11 +11,13 @@ import {
 import {
   Button,
   Checkbox,
+  Infobox,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
 import { useAtom } from "jotai"
 import { upperFirst } from "lodash-es"
+import posthog from "posthog-js"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { isAllowedToHaveChildren } from "~/utils/resources"
@@ -99,9 +101,18 @@ const DeleteResourceModalContent = ({
   const utils = trpc.useUtils()
   const toast = useToast()
   const [isChecked, setIsChecked] = useState(false)
+  // Redirects whose destination resolves to this resource (or any descendant)
+  // are soft-deleted alongside it, so warn how many will go.
+  const { data: redirectCount = 0 } =
+    trpc.redirect.countByDestinationResource.useQuery({ siteId, resourceId })
   const { mutate, isPending } = trpc.resource.delete.useMutation({
     onSettled: onClose,
     onSuccess: async () => {
+      posthog.capture("resource_deleted", {
+        site_id: siteId,
+        resource_type: resourceType,
+        has_redirects: redirectCount > 0,
+      })
       // TODO: here and elsewhere, we should aim to simplify our query pattern
       // such that the invalidation logic is clear
       await utils.resource.listWithoutRoot.invalidate()
@@ -144,6 +155,15 @@ const DeleteResourceModalContent = ({
             <Text textStyle="body-2">Yes, delete this {label} permanently</Text>
           </Checkbox>
         </HStack>
+        {redirectCount > 0 && (
+          // TODO(design): final copy pending — confirm with designer.
+          <Infobox variant="warning" size="sm" mt="1rem">
+            {redirectCount === 1
+              ? "1 redirect points"
+              : `${redirectCount} redirects point`}{" "}
+            to this {label} and will be removed when you delete it.
+          </Infobox>
+        )}
       </ModalBody>
 
       <ModalFooter>

@@ -11,7 +11,7 @@ export const AntiScamDisclaimerBanner = () => {
       aria-label="Anti-scam notice"
     >
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-utility-feedback-warning-subtle">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-utility-feedback-warning-faint">
           <BiError
             className="h-5 w-5 text-utility-feedback-warning"
             aria-hidden

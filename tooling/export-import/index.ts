@@ -1,8 +1,8 @@
 import { confirm, number, select } from "@inquirer/prompts";
 import { exec as base, execFile as baseFile } from "node:child_process";
 import { promisify } from "node:util";
-import { Client } from "pg";
 import { ENVIRONMENT_CHOICES } from "./constants";
+import { createDbClient, getDbClientConfig } from "./db";
 
 import fs from "node:fs";
 import path from "node:path";
@@ -74,7 +74,10 @@ const unstudioifySite = async (sourceSiteId: number) => {
   const allJsonFiles = fs
     .readdirSync(path.join(process.cwd(), "temp"), { recursive: true })
     .filter(
-      (file) => (file as string).endsWith(".json") && file !== "sitemap.json"
+      (file) =>
+        (file as string).endsWith(".json") &&
+        file !== "sitemap.json" &&
+        file !== "redirects.json"
     ) as string[];
 
   for (const file of allJsonFiles) {
@@ -116,7 +119,7 @@ const main = async () => {
 
   if (sourceEnv !== "LOCAL") {
     await confirm({
-      message: `Have you opened your connection to the database using pnpm run ${getDbConnectCommand(sourceEnv)}?`,
+      message: `Have you run \`aws sso login --profile ${process.env[`${sourceEnv}_AWS_PROFILE`]}\` if needed, and opened the database tunnel with pnpm run ${getDbConnectCommand(sourceEnv)}?`,
     });
   }
 
@@ -160,16 +163,19 @@ const main = async () => {
     fs.writeFileSync(queryFilePath, modifiedQueryFile, "utf-8");
   }
 
+  const sourceDb = await getDbClientConfig(sourceEnv);
   await exec(`pnpm run start`, {
     cwd: exportDir,
     env: {
       ...process.env,
       SITE_ID: sourceSiteId.toString(),
-      DB_USERNAME: process.env[`${sourceEnv}_DB_USERNAME`],
-      DB_PASSWORD: process.env[`${sourceEnv}_DB_PASSWORD`],
-      DB_HOST: process.env[`${sourceEnv}_DB_HOST`],
-      DB_PORT: process.env[`${sourceEnv}_DB_PORT`],
-      DB_NAME: process.env[`${sourceEnv}_DB_NAME`],
+      DB_USERNAME: sourceDb.user,
+      DB_PASSWORD: sourceDb.password,
+      DB_HOST: sourceDb.host,
+      DB_PORT: String(sourceDb.port),
+      DB_NAME: sourceDb.database,
+      DB_IAM_AUTH: sourceDb.ssl ? "true" : "",
+      DB_SSL_SERVERNAME: sourceDb.ssl?.servername ?? "",
     },
   });
 
@@ -178,13 +184,7 @@ const main = async () => {
     fs.writeFileSync(queryFilePath, originalQueryFile, "utf-8");
   }
 
-  const sourceClient = new Client({
-    user: process.env[`${sourceEnv}_DB_USERNAME`],
-    host: process.env[`${sourceEnv}_DB_HOST`],
-    database: process.env[`${sourceEnv}_DB_NAME`],
-    password: decodeURIComponent(process.env[`${sourceEnv}_DB_PASSWORD`] ?? ""),
-    port: Number(process.env[`${sourceEnv}_DB_PORT`]),
-  });
+  const sourceClient = await createDbClient(sourceEnv);
 
   try {
     await sourceClient.connect();
@@ -226,6 +226,10 @@ const main = async () => {
     path.join(exportDir, "sitemap.json"),
     path.join(tempDir, "sitemap.json"),
   ]);
+  await execFile("mv", [
+    path.join(exportDir, "redirects.json"),
+    path.join(tempDir, "redirects.json"),
+  ]);
 
   // Step 2: Export the assets from the S3 bucket
   if (sourceEnv !== "LOCAL") {
@@ -257,7 +261,7 @@ const main = async () => {
   // Step 4: Prompt user to connect to the destination database
   if (destEnv !== "LOCAL" && destEnv !== "GITHUB") {
     await confirm({
-      message: `Have you opened your connection to the database using pnpm run ${getDbConnectCommand(destEnv)}?`,
+      message: `Have you run \`aws sso login --profile ${process.env[`${destEnv}_AWS_PROFILE`]}\` if needed, and opened the database tunnel with pnpm run ${getDbConnectCommand(destEnv)}?`,
     });
   }
 
@@ -265,22 +269,19 @@ const main = async () => {
   let finalDestSiteId = destSiteId;
 
   if (destEnv !== "GITHUB") {
-    const destClient = new Client({
-      user: process.env[`${destEnv}_DB_USERNAME`],
-      host: process.env[`${destEnv}_DB_HOST`],
-      database: process.env[`${destEnv}_DB_NAME`],
-      password: decodeURIComponent(process.env[`${destEnv}_DB_PASSWORD`] ?? ""),
-      port: Number(process.env[`${destEnv}_DB_PORT`]),
-    });
+    const destClient = await createDbClient(destEnv);
 
     try {
       await destClient.connect();
 
       if (!destSiteId) {
         console.log(`Creating new site in ${destEnv}...`);
+        // Site.name is unique per environment, so same-env duplicates need a distinct name.
+        const newSiteName =
+          sourceEnv === destEnv ? `${siteName} (Copy)` : siteName;
         const res = await destClient.query(
           `INSERT INTO "Site" (name, config, theme) VALUES ($1, '{}', '{}') RETURNING id`,
-          [siteName]
+          [newSiteName]
         );
         finalDestSiteId = res.rows[0].id;
         console.log(`Created new site with ID ${finalDestSiteId}`);

@@ -9,6 +9,11 @@ updates:
     cooldown:
       default-days: 7 # to mitigate supply chain attacks
     groups:
+      atlaskit-pragmatic-dnd:
+        applies-to: version-updates
+        patterns:
+          - "@atlaskit/pragmatic-drag-and-drop"
+          - "@atlaskit/pragmatic-drag-and-drop-hitbox"
       aws-sdk:
         applies-to: version-updates
         patterns:
@@ -32,10 +37,15 @@ updates:
         patterns:
           - "pg"
           - "@types/pg"
+      playwright:
+        applies-to: version-updates
+        patterns:
+          - "playwright"
+          - "@playwright/test"
       prisma:
         applies-to: version-updates
         patterns:
-          - "@prisma/client"
+          - "@prisma/*"
           - "prisma"
       react:
         applies-to: version-updates
@@ -50,11 +60,6 @@ updates:
           - "@tanstack/query-devtools"
           - "@tanstack/react-query"
           - "@tanstack/react-query-devtools"
-      storybook:
-        applies-to: version-updates
-        patterns:
-          - "@storybook/*"
-          - "storybook"
       tiptap:
         applies-to: version-updates
         patterns:
@@ -76,11 +81,25 @@ updates:
           - "vitest"
           - "@vitest/*"
           - "@vitejs/*"
+      growthbook:
+        applies-to: version-updates
+        patterns:
+          - "@growthbook/growthbook"
+          - "@growthbook/growthbook-react"
       jsonforms:
         applies-to: version-updates
         patterns:
           - "@jsonforms/core"
           - "@jsonforms/react"
+      casl:
+        applies-to: version-updates
+        patterns:
+          - "@casl/*"
+      react-aria:
+        applies-to: version-updates
+        patterns:
+          - "@react-aria/*"
+          - "@react-stately/*"
     ignore:
       # Currently dependabot doesn't support ignoring by group so we have to ignore each dependency individually
       # Ignore major version updates for react — we cannot upgrade to React 19 yet because some dependencies
@@ -94,13 +113,6 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@types/react-dom"
         update-types: ["version-update:semver-major"]
-      # Ignore major version updates for Prisma 6 due to installation issues
-      ### Could not resolve @prisma/client despite the installation that we just tried.
-      ### Please try to install it by hand with `pnpm add @prisma/client` and rerun `pnpm exec prisma generate` 🙏.
-      - dependency-name: "prisma"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@prisma/client"
-        update-types: ["version-update:semver-major"]
       # @chakra-ui/react and @chakra-ui/cli v3 require a full Chakra UI v3 migration.
       # @chakra-ui/react v2 is pinned to the OGP design system version.
       # chakra-react-select v6 requires Chakra UI v3 (imports Separator, Span, useChakraContext etc. not present in v2).
@@ -110,5 +122,48 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "chakra-react-select"
         update-types: ["version-update:semver-major"]
-      # markdown-to-jsx is only used in the unmaintained classic template; skip all updates
-      - dependency-name: "markdown-to-jsx"
+      - dependency-name: "algoliasearch"
+        update-types: ["version-update:semver-major"]
+      # Storybook 10.5.x breaks interactive stories: its instrumented
+      # HTMLElement.prototype.focus getter conflicts with
+      # @zag-js/focus-visible (used by Chakra/@opengovsg/design-system-react),
+      # throwing "Illegal invocation" on any story that opens a Chakra Menu.
+      # Pinned to 10.4.6 until fixed upstream — remove once resolved.
+      # These packages were also removed from the `storybook` update group
+      # above — grouped updates don't reliably respect per-dependency
+      # `update-types` ignores, so an ungrouped ignore is the only way to
+      # actually block them.
+      ### Storybook 10.5
+      - dependency-name: "storybook"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@storybook/addon-a11y"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@storybook/addon-docs"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@storybook/addon-links"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@storybook/addon-themes"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@storybook/nextjs"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@storybook/react-vite"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "eslint-plugin-storybook"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "storybook-addon-pseudo-states"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7 # to mitigate supply chain attacks
+    groups:
+      # github/codeql-action ships init/analyze/autobuild/upload-sarif from
+      # a single repo and requires them to be pinned to the same release —
+      # group them so Dependabot bumps them together in one PR instead of
+      # leaving them mismatched.
+      codeql:
+        patterns:
+          - "github/codeql-action/*"

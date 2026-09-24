@@ -1,11 +1,22 @@
-import { describe, expect, it } from "vitest"
+import { TRPCError } from "@trpc/server"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+import { deleteFile } from "~/lib/s3"
 
 import {
+  deleteAssetsByUrl,
   doAllFileKeysBelongToSite,
   getContentDispositionForKey,
   getContentTypeFromKey,
   getFileKey,
+  parseAssetUrlToKey,
+  sanitizeSvg,
 } from "../asset.service"
+
+// Mock the S3 client so these stay pure unit tests, matching asset.router.test.ts.
+vi.mock("~/lib/s3", () => ({
+  deleteFile: vi.fn().mockResolvedValue(undefined),
+  isNotFoundError: vi.fn().mockReturnValue(false),
+}))
 
 describe("asset.service", () => {
   describe("getContentTypeFromKey", () => {
@@ -46,14 +57,15 @@ describe("asset.service", () => {
   describe("getContentDispositionForKey", () => {
     it("should return inline with filename from key segment", () => {
       const result = getContentDispositionForKey("1/abc-uuid/test.png")
-      expect(result).toMatch(/^inline; filename\*=UTF-8''/)
-      expect(result).toContain(encodeURIComponent("test.png"))
+      expect(result).toBe(`inline; filename=test.png`)
     })
 
-    it("should encode special characters in filename", () => {
+    it("should encode non-latin1 characters via RFC 5987 with a latin1 fallback", () => {
       const result = getContentDispositionForKey("1/abc/测试文件.pdf")
-      expect(result).toMatch(/^inline; filename\*=UTF-8''/)
-      expect(result).toContain(encodeURIComponent("测试文件.pdf"))
+      // filename= fallback for legacy clients, plus a correctly-encoded filename*
+      expect(result).toBe(
+        `inline; filename="????.pdf"; filename*=UTF-8''%E6%B5%8B%E8%AF%95%E6%96%87%E4%BB%B6.pdf`,
+      )
     })
   })
 
@@ -273,6 +285,394 @@ describe("asset.service", () => {
           fileKeys: ["2/uuid/file.png"],
         }),
       ).toBe(true)
+    })
+  })
+
+  describe("parseAssetUrlToKey", () => {
+    // Matches NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME in .env.test.
+    const ASSET_DOMAIN = "user-content.example.com"
+    const UUID = "11111111-1111-1111-1111-111111111111"
+
+    it("should extract the key from a well-formed asset URL", () => {
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/${UUID}/picture.png`,
+      )
+      expect(result).toBe(`36/${UUID}/picture.png`)
+    })
+
+    it("should decode percent-encoded characters in the path", () => {
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/${UUID}/my%20file.png`,
+      )
+      expect(result).toBe(`36/${UUID}/my file.png`)
+    })
+
+    it("should extract a percent-encoded '#' from the filename", () => {
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/${UUID}/my%23file.png`,
+      )
+      expect(result).toBe(`36/${UUID}/my#file.png`)
+    })
+
+    it("should not truncate the key at an unescaped '#' in the filename", () => {
+      // filenamify's reserved-character list doesn't strip '#', and Studio
+      // concatenates the stored key into asset URLs without encoding it —
+      // so a legitimately uploaded file with '#' in its name produces a URL
+      // with a raw, unescaped '#'. Isomer never appends a real navigational
+      // fragment to an asset URL (these are direct file links, not page
+      // links with anchors), so an unescaped '#' here is always part of the
+      // filename; the WHATWG URL parser would otherwise treat it as the
+      // start of a fragment and drop it and everything after it from
+      // `.pathname`.
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/${UUID}/my#file.png`,
+      )
+      expect(result).toBe(`36/${UUID}/my#file.png`)
+    })
+
+    it("should drop a query string rather than folding it into the key", () => {
+      // A real asset key can never contain '?' (filenamify strips it), so
+      // a query string on a pasted URL is never part of the filename.
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/${UUID}/picture.png?download=1`,
+      )
+      expect(result).toBe(`36/${UUID}/picture.png`)
+    })
+
+    it("should preserve a literal '%' rather than throwing on a malformed escape", () => {
+      // filenamify doesn't strip '%' from filenames, so a legitimately
+      // uploaded "cover-100%.png" produces a URL with a raw '%' that isn't
+      // part of a valid escape — decodeURIComponent would throw on the
+      // whole string if applied directly.
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/${UUID}/cover-100%.png`,
+      )
+      expect(result).toBe(`36/${UUID}/cover-100%.png`)
+    })
+
+    it("should decode a multi-byte percent-encoded character", () => {
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/${UUID}/caf%C3%A9.png`,
+      )
+      expect(result).toBe(`36/${UUID}/café.png`)
+    })
+
+    it("should trim surrounding whitespace before parsing", () => {
+      const result = parseAssetUrlToKey(
+        `  https://${ASSET_DOMAIN}/36/${UUID}/file.png  `,
+      )
+      expect(result).toBe(`36/${UUID}/file.png`)
+    })
+
+    it("should return null for a malformed URL", () => {
+      expect(parseAssetUrlToKey("not-a-url")).toBeNull()
+    })
+
+    it("should return null for an empty string", () => {
+      expect(parseAssetUrlToKey("")).toBeNull()
+    })
+
+    it("should return null when the URL is on a different host", () => {
+      const result = parseAssetUrlToKey(
+        `https://evil.example.com/36/${UUID}/picture.png`,
+      )
+      expect(result).toBeNull()
+    })
+
+    it("should return null when the path has extra segments", () => {
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/${UUID}/nested/picture.png`,
+      )
+      expect(result).toBeNull()
+    })
+
+    it("should return null when the folder segment is not a UUID", () => {
+      const result = parseAssetUrlToKey(
+        `https://${ASSET_DOMAIN}/36/uuid/picture.png`,
+      )
+      expect(result).toBeNull()
+    })
+  })
+
+  describe("deleteAssetsByUrl", () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
+    // Matches NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME in .env.test.
+    const ASSET_DOMAIN = "user-content.example.com"
+    const UUID_1 = "11111111-1111-1111-1111-111111111111"
+    const UUID_2 = "22222222-2222-2222-2222-222222222222"
+
+    it("should mark each valid URL's key as deleted and report success", async () => {
+      // Arrange
+      const urls = [
+        `https://${ASSET_DOMAIN}/36/${UUID_1}/a.png`,
+        `https://${ASSET_DOMAIN}/37/${UUID_2}/b.png`,
+      ]
+
+      // Act
+      const results = await deleteAssetsByUrl(urls)
+
+      // Assert
+      expect(results).toEqual([
+        { url: urls[0], key: `36/${UUID_1}/a.png`, success: true },
+        { url: urls[1], key: `37/${UUID_2}/b.png`, success: true },
+      ])
+      // .png is an optimizable format, so each key also deletes its .webp
+      // and .avif derivatives alongside the original: 3 calls per key.
+      expect(deleteFile).toHaveBeenCalledTimes(6)
+    })
+
+    it("should report failure for an invalid URL without calling deleteFile", async () => {
+      // Act
+      const results = await deleteAssetsByUrl(["not-a-url"])
+
+      // Assert
+      expect(results).toEqual([
+        { url: "not-a-url", success: false, error: "Invalid asset URL" },
+      ])
+      expect(deleteFile).not.toHaveBeenCalled()
+    })
+
+    it("should report a generic failure message when deleteFile rejects, without failing other URLs", async () => {
+      // Arrange
+      vi.mocked(deleteFile)
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error("S3 unavailable"))
+      const urls = [
+        `https://${ASSET_DOMAIN}/36/${UUID_1}/a.png`,
+        `https://${ASSET_DOMAIN}/37/${UUID_2}/b.png`,
+      ]
+
+      // Act
+      const results = await deleteAssetsByUrl(urls)
+
+      // Assert — the underlying provider error is logged server-side, not
+      // returned to the caller.
+      expect(results).toEqual([
+        { url: urls[0], key: `36/${UUID_1}/a.png`, success: true },
+        {
+          url: urls[1],
+          key: `37/${UUID_2}/b.png`,
+          success: false,
+          error: "Failed to delete asset",
+        },
+      ])
+    })
+  })
+
+  describe("sanitizeSvg", () => {
+    it("should return sanitized content for a valid SVG without altering safe elements or attributes", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert — DOMPurify normalises self-closing tags to explicit close tags
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
+      )
+    })
+
+    it("should strip <script> tag from SVG without touching other content", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/><script>alert(1)</script></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
+      )
+    })
+
+    it("should strip onload attribute from SVG without touching other content", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"><rect width="10" height="10"/></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
+      )
+    })
+
+    it("should throw BAD_REQUEST when root element is not svg (HTML document)", () => {
+      // Arrange
+      const input = "<!DOCTYPE html><html><body></body></html>"
+
+      // Act & Assert
+      expect(() => sanitizeSvg(input)).toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Root element is not a valid SVG element",
+        }),
+      )
+    })
+
+    it("should throw BAD_REQUEST for XML entity declaration", () => {
+      // Arrange
+      const input =
+        '<!ENTITY xxe "test"><svg xmlns="http://www.w3.org/2000/svg"/>'
+
+      // Act & Assert
+      expect(() => sanitizeSvg(input)).toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "SVG contains disallowed XML entities",
+        }),
+      )
+    })
+
+    it("should throw BAD_REQUEST for billion-laughs XML entity bomb", () => {
+      // Arrange
+      // Billion-laughs: exponential entity expansion that exhausts server memory
+      // at parse time. Must be caught by the <!ENTITY regex BEFORE DOMParser runs —
+      // DOMPurify operates on the already-parsed DOM and cannot prevent this.
+      const input = `<!DOCTYPE svg [
+        <!ENTITY lol "lol">
+        <!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">
+        <!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">
+      ]>
+      <svg xmlns="http://www.w3.org/2000/svg">&lol3;</svg>`
+
+      // Act & Assert
+      expect(() => sanitizeSvg(input)).toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "SVG contains disallowed XML entities",
+        }),
+      )
+    })
+
+    it("should throw BAD_REQUEST for non-XML binary/random string", () => {
+      // Arrange
+      const input = "not an svg at all, just random text"
+
+      // Act & Assert
+      expect(() => sanitizeSvg(input)).toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "SVG failed to parse as valid XML",
+        }),
+      )
+    })
+
+    it("should throw BAD_REQUEST for empty string", () => {
+      // Arrange
+      const input = ""
+
+      // Act & Assert
+      expect(() => sanitizeSvg(input)).toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "SVG failed to parse as valid XML",
+        }),
+      )
+    })
+
+    it("should strip foreignObject tag from SVG without touching other content", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/><foreignObject><div>evil</div></foreignObject></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
+      )
+    })
+
+    it("should strip use tag from SVG without touching other content", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/><use href="http://evil.com/evil.svg#xss"/></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
+      )
+    })
+
+    it("should strip onclick attribute from SVG without touching other content", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10" onclick="alert(1)"/></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
+      )
+    })
+
+    it("should strip onerror attribute from SVG without touching other content", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/><image onerror="alert(1)"/></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect><image></image></svg>',
+      )
+    })
+
+    it("should strip onmouseover attribute from SVG without touching other content", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10" onmouseover="alert(1)"/></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
+      )
+    })
+
+    it("should throw BAD_REQUEST for valid XML that is not SVG", () => {
+      // Arrange
+      const input = '<root xmlns="http://example.com"><child/></root>'
+
+      // Act & Assert
+      expect(() => sanitizeSvg(input)).toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Root element is not a valid SVG element",
+        }),
+      )
+    })
+
+    it("should throw BAD_REQUEST for malformed XML", () => {
+      // Arrange
+      const input = '<svg xmlns="http://www.w3.org/2000/svg"><unclosed>'
+
+      // Act & Assert
+      expect(() => sanitizeSvg(input)).toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "SVG failed to parse as valid XML",
+        }),
+      )
     })
   })
 })

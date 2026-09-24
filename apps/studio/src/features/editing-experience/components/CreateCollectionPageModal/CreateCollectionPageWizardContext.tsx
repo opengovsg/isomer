@@ -4,6 +4,7 @@ import type { PropsWithChildren } from "react"
 import type { z } from "zod"
 import { merge } from "lodash-es"
 import { useRouter } from "next/router"
+import posthog from "posthog-js"
 import { createContext, useContext, useMemo, useState } from "react"
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import collectionLinkPreview from "~/features/editing-experience/data/collectionLinkPreview.json"
@@ -105,6 +106,10 @@ const useCreateCollectionPageWizardContext = ({
         },
         {
           onSuccess: ({ pageId }) => {
+            posthog.capture("collection_page_created", {
+              site_id: siteId,
+              resource_type: values.type,
+            })
             const nextType = getResourceSubpath(type)
             void router.push(`/sites/${siteId}/${nextType}/${pageId}`)
           },

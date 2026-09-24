@@ -1,2 +1,7 @@
+export * from "./createTableSelectionBorderPlugin"
+export * from "./getBlockElement"
+export * from "./getCollectionSortOptions"
 export * from "./getDgsIdFromString"
 export * from "./getHtmlWithRelativeReferenceLinks"
+export * from "./getSelectedCellBorderClasses"
+export * from "./scrollToBlockElement"

@@ -1,5 +1,6 @@
 export { getBreadcrumbFromSiteMap } from "./getBreadcrumbFromSiteMap"
 export { getFormattedDate } from "./getFormattedDate"
+export { getAskgovIdFromString } from "./getAskgovIdFromString"
 export { getNodeFromSiteMap } from "./getNodeFromSiteMap"
 export { getParsedDate } from "./getParsedDate"
 export { getReferenceLinkHref } from "./getReferenceLinkHref"
@@ -19,6 +20,7 @@ export {
   fetchDgsFileDownloadUrl,
   fetchDgsMetadata,
   getDgsIdFromDgsLink,
+  DGS_REQUEST_MAX_BYTES,
 } from "./dgs"
 export { fetchFileMetadata } from "./fetchFileMetadata"
 export { formatBytes } from "./formatBytes"
@@ -33,6 +35,10 @@ export {
   MAPS_EMBED_URL_REGEXES,
   VIDEO_EMBED_URL_REGEXES,
   NON_EMPTY_STRING_REGEX,
+  TRIMMED_NON_EMPTY_STRING_REGEX,
+  TRIMMED_STRING_OR_EMPTY_REGEX,
+  GTM_ID_STRING_REGEX,
 } from "./validation"
 
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
+export { resolveCollectionSortOrder } from "../templates/next/layouts/Collection/utils/collectionSortOrder"

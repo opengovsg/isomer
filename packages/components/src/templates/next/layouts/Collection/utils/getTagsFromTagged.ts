@@ -1,19 +1,30 @@
-import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
+import type {
+  ArticlePagePageProps,
+  CollectionPagePageProps,
+  TagGroup,
+} from "~/types"
+import { isTextFilter } from "~/types/page"
 
 export const getTagsFromTagged = (
   tagged: NonNullable<ArticlePagePageProps["tagged"]>,
   tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]>,
-): NonNullable<ArticlePagePageProps["tags"]> => {
-  return tagCategories
-    .map(({ options, label }) => {
-      return {
-        category: label,
-        selected: options
-          .filter(({ id: optionId }) => tagged.includes(optionId))
-          .map(({ label }) => label),
-      }
-    })
-    .filter(({ selected }) => {
-      return selected.length > 0
-    })
+): TagGroup[] => {
+  return (
+    tagCategories
+      // NOTE: date filters have no `options`/`tagged` membership — they resolve
+      // their own tags separately (see getDateFilterDisplayEntries).
+      .filter(isTextFilter)
+      .map(({ id, options, label }) => {
+        return {
+          id,
+          category: label,
+          selected: options
+            .filter(({ id: optionId }) => tagged.includes(optionId))
+            .map(({ label }) => label),
+        }
+      })
+      .filter(({ selected }) => {
+        return selected.length > 0
+      })
+  )
 }

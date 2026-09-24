@@ -1,5 +1,6 @@
 import type { IconType } from "react-icons"
 
+import type { MenubarCustomProps } from "./Custom"
 import type { MenubarDetailedListProps } from "./DetailedList"
 import type { MenubarDividerProps } from "./Divider"
 import type { MenubarHorizontalListProps } from "./HorizontalList"
@@ -26,3 +27,4 @@ export type PossibleMenubarItemProps =
   | MenubarDetailedListProps
   | MenubarItemProps
   | MenubarOverflowListProps
+  | MenubarCustomProps

@@ -1,0 +1,85 @@
+meta {
+  name: Bootstrap Site
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/v2/bootstrap
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  User-Agent: {{userAgent}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "project": {
+      "agencyId": 31,
+      "projectName": "My Site",
+      "adminList": ["isomer@open.gov.sg"]
+    },
+    "index": {
+      "indexType": "websiteSearch",
+      "indexName": "My Site",
+      "dataSources": {
+        "web": [
+          {
+            "startingUrl": "https://mysite.gov.sg",
+            "documentIndexConfig": {
+              "indexWhitelist": [],
+              "indexBlacklist": []
+            }
+          }
+        ],
+        "api": [],
+        "pushApi": { "enabled": false }
+      }
+    },
+    "sites": [
+      {
+        "siteName": "My Site",
+        "siteDomain": "mysite.gov.sg",
+        "environment": "production",
+        "apps": [
+          {
+            "appType": "websiteSearch",
+            "config": {
+              "theme": {
+                "primary": "#000000",
+                "fontFamily": "Inter"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+
+docs {
+  Provisions a new SearchSG site. This mirrors `generateRequestData` in
+  `tooling/site-launch/create-searchsg-client.ts`.
+
+  Response shape:
+  ```json
+  { "data": { "sites": [{ "siteClientId": "..." }] } }
+  ```
+
+  The returned `siteClientId` should be stored in the site config.
+
+  Fields to update before running:
+  - `project.projectName` / `index.indexName` / `sites[0].siteName` — the site display name
+  - `index.dataSources.web[0].startingUrl` — the crawl start URL (must be https)
+  - `sites[0].siteDomain` — the site domain without protocol
+  - `sites[0].apps[0].config.theme.primary` — the site brand colour (hex)
+
+  SearchSG has no non-production environment — this call creates a live site.
+}

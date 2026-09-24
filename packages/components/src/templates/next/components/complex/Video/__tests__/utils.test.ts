@@ -5,6 +5,7 @@ import {
   getPrivacyEnhancedYouTubeEmbedUrl,
   getVimeoVideoId,
   getYouTubeVideoId,
+  isFacebookReelEmbedUrl,
 } from "../utils"
 
 describe("utils", () => {
@@ -220,6 +221,69 @@ describe("utils", () => {
 
       testCases.forEach((testCase) => {
         expect(getVimeoVideoId(testCase)).toBeNull()
+      })
+    })
+  })
+
+  describe("isFacebookReelEmbedUrl", () => {
+    it("should return true for Facebook Reel embed URLs", () => {
+      const testCases = [
+        "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F3028033664054832%2F&show_text=false&width=267&t=0",
+        "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F123",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(isFacebookReelEmbedUrl(testCase)).toBe(true)
+      })
+    })
+
+    it("should return false for regular Facebook video embed URLs", () => {
+      const testCases = [
+        "https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Fworldcitiessummit%2Fvideos%2F696071555825049%2F&show_text=false&width=560&t=0",
+        "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fwatch%2F%3Fv%3D123",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(isFacebookReelEmbedUrl(testCase)).toBe(false)
+      })
+    })
+
+    it("should return false for non-embed Facebook URLs even when the href points to a reel", () => {
+      const testCases = [
+        "https://www.facebook.com/?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F123",
+        "https://www.facebook.com/reel/123",
+        "https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F123",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(isFacebookReelEmbedUrl(testCase)).toBe(false)
+      })
+    })
+
+    it("should return false when the href param is missing", () => {
+      expect(
+        isFacebookReelEmbedUrl(
+          "https://www.facebook.com/plugins/video.php?show_text=false",
+        ),
+      ).toBe(false)
+    })
+
+    it("should return false for non-Facebook URLs", () => {
+      const testCases = [
+        "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "https://player.vimeo.com/video/984159615",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(isFacebookReelEmbedUrl(testCase)).toBe(false)
+      })
+    })
+
+    it("should return false for invalid URLs", () => {
+      const testCases = ["", "not-a-url"]
+
+      testCases.forEach((testCase) => {
+        expect(isFacebookReelEmbedUrl(testCase)).toBe(false)
       })
     })
   })

@@ -28,10 +28,15 @@ export const DEFAULT_BLOCKS = {
   },
   blockquote: {
     type: "blockquote",
-    quote:
-      "Enforcing the gold standards of building government informational websites at Isomer (OGP)",
-    source: "Huaying Zhu",
-    imageAlt: "Portrait of Huaying Zhu",
+    quote: "Enter your quote here.",
+    source: "Describe who said the quote.",
+    imageAlt: "Enter a descriptive alt text.",
+  },
+  button: {
+    type: "button",
+    alignment: "left",
+    buttonLabel: "Enter your button text.",
+    buttonUrl: "https://www.google.com",
   },
   callout: {
     type: "callout",
@@ -43,7 +48,7 @@ export const DEFAULT_BLOCKS = {
           content: [
             {
               type: "text",
-              text: "Callout content",
+              text: "We’re closing applications for this position on Thursday, July 3rd. Make sure to apply by then.",
             },
           ],
         },
@@ -53,84 +58,84 @@ export const DEFAULT_BLOCKS = {
   formsg: {
     type: "formsg",
     url: "https://form.gov.sg/686e73c1a1f7bf391ee2b3af",
-    title: "A feedback collection form",
+    title: "Fill in a sample feedback form for Isomer.",
   },
   hero: undefined,
   iframe: {
     type: "iframe",
     title: "YouTube embed",
     content:
-      '<iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>',
+      '<iframe width="560" height="315" src="https://www.youtube.com/embed/GzQiJ091g7Q?si=GePcnmUmvmGk77fz" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>',
   },
   image: {
     type: "image",
     src: "/placeholder_no_image.png",
-    alt: "Add your alt text here",
+    alt: "Enter a descriptive alt text.",
     size: "default",
   },
   infobar: {
     type: "infobar",
-    title: "This is the main title",
-    description: "This is an optional description",
+    title: "Enter a strong message or call-to-action.",
+    description: "Elaborate on the title.",
   },
   infocards: {
     type: "infocards",
-    title: "This is a title of the Infocards component",
-    subtitle: "This is an optional subtitle for the Infocards component",
+    title: "Enter a title.",
+    subtitle: "Elaborate on the title.",
     variant: "cardsWithImages",
     maxColumns: "3",
     cards: [
       {
-        title: "This is the first card",
+        title: "Enter a title for your first card.",
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
-        imageAlt: "This is the alt text",
+        imageAlt: "Enter a descriptive alt text.",
         imageFit: "cover",
       },
       {
-        title: "This is the second card",
+        title: "Enter a title for your second card.",
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
-        imageAlt: "This is the alt text",
+        imageAlt: "Enter a descriptive alt text.",
         imageFit: "cover",
       },
       {
-        title: "This is the third card",
+        title: "Enter a title for your third card.",
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
-        imageAlt: "This is the alt text",
+        imageAlt: "Enter a descriptive alt text.",
         imageFit: "cover",
       },
     ],
   },
   infocols: {
     type: "infocols",
-    title: "This is the main title of the InfoCols component",
-    subtitle: "This is an optional subtitle for the InfoCols component.",
+    title: "Enter a title.",
+    subtitle: "Elaborate on the title.",
     infoBoxes: [
       {
-        title: "This is the title of the first column",
-        description: "You can also add additional description here",
+        title: "Enter a title for your first column.",
+        description: "Elaborate on the title.",
         icon: "office-building",
       },
       {
-        title: "This is the title of the second column",
-        description: "You can also add additional description here",
+        title: "Enter a title for your second column.",
+        description: "Elaborate on the title.",
         icon: "stars",
       },
       {
-        title: "This is the title of the third column",
-        description: "You can also add additional description here",
+        title: "Enter a title for your third column.",
+        description: "Elaborate on the title.",
         icon: "globe",
       },
     ],
   },
   infopic: {
     type: "infopic",
-    title: "This is an infopic",
-    description: "This is the description for the infopic component",
+    title: "Enter a title.",
+    description: "Elaborate on the title.",
     imageSrc: "/placeholder_no_image.png",
-    imageAlt: "This is the alt text for the image",
+    imageAlt: "Enter a descriptive alt text.",
   },
   contentpic: {
     type: "contentpic",
@@ -141,7 +146,7 @@ export const DEFAULT_BLOCKS = {
           type: "paragraph",
           content: [
             {
-              text: "Enter the content accompanying the image here",
+              text: "Enter content to place beside the image.",
               type: "text",
             },
           ],
@@ -149,44 +154,65 @@ export const DEFAULT_BLOCKS = {
       ],
     },
     imageSrc: "/placeholder_no_image.png",
-    imageAlt: "This is the alt text for the image",
+    imageAlt: "Describe what the image is about.",
   },
   keystatistics: {
     type: "keystatistics",
-    title: "Irrationality in numbers",
+    title: "Enter a title.",
     statistics: [
       {
-        label: "Average all nighters pulled in a typical calendar month",
-        value: "3",
+        label: "Enter a label for each item.",
+        value: "Example",
       },
       {
-        label: "Growth in tasks assigned Q4 2024 (YoY)",
+        label: "Show growth numbers",
         value: "+12.2%",
       },
       {
-        label: "Creative blocks met per single evening",
-        value: "89",
+        label: "Use commas for big numbers",
+        value: "12,890",
       },
       {
-        value: "4.0",
-        label: "Number of lies in this stat block",
+        label: "Highlight core values",
+        value: "Integrity",
+      },
+    ],
+  },
+  steps: {
+    type: "steps",
+    title: "How to apply",
+    subtitle: "Tell users what to expect before they start.",
+    numberStyle: "numeral",
+    steps: [
+      {
+        title: "Check if you are eligible",
+        description: "Say who this is for, in one sentence.",
+      },
+      {
+        title: "Prepare your documents",
+        description: "List what users need to have on hand.",
+      },
+      {
+        title: "Submit your application",
+        description: "Say how long it takes and what happens next.",
       },
     ],
   },
   map: {
     type: "map",
-    title: "Singapore region",
+    title: "Map of the Singapore region",
     url: "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d127639.0647119137!2d103.79481771806647!3d1.343949056391766!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2ssg!4v1731681854346!5m2!1sen!2ssg",
   },
   audio: {
     type: "audio",
-    title: "As scammers adapt and evolve, how can technology keep up?",
+    title:
+      "Play podcast: As scammers adapt and evolve, how can technology keep up?",
     url: "https://open.spotify.com/embed/episode/1xaBZfZ3tffBZdgBdy1Kh6",
   },
   video: {
     type: "video",
-    title: "Rick Astley - Never Gonna Give You Up",
-    url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD",
+    title: "Play video: Kit Chan sings 'Home' at NDP 2025",
+    url: "https://www.youtube.com/embed/GzQiJ091g7Q?si=GePcnmUmvmGk77fz",
   },
   // TODO: Replace with actual working API endpoint
   dynamicdatabanner: {
@@ -236,18 +262,18 @@ export const DEFAULT_BLOCKS = {
     images: [
       {
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: "Enter a descriptive alt text.",
       },
       {
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: "Enter a descriptive alt text.",
       },
       {
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: "Enter a descriptive alt text.",
       },
     ],
-    title: "In collaboration with",
+    title: "Our partners",
   },
   collectionblock: {
     type: "collectionblock",
@@ -260,19 +286,19 @@ export const DEFAULT_BLOCKS = {
     type: "imagegallery",
     images: [
       {
-        caption: "This is the first image",
+        caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: "Enter a descriptive alt text.",
       },
       {
-        caption: "This is the second image",
+        caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: "Enter a descriptive alt text.",
       },
       {
-        caption: "This is the third image",
+        caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: "Enter a descriptive alt text.",
       },
     ],
   },
@@ -340,6 +366,13 @@ export const BLOCK_TO_META: Record<
     usageText: "Share key wins or highlight your values in short words.",
     imageSrc: "/assets/block-images/KeyStatistics.png",
   },
+  steps: {
+    label: "Steps",
+    description: "Break a process into numbered steps.",
+    usageText:
+      "Show users what to do in order, like applying for a scheme or making a report.",
+    imageSrc: "/assets/block-images/Steps.png",
+  },
   infobar: {
     label: "Call-to-Action",
     description: "Add a strong Call-to-Action.",
@@ -390,6 +423,7 @@ export const BLOCK_TO_META: Record<
     label: "Audio",
     description: "Embed an audio from Spotify or Apple Podcast.",
     usageText: "The audio will be playable directly on the page.",
+    imageSrc: "/assets/block-images/Podcast.png",
   },
   video: {
     label: "Video",
@@ -417,7 +451,6 @@ export const BLOCK_TO_META: Record<
     imageSrc: "/assets/block-images/LogoCloud.png",
   },
   collectionblock: {
-    // TODO: Add image source
     label: "Link a Collection",
     description: "Automatically display recent items from a Collection.",
     usageText:
@@ -425,10 +458,10 @@ export const BLOCK_TO_META: Record<
     imageSrc: "/assets/block-images/CollectionBlock.png",
   },
   imagegallery: {
-    // TODO: Add image source
     label: "Image gallery",
     description: "Display up to 30 images in a slideshow.",
     usageText: "Share memorable moments from an event.",
+    imageSrc: "/assets/block-images/ImageGallery.png",
   },
   blockquote: {
     label: "Quote",
@@ -437,11 +470,18 @@ export const BLOCK_TO_META: Record<
       "Humanise your site with powerful quotes or stories from real people.",
     imageSrc: "/assets/block-images/Blockquote.png",
   },
+  button: {
+    label: "Button",
+    description: "Add one or two buttons that link somewhere.",
+    usageText:
+      "Use when you want to show a clear next step or two, without a heading or coloured background.",
+    imageSrc: "/assets/block-images/Button.png",
+  },
   contactinformation: {
     label: "Contact information",
     description: "Display contact information.",
     usageText: "Let people know how they can reach you.",
-    // TODO: Add imageSrc
+    imageSrc: "/assets/block-images/ContactInformation.png",
   },
   dynamiccomponentlist: {
     label: "Dynamic component list",
@@ -473,6 +513,7 @@ export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "callout",
       "blockquote",
       "imagegallery",
+      "button",
     ],
   },
   { label: "Embed external content", types: ["map", "video"] },
@@ -490,11 +531,12 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
       "contentpic",
       "infobar",
       "imagegallery",
+      "button",
     ],
   },
   {
     label: "Add a new section",
-    types: ["infocards", "infocols", "keystatistics"],
+    types: ["infocards", "infocols", "keystatistics", "steps"],
   },
   { label: "Embed external content", types: ["map", "video", "formsg"] },
 ]
@@ -519,6 +561,7 @@ export const getHomepageAllowedBlocks = ({
       "infocards",
       "keystatistics",
       "infocols",
+      "steps",
       "infopic",
       "infobar",
       "blockquote",

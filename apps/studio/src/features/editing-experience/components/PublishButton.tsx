@@ -1,30 +1,14 @@
 import type { ButtonProps } from "@opengovsg/design-system-react"
-import {
-  Divider,
-  HStack,
-  Icon,
-  IconButton,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Skeleton,
-  Text,
-  useDisclosure,
-} from "@chakra-ui/react"
-import {
-  Button,
-  Menu,
-  TouchableTooltip,
-  useToast,
-} from "@opengovsg/design-system-react"
-import { BiChevronDown, BiTimeFive } from "react-icons/bi"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { Skeleton, useDisclosure } from "@chakra-ui/react"
+import { Button, TouchableTooltip } from "@opengovsg/design-system-react"
+import posthog from "posthog-js"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
+import { ScheduledAction } from "~prisma/generated/generatedEnums"
 
-import { PublishingModal, ScheduledPublishingModal } from "./PublishingModal"
 import { CancelSchedulePublishIndicator } from "./PublishingModal/CancelSchedulePublishIndicator"
+import { PublishOrUnpublishModal } from "./PublishOrUnpublishModal"
 
 interface PublishButtonProps extends ButtonProps {
   pageId: number
@@ -36,124 +20,72 @@ const SuspendablePublishButton = ({
   siteId,
   ...rest
 }: PublishButtonProps): JSX.Element => {
-  const toast = useToast()
-  const utils = trpc.useUtils()
-  // the current disclosures for the publish modals
-  const publishNowDisclosure = useDisclosure()
-  const scheduledPublishingDisclosure = useDisclosure()
+  const publishDisclosure = useDisclosure()
 
   const [currPage] = trpc.page.readPage.useSuspenseQuery({ pageId, siteId })
   const isChangesPendingPublish = !!currPage.draftBlobId
+  // A null scheduledAction on a legacy row defaults to Publish, matching the
+  // convention used throughout the resource/page services.
+  const isScheduledToPublish =
+    !!currPage.scheduledAt &&
+    currPage.scheduledAction !== ScheduledAction.Unpublish
+  const isScheduledToUnpublish =
+    !!currPage.scheduledAt &&
+    currPage.scheduledAction === ScheduledAction.Unpublish
 
-  const { mutate, isPending } = trpc.page.publishPage.useMutation({
-    onSettled: async () => {
-      await utils.page.readPage.refetch({ pageId, siteId })
-      await utils.page.getCategories.invalidate({ pageId, siteId })
-      await utils.site.getLocalisedSitemap.invalidate({
-        resourceId: pageId,
-        siteId,
-      })
-    },
-    onSuccess: () => {
-      toast({
-        status: "success",
-        title: "Page published successfully",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-      if (publishNowDisclosure.isOpen) publishNowDisclosure.onClose()
-    },
-    onError: (error) => {
-      console.error(`Error occurred when publishing page: ${error.message}`)
-      toast({
-        status: "error",
-        title: "Failed to publish page. Please contact Isomer support.",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-  })
+  // publishPageResource blocks an immediate publish while a scheduled
+  // unpublish is pending (opposite-direction conflict). Surface that here
+  // instead of letting the user hit the error after submitting.
+  const disabledReason = isScheduledToUnpublish
+    ? "This page has a scheduled unpublish. Cancel it before publishing."
+    : !isChangesPendingPublish
+      ? "All changes have been published"
+      : undefined
 
   return (
     <Can do="publish" on="Resource" passThrough>
-      {(allowed) => (
+      {({ isAllowed }) => (
         <TouchableTooltip
-          hidden={isChangesPendingPublish}
-          label="All changes have been published"
+          hidden={!disabledReason && isAllowed}
+          label={
+            !isAllowed
+              ? "You need to be a Publisher or Admin to publish."
+              : disabledReason
+          }
         >
-          {allowed && (
-            <>
-              {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
-              {scheduledPublishingDisclosure.isOpen && (
-                <ScheduledPublishingModal
-                  siteId={siteId}
-                  pageId={pageId}
-                  {...scheduledPublishingDisclosure}
-                />
-              )}
-              {publishNowDisclosure.isOpen && (
-                <PublishingModal
-                  pageId={pageId}
-                  siteId={siteId}
-                  onPublishNow={(pageId, siteId) => mutate({ pageId, siteId })}
-                  isPublishingNow={isPending}
-                  {...publishNowDisclosure}
-                />
-              )}
-              {currPage.scheduledAt ? (
-                <CancelSchedulePublishIndicator
-                  siteId={siteId}
-                  pageId={pageId}
-                  scheduledAt={currPage.scheduledAt}
-                />
-              ) : (
-                <HStack spacing={0} position="relative">
-                  <Button
-                    variant="solid"
-                    size="sm"
-                    isDisabled={!isChangesPendingPublish}
-                    isLoading={isPending}
-                    borderRightRadius={0}
-                    onClick={() => publishNowDisclosure.onOpen()}
-                    {...rest}
-                  >
-                    Publish
-                  </Button>
-                  <>
-                    <Divider
-                      orientation="vertical"
-                      borderColor="base.canvas.default"
-                      height="auto"
-                    />
-                    <Menu preventOverflow={true} isLazy>
-                      <MenuButton
-                        as={IconButton}
-                        aria-label="More options"
-                        icon={<Icon as={BiChevronDown} boxSize="1rem" />}
-                        size="sm"
-                        variant="solid"
-                        isDisabled={!isChangesPendingPublish || isPending}
-                        borderLeftRadius={0}
-                      />
-                      <MenuList>
-                        <MenuItem
-                          onClick={scheduledPublishingDisclosure.onOpen}
-                        >
-                          <HStack spacing="0.5rem" alignItems="center">
-                            <Icon as={BiTimeFive} boxSize="1rem" />
-                            <Text
-                              textStyle="body-2"
-                              color="base.content.strong"
-                            >
-                              Schedule for later
-                            </Text>
-                          </HStack>
-                        </MenuItem>
-                      </MenuList>
-                    </Menu>
-                  </>
-                </HStack>
-              )}
-            </>
-          )}
+          <>
+            {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
+            {publishDisclosure.isOpen && (
+              <PublishOrUnpublishModal
+                action="publish"
+                pageId={pageId}
+                siteId={siteId}
+                {...publishDisclosure}
+              />
+            )}
+            {isScheduledToPublish && isAllowed ? (
+              <CancelSchedulePublishIndicator
+                siteId={siteId}
+                pageId={pageId}
+                isCurrentlyPublished={currPage.publishedVersionId !== null}
+              />
+            ) : (
+              <Button
+                variant="solid"
+                size="sm"
+                isDisabled={!!disabledReason || !isAllowed}
+                onClick={() => {
+                  posthog.capture("publish_modal_opened", {
+                    site_id: siteId,
+                  })
+                  publishDisclosure.onOpen()
+                }}
+                {...rest}
+              >
+                Publish
+              </Button>
+            )}
+          </>
         </TouchableTooltip>
       )}
     </Can>

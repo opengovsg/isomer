@@ -1,13 +1,14 @@
 import type { AttachmentProps } from "@opengovsg/design-system-react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
-import { Attachment } from "@opengovsg/design-system-react"
+import { Attachment, useToast } from "@opengovsg/design-system-react"
 import { uniq } from "lodash-es"
 import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
-import { RISKY_FILE_EXTENSIONS } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
-import { getPresignedPutUrlSchema } from "~/schemas/asset"
+import { RISKY_FILE_EXTENSIONS } from "~/lib/fileUpload"
+import { fileNameAndSizeSchema, uploadSvgSchema } from "~/schemas/asset"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 import { getFileExtension } from "~/utils/getFileExtension"
 
@@ -23,6 +24,7 @@ interface FileAttachmentProps {
   maxSizeInBytes: number
   acceptedFileTypes: Record<string, string>
   shouldFetchResource?: boolean
+  onUploadedFile?: (file: File) => void
   enableRiskyFileWarning?: boolean
 }
 
@@ -35,6 +37,7 @@ export const FileAttachment = ({
   maxSizeInBytes,
   acceptedFileTypes,
   shouldFetchResource = true,
+  onUploadedFile,
   enableRiskyFileWarning = false,
 }: FileAttachmentProps) => {
   const [rejections, setRejections] = useState<FileRejections>([])
@@ -47,6 +50,7 @@ export const FileAttachment = ({
     resourceId,
   })
   const { handleAssetUpload, isLoading } = useAssetUpload({})
+  const toast = useToast()
 
   useEffect(() => {
     // NOTE: The outer link modal uses this to disable the button
@@ -58,8 +62,18 @@ export const FileAttachment = ({
       { file },
       {
         onSuccess: ({ path }) => {
+          onUploadedFile?.(file)
           if (shouldFetchResource) {
-            void handleAssetUpload(path).then((src) => setHref(src))
+            void handleAssetUpload(path)
+              .then((src) => setHref(src))
+              .catch(() => {
+                toast({
+                  title: "Failed to upload file",
+                  description: "Please try again.",
+                  status: "error",
+                  ...BRIEF_TOAST_SETTINGS,
+                })
+              })
           } else setHref(path)
         },
       },
@@ -97,9 +111,19 @@ export const FileAttachment = ({
               ...Object.values(acceptedFileTypes),
             ])}
             onFileValidation={(file) => {
-              const parseResult = getPresignedPutUrlSchema
-                .pick({ fileName: true })
-                .safeParse({ fileName: file.name })
+              // SVGs are validated and uploaded via the dedicated uploadSvg
+              // endpoint (not the presigned PUT path), so use uploadSvgSchema
+              // for filename validation to avoid the deliberate SVG rejection
+              // in fileNameAndSizeSchema.
+              const isSvg = file.name.toLowerCase().endsWith(".svg")
+              const parseResult = isSvg
+                ? uploadSvgSchema
+                    .pick({ fileName: true })
+                    .safeParse({ fileName: file.name })
+                : fileNameAndSizeSchema.safeParse({
+                    fileName: file.name,
+                    fileSize: file.size,
+                  })
 
               if (parseResult.success) return null
               // NOTE: safe assertion here because we're in error path and there's at least 1 error

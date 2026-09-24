@@ -8,6 +8,8 @@ export { RenderApplicationScripts } from "./renderApplicationScripts"
 export { RenderApplicationHeadScripts } from "./renderApplicationHeadScripts"
 export {
   getMetadata,
+  getPageJsonLd,
+  getSiteJsonLd,
   shouldBlockIndexing,
   getRobotsTxt,
   getSitemapXml,

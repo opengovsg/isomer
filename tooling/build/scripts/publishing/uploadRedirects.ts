@@ -1,25 +1,95 @@
-import { spawn } from "child_process"
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import * as fs from "fs"
-import * as os from "os"
-import * as path from "path"
+import { parseArgs } from "node:util"
+import { argv } from "process"
+import { pathToFileURL } from "url"
 
-const REDIRECTS_JSON = process.env.REDIRECTS_JSON
-const S3_BUCKET = process.env.S3_BUCKET_NAME
-const SITE_NAME = process.env.SITE_NAME
-const BUILD_NUMBER = process.env.CODEBUILD_BUILD_NUMBER
-const CONCURRENCY = 20
+const DEFAULT_CONCURRENCY = 20
+
+const uploadCliOptions = {
+  "redirects-json": { type: "string" },
+  "s3-bucket-name": { type: "string" },
+  "site-name": { type: "string" },
+  "build-number": { type: "string" },
+  concurrency: { type: "string" },
+} as const
 
 interface Redirect {
   source: string
   destination: string
 }
 
+export interface UploadConfig {
+  redirectsJson: string
+  s3BucketName: string
+  siteName: string
+  buildNumber: string
+  concurrency: number
+}
+
+export function parseUploadCliArgs(args: readonly string[] = argv) {
+  return parseArgs({
+    args: args.slice(2),
+    options: uploadCliOptions,
+    strict: false,
+  }).values
+}
+
+/** Prefer CLI / S3_SYNC_CONCURRENCY from publisher.sh; fall back if unset/invalid. */
+export function resolveConcurrency(
+  raw: string | undefined = process.env.S3_SYNC_CONCURRENCY,
+): number {
+  const parsed = raw === undefined ? NaN : Number.parseInt(raw, 10)
+  if (!Number.isFinite(parsed) || parsed < 1) return DEFAULT_CONCURRENCY
+  return parsed
+}
+
+/** CLI flags from publisher.sh take precedence; env vars remain for local runs. */
+export function resolveUploadConfig(
+  args: readonly string[] = argv,
+): UploadConfig | null {
+  const values = parseUploadCliArgs(args)
+
+  const redirectsJson = values["redirects-json"] ?? process.env.REDIRECTS_JSON
+  const s3BucketName = values["s3-bucket-name"] ?? process.env.S3_BUCKET_NAME
+  const siteName = values["site-name"] ?? process.env.SITE_NAME
+  const buildNumber =
+    values["build-number"] ?? process.env.CODEBUILD_BUILD_NUMBER
+
+  if (!redirectsJson || !s3BucketName || !siteName || !buildNumber) {
+    return null
+  }
+
+  return {
+    redirectsJson,
+    s3BucketName,
+    siteName,
+    buildNumber,
+    concurrency: resolveConcurrency(
+      values.concurrency ?? process.env.S3_SYNC_CONCURRENCY,
+    ),
+  }
+}
+
 // Returns the normalised S3 key segment, or null if the source is unsafe/empty.
-function normalizeSource(source: string): string | null {
+export function normalizeSource(source: string): string | null {
   if (typeof source !== "string") return null
+  // A stored source keeps its percent-encoding (the source schema forbids a raw
+  // space, so a space is persisted as "%20"). CloudFront percent-decodes the
+  // request path before it fetches from S3, so the object must be keyed by the
+  // DECODED path — otherwise it sits at a "%20" key that no request ever reaches.
+  // Decode first, then run the safety checks below on the decoded value so an
+  // encoded "%2e%2e" or "%00" can't smuggle a traversal / control char past them.
+  let decoded: string
+  try {
+    decoded = decodeURIComponent(source)
+  } catch {
+    // Malformed percent-encoding (e.g. a lone "%") can't be keyed correctly.
+    return null
+  }
   // Reject control chars and backslashes
-  if (/[\x00-\x1f\\]/.test(source)) return null
-  const trimmed = source
+  if (/[\x00-\x1f\x7f\\]/.test(decoded)) return null
+  const trimmed = decoded
     .replace(/^\/+/, "")
     .replace(/\/+$/, "")
     .replace(/\/+/g, "/")
@@ -29,41 +99,124 @@ function normalizeSource(source: string): string | null {
   return trimmed
 }
 
-const EMPTY_FILE = path.join(os.tmpdir(), "isomer-redirect-empty")
+// A reference destination has already been resolved to a path by GET_REDIRECTS
+// before this script runs. Compare the paths as CloudFront will see them:
+// percent-decoded, slash-normalised and without a query/fragment (neither is
+// part of the S3 object key). For a wildcard, compare its prefix because the
+// edge resolver appends the matched remainder to the destination; e.g.
+// "/students/*" -> "/students" also redirects every request back to itself.
+// Exported for focused regression coverage of this final upload boundary.
+export function isSelfReferentialRedirect({
+  source,
+  destination,
+}: Redirect): boolean {
+  if (!destination.startsWith("/")) return false
 
-function uploadOne(source: string, destination: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const proc = spawn("aws", [
-      "s3",
-      "cp",
-      "--only-show-errors",
-      EMPTY_FILE,
-      `s3://${S3_BUCKET}/${SITE_NAME}/${BUILD_NUMBER}/latest/${source}/index.html`,
-      "--content-type",
-      "text/html",
-      "--cache-control",
-      "max-age=600",
-      // JSON form avoids shorthand parsing of commas/equals in destination URLs.
-      "--metadata",
-      JSON.stringify({ "redirect-destination": destination }),
-    ])
-    let stderr = ""
-    proc.stderr.on("data", (d) => {
-      stderr += d.toString()
-    })
-    proc.on("close", (code) => {
-      if (code === 0) resolve()
-      else
-        reject(
-          new Error(`aws s3 cp exited ${code} for ${source}: ${stderr.trim()}`),
-        )
-    })
-    proc.on("error", reject)
-  })
+  const sourcePath = source.endsWith("/*") ? source.slice(0, -2) : source
+  const destinationPath = destination.split(/[?#]/, 1)[0]
+  const normalizedSource = normalizeSource(sourcePath)
+  const normalizedDestination = destinationPath
+    ? normalizeSource(destinationPath)
+    : null
+
+  return normalizedSource !== null && normalizedSource === normalizedDestination
+}
+
+export const MANIFEST_KEY_SUFFIX = "_redirects/manifest.json"
+
+// A stored source is a wildcard ("…/*") — those go in the manifest for the edge
+// resolver to prefix-match. Everything else is an exact redirect and stays a
+// 0-byte S3 object served directly by CloudFront.
+const isManifestKind = (source: string): boolean => source.endsWith("/*")
+
+export function partitionRedirects(rows: Redirect[]): {
+  exact: Redirect[]
+  manifestEntries: Redirect[]
+} {
+  const exact: Redirect[] = []
+  const manifestEntries: Redirect[] = []
+  for (const r of rows) {
+    ;(isManifestKind(r.source) ? manifestEntries : exact).push(r)
+  }
+  return { exact, manifestEntries }
+}
+
+// `version` is the manifest schema version: the edge resolver reads it to know
+// how to interpret the file, so an incompatible future format can bump it and
+// let the resolver branch on / reject an unexpected version rather than
+// mis-parsing. Bump it only on a breaking shape change.
+export const MANIFEST_VERSION = 1
+
+export function buildManifest(entries: Redirect[]): {
+  version: number
+  redirects: Record<string, string>
+} {
+  const redirects: Record<string, string> = {}
+  for (const { source, destination } of entries) {
+    // Keep the first destination and warn on a repeat, mirroring the exact-path
+    // dedup above — silently overwriting would let a later row change a wildcard's
+    // target with no signal in the build log.
+    if (Object.prototype.hasOwnProperty.call(redirects, source)) {
+      console.warn(
+        `Skipping duplicate wildcard source in manifest: ${source} (keeping first destination "${redirects[source]}")`,
+      )
+      continue
+    }
+    redirects[source] = destination
+  }
+  return { version: MANIFEST_VERSION, redirects }
+}
+
+async function uploadManifest(
+  client: S3Client,
+  config: UploadConfig,
+  entries: Redirect[],
+): Promise<void> {
+  const body = JSON.stringify(buildManifest(entries))
+  await client.send(
+    new PutObjectCommand({
+      Bucket: config.s3BucketName,
+      Key: `${config.siteName}/${config.buildNumber}/latest/${MANIFEST_KEY_SUFFIX}`,
+      Body: body,
+      ContentType: "application/json",
+      CacheControl: "max-age=600",
+    }),
+  )
+}
+
+async function uploadOne(
+  client: S3Client,
+  config: UploadConfig,
+  source: string,
+  destination: string,
+): Promise<void> {
+  // Mirror the CloudFront redirect function's assumption (see
+  // generateRedirectFnCode in isomer-next-infra): if the last 5 characters
+  // contain a ".", the source is treated as a file path and used as-is.
+  // Otherwise it is a directory path and resolves to its "/index.html" object.
+  const isPotentialFilePath = source.slice(-5).includes(".")
+  const key = isPotentialFilePath ? source : `${source}/index.html`
+
+  await client.send(
+    new PutObjectCommand({
+      Bucket: config.s3BucketName,
+      Key: `${config.siteName}/${config.buildNumber}/latest/${key}`,
+      // Empty Buffer (not "") so the SDK knows Content-Length upfront and
+      // does not warn about a stream of unknown length.
+      Body: Buffer.alloc(0),
+      ContentLength: 0,
+      ContentType: "text/html",
+      CacheControl: "max-age=600",
+      // Becomes x-amz-meta-redirect-destination on the object.
+      Metadata: { "redirect-destination": destination },
+    }),
+  )
 }
 
 // Worker-pool: each worker pulls from the shared queue until it is empty.
 async function runWithConcurrency(
+  client: S3Client,
+  config: UploadConfig,
   items: Redirect[],
   limit: number,
 ): Promise<{ failed: number }> {
@@ -74,7 +227,7 @@ async function runWithConcurrency(
       const r = queue.shift()
       if (!r) break
       try {
-        await uploadOne(r.source, r.destination)
+        await uploadOne(client, config, r.source, r.destination)
       } catch (err) {
         console.error("Redirect upload failed:", err)
         failed++
@@ -88,18 +241,39 @@ async function runWithConcurrency(
 }
 
 async function main(): Promise<void> {
-  if (!REDIRECTS_JSON || !S3_BUCKET || !SITE_NAME || !BUILD_NUMBER) {
+  const config = resolveUploadConfig()
+  if (!config) {
     throw new Error(
-      "Missing required env vars: REDIRECTS_JSON, S3_BUCKET_NAME, SITE_NAME, CODEBUILD_BUILD_NUMBER",
+      "Missing required inputs: --redirects-json, --s3-bucket-name, --site-name, --build-number (or the matching env vars)",
     )
   }
 
-  const raw: Redirect[] = JSON.parse(fs.readFileSync(REDIRECTS_JSON, "utf-8"))
-  console.log(`Loaded ${raw.length} redirect row(s) from ${REDIRECTS_JSON}`)
+  const raw: Redirect[] = JSON.parse(
+    fs.readFileSync(config.redirectsJson, "utf-8"),
+  )
+  console.log(
+    `Loaded ${raw.length} redirect row(s) from ${config.redirectsJson}`,
+  )
 
+  // Partition BEFORE per-kind normalisation: wildcard sources must not go
+  // through normalizeSource (it strips the leading slash and would mangle the
+  // "/*"). Their stored sources are already canonical (written by the schema).
+  // GET_REDIRECTS drops self-references too, but enforce the invariant again at
+  // the final upload boundary. This also protects custom/stale redirects.json
+  // inputs and catches percent-encoded sources after CloudFront normalisation.
+  const publishable = raw.filter((redirect) => {
+    if (!isSelfReferentialRedirect(redirect)) return true
+    console.warn(
+      `Skipping self-referential redirect: ${redirect.source} -> ${redirect.destination}`,
+    )
+    return false
+  })
+  const { exact: rawExact, manifestEntries } = partitionRedirects(publishable)
+
+  // Exact: normalise the S3 key (decode %-encoding, strip slashes, safety checks).
   const seen = new Set<string>()
-  const valid: Redirect[] = []
-  for (const r of raw) {
+  const validExact: Redirect[] = []
+  for (const r of rawExact) {
     const source = normalizeSource(r.source)
     if (!source) {
       console.warn(
@@ -117,25 +291,49 @@ async function main(): Promise<void> {
       )
     }
     seen.add(source)
-    valid.push({ source, destination: r.destination })
+    validExact.push({ source, destination: r.destination })
   }
 
-  if (valid.length === 0) {
+  // Region/credentials come from the environment (CodeBuild IAM role +
+  // AWS_REGION), same as `aws s3 cp` previously.
+  const client = new S3Client({})
+  let totalFailed = 0
+
+  if (validExact.length > 0) {
+    console.log(
+      `Uploading ${validExact.length} exact redirect(s) with concurrency ${config.concurrency}...`,
+    )
+    const { failed } = await runWithConcurrency(
+      client,
+      config,
+      validExact,
+      config.concurrency,
+    )
+    console.log(
+      `Uploaded ${validExact.length - failed}/${validExact.length} exact redirects.`,
+    )
+    totalFailed += failed
+  }
+
+  // Wildcard sources go to a single manifest the edge resolver reads.
+  if (manifestEntries.length > 0) {
+    await uploadManifest(client, config, manifestEntries)
+    console.log(`Uploaded manifest with ${manifestEntries.length} rule(s).`)
+  }
+
+  if (validExact.length === 0 && manifestEntries.length === 0) {
     console.log("No valid redirects to upload.")
     return
   }
 
-  fs.writeFileSync(EMPTY_FILE, "")
-
-  console.log(
-    `Uploading ${valid.length} redirect(s) with concurrency ${CONCURRENCY}...`,
-  )
-  const { failed } = await runWithConcurrency(valid, CONCURRENCY)
-  console.log(`Uploaded ${valid.length - failed}/${valid.length} redirects.`)
-  if (failed > 0) process.exit(1)
+  if (totalFailed > 0) process.exit(1)
 }
 
-main().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
+// Run only when executed directly (`tsx uploadRedirects.ts`), not when the file
+// is imported — e.g. by the unit tests for normalizeSource.
+if (argv[1] && import.meta.url === pathToFileURL(argv[1]).href) {
+  main().catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })
+}

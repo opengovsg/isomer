@@ -41,17 +41,18 @@ tRPC context (`src/server/context.ts`) includes: `session`, Prisma client, Kysel
 **Schema**: `prisma/schema.prisma` (PostgreSQL via Neon)
 
 Core models:
-| Model | Purpose |
-|-------|---------|
-| `Resource` | All site content — pages, folders, collections. Hierarchical via `parentId`. |
-| `Blob` | JSON content storage (draft blobs) |
-| `Version` | Published snapshots of a resource (immutable) |
-| `Site` | Website config and theme (stored as JSON) |
-| `User` | Accounts — soft-deleted via `deletedAt` |
-| `ResourcePermission` | CASL-based RBAC: Admin / Editor / Publisher roles |
-| `IsomerAdmin` | Platform-level admins with expiry |
-| `AuditLog` | Append-only audit trail with before/after deltas |
-| `CodeBuildJobs` | Build/deploy job tracking |
+
+| Model                | Purpose                                                                      |
+| -------------------- | ---------------------------------------------------------------------------- |
+| `Resource`           | All site content — pages, folders, collections. Hierarchical via `parentId`. |
+| `Blob`               | JSON content storage (draft blobs)                                           |
+| `Version`            | Published snapshots of a resource (immutable)                                |
+| `Site`               | Website config and theme (stored as JSON)                                    |
+| `User`               | Accounts — soft-deleted via `deletedAt`                                      |
+| `ResourcePermission` | CASL-based RBAC: Admin / Editor / Publisher roles                            |
+| `IsomerAdmin`        | Platform-level admins with expiry                                            |
+| `AuditLog`           | Append-only audit trail with before/after deltas                             |
+| `CodeBuildJobs`      | Build/deploy job tracking                                                    |
 
 **Draft-publish model**: A `Resource` has a draft `Blob` for in-progress edits. Publishing creates a new `Version` pointing to a frozen `Blob`.
 
@@ -131,7 +132,16 @@ export $(grep DATABASE_URL .env.development.local | xargs) && pnpm run setup
 
 ### Start server
 
+Run from the **repo root** so Turbo generates the preview CSS before starting the dev server:
+
 ```bash
+pnpm dev
+```
+
+If you must run from `apps/studio` directly, generate the preview CSS first:
+
+```bash
+pnpm build:preview-tw
 pnpm run dev
 ```
 
@@ -153,7 +163,7 @@ pnpm test:unit -- src/path/to/file.test.ts   # single file
 ```bash
 pnpm setup:test                                           # start Docker services first
 pnpm test:e2e
-pnpm exec playwright test tests/e2e/specific.spec.ts      # single test
+pnpm exec playwright test tests/e2e/smoke.test.ts         # single test
 ```
 
 - Requires `pnpm setup:test` (containerized PostgreSQL + MockPass)

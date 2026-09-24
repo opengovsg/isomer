@@ -24,10 +24,9 @@ import { trpc } from "~/utils/trpc"
 
 import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
-import { getLinkHrefType } from "../../../LinkEditor/utils"
+import { getLinkHrefType, parseHref } from "../../../LinkEditor/utils"
 import { LinkErrorBoundary } from "../../components/LinkErrorBoundary"
 import { getCustomErrorMessage } from "./utils"
-import { parseHref } from "./utils/parseHref"
 
 interface SuspendableLabelProps {
   siteId: number
@@ -133,7 +132,10 @@ export function BaseLinkControl({
           </Flex>
           {required && (
             <FormErrorMessage>
-              {label} {getCustomErrorMessage(errors)}
+              {/* AJV sees an empty string as present, so pattern mismatch (not "required") fires here — check data directly to show the empty-state copy */}
+              {!data
+                ? `${label} cannot be empty.`
+                : `${label} ${getCustomErrorMessage(errors)}`}
             </FormErrorMessage>
           )}
         </LinkErrorBoundary>

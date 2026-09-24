@@ -24,6 +24,7 @@ import {
   isActiveIsomerAdmin,
   validatePermissionsForManagingUsers,
   validateUserIsIsomerAdmin,
+  validateUserIsSiteAdmin,
 } from "../permissions.service"
 import { CRUD_ACTIONS } from "../permissions.type"
 import {
@@ -1082,6 +1083,153 @@ describe("permissions.service", () => {
       })
     })
 
+    describe("unpublish", () => {
+      describe("admin", () => {
+        it("should allow admins to unpublish any resources", async () => {
+          // Arrange
+          await setupAdminPermissions({ userId: user.id, siteId: site.id })
+
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "unpublish",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).resolves.not.toThrow()
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
+            action: "unpublish",
+            resourceIds,
+            userId: user.id,
+            siteId: site.id,
+          })
+
+          // Assert (multiple resources)
+          await expect(bulkValidation).resolves.not.toThrow()
+        })
+      })
+
+      describe("publisher", () => {
+        it("should allow publishers to unpublish any resources", async () => {
+          // Arrange
+          await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "unpublish",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).resolves.not.toThrow()
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
+            action: "unpublish",
+            resourceIds,
+            userId: user.id,
+            siteId: site.id,
+          })
+
+          // Assert (multiple resources)
+          await expect(bulkValidation).resolves.not.toThrow()
+        })
+      })
+
+      describe("editor", () => {
+        it("should not allow editors to unpublish resources", async () => {
+          // Arrange
+          await setupEditorPermissions({ userId: user.id, siteId: site.id })
+
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "unpublish",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).rejects.toThrow(
+              "You do not have sufficient permissions to perform this action",
+            )
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
+            action: "unpublish",
+            resourceIds,
+            userId: user.id,
+            siteId: site.id,
+          })
+
+          // Assert (multiple resources)
+          await expect(bulkValidation).rejects.toThrow(
+            "You do not have sufficient permissions to perform this action",
+          )
+        })
+      })
+
+      describe("no permissions", () => {
+        it("should not allow users without permissions to unpublish any resources", async () => {
+          for (const resourceId of resourceIds) {
+            // Act (single resource)
+            const validation = bulkValidateUserPermissionsForResources({
+              action: "unpublish",
+              resourceIds: [resourceId],
+              userId: user.id,
+              siteId: site.id,
+            })
+
+            // Assert (single resource)
+            await expect(validation).rejects.toThrow(
+              "You do not have sufficient permissions to perform this action",
+            )
+          }
+
+          // Act (multiple resources)
+          const bulkValidation = bulkValidateUserPermissionsForResources({
+            action: "unpublish",
+            resourceIds,
+            userId: user.id,
+            siteId: site.id,
+          })
+
+          // Assert (multiple resources)
+          await expect(bulkValidation).rejects.toThrow(
+            "You do not have sufficient permissions to perform this action",
+          )
+        })
+      })
+
+      it("should throw error if resource is not found", async () => {
+        // Arrange
+        await setupAdminPermissions({ userId: user.id, siteId: site.id })
+
+        // Act
+        const validation = bulkValidateUserPermissionsForResources({
+          action: "unpublish",
+          resourceIds: ["999999999"],
+          userId: user.id,
+          siteId: site.id,
+        })
+
+        // Assert
+        await expect(validation).rejects.toThrow("Resource not found")
+      })
+    })
+
     describe("Isomer Admin", () => {
       beforeEach(async () => {
         await resetTables("IsomerAdmin")
@@ -1091,7 +1239,11 @@ describe("permissions.service", () => {
         // Arrange
         await setupIsomerAdmin({ userId: user.id })
 
-        for (const action of [...CRUD_ACTIONS, "publish"] as const) {
+        for (const action of [
+          ...CRUD_ACTIONS,
+          "publish",
+          "unpublish",
+        ] as const) {
           // Act
           const validation = bulkValidateUserPermissionsForResources({
             action,
@@ -1550,6 +1702,49 @@ describe("validateUserIsIsomerAdmin", () => {
           "You do not have sufficient permissions to perform this action",
       }),
     )
+  })
+})
+
+describe("validateUserIsSiteAdmin", () => {
+  beforeEach(async () => {
+    await resetTables("IsomerAdmin", "ResourcePermission", "User", "Site")
+  })
+
+  it("should allow a Site Admin", async () => {
+    // Arrange
+    const user = await setupUser({ email: "site-admin@example.com" })
+    const { site } = await setupSite()
+    await setupAdminPermissions({ userId: user.id, siteId: site.id })
+
+    // Act & Assert
+    await expect(
+      validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
+    ).resolves.toBe(true)
+  })
+
+  it("should allow an active Isomer Admin without a site permission", async () => {
+    // Arrange
+    const user = await setupUser({ email: "isomer-admin@example.com" })
+    const { site } = await setupSite()
+    await setupIsomerAdmin({ userId: user.id })
+
+    // Act & Assert
+    await expect(
+      validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
+    ).resolves.toBe(true)
+  })
+
+  it("should reject an expired Isomer Admin without a site permission", async () => {
+    // Arrange
+    const user = await setupUser({ email: "expired-admin@example.com" })
+    const { site } = await setupSite()
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+
+    // Act & Assert
+    await expect(
+      validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" })
   })
 })
 

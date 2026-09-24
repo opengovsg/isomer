@@ -27,12 +27,14 @@ function JsonFormsDateControl({
   description,
   required,
   errors,
+  enabled,
 }: ControlProps) {
   return (
     <Box>
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <DatePicker
+          isDisabled={enabled === false}
           inputValue={typeof data === "string" ? String(data) : undefined}
           allowManualInput={true}
           onInputValueChange={(date) => handleChange(path, date)}

@@ -1,10 +1,10 @@
-import { ResourceType } from "@prisma/client"
 import { pick } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupBlob,
   setupCollection,
   setupCollectionMeta,
+  setupCollectionPage,
   setupFolder,
   setupFolderMeta,
   setupFullSite,
@@ -12,16 +12,20 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { ResourceType } from "~prisma/generated/prisma/client"
 
 import type { Resource } from "../../database"
 import { db, ResourceState } from "../../database"
 import {
   getBatchAncestryWithSelfQuery,
+  getFooter,
   getFullPageById,
   getLocalisedSitemap,
   getNavBar,
   getPageById,
+  getSearchResults,
   getSiteResourceById,
+  getWithFullPermalink,
   updateBlobById,
   updatePageById,
 } from "../resource.service"
@@ -622,7 +626,7 @@ describe("resource.service", () => {
       )
 
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
     })
   })
   describe("updateBlobById", () => {
@@ -648,7 +652,7 @@ describe("resource.service", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
     })
 
     it("should create a draft blob if the page is already published", async () => {
@@ -735,7 +739,7 @@ describe("resource.service", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
     })
   })
 
@@ -754,7 +758,7 @@ describe("resource.service", () => {
       // Act
       const result = getNavBar(db, 99999)
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
     })
   })
 
@@ -763,7 +767,7 @@ describe("resource.service", () => {
       // Arrange
       const { site } = await setupSite()
       // Act
-      const result = await getNavBar(db, site.id)
+      const result = await getFooter(db, site.id)
       // Assert
       expect(result).toBeDefined()
       expect(result.siteId).toBe(site.id)
@@ -771,9 +775,9 @@ describe("resource.service", () => {
 
     it("should throw an error if the `siteId` is not found", async () => {
       // Act
-      const result = getNavBar(db, 99999)
+      const result = getFooter(db, 99999)
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
     })
   })
 
@@ -790,7 +794,7 @@ describe("resource.service", () => {
       const result = getLocalisedSitemap(9999, Number(page.id))
 
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
     })
 
     it("should throw an error if the `resourceId` doesn't exist", async () => {
@@ -799,7 +803,7 @@ describe("resource.service", () => {
       // Act
       const result = getLocalisedSitemap(site.id, 99999)
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
     })
 
     it("should return the path from ancestor to the page (DRAFT), together with its siblings", async () => {
@@ -1620,12 +1624,255 @@ describe("resource.service", () => {
         expect(result.id).toBe(rootPage.id)
       })
     })
+
+    describe("firstImage", () => {
+      type SitemapNode = Awaited<ReturnType<typeof getLocalisedSitemap>>
+      type PageBody = Awaited<
+        ReturnType<typeof setupBlob>
+      >["content"]["content"]
+
+      const findNode = (
+        node: SitemapNode,
+        id: string,
+      ): SitemapNode | undefined => {
+        if (node.id === id) return node
+        for (const child of node.children ?? []) {
+          const found = findNode(child, id)
+          if (found) return found
+        }
+        return undefined
+      }
+
+      // Publishes a collection item whose body is `content`, then returns it.
+      // The collection's index page is previewed so that the items show up as
+      // immediate siblings without going through the tag-mapping path.
+      const setupCollectionWithItemBody = async (content: PageBody) => {
+        const user = await setupUser({ isDeleted: false })
+        const { site } = await setupSite()
+        await setupPageResource({
+          resourceType: ResourceType.RootPage,
+          siteId: site.id,
+        })
+        const { collection } = await setupCollection({
+          siteId: site.id,
+          permalink: "test-collection",
+          state: ResourceState.Published,
+        })
+        const { page: indexPage } = await setupPageResource({
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: collection.id,
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+        const { page: item, blob } = await setupCollectionPage({
+          siteId: site.id,
+          parentId: collection.id,
+          permalink: "an-article",
+          title: "An article",
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+
+        await db
+          .updateTable("Blob")
+          .where("id", "=", blob.id)
+          .set({ content: { ...blob.content, content } })
+          .execute()
+
+        const sitemap = await getLocalisedSitemap(site.id, Number(indexPage.id))
+        return findNode(sitemap, item.id)
+      }
+
+      it("should use the image that comes first in document order", async () => {
+        // Arrange + Act: images are interleaved with prose so that picking any
+        // image other than the earliest one yields a different src
+        const node = await setupCollectionWithItemBody([
+          { type: "prose", content: [] },
+          { type: "image", src: "/first.jpg", alt: "First image" },
+          { type: "prose", content: [] },
+          { type: "image", src: "/second.jpg", alt: "Second image" },
+          { type: "image", src: "/third.jpg", alt: "Third image" },
+        ])
+
+        // Assert
+        expect(node?.firstImage).toEqual({
+          src: "/first.jpg",
+          alt: "First image",
+        })
+      })
+
+      it("should not set firstImage when the body has no image block", async () => {
+        // Arrange + Act
+        const node = await setupCollectionWithItemBody([
+          { type: "prose", content: [] },
+        ])
+
+        // Assert
+        expect(node).toBeDefined()
+        expect(node?.firstImage).toBeUndefined()
+      })
+
+      it("should fall back to an empty alt when the image block has none", async () => {
+        // Arrange + Act
+        // `alt` is required by the schema but nothing enforces it on the stored
+        // JSON, so the cast reproduces a blob that omits it
+        const node = await setupCollectionWithItemBody([
+          { type: "image", src: "/no-alt.jpg" } as unknown as PageBody[number],
+        ])
+
+        // Assert
+        expect(node?.firstImage).toEqual({ src: "/no-alt.jpg", alt: "" })
+      })
+
+      it("should not set firstImage for non-article layouts", async () => {
+        // Arrange: a regular content page whose body happens to contain an image
+        const user = await setupUser({ isDeleted: false })
+        const { site } = await setupSite()
+        await setupPageResource({
+          resourceType: ResourceType.RootPage,
+          siteId: site.id,
+        })
+        const { folder } = await setupFolder({
+          siteId: site.id,
+          permalink: "a-folder",
+          state: ResourceState.Published,
+        })
+        const { page: sibling } = await setupPageResource({
+          resourceType: ResourceType.Page,
+          siteId: site.id,
+          parentId: folder.id,
+          permalink: "sibling",
+          title: "Sibling",
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+        const { page: contentPage, blob } = await setupPageResource({
+          resourceType: ResourceType.Page,
+          siteId: site.id,
+          parentId: folder.id,
+          permalink: "with-image",
+          title: "With image",
+          state: ResourceState.Published,
+          userId: user.id,
+        })
+        await db
+          .updateTable("Blob")
+          .where("id", "=", blob.id)
+          .set({
+            content: {
+              ...blob.content,
+              content: [{ type: "image", src: "/ignored.jpg", alt: "Ignored" }],
+            },
+          })
+          .execute()
+
+        // Act
+        const sitemap = await getLocalisedSitemap(site.id, Number(sibling.id))
+
+        // Assert
+        const node = findNode(sitemap, contentPage.id)
+        expect(node).toBeDefined()
+        expect(node?.firstImage).toBeUndefined()
+      })
+    })
   })
   describe.skip("getResourcePermalinkTree", () => {})
   describe.skip("getResourceFullPermalink", () => {})
   describe.skip("publishResource", () => {})
-  describe.skip("getWithFulPermalink", () => {})
-  describe.skip("getSearchResults", () => {})
+
+  describe("getWithFullPermalink", () => {
+    it("returns an empty array when given no resourceIds", async () => {
+      const { site } = await setupSite()
+
+      const result = await getWithFullPermalink({
+        resourceIds: [],
+        siteId: site.id,
+      })
+
+      expect(result).toEqual([])
+    })
+
+    it("returns the full permalink for a nested resource in the requested site", async () => {
+      const { folder: parent, site } = await setupFolder({
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const { folder: nested } = await setupFolder({
+        siteId: site.id,
+        parentId: parent.id,
+        permalink: "nested-folder",
+        title: "Nested folder",
+      })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: nested.id,
+        resourceType: ResourceType.Page,
+      })
+
+      const result = await getWithFullPermalink({
+        resourceIds: [page.id],
+        siteId: site.id,
+      })
+
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({
+        id: page.id,
+        title: page.title,
+        fullPermalink: `${parent.permalink}/${nested.permalink}/${page.permalink}`,
+      })
+    })
+
+    it("does not return resources from another site (site scoping)", async () => {
+      // Two distinct sites, each with a page
+      const { site: siteA, page: pageA } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      const { site: siteB, page: pageB } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      expect(siteA.id).not.toBe(siteB.id)
+
+      // Asking for pageB but scoping by siteA must return nothing — the CTE
+      // must not traverse other sites' trees.
+      const crossSite = await getWithFullPermalink({
+        resourceIds: [pageB.id],
+        siteId: siteA.id,
+      })
+      expect(crossSite).toEqual([])
+
+      // Sanity: the same call with the correct siteId still works.
+      const sameSite = await getWithFullPermalink({
+        resourceIds: [pageA.id],
+        siteId: siteA.id,
+      })
+      expect(sameSite).toHaveLength(1)
+      expect(sameSite[0]?.id).toBe(pageA.id)
+    })
+  })
+
+  describe("getSearchResults", () => {
+    it("returns an empty array when given no resourceTypes", async () => {
+      //Arrange
+      const { site } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+
+      //Search with no resourceTypes
+      const result = await getSearchResults({
+        siteId: site.id,
+        resourceTypes: [],
+        query: "test",
+        limit: 10,
+        offset: 0,
+      })
+
+      //Should return empty array, with totalCount 0
+      expect(result.resources).toEqual([])
+      expect(result.totalCount).toEqual(0)
+    })
+  })
+
   describe.skip("getSearchRecentlyEdited", () => {})
   describe.skip("getSearchWithResourceIds", () => {})
 })

@@ -7,6 +7,8 @@ import { omit, pick } from "lodash-es"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
+import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
+import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
   applySession,
@@ -14,6 +16,7 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupAdminPermissions,
+  setupBlob,
   setupCollection,
   setupEditorPermissions,
   setupFolder,
@@ -22,17 +25,28 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { IS_UNPUBLISH_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import { normalizeRedirectPath } from "~/schemas/redirect"
 import { createCallerFactory } from "~/server/trpc"
 import {
   AuditLogEvent,
   ResourceState,
   ResourceType,
+  ScheduledAction,
 } from "~prisma/generated/generatedEnums"
 
 import type { User } from "../../database"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db, jsonb } from "../../database"
-import { getBlobOfResource, getPageById } from "../../resource/resource.service"
+import {
+  PageAlreadyUnpublishedError,
+  ScheduledActionConflictError,
+} from "../../resource/resource.error"
+import {
+  getBlobOfResource,
+  getPageById,
+  getResourceFullPermalink,
+} from "../../resource/resource.service"
 import { pageRouter } from "../page.router"
 import { createDefaultPage } from "../page.service"
 
@@ -69,7 +83,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.getPrefill({ siteId: 1, resourceId: "1" })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -87,7 +101,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -111,7 +125,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
@@ -362,57 +376,6 @@ describe("page.router", async () => {
       expect(result).toEqual({
         title: "Test Collection Page",
         description: "Collection subtitle text",
-      })
-    })
-
-    it("should return prefill data for file ref page layout", async () => {
-      // Arrange
-      const fileBlob = await db
-        .insertInto("Blob")
-        .values({
-          content: jsonb({
-            layout: "file",
-            page: {
-              description: "File description text",
-              image: { src: "/images/file-thumb.png", alt: "File image" },
-            },
-            content: [],
-            version: "0.1.0",
-          }),
-        })
-        .returningAll()
-        .executeTakeFirstOrThrow()
-
-      const { site } = await setupSite()
-      const page = await db
-        .insertInto("Resource")
-        .values({
-          title: "Test File Page",
-          permalink: "test-file",
-          siteId: site.id,
-          draftBlobId: fileBlob.id,
-          type: ResourceType.Page,
-        })
-        .returningAll()
-        .executeTakeFirstOrThrow()
-
-      await setupEditorPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = await caller.getPrefill({
-        siteId: site.id,
-        resourceId: page.id,
-      })
-
-      // Assert
-      expect(result).toEqual({
-        title: "Test File Page",
-        description: "File description text",
-        thumbnail: "/images/file-thumb.png",
-        thumbnailAlt: "File image",
       })
     })
 
@@ -675,7 +638,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.list({ siteId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -686,7 +649,7 @@ describe("page.router", async () => {
 
       const result = caller.list({ siteId: site.id })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -718,7 +681,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.getCategories({ siteId: 1, pageId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -736,7 +699,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -776,7 +739,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.readPage({ siteId: 1, pageId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -792,7 +755,7 @@ describe("page.router", async () => {
       const result = caller.readPage(mockSite)
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
@@ -878,7 +841,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
@@ -896,7 +859,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -913,7 +876,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.readPageAndBlob({ siteId: 1, pageId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -931,7 +894,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -952,7 +915,7 @@ describe("page.router", async () => {
       const result = caller.readPageAndBlob(mockSite)
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
@@ -1080,7 +1043,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
@@ -1105,7 +1068,7 @@ describe("page.router", async () => {
         blocks: pageToReorder.blob.content.content,
       })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await assertAuditLogRows()
@@ -1122,7 +1085,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1148,7 +1111,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message:
@@ -1191,7 +1154,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message:
@@ -1219,7 +1182,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNPROCESSABLE_CONTENT" }),
       )
       await assertAuditLogRows()
@@ -1241,7 +1204,7 @@ describe("page.router", async () => {
           to: 1,
           blocks: pageToReorder.blob.content.content,
         }),
-      ).rejects.toThrowError("Too small: expected number to be >=0")
+      ).rejects.toThrow("Too small: expected number to be >=0")
       await assertAuditLogRows()
     })
 
@@ -1263,7 +1226,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNPROCESSABLE_CONTENT" }),
       )
       await assertAuditLogRows()
@@ -1285,7 +1248,7 @@ describe("page.router", async () => {
           to: -1,
           blocks: pageToReorder.blob.content.content,
         }),
-      ).rejects.toThrowError("Too small: expected number to be >=0")
+      ).rejects.toThrow("Too small: expected number to be >=0")
       await assertAuditLogRows()
     })
 
@@ -1373,7 +1336,7 @@ describe("page.router", async () => {
           layout: "content",
           page: pick(page, ["title", "permalink"]),
           version: "0.1.0",
-        } as UpdatePageOutput["content"]),
+        } satisfies UpdatePageOutput["content"]),
       }
     }
 
@@ -1392,7 +1355,7 @@ describe("page.router", async () => {
       const result = unauthedCaller.updatePageBlob(pageUpdateArgs)
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await assertAuditLogRows()
@@ -1406,7 +1369,7 @@ describe("page.router", async () => {
       const result = caller.updatePageBlob(pageUpdateArgs)
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1430,7 +1393,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
       await assertAuditLogRows()
@@ -1451,7 +1414,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError("Schema validation failed")
+      await expect(result).rejects.toThrow("Schema validation failed")
       await assertAuditLogRows()
     })
 
@@ -1567,7 +1530,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await assertAuditLogRows()
@@ -1589,7 +1552,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1608,7 +1571,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1635,13 +1598,13 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await assertAuditLogRows()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A resource with the same permalink already exists",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should create a new page with Content layout successfully", async () => {
@@ -1845,7 +1808,7 @@ describe("page.router", async () => {
       })
     })
 
-    it("should throw 400 if folderId does not exist", async () => {
+    it("should throw 404 if folderId does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
       const expectedPageArgs = {
@@ -1863,17 +1826,17 @@ describe("page.router", async () => {
       const result = caller.createPage({ ...expectedPageArgs })
 
       // Assert
-      await assertAuditLogRows()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "BAD_REQUEST",
+          code: "NOT_FOUND",
           message:
             "Parent not found or parentId is not a valid collection or folder",
         }),
       )
+      await assertAuditLogRows()
     })
 
-    it("should throw 400 if folderId is not a Folder resource", async () => {
+    it("should throw 404 if folderId is not a Folder resource", async () => {
       // Arrange
       const { site, page } = await setupPageResource({ resourceType: "Page" })
       const expectedPageArgs = {
@@ -1891,14 +1854,14 @@ describe("page.router", async () => {
       const result = caller.createPage({ ...expectedPageArgs })
 
       // Assert
-      await assertAuditLogRows()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "BAD_REQUEST",
+          code: "NOT_FOUND",
           message:
             "Parent not found or parentId is not a valid collection or folder",
         }),
       )
+      await assertAuditLogRows()
     })
 
     // TODO: Implement tests when permissions are implemented
@@ -1913,7 +1876,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.getRootPage({ siteId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1925,7 +1888,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1959,7 +1922,7 @@ describe("page.router", async () => {
       const result = caller.getRootPage({ siteId: site.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1980,7 +1943,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.publishPage({ siteId: 1, pageId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2002,7 +1965,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2051,6 +2014,1071 @@ describe("page.router", async () => {
         .selectAll()
         .execute()
       expect(auditLogs.length).toEqual(1)
+      expect(auditLogs[0]?.delta).toMatchObject({
+        after: { versionId: newVersions[0]?.id, versionNum: 1 },
+      })
+    })
+
+    it("should block the first publish when a live redirect occupies the page's URL", async () => {
+      // Arrange — a draft page whose URL already has a live redirect
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(page.id),
+      )
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: normalizeRedirectPath(fullPermalink!),
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act
+      const result = caller.publishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert — blocked, and nothing published
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "CONFLICT",
+          message: `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
+        }),
+      )
+      const versions = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+      expect(versions.length).toEqual(0)
+    })
+
+    it("should allow publishing when a redirect exists at a different path", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/some-unrelated-path",
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act
+      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — published normally
+      const versions = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+      expect(versions.length).toEqual(1)
+    })
+
+    it("should not block re-publishing an already-published page whose URL has a redirect", async () => {
+      // Arrange — an already-published page (the source-guard gap aside, this
+      // can happen via imported data). Only the first publish is gated.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(page.id),
+      )
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: normalizeRedirectPath(fullPermalink!),
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act / Assert — re-publish is not blocked
+      await expect(
+        caller.publishPage({ siteId: site.id, pageId: Number(page.id) }),
+      ).resolves.toBeUndefined()
+    })
+
+    it("should back-fill a literal redirect destination into a reference on first publish", async () => {
+      // Arrange — a draft page, plus a redirect whose destination is the page's
+      // literal path (created before the page was live). Publishing the page
+      // should rewrite that literal into a [resource:...] reference so the
+      // redirect follows the page's future moves.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(page.id),
+      )
+      const literalDestination = normalizeRedirectPath(fullPermalink!)
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old-url",
+          destination: literalDestination,
+        })
+        .execute()
+
+      // Act
+      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — the literal destination is now a reference to the page
+      const redirect = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("source", "=", "/old-url")
+        .executeTakeFirstOrThrow()
+      expect(redirect.destination).toEqual(`[resource:${site.id}:${page.id}]`)
+
+      // Assert — a RedirectDelete entry records the literal form being retired
+      const deleteEntry = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("eventType", "=", "RedirectDelete")
+        .executeTakeFirstOrThrow()
+      expect(deleteEntry.userId).toBe(session.userId)
+      const deleteDelta = deleteEntry.delta as {
+        before: { destination: string; deletedAt: string | null }
+        after: { destination: string; deletedAt: string | null }
+      }
+      expect(deleteDelta.before.destination).toBe(literalDestination)
+      expect(deleteDelta.before.deletedAt).toBeNull()
+      expect(deleteDelta.after.destination).toBe(literalDestination)
+      expect(deleteDelta.after.deletedAt).not.toBeNull()
+
+      // Assert — a RedirectCreate entry records the reference form being adopted
+      const createEntry = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("eventType", "=", "RedirectCreate")
+        .executeTakeFirstOrThrow()
+      expect(createEntry.userId).toBe(session.userId)
+      const createDelta = createEntry.delta as {
+        before: null
+        after: { destination: string }
+      }
+      expect(createDelta.before).toBeNull()
+      expect(createDelta.after.destination).toBe(
+        `[resource:${site.id}:${page.id}]`,
+      )
+    })
+
+    it("should leave a literal redirect to a different path untouched on publish", async () => {
+      // Arrange — a redirect pointing at some other path must not be rewritten
+      // when an unrelated page is published.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old-url",
+          destination: "/some-other-page",
+        })
+        .execute()
+
+      // Act
+      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — destination is unchanged
+      const redirect = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("source", "=", "/old-url")
+        .executeTakeFirstOrThrow()
+      expect(redirect.destination).toEqual("/some-other-page")
+    })
+
+    it("should back-fill a literal redirect to a folder URL into a container reference when the folder's index page is first published", async () => {
+      // Arrange — a folder served by its (draft) IndexPage, plus a redirect
+      // whose destination is the folder's literal path. The IndexPage renders at
+      // the folder's URL, so publishing it should rewrite the literal into a
+      // reference to the CONTAINER (folder), not the index page itself.
+      const { site, folder } = await setupFolder({ permalink: "guides" })
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(folder.id),
+      )
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old-url",
+          destination: normalizeRedirectPath(fullPermalink!),
+        })
+        .execute()
+
+      // Act — publish the folder's index page (first publish)
+      await caller.publishPage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+      })
+
+      // Assert — the literal destination now references the folder, so it will
+      // follow the folder's future renames
+      const redirect = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("source", "=", "/old-url")
+        .executeTakeFirstOrThrow()
+      expect(redirect.destination).toEqual(`[resource:${site.id}:${folder.id}]`)
+    })
+
+    it("should throw if the page has a pending scheduled unpublish", async () => {
+      // Arrange — publishing now would conflict with the pending unpublish
+      const scheduledAt = new Date("2999-01-01T00:00:00Z")
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt,
+        scheduledBy: session.userId ?? undefined,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.publishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new ScheduledActionConflictError("unpublished", scheduledAt),
+      )
+    })
+
+    it("should proceed and clear the schedule when publishing a page with a pending scheduled publish", async () => {
+      // Arrange — same-direction schedule: manually publishing now is just
+      // doing early what the cron would have done later, so it should
+      // proceed and clear the now-redundant schedule rather than block.
+      const scheduledAt = new Date("2999-01-01T00:00:00Z")
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        userId: session.userId ?? undefined,
+        scheduledAt,
+        scheduledBy: session.userId ?? undefined,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.publishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).not.toBeNull()
+      expect(updated.scheduledAt).toBeNull()
+      expect(updated.scheduledBy).toBeNull()
+      expect(updated.scheduledAction).toBeNull()
+    })
+
+    describe("ancestor guard", () => {
+      it("should throw if the containing folder's IndexPage has a pending scheduled unpublish, even though it's currently live", async () => {
+        const { site, folder } = await setupFolder({})
+        const scheduledAt = new Date("2999-01-01T00:00:00Z")
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+          scheduledAt,
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "child-page",
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        const result = caller.publishPage({
+          siteId: site.id,
+          pageId: Number(page.id),
+        })
+
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+        )
+      })
+    })
+  })
+
+  describe("unpublishPage", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.unpublishPage({ siteId: 1, pageId: 1 })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have unpublish access to the page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
+      afterEach(() => {
+        // Restore the baseline forced features so the flag doesn't leak.
+        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
+      })
+
+      it("should throw 404 as if the page cannot be unpublished, even for an otherwise-valid page", async () => {
+        // Arrange — dark-launch guard: same NOT_FOUND a caller would see for
+        // an unsupported resource type, so the flag's existence isn't
+        // observable from the error shape
+        mockGrowthBook.setForcedFeatures(
+          new Map([
+            ...mockFeatureFlags,
+            [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
+          ]),
+        )
+        const { site, page } = await setupPageResource({
+          resourceType: ResourceType.Page,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        // Act
+        const result = caller.unpublishPage({
+          siteId: site.id,
+          pageId: Number(page.id),
+        })
+
+        // Assert
+        await expect(result).rejects.toThrow(
+          new TRPCError({
+            code: "NOT_FOUND",
+            message: "This page either does not exist or cannot be unpublished",
+          }),
+        )
+      })
+    })
+
+    it("should throw if the page is not currently published", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(new PageAlreadyUnpublishedError())
+    })
+
+    it("should throw if the page has a pending scheduled publish", async () => {
+      // Arrange — the schedule cron only checks scheduledAt, not the page's
+      // current state, so unpublishing without cancelling the schedule
+      // would let the cron silently republish this page later
+      const scheduledAt = new Date("2999-01-01T00:00:00Z")
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt,
+        scheduledBy: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new ScheduledActionConflictError("published", scheduledAt),
+      )
+    })
+
+    it("should proceed and clear the schedule when unpublishing a page with a pending scheduled unpublish", async () => {
+      // Arrange — same-direction schedule: manually unpublishing now is just
+      // doing early what the cron would have done later, so it should
+      // proceed and clear the now-redundant schedule rather than block.
+      const scheduledAt = new Date("2999-01-01T00:00:00Z")
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt,
+        scheduledBy: session.userId ?? undefined,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).toBeNull()
+      expect(updated.scheduledAt).toBeNull()
+      expect(updated.scheduledBy).toBeNull()
+      expect(updated.scheduledAction).toBeNull()
+    })
+
+    it("should throw 404 if the page does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: 99999, // does not exist
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page either does not exist or cannot be unpublished",
+        }),
+      )
+    })
+
+    it("should throw if a Folder's IndexPage is not currently published", async () => {
+      // Arrange — a Folder has no content of its own; unpublishPage resolves
+      // its id to the child IndexPage, so the precondition check applies there
+      const { site, folder } = await setupFolder({})
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(folder.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(new PageAlreadyUnpublishedError())
+    })
+
+    it("should unpublish a Folder's IndexPage, leaving the Folder's own row untouched", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(folder.id) })
+
+      // Assert — the IndexPage is unpublished
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.publishedVersionId).toBeNull()
+      expect(updatedIndexPage.state).toEqual(ResourceState.Draft)
+      expect(updatedIndexPage.draftBlobId).not.toBeNull()
+
+      // Assert — the Folder's own row is untouched (it never had a
+      // publishedVersionId to begin with)
+      const updatedFolder = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedFolder.publishedVersionId).toBeNull()
+      expect(updatedFolder.state).toEqual(ResourceState.Draft)
+    })
+
+    it("should throw if a sibling page inside the Folder is still published", async () => {
+      // Arrange — the Folder's IndexPage is live, but so is a sibling Page
+      // directly under the same Folder; unpublishing the landing page would
+      // otherwise leave that sibling reachable with no live IndexPage above it
+      const { site, folder } = await setupFolder({})
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      const { page: siblingPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "sibling-page",
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(folder.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "This folder or collection has other live pages inside it — unpublish them before unpublishing its landing page",
+        }),
+      )
+      const actualSiblingPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", siblingPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(actualSiblingPage.publishedVersionId).not.toBeNull()
+    })
+
+    it("should throw if a live page is nested inside a subfolder of the Folder", async () => {
+      // Arrange — the live descendant is two levels down, not a direct child
+      const { site, folder } = await setupFolder({})
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "subfolder",
+      })
+      const { page: nestedPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: subfolder.id,
+        resourceType: ResourceType.Page,
+        permalink: "nested-page",
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(folder.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "This folder or collection has other live pages inside it — unpublish them before unpublishing its landing page",
+        }),
+      )
+      const actualNestedPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", nestedPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(actualNestedPage.publishedVersionId).not.toBeNull()
+    })
+
+    it("should unpublish a Folder's IndexPage when a sibling page exists but is not live", async () => {
+      // Arrange — a sibling Page exists but was never published, so it
+      // shouldn't count against the landing-page unpublish guard
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "draft-sibling-page",
+        state: ResourceState.Draft,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(folder.id) })
+
+      // Assert
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.publishedVersionId).toBeNull()
+      expect(updatedIndexPage.state).toEqual(ResourceState.Draft)
+    })
+
+    it("should throw if a Collection's IndexPage is not currently published", async () => {
+      // Arrange — same resolve-to-child-IndexPage behaviour as Folder
+      const { site, collection } = await setupCollection()
+      await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(collection.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(new PageAlreadyUnpublishedError())
+    })
+
+    it("should unpublish a Collection's IndexPage, leaving the Collection's own row untouched", async () => {
+      // Arrange
+      const { site, collection } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(collection.id),
+      })
+
+      // Assert — the IndexPage is unpublished
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.publishedVersionId).toBeNull()
+      expect(updatedIndexPage.state).toEqual(ResourceState.Draft)
+      expect(updatedIndexPage.draftBlobId).not.toBeNull()
+
+      // Assert — the Collection's own row is untouched
+      const updatedCollection = await db
+        .selectFrom("Resource")
+        .where("id", "=", collection.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedCollection.publishedVersionId).toBeNull()
+      expect(updatedCollection.state).toEqual(ResourceState.Draft)
+    })
+
+    it("should throw if a sibling page inside the Collection is still published", async () => {
+      // Arrange — same resolve-to-child-IndexPage behaviour as Folder
+      const { site, collection } = await setupCollection()
+      await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      const { page: siblingPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        permalink: "sibling-collection-page",
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(collection.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "This folder or collection has other live pages inside it — unpublish them before unpublishing its landing page",
+        }),
+      )
+      const actualSiblingPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", siblingPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(actualSiblingPage.publishedVersionId).not.toBeNull()
+    })
+
+    it.each([
+      ResourceType.RootPage,
+      ResourceType.FolderMeta,
+      ResourceType.CollectionMeta,
+    ])("should throw 404 if pageId refers to a %s", async (resourceType) => {
+      // Arrange — RootPage has a real publish state but the static-site
+      // build has no "unpublished homepage" case (see
+      // UNPUBLISHABLE_RESOURCE_TYPES in ~/constants/resources); FolderMeta/
+      // CollectionMeta are internal ordering metadata with no meaningfully
+      // tracked publish state
+      const { site, page } = await setupPageResource({
+        resourceType,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page either does not exist or cannot be unpublished",
+        }),
+      )
+    })
+
+    it("should unpublish a live CollectionLink", async () => {
+      // Arrange — CollectionLink shares the same publish/unpublish path as
+      // a regular page (see LinkEditNavbar's use of PublishButton)
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.CollectionLink,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).toBeNull()
+      expect(updated.state).toEqual(ResourceState.Draft)
+    })
+
+    it("should unpublish a live page while retaining its draft", async () => {
+      // Arrange — a published page with a pending draft
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const draftBlob = await setupBlob()
+      await db
+        .updateTable("Resource")
+        .where("id", "=", page.id)
+        .set({ draftBlobId: draftBlob.id })
+        .execute()
+
+      const publishedVersion = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      // Act
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — DB (Resource)
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).toBeNull()
+      expect(updated.state).toEqual(ResourceState.Draft)
+      expect(updated.draftBlobId).toEqual(draftBlob.id)
+
+      // Assert — DB (AuditLog)
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Unpublish)
+        .selectAll()
+        .execute()
+      expect(auditLogs.length).toEqual(1)
+      expect(auditLogs[0]?.delta).toMatchObject({
+        before: {
+          versionId: publishedVersion.id,
+          versionNum: publishedVersion.versionNum,
+        },
+      })
+    })
+
+    it("should backfill a draft from the published content when there is no pending draft", async () => {
+      // Arrange — a published page with no pending draft (draftBlobId is
+      // null, as setupPageResource leaves it after publishing)
+      const { site, page, blob } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const before = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(before.draftBlobId).toBeNull()
+
+      // Act
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — a new draft Blob was created with the published content,
+      // rather than reusing the Version's Blob
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).toBeNull()
+      expect(updated.state).toEqual(ResourceState.Draft)
+      expect(updated.draftBlobId).not.toBeNull()
+      expect(updated.draftBlobId).not.toEqual(blob.id)
+
+      const draftBlob = await db
+        .selectFrom("Blob")
+        .where("id", "=", updated.draftBlobId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(draftBlob.content).toEqual(blob.content)
+    })
+
+    it("should leave existing redirects untouched", async () => {
+      // Arrange — one redirect pointing away from the page (by literal path),
+      // and one redirect whose destination references the page being
+      // unpublished. unpublishPageResource never writes to the Redirect
+      // table, so neither row's source/destination/deletedAt should change —
+      // the build-time exclusion of unpublished targets from redirects.json
+      // (tooling/build/scripts/publishing/queries.ts) is a separate, later
+      // concern from the DB row itself.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      await db
+        .insertInto("Redirect")
+        .values([
+          {
+            siteId: site.id,
+            source: "/old-url",
+            destination: "/some-other-page",
+          },
+          {
+            siteId: site.id,
+            source: "/another-old-url",
+            destination: `[resource:${site.id}:${page.id}]`,
+          },
+        ])
+        .execute()
+
+      // Act
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — both redirects are exactly as they were, and not soft-deleted
+      const redirects = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .orderBy("source", "asc")
+        .execute()
+      expect(redirects).toHaveLength(2)
+      expect(redirects[0]).toMatchObject({
+        source: "/another-old-url",
+        destination: `[resource:${site.id}:${page.id}]`,
+        deletedAt: null,
+      })
+      expect(redirects[1]).toMatchObject({
+        source: "/old-url",
+        destination: "/some-other-page",
+        deletedAt: null,
+      })
     })
   })
 
@@ -2065,7 +3093,7 @@ describe("page.router", async () => {
         meta: "Test Meta",
       })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2084,7 +3112,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2124,6 +3152,183 @@ describe("page.router", async () => {
   })
 
   describe("updateSettings", () => {
+    describe("redirect on settings change", () => {
+      const liveRedirects = (siteId: number) =>
+        db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", siteId)
+          .where("deletedAt", "is", null)
+          .execute()
+
+      const setupPublishedPage = async (permalink: string) => {
+        const { site, page } = await setupPageResource({
+          resourceType: ResourceType.Page,
+          permalink,
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+        return { site, page }
+      }
+
+      it("creates a redirect from the old URL when the permalink changes", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: true,
+        })
+
+        const redirects = await liveRedirects(site.id)
+        expect(redirects).toHaveLength(1)
+        expect(redirects[0]!.source).toBe("/old-page")
+        expect(redirects[0]!.destination).toBe(
+          `[resource:${site.id}:${page.id}]`,
+        )
+      })
+
+      it("does not create a redirect for a title-only change", async () => {
+        const { site, page } = await setupPublishedPage("stay")
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Renamed title only",
+          permalink: "stay",
+          shouldCreateRedirect: true,
+        })
+
+        expect(await liveRedirects(site.id)).toHaveLength(0)
+      })
+
+      it("does not create a redirect when shouldCreateRedirect is false", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: false,
+        })
+
+        expect(await liveRedirects(site.id)).toHaveLength(0)
+      })
+
+      it("blocks renaming a published page onto a path a live redirect points elsewhere from", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+        // A live redirect already occupies the new URL, pointing elsewhere —
+        // renaming the page onto it would shadow the page.
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/new-page",
+            destination: "https://example.gov.sg/elsewhere",
+          })
+          .execute()
+
+        const result = caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: false,
+        })
+
+        // Assert — blocked, and the whole edit is rolled back (permalink unchanged).
+        await expect(result).rejects.toMatchObject({ code: "CONFLICT" })
+        const unchanged = await db
+          .selectFrom("Resource")
+          .select("permalink")
+          .where("id", "=", String(page.id))
+          .executeTakeFirstOrThrow()
+        expect(unchanged.permalink).toBe("old-page")
+      })
+
+      it("reclaims a redirect pointing back at the page when the URL is renamed onto it", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+        // A redirect at the URL the page is about to occupy, pointing back at it
+        // — this is the reclaim case, not a shadow, so the rename is allowed.
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/new-page",
+            destination: `[resource:${site.id}:${page.id}]`,
+          })
+          .execute()
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: true,
+        })
+
+        // The self-pointing redirect at /new-page is reclaimed (soft-deleted)...
+        const reclaimed = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("source", "=", "/new-page")
+          .executeTakeFirstOrThrow()
+        expect(reclaimed.deletedAt).not.toBeNull()
+        // ...and the old URL gets its own redirect.
+        const live = await liveRedirects(site.id)
+        expect(live).toHaveLength(1)
+        expect(live[0]!.source).toBe("/old-page")
+      })
+
+      it("revives a soft-deleted redirect at the old URL instead of duplicating it", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+        // A previously soft-deleted redirect already occupies the old source
+        // (e.g. it was deleted earlier). The upsert should revive this row, not
+        // insert a second one at the same (siteId, source).
+        const stale = await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/old-page",
+            destination: "https://example.gov.sg/stale",
+            deletedAt: new Date(),
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: true,
+        })
+
+        // Exactly one row at the old source — the stale one, revived in place.
+        const rows = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("source", "=", "/old-page")
+          .execute()
+        expect(rows).toHaveLength(1)
+        expect(rows[0]!.id).toBe(stale.id)
+        expect(rows[0]!.deletedAt).toBeNull()
+        expect(rows[0]!.destination).toBe(`[resource:${site.id}:${page.id}]`)
+      })
+    })
+
     it("should throw 401 if not logged in update", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -2139,7 +3344,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2157,14 +3362,14 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await assertAuditLogRows()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message:
             "Unable to load content for the requested page, please contact Isomer Support",
         }),
       )
+      await assertAuditLogRows()
     })
 
     it("should update page settings successfully", async () => {
@@ -2187,8 +3392,9 @@ describe("page.router", async () => {
         ...expectedSettings,
       })
 
-      // Assert
-      await assertAuditLogRows(2)
+      // Assert — only a ResourceUpdate entry; an unpublished page has no live
+      // presence, so no implicit publish happens.
+      await assertAuditLogRows(1)
       const actualResource = await db
         .selectFrom("Resource")
         .where("id", "=", page.id)
@@ -2202,7 +3408,62 @@ describe("page.router", async () => {
         .executeTakeFirstOrThrow()
       expect(result).toMatchObject(actualResource)
       expect(result).toMatchObject(expectedSettings)
-      await assertAuditLogRows(2)
+    })
+
+    it("should not log a Publish event when updating settings of an unpublished page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        type: "Page",
+        title: "New Title",
+        permalink: "new-permalink",
+      })
+
+      // Assert
+      const publishLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Publish)
+        .selectAll()
+        .execute()
+      expect(publishLogs).toHaveLength(0)
+    })
+
+    it("should log a Publish event when updating settings of a published page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        type: "Page",
+        title: "New Title",
+        permalink: "new-permalink",
+      })
+
+      // Assert
+      const publishLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Publish)
+        .selectAll()
+        .execute()
+      expect(publishLogs).toHaveLength(1)
     })
 
     it("should update root page settings successfully", async () => {
@@ -2240,6 +3501,33 @@ describe("page.router", async () => {
       expect(result).toMatchObject(expectedSettings)
     })
 
+    it("should not allow changing a page type to RootPage", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        type: "RootPage",
+        title: "Attempted RootPage",
+      })
+
+      // Assert: type should remain unchanged
+      const actualResource = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .select(["Resource.type"])
+        .executeTakeFirstOrThrow()
+      expect(actualResource.type).toBe("Page")
+    })
+
     it("should throw 409 if permalink is not unique", async () => {
       // Arrange
       const reusedPermalink = "this-is-not-unique"
@@ -2267,7 +3555,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A resource with the same permalink already exists",
@@ -2292,7 +3580,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2340,7 +3628,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.getFullPermalink({ siteId: 1, pageId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2354,7 +3642,7 @@ describe("page.router", async () => {
       const result = caller.getFullPermalink({ siteId: site.id, pageId: 99999 })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "No permalink could be found for the given page",
@@ -2435,7 +3723,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2454,7 +3742,7 @@ describe("page.router", async () => {
 
       const result = unauthedCaller.getPermalinkTree({ pageId: 1, siteId: 1 })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2467,7 +3755,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2484,7 +3772,7 @@ describe("page.router", async () => {
       const result = caller.getPermalinkTree({ siteId: site.id, pageId: 99999 })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2545,7 +3833,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2567,7 +3855,7 @@ describe("page.router", async () => {
         parentId: "1",
       })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2583,7 +3871,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2637,7 +3925,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(scheduleCaller).rejects.toThrowError(
+      await expect(scheduleCaller).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2690,12 +3978,13 @@ describe("page.router", async () => {
         eventType: AuditLogEvent.SchedulePublish,
         delta: {
           before: omit(expectedPage, ["updatedAt", "createdAt"]),
-          // NOTE: Need to convert expectedDate to ISO string as the comparison is done with the DB value which is in ISO format
+          // Convert expectedDate to ISO string since we're comparing against the DB value, which is in ISO format
           after: omit(
             {
               ...expectedPage,
               scheduledAt: expectedDate.toISOString(),
               scheduledBy: session.userId,
+              scheduledAction: ScheduledAction.Publish,
             },
             ["updatedAt", "createdAt"],
           ),
@@ -2720,7 +4009,7 @@ describe("page.router", async () => {
           pageId: Number(expectedPage.id),
           scheduledAt: subDays(FIXED_NOW, 1),
         }),
-      ).rejects.toThrowError()
+      ).rejects.toThrow()
 
       // Assert
       // Since the request fails, expect scheduledAt to be null
@@ -2751,7 +4040,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(scheduleCaller).rejects.toThrowError(
+      await expect(scheduleCaller).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2774,16 +4063,15 @@ describe("page.router", async () => {
         scheduledAt: subDays(FIXED_NOW, 1),
       })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
-    it("should throw an error if the resource is not found", async () => {
+    it("should throw NOT_FOUND if the page resource does not exist", async () => {
       //  Arrange
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
       })
-      // The user is only an editor, not a publisher
       await setupPublisherPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
@@ -2796,9 +4084,84 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(scheduleCaller).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST", message: "Resource not found" }),
+      await expect(scheduleCaller).rejects.toThrow(
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
+    })
+
+    it("should resolve a Folder id to its child IndexPage and schedule that", async () => {
+      // Arrange — same input contract as publishPage: passing the Folder's
+      // own id, not its landing page's, should still work.
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.schedulePage({
+        siteId: site.id,
+        pageId: Number(folder.id),
+        scheduledAt: addDays(FIXED_NOW, 1),
+      })
+
+      // Assert — the schedule landed on the IndexPage, not the Folder
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.scheduledAt).toEqual(addDays(FIXED_NOW, 1))
+      expect(updatedIndexPage.scheduledAction).toEqual(ScheduledAction.Publish)
+
+      const updatedFolder = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedFolder.scheduledAt).toBeNull()
+    })
+
+    describe("ancestor guard", () => {
+      it("should throw if the containing folder's IndexPage has a pending scheduled unpublish", async () => {
+        const { site, folder } = await setupFolder({})
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+          scheduledAt: addDays(FIXED_NOW, 5),
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "child-page",
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        const result = caller.schedulePage({
+          siteId: site.id,
+          pageId: Number(page.id),
+          scheduledAt: addDays(FIXED_NOW, 1),
+        })
+
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+        )
+      })
     })
   })
   describe("cancelSchedulePage", () => {
@@ -2859,10 +4222,11 @@ describe("page.router", async () => {
           siteId: site.id,
           pageId: Number(expectedPage.id),
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
-          message: "Unable to cancel schedule for a page that is not scheduled",
+          message:
+            "Unable to cancel schedule for a page that is not scheduled to be published",
         }),
       )
     })
@@ -2889,7 +4253,7 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(scheduleCaller).rejects.toThrowError(
+      await expect(scheduleCaller).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2917,11 +4281,11 @@ describe("page.router", async () => {
         pageId: Number(expectedPage.id),
       })
 
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
-    it("should throw an error if the resource is not found", async () => {
+    it("should throw NOT_FOUND if the page resource does not exist", async () => {
       // Arrange
       const { site, page: expectedPage } = await setupPageResource({
         resourceType: "Page",
@@ -2944,8 +4308,915 @@ describe("page.router", async () => {
       })
 
       // Assert
-      await expect(cancelScheduleCaller).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST", message: "Resource not found" }),
+      await expect(cancelScheduleCaller).rejects.toThrow(
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
+      )
+    })
+
+    it("should resolve a Folder id to its child IndexPage and cancel that", async () => {
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        userId: session.userId ?? undefined,
+        scheduledAt: set(addDays(FIXED_NOW, 1), {
+          hours: 10,
+          minutes: 0,
+          seconds: 0,
+          milliseconds: 0,
+        }),
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.cancelSchedulePage({
+        siteId: site.id,
+        pageId: Number(folder.id),
+      })
+
+      // Assert
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.scheduledAt).toBeNull()
+      expect(updatedIndexPage.scheduledBy).toBeNull()
+    })
+
+    it("should allow cancelling even when a child page still has its own pending scheduled publish", async () => {
+      // Unlike scheduled unpublish, cancelling a scheduled publish is never
+      // blocked by a dependent child's own schedule — a child's publish
+      // doesn't depend on its ancestor's publish schedule (only on the
+      // ancestor not having a pending scheduled *unpublish*, see the
+      // ancestor guard above), so there's nothing for this cancel to strand.
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        scheduledAt: addDays(FIXED_NOW, 1),
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "child-page",
+        scheduledAt: addDays(FIXED_NOW, 1),
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      await expect(
+        caller.cancelSchedulePage({
+          siteId: site.id,
+          pageId: Number(indexPage.id),
+        }),
+      ).resolves.not.toThrow()
+    })
+  })
+
+  describe("scheduleUnpublish", () => {
+    const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
+    const futureDate = set(addDays(FIXED_NOW, 1), {
+      hours: 10,
+      minutes: 0,
+      seconds: 0,
+      milliseconds: 0,
+    })
+    beforeEach(() => {
+      MockDate.set(FIXED_NOW)
+    })
+    afterEach(() => {
+      MockDate.reset()
+    })
+
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.scheduleUnpublish({
+        siteId: 1,
+        pageId: 1,
+        scheduledAt: futureDate,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have unpublish access", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+        scheduledAt: futureDate,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should throw if the scheduled time is in the past", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+        scheduledAt: addDays(FIXED_NOW, -1),
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Scheduled time must be in the future",
+        }),
+      )
+    })
+
+    describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
+      afterEach(() => {
+        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
+      })
+
+      it("should throw 404 as if the page cannot be unpublished, even for an otherwise-valid schedule request", async () => {
+        mockGrowthBook.setForcedFeatures(
+          new Map([
+            ...mockFeatureFlags,
+            [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
+          ]),
+        )
+        const { site, page } = await setupPageResource({
+          resourceType: ResourceType.Page,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        const result = caller.scheduleUnpublish({
+          siteId: site.id,
+          pageId: Number(page.id),
+          scheduledAt: futureDate,
+        })
+
+        await expect(result).rejects.toThrow(
+          new TRPCError({
+            code: "NOT_FOUND",
+            message: "This page either does not exist or cannot be unpublished",
+          }),
+        )
+      })
+    })
+
+    it("should throw 404 if pageId refers to the RootPage — otherwise it could be scheduled for unpublish and executed unchecked by the cron", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.RootPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+        scheduledAt: futureDate,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page either does not exist or cannot be unpublished",
+        }),
+      )
+    })
+
+    it("should throw 404 if pageId refers to a Folder", async () => {
+      const { site, folder } = await setupFolder()
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(folder.id),
+        scheduledAt: futureDate,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page either does not exist or cannot be unpublished",
+        }),
+      )
+    })
+
+    it("should throw 404 if pageId refers to a Collection", async () => {
+      const { site, collection } = await setupCollection()
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(collection.id),
+        scheduledAt: futureDate,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page either does not exist or cannot be unpublished",
+        }),
+      )
+    })
+
+    it("should throw if the page is not currently published", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+        scheduledAt: futureDate,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This page is not currently published",
+        }),
+      )
+    })
+
+    it("should throw if the page already has a scheduled action", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+        scheduledAt: futureDate,
+      })
+
+      await expect(result).rejects.toThrow(
+        expect.objectContaining({ code: "BAD_REQUEST" }),
+      )
+    })
+
+    describe("container-siblings guard", () => {
+      const earlierDate = set(addDays(FIXED_NOW, 1), {
+        hours: 8,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      })
+      const laterDate = set(addDays(FIXED_NOW, 2), {
+        hours: 10,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      })
+
+      it("should throw if a sibling page inside the Folder is still live with no schedule", async () => {
+        const { site, folder } = await setupFolder({})
+        const { page: indexPage } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "sibling-page",
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        const result = caller.scheduleUnpublish({
+          siteId: site.id,
+          pageId: Number(indexPage.id),
+          scheduledAt: futureDate,
+        })
+
+        await expect(result).rejects.toThrow(
+          new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message:
+              "Some pages in this folder/collection will still be live at that time. Schedule or unpublish those pages first.",
+          }),
+        )
+      })
+
+      it("should throw if a live sibling is only scheduled to unpublish after this request's scheduled time", async () => {
+        const { site, folder } = await setupFolder({})
+        const { page: indexPage } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "sibling-page",
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+          scheduledAt: laterDate,
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        const result = caller.scheduleUnpublish({
+          siteId: site.id,
+          pageId: Number(indexPage.id),
+          scheduledAt: futureDate,
+        })
+
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+        )
+      })
+
+      it("should throw if a currently-unpublished sibling is scheduled to publish before this request's scheduled time", async () => {
+        // The sibling isn't live right now, but it will be by the time this
+        // unpublish fires — closing the loophole where the guard only looked
+        // at current liveness, not schedules already on the books.
+        const { site, folder } = await setupFolder({})
+        const { page: indexPage } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "sibling-page",
+          userId: session.userId ?? undefined,
+          scheduledAt: earlierDate,
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Publish,
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        const result = caller.scheduleUnpublish({
+          siteId: site.id,
+          pageId: Number(indexPage.id),
+          scheduledAt: futureDate,
+        })
+
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+        )
+      })
+
+      it("should allow scheduling when a sibling is already unpublished with no incoming schedule", async () => {
+        const { site, folder } = await setupFolder({})
+        const { page: indexPage } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "sibling-page",
+          userId: session.userId ?? undefined,
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        await caller.scheduleUnpublish({
+          siteId: site.id,
+          pageId: Number(indexPage.id),
+          scheduledAt: futureDate,
+        })
+
+        const updated = await db
+          .selectFrom("Resource")
+          .where("id", "=", indexPage.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        expect(updated.scheduledAt).toEqual(futureDate)
+      })
+
+      it("should allow scheduling when a live sibling is scheduled to unpublish strictly before this request's scheduled time", async () => {
+        const { site, folder } = await setupFolder({})
+        const { page: indexPage } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "sibling-page",
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+          scheduledAt: earlierDate,
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        await caller.scheduleUnpublish({
+          siteId: site.id,
+          pageId: Number(indexPage.id),
+          scheduledAt: futureDate,
+        })
+
+        const updated = await db
+          .selectFrom("Resource")
+          .where("id", "=", indexPage.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        expect(updated.scheduledAt).toEqual(futureDate)
+      })
+
+      it("should allow scheduling when a live sibling is scheduled to unpublish at the exact same time", async () => {
+        // Restriction 4 explicitly allows scheduling an index page's
+        // unpublish alongside its children at the same instant — the cron's
+        // depth-aware ordering (schedulePublishingJob.ts) is what makes this
+        // actually safe to execute.
+        const { site, folder } = await setupFolder({})
+        const { page: indexPage } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "sibling-page",
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+          scheduledAt: futureDate,
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        await caller.scheduleUnpublish({
+          siteId: site.id,
+          pageId: Number(indexPage.id),
+          scheduledAt: futureDate,
+        })
+
+        const updated = await db
+          .selectFrom("Resource")
+          .where("id", "=", indexPage.id)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+        expect(updated.scheduledAt).toEqual(futureDate)
+      })
+    })
+
+    it("should schedule the page for unpublish", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+        scheduledAt: futureDate,
+      })
+
+      // Assert
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.scheduledAt).toEqual(futureDate)
+      expect(updated.scheduledBy).toEqual(session.userId)
+      expect(updated.scheduledAction).toEqual(ScheduledAction.Unpublish)
+
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.ScheduleUnpublish)
+        .selectAll()
+        .execute()
+      expect(auditLogs.length).toEqual(1)
+    })
+
+    it("should resolve a Folder id to its child IndexPage and schedule that", async () => {
+      // Arrange — same input contract as unpublishPage: passing the
+      // Folder's own id, not its landing page's, should still work.
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.scheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(folder.id),
+        scheduledAt: futureDate,
+      })
+
+      // Assert — the schedule landed on the IndexPage, not the Folder
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.scheduledAt).toEqual(futureDate)
+      expect(updatedIndexPage.scheduledAction).toEqual(
+        ScheduledAction.Unpublish,
+      )
+
+      const updatedFolder = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedFolder.scheduledAt).toBeNull()
+    })
+  })
+
+  describe("cancelScheduleUnpublish", () => {
+    const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
+    const futureDate = set(addDays(FIXED_NOW, 1), {
+      hours: 10,
+      minutes: 0,
+      seconds: 0,
+      milliseconds: 0,
+    })
+    beforeEach(() => {
+      MockDate.set(FIXED_NOW)
+    })
+    afterEach(() => {
+      MockDate.reset()
+    })
+
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.cancelScheduleUnpublish({
+        siteId: 1,
+        pageId: 1,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have unpublish access", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.cancelScheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
+      afterEach(() => {
+        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
+      })
+
+      it("should throw 404 as if the page cannot be unpublished, even for an otherwise-valid cancel request", async () => {
+        mockGrowthBook.setForcedFeatures(
+          new Map([
+            ...mockFeatureFlags,
+            [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
+          ]),
+        )
+        const { site, page } = await setupPageResource({
+          resourceType: ResourceType.Page,
+          state: ResourceState.Published,
+          userId: session.userId ?? undefined,
+          scheduledAt: futureDate,
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        await setupPublisherPermissions({
+          userId: session.userId ?? undefined,
+          siteId: site.id,
+        })
+
+        const result = caller.cancelScheduleUnpublish({
+          siteId: site.id,
+          pageId: Number(page.id),
+        })
+
+        await expect(result).rejects.toThrow(
+          new TRPCError({
+            code: "NOT_FOUND",
+            message: "This page either does not exist or cannot be unpublished",
+          }),
+        )
+      })
+    })
+
+    it("should throw if the page has no scheduled unpublish (e.g. scheduled for publish instead)", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.cancelScheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Unable to cancel schedule for a page that is not scheduled to be unpublished",
+        }),
+      )
+    })
+
+    it("should cancel a scheduled unpublish", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.cancelScheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.scheduledAt).toBeNull()
+      expect(updated.scheduledBy).toBeNull()
+      expect(updated.scheduledAction).toBeNull()
+
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.CancelScheduleUnpublish)
+        .selectAll()
+        .execute()
+      expect(auditLogs.length).toEqual(1)
+    })
+
+    it("should resolve a Folder id to its child IndexPage and cancel that", async () => {
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.cancelScheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(folder.id),
+      })
+
+      // Assert
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.scheduledAt).toBeNull()
+      expect(updatedIndexPage.scheduledBy).toBeNull()
+      expect(updatedIndexPage.scheduledAction).toBeNull()
+    })
+
+    it("should allow cancelling the index page's own scheduled unpublish even while a child page still has a pending scheduled unpublish", async () => {
+      // Cancelling the container's own unpublish doesn't strand the child's
+      // schedule — the child still unpublishes on its own, independent of
+      // whether the container also goes dark.
+      const { site, folder } = await setupFolder({})
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "child-page",
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      await expect(
+        caller.cancelScheduleUnpublish({
+          siteId: site.id,
+          pageId: Number(indexPage.id),
+        }),
+      ).resolves.not.toThrow()
+    })
+
+    it("should throw if an ancestor container's IndexPage has a pending scheduled unpublish", async () => {
+      // The ancestor's own scheduled unpublish was only safe to schedule
+      // because this child was already dark, or scheduled to go dark, by
+      // then. Cancelling the child's schedule out from under that would
+      // leave it live past the ancestor's scheduled unpublish.
+      const { site, folder } = await setupFolder({})
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      const { page: childPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "child-page",
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+        scheduledAt: futureDate,
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.cancelScheduleUnpublish({
+        siteId: site.id,
+        pageId: Number(childPage.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        expect.objectContaining({ code: "PRECONDITION_FAILED" }),
       )
     })
   })

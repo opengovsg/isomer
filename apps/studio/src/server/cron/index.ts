@@ -1,6 +1,10 @@
+import { env } from "~/env.mjs"
+
 import { createBaseLogger } from "../../lib/logger"
+import { auditLogExportJob } from "./jobs/auditLogExportJob"
 import { deactivateInactiveUsersJob } from "./jobs/deactivateInactiveUsersJob"
 import { schedulePublishingJob } from "./jobs/schedulePublishingJob"
+import { schedulePushDocumentJob } from "./jobs/schedulePushDocumentJob"
 import { sendAccountDeactivationWarningEmailsJob } from "./jobs/sendAccountDeactivationWarningEmailsJob"
 
 const logger = createBaseLogger({ path: "cron:index" })
@@ -9,15 +13,22 @@ const logger = createBaseLogger({ path: "cron:index" })
 const cronJobs: { stop: () => void }[] = []
 
 export const initializeCronJobs = async () => {
+  if (!env.ENABLE_CRON_WORKERS) {
+    logger.info("Cron workers are disabled. Skipping initialization.")
+    return
+  }
+
   logger.info("Initializing cron jobs...")
 
   // Initialize and track all cron jobs
   cronJobs.push(
     await deactivateInactiveUsersJob(),
     await schedulePublishingJob(),
+    await schedulePushDocumentJob(),
     await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 1 }),
     await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 7 }),
     await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 14 }),
+    await auditLogExportJob(),
   )
 
   logger.info("Cron jobs initialized successfully")

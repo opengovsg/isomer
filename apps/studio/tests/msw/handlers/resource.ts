@@ -1,3 +1,5 @@
+import type { RouterOutput } from "~/utils/trpc"
+
 import { trpcMsw } from "../mockTrpc"
 import { DEFAULT_COLLECTION_ITEMS } from "./collection"
 import { DEFAULT_PAGE_ITEMS } from "./page"
@@ -33,7 +35,7 @@ export const resourceHandlers = {
             title: item.title,
             permalink: item.permalink,
             parentId: item.parentId,
-            type: item.type as "Page" | "CollectionLink" | "CollectionPage",
+            type: item.type,
             // ID must be unique so infinite loop won't occur
             id: `${resourceId}-${item.title}-${item.id}`,
           }))
@@ -85,11 +87,48 @@ export const resourceHandlers = {
         }
       })
     },
+    collectionLink: () => {
+      return trpcMsw.resource.getParentOf.query(() => {
+        return {
+          type: "CollectionLink",
+          id: "1",
+          parentId: "1",
+          title: "yet another link",
+          parent: {
+            type: "Collection",
+            id: "1",
+            parentId: null,
+            title: "a collection",
+          },
+        }
+      })
+    },
   },
   getAncestryStack: {
     default: () => {
       return trpcMsw.resource.getAncestryStack.query(() => {
         return []
+      })
+    },
+    // Ancestors of a collection item sitting in `/resources/circulars`, root-first.
+    nestedCollection: () => {
+      return trpcMsw.resource.getAncestryStack.query(() => {
+        return [
+          {
+            id: "10",
+            parentId: null,
+            title: "Resources",
+            permalink: "resources",
+            type: "Folder",
+          },
+          {
+            id: "11",
+            parentId: "10",
+            title: "Circulars",
+            permalink: "circulars",
+            type: "Collection",
+          },
+        ]
       })
     },
   },
@@ -177,6 +216,18 @@ export const resourceHandlers = {
       })
     },
   },
+  getMoveLockInfo: {
+    default: () => {
+      return trpcMsw.resource.getMoveLockInfo.query(() => {
+        return { isBlocked: false }
+      })
+    },
+    blocked: () => {
+      return trpcMsw.resource.getMoveLockInfo.query(() => {
+        return { isBlocked: true }
+      })
+    },
+  },
   getMetadataById: {
     homepage: () =>
       trpcMsw.resource.getMetadataById.query(() => {
@@ -187,6 +238,7 @@ export const resourceHandlers = {
           permalink: "home",
           parentId: null,
           siteId: 1,
+          publishedVersionId: null,
         }
       }),
     content: () =>
@@ -198,6 +250,7 @@ export const resourceHandlers = {
           permalink: "page-title-here",
           parentId: null,
           siteId: 1,
+          publishedVersionId: "1",
         }
       }),
     article: () =>
@@ -209,6 +262,7 @@ export const resourceHandlers = {
           permalink: "article-layout",
           parentId: null,
           siteId: 1,
+          publishedVersionId: null,
         }
       }),
     index: () =>
@@ -220,6 +274,7 @@ export const resourceHandlers = {
           permalink: "_index",
           parentId: null,
           siteId: 1,
+          publishedVersionId: null,
         }
       }),
     database: () =>
@@ -231,7 +286,24 @@ export const resourceHandlers = {
           permalink: "database-layout",
           parentId: null,
           siteId: 1,
+          publishedVersionId: null,
         }
+      }),
+    // Resolves the mocked metadata by the requested `resourceId`, so a story
+    // can give the moved resource and the picked destination distinct types
+    // (e.g. a Page moved onto a Collection) to exercise move validation.
+    byId: (
+      resourcesById: Record<
+        string,
+        RouterOutput["resource"]["getMetadataById"]
+      >,
+    ) =>
+      trpcMsw.resource.getMetadataById.query(({ input: { resourceId } }) => {
+        const resource = resourcesById[resourceId]
+        if (!resource) {
+          throw new Error(`No mocked resource for id ${resourceId}`)
+        }
+        return resource
       }),
   },
   search: {

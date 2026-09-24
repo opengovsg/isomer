@@ -1,6 +1,7 @@
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { useMutation } from "@tanstack/react-query"
+import { performUpload } from "~/lib/storage/client"
 import { trpc } from "~/utils/trpc"
 
 type UploadAssetMutationParams = Pick<
@@ -11,40 +12,11 @@ type UploadAssetMutationParams = Pick<
 export interface UploadAssetMutationInput {
   file: File
   fileName?: string
+  scheduledAt?: Date
 }
 
 export interface UploadAssetMutationOutput {
   path: string
-}
-
-interface HandleUploadParams {
-  file: File
-  presignedPutUrl: string
-  contentType: string
-  contentDisposition: string
-}
-
-const handleUpload = async ({
-  file,
-  presignedPutUrl,
-  contentType,
-  contentDisposition,
-}: HandleUploadParams) => {
-  // Use server-signed Content-Type and Content-Disposition so upload metadata
-  // cannot be overridden by the client (prevents stored XSS via type confusion).
-  const response = await fetch(presignedPutUrl, {
-    headers: {
-      "Content-Type": contentType,
-      "Content-Disposition": contentDisposition,
-    },
-    method: "PUT",
-    body: file,
-  })
-
-  if (!response.ok) {
-    const data = (await response.json()) as unknown as { error: string }
-    throw new Error(data.error)
-  }
 }
 
 export const useUploadAssetMutation = ({
@@ -53,26 +25,49 @@ export const useUploadAssetMutation = ({
 }: UploadAssetMutationParams) => {
   const { mutateAsync: getPresignedPutUrl } =
     trpc.asset.getPresignedPutUrl.useMutation()
+  const { mutateAsync: uploadSvg } = trpc.asset.uploadSvg.useMutation()
 
   return useMutation<UploadAssetMutationOutput, void, UploadAssetMutationInput>(
     {
-      mutationFn: async ({ file, fileName }) => {
-        const { fileKey, presignedPutUrl, contentType, contentDisposition } =
-          await getPresignedPutUrl({
+      mutationFn: async ({ file, fileName, scheduledAt }) => {
+        const effectiveName = fileName ?? file.name
+
+        if (effectiveName.toLowerCase().endsWith(".svg")) {
+          const content = await file.text()
+          const { fileKey } = await uploadSvg({
             siteId,
             resourceId,
-            fileName: fileName ?? file.name,
+            fileName: effectiveName,
+            content,
+            tags: scheduledAt
+              ? [
+                  {
+                    key: "scheduledAt",
+                    value: scheduledAt.getTime().toString(),
+                  },
+                ]
+              : undefined,
           })
-        await handleUpload({
-          file,
-          presignedPutUrl,
-          contentType,
-          contentDisposition,
+          return { path: `/${fileKey}` }
+        }
+
+        const { fileKey, uploadConfig } = await getPresignedPutUrl({
+          siteId,
+          resourceId,
+          fileName: effectiveName,
+          fileSize: file.size,
+          tags: scheduledAt
+            ? [
+                {
+                  key: "scheduledAt",
+                  value: scheduledAt.getTime().toString(),
+                },
+              ]
+            : undefined,
         })
 
-        return {
-          path: `/${fileKey}`,
-        }
+        const path = await performUpload(file, fileKey, uploadConfig)
+        return { path }
       },
       retry: false,
     },

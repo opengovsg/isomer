@@ -6,8 +6,12 @@ import { exportIndividualJsons } from "./apps/export-individual-jsons"
 import { exportSiteJsons } from "./apps/export-site-jsons"
 import { extractFolderJsons } from "./apps/extract-folder-jsons"
 import { findInvalidSchema } from "./apps/find-invalid-schema"
+import { createContentFromLocal } from "./apps/create-content-from-local"
 import { importFolderJsons } from "./apps/import-folder-jsons"
+import { publishSiteResources } from "./apps/publish-site-resources"
 import { rebuildAllCodebuildProjects } from "./apps/rebuild-all-codebuild-projects"
+import { removeGazetteSearchRecords } from "./apps/remove-gazette-search-records"
+import { repairGazetteSearchRecords } from "./apps/repair-gazette-search-records"
 
 const main = async () => {
   const script = await select<IsomerAdminScriptType>({
@@ -43,16 +47,40 @@ const main = async () => {
         value: "find-invalid-schema",
       },
       {
+        name: "Create content from local",
+        description:
+          "Prepare assets, studioify schemas, and create a published Collection or Folder from local JSON.",
+        value: "create-content-from-local",
+      },
+      {
         name: "Import folder JSONs",
         description:
           "Import JSON files from ./input to update existing resources in the database.",
         value: "import-folder-jsons",
       },
       {
+        name: "Publish site resources",
+        description:
+          "Publish all draft resources for a given site ID in the database.",
+        value: "publish-site-resources",
+      },
+      {
         name: "Rebuild all CodeBuild projects",
         description:
           "List AWS CodeBuild projects and start builds for each project with resumable batching.",
         value: "rebuild-all-codebuild-projects",
+      },
+      {
+        name: "Remove gazette search records",
+        description:
+          "Remove Search Records from Algolia for gazette resource IDs (incident response).",
+        value: "remove-gazette-search-records",
+      },
+      {
+        name: "Repair gazette search records",
+        description:
+          "Re-submit Search Records to Algolia for gazette resource IDs (incident response).",
+        value: "repair-gazette-search-records",
       },
     ],
   })
@@ -73,11 +101,23 @@ const main = async () => {
     case "find-invalid-schema":
       await findInvalidSchema()
       break
+    case "create-content-from-local":
+      await createContentFromLocal()
+      break
     case "import-folder-jsons":
       await importFolderJsons()
       break
+    case "publish-site-resources":
+      await publishSiteResources()
+      break
     case "rebuild-all-codebuild-projects":
       await rebuildAllCodebuildProjects()
+      break
+    case "remove-gazette-search-records":
+      await removeGazetteSearchRecords()
+      break
+    case "repair-gazette-search-records":
+      await repairGazetteSearchRecords()
       break
     default:
       const _: never = script

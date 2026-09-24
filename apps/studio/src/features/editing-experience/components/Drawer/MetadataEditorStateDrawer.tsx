@@ -1,4 +1,7 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type {
+  ArticlePagePageProps,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
@@ -8,14 +11,20 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { isEmpty, isEqual } from "lodash-es"
+import posthog from "posthog-js"
 import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
+import type { CollectionTags } from "../../hooks/useCollectionTags"
+import { useCollectionTags } from "../../hooks/useCollectionTags"
 import { pageSchema } from "../../schema"
+import { validateRequiredDateFilters } from "../../utils/validateRequiredDateFilters"
+import { validateRequiredTags } from "../../utils/validateRequiredTags"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
 import { DiscardChangesModal } from "../DiscardChangesModal"
 import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
@@ -23,7 +32,7 @@ import FormBuilder from "../form-builder/FormBuilder"
 import { DrawerHeader } from "./DrawerHeader"
 
 const HEADER_LABELS: Record<string, string> = {
-  article: "Edit article page header",
+  article: "Edit item page header",
   content: "Edit content page header",
   index: "Edit index page header",
   database: "Edit page header",
@@ -36,6 +45,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     onClose: onDiscardChangesModalClose,
   } = useDisclosure()
   const {
+    type,
     setDrawerState,
     savedPageState,
     setSavedPageState,
@@ -44,13 +54,26 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   } = useEditorDrawerContext()
 
   const { pageId, siteId } = useQueryParse(pageSchema)
+
+  const isCollectionItem =
+    type === ResourceType.CollectionPage || type === ResourceType.CollectionLink
+
+  const { data: collectionTags = [], isLoading: isCollectionTagsLoading } =
+    useCollectionTags({
+      resourceId: pageId,
+      siteId,
+      enabled: isCollectionItem,
+    })
+
   const toast = useToast()
   const utils = trpc.useUtils()
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
-    onSuccess: async () => {
-      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-      await utils.page.readPage.invalidate({ pageId, siteId })
-      await utils.page.getCategories.invalidate({ pageId, siteId })
+    onSuccess: () => {
+      posthog.capture("page_changes_saved", { site_id: siteId })
+      void Promise.all([
+        utils.page.readPageAndBlob.invalidate({ pageId, siteId }),
+        utils.page.readPage.invalidate({ pageId, siteId }),
+      ])
       toast({
         status: "success",
         title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
@@ -179,7 +202,28 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
             py="1.5rem"
             px="2rem"
           >
-            <SaveButton isLoading={isPending} onClick={handleSaveChanges} />
+            {collectionTags.length > 0 ? (
+              <TagsAwareSaveButton
+                isLoading={isPending}
+                onClick={handleSaveChanges}
+                tags={collectionTags}
+                tagged={(previewPageState.page as { tagged?: string[] }).tagged}
+                dateTagged={
+                  (
+                    previewPageState.page as Pick<
+                      ArticlePagePageProps,
+                      "dateTagged"
+                    >
+                  ).dateTagged
+                }
+              />
+            ) : (
+              <SaveButton
+                isLoading={isPending}
+                onClick={handleSaveChanges}
+                isTagsValid={!isCollectionItem || !isCollectionTagsLoading}
+              />
+            )}
           </Box>
         </ErrorProvider>
       </Flex>
@@ -190,9 +234,11 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 const SaveButton = ({
   onClick,
   isLoading,
+  isTagsValid = true,
 }: {
   onClick: () => void
   isLoading: boolean
+  isTagsValid?: boolean
 }) => {
   const { errors } = useBuilderErrors()
 
@@ -200,10 +246,38 @@ const SaveButton = ({
     <Button
       w="100%"
       isLoading={isLoading}
-      isDisabled={!isEmpty(errors)}
+      isDisabled={!isEmpty(errors) || !isTagsValid}
       onClick={onClick}
     >
       Save changes
     </Button>
+  )
+}
+
+const TagsAwareSaveButton = ({
+  onClick,
+  isLoading,
+  tags,
+  tagged,
+  dateTagged,
+}: {
+  onClick: () => void
+  isLoading: boolean
+  tags: CollectionTags
+  tagged: string[] | undefined
+  dateTagged: ArticlePagePageProps["dateTagged"]
+}) => {
+  const { isValid: isTaggedValid } = validateRequiredTags(tags, tagged)
+  const { isValid: isDateTaggedValid } = validateRequiredDateFilters(
+    tags,
+    dateTagged,
+  )
+
+  return (
+    <SaveButton
+      isLoading={isLoading}
+      onClick={onClick}
+      isTagsValid={isTaggedValid && isDateTaggedValid}
+    />
   )
 }

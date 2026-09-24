@@ -1,18 +1,22 @@
 import type { LinkRefPageSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
+import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { format, parse } from "date-fns"
 import { z } from "zod"
 
 import { generateBasePermalinkSchema } from "./common"
 import { MAX_FOLDER_PERMALINK_LENGTH, MAX_FOLDER_TITLE_LENGTH } from "./folder"
 import { offsetPaginationSchema } from "./pagination"
+import { resourceOrderByOptions } from "./resource"
 
 export type CollectionLinkProps = Static<typeof LinkRefPageSchema>
 
 // NOTE: zod's internal date schema uses `YYYY-MM-DD` but our format is
-// dd/mm/yyyy. Hence, we will run a 2 way conversion from
+// dd/MM/yyyy. Hence, we will run a 2 way conversion from
 // our format -> zod then zod -> our format
 // If the date is nullish, then we will return as undefined
+const SLASH_DATE_FORMAT = "dd/MM/yyyy"
+
 const slashDateSchema = z
   .string()
   .nullish()
@@ -21,7 +25,7 @@ const slashDateSchema = z
       return undefined
     }
 
-    return parse(d, "dd/mm/yyyy", new Date())
+    return parse(d, SLASH_DATE_FORMAT, new Date())
   })
   .pipe(z.date().optional())
   .transform((d) => {
@@ -29,8 +33,14 @@ const slashDateSchema = z
       return undefined
     }
 
-    return format(d, "dd/mm/yyyy")
+    return format(d, SLASH_DATE_FORMAT)
   })
+
+const dateTaggedEntrySchema = z.object({
+  id: z.string().uuid(),
+  date: z.string().min(1),
+  endDate: z.string().optional(),
+})
 
 export const editLinkSchema = z.object({
   date: slashDateSchema.optional(),
@@ -48,6 +58,7 @@ export const editLinkSchema = z.object({
     )
     .optional(),
   tagged: z.array(z.string()).optional(),
+  dateTagged: z.array(dateTaggedEntrySchema).optional(),
   image: z
     .object({
       src: z.string(),
@@ -97,18 +108,41 @@ export const getCollectionsSchema = z.object({
   hasChildren: z.boolean().optional().default(false),
 })
 
-export const readCollectionOrderByOptions = [
-  "updated-desc",
-  "title-asc",
-] as const
-
 export const readCollectionSchema = z
   .object({
     siteId: z.number().min(1),
     resourceId: z.number().min(1),
-    orderBy: z
-      .enum(readCollectionOrderByOptions)
-      .optional()
-      .default("updated-desc"),
+    orderBy: z.enum(resourceOrderByOptions).optional().default("updated-desc"),
   })
   .merge(offsetPaginationSchema)
+
+// Upper bound to limit request parsing and SQL cost (ANY(...) on text[]).
+// Arbitrary limit to prevent abuse; adjust if legitimate collections exceed this.
+export const MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT = 100
+
+const countFilterUsageBaseSchema = z.object({
+  siteId: z.number().min(1),
+  pageId: z.number().min(1), // pageId is the collection index page resource id
+})
+
+/**
+ * Counts child collection pages/links that use the given filter.
+ * Text filters match `tagged` against option ids; date filters match
+ * a `dateTagged` entry for the filter id (no per-option granularity).
+ */
+export const countFilterUsageSchema = z.discriminatedUnion("type", [
+  countFilterUsageBaseSchema.extend({
+    type: z.literal(TAG_CATEGORY_TYPE.Text),
+    tagOptionIds: z
+      .array(z.string().uuid())
+      .max(MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT, {
+        message: `At most ${MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT} tag options can be queried at once`,
+      }),
+  }),
+  countFilterUsageBaseSchema.extend({
+    type: z.literal(TAG_CATEGORY_TYPE.Date),
+    dateFilterId: z.string().uuid(),
+  }),
+])
+
+export type CountFilterUsageInput = z.infer<typeof countFilterUsageSchema>

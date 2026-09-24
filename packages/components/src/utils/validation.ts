@@ -1,3 +1,5 @@
+import { COLLECTION_SORT_ORDER } from "~/types/constants"
+
 const ALLOWED_URL_REGEXES = {
   external: "^https:\\/\\/",
   phone: "^tel:",
@@ -55,11 +57,18 @@ const isValidGoogleMapsEmbedUrl = (urlObject: URL) => {
 }
 
 const isValidOneMapEmbedUrl = (urlObject: URL) => {
-  return (
-    urlObject.hostname === "www.onemap.gov.sg" &&
-    (urlObject.pathname === "/minimap/minimap.html" ||
-      urlObject.pathname === "/amm/amm.html")
-  )
+  if (urlObject.hostname === "www.onemap.gov.sg") {
+    return (
+      urlObject.pathname === "/minimap/minimap.html" ||
+      urlObject.pathname === "/amm/amm.html"
+    )
+  }
+
+  if (urlObject.hostname === "mobile.onemap.gov.sg") {
+    return urlObject.pathname.length > 1
+  }
+
+  return false
 }
 
 export const isValidOGPMapsEmbedUrl = (urlObject: URL) => {
@@ -91,9 +100,9 @@ export const isValidMapEmbedUrl = (url: string) => {
 // that is supported inside the JSON schema. Components rely on the URL object
 // validation for better security.
 export const MAPS_EMBED_URL_REGEXES = {
-  googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed?.*$",
+  googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed(?:\\?.*)?$",
   onemap:
-    "^https://www\\.onemap\\.gov\\.sg(/minimap/minimap\\.html|/amm/amm\\.html).*$",
+    "^https://www\\.onemap\\.gov\\.sg(/minimap/minimap\\.html|/amm/amm\\.html).*$|^https://mobile\\.onemap\\.gov\\.sg/.+$",
   ogpmaps: `^https://maps\\.gov\\.sg/.*$`,
 } as const
 
@@ -144,7 +153,7 @@ export const isValidVideoUrl = (url: string) => {
 // that is supported inside the JSON schema. Components rely on the URL object
 // validation for better security.
 export const VIDEO_EMBED_URL_REGEXES = {
-  fbvideo: "^https://www\\.facebook\\.com/plugins/video.php?.*$",
+  fbvideo: "^https://www\\.facebook\\.com/plugins/video\\.php(?:\\?.*)?$",
   vimeo: "^https://player\\.vimeo\\.com/video/.*$",
   youtube:
     "^https://www\\.(youtube|youtube-nocookie)\\.com/(embed/|watch\\?v=).*$",
@@ -205,6 +214,24 @@ export const isApplePodcastUrl = (url: string) => {
 // ❌ " " (only whitespace)
 export const NON_EMPTY_STRING_REGEX = "^(?=.*\\S)"
 
+// Stricter variant: rejects leading/trailing whitespace in addition to empty/whitespace-only.
+// ✅ "hello"
+// ✅ "a"
+// ✅ "ab cd" (internal whitespace allowed)
+// ❌ "" (empty string)
+// ❌ " " (only whitespace)
+// ❌ " hello" (leading whitespace)
+// ❌ "hello " (trailing whitespace)
+// ❌ " a " (surrounded by spaces)
+export const TRIMMED_NON_EMPTY_STRING_REGEX = "^\\S(.*\\S)?$"
+
+// ✅ "" (empty string — used when a label should be hidden)
+// ✅ "ab cd" (internal whitespace allowed)
+// ❌ " " (only whitespace)
+// ❌ " hello" (leading whitespace)
+// ❌ "hello " (trailing whitespace)
+export const TRIMMED_STRING_OR_EMPTY_REGEX = "^$|^\\S(.*\\S)?$"
+
 // ✅ "d_a" (minimum 3 characters, starts with "d_")
 // ✅ "d_abc" (more than 3 characters, starts with "d_")
 // ❌ "d_" (only 2 characters)
@@ -213,3 +240,76 @@ export const NON_EMPTY_STRING_REGEX = "^(?=.*\\S)"
 // ❌ "d_ab c" (contains space)
 // ❌ "d_ab_c" (contains underscore after prefix)
 export const DGS_ID_STRING_REGEX = "^d_[a-zA-Z0-9]+$"
+
+// An AskGov agency ID is the first path segment of an ask.gov.sg link — `mha` in
+// https://ask.gov.sg/mha/questions/123 — and that bare ID is what the widget
+// script expects. Agencies routinely paste the whole link instead, so the field
+// accepts either form and `getAskgovIdFromString` normalises a link down to the
+// ID. The scheme and host spell their casing out as character classes rather
+// than using the `i` flag: this pattern is also used as a JSON schema `pattern`,
+// which ajv compiles with the `u` flag only, and the schema and the extractor
+// have to accept exactly the same inputs.
+const ASKGOV_SCHEME_REGEX = "(?:[Hh][Tt][Tt][Pp][Ss]?://)?"
+const ASKGOV_HOST_REGEX =
+  "(?:[Ww][Ww][Ww]\\.)?[Aa][Ss][Kk]\\.[Gg][Oo][Vv]\\.[Ss][Gg]"
+
+// ✅ "mha"
+// ✅ "help2"
+// ❌ "custom/agency" (an ID has no path separators)
+// ❌ "ask.gov.sg" (an ID has no dots)
+// ❌ "" (empty string)
+export const ASKGOV_AGENCY_ID_REGEX = "[A-Za-z0-9_-]+"
+
+// Captures the agency ID. Whatever follows it — further path segments, a query
+// string or a fragment — is ignored, so links to a specific question or topic
+// resolve to the same agency ID.
+// ✅ "https://ask.gov.sg/mha"
+// ✅ "http://www.ask.gov.sg/help/questions/question-id?from=widget"
+// ✅ "ask.gov.sg/mha" (scheme is optional)
+// ✅ "HTTPS://WWW.ASK.GOV.SG/mha" (scheme and host are case-insensitive)
+// ❌ "https://ask.gov.sg/" (no agency ID)
+// ❌ "https://staging.ask.gov.sg/mha" (only ask.gov.sg and www.ask.gov.sg)
+// ❌ "example.com/mha" (not an AskGov host)
+// ❌ "ftp://ask.gov.sg/mha" (only HTTP(S))
+export const ASKGOV_URL_REGEX = `${ASKGOV_SCHEME_REGEX}${ASKGOV_HOST_REGEX}/(${ASKGOV_AGENCY_ID_REGEX})(?:[/?#].*)?`
+
+// Either of the two above. Surrounding whitespace is tolerated so that a value
+// pasted with a stray space is not rejected outright; `getAskgovIdFromString`
+// trims it off before the ID is stored.
+export const ASKGOV_ID_OR_URL_REGEX = `^\\s*(?:${ASKGOV_AGENCY_ID_REGEX}|${ASKGOV_URL_REGEX})\\s*$`
+
+// Matches Google tag IDs across the formats observed in the wild:
+//   GTM-XXXXXX  — Google Tag Manager containers (official)
+//   G-XXXXXX    — Google Analytics 4 measurement IDs (officially loaded via gtag.js, not GTM,
+//                 but users paste them into the GTM field and they work in practice)
+//   GT-XXXXXX   — Google Tag IDs (observed working in manual testing; not documented by Google)
+// All three share the same GTM snippet format at runtime, so we accept them all even though
+// only GTM- is officially documented.
+// Examples:
+// ✅ "GTM-ABC123"
+// ✅ "G-ABC123"
+// ✅ "GT-ABC123"
+// ❌ "gtm-abc123" (lowercase)
+// ❌ "GTM-" (missing container ID)
+// ❌ "');alert(document.cookie);//" (XSS payload)
+// NOTE: Official documentation does not specify allowed length,
+// so we use ^GTM-[A-Z0-9]+$ (one or more chars) for future proofing.
+export const GTM_ID_STRING_REGEX = "^(GTM|G|GT)-[A-Z0-9]+$"
+
+// Collection page `sortOrder`: one of the four `COLLECTION_SORT_ORDER`
+// literals, or `date-filter-{uuid}-asc|desc` for a collection date filter
+// (tag category of type date).
+// ✅ COLLECTION_SORT_ORDER.DateDesc ("date-desc")
+// ✅ "date-filter-550e8400-e29b-41d4-a716-446655440000-asc"
+// ❌ "totally-made-up"
+// ❌ "date-filter-not-a-uuid-desc"
+const DATE_FILTER_SORT_ORDER_UUID =
+  "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
+const DATE_FILTER_SORT_ORDER_PATTERN = `date-filter-${DATE_FILTER_SORT_ORDER_UUID}-(?:asc|desc)`
+
+export const DATE_FILTER_SORT_ORDER_REGEX = new RegExp(
+  `^date-filter-(${DATE_FILTER_SORT_ORDER_UUID})-(asc|desc)$`,
+)
+
+export const COLLECTION_SORT_ORDER_PATTERN = `^(${COLLECTION_SORT_ORDER.DateDesc}|${COLLECTION_SORT_ORDER.DateAsc}|${COLLECTION_SORT_ORDER.TitleAsc}|${COLLECTION_SORT_ORDER.TitleDesc}|${DATE_FILTER_SORT_ORDER_PATTERN})$`

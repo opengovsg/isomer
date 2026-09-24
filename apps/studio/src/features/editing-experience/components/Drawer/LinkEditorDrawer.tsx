@@ -14,6 +14,9 @@ import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
+import { useCollectionTags } from "../../hooks/useCollectionTags"
+import { validateRequiredDateFilters } from "../../utils/validateRequiredDateFilters"
+import { validateRequiredTags } from "../../utils/validateRequiredTags"
 import { ActivateRawJsonEditorMode } from "../ActivateRawJsonEditorMode"
 import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
 import FormBuilder from "../form-builder/FormBuilder"
@@ -48,6 +51,21 @@ const InnerDrawer = ({
   const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
+  const { linkId, siteId } = useQueryParse(editLinkSchema)
+  const { data: collectionTags = [], isLoading: isCollectionTagsLoading } =
+    useCollectionTags({
+      resourceId: linkId,
+      siteId,
+    })
+  const { isValid: isTaggedValid } = validateRequiredTags(
+    collectionTags,
+    previewPageState.tagged,
+  )
+  const { isValid: isDateTaggedValid } = validateRequiredDateFilters(
+    collectionTags,
+    previewPageState.dateTagged,
+  )
+  const isTagsValid = isTaggedValid && isDateTaggedValid
 
   return (
     <Flex flexDir="column" position="relative" h="100%" w="100%">
@@ -84,7 +102,12 @@ const InnerDrawer = ({
           w="full"
           alignSelf="flex-start"
           onClick={handleSaveChanges}
-          isDisabled={!isEmpty(errors) || !previewPageState.ref}
+          isDisabled={
+            !isEmpty(errors) ||
+            !previewPageState.ref ||
+            !isTagsValid ||
+            isCollectionTagsLoading
+          }
           isLoading={isLoading}
         >
           Save
@@ -177,6 +200,7 @@ export const LinkEditorDrawer = ({
     trpc.collection.updateCollectionLink.useMutation({
       onSuccess: () => {
         void utils.collection.readCollectionLink.invalidate()
+        void utils.collection.countFilterUsage.invalidate()
         void utils.page.readPage.invalidate()
         toast({
           title: "Link updated!",

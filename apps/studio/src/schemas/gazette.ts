@@ -1,4 +1,6 @@
 import { z } from "zod"
+import { MAX_FILE_SIZE_BYTES } from "~/lib/fileUpload"
+import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 
 import { offsetPaginationSchema } from "./pagination"
 
@@ -64,4 +66,61 @@ export const updateGazetteServerSchema = gazetteMetadataSchema.extend({
     .min(1)
     .regex(/^[_\-a-zA-Z0-9]+\.pdf$/)
     .optional(),
+})
+
+export const cancelScheduledPublishSchema = z.object({
+  siteId: z.number().min(1),
+  gazetteId: z.number().min(1),
+})
+
+export const deleteGazetteSchema = z.object({
+  siteId: z.number().min(1),
+  gazetteId: z.number().min(1),
+})
+
+export const getPresignedGetUrlSchema = z.object({
+  siteId: z.number().min(1),
+  fileKey: z
+    .string()
+    .min(1)
+    // Defence-in-depth against path-traversal-style fileKeys (e.g.
+    // "/SITE_ID/x.pdf" or "../y.pdf"). S3 keys for gazettes are always relative
+    // and have no path traversal segments.
+    .refine((s) => !s.startsWith("/") && !s.split("/").includes(".."), {
+      message: "Invalid fileKey",
+    }),
+})
+
+export const getPresignedPutUrlSchema = z.object({
+  siteId: z.number().min(1),
+  tags: z
+    .array(
+      z.object({
+        key: z.string(),
+        value: z.string(),
+      }),
+    )
+    .optional(),
+  resourceId: z.string().optional(),
+  year: z.number().min(1000).max(9999),
+  category: z.string().trim().min(1),
+  subcategory: z.string().trim().min(1),
+  fileSize: z
+    .number({ error: "Missing file size" })
+    .int()
+    .min(1, { message: "File size must be greater than 0 bytes" })
+    .max(MAX_FILE_SIZE_BYTES, {
+      message: `File size must not exceed ${formatFileSizeLimit({ bytes: MAX_FILE_SIZE_BYTES })}`,
+    }),
+  fileName: z
+    .string({
+      error: "Missing file name",
+    })
+    .refine((s) => /^[a-zA-Z0-9-_]/.test(s), {
+      message:
+        "File name must start with a letter, number, hyphen, or underscore",
+    })
+    .refine((fileName) => fileName.trim().toLowerCase().endsWith(".pdf"), {
+      message: "Only PDF files are allowed.",
+    }),
 })

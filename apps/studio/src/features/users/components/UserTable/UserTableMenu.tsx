@@ -7,6 +7,7 @@ import {
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
+import posthog from "posthog-js"
 import { useContext } from "react"
 import {
   BiDotsVerticalRounded,
@@ -50,11 +51,12 @@ export const UserTableMenu = ({
   const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
 
-  const isSingpassEnabled = useIsSingpassEnabled()
+  const { isSingpassEnabled } = useIsSingpassEnabled()
 
   const { mutate: resendInvite, isPending: isResendingInvite } =
     trpc.user.resendInvite.useMutation({
       onSuccess: (result) => {
+        posthog.capture("user_invite_resent", { site_id: siteId })
         toast({
           status: "success",
           title: `Invite resent to ${result.email}`,

@@ -12,7 +12,7 @@ export const InitialLoginStep = (): JSX.Element => {
   const {
     env: { NEXT_PUBLIC_APP_NAME: title },
   } = useEnv()
-  const isSingpassEnabled = useIsSingpassEnabled()
+  const { isSingpassEnabled } = useIsSingpassEnabled()
   const { errorState } = useSignInContext()
 
   const errorTitle = useMemo(() => {

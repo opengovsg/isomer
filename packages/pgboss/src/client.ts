@@ -36,6 +36,11 @@ export const registerPgbossJob = async (
   scheduleOptions: ScheduleOptions = {},
   heartbeatOptions?: HeartbeatOptions,
 ) => {
+  if (!env.ENABLE_CRON_WORKERS) {
+    logger.warn(`PgBoss job ${jobName} is disabled. Skipping registration.`)
+    return { stop: () => undefined }
+  }
+
   const boss = await getPgbossClient(logger)
   if (globalForPgboss.registeredPgbossJobs.has(jobName)) {
     logger.warn(
@@ -80,6 +85,8 @@ export const registerPgbossJob = async (
 }
 
 export const stopAllPgbossJobs = async (logger: BaseLogger): Promise<void> => {
+  if (!env.ENABLE_CRON_WORKERS) return
+
   const boss = await getPgbossClient(logger)
   try {
     await boss.stop({ graceful: true })

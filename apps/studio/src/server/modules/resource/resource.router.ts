@@ -2,6 +2,8 @@ import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
 import { get } from "lodash-es"
 import { USER_LINKABLE_RESOURCE_TYPES } from "~/constants/resources"
+import { SEARCH_PAGE_PERMALINK } from "~/constants/sitemap"
+import { IS_UNPUBLISH_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -15,6 +17,8 @@ import {
   getIndexPageOutputSchema,
   getIndexPageSchema,
   getMetadataSchema,
+  getMoveLockInfoOutputSchema,
+  getMoveLockInfoSchema,
   getNestedFolderChildrenOutputSchema,
   getNestedFolderChildrenSchema,
   getParentSchema,
@@ -27,6 +31,7 @@ import {
   searchWithResourceIdsSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
+import { isResourceMoveValid } from "~/utils/resources"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
@@ -38,15 +43,31 @@ import {
   definePermissionsForResource,
   getResourcePermission,
 } from "../permissions/permissions.service"
+import {
+  applyFolderPermalinkChangeRedirects,
+  applyPermalinkChangeRedirects,
+  softDeleteRedirectsPointingToResource,
+} from "../redirect/redirect.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
+  applyResourceOrderBy,
+  applyResourceStatusFilter,
+  assertMoveDestinationUnlocked,
+  assertResourceNotLive,
+  assertResourceNotScheduled,
   defaultResourceSelect,
   getBatchAncestryWithSelfQuery,
+  getChildLiveStatusMap,
+  getMoveLockInfo,
+  getResourceFullPermalink,
   getSearchRecentlyEdited,
   getSearchResults,
   getSearchWithResourceIds,
   getWithFullPermalink,
+  hasPublishedDescendant,
   publishResource,
+  selectLastPublishedAt,
+  splitContainerIdsByStatus,
 } from "./resource.service"
 
 const fetchResource = async (resourceId: string | null) => {
@@ -119,6 +140,7 @@ export const resourceRouter = router({
           "Resource.permalink",
           "Resource.parentId",
           "Resource.siteId",
+          "Resource.publishedVersionId",
         ])
         .executeTakeFirst()
 
@@ -199,7 +221,10 @@ export const resourceRouter = router({
     .input(getChildrenSchema)
     .output(getChildrenOutputSchema)
     .query(
-      async ({ ctx, input: { resourceId, siteId, cursor: offset, limit } }) => {
+      async ({
+        ctx,
+        input: { resourceId, siteId, cursor: offset, limit, includeSearchPage },
+      }) => {
         await bulkValidateUserPermissionsForResources({
           action: "read",
           resourceIds: [resourceId],
@@ -240,6 +265,13 @@ export const resourceRouter = router({
 
         if (resourceId === null) {
           query = query.where("parentId", "is", null)
+          if (!includeSearchPage) {
+            query = query.where(
+              "Resource.permalink",
+              "!=",
+              SEARCH_PAGE_PERMALINK,
+            )
+          }
         } else {
           query = query.where("Resource.parentId", "=", String(resourceId))
         }
@@ -321,7 +353,12 @@ export const resourceRouter = router({
     .mutation(
       async ({
         ctx,
-        input: { siteId, movedResourceId, destinationResourceId },
+        input: {
+          siteId,
+          movedResourceId,
+          destinationResourceId,
+          shouldCreateRedirect,
+        },
       }) => {
         const isValid = await validateUserPermissionsForMove({
           from: movedResourceId,
@@ -363,15 +400,6 @@ export const resourceRouter = router({
               throw new TRPCError({ code: "BAD_REQUEST" })
             }
 
-            // Prevent users from moving the search page (permalink /search, no parent)
-            // This is a special page that is used to display the SearchSG results
-            if (toMove.permalink === "search" && toMove.parentId === null) {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message: "The search page cannot be moved",
-              })
-            }
-
             let query = tx.selectFrom("Resource")
             query = !!destinationResourceId
               ? query.where("id", "=", destinationResourceId)
@@ -379,17 +407,10 @@ export const resourceRouter = router({
                   .where("type", "=", ResourceType.RootPage)
                   .where("siteId", "=", siteId)
             const parent = await query
-              .select(["id", "type", "siteId"])
+              .select(["id", "type", "siteId", "permalink", "parentId"])
               .executeTakeFirst()
 
-            if (
-              !parent ||
-              // NOTE: we only allow moves to folders/root.
-              // for moves to root, we only allow this for admin
-              (parent.type !== ResourceType.RootPage &&
-                parent.type !== ResourceType.Folder &&
-                parent.type !== ResourceType.Collection)
-            ) {
+            if (!parent) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
                 message:
@@ -397,48 +418,20 @@ export const resourceRouter = router({
               })
             }
 
-            if (toMove.parentId === parent.id) {
+            const moveValidity = isResourceMoveValid(toMove, parent)
+            if (moveValidity instanceof Error) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
-                message: "You cannot move a resource to the same folder",
+                message: moveValidity.message,
               })
             }
 
-            // NOTE: If the users are trying to move into a collection,
-            // check that the resource first belongs to a collection
-            if (
-              parent.type !== ResourceType.Collection &&
-              (toMove.type === ResourceType.CollectionPage ||
-                toMove.type === ResourceType.CollectionLink)
-            ) {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message:
-                  "Collection items can only be moved to another collection",
-              })
-            }
-
-            if (
-              parent.type === ResourceType.Collection &&
-              toMove.type !== ResourceType.CollectionPage &&
-              toMove.type !== ResourceType.CollectionLink
-            ) {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message: "Folder items can only be moved to another folder",
-              })
-            }
-
-            if (movedResourceId === destinationResourceId) {
-              throw new TRPCError({ code: "BAD_REQUEST" })
-            }
-
-            if (toMove.siteId !== parent.siteId) {
-              throw new TRPCError({
-                code: "FORBIDDEN",
-                message: "You cannot move a resource to a different site",
-              })
-            }
+            await assertMoveDestinationUnlocked(tx, {
+              siteId,
+              destinationId: parent.id,
+              destinationType: parent.type,
+              movedResourceId,
+            })
 
             if (
               toMove.type === "Folder" ||
@@ -480,6 +473,20 @@ export const resourceRouter = router({
               }
             }
 
+            // Old URL = current location (pre-UPDATE); new URL from the
+            // unchanged destination + slug, so neither read is stale.
+            const oldFullPermalink = await getResourceFullPermalink(
+              siteId,
+              Number(movedResourceId),
+            )
+            const destinationFullPermalink = destinationResourceId
+              ? await getResourceFullPermalink(
+                  siteId,
+                  Number(destinationResourceId),
+                )
+              : null
+            const newFullPermalink = `${destinationFullPermalink ?? ""}/${toMove.permalink}`
+
             await tx
               .updateTable("Resource")
               .where("siteId", "=", Number(siteId))
@@ -488,6 +495,7 @@ export const resourceRouter = router({
                 ResourceType.Page,
                 ResourceType.CollectionPage,
                 ResourceType.Folder,
+                ResourceType.Collection,
                 ResourceType.CollectionLink,
               ])
               .set({
@@ -521,6 +529,47 @@ export const resourceRouter = router({
               by: user,
             })
 
+            // Keep redirects consistent with the new URL. Page/CollectionPage
+            // get a single exact redirect for their own URL.
+            if (
+              (toMove.type === ResourceType.Page ||
+                toMove.type === ResourceType.CollectionPage) &&
+              oldFullPermalink !== null
+            ) {
+              await applyPermalinkChangeRedirects(tx, {
+                siteId,
+                oldFullPermalink,
+                newFullPermalink,
+                resourceId: movedResourceId,
+                isPublished: toMove.publishedVersionId !== null,
+                shouldCreateRedirect,
+                byUserId: user.id,
+              })
+            }
+
+            // A Folder/Collection has no URL of its own, but the move changes
+            // every descendant's URL — preserve them with one wildcard redirect
+            // ("/old-folder/*"), and validate no descendant lands on a URL an
+            // existing redirect already covers.
+            if (
+              (toMove.type === ResourceType.Folder ||
+                toMove.type === ResourceType.Collection) &&
+              oldFullPermalink !== null
+            ) {
+              await applyFolderPermalinkChangeRedirects(tx, {
+                siteId,
+                oldFullPermalink,
+                newFullPermalink,
+                resourceId: movedResourceId,
+                shouldCreateRedirect,
+                hasLiveContent: await hasPublishedDescendant(tx, {
+                  siteId,
+                  resourceId: movedResourceId,
+                }),
+                byUserId: user.id,
+              })
+            }
+
             return moved
           })
           .catch((err) => {
@@ -538,9 +587,39 @@ export const resourceRouter = router({
       },
     ),
 
+  // Read-only mirror of the `move` mutation's unpublish-lock check (see the
+  // comment there), so the destination picker can warn as soon as a
+  // destination is selected instead of only surfacing the error on submit.
+  // The mutation still re-runs this check itself as the source of truth.
+  getMoveLockInfo: protectedProcedure
+    .input(getMoveLockInfoSchema)
+    .output(getMoveLockInfoOutputSchema)
+    .query(
+      async ({
+        ctx,
+        input: { siteId, movedResourceId, destinationResourceId },
+      }) => {
+        await bulkValidateUserPermissionsForResources({
+          action: "read",
+          resourceIds: [
+            movedResourceId,
+            ...(destinationResourceId ? [destinationResourceId] : []),
+          ],
+          userId: ctx.user.id,
+          siteId: Number(siteId),
+        })
+
+        return getMoveLockInfo(db, {
+          siteId,
+          movedResourceId,
+          destinationResourceId,
+        })
+      },
+    ),
+
   countWithoutRoot: protectedProcedure
     .input(countResourceSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
+    .query(async ({ ctx, input: { siteId, resourceId, statusFilter } }) => {
       await bulkValidateUserPermissionsForResources({
         action: "read",
         resourceIds: [resourceId ? String(resourceId) : null],
@@ -576,7 +655,36 @@ export const resourceRouter = router({
       if (resourceId) {
         query = query.where("Resource.parentId", "=", String(resourceId))
       } else {
-        query = query.where("Resource.parentId", "is", null)
+        query = query
+          .where("Resource.parentId", "is", null)
+          .where("Resource.permalink", "!=", SEARCH_PAGE_PERMALINK)
+      }
+
+      if (statusFilter.length > 0) {
+        // Every tag needs the container-id sets — a Folder/Collection's own
+        // publishedVersionId/scheduledAt/scheduledAction/draftBlobId are
+        // never set, so all five tags key off its child IndexPage instead.
+        const {
+          liveContainerIds,
+          notLiveContainerIds,
+          hasDraftContainerIds,
+          scheduledToPublishContainerIds,
+          scheduledToUnpublishContainerIds,
+        } = splitContainerIdsByStatus(
+          await getChildLiveStatusMap(db, {
+            siteId,
+            resourceId: resourceId ? String(resourceId) : null,
+          }),
+        )
+
+        query = applyResourceStatusFilter(query, {
+          statusFilter,
+          liveContainerIds,
+          notLiveContainerIds,
+          hasDraftContainerIds,
+          scheduledToPublishContainerIds,
+          scheduledToUnpublishContainerIds,
+        })
       }
 
       const result = await query.executeTakeFirst()
@@ -585,47 +693,129 @@ export const resourceRouter = router({
 
   listWithoutRoot: protectedProcedure
     .input(listResourceSchema)
-    .query(async ({ ctx, input: { siteId, resourceId, offset, limit } }) => {
-      await bulkValidateUserPermissionsForResources({
-        action: "read",
-        resourceIds: [resourceId ? String(resourceId) : null],
-        userId: ctx.user.id,
-        siteId: Number(siteId),
-      })
+    .query(
+      async ({
+        ctx,
+        input: { siteId, resourceId, offset, limit, orderBy, statusFilter },
+      }) => {
+        await bulkValidateUserPermissionsForResources({
+          action: "read",
+          resourceIds: [resourceId ? String(resourceId) : null],
+          userId: ctx.user.id,
+          siteId: Number(siteId),
+        })
 
-      let query = db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "!=", ResourceType.RootPage)
-        .where("Resource.type", "!=", ResourceType.IndexPage)
-        .where("Resource.type", "!=", ResourceType.FolderMeta)
-        .where("Resource.type", "!=", ResourceType.CollectionMeta)
-        .orderBy("Resource.updatedAt", "desc")
-        .orderBy("Resource.title", "asc")
-        .offset(offset)
-        .limit(limit)
+        let query = db
+          .selectFrom("Resource")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "!=", ResourceType.RootPage)
+          .where("Resource.type", "!=", ResourceType.IndexPage)
+          .where("Resource.type", "!=", ResourceType.FolderMeta)
+          .where("Resource.type", "!=", ResourceType.CollectionMeta)
 
-      if (resourceId) {
-        query = query.where("Resource.parentId", "=", String(resourceId))
-      } else {
-        query = query.where("Resource.parentId", "is", null)
-      }
+        if (resourceId) {
+          query = query.where("Resource.parentId", "=", String(resourceId))
+        } else {
+          query = query
+            .where("Resource.parentId", "is", null)
+            .where("Resource.permalink", "!=", SEARCH_PAGE_PERMALINK)
+        }
 
-      // TODO: Add pagination support
-      return query
-        .select([
-          "Resource.id",
-          "Resource.permalink",
-          "Resource.title",
-          "Resource.publishedVersionId",
-          "Resource.draftBlobId",
-          "Resource.type",
-          "Resource.parentId",
-          "Resource.updatedAt",
-          "Resource.scheduledAt",
-        ])
-        .execute()
-    }),
+        query = applyResourceOrderBy(query, orderBy)
+
+        // A Folder/Collection's live content is its child IndexPage's, not its
+        // own publishedVersionId, so its status needs the recursive descendant
+        // check; every other type is live iff its own publishedVersionId is
+        // set. Computed up front (rather than after the rows query, as
+        // before) since the live/notLive status filter needs it too.
+        const childLiveStatus = await getChildLiveStatusMap(db, {
+          siteId,
+          resourceId: resourceId ? String(resourceId) : null,
+        })
+
+        if (statusFilter.length > 0) {
+          const {
+            liveContainerIds,
+            notLiveContainerIds,
+            hasDraftContainerIds,
+            scheduledToPublishContainerIds,
+            scheduledToUnpublishContainerIds,
+          } = splitContainerIdsByStatus(childLiveStatus)
+          query = applyResourceStatusFilter(query, {
+            statusFilter,
+            liveContainerIds,
+            notLiveContainerIds,
+            hasDraftContainerIds,
+            scheduledToPublishContainerIds,
+            scheduledToUnpublishContainerIds,
+          })
+        }
+
+        const rows = await query
+          .offset(offset)
+          .limit(limit)
+          .select((eb) => [
+            "Resource.id",
+            "Resource.permalink",
+            "Resource.title",
+            "Resource.publishedVersionId",
+            "Resource.draftBlobId",
+            "Resource.type",
+            "Resource.parentId",
+            "Resource.updatedAt",
+            "Resource.scheduledAt",
+            "Resource.scheduledAction",
+            selectLastPublishedAt(eb),
+            // A window function count avoids a second round-trip for the
+            // common case. It rides along on every returned row, so it's
+            // unavailable when the page itself comes back empty (e.g. a
+            // stale `offset` past the true end) — see the fallback below.
+            eb.fn.countAll<string>().over().as("totalCount"),
+          ])
+          .execute()
+
+        const items = rows.map(({ totalCount: _totalCount, ...row }) => {
+          const isContainer =
+            row.type === ResourceType.Folder ||
+            row.type === ResourceType.Collection
+          if (!isContainer) {
+            return {
+              ...row,
+              liveStatus: row.publishedVersionId !== null ? "live" : "notLive",
+            } as const
+          }
+
+          const status = childLiveStatus.get(String(row.id))
+          return {
+            ...row,
+            liveStatus: status?.hasLiveIndexPage
+              ? "live"
+              : status?.hasLiveDescendant
+                ? "liveTemplate"
+                : "notLive",
+            // A Folder/Collection's draftBlobId/scheduledAt/scheduledAction
+            // live on its child IndexPage instead, so the Status badges need
+            // those substituted in.
+            draftBlobId: status?.indexPageDraftBlobId ?? null,
+            scheduledAt: status?.indexPageScheduledAt ?? null,
+            scheduledAction: status?.indexPageScheduledAction ?? null,
+          } as const
+        })
+
+        const totalCount = rows[0]
+          ? Number(rows[0].totalCount)
+          : Number(
+              (
+                await query
+                  .clearOrderBy()
+                  .select((eb) => [eb.fn.countAll<string>().as("totalCount")])
+                  .executeTakeFirst()
+              )?.totalCount ?? 0,
+            )
+
+        return { items, totalCount }
+      },
+    ),
 
   delete: protectedProcedure
     .input(deleteResourceSchema)
@@ -666,12 +856,38 @@ export const resourceRouter = router({
 
         // Prevent users from deleting the search page (permalink /search, no parent)
         // This is a special page that is used to display the SearchSG results
-        if (before.permalink === "search" && before.parentId === null) {
+        if (
+          before.permalink === SEARCH_PAGE_PERMALINK &&
+          before.parentId === null
+        ) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "The search page cannot be deleted",
           })
         }
+
+        // Gated on the flag: with unpublish unreachable, a live resource
+        // could never become deletable, so skip the guard entirely rather
+        // than lock it out permanently.
+        if (ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+          await assertResourceNotLive(tx, {
+            siteId: Number(siteId),
+            resourceId,
+            resourceType: before.type,
+            publishedVersionId: before.publishedVersionId,
+          })
+        }
+
+        // Not gated on the flag: schedulePage (scheduling a publish) has no
+        // flag check of its own, so a pending schedule can exist even with
+        // unpublishing disabled. Always guard against it, or the delete
+        // silently discards the schedule along with the row.
+        await assertResourceNotScheduled(tx, {
+          siteId: Number(siteId),
+          resourceId,
+          resourceType: before.type,
+          scheduledAt: before.scheduledAt,
+        })
 
         await logResourceEvent(tx, {
           siteId,
@@ -681,6 +897,16 @@ export const resourceRouter = router({
           },
           by: user,
           eventType: AuditLogEvent.ResourceDelete,
+        })
+
+        // Soft-delete redirects pointing at this resource (or any descendant)
+        // in the same transaction — once the page is gone they resolve to
+        // nothing. Run before the delete while the subtree is still resolvable;
+        // the delete's site publish covers the removal.
+        await softDeleteRedirectsPointingToResource(tx, {
+          siteId: Number(siteId),
+          resourceId: String(resourceId),
+          byUserId: user.id,
         })
 
         return tx
@@ -696,7 +922,13 @@ export const resourceRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST" })
       }
 
-      await publishResource(user.id, result, ctx.logger)
+      // Skip the rebuild when the guard above ran: it already proved nothing
+      // live was just deleted, so there's nothing for a rebuild to remove.
+      // Without the flag, a live resource can still reach here, so keep
+      // rebuilding in that case.
+      if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
+        await publishResource(user.id, result, ctx.logger)
+      }
 
       // NOTE: We need to do this cast as the property is a `bigint`
       // and trpc cannot serialise it, which leads to errors
@@ -752,7 +984,10 @@ export const resourceRouter = router({
         siteId: Number(siteId),
       })
 
-      const result = await getWithFullPermalink({ resourceIds: [resourceId] })
+      const result = await getWithFullPermalink({
+        resourceIds: [resourceId],
+        siteId: Number(siteId),
+      })
 
       if (result.length === 0 || !result[0]) {
         throw new TRPCError({ code: "NOT_FOUND" })

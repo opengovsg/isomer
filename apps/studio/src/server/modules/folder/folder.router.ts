@@ -21,8 +21,14 @@ import {
 import { PG_ERROR_CODES } from "../database/constants"
 import { createFolderIndexPage } from "../page/page.service"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
-import { publishResource } from "../resource/resource.service"
+import { applyFolderPermalinkChangeRedirects } from "../redirect/redirect.service"
+import {
+  getResourceFullPermalink,
+  hasPublishedDescendant,
+  publishResource,
+} from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
+import { getFolderIndexPageInfo } from "./folder.service"
 
 export const folderRouter = router({
   create: protectedProcedure
@@ -198,7 +204,10 @@ export const folderRouter = router({
   editFolder: protectedProcedure
     .input(editFolderSchema)
     .mutation(
-      async ({ ctx, input: { resourceId, permalink, title, siteId } }) => {
+      async ({
+        ctx,
+        input: { resourceId, permalink, title, siteId, shouldCreateRedirect },
+      }) => {
         await bulkValidateUserPermissionsForResources({
           siteId: Number(siteId),
           action: "update",
@@ -229,6 +238,23 @@ export const folderRouter = router({
               message: "Resource does not exist",
             })
           }
+
+          // Capture the folder's CURRENT full permalink BEFORE the update below
+          // rewrites Resource.permalink — getResourceFullPermalink walks the live
+          // tree, so reading it afterwards would return the NEW path and the
+          // redirect would be a no-op. Needed on any actual permalink change so
+          // the descendant shadow guard below always runs — the flag only gates
+          // whether a redirect gets CREATED, not whether the move is validated
+          // against redirects that already exist.
+          const permalinkChanged =
+            !!permalink && permalink !== oldResource.permalink
+          const oldFullPermalink = permalinkChanged
+            ? await getResourceFullPermalink(
+                Number(siteId),
+                Number(resourceId),
+                tx,
+              )
+            : null
 
           const newResource = await tx
             .updateTable("Resource")
@@ -277,6 +303,28 @@ export const folderRouter = router({
             by: user,
           })
 
+          // A renamed folder/collection changes every descendant's URL — preserve
+          // them with one wildcard redirect ("/old-folder/*"). oldFullPermalink
+          // was captured pre-update; only the last path segment changed, so swap
+          // it to derive the new full permalink without re-walking the tree.
+          if (permalinkChanged && oldFullPermalink !== null) {
+            const newFullPermalink =
+              oldFullPermalink.slice(0, oldFullPermalink.lastIndexOf("/") + 1) +
+              newResource.permalink
+            await applyFolderPermalinkChangeRedirects(tx, {
+              siteId: Number(siteId),
+              oldFullPermalink,
+              newFullPermalink,
+              resourceId,
+              hasLiveContent: await hasPublishedDescendant(tx, {
+                siteId: Number(siteId),
+                resourceId,
+              }),
+              shouldCreateRedirect,
+              byUserId: user.id,
+            })
+          }
+
           return newResource
         })
 
@@ -296,28 +344,7 @@ export const folderRouter = router({
         resourceIds: [resourceId],
       })
 
-      const { title } = await db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.id", "=", resourceId)
-        .select("title")
-        .executeTakeFirstOrThrow()
-
-      const indexPage = await db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.parentId", "=", resourceId)
-        .where("Resource.type", "=", ResourceType.IndexPage)
-        .select(["id", "draftBlobId"])
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              code: "NOT_FOUND",
-              message: "No existing index page found",
-            }),
-        )
-
-      return { title, ...indexPage }
+      return getFolderIndexPageInfo(db, { siteId, resourceId })
     }),
 
   listChildPages: protectedProcedure

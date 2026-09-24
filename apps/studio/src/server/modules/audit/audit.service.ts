@@ -1,9 +1,12 @@
 import type {
   AuditLogEvent,
+  AuditLogExportReportType,
   Blob,
   DB,
   Footer,
   Navbar,
+  PushDocumentJob,
+  Redirect,
   Resource,
   ResourcePermission,
   Site,
@@ -42,7 +45,23 @@ interface ResourceEventDeltaMap {
     before: FullResource
     after: FullResource
   }
-  CancelSchedulePublish: {
+  CancelSchedulePublish:
+    | {
+        before: FullResource
+        after: FullResource
+      }
+    // egazette cancel: the resource is deleted in the same transaction, so we
+    // log the deleted PushDocumentJob row instead of a synthetic resource
+    // snapshot that never lands in the DB.
+    | {
+        before: WithoutMeta<PushDocumentJob>
+        after: null
+      }
+  ScheduleUnpublish: {
+    before: FullResource
+    after: FullResource
+  }
+  CancelScheduleUnpublish: {
     before: FullResource
     after: FullResource
   }
@@ -143,6 +162,49 @@ export const logConfigEvent: AuditLogger<ConfigEventLogProps> = async (
     .execute()
 }
 
+// map each event type to its delta type
+interface RedirectEventDeltaMap {
+  RedirectCreate: {
+    // Creating a redirect for a soft-deleted source revives it, so `before`
+    // is the soft-deleted row in that case and null otherwise
+    before: Redirect | null
+    after: Redirect
+  }
+  RedirectDelete: {
+    // Redirects are soft-deleted, so `after` is the real row with
+    // `deletedAt` set rather than null
+    before: Redirect
+    after: Redirect
+  }
+}
+
+export type RedirectEventLogProps = {
+  [K in keyof RedirectEventDeltaMap]: {
+    eventType: K
+    delta: RedirectEventDeltaMap[K]
+    by: User
+    ip?: string
+    siteId: Site["id"]
+  }
+}[keyof RedirectEventDeltaMap]
+
+export const logRedirectEvent: AuditLogger<RedirectEventLogProps> = async (
+  tx,
+  { eventType, delta, by, ip, siteId },
+) => {
+  await tx
+    .insertInto("AuditLog")
+    .values({
+      siteId,
+      eventType,
+      delta,
+      userId: by.id,
+      ipAddress: ip,
+      metadata: {},
+    })
+    .execute()
+}
+
 interface LoginDelta {
   before: VerificationToken
   after: null
@@ -179,6 +241,7 @@ export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
 
 interface VersionPointer {
   versionId: Version["id"]
+  versionNum: Version["versionNum"]
 }
 
 type BlobPublishEvent = Resource & Blob
@@ -199,7 +262,7 @@ interface PublishEventLogProps<
     before: Before extends null ? null : WithoutMeta<Before>
     after: After extends null ? null : WithoutMeta<After>
   }
-  eventType: Extract<AuditLogEvent, "Publish">
+  eventType: Extract<AuditLogEvent, "Publish" | "Unpublish">
   ip?: string
   metadata: Meta
   siteId: Site["id"]
@@ -210,6 +273,14 @@ interface PublishEventLogProps<
 type BlobPublishEventLogProps = PublishEventLogProps<
   null | VersionPointer,
   VersionPointer,
+  BlobPublishEvent
+>
+
+// NOTE: Unpublish clears Resource.publishedVersionId while leaving Version
+// history and any draft untouched, so there is no new version to point to.
+type BlobUnpublishEventLogProps = PublishEventLogProps<
+  VersionPointer,
+  null,
   BlobPublishEvent
 >
 
@@ -230,6 +301,7 @@ type RepublishEventLogProps = PublishEventLogProps<
 
 export const logPublishEvent: AuditLogger<
   | BlobPublishEventLogProps
+  | BlobUnpublishEventLogProps
   | ResourcePublishEventLogProps
   | ConfigPublishEventLogProps
   | RepublishEventLogProps
@@ -331,5 +403,47 @@ export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
       siteId,
       metadata,
     })
+    .execute()
+}
+
+interface AuditLogExportCreateDelta {
+  before: null
+  after: {
+    auditLogDateRange: string
+    reportType: AuditLogExportReportType
+  }
+}
+
+interface AuditLogExportEventLogProps {
+  eventType: Extract<AuditLogEvent, "AuditLogExportCreate">
+  delta: AuditLogExportCreateDelta
+  by: User
+  ip?: string
+  siteId: Site["id"]
+}
+
+// Batched: an "allSites" ask (see auditLogExport.service.ts) can cover every
+// site the caller Admins, and each site's request gets its own event —
+// inserting all of them in one multi-row statement avoids holding that ask's
+// transaction open for one extra round trip per site.
+export const logAuditLogExportEvents: AuditLogger<
+  AuditLogExportEventLogProps[]
+> = async (tx, events) => {
+  if (events.length === 0) {
+    return
+  }
+
+  await tx
+    .insertInto("AuditLog")
+    .values(
+      events.map(({ eventType, delta, by, ip, siteId }) => ({
+        siteId,
+        eventType,
+        delta,
+        userId: by.id,
+        ipAddress: ip,
+        metadata: {},
+      })),
+    )
     .execute()
 }

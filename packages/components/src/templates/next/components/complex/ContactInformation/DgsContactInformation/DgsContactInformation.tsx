@@ -21,13 +21,12 @@ export const DgsContactInformation = ({
   const params = useMemo(
     () => ({
       resourceId,
-      filters: filters?.reduce(
-        (acc, filter) => {
-          acc[filter.fieldKey] = filter.fieldValue
-          return acc
-        },
-        {} as NonNullable<DgsApiDatasetSearchParams["filters"]>,
-      ),
+      filters: filters?.reduce<
+        NonNullable<DgsApiDatasetSearchParams["filters"]>
+      >((acc, filter) => {
+        acc[filter.fieldKey] = filter.fieldValue
+        return acc
+      }, {}),
     }),
     [resourceId, filters],
   )
@@ -39,7 +38,7 @@ export const DgsContactInformation = ({
       <ContactInformationUI
         isLoading={isLoading}
         methods={[]} // not needed for loading state but its required prop
-        {...pick(rest, "type", "layout")}
+        {...pick(rest, "type", "layout", "headingLevel")}
         acceptHtmlTags
       />
     )
@@ -88,6 +87,7 @@ export const DgsTransformedContactInformation = ({
       otherInformation={otherInformation}
       type={rest.type}
       layout={rest.layout}
+      headingLevel={rest.headingLevel}
       {...omit(rest, InjectableContactInformationKeys)}
       acceptHtmlTags
     />

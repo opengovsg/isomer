@@ -16,7 +16,7 @@ describe("sortCollectionItems", () => {
       variant: "article",
       url: "/test-item",
       description: "",
-      category: "Category",
+      plaintextTags: [{ category: "Category", selected: ["Category"] }],
       site: {
         siteMap: {
           id: "root",
@@ -486,219 +486,208 @@ describe("sortCollectionItems", () => {
     })
   })
 
-  describe("sortBy is category", () => {
-    it("should sort items by category (alphabetically) by default", () => {
-      // Arrange
+  describe("sortBy date filter", () => {
+    const filterId = "550e8400-e29b-41d4-a716-446655440000"
+
+    it("should sort items by a date filter start date (newest first)", () => {
       const items = [
-        createItem({ category: "2000" }),
-        createItem({ category: "2002" }),
-        createItem({ category: "2001" }),
+        createItem({
+          title: "Oldest",
+          dateTagged: [{ id: filterId, date: "2023-01-01" }],
+        }),
+        createItem({
+          title: "Newest",
+          dateTagged: [{ id: filterId, date: "2023-12-31" }],
+        }),
+        createItem({
+          title: "Middle",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
       ]
 
-      // Act
       const sorted = sortCollectionItems({
         items,
-        sortBy: "category",
-      })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "category-asc",
+        sortOrder: `date-filter-${filterId}-desc`,
       })
 
-      // Assert
-      const expectedCategories = ["2000", "2001", "2002"]
-      expect(sorted.map((item) => item.category)).toEqual(expectedCategories)
-      expect(sortedTwo.map((item) => item.category)).toEqual(expectedCategories)
+      expect(sorted.map((item) => item.title)).toEqual([
+        "Newest",
+        "Middle",
+        "Oldest",
+      ])
     })
 
-    it("should sort items by category (reverse alphabetically) when sort direction is descending", () => {
-      // Arrange
-      const items = [
-        createItem({ category: "2000" }),
-        createItem({ category: "2002" }),
-        createItem({ category: "2001" }),
-      ]
-
-      // Act
-      const sorted = sortCollectionItems({
-        items,
-        sortBy: "category",
-        sortDirection: "desc",
-      })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "category-desc",
-      })
-
-      // Assert
-      const expectedCategories = ["2002", "2001", "2000"]
-      expect(sorted.map((item) => item.category)).toEqual(expectedCategories)
-      expect(sortedTwo.map((item) => item.category)).toEqual(expectedCategories)
-    })
-
-    it("should sort items by title when categories are the same", () => {
-      // Arrange
-      const items = [
-        createItem({ category: "Same Category", title: "Charlie" }),
-        createItem({ category: "Same Category", title: "Alice" }),
-        createItem({ category: "Same Category", title: "Bob" }),
-      ]
-
-      // Act
-      const sorted = sortCollectionItems({
-        items,
-        sortBy: "category",
-      })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "category-asc",
-      })
-
-      // Assert
-      const expectedTitles = ["Alice", "Bob", "Charlie"]
-      expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-      expect(sortedTwo.map((item) => item.title)).toEqual(expectedTitles)
-    })
-
-    it("should sort items by published date (oldest first) when categories and titles are the same", () => {
+    it("should sort items by a date filter start date (oldest first)", () => {
       // Arrange
       const items = [
         createItem({
-          category: "Same Category",
-          title: "Same Title",
+          title: "Oldest",
+          dateTagged: [{ id: filterId, date: "2023-01-01" }],
+        }),
+        createItem({
+          title: "Newest",
+          dateTagged: [{ id: filterId, date: "2023-12-31" }],
+        }),
+        createItem({
+          title: "Middle",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+      ]
+
+      // Act
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: `date-filter-${filterId}-asc`,
+      })
+
+      // Assert
+      expect(sorted.map((item) => item.title)).toEqual([
+        "Oldest",
+        "Middle",
+        "Newest",
+      ])
+    })
+
+    it("should place items without the date filter value at the end", () => {
+      const items = [
+        createItem({
+          title: "No date",
+        }),
+        createItem({
+          title: "Has date",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+      ]
+
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: `date-filter-${filterId}-asc`,
+      })
+
+      expect(sorted.map((item) => item.title)).toEqual(["Has date", "No date"])
+    })
+
+    it("should use title A → Z as a tiebreaker for the same date filter date", () => {
+      const items = [
+        createItem({
+          title: "Zebra",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+        createItem({
+          title: "Alpha",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+      ]
+
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: `date-filter-${filterId}-desc`,
+      })
+
+      expect(sorted.map((item) => item.title)).toEqual(["Alpha", "Zebra"])
+    })
+
+    it("should sort by last modified when date filter dates and titles are equal", () => {
+      const items = [
+        createItem({
+          title: "Same title",
+          lastModified: "2025-01-01T12:00:00Z",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+        createItem({
+          title: "Same title",
+          lastModified: "2025-03-01T12:00:00Z",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+        createItem({
+          title: "Same title",
+          lastModified: "2025-02-01T12:00:00Z",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+      ]
+
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: `date-filter-${filterId}-desc`,
+      })
+
+      expect(sorted.map((item) => item.lastModified)).toEqual([
+        "2025-03-01T12:00:00Z",
+        "2025-02-01T12:00:00Z",
+        "2025-01-01T12:00:00Z",
+      ])
+    })
+
+    it("should sort by last modified rather than title when date filter dates are equal", () => {
+      // Arrange
+      const items = [
+        createItem({
+          title: "Alpha",
+          lastModified: "2025-01-01T12:00:00Z",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+        createItem({
+          title: "Zebra",
+          lastModified: "2025-03-01T12:00:00Z",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+      ]
+
+      // Act
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: `date-filter-${filterId}-desc`,
+      })
+
+      // Assert
+      expect(sorted.map((item) => item.title)).toEqual(["Zebra", "Alpha"])
+    })
+
+    it("should fall back to publish date when both items lack the date filter value", () => {
+      const items = [
+        createItem({
+          title: "Older publish",
           date: new Date("2023-01-01"),
         }),
         createItem({
-          category: "Same Category",
-          title: "Same Title",
+          title: "Newer publish",
           date: new Date("2023-12-31"),
         }),
-        createItem({
-          category: "Same Category",
-          title: "Same Title",
-          date: new Date("2023-06-15"),
-        }),
       ]
 
-      // Act
       const sorted = sortCollectionItems({
         items,
-        sortBy: "category",
-      })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "category-asc",
+        sortOrder: `date-filter-${filterId}-desc`,
       })
 
-      // Assert
-      const expectedDates = [
-        new Date("2023-01-01"),
-        new Date("2023-06-15"),
-        new Date("2023-12-31"),
-      ]
-      expect(sorted.map((item) => item.date)).toEqual(expectedDates)
-      expect(sortedTwo.map((item) => item.date)).toEqual(expectedDates)
+      expect(sorted.map((item) => item.title)).toEqual([
+        "Newer publish",
+        "Older publish",
+      ])
     })
+  })
 
-    it("should sort items by title and take into account numbers in the title when categories are the same", () => {
+  describe("malformed sortOrder", () => {
+    it("should sort by published date newest first instead of trusting dirty data", () => {
       // Arrange
       const items = [
-        createItem({ category: "Same Category", title: "2 ogpeople" }),
-        createItem({ category: "Same Category", title: "1 ogpeople" }),
-        createItem({ category: "Same Category", title: "10 ogpeople" }),
+        createItem({ title: "Oldest", date: new Date("2023-01-01") }),
+        createItem({ title: "Newest", date: new Date("2023-12-31") }),
+        createItem({ title: "Middle", date: new Date("2023-06-15") }),
       ]
 
       // Act
       const sorted = sortCollectionItems({
         items,
-        sortBy: "category",
-      })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "category-asc",
+        sortOrder: "totally-made-up",
       })
 
       // Assert
-      const expectedTitles = ["1 ogpeople", "2 ogpeople", "10 ogpeople"]
-      expect(sorted.map((item) => item.title)).toEqual(expectedTitles)
-      expect(sortedTwo.map((item) => item.title)).toEqual(expectedTitles)
-    })
-
-    it("should sort items by last modified in ascending order if the categories and titles are the same and they do not have published dates", () => {
-      // Arrange
-      const items = [
-        createItem({
-          category: "Same Category",
-          title: "Same Title",
-          date: undefined,
-          lastModified: "2025-01-01T12:00:00Z",
-        }),
-        createItem({
-          category: "Same Category",
-          title: "Same Title",
-          date: undefined,
-          lastModified: "2025-03-01T12:00:00Z",
-        }),
-        createItem({
-          category: "Same Category",
-          title: "Same Title",
-          date: undefined,
-          lastModified: "2025-02-01T12:00:00Z",
-        }),
-      ]
-
-      // Act
-      const sorted = sortCollectionItems({
-        items,
-        sortBy: "category",
-      })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "category-asc",
-      })
-
-      // Assert
-      const expectedLastModified = [
-        "2025-01-01T12:00:00Z",
-        "2025-02-01T12:00:00Z",
-        "2025-03-01T12:00:00Z",
-      ]
-      expect(sorted.map((item) => item.lastModified)).toEqual(
-        expectedLastModified,
-      )
-      expect(sortedTwo.map((item) => item.lastModified)).toEqual(
-        expectedLastModified,
-      )
-    })
-
-    it("should sort items with published dates before items without published dates when they all have the same category", () => {
-      // Arrange
-      const items = [
-        createItem({ category: "Same Category", date: undefined }),
-        createItem({ category: "Same Category", date: new Date("2023-12-31") }),
-        createItem({ category: "Same Category", date: undefined }),
-        createItem({ category: "Same Category", date: new Date("2023-01-01") }),
-      ]
-
-      // Act
-      const sorted = sortCollectionItems({
-        items,
-        sortBy: "category",
-      })
-      const sortedTwo = sortCollectionItems({
-        items,
-        sortOrder: "category-asc",
-      })
-
-      // Assert
-      const expectedDates = [
-        new Date("2023-01-01"),
-        new Date("2023-12-31"),
-        undefined,
-        undefined,
-      ]
-      expect(sorted.map((item) => item.date)).toEqual(expectedDates)
-      expect(sortedTwo.map((item) => item.date)).toEqual(expectedDates)
+      expect(sorted.map((item) => item.title)).toEqual([
+        "Newest",
+        "Middle",
+        "Oldest",
+      ])
     })
   })
 })

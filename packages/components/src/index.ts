@@ -8,7 +8,13 @@ export {
   getResourceIdFromReferenceLink,
   REFERENCE_LINK_REGEX,
   NON_EMPTY_STRING_REGEX,
+  TRIMMED_NON_EMPTY_STRING_REGEX,
+  TRIMMED_STRING_OR_EMPTY_REGEX,
   createChildrenPagesComparator,
+  formatBytes,
+  DGS_REQUEST_MAX_BYTES,
+  getAskgovIdFromString,
+  resolveCollectionSortOrder,
 } from "./utils"
 export * from "./schemas"
 export * from "./types"

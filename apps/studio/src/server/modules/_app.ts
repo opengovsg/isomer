@@ -4,12 +4,14 @@
 
 import { publicProcedure, router } from "../trpc"
 import { assetRouter } from "./asset/asset.router"
+import { auditRouter } from "./audit/audit.router"
 import { authRouter } from "./auth/auth.router"
 import { collectionRouter } from "./collection/collection.router"
 import { folderRouter } from "./folder/folder.router"
 import { gazetteRouter } from "./gazette/gazette.router"
 import { meRouter } from "./me/me.router"
 import { pageRouter } from "./page/page.router"
+import { redirectRouter } from "./redirect/redirect.router"
 import { resourceRouter } from "./resource/resource.router"
 import { siteRouter } from "./site/site.router"
 import { userRouter } from "./user/user.router"
@@ -21,11 +23,13 @@ export const appRouter = router({
   me: meRouter,
   auth: authRouter,
   asset: assetRouter,
+  audit: auditRouter,
   page: pageRouter,
   folder: folderRouter,
   collection: collectionRouter,
   gazette: gazetteRouter,
   site: siteRouter,
+  redirect: redirectRouter,
   resource: resourceRouter,
   user: userRouter,
   whitelist: whitelistRouter,

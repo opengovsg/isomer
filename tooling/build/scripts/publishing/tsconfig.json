@@ -15,8 +15,10 @@
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "paths": {
-      "~generated/*": ["../../../../apps/studio/prisma/generated/*"],
-      // NOTE: this works because we clone our repo as a whole.
+      // NOTE: generated Kysely types moved from apps/studio/prisma/generated
+      // to @isomer/db (packages/db/src/generated). This works because we
+      // clone our repo as a whole.
+      "~generated/*": ["../../../../packages/db/src/generated/*"],
       // Respect the package's default export and use only index
       "~schema": ["../../../../packages/components/src/index.ts"]
     }

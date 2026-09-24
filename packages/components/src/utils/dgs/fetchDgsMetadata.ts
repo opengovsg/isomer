@@ -1,5 +1,8 @@
+import { isCkanInternalColumn } from "./isCkanInternalColumn"
+
 interface FetchDgsMetadataProps {
   resourceId: string
+  signal?: AbortSignal
 }
 
 interface MetaMappingType {
@@ -35,28 +38,25 @@ export type FetchDgsMetadataOutput = Pick<
 
 export const fetchDgsMetadata = async ({
   resourceId,
-}: FetchDgsMetadataProps): Promise<FetchDgsMetadataOutput | undefined> => {
-  try {
-    // For simplicity sake, we will always use data.gov.sg production API
-    const response = await fetch(
-      `https://api-production.data.gov.sg/v2/public/api/datasets/${resourceId}/metadata`,
-    )
+  signal,
+}: FetchDgsMetadataProps): Promise<FetchDgsMetadataOutput> => {
+  // For simplicity sake, we will always use data.gov.sg production API
+  const response = await fetch(
+    `https://api-production.data.gov.sg/v2/public/api/datasets/${resourceId}/metadata`,
+    { signal },
+  )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  }
 
-    const data = (await response.json()) as FetchDgsMetadataResponse
+  const data = (await response.json()) as FetchDgsMetadataResponse
 
-    return {
-      name: data.data.name,
-      format: data.data.format,
-      size: data.data.datasetSize,
-      columnMetadata: extractColumnMetadata(data),
-    }
-  } catch (error) {
-    console.error("Error fetching DGS metadata:", error)
-    return undefined
+  return {
+    name: data.data.name,
+    format: data.data.format,
+    size: data.data.datasetSize,
+    columnMetadata: extractColumnMetadata(data),
   }
 }
 
@@ -65,6 +65,7 @@ const extractColumnMetadata = (
 ): FetchDgsMetadataOutput["columnMetadata"] => {
   try {
     return Object.values(data.data.columnMetadata.metaMapping)
+      .filter((mapping) => !isCkanInternalColumn(mapping.name))
       .sort((a, b) => Number(a.index) - Number(b.index))
       .reduce<NonNullable<FetchDgsMetadataOutput["columnMetadata"]>>(
         (acc, mapping) => {

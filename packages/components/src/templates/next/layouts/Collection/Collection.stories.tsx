@@ -1,8 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
+import { addDays, format } from "date-fns"
 import { flatten, times } from "lodash-es"
-import { expect, userEvent, within } from "storybook/test"
+import { expect, fireEvent, userEvent, within } from "storybook/test"
 import { generateSiteConfig } from "~/stories/helpers"
+import {
+  DATE_FILTER_STATUS,
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+  TAG_CATEGORY_TYPE,
+} from "~/types/constants"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -20,21 +27,13 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months.",
       date: "07/05/2024",
       category: "Category Name",
-      tags: [
-        {
-          category:
-            "Testing a long filter label to test how it wraps or truncates",
-          values: ["Test"],
-          selected: ["Test"],
-        },
-      ],
     },
     {
       id: `${index}`,
       title: `This is the title for a collection item that shows the Isomer hero banner-${index}`,
       permalink: `/publications/item-two-${index}`,
       lastModified: "",
-      layout: "file",
+      layout: "link",
       image: {
         src: "https://images.unsplash.com/photo-1728931710331-7f74dca643eb?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         alt: "placeholder",
@@ -44,15 +43,6 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       date: "07/05/2024",
       category: "Category Name",
       ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
-      fileDetails: { type: "png", size: "1.2MB" },
-      tags: [
-        {
-          category:
-            "Testing a long filter label to test how it wraps or truncates",
-          values: ["Test"],
-          selected: ["Test"],
-        },
-      ],
     },
     {
       id: `${index}`,
@@ -65,20 +55,6 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       date: "12/08/2023",
       category: "Category Name",
       ref: "https://guide.isomer.gov.sg",
-      tags: [
-        {
-          category:
-            "Testing a long filter label to test how it wraps or truncates",
-          values: [
-            "This is a very long tag that should be reflowed on smaller screens maybe",
-          ],
-          selected: [
-            "Test",
-            "This is a very long tag that should be reflowed on smaller screens maybe",
-            "This is a second long link that should eat into the image area so that we can see how it looks",
-          ],
-        },
-      ],
     },
   ]),
 )
@@ -86,9 +62,11 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
 const generateArgs = ({
   collectionItems = COLLECTION_ITEMS,
   variant = "collection",
+  tagCategories,
 }: {
   collectionItems?: IsomerSitemap[]
   variant?: CollectionPageSchemaType["page"]["variant"]
+  tagCategories?: CollectionPageSchemaType["page"]["tagCategories"]
 } = {}): CollectionPageSchemaType => {
   return {
     layout: "collection",
@@ -110,22 +88,6 @@ const generateArgs = ({
             layout: "collection",
             summary: "",
             children: collectionItems,
-            tags: [
-              { category: "tag", selected: ["A tag"] },
-              { category: "tagged", selected: ["tagged"] },
-              {
-                category: "long",
-                selected: [
-                  "This is a very long tag that should be reflowed on smaller screens maybe",
-                ],
-              },
-              {
-                category: "very long",
-                selected: [
-                  "This is a second long link that should eat into the image area so that we can see how it looks",
-                ],
-              },
-            ],
           },
         ],
       },
@@ -140,6 +102,7 @@ const generateArgs = ({
       subtitle:
         "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
       variant,
+      tagCategories,
     },
     content: [],
   }
@@ -202,8 +165,24 @@ export const NoResults: Story = {
   },
 }
 
+// Category is now an ordinary tagCategories group — an item is tagged with
+// an option UUID rather than carrying a plain `category` string.
+const CATEGORY_NAME_2_OPTION_ID = "category-name-2"
+const CATEGORY_TAG_CATEGORY: NonNullable<
+  CollectionPageSchemaType["page"]["tagCategories"]
+> = [
+  {
+    label: "Category",
+    id: "category-group",
+    isRequired: true,
+    display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+    options: [{ label: "Category Name 2", id: CATEGORY_NAME_2_OPTION_ID }],
+  },
+]
+
 export const FilteredEmptyResults: Story = {
   args: generateArgs({
+    tagCategories: CATEGORY_TAG_CATEGORY,
     collectionItems: [
       ...COLLECTION_ITEMS,
       {
@@ -211,16 +190,12 @@ export const FilteredEmptyResults: Story = {
         title: `2025 File`,
         permalink: `/publications/item-twenty-twenty-five`,
         lastModified: "",
-        layout: "file",
+        layout: "link",
         summary:
           "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
         date: "2025-05-07",
-        category: "Category Name 2",
+        tagged: [CATEGORY_NAME_2_OPTION_ID],
         ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
-        fileDetails: {
-          type: "png",
-          size: "1.2MB",
-        },
       },
     ],
   }),
@@ -243,11 +218,11 @@ export const YearFilter: Story = {
   args: generateArgs({ collectionItems: threeItemsHaveUndefinedDate }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const dateNotSpecified = screen.queryByText(/Not specified \(3\)/i)
-    await expect(dateNotSpecified).toBeInTheDocument()
 
+    // CollectionCard renders the publication date twice (desktop sidebar + mobile
+    // inline); both nodes stay in the DOM, so 10 paginated cards → 20 matches.
     const dateText = await screen.findAllByText(/7 May 2024/)
-    await expect(dateText.length).toBe(10)
+    await expect(dateText.length).toBe(20)
   },
 }
 
@@ -257,7 +232,7 @@ export const YearFilterSelectNotSpecified: Story = {
     const screen = within(canvasElement)
     await userEvent.click(screen.getByText(/Not specified/i))
 
-    const resultsHeader = await screen.findAllByText(/3 articles/)
+    const resultsHeader = await screen.findAllByText(/3 items/)
     await expect(resultsHeader.length).toBe(1)
   },
 }
@@ -280,12 +255,25 @@ export const AllResultsNoDate: Story = {
   },
 }
 
+const THE_ONLY_CATEGORY_OPTION_ID = "the-only-category"
+
 export const AllResultsSameCategory: Story = {
   name: "Should show category filter even if all items have same category",
   args: generateArgs({
+    tagCategories: [
+      {
+        label: "Category",
+        id: "category-group",
+        isRequired: true,
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+        options: [
+          { label: "The only category", id: THE_ONLY_CATEGORY_OPTION_ID },
+        ],
+      },
+    ],
     collectionItems: COLLECTION_ITEMS.map((item) => ({
       ...item,
-      category: "The only category",
+      tagged: [THE_ONLY_CATEGORY_OPTION_ID],
     })),
   }),
   play: async ({ canvasElement }) => {
@@ -313,13 +301,45 @@ export const AllResultsSameYear: Story = {
   },
 }
 
-export const FileCard: Story = {
+const itemsWithNoFilterableAttributes = COLLECTION_ITEMS.map((item) => ({
+  ...item,
+  date: undefined,
+  tags: undefined,
+}))
+
+export const NoFiltersCollectionCard: Story = {
+  name: "No Filters (Collection Card)",
+  args: generateArgs({
+    collectionItems: itemsWithNoFilterableAttributes,
+    variant: "collection",
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+
+    const yearFilter = screen.queryByText(/Year/i)
+    await expect(yearFilter).not.toBeInTheDocument()
+
+    const filtersHeading = screen.queryByRole("heading", { name: /Filters/i })
+    await expect(filtersHeading).not.toBeInTheDocument()
+  },
+}
+
+export const NoFiltersBlogCard: Story = {
+  name: "No Filters (Blog Card)",
+  args: generateArgs({
+    collectionItems: itemsWithNoFilterableAttributes,
+    variant: "blog",
+  }),
+  play: NoFiltersCollectionCard.play,
+}
+
+export const LinkToFile: Story = {
   args: generateArgs({
     collectionItems: [COLLECTION_ITEMS[1]] as IsomerSitemap[],
   }),
 }
 
-export const FileCardNoImage: Story = {
+export const LinkToFileNoImage: Story = {
   args: generateArgs({
     collectionItems: [
       { ...COLLECTION_ITEMS[1], image: undefined } as IsomerSitemap,
@@ -332,4 +352,172 @@ export const Blog: Story = {
     collectionItems: COLLECTION_ITEMS,
     variant: "blog",
   }),
+}
+
+// Anchored to the same fixed reference date `.storybook/preview.tsx`'s
+// `MockDateDecorator` freezes `Date` to for every story (deterministic
+// Chromatic snapshots) — NOT real wall-clock `new Date()`. The decorator's
+// `mockdate.set(...)` only takes effect once the story actually renders, by
+// which point this module has already finished evaluating, so anchoring to
+// real time here would compute dates relative to a "today" the app never
+// actually sees, landing every item in the same bucket regardless of intent.
+const STORYBOOK_MOCKED_DATE = "2025-08-09T12:00:00.000Z"
+const offsetDate = (days: number): string =>
+  format(addDays(new Date(STORYBOOK_MOCKED_DATE), days), "yyyy-MM-dd")
+
+const EVENT_DATE_FILTER_ID = "event-date-filter"
+// Matches the Figma reference's exact bucket labels ("Ended", not the
+// schema default "Event ended").
+const EVENT_DATE_STATUS_LABELS = {
+  ...DEFAULT_DATE_FILTER_STATUS_LABELS,
+  [DATE_FILTER_STATUS.Ended.id]: "Ended",
+}
+const EVENT_DATE_TAG_CATEGORY: NonNullable<
+  CollectionPageSchemaType["page"]["tagCategories"]
+> = [
+  {
+    label: "Event date",
+    id: EVENT_DATE_FILTER_ID,
+    type: TAG_CATEGORY_TYPE.Date,
+    statusLabels: EVENT_DATE_STATUS_LABELS,
+  },
+]
+
+// Counts (12 upcoming / 10 ongoing / 2 ended) mirror the Figma reference
+// for the sidebar's date-filter section (see wayfinder ticket 009).
+const dateFilterCollectionItem = (
+  index: number,
+  dateTagged: NonNullable<IsomerSitemap["dateTagged"]>,
+): IsomerSitemap => ({
+  id: `date-filter-item-${index}`,
+  title: `Annual Community Charity Run ${2020 + index}`,
+  permalink: `/publications/annual-community-charity-run-${index}`,
+  lastModified: "",
+  layout: "article",
+  summary:
+    "Join us for a day of community, fitness, and fundraising for a good cause.",
+  dateTagged,
+})
+
+const DATE_FILTER_COLLECTION_ITEMS: IsomerSitemap[] = [
+  ...times(12, (index) =>
+    dateFilterCollectionItem(index, [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        date: offsetDate(30 + index),
+        endDate: offsetDate(32 + index),
+      },
+    ]),
+  ),
+  ...times(10, (index) =>
+    dateFilterCollectionItem(12 + index, [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        date: offsetDate(-5),
+        endDate: offsetDate(5),
+      },
+    ]),
+  ),
+  ...times(2, (index) =>
+    dateFilterCollectionItem(22 + index, [
+      {
+        id: EVENT_DATE_FILTER_ID,
+        date: offsetDate(-60),
+        endDate: offsetDate(-50),
+      },
+    ]),
+  ),
+]
+
+export const DateFilters: Story = {
+  name: "Date Filters",
+  args: generateArgs({
+    tagCategories: EVENT_DATE_TAG_CATEGORY,
+    collectionItems: DATE_FILTER_COLLECTION_ITEMS,
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+
+    await expect(screen.getByText(/Upcoming \(12\)/i)).toBeInTheDocument()
+    await expect(screen.getByText(/Ongoing \(10\)/i)).toBeInTheDocument()
+    await expect(screen.getByText(/Ended \(2\)/i)).toBeInTheDocument()
+  },
+}
+
+export const DateFiltersStatusFiltered: Story = {
+  name: "Date Filters — Status Filtered",
+  args: generateArgs({
+    tagCategories: EVENT_DATE_TAG_CATEGORY,
+    collectionItems: DATE_FILTER_COLLECTION_ITEMS,
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(screen.getByText(/Ended \(2\)/i))
+
+    const resultsHeader = await screen.findAllByText(/2 items/)
+    await expect(resultsHeader.length).toBe(1)
+  },
+}
+
+// Date-range stories are exclusively about the date inputs — no status
+// checkbox (Upcoming/Ongoing/Ended) should ever end up checked, since
+// `updateAppliedDateRange` applies a range independently of `items`.
+const expectNoStatusChecked = async (canvasElement: HTMLElement) => {
+  const checkedBoxes = canvasElement.querySelectorAll(
+    'input[type="checkbox"]:checked',
+  )
+  await expect(checkedBoxes.length).toBe(0)
+}
+
+const fillDateRange = async (
+  canvasElement: HTMLElement,
+  start: string,
+  end: string,
+) => {
+  const screen = within(canvasElement)
+  await fireEvent.change(screen.getByLabelText("From"), {
+    target: { value: start },
+  })
+  await fireEvent.change(screen.getByLabelText("To"), {
+    target: { value: end },
+  })
+}
+
+export const DateFiltersDateFiltered: Story = {
+  name: "Date Filters — Date Filtered",
+  args: generateArgs({
+    tagCategories: EVENT_DATE_TAG_CATEGORY,
+    collectionItems: DATE_FILTER_COLLECTION_ITEMS,
+  }),
+  play: async ({ canvasElement }) => {
+    // 4 and 14 August 2025 — the exact range the "ongoing" items above use
+    // (offsetDate(-5)/offsetDate(5) from the mocked "today" of 9 Aug 2025).
+    await fillDateRange(canvasElement, "2025-08-04", "2025-08-14")
+
+    const screen = within(canvasElement)
+    const resultsHeader = await screen.findAllByText(/10 items/)
+    await expect(resultsHeader.length).toBe(1)
+
+    await expectNoStatusChecked(canvasElement)
+  },
+}
+
+export const DateFiltersBothFiltered: Story = {
+  name: "Date Filters — Both Filtered",
+  args: generateArgs({
+    tagCategories: EVENT_DATE_TAG_CATEGORY,
+    collectionItems: DATE_FILTER_COLLECTION_ITEMS,
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await userEvent.click(screen.getByText(/Upcoming \(12\)/i))
+
+    // Wide enough to include all 10 ongoing (4–14 Aug) plus the first three
+    // upcoming (8–10 / 9–11 / 10–12 Sep). Upcoming alone is 12; this range
+    // alone is 13; AND'd together only those three upcoming items remain.
+    await fillDateRange(canvasElement, "2025-08-04", "2025-09-10")
+
+    const resultsHeader = await screen.findAllByText(/3 items/)
+    await expect(resultsHeader.length).toBe(1)
+  },
 }

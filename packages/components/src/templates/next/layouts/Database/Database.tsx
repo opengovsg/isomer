@@ -33,7 +33,7 @@ export const DatabaseLayout = ({
   )
   // auto-inject ids for heading level 2 blocks if does not exist
   const transformedContent = getTransformedPageContent(content)
-  const tableOfContents = getTableOfContents(site, content)
+  const tableOfContents = getTableOfContents(site, transformedContent)
 
   return (
     <Skeleton site={site} page={page} layout={layout}>
@@ -50,12 +50,14 @@ export const DatabaseLayout = ({
             {tableOfContents.length > 1 && (
               <TableOfContents items={tableOfContents} />
             )}
-            <div>
+            <div data-isomer-content-blocks>
               {renderPageContent({
                 content: transformedContent,
                 layout,
                 site,
                 permalink: page.permalink,
+                // ContentPageHeader above already owns the page's h1.
+                headingLevel: 2,
               })}
             </div>
           </div>

@@ -74,7 +74,7 @@ function JsonFormsIntegerControl({
         <FormLabel description={description}>{label}</FormLabel>
         <NumberInput
           // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          defaultValue={defaultValue || min}
+          defaultValue={defaultValue ?? min}
           min={min}
           max={max}
           onChange={onChange}

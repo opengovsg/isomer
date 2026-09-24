@@ -15,18 +15,18 @@ export const DynamicComponentList = ({
   dataSource: { resourceId, sort, filters },
   component,
   layout,
+  headingLevel,
 }: DynamicComponentListProps) => {
   const params = useMemo(
     () => ({
       resourceId,
       sort,
-      filters: filters?.reduce(
-        (acc, filter) => {
-          acc[filter.fieldKey] = filter.fieldValue
-          return acc
-        },
-        {} as NonNullable<DgsApiDatasetSearchParams["filters"]>,
-      ),
+      filters: filters?.reduce<
+        NonNullable<DgsApiDatasetSearchParams["filters"]>
+      >((acc, filter) => {
+        acc[filter.fieldKey] = filter.fieldValue
+        return acc
+      }, {}),
     }),
     [resourceId, sort, filters],
   )
@@ -51,6 +51,7 @@ export const DynamicComponentList = ({
           {...component}
           layout={layout}
           isLoading={isLoading}
+          headingLevel={headingLevel}
         />
       ))
 

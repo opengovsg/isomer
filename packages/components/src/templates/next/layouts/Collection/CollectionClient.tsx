@@ -36,8 +36,8 @@ const createCollectionLayoutStyles = tv({
   variants: {
     hasNoFilters: {
       true: {
-        filterContainer: "hidden lg:block",
-        content: "pt-0",
+        filterContainer: "hidden",
+        content: "pt-0 lg:col-span-12 lg:ml-0",
       },
     },
   },
@@ -57,6 +57,7 @@ export const CollectionClient = ({
     paginatedItems,
     filteredCount,
     searchValue,
+    availableFilters,
     appliedFilters,
     handleFilterToggle,
     setAppliedFilters,
@@ -65,7 +66,11 @@ export const CollectionClient = ({
     currPage,
     setCurrPage,
     totalCount,
-  } = useCollection({ items })
+  } = useCollection({
+    items,
+    tagCategories: page.tagCategories,
+    filters,
+  })
 
   const articleContainerRef = useRef<HTMLDivElement>(null)
   const onPageChange = () => {
@@ -74,7 +79,7 @@ export const CollectionClient = ({
     })
   }
 
-  const hasNoFilters = filters.length === 0
+  const hasNoFilters = availableFilters.length === 0
 
   return (
     <>
@@ -96,13 +101,12 @@ export const CollectionClient = ({
           })}
         >
           <Filter
-            filters={filters}
+            filters={availableFilters}
             appliedFilters={appliedFilters}
             handleFilterToggle={handleFilterToggle}
             setAppliedFilters={setAppliedFilters}
             handleClearFilter={handleClearFilter}
           />
-          <BackToTopLink className="hidden lg:inline-flex" />
         </div>
         <div
           className={compoundStyles.content({
@@ -121,10 +125,12 @@ export const CollectionClient = ({
               totalCount={totalCount}
               shouldShowDate={shouldShowDate}
               siteAssetsBaseUrl={siteAssetsBaseUrl}
+              headingLevel={2}
             />
           </div>
-          {paginatedItems.length > 0 && (
-            <div className="flex w-full justify-center lg:justify-end">
+          <div className="flex w-full flex-col-reverse items-center justify-between gap-4 lg:flex-row">
+            <BackToTopLink className="hidden lg:inline-flex" />
+            {paginatedItems.length > 0 && (
               <PaginationControls
                 totalItems={filteredCount}
                 onPageChange={onPageChange}
@@ -132,8 +138,8 @@ export const CollectionClient = ({
                 currPage={currPage}
                 setCurrPage={setCurrPage}
               />
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </>

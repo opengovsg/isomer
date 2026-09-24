@@ -4,16 +4,25 @@ import { isValidEmail } from "~/utils/email"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
+  AuditLogExportBatchReadyEmailTemplateData,
+  AuditLogExportFailedEmailTemplateData,
+  AuditLogExportReadyEmailTemplateData,
   BaseEmailTemplateData,
   CancelSchedulePageTemplateData,
+  CancelScheduleUnpublishTemplateData,
   EmailTemplate,
   FailedPublishTemplateData,
+  FailedSiteRebuildTemplateData,
+  FailedUnpublishTemplateData,
+  GazetteDeletionEmailTemplateData,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
   SchedulePageTemplateData,
-  SuccessfulPublishTemplateData,
+  ScheduleUnpublishTemplateData,
+  SiteUpdateFailedTemplateData,
+  SiteUpdatedTemplateData,
 } from "./templates"
 import { sendMail } from "../../lib/mail"
 import { templates } from "./templates"
@@ -38,11 +47,22 @@ async function sendEmailWithTemplate({
     throw new Error("Invalid email format")
   }
 
+  // Drop malformed cc addresses rather than failing the send for everyone
+  const validCc = data.cc?.filter((email) => {
+    if (isValidEmail(email)) return true
+    logger.error({
+      error: "Invalid cc email format",
+      email,
+    })
+    return false
+  })
+
   try {
     await sendMail({
       recipient: data.recipientEmail,
       subject: template.subject,
       body: template.body,
+      cc: validCc,
     })
   } catch (error) {
     logger.error({
@@ -94,6 +114,26 @@ export async function sendCancelSchedulePageEmail(
   })
 }
 
+export async function sendScheduledUnpublishEmail(
+  data: ScheduleUnpublishTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.scheduleUnpublish(data),
+    emailType: "scheduled unpublish",
+  })
+}
+
+export async function sendCancelScheduleUnpublishEmail(
+  data: CancelScheduleUnpublishTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.cancelScheduleUnpublish(data),
+    emailType: "cancel scheduled unpublish",
+  })
+}
+
 export async function sendFailedPublishEmail(
   data: FailedPublishTemplateData,
 ): Promise<void> {
@@ -104,13 +144,43 @@ export async function sendFailedPublishEmail(
   })
 }
 
-export async function sendSuccessfulPublishEmail(
-  data: SuccessfulPublishTemplateData,
+export async function sendFailedUnpublishEmail(
+  data: FailedUnpublishTemplateData,
 ): Promise<void> {
   await sendEmailWithTemplate({
     data,
-    template: templates.successfulPublish(data),
-    emailType: "successful publish",
+    template: templates.failedUnpublish(data),
+    emailType: "failed unpublish",
+  })
+}
+
+export async function sendFailedSiteRebuildEmail(
+  data: FailedSiteRebuildTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.failedSiteRebuild(data),
+    emailType: "failed site rebuild",
+  })
+}
+
+export async function sendSiteUpdatedEmail(
+  data: SiteUpdatedTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.siteUpdated(data),
+    emailType: "site updated",
+  })
+}
+
+export async function sendSiteUpdateFailedEmail(
+  data: SiteUpdateFailedTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.siteUpdateFailed(data),
+    emailType: "site update failed",
   })
 }
 
@@ -151,5 +221,45 @@ export async function sendAccountDeactivationEmail(
     data,
     template: templates.accountDeactivation(data),
     emailType: "account deactivation",
+  })
+}
+
+export async function sendGazetteDeletionEmail(
+  data: GazetteDeletionEmailTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.gazetteDeletion(data),
+    emailType: "gazette deletion",
+  })
+}
+
+export async function sendAuditLogExportReadyEmail(
+  data: AuditLogExportReadyEmailTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.auditLogExportReady(data),
+    emailType: "audit log export ready",
+  })
+}
+
+export async function sendAuditLogExportFailedEmail(
+  data: AuditLogExportFailedEmailTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.auditLogExportFailed(data),
+    emailType: "audit log export failed",
+  })
+}
+
+export async function sendAuditLogExportBatchReadyEmail(
+  data: AuditLogExportBatchReadyEmailTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.auditLogExportBatchReady(data),
+    emailType: "audit log export batch ready",
   })
 }

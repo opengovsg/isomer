@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { userEvent, within } from "storybook/test"
+import { MOCK_TEST_USER_NAME } from "tests/msw/constants"
 import { collectionHandlers } from "tests/msw/handlers/collection"
 import { folderHandlers } from "tests/msw/handlers/folder"
 import { meHandlers } from "tests/msw/handlers/me"
@@ -9,7 +10,10 @@ import { sitesHandlers } from "tests/msw/handlers/sites"
 import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import CollectionPage from "~/pages/sites/[siteId]/collections/[collectionId]"
 
-import { createBannerGbParameters } from "../utils/growthbook"
+import {
+  createBannerGbParameters,
+  createEgazetteInfoGbParameters,
+} from "../utils/growthbook"
 
 const meta: Meta<typeof CollectionPage> = {
   title: "Pages/Collection Management/Collection Page",
@@ -85,6 +89,17 @@ export const WithBanner: Story = {
   },
 }
 
+export const GazetteCollection: Story = {
+  parameters: {
+    growthbook: [
+      createEgazetteInfoGbParameters({
+        siteId: "1",
+        gazettesCollectionId: "1",
+      }),
+    ],
+  },
+}
+
 export const PageSettings: Story = {
   play: async (context) => {
     const { canvasElement } = context
@@ -114,11 +129,10 @@ export const LinkSettings: Story = {
 export const ExpandedProfileDropdown: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const testUserSelector = await screen.findByText(/TU/i)
-    const testUserSelectorButton = testUserSelector.closest("button")
-    if (testUserSelectorButton) {
-      await userEvent.click(testUserSelectorButton)
-    }
+    const profileMenuButton = await screen.findByRole("button", {
+      name: MOCK_TEST_USER_NAME,
+    })
+    await userEvent.click(profileMenuButton)
   },
 }
 

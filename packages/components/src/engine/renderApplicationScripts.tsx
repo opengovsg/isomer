@@ -1,4 +1,8 @@
-import type { IsomerSiteProps, ScriptComponentType } from "~/types"
+import type {
+  IsomerSiteProps,
+  IsomerSiteThemeProps,
+  ScriptComponentType,
+} from "~/types"
 
 import { AskgovWidget } from "../templates/next/components/internal/Askgov"
 import {
@@ -11,14 +15,17 @@ import {
   VicaStylesheet,
   VicaWidget,
 } from "../templates/next/components/internal/Vica"
+import { ZendeskWidget } from "../templates/next/components/internal/Zendesk"
 
 interface RenderApplicationScriptsProps {
   site: Omit<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">
+  themeColors: IsomerSiteThemeProps["colors"]
   ScriptComponent: ScriptComponentType
 }
 
 export const RenderApplicationScripts = ({
   site,
+  themeColors,
   ScriptComponent,
 }: RenderApplicationScriptsProps) => {
   return (
@@ -43,12 +50,13 @@ export const RenderApplicationScripts = ({
       {site.vica && (
         <>
           <VicaStylesheet useDevStagingScript={site.vica.useDevStagingScript} />
-          <VicaWidget site={site} {...site.vica} />
+          <VicaWidget site={site} themeColors={themeColors} {...site.vica} />
         </>
       )}
       {site.askgov && (
         <AskgovWidget environment={site.environment} {...site.askgov} />
       )}
+      {site.zendesk && <ZendeskWidget {...site.zendesk} />}
     </>
   )
 }

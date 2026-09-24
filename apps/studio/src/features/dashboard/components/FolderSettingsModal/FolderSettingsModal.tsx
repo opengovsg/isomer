@@ -17,6 +17,7 @@ import {
 } from "@chakra-ui/react"
 import {
   Button,
+  Checkbox,
   FormErrorMessage,
   FormHelperText,
   FormLabel,
@@ -111,6 +112,7 @@ const SuspendableModalContent = ({
     defaultValues: {
       title: originalTitle,
       permalink: originalPermalink,
+      shouldCreateRedirect: true,
     },
     schema: baseEditFolderSchema.omit({ siteId: true, resourceId: true }),
   })
@@ -121,6 +123,10 @@ const SuspendableModalContent = ({
     onSettled: onClose,
     onSuccess: async () => {
       await utils.resource.listWithoutRoot.invalidate()
+      // Renaming a folder changes its title/permalink, so the cached resource
+      // search results are now stale — invalidate them too (the page-settings
+      // path already does a broad invalidate; this keeps folder rename in sync).
+      await utils.resource.search.invalidate()
       await utils.resource.getChildrenOf.invalidate({
         resourceId: parentId ? String(parentId) : null,
       })
@@ -235,6 +241,29 @@ const SuspendableModalContent = ({
                 characters left
               </FormHelperText>
             </FormControl>
+            {permalink !== originalPermalink && (
+              <FormControl>
+                <Controller
+                  control={control}
+                  name="shouldCreateRedirect"
+                  render={({ field: { value, onChange, ref, ...field } }) => (
+                    <Checkbox
+                      alignItems="flex-start"
+                      size="sm"
+                      isChecked={!!value}
+                      onChange={(e) => onChange(e.target.checked)}
+                      ref={ref}
+                      {...field}
+                    >
+                      <Text textStyle="body-2" color="base.content.strong">
+                        Redirect visitors from everything under the old URL to
+                        the new location.
+                      </Text>
+                    </Checkbox>
+                  )}
+                />
+              </FormControl>
+            )}
           </VStack>
         </ModalBody>
         <ModalFooter>

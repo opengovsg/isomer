@@ -1,4 +1,5 @@
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import type { InfopicProps } from "../types"
@@ -17,7 +18,9 @@ export const BlockInfopic = ({
   isTextOnRight,
   shouldLazyLoad,
   site,
+  headingLevel,
 }: Omit<InfopicProps, "variant">) => {
+  const Tag = getHeadingTag(headingLevel)
   const compoundStyles = infopicStyles({
     isTextOnRight,
     variant: InfopicVariants.Block.value,
@@ -28,7 +31,7 @@ export const BlockInfopic = ({
   return (
     <section id={id} className={compoundStyles.container()}>
       <div className={compoundStyles.content()}>
-        <h2 className={compoundStyles.title()}>{title}</h2>
+        <Tag className={compoundStyles.title()}>{title}</Tag>
         <p className={compoundStyles.description()}>{description}</p>
         {hasLinkButton && (
           <div className={compoundStyles.button()}>

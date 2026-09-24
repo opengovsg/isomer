@@ -16,7 +16,9 @@ interface UseResourceSelectorProps {
   existingResource: ResourceItemContent | undefined
   setResourceStack: (resourceStack: ResourceItemContent[]) => void
   removeFromStack: (numberOfResources: number) => ResourceItemContent[]
-  onChange: (resourceId: string | null) => void
+  // fullPermalink is the selected resource's path (no leading slash), built from
+  // the just-updated stack so it never lags a render behind resourceId.
+  onChange: (resourceId: string | null, fullPermalink: string) => void
 }
 
 export const useResourceSelector = ({
@@ -37,6 +39,11 @@ export const useResourceSelector = ({
       return isResourceHighlighted && curResourceId === resourceId
     },
     [isResourceHighlighted, moveDest?.id],
+  )
+
+  const isHomeHighlighted = useMemo(
+    () => isResourceHighlighted && moveDest?.type === ResourceType.RootPage,
+    [isResourceHighlighted, moveDest?.type],
   )
 
   const { data: nestedChildrenOfExistingResourceResult } =
@@ -94,7 +101,10 @@ export const useResourceSelector = ({
     }
 
     const lastChild = lastResourceItemInAncestryStack(updatedStack)
-    onChange(lastChild?.id ?? null)
+    onChange(
+      lastChild?.id ?? null,
+      updatedStack.map((resource) => resource.permalink).join("/"),
+    )
   }, [
     isResourceHighlighted,
     onChange,
@@ -125,10 +135,25 @@ export const useResourceSelector = ({
       }
 
       setResourceStack(resourceItemWithAncestryStack)
-      onChange(lastChild.id)
+      // The backend represents "root" as `parentId: null`, not the RootPage
+      // row's own id — sending the real id here for a move would make the
+      // moved resource a child of the RootPage row instead of a top-level
+      // resource. Link mode still needs the real id to build the reference
+      // link, so only translate to `null` for the move destination.
+      const destinationResourceId =
+        interactionType === "move" && lastChild.type === ResourceType.RootPage
+          ? null
+          : lastChild.id
+      onChange(
+        destinationResourceId,
+        resourceItemWithAncestryStack
+          .map((resource) => resource.permalink)
+          .join("/"),
+      )
       setIsResourceHighlighted(true)
     },
     [
+      interactionType,
       onChange,
       setIsResourceHighlighted,
       setResourceStack,
@@ -138,6 +163,7 @@ export const useResourceSelector = ({
 
   return {
     isResourceIdHighlighted,
+    isHomeHighlighted,
     isResourceItemDisabled,
     hasParentInStack,
     handleClickBackButton,

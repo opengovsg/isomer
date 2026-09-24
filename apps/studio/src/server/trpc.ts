@@ -9,11 +9,13 @@
  */
 
 import { initTRPC, TRPCError } from "@trpc/server"
+import { timingSafeEqual } from "node:crypto"
 import superjson from "superjson"
 import { ZodError } from "zod"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
+import { redactLogInput } from "~/lib/redact-log-input"
 
 import type { RateLimitMetaOptions } from "./modules/rate-limit/types"
 import { type Context } from "./context"
@@ -60,7 +62,7 @@ const loggerMiddleware = t.middleware(
       path,
       req: ctx.req,
     })
-    const rawInput = await getRawInput()
+    const rawInput = redactLogInput(await getRawInput())
 
     const result = await next({
       ctx: { logger },
@@ -173,29 +175,37 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
 
 /**
  * Webhook middleware to protect endpoints that do not need a user context
- * but still need to be protected via an API key. We still check the session
- * in case the request is made by a logged in user (via the FE), and to allow for easier testing.
+ * but still need to be protected via an API key.
  * */
 
 export const WEBHOOK_X_API_KEY_HEADER = "x-api-key"
 
+const isValidWebhookApiKey = (
+  apiKey: string | string[] | undefined,
+  expectedApiKey: string,
+): boolean => {
+  return (
+    typeof apiKey === "string" &&
+    apiKey.length === expectedApiKey.length &&
+    timingSafeEqual(Buffer.from(apiKey), Buffer.from(expectedApiKey))
+  )
+}
+
 const webhookMiddleware = t.middleware(async ({ next, ctx }) => {
-  if (!ctx.session?.userId) {
-    const apiKey = ctx.req.headers[WEBHOOK_X_API_KEY_HEADER]
-    // Ensure that the API key is set in the env
-    if (!env.STUDIO_SSM_WEBHOOK_API_KEY) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Webhook API key is not configured",
-      })
-    }
-    // Ensure that the API key is valid and matches
-    if (!apiKey || apiKey !== env.STUDIO_SSM_WEBHOOK_API_KEY) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Invalid Webhook API key provided",
-      })
-    }
+  const apiKey = ctx.req.headers[WEBHOOK_X_API_KEY_HEADER]
+  // Ensure that the API key is set in the env
+  if (!env.STUDIO_SSM_WEBHOOK_API_KEY) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Webhook API key is not configured",
+    })
+  }
+  // Ensure that the API key is valid and matches
+  if (!isValidWebhookApiKey(apiKey, env.STUDIO_SSM_WEBHOOK_API_KEY)) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Invalid Webhook API key provided",
+    })
   }
   return next()
 })
