@@ -1,5 +1,5 @@
 import type { Node } from "@tiptap/pm/model"
-import type { TableMap } from "@tiptap/pm/tables"
+import { selectedRect, type TableMap } from "@tiptap/pm/tables"
 import { describe, expect, it } from "vitest"
 
 import {
@@ -141,7 +141,9 @@ describe("getTableSelectionKind", () => {
 })
 
 const cellNode = (attrs: { colspan?: number; rowspan?: number }) =>
-  ({ attrs: { colspan: 1, rowspan: 1, ...attrs } }) as Node
+  ({ attrs: { colspan: 1, rowspan: 1, ...attrs } }) as unknown as Node
+
+type MockTableRect = ReturnType<typeof selectedRect>
 
 const selectionRect = ({
   width,
@@ -159,20 +161,22 @@ const selectionRect = ({
   left?: number
   right?: number
   cell: Node
-}) => ({
-  top,
-  bottom: bottom ?? height,
-  left,
-  right: right ?? width,
-  map: {
-    width,
-    height,
-    map: [0],
-  },
-  table: {
-    nodeAt: () => cell,
-  } as Node,
-})
+}): MockTableRect =>
+  ({
+    tableStart: 1,
+    top,
+    bottom: bottom ?? height,
+    left,
+    right: right ?? width,
+    map: {
+      width,
+      height,
+      map: [0],
+    } as TableMap,
+    table: {
+      nodeAt: () => cell,
+    } as unknown as Node,
+  }) as MockTableRect
 
 describe("selectionIsFullyMergedRow", () => {
   it("is true for a full-width row that is one merged cell", () => {

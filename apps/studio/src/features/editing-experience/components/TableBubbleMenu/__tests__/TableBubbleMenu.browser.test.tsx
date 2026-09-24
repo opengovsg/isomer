@@ -948,7 +948,11 @@ describe("TableBubbleMenu", () => {
 
     await waitFor(() => {
       expect(rowCellCount(editor, 1)).toBe(3)
-      expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+      expect(rowTextsAt(editor, 1)).toEqual([
+        "Row 1, A",
+        "Row 1, B",
+        "Row 1, C",
+      ])
     })
   })
 
