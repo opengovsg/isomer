@@ -193,6 +193,38 @@ const isMergedCell = (rect: ReturnType<typeof selectedRect>): boolean => {
   )
 }
 
+type TableSelectionRect = ReturnType<typeof selectedRect>
+
+/** Full-width row selection that is a single cell merged across the row. */
+export const selectionIsFullyMergedRow = (
+  rect: TableSelectionRect,
+): boolean => {
+  if (rect.left !== 0 || rect.right !== rect.map.width) return false
+  if (rect.bottom - rect.top !== 1) return false
+
+  const cellStart = rect.map.map[rect.top * rect.map.width + rect.left]
+  if (cellStart === undefined) return false
+  const node = rect.table.nodeAt(cellStart)
+  if (!node) return false
+
+  return (node.attrs.colspan as number) === rect.map.width
+}
+
+/** Full-height column selection that is a single cell merged down the column. */
+export const selectionIsFullyMergedColumn = (
+  rect: TableSelectionRect,
+): boolean => {
+  if (rect.top !== 0 || rect.bottom !== rect.map.height) return false
+  if (rect.right - rect.left !== 1) return false
+
+  const cellStart = rect.map.map[rect.top * rect.map.width + rect.left]
+  if (cellStart === undefined) return false
+  const node = rect.table.nodeAt(cellStart)
+  if (!node) return false
+
+  return (node.attrs.rowspan as number) === rect.map.height
+}
+
 export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   const { selection } = editor.state
   if (!(selection instanceof CellSelection)) return "none"

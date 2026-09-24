@@ -61,6 +61,8 @@ import {
   restoreMovedBlockSelection,
   selectionIncludesHeaderColumn,
   selectionIncludesHeaderRow,
+  selectionIsFullyMergedColumn,
+  selectionIsFullyMergedRow,
   selectionIsLeftmostColumn,
   selectionIsTopRow,
 } from "./TableBubbleMenu.utils"
@@ -327,6 +329,14 @@ const MergeCellsButton = ({ editor }: { editor: Editor }) => (
   />
 )
 
+const SplitCellButton = ({ editor }: { editor: Editor }) => (
+  <ActionButton
+    label="Split cell"
+    icon={<IconSplitCell boxSize="1rem" />}
+    onClick={() => editor.chain().focus().splitCell().run()}
+  />
+)
+
 const HeaderToggle = ({
   label,
   isChecked,
@@ -382,6 +392,7 @@ const RowSelectionActions = ({
     { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
     "down",
   )
+  const showSplitCell = selectionIsFullyMergedRow(rect)
 
   return (
     <ActionGroup>
@@ -413,6 +424,7 @@ const RowSelectionActions = ({
       )}
       <ClearContentsButton editor={editor} />
       <MergeCellsButton editor={editor} />
+      {showSplitCell && <SplitCellButton editor={editor} />}
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
@@ -456,6 +468,7 @@ const ColumnSelectionActions = ({
     { left: rect.left, right: rect.right, tableWidth: rect.map.width },
     "right",
   )
+  const showSplitCell = selectionIsFullyMergedColumn(rect)
 
   return (
     <ActionGroup>
@@ -487,6 +500,7 @@ const ColumnSelectionActions = ({
       )}
       <ClearContentsButton editor={editor} />
       <MergeCellsButton editor={editor} />
+      {showSplitCell && <SplitCellButton editor={editor} />}
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
@@ -556,11 +570,7 @@ const SelectionActions = ({
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          <ActionButton
-            label="Split cell"
-            icon={<IconSplitCell boxSize="1rem" />}
-            onClick={() => editor.chain().focus().splitCell().run()}
-          />
+          <SplitCellButton editor={editor} />
         </ActionGroup>
       )
     default:
