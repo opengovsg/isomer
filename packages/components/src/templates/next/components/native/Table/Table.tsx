@@ -24,7 +24,7 @@ const tableCellStyles = tv({
   base: "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top [&_li]:mb-4 [&_li]:mt-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
   variants: {
     isHeader: {
-      true: "bg-base-canvas-backdrop [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium",
+      true: "bg-base-canvas-backdrop [&_ol]:prose-label-md-bold [&_p]:prose-label-md-bold [&_ul]:prose-label-md-bold",
       false: "bg-base-canvas-alt [&_ol]:prose-body-sm [&_p]:prose-body-sm",
     },
   },
