@@ -162,7 +162,7 @@ catalog:
   papaparse: ^5.7.0
   pg-boss: ^12.30.0
   postcss-load-config: ^6.0.1
-  posthog-js: ^1.429.1
+  posthog-js: ^1.433.10
   posthog-node: ^5.52.4
   rate-limiter-flexible: ^11.2.0
   react-error-boundary: ^6.1.5
