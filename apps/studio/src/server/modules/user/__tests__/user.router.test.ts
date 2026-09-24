@@ -1225,6 +1225,22 @@ describe("user.router", () => {
       expect(result[0]).not.toHaveProperty("phone")
     })
 
+    it("should not return phone numbers if requester is not an isomer admin", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+      const user = await setupUser({ email: TEST_EMAIL, phone: "91234567" })
+      await setupEditorPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toHaveLength(2) // the current admin user and the editor
+      for (const listedUser of result) {
+        expect(listedUser).not.toHaveProperty("phone")
+      }
+    })
+
     it("should return paginated results (10 users per page)", async () => {
       // Arrange
       await setupEditorPermissions({ userId: session.userId, siteId })
