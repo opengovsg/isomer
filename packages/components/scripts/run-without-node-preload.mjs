@@ -9,8 +9,7 @@ const stripInstrumentationFromNodeOptions = (nodeOptions) => {
     return ""
   }
 
-  const tokens =
-    nodeOptions.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) ?? []
+  const tokens = nodeOptions.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) ?? []
   const kept = []
 
   for (let i = 0; i < tokens.length; i++) {
@@ -42,9 +41,7 @@ const stripInstrumentationFromNodeOptions = (nodeOptions) => {
 
 const [command, ...args] = process.argv.slice(2)
 if (!command) {
-  console.error(
-    "Usage: node run-without-node-preload.mjs <command> [args...]",
-  )
+  console.error("Usage: node run-without-node-preload.mjs <command> [args...]")
   process.exit(1)
 }
 
