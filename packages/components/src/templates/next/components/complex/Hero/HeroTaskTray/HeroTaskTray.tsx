@@ -22,7 +22,7 @@ export const HeroTaskTray = ({
   const trimmedTrayTitle = taskTrayTitle?.trim()
   const itemHeadingLevel = headingLevel + (trimmedTrayTitle ? 2 : 1)
   const taskTrayCardClassName =
-    "flex h-full flex-col items-start gap-6 rounded-lg border border-base-divider-subtle bg-white px-10 pb-9 pt-8 shadow-[0_6px_24px_0_rgba(0,0,0,0.10)]"
+    "flex h-full flex-col items-start gap-6 rounded-lg border border-base-divider-subtle bg-white px-8 py-8 shadow-[0_6px_24px_0_rgba(0,0,0,0.10)] md:px-10 md:pt-8 md:pb-9"
 
   return (
     <section className="bg-white pb-12 md:pb-16">
