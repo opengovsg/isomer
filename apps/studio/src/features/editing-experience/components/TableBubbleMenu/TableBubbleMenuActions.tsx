@@ -22,6 +22,7 @@ import {
   moveTableRow,
   selectedRect,
 } from "@tiptap/pm/tables"
+import { useEditorState } from "@tiptap/react"
 import {
   BiCopy,
   BiDownArrowAlt,
@@ -378,7 +379,23 @@ const RowSelectionActions = ({
   editor: Editor
   rect: SelectionRect
 }) => {
-  const includesHeader = selectionIncludesHeaderRow(rect)
+  const { headerRowActive, includesHeader } = useEditorState({
+    editor,
+    selector: ({ editor: currentEditor }) => {
+      const { selection } = currentEditor.state
+      if (!(selection instanceof CellSelection)) {
+        return { headerRowActive: false, includesHeader: false }
+      }
+      const currentRect = selectedRect(currentEditor.state)
+      return {
+        headerRowActive: hasHeaderRow(currentRect),
+        includesHeader: selectionIncludesHeaderRow(currentRect),
+      }
+    },
+    equalityFn: (previous, next) =>
+      previous.headerRowActive === next.headerRowActive &&
+      previous.includesHeader === next.includesHeader,
+  })
   const rowMoveUpPlan = getRowMovePlan(
     { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
     "up",
@@ -393,7 +410,7 @@ const RowSelectionActions = ({
       {selectionIsTopRow(rect) && (
         <HeaderToggle
           label="Header row"
-          isChecked={hasHeaderRow(rect)}
+          isChecked={headerRowActive}
           onToggle={() => editor.chain().focus().toggleHeaderRow().run()}
         />
       )}
@@ -450,7 +467,23 @@ const ColumnSelectionActions = ({
   editor: Editor
   rect: SelectionRect
 }) => {
-  const includesHeader = selectionIncludesHeaderColumn(rect)
+  const { headerColumnActive, includesHeader } = useEditorState({
+    editor,
+    selector: ({ editor: currentEditor }) => {
+      const { selection } = currentEditor.state
+      if (!(selection instanceof CellSelection)) {
+        return { headerColumnActive: false, includesHeader: false }
+      }
+      const currentRect = selectedRect(currentEditor.state)
+      return {
+        headerColumnActive: hasHeaderColumn(currentRect),
+        includesHeader: selectionIncludesHeaderColumn(currentRect),
+      }
+    },
+    equalityFn: (previous, next) =>
+      previous.headerColumnActive === next.headerColumnActive &&
+      previous.includesHeader === next.includesHeader,
+  })
 
   const columnMoveLeftPlan = getColumnMovePlan(
     { left: rect.left, right: rect.right, tableWidth: rect.map.width },
@@ -467,7 +500,7 @@ const ColumnSelectionActions = ({
       {selectionIsLeftmostColumn(rect) && (
         <HeaderToggle
           label="Header column"
-          isChecked={hasHeaderColumn(rect)}
+          isChecked={headerColumnActive}
           onToggle={() => editor.chain().focus().toggleHeaderColumn().run()}
         />
       )}
