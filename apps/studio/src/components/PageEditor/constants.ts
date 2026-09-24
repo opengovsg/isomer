@@ -178,6 +178,26 @@ export const DEFAULT_BLOCKS = {
       },
     ],
   },
+  steps: {
+    type: "steps",
+    title: "How to apply",
+    subtitle: "Tell users what to expect before they start.",
+    numberStyle: "numeral",
+    steps: [
+      {
+        title: "Check if you are eligible",
+        description: "Say who this is for, in one sentence.",
+      },
+      {
+        title: "Prepare your documents",
+        description: "List what users need to have on hand.",
+      },
+      {
+        title: "Submit your application",
+        description: "Say how long it takes and what happens next.",
+      },
+    ],
+  },
   map: {
     type: "map",
     title: "Map of the Singapore region",
@@ -346,6 +366,13 @@ export const BLOCK_TO_META: Record<
     usageText: "Share key wins or highlight your values in short words.",
     imageSrc: "/assets/block-images/KeyStatistics.png",
   },
+  steps: {
+    label: "Steps",
+    description: "Break a process into numbered steps.",
+    usageText:
+      "Show users what to do in order, like applying for a scheme or making a report.",
+    imageSrc: "/assets/block-images/Steps.png",
+  },
   infobar: {
     label: "Call-to-Action",
     description: "Add a strong Call-to-Action.",
@@ -509,7 +536,7 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
   },
   {
     label: "Add a new section",
-    types: ["infocards", "infocols", "keystatistics"],
+    types: ["infocards", "infocols", "keystatistics", "steps"],
   },
   { label: "Embed external content", types: ["map", "video", "formsg"] },
 ]
@@ -534,6 +561,7 @@ export const getHomepageAllowedBlocks = ({
       "infocards",
       "keystatistics",
       "infocols",
+      "steps",
       "infopic",
       "infobar",
       "blockquote",

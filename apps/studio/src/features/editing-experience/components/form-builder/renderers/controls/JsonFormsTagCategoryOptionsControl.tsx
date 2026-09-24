@@ -4,6 +4,7 @@ import { Box, HStack, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches, update } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
+import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { get } from "lodash-es"
 import { Suspense, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
@@ -37,7 +38,8 @@ function DeleteOptionWarningBody({
   pageId: number
   tagId: string
 }) {
-  const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
+  const [{ count }] = trpc.collection.countFilterUsage.useSuspenseQuery({
+    type: TAG_CATEGORY_TYPE.Text,
     siteId,
     pageId,
     tagOptionIds: [tagId],

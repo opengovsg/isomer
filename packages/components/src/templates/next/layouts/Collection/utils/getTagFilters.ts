@@ -1,6 +1,7 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { resolveTagCategoryDisplay } from "~/types/constants"
+import { isTextFilter } from "~/types/page"
 
 import type { Filter, FilterItem } from "../../../types/Filter"
 
@@ -46,9 +47,9 @@ export const getTagFilters = (
         }),
       )
 
-      const matchedCategory = tagCategories?.find(
-        (tagCategory) => tagCategory.label === category,
-      )
+      const matchedCategory = tagCategories
+        ?.filter(isTextFilter)
+        .find((tagCategory) => tagCategory.label === category)
 
       const filters: Filter[] = [
         ...acc,
@@ -89,9 +90,11 @@ export const getTagFilters = (
     return {
       ...filter,
       items: filter.items.sort((a, b) => {
-        const category = tagCategories.find((cat) => cat.label === filter.id)
+        const category = tagCategories
+          .filter(isTextFilter)
+          .find((cat) => cat.label === filter.id)
         const tagOptionIds =
-          category?.options?.map((option) => option.label) ?? []
+          category?.options.map((option) => option.label) ?? []
         return tagOptionIds.indexOf(a.id) - tagOptionIds.indexOf(b.id)
       }),
     }

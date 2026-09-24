@@ -41,6 +41,14 @@ export const Admin: Story = {
       ],
     },
   },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    // Anchor on the table having rendered before asserting the absence.
+    await screen.findByText("Government Editor")
+    await expect(
+      screen.queryByRole("columnheader", { name: "Phone" }),
+    ).toBeNull()
+  },
 }
 
 export const Publisher: Story = {
@@ -87,6 +95,25 @@ export const ExpandedMenu: Story = {
       name: "Options for Admin User",
     })
     await userEvent.click(actionMenu)
+  },
+}
+
+// Core Isomer admins additionally see each collaborator's phone number
+export const CoreIsomerAdmin: Story = {
+  parameters: {
+    msw: {
+      // Must precede ADMIN_HANDLERS' isIsomerAdmin.default() and
+      // list.users(), since MSW uses the first matching handler
+      handlers: [
+        userHandlers.isIsomerAdmin.admin(),
+        userHandlers.list.usersWithPhone(),
+        ...ADMIN_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await expect(await screen.findByText("91234567")).toBeVisible()
   },
 }
 

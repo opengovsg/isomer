@@ -37,6 +37,7 @@ export const buildPermissionsForResource = (
     case RoleType.Publisher:
       giveBasePermissions(builder)
       builder.can("publish", "Resource")
+      builder.can("unpublish", "Resource")
       return
   }
 }

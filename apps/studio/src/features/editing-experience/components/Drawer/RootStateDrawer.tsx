@@ -69,7 +69,7 @@ interface FixedBlockContent {
 const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
   article: {
     label: "Article page header",
-    description: "Category, Date, and Summary",
+    description: "Filters, Date, and Summary",
   },
   content: {
     label: "Content page header",
@@ -254,7 +254,7 @@ export default function RootStateDrawer() {
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
         if (type === ResourceType.CollectionPage) {
-          void utils.collection.countTagOptionsUsage.invalidate()
+          void utils.collection.countFilterUsage.invalidate()
         }
         toast({
           status: "success",

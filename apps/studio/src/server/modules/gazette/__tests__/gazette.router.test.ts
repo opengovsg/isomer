@@ -181,6 +181,65 @@ describe("gazette.router", async () => {
     })
   })
 
+  describe("list ordering", () => {
+    it("orders by notification number numerically, not lexicographically", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+      vi.spyOn(s3Lib, "getFileSize").mockResolvedValue(0)
+
+      // Notification numbers deliberately mix digit lengths: a naive text
+      // sort would put "82" above "5337" ('8' > '5' as the first
+      // character), even though 5337 is numerically larger.
+      const notificationNumbers = [
+        "82",
+        "81",
+        "80",
+        "78",
+        "5337",
+        "5336",
+        "5335",
+      ]
+      for (const notificationNumber of notificationNumbers) {
+        await caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: `Notice ${notificationNumber}`,
+          permalink: crypto.randomUUID(),
+          ref: `/sites/1/gazettes/${crypto.randomUUID()}/notif-${notificationNumber}.pdf`,
+          category: "Government Gazette",
+          date: "30/04/2026",
+          description: notificationNumber,
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        })
+      }
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        limit: 10,
+        offset: 0,
+      })
+
+      // Assert
+      const orderedNotificationNumbers = result.map(
+        (gazette) =>
+          (gazette.content as { page?: { description?: string } })?.page
+            ?.description,
+      )
+      expect(orderedNotificationNumbers).toEqual([
+        "5337",
+        "5336",
+        "5335",
+        "82",
+        "81",
+        "80",
+        "78",
+      ])
+    })
+  })
+
   describe("create", () => {
     it("creates a gazette resource + blob + audit entries in one transaction", async () => {
       // Arrange

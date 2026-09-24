@@ -28,6 +28,7 @@ import {
   publishResource,
 } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
+import { getFolderIndexPageInfo } from "./folder.service"
 
 export const folderRouter = router({
   create: protectedProcedure
@@ -343,28 +344,7 @@ export const folderRouter = router({
         resourceIds: [resourceId],
       })
 
-      const { title } = await db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.id", "=", resourceId)
-        .select("title")
-        .executeTakeFirstOrThrow()
-
-      const indexPage = await db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.parentId", "=", resourceId)
-        .where("Resource.type", "=", ResourceType.IndexPage)
-        .select(["id", "draftBlobId"])
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              code: "NOT_FOUND",
-              message: "No existing index page found",
-            }),
-        )
-
-      return { title, ...indexPage }
+      return getFolderIndexPageInfo(db, { siteId, resourceId })
     }),
 
   listChildPages: protectedProcedure

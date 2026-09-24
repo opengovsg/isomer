@@ -4,6 +4,8 @@ import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
+import { resolveCollectionSortOrder } from "./collectionSortOrder"
+import { getDateFilterDisplayEntries } from "./getDateFilterDisplayEntries"
 import { getPillAndPlaintextTags } from "./getPillAndPlaintextTags"
 import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
@@ -108,12 +110,7 @@ export const getCollectionItems = ({
 
   const items = currSitemap.children
     .flatMap((child) => getSitemapAsArray(child))
-    .filter(
-      (item) =>
-        item.layout === "file" ||
-        item.layout === "link" ||
-        item.layout === "article",
-    )
+    .filter((item) => item.layout === "link" || item.layout === "article")
 
   const transformedItems = items.map((item) => {
     const date =
@@ -123,6 +120,10 @@ export const getCollectionItems = ({
     const image = getItemImage({ showThumbnail, item, site })
     const { pillTags, plaintextTags } = getPillAndPlaintextTags(
       item.tagged,
+      tagCategories,
+    )
+    const { dateFilterDisplayEntries } = getDateFilterDisplayEntries(
+      item.dateTagged,
       tagCategories,
     )
 
@@ -144,16 +145,11 @@ export const getCollectionItems = ({
           ? getTagsFromTagged(item.tagged, tagCategories)
           : undefined,
       pillTags,
+      dateTagged: item.dateTagged,
+      dateFilterDisplayEntries,
     }
 
-    if (item.layout === "file") {
-      return {
-        ...baseItem,
-        variant: "file",
-        url: item.ref,
-        fileDetails: item.fileDetails,
-      }
-    } else if (item.layout === "link") {
+    if (item.layout === "link") {
       return {
         ...baseItem,
         variant: "link",
@@ -170,7 +166,9 @@ export const getCollectionItems = ({
 
   return sortCollectionItems({
     items: transformedItems,
-    sortOrder,
+    sortOrder: sortOrder
+      ? resolveCollectionSortOrder(sortOrder, tagCategories)
+      : undefined,
     sortBy,
     sortDirection,
   })

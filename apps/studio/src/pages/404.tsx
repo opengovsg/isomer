@@ -1,12 +1,24 @@
 import { Flex, Stack, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import Image from "next/image"
+import NextLink from "next/link"
 import { useRouter } from "next/router"
+import {
+  type NotFoundCta,
+  getNotFoundCtaFromPath,
+  ALL_SITES_CTA,
+} from "~/components/ErrorBoundary/getNotFoundCta"
 import { RestrictedMiniFooter } from "~/components/RestrictedMiniFooter"
 
 // https://nextjs.org/docs/advanced-features/custom-error-page
 const Custom404 = () => {
   const router = useRouter()
+
+  // Prerender uses asPath "/404". Wait for router.isReady before parsing the
+  // requested URL so the first client render matches the prerender.
+  const cta: NotFoundCta = router.isReady
+    ? getNotFoundCtaFromPath(router.asPath)
+    : ALL_SITES_CTA
 
   return (
     <Flex flexDirection="column" w="100%" flex={1}>
@@ -38,8 +50,11 @@ const Custom404 = () => {
           <Text textStyle="h5" as="h1">
             This page could not be found
           </Text>
-          <Button variant="link" onClick={() => router.back()}>
-            Go back
+          <Text textStyle="body-2" textAlign="center">
+            Check that the URL is correct.
+          </Text>
+          <Button mt="0.5rem" as={NextLink} href={cta.href}>
+            {cta.label}
           </Button>
         </Stack>
         <RestrictedMiniFooter

@@ -4,7 +4,6 @@ import {
   CollectionPagePageSchema,
   ContentPagePageSchema,
   DatabasePagePageSchema,
-  FileRefPageSchema,
   HomePagePageSchema,
   IndexPagePageSchema,
   LinkRefPageSchema,
@@ -22,7 +21,6 @@ export const LAYOUT_PAGE_MAP = {
   search: SearchPagePageSchema,
   link: LinkRefPageSchema,
   collection: CollectionPagePageSchema,
-  file: FileRefPageSchema,
 } as const
 
 export const getLayoutPageSchema = (layout: IsomerPageLayoutType) => {

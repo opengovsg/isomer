@@ -10,6 +10,9 @@ import {
   IconCalloutNote,
   IconCalloutUrgent,
   IconCalloutWarning,
+  IconStepsBadge,
+  IconStepsEyebrow,
+  IconStepsNumeral,
   IconTagCategoryPills,
   IconTagCategoryPlaintext,
 } from "~/components/icons"
@@ -25,6 +28,9 @@ const IMAGE_RADIO_ICONS: Record<string, typeof IconTagCategoryPills> = {
   "callout/warning": IconCalloutWarning,
   "callout/urgent": IconCalloutUrgent,
   "callout/note": IconCalloutNote,
+  "steps/numeral": IconStepsNumeral,
+  "steps/eyebrow": IconStepsEyebrow,
+  "steps/badge": IconStepsBadge,
 }
 
 interface ImageRadioSchema {

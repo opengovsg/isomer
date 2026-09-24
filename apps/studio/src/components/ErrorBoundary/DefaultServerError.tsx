@@ -4,6 +4,7 @@ import NextLink from "next/link"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 
 import { LiftUnderRepair } from "../Svg"
+import { ALL_SITES_CTA } from "./getNotFoundCta"
 
 export const DefaultServerError = () => {
   return (
@@ -29,8 +30,8 @@ export const DefaultServerError = () => {
           </Link>
           .
         </Text>
-        <Button mt="1.25rem" as={NextLink} href="/">
-          Back to Home
+        <Button mt="1.25rem" as={NextLink} href={ALL_SITES_CTA.href}>
+          {ALL_SITES_CTA.label}
         </Button>
       </Flex>
     </Flex>
