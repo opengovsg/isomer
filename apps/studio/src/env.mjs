@@ -28,7 +28,7 @@ const shouldSkipEnvValidation =
   process.env.npm_lifecycle_event === "lint" ||
   !!process.env.STORYBOOK
 
-export const env = createEnv({
+const parsedEnv = createEnv({
   shared: {
     NODE_ENV: z.enum(["development", "test", "production"]),
   },
@@ -116,9 +116,10 @@ export const env = createEnv({
       (process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
         ? "preview"
         : undefined),
-    NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS:
+    NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS: skipSingpassSchema.parse(
       readProcessEnv("NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS") ??
-      process.env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS,
+        process.env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS,
+    ),
     NEXT_PUBLIC_APP_URL:
       readProcessEnv("NEXT_PUBLIC_APP_URL") ?? process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_APP_NAME:
@@ -159,15 +160,15 @@ export const env = createEnv({
   skipValidation: shouldSkipEnvValidation,
 })
 
-if (shouldSkipEnvValidation) {
-  env.ENABLE_CRON_WORKERS = cronWorkersSchema.parse(
-    readProcessEnv("ENABLE_CRON_WORKERS") ?? process.env.ENABLE_CRON_WORKERS,
-  )
-  env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS = skipSingpassSchema.parse(
-    readProcessEnv("NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS") ??
-      process.env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS,
-  )
-}
+export const env = shouldSkipEnvValidation
+  ? {
+      ...parsedEnv,
+      ENABLE_CRON_WORKERS: cronWorkersSchema.parse(
+        readProcessEnv("ENABLE_CRON_WORKERS") ??
+          process.env.ENABLE_CRON_WORKERS,
+      ),
+    }
+  : parsedEnv
 
 if (!shouldSkipEnvValidation && typeof window === "undefined") {
   const r2Vars = [
