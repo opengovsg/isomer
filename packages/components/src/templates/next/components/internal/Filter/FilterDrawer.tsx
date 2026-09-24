@@ -1,6 +1,11 @@
 "use client"
 
-import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react"
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+} from "@headlessui/react"
 import { useButton } from "@react-aria/button"
 import { useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
@@ -19,7 +24,7 @@ import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { IconButton } from "../IconButton"
 import { DateFilterControls } from "./DateFilterControls"
-import { filterChevronStyles, filterPanelStyles } from "./filterStyles"
+import { filterChevronStyles } from "./filterStyles"
 
 const expandFilterButtonStyle = tv({
   extend: focusRing,
@@ -279,9 +284,9 @@ export const FilterDrawer = (props: FilterDrawerProps): JSX.Element => {
           className="relative ml-auto flex h-full w-full transform flex-col overflow-y-auto bg-white transition duration-300 ease-in-out data-[closed]:translate-y-full"
         >
           <div className="mx-6 flex items-center justify-between border-b border-b-divider-medium pb-3 pt-12 md:mx-10">
-            <h2 className="prose-title-lg-medium text-base-content-medium">
+            <DialogTitle className="prose-title-lg-medium text-base-content-medium">
               Filters
-            </h2>
+            </DialogTitle>
             <IconButton
               icon={BiX}
               onPress={() => onOpen(false)}
