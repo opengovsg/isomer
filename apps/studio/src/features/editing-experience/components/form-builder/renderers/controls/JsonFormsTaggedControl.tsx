@@ -8,6 +8,7 @@ import {
   FormLabel,
   MultiSelect,
 } from "@opengovsg/design-system-react"
+import { isTextFilter } from "@opengovsg/isomer-components"
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
@@ -66,6 +67,9 @@ const SuspendableJsonFormsTaggedControl = ({
     tags.length > 0 && (
       <VStack spacing="1.25rem">
         {tags
+          // NOTE: date filters have no `options`/`tagged` membership — their
+          // value is edited by JsonFormsDateFilterValuesControl instead.
+          .filter(isTextFilter)
           .filter(({ options }) => options.length > 0)
           .map(({ label, options, isRequired: tagIsRequired }) => {
             const currentTagCategoryOptions = options.filter(({ id }) =>
