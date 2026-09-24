@@ -235,6 +235,32 @@ export const TaskTrayTwoItems: Story = {
   },
 }
 
+// Minimal copy so tray width is driven by layout, not content length (see FloatingShortText).
+export const TaskTrayTwoItemsShortText: Story = {
+  args: {
+    ...TaskTray.args,
+    title: "Title",
+    subtitle: "Subtitle",
+    taskTrayTitle: "Tray",
+    taskTrayItems: [
+      {
+        icon: "stars",
+        title: "One",
+        description: "A",
+        buttonLabel: "Go",
+        buttonUrl: "/",
+      },
+      {
+        icon: "line-chart",
+        title: "Two",
+        description: "B",
+        buttonLabel: "Go",
+        buttonUrl: "/",
+      },
+    ],
+  },
+}
+
 export const TaskTrayThreeItems: Story = {
   args: {
     ...TaskTray.args,

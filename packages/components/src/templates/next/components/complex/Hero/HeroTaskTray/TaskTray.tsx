@@ -9,11 +9,11 @@ const TASK_TRAY_TITLE_ID = "hero-task-tray-title"
 const taskTrayStyles = tv({
   slots: {
     root: [
-      "flex h-full flex-col items-start gap-6 rounded-lg border border-base-divider-subtle bg-white p-6 shadow-[0_6px_24px_0_rgba(0,0,0,0.10)]",
+      "flex h-full w-full flex-col items-start gap-6 rounded-lg border border-base-divider-subtle bg-white p-6 shadow-[0_6px_24px_0_rgba(0,0,0,0.10)]",
       "md:px-10 md:pb-9 md:pt-8",
     ],
     title: "prose-display-sm break-words text-base-content-strong",
-    items: "grid grid-cols-1 gap-8 md:grid-cols-2",
+    items: "grid w-full grid-cols-1 gap-8 md:grid-cols-2",
   },
   variants: {
     itemCount: {

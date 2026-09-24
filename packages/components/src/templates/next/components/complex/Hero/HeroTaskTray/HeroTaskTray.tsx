@@ -25,7 +25,7 @@ export const HeroTaskTray = ({
         The image covers rows 1–2: 25% of the tray below lg (1fr of 1fr+3fr), 50% at lg.
         Row 3 stays in flow, so the section padding starts at the tray bottom.
       */}
-      <div className="grid grid-rows-[auto_minmax(0,1fr)_minmax(0,3fr)] lg:grid-rows-[auto_minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="grid w-full grid-cols-1 grid-rows-[auto_minmax(0,1fr)_minmax(0,3fr)] lg:grid-rows-[auto_minmax(0,1fr)_minmax(0,1fr)]">
         <div
           className="relative col-start-1 row-start-1 row-end-3 overflow-hidden"
           style={{ contain: "layout" }}
@@ -45,7 +45,7 @@ export const HeroTaskTray = ({
         <div
           className={twMerge(
             ComponentContent,
-            "relative z-10 col-start-1 row-start-1 flex flex-row justify-start py-16 text-start text-base-content-inverse",
+            "relative z-10 col-start-1 row-start-1 flex w-full min-w-0 flex-row justify-start py-16 text-start text-base-content-inverse",
           )}
         >
           <div className="xl:max-w-50% flex w-full flex-col gap-9 sm:w-3/5">
@@ -61,7 +61,7 @@ export const HeroTaskTray = ({
         <div
           className={twMerge(
             ComponentContent,
-            "z-20 col-start-1 row-start-2 row-end-4 self-stretch",
+            "z-20 col-start-1 row-start-2 row-end-4 w-full min-w-0 self-stretch",
           )}
         >
           <TaskTray

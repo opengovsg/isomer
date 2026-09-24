@@ -837,6 +837,36 @@ export const HeroTaskTrayTwoItems: Story = {
   }),
 }
 
+// Minimal copy so tray width is driven by layout, not content length (see FloatingShortText).
+export const HeroTaskTrayTwoItemsShortText: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "taskTray",
+      backgroundUrl: "/hero-banner.png",
+      title: "Title",
+      subtitle: "Subtitle",
+      taskTrayTitle: "Tray",
+      taskTrayItems: [
+        {
+          icon: "stars",
+          title: "One",
+          description: "A",
+          buttonLabel: "Go",
+          buttonUrl: "/",
+        },
+        {
+          icon: "line-chart",
+          title: "Two",
+          description: "B",
+          buttonLabel: "Go",
+          buttonUrl: "/",
+        },
+      ],
+    },
+  }),
+}
+
 export const HeroTaskTrayThreeItems: Story = {
   args: generateArgs({
     heroProps: {
