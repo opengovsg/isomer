@@ -20,7 +20,10 @@ const cronWorkersSchema = z.stringbool().optional().default(false)
 const skipSingpassSchema = z.stringbool().optional().default(false)
 
 /** @param {unknown} value */
-const coerceEnvBoolean = (value, stringSchema) => {
+const coerceEnvBoolean = (
+  value,
+  /** @type {typeof cronWorkersSchema} */ stringSchema,
+) => {
   if (typeof value === "boolean") return value
   return stringSchema.parse(value)
 }

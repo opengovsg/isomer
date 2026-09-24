@@ -2,11 +2,19 @@ import { createEnv } from "@t3-oss/env-core"
 import { z } from "zod"
 
 const cronWorkersSchema = z.stringbool().optional().default(false)
+const cronWorkersEnvSchema = z.preprocess((value) => {
+  if (typeof value === "boolean") return value
+  return cronWorkersSchema.parse(value)
+}, z.boolean().default(false))
 
-export const env = createEnv({
+const skipValidation =
+  !!process.env.SKIP_ENV_VALIDATION ||
+  process.env.npm_lifecycle_event === "lint"
+
+const parsedEnv = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
-    ENABLE_CRON_WORKERS: cronWorkersSchema,
+    ENABLE_CRON_WORKERS: cronWorkersEnvSchema,
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -14,12 +22,18 @@ export const env = createEnv({
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
-    // Parsed here so "false" stays false when skipValidation bypasses the schema.
-    ENABLE_CRON_WORKERS: cronWorkersSchema.parse(
-      process.env.ENABLE_CRON_WORKERS,
-    ),
+    ENABLE_CRON_WORKERS: process.env.ENABLE_CRON_WORKERS,
   },
-  skipValidation:
-    !!process.env.SKIP_ENV_VALIDATION ||
-    process.env.npm_lifecycle_event === "lint",
+  skipValidation,
 })
+
+export const env = skipValidation
+  ? new Proxy(parsedEnv, {
+      get(target, prop, receiver) {
+        if (prop === "ENABLE_CRON_WORKERS") {
+          return cronWorkersSchema.parse(process.env.ENABLE_CRON_WORKERS)
+        }
+        return Reflect.get(target, prop, receiver)
+      },
+    })
+  : parsedEnv
