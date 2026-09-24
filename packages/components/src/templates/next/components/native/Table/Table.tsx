@@ -7,7 +7,6 @@ import { Divider } from "../Divider"
 import { OrderedList } from "../OrderedList"
 import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
-import { getTableCaptionElementId } from "./getTableCaptionElementId"
 import { resolveTableLayout } from "./resolveTableLayout"
 import { normalizeColspan, normalizeRowspan } from "./tableLayoutLimits"
 
@@ -32,22 +31,17 @@ const tableCellStyles = tv({
 
 export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
   const layout = resolveTableLayout(content)
-  const hasCaption = hasVisibleTableCaption(caption)
-  const captionId = hasCaption
-    ? getTableCaptionElementId(caption, content)
-    : undefined
-  const captionParagraph = (
-    <BaseParagraph
-      content={caption}
-      className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
-    />
-  )
-  const table = (
-    <div className="overflow-x-auto" tabIndex={0}>
-      <table
-        className={tableStyles({ isFixedLayout: layout.kind === "fixed" })}
-        aria-labelledby={captionId}
-      >
+
+  return (
+    <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
+      <BaseParagraph
+        content={caption}
+        className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
+      />
+      <div className="overflow-x-auto" tabIndex={0}>
+        <table
+          className={tableStyles({ isFixedLayout: layout.kind === "fixed" })}
+        >
           {layout.kind === "fixed" && (
             <colgroup>
               {layout.columnWidths.map((width, index) => (
@@ -113,22 +107,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
             ))}
           </tbody>
         </table>
-    </div>
-  )
-
-  if (!hasCaption) {
-    return (
-      <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
-        {captionParagraph}
-        {table}
       </div>
-    )
-  }
-
-  return (
-    <figure className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
-      <figcaption id={captionId}>{captionParagraph}</figcaption>
-      {table}
-    </figure>
+    </div>
   )
 }
