@@ -7,8 +7,6 @@ export const ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY =
 export const ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY =
   "enable-emails-for-regular-publishes"
 export const BANNER_FEATURE_KEY = "isomer-next-banner"
-export const IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY =
-  "is-new-collection-tags-management-enabled"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
 export const IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY =
   "homepage-antiscam-banner-enabled"
