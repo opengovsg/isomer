@@ -102,12 +102,12 @@ export const ExpandedMenu: Story = {
 export const CoreIsomerAdmin: Story = {
   parameters: {
     msw: {
-      // Must precede ADMIN_HANDLERS' isIsomerAdmin.default() (returns false)
+      // Must precede ADMIN_HANDLERS' isIsomerAdmin.default() and
+      // list.users(), since MSW uses the first matching handler
       handlers: [
         userHandlers.isIsomerAdmin.admin(),
-        ...ADMIN_HANDLERS,
-        resourceHandlers.getRolesFor.admin(),
         userHandlers.list.usersWithPhone(),
+        ...ADMIN_HANDLERS,
       ],
     },
   },
