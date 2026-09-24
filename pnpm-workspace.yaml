@@ -55,6 +55,12 @@ trustPolicyExclude:
   # day the maintainer migrated their publish workflow to GitHub Actions OIDC — hence no
   # provenance on this one release while every release since (3.x) has it. Not a compromise.
   - "tailwind-merge@2.6.1"
+  # Verified on npm: prisma@7.10.0 is the only package in the pinned 7.10.0 line
+  # missing provenance; sibling @prisma/client and @prisma/engines attestations for
+  # 7.10.0 are present and match 7.9.0's SLSA predicate. Published by prismabot
+  # (bot-npm@prisma.io) like prior releases — looks like a one-off CLI publish gap,
+  # not a maintainer-credential downgrade signal.
+  - "prisma@7.10.0"
 
 publicHoistPattern:
   - "*eslint-plugin*"
