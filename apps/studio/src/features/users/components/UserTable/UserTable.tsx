@@ -180,6 +180,7 @@ export const UserTable = ({ siteId, adminType }: UserTableProps) => {
         <UserTableEmptyState
           siteId={siteId}
           promptAddUser={adminType === "agency"}
+          colSpan={columns.length}
         />
       }
     />

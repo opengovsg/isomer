@@ -41,6 +41,14 @@ export const Admin: Story = {
       ],
     },
   },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    // Anchor on the table having rendered before asserting the absence.
+    await screen.findByText("Government Editor")
+    await expect(
+      screen.queryByRole("columnheader", { name: "Phone" }),
+    ).toBeNull()
+  },
 }
 
 export const Publisher: Story = {
@@ -99,7 +107,7 @@ export const CoreIsomerAdmin: Story = {
         userHandlers.isIsomerAdmin.admin(),
         ...ADMIN_HANDLERS,
         resourceHandlers.getRolesFor.admin(),
-        userHandlers.list.users(),
+        userHandlers.list.usersWithPhone(),
       ],
     },
   },
