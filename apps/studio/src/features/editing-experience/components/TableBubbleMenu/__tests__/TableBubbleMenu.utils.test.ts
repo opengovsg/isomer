@@ -176,12 +176,12 @@ const tableSchema = new Schema({
   },
 })
 
-const paragraph = () => tableSchema.nodes.paragraph!.create()
+const paragraph = () => tableSchema.nodes.paragraph.create()
 
 const buildUniformTable = (width: number, height: number): Node => {
-  const tableRow = tableSchema.nodes.tableRow!
-  const tableCell = tableSchema.nodes.tableCell!
-  const table = tableSchema.nodes.table!
+  const tableRow = tableSchema.nodes.tableRow
+  const tableCell = tableSchema.nodes.tableCell
+  const table = tableSchema.nodes.table
 
   return table.create(
     null,
@@ -333,9 +333,9 @@ describe("canMergeCellSelection", () => {
 
   it("refuses a full-height column when rowspan leaves the other row with no cells", () => {
     // Arrange
-    const tableRow = tableSchema.nodes.tableRow!
-    const tableCell = tableSchema.nodes.tableCell!
-    const table = tableSchema.nodes.table!
+    const tableRow = tableSchema.nodes.tableRow
+    const tableCell = tableSchema.nodes.tableCell
+    const table = tableSchema.nodes.table
     const rowspanTable = table.create(null, [
       tableRow.create(null, [
         tableCell.create({ rowspan: 2 }, [paragraph()]),
