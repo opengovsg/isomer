@@ -7,7 +7,6 @@ import {
   Flex,
   Icon,
   Text,
-  useCheckbox,
   useMultiStyleConfig,
   VStack,
 } from "@chakra-ui/react"
@@ -22,7 +21,6 @@ import {
   moveTableRow,
   selectedRect,
 } from "@tiptap/pm/tables"
-import { useEditorState } from "@tiptap/react"
 import {
   BiCopy,
   BiDownArrowAlt,
@@ -42,10 +40,6 @@ import {
   IconMergeCells,
   IconSplitCell,
 } from "~/components/icons"
-import {
-  hasHeaderColumn,
-  hasHeaderRow,
-} from "~/features/editing-experience/utils/tableHeaderAxis"
 
 import type {
   SelectionKind,
@@ -295,17 +289,14 @@ const BackgroundColor = ({
 
 const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
   const styles = useMultiStyleConfig("Switch", { size: "sm" })
-  const { getCheckboxProps, getIndicatorProps } = useCheckbox({
-    isChecked,
-    isReadOnly: true,
-  })
   const ThumbIcon = isChecked ? BxCheck : BxX
+  const checkedDataAttr = isChecked ? "" : undefined
 
   return (
     <chakra.span
       aria-hidden
       className="chakra-switch__track"
-      {...getCheckboxProps()}
+      data-checked={checkedDataAttr}
       __css={{
         display: "inline-flex",
         flexShrink: 0,
@@ -316,10 +307,14 @@ const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
     >
       <chakra.span
         className="chakra-switch__thumb"
-        {...getIndicatorProps()}
+        data-checked={checkedDataAttr}
         __css={styles.thumb}
       >
-        <Icon as={ThumbIcon} __css={styles.thumbIcon} />
+        <Icon
+          as={ThumbIcon}
+          data-checked={checkedDataAttr}
+          __css={styles.thumbIcon}
+        />
       </chakra.span>
     </chakra.span>
   )
@@ -379,23 +374,7 @@ const RowSelectionActions = ({
   editor: Editor
   rect: SelectionRect
 }) => {
-  const { headerRowActive, includesHeader } = useEditorState({
-    editor,
-    selector: ({ editor: currentEditor }) => {
-      const { selection } = currentEditor.state
-      if (!(selection instanceof CellSelection)) {
-        return { headerRowActive: false, includesHeader: false }
-      }
-      const currentRect = selectedRect(currentEditor.state)
-      return {
-        headerRowActive: hasHeaderRow(currentRect),
-        includesHeader: selectionIncludesHeaderRow(currentRect),
-      }
-    },
-    equalityFn: (previous, next) =>
-      previous.headerRowActive === next.headerRowActive &&
-      previous.includesHeader === next.includesHeader,
-  })
+  const includesHeader = selectionIncludesHeaderRow(rect)
   const rowMoveUpPlan = getRowMovePlan(
     { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
     "up",
@@ -410,7 +389,7 @@ const RowSelectionActions = ({
       {selectionIsTopRow(rect) && (
         <HeaderToggle
           label="Header row"
-          isChecked={headerRowActive}
+          isChecked={includesHeader}
           onToggle={() => editor.chain().focus().toggleHeaderRow().run()}
         />
       )}
@@ -467,23 +446,7 @@ const ColumnSelectionActions = ({
   editor: Editor
   rect: SelectionRect
 }) => {
-  const { headerColumnActive, includesHeader } = useEditorState({
-    editor,
-    selector: ({ editor: currentEditor }) => {
-      const { selection } = currentEditor.state
-      if (!(selection instanceof CellSelection)) {
-        return { headerColumnActive: false, includesHeader: false }
-      }
-      const currentRect = selectedRect(currentEditor.state)
-      return {
-        headerColumnActive: hasHeaderColumn(currentRect),
-        includesHeader: selectionIncludesHeaderColumn(currentRect),
-      }
-    },
-    equalityFn: (previous, next) =>
-      previous.headerColumnActive === next.headerColumnActive &&
-      previous.includesHeader === next.includesHeader,
-  })
+  const includesHeader = selectionIncludesHeaderColumn(rect)
 
   const columnMoveLeftPlan = getColumnMovePlan(
     { left: rect.left, right: rect.right, tableWidth: rect.map.width },
@@ -500,7 +463,7 @@ const ColumnSelectionActions = ({
       {selectionIsLeftmostColumn(rect) && (
         <HeaderToggle
           label="Header column"
-          isChecked={headerColumnActive}
+          isChecked={includesHeader}
           onToggle={() => editor.chain().focus().toggleHeaderColumn().run()}
         />
       )}
