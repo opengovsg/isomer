@@ -3,7 +3,25 @@ import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers"
 
 import { Table } from "./Table"
+import { getTableCaptionElementId } from "./getTableCaptionElementId"
 import { MAX_TABLE_COLUMNS, MAX_TABLE_ROWS } from "./tableLayoutLimits"
+
+const singleCellTableContent = [
+  {
+    type: "tableRow" as const,
+    content: [
+      {
+        type: "tableCell" as const,
+        content: [
+          {
+            type: "paragraph" as const,
+            content: [{ type: "text" as const, text: "A" }],
+          },
+        ],
+      },
+    ],
+  },
+]
 
 const staggeredMergesContent = [
   {
@@ -383,5 +401,39 @@ describe("Table backgroundColor", () => {
     expect(cellTags).toEqual(["th", "td"])
     expect(openTags[0]).toContain("prose-label-md-bold")
     expect(openTags[1]).not.toContain("prose-label-md-bold")
+  })
+})
+
+describe("Table caption accessibility", () => {
+  it("links the external caption to the table with aria-labelledby", () => {
+    const caption = "Year / Agency"
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{ caption }}
+        content={singleCellTableContent}
+      />,
+    )
+    const captionId = getTableCaptionElementId(caption, singleCellTableContent)
+
+    expect(html).toContain(`id="${captionId}"`)
+    expect(html).toContain(`aria-labelledby="${captionId}"`)
+    expect(html).toContain("<figure")
+    expect(html).toContain("Year / Agency")
+  })
+
+  it("omits figure semantics when the caption is whitespace-only", () => {
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{ caption: "   " }}
+        content={singleCellTableContent}
+      />,
+    )
+
+    expect(html).not.toContain("<figure")
+    expect(html).not.toContain("aria-labelledby")
   })
 })

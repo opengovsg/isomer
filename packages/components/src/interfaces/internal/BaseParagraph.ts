@@ -8,6 +8,5 @@ export type BaseParagraphProps = Omit<
 > & {
   content: string
   allowedTags?: string[]
-  id?: string
   className?: string
 }
