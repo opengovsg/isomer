@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: read # dorny/paths-filter lists PR files via the REST API
     # Set job outputs to values from filter step
     outputs:
       ui: ${{ steps.filter.outputs.ui }}

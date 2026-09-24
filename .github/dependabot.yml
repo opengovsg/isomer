@@ -174,3 +174,10 @@ updates:
     open-pull-requests-limit: 5
     cooldown:
       default-days: 7 # to mitigate supply chain attacks
+  - package-ecosystem: docker
+    directory: "/packages/pgboss"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7 # to mitigate supply chain attacks
