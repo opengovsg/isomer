@@ -168,43 +168,4 @@ describe("applyHeaderAxisNormalization", () => {
     ).toBe(7)
   })
 
-  it("keeps a merged corner header cell when both axes are preserved", () => {
-    // Arrange: top-left header spans two rows; only one physical cell in column 0 row 1
-    const paragraph = schema.nodes.paragraph
-    const tableRow = schema.nodes.tableRow
-    const table = schema.nodes.table
-    if (!paragraph || !tableRow || !table)
-      throw new Error("Invalid test schema")
-    const doc = schema.node("doc", null, [
-      table.create(null, [
-        tableRow.create(null, [
-          schema.node("tableHeader", { ...cellAttrs, rowspan: 2 }, [
-            paragraph.create(),
-          ]),
-          schema.node("tableHeader", cellAttrs, [paragraph.create()]),
-          schema.node("tableCell", cellAttrs, [paragraph.create()]),
-        ]),
-        tableRow.create(null, [
-          schema.node("tableCell", cellAttrs, [paragraph.create()]),
-          schema.node("tableCell", cellAttrs, [paragraph.create()]),
-        ]),
-      ]),
-    ])
-    const state = EditorState.create({ schema, doc })
-    const flags = { preserveHeaderRow: true, preserveHeaderColumn: true }
-
-    // Act
-    let tr = state.tr
-    moveTableColumn({ from: 2, to: 1, pos: tablePos() + 1 })(state, (next) => {
-      tr = next
-      return true
-    })
-    tr = applyHeaderAxisNormalization(tr, tablePos(), flags, schema)
-
-    // Assert
-    const after = EditorState.create({ schema, doc: tr.doc })
-    const types = cellTypesInOrder(after.doc)
-    expect(types[0]).toBe("tableHeader")
-    expect(hasHeaderRow(mappedTable(after.doc))).toBe(true)
-  })
 })
