@@ -8,7 +8,7 @@ import { MINIMAL_VIEWPORTS } from "storybook/viewport"
 import "bootstrap-icons/font/bootstrap-icons.css"
 
 import "../src/index.css"
-import { viewport } from "@isomer/storybook-config"
+import { CHROMATIC_LOCALE_SG, viewport } from "@isomer/storybook-config"
 
 const CUSTOM_GENERAL_VIEWPORTS = {
   smallDesktop: {
@@ -134,6 +134,8 @@ const preview: Preview = {
      */
     chromatic: {
       prefersReducedMotion: "reduce",
+      // Singapore locale for published-site snapshots (e.g. native date inputs).
+      locale: CHROMATIC_LOCALE_SG,
     },
   },
 

@@ -5,11 +5,7 @@ import { expect, userEvent, within } from "storybook/test"
 import { toggleAppliedFilterItem } from "~/templates/next/layouts/Collection/utils"
 import { DATE_FILTER_STATUS, TAG_CATEGORY_TYPE } from "~/types/constants"
 
-import {
-  CHROMATIC_LOCALE_SG,
-  getViewportByMode,
-  withChromaticModes,
-} from "@isomer/storybook-config"
+import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
 import { Filter } from "./Filter"
 
@@ -178,7 +174,7 @@ const DATE_FILTER = {
 
 export const WithDateFilter: Story = {
   parameters: {
-    chromatic: withChromaticModes(["desktop"], { locale: CHROMATIC_LOCALE_SG }),
+    chromatic: withChromaticModes(["desktop"]),
   },
   args: {
     filters: [DATE_FILTER],
@@ -195,7 +191,7 @@ export const WithDateFilter: Story = {
 export const MobileDateFilterDrawer: Story = {
   globals: { viewport: getViewportByMode("mobile") },
   parameters: {
-    chromatic: withChromaticModes(["mobile"], { locale: CHROMATIC_LOCALE_SG }),
+    chromatic: withChromaticModes(["mobile"]),
   },
   args: WithDateFilter.args,
   play: async ({ canvasElement }) => {
@@ -208,7 +204,7 @@ export const MobileDateFilterDrawer: Story = {
 }
 
 const dateFilterDesktopParameters = {
-  chromatic: withChromaticModes(["desktop"], { locale: CHROMATIC_LOCALE_SG }),
+  chromatic: withChromaticModes(["desktop"]),
   globals: { viewport: getViewportByMode("desktop") },
 }
 
@@ -308,7 +304,7 @@ export const DateFilterBothControls: Story = {
 export const DateFilterDateRangeOnlyMobileDrawer: Story = {
   globals: { viewport: getViewportByMode("mobile") },
   parameters: {
-    chromatic: withChromaticModes(["mobile"], { locale: CHROMATIC_LOCALE_SG }),
+    chromatic: withChromaticModes(["mobile"]),
   },
   args: DateFilterDateRangeOnly.args,
   play: async ({ canvasElement }) => {

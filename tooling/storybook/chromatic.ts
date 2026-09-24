@@ -1,4 +1,4 @@
-import { modes } from "./modes"
+import { CHROMATIC_LOCALE_SG, modes } from "./modes"
 
 /** @see https://www.chromatic.com/docs/modes/browser-options/ */
 export interface ChromaticBrowserOptions {
@@ -9,6 +9,10 @@ export const withChromaticModes = (
   args: (keyof typeof modes)[],
   browserOptions?: ChromaticBrowserOptions,
 ) => {
+  const resolvedBrowserOptions = {
+    locale: CHROMATIC_LOCALE_SG,
+    ...browserOptions,
+  }
   const modesArr = Array.from(new Set(args))
   return {
     modes: modesArr.reduce(
@@ -18,7 +22,7 @@ export const withChromaticModes = (
           // Only want to preserve width, and not height for Chromatic snapshots.
           [mode]: {
             ...modes[mode],
-            ...browserOptions,
+            ...resolvedBrowserOptions,
           },
         }
       },
