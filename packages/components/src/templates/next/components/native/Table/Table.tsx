@@ -7,10 +7,7 @@ import { Divider } from "../Divider"
 import { OrderedList } from "../OrderedList"
 import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
-import {
-  getTableCaptionElementId,
-  hasVisibleTableCaption,
-} from "./getTableCaptionElementId"
+import { getTableCaptionElementId } from "./getTableCaptionElementId"
 import { resolveTableLayout } from "./resolveTableLayout"
 import { normalizeColspan, normalizeRowspan } from "./tableLayoutLimits"
 

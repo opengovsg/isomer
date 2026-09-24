@@ -17,6 +17,3 @@ export const getTableCaptionElementId = (
   const cellCount = content.reduce((n, row) => n + row.content.length, 0)
   return `isomer-table-caption-${hashString(`${caption}\0${rowCount}\0${cellCount}`)}`
 }
-
-export const hasVisibleTableCaption = (caption: string): boolean =>
-  caption.trim() !== ""
