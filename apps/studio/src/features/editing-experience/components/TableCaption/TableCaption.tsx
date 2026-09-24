@@ -52,7 +52,7 @@ export const TableCaption = ({
           onClick={onTableSettingsModalOpen}
           aria-label={hasCaption ? "Edit table caption" : "Add table caption"}
         >
-          {hasCaption ? "Edit" : "Add caption"}
+          {hasCaption ? "Edit caption" : "Add caption"}
         </Button>
       </Flex>
 

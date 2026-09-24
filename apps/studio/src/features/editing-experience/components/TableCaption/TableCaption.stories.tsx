@@ -88,7 +88,7 @@ export const PopulatedCaption: Story = {
     ).toBeInTheDocument()
     await expect(
       await canvas.findByRole("button", { name: "Edit table caption" }),
-    ).toHaveTextContent("Edit")
+    ).toHaveTextContent("Edit caption")
   },
 }
 
