@@ -73,7 +73,7 @@ export const HeroTaskTray = ({
               </TrayTitleTag>
             )}
 
-            <TaskTray items={taskTrayItems} site={site} />
+            <TaskTray taskTrayItems={taskTrayItems} site={site} />
           </div>
         </div>
       </div>

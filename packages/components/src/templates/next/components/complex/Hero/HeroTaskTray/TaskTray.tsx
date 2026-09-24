@@ -15,14 +15,14 @@ const gridStyles = tv({
 })
 
 export const TaskTray = ({
-  items,
+  taskTrayItems,
   site,
 }: Pick<HeroTaskTrayProps, "taskTrayItems" | "site">) => {
-  const itemCount = items.length as 2 | 3 | 4
+  const itemCount = taskTrayItems.length as 2 | 3 | 4
 
   return (
     <div className={gridStyles({ itemCount })}>
-      {items.map((item, idx) => (
+      {taskTrayItems.map((item, idx) => (
         <TaskTrayItem key={idx} item={item} site={site} />
       ))}
     </div>
