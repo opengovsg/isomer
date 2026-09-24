@@ -1,5 +1,5 @@
 import type { DB } from "~/server/modules/database"
-import { getPostgresConnectionString } from "@opengovsg/starter-kitty-testcontainers"
+import { getPostgresConnectionString } from "@opengovsg/testcontainers"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { Kysely, PostgresDialect } from "kysely"
 import { randomUUID } from "node:crypto"

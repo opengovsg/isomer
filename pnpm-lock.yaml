@@ -217,7 +217,7 @@ catalogs:
     '@opengovsg/design-system-react':
       specifier: ^1.35.0
       version: 1.35.0
-    '@opengovsg/starter-kitty-testcontainers':
+    '@opengovsg/testcontainers':
       specifier: ^0.2.0
       version: 0.2.0
     '@opengovsg/validators':
@@ -1147,7 +1147,7 @@ importers:
       '@isomer/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
-      '@opengovsg/starter-kitty-testcontainers':
+      '@opengovsg/testcontainers':
         specifier: 'catalog:'
         version: 0.2.0(testcontainers@12.1.0(supports-color@8.1.1))(vitest@5.0.1)(zod@4.5.4)
       '@playwright/test':
@@ -1723,7 +1723,7 @@ importers:
       '@isomer/db':
         specifier: workspace:*
         version: link:../../../../packages/db
-      '@opengovsg/starter-kitty-testcontainers':
+      '@opengovsg/testcontainers':
         specifier: 'catalog:'
         version: 0.2.0(testcontainers@12.1.0(supports-color@8.1.1))(vitest@5.0.1)(zod@4.5.4)
       '@types/node':
@@ -4386,14 +4386,8 @@ packages:
       '@noble/hashes':
         optional: true
 
-  '@floating-ui/core@1.7.5':
-    resolution: {integrity: sha512-1Ih4WTWyw0+lKyFMcBHGbb5U5FtuHJuujoyyr5zTaWS5EYMeT6Jb2AuDeftsCsEuchO+mM2ij5+q9crhydzLhQ==}
-
   '@floating-ui/core@1.8.0':
     resolution: {integrity: sha512-0CIZ5itps/8x7BG8dEIhs53BvCUH2PCoogtakwRTut+Arm58sJooJ0AuZhLw2HJYIR5cMLNPBSS728sPho2khQ==}
-
-  '@floating-ui/dom@1.7.6':
-    resolution: {integrity: sha512-9gZSAI5XM36880PPMm//9dfiEngYoC6Am2izES1FF406YFsjvyBMmeJ2g4SAju3xWwtuynNRFL2s9hgxpLI5SQ==}
 
   '@floating-ui/dom@1.8.0':
     resolution: {integrity: sha512-yXSrzeHZBTZadLOlfyhCkJHNeLJnHRnRInwdZ40L7ZiaAtrBwoYlsDrX3v5zB1Utk7CLfzcOVnVVWoXEky7Ceg==}
@@ -5149,11 +5143,8 @@ packages:
       react: ^18.2.0
       react-dom: ^18.2.0
 
-  '@opengovsg/starter-kitty-testcontainers@0.2.0':
-    resolution: {integrity: sha512-JhJZ7Fvto22+DNzMYFvL0tJEOjhjNdddsKGcG0WDXtA6APJq61OikwaoD1fOq9cdnvHRm1fkc/jO3KC4SkZiIg==}
-    deprecated: |-
-      Renamed to @opengovsg/testcontainers.
-        Please migrate: npm i @opengovsg/testcontainers
+  '@opengovsg/testcontainers@0.2.0':
+    resolution: {integrity: sha512-FhX5CTZAACL8XDDJuvioPKBTgu/C+N7p9/a2wbztFT9QH9X05H6c82zi7NWoEibbVS0BD/lZMVRRCEZ1lzy5Pg==}
     peerDependencies:
       testcontainers: ^10.0.0 || ^11.0.0 || ^12.0.0
       vitest: ^4.1.0
@@ -15303,7 +15294,7 @@ snapshots:
 
   '@corvu/utils@0.4.2(solid-js@1.9.15)':
     dependencies:
-      '@floating-ui/dom': 1.7.6
+      '@floating-ui/dom': 1.8.0
       solid-js: 1.9.15
 
   '@csstools/cascade-layer-name-parser@3.0.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)':
@@ -16070,18 +16061,9 @@ snapshots:
     optionalDependencies:
       '@noble/hashes': 2.2.0
 
-  '@floating-ui/core@1.7.5':
-    dependencies:
-      '@floating-ui/utils': 0.2.11
-
   '@floating-ui/core@1.8.0':
     dependencies:
       '@floating-ui/utils': 0.2.12
-
-  '@floating-ui/dom@1.7.6':
-    dependencies:
-      '@floating-ui/core': 1.7.5
-      '@floating-ui/utils': 0.2.11
 
   '@floating-ui/dom@1.8.0':
     dependencies:
@@ -16090,7 +16072,7 @@ snapshots:
 
   '@floating-ui/react-dom@2.1.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@floating-ui/dom': 1.7.6
+      '@floating-ui/dom': 1.8.0
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
@@ -16541,7 +16523,7 @@ snapshots:
 
   '@kobalte/core@0.13.14(solid-js@1.9.15)':
     dependencies:
-      '@floating-ui/dom': 1.7.6
+      '@floating-ui/dom': 1.8.0
       '@internationalized/number': 3.6.6
       '@kobalte/utils': 0.9.2(solid-js@1.9.15)
       '@solid-primitives/props': 3.2.4(solid-js@1.9.15)
@@ -16754,7 +16736,7 @@ snapshots:
       - prop-types
       - supports-color
 
-  '@opengovsg/starter-kitty-testcontainers@0.2.0(testcontainers@12.1.0(supports-color@8.1.1))(vitest@5.0.1)(zod@4.5.4)':
+  '@opengovsg/testcontainers@0.2.0(testcontainers@12.1.0(supports-color@8.1.1))(vitest@5.0.1)(zod@4.5.4)':
     dependencies:
       testcontainers: 12.1.0(supports-color@8.1.1)
       zod: 4.5.4
@@ -23810,7 +23792,7 @@ snapshots:
       '@babel/runtime': 7.29.7
       '@emotion/cache': 11.14.0
       '@emotion/react': 11.14.0(@types/react@18.3.31)(react@18.3.1)(supports-color@8.1.1)
-      '@floating-ui/dom': 1.7.6
+      '@floating-ui/dom': 1.8.0
       '@types/react-transition-group': 4.4.12(@types/react@18.3.31)
       memoize-one: 6.0.0
       prop-types: 15.8.1

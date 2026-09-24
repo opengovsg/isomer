@@ -1,4 +1,4 @@
-import { getMappedPort } from "@opengovsg/starter-kitty-testcontainers"
+import { getMappedPort } from "@opengovsg/testcontainers"
 import { inject } from "vitest"
 
 const container = inject("testcontainers").mockpass

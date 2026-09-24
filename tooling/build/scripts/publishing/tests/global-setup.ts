@@ -1,10 +1,7 @@
-import type {} from "@opengovsg/starter-kitty-testcontainers/vitest"
+import type {} from "@opengovsg/testcontainers/vitest"
 import type { TestProject } from "vitest/node"
-import {
-  getMappedPort,
-  postgres,
-} from "@opengovsg/starter-kitty-testcontainers"
-import { createGlobalSetup } from "@opengovsg/starter-kitty-testcontainers/vitest"
+import { getMappedPort, postgres } from "@opengovsg/testcontainers"
+import { createGlobalSetup } from "@opengovsg/testcontainers/vitest"
 import { readdirSync, readFileSync, statSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"

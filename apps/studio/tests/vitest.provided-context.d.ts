@@ -1,4 +1,4 @@
-import type { ProvidedContainers } from "@opengovsg/starter-kitty-testcontainers/vitest"
+import type { ProvidedContainers } from "@opengovsg/testcontainers/vitest"
 
 declare module "vitest" {
   export interface ProvidedContext {

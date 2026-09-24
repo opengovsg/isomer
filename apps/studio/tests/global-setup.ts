@@ -1,6 +1,6 @@
-import type { ContainerConfiguration } from "@opengovsg/starter-kitty-testcontainers"
-import { postgres } from "@opengovsg/starter-kitty-testcontainers"
-import { createGlobalSetup } from "@opengovsg/starter-kitty-testcontainers/vitest"
+import type { ContainerConfiguration } from "@opengovsg/testcontainers"
+import { postgres } from "@opengovsg/testcontainers"
+import { createGlobalSetup } from "@opengovsg/testcontainers/vitest"
 
 // No preset for mockpass; spelled out as a plain `ContainerConfiguration`.
 const mockpass: ContainerConfiguration = {
