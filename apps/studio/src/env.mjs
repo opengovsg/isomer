@@ -18,14 +18,21 @@ const readProcessEnv = (key) =>
 
 const cronWorkersSchema = z.stringbool().optional().default(false)
 const skipSingpassSchema = z.stringbool().optional().default(false)
-const cronWorkersEnvSchema = z
-  .union([z.boolean(), cronWorkersSchema])
-  .optional()
-  .default(false)
-const skipSingpassEnvSchema = z
-  .union([z.boolean(), skipSingpassSchema])
-  .optional()
-  .default(false)
+
+/** @param {unknown} value */
+const coerceEnvBoolean = (value, stringSchema) => {
+  if (typeof value === "boolean") return value
+  return stringSchema.parse(value)
+}
+
+const cronWorkersEnvSchema = z.preprocess(
+  (value) => coerceEnvBoolean(value, cronWorkersSchema),
+  z.boolean().default(false),
+)
+const skipSingpassEnvSchema = z.preprocess(
+  (value) => coerceEnvBoolean(value, skipSingpassSchema),
+  z.boolean().default(false),
+)
 
 const shouldSkipEnvValidation =
   !!process.env.SKIP_ENV_VALIDATION ||
