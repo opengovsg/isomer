@@ -1,5 +1,4 @@
-# 4-24
-FROM mcr.microsoft.com/devcontainers/javascript-node:4-24@sha256:e39c77a1d840eccb0d90257c20a436d4e90447b92dcfc0e637b15a6f25f90fd8
+FROM mcr.microsoft.com/devcontainers/javascript-node:0-24
 
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
