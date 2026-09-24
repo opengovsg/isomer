@@ -772,6 +772,100 @@ export const HeroFloatingShortText: Story = {
   }),
 }
 
+const homepageTaskTrayItems = [
+  {
+    icon: "stars" as const,
+    title: "Explore Isomer's features",
+    description:
+      "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+    buttonLabel: "See features",
+    buttonUrl: "/",
+  },
+  {
+    icon: "line-chart" as const,
+    title: "See how others use Isomer",
+    description:
+      "Browse websites built with Isomer across agencies and see what good government digital service looks like.",
+    buttonLabel: "View showcase",
+    buttonUrl: "/",
+  },
+  {
+    icon: "globe" as const,
+    title: "Start building your site",
+    description:
+      "Get guidance on setting up your agency site, from content planning to launch.",
+    buttonLabel: "Get started",
+    buttonUrl: "/",
+  },
+  {
+    icon: "users" as const,
+    title: "Join the community",
+    description:
+      "Connect with other agencies using Isomer and learn from shared playbooks.",
+    buttonLabel: "Join us",
+    buttonUrl: "/",
+  },
+]
+
+export const HeroTaskTray: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "taskTray",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      taskTrayTitle: "Get started",
+      taskTrayItems: homepageTaskTrayItems,
+    },
+  }),
+}
+
+export const HeroTaskTrayTwoItems: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "taskTray",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      taskTrayTitle: "Get started",
+      taskTrayItems: homepageTaskTrayItems.slice(0, 2),
+    },
+  }),
+}
+
+export const HeroTaskTrayThreeItems: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "taskTray",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      taskTrayTitle: "Get started",
+      taskTrayItems: homepageTaskTrayItems.slice(0, 3),
+    },
+  }),
+}
+
+export const HeroTaskTrayNoTitle: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "taskTray",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      taskTrayItems: homepageTaskTrayItems,
+    },
+  }),
+}
+
 export const HeroSearchbar: Story = {
   args: generateArgs({
     heroProps: {

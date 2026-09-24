@@ -3,8 +3,13 @@ import type { Simplify } from "type-fest"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { omit } from "lodash-es"
+import { SUPPORTED_ICON_NAMES } from "~/common/icons"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
-import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
+import {
+  LINK_HREF_PATTERN,
+  NON_EMPTY_STRING_REGEX,
+  TRIMMED_NON_EMPTY_STRING_REGEX,
+} from "~/utils/validation"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { generateImageSrcSchema } from "./Image"
@@ -15,6 +20,7 @@ export const HERO_STYLE = {
   largeImage: "largeImage",
   floating: "floating",
   searchbar: "searchbar",
+  taskTray: "taskTray",
 } as const
 
 const HeroBaseSchema = Type.Object({
@@ -195,6 +201,85 @@ const HeroSearchbarSchema = Type.Composite(
   },
 )
 
+const TaskTrayItemSchema = Type.Object({
+  title: Type.String({
+    title: "Title",
+    pattern: NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
+  }),
+  description: Type.String({
+    title: "Description",
+    pattern: NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
+  }),
+  icon: Type.Union(
+    SUPPORTED_ICON_NAMES.map((icon) =>
+      Type.Literal(icon, {
+        title: icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-/g, " "),
+      }),
+    ),
+    {
+      title: "Icon",
+      type: "string",
+    },
+  ),
+  buttonLabel: Type.String({
+    title: "Link text",
+    maxLength: 50,
+    pattern: NON_EMPTY_STRING_REGEX,
+    description:
+      "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
+  }),
+  buttonUrl: Type.String({
+    title: "Link destination",
+    description: "When this is clicked, open:",
+    format: "link",
+    pattern: LINK_HREF_PATTERN,
+  }),
+})
+
+const TASK_TRAY_GROUPING = {
+  label: "Task tray",
+  fields: ["taskTrayTitle", "taskTrayItems"],
+} as const
+
+const HeroTaskTraySchema = Type.Composite(
+  [
+    Type.Object({
+      variant: Type.Literal(HERO_STYLE.taskTray, {
+        default: HERO_STYLE.taskTray,
+      }),
+      backgroundUrl: BackgroundUrlSchema,
+      taskTrayTitle: Type.Optional(
+        Type.String({
+          title: "Task tray title",
+          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+          errorMessage: {
+            pattern: "cannot be empty or contain only spaces",
+          },
+        }),
+      ),
+      taskTrayItems: Type.Array(TaskTrayItemSchema, {
+        title: "Tasks",
+        minItems: 2,
+        maxItems: 4,
+      }),
+    }),
+    HeroBaseSchema,
+  ],
+  {
+    title: "Task tray",
+    groups: [GROUPINGS.TEXT, TASK_TRAY_GROUPING],
+  },
+)
+
 export const HeroSchema = Type.Intersect(
   [
     Type.Union(
@@ -204,6 +289,7 @@ export const HeroSchema = Type.Intersect(
         HeroLargeImageSchema,
         HeroFloatingSchema,
         HeroSearchbarSchema,
+        HeroTaskTraySchema,
       ],
       {
         title: "Hero banner style",
@@ -242,9 +328,14 @@ export type HeroSearchbarProps = Simplify<
   CommonProps & Static<typeof HeroSearchbarSchema>
 >
 
+export type HeroTaskTrayProps = Simplify<
+  CommonProps & Static<typeof HeroTaskTraySchema>
+>
+
 export type HeroProps =
   | HeroGradientProps
   | HeroBlockProps
   | HeroLargeImageProps
   | HeroFloatingProps
   | HeroSearchbarProps
+  | HeroTaskTrayProps
