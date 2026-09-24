@@ -1,6 +1,10 @@
 import type { Editor } from "@tiptap/react"
 import { Fragment, type Node, type NodeType } from "@tiptap/pm/model"
 import { TableMap } from "@tiptap/pm/tables"
+import {
+  hasHeaderColumn,
+  hasHeaderRow,
+} from "~/features/editing-experience/utils/tableHeaderAxis"
 
 import {
   selectionIsFullyMergedColumn,
@@ -100,6 +104,27 @@ const contentForSplitSlot = ({
   return Fragment.from(tail.length > 0 ? tail : [paragraph.create()])
 }
 
+const splitCellTypeForSlot = ({
+  table,
+  map,
+  rowIndex,
+  col,
+  tableCell,
+  tableHeader,
+}: {
+  table: Node
+  map: TableMap
+  rowIndex: number
+  col: number
+  tableCell: NodeType
+  tableHeader: NodeType
+}) => {
+  const mapped = { table, map }
+  if (hasHeaderRow(mapped) && rowIndex === 0) return tableHeader
+  if (hasHeaderColumn(mapped) && col === 0) return tableHeader
+  return tableCell
+}
+
 export const splitFullyMergedRow = (
   editor: Editor,
   rect: TableSelectionRect,
@@ -157,7 +182,8 @@ const buildRowCellsAfterColumnSplit = ({
   blocks,
   sourceCell,
   sourceCellOffset,
-  cellType,
+  tableCell,
+  tableHeader,
   paragraph,
 }: {
   table: Node
@@ -169,7 +195,8 @@ const buildRowCellsAfterColumnSplit = ({
   blocks: Node[]
   sourceCell: Node
   sourceCellOffset: number
-  cellType: NodeType
+  tableCell: NodeType
+  tableHeader: NodeType
   paragraph: NodeType
 }): Node[] => {
   const cells: Node[] = []
@@ -177,6 +204,14 @@ const buildRowCellsAfterColumnSplit = ({
 
   for (let col = 0; col < map.width;) {
     if (col === splitLeft) {
+      const cellType = splitCellTypeForSlot({
+        table,
+        map,
+        rowIndex,
+        col: splitLeft,
+        tableCell,
+        tableHeader,
+      })
       cells.push(
         cellType.create(
           splitCellAttrs(sourceCell),
@@ -256,9 +291,6 @@ export const splitFullyMergedColumn = (
   const blocks = cellBlocks(sourceCell)
   const { paragraph, tableCell, tableHeader } = state.schema.nodes
   if (!paragraph || !tableCell || !tableHeader) return false
-  const cellType =
-    sourceCell.type.name === "tableHeader" ? tableHeader : tableCell
-
   let tr = state.tr
 
   for (let rowIndex = rect.top; rowIndex < rect.bottom; rowIndex++) {
@@ -278,7 +310,8 @@ export const splitFullyMergedColumn = (
       blocks,
       sourceCell,
       sourceCellOffset: cellOffset,
-      cellType,
+      tableCell,
+      tableHeader,
       paragraph,
     })
 
