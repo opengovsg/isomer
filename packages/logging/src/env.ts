@@ -1,7 +1,7 @@
 import { createEnv } from "@t3-oss/env-core"
 import { z } from "zod"
 
-// TODO (#2205): this package duplicates the NEXT_PUBLIC_APP_ENV / NEXT_PUBLIC_APP_VERSION
+// TODO: this package duplicates the NEXT_PUBLIC_APP_ENV / NEXT_PUBLIC_APP_VERSION
 // validation that already lives in apps/studio/src/env.mjs and quietly couples
 // this "shared" package to Next.js conventions:
 //   - A non-Next.js consumer (standalone worker, CLI) wont set NEXT_PUBLIC_*
