@@ -1,3 +1,5 @@
+import { afterEach, describe, expect, it, vi } from "vitest"
+
 describe("env.mjs security invariants", () => {
   afterEach(() => {
     vi.unstubAllEnvs()
