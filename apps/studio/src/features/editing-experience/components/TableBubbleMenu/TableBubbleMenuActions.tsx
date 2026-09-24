@@ -392,7 +392,7 @@ const RowSelectionActions = ({
     { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
     "down",
   )
-  const showSplitCell = selectionIsFullyMergedRow(rect)
+  const isFullyMergedRow = selectionIsFullyMergedRow(rect)
 
   return (
     <ActionGroup>
@@ -423,7 +423,7 @@ const RowSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
-      {showSplitCell ? (
+      {isFullyMergedRow ? (
         <SplitCellButton editor={editor} />
       ) : (
         <MergeCellsButton editor={editor} />
@@ -471,7 +471,7 @@ const ColumnSelectionActions = ({
     { left: rect.left, right: rect.right, tableWidth: rect.map.width },
     "right",
   )
-  const showSplitCell = selectionIsFullyMergedColumn(rect)
+  const isFullyMergedColumn = selectionIsFullyMergedColumn(rect)
 
   return (
     <ActionGroup>
@@ -502,7 +502,7 @@ const ColumnSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
-      {showSplitCell ? (
+      {isFullyMergedColumn ? (
         <SplitCellButton editor={editor} />
       ) : (
         <MergeCellsButton editor={editor} />

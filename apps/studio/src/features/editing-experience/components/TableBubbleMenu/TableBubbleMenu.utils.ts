@@ -193,7 +193,7 @@ const isMergedCell = (rect: ReturnType<typeof selectedRect>): boolean => {
   )
 }
 
-type TableSelectionRect = ReturnType<typeof selectedRect>
+export type TableSelectionRect = ReturnType<typeof selectedRect>
 
 /** Full-width row selection that is a single cell merged across the row. */
 export const selectionIsFullyMergedRow = (

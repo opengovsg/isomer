@@ -977,7 +977,8 @@ describe("TableBubbleMenu", () => {
   })
 
   it("does not show Split cell for a full row that only partially merged", async () => {
-    const { editor, findByRole, findByText, queryByText } = await renderHarness()
+    const { editor, findByRole, findByText, queryByText } =
+      await renderHarness()
 
     selectCells(editor, 3, 4)
     act(() => {

@@ -1,5 +1,5 @@
 import type { Node } from "@tiptap/pm/model"
-import { selectedRect, type TableMap } from "@tiptap/pm/tables"
+import type { TableMap } from "@tiptap/pm/tables"
 import { describe, expect, it } from "vitest"
 
 import {
@@ -12,6 +12,7 @@ import {
   selectionIsFullyMergedColumn,
   selectionIsFullyMergedRow,
   type TableHeaderOverlapRect,
+  type TableSelectionRect,
 } from "../TableBubbleMenu.utils"
 
 // Builds a minimal rect for header-overlap helpers (no live editor).
@@ -143,8 +144,6 @@ describe("getTableSelectionKind", () => {
 const cellNode = (attrs: { colspan?: number; rowspan?: number }) =>
   ({ attrs: { colspan: 1, rowspan: 1, ...attrs } }) as unknown as Node
 
-type MockTableRect = ReturnType<typeof selectedRect>
-
 const selectionRect = ({
   width,
   height,
@@ -161,22 +160,21 @@ const selectionRect = ({
   left?: number
   right?: number
   cell: Node
-}): MockTableRect =>
-  ({
-    tableStart: 1,
-    top,
-    bottom: bottom ?? height,
-    left,
-    right: right ?? width,
-    map: {
-      width,
-      height,
-      map: [0],
-    } as TableMap,
-    table: {
-      nodeAt: () => cell,
-    } as unknown as Node,
-  }) as MockTableRect
+}): TableSelectionRect => ({
+  tableStart: 1,
+  top,
+  bottom: bottom ?? height,
+  left,
+  right: right ?? width,
+  map: {
+    width,
+    height,
+    map: [0],
+  } as TableMap,
+  table: {
+    nodeAt: () => cell,
+  } as unknown as Node,
+})
 
 describe("selectionIsFullyMergedRow", () => {
   it("is true for a full-width row that is one merged cell", () => {
