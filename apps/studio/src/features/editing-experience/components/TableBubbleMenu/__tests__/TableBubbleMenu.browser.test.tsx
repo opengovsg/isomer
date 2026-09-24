@@ -938,6 +938,7 @@ describe("TableBubbleMenu", () => {
     act(() => {
       editor.chain().focus().mergeCells().run()
     })
+
     selectRowAtCell(editor, 3)
     await activateTableBubbleMenu(findByRole)
 

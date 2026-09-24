@@ -56,6 +56,10 @@ import {
   duplicateSelectedRows,
 } from "./TableBubbleMenu.duplicate"
 import {
+  splitFullyMergedColumn,
+  splitFullyMergedRow,
+} from "./TableBubbleMenu.split"
+import {
   getColumnMovePlan,
   getRowMovePlan,
   restoreMovedBlockSelection,
@@ -322,21 +326,33 @@ const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
 }
 
 const splitSelectedMergedCell = (editor: Editor) => {
-  const { selection } = editor.state
+  const { state } = editor
+  const selection = state.selection
 
   if (selection instanceof CellSelection) {
-    const rect = selectedRect(editor.state)
-    const mapIndex = rect.top * rect.map.width + rect.left
-    const cellOffset = rect.map.map[mapIndex]
-    if (cellOffset !== undefined) {
-      const cellPos = rect.tableStart + cellOffset
-      editor
-        .chain()
-        .focus()
-        .setCellSelection({ anchorCell: cellPos, headCell: cellPos })
-        .splitCell()
-        .run()
-      return
+    const rect = selectedRect(state)
+    if (selectionIsFullyMergedRow(rect)) {
+      if (splitFullyMergedRow(editor, rect)) return
+    }
+    if (selectionIsFullyMergedColumn(rect)) {
+      if (splitFullyMergedColumn(editor, rect)) return
+    }
+
+    if (selection.$anchorCell.pos !== selection.$headCell.pos) {
+      const mapIndex = rect.top * rect.map.width + rect.left
+      const cellOffset = rect.map.map[mapIndex]
+      if (cellOffset !== undefined) {
+        const cellPos = rect.tableStart + cellOffset
+        const narrowed = editor
+          .chain()
+          .focus()
+          .setCellSelection({ anchorCell: cellPos, headCell: cellPos })
+          .run()
+        if (narrowed) {
+          editor.chain().focus().splitCell().run()
+          return
+        }
+      }
     }
   }
 
