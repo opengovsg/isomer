@@ -4,15 +4,17 @@ import { AddNewUserButton } from "~/features/users/components"
 interface UserTableEmptyStateProps {
   siteId: number
   promptAddUser?: boolean
+  colSpan: number
 }
 
 export const UserTableEmptyState = ({
   siteId,
   promptAddUser = true,
+  colSpan,
 }: UserTableEmptyStateProps) => {
   return (
     <Tr aria-hidden>
-      <Td colSpan={4}>
+      <Td colSpan={colSpan}>
         <Flex align="center" justify="center" minHeight="50vh" py="4rem">
           <VStack align="center" gap="1.5rem">
             <VStack align="center" gap="0.5rem">
