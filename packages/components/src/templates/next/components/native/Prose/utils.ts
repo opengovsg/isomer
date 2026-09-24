@@ -1,5 +1,7 @@
 import type { ProseProps } from "~/interfaces"
 
+import { cellsIn } from "../Table/tableLayoutLimits"
+
 export const hasContent = (content: ProseProps["content"]) => {
   // NOTE: top level is always `prose`
   return content.map(_hasContent).some(Boolean)
@@ -30,8 +32,8 @@ const _hasContent = (content: ProseProps["content"][number]): boolean => {
       )
     case "table":
       return !!content.content.some((tableRow) => {
-        return tableRow.content.some((tableCell) => {
-          return tableCell.content.some((cellContent) =>
+        return cellsIn(tableRow).some((tableCell) => {
+          return cellsIn(tableCell).some((cellContent) =>
             _hasContent(cellContent),
           )
         })

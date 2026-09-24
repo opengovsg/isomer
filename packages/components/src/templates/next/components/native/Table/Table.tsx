@@ -9,7 +9,11 @@ import { OrderedList } from "../OrderedList"
 import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
 import { resolveTableLayout } from "./resolveTableLayout"
-import { normalizeColspan, normalizeRowspan } from "./tableLayoutLimits"
+import {
+  cellsIn,
+  normalizeColspan,
+  normalizeRowspan,
+} from "./tableLayoutLimits"
 
 const tableStyles = tv({
   base: "w-full border-collapse border-spacing-0 border border-base-divider-medium",
@@ -56,7 +60,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
           <tbody>
             {content.map((row, index) => (
               <tr key={index} className="text-left">
-                {row.content.map((cell, cellIndex) => {
+                {cellsIn(row).map((cell, cellIndex) => {
                   const isHeader = cell.type === "tableHeader"
                   const CellTag = isHeader ? "th" : "td"
                   const backgroundColor = getTableCellBackgroundColorCss(
@@ -71,7 +75,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                       className={tableCellStyles({ isHeader })}
                       style={backgroundColor ? { backgroundColor } : undefined}
                     >
-                      {cell.content.map((cellContent, index) => {
+                      {cellsIn(cell).map((cellContent, index) => {
                         switch (cellContent.type) {
                           case "divider":
                             return <Divider key={index} {...cellContent} />

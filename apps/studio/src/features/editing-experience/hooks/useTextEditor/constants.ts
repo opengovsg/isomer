@@ -28,10 +28,12 @@ import { TableHeader } from "@tiptap/extension-table-header"
 import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
+import { CellSelection, selectedRect } from "@tiptap/pm/tables"
 import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
 import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
 
+import { canMergeCellSelection } from "../../components/TableBubbleMenu/TableBubbleMenu.utils"
 import {
   focusTableBubbleMenuTrigger,
   runTableBubbleMenuFocusTrigger,
@@ -132,9 +134,18 @@ export const IsomerTable = Table.extend({
     const parent = this.parent?.()
     const parentToggleHeaderRow = parent?.toggleHeaderRow
     const parentToggleHeaderColumn = parent?.toggleHeaderColumn
+    const parentMergeCells = parent?.mergeCells
 
     return {
       ...parent,
+      mergeCells: () => (props) => {
+        const { selection } = props.state
+        if (selection instanceof CellSelection) {
+          const rect = selectedRect(props.state)
+          if (!canMergeCellSelection(rect)) return false
+        }
+        return parentMergeCells?.()(props) ?? false
+      },
       focusTableBubbleMenuTrigger:
         () =>
         ({ editor }: { editor: Editor }) =>

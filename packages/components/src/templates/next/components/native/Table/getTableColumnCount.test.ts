@@ -1,6 +1,9 @@
+import type { TableProps } from "~/interfaces"
 import { describe, expect, it } from "vitest"
 
 import { getTableColumnCount } from "./getTableColumnCount"
+
+type TableRows = TableProps["content"]
 
 describe("getTableColumnCount", () => {
   it("returns 0 for an empty table", () => {
@@ -294,6 +297,33 @@ describe("getTableColumnCount", () => {
                 },
               ],
     }))
+
+    // Act / Assert
+    expect(getTableColumnCount(rows)).toBe(2)
+  })
+
+  it("counts columns when a covered row omits content", () => {
+    // Arrange: TipTap drops `content` on a row whose cells are all covered by rowspan.
+    const rows = [
+      {
+        type: "tableRow" as const,
+        content: [
+          {
+            type: "tableCell" as const,
+            attrs: { colspan: 2, rowspan: 2 },
+            content: [
+              {
+                type: "paragraph" as const,
+                content: [{ type: "text" as const, text: "" }],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow" as const,
+      },
+    ] as unknown as TableRows
 
     // Act / Assert
     expect(getTableColumnCount(rows)).toBe(2)

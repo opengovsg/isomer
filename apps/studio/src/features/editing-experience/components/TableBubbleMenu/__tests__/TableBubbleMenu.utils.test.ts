@@ -3,6 +3,7 @@ import type { TableMap } from "@tiptap/pm/tables"
 import { describe, expect, it } from "vitest"
 
 import {
+  canMergeCellSelection,
   getColumnMovePlan,
   getMovedBlockCellCorners,
   getRowMovePlan,
@@ -135,6 +136,93 @@ describe("getTableSelectionKind", () => {
 
   it("classifies the remaining selection shape as multi-cell", () => {
     expect(getTableSelectionKind(partialSelection)).toBe("multi-cell")
+  })
+})
+
+describe("canMergeCellSelection", () => {
+  const rect = ({
+    top,
+    bottom,
+    left,
+    right,
+    width,
+    height,
+  }: {
+    top: number
+    bottom: number
+    left: number
+    right: number
+    width: number
+    height: number
+  }) => ({ top, bottom, left, right, map: { width, height } })
+
+  it("allows a single full row or a single full column", () => {
+    // Arrange
+    const oneRow = rect({
+      top: 1,
+      bottom: 2,
+      left: 0,
+      right: 3,
+      width: 3,
+      height: 3,
+    })
+    const oneColumn = rect({
+      top: 0,
+      bottom: 3,
+      left: 1,
+      right: 2,
+      width: 3,
+      height: 3,
+    })
+
+    // Act / Assert
+    expect(canMergeCellSelection(oneRow)).toBe(true)
+    expect(canMergeCellSelection(oneColumn)).toBe(true)
+  })
+
+  it("refuses two or more full rows", () => {
+    // Arrange
+    const twoRows = rect({
+      top: 1,
+      bottom: 3,
+      left: 0,
+      right: 3,
+      width: 3,
+      height: 3,
+    })
+
+    // Act / Assert
+    expect(canMergeCellSelection(twoRows)).toBe(false)
+  })
+
+  it("refuses two or more full columns", () => {
+    // Arrange
+    const twoColumns = rect({
+      top: 0,
+      bottom: 3,
+      left: 0,
+      right: 2,
+      width: 3,
+      height: 3,
+    })
+
+    // Act / Assert
+    expect(canMergeCellSelection(twoColumns)).toBe(false)
+  })
+
+  it("allows a partial block that is not a whole row or column", () => {
+    // Arrange
+    const block = rect({
+      top: 1,
+      bottom: 3,
+      left: 0,
+      right: 2,
+      width: 3,
+      height: 3,
+    })
+
+    // Act / Assert
+    expect(canMergeCellSelection(block)).toBe(true)
   })
 })
 

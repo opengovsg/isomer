@@ -52,6 +52,28 @@ export const selectionIsLeftmostColumn = (rect: {
   right: number
 }): boolean => rect.left === 0 && rect.right === 1
 
+interface MergeSelectionRect {
+  top: number
+  bottom: number
+  left: number
+  right: number
+  map: { width: number; height: number }
+}
+
+// Merging several full rows (or columns) leaves a row with no cells. TipTap
+// then omits `content` on that row, which published-table layout cannot walk.
+export const canMergeCellSelection = (rect: MergeSelectionRect): boolean => {
+  const coversMultipleWholeRows =
+    rect.left === 0 &&
+    rect.right === rect.map.width &&
+    rect.bottom - rect.top > 1
+  const coversMultipleWholeColumns =
+    rect.top === 0 &&
+    rect.bottom === rect.map.height &&
+    rect.right - rect.left > 1
+  return !coversMultipleWholeRows && !coversMultipleWholeColumns
+}
+
 export const getTableSelectionKind = ({
   spansEntireTableWidth,
   spansEntireTableHeight,
