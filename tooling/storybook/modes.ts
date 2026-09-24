@@ -6,6 +6,9 @@
 
 export type ChromaticModeKey = keyof typeof modes
 
+/** Chromatic browser locale for Singapore-published sites. */
+export const CHROMATIC_LOCALE_SG = "en-SG"
+
 export const modes = {
   mobileSmall: {
     viewport: "xs",

@@ -1,3 +1,3 @@
 export { viewport } from "./viewports"
-export { withChromaticModes } from "./chromatic"
-export { getViewportByMode } from "./modes"
+export { type ChromaticBrowserOptions, withChromaticModes } from "./chromatic"
+export { CHROMATIC_LOCALE_SG, getViewportByMode } from "./modes"
