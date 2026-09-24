@@ -1,5 +1,4 @@
 import type { TableProps } from "~/interfaces"
-import { useId } from "react"
 import { getTableCellBackgroundColorCss } from "~/constants/tableCellBackgroundColor"
 import { tv } from "~/lib/tv"
 
@@ -31,20 +30,19 @@ const tableCellStyles = tv({
 })
 
 export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
-  const tableDescriptionId = useId()
   const layout = resolveTableLayout(content)
 
   return (
-    <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
-      <BaseParagraph
-        id={tableDescriptionId}
-        content={caption}
-        className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
-      />
+    <figure className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
+      <figcaption>
+        <BaseParagraph
+          content={caption}
+          className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
+        />
+      </figcaption>
       <div className="overflow-x-auto" tabIndex={0}>
         <table
           className={tableStyles({ isFixedLayout: layout.kind === "fixed" })}
-          aria-describedby={tableDescriptionId}
         >
           {layout.kind === "fixed" && (
             <colgroup>
@@ -112,6 +110,6 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
           </tbody>
         </table>
       </div>
-    </div>
+    </figure>
   )
 }
