@@ -23,6 +23,7 @@ import { viewportPointToContainerPoint } from "./measure"
 import {
   applyHeaderAxisNormalization,
   getHeaderAxisFlags,
+  shouldNormalizeHeaderTypesAfterDrag,
 } from "./normalizeHeaderAxis"
 import { selectWholeSlot } from "./selection"
 
@@ -81,8 +82,7 @@ export const useAxisDragGesture = ({
           : null
         const normalize =
           !!headerAxisFlags &&
-          (headerAxisFlags.preserveHeaderRow ||
-            headerAxisFlags.preserveHeaderColumn)
+          shouldNormalizeHeaderTypesAfterDrag(intent.axis, headerAxisFlags)
         const move = AXIS_TABLE_OPS[intent.axis].move({
           from: intent.from,
           to: intent.to,

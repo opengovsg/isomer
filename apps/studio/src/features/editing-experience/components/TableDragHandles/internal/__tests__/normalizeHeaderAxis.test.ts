@@ -8,11 +8,12 @@ import {
   hasHeaderRow,
 } from "~/features/editing-experience/utils/tableHeaderAxis"
 
-import { getTableAt } from "./axisTableOps"
+import { getTableAt } from "../axisTableOps"
 import {
   applyHeaderAxisNormalization,
   getHeaderAxisFlags,
-} from "./normalizeHeaderAxis"
+  shouldNormalizeHeaderTypesAfterDrag,
+} from "../normalizeHeaderAxis"
 
 const cellAttrs = {
   colspan: { default: 1 },
@@ -51,6 +52,7 @@ const schema = new Schema({
 
 const createTableDoc = (
   rows: ("tableCell" | "tableHeader")[][],
+  attrs?: { colspan?: number; rowspan?: number }[][],
 ): ProseMirrorNode => {
   const paragraph = schema.nodes.paragraph
   const tableRow = schema.nodes.tableRow
@@ -60,10 +62,21 @@ const createTableDoc = (
   return schema.node("doc", null, [
     table.create(
       null,
-      rows.map((row) =>
+      rows.map((row, rowIndex) =>
         tableRow.create(
           null,
-          row.map((type) => schema.node(type, null, [paragraph.create()])),
+          row.map((type, colIndex) => {
+            const cellAttr = attrs?.[rowIndex]?.[colIndex] ?? {}
+            return schema.node(
+              type,
+              {
+                colspan: cellAttr.colspan ?? 1,
+                rowspan: cellAttr.rowspan ?? 1,
+                colwidth: null,
+              },
+              [paragraph.create()],
+            )
+          }),
         ),
       ),
     ),
@@ -77,6 +90,18 @@ const mappedTable = (doc: ProseMirrorNode) => {
   return { map: TableMap.get(table), table }
 }
 
+const cellTypesInOrder = (doc: ProseMirrorNode): string[] => {
+  const types: string[] = []
+  doc.descendants((node) => {
+    if (node.type.name === "tableCell" || node.type.name === "tableHeader") {
+      types.push(node.type.name)
+      return false
+    }
+    return true
+  })
+  return types
+}
+
 const headerRowAndColumnTable = () =>
   createTableDoc([
     Array.from({ length: 4 }, () => "tableHeader"),
@@ -85,12 +110,25 @@ const headerRowAndColumnTable = () =>
     ["tableHeader", "tableCell", "tableCell", "tableCell"],
   ])
 
+describe("shouldNormalizeHeaderTypesAfterDrag", () => {
+  it("skips row-drag normalization when only a header column is set", () => {
+    expect(
+      shouldNormalizeHeaderTypesAfterDrag("row", {
+        preserveHeaderRow: false,
+        preserveHeaderColumn: true,
+      }),
+    ).toBe(false)
+  })
+})
+
 describe("applyHeaderAxisNormalization", () => {
   it("keeps header row and header column after a body row reorder", () => {
+    // Arrange
     const doc = headerRowAndColumnTable()
     const state = EditorState.create({ schema, doc })
     const flags = getHeaderAxisFlags(getTableAt(state.doc, tablePos())!)
 
+    // Act
     let tr = state.tr
     moveTableRow({ from: 3, to: 2, pos: tablePos() + 1 })(state, (next) => {
       tr = next
@@ -98,16 +136,22 @@ describe("applyHeaderAxisNormalization", () => {
     })
     tr = applyHeaderAxisNormalization(tr, tablePos(), flags, schema)
 
+    // Assert
     const after = EditorState.create({ schema, doc: tr.doc })
     expect(hasHeaderRow(mappedTable(after.doc))).toBe(true)
     expect(hasHeaderColumn(mappedTable(after.doc))).toBe(true)
+    expect(
+      cellTypesInOrder(after.doc).filter((t) => t === "tableHeader").length,
+    ).toBe(7)
   })
 
   it("keeps header row and header column after swapping columns 3 and 4", () => {
+    // Arrange
     const doc = headerRowAndColumnTable()
     const state = EditorState.create({ schema, doc })
     const flags = getHeaderAxisFlags(getTableAt(state.doc, tablePos())!)
 
+    // Act
     let tr = state.tr
     moveTableColumn({ from: 3, to: 2, pos: tablePos() + 1 })(state, (next) => {
       tr = next
@@ -115,8 +159,50 @@ describe("applyHeaderAxisNormalization", () => {
     })
     tr = applyHeaderAxisNormalization(tr, tablePos(), flags, schema)
 
+    // Assert
     const after = EditorState.create({ schema, doc: tr.doc })
     expect(hasHeaderRow(mappedTable(after.doc))).toBe(true)
     expect(hasHeaderColumn(mappedTable(after.doc))).toBe(true)
+    expect(
+      cellTypesInOrder(after.doc).filter((t) => t === "tableHeader").length,
+    ).toBe(7)
+  })
+
+  it("keeps a merged corner header cell when both axes are preserved", () => {
+    // Arrange: top-left header spans two rows; only one physical cell in column 0 row 1
+    const paragraph = schema.nodes.paragraph!
+    const tableRow = schema.nodes.tableRow!
+    const table = schema.nodes.table!
+    const doc = schema.node("doc", null, [
+      table.create(null, [
+        tableRow.create(null, [
+          schema.node("tableHeader", { ...cellAttrs, rowspan: 2 }, [
+            paragraph.create(),
+          ]),
+          schema.node("tableHeader", cellAttrs, [paragraph.create()]),
+          schema.node("tableCell", cellAttrs, [paragraph.create()]),
+        ]),
+        tableRow.create(null, [
+          schema.node("tableCell", cellAttrs, [paragraph.create()]),
+          schema.node("tableCell", cellAttrs, [paragraph.create()]),
+        ]),
+      ]),
+    ])
+    const state = EditorState.create({ schema, doc })
+    const flags = { preserveHeaderRow: true, preserveHeaderColumn: true }
+
+    // Act
+    let tr = state.tr
+    moveTableColumn({ from: 2, to: 1, pos: tablePos() + 1 })(state, (next) => {
+      tr = next
+      return true
+    })
+    tr = applyHeaderAxisNormalization(tr, tablePos(), flags, schema)
+
+    // Assert
+    const after = EditorState.create({ schema, doc: tr.doc })
+    const types = cellTypesInOrder(after.doc)
+    expect(types[0]).toBe("tableHeader")
+    expect(hasHeaderRow(mappedTable(after.doc))).toBe(true)
   })
 })
