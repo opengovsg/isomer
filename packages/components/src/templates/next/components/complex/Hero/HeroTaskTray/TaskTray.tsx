@@ -33,7 +33,6 @@ export const TaskTray = ({
         <TaskTrayItem
           key={idx}
           item={item}
-          itemIndex={idx}
           site={site}
           headingLevel={headingLevel}
         />

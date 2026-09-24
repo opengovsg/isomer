@@ -49,22 +49,18 @@ const ItemIcon = ({ icon }: { icon: SupportedIconName }) => {
 
 interface TaskTrayItemProps {
   item: HeroTaskTrayProps["taskTrayItems"][number]
-  itemIndex: number
   site: HeroTaskTrayProps["site"]
   headingLevel: HeroTaskTrayProps["headingLevel"]
 }
 
 export const TaskTrayItem = ({
   item,
-  itemIndex,
   site,
   headingLevel,
 }: TaskTrayItemProps) => {
   const { title, icon, description, buttonUrl, buttonLabel } = item
   const isExternalLink = isExternalUrl(buttonUrl)
   const TitleTag = getHeadingTag(headingLevel)
-  const titleId = `hero-task-tray-item-${itemIndex}-title`
-  const descriptionId = `hero-task-tray-item-${itemIndex}-description`
 
   return (
     <Link
@@ -75,22 +71,16 @@ export const TaskTrayItem = ({
       )}
       className={styles.root()}
       isExternal={isExternalLink}
-      aria-labelledby={titleId}
-      aria-describedby={description ? descriptionId : undefined}
     >
       <ItemIcon icon={icon} />
 
-      <TitleTag id={titleId} className={styles.title({ hasLink: true })}>
-        {title}
-      </TitleTag>
+      <TitleTag className={styles.title({ hasLink: true })}>{title}</TitleTag>
 
       {description ? (
-        <p id={descriptionId} className={styles.description()}>
-          {description}
-        </p>
+        <p className={styles.description()}>{description}</p>
       ) : null}
 
-      <div className={styles.button()} aria-hidden>
+      <div className={styles.button()}>
         {buttonLabel}
         <BiRightArrowAlt
           aria-hidden
