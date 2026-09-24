@@ -1,13 +1,9 @@
 /**
- * @param {Record<string, unknown> | null | undefined} storybookInjectedEnv
- * @param {Record<string, string | undefined>} [processEnv]
  * @param {string} key
+ * @param {Record<string, unknown> | null | undefined} storybookInjectedEnv
+ * @param {Record<string, string | undefined>} processEnv
  */
-export const readProcessEnv = (
-  key,
-  storybookInjectedEnv,
-  processEnv = process.env,
-) => {
+export const readProcessEnv = (key, storybookInjectedEnv, processEnv) => {
   if (
     storybookInjectedEnv &&
     Object.prototype.hasOwnProperty.call(storybookInjectedEnv, key)
