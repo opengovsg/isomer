@@ -14,16 +14,29 @@ const gridStyles = tv({
   },
 })
 
+interface TaskTrayProps {
+  taskTrayItems: HeroTaskTrayProps["taskTrayItems"]
+  site: HeroTaskTrayProps["site"]
+  headingLevel: HeroTaskTrayProps["headingLevel"]
+}
+
 export const TaskTray = ({
   taskTrayItems,
   site,
-}: Pick<HeroTaskTrayProps, "taskTrayItems" | "site">) => {
+  headingLevel,
+}: TaskTrayProps) => {
   const itemCount = taskTrayItems.length as 2 | 3 | 4
 
   return (
     <div className={gridStyles({ itemCount })}>
       {taskTrayItems.map((item, idx) => (
-        <TaskTrayItem key={idx} item={item} site={site} />
+        <TaskTrayItem
+          key={idx}
+          item={item}
+          itemIndex={idx}
+          site={site}
+          headingLevel={headingLevel}
+        />
       ))}
     </div>
   )

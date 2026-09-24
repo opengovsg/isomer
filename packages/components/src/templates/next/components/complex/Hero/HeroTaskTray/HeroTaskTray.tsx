@@ -6,6 +6,8 @@ import { ComponentContent } from "../../../internal/customCssClass"
 import { ImageClient } from "../../../internal/ImageClient"
 import { TaskTray } from "./TaskTray"
 
+const HERO_TASK_TRAY_TITLE_ID = "hero-task-tray-title"
+
 export const HeroTaskTray = ({
   title,
   subtitle,
@@ -18,6 +20,9 @@ export const HeroTaskTray = ({
   const HeroTag = getHeadingTag(headingLevel)
   const TrayTitleTag = getHeadingTag(headingLevel + 1)
   const trimmedTrayTitle = taskTrayTitle?.trim()
+  const itemHeadingLevel = headingLevel + (trimmedTrayTitle ? 2 : 1)
+  const taskTrayCardClassName =
+    "flex h-full flex-col items-start gap-6 rounded-lg border border-base-divider-subtle bg-white px-10 pb-9 pt-8 shadow-[0_6px_24px_0_rgba(0,0,0,0.10)]"
 
   return (
     <section className="bg-white pb-12 md:pb-16">
@@ -66,15 +71,33 @@ export const HeroTaskTray = ({
             "z-20 col-start-1 row-start-2 row-end-4 self-stretch",
           )}
         >
-          <div className="flex h-full flex-col items-start gap-6 rounded-lg border border-base-divider-subtle bg-white px-10 pb-9 pt-8 shadow-[0_6px_24px_0_rgba(0,0,0,0.10)]">
-            {trimmedTrayTitle && (
-              <TrayTitleTag className="prose-display-sm break-words text-base-content-strong">
+          {trimmedTrayTitle ? (
+            <section
+              className={taskTrayCardClassName}
+              aria-labelledby={HERO_TASK_TRAY_TITLE_ID}
+            >
+              <TrayTitleTag
+                id={HERO_TASK_TRAY_TITLE_ID}
+                className="prose-display-sm break-words text-base-content-strong"
+              >
                 {trimmedTrayTitle}
               </TrayTitleTag>
-            )}
 
-            <TaskTray taskTrayItems={taskTrayItems} site={site} />
-          </div>
+              <TaskTray
+                taskTrayItems={taskTrayItems}
+                site={site}
+                headingLevel={itemHeadingLevel}
+              />
+            </section>
+          ) : (
+            <div className={taskTrayCardClassName}>
+              <TaskTray
+                taskTrayItems={taskTrayItems}
+                site={site}
+                headingLevel={itemHeadingLevel}
+              />
+            </div>
+          )}
         </div>
       </div>
     </section>

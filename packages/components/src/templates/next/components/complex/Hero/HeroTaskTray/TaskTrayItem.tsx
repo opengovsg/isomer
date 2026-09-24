@@ -3,6 +3,7 @@ import type { HeroTaskTrayProps } from "~/interfaces/complex/Hero"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { tv } from "~/lib/tv"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
@@ -21,7 +22,7 @@ const createStyles = tv({
     button:
       "prose-headline-base-medium items-center gap-1 text-base-content-strong",
     buttonIcon:
-      "mb-0.5 ml-1 inline text-[1.375rem] transition ease-in group-hover:translate-x-1",
+      "mb-0.5 ml-1 inline text-[1.375rem] transition ease-in group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0",
   },
   variants: {
     isExternalLink: {
@@ -48,12 +49,22 @@ const ItemIcon = ({ icon }: { icon: SupportedIconName }) => {
 
 interface TaskTrayItemProps {
   item: HeroTaskTrayProps["taskTrayItems"][number]
+  itemIndex: number
   site: HeroTaskTrayProps["site"]
+  headingLevel: HeroTaskTrayProps["headingLevel"]
 }
 
-export const TaskTrayItem = ({ item, site }: TaskTrayItemProps) => {
+export const TaskTrayItem = ({
+  item,
+  itemIndex,
+  site,
+  headingLevel,
+}: TaskTrayItemProps) => {
   const { title, icon, description, buttonUrl, buttonLabel } = item
   const isExternalLink = isExternalUrl(buttonUrl)
+  const TitleTag = getHeadingTag(headingLevel)
+  const titleId = `hero-task-tray-item-${itemIndex}-title`
+  const descriptionId = `hero-task-tray-item-${itemIndex}-description`
 
   return (
     <Link
@@ -64,16 +75,25 @@ export const TaskTrayItem = ({ item, site }: TaskTrayItemProps) => {
       )}
       className={styles.root()}
       isExternal={isExternalLink}
+      aria-labelledby={titleId}
+      aria-describedby={description ? descriptionId : undefined}
     >
       <ItemIcon icon={icon} />
 
-      <h3 className={styles.title({ hasLink: true })}>{title}</h3>
+      <TitleTag id={titleId} className={styles.title({ hasLink: true })}>
+        {title}
+      </TitleTag>
 
-      <p className={styles.description()}>{description}</p>
+      {description ? (
+        <p id={descriptionId} className={styles.description()}>
+          {description}
+        </p>
+      ) : null}
 
-      <div className={styles.button()}>
+      <div className={styles.button()} aria-hidden>
         {buttonLabel}
         <BiRightArrowAlt
+          aria-hidden
           className={styles.buttonIcon({
             isExternalLink,
           })}
