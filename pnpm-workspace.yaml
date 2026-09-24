@@ -14,6 +14,14 @@ linkWorkspacePackages: true
 
 blockExoticSubdeps: true
 
+# Pins the registries used for resolution/verification so a runner's ambient
+# npm config (env var, global .npmrc) can't silently redirect @opengovsg
+# packages to a registry that isn't authenticated in CI, which otherwise
+# fails pnpm 12's supply-chain lockfile verification with 401s.
+registries:
+  default: "https://registry.npmjs.org/"
+  "@opengovsg": "https://registry.npmjs.org/"
+
 minimumReleaseAge: 1440
 
 minimumReleaseAgeExclude:
@@ -63,7 +71,7 @@ catalog:
   # v5 changed the client API — do not "upgrade" this without reviewing egazette compatibility.
   algoliasearch: ^4.27.0
   ajv: ^8.20.0
-  autoprefixer: ^10.5.5
+  autoprefixer: ^10.6.1
   axios: ^1.20.0
   bootstrap-icons: ^1.13.1
   browserslist-useragent-regexp: ^4.1.4
@@ -75,7 +83,7 @@ catalog:
   dotenv: ^16.6.1
   dotenv-cli: ^11.0.0
   jsdom: ^30.0.1
-  isomorphic-dompurify: ^3.23.0
+  isomorphic-dompurify: ^4.2.0
   mockdate: ^3.0.5
   msw: ^2.15.0
   msw-storybook-addon: ^3.0.0
@@ -84,7 +92,7 @@ catalog:
   npm-run-all2: ^9.0.3
   "@octokit/rest": ^22.0.1
   "@inquirer/prompts": ^8.7.2
-  "@opengovsg/design-system-react": ^1.34.0
+  "@opengovsg/design-system-react": ^1.35.0
   "@opengovsg/validators": ^1.4.1
   "@paralleldrive/cuid2": ^3.3.0
   "@sinclair/typebox": ^0.33.24
@@ -117,8 +125,9 @@ catalog:
   "@types/request": ^2.48.13
   "@types/validator": ^13.15.10
   "@1password/sdk": ^0.5.0
-  "@datadog/browser-rum": ^7.12.0
+  "@datadog/browser-rum": ^7.13.0
   "@fontsource/ibm-plex-mono": ^5.3.0
+  "@floating-ui/dom": ^1.8.0
   "@formkit/auto-animate": ^0.10.0
   "@headlessui/react": ^2.2.10
   "@hello-pangea/dnd": ^18.0.1
@@ -139,21 +148,21 @@ catalog:
   interweave-ssr: ^2.0.0
   iron-session: ^8.0.4
   jose: ^6.2.12
-  jotai: ^2.20.3
+  jotai: ^3.0.0
   js-md5: ^0.9.2
   kysely: ^0.29.5
   lodash-es: ^4.18.1
   nanoid: ^6.0.1
   next: 16.3.3
   openid-client: ^5.7.1
-  oxfmt: ^0.62.0
+  oxfmt: ^0.68.0
   oxlint: ^1.82.0
   oxlint-tsgolint: ^7.0.2001
   papaparse: ^5.7.0
   pg-boss: ^12.30.0
   postcss-load-config: ^6.0.1
   posthog-js: ^1.429.1
-  posthog-node: ^5.51.8
+  posthog-node: ^5.52.4
   rate-limiter-flexible: ^11.2.0
   react-error-boundary: ^6.1.5
   react-frame-component: ^5.3.2
@@ -172,22 +181,22 @@ catalog:
 
 catalogs:
   atlaskitPragmaticDnd:
-    "@atlaskit/pragmatic-drag-and-drop": ^2.0.2
-    "@atlaskit/pragmatic-drag-and-drop-hitbox": ^2.2.0
+    "@atlaskit/pragmatic-drag-and-drop": ^3.1.0
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": ^2.2.2
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1129.0
-    "@aws-sdk/client-amplify": ^3.1129.0
-    "@aws-sdk/client-cloudfront": ^3.1129.0
-    "@aws-sdk/client-codebuild": ^3.1129.0
-    "@aws-sdk/client-s3": ^3.1129.0
-    "@aws-sdk/lib-storage": ^3.1129.0
-    "@aws-sdk/s3-request-presigner": ^3.1129.0
-    "@aws-sdk/credential-providers": ^3.1129.0
-    "@aws-sdk/rds-signer": ^3.1129.0
+    "@aws-sdk/client-acm": ^3.1132.0
+    "@aws-sdk/client-amplify": ^3.1132.0
+    "@aws-sdk/client-cloudfront": ^3.1132.0
+    "@aws-sdk/client-codebuild": ^3.1132.0
+    "@aws-sdk/client-s3": ^3.1132.0
+    "@aws-sdk/lib-storage": ^3.1132.0
+    "@aws-sdk/s3-request-presigner": ^3.1132.0
+    "@aws-sdk/credential-providers": ^3.1132.0
+    "@aws-sdk/rds-signer": ^3.1132.0
   babel:
     "@babel/plugin-transform-class-properties": ^8.0.1
     "@babel/plugin-transform-object-rest-spread": ^8.0.1
-    "@babel/preset-env": ^8.0.2
+    "@babel/preset-env": ^8.0.5
     "@babel/preset-typescript": ^8.0.1
   casl:
     "@casl/ability": ^7.0.1
@@ -250,9 +259,9 @@ catalogs:
     eslint-plugin-storybook: 10.4.6
     storybook-addon-pseudo-states: 10.4.6
   tanstack-query:
-    "@tanstack/query-devtools": ^5.102.8
-    "@tanstack/react-query": ^5.102.8
-    "@tanstack/react-query-devtools": ^5.102.8
+    "@tanstack/query-devtools": ^5.103.1
+    "@tanstack/react-query": ^5.103.1
+    "@tanstack/react-query-devtools": ^5.103.1
   tiptap:
     "@tiptap/core": ^3.31.3
     "@tiptap/extension-bold": ^3.31.3
@@ -290,7 +299,7 @@ catalogs:
     "@trpc/server": ^11.18.0
   vitest:
     "@vitejs/plugin-react": ^6.1.1
-    "@vitest/browser-playwright": ^5.0.0
-    "@vitest/coverage-istanbul": ^5.0.0
-    vite: ^8.2.2
-    vitest: ^5.0.0
+    "@vitest/browser-playwright": ^5.0.1
+    "@vitest/coverage-istanbul": ^5.0.1
+    vite: ^8.3.0
+    vitest: ^5.0.1

@@ -43,7 +43,7 @@ vi.mock("~/utils/trpc", () => ({
         readPageAndBlob: { invalidate: noop },
       },
       collection: {
-        countTagOptionsUsage: { invalidate: noop },
+        countFilterUsage: { invalidate: noop },
       },
     }),
   },

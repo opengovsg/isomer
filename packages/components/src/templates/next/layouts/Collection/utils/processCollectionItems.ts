@@ -22,6 +22,8 @@ export const processCollectionItems = (
       url,
       tags,
       pillTags,
+      dateTagged,
+      dateFilterDisplayEntries,
     } = item
     return {
       id,
@@ -33,6 +35,8 @@ export const processCollectionItems = (
       isContainNeeded,
       tags,
       pillTags,
+      dateTagged,
+      dateFilterDisplayEntries,
       referenceLinkHref: getReferenceLinkHref(
         url,
         site.siteMapArray,

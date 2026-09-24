@@ -6,8 +6,8 @@ A government CMS and site builder for Singapore public agencies. Editors create 
 
 ### Collection structure
 
-**Collection Item**: An article (CollectionPage) or link (CollectionLink) that lives inside a collection. Both support tag assignment, including the migrated "Category" tag group (see below).
-_Avoid_: article (when referring to both types), page (ambiguous)
+**Collection Item**: An article (CollectionPage) or link (CollectionLink) that lives inside a collection. A link may target an external URL or an uploaded file — a "file item" is a CollectionLink variant, not a separate resource type. Both support tag assignment, including the migrated "Category" tag group (see below).
+_Avoid_: article (when referring to both types), page (ambiguous), file (as a distinct item type — it is a link variant)
 
 **Collection Index**: The parent page of a collection. Stores the admin-defined taxonomy — Tag Categories — in its blob.
 _Avoid_: collection page, index page (ambiguous across layouts)
@@ -48,6 +48,23 @@ _Avoid_: document (ambiguous with the SearchSG "document", which is one-per-gaze
 
 **Object Group**: The identity shared by all Search Records of one gazette — its S3 object key. Used to address a gazette's records as a unit (e.g. removing them all).
 _Avoid_: object key (true but hides the grouping role), ref (that's the leading-slash page field the Object Group is derived from)
+
+### Page editor — tables
+
+**Axis** (`Axis`): Whether a slot is a `"row"` or `"column"`. Most table editing rules take an axis instead of duplicating row and column logic.
+_Avoid_: direction, orientation, dimension
+
+**Slot**: A whole row or a whole column. Drag handles select, reorder, and append slots.
+_Avoid_: row/column (when the statement applies to both), line, track, cell (a slot is a whole row or column, never a single cell)
+
+**Locked slot**: A slot you can select but not reorder. Today that means a header row or header column. Each axis has a minimum movable index; drags cannot start from a locked slot or drop above one.
+_Avoid_: header (the cells themselves, not the constraint on them), frozen row/column (implies scroll pinning, which is unrelated)
+
+**Gutter** (`TABLE_GUTTER_PX`): The band on every side of a table where drag handles and add pills sit. The table node view reserves it; `TableDragHandles` draws into it. The pointer counts as hovering a table anywhere inside the gutter.
+_Avoid_: margin, padding (each is only one side's implementation), chrome (broader, includes the handles themselves)
+
+**Add pill**: The rounded control in the gutter below and to the right of a table. Appends a slot on that axis. Visible while the pointer is over the table or its gutter.
+_Avoid_: add button, plus button, insert control
 
 ### Roles and surfaces
 
