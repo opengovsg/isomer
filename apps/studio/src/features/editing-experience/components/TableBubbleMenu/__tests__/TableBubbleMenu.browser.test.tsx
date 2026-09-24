@@ -421,6 +421,33 @@ describe("TableBubbleMenu", () => {
     expect(await findByText("Move up")).toBeTruthy()
     expect(await findByText("Move down")).toBeTruthy()
     expect(await findByText("Delete row")).toBeTruthy()
+    expect(await findByText("Merge cells")).toBeTruthy()
+  })
+
+  it("shows Merge cells for a full row selection", async () => {
+    // Arrange
+    const { editor, findByText, findByRole } = await renderHarness()
+    selectCells(editor, 3, 5) // first body row: cells 3-5
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+
+    // Assert
+    expect(await findByText("Delete row")).toBeTruthy()
+    expect(await findByText("Merge cells")).toBeTruthy()
+  })
+
+  it("shows Merge cells for a full column selection", async () => {
+    // Arrange
+    const { editor, findByText, findByRole } = await renderHarness()
+    selectCells(editor, 1, 7) // column B (header + both body rows)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+
+    // Assert
+    expect(await findByText("Delete column")).toBeTruthy()
+    expect(await findByText("Merge cells")).toBeTruthy()
   })
 
   it("shows Header row/column only for the exact top row / leftmost column", async () => {
@@ -1352,6 +1379,54 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Delete row")).toBeNull()
   })
 
+  it("opens the actions list on the measured box instead of the closed-menu coordinates", async () => {
+    // Arrange
+    const { editor, findByRole } = await renderHarness()
+    selectCells(editor, 4, 4)
+    const trigger = await findByRole("button", { name: "Table actions" })
+    await waitFor(() => {
+      expect(getComputedStyle(trigger).visibility).toBe("visible")
+    })
+
+    const menuRoot = trigger.parentElement
+    if (!(menuRoot instanceof HTMLElement)) throw new Error("menu root missing")
+
+    const visibleFrames: { top: number; left: number }[] = []
+    const observer = new MutationObserver(() => {
+      const actionsEl = menuRoot.querySelector(
+        "[data-table-bubble-menu-actions]",
+      )
+      if (!(actionsEl instanceof HTMLElement)) return
+      if (getComputedStyle(actionsEl).visibility !== "visible") return
+      const rect = actionsEl.getBoundingClientRect()
+      visibleFrames.push({ top: rect.top, left: rect.left })
+    })
+    observer.observe(menuRoot, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    })
+
+    // Act
+    await act(async () => {
+      trigger.click()
+      // computePosition applies the open-menu coordinates in a microtask.
+      await Promise.resolve()
+    })
+    observer.disconnect()
+
+    // Assert: every painted-visible frame is already the settled open position.
+    expect(trigger).toHaveAttribute("aria-pressed", "true")
+    const actionsEl = menuRoot.querySelector("[data-table-bubble-menu-actions]")
+    if (!(actionsEl instanceof HTMLElement)) throw new Error("actions missing")
+    const settled = actionsEl.getBoundingClientRect()
+    expect(visibleFrames.length).toBeGreaterThan(0)
+    for (const frame of visibleFrames) {
+      expect(Math.abs(frame.top - settled.top)).toBeLessThan(1)
+      expect(Math.abs(frame.left - settled.left)).toBeLessThan(1)
+    }
+  })
+
   it("repositions the menu when the editor's own scroll container scrolls (not just window)", async () => {
     // Arrange
     let editor: Editor | undefined
@@ -1410,6 +1485,99 @@ describe("TableBubbleMenu", () => {
     // Assert
     await waitFor(() => {
       expect(menuEl?.getBoundingClientRect().top).not.toBe(initialTop)
+    })
+  })
+
+  it("keeps the pencil on the bottom-right corner of the highlighted cells", async () => {
+    // Arrange
+    const { editor, findByRole } = await renderHarness()
+    selectCells(editor, 3, 8)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+
+    // Assert
+    const triggerEl = document.querySelector("[data-table-bubble-menu-trigger]")
+    const actionsEl = document.querySelector("[data-table-bubble-menu-actions]")
+    const cell = editor.view.nodeDOM(nthCellPos(editor, 8))
+    if (!(triggerEl instanceof HTMLElement)) throw new Error("trigger missing")
+    if (!(actionsEl instanceof HTMLElement)) throw new Error("actions missing")
+    if (!(cell instanceof HTMLElement)) throw new Error("cell missing")
+
+    await waitFor(() => {
+      const triggerRect = triggerEl.getBoundingClientRect()
+      const actionsRect = actionsEl.getBoundingClientRect()
+      const cellRect = cell.getBoundingClientRect()
+      const triggerCenterX = triggerRect.left + triggerRect.width / 2
+      const triggerCenterY = triggerRect.top + triggerRect.height / 2
+      expect(Math.abs(triggerCenterX - cellRect.right)).toBeLessThan(1)
+      expect(Math.abs(triggerCenterY - cellRect.bottom)).toBeLessThan(1)
+      expect(actionsRect.left).toBeGreaterThanOrEqual(triggerRect.right - 1)
+    })
+  })
+
+  it("keeps the open menu inside the viewport when the cell is at the top-left", async () => {
+    // Arrange: a narrow table pinned to the viewport corner, so the list
+    // would otherwise run off the top and the left.
+    let editor: Editor | undefined
+
+    const PinnedHarness = () => {
+      const e = useTextEditor({ data: SEED_CONTENT, handleChange: () => null })
+      useEffect(() => {
+        if (e) editor = e
+      }, [e])
+      return (
+        <div style={{ position: "fixed", top: 0, left: 0, width: 120 }}>
+          {e && <TableBubbleMenu editor={e} />}
+          {e && <EditorContent editor={e} />}
+        </div>
+      )
+    }
+
+    const { findByRole, findByText } = render(
+      <ThemeProvider theme={theme}>
+        <PinnedHarness />
+      </ThemeProvider>,
+    )
+    await waitFor(() => {
+      if (!editor) throw new Error("editor not ready")
+    })
+    const readyEditor = editor!
+
+    selectCells(readyEditor, 0, 0)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+    await findByText("Clear contents")
+
+    // Assert
+    const actionsEl = document.querySelector("[data-table-bubble-menu-actions]")
+    const triggerEl = document.querySelector("[data-table-bubble-menu-trigger]")
+    if (!(actionsEl instanceof HTMLElement)) throw new Error("actions missing")
+    if (!(triggerEl instanceof HTMLElement)) throw new Error("trigger missing")
+
+    await waitFor(() => {
+      const actionsRect = actionsEl.getBoundingClientRect()
+      expect(actionsRect.top).toBeGreaterThanOrEqual(0)
+      expect(actionsRect.left).toBeGreaterThanOrEqual(0)
+      expect(actionsRect.right).toBeLessThanOrEqual(window.innerWidth)
+      expect(actionsRect.bottom).toBeLessThanOrEqual(window.innerHeight)
+
+      const cell = readyEditor.view.nodeDOM(nthCellPos(readyEditor, 0))
+      if (!(cell instanceof HTMLElement)) throw new Error("cell missing")
+      const cellRect = cell.getBoundingClientRect()
+      const triggerRect = triggerEl.getBoundingClientRect()
+      const triggerCenterX = triggerRect.left + triggerRect.width / 2
+      const triggerCenterY = triggerRect.top + triggerRect.height / 2
+
+      // The list may slide to stay on screen. The pencil stays on the corner.
+      expect(Math.abs(triggerCenterX - cellRect.right)).toBeLessThan(1)
+      expect(Math.abs(triggerCenterY - cellRect.bottom)).toBeLessThan(1)
+
+      const actionsAbove = actionsRect.bottom <= triggerRect.top + 1
+      const actionsBelow = actionsRect.top >= triggerRect.bottom - 1
+      expect(actionsAbove || actionsBelow).toBe(true)
+      expect(actionsRect.left).toBeGreaterThanOrEqual(triggerRect.right - 1)
     })
   })
 
