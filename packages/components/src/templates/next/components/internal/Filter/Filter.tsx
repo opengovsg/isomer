@@ -171,6 +171,7 @@ export const Filter = ({
                   ) : (
                     <CheckboxGroup
                       aria-label={label}
+                      className="mt-4 gap-0"
                       value={appliedItemsById[id] ?? []}
                     >
                       {items.map(({ id: itemId, label: itemLabel, count }) => (

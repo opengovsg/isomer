@@ -40,7 +40,7 @@ export const DateFilterControls = ({
       {showStatusCheckboxes && (
         <CheckboxGroup
           aria-label={statusGroupLabel}
-          className="gap-2"
+          className="mt-4 gap-0"
           value={checkboxValue}
           onChange={onCheckboxValuesChange}
         >

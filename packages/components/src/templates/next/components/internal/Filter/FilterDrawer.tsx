@@ -214,6 +214,7 @@ const FilterDrawerContent = ({
                   ) : (
                     <CheckboxGroup
                       aria-label={label}
+                      className="mt-4 gap-0"
                       value={holdingFiltersById[id] ?? []}
                       onChange={(values) => {
                         setHoldingFiltersById((prev) => ({
