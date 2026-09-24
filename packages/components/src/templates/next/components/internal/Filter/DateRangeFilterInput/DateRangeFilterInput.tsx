@@ -99,57 +99,55 @@ export const DateRangeFilterInput = ({
   }
 
   return (
-    <fieldset className="mx-2 mb-2 flex min-w-0 flex-col gap-2 border-0 p-0">
-      <legend className="prose-headline-base-medium mb-2 text-base-content">
+    <fieldset className="mx-2 mb-2 mt-1 flex min-w-0 flex-col gap-2 border-0 p-0">
+      <legend className="prose-headline-base-medium float-left table w-full text-base-content">
         Search by date or range
       </legend>
 
-      <div className="flex flex-col gap-4">
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <label
-            htmlFor={fromId}
-            className="prose-headline-base-medium text-base-content"
-          >
-            {FROM_LABEL}
-          </label>
-          <input
-            id={fromId}
-            type="date"
-            value={start}
-            max={end || undefined}
-            placeholder={DATE_PLACEHOLDER}
-            onChange={handleStartChange}
-            onKeyDown={stopEscapeFromBubbling}
-            className={dateRangeInputFieldStyles({
-              isInvalid: !!validationError,
-            })}
-            aria-invalid={validationError ? true : undefined}
-            aria-describedby={validationError ? errorId : undefined}
-          />
-        </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <label
+          htmlFor={fromId}
+          className="prose-headline-base-medium text-base-content"
+        >
+          {FROM_LABEL}
+        </label>
+        <input
+          id={fromId}
+          type="date"
+          value={start}
+          max={end || undefined}
+          placeholder={DATE_PLACEHOLDER}
+          onChange={handleStartChange}
+          onKeyDown={stopEscapeFromBubbling}
+          className={dateRangeInputFieldStyles({
+            isInvalid: !!validationError,
+          })}
+          aria-invalid={validationError ? true : undefined}
+          aria-describedby={validationError ? errorId : undefined}
+        />
+      </div>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <label
-            htmlFor={toId}
-            className="prose-headline-base-medium text-base-content"
-          >
-            {TO_LABEL}
-          </label>
-          <input
-            id={toId}
-            type="date"
-            value={end}
-            min={start || undefined}
-            placeholder={DATE_PLACEHOLDER}
-            onChange={handleEndChange}
-            onKeyDown={stopEscapeFromBubbling}
-            className={dateRangeInputFieldStyles({
-              isInvalid: !!validationError,
-            })}
-            aria-invalid={validationError ? true : undefined}
-            aria-describedby={validationError ? errorId : undefined}
-          />
-        </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <label
+          htmlFor={toId}
+          className="prose-headline-base-medium text-base-content"
+        >
+          {TO_LABEL}
+        </label>
+        <input
+          id={toId}
+          type="date"
+          value={end}
+          min={start || undefined}
+          placeholder={DATE_PLACEHOLDER}
+          onChange={handleEndChange}
+          onKeyDown={stopEscapeFromBubbling}
+          className={dateRangeInputFieldStyles({
+            isInvalid: !!validationError,
+          })}
+          aria-invalid={validationError ? true : undefined}
+          aria-describedby={validationError ? errorId : undefined}
+        />
       </div>
 
       {validationError && (

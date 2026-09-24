@@ -31,7 +31,7 @@ const renderDateFilter = (
 
 const openMobileDrawer = () => {
   fireEvent.click(screen.getByRole("button", { name: /filter results/i }))
-  return screen.findByRole("dialog")
+  return screen.findByRole("dialog", { name: "Filters" })
 }
 
 describe("Filter", () => {
