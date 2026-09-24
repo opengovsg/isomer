@@ -928,7 +928,7 @@ describe("TableBubbleMenu", () => {
 
     expect(await findByText("Split cell")).toBeTruthy()
     expect(await findByText("Delete row")).toBeTruthy()
-    expect(queryByText("Merge cells")).toBeTruthy()
+    expect(queryByText("Merge cells")).toBeNull()
   })
 
   it("splits a fully merged row back into separate cells from the row menu", async () => {
@@ -973,7 +973,7 @@ describe("TableBubbleMenu", () => {
 
     expect(await findByText("Split cell")).toBeTruthy()
     expect(await findByText("Delete column")).toBeTruthy()
-    expect(queryByText("Merge cells")).toBeTruthy()
+    expect(queryByText("Merge cells")).toBeNull()
   })
 
   it("does not show Split cell for a full row that only partially merged", async () => {
@@ -988,6 +988,7 @@ describe("TableBubbleMenu", () => {
     await activateTableBubbleMenu(findByRole)
 
     expect(queryByText("Split cell")).toBeNull()
+    expect(await findByText("Merge cells")).toBeTruthy()
   })
 
   it("shows Clear contents and Merge cells for an irregular multi-cell selection", async () => {

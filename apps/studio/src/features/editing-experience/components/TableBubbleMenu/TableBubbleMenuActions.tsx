@@ -423,8 +423,11 @@ const RowSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
-      <MergeCellsButton editor={editor} />
-      {showSplitCell && <SplitCellButton editor={editor} />}
+      {showSplitCell ? (
+        <SplitCellButton editor={editor} />
+      ) : (
+        <MergeCellsButton editor={editor} />
+      )}
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
@@ -499,8 +502,11 @@ const ColumnSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
-      <MergeCellsButton editor={editor} />
-      {showSplitCell && <SplitCellButton editor={editor} />}
+      {showSplitCell ? (
+        <SplitCellButton editor={editor} />
+      ) : (
+        <MergeCellsButton editor={editor} />
+      )}
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
