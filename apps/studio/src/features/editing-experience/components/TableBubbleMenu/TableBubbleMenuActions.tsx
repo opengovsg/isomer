@@ -60,7 +60,6 @@ import {
   splitFullyMergedRow,
 } from "./TableBubbleMenu.split"
 import {
-
   getColumnMovePlan,
   getRowMovePlan,
   restoreMovedBlockSelection,
@@ -68,7 +67,6 @@ import {
   selectionIncludesHeaderRow,
   selectionIsFullyMergedColumn,
   selectionIsFullyMergedRow,
-
   selectionIsLeftmostColumn,
   selectionIsTopRow,
 } from "./TableBubbleMenu.utils"
@@ -300,7 +298,6 @@ const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
   const ThumbIcon = isChecked ? BxCheck : BxX
   const checkedDataAttr = isChecked ? "" : undefined
 
-
   return (
     <chakra.span
       aria-hidden
@@ -366,7 +363,6 @@ const splitSelectedMergedCell = (editor: Editor) => {
   editor.chain().focus().splitCell().run()
 }
 
-
 const MergeCellsButton = ({ editor }: { editor: Editor }) => (
   <ActionButton
     label="Merge cells"
@@ -382,7 +378,6 @@ const SplitCellButton = ({ editor }: { editor: Editor }) => (
     onClick={() => splitSelectedMergedCell(editor)}
   />
 )
-
 
 const HeaderToggle = ({
   label,
@@ -440,7 +435,6 @@ const RowSelectionActions = ({
     "down",
   )
   const isFullyMergedRow = selectionIsFullyMergedRow(rect)
-
 
   return (
     <ActionGroup>
@@ -521,7 +515,6 @@ const ColumnSelectionActions = ({
     "right",
   )
   const isFullyMergedColumn = selectionIsFullyMergedColumn(rect)
-
 
   return (
     <ActionGroup>
@@ -638,7 +631,6 @@ const SelectionActions = ({
         <ActionGroup>
           <ClearContentsButton editor={editor} />
           <SplitCellButton editor={editor} />
-
         </ActionGroup>
       )
     default:

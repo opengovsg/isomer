@@ -129,7 +129,6 @@ const selectColumnAtCell = (editor: Editor, cellIndex: number) => {
   })
 }
 
-
 const activateTableBubbleMenu = async (
   findByRole: (role: string, options: { name: string }) => Promise<HTMLElement>,
 ) => {
@@ -1001,7 +1000,6 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Split cell")).toBeNull()
     expect(await findByText("Merge cells")).toBeTruthy()
   })
-
 
   it("shows Clear contents and Merge cells for an irregular multi-cell selection", async () => {
     const { editor, findByText, findByRole, queryByText } =
