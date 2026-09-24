@@ -167,5 +167,4 @@ describe("applyHeaderAxisNormalization", () => {
       cellTypesInOrder(after.doc).filter((t) => t === "tableHeader").length,
     ).toBe(7)
   })
-
 })
