@@ -18,6 +18,14 @@ const readProcessEnv = (key) =>
 
 const cronWorkersSchema = z.stringbool().optional().default(false)
 const skipSingpassSchema = z.stringbool().optional().default(false)
+const cronWorkersEnvSchema = z
+  .union([z.boolean(), cronWorkersSchema])
+  .optional()
+  .default(false)
+const skipSingpassEnvSchema = z
+  .union([z.boolean(), skipSingpassSchema])
+  .optional()
+  .default(false)
 
 const shouldSkipEnvValidation =
   !!process.env.SKIP_ENV_VALIDATION ||
@@ -35,7 +43,7 @@ const parsedEnv = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
     CI: z.coerce.boolean().default(false),
-    ENABLE_CRON_WORKERS: z.stringbool().optional().default(false),
+    ENABLE_CRON_WORKERS: cronWorkersEnvSchema,
     OTP_EXPIRY: z.coerce.number().positive().optional().default(600),
     // WARNING: Setting this bypasses OTP security. For preview environments only — never set in staging or production.
     DANGEROUSLY_SET_STATIC_OTP: z.string().length(6).optional(),
@@ -85,10 +93,7 @@ const parsedEnv = createEnv({
     ]),
     // WARNING: Setting this bypasses SingPass login entirely. For preview
     // environments only — never set in staging or production.
-    NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS: z
-      .stringbool()
-      .optional()
-      .default(false),
+    NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS: skipSingpassEnvSchema,
     NEXT_PUBLIC_APP_URL: z.string().url().optional(),
     NEXT_PUBLIC_APP_NAME: z.string().default("Isomer Studio"),
     NEXT_PUBLIC_APP_VERSION: z.string().default("0.0.0"),
@@ -156,17 +161,23 @@ const parsedEnv = createEnv({
 })
 
 export const env = shouldSkipEnvValidation
-  ? {
-      ...parsedEnv,
-      ENABLE_CRON_WORKERS: cronWorkersSchema.parse(
-        readProcessEnv("ENABLE_CRON_WORKERS") ??
-          process.env.ENABLE_CRON_WORKERS,
-      ),
-      NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS: skipSingpassSchema.parse(
-        readProcessEnv("NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS") ??
-          process.env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS,
-      ),
-    }
+  ? new Proxy(parsedEnv, {
+      get(target, prop, receiver) {
+        if (prop === "ENABLE_CRON_WORKERS") {
+          return cronWorkersSchema.parse(
+            readProcessEnv("ENABLE_CRON_WORKERS") ??
+              process.env.ENABLE_CRON_WORKERS,
+          )
+        }
+        if (prop === "NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS") {
+          return skipSingpassSchema.parse(
+            readProcessEnv("NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS") ??
+              process.env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS,
+          )
+        }
+        return Reflect.get(target, prop, receiver)
+      },
+    })
   : parsedEnv
 
 if (!shouldSkipEnvValidation && typeof window === "undefined") {
