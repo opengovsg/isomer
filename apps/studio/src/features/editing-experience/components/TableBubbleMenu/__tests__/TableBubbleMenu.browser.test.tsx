@@ -458,28 +458,28 @@ describe("TableBubbleMenu", () => {
     // Act
     await activateTableBubbleMenu(findByRole)
     // Assert
-    expect(queryByRole("checkbox", { name: "Header row" })).toBeNull()
+    expect(queryByRole("switch", { name: "Header row" })).toBeNull()
 
     // Arrange: exact header / top row
     selectCells(editor, 0, 2)
     // Act
     await activateTableBubbleMenu(findByRole)
     // Assert
-    expect(await findByRole("checkbox", { name: "Header row" })).toBeChecked()
+    expect(await findByRole("switch", { name: "Header row" })).toBeChecked()
 
     // Arrange: top row + body row (overlaps top row but is not exactly it)
     selectCells(editor, 0, 5)
     // Act
     await activateTableBubbleMenu(findByRole)
     // Assert
-    expect(queryByRole("checkbox", { name: "Header row" })).toBeNull()
+    expect(queryByRole("switch", { name: "Header row" })).toBeNull()
 
     // Arrange: middle column, not the leftmost column
     selectCells(editor, 1, 7)
     // Act
     await activateTableBubbleMenu(findByRole)
     // Assert
-    expect(queryByRole("checkbox", { name: "Header column" })).toBeNull()
+    expect(queryByRole("switch", { name: "Header column" })).toBeNull()
 
     // Arrange: exact leftmost column
     selectCells(editor, 0, 6)
@@ -487,7 +487,7 @@ describe("TableBubbleMenu", () => {
     await activateTableBubbleMenu(findByRole)
     // Assert
     expect(
-      await findByRole("checkbox", { name: "Header column" }),
+      await findByRole("switch", { name: "Header column" }),
     ).not.toBeChecked()
 
     // Arrange: leftmost + next column (overlaps leftmost but is not exactly it)
@@ -495,7 +495,7 @@ describe("TableBubbleMenu", () => {
     // Act
     await activateTableBubbleMenu(findByRole)
     // Assert
-    expect(queryByRole("checkbox", { name: "Header column" })).toBeNull()
+    expect(queryByRole("switch", { name: "Header column" })).toBeNull()
   })
 
   it("moves a multi-column selection as a block (A,B → right becomes C,A,B)", async () => {
@@ -777,7 +777,7 @@ describe("TableBubbleMenu", () => {
     // Act
     await activateTableBubbleMenu(findByRole)
     // Assert
-    const headerToggle = await findByRole("checkbox", { name: "Header row" })
+    const headerToggle = await findByRole("switch", { name: "Header row" })
     expect(headerToggle).toBeChecked()
     expect(queryByText("Add row above")).toBeNull()
     expect(await findByText("Add row below")).toBeTruthy()
@@ -791,7 +791,7 @@ describe("TableBubbleMenu", () => {
     // Act
     await activateTableBubbleMenu(findByRole)
     // Assert
-    expect(queryByRole("checkbox", { name: "Header row" })).toBeNull()
+    expect(queryByRole("switch", { name: "Header row" })).toBeNull()
     expect(queryByText("Add row above")).toBeNull()
     expect(queryByText("Delete row")).toBeNull()
     expect(queryByText("Duplicate row")).toBeNull()
@@ -805,13 +805,15 @@ describe("TableBubbleMenu", () => {
       await renderHarness()
     selectCells(editor, 0, 2)
     await activateTableBubbleMenu(findByRole)
-    const headerToggle = await findByRole("checkbox", { name: "Header row" })
+    const headerToggle = await findByRole("switch", { name: "Header row" })
     expect(headerToggle).toBeChecked()
     expect(queryByText("Delete row")).toBeNull()
 
-    // Act
+    // Act: pointer sequence including the mousedown the row cancels (Playwright
+    // userEvent.click fails when the portaled menu is outside the viewport).
     act(() => {
-      headerToggle.click()
+      fireEvent.mouseDown(headerToggle)
+      fireEvent.click(headerToggle)
     })
 
     // Assert
@@ -834,7 +836,7 @@ describe("TableBubbleMenu", () => {
     await activateTableBubbleMenu(findByRole)
     // Assert
     expect(
-      await findByRole("checkbox", { name: "Header column" }),
+      await findByRole("switch", { name: "Header column" }),
     ).not.toBeChecked()
     expect(await findByText("Delete column")).toBeTruthy()
     expect(await findByText("Move right")).toBeTruthy()
@@ -845,9 +847,7 @@ describe("TableBubbleMenu", () => {
       editor.chain().focus().toggleHeaderColumn().run()
     })
     // Assert
-    expect(
-      await findByRole("checkbox", { name: "Header column" }),
-    ).toBeChecked()
+    expect(await findByRole("switch", { name: "Header column" })).toBeChecked()
     expect(queryByText("Add column left")).toBeNull()
     expect(queryByText("Delete column")).toBeNull()
     expect(queryByText("Duplicate column")).toBeNull()
@@ -859,7 +859,7 @@ describe("TableBubbleMenu", () => {
     // Act
     await activateTableBubbleMenu(findByRole)
     // Assert
-    expect(queryByRole("checkbox", { name: "Header column" })).toBeNull()
+    expect(queryByRole("switch", { name: "Header column" })).toBeNull()
     expect(queryByText("Delete column")).toBeNull()
     expect(queryByText("Duplicate column")).toBeNull()
     expect(queryByText("Move left")).toBeNull()

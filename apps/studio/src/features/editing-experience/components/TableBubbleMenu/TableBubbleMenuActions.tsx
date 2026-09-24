@@ -1,8 +1,16 @@
 import type { TableCellBackgroundColorToken } from "@opengovsg/isomer-components"
 import type { Editor } from "@tiptap/react"
 import type { ReactElement, ReactNode } from "react"
-import { Box, Flex, Text, VStack } from "@chakra-ui/react"
-import { Button, Switch } from "@opengovsg/design-system-react"
+import {
+  Box,
+  chakra,
+  Flex,
+  Icon,
+  Text,
+  useMultiStyleConfig,
+  VStack,
+} from "@chakra-ui/react"
+import { BxCheck, BxX, Button } from "@opengovsg/design-system-react"
 import {
   TABLE_CELL_BACKGROUND_COLORS,
   TABLE_CELL_BACKGROUND_COLOR_TOKENS,
@@ -279,6 +287,38 @@ const BackgroundColor = ({
   )
 }
 
+const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
+  const styles = useMultiStyleConfig("Switch", { size: "sm" })
+  const ThumbIcon = isChecked ? BxCheck : BxX
+
+  return (
+    <chakra.span
+      aria-hidden
+      className="chakra-switch__track"
+      data-checked={isChecked}
+      __css={{
+        display: "inline-flex",
+        flexShrink: 0,
+        justifyContent: "flex-start",
+        boxSizing: "content-box",
+        ...styles.track,
+      }}
+    >
+      <chakra.span
+        className="chakra-switch__thumb"
+        data-checked={isChecked}
+        __css={styles.thumb}
+      >
+        <Icon
+          as={ThumbIcon}
+          data-checked={isChecked}
+          __css={styles.thumbIcon}
+        />
+      </chakra.span>
+    </chakra.span>
+  )
+}
+
 const MergeCellsButton = ({ editor }: { editor: Editor }) => (
   <ActionButton
     label="Merge cells"
@@ -296,24 +336,31 @@ const HeaderToggle = ({
   isChecked: boolean
   onToggle: () => void
 }) => (
+  // The row cancels mousedown so the editor keeps its cell selection. A
+  // Switch is a checkbox, and that cancel swallows its first change event.
   <Flex
+    as="button"
+    type="button"
+    role="switch"
+    aria-checked={isChecked}
     w="100%"
     minH="2.25rem"
     align="center"
     justify="space-between"
     px="0.75rem"
     gap="0.5rem"
+    bg="transparent"
+    border="none"
+    borderRadius="0"
+    cursor="pointer"
+    sx={{ appearance: "none" }}
     onMouseDown={(event) => event.preventDefault()}
+    onClick={onToggle}
   >
     <Text textStyle="body-2" color="base.content.strong">
       {label}
     </Text>
-    <Switch
-      size="sm"
-      isChecked={isChecked}
-      onChange={onToggle}
-      aria-label={label}
-    />
+    <HeaderSwitchVisual isChecked={isChecked} />
   </Flex>
 )
 
