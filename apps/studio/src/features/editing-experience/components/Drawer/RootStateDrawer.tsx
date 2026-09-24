@@ -497,12 +497,17 @@ export default function RootStateDrawer() {
                 <VStack gap="1.5rem" w="100%">
                   <VStack w="100%" h="100%" gap="1rem">
                     <Flex flexDirection="row" w="100%">
-                      <VStack gap="0.25rem" align="start" flex={1}>
-                        <Text textStyle="subhead-1">Custom blocks</Text>
-                        <Text textStyle="caption-2" color="base.content.medium">
-                          Use blocks to display your content.
-                        </Text>
-                      </VStack>
+                      {canAddBlocks && (
+                        <VStack gap="0.25rem" align="start" flex={1}>
+                          <Text textStyle="subhead-1">Custom blocks</Text>
+                          <Text
+                            textStyle="caption-2"
+                            color="base.content.medium"
+                          >
+                            Use blocks to display your content.
+                          </Text>
+                        </VStack>
+                      )}
                       {/* TODO: we should swap over to using the `resource.type` */}
                       {/* rather than the `page.layout` but we are unable to do so due */}
                       {/* to the existence of custom index page that are `layout: */}
