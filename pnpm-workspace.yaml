@@ -93,6 +93,7 @@ catalog:
   "@octokit/rest": ^22.0.1
   "@inquirer/prompts": ^8.7.2
   "@opengovsg/design-system-react": ^1.35.0
+  "@opengovsg/starter-kitty-testcontainers": ^0.2.0
   "@opengovsg/validators": ^1.4.1
   "@paralleldrive/cuid2": ^3.3.0
   "@sinclair/typebox": ^0.33.24
