@@ -68,6 +68,9 @@ const setupContainers = createGlobalSetup([
     wait: {
       type: "LOG",
       message: "database system is ready to accept connections",
+      // postgres:15-alpine starts a temporary server during init before the
+      // final server; wait for both readiness lines (see main's prior setup).
+      times: 2,
     },
   }),
 ])
