@@ -321,6 +321,28 @@ const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
   )
 }
 
+const splitSelectedMergedCell = (editor: Editor) => {
+  const { selection } = editor.state
+
+  if (selection instanceof CellSelection) {
+    const rect = selectedRect(editor.state)
+    const mapIndex = rect.top * rect.map.width + rect.left
+    const cellOffset = rect.map.map[mapIndex]
+    if (cellOffset !== undefined) {
+      const cellPos = rect.tableStart + cellOffset
+      editor
+        .chain()
+        .focus()
+        .setCellSelection({ anchorCell: cellPos, headCell: cellPos })
+        .splitCell()
+        .run()
+      return
+    }
+  }
+
+  editor.chain().focus().splitCell().run()
+}
+
 const MergeCellsButton = ({ editor }: { editor: Editor }) => (
   <ActionButton
     label="Merge cells"
@@ -333,7 +355,7 @@ const SplitCellButton = ({ editor }: { editor: Editor }) => (
   <ActionButton
     label="Split cell"
     icon={<IconSplitCell boxSize="1rem" />}
-    onClick={() => editor.chain().focus().splitCell().run()}
+    onClick={() => splitSelectedMergedCell(editor)}
   />
 )
 
