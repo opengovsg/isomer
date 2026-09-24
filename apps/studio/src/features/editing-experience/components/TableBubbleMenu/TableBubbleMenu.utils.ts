@@ -199,6 +199,7 @@ export type TableSelectionRect = ReturnType<typeof selectedRect>
 export const selectionIsFullyMergedRow = (
   rect: TableSelectionRect,
 ): boolean => {
+  if (rect.map.width <= 1) return false
   if (rect.left !== 0 || rect.right !== rect.map.width) return false
   if (rect.bottom - rect.top !== 1) return false
 
@@ -214,6 +215,7 @@ export const selectionIsFullyMergedRow = (
 export const selectionIsFullyMergedColumn = (
   rect: TableSelectionRect,
 ): boolean => {
+  if (rect.map.height <= 1) return false
   if (rect.top !== 0 || rect.bottom !== rect.map.height) return false
   if (rect.right - rect.left !== 1) return false
 

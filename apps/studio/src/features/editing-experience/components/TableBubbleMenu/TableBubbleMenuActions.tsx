@@ -60,6 +60,7 @@ import {
   splitFullyMergedRow,
 } from "./TableBubbleMenu.split"
 import {
+
   getColumnMovePlan,
   getRowMovePlan,
   restoreMovedBlockSelection,
@@ -67,6 +68,7 @@ import {
   selectionIncludesHeaderRow,
   selectionIsFullyMergedColumn,
   selectionIsFullyMergedRow,
+
   selectionIsLeftmostColumn,
   selectionIsTopRow,
 } from "./TableBubbleMenu.utils"
@@ -296,12 +298,15 @@ const BackgroundColor = ({
 const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
   const styles = useMultiStyleConfig("Switch", { size: "sm" })
   const ThumbIcon = isChecked ? BxCheck : BxX
+  const checkedDataAttr = isChecked ? "" : undefined
+
 
   return (
     <chakra.span
       aria-hidden
       className="chakra-switch__track"
-      data-checked={isChecked}
+      data-checked={checkedDataAttr}
+
       __css={{
         display: "inline-flex",
         flexShrink: 0,
@@ -312,12 +317,14 @@ const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
     >
       <chakra.span
         className="chakra-switch__thumb"
-        data-checked={isChecked}
+        data-checked={checkedDataAttr}
+
         __css={styles.thumb}
       >
         <Icon
           as={ThumbIcon}
-          data-checked={isChecked}
+          data-checked={checkedDataAttr}
+
           __css={styles.thumbIcon}
         />
       </chakra.span>
@@ -359,6 +366,7 @@ const splitSelectedMergedCell = (editor: Editor) => {
   editor.chain().focus().splitCell().run()
 }
 
+
 const MergeCellsButton = ({ editor }: { editor: Editor }) => (
   <ActionButton
     label="Merge cells"
@@ -374,6 +382,7 @@ const SplitCellButton = ({ editor }: { editor: Editor }) => (
     onClick={() => splitSelectedMergedCell(editor)}
   />
 )
+
 
 const HeaderToggle = ({
   label,
@@ -432,6 +441,7 @@ const RowSelectionActions = ({
   )
   const isFullyMergedRow = selectionIsFullyMergedRow(rect)
 
+
   return (
     <ActionGroup>
       {selectionIsTopRow(rect) && (
@@ -466,6 +476,7 @@ const RowSelectionActions = ({
       ) : (
         <MergeCellsButton editor={editor} />
       )}
+
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
@@ -511,6 +522,7 @@ const ColumnSelectionActions = ({
   )
   const isFullyMergedColumn = selectionIsFullyMergedColumn(rect)
 
+
   return (
     <ActionGroup>
       {selectionIsLeftmostColumn(rect) && (
@@ -545,6 +557,7 @@ const ColumnSelectionActions = ({
       ) : (
         <MergeCellsButton editor={editor} />
       )}
+
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
@@ -606,6 +619,7 @@ const SelectionActions = ({
         </ActionGroup>
       )
     }
+
     case "multi-cell":
       return (
         <ActionGroup>
@@ -624,6 +638,7 @@ const SelectionActions = ({
         <ActionGroup>
           <ClearContentsButton editor={editor} />
           <SplitCellButton editor={editor} />
+
         </ActionGroup>
       )
     default:

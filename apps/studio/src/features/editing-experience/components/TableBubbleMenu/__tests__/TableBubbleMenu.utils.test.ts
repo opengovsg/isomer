@@ -13,6 +13,7 @@ import {
   selectionIsFullyMergedRow,
   type TableHeaderOverlapRect,
   type TableSelectionRect,
+
 } from "../TableBubbleMenu.utils"
 
 // Builds a minimal rect for header-overlap helpers (no live editor).
@@ -293,6 +294,7 @@ describe("selectionIsFullyMergedColumn", () => {
     expect(selectionIsFullyMergedColumn(rect)).toBe(false)
   })
 })
+
 
 describe("selectionIncludesHeaderRow", () => {
   const headerThenBody = [

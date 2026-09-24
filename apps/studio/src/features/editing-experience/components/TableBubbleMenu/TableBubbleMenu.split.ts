@@ -293,7 +293,7 @@ export const splitFullyMergedColumn = (
   if (!paragraph || !tableCell || !tableHeader) return false
   let tr = state.tr
 
-  for (let rowIndex = rect.top; rowIndex < rect.bottom; rowIndex++) {
+  for (let rowIndex = rect.bottom - 1; rowIndex >= rect.top; rowIndex--) {
     const tableNode = tr.doc.nodeAt(tablePos)
     if (!tableNode) return false
 
