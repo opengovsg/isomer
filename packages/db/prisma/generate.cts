@@ -73,16 +73,28 @@ const extractTableTypes = (source: string): string[] => {
   }
 
   const tables: string[] = []
-  for (const line of dbBody.split("\n")) {
-    // Match `TableName: TableType` lines; Prisma model names are valid TS identifiers.
-    const tableName = line.match(/^\s*([A-Za-z_]\w*)\s*:/)?.[1]
-    if (tableName) {
-      tables.push(tableName)
+  const tableEntryPattern = /([A-Za-z_]\w*)\s*:\s*([A-Za-z_]\w*)/g
+  for (const match of dbBody.matchAll(tableEntryPattern)) {
+    const tableName = match[1]
+    const tableType = match[2]
+    if (!tableName || !tableType) {
+      continue
     }
+    if (tableName !== tableType) {
+      throw new Error(
+        `Unexpected DB mapping ${tableName}: ${tableType}; expected model name to match type name`,
+      )
+    }
+    tables.push(tableName)
   }
 
   if (tables.length === 0) {
     throw new Error("No tables found in DB type definition")
+  }
+
+  const uniqueTables = new Set(tables)
+  if (uniqueTables.size !== tables.length) {
+    throw new Error("Duplicate table entries found in DB type definition")
   }
 
   return tables
