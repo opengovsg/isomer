@@ -24,6 +24,7 @@ import {
   updateUserInputSchema,
   updateUserOutputSchema,
 } from "~/schemas/user"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { protectedProcedure, router } from "../../trpc"
 import { db, RoleType } from "../database"
@@ -226,6 +227,11 @@ export const userRouter = router({
         action: "read",
       })
 
+      // Phone numbers are PII, so only core Isomer admins may see them
+      const canViewPhone = await isActiveIsomerAdmin(ctx.user.id, [
+        IsomerAdminRole.Core,
+      ])
+
       return getUsersQuery({ siteId, adminType })
         .orderBy("ActiveUser.email", "asc")
         .select((eb) => [
@@ -245,6 +251,7 @@ export const userRouter = router({
               )
           ).as("role"),
         ])
+        .$if(canViewPhone, (qb) => qb.select("ActiveUser.phone"))
         .limit(limit)
         .offset(offset)
         .execute()

@@ -90,6 +90,25 @@ export const ExpandedMenu: Story = {
   },
 }
 
+// Core Isomer admins additionally see each collaborator's phone number
+export const CoreIsomerAdmin: Story = {
+  parameters: {
+    msw: {
+      // Must precede ADMIN_HANDLERS' isIsomerAdmin.default() (returns false)
+      handlers: [
+        userHandlers.isIsomerAdmin.admin(),
+        ...ADMIN_HANDLERS,
+        resourceHandlers.getRolesFor.admin(),
+        userHandlers.list.users(),
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await expect(await screen.findByText("91234567")).toBeVisible()
+  },
+}
+
 export const IsomerAdminsTab: Story = {
   parameters: {
     msw: {

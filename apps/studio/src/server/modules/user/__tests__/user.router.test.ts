@@ -9,6 +9,7 @@ import {
 import {
   setupAdminPermissions,
   setupEditorPermissions,
+  setupIsomerAdmin,
   setupPublisherPermissions,
   setupSite,
   setupUser,
@@ -1187,6 +1188,41 @@ describe("user.router", () => {
           role: RoleType.Admin,
         }),
       )
+    })
+
+    it("should return phone numbers if requester is a core isomer admin", async () => {
+      // Arrange
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
+      const user = await setupUser({ email: TEST_EMAIL, phone: "91234567" })
+      await setupEditorPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toEqual([
+        expect.objectContaining({ id: user.id, phone: "91234567" }),
+      ])
+    })
+
+    it("should not return phone numbers if requester is not a core isomer admin", async () => {
+      // Arrange
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Migrator,
+      })
+      const user = await setupUser({ email: TEST_EMAIL, phone: "91234567" })
+      await setupEditorPermissions({ userId: user.id, siteId })
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]).not.toHaveProperty("phone")
     })
 
     it("should return paginated results (10 users per page)", async () => {
