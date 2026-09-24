@@ -1,6 +1,9 @@
 import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
-import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
+import {
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+} from "~/types/constants"
 
 import { getPillAndPlaintextTags } from "../getPillAndPlaintextTags"
 
@@ -105,6 +108,33 @@ describe("getPillAndPlaintextTags", () => {
 
     // Assert
     expect(result.pillTags).toEqual([])
+    expect(result.plaintextTags).toEqual([])
+  })
+
+  it("skips date-type categories entirely, resolving only text categories", () => {
+    // Arrange
+    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+      {
+        label: "Event Date",
+        id: "date-1",
+        type: "date",
+        statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
+      },
+      {
+        label: "Topic",
+        id: "topic-1",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+        options: [{ label: "Health", id: "topic-opt-1" }],
+      },
+    ]
+
+    // Act
+    const result = getPillAndPlaintextTags(["topic-opt-1"], tagCategories)
+
+    // Assert
+    expect(result.pillTags).toEqual([
+      { id: "topic-1", category: "Topic", selected: ["Health"] },
+    ])
     expect(result.plaintextTags).toEqual([])
   })
 
