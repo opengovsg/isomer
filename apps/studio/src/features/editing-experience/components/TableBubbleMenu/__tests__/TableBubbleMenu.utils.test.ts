@@ -1,5 +1,6 @@
-import type { Node } from "@tiptap/pm/model"
-import type { TableMap } from "@tiptap/pm/tables"
+import type { Node, NodeSpec } from "@tiptap/pm/model"
+import { Schema } from "@tiptap/pm/model"
+import { TableMap } from "@tiptap/pm/tables"
 import { describe, expect, it } from "vitest"
 
 import {
@@ -139,6 +140,84 @@ describe("getTableSelectionKind", () => {
   })
 })
 
+const cellAttrs = {
+  colspan: { default: 1 },
+  rowspan: { default: 1 },
+  colwidth: { default: null },
+  backgroundColor: { default: null },
+}
+
+const tableSchema = new Schema({
+  nodes: {
+    doc: { content: "table" },
+    text: { group: "inline" },
+    paragraph: { content: "text*", group: "block" },
+    table: {
+      content: "tableRow+",
+      tableRole: "table",
+      isolating: true,
+    } satisfies NodeSpec,
+    tableRow: {
+      content: "(tableCell | tableHeader)+",
+      tableRole: "row",
+    } satisfies NodeSpec,
+    tableCell: {
+      attrs: cellAttrs,
+      content: "paragraph+",
+      tableRole: "cell",
+      isolating: true,
+    } satisfies NodeSpec,
+    tableHeader: {
+      attrs: cellAttrs,
+      content: "paragraph+",
+      tableRole: "header_cell",
+      isolating: true,
+    } satisfies NodeSpec,
+  },
+})
+
+const paragraph = () => tableSchema.nodes.paragraph!.create()
+
+const buildUniformTable = (width: number, height: number): Node => {
+  const tableRow = tableSchema.nodes.tableRow!
+  const tableCell = tableSchema.nodes.tableCell!
+  const table = tableSchema.nodes.table!
+
+  return table.create(
+    null,
+    Array.from({ length: height }, () =>
+      tableRow.create(
+        null,
+        Array.from({ length: width }, () =>
+          tableCell.create(null, [paragraph()]),
+        ),
+      ),
+    ),
+  )
+}
+
+const mergeSelectionRect = (
+  table: Node,
+  {
+    top,
+    bottom,
+    left,
+    right,
+  }: {
+    top: number
+    bottom: number
+    left: number
+    right: number
+  },
+) => ({
+  top,
+  bottom,
+  left,
+  right,
+  table,
+  map: TableMap.get(table),
+})
+
 describe("canMergeCellSelection", () => {
   const rect = ({
     top,
@@ -154,7 +233,13 @@ describe("canMergeCellSelection", () => {
     right: number
     width: number
     height: number
-  }) => ({ top, bottom, left, right, map: { width, height } })
+  }) =>
+    mergeSelectionRect(buildUniformTable(width, height), {
+      top,
+      bottom,
+      left,
+      right,
+    })
 
   it("allows a single full row", () => {
     // Arrange
@@ -244,6 +329,29 @@ describe("canMergeCellSelection", () => {
 
     // Act / Assert
     expect(canMergeCellSelection(block)).toBe(true)
+  })
+
+  it("refuses a full-height column when rowspan leaves the other row with no cells", () => {
+    // Arrange
+    const tableRow = tableSchema.nodes.tableRow!
+    const tableCell = tableSchema.nodes.tableCell!
+    const table = tableSchema.nodes.table!
+    const rowspanTable = table.create(null, [
+      tableRow.create(null, [
+        tableCell.create({ rowspan: 2 }, [paragraph()]),
+        tableCell.create(null, [paragraph()]),
+      ]),
+      tableRow.create(null, [tableCell.create(null, [paragraph()])]),
+    ])
+    const columnSelection = mergeSelectionRect(rowspanTable, {
+      top: 0,
+      bottom: 2,
+      left: 1,
+      right: 2,
+    })
+
+    // Act / Assert
+    expect(canMergeCellSelection(columnSelection)).toBe(false)
   })
 })
 

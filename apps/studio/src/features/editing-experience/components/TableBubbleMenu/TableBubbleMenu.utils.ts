@@ -57,10 +57,55 @@ interface MergeSelectionRect {
   bottom: number
   left: number
   right: number
-  map: { width: number; height: number }
+  map: TableMap
+  table: Node
 }
 
-// Two or more full rows, or two or more full columns, leave a row with no cells.
+const cellRectIntersectsSelection = (
+  cell: { top: number; bottom: number; left: number; right: number },
+  selection: Pick<MergeSelectionRect, "top" | "bottom" | "left" | "right">,
+): boolean =>
+  cell.top < selection.bottom &&
+  cell.bottom > selection.top &&
+  cell.left < selection.right &&
+  cell.right > selection.left
+
+// Merging removes every selected cell except the anchor; rows below the anchor
+// lose all direct children when each child intersects the selection.
+const mergeWouldLeaveEmptyRow = (rect: MergeSelectionRect): boolean => {
+  const { table, map, top, bottom, left, right } = rect
+
+  for (let row = 0; row < map.height; row++) {
+    const rowNode = table.child(row)
+    if (rowNode.childCount === 0) continue
+
+    let rowOffset = 0
+    for (let r = 0; r < row; r++) {
+      rowOffset += table.child(r).nodeSize
+    }
+
+    let allChildrenInSelection = true
+    let cellOffset = rowOffset + 1
+    for (let cellIndex = 0; cellIndex < rowNode.childCount; cellIndex++) {
+      const cellRect = map.findCell(cellOffset)
+      if (
+        !cellRectIntersectsSelection(cellRect, { top, bottom, left, right })
+      ) {
+        allChildrenInSelection = false
+        break
+      }
+      cellOffset += rowNode.child(cellIndex).nodeSize
+    }
+
+    if (allChildrenInSelection && row > top) {
+      return true
+    }
+  }
+
+  return false
+}
+
+// Two or more full rows/columns, or any merge that leaves a row with no cells.
 export const canMergeCellSelection = (rect: MergeSelectionRect): boolean => {
   const coversMultipleWholeRows =
     rect.left === 0 &&
@@ -71,7 +116,8 @@ export const canMergeCellSelection = (rect: MergeSelectionRect): boolean => {
     rect.bottom === rect.map.height &&
     rect.bottom - rect.top > 1 &&
     rect.right - rect.left > 1
-  return !coversMultipleWholeRows && !coversMultipleWholeColumns
+  if (coversMultipleWholeRows || coversMultipleWholeColumns) return false
+  return !mergeWouldLeaveEmptyRow(rect)
 }
 
 export const getTableSelectionKind = ({
