@@ -1,5 +1,5 @@
-import type { Node } from "@tiptap/pm/model"
 import type { Editor } from "@tiptap/react"
+import { Fragment, type Node, type NodeType } from "@tiptap/pm/model"
 import { TableMap } from "@tiptap/pm/tables"
 
 import {
@@ -7,6 +7,9 @@ import {
   selectionIsFullyMergedRow,
   type TableSelectionRect,
 } from "./TableBubbleMenu.utils"
+
+// TipTap's splitCell() only inserts empty sibling cells; these helpers rebuild
+// fully merged row/column selections and preserve block content instead.
 
 const cellBlocks = (cell: Node): Node[] => {
   const blocks: Node[] = []
@@ -33,7 +36,70 @@ const splitCellAttrs = (cell: Node) => ({
   colwidth: null,
 })
 
-/** Rebuilds a fully merged row into separate cells with block content preserved. */
+const resolveCellAt = ({
+  table,
+  map,
+  index,
+}: {
+  table: Node
+  map: TableMap
+  index: number
+}) => {
+  const pos = map.map[index]
+  if (pos === undefined) return null
+  const node = table.nodeAt(pos)
+  if (!node) return null
+  return { pos, node }
+}
+
+const isSlotCoveredFromRowAbove = ({
+  map,
+  rowIndex,
+  col,
+}: {
+  map: TableMap
+  rowIndex: number
+  col: number
+}): boolean => {
+  const index = rowIndex * map.width + col
+  return (
+    rowIndex > 0 &&
+    rowIndex < map.height &&
+    map.map[index] === map.map[index - map.width]
+  )
+}
+
+const isRowOwnedCell = ({
+  map,
+  cellPos,
+  rowIndex,
+}: {
+  map: TableMap
+  cellPos: number
+  rowIndex: number
+}) => map.findCell(cellPos).top === rowIndex
+
+const contentForSplitSlot = ({
+  blocks,
+  slotIndex,
+  slotCount,
+  paragraph,
+}: {
+  blocks: Node[]
+  slotIndex: number
+  slotCount: number
+  paragraph: NodeType
+}) => {
+  if (slotIndex < slotCount - 1) {
+    return blocks[slotIndex] ?? paragraph.create()
+  }
+  const tail =
+    blocks.length >= slotCount
+      ? blocks.slice(slotCount - 1)
+      : [blocks[slotIndex] ?? paragraph.create()]
+  return Fragment.from(tail.length > 0 ? tail : [paragraph.create()])
+}
+
 export const splitFullyMergedRow = (
   editor: Editor,
   rect: TableSelectionRect,
@@ -62,8 +128,17 @@ export const splitFullyMergedRow = (
 
   const newCells: Node[] = []
   for (let col = 0; col < rect.map.width; col++) {
-    const block = blocks[col] ?? paragraph.create()
-    newCells.push(cellType.create(splitCellAttrs(sourceCell), block))
+    newCells.push(
+      cellType.create(
+        splitCellAttrs(sourceCell),
+        contentForSplitSlot({
+          blocks,
+          slotIndex: col,
+          slotCount: rect.map.width,
+          paragraph,
+        }),
+      ),
+    )
   }
 
   const newRow = rowNode.type.create(rowNode.attrs, newCells)
@@ -72,7 +147,94 @@ export const splitFullyMergedRow = (
   return true
 }
 
-/** Rebuilds a fully merged column into separate cells with block content preserved. */
+const buildRowCellsAfterColumnSplit = ({
+  table,
+  map,
+  rowIndex,
+  splitLeft,
+  splitTop,
+  splitBottom,
+  blocks,
+  sourceCell,
+  sourceCellOffset,
+  cellType,
+  paragraph,
+}: {
+  table: Node
+  map: TableMap
+  rowIndex: number
+  splitLeft: number
+  splitTop: number
+  splitBottom: number
+  blocks: Node[]
+  sourceCell: Node
+  sourceCellOffset: number
+  cellType: NodeType
+  paragraph: NodeType
+}): Node[] => {
+  const cells: Node[] = []
+  const slotCount = splitBottom - splitTop
+
+  for (let col = 0; col < map.width;) {
+    if (col === splitLeft) {
+      cells.push(
+        cellType.create(
+          splitCellAttrs(sourceCell),
+          contentForSplitSlot({
+            blocks,
+            slotIndex: rowIndex - splitTop,
+            slotCount,
+            paragraph,
+          }),
+        ),
+      )
+      col += 1
+      continue
+    }
+
+    if (isSlotCoveredFromRowAbove({ map, rowIndex, col })) {
+      const covered = resolveCellAt({
+        table,
+        map,
+        index: rowIndex * map.width + col,
+      })
+      if (covered) {
+        col += covered.node.attrs.colspan as number
+        continue
+      }
+    }
+
+    const resolved = resolveCellAt({
+      table,
+      map,
+      index: rowIndex * map.width + col,
+    })
+    if (!resolved) {
+      col += 1
+      continue
+    }
+
+    if (
+      resolved.pos === sourceCellOffset &&
+      rowIndex === splitTop &&
+      col !== splitLeft
+    ) {
+      col += resolved.node.attrs.colspan as number
+      continue
+    }
+
+    if (!isRowOwnedCell({ map, cellPos: resolved.pos, rowIndex })) {
+      col += resolved.node.attrs.colspan as number
+      continue
+    }
+
+    cells.push(resolved.node)
+    col += resolved.node.attrs.colspan as number
+  }
+
+  return cells
+}
+
 export const splitFullyMergedColumn = (
   editor: Editor,
   rect: TableSelectionRect,
@@ -99,29 +261,26 @@ export const splitFullyMergedColumn = (
 
   let tr = state.tr
 
-  for (let rowIndex = rect.bottom - 1; rowIndex >= rect.top; rowIndex--) {
+  for (let rowIndex = rect.top; rowIndex < rect.bottom; rowIndex++) {
     const tableNode = tr.doc.nodeAt(tablePos)
     if (!tableNode) return false
 
     const map = TableMap.get(tableNode)
     const rowNode = tableNode.child(rowIndex)
     const rowPos = rowPosInDoc(tablePos, tableNode, rowIndex)
-    const newCells: Node[] = []
-
-    for (let colIndex = 0; colIndex < map.width; colIndex++) {
-      if (colIndex === rect.left) {
-        const block = blocks[rowIndex - rect.top] ?? paragraph.create()
-        newCells.push(cellType.create(splitCellAttrs(sourceCell), block))
-        continue
-      }
-
-      const slot = rowIndex * map.width + colIndex
-      const offset = map.map[slot]
-      if (offset === undefined || offset === cellOffset) continue
-
-      const existing = tableNode.nodeAt(offset)
-      if (existing) newCells.push(existing)
-    }
+    const newCells = buildRowCellsAfterColumnSplit({
+      table: tableNode,
+      map,
+      rowIndex,
+      splitLeft: rect.left,
+      splitTop: rect.top,
+      splitBottom: rect.bottom,
+      blocks,
+      sourceCell,
+      sourceCellOffset: cellOffset,
+      cellType,
+      paragraph,
+    })
 
     const newRow = rowNode.type.create(rowNode.attrs, newCells)
     tr = tr.replaceWith(rowPos, rowPos + rowNode.nodeSize, newRow)

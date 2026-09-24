@@ -586,17 +586,26 @@ const SelectionActions = ({
     case "column":
     case "header-column":
       return <ColumnSelectionActions editor={editor} rect={rect} />
-    case "table":
+    case "table": {
+      const isFullyMergedRow = selectionIsFullyMergedRow(rect)
+      const isFullyMergedColumn = selectionIsFullyMergedColumn(rect)
+      const showSplit = isFullyMergedRow || isFullyMergedColumn
+
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          <ActionButton
-            label="Delete table"
-            icon={<BiTrash fontSize="1rem" />}
-            onClick={() => editor.chain().focus().deleteTable().run()}
-          />
+          {showSplit ? (
+            <SplitCellButton editor={editor} />
+          ) : (
+            <ActionButton
+              label="Delete table"
+              icon={<BiTrash fontSize="1rem" />}
+              onClick={() => editor.chain().focus().deleteTable().run()}
+            />
+          )}
         </ActionGroup>
       )
+    }
     case "multi-cell":
       return (
         <ActionGroup>

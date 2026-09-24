@@ -183,26 +183,31 @@ const selectionRect = ({
 
 describe("selectionIsFullyMergedRow", () => {
   it("is true for a full-width row that is one merged cell", () => {
+    // Arrange
     const rect = selectionRect({
       width: 3,
       height: 3,
       cell: cellNode({ colspan: 3 }),
     })
 
+    // Act / Assert
     expect(selectionIsFullyMergedRow(rect)).toBe(true)
   })
 
   it("is false when the row still has multiple cells", () => {
+    // Arrange
     const rect = selectionRect({
       width: 3,
       height: 3,
       cell: cellNode({ colspan: 2 }),
     })
 
+    // Act / Assert
     expect(selectionIsFullyMergedRow(rect)).toBe(false)
   })
 
   it("is false when the selection does not span the full table width", () => {
+    // Arrange
     const rect = selectionRect({
       width: 3,
       height: 3,
@@ -211,10 +216,12 @@ describe("selectionIsFullyMergedRow", () => {
       cell: cellNode({ colspan: 2 }),
     })
 
+    // Act / Assert
     expect(selectionIsFullyMergedRow(rect)).toBe(false)
   })
 
   it("is false when the selection spans multiple rows", () => {
+    // Arrange
     const rect = selectionRect({
       width: 3,
       height: 3,
@@ -222,12 +229,14 @@ describe("selectionIsFullyMergedRow", () => {
       cell: cellNode({ colspan: 3 }),
     })
 
+    // Act / Assert
     expect(selectionIsFullyMergedRow(rect)).toBe(false)
   })
 })
 
 describe("selectionIsFullyMergedColumn", () => {
   it("is true for a full-height column that is one merged cell", () => {
+    // Arrange
     const rect = selectionRect({
       width: 3,
       height: 3,
@@ -237,10 +246,12 @@ describe("selectionIsFullyMergedColumn", () => {
       cell: cellNode({ rowspan: 3 }),
     })
 
+    // Act / Assert
     expect(selectionIsFullyMergedColumn(rect)).toBe(true)
   })
 
   it("is false when the column still has multiple cells", () => {
+    // Arrange
     const rect = selectionRect({
       width: 3,
       height: 3,
@@ -249,10 +260,12 @@ describe("selectionIsFullyMergedColumn", () => {
       cell: cellNode({ rowspan: 2 }),
     })
 
+    // Act / Assert
     expect(selectionIsFullyMergedColumn(rect)).toBe(false)
   })
 
   it("is false when the selection does not span the full table height", () => {
+    // Arrange
     const rect = selectionRect({
       width: 3,
       height: 3,
@@ -263,10 +276,12 @@ describe("selectionIsFullyMergedColumn", () => {
       cell: cellNode({ rowspan: 2 }),
     })
 
+    // Act / Assert
     expect(selectionIsFullyMergedColumn(rect)).toBe(false)
   })
 
   it("is false when the selection spans multiple columns", () => {
+    // Arrange
     const rect = selectionRect({
       width: 3,
       height: 3,
@@ -274,6 +289,7 @@ describe("selectionIsFullyMergedColumn", () => {
       cell: cellNode({ rowspan: 3 }),
     })
 
+    // Act / Assert
     expect(selectionIsFullyMergedColumn(rect)).toBe(false)
   })
 })

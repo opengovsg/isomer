@@ -917,6 +917,7 @@ describe("TableBubbleMenu", () => {
     const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
 
+    // Arrange
     selectCells(editor, 3, 5)
     act(() => {
       editor.chain().focus().mergeCells().run()
@@ -924,8 +925,10 @@ describe("TableBubbleMenu", () => {
     expect(rowCellCount(editor, 1)).toBe(1)
 
     selectRowAtCell(editor, 3)
+    // Act
     await activateTableBubbleMenu(findByRole)
 
+    // Assert
     expect(await findByText("Split cell")).toBeTruthy()
     expect(await findByText("Delete row")).toBeTruthy()
     expect(queryByText("Merge cells")).toBeNull()
@@ -934,19 +937,21 @@ describe("TableBubbleMenu", () => {
   it("splits a fully merged row back into separate cells from the row menu", async () => {
     const { editor, findByText, findByRole } = await renderHarness()
 
+    // Arrange
     selectCells(editor, 3, 5)
     act(() => {
       editor.chain().focus().mergeCells().run()
     })
-
     selectRowAtCell(editor, 3)
     await activateTableBubbleMenu(findByRole)
-
     const splitCell = await findByText("Split cell")
+
+    // Act
     act(() => {
       splitCell.click()
     })
 
+    // Assert
     await waitFor(() => {
       expect(rowCellCount(editor, 1)).toBe(3)
       expect(rowTextsAt(editor, 1)).toEqual([
@@ -961,14 +966,17 @@ describe("TableBubbleMenu", () => {
     const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
 
+    // Arrange
     selectCells(editor, 1, 7)
     act(() => {
       editor.chain().focus().mergeCells().run()
     })
-
     selectColumnAtCell(editor, 1)
+
+    // Act
     await activateTableBubbleMenu(findByRole)
 
+    // Assert
     expect(await findByText("Split cell")).toBeTruthy()
     expect(await findByText("Delete column")).toBeTruthy()
     expect(queryByText("Merge cells")).toBeNull()
@@ -978,14 +986,17 @@ describe("TableBubbleMenu", () => {
     const { editor, findByRole, findByText, queryByText } =
       await renderHarness()
 
+    // Arrange
     selectCells(editor, 3, 4)
     act(() => {
       editor.chain().focus().mergeCells().run()
     })
     selectRowAtCell(editor, 3)
 
+    // Act
     await activateTableBubbleMenu(findByRole)
 
+    // Assert
     expect(queryByText("Split cell")).toBeNull()
     expect(await findByText("Merge cells")).toBeTruthy()
   })
