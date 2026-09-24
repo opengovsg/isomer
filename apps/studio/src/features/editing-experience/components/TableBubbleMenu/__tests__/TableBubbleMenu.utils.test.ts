@@ -160,21 +160,26 @@ const selectionRect = ({
   left?: number
   right?: number
   cell: Node
-}): TableSelectionRect => ({
-  tableStart: 1,
-  top,
-  bottom: bottom ?? height,
-  left,
-  right: right ?? width,
-  map: {
-    width,
-    height,
-    map: [0],
-  } as TableMap,
-  table: {
-    nodeAt: () => cell,
-  } as unknown as Node,
-})
+}): TableSelectionRect => {
+  const resolvedBottom = bottom ?? top + 1
+  const resolvedRight = right ?? width
+
+  return {
+    tableStart: 1,
+    top,
+    bottom: resolvedBottom,
+    left,
+    right: resolvedRight,
+    map: {
+      width,
+      height,
+      map: Array.from({ length: width * height }, () => 0),
+    } as TableMap,
+    table: {
+      nodeAt: () => cell,
+    } as unknown as Node,
+  }
+}
 
 describe("selectionIsFullyMergedRow", () => {
   it("is true for a full-width row that is one merged cell", () => {
@@ -226,6 +231,7 @@ describe("selectionIsFullyMergedColumn", () => {
     const rect = selectionRect({
       width: 3,
       height: 3,
+      bottom: 3,
       left: 1,
       right: 2,
       cell: cellNode({ rowspan: 3 }),
