@@ -31,9 +31,12 @@ export const env = skipValidation
   ? new Proxy(parsedEnv, {
       get(target, prop, receiver) {
         if (prop === "ENABLE_CRON_WORKERS") {
-          return cronWorkersSchema.parse(process.env.ENABLE_CRON_WORKERS)
+          const enabled: boolean = cronWorkersSchema.parse(
+            process.env.ENABLE_CRON_WORKERS,
+          )
+          return enabled
         }
-        return Reflect.get(target, prop, receiver)
+        return Reflect.get(target, prop, receiver) as typeof target
       },
     })
   : parsedEnv
