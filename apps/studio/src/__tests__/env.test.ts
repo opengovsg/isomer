@@ -11,56 +11,69 @@ describe("env.mjs security invariants", () => {
   }
 
   it("rejects partial R2 credentials", async () => {
+    // Arrange
     vi.stubEnv("R2_ACCOUNT_ID", "acct-id")
 
+    // Act / Assert
     await expect(importEnvModule()).rejects.toThrow(
       /R2_ACCOUNT_ID, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY must be set together/,
     )
   })
 
   it("rejects DANGEROUSLY_SET_STATIC_OTP outside preview", async () => {
+    // Arrange
     vi.stubEnv("NEXT_PUBLIC_APP_ENV", "development")
     vi.stubEnv("DANGEROUSLY_SET_STATIC_OTP", "123456")
 
+    // Act / Assert
     await expect(importEnvModule()).rejects.toThrow(
       /DANGEROUSLY_SET_STATIC_OTP may only be set in preview environments/,
     )
   })
 
   it("rejects NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS outside preview", async () => {
+    // Arrange
     vi.stubEnv("NEXT_PUBLIC_APP_ENV", "staging")
     vi.stubEnv("NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS", "true")
 
+    // Act / Assert
     await expect(importEnvModule()).rejects.toThrow(
       /NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS may only be set in preview environments/,
     )
   })
 
   it("accepts preview auth bypass flags when configured together", async () => {
+    // Arrange
     vi.stubEnv("NEXT_PUBLIC_APP_ENV", "preview")
     vi.stubEnv("DANGEROUSLY_SET_STATIC_OTP", "123456")
     vi.stubEnv("NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS", "true")
 
+    // Act
     const { env } = await importEnvModule()
 
+    // Assert
     expect(env.NEXT_PUBLIC_APP_ENV).toBe("preview")
     expect(env.DANGEROUSLY_SET_STATIC_OTP).toBe("123456")
     expect(env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS).toBe(true)
   })
 
   it("accepts a full R2 credential set", async () => {
+    // Arrange
     vi.stubEnv("R2_ACCOUNT_ID", "acct")
     vi.stubEnv("R2_ACCESS_KEY_ID", "key")
     vi.stubEnv("R2_SECRET_ACCESS_KEY", "secret")
 
+    // Act
     const { env } = await importEnvModule()
 
+    // Assert
     expect(env.R2_ACCOUNT_ID).toBe("acct")
     expect(env.R2_ACCESS_KEY_ID).toBe("key")
     expect(env.R2_SECRET_ACCESS_KEY).toBe("secret")
   })
 
   it("reads client env from STORYBOOK_ENVIRONMENT when STORYBOOK is set", async () => {
+    // Arrange
     vi.stubEnv("STORYBOOK", "true")
     vi.stubEnv("SKIP_ENV_VALIDATION", "true")
     vi.stubEnv(
@@ -71,8 +84,10 @@ describe("env.mjs security invariants", () => {
       }),
     )
 
+    // Act
     const { env } = await importEnvModule()
 
+    // Assert
     expect(env.NEXT_PUBLIC_APP_NAME).toBe("Storybook Site Name")
     expect(env.NEXT_PUBLIC_APP_ENV).toBe("development")
   })
