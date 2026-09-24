@@ -245,11 +245,6 @@ const TaskTrayItemSchema = Type.Object({
   }),
 })
 
-const TASK_TRAY_GROUPING = {
-  label: "Task tray",
-  fields: ["taskTrayTitle", "taskTrayItems"],
-} as const
-
 const HeroTaskTraySchema = Type.Composite(
   [
     Type.Object({
@@ -276,7 +271,13 @@ const HeroTaskTraySchema = Type.Composite(
   ],
   {
     title: "Task tray",
-    groups: [GROUPINGS.TEXT, TASK_TRAY_GROUPING],
+    groups: [
+      GROUPINGS.TEXT,
+      {
+        label: "Task tray",
+        fields: ["taskTrayTitle", "taskTrayItems"],
+      },
+    ],
   },
 )
 
