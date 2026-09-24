@@ -11,8 +11,7 @@ const { mockEnv } = vi.hoisted(() => ({
   mockEnv: {
     ENABLE_CRON_WORKERS: true,
     DATABASE_URL:
-      process.env.DATABASE_URL ??
-      "postgres://root:root@localhost:5431/test",
+      process.env.DATABASE_URL ?? "postgres://root:root@localhost:5431/test",
   },
 }))
 
