@@ -22,7 +22,7 @@ import { IDLE_GESTURE, reduceGesture } from "./dragMachine"
 import { viewportPointToContainerPoint } from "./measure"
 import {
   applyHeaderAxisNormalization,
-  shouldNormalizeHeaderAxis,
+  getHeaderAxisFlags,
 } from "./normalizeHeaderAxis"
 import { selectWholeSlot } from "./selection"
 
@@ -76,8 +76,13 @@ export const useAxisDragGesture = ({
       }
       if (intent.type === "moveSlot") {
         const tableBefore = getTableAt(editor.state.doc, intent.tablePos)
+        const headerAxisFlags = tableBefore
+          ? getHeaderAxisFlags(tableBefore)
+          : null
         const normalize =
-          !!tableBefore && shouldNormalizeHeaderAxis(tableBefore, intent.axis)
+          !!headerAxisFlags &&
+          (headerAxisFlags.preserveHeaderRow ||
+            headerAxisFlags.preserveHeaderColumn)
         const move = AXIS_TABLE_OPS[intent.axis].move({
           from: intent.from,
           to: intent.to,
@@ -90,11 +95,11 @@ export const useAxisDragGesture = ({
           return true
         })
         if (!moved) return
-        if (normalize) {
+        if (normalize && headerAxisFlags) {
           transaction = applyHeaderAxisNormalization(
             transaction,
             intent.tablePos,
-            intent.axis,
+            headerAxisFlags,
             schema,
           )
         }

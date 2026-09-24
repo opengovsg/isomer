@@ -66,23 +66,59 @@ export const normalizeHeaderColumnTypes = (
   return tr
 }
 
+export interface HeaderAxisFlags {
+  preserveHeaderRow: boolean
+  preserveHeaderColumn: boolean
+}
+
+export const getHeaderAxisFlags = (table: ProseMirrorNode): HeaderAxisFlags => {
+  const mapped = { map: TableMap.get(table), table }
+  return {
+    preserveHeaderRow: hasHeaderRow(mapped),
+    preserveHeaderColumn: hasHeaderColumn(mapped),
+  }
+}
+
 export const shouldNormalizeHeaderAxis = (
   table: ProseMirrorNode,
   axis: Axis,
 ): boolean => {
-  const mapped = { map: TableMap.get(table), table }
-  return axis === "row" ? hasHeaderRow(mapped) : hasHeaderColumn(mapped)
+  const flags = getHeaderAxisFlags(table)
+  return axis === "row" ? flags.preserveHeaderRow : flags.preserveHeaderColumn
+}
+
+const normalizeHeaderTypes = (
+  tr: Transaction,
+  tablePos: number,
+  table: ProseMirrorNode,
+  schema: Schema,
+  flags: HeaderAxisFlags,
+): Transaction => {
+  const { preserveHeaderRow, preserveHeaderColumn } = flags
+  if (!preserveHeaderRow && !preserveHeaderColumn) return tr
+
+  const map = TableMap.get(table)
+  for (let row = 0; row < map.height; row++) {
+    for (let col = 0; col < map.width; col++) {
+      const cellOffset = map.map[row * map.width + col]
+      if (cellOffset === undefined) continue
+      const cell = table.nodeAt(cellOffset)
+      if (!cell) continue
+      const wantHeader =
+        (preserveHeaderRow && row === 0) || (preserveHeaderColumn && col === 0)
+      tr = setCellKind(tr, tablePos, cellOffset, cell, schema, wantHeader)
+    }
+  }
+  return tr
 }
 
 export const applyHeaderAxisNormalization = (
   tr: Transaction,
   tablePos: number,
-  axis: Axis,
+  flags: HeaderAxisFlags,
   schema: Schema,
 ): Transaction => {
   const table = getTableAt(tr.doc, tablePos)
-  if (!table || !shouldNormalizeHeaderAxis(table, axis)) return tr
-  return axis === "row"
-    ? normalizeHeaderRowTypes(tr, tablePos, table, schema)
-    : normalizeHeaderColumnTypes(tr, tablePos, table, schema)
+  if (!table) return tr
+  return normalizeHeaderTypes(tr, tablePos, table, schema, flags)
 }
