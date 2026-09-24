@@ -25,7 +25,6 @@ const meta: Meta<typeof FilterTypeChoiceModal> = {
     isOpen: true,
     onClose: () => console.log("onClose"),
     onSelect: (type) => console.log("onSelect", type),
-    isDateFilterEnabled: true,
   },
 }
 
@@ -35,11 +34,4 @@ type Story = StoryObj<typeof FilterTypeChoiceModal>
 
 export const Default: Story = {
   name: "FilterTypeChoiceModal",
-}
-
-export const DateFilterDisabled: Story = {
-  name: "FilterTypeChoiceModal (date filter disabled)",
-  args: {
-    isDateFilterEnabled: false,
-  },
 }
