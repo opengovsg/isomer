@@ -545,7 +545,7 @@ const SelectionActions = ({
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          <MergeCellsButton editor={editor} />
+          {canMergeCellSelection(rect) && <MergeCellsButton editor={editor} />}
         </ActionGroup>
       )
     case "single-cell":

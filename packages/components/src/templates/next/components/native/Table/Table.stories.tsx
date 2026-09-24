@@ -2380,3 +2380,32 @@ export const StaggeredMergesPhantomColumn: Story = {
     ],
   },
 }
+
+/** Row 2 has no cells; rowspan from row 1 covers both rows (TipTap omits `content`). */
+export const RowspanRowWithoutCells: Story = {
+  args: {
+    attrs: {
+      caption: "Merged rows with omitted row content",
+    },
+    content: [
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableCell",
+            attrs: { colspan: 2, rowspan: 2 },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Spans both rows" }],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+      },
+    ],
+  },
+}

@@ -387,7 +387,7 @@ describe("Table backgroundColor", () => {
   })
 
   it("renders a rowspan row that omits content", () => {
-    // Arrange: the second row has no `content`.
+    // Arrange / Act
     const html = renderToStaticMarkup(
       <Table
         type="table"

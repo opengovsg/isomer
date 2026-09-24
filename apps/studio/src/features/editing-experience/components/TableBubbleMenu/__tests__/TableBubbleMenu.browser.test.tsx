@@ -441,7 +441,7 @@ describe("TableBubbleMenu", () => {
     // Arrange
     const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
-    selectCells(editor, 3, 8) // both body rows
+    selectCells(editor, 3, 8)
 
     // Act
     await activateTableBubbleMenu(findByRole)
@@ -462,7 +462,7 @@ describe("TableBubbleMenu", () => {
     // Arrange
     const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
-    selectCells(editor, 0, 7) // columns A and B, every row
+    selectCells(editor, 0, 7)
 
     // Act
     await activateTableBubbleMenu(findByRole)

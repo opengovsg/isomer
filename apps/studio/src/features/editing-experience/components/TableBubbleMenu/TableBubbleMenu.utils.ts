@@ -69,6 +69,7 @@ export const canMergeCellSelection = (rect: MergeSelectionRect): boolean => {
   const coversMultipleWholeColumns =
     rect.top === 0 &&
     rect.bottom === rect.map.height &&
+    rect.bottom - rect.top > 1 &&
     rect.right - rect.left > 1
   return !coversMultipleWholeRows && !coversMultipleWholeColumns
 }

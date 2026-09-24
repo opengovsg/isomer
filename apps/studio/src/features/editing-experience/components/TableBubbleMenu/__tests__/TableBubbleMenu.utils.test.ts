@@ -156,7 +156,7 @@ describe("canMergeCellSelection", () => {
     height: number
   }) => ({ top, bottom, left, right, map: { width, height } })
 
-  it("allows a single full row or a single full column", () => {
+  it("allows a single full row", () => {
     // Arrange
     const oneRow = rect({
       top: 1,
@@ -166,6 +166,13 @@ describe("canMergeCellSelection", () => {
       width: 3,
       height: 3,
     })
+
+    // Act / Assert
+    expect(canMergeCellSelection(oneRow)).toBe(true)
+  })
+
+  it("allows a single full column", () => {
+    // Arrange
     const oneColumn = rect({
       top: 0,
       bottom: 3,
@@ -176,8 +183,22 @@ describe("canMergeCellSelection", () => {
     })
 
     // Act / Assert
-    expect(canMergeCellSelection(oneRow)).toBe(true)
     expect(canMergeCellSelection(oneColumn)).toBe(true)
+  })
+
+  it("allows merging a one-row table across its columns", () => {
+    // Arrange
+    const oneRowTable = rect({
+      top: 0,
+      bottom: 1,
+      left: 0,
+      right: 2,
+      width: 2,
+      height: 1,
+    })
+
+    // Act / Assert
+    expect(canMergeCellSelection(oneRowTable)).toBe(true)
   })
 
   it("refuses two or more full rows", () => {

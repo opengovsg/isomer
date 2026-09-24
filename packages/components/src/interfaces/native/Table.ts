@@ -92,10 +92,12 @@ const TableHeaderCellSchema = Type.Object({
 const TableContentRowSchema = Type.Object(
   {
     type: Type.Literal("tableRow", { default: "tableRow" }),
-    content: Type.Array(Type.Union([TableCellSchema, TableHeaderCellSchema]), {
-      title: "Table cells",
-      minItems: 1,
-    }),
+    content: Type.Optional(
+      Type.Array(Type.Union([TableCellSchema, TableHeaderCellSchema]), {
+        title: "Table cells",
+        minItems: 0,
+      }),
+    ),
   },
   {
     title: "Table row",
@@ -105,10 +107,12 @@ const TableContentRowSchema = Type.Object(
 const TableHeaderRowSchema = Type.Object(
   {
     type: Type.Literal("tableRow", { default: "tableRow" }),
-    content: Type.Array(TableHeaderCellSchema, {
-      title: "Table header cells",
-      minItems: 1,
-    }),
+    content: Type.Optional(
+      Type.Array(TableHeaderCellSchema, {
+        title: "Table header cells",
+        minItems: 0,
+      }),
+    ),
   },
   {
     title: "Table header row",
