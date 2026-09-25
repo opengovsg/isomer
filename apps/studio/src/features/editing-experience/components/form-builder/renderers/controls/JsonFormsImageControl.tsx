@@ -97,13 +97,10 @@ function JsonFormsImageControl({
           setHref={(src) => {
             handleChange(path, src)
             const uploadedMimeType = uploadedMimeTypeRef.current
-            if (
-              !isAiAltTextGenerationEnabled ||
-              !src ||
-              !pageId ||
-              !altPath ||
-              !uploadedMimeType
-            ) {
+            if (!isAiAltTextGenerationEnabled || !pageId || !altPath) {
+              return
+            }
+            if (!src || !uploadedMimeType) {
               return
             }
 
