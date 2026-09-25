@@ -238,6 +238,7 @@ describe("ai.router", async () => {
     expect(result).toEqual({ altText: "A red bus at a stop." })
     expect(generateAltText).toHaveBeenCalledWith(
       `https://${ASSET_DOMAIN}${src}`,
+      expect.any(AbortSignal),
     )
   })
 
