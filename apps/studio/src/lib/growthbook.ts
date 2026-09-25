@@ -35,7 +35,9 @@ export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
 // this same shape — `email` is already a GrowthBook attribute.
 export const ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY =
   "enable-ai-alt-text-generation"
-export interface AiAltTextGenerationFeatureValue {
+// `interface` has no string index signature, so it is not a GrowthBook JSONValue.
+// oxlint-disable-next-line typescript/consistent-type-definitions
+export type AiAltTextGenerationFeatureValue = {
   enabledSites: string[]
 }
 export const ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE: AiAltTextGenerationFeatureValue =
