@@ -5,8 +5,8 @@ import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { get } from "lodash-es"
+import { useState } from "react"
 import { AttachmentData } from "~/components/AttachmentData"
-import { PLACEHOLDER_ALT_TEXT } from "~/components/PageEditor/constants"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
@@ -15,6 +15,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 import { trpc } from "~/utils/trpc"
 
+import { AltTextSuggestion } from "./AltTextSuggestion"
 import {
   getCustomErrorMessage,
   getImageFieldPaths,
@@ -54,21 +55,17 @@ function JsonFormsImageControl({
     | Record<string, unknown>
     | undefined
 
-  const { mutate: generateAltText } = trpc.ai.generateAltText.useMutation({
-    onSuccess: ({ altText }) => {
-      if (!altText || !altPath) return
-      // The generation call takes a few seconds — don't clobber alt text the
-      // editor already typed in while it was in flight. A new image block
-      // starts with placeholder alt, and that should be replaced.
-      const currentAlt = get(ctx.core?.data, altPath) as string | undefined
-      if (currentAlt && currentAlt !== PLACEHOLDER_ALT_TEXT) return
-      handleChange(altPath, altText)
-    },
-    onError: (error) => {
-      // The upload already landed. A forbidden suggestion leaves the image as saved.
-      if (error.data?.code === "FORBIDDEN") return
-    },
-  })
+  const [suggestion, setSuggestion] = useState<string>()
+  const { mutate: generateAltText, isPending: isGeneratingAltText } =
+    trpc.ai.generateAltText.useMutation({
+      onSuccess: ({ altText }) => {
+        setSuggestion(altText)
+      },
+      onError: () => {
+        // The upload already landed. A failed suggestion leaves the image as saved.
+        setSuggestion(undefined)
+      },
+    })
 
   return (
     <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
@@ -100,6 +97,7 @@ function JsonFormsImageControl({
               return
             }
 
+            setSuggestion(undefined)
             generateAltText({
               siteId,
               pageId,
@@ -110,6 +108,16 @@ function JsonFormsImageControl({
           shouldFetchResource={true}
         />
       )}
+      <AltTextSuggestion
+        isGenerating={isGeneratingAltText}
+        suggestion={suggestion}
+        onApply={() => {
+          if (!altPath || !suggestion) return
+          handleChange(altPath, suggestion)
+          setSuggestion(undefined)
+        }}
+        onDismiss={() => setSuggestion(undefined)}
+      />
       {!!errors && (
         <FormErrorMessage>
           {label} {getCustomErrorMessage(errors)}
