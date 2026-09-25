@@ -12,7 +12,7 @@ export interface GenerateFoundryTextInput {
   system: string
   prompt: string
   imageUrl?: string
-  maxOutputTokens: number
+  maxOutputTokens?: number
 }
 
 /**
