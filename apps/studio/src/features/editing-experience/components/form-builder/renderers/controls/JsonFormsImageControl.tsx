@@ -15,9 +15,11 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 import { trpc } from "~/utils/trpc"
 
-import { getCustomErrorMessage, getImageFieldPaths } from "./utils"
-
-const SURROUNDING_TEXT_FIELD_DENYLIST = new Set(["src", "alt", "type"])
+import {
+  getCustomErrorMessage,
+  getImageFieldPaths,
+  getSurroundingText,
+} from "./utils"
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,
@@ -100,18 +102,6 @@ function JsonFormsImageControl({
               return
             }
 
-            const surroundingText = parentData
-              ? Object.entries(parentData)
-                  .filter(
-                    ([key, value]) =>
-                      !SURROUNDING_TEXT_FIELD_DENYLIST.has(key) &&
-                      typeof value === "string" &&
-                      value.trim().length > 0,
-                  )
-                  .map(([, value]) => value as string)
-                  .join(" ")
-              : undefined
-
             generateAltText({
               siteId,
               pageId,
@@ -121,7 +111,7 @@ function JsonFormsImageControl({
                 typeof parentData?.type === "string"
                   ? parentData.type
                   : (schema.title ?? "image"),
-              surroundingText: surroundingText || undefined,
+              surroundingText: getSurroundingText(parentData),
             })
           }}
           shouldFetchResource={true}
