@@ -12,9 +12,9 @@ import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useAiAltTextGenerationEnabled } from "~/hooks/useAiAltTextGenerationEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
+import { trpc } from "~/utils/trpc"
 
 import { AltTextSuggestion } from "./AltTextSuggestion"
-import { useAltTextSuggestion } from "./useAltTextSuggestion"
 import {
   getCustomErrorMessage,
   getImageFieldPaths,
@@ -54,7 +54,15 @@ function JsonFormsImageControl({
     | Record<string, unknown>
     | undefined
 
-  const altTextSuggestion = useAltTextSuggestion()
+  const {
+    mutate: generateAltText,
+    reset: dismissAltText,
+    isPending: isGeneratingAltText,
+    isSuccess: hasAltText,
+    isError: hasAltTextFailed,
+    data: altTextResult,
+  } = trpc.ai.generateAltText.useMutation()
+  const altText = hasAltText ? altTextResult.altText : undefined
 
   return (
     <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
@@ -64,7 +72,7 @@ function JsonFormsImageControl({
           data={data.split("/").pop() ?? "Unknown"}
           onClick={() => {
             handleChange(path, undefined)
-            altTextSuggestion.dismiss()
+            dismissAltText()
           }}
         />
       ) : (
@@ -89,7 +97,7 @@ function JsonFormsImageControl({
               return
             }
 
-            altTextSuggestion.generate({
+            generateAltText({
               siteId,
               pageId,
               src,
@@ -100,15 +108,15 @@ function JsonFormsImageControl({
         />
       )}
       <AltTextSuggestion
-        isGenerating={altTextSuggestion.isGenerating}
-        suggestion={altTextSuggestion.suggestion}
-        hasFailed={altTextSuggestion.hasFailed}
+        isGenerating={isGeneratingAltText}
+        suggestion={altText}
+        hasFailed={hasAltTextFailed}
         onApply={() => {
-          if (!altPath || !altTextSuggestion.suggestion) return
-          handleChange(altPath, altTextSuggestion.suggestion)
-          altTextSuggestion.dismiss()
+          if (!altPath || !altText) return
+          handleChange(altPath, altText)
+          dismissAltText()
         }}
-        onDismiss={altTextSuggestion.dismiss}
+        onDismiss={dismissAltText}
       />
       {!!errors && (
         <FormErrorMessage>
