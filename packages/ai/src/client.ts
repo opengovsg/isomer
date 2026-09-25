@@ -1,8 +1,6 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
 import { generateText, type UserContent } from "ai"
 
-const PAIR_FOUNDRY_BASE_URL = "https://engine.pair.gov.sg"
-
 export interface PairFoundryClientConfig {
   apiKey: string
 }
@@ -24,7 +22,7 @@ export const createPairFoundryClient = ({
 }: PairFoundryClientConfig) => {
   const provider = createOpenAICompatible({
     name: "pair-engine",
-    baseURL: PAIR_FOUNDRY_BASE_URL,
+    baseURL: "https://engine.pair.gov.sg",
     apiKey,
   })
 
