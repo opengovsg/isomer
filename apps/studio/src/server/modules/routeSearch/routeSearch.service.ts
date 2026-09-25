@@ -4,8 +4,11 @@ import type { StudioRouteDefinition } from "./studioRoutes"
 
 export const JEV_MODEL_ID = "typesafe-ai/jev"
 export const NONE_ROUTE_CHOICE = "none"
-/** Ignore a destination unless Jev is at least this sure. */
-const MIN_MATCH_PROBABILITY = 0.35
+/**
+ * Extra destinations besides Jev's top choice. 0.35 hid short queries such as
+ * "user", where none wins and the real page is only somewhat likely.
+ */
+const MIN_MATCH_PROBABILITY = 0.2
 const MAX_MATCHES = 3
 
 export interface MatchedStudioRoute {

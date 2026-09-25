@@ -100,7 +100,7 @@ describe("matchStudioRoutes", () => {
     // Assert
     expect(criteria).not.toHaveProperty("settingsAuditLog")
     expect(criteria).not.toHaveProperty("isomerAdmin")
-    expect(criteria.collaborators).toEqual(expect.any(String))
+    expect(criteria.collaborators).toContain("user access logs")
     expect(matches).toEqual([
       expect.objectContaining({
         id: "collaborators",
@@ -137,6 +137,25 @@ describe("matchStudioRoutes", () => {
     ])
   })
 
+  it("shows collaborators for a short user query when none is the top choice", () => {
+    // Arrange
+    const routes = memberRoutes()
+
+    // Act
+    const matches = pickRouteMatches({
+      siteId: "7",
+      routes,
+      answer: {
+        type: "choice",
+        choice: "none",
+        probabilities: { none: 0.55, collaborators: 0.22 },
+      },
+    })
+
+    // Assert
+    expect(matches.map((match) => match.id)).toEqual(["collaborators"])
+  })
+
   it("returns the selected route even when its probability is below the extra-match cutoff", () => {
     // Arrange
     const routes = memberRoutes()
@@ -148,7 +167,7 @@ describe("matchStudioRoutes", () => {
       answer: {
         type: "choice",
         choice: "settingsIntegrations",
-        probabilities: { settingsIntegrations: 0.22, none: 0.2 },
+        probabilities: { settingsIntegrations: 0.1, none: 0.2 },
       },
     })
 
@@ -181,7 +200,7 @@ describe("matchStudioRoutes", () => {
       Promise.resolve({
         type: "choice",
         choice: "none",
-        probabilities: { none: 0.8, collaborators: 0.2 },
+        probabilities: { none: 0.9, collaborators: 0.1 },
       })
 
     // Act

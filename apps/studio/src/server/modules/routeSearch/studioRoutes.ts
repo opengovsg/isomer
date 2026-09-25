@@ -21,7 +21,7 @@ export const STUDIO_ROUTES: StudioRouteDefinition[] = [
     id: "collaborators",
     label: "Collaborators",
     description:
-      "Collaborators, users, and the people list. Manage users, invite someone, add a user, edit roles, or remove a collaborator.",
+      "Collaborators and users. Manage users, invite someone, add a user, edit roles, or remove a collaborator. Also user access logs, access history, and exporting who accessed the site.",
     href: (siteId) => `/sites/${siteId}/users`,
     access: "member",
   },
@@ -57,7 +57,8 @@ export const STUDIO_ROUTES: StudioRouteDefinition[] = [
   {
     id: "settingsAuditLog",
     label: "Logs",
-    description: "Site settings for audit logs and activity exports.",
+    description:
+      "Site settings for the audit log of edits and publishing activity. Not collaborator access logs or user access history.",
     href: (siteId) => `/sites/${siteId}/settings/audit-log`,
     access: "siteAdmin",
     requiresAuditLogFlag: true,
