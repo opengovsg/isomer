@@ -179,7 +179,7 @@ export const Searchbar: Story = {
   },
 }
 
-const taskTrayItemsBase = [
+const quickActionsItemsBase = [
   {
     icon: "stars" as const,
     title: "Explore Isomer's features",
@@ -214,7 +214,7 @@ const taskTrayItemsBase = [
   },
 ]
 
-export const TaskTray: Story = {
+export const GradientQuickActions: Story = {
   args: {
     headingLevel: 1,
     site: generateSiteConfig(),
@@ -222,27 +222,28 @@ export const TaskTray: Story = {
     title: "Set up a good government website, fast",
     subtitle:
       "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
-    variant: "taskTray",
-    taskTrayTitle: "Get started",
-    taskTrayItems: taskTrayItemsBase,
+    variant: "gradient",
+    actionLayout: "quickActions",
+    quickActionsTitle: "Get started",
+    quickActionsItems: quickActionsItemsBase,
   },
 }
 
-export const TaskTrayTwoItems: Story = {
+export const GradientQuickActionsTwoItems: Story = {
   args: {
-    ...TaskTray.args,
-    taskTrayItems: taskTrayItemsBase.slice(0, 2),
+    ...GradientQuickActions.args,
+    quickActionsItems: quickActionsItemsBase.slice(0, 2),
   },
 }
 
 // Minimal copy so tray width is driven by layout, not content length (see FloatingShortText).
-export const TaskTrayTwoItemsShortText: Story = {
+export const GradientQuickActionsTwoItemsShortText: Story = {
   args: {
-    ...TaskTray.args,
+    ...GradientQuickActions.args,
     title: "Title",
     subtitle: "Subtitle",
-    taskTrayTitle: "Tray",
-    taskTrayItems: [
+    quickActionsTitle: "Tray",
+    quickActionsItems: [
       {
         icon: "stars",
         title: "One",
@@ -261,17 +262,17 @@ export const TaskTrayTwoItemsShortText: Story = {
   },
 }
 
-export const TaskTrayThreeItems: Story = {
+export const GradientQuickActionsThreeItems: Story = {
   args: {
-    ...TaskTray.args,
-    taskTrayItems: taskTrayItemsBase.slice(0, 3),
+    ...GradientQuickActions.args,
+    quickActionsItems: quickActionsItemsBase.slice(0, 3),
   },
 }
 
-export const TaskTrayNoTitle: Story = {
+export const GradientQuickActionsNoTitle: Story = {
   args: {
-    ...TaskTray.args,
-    taskTrayTitle: undefined,
+    ...GradientQuickActions.args,
+    quickActionsTitle: undefined,
   },
 }
 

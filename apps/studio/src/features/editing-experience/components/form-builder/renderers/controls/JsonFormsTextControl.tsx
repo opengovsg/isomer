@@ -33,6 +33,13 @@ const isSchemaWithTooltip = (
   return (schema as unknown as { tooltip?: string }).tooltip !== undefined
 }
 
+const isSchemaWithPlaceholder = (
+  schema: ControlProps["schema"],
+): schema is ControlProps["schema"] & { placeholder: string } => {
+  return (schema as unknown as { placeholder?: string }).placeholder !==
+    undefined
+}
+
 export function JsonFormsTextControl({
   data,
   label,
@@ -59,6 +66,9 @@ export function JsonFormsTextControl({
   }
 
   const { tooltip } = isSchemaWithTooltip(schema) ? schema : {}
+  const placeholder = isSchemaWithPlaceholder(schema)
+    ? schema.placeholder
+    : label
 
   return (
     <Box>
@@ -75,7 +85,7 @@ export function JsonFormsTextControl({
           type="text"
           value={String(data || "")}
           onChange={onChange}
-          placeholder={label}
+          placeholder={placeholder}
           maxLength={maxLength}
           my="0.5rem"
         />

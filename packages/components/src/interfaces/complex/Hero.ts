@@ -11,7 +11,10 @@ import {
   TRIMMED_NON_EMPTY_STRING_REGEX,
 } from "~/utils/validation"
 
-import { ARRAY_RADIO_FORMAT } from "../format"
+import {
+  ARRAY_RADIO_FORMAT,
+  HERO_ACTION_LAYOUT_FORMAT,
+} from "../format"
 import { generateImageSrcSchema } from "./Image"
 
 export const HERO_STYLE = {
@@ -20,8 +23,15 @@ export const HERO_STYLE = {
   largeImage: "largeImage",
   floating: "floating",
   searchbar: "searchbar",
-  taskTray: "taskTray",
 } as const
+
+export const HERO_ACTION_LAYOUT = {
+  buttons: "buttons",
+  quickActions: "quickActions",
+} as const
+
+export type HeroActionLayout =
+  (typeof HERO_ACTION_LAYOUT)[keyof typeof HERO_ACTION_LAYOUT]
 
 const HeroBaseSchema = Type.Object({
   type: Type.Literal("hero", { default: "hero" }),
@@ -102,23 +112,180 @@ const GROUPINGS = {
   },
 } as const
 
+export const HERO_QUICK_ACTION_ITEM_TITLE_PLACEHOLDER = "Quick action title"
+
+const HeroActionLayoutQuickActionItemSchema = Type.Object({
+  title: Type.Optional(
+    Type.String({
+      title: "Title",
+      placeholder: HERO_QUICK_ACTION_ITEM_TITLE_PLACEHOLDER,
+      pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+      errorMessage: {
+        pattern: "cannot be empty or contain only spaces",
+      },
+    }),
+  ),
+  description: Type.String({
+    title: "Description",
+    pattern: NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
+  }),
+  icon: Type.Union(
+    SUPPORTED_ICON_NAMES.map((icon) =>
+      Type.Literal(icon, {
+        title: icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-/g, " "),
+      }),
+    ),
+    {
+      title: "Icon",
+      type: "string",
+    },
+  ),
+  buttonLabel: Type.String({
+    title: "Link text",
+    maxLength: 50,
+    pattern: NON_EMPTY_STRING_REGEX,
+    description:
+      "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
+  }),
+  buttonUrl: Type.String({
+    title: "Link destination",
+    description: "When this is clicked, open:",
+    format: "link",
+    pattern: LINK_HREF_PATTERN,
+  }),
+})
+
+const HeroGradientCallToActionsSchema = Type.Object({
+  buttonLabel: Type.Optional(
+    Type.String({
+      title: "Primary Call-to-Action text",
+      description:
+        "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
+    }),
+  ),
+  buttonUrl: Type.Optional(
+    Type.String({
+      title: "Button destination",
+      description: "When this is clicked, open:",
+      format: "link",
+      pattern: LINK_HREF_PATTERN,
+    }),
+  ),
+  secondaryButtonLabel: Type.Optional(
+    Type.String({
+      title: "Secondary Call-to-Action text",
+      description:
+        "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
+    }),
+  ),
+  secondaryButtonUrl: Type.Optional(
+    Type.String({
+      title: "Button destination",
+      description: "When this is clicked, open:",
+      format: "link",
+      pattern: LINK_HREF_PATTERN,
+    }),
+  ),
+})
+
+const HeroGradientSharedSchema = Type.Composite([
+  Type.Object({
+    variant: Type.Literal(HERO_STYLE.gradient, {
+      default: HERO_STYLE.gradient,
+    }),
+    backgroundUrl: BackgroundUrlSchema,
+  }),
+  HeroBaseSchema,
+])
+
 const HeroGradientSchema = Type.Composite(
   [
+    HeroGradientSharedSchema,
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.gradient, {
-        default: HERO_STYLE.gradient,
-      }),
-      backgroundUrl: BackgroundUrlSchema,
+      // Optional: For backwards compatibility with existing gradient hero without action layout value
+      actionLayout: Type.Optional(
+        Type.Unsafe<HeroActionLayout>({
+          oneOf: [
+            {
+              const: HERO_ACTION_LAYOUT.buttons,
+              title: "Buttons only",
+            },
+            {
+              const: HERO_ACTION_LAYOUT.quickActions,
+              title: "Quick actions",
+            },
+          ],
+          title: "Layout",
+          // Intentionally no `default` — Studio AJV uses useDefaults, which would
+          // dirty existing gradient heroes. Renderer falls back to buttons.
+          format: HERO_ACTION_LAYOUT_FORMAT,
+        }),
+      ),
+      quickActionsTitle: Type.Optional(
+        Type.String({
+          title: "Title",
+          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+          errorMessage: {
+            pattern: "cannot be empty or contain only spaces",
+          },
+        }),
+      ),
+      quickActionsItems: Type.Optional(
+        Type.Array(HeroActionLayoutQuickActionItemSchema, {
+          title: "Content",
+          minItems: 2,
+          maxItems: 4,
+        }),
+      ),
     }),
-    HeroBaseSchema,
-    CallToActionsSchema,
+    HeroGradientCallToActionsSchema,
+    Type.Unsafe({
+      if: {
+        properties: {
+          actionLayout: { const: HERO_ACTION_LAYOUT.quickActions },
+        },
+        required: ["actionLayout"],
+      },
+      then: {
+        required: ["quickActionsItems"],
+      },
+    }),
   ],
   {
     title: "Gradient (Default)",
     groups: [
       GROUPINGS.TEXT,
-      GROUPINGS.PRIMARY_CALL_TO_ACTION,
-      GROUPINGS.SECONDARY_CALL_TO_ACTION,
+      {
+        fields: ["actionLayout"],
+      },
+      {
+        ...GROUPINGS.PRIMARY_CALL_TO_ACTION,
+        visibleWhen: {
+          property: "actionLayout",
+          schema: { not: { const: HERO_ACTION_LAYOUT.quickActions } },
+        },
+      },
+      {
+        ...GROUPINGS.SECONDARY_CALL_TO_ACTION,
+        visibleWhen: {
+          property: "actionLayout",
+          schema: { not: { const: HERO_ACTION_LAYOUT.quickActions } },
+        },
+      },
+      {
+        label: "Quick actions",
+        fields: ["quickActionsTitle", "quickActionsItems"],
+        visibleWhen: {
+          property: "actionLayout",
+          schema: { const: HERO_ACTION_LAYOUT.quickActions },
+        },
+      },
     ],
   },
 )
@@ -184,86 +351,6 @@ const HeroFloatingSchema = Type.Composite(
   },
 )
 
-const TaskTrayItemSchema = Type.Object({
-  title: Type.String({
-    title: "Title",
-    pattern: NON_EMPTY_STRING_REGEX,
-    errorMessage: {
-      pattern: "cannot be empty or contain only spaces",
-    },
-  }),
-  description: Type.String({
-    title: "Description",
-    pattern: NON_EMPTY_STRING_REGEX,
-    errorMessage: {
-      pattern: "cannot be empty or contain only spaces",
-    },
-  }),
-  icon: Type.Union(
-    SUPPORTED_ICON_NAMES.map((icon) =>
-      Type.Literal(icon, {
-        title: icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-/g, " "),
-      }),
-    ),
-    {
-      title: "Icon",
-      type: "string",
-    },
-  ),
-  buttonLabel: Type.String({
-    title: "Link text",
-    maxLength: 50,
-    pattern: NON_EMPTY_STRING_REGEX,
-    description:
-      "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
-    errorMessage: {
-      pattern: "cannot be empty or contain only spaces",
-    },
-  }),
-  buttonUrl: Type.String({
-    title: "Link destination",
-    description: "When this is clicked, open:",
-    format: "link",
-    pattern: LINK_HREF_PATTERN,
-  }),
-})
-
-const HeroTaskTraySchema = Type.Composite(
-  [
-    Type.Object({
-      variant: Type.Literal(HERO_STYLE.taskTray, {
-        default: HERO_STYLE.taskTray,
-      }),
-      backgroundUrl: BackgroundUrlSchema,
-      taskTrayTitle: Type.Optional(
-        Type.String({
-          title: "Task tray title",
-          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
-          errorMessage: {
-            pattern: "cannot be empty or contain only spaces",
-          },
-        }),
-      ),
-      taskTrayItems: Type.Array(TaskTrayItemSchema, {
-        title: "Tasks",
-        minItems: 2,
-        maxItems: 4,
-      }),
-    }),
-    HeroBaseSchema,
-  ],
-  {
-    title: "Task tray",
-    groups: [
-      GROUPINGS.TEXT,
-      {
-        label: "Task tray",
-        fields: ["taskTrayTitle", "taskTrayItems"],
-      },
-    ],
-  },
-)
-
 const HeroSearchbarSchema = Type.Composite(
   [
     Type.Object({
@@ -289,7 +376,6 @@ export const HeroSchema = Type.Intersect(
         HeroBlockSchema,
         HeroLargeImageSchema,
         HeroFloatingSchema,
-        HeroTaskTraySchema,
         HeroSearchbarSchema,
       ],
       {
@@ -309,8 +395,38 @@ type CommonProps = Static<typeof HeroBaseSchema> & {
   headingLevel: number
 }
 
+export type HeroActionLayoutQuickActionItem = Static<
+  typeof HeroActionLayoutQuickActionItemSchema
+>
+
+/** Props for the shared CTA buttons row (gradient `actionLayout` only today). */
+export type HeroActionLayoutButtonsPanelProps = Simplify<
+  Pick<CommonProps, "site"> & Static<typeof HeroGradientCallToActionsSchema>
+>
+
+/** Props for the shared quick-actions panel (gradient `actionLayout` only today). */
+export type HeroActionLayoutQuickActionsPanelProps = Simplify<
+  Pick<CommonProps, "site" | "headingLevel"> & {
+    quickActionsTitle?: string
+    quickActionsItems: HeroActionLayoutQuickActionItem[]
+  }
+>
+
 export type HeroGradientProps = Simplify<
-  CommonProps & Static<typeof HeroGradientSchema>
+  CommonProps &
+    Static<typeof HeroGradientSharedSchema> &
+    Static<typeof HeroGradientCallToActionsSchema> & {
+      actionLayout?: HeroActionLayout
+      quickActionsTitle?: string
+      quickActionsItems?: HeroActionLayoutQuickActionItem[]
+    }
+>
+
+export type HeroActionLayoutQuickActionsProps = Simplify<
+  HeroGradientProps & {
+    actionLayout: typeof HERO_ACTION_LAYOUT.quickActions
+    quickActionsItems: HeroActionLayoutQuickActionItem[]
+  }
 >
 
 export type HeroBlockProps = Simplify<
@@ -325,10 +441,6 @@ export type HeroFloatingProps = Simplify<
   CommonProps & Static<typeof HeroFloatingSchema>
 >
 
-export type HeroTaskTrayProps = Simplify<
-  CommonProps & Static<typeof HeroTaskTraySchema>
->
-
 export type HeroSearchbarProps = Simplify<
   CommonProps & Static<typeof HeroSearchbarSchema>
 >
@@ -338,5 +450,4 @@ export type HeroProps =
   | HeroBlockProps
   | HeroLargeImageProps
   | HeroFloatingProps
-  | HeroTaskTrayProps
   | HeroSearchbarProps

@@ -1,5 +1,5 @@
 import type { SupportedIconName } from "~/common/icons"
-import type { HeroTaskTrayProps } from "~/interfaces/complex/Hero"
+import type { HeroActionLayoutQuickActionsPanelProps } from "~/interfaces/complex/Hero"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { tv } from "~/lib/tv"
@@ -8,7 +8,7 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 
-import { Link } from "../../../internal/Link"
+import { Link } from "../../../../internal/Link"
 
 const createStyles = tv({
   slots: {
@@ -47,18 +47,19 @@ const ItemIcon = ({ icon }: { icon: SupportedIconName }) => {
   return <Icon aria-hidden className={styles.icon({ hasLink: true })} />
 }
 
-interface TaskTrayItemProps {
-  item: HeroTaskTrayProps["taskTrayItems"][number]
-  site: HeroTaskTrayProps["site"]
-  headingLevel: HeroTaskTrayProps["headingLevel"]
+interface QuickActionsItemProps {
+  item: HeroActionLayoutQuickActionsPanelProps["quickActionsItems"][number]
+  site: HeroActionLayoutQuickActionsPanelProps["site"]
+  headingLevel: HeroActionLayoutQuickActionsPanelProps["headingLevel"]
 }
 
-export const TaskTrayItem = ({
+export const QuickActionsItem = ({
   item,
   site,
   headingLevel,
-}: TaskTrayItemProps) => {
+}: QuickActionsItemProps) => {
   const { title, icon, description, buttonUrl, buttonLabel } = item
+  const trimmedTitle = title?.trim()
   const isExternalLink = isExternalUrl(buttonUrl)
   const TitleTag = getHeadingTag(headingLevel)
 
@@ -74,7 +75,11 @@ export const TaskTrayItem = ({
     >
       <ItemIcon icon={icon} />
 
-      <TitleTag className={styles.title({ hasLink: true })}>{title}</TitleTag>
+      {trimmedTitle ? (
+        <TitleTag className={styles.title({ hasLink: true })}>
+          {trimmedTitle}
+        </TitleTag>
+      ) : null}
 
       {description ? (
         <p className={styles.description()}>{description}</p>

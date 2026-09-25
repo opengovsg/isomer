@@ -1,29 +1,29 @@
-import type { HeroTaskTrayProps } from "~/interfaces/complex/Hero"
+import type { HeroActionLayoutQuickActionsProps } from "~/interfaces/complex/Hero"
 import { twMerge } from "~/lib/twMerge"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
 import { ComponentContent } from "../../../internal/customCssClass"
 import { ImageClient } from "../../../internal/ImageClient"
-import { TaskTray } from "./TaskTray"
+import { QuickActions } from "../shared/QuickActions"
 
-export const HeroTaskTray = ({
+export const HeroGradientQuickActions = ({
   title,
   subtitle,
   backgroundUrl,
-  taskTrayTitle,
-  taskTrayItems,
+  quickActionsTitle,
+  quickActionsItems,
   site,
   headingLevel,
-}: HeroTaskTrayProps) => {
+}: HeroActionLayoutQuickActionsProps) => {
   const HeroTag = getHeadingTag(headingLevel)
 
   return (
     <section className="bg-white pb-12 md:pb-16">
       {/*
         Row 1 is the hero copy (py-16 matches the title's inset from the banner top).
-        The tray spans rows 2–3, so its top sits on that same inset below the description.
-        The image covers rows 1–2: 25% of the tray below lg (1fr of 1fr+3fr), 50% at lg.
-        Row 3 stays in flow, so the section padding starts at the tray bottom.
+        Quick actions span rows 2–3, with their top aligned below the description.
+        The image covers rows 1–2: 25% of the panel below lg (1fr of 1fr+3fr), 50% at lg.
+        Row 3 stays in flow, so the section padding starts at the panel bottom.
       */}
       <div className="grid w-full grid-cols-1 grid-rows-[auto_minmax(0,1fr)_minmax(0,3fr)] lg:grid-rows-[auto_minmax(0,1fr)_minmax(0,1fr)]">
         <div
@@ -64,9 +64,9 @@ export const HeroTaskTray = ({
             "z-20 col-start-1 row-start-2 row-end-4 w-full min-w-0 self-stretch",
           )}
         >
-          <TaskTray
-            taskTrayTitle={taskTrayTitle}
-            taskTrayItems={taskTrayItems}
+          <QuickActions
+            quickActionsTitle={quickActionsTitle}
+            quickActionsItems={quickActionsItems}
             site={site}
             headingLevel={headingLevel}
           />

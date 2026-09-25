@@ -21,14 +21,14 @@ const GroupComponent = React.memo(function GroupComponent({
   renderers,
   cells,
 }: LayoutProps) {
+  if (!visible) {
+    return null
+  }
+
   // Note: We have to perform this check here due to inaccuracies in JSONForms'
   // type definitions.
   // Ref: https://github.com/eclipsesource/jsonforms/blob/c3cead71d08ff11837bdeb5fbea66e5313137218/packages/material-renderers/src/layouts/MaterialGroupLayout.tsx#L52
   const elements = isGroupLayout(uischema) ? uischema.elements : []
-
-  if (!visible) {
-    return null
-  }
 
   return (
     <Box display="flex" flexDirection="column" gap="1.25rem">

@@ -9,6 +9,10 @@ export type IsomerExtendedJsonSchema = JsonSchema & {
   groups?: {
     label: string
     fields: string[]
+    visibleWhen?: {
+      property: string
+      schema: JsonSchema
+    }
   }[]
 }
 

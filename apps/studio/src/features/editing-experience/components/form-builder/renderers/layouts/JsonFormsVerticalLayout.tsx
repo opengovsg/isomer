@@ -5,7 +5,7 @@ import type {
 } from "@jsonforms/core"
 import type { IsomerExtendedJsonSchema } from "~/types/schema"
 import { Box } from "@chakra-ui/react"
-import { rankWith, uiTypeIs } from "@jsonforms/core"
+import { rankWith, RuleEffect, uiTypeIs } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsLayoutProps } from "@jsonforms/react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { isVerticalLayout } from "~/types/schema"
@@ -77,6 +77,15 @@ function getUiSchemaWithGroup(
         type: "Group",
         label,
         elements: groupElements,
+        rule: group.visibleWhen
+          ? {
+              effect: RuleEffect.SHOW,
+              condition: {
+                scope: `#/properties/${group.visibleWhen.property}`,
+                schema: group.visibleWhen.schema,
+              },
+            }
+          : undefined,
       })
 
       tempUiSchema = tempUiSchema.filter(

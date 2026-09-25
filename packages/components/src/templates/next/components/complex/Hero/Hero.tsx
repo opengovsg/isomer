@@ -6,7 +6,6 @@ import { HeroFloating } from "./HeroFloating"
 import { HeroGradient } from "./HeroGradient"
 import { HeroLargeImage } from "./HeroLargeImage"
 import { HeroSearchbar } from "./HeroSearchbar"
-import { HeroTaskTray } from "./HeroTaskTray"
 
 export const Hero = (props: HeroProps) => {
   const { variant } = props
@@ -19,8 +18,6 @@ export const Hero = (props: HeroProps) => {
       return <HeroLargeImage {...props} />
     case HERO_STYLE.floating:
       return <HeroFloating {...props} />
-    case HERO_STYLE.taskTray:
-      return <HeroTaskTray {...props} />
     case HERO_STYLE.searchbar:
       return <HeroSearchbar {...props} />
     default:

@@ -772,7 +772,7 @@ export const HeroFloatingShortText: Story = {
   }),
 }
 
-const homepageTaskTrayItems = [
+const homepageQuickActionsItems = [
   {
     icon: "stars" as const,
     title: "Explore Isomer's features",
@@ -807,47 +807,50 @@ const homepageTaskTrayItems = [
   },
 ]
 
-export const HeroTaskTray: Story = {
+export const HeroGradientQuickActions: Story = {
   args: generateArgs({
     heroProps: {
       type: "hero",
-      variant: "taskTray",
+      variant: "gradient",
+      actionLayout: "quickActions",
       backgroundUrl: "/hero-banner.png",
       title: "Set up a good government website, fast",
       subtitle:
         "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
-      taskTrayTitle: "Get started",
-      taskTrayItems: homepageTaskTrayItems,
+      quickActionsTitle: "Get started",
+      quickActionsItems: homepageQuickActionsItems,
     },
   }),
 }
 
-export const HeroTaskTrayTwoItems: Story = {
+export const HeroGradientQuickActionsTwoItems: Story = {
   args: generateArgs({
     heroProps: {
       type: "hero",
-      variant: "taskTray",
+      variant: "gradient",
+      actionLayout: "quickActions",
       backgroundUrl: "/hero-banner.png",
       title: "Set up a good government website, fast",
       subtitle:
         "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
-      taskTrayTitle: "Get started",
-      taskTrayItems: homepageTaskTrayItems.slice(0, 2),
+      quickActionsTitle: "Get started",
+      quickActionsItems: homepageQuickActionsItems.slice(0, 2),
     },
   }),
 }
 
 // Minimal copy so tray width is driven by layout, not content length (see FloatingShortText).
-export const HeroTaskTrayTwoItemsShortText: Story = {
+export const HeroGradientQuickActionsTwoItemsShortText: Story = {
   args: generateArgs({
     heroProps: {
       type: "hero",
-      variant: "taskTray",
+      variant: "gradient",
+      actionLayout: "quickActions",
       backgroundUrl: "/hero-banner.png",
       title: "Title",
       subtitle: "Subtitle",
-      taskTrayTitle: "Tray",
-      taskTrayItems: [
+      quickActionsTitle: "Tray",
+      quickActionsItems: [
         {
           icon: "stars",
           title: "One",
@@ -867,31 +870,33 @@ export const HeroTaskTrayTwoItemsShortText: Story = {
   }),
 }
 
-export const HeroTaskTrayThreeItems: Story = {
+export const HeroGradientQuickActionsThreeItems: Story = {
   args: generateArgs({
     heroProps: {
       type: "hero",
-      variant: "taskTray",
+      variant: "gradient",
+      actionLayout: "quickActions",
       backgroundUrl: "/hero-banner.png",
       title: "Set up a good government website, fast",
       subtitle:
         "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
-      taskTrayTitle: "Get started",
-      taskTrayItems: homepageTaskTrayItems.slice(0, 3),
+      quickActionsTitle: "Get started",
+      quickActionsItems: homepageQuickActionsItems.slice(0, 3),
     },
   }),
 }
 
-export const HeroTaskTrayNoTitle: Story = {
+export const HeroGradientQuickActionsNoTitle: Story = {
   args: generateArgs({
     heroProps: {
       type: "hero",
-      variant: "taskTray",
+      variant: "gradient",
+      actionLayout: "quickActions",
       backgroundUrl: "/hero-banner.png",
       title: "Set up a good government website, fast",
       subtitle:
         "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
-      taskTrayItems: homepageTaskTrayItems,
+      quickActionsItems: homepageQuickActionsItems,
     },
   }),
 }
