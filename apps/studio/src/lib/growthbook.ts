@@ -41,10 +41,28 @@ export interface AiAltTextGenerationFeatureValue {
 export const ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE: AiAltTextGenerationFeatureValue =
   { enabledSites: [] }
 
-export const isAiAltTextGenerationEnabledForSite = (
-  value: AiAltTextGenerationFeatureValue,
-  siteId: number,
-): boolean => value.enabledSites.includes(siteId.toString())
+export const isAiAltTextGenerationEnabledForSite = ({
+  value,
+  siteId,
+}: {
+  value: AiAltTextGenerationFeatureValue
+  siteId: number
+}): boolean => value.enabledSites.includes(siteId.toString())
+
+export const getIsAiAltTextGenerationEnabled = ({
+  gb,
+  siteId,
+}: {
+  gb: GrowthBook
+  siteId: number
+}): boolean =>
+  isAiAltTextGenerationEnabledForSite({
+    value: gb.getFeatureValue(
+      ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
+      ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE,
+    ),
+    siteId,
+  })
 
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 

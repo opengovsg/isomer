@@ -1,9 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import {
-  ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
-  ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE,
-  isAiAltTextGenerationEnabledForSite,
-} from "~/lib/growthbook"
+import { getIsAiAltTextGenerationEnabled } from "~/lib/growthbook"
 import { generateAltTextSchema } from "~/schemas/ai"
 import { protectedProcedure, router } from "~/server/trpc"
 
@@ -22,12 +18,7 @@ export const aiRouter = router({
     // use while still limiting abuse.
     .meta({ rateLimitOptions: { max: 20, windowMs: 60_000 } })
     .mutation(async ({ ctx, input: { siteId, pageId, src } }) => {
-      // The caller is signed in. The suggestion is not available for this site.
-      const altTextFlag = ctx.gb.getFeatureValue(
-        ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
-        ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE,
-      )
-      if (!isAiAltTextGenerationEnabledForSite(altTextFlag, siteId)) {
+      if (!getIsAiAltTextGenerationEnabled({ gb: ctx.gb, siteId })) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "Alt text suggestions are not available for this site",

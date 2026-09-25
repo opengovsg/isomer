@@ -11,5 +11,5 @@ export const useAiAltTextGenerationEnabled = (siteId: number) => {
     ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
     ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE,
   )
-  return isAiAltTextGenerationEnabledForSite(value, siteId)
+  return isAiAltTextGenerationEnabledForSite({ value, siteId })
 }
