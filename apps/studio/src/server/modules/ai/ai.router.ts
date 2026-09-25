@@ -1,4 +1,7 @@
-import { ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY } from "~/lib/growthbook"
+import {
+  ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
+  ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE,
+} from "~/lib/growthbook"
 import { generateAltTextSchema } from "~/schemas/ai"
 import { protectedProcedure, router } from "~/server/trpc"
 
@@ -14,7 +17,12 @@ export const aiRouter = router({
     .meta({ rateLimitOptions: { max: 20, windowMs: 60_000 } })
     .mutation(
       async ({ ctx, input: { siteId, src, mimeType, componentType } }) => {
-        if (!ctx.gb.isOn(ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY)) {
+        if (
+          !ctx.gb.getFeatureValue(
+            ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
+            ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE,
+          )
+        ) {
           return { altText: undefined }
         }
 

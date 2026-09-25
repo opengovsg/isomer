@@ -10,6 +10,7 @@ import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
+import { useAiAltTextGenerationEnabled } from "~/hooks/useAiAltTextGenerationEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 import { trpc } from "~/utils/trpc"
@@ -51,6 +52,7 @@ function JsonFormsImageControl({
   schema,
 }: JsonFormsImageControlProps) {
   const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
+  const isAiAltTextGenerationEnabled = useAiAltTextGenerationEnabled()
   const ctx = useJsonForms()
   const [uploadedMimeType, setUploadedMimeType] = useState<string>()
 
@@ -90,7 +92,15 @@ function JsonFormsImageControl({
           onUploadedFile={(file) => setUploadedMimeType(file.type)}
           setHref={(src) => {
             handleChange(path, src)
-            if (!src || !pageId || !altPath || !uploadedMimeType) return
+            if (
+              !isAiAltTextGenerationEnabled ||
+              !src ||
+              !pageId ||
+              !altPath ||
+              !uploadedMimeType
+            ) {
+              return
+            }
 
             const surroundingText = parentData
               ? Object.entries(parentData)
