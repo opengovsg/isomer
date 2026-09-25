@@ -1,6 +1,6 @@
-import { Box, HStack, Icon, Text, VStack } from "@chakra-ui/react"
+import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { BiSolidMagicWand } from "react-icons/bi"
+import { IconSparklesAlt } from "~/components/icons/IconSparklesAlt"
 
 interface AltTextSuggestionProps {
   isGenerating: boolean
@@ -27,8 +27,7 @@ export const AltTextSuggestion = ({
       bg="base.canvas.brand-subtle"
     >
       <HStack spacing="0.5rem" align="center">
-        <Icon
-          as={BiSolidMagicWand}
+        <IconSparklesAlt
           color="interaction.main.default"
           boxSize="1rem"
           sx={
