@@ -7,7 +7,7 @@ export const JEV_MODEL_ID = "typesafe-ai/jev"
  * Each destination is scored on its own. A shared choice would force one
  * winner, so "logs" could not surface both audit logs and user access logs.
  */
-const MIN_MATCH_PROBABILITY = 0.4
+const MIN_MATCH_PROBABILITY = 0.3
 const MAX_MATCHES = 2
 
 export interface MatchedStudioRoute {
