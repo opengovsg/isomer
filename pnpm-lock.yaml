@@ -996,6 +996,9 @@ importers:
       '@uidotdev/usehooks':
         specifier: 'catalog:'
         version: 2.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      ai:
+        specifier: 'catalog:'
+        version: 6.0.290(zod@4.5.4)
       ajv:
         specifier: 'catalog:'
         version: 8.20.0
@@ -1294,9 +1297,6 @@ importers:
       '@ai-sdk/openai-compatible':
         specifier: 'catalog:'
         version: 2.0.78(zod@4.5.4)
-      ai:
-        specifier: 'catalog:'
-        version: 6.0.290(zod@4.5.4)
     devDependencies:
       '@isomer/oxlint-config':
         specifier: workspace:*

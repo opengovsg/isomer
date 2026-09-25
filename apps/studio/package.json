@@ -127,6 +127,7 @@
     "@trpc/react-query": "catalog:trpc",
     "@trpc/server": "catalog:trpc",
     "@uidotdev/usehooks": "catalog:",
+    "ai": "catalog:",
     "ajv": "catalog:",
     "ajv-errors": "catalog:",
     "chakra-react-select": "catalog:",

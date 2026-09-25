@@ -1,5 +1,4 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
-import { generateText } from "ai"
 
 const FOUNDRY_BASE_URL = "https://engine.pair.gov.sg"
 
@@ -7,57 +6,13 @@ export interface FoundryClientConfig {
   apiKey: string
 }
 
-export interface GenerateFoundryTextInput {
-  modelId: string
-  system: string
-  prompt: string
-  imageUrl?: string
-  maxOutputTokens?: number
-}
-
 /**
- * Pair Foundry client. This package does not read application env and does
- * not know about product use cases — callers pass a key and the prompt.
+ * Pair Foundry provider. This package does not read application env and does
+ * not build prompts or messages — callers pass a key and use the AI SDK.
  */
-export const createFoundryClient = ({ apiKey }: FoundryClientConfig) => {
-  const provider = createOpenAICompatible({
+export const createFoundryClient = ({ apiKey }: FoundryClientConfig) =>
+  createOpenAICompatible({
     name: "pair-engine",
     baseURL: FOUNDRY_BASE_URL,
     apiKey,
   })
-
-  const generateFoundryText = async ({
-    modelId,
-    system,
-    prompt,
-    imageUrl,
-    maxOutputTokens,
-  }: GenerateFoundryTextInput): Promise<string> => {
-    const response = await generateText({
-      model: provider.chatModel(modelId),
-      allowSystemInMessages: true,
-      messages: [
-        { role: "system", content: system },
-        {
-          role: "user",
-          content: imageUrl
-            ? [
-                { type: "text" as const, text: prompt },
-                { type: "image" as const, image: new URL(imageUrl) },
-              ]
-            : prompt,
-        },
-      ],
-      maxOutputTokens,
-    })
-
-    const text = response.text.trim()
-    if (!text) {
-      throw new Error("Foundry returned no text")
-    }
-
-    return text
-  }
-
-  return { generateText: generateFoundryText }
-}

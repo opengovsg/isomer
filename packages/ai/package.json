@@ -16,8 +16,7 @@
     "typecheck": "tsgo"
   },
   "dependencies": {
-    "@ai-sdk/openai-compatible": "catalog:",
-    "ai": "catalog:"
+    "@ai-sdk/openai-compatible": "catalog:"
   },
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",
