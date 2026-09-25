@@ -5,7 +5,6 @@ import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { get } from "lodash-es"
-import { useState } from "react"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -13,9 +12,9 @@ import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useAiAltTextGenerationEnabled } from "~/hooks/useAiAltTextGenerationEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
-import { trpc } from "~/utils/trpc"
 
 import { AltTextSuggestion } from "./AltTextSuggestion"
+import { useAltTextSuggestion } from "./useAltTextSuggestion"
 import {
   getCustomErrorMessage,
   getImageFieldPaths,
@@ -55,21 +54,7 @@ function JsonFormsImageControl({
     | Record<string, unknown>
     | undefined
 
-  const [suggestion, setSuggestion] = useState<string>()
-  const [hasAltTextFailed, setHasAltTextFailed] = useState(false)
-  const { mutate: generateAltText, isPending: isGeneratingAltText } =
-    trpc.ai.generateAltText.useMutation({
-      onSuccess: ({ altText }) => {
-        // A successful call can still return no text when the image cannot be
-        // read or the model returns nothing. Treat that as a failed suggestion.
-        setSuggestion(altText)
-        setHasAltTextFailed(!altText)
-      },
-      onError: () => {
-        setSuggestion(undefined)
-        setHasAltTextFailed(true)
-      },
-    })
+  const altTextSuggestion = useAltTextSuggestion()
 
   return (
     <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
@@ -79,8 +64,7 @@ function JsonFormsImageControl({
           data={data.split("/").pop() ?? "Unknown"}
           onClick={() => {
             handleChange(path, undefined)
-            setSuggestion(undefined)
-            setHasAltTextFailed(false)
+            altTextSuggestion.dismiss()
           }}
         />
       ) : (
@@ -105,9 +89,7 @@ function JsonFormsImageControl({
               return
             }
 
-            setSuggestion(undefined)
-            setHasAltTextFailed(false)
-            generateAltText({
+            altTextSuggestion.generate({
               siteId,
               pageId,
               src,
@@ -118,19 +100,15 @@ function JsonFormsImageControl({
         />
       )}
       <AltTextSuggestion
-        isGenerating={isGeneratingAltText}
-        suggestion={suggestion}
-        hasFailed={hasAltTextFailed && !isGeneratingAltText}
+        isGenerating={altTextSuggestion.isGenerating}
+        suggestion={altTextSuggestion.suggestion}
+        hasFailed={altTextSuggestion.hasFailed}
         onApply={() => {
-          if (!altPath || !suggestion) return
-          handleChange(altPath, suggestion)
-          setSuggestion(undefined)
-          setHasAltTextFailed(false)
+          if (!altPath || !altTextSuggestion.suggestion) return
+          handleChange(altPath, altTextSuggestion.suggestion)
+          altTextSuggestion.dismiss()
         }}
-        onDismiss={() => {
-          setSuggestion(undefined)
-          setHasAltTextFailed(false)
-        }}
+        onDismiss={altTextSuggestion.dismiss}
       />
       {!!errors && (
         <FormErrorMessage>
