@@ -7,11 +7,13 @@ import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 import type { Logger } from "@isomer/logging"
 
-import { parseAssetUrlToKey } from "../asset/asset.service"
+import {
+  getContentTypeFromKey,
+  parseAssetUrlToKey,
+} from "../asset/asset.service"
 
 interface GenerateAltTextForUploadedImageParams {
   fileKey: string
-  mimeType: string
   componentType: string
   logger: Logger<string>
 }
@@ -51,10 +53,10 @@ export const parseUploadedImageKey = (src: string): string | null => {
 // never surface as an error in the page editor.
 export const generateAltTextForUploadedImage = async ({
   fileKey,
-  mimeType,
   componentType,
   logger,
 }: GenerateAltTextForUploadedImageParams): Promise<string | undefined> => {
+  const mimeType = getContentTypeFromKey(fileKey)
   if (!isAltTextGenerationSupportedForMimeType(mimeType) || !ASSETS_BASE_URL) {
     return undefined
   }

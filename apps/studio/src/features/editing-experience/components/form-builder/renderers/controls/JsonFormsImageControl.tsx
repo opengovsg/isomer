@@ -5,7 +5,6 @@ import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { get } from "lodash-es"
-import { useRef } from "react"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -48,9 +47,6 @@ function JsonFormsImageControl({
   const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
   const isAiAltTextGenerationEnabled = useAiAltTextGenerationEnabled()
   const ctx = useJsonForms()
-  // FileAttachment calls setHref from the upload closure, which never sees a
-  // later setState. A ref is updated before that callback runs.
-  const uploadedMimeTypeRef = useRef<string | undefined>(undefined)
 
   const { parentPath, altPath } = getImageFieldPaths(path)
   const parentData = get(ctx.core?.data, parentPath) as
@@ -84,12 +80,8 @@ function JsonFormsImageControl({
           }
           siteId={siteId}
           resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
-          onUploadedFile={(file) => {
-            uploadedMimeTypeRef.current = file.type
-          }}
           setHref={(src) => {
             handleChange(path, src)
-            const uploadedMimeType = uploadedMimeTypeRef.current
             if (!isAiAltTextGenerationEnabled) {
               return
             }
@@ -97,8 +89,8 @@ function JsonFormsImageControl({
             if (!pageId || !altPath) {
               return
             }
-            // Skip until the upload has a stored path and a known MIME type.
-            if (!src || !uploadedMimeType) {
+            // Skip the empty href FileAttachment sends while the upload is in flight.
+            if (!src) {
               return
             }
 
@@ -106,7 +98,6 @@ function JsonFormsImageControl({
               siteId,
               pageId,
               src,
-              mimeType: uploadedMimeType,
               componentType:
                 typeof parentData?.type === "string"
                   ? parentData.type
