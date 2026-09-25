@@ -3,12 +3,11 @@ import { experimental_evaluate as evaluate } from "ai"
 import type { StudioRouteDefinition } from "./studioRoutes"
 
 export const JEV_MODEL_ID = "typesafe-ai/jev"
-export const NONE_ROUTE_CHOICE = "none"
 /**
- * Extra destinations besides Jev's top choice. 0.35 hid short queries such as
- * "user", where none wins and the real page is only somewhat likely.
+ * Each destination is scored on its own. A shared choice would force one
+ * winner, so "logs" could not surface both audit logs and user access logs.
  */
-const MIN_MATCH_PROBABILITY = 0.2
+const MIN_MATCH_PROBABILITY = 0.5
 const MAX_MATCHES = 2
 
 export interface MatchedStudioRoute {
@@ -18,88 +17,73 @@ export interface MatchedStudioRoute {
   description: string
 }
 
-export interface RouteChoiceAnswer {
-  type: "choice"
-  choice: string
-  probabilities?: Record<string, number>
-}
-
 export type EvaluateStudioRoutes = (input: {
   query: string
-  criteria: Record<string, string>
-}) => Promise<RouteChoiceAnswer>
+  routes: StudioRouteDefinition[]
+}) => Promise<Record<string, number>>
 
-const evaluateWithJev: EvaluateStudioRoutes = async ({ query, criteria }) => {
+const evaluateWithJev: EvaluateStudioRoutes = async ({ query, routes }) => {
+  const questions = Object.fromEntries(
+    routes.map((route) => [
+      route.id,
+      {
+        type: "boolean" as const,
+        instructions: `Does this search refer to "${route.label}"? ${route.description} A query may match more than one destination.`,
+        criteria: {
+          true: "The query is asking to open this destination.",
+          false:
+            "The query is a page, folder, or collection title, or a different destination.",
+        },
+      },
+    ]),
+  )
+
   const result = await evaluate({
     model: JEV_MODEL_ID,
     state: query,
-    questions: {
-      destination: {
-        type: "choice",
-        instructions:
-          "Which Studio destination is this search trying to open? Pick none when it is looking for a page, folder, or collection by title.",
-        criteria,
-      },
-    },
+    questions,
     providerOptions: {
       gateway: { zeroDataRetention: true },
     },
   })
 
-  return result.answers.destination
-}
-
-export const buildRouteCriteria = (
-  routes: StudioRouteDefinition[],
-): Record<string, string> => {
-  return {
-    ...Object.fromEntries(routes.map((route) => [route.id, route.description])),
-    [NONE_ROUTE_CHOICE]:
-      "The query is looking for a page, folder, or collection by its title, not a Studio settings or admin destination.",
-  }
+  return Object.fromEntries(
+    routes.map((route) => {
+      const answer = result.answers[route.id]
+      const probability = answer?.type === "boolean" ? answer.probability : 0
+      return [route.id, probability]
+    }),
+  )
 }
 
 export const pickRouteMatches = ({
   siteId,
   routes,
-  answer,
+  probabilities,
 }: {
   siteId: string
   routes: StudioRouteDefinition[]
-  answer: RouteChoiceAnswer
+  probabilities: Record<string, number>
 }): MatchedStudioRoute[] => {
   const routesById = new Map(routes.map((route) => [route.id, route]))
-  const probabilities = answer.probabilities
 
-  const rankedFromProbabilities = probabilities
-    ? Object.entries(probabilities)
-        .filter(([id]) => id !== NONE_ROUTE_CHOICE && routesById.has(id))
-        .filter(([, probability]) => probability >= MIN_MATCH_PROBABILITY)
-        .sort(([, left], [, right]) => right - left)
-    : []
-  const selectedId =
-    answer.choice !== NONE_ROUTE_CHOICE && routesById.has(answer.choice)
-      ? answer.choice
-      : undefined
-  const ranked = selectedId
-    ? [
-        [selectedId, probabilities?.[selectedId] ?? 1] as const,
-        ...rankedFromProbabilities.filter(([id]) => id !== selectedId),
+  return Object.entries(probabilities)
+    .filter(([id]) => routesById.has(id))
+    .filter(([, probability]) => probability >= MIN_MATCH_PROBABILITY)
+    .sort(([, left], [, right]) => right - left)
+    .slice(0, MAX_MATCHES)
+    .flatMap(([id]) => {
+      const route = routesById.get(id)
+      if (!route) return []
+      return [
+        {
+          id: route.id,
+          label: route.label,
+          href: route.href(siteId),
+          description: route.description,
+        },
       ]
-    : rankedFromProbabilities
-
-  return ranked.slice(0, MAX_MATCHES).flatMap(([id]) => {
-    const route = routesById.get(id)
-    if (!route) return []
-    return [
-      {
-        id: route.id,
-        label: route.label,
-        href: route.href(siteId),
-        description: route.description,
-      },
-    ]
-  })
+    })
 }
 
 export const matchStudioRoutes = async ({
@@ -116,10 +100,10 @@ export const matchStudioRoutes = async ({
   const trimmed = query.trim()
   if (!trimmed || routes.length === 0) return []
 
-  const answer = await evaluateRoutes({
+  const probabilities = await evaluateRoutes({
     query: trimmed,
-    criteria: buildRouteCriteria(routes),
+    routes,
   })
 
-  return pickRouteMatches({ siteId, routes, answer })
+  return pickRouteMatches({ siteId, routes, probabilities })
 }

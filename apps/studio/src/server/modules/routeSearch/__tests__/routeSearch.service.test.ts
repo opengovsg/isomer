@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import type { EvaluateStudioRoutes } from "../routeSearch.service"
-import {
-  buildRouteCriteria,
-  matchStudioRoutes,
-  pickRouteMatches,
-} from "../routeSearch.service"
+import { matchStudioRoutes, pickRouteMatches } from "../routeSearch.service"
 import { listAccessibleStudioRoutes } from "../studioRoutes"
 
 const memberRoutes = () =>
@@ -72,21 +68,13 @@ describe("listAccessibleStudioRoutes", () => {
 })
 
 describe("matchStudioRoutes", () => {
-  it("sends only accessible routes to Jev and returns the matching URL", async () => {
+  it("scores only accessible routes and returns the matching URL", async () => {
     // Arrange
     const routes = memberRoutes()
-    let criteria: Record<string, string> = {}
+    let scoredIds: string[] = []
     const evaluateRoutes: EvaluateStudioRoutes = (input) => {
-      criteria = input.criteria
-      return Promise.resolve({
-        type: "choice",
-        choice: "collaborators",
-        probabilities: {
-          collaborators: 0.91,
-          none: 0.04,
-          settingsIntegrations: 0.05,
-        },
-      })
+      scoredIds = input.routes.map((route) => route.id)
+      return Promise.resolve({ collaborators: 0.91, settingsIntegrations: 0.1 })
     }
 
     // Act
@@ -98,9 +86,13 @@ describe("matchStudioRoutes", () => {
     })
 
     // Assert
-    expect(criteria).not.toHaveProperty("settingsAuditLog")
-    expect(criteria).not.toHaveProperty("isomerAdmin")
-    expect(criteria.collaborators.toLowerCase()).toContain("user access logs")
+    expect(scoredIds).not.toContain("settingsAuditLog")
+    expect(scoredIds).not.toContain("isomerAdmin")
+    expect(
+      routes
+        .find((route) => route.id === "collaborators")
+        ?.description.toLowerCase(),
+    ).toContain("user access logs")
     expect(matches).toEqual([
       expect.objectContaining({
         id: "collaborators",
@@ -114,11 +106,7 @@ describe("matchStudioRoutes", () => {
     // Arrange
     const routes = memberRoutes()
     const evaluateRoutes: EvaluateStudioRoutes = () =>
-      Promise.resolve({
-        type: "choice",
-        choice: "settingsIntegrations",
-        probabilities: { settingsIntegrations: 0.88, none: 0.12 },
-      })
+      Promise.resolve({ settingsIntegrations: 0.88, collaborators: 0.12 })
 
     // Act
     const matches = await matchStudioRoutes({
@@ -137,7 +125,7 @@ describe("matchStudioRoutes", () => {
     ])
   })
 
-  it("returns the two log destinations and no third match", () => {
+  it("returns both log destinations above the floor and no third match", () => {
     // Arrange
     const routes = listAccessibleStudioRoutes({
       isSiteAdmin: true,
@@ -149,15 +137,10 @@ describe("matchStudioRoutes", () => {
     const matches = pickRouteMatches({
       siteId: "7",
       routes,
-      answer: {
-        type: "choice",
-        choice: "settingsAuditLog",
-        probabilities: {
-          settingsAuditLog: 0.48,
-          collaborators: 0.31,
-          settingsFooter: 0.21,
-          none: 0.0,
-        },
+      probabilities: {
+        settingsAuditLog: 0.82,
+        collaborators: 0.74,
+        settingsFooter: 0.61,
       },
     })
 
@@ -172,7 +155,7 @@ describe("matchStudioRoutes", () => {
     ])
   })
 
-  it("shows collaborators for a short user query when none is the top choice", () => {
+  it("drops a destination below the floor", () => {
     // Arrange
     const routes = memberRoutes()
 
@@ -180,37 +163,14 @@ describe("matchStudioRoutes", () => {
     const matches = pickRouteMatches({
       siteId: "7",
       routes,
-      answer: {
-        type: "choice",
-        choice: "none",
-        probabilities: { none: 0.55, collaborators: 0.22 },
-      },
-    })
-
-    // Assert
-    expect(matches.map((match) => match.id)).toEqual(["collaborators"])
-  })
-
-  it("returns the selected route even when its probability is below the extra-match cutoff", () => {
-    // Arrange
-    const routes = memberRoutes()
-
-    // Act
-    const matches = pickRouteMatches({
-      siteId: "7",
-      routes,
-      answer: {
-        type: "choice",
-        choice: "settingsIntegrations",
-        probabilities: { settingsIntegrations: 0.1, none: 0.2 },
-      },
+      probabilities: { collaborators: 0.49, settingsIntegrations: 0.5 },
     })
 
     // Assert
     expect(matches.map((match) => match.id)).toEqual(["settingsIntegrations"])
   })
 
-  it("drops a destination Jev names that was not in the allowed set", () => {
+  it("drops a destination that was not in the allowed set", () => {
     // Arrange
     const routes = memberRoutes()
 
@@ -218,25 +178,17 @@ describe("matchStudioRoutes", () => {
     const matches = pickRouteMatches({
       siteId: "7",
       routes,
-      answer: {
-        type: "choice",
-        choice: "isomerAdmin",
-        probabilities: { isomerAdmin: 0.99, none: 0.01 },
-      },
+      probabilities: { isomerAdmin: 0.99 },
     })
 
     // Assert
     expect(matches).toEqual([])
   })
 
-  it("returns nothing when the query is about page content", async () => {
+  it("returns nothing when every destination is below the floor", async () => {
     // Arrange
     const evaluateRoutes: EvaluateStudioRoutes = () =>
-      Promise.resolve({
-        type: "choice",
-        choice: "none",
-        probabilities: { none: 0.9, collaborators: 0.1 },
-      })
+      Promise.resolve({ collaborators: 0.1, settingsIntegrations: 0.2 })
 
     // Act
     const matches = await matchStudioRoutes({
@@ -248,6 +200,5 @@ describe("matchStudioRoutes", () => {
 
     // Assert
     expect(matches).toEqual([])
-    expect(buildRouteCriteria(memberRoutes()).none).toEqual(expect.any(String))
   })
 })
