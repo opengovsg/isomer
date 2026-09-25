@@ -1,4 +1,8 @@
-import type { CombinatorRendererProps, JsonSchema, RankedTester } from "@jsonforms/core"
+import type {
+  CombinatorRendererProps,
+  JsonSchema,
+  RankedTester,
+} from "@jsonforms/core"
 import { Box, Flex, FormControl } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
@@ -27,6 +31,19 @@ const heroActionLayoutRadioCss = {
     boxShadow: "none",
     outline: "none",
   },
+}
+
+const readActionLayout = (value: unknown) => {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("actionLayout" in value)
+  ) {
+    return HERO_ACTION_LAYOUT.buttons
+  }
+
+  const layout = value.actionLayout
+  return typeof layout === "string" ? layout : HERO_ACTION_LAYOUT.buttons
 }
 
 const actionLayoutConst = (schema: JsonSchema) => {
@@ -80,10 +97,14 @@ function JsonFormsHeroActionLayoutControl({
     }
 
     setVariant(String(renderInfo.label))
-    const newData = createDefaultValue(renderInfo.schema, rootSchema)
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const newData: unknown = createDefaultValue(renderInfo.schema, rootSchema)
+    const current: unknown = data
+    const nextData =
+      typeof newData === "object" && newData !== null ? newData : {}
     handleChange(path, {
-      ...data,
-      ...newData,
+      ...(typeof current === "object" && current !== null ? current : {}),
+      ...nextData,
     })
   }
 
@@ -95,13 +116,7 @@ function JsonFormsHeroActionLayoutControl({
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [indexOfFittingSchema])
 
-  const selectedLayout =
-    typeof data === "object" &&
-    data !== null &&
-    "actionLayout" in data &&
-    typeof data.actionLayout === "string"
-      ? data.actionLayout
-      : HERO_ACTION_LAYOUT.buttons
+  const selectedLayout = readActionLayout(data)
 
   return (
     <>
