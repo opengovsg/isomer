@@ -277,6 +277,16 @@ describe("asset.service", () => {
       ).toBe(false)
     })
 
+    it("should return false when another site id only shares a numeric prefix", () => {
+      // "10/...".startsWith("1/") is false. Site 1 must not own site 10's key.
+      expect(
+        doAllFileKeysBelongToSite({
+          siteId: 1,
+          fileKeys: ["10/11111111-1111-1111-1111-111111111111/secret.png"],
+        }),
+      ).toBe(false)
+    })
+
     it("should return true when siteId is substring but key has correct prefix with slash", () => {
       // "2/" prefix only matches siteId 2
       expect(

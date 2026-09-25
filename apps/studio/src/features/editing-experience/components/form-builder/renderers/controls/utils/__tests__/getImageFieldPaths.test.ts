@@ -29,7 +29,35 @@ describe("getImageFieldPaths", () => {
     })
   })
 
-  it("returns no alt path when the control is not bound to src", () => {
+  it("returns the sibling imageAlt field for an imageSrc path", () => {
+    // Arrange
+    const srcPath = "imageSrc"
+
+    // Act
+    const result = getImageFieldPaths(srcPath)
+
+    // Assert
+    expect(result).toEqual({
+      parentPath: "",
+      altPath: "imageAlt",
+    })
+  })
+
+  it("returns the sibling imageAlt field for an imageUrl path", () => {
+    // Arrange
+    const srcPath = "cards.0.imageUrl"
+
+    // Act
+    const result = getImageFieldPaths(srcPath)
+
+    // Assert
+    expect(result).toEqual({
+      parentPath: "cards.0",
+      altPath: "cards.0.imageAlt",
+    })
+  })
+
+  it("returns no alt path when the control is not an image field", () => {
     // Arrange
     const srcPath = "content.2.image"
 
