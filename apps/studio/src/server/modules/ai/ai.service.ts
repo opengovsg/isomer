@@ -14,7 +14,6 @@ import {
 
 interface GenerateAltTextForUploadedImageParams {
   fileKey: string
-  componentType: string
   logger: Logger<string>
 }
 
@@ -53,7 +52,6 @@ export const parseUploadedImageKey = (src: string): string | null => {
 // never surface as an error in the page editor.
 export const generateAltTextForUploadedImage = async ({
   fileKey,
-  componentType,
   logger,
 }: GenerateAltTextForUploadedImageParams): Promise<string | undefined> => {
   const mimeType = getContentTypeFromKey(fileKey)
@@ -72,7 +70,7 @@ export const generateAltTextForUploadedImage = async ({
     return await generateAltText(imageUrl)
   } catch (error) {
     logger.error(
-      { error, merged: { fileKey, mimeType, componentType } },
+      { error, merged: { fileKey, mimeType } },
       "Failed to generate AI alt text suggestion",
     )
     return undefined

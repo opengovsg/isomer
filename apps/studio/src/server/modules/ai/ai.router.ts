@@ -20,43 +20,40 @@ export const aiRouter = router({
     // Editors upload images one at a time, so this comfortably covers normal
     // use while still limiting abuse.
     .meta({ rateLimitOptions: { max: 20, windowMs: 60_000 } })
-    .mutation(
-      async ({ ctx, input: { siteId, pageId, src, componentType } }) => {
-        if (
-          !ctx.gb.getFeatureValue(
-            ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
-            ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE,
-          )
-        ) {
-          return { altText: undefined }
-        }
+    .mutation(async ({ ctx, input: { siteId, pageId, src } }) => {
+      if (
+        !ctx.gb.getFeatureValue(
+          ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
+          ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE,
+        )
+      ) {
+        return { altText: undefined }
+      }
 
-        await bulkValidateUserPermissionsForResources({
-          siteId,
-          action: "update",
-          userId: ctx.user.id,
-          resourceIds: [String(pageId)],
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "update",
+        userId: ctx.user.id,
+        resourceIds: [String(pageId)],
+      })
+
+      const fileKey = parseUploadedImageKey(src)
+      if (
+        !fileKey ||
+        !doAllFileKeysBelongToSite({ fileKeys: [fileKey], siteId })
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "The file key does not belong to the specified site. You may only access assets for the site you are authorized for.",
         })
+      }
 
-        const fileKey = parseUploadedImageKey(src)
-        if (
-          !fileKey ||
-          !doAllFileKeysBelongToSite({ fileKeys: [fileKey], siteId })
-        ) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message:
-              "The file key does not belong to the specified site. You may only access assets for the site you are authorized for.",
-          })
-        }
+      const altText = await generateAltTextForUploadedImage({
+        fileKey,
+        logger: ctx.logger,
+      })
 
-        const altText = await generateAltTextForUploadedImage({
-          fileKey,
-          componentType,
-          logger: ctx.logger,
-        })
-
-        return { altText }
-      },
-    ),
+      return { altText }
+    }),
 })

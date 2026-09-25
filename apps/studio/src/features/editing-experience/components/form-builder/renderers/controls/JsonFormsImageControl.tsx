@@ -98,10 +98,6 @@ function JsonFormsImageControl({
               siteId,
               pageId,
               src,
-              componentType:
-                typeof parentData?.type === "string"
-                  ? parentData.type
-                  : (schema.title ?? "image"),
               surroundingText: getSurroundingText(parentData),
             })
           }}
