@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server"
 import { env } from "~/env.mjs"
 import {
-  generateAltText,
+  generateAltTextWithValidationRetry,
   isAltTextGenerationSupportedForMimeType,
 } from "~/lib/generateAltText"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
@@ -76,7 +76,7 @@ export const generateAltTextForUploadedImage = async ({
       throw new Error(`Uploaded image is not accessible: ${head.status}`)
     }
 
-    return await generateAltText(imageUrl, abortSignal)
+    return await generateAltTextWithValidationRetry(imageUrl, abortSignal)
   } catch (error) {
     if (abortSignal?.aborted) throw error
     logger.error(

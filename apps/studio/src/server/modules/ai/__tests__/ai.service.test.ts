@@ -11,9 +11,27 @@ import {
 
 vi.mock("~/lib/generateAltText", async () => {
   const actual = await vi.importActual("~/lib/generateAltText")
+  const { isAltTextAcceptedByFormSchema } = await vi.importActual(
+    "~/lib/isAltTextAcceptedByFormSchema",
+  )
+  const generateAltText = vi.fn()
+  const generateAltTextWithValidationRetry = async (
+    imageUrl: string,
+    abortSignal?: AbortSignal,
+  ) => {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const altText = String(await generateAltText(imageUrl, abortSignal))
+      if (isAltTextAcceptedByFormSchema(altText)) {
+        return altText
+      }
+    }
+    throw new Error("Generated alt text did not pass validation")
+  }
+
   return {
     ...actual,
-    generateAltText: vi.fn(),
+    generateAltText,
+    generateAltTextWithValidationRetry,
   }
 })
 
@@ -120,7 +138,46 @@ describe("ai.service", () => {
       )
       expect(generateAltText).toHaveBeenCalledWith(
         `https://${ASSET_DOMAIN}/${PNG_KEY}`,
+        undefined,
       )
+    })
+
+    it("retries once when the first suggestion fails the alt regex", async () => {
+      // Arrange
+      fetchMock.mockResolvedValue({ ok: true, status: 200 })
+      vi.mocked(generateAltText)
+        .mockResolvedValueOnce("chart")
+        .mockResolvedValueOnce("A red bus at a stop.")
+
+      // Act
+      const result = await generateAltTextForUploadedImage({
+        fileKey: PNG_KEY,
+        logger,
+      })
+
+      // Assert
+      expect(result).toBe("A red bus at a stop.")
+      expect(generateAltText).toHaveBeenCalledTimes(2)
+    })
+
+    it("rejects when both suggestions fail the alt regex", async () => {
+      // Arrange
+      fetchMock.mockResolvedValue({ ok: true, status: 200 })
+      vi.mocked(generateAltText).mockResolvedValue("chart")
+
+      // Act
+      const result = generateAltTextForUploadedImage({
+        fileKey: PNG_KEY,
+        logger,
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to generate alt text",
+      })
+      expect(generateAltText).toHaveBeenCalledTimes(2)
+      expect(logger.error).toHaveBeenCalled()
     })
 
     it("rejects when the image cannot be fetched", async () => {
