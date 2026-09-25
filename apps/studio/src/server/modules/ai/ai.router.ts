@@ -16,7 +16,10 @@ export const aiRouter = router({
     // use while still limiting abuse.
     .meta({ rateLimitOptions: { max: 20, windowMs: 60_000 } })
     .mutation(
-      async ({ ctx, input: { siteId, src, mimeType, componentType } }) => {
+      async ({
+        ctx,
+        input: { siteId, pageId, src, mimeType, componentType },
+      }) => {
         if (
           !ctx.gb.getFeatureValue(
             ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
@@ -28,11 +31,13 @@ export const aiRouter = router({
 
         await bulkValidateUserPermissionsForResources({
           siteId,
-          action: "read",
+          action: "update",
           userId: ctx.user.id,
+          resourceIds: [String(pageId)],
         })
 
         const altText = await generateAltTextForUploadedImage({
+          siteId,
           src,
           mimeType,
           componentType,

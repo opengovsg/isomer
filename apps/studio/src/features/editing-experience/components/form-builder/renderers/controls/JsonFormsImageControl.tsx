@@ -5,7 +5,7 @@ import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { get } from "lodash-es"
-import { useState } from "react"
+import { useRef } from "react"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -54,7 +54,9 @@ function JsonFormsImageControl({
   const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
   const isAiAltTextGenerationEnabled = useAiAltTextGenerationEnabled()
   const ctx = useJsonForms()
-  const [uploadedMimeType, setUploadedMimeType] = useState<string>()
+  // FileAttachment calls setHref from the upload closure, which never sees a
+  // later setState. A ref is updated before that callback runs.
+  const uploadedMimeTypeRef = useRef<string | undefined>(undefined)
 
   const altPath = getSiblingAltPath(path)
   const parentPath = path.split(".").slice(0, -1).join(".")
@@ -89,9 +91,12 @@ function JsonFormsImageControl({
           }
           siteId={siteId}
           resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
-          onUploadedFile={(file) => setUploadedMimeType(file.type)}
+          onUploadedFile={(file) => {
+            uploadedMimeTypeRef.current = file.type
+          }}
           setHref={(src) => {
             handleChange(path, src)
+            const uploadedMimeType = uploadedMimeTypeRef.current
             if (
               !isAiAltTextGenerationEnabled ||
               !src ||
