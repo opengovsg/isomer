@@ -26,7 +26,6 @@ const ContentSecurityPolicy = `
     https://api-iam.eu.intercom.io
     https://api-iam.au.intercom.io
     ;
-  frame-ancestors 'self';
   img-src * data: blob:;
   frame-src
     'self'
@@ -212,10 +211,6 @@ const config = {
           {
             key: "X-Content-Type-Options",
             value: "nosniff",
-          },
-          {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN",
           },
           {
             key: "Strict-Transport-Security",
