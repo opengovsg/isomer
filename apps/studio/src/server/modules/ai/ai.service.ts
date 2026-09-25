@@ -7,39 +7,29 @@ import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 import type { Logger } from "@isomer/logging"
 
-import {
-  doAllFileKeysBelongToSite,
-  parseAssetUrlToKey,
-} from "../asset/asset.service"
+import { parseAssetUrlToKey } from "../asset/asset.service"
 
 interface GenerateAltTextForUploadedImageParams {
-  siteId: number
-  src: string
+  fileKey: string
   mimeType: string
   componentType: string
   logger: Logger<string>
 }
 
 // `src` is a client-supplied path. Concatenating it onto the asset host lets
-// a value like `@169.254.169.254/...` retarget the request, and a path under
-// another site id would describe that site's file. Resolve only a canonical
-// `https://<asset-domain>/<siteId>/<uuid>/<file>` URL for this site.
-const resolveUploadedImageUrl = ({
-  src,
-  siteId,
-}: {
-  src: string
-  siteId: number
-}): string | undefined => {
+// a value like `@169.254.169.254/...` retarget the request. Return only a
+// canonical `${siteId}/${uuid}/${file}` key on the asset domain. The router
+// must still reject keys that do not belong to the caller's site.
+export const parseUploadedImageKey = (src: string): string | null => {
   if (!ASSETS_BASE_URL || !env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME) {
-    return undefined
+    return null
   }
 
   let parsed: URL
   try {
     parsed = new URL(src, ASSETS_BASE_URL)
   } catch {
-    return undefined
+    return null
   }
 
   if (
@@ -49,15 +39,10 @@ const resolveUploadedImageUrl = ({
     parsed.port !== "" ||
     parsed.hostname !== env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
   ) {
-    return undefined
+    return null
   }
 
-  const key = parseAssetUrlToKey(parsed.href)
-  if (!key || !doAllFileKeysBelongToSite({ fileKeys: [key], siteId })) {
-    return undefined
-  }
-
-  return `${ASSETS_BASE_URL}/${key}`
+  return parseAssetUrlToKey(parsed.href)
 }
 
 // Returns `undefined` (rather than throwing) whenever a usable suggestion
@@ -65,24 +50,16 @@ const resolveUploadedImageUrl = ({
 // editor can always fill in themselves, so a model/network hiccup should
 // never surface as an error in the page editor.
 export const generateAltTextForUploadedImage = async ({
-  siteId,
-  src,
+  fileKey,
   mimeType,
   componentType,
   logger,
 }: GenerateAltTextForUploadedImageParams): Promise<string | undefined> => {
-  if (!isAltTextGenerationSupportedForMimeType(mimeType)) {
+  if (!isAltTextGenerationSupportedForMimeType(mimeType) || !ASSETS_BASE_URL) {
     return undefined
   }
 
-  const imageUrl = resolveUploadedImageUrl({ src, siteId })
-  if (!imageUrl) {
-    logger.error(
-      { merged: { src, mimeType, componentType, siteId } },
-      "Rejected alt text generation for a non-site asset URL",
-    )
-    return undefined
-  }
+  const imageUrl = `${ASSETS_BASE_URL}/${fileKey}`
 
   try {
     const head = await fetch(imageUrl, { method: "HEAD" })
@@ -93,7 +70,7 @@ export const generateAltTextForUploadedImage = async ({
     return await generateAltText(imageUrl)
   } catch (error) {
     logger.error(
-      { error, merged: { src, mimeType, componentType } },
+      { error, merged: { fileKey, mimeType, componentType } },
       "Failed to generate AI alt text suggestion",
     )
     return undefined

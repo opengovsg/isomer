@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server"
 import {
   ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
   ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE,
@@ -5,8 +6,12 @@ import {
 import { generateAltTextSchema } from "~/schemas/ai"
 import { protectedProcedure, router } from "~/server/trpc"
 
+import { doAllFileKeysBelongToSite } from "../asset/asset.service"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
-import { generateAltTextForUploadedImage } from "./ai.service"
+import {
+  generateAltTextForUploadedImage,
+  parseUploadedImageKey,
+} from "./ai.service"
 
 export const aiRouter = router({
   generateAltText: protectedProcedure
@@ -36,9 +41,20 @@ export const aiRouter = router({
           resourceIds: [String(pageId)],
         })
 
+        const fileKey = parseUploadedImageKey(src)
+        if (
+          !fileKey ||
+          !doAllFileKeysBelongToSite({ fileKeys: [fileKey], siteId })
+        ) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "The file key does not belong to the specified site. You may only access assets for the site you are authorized for.",
+          })
+        }
+
         const altText = await generateAltTextForUploadedImage({
-          siteId,
-          src,
+          fileKey,
           mimeType,
           componentType,
           logger: ctx.logger,
