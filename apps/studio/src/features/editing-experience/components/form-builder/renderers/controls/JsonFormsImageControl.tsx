@@ -62,6 +62,10 @@ function JsonFormsImageControl({
       if (currentAlt) return
       handleChange(altPath, altText)
     },
+    onError: (error) => {
+      // The flag is off. The upload already landed; there is no suggestion to apply.
+      if (error.data?.code === "NOT_FOUND") return
+    },
   })
 
   return (
