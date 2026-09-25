@@ -19,12 +19,22 @@ import { getCustomErrorMessage } from "./utils"
 
 const SURROUNDING_TEXT_FIELD_DENYLIST = new Set(["src", "alt", "type"])
 
-// The alt field is always the sibling of `src` on the same component object,
-// e.g. "content.2.src" -> "content.2.alt".
-const getSiblingAltPath = (srcPath: string): string | undefined => {
-  const parts = srcPath.split(".")
-  if (parts[parts.length - 1] !== "src") return undefined
-  return [...parts.slice(0, -1), "alt"].join(".")
+// This control is bound to a component's `src`. JSON Forms paths are
+// dot-separated ("content.2.src"). `alt` is the sibling field on that same
+// object ("content.2.alt").
+const getImageFieldPaths = (
+  srcPath: string,
+): { parentPath: string; altPath: string | undefined } => {
+  const segments = srcPath.split(".")
+  const fieldName = segments.at(-1)
+  const parentSegments = segments.slice(0, -1)
+  const parentPath = parentSegments.join(".")
+
+  if (fieldName !== "src") {
+    return { parentPath, altPath: undefined }
+  }
+
+  return { parentPath, altPath: [...parentSegments, "alt"].join(".") }
 }
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
@@ -58,8 +68,7 @@ function JsonFormsImageControl({
   // later setState. A ref is updated before that callback runs.
   const uploadedMimeTypeRef = useRef<string | undefined>(undefined)
 
-  const altPath = getSiblingAltPath(path)
-  const parentPath = path.split(".").slice(0, -1).join(".")
+  const { parentPath, altPath } = getImageFieldPaths(path)
   const parentData = get(ctx.core?.data, parentPath) as
     | Record<string, unknown>
     | undefined
