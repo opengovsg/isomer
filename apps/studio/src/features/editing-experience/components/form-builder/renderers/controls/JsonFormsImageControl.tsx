@@ -6,6 +6,7 @@ import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { get } from "lodash-es"
 import { AttachmentData } from "~/components/AttachmentData"
+import { PLACEHOLDER_ALT_TEXT } from "~/components/PageEditor/constants"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
@@ -57,9 +58,10 @@ function JsonFormsImageControl({
     onSuccess: ({ altText }) => {
       if (!altText || !altPath) return
       // The generation call takes a few seconds — don't clobber alt text the
-      // editor already typed in while it was in flight.
+      // editor already typed in while it was in flight. A new image block
+      // starts with placeholder alt, and that should be replaced.
       const currentAlt = get(ctx.core?.data, altPath) as string | undefined
-      if (currentAlt) return
+      if (currentAlt && currentAlt !== PLACEHOLDER_ALT_TEXT) return
       handleChange(altPath, altText)
     },
     onError: (error) => {

@@ -1,6 +1,9 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { DEFAULT_CHILDREN_PAGES_BLOCK } from "@opengovsg/isomer-components"
 
+// Default alt on a new image block. Not text an editor typed.
+export const PLACEHOLDER_ALT_TEXT = "Enter a descriptive alt text."
+
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS = {
   prose: {
@@ -30,7 +33,7 @@ export const DEFAULT_BLOCKS = {
     type: "blockquote",
     quote: "Enter your quote here.",
     source: "Describe who said the quote.",
-    imageAlt: "Enter a descriptive alt text.",
+    imageAlt: PLACEHOLDER_ALT_TEXT,
   },
   button: {
     type: "button",
@@ -70,7 +73,7 @@ export const DEFAULT_BLOCKS = {
   image: {
     type: "image",
     src: "/placeholder_no_image.png",
-    alt: "Enter a descriptive alt text.",
+    alt: PLACEHOLDER_ALT_TEXT,
     size: "default",
   },
   infobar: {
@@ -89,21 +92,21 @@ export const DEFAULT_BLOCKS = {
         title: "Enter a title for your first card.",
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
-        imageAlt: "Enter a descriptive alt text.",
+        imageAlt: PLACEHOLDER_ALT_TEXT,
         imageFit: "cover",
       },
       {
         title: "Enter a title for your second card.",
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
-        imageAlt: "Enter a descriptive alt text.",
+        imageAlt: PLACEHOLDER_ALT_TEXT,
         imageFit: "cover",
       },
       {
         title: "Enter a title for your third card.",
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
-        imageAlt: "Enter a descriptive alt text.",
+        imageAlt: PLACEHOLDER_ALT_TEXT,
         imageFit: "cover",
       },
     ],
@@ -135,7 +138,7 @@ export const DEFAULT_BLOCKS = {
     title: "Enter a title.",
     description: "Elaborate on the title.",
     imageSrc: "/placeholder_no_image.png",
-    imageAlt: "Enter a descriptive alt text.",
+    imageAlt: PLACEHOLDER_ALT_TEXT,
   },
   contentpic: {
     type: "contentpic",
@@ -262,15 +265,15 @@ export const DEFAULT_BLOCKS = {
     images: [
       {
         src: "/placeholder_no_image.png",
-        alt: "Enter a descriptive alt text.",
+        alt: PLACEHOLDER_ALT_TEXT,
       },
       {
         src: "/placeholder_no_image.png",
-        alt: "Enter a descriptive alt text.",
+        alt: PLACEHOLDER_ALT_TEXT,
       },
       {
         src: "/placeholder_no_image.png",
-        alt: "Enter a descriptive alt text.",
+        alt: PLACEHOLDER_ALT_TEXT,
       },
     ],
     title: "Our partners",
@@ -288,17 +291,17 @@ export const DEFAULT_BLOCKS = {
       {
         caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "Enter a descriptive alt text.",
+        alt: PLACEHOLDER_ALT_TEXT,
       },
       {
         caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "Enter a descriptive alt text.",
+        alt: PLACEHOLDER_ALT_TEXT,
       },
       {
         caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "Enter a descriptive alt text.",
+        alt: PLACEHOLDER_ALT_TEXT,
       },
     ],
   },
