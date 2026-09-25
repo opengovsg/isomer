@@ -1,4 +1,4 @@
-import { foundryClient } from "~/lib/foundry"
+import { pairFoundryClient } from "~/lib/pairFoundry"
 
 const ALT_TEXT_MAX_CHARACTERS = 120
 
@@ -14,11 +14,11 @@ export const isAltTextGenerationSupportedForMimeType = (
 ): boolean => SUPPORTED_IMAGE_MIME_TYPES.has(mimeType)
 
 export const generateAltText = async (imageUrl: string): Promise<string> => {
-  if (!foundryClient) {
+  if (!pairFoundryClient) {
     throw new Error("PAIR_FOUNDRY_API_KEY is not set")
   }
 
-  return foundryClient.generateText({
+  return pairFoundryClient.generateText({
     modelId: "claude-sonnet-4-6-v1:rsn",
     system: `You generate alternative text (alt text) for images for visually impaired users.
 Your job:

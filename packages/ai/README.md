@@ -4,7 +4,7 @@ Shared Pair Foundry client for Isomer. This package does **not** import applicat
 
 ## API
 
-- **`createFoundryClient({ apiKey })`** — returns a client bound to `https://engine.pair.gov.sg`:
+- **`createPairFoundryClient({ apiKey })`** — returns a client bound to `https://engine.pair.gov.sg`:
   - `generateText({ modelId, system?, prompt, maxOutputTokens? })` — one completion. `prompt` is the user message content. `maxOutputTokens` is forwarded only when the caller sets it. Throws when the model returns empty text.
 
 ## Usage in Studio

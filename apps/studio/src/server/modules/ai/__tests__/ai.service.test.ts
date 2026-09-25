@@ -133,10 +133,12 @@ describe("ai.service", () => {
       expect(logger.error).toHaveBeenCalled()
     })
 
-    it("returns undefined when Foundry fails", async () => {
+    it("returns undefined when Pair Foundry fails", async () => {
       // Arrange
       fetchMock.mockResolvedValue({ ok: true, status: 200 })
-      vi.mocked(generateAltText).mockRejectedValue(new Error("foundry down"))
+      vi.mocked(generateAltText).mockRejectedValue(
+        new Error("pair foundry down"),
+      )
 
       // Act
       const result = await generateAltTextForUploadedImage({

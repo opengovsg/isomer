@@ -1,2 +1,5 @@
-export { createFoundryClient } from "./client"
-export type { FoundryClientConfig, GenerateFoundryTextInput } from "./client"
+export { createPairFoundryClient } from "./client"
+export type {
+  GeneratePairFoundryTextInput,
+  PairFoundryClientConfig,
+} from "./client"

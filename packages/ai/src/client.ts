@@ -1,13 +1,13 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
 import { generateText, type UserContent } from "ai"
 
-const FOUNDRY_BASE_URL = "https://engine.pair.gov.sg"
+const PAIR_FOUNDRY_BASE_URL = "https://engine.pair.gov.sg"
 
-export interface FoundryClientConfig {
+export interface PairFoundryClientConfig {
   apiKey: string
 }
 
-export interface GenerateFoundryTextInput {
+export interface GeneratePairFoundryTextInput {
   modelId: string
   system?: string
   prompt: UserContent
@@ -19,19 +19,21 @@ export interface GenerateFoundryTextInput {
  * not know about product use cases — callers pass a key, an optional system
  * prompt, and the user prompt.
  */
-export const createFoundryClient = ({ apiKey }: FoundryClientConfig) => {
+export const createPairFoundryClient = ({
+  apiKey,
+}: PairFoundryClientConfig) => {
   const provider = createOpenAICompatible({
     name: "pair-engine",
-    baseURL: FOUNDRY_BASE_URL,
+    baseURL: PAIR_FOUNDRY_BASE_URL,
     apiKey,
   })
 
-  const generateFoundryText = async ({
+  const generatePairFoundryText = async ({
     modelId,
     system,
     prompt,
     maxOutputTokens,
-  }: GenerateFoundryTextInput): Promise<string> => {
+  }: GeneratePairFoundryTextInput): Promise<string> => {
     const response = await generateText({
       model: provider.chatModel(modelId),
       allowSystemInMessages: true,
@@ -44,11 +46,11 @@ export const createFoundryClient = ({ apiKey }: FoundryClientConfig) => {
 
     const text = response.text.trim()
     if (!text) {
-      throw new Error("Foundry returned no text")
+      throw new Error("Pair Foundry returned no text")
     }
 
     return text
   }
 
-  return { generateText: generateFoundryText }
+  return { generateText: generatePairFoundryText }
 }
