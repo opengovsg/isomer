@@ -88,9 +88,14 @@ function JsonFormsImageControl({
           setHref={(src) => {
             handleChange(path, src)
             const uploadedMimeType = uploadedMimeTypeRef.current
-            if (!isAiAltTextGenerationEnabled || !pageId || !altPath) {
+            if (!isAiAltTextGenerationEnabled) {
               return
             }
+            // Suggestions only apply on a page whose image field has a sibling alt.
+            if (!pageId || !altPath) {
+              return
+            }
+            // Skip until the upload has a stored path and a known MIME type.
             if (!src || !uploadedMimeType) {
               return
             }
