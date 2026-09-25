@@ -1,5 +1,5 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
-import { type FlexibleSchema, Output, generateText } from "ai"
+import { generateText } from "ai"
 
 const FOUNDRY_BASE_URL = "https://engine.pair.gov.sg"
 
@@ -7,27 +7,11 @@ export interface FoundryClientConfig {
   apiKey: string
 }
 
-export interface FoundryImageInput {
-  bytes: Uint8Array
-  mimeType: string
-}
-
 export interface GenerateFoundryTextInput {
   modelId: string
   system: string
   prompt: string
-  image?: FoundryImageInput
-  maxOutputTokens?: number
-}
-
-export interface GenerateFoundryObjectInput<T> {
-  modelId: string
-  system: string
-  prompt: string
-  schema: FlexibleSchema<T>
-  schemaName?: string
-  schemaDescription?: string
-  image?: FoundryImageInput
+  imageUrl?: string
   maxOutputTokens?: number
 }
 
@@ -42,23 +26,11 @@ export const createFoundryClient = ({ apiKey }: FoundryClientConfig) => {
     apiKey,
   })
 
-  const buildUserContent = (prompt: string, image?: FoundryImageInput) =>
-    image
-      ? [
-          { type: "text" as const, text: prompt },
-          {
-            type: "image" as const,
-            image: image.bytes,
-            mediaType: image.mimeType,
-          },
-        ]
-      : prompt
-
   const generateFoundryText = async ({
     modelId,
     system,
     prompt,
-    image,
+    imageUrl,
     maxOutputTokens = 300,
   }: GenerateFoundryTextInput): Promise<string> => {
     const response = await generateText({
@@ -66,7 +38,15 @@ export const createFoundryClient = ({ apiKey }: FoundryClientConfig) => {
       allowSystemInMessages: true,
       messages: [
         { role: "system", content: system },
-        { role: "user", content: buildUserContent(prompt, image) },
+        {
+          role: "user",
+          content: imageUrl
+            ? [
+                { type: "text" as const, text: prompt },
+                { type: "image" as const, image: new URL(imageUrl) },
+              ]
+            : prompt,
+        },
       ],
       maxOutputTokens,
     })
@@ -79,40 +59,5 @@ export const createFoundryClient = ({ apiKey }: FoundryClientConfig) => {
     return text
   }
 
-  const generateFoundryObject = async <T>({
-    modelId,
-    system,
-    prompt,
-    schema,
-    schemaName,
-    schemaDescription,
-    image,
-    maxOutputTokens = 300,
-  }: GenerateFoundryObjectInput<T>): Promise<T> => {
-    const response = await generateText({
-      model: provider.chatModel(modelId),
-      allowSystemInMessages: true,
-      output: Output.object({
-        schema,
-        name: schemaName,
-        description: schemaDescription,
-      }),
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: buildUserContent(prompt, image) },
-      ],
-      maxOutputTokens,
-    })
-
-    if (response.output == null) {
-      throw new Error("Foundry returned no structured output")
-    }
-
-    return response.output
-  }
-
-  return {
-    generateText: generateFoundryText,
-    generateObject: generateFoundryObject,
-  }
+  return { generateText: generateFoundryText }
 }

@@ -9,9 +9,7 @@ import type { Logger } from "@isomer/logging"
 interface GenerateAltTextForUploadedImageParams {
   src: string
   mimeType: string
-  pageTitle?: string
   componentType: string
-  surroundingText?: string
   logger: Logger<string>
 }
 
@@ -22,27 +20,22 @@ interface GenerateAltTextForUploadedImageParams {
 export const generateAltTextForUploadedImage = async ({
   src,
   mimeType,
-  pageTitle,
   componentType,
-  surroundingText,
   logger,
 }: GenerateAltTextForUploadedImageParams): Promise<string | undefined> => {
   if (!isAltTextGenerationSupportedForMimeType(mimeType)) {
     return undefined
   }
 
-  try {
-    const response = await fetch(`${ASSETS_BASE_URL}${src}`)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch uploaded image: ${response.status}`)
-    }
-    const imageBytes = new Uint8Array(await response.arrayBuffer())
+  const imageUrl = `${ASSETS_BASE_URL}${src}`
 
-    return await generateAltText({
-      imageBytes,
-      mimeType,
-      context: { pageTitle, componentType, surroundingText },
-    })
+  try {
+    const head = await fetch(imageUrl, { method: "HEAD" })
+    if (!head.ok) {
+      throw new Error(`Uploaded image is not accessible: ${head.status}`)
+    }
+
+    return await generateAltText(imageUrl)
   } catch (error) {
     logger.error(
       { error, merged: { src, mimeType, componentType } },
