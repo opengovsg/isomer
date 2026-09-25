@@ -10,6 +10,7 @@ export interface GeneratePairFoundryTextInput {
   system?: string
   prompt: UserContent
   maxOutputTokens?: number
+  abortSignal?: AbortSignal
 }
 
 /**
@@ -31,6 +32,7 @@ export const createPairFoundryClient = ({
     system,
     prompt,
     maxOutputTokens,
+    abortSignal,
   }: GeneratePairFoundryTextInput): Promise<string> => {
     const response = await generateText({
       model: provider.chatModel(modelId),
@@ -40,6 +42,7 @@ export const createPairFoundryClient = ({
         { role: "user" as const, content: prompt },
       ],
       maxOutputTokens,
+      abortSignal,
     })
 
     const text = response.text.trim()

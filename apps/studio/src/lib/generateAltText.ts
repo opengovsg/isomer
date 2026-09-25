@@ -13,7 +13,10 @@ export const isAltTextGenerationSupportedForMimeType = (
   mimeType: string,
 ): boolean => SUPPORTED_IMAGE_MIME_TYPES.has(mimeType)
 
-export const generateAltText = async (imageUrl: string): Promise<string> => {
+export const generateAltText = async (
+  imageUrl: string,
+  abortSignal?: AbortSignal,
+): Promise<string> => {
   if (!pairFoundryClient) {
     throw new Error("PAIR_FOUNDRY_API_KEY is not set")
   }
@@ -36,5 +39,6 @@ Return ONLY the alt text, nothing else.`,
       { type: "image", image: new URL(imageUrl) },
     ],
     maxOutputTokens: 300,
+    abortSignal,
   })
 }

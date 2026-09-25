@@ -1,3 +1,4 @@
+import type { ServerResponse } from "http"
 import { TRPCError } from "@trpc/server"
 import { getIsAiAltTextGenerationEnabled } from "~/lib/growthbook"
 import { generateAltTextSchema } from "~/schemas/ai"
@@ -9,6 +10,16 @@ import {
   generateAltTextForUploadedImage,
   parseUploadedImageKey,
 } from "./ai.service"
+
+// The response closes when the client disconnects or when we finish writing.
+// Abort only the first case, so a replaced upload stops the model call.
+const abortSignalFromResponse = (res: ServerResponse): AbortSignal => {
+  const controller = new AbortController()
+  res.on("close", () => {
+    if (!res.writableEnded) controller.abort()
+  })
+  return controller.signal
+}
 
 export const aiRouter = router({
   generateAltText: protectedProcedure
@@ -47,6 +58,7 @@ export const aiRouter = router({
       const altText = await generateAltTextForUploadedImage({
         fileKey,
         logger: ctx.logger,
+        abortSignal: abortSignalFromResponse(ctx.res),
       })
 
       return { altText }

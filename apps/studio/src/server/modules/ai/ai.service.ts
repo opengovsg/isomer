@@ -16,6 +16,7 @@ import {
 interface GenerateAltTextForUploadedImageParams {
   fileKey: string
   logger: Logger<string>
+  abortSignal?: AbortSignal
 }
 
 // `src` is a client-supplied path. Concatenating it onto the asset host lets
@@ -50,6 +51,7 @@ export const parseUploadedImageKey = (src: string): string | null => {
 export const generateAltTextForUploadedImage = async ({
   fileKey,
   logger,
+  abortSignal,
 }: GenerateAltTextForUploadedImageParams): Promise<string> => {
   const mimeType = getContentTypeFromKey(fileKey)
   if (!isAltTextGenerationSupportedForMimeType(mimeType)) {
@@ -69,13 +71,14 @@ export const generateAltTextForUploadedImage = async ({
   const imageUrl = `${ASSETS_BASE_URL}/${fileKey}`
 
   try {
-    const head = await fetch(imageUrl, { method: "HEAD" })
+    const head = await fetch(imageUrl, { method: "HEAD", signal: abortSignal })
     if (!head.ok) {
       throw new Error(`Uploaded image is not accessible: ${head.status}`)
     }
 
-    return await generateAltText(imageUrl)
+    return await generateAltText(imageUrl, abortSignal)
   } catch (error) {
+    if (abortSignal?.aborted) throw error
     logger.error(
       { error, merged: { fileKey, mimeType } },
       "Failed to generate AI alt text suggestion",

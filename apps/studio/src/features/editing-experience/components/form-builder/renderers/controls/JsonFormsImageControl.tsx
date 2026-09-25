@@ -4,7 +4,9 @@ import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
+import { useMutation } from "@tanstack/react-query"
 import { get } from "lodash-es"
+import { useRef } from "react"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -54,15 +56,35 @@ function JsonFormsImageControl({
     | Record<string, unknown>
     | undefined
 
+  const utils = trpc.useUtils()
+  const altTextRequest = useRef<AbortController | null>(null)
   const {
     mutate: generateAltText,
-    reset: dismissAltText,
+    reset: resetAltText,
     isPending: isGeneratingAltText,
     isSuccess: hasAltText,
     isError: hasAltTextFailed,
     data: altTextResult,
-  } = trpc.ai.generateAltText.useMutation()
+  } = useMutation({
+    mutationFn: (
+      input: Parameters<typeof utils.client.ai.generateAltText.mutate>[0],
+    ) => {
+      // A newer upload replaces the in-flight suggestion. The observer only
+      // keeps the latest mutation, and aborting stops the previous request.
+      altTextRequest.current?.abort()
+      const controller = new AbortController()
+      altTextRequest.current = controller
+      return utils.client.ai.generateAltText.mutate(input, {
+        signal: controller.signal,
+      })
+    },
+  })
   const altText = hasAltText ? altTextResult.altText : undefined
+  const dismissAltText = () => {
+    resetAltText()
+    altTextRequest.current?.abort()
+    altTextRequest.current = null
+  }
 
   return (
     <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
