@@ -69,6 +69,8 @@ catalog:
   # v4 is pinned deliberately: the legacy egazette integration uses the v4 client API
   # (algoliasearch(appId, key).initIndex(name), index.saveObjects, index.deleteBy).
   # v5 changed the client API — do not "upgrade" this without reviewing egazette compatibility.
+  "@ai-sdk/openai-compatible": ^2.0.19
+  ai: ^6.0.50
   algoliasearch: ^4.27.0
   ajv: ^8.20.0
   autoprefixer: ^10.6.1
@@ -187,7 +189,6 @@ catalogs:
   "aws-sdk":
     "@aws-sdk/client-acm": ^3.1132.0
     "@aws-sdk/client-amplify": ^3.1132.0
-    "@aws-sdk/client-bedrock-runtime": ^3.1132.0
     "@aws-sdk/client-cloudfront": ^3.1132.0
     "@aws-sdk/client-codebuild": ^3.1132.0
     "@aws-sdk/client-s3": ^3.1132.0

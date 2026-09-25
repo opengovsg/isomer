@@ -20,7 +20,8 @@
     "typecheck": "tsgo"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "catalog:aws-sdk"
+    "@ai-sdk/openai-compatible": "catalog:",
+    "ai": "catalog:"
   },
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",

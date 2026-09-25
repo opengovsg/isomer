@@ -1,19 +1,19 @@
-import type * as BedrockRuntime from "@aws-sdk/client-bedrock-runtime"
-import { ConverseCommand } from "@aws-sdk/client-bedrock-runtime"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-// Mock the Bedrock client so we can control the model's raw response without
-// hitting AWS, following the pattern in s3.test.ts.
-const sendMock = vi.fn()
-vi.mock("@aws-sdk/client-bedrock-runtime", async (importOriginal) => {
-  const actual = await importOriginal<typeof BedrockRuntime>()
-  return {
-    ...actual,
-    BedrockRuntimeClient: vi.fn(function () {
-      return { send: sendMock }
-    }),
-  }
-})
+const generateTextMock = vi.fn((): Promise<{ text: string }> =>
+  Promise.resolve({ text: "" }),
+)
+const chatModelMock = vi.fn((modelId: string) => ({ modelId }))
+
+vi.mock("ai", () => ({
+  generateText: (args: unknown) => generateTextMock(args),
+}))
+
+vi.mock("@ai-sdk/openai-compatible", () => ({
+  createOpenAICompatible: () => ({
+    chatModel: chatModelMock,
+  }),
+}))
 
 const {
   generateAltText,
@@ -21,22 +21,16 @@ const {
   isAltTextGenerationSupportedForMimeType,
 } = await import("../generateAltText")
 
-const mockBedrockResponse = (text: string) => ({
-  output: { message: { content: [{ text }] } },
-})
-
 describe("generateAltText", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    process.env.PAIR_FOUNDRY_API_KEY = "test-key"
+    generateTextMock.mockResolvedValue({
+      text: "Image of a queue of residents outside a community centre — waiting for vaccinations",
+    })
   })
 
   it("returns sanitized alt text with no em dash or generic prefix", async () => {
-    sendMock.mockResolvedValueOnce(
-      mockBedrockResponse(
-        "Image of a queue of residents outside a community centre — waiting for vaccinations",
-      ),
-    )
-
     const result = await generateAltText({
       imageBytes: new Uint8Array([1, 2, 3]),
       mimeType: "image/png",
@@ -47,26 +41,43 @@ describe("generateAltText", () => {
     expect(result.toLowerCase().startsWith("image of")).toBe(false)
   })
 
-  it("sends the image bytes and context to Bedrock via ConverseCommand", async () => {
-    sendMock.mockResolvedValueOnce(
-      mockBedrockResponse("Residents queueing outside a community centre"),
-    )
+  it("sends the image bytes and context to Pair Foundry", async () => {
+    generateTextMock.mockResolvedValueOnce({
+      text: "Residents queueing outside a community centre",
+    })
 
+    const imageBytes = new Uint8Array([1, 2, 3])
     await generateAltText({
-      imageBytes: new Uint8Array([1, 2, 3]),
+      imageBytes,
       mimeType: "image/jpeg",
       context: { componentType: "image", pageTitle: "Vaccination drive" },
     })
 
-    expect(sendMock).toHaveBeenCalledTimes(1)
-    const command = sendMock.mock.calls[0]?.[0] as ConverseCommand
-    expect(command).toBeInstanceOf(ConverseCommand)
-    expect(command.input.messages?.[0]?.content?.[0]?.image?.format).toBe(
-      "jpeg",
+    expect(chatModelMock).toHaveBeenCalledWith("claude-sonnet-4-6-v1:rsn")
+    expect(generateTextMock).toHaveBeenCalledTimes(1)
+    const request = generateTextMock.mock.calls[0]?.[0] as {
+      messages: {
+        role: string
+        content: string | { type: string; image?: Uint8Array }[]
+      }[]
+    }
+    const userMessage = request.messages.find(
+      (message) => message.role === "user",
+    )
+    expect(Array.isArray(userMessage?.content)).toBe(true)
+    if (!Array.isArray(userMessage?.content)) return
+    expect(userMessage.content).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "image", image: imageBytes }),
+        expect.objectContaining({
+          type: "text",
+          text: expect.stringContaining("Vaccination drive"),
+        }),
+      ]),
     )
   })
 
-  it("throws for an unsupported MIME type instead of calling Bedrock", async () => {
+  it("throws for an unsupported MIME type instead of calling Foundry", async () => {
     await expect(
       generateAltText({
         imageBytes: new Uint8Array([1, 2, 3]),
@@ -75,7 +86,21 @@ describe("generateAltText", () => {
       }),
     ).rejects.toThrow(/unsupported/i)
 
-    expect(sendMock).not.toHaveBeenCalled()
+    expect(generateTextMock).not.toHaveBeenCalled()
+  })
+
+  it("throws when PAIR_FOUNDRY_API_KEY is missing", async () => {
+    delete process.env.PAIR_FOUNDRY_API_KEY
+
+    await expect(
+      generateAltText({
+        imageBytes: new Uint8Array([1, 2, 3]),
+        mimeType: "image/png",
+        context: { componentType: "image" },
+      }),
+    ).rejects.toThrow(/PAIR_FOUNDRY_API_KEY/)
+
+    expect(generateTextMock).not.toHaveBeenCalled()
   })
 })
 
@@ -91,14 +116,14 @@ describe("sanitizeAltText", () => {
 })
 
 describe("isAltTextGenerationSupportedForMimeType", () => {
-  it("supports the four raster formats Bedrock's Converse API accepts", () => {
+  it("supports the raster formats sent to Pair Foundry", () => {
     expect(isAltTextGenerationSupportedForMimeType("image/png")).toBe(true)
     expect(isAltTextGenerationSupportedForMimeType("image/jpeg")).toBe(true)
     expect(isAltTextGenerationSupportedForMimeType("image/gif")).toBe(true)
     expect(isAltTextGenerationSupportedForMimeType("image/webp")).toBe(true)
   })
 
-  it("rejects formats Bedrock can't accept as an image block", () => {
+  it("rejects formats that are not sent as an image block", () => {
     expect(isAltTextGenerationSupportedForMimeType("image/svg+xml")).toBe(false)
     expect(isAltTextGenerationSupportedForMimeType("image/bmp")).toBe(false)
     expect(isAltTextGenerationSupportedForMimeType("image/avif")).toBe(false)

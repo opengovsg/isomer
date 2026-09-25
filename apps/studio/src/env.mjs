@@ -79,6 +79,7 @@ const server = z
     // WARNING: Setting this bypasses OTP security. For preview environments only — never set in staging or production.
     DANGEROUSLY_SET_STATIC_OTP: z.string().length(6).optional(),
     POSTMAN_API_KEY: z.string().optional(),
+    PAIR_FOUNDRY_API_KEY: z.string().optional(),
     SESSION_SECRET: z.string().min(32),
     GROWTHBOOK_CLIENT_KEY: z.string().optional(),
     STUDIO_SSM_WEBHOOK_API_KEY: z.string().optional(),
@@ -160,6 +161,7 @@ const processEnv = {
   NODE_ENV: process.env.NODE_ENV,
   OTP_EXPIRY: process.env.OTP_EXPIRY,
   POSTMAN_API_KEY: process.env.POSTMAN_API_KEY,
+  PAIR_FOUNDRY_API_KEY: process.env.PAIR_FOUNDRY_API_KEY,
   SESSION_SECRET: process.env.SESSION_SECRET,
   GROWTHBOOK_CLIENT_KEY: process.env.GROWTHBOOK_CLIENT_KEY,
   EGAZETTE_DOCUMENT_INDEX: process.env.EGAZETTE_DOCUMENT_INDEX,

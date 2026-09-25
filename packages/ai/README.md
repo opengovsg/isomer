@@ -4,11 +4,9 @@ Shared model calls for Isomer. This package does **not** import application env 
 
 ## API
 
-- **`generateAltText({ imageBytes, mimeType, context })`** — asks Bedrock (Claude vision, Converse API) for alt text and returns the sanitized suggestion.
+- **`generateAltText({ imageBytes, mimeType, context })`** — asks Pair Foundry (`https://engine.pair.gov.sg`, model `claude-sonnet-4-6-v1:rsn`) for alt text and returns the sanitized suggestion. Reads `PAIR_FOUNDRY_API_KEY` from the environment.
 - **`sanitizeAltText(rawText)`** — strips AI tells (generic prefixes, wrapping quotes, em dashes) from a model response.
-- **`isAltTextGenerationSupportedForMimeType(mimeType)`** — true for the four raster formats the Converse API accepts (`png`, `jpeg`, `gif`, `webp`).
-
-Region and model ID are hardcoded until the account's Bedrock access is confirmed. If they need to vary per environment, accept them as arguments from the caller rather than reading `process.env` here.
+- **`isAltTextGenerationSupportedForMimeType(mimeType)`** — true for `png`, `jpeg`, `gif`, and `webp`.
 
 ## Usage in Studio
 

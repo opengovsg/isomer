@@ -1,19 +1,21 @@
-import {
-  BedrockRuntimeClient,
-  ConverseCommand,
-} from "@aws-sdk/client-bedrock-runtime"
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
+import { generateText } from "ai"
 
-// TODO(isomer): confirm this region and model ID against the models this AWS
-// account actually has Bedrock access enabled for — Claude vision models on
-// Bedrock are only served from a subset of regions, and access is granted
-// per-model per-account. If these need to vary per environment, accept them
-// as arguments from the caller (Studio validates env in apps/studio/src/env.mjs)
-// rather than reading process.env here.
-const BEDROCK_REGION = "ap-southeast-1"
-const BEDROCK_ALT_TEXT_MODEL_ID =
-  "apac.anthropic.claude-3-5-sonnet-20241022-v2:0"
+const FOUNDRY_BASE_URL = "https://engine.pair.gov.sg"
+const FOUNDRY_MODEL_ID = "claude-sonnet-4-6-v1:rsn"
 
-const client = new BedrockRuntimeClient({ region: BEDROCK_REGION })
+const getEngine = () => {
+  const apiKey = process.env.PAIR_FOUNDRY_API_KEY
+  if (!apiKey) {
+    throw new Error("PAIR_FOUNDRY_API_KEY is not set")
+  }
+
+  return createOpenAICompatible({
+    name: "pair-engine",
+    baseURL: FOUNDRY_BASE_URL,
+    apiKey,
+  })
+}
 
 const EM_DASH = "—"
 
@@ -40,22 +42,19 @@ export interface GenerateAltTextInput {
   context: GenerateAltTextContext
 }
 
-// Bedrock's Converse API only accepts these four raster formats. Callers
-// should skip generation entirely (not call this function) for anything
-// else, e.g. SVG, BMP, AVIF.
-const BEDROCK_IMAGE_FORMATS_BY_MIME_TYPE: Record<
-  string,
-  "png" | "jpeg" | "gif" | "webp"
-> = {
-  "image/png": "png",
-  "image/jpeg": "jpeg",
-  "image/gif": "gif",
-  "image/webp": "webp",
-}
+// Pair Foundry's vision models accept these raster formats. Callers should
+// skip generation entirely (not call this function) for anything else, e.g.
+// SVG, BMP, AVIF.
+const FOUNDRY_IMAGE_FORMATS = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/gif",
+  "image/webp",
+])
 
 export const isAltTextGenerationSupportedForMimeType = (
   mimeType: string,
-): boolean => mimeType in BEDROCK_IMAGE_FORMATS_BY_MIME_TYPE
+): boolean => FOUNDRY_IMAGE_FORMATS.has(mimeType)
 
 const SYSTEM_PROMPT = `You write alt text for images on Singapore government websites built with Isomer.
 
@@ -121,37 +120,34 @@ export const generateAltText = async ({
   mimeType,
   context,
 }: GenerateAltTextInput): Promise<string> => {
-  const format = BEDROCK_IMAGE_FORMATS_BY_MIME_TYPE[mimeType]
-  if (!format) {
+  if (!isAltTextGenerationSupportedForMimeType(mimeType)) {
     throw new Error(
       `Unsupported image MIME type for alt text generation: ${mimeType}`,
     )
   }
 
-  const response = await client.send(
-    new ConverseCommand({
-      modelId: BEDROCK_ALT_TEXT_MODEL_ID,
-      system: [{ text: SYSTEM_PROMPT }],
-      messages: [
-        {
-          role: "user",
-          content: [
-            { image: { format, source: { bytes: imageBytes } } },
-            { text: buildUserPrompt(context) },
-          ],
-        },
-      ],
-      inferenceConfig: { maxTokens: 200, temperature: 0.3 },
-    }),
-  )
+  const foundryEngineProvider = getEngine()
+  const chatModel = foundryEngineProvider.chatModel(FOUNDRY_MODEL_ID)
 
-  const rawText = response.output?.message?.content
-    ?.map((block) => block.text ?? "")
-    .join("")
-    .trim()
+  const response = await generateText({
+    model: chatModel,
+    allowSystemInMessages: true,
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: [
+          { type: "text", text: buildUserPrompt(context) },
+          { type: "image", image: imageBytes, mediaType: mimeType },
+        ],
+      },
+    ],
+    maxOutputTokens: 300,
+  })
 
+  const rawText = response.text.trim()
   if (!rawText) {
-    throw new Error("Bedrock returned no alt text content")
+    throw new Error("Foundry returned no alt text content")
   }
 
   return sanitizeAltText(rawText)
