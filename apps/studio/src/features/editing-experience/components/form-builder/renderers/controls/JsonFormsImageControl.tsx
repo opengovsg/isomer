@@ -15,27 +15,9 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 import { trpc } from "~/utils/trpc"
 
-import { getCustomErrorMessage } from "./utils"
+import { getCustomErrorMessage, getImageFieldPaths } from "./utils"
 
 const SURROUNDING_TEXT_FIELD_DENYLIST = new Set(["src", "alt", "type"])
-
-// This control is bound to a component's `src`. JSON Forms paths are
-// dot-separated ("content.2.src"). `alt` is the sibling field on that same
-// object ("content.2.alt").
-const getImageFieldPaths = (
-  srcPath: string,
-): { parentPath: string; altPath: string | undefined } => {
-  const segments = srcPath.split(".")
-  const fieldName = segments.at(-1)
-  const parentSegments = segments.slice(0, -1)
-  const parentPath = parentSegments.join(".")
-
-  if (fieldName !== "src") {
-    return { parentPath, altPath: undefined }
-  }
-
-  return { parentPath, altPath: [...parentSegments, "alt"].join(".") }
-}
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,
