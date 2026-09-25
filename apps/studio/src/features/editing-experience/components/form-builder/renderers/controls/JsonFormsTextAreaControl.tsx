@@ -15,7 +15,8 @@ import {
   TEXTAREA_MAX_ROWS,
 } from "~/constants/formBuilder"
 
-import { getCustomErrorMessage } from "./utils"
+import { useBuilderErrors } from "../../ErrorProvider"
+import { getBuilderFieldErrorMessage } from "./utils"
 
 export const jsonFormsTextAreaControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextAreaControl,
@@ -43,6 +44,12 @@ function JsonFormsTextAreaControl({
   errors,
   schema,
 }: ControlProps) {
+  const { errors: errorsByInstancePath } = useBuilderErrors()
+  const errorMessage = getBuilderFieldErrorMessage(
+    path,
+    errors,
+    errorsByInstancePath,
+  )
   const { maxLength } = schema
   const remainingCharacterCount = maxLength
     ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)
@@ -58,7 +65,7 @@ function JsonFormsTextAreaControl({
     const { value } = e.target
 
     if (value === "") {
-      handleChange(path, undefined)
+      handleChange(path, required ? "" : undefined)
     } else {
       handleChange(path, value)
     }
@@ -66,7 +73,7 @@ function JsonFormsTextAreaControl({
 
   return (
     <Box>
-      <FormControl isRequired={required} isInvalid={!!errors}>
+      <FormControl isRequired={required} isInvalid={!!errorMessage}>
         <FormLabel description={description} mb={0}>
           {label}
         </FormLabel>
@@ -79,14 +86,14 @@ function JsonFormsTextAreaControl({
           maxAutosizeRows={numOfRows}
           my="0.5rem"
         />
-        {maxLength && !errors && (
+        {maxLength && !errorMessage && (
           <FormHelperText>
             {remainingCharacterCount}{" "}
             {remainingCharacterCount === 1 ? "character" : "characters"} left
           </FormHelperText>
         )}
         <FormErrorMessage>
-          {label} {getCustomErrorMessage(errors)}
+          {label} {errorMessage}
         </FormErrorMessage>
       </FormControl>
     </Box>

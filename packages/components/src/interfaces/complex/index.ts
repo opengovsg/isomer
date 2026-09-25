@@ -13,7 +13,6 @@ export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
 export {
   HERO_ACTION_LAYOUT,
-  HERO_QUICK_ACTION_ITEM_TITLE_PLACEHOLDER,
   HERO_STYLE,
   HeroSchema,
   type HeroActionLayout,

@@ -21,6 +21,7 @@ import {
   IconHeroActionLayoutButtons,
   IconHeroActionLayoutQuickActions,
 } from "~/components/icons"
+import { HERO_QUICK_ACTIONS_DEFAULT_TITLE } from "~/components/PageEditor/constants"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 // TODO: Merge with JsonFormsChildPageLayoutControl — same titled layout + preview pattern.
@@ -55,6 +56,45 @@ const actionLayoutConst = (schema: JsonSchema) => {
   return "const" in actionLayout && typeof actionLayout.const === "string"
     ? actionLayout.const
     : undefined
+}
+
+const propertyKeys = (schema: JsonSchema) =>
+  schema.properties ? Object.keys(schema.properties) : []
+
+/** Keep shared hero fields and the selected layout. Drop the other layout's keys. */
+export const nextHeroActionLayoutData = ({
+  current,
+  nextData,
+  selectedSchema,
+  otherSchemas,
+  layout,
+}: {
+  current: unknown
+  nextData: unknown
+  selectedSchema: JsonSchema
+  otherSchemas: JsonSchema[]
+  layout: string
+}) => {
+  const selectedKeys = new Set(propertyKeys(selectedSchema))
+  const keysToDrop = otherSchemas.flatMap((schema) =>
+    propertyKeys(schema).filter((key) => !selectedKeys.has(key)),
+  )
+  const kept: Record<string, unknown> =
+    typeof current === "object" && current !== null
+      ? { ...(current as Record<string, unknown>) }
+      : {}
+
+  for (const key of keysToDrop) {
+    delete kept[key]
+  }
+
+  return {
+    ...kept,
+    ...(typeof nextData === "object" && nextData !== null ? nextData : {}),
+    ...(layout === HERO_ACTION_LAYOUT.quickActions
+      ? { quickActionsTitle: HERO_QUICK_ACTIONS_DEFAULT_TITLE }
+      : {}),
+  }
 }
 
 export const jsonFormsHeroActionLayoutControlTester: RankedTester = rankWith(
@@ -99,13 +139,18 @@ function JsonFormsHeroActionLayoutControl({
     setVariant(String(renderInfo.label))
     // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const newData: unknown = createDefaultValue(renderInfo.schema, rootSchema)
-    const current: unknown = data
-    const nextData =
-      typeof newData === "object" && newData !== null ? newData : {}
-    handleChange(path, {
-      ...(typeof current === "object" && current !== null ? current : {}),
-      ...nextData,
-    })
+    handleChange(
+      path,
+      nextHeroActionLayoutData({
+        current: data,
+        nextData: newData,
+        selectedSchema: renderInfo.schema,
+        otherSchemas: renderInfos
+          .filter((info) => info !== renderInfo)
+          .map((info) => info.schema),
+        layout,
+      }),
+    )
   }
 
   useEffect(() => {

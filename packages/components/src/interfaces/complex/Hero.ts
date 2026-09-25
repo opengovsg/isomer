@@ -109,8 +109,6 @@ const GROUPINGS = {
   },
 } as const
 
-export const HERO_QUICK_ACTION_ITEM_TITLE_PLACEHOLDER = "Quick action title"
-
 const HeroActionLayoutQuickActionItemSchema = Type.Object({
   icon: Type.Union(
     SUPPORTED_ICON_NAMES.map((icon) =>
@@ -128,16 +126,13 @@ const HeroActionLayoutQuickActionItemSchema = Type.Object({
       },
     },
   ),
-  title: Type.Optional(
-    Type.String({
-      title: "Title",
-      placeholder: HERO_QUICK_ACTION_ITEM_TITLE_PLACEHOLDER,
-      pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
-      errorMessage: {
-        pattern: "cannot be empty or contain only spaces",
-      },
-    }),
-  ),
+  title: Type.String({
+    title: "Title",
+    pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
+  }),
   description: Type.String({
     title: "Description",
     pattern: NON_EMPTY_STRING_REGEX,
