@@ -12,7 +12,7 @@ export interface GenerateFoundryTextInput {
   system: string
   prompt: string
   imageUrl?: string
-  maxOutputTokens?: number
+  maxOutputTokens: number
 }
 
 /**
@@ -31,7 +31,7 @@ export const createFoundryClient = ({ apiKey }: FoundryClientConfig) => {
     system,
     prompt,
     imageUrl,
-    maxOutputTokens = 300,
+    maxOutputTokens,
   }: GenerateFoundryTextInput): Promise<string> => {
     const response = await generateText({
       model: provider.chatModel(modelId),
