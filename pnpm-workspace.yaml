@@ -158,7 +158,7 @@ catalog:
   openid-client: ^5.7.1
   oxfmt: ^0.68.0
   oxlint: ^1.82.0
-  oxlint-tsgolint: ^7.0.2001
+  oxlint-tsgolint: ^7.0.2002
   papaparse: ^5.7.0
   pg-boss: ^12.30.0
   postcss-load-config: ^6.0.1
