@@ -29,7 +29,13 @@ export const aiRouter = router({
     // use while still limiting abuse.
     .meta({ rateLimitOptions: { max: 20, windowMs: 60_000 } })
     .mutation(async ({ ctx, input: { siteId, pageId, src } }) => {
-      if (!getIsAiAltTextGenerationEnabled({ gb: ctx.gb, siteId })) {
+      if (
+        !(await getIsAiAltTextGenerationEnabled({
+          gb: ctx.gb,
+          siteId,
+          email: ctx.user.email,
+        }))
+      ) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "Alt text suggestions are not available for this site",
