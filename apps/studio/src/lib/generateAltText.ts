@@ -1,6 +1,5 @@
 import { foundryClient } from "~/lib/foundry"
 
-const FOUNDRY_ALT_TEXT_MODEL_ID = "claude-sonnet-4-6-v1:rsn"
 const ALT_TEXT_MAX_CHARACTERS = 120
 
 const SUPPORTED_IMAGE_MIME_TYPES = new Set([
@@ -14,23 +13,21 @@ export const isAltTextGenerationSupportedForMimeType = (
   mimeType: string,
 ): boolean => SUPPORTED_IMAGE_MIME_TYPES.has(mimeType)
 
-const SYSTEM_PROMPT = `You generate alternative text (alt text) for images for visually impaired users.
-Your job:
-- Describe the key visual information clearly and concretely.
-- Mention only what is visible, no guessing or extra context.
-- Use plain language, no emojis.
-- HARD LIMIT: Your response MUST be a single sentence of at most ${ALT_TEXT_MAX_CHARACTERS} characters.
-- Do NOT include quotes or the words "alt text" in your answer. It cannot be empty, contain only spaces, or have generic terms like 'image', 'logo', 'graph', etc.
-Return ONLY the alt text, nothing else.`
-
 export const generateAltText = async (imageUrl: string): Promise<string> => {
   if (!foundryClient) {
     throw new Error("PAIR_FOUNDRY_API_KEY is not set")
   }
 
   return foundryClient.generateText({
-    modelId: FOUNDRY_ALT_TEXT_MODEL_ID,
-    system: SYSTEM_PROMPT,
+    modelId: "claude-sonnet-4-6-v1:rsn",
+    system: `You generate alternative text (alt text) for images for visually impaired users.
+Your job:
+- Describe the key visual information clearly and concretely.
+- Mention only what is visible, no guessing or extra context.
+- Use plain language, no emojis.
+- HARD LIMIT: Your response MUST be a single sentence of at most ${ALT_TEXT_MAX_CHARACTERS} characters.
+- Do NOT include quotes or the words "alt text" in your answer. It cannot be empty, contain only spaces, or have generic terms like 'image', 'logo', 'graph', etc.
+Return ONLY the alt text, nothing else.`,
     prompt: `Describe this image for a visually impaired user in at most ${ALT_TEXT_MAX_CHARACTERS} characters.`,
     imageUrl,
     maxOutputTokens: 300,
