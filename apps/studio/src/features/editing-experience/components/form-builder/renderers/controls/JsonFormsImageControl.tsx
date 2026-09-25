@@ -56,14 +56,18 @@ function JsonFormsImageControl({
     | undefined
 
   const [suggestion, setSuggestion] = useState<string>()
+  const [hasAltTextFailed, setHasAltTextFailed] = useState(false)
   const { mutate: generateAltText, isPending: isGeneratingAltText } =
     trpc.ai.generateAltText.useMutation({
       onSuccess: ({ altText }) => {
+        // A successful call can still return no text when the image cannot be
+        // read or the model returns nothing. Treat that as a failed suggestion.
         setSuggestion(altText)
+        setHasAltTextFailed(!altText)
       },
       onError: () => {
-        // The upload already landed. A failed suggestion leaves the image as saved.
         setSuggestion(undefined)
+        setHasAltTextFailed(true)
       },
     })
 
@@ -73,7 +77,11 @@ function JsonFormsImageControl({
       {data ? (
         <AttachmentData
           data={data.split("/").pop() ?? "Unknown"}
-          onClick={() => handleChange(path, undefined)}
+          onClick={() => {
+            handleChange(path, undefined)
+            setSuggestion(undefined)
+            setHasAltTextFailed(false)
+          }}
         />
       ) : (
         <FileAttachment
@@ -98,6 +106,7 @@ function JsonFormsImageControl({
             }
 
             setSuggestion(undefined)
+            setHasAltTextFailed(false)
             generateAltText({
               siteId,
               pageId,
@@ -111,12 +120,17 @@ function JsonFormsImageControl({
       <AltTextSuggestion
         isGenerating={isGeneratingAltText}
         suggestion={suggestion}
+        hasFailed={hasAltTextFailed && !isGeneratingAltText}
         onApply={() => {
           if (!altPath || !suggestion) return
           handleChange(altPath, suggestion)
           setSuggestion(undefined)
+          setHasAltTextFailed(false)
         }}
-        onDismiss={() => setSuggestion(undefined)}
+        onDismiss={() => {
+          setSuggestion(undefined)
+          setHasAltTextFailed(false)
+        }}
       />
       {!!errors && (
         <FormErrorMessage>
