@@ -1,9 +1,7 @@
 import { TRPCError } from "@trpc/server"
 import { env } from "~/env.mjs"
-import {
-  generateAltTextWithValidationRetry,
-  isAltTextGenerationSupportedForMimeType,
-} from "~/lib/generateAltText"
+import { isAltTextGenerationSupportedForMimeType } from "~/lib/generateAltText"
+import { generateAltTextWithValidationRetry } from "~/lib/generateAltTextWithValidationRetry"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 import type { Logger } from "@isomer/logging"

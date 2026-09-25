@@ -148,6 +148,7 @@
     "nanoid": "catalog:",
     "next": "catalog:",
     "openid-client": "catalog:",
+    "p-retry": "catalog:",
     "papaparse": "catalog:",
     "pdfreader": "^3.0.8",
     "pg": "catalog:pg",

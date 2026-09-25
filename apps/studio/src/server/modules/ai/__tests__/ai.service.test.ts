@@ -11,27 +11,9 @@ import {
 
 vi.mock("~/lib/generateAltText", async () => {
   const actual = await vi.importActual("~/lib/generateAltText")
-  const { isAltTextAcceptedByFormSchema } = await vi.importActual(
-    "~/lib/isAltTextAcceptedByFormSchema",
-  )
-  const generateAltText = vi.fn()
-  const generateAltTextWithValidationRetry = async (
-    imageUrl: string,
-    abortSignal?: AbortSignal,
-  ) => {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const altText = String(await generateAltText(imageUrl, abortSignal))
-      if (isAltTextAcceptedByFormSchema(altText)) {
-        return altText
-      }
-    }
-    throw new Error("Generated alt text did not pass validation")
-  }
-
   return {
     ...actual,
-    generateAltText,
-    generateAltTextWithValidationRetry,
+    generateAltText: vi.fn(),
   }
 })
 

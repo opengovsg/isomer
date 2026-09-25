@@ -1,4 +1,3 @@
-import { isAltTextAcceptedByFormSchema } from "~/lib/isAltTextAcceptedByFormSchema"
 import { pairFoundryClient } from "~/lib/pairFoundry"
 
 const ALT_TEXT_MAX_CHARACTERS = 120
@@ -42,22 +41,4 @@ Return ONLY the alt text, nothing else.`,
     maxOutputTokens: 300,
     abortSignal,
   })
-}
-
-const MAX_ALT_TEXT_GENERATION_ATTEMPTS = 2
-
-// Pair Foundry can return text that fails the image block's alt regex. Retry once
-// before the router surfaces an error to the editor.
-export const generateAltTextWithValidationRetry = async (
-  imageUrl: string,
-  abortSignal?: AbortSignal,
-): Promise<string> => {
-  for (let attempt = 0; attempt < MAX_ALT_TEXT_GENERATION_ATTEMPTS; attempt++) {
-    const altText = await generateAltText(imageUrl, abortSignal)
-    if (isAltTextAcceptedByFormSchema(altText)) {
-      return altText
-    }
-  }
-
-  throw new Error("Generated alt text did not pass validation")
 }
