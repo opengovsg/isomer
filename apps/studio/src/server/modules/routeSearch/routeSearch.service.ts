@@ -7,7 +7,7 @@ export const JEV_MODEL_ID = "typesafe-ai/jev"
  * Each destination is scored on its own. A shared choice would force one
  * winner, so "logs" could not surface both audit logs and user access logs.
  */
-const MIN_MATCH_PROBABILITY = 0.5
+const MIN_MATCH_PROBABILITY = 0.4
 const MAX_MATCHES = 2
 
 export interface MatchedStudioRoute {
@@ -28,11 +28,11 @@ const evaluateWithJev: EvaluateStudioRoutes = async ({ query, routes }) => {
       route.id,
       {
         type: "boolean" as const,
-        instructions: `Does this search refer to "${route.label}"? ${route.description} A query may match more than one destination.`,
+        instructions: `Does this search refer to "${route.label}"? ${route.description}`,
         criteria: {
-          true: "The query is asking to open this destination.",
+          true: "The query refers to this destination, even when it also refers to another destination.",
           false:
-            "The query is a page, folder, or collection title, or a different destination.",
+            "The query does not refer to this destination. It is a page, folder, or collection title, or it is about something else.",
         },
       },
     ]),

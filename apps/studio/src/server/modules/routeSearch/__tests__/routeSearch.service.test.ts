@@ -163,7 +163,7 @@ describe("matchStudioRoutes", () => {
     const matches = pickRouteMatches({
       siteId: "7",
       routes,
-      probabilities: { collaborators: 0.49, settingsIntegrations: 0.5 },
+      probabilities: { collaborators: 0.39, settingsIntegrations: 0.4 },
     })
 
     // Assert
