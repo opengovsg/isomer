@@ -1,5 +1,6 @@
 import type { ChakraProps } from "@chakra-ui/react"
 import type { PropsWithChildren } from "react"
+import type { MatchedStudioRoute } from "~/schemas/routeSearch"
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { ModalBody as ChakraModalBody, Text, VStack } from "@chakra-ui/react"
 import { useResourceLocalViewHistory } from "~/hooks/useResourceLocalViewHistory"
@@ -8,6 +9,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { SearchResultProps } from "./SearchResult"
 import { NoSearchResultSvgr } from "../Svg/NoSearchResultSvgr"
+import { RouteSearchResults } from "./RouteSearchResult"
 import { SearchResult } from "./SearchResult"
 import { SearchResultHint } from "./SearchResultHint"
 
@@ -160,28 +162,33 @@ export const SearchResultsState = ({
   items,
   totalResultsCount,
   searchTerm,
+  routes = [],
   shouldShowHint = false,
 }: {
   siteId: string
   items: SearchResultResource[]
   totalResultsCount: number
   searchTerm: string
+  routes?: MatchedStudioRoute[]
   shouldShowHint?: boolean
 }) => {
   return (
     <ModalBody>
-      <HeaderTextAndContent
-        headerText={`${totalResultsCount} search result${totalResultsCount === 1 ? "" : "s"} with "${searchTerm}" in title`}
-        shouldShowHint={shouldShowHint}
-        content={
-          <SearchResults
-            siteId={siteId}
-            items={items}
-            searchTerms={searchTerm.split(" ")}
-          />
-        }
-        gap="0.5rem"
-      />
+      <RouteSearchResults routes={routes} />
+      {items.length > 0 && (
+        <HeaderTextAndContent
+          headerText={`${totalResultsCount} search result${totalResultsCount === 1 ? "" : "s"} with "${searchTerm}" in title`}
+          shouldShowHint={shouldShowHint}
+          content={
+            <SearchResults
+              siteId={siteId}
+              items={items}
+              searchTerms={searchTerm.split(" ")}
+            />
+          }
+          gap="0.5rem"
+        />
+      )}
     </ModalBody>
   )
 }

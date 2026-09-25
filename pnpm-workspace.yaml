@@ -25,8 +25,9 @@ registries:
 minimumReleaseAge: 1440
 
 minimumReleaseAgeExclude:
-  # If there is a CVE, exclude it here so we can update it immediately without waiting for the minimum release age to pass.
-  - "@opengovsg/*"
+  - '@opengovsg/*'
+  - '@ai-sdk/gateway@4.0.92'
+  - ai@7.0.114
 
 publicHoistPattern:
   - "*eslint-plugin*"

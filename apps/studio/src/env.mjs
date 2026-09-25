@@ -92,6 +92,11 @@ const server = z
     ALGOLIA_APP_ID: z.string(),
     ALGOLIA_API_KEY: z.string(),
     ALGOLIA_INDEX_NAME: z.string(),
+    // Optional so Studio still boots when route search is not configured.
+    AI_GATEWAY_API_KEY: z
+      .string()
+      .optional()
+      .transform((value) => value || undefined),
     SYSTEM_USER_EMAIL: z.email().optional().default(SYSTEM_USER_EMAIL),
   })
   .extend(s3Schema.shape)
@@ -168,6 +173,7 @@ const processEnv = {
   ALGOLIA_APP_ID: process.env.ALGOLIA_APP_ID,
   ALGOLIA_API_KEY: process.env.ALGOLIA_API_KEY,
   ALGOLIA_INDEX_NAME: process.env.ALGOLIA_INDEX_NAME,
+  AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY || undefined,
   NEXT_PUBLIC_S3_REGION: process.env.NEXT_PUBLIC_S3_REGION,
   NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME:
     process.env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,

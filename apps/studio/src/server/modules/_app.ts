@@ -13,6 +13,7 @@ import { meRouter } from "./me/me.router"
 import { pageRouter } from "./page/page.router"
 import { redirectRouter } from "./redirect/redirect.router"
 import { resourceRouter } from "./resource/resource.router"
+import { routeSearchRouter } from "./routeSearch/routeSearch.router"
 import { siteRouter } from "./site/site.router"
 import { userRouter } from "./user/user.router"
 import { webhookRouter } from "./webhook/webhook.router"
@@ -31,6 +32,7 @@ export const appRouter = router({
   site: siteRouter,
   redirect: redirectRouter,
   resource: resourceRouter,
+  routeSearch: routeSearchRouter,
   user: userRouter,
   whitelist: whitelistRouter,
   webhook: webhookRouter,

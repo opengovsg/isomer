@@ -10,6 +10,7 @@ import { Searchbar as OgpSearchBar } from "@opengovsg/design-system-react"
 import { useCallback, useState } from "react"
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { useSearchQuery } from "~/hooks/useSearchQuery"
+import { trpc } from "~/utils/trpc"
 
 import { CommandKey } from "./CommandKey"
 import {
@@ -42,13 +43,18 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
       setQueryCount((prev) => prev + 1)
     }, []),
   })
+  const { data: matchedRoutes = [], isLoading: isRouteSearchLoading } =
+    trpc.routeSearch.match.useQuery(
+      { siteId, query: debouncedSearchTerm },
+      { enabled: debouncedSearchTerm.length > 0 },
+    )
 
   const renderModalBody = (): React.ReactNode => {
     if (!!debouncedSearchTerm) {
-      if (isLoading) {
+      if (isLoading || isRouteSearchLoading) {
         return <LoadingState />
       }
-      if (matchedResources.length === 0) {
+      if (matchedResources.length === 0 && matchedRoutes.length === 0) {
         return <NoResultsState />
       }
       return (
@@ -57,6 +63,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           items={matchedResources}
           totalResultsCount={totalResultsCount}
           searchTerm={debouncedSearchTerm}
+          routes={matchedRoutes}
           // 3 is an arbitrary number that we are trying out and our guess
           // of the number of queries the user has to do before they are deemed "lost"
           shouldShowHint={queryCount >= 3}
@@ -89,7 +96,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
             minW={minWidth}
             maxW={maxWidth}
             // border={0}
-            placeholder={`Search pages, collections, or folders by name. e.g. "Speech by Minister"`}
+            placeholder={`Search pages or where to go. e.g. "manage users"`}
           />
         </ModalHeader>
         {renderModalBody()}
