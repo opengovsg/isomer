@@ -28,6 +28,7 @@ const quickActionsStyles = tv({
 
 export const QuickActions = ({
   quickActionsTitle,
+  showIcon,
   quickActionsItems,
   site,
   headingLevel,
@@ -49,6 +50,7 @@ export const QuickActions = ({
         <QuickActionsItem
           key={idx}
           item={item}
+          showIcon={showIcon}
           site={site}
           headingLevel={itemHeadingLevel}
         />

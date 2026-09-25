@@ -3,9 +3,9 @@ import type {
   RankedTester,
   UISchemaElement,
 } from "@jsonforms/core"
-import type { IsomerExtendedJsonSchema } from "~/types/schema"
+import type { FieldVisibleWhen, IsomerExtendedJsonSchema } from "~/types/schema"
 import { Box } from "@chakra-ui/react"
-import { rankWith, RuleEffect, uiTypeIs } from "@jsonforms/core"
+import { createAjv, rankWith, RuleEffect, uiTypeIs } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsLayoutProps } from "@jsonforms/react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { isVerticalLayout } from "~/types/schema"
@@ -21,14 +21,54 @@ export const jsonFormsVerticalLayoutTester: RankedTester = rankWith(
   uiTypeIs("VerticalLayout"),
 )
 
+const ajv = createAjv()
+
+const showWhenRootMatches = (visibleWhen: FieldVisibleWhen) => ({
+  effect: RuleEffect.SHOW,
+  condition: {
+    validate: ({ fullData }: { fullData: unknown }) => {
+      if (typeof fullData !== "object" || fullData === null) {
+        return false
+      }
+
+      const value = (fullData as Record<string, unknown>)[visibleWhen.property]
+      return ajv.validate(visibleWhen.schema, value)
+    },
+  },
+})
+
+function withFieldVisibility(
+  jsonSchema: IsomerExtendedJsonSchema,
+  uiSchema: UISchemaElementWithScope[],
+) {
+  const properties = jsonSchema.properties ?? {}
+
+  return uiSchema.map((element) => {
+    const propertyName = element.scope?.split("/").pop()
+    const visibleWhen = propertyName
+      ? properties[propertyName]?.visibleWhen
+      : undefined
+
+    if (!visibleWhen?.root) {
+      return element
+    }
+
+    return {
+      ...element,
+      rule: showWhenRootMatches(visibleWhen),
+    }
+  })
+}
+
 function getUiSchemaWithGroup(
   jsonSchema: IsomerExtendedJsonSchema,
   uiSchema: UISchemaElementWithScope[],
 ) {
   const { groups } = jsonSchema
+  const elements = withFieldVisibility(jsonSchema, uiSchema)
 
   if (!groups) {
-    return uiSchema
+    return elements
   }
 
   const groupMap = new Map<string, string[]>(
@@ -39,12 +79,12 @@ function getUiSchemaWithGroup(
     (property) => !groups.some(({ fields }) => fields.includes(property)),
   )
 
-  let tempUiSchema = [...uiSchema]
+  let tempUiSchema = [...elements]
   const newUiSchema: UISchemaElementWithScope[] = []
 
   let count = 0
 
-  while (count < uiSchema.length) {
+  while (count < elements.length) {
     const element = tempUiSchema[0]
 
     if (!element) {
@@ -69,7 +109,7 @@ function getUiSchemaWithGroup(
     if (group) {
       const { label } = group
       const groupFields = groupMap.get(label) ?? []
-      const groupElements = uiSchema.filter((el) =>
+      const groupElements = elements.filter((el) =>
         groupFields.includes(el.scope?.split("/").pop() || ""),
       )
 

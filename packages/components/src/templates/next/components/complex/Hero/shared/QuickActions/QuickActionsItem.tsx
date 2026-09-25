@@ -49,12 +49,14 @@ const ItemIcon = ({ icon }: { icon: SupportedIconName }) => {
 
 interface QuickActionsItemProps {
   item: HeroActionLayoutQuickActionsPanelProps["quickActionsItems"][number]
+  showIcon: HeroActionLayoutQuickActionsPanelProps["showIcon"]
   site: HeroActionLayoutQuickActionsPanelProps["site"]
   headingLevel: HeroActionLayoutQuickActionsPanelProps["headingLevel"]
 }
 
 export const QuickActionsItem = ({
   item,
+  showIcon,
   site,
   headingLevel,
 }: QuickActionsItemProps) => {
@@ -73,7 +75,7 @@ export const QuickActionsItem = ({
       className={styles.root()}
       isExternal={isExternalLink}
     >
-      <ItemIcon icon={icon} />
+      {showIcon ? <ItemIcon icon={icon} /> : null}
 
       {trimmedTitle ? (
         <TitleTag className={styles.title({ hasLink: true })}>

@@ -25,9 +25,7 @@ const heroActionLayoutRadioCss = {
 
 export const jsonFormsHeroActionLayoutControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.HeroActionLayoutControl,
-  schemaMatches(
-    (schema) => schema.format === HERO_ACTION_LAYOUT_FORMAT,
-  ),
+  schemaMatches((schema) => schema.format === HERO_ACTION_LAYOUT_FORMAT),
 )
 
 function JsonFormsHeroActionLayoutControl({

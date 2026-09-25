@@ -11,6 +11,7 @@ export const HeroGradientQuickActions = ({
   subtitle,
   backgroundUrl,
   quickActionsTitle,
+  showIcon,
   quickActionsItems,
   site,
   headingLevel,
@@ -66,6 +67,7 @@ export const HeroGradientQuickActions = ({
         >
           <QuickActions
             quickActionsTitle={quickActionsTitle}
+            showIcon={showIcon}
             quickActionsItems={quickActionsItems}
             site={site}
             headingLevel={headingLevel}

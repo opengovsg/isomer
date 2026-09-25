@@ -11,10 +11,7 @@ import {
   TRIMMED_NON_EMPTY_STRING_REGEX,
 } from "~/utils/validation"
 
-import {
-  ARRAY_RADIO_FORMAT,
-  HERO_ACTION_LAYOUT_FORMAT,
-} from "../format"
+import { ARRAY_RADIO_FORMAT, HERO_ACTION_LAYOUT_FORMAT } from "../format"
 import { generateImageSrcSchema } from "./Image"
 
 export const HERO_STYLE = {
@@ -115,6 +112,22 @@ const GROUPINGS = {
 export const HERO_QUICK_ACTION_ITEM_TITLE_PLACEHOLDER = "Quick action title"
 
 const HeroActionLayoutQuickActionItemSchema = Type.Object({
+  icon: Type.Union(
+    SUPPORTED_ICON_NAMES.map((icon) =>
+      Type.Literal(icon, {
+        title: icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-/g, " "),
+      }),
+    ),
+    {
+      title: "Column icon",
+      type: "string",
+      visibleWhen: {
+        property: "showIcon",
+        schema: { const: true },
+        root: true,
+      },
+    },
+  ),
   title: Type.Optional(
     Type.String({
       title: "Title",
@@ -132,19 +145,8 @@ const HeroActionLayoutQuickActionItemSchema = Type.Object({
       pattern: "cannot be empty or contain only spaces",
     },
   }),
-  icon: Type.Union(
-    SUPPORTED_ICON_NAMES.map((icon) =>
-      Type.Literal(icon, {
-        title: icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-/g, " "),
-      }),
-    ),
-    {
-      title: "Icon",
-      type: "string",
-    },
-  ),
   buttonLabel: Type.String({
-    title: "Link text",
+    title: "Call-to-action text",
     maxLength: 50,
     pattern: NON_EMPTY_STRING_REGEX,
     description:
@@ -154,7 +156,7 @@ const HeroActionLayoutQuickActionItemSchema = Type.Object({
     },
   }),
   buttonUrl: Type.String({
-    title: "Link destination",
+    title: "Call-to-action destination",
     description: "When this is clicked, open:",
     format: "link",
     pattern: LINK_HREF_PATTERN,
@@ -236,6 +238,10 @@ const HeroGradientSchema = Type.Composite(
           },
         }),
       ),
+      showIcon: Type.Boolean({
+        title: "Show icons",
+        default: true,
+      }),
       quickActionsItems: Type.Optional(
         Type.Array(HeroActionLayoutQuickActionItemSchema, {
           title: "Content",
@@ -253,7 +259,7 @@ const HeroGradientSchema = Type.Composite(
         required: ["actionLayout"],
       },
       then: {
-        required: ["quickActionsItems"],
+        required: ["quickActionsItems", "showIcon"],
       },
     }),
   ],
@@ -280,7 +286,7 @@ const HeroGradientSchema = Type.Composite(
       },
       {
         label: "Quick actions",
-        fields: ["quickActionsTitle", "quickActionsItems"],
+        fields: ["quickActionsTitle", "showIcon", "quickActionsItems"],
         visibleWhen: {
           property: "actionLayout",
           schema: { const: HERO_ACTION_LAYOUT.quickActions },
@@ -408,6 +414,7 @@ export type HeroActionLayoutButtonsPanelProps = Simplify<
 export type HeroActionLayoutQuickActionsPanelProps = Simplify<
   Pick<CommonProps, "site" | "headingLevel"> & {
     quickActionsTitle?: string
+    showIcon: boolean
     quickActionsItems: HeroActionLayoutQuickActionItem[]
   }
 >
@@ -418,6 +425,7 @@ export type HeroGradientProps = Simplify<
     Static<typeof HeroGradientCallToActionsSchema> & {
       actionLayout?: HeroActionLayout
       quickActionsTitle?: string
+      showIcon: boolean
       quickActionsItems?: HeroActionLayoutQuickActionItem[]
     }
 >

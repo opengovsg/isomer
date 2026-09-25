@@ -1,8 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import {
-  HERO_ACTION_LAYOUT,
-  HERO_STYLE,
-} from "@opengovsg/isomer-components"
+import { HERO_ACTION_LAYOUT, HERO_STYLE } from "@opengovsg/isomer-components"
 
 import {
   createDefaultHeroActionLayoutQuickActionItem,
@@ -29,8 +26,9 @@ export const ensureHeroActionLayoutQuickActionsItems = (
   const existingItems = component.quickActionsItems ?? []
   const needsItems = existingItems.length < HERO_QUICK_ACTIONS_MIN_ITEMS
   const needsTitle = !component.quickActionsTitle?.trim()
+  const needsShowIcon = component.showIcon === undefined
 
-  if (!needsItems && !needsTitle) {
+  if (!needsItems && !needsTitle && !needsShowIcon) {
     return component
   }
 
@@ -46,6 +44,10 @@ export const ensureHeroActionLayoutQuickActionsItems = (
 
   if (needsTitle) {
     next = { ...next, quickActionsTitle: HERO_QUICK_ACTIONS_DEFAULT_TITLE }
+  }
+
+  if (needsShowIcon) {
+    next = { ...next, showIcon: true }
   }
 
   return next

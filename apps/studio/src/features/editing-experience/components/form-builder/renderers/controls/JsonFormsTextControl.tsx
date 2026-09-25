@@ -36,8 +36,9 @@ const isSchemaWithTooltip = (
 const isSchemaWithPlaceholder = (
   schema: ControlProps["schema"],
 ): schema is ControlProps["schema"] & { placeholder: string } => {
-  return (schema as unknown as { placeholder?: string }).placeholder !==
-    undefined
+  return (
+    (schema as unknown as { placeholder?: string }).placeholder !== undefined
+  )
 }
 
 export function JsonFormsTextControl({

@@ -813,6 +813,7 @@ export const HeroGradientQuickActions: Story = {
       type: "hero",
       variant: "gradient",
       actionLayout: "quickActions",
+      showIcon: true,
       backgroundUrl: "/hero-banner.png",
       title: "Set up a good government website, fast",
       subtitle:
@@ -829,6 +830,7 @@ export const HeroGradientQuickActionsTwoItems: Story = {
       type: "hero",
       variant: "gradient",
       actionLayout: "quickActions",
+      showIcon: true,
       backgroundUrl: "/hero-banner.png",
       title: "Set up a good government website, fast",
       subtitle:
@@ -846,6 +848,7 @@ export const HeroGradientQuickActionsTwoItemsShortText: Story = {
       type: "hero",
       variant: "gradient",
       actionLayout: "quickActions",
+      showIcon: true,
       backgroundUrl: "/hero-banner.png",
       title: "Title",
       subtitle: "Subtitle",
@@ -876,6 +879,7 @@ export const HeroGradientQuickActionsThreeItems: Story = {
       type: "hero",
       variant: "gradient",
       actionLayout: "quickActions",
+      showIcon: true,
       backgroundUrl: "/hero-banner.png",
       title: "Set up a good government website, fast",
       subtitle:
@@ -892,6 +896,7 @@ export const HeroGradientQuickActionsNoTitle: Story = {
       type: "hero",
       variant: "gradient",
       actionLayout: "quickActions",
+      showIcon: true,
       backgroundUrl: "/hero-banner.png",
       title: "Set up a good government website, fast",
       subtitle:

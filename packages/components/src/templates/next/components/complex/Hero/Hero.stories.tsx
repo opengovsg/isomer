@@ -224,6 +224,7 @@ export const GradientQuickActions: Story = {
       "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
     variant: "gradient",
     actionLayout: "quickActions",
+    showIcon: true,
     quickActionsTitle: "Get started",
     quickActionsItems: quickActionsItemsBase,
   },
@@ -242,6 +243,7 @@ export const GradientQuickActionsTwoItemsShortText: Story = {
     ...GradientQuickActions.args,
     title: "Title",
     subtitle: "Subtitle",
+    showIcon: true,
     quickActionsTitle: "Tray",
     quickActionsItems: [
       {
@@ -273,6 +275,13 @@ export const GradientQuickActionsNoTitle: Story = {
   args: {
     ...GradientQuickActions.args,
     quickActionsTitle: undefined,
+  },
+}
+
+export const GradientQuickActionsNoIcons: Story = {
+  args: {
+    ...GradientQuickActions.args,
+    showIcon: false,
   },
 }
 
