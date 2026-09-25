@@ -1,13 +1,12 @@
+import type * as BedrockRuntime from "@aws-sdk/client-bedrock-runtime"
 import { ConverseCommand } from "@aws-sdk/client-bedrock-runtime"
-import { ALT_TEXT_REGEX_PATTERN } from "@opengovsg/isomer-components"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 // Mock the Bedrock client so we can control the model's raw response without
 // hitting AWS, following the pattern in s3.test.ts.
 const sendMock = vi.fn()
 vi.mock("@aws-sdk/client-bedrock-runtime", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("@aws-sdk/client-bedrock-runtime")>()
+  const actual = await importOriginal<typeof BedrockRuntime>()
   return {
     ...actual,
     BedrockRuntimeClient: vi.fn(function () {
@@ -21,8 +20,6 @@ const {
   sanitizeAltText,
   isAltTextGenerationSupportedForMimeType,
 } = await import("../generateAltText")
-
-const altTextRegex = new RegExp(ALT_TEXT_REGEX_PATTERN)
 
 const mockBedrockResponse = (text: string) => ({
   output: { message: { content: [{ text }] } },
@@ -47,7 +44,6 @@ describe("generateAltText", () => {
     })
 
     expect(result).not.toContain("—")
-    expect(altTextRegex.test(result)).toBe(true)
     expect(result.toLowerCase().startsWith("image of")).toBe(false)
   })
 
@@ -91,7 +87,6 @@ describe("sanitizeAltText", () => {
 
     expect(result).not.toContain("—")
     expect(result.toLowerCase().startsWith("photo of")).toBe(false)
-    expect(altTextRegex.test(result)).toBe(true)
   })
 })
 

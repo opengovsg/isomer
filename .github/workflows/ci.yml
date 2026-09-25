@@ -173,6 +173,27 @@ jobs:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
 
+  test-ai:
+    name: Test AI
+    needs: optimize_ci
+    runs-on: ubuntu-latest
+    if: needs.optimize_ci.outputs.skip == 'false'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@d7e3562370d3742851764531da3cb54a743ebd63 # v3.1.0
+        with:
+          languages: js
+          service: isomer-ai
+          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
+      - name: Test AI
+        run: pnpm exec turbo test-ci:unit --filter=@isomer/ai --env-mode=loose
+        env:
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
+          TZ: Asia/Singapore
+
   test-validators:
     name: Test Validators
     needs: optimize_ci

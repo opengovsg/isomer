@@ -6,10 +6,9 @@ import {
 // TODO(isomer): confirm this region and model ID against the models this AWS
 // account actually has Bedrock access enabled for — Claude vision models on
 // Bedrock are only served from a subset of regions, and access is granted
-// per-model per-account. If these need to be configurable per-environment,
-// add them to ~/env.mjs following the pattern of the other AWS clients
-// (e.g. R2_ACCOUNT_ID in ~/lib/s3.ts) rather than reading process.env
-// directly here.
+// per-model per-account. If these need to vary per environment, accept them
+// as arguments from the caller (Studio validates env in apps/studio/src/env.mjs)
+// rather than reading process.env here.
 const BEDROCK_REGION = "ap-southeast-1"
 const BEDROCK_ALT_TEXT_MODEL_ID =
   "apac.anthropic.claude-3-5-sonnet-20241022-v2:0"

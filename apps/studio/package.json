@@ -58,7 +58,6 @@
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "catalog:atlaskitPragmaticDnd",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "catalog:atlaskitPragmaticDnd",
-    "@aws-sdk/client-bedrock-runtime": "catalog:aws-sdk",
     "@aws-sdk/client-cloudfront": "catalog:aws-sdk",
     "@aws-sdk/client-codebuild": "catalog:aws-sdk",
     "@aws-sdk/client-s3": "catalog:aws-sdk",
@@ -80,6 +79,7 @@
     "@hello-pangea/dnd": "catalog:",
     "@hookform/resolvers": "catalog:",
     "@intercom/messenger-js-sdk": "catalog:",
+    "@isomer/ai": "workspace:*",
     "@isomer/algolia": "workspace:*",
     "@isomer/db": "workspace:*",
     "@isomer/logging": "workspace:*",
