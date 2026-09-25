@@ -45,7 +45,7 @@ function JsonFormsImageControl({
   schema,
 }: JsonFormsImageControlProps) {
   const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
-  const isAiAltTextGenerationEnabled = useAiAltTextGenerationEnabled()
+  const isAiAltTextGenerationEnabled = useAiAltTextGenerationEnabled(siteId)
   const ctx = useJsonForms()
 
   const { parentPath, altPath } = getImageFieldPaths(path)

@@ -29,12 +29,22 @@ export const IS_UNPUBLISH_ENABLED_FEATURE_KEY = "is-unpublish-enabled"
 export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY = "is-date-filters-enabled"
 export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
 
-// Gates the live Pair Foundry call in @isomer/ai. OFF by default so the
-// AI-suggestion feature can be rolled out per-environment/site without a
-// code change.
+// Gates the live Pair Foundry call. The value is the sites in the canary.
+// An empty list is off everywhere. Widen `enabledSites` over time. To limit
+// the canary to specific people, target their `email` in GrowthBook and serve
+// this same shape — `email` is already a GrowthBook attribute.
 export const ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY =
   "enable-ai-alt-text-generation"
-export const ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE = false
+export interface AiAltTextGenerationFeatureValue {
+  enabledSites: string[]
+}
+export const ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE: AiAltTextGenerationFeatureValue =
+  { enabledSites: [] }
+
+export const isAiAltTextGenerationEnabledForSite = (
+  value: AiAltTextGenerationFeatureValue,
+  siteId: number,
+): boolean => value.enabledSites.includes(siteId.toString())
 
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 

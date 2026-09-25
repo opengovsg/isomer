@@ -31,11 +31,14 @@ const createCaller = createCallerFactory(aiRouter)
 const UUID = "11111111-1111-1111-1111-111111111111"
 const ASSET_DOMAIN = "user-content.example.com"
 
-const enableAltText = () => {
+const enableAltText = (siteId: number) => {
   mockGrowthBook.setForcedFeatures(
     new Map([
       ...mockFeatureFlags,
-      [ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY, true],
+      [
+        ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
+        { enabledSites: [String(siteId)] },
+      ],
     ]),
   )
 }
@@ -96,10 +99,10 @@ describe("ai.router", async () => {
 
   it("should throw 403 when the user cannot update the page", async () => {
     // Arrange
-    enableAltText()
     const { site, page } = await setupPageResource({
       resourceType: ResourceType.Page,
     })
+    enableAltText(site.id)
 
     // Act
     const result = caller.generateAltText({
@@ -120,10 +123,10 @@ describe("ai.router", async () => {
 
   it("should throw 403 when the image belongs to another site", async () => {
     // Arrange
-    enableAltText()
     const { site, page } = await setupPageResource({
       resourceType: ResourceType.Page,
     })
+    enableAltText(site.id)
     const { site: otherSite } = await setupPageResource({
       resourceType: ResourceType.Page,
     })
@@ -152,10 +155,10 @@ describe("ai.router", async () => {
 
   it("should throw 403 when the image path is not an asset URL", async () => {
     // Arrange
-    enableAltText()
     const { site, page } = await setupPageResource({
       resourceType: ResourceType.Page,
     })
+    enableAltText(site.id)
     await setupEditorPermissions({
       siteId: site.id,
       userId: String(session.userId),
@@ -180,10 +183,10 @@ describe("ai.router", async () => {
 
   it("should return no suggestion for a non-image asset", async () => {
     // Arrange
-    enableAltText()
     const { site, page } = await setupPageResource({
       resourceType: ResourceType.Page,
     })
+    enableAltText(site.id)
     await setupEditorPermissions({
       siteId: site.id,
       userId: String(session.userId),
@@ -203,10 +206,10 @@ describe("ai.router", async () => {
 
   it("should return the suggestion for an image on the page's site", async () => {
     // Arrange
-    enableAltText()
     const { site, page } = await setupPageResource({
       resourceType: ResourceType.Page,
     })
+    enableAltText(site.id)
     await setupEditorPermissions({
       siteId: site.id,
       userId: String(session.userId),
@@ -226,5 +229,28 @@ describe("ai.router", async () => {
     expect(generateAltText).toHaveBeenCalledWith(
       `https://${ASSET_DOMAIN}${src}`,
     )
+  })
+
+  it("should throw 404 when the site is not in the canary", async () => {
+    // Arrange
+    const { site, page } = await setupPageResource({
+      resourceType: ResourceType.Page,
+    })
+    enableAltText(site.id + 1)
+    await setupEditorPermissions({
+      siteId: site.id,
+      userId: String(session.userId),
+    })
+
+    // Act
+    const result = caller.generateAltText({
+      siteId: site.id,
+      pageId: Number(page.id),
+      src: `/${site.id}/${UUID}/picture.png`,
+    })
+
+    // Assert
+    await expect(result).rejects.toThrow(new TRPCError({ code: "NOT_FOUND" }))
+    expect(generateAltText).not.toHaveBeenCalled()
   })
 })

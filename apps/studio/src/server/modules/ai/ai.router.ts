@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server"
 import {
   ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
   ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE,
+  isAiAltTextGenerationEnabledForSite,
 } from "~/lib/growthbook"
 import { generateAltTextSchema } from "~/schemas/ai"
 import { protectedProcedure, router } from "~/server/trpc"
@@ -23,12 +24,11 @@ export const aiRouter = router({
     .mutation(async ({ ctx, input: { siteId, pageId, src } }) => {
       // Dark-launched. NOT_FOUND matches unpublish: a direct caller cannot
       // tell a disabled flag apart from a missing procedure.
-      if (
-        !ctx.gb.getFeatureValue(
-          ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
-          ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE,
-        )
-      ) {
+      const altTextFlag = ctx.gb.getFeatureValue(
+        ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
+        ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE,
+      )
+      if (!isAiAltTextGenerationEnabledForSite(altTextFlag, siteId)) {
         throw new TRPCError({ code: "NOT_FOUND" })
       }
 
