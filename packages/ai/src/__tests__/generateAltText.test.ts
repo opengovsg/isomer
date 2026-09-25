@@ -30,7 +30,7 @@ describe("generateAltText", () => {
     vi.clearAllMocks()
   })
 
-  it("returns sanitized alt text that passes ALT_TEXT_REGEX_PATTERN and contains no em dash", async () => {
+  it("returns sanitized alt text with no em dash or generic prefix", async () => {
     sendMock.mockResolvedValueOnce(
       mockBedrockResponse(
         "Image of a queue of residents outside a community centre — waiting for vaccinations",
