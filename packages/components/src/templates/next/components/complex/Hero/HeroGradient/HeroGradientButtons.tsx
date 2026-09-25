@@ -1,4 +1,4 @@
-import type { HeroGradientProps } from "~/interfaces/complex/Hero"
+import type { HeroGradientButtonsProps } from "~/interfaces/complex/Hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
 import { ComponentContent } from "../../../internal/customCssClass"
@@ -15,7 +15,7 @@ export const HeroGradientButtons = ({
   backgroundUrl,
   site,
   headingLevel,
-}: HeroGradientProps) => {
+}: HeroGradientButtonsProps) => {
   const Tag = getHeadingTag(headingLevel)
   return (
     <section className="relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]">

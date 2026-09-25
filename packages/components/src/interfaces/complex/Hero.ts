@@ -196,103 +196,96 @@ const HeroGradientCallToActionsSchema = Type.Object({
   ),
 })
 
-const HeroGradientSharedSchema = Type.Composite([
-  Type.Object({
-    variant: Type.Literal(HERO_STYLE.gradient, {
-      default: HERO_STYLE.gradient,
-    }),
-    backgroundUrl: BackgroundUrlSchema,
-  }),
-  HeroBaseSchema,
-])
-
-const HeroGradientSchema = Type.Composite(
+const HeroGradientSharedSchema = Type.Composite(
   [
-    HeroGradientSharedSchema,
     Type.Object({
-      // Optional: For backwards compatibility with existing gradient hero without action layout value
-      actionLayout: Type.Optional(
-        Type.Unsafe<HeroActionLayout>({
-          oneOf: [
-            {
-              const: HERO_ACTION_LAYOUT.buttons,
-              title: "Buttons only",
-            },
-            {
-              const: HERO_ACTION_LAYOUT.quickActions,
-              title: "Quick actions",
-            },
-          ],
-          title: "Layout",
-          // Intentionally no `default` — Studio AJV uses useDefaults, which would
-          // dirty existing gradient heroes. Renderer falls back to buttons.
-          format: HERO_ACTION_LAYOUT_FORMAT,
-        }),
-      ),
-      quickActionsTitle: Type.Optional(
-        Type.String({
-          title: "Title",
-          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
-          errorMessage: {
-            pattern: "cannot be empty or contain only spaces",
-          },
-        }),
-      ),
-      showIcon: Type.Boolean({
-        title: "Show icons",
-        default: true,
+      variant: Type.Literal(HERO_STYLE.gradient, {
+        default: HERO_STYLE.gradient,
       }),
-      quickActionsItems: Type.Optional(
-        Type.Array(HeroActionLayoutQuickActionItemSchema, {
-          title: "Content",
-          minItems: 2,
-          maxItems: 4,
+      backgroundUrl: BackgroundUrlSchema,
+    }),
+    HeroBaseSchema,
+  ],
+  {
+    groups: [GROUPINGS.TEXT],
+  },
+)
+
+const HeroGradientButtonsLayoutSchema = Type.Composite(
+  [
+    Type.Object({
+      // Optional so existing gradient heroes with no actionLayout still match this branch.
+      actionLayout: Type.Optional(
+        Type.Literal(HERO_ACTION_LAYOUT.buttons, {
+          default: HERO_ACTION_LAYOUT.buttons,
         }),
       ),
     }),
     HeroGradientCallToActionsSchema,
-    Type.Unsafe({
-      if: {
-        properties: {
-          actionLayout: { const: HERO_ACTION_LAYOUT.quickActions },
+  ],
+  {
+    title: "Buttons only",
+    groups: [
+      GROUPINGS.PRIMARY_CALL_TO_ACTION,
+      GROUPINGS.SECONDARY_CALL_TO_ACTION,
+    ],
+  },
+)
+
+const HeroGradientQuickActionsLayoutSchema = Type.Object(
+  {
+    actionLayout: Type.Literal(HERO_ACTION_LAYOUT.quickActions, {
+      default: HERO_ACTION_LAYOUT.quickActions,
+    }),
+    quickActionsTitle: Type.Optional(
+      Type.String({
+        title: "Title",
+        pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+        errorMessage: {
+          pattern: "cannot be empty or contain only spaces",
         },
-        required: ["actionLayout"],
+      }),
+    ),
+    showIcon: Type.Boolean({
+      title: "Show icons",
+      default: true,
+    }),
+    quickActionsItems: Type.Array(HeroActionLayoutQuickActionItemSchema, {
+      title: "Content",
+      minItems: 2,
+      maxItems: 4,
+    }),
+  },
+  {
+    title: "Quick actions",
+    groups: [
+      {
+        label: "Quick actions",
+        fields: ["quickActionsTitle", "showIcon", "quickActionsItems"],
       },
-      then: {
-        required: ["quickActionsItems", "showIcon"],
-      },
+    ],
+  },
+)
+
+const HeroGradientSchema = Type.Intersect(
+  [
+    HeroGradientSharedSchema,
+    // Same shape as InfoCards: shared fields, then a oneOf for the variant.
+    // No discriminator — existing heroes omit actionLayout and must still match buttons.
+    Type.Unsafe<
+      | Static<typeof HeroGradientButtonsLayoutSchema>
+      | Static<typeof HeroGradientQuickActionsLayoutSchema>
+    >({
+      oneOf: [
+        HeroGradientButtonsLayoutSchema,
+        HeroGradientQuickActionsLayoutSchema,
+      ],
+      format: HERO_ACTION_LAYOUT_FORMAT,
+      title: "Layout",
     }),
   ],
   {
     title: "Gradient (Default)",
-    groups: [
-      GROUPINGS.TEXT,
-      {
-        fields: ["actionLayout"],
-      },
-      {
-        ...GROUPINGS.PRIMARY_CALL_TO_ACTION,
-        visibleWhen: {
-          property: "actionLayout",
-          schema: { not: { const: HERO_ACTION_LAYOUT.quickActions } },
-        },
-      },
-      {
-        ...GROUPINGS.SECONDARY_CALL_TO_ACTION,
-        visibleWhen: {
-          property: "actionLayout",
-          schema: { not: { const: HERO_ACTION_LAYOUT.quickActions } },
-        },
-      },
-      {
-        label: "Quick actions",
-        fields: ["quickActionsTitle", "showIcon", "quickActionsItems"],
-        visibleWhen: {
-          property: "actionLayout",
-          schema: { const: HERO_ACTION_LAYOUT.quickActions },
-        },
-      },
-    ],
   },
 )
 
@@ -419,23 +412,21 @@ export type HeroActionLayoutQuickActionsPanelProps = Simplify<
   }
 >
 
-export type HeroGradientProps = Simplify<
+export type HeroGradientButtonsProps = Simplify<
   CommonProps &
     Static<typeof HeroGradientSharedSchema> &
-    Static<typeof HeroGradientCallToActionsSchema> & {
-      actionLayout?: HeroActionLayout
-      quickActionsTitle?: string
-      showIcon: boolean
-      quickActionsItems?: HeroActionLayoutQuickActionItem[]
-    }
+    Static<typeof HeroGradientButtonsLayoutSchema>
 >
 
 export type HeroActionLayoutQuickActionsProps = Simplify<
-  HeroGradientProps & {
-    actionLayout: typeof HERO_ACTION_LAYOUT.quickActions
-    quickActionsItems: HeroActionLayoutQuickActionItem[]
-  }
+  CommonProps &
+    Static<typeof HeroGradientSharedSchema> &
+    Static<typeof HeroGradientQuickActionsLayoutSchema>
 >
+
+export type HeroGradientProps =
+  | HeroGradientButtonsProps
+  | HeroActionLayoutQuickActionsProps
 
 export type HeroBlockProps = Simplify<
   CommonProps & Static<typeof HeroBlockSchema>
