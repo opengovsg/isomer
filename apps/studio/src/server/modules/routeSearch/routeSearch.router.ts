@@ -39,6 +39,10 @@ export const routeSearchRouter = router({
         userId: ctx.user.id,
         siteId,
       })
+      // The sidenav reads this flag with the signed-in email. This request's
+      // GrowthBook instance does not have that attribute yet, so set it before
+      // deciding whether Logs is a legal choice.
+      await ctx.gb.setAttributes({ email: ctx.user.email })
       const routes = listAccessibleStudioRoutes({
         isSiteAdmin: roles.some(({ role }) => role === RoleType.Admin),
         isIsomerAdmin: await isActiveIsomerAdmin(ctx.user.id, [
@@ -56,7 +60,10 @@ export const routeSearchRouter = router({
         })
       } catch (error) {
         ctx.logger.error({ err: error }, "Studio route search failed")
-        return []
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Studio route search failed",
+        })
       }
     }),
 })

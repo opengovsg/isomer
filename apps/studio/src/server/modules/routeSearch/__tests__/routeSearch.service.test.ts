@@ -137,6 +137,25 @@ describe("matchStudioRoutes", () => {
     ])
   })
 
+  it("returns the selected route even when its probability is below the extra-match cutoff", () => {
+    // Arrange
+    const routes = memberRoutes()
+
+    // Act
+    const matches = pickRouteMatches({
+      siteId: "7",
+      routes,
+      answer: {
+        type: "choice",
+        choice: "settingsIntegrations",
+        probabilities: { settingsIntegrations: 0.22, none: 0.2 },
+      },
+    })
+
+    // Assert
+    expect(matches.map((match) => match.id)).toEqual(["settingsIntegrations"])
+  })
+
   it("drops a destination Jev names that was not in the allowed set", () => {
     // Arrange
     const routes = memberRoutes()

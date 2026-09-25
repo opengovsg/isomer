@@ -1,5 +1,4 @@
 import { experimental_evaluate as evaluate } from "ai"
-import { env } from "~/env.mjs"
 
 import type { StudioRouteDefinition } from "./studioRoutes"
 
@@ -69,14 +68,22 @@ export const pickRouteMatches = ({
   const routesById = new Map(routes.map((route) => [route.id, route]))
   const probabilities = answer.probabilities
 
-  const ranked = probabilities
+  const rankedFromProbabilities = probabilities
     ? Object.entries(probabilities)
         .filter(([id]) => id !== NONE_ROUTE_CHOICE && routesById.has(id))
         .filter(([, probability]) => probability >= MIN_MATCH_PROBABILITY)
         .sort(([, left], [, right]) => right - left)
-    : answer.choice !== NONE_ROUTE_CHOICE && routesById.has(answer.choice)
-      ? [[answer.choice, 1] as const]
-      : []
+    : []
+  const selectedId =
+    answer.choice !== NONE_ROUTE_CHOICE && routesById.has(answer.choice)
+      ? answer.choice
+      : undefined
+  const ranked = selectedId
+    ? [
+        [selectedId, probabilities?.[selectedId] ?? 1] as const,
+        ...rankedFromProbabilities.filter(([id]) => id !== selectedId),
+      ]
+    : rankedFromProbabilities
 
   return ranked.slice(0, MAX_MATCHES).flatMap(([id]) => {
     const route = routesById.get(id)
@@ -105,7 +112,6 @@ export const matchStudioRoutes = async ({
 }): Promise<MatchedStudioRoute[]> => {
   const trimmed = query.trim()
   if (!trimmed || routes.length === 0) return []
-  if (evaluateRoutes === evaluateWithJev && !env.AI_GATEWAY_API_KEY) return []
 
   const answer = await evaluateRoutes({
     query: trimmed,
