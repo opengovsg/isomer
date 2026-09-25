@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const generateTextMock = vi.fn((): Promise<{ text: string }> =>
+const generateTextMock = vi.fn((_args: unknown): Promise<{ text: string }> =>
   Promise.resolve({ text: "" }),
 )
 const chatModelMock = vi.fn((modelId: string) => ({ modelId }))
@@ -58,7 +58,7 @@ describe("generateAltText", () => {
     const request = generateTextMock.mock.calls[0]?.[0] as {
       messages: {
         role: string
-        content: string | { type: string; image?: Uint8Array }[]
+        content: string | { type: string; text?: string; image?: Uint8Array }[]
       }[]
     }
     const userMessage = request.messages.find(
