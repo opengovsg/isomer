@@ -162,7 +162,7 @@ describe("matchStudioRoutes", () => {
       Promise.resolve({
         type: "choice",
         choice: "none",
-        probabilities: { none: 0.8, collaborators: 0.1, siteContent: 0.1 },
+        probabilities: { none: 0.8, collaborators: 0.2 },
       })
 
     // Act

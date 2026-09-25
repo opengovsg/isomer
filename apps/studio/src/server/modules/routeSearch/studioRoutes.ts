@@ -18,14 +18,6 @@ export interface StudioRouteDefinition {
  */
 export const STUDIO_ROUTES: StudioRouteDefinition[] = [
   {
-    id: "siteContent",
-    label: "Site content",
-    description:
-      "Site content, pages, folders, and collections. The main content tree.",
-    href: (siteId) => `/sites/${siteId}`,
-    access: "member",
-  },
-  {
     id: "collaborators",
     label: "Collaborators",
     description:
