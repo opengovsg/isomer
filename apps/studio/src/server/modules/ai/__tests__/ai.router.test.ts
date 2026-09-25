@@ -75,7 +75,7 @@ describe("ai.router", async () => {
     )
   })
 
-  it("should throw 404 when alt text generation is disabled", async () => {
+  it("should throw 403 when alt text generation is disabled", async () => {
     // Arrange
     const { site, page } = await setupPageResource({
       resourceType: ResourceType.Page,
@@ -93,7 +93,12 @@ describe("ai.router", async () => {
     })
 
     // Assert
-    await expect(result).rejects.toThrow(new TRPCError({ code: "NOT_FOUND" }))
+    await expect(result).rejects.toThrow(
+      new TRPCError({
+        code: "FORBIDDEN",
+        message: "Alt text suggestions are not available for this site",
+      }),
+    )
     expect(generateAltText).not.toHaveBeenCalled()
   })
 
@@ -231,7 +236,7 @@ describe("ai.router", async () => {
     )
   })
 
-  it("should throw 404 when the site is not in the canary", async () => {
+  it("should throw 403 when the site is not in the canary", async () => {
     // Arrange
     const { site, page } = await setupPageResource({
       resourceType: ResourceType.Page,
@@ -250,7 +255,12 @@ describe("ai.router", async () => {
     })
 
     // Assert
-    await expect(result).rejects.toThrow(new TRPCError({ code: "NOT_FOUND" }))
+    await expect(result).rejects.toThrow(
+      new TRPCError({
+        code: "FORBIDDEN",
+        message: "Alt text suggestions are not available for this site",
+      }),
+    )
     expect(generateAltText).not.toHaveBeenCalled()
   })
 })

@@ -63,8 +63,8 @@ function JsonFormsImageControl({
       handleChange(altPath, altText)
     },
     onError: (error) => {
-      // The flag is off. The upload already landed; there is no suggestion to apply.
-      if (error.data?.code === "NOT_FOUND") return
+      // The upload already landed. A forbidden suggestion leaves the image as saved.
+      if (error.data?.code === "FORBIDDEN") return
     },
   })
 

@@ -22,14 +22,16 @@ export const aiRouter = router({
     // use while still limiting abuse.
     .meta({ rateLimitOptions: { max: 20, windowMs: 60_000 } })
     .mutation(async ({ ctx, input: { siteId, pageId, src } }) => {
-      // Dark-launched. NOT_FOUND matches unpublish: a direct caller cannot
-      // tell a disabled flag apart from a missing procedure.
+      // The caller is signed in. The suggestion is not available for this site.
       const altTextFlag = ctx.gb.getFeatureValue(
         ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
         ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE,
       )
       if (!isAiAltTextGenerationEnabledForSite(altTextFlag, siteId)) {
-        throw new TRPCError({ code: "NOT_FOUND" })
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Alt text suggestions are not available for this site",
+        })
       }
 
       await bulkValidateUserPermissionsForResources({
