@@ -9,7 +9,7 @@ export const NONE_ROUTE_CHOICE = "none"
  * "user", where none wins and the real page is only somewhat likely.
  */
 const MIN_MATCH_PROBABILITY = 0.2
-const MAX_MATCHES = 3
+const MAX_MATCHES = 2
 
 export interface MatchedStudioRoute {
   id: string

@@ -100,11 +100,11 @@ describe("matchStudioRoutes", () => {
     // Assert
     expect(criteria).not.toHaveProperty("settingsAuditLog")
     expect(criteria).not.toHaveProperty("isomerAdmin")
-    expect(criteria.collaborators).toContain("user access logs")
+    expect(criteria.collaborators.toLowerCase()).toContain("user access logs")
     expect(matches).toEqual([
       expect.objectContaining({
         id: "collaborators",
-        label: "Collaborators",
+        label: "Collaborators and user access logs",
         href: "/sites/42/users",
       }),
     ])
@@ -134,6 +134,41 @@ describe("matchStudioRoutes", () => {
         id: "settingsIntegrations",
         href: "/sites/7/settings/integrations",
       }),
+    ])
+  })
+
+  it("returns the two log destinations and no third match", () => {
+    // Arrange
+    const routes = listAccessibleStudioRoutes({
+      isSiteAdmin: true,
+      isIsomerAdmin: false,
+      isAuditLogEnabled: true,
+    })
+
+    // Act
+    const matches = pickRouteMatches({
+      siteId: "7",
+      routes,
+      answer: {
+        type: "choice",
+        choice: "settingsAuditLog",
+        probabilities: {
+          settingsAuditLog: 0.48,
+          collaborators: 0.31,
+          settingsFooter: 0.21,
+          none: 0.0,
+        },
+      },
+    })
+
+    // Assert
+    expect(matches.map((match) => match.id)).toEqual([
+      "settingsAuditLog",
+      "collaborators",
+    ])
+    expect(matches.map((match) => match.label)).toEqual([
+      "Audit logs",
+      "Collaborators and user access logs",
     ])
   })
 
