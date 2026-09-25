@@ -1,3 +1,4 @@
+import { z } from "zod"
 import { foundryClient } from "~/lib/foundry"
 
 const FOUNDRY_ALT_TEXT_MODEL_ID = "claude-sonnet-4-6-v1:rsn"
@@ -59,7 +60,17 @@ Never do any of the following, because each one reads as obviously AI-generated 
 - Use SEO or keyword-stuffing language
 - Add commentary, caveats, or a description of your own reasoning
 
-Respond with only the finished alt text. No quotation marks, no preamble, no classification label.`
+Return the classification and the finished alt text in the structured fields. No quotation marks, no preamble, and no classification label inside the alt text.`
+
+const altTextResultSchema = z.object({
+  classification: z.enum([
+    "decorative",
+    "informative",
+    "functional-icon-link",
+    "text-heavy-infographic",
+  ]),
+  altText: z.string().min(1),
+})
 
 const buildUserPrompt = ({
   pageTitle,
@@ -111,13 +122,17 @@ export const generateAltText = async ({
     throw new Error("PAIR_FOUNDRY_API_KEY is not set")
   }
 
-  const rawText = await foundryClient.generateText({
+  const result = await foundryClient.generateObject({
     modelId: FOUNDRY_ALT_TEXT_MODEL_ID,
     system: SYSTEM_PROMPT,
     prompt: buildUserPrompt(context),
+    schema: altTextResultSchema,
+    schemaName: "alt_text",
+    schemaDescription:
+      "A classification of the image and the finished alt text for it.",
     image: { bytes: imageBytes, mimeType },
     maxOutputTokens: 300,
   })
 
-  return sanitizeAltText(rawText)
+  return sanitizeAltText(result.altText)
 }
