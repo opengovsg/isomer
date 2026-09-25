@@ -1,13 +1,12 @@
 # @isomer/ai
 
-Shared model calls for Isomer. This package does **not** import application env modules — callers pass plain inputs (image bytes, MIME type, page context).
+Shared Pair Foundry client for Isomer. This package does **not** import application env modules and does **not** own product prompts. Callers pass a validated API key, a model id, and the text (and optional image) they want the model to see. The client returns the model's trimmed text.
 
 ## API
 
-- **`generateAltText({ imageBytes, mimeType, context })`** — asks Pair Foundry (`https://engine.pair.gov.sg`, model `claude-sonnet-4-6-v1:rsn`) for alt text and returns the sanitized suggestion. Reads `PAIR_FOUNDRY_API_KEY` from the environment.
-- **`sanitizeAltText(rawText)`** — strips AI tells (generic prefixes, wrapping quotes, em dashes) from a model response.
-- **`isAltTextGenerationSupportedForMimeType(mimeType)`** — true for `png`, `jpeg`, `gif`, and `webp`.
+- **`createFoundryClient({ apiKey })`** — returns a client bound to `https://engine.pair.gov.sg`:
+  - `generateText({ modelId, system, prompt, image?, maxOutputTokens? })` — one completion. `image` is `{ bytes, mimeType }`. Throws when the model returns empty text.
 
 ## Usage in Studio
 
-Studio owns the feature flag, permissions, and asset fetch. See `apps/studio/src/server/modules/image/image.service.ts`.
+Keep a thin adapter in the app that reads validated env, then call `generateText` from the use case. Alt-text suggestions live in `apps/studio/src/lib/generateAltText.ts`.

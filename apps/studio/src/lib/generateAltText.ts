@@ -1,21 +1,6 @@
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
-import { generateText } from "ai"
+import { foundryClient } from "~/lib/foundry"
 
-const FOUNDRY_BASE_URL = "https://engine.pair.gov.sg"
-const FOUNDRY_MODEL_ID = "claude-sonnet-4-6-v1:rsn"
-
-const getEngine = () => {
-  const apiKey = process.env.PAIR_FOUNDRY_API_KEY
-  if (!apiKey) {
-    throw new Error("PAIR_FOUNDRY_API_KEY is not set")
-  }
-
-  return createOpenAICompatible({
-    name: "pair-engine",
-    baseURL: FOUNDRY_BASE_URL,
-    apiKey,
-  })
-}
+const FOUNDRY_ALT_TEXT_MODEL_ID = "claude-sonnet-4-6-v1:rsn"
 
 const EM_DASH = "—"
 
@@ -42,10 +27,7 @@ export interface GenerateAltTextInput {
   context: GenerateAltTextContext
 }
 
-// Pair Foundry's vision models accept these raster formats. Callers should
-// skip generation entirely (not call this function) for anything else, e.g.
-// SVG, BMP, AVIF.
-const FOUNDRY_IMAGE_FORMATS = new Set([
+const SUPPORTED_IMAGE_MIME_TYPES = new Set([
   "image/png",
   "image/jpeg",
   "image/gif",
@@ -54,7 +36,7 @@ const FOUNDRY_IMAGE_FORMATS = new Set([
 
 export const isAltTextGenerationSupportedForMimeType = (
   mimeType: string,
-): boolean => FOUNDRY_IMAGE_FORMATS.has(mimeType)
+): boolean => SUPPORTED_IMAGE_MIME_TYPES.has(mimeType)
 
 const SYSTEM_PROMPT = `You write alt text for images on Singapore government websites built with Isomer.
 
@@ -125,30 +107,17 @@ export const generateAltText = async ({
       `Unsupported image MIME type for alt text generation: ${mimeType}`,
     )
   }
+  if (!foundryClient) {
+    throw new Error("PAIR_FOUNDRY_API_KEY is not set")
+  }
 
-  const foundryEngineProvider = getEngine()
-  const chatModel = foundryEngineProvider.chatModel(FOUNDRY_MODEL_ID)
-
-  const response = await generateText({
-    model: chatModel,
-    allowSystemInMessages: true,
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      {
-        role: "user",
-        content: [
-          { type: "text", text: buildUserPrompt(context) },
-          { type: "image", image: imageBytes, mediaType: mimeType },
-        ],
-      },
-    ],
+  const rawText = await foundryClient.generateText({
+    modelId: FOUNDRY_ALT_TEXT_MODEL_ID,
+    system: SYSTEM_PROMPT,
+    prompt: buildUserPrompt(context),
+    image: { bytes: imageBytes, mimeType },
     maxOutputTokens: 300,
   })
-
-  const rawText = response.text.trim()
-  if (!rawText) {
-    throw new Error("Foundry returned no alt text content")
-  }
 
   return sanitizeAltText(rawText)
 }

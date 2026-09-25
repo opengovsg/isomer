@@ -1,9 +1,6 @@
-export {
-  generateAltText,
-  isAltTextGenerationSupportedForMimeType,
-  sanitizeAltText,
-} from "./generateAltText"
+export { createFoundryClient } from "./client"
 export type {
-  GenerateAltTextContext,
-  GenerateAltTextInput,
-} from "./generateAltText"
+  FoundryClientConfig,
+  FoundryImageInput,
+  GenerateFoundryTextInput,
+} from "./client"

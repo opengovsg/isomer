@@ -1,7 +1,7 @@
 import {
   generateAltText,
   isAltTextGenerationSupportedForMimeType,
-} from "@isomer/ai"
+} from "~/lib/generateAltText"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 import type { Logger } from "@isomer/logging"
