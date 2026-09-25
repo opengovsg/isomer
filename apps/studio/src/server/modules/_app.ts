@@ -3,13 +3,13 @@
  */
 
 import { publicProcedure, router } from "../trpc"
+import { aiRouter } from "./ai/ai.router"
 import { assetRouter } from "./asset/asset.router"
 import { auditRouter } from "./audit/audit.router"
 import { authRouter } from "./auth/auth.router"
 import { collectionRouter } from "./collection/collection.router"
 import { folderRouter } from "./folder/folder.router"
 import { gazetteRouter } from "./gazette/gazette.router"
-import { imageRouter } from "./image/image.router"
 import { meRouter } from "./me/me.router"
 import { pageRouter } from "./page/page.router"
 import { redirectRouter } from "./redirect/redirect.router"
@@ -29,7 +29,7 @@ export const appRouter = router({
   folder: folderRouter,
   collection: collectionRouter,
   gazette: gazetteRouter,
-  image: imageRouter,
+  ai: aiRouter,
   site: siteRouter,
   redirect: redirectRouter,
   resource: resourceRouter,

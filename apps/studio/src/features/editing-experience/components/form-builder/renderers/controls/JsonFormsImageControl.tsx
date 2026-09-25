@@ -60,7 +60,7 @@ function JsonFormsImageControl({
     | Record<string, unknown>
     | undefined
 
-  const { mutate: generateAltText } = trpc.image.generateAltText.useMutation({
+  const { mutate: generateAltText } = trpc.ai.generateAltText.useMutation({
     onSuccess: ({ altText }) => {
       if (!altText || !altPath) return
       // The generation call takes a few seconds — don't clobber alt text the

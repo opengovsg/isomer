@@ -1,11 +1,11 @@
 import { ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY } from "~/lib/growthbook"
-import { generateAltTextSchema } from "~/schemas/image"
+import { generateAltTextSchema } from "~/schemas/ai"
 import { protectedProcedure, router } from "~/server/trpc"
 
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
-import { generateAltTextForUploadedImage } from "./image.service"
+import { generateAltTextForUploadedImage } from "./ai.service"
 
-export const imageRouter = router({
+export const aiRouter = router({
   generateAltText: protectedProcedure
     .input(generateAltTextSchema)
     // Arbitrary: bounds cost/latency exposure to the vision model per user.
