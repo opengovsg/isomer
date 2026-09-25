@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { generateAltText } from "~/lib/generateAltText"
 
@@ -79,18 +80,23 @@ describe("ai.service", () => {
       vi.mocked(logger.error).mockReset()
     })
 
-    it("returns undefined for a file type the model does not describe", async () => {
+    it("rejects a file type the model does not describe", async () => {
       // Arrange
       const fileKey = `36/${UUID}/notes.pdf`
 
       // Act
-      const result = await generateAltTextForUploadedImage({
+      const result = generateAltTextForUploadedImage({
         fileKey,
         logger,
       })
 
       // Assert
-      expect(result).toBeUndefined()
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This file type cannot be described",
+        }),
+      )
       expect(fetchMock).not.toHaveBeenCalled()
       expect(generateAltText).not.toHaveBeenCalled()
     })
@@ -117,23 +123,26 @@ describe("ai.service", () => {
       )
     })
 
-    it("returns undefined when the image cannot be fetched", async () => {
+    it("rejects when the image cannot be fetched", async () => {
       // Arrange
       fetchMock.mockResolvedValue({ ok: false, status: 404 })
 
       // Act
-      const result = await generateAltTextForUploadedImage({
+      const result = generateAltTextForUploadedImage({
         fileKey: PNG_KEY,
         logger,
       })
 
       // Assert
-      expect(result).toBeUndefined()
+      await expect(result).rejects.toMatchObject({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to generate alt text",
+      })
       expect(generateAltText).not.toHaveBeenCalled()
       expect(logger.error).toHaveBeenCalled()
     })
 
-    it("returns undefined when Pair Foundry fails", async () => {
+    it("rejects when Pair Foundry fails", async () => {
       // Arrange
       fetchMock.mockResolvedValue({ ok: true, status: 200 })
       vi.mocked(generateAltText).mockRejectedValue(
@@ -141,13 +150,16 @@ describe("ai.service", () => {
       )
 
       // Act
-      const result = await generateAltTextForUploadedImage({
+      const result = generateAltTextForUploadedImage({
         fileKey: PNG_KEY,
         logger,
       })
 
       // Assert
-      expect(result).toBeUndefined()
+      await expect(result).rejects.toMatchObject({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to generate alt text",
+      })
       expect(logger.error).toHaveBeenCalled()
     })
   })

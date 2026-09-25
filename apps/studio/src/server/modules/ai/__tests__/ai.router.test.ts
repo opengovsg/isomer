@@ -186,7 +186,7 @@ describe("ai.router", async () => {
     )
   })
 
-  it("should return no suggestion for a non-image asset", async () => {
+  it("should reject a non-image asset", async () => {
     // Arrange
     const { site, page } = await setupPageResource({
       resourceType: ResourceType.Page,
@@ -198,14 +198,19 @@ describe("ai.router", async () => {
     })
 
     // Act
-    const result = await caller.generateAltText({
+    const result = caller.generateAltText({
       siteId: site.id,
       pageId: Number(page.id),
       src: `/${site.id}/${UUID}/notes.pdf`,
     })
 
     // Assert
-    expect(result).toEqual({ altText: undefined })
+    await expect(result).rejects.toThrow(
+      new TRPCError({
+        code: "BAD_REQUEST",
+        message: "This file type cannot be described",
+      }),
+    )
     expect(generateAltText).not.toHaveBeenCalled()
   })
 

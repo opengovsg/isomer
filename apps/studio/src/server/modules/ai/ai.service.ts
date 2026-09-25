@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server"
 import { env } from "~/env.mjs"
 import {
   generateAltText,
@@ -46,17 +47,23 @@ export const parseUploadedImageKey = (src: string): string | null => {
   return parseAssetUrlToKey(parsed.href)
 }
 
-// Returns `undefined` (rather than throwing) whenever a usable suggestion
-// can't be produced — this is a best-effort assist that pre-fills a field the
-// editor can always fill in themselves, so a model/network hiccup should
-// never surface as an error in the page editor.
 export const generateAltTextForUploadedImage = async ({
   fileKey,
   logger,
-}: GenerateAltTextForUploadedImageParams): Promise<string | undefined> => {
+}: GenerateAltTextForUploadedImageParams): Promise<string> => {
   const mimeType = getContentTypeFromKey(fileKey)
-  if (!isAltTextGenerationSupportedForMimeType(mimeType) || !ASSETS_BASE_URL) {
-    return undefined
+  if (!isAltTextGenerationSupportedForMimeType(mimeType)) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "This file type cannot be described",
+    })
+  }
+
+  if (!ASSETS_BASE_URL) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to generate alt text",
+    })
   }
 
   const imageUrl = `${ASSETS_BASE_URL}/${fileKey}`
@@ -73,6 +80,10 @@ export const generateAltTextForUploadedImage = async ({
       { error, merged: { fileKey, mimeType } },
       "Failed to generate AI alt text suggestion",
     )
-    return undefined
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to generate alt text",
+      cause: error,
+    })
   }
 }
