@@ -1,0 +1,39 @@
+{
+  "name": "playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc && pnpm run generate && vite build",
+    "clean": "git clean -xdf dist .turbo node_modules",
+    "dev": "vite",
+    "format": "oxfmt --check . --ignore-path ../../.gitignore",
+    "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
+    "generate": "tsx scripts/generate-schema.ts",
+    "lint": "oxlint --type-aware .",
+    "lint:fix": "oxlint --type-aware --fix .",
+    "predev": "pnpm run generate",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "catalog:",
+    "@opengovsg/isomer-components": "workspace:*",
+    "ajv": "catalog:",
+    "react": "catalog:react",
+    "react-dom": "catalog:react"
+  },
+  "devDependencies": {
+    "@isomer/oxlint-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:react",
+    "@types/react-dom": "catalog:react",
+    "@vitejs/plugin-react": "catalog:vitest",
+    "autoprefixer": "catalog:",
+    "postcss": "catalog:",
+    "tailwindcss": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:vitest"
+  }
+}
