@@ -56,11 +56,17 @@ import {
   duplicateSelectedRows,
 } from "./TableBubbleMenu.duplicate"
 import {
+  splitFullyMergedColumn,
+  splitFullyMergedRow,
+} from "./TableBubbleMenu.split"
+import {
   getColumnMovePlan,
   getRowMovePlan,
   restoreMovedBlockSelection,
   selectionIncludesHeaderColumn,
   selectionIncludesHeaderRow,
+  selectionIsFullyMergedColumn,
+  selectionIsFullyMergedRow,
   selectionIsLeftmostColumn,
   selectionIsTopRow,
 } from "./TableBubbleMenu.utils"
@@ -297,6 +303,7 @@ const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
       aria-hidden
       className="chakra-switch__track"
       data-checked={checkedDataAttr}
+
       __css={{
         display: "inline-flex",
         flexShrink: 0,
@@ -308,11 +315,13 @@ const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
       <chakra.span
         className="chakra-switch__thumb"
         data-checked={checkedDataAttr}
+
         __css={styles.thumb}
       >
         <Icon
           as={ThumbIcon}
           data-checked={checkedDataAttr}
+
           __css={styles.thumbIcon}
         />
       </chakra.span>
@@ -320,11 +329,53 @@ const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
   )
 }
 
+const splitSelectedMergedCell = (editor: Editor) => {
+  const { state } = editor
+  const selection = state.selection
+
+  if (selection instanceof CellSelection) {
+    const rect = selectedRect(state)
+    if (selectionIsFullyMergedRow(rect)) {
+      if (splitFullyMergedRow(editor, rect)) return
+    }
+    if (selectionIsFullyMergedColumn(rect)) {
+      if (splitFullyMergedColumn(editor, rect)) return
+    }
+
+    if (selection.$anchorCell.pos !== selection.$headCell.pos) {
+      const mapIndex = rect.top * rect.map.width + rect.left
+      const cellOffset = rect.map.map[mapIndex]
+      if (cellOffset !== undefined) {
+        const cellPos = rect.tableStart + cellOffset
+        const narrowed = editor
+          .chain()
+          .focus()
+          .setCellSelection({ anchorCell: cellPos, headCell: cellPos })
+          .run()
+        if (narrowed) {
+          editor.chain().focus().splitCell().run()
+          return
+        }
+      }
+    }
+  }
+
+  editor.chain().focus().splitCell().run()
+}
+
 const MergeCellsButton = ({ editor }: { editor: Editor }) => (
   <ActionButton
     label="Merge cells"
     icon={<IconMergeCells boxSize="1rem" />}
     onClick={() => editor.chain().focus().mergeCells().run()}
+  />
+)
+
+const SplitCellButton = ({ editor }: { editor: Editor }) => (
+  <ActionButton
+    label="Split cell"
+    icon={<IconSplitCell boxSize="1rem" />}
+    onClick={() => splitSelectedMergedCell(editor)}
   />
 )
 
@@ -383,6 +434,7 @@ const RowSelectionActions = ({
     { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
     "down",
   )
+  const isFullyMergedRow = selectionIsFullyMergedRow(rect)
 
   return (
     <ActionGroup>
@@ -413,7 +465,12 @@ const RowSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
-      <MergeCellsButton editor={editor} />
+      {isFullyMergedRow ? (
+        <SplitCellButton editor={editor} />
+      ) : (
+        <MergeCellsButton editor={editor} />
+      )}
+
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
@@ -457,6 +514,7 @@ const ColumnSelectionActions = ({
     { left: rect.left, right: rect.right, tableWidth: rect.map.width },
     "right",
   )
+  const isFullyMergedColumn = selectionIsFullyMergedColumn(rect)
 
   return (
     <ActionGroup>
@@ -487,7 +545,12 @@ const ColumnSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
-      <MergeCellsButton editor={editor} />
+      {isFullyMergedColumn ? (
+        <SplitCellButton editor={editor} />
+      ) : (
+        <MergeCellsButton editor={editor} />
+      )}
+
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
@@ -529,17 +592,27 @@ const SelectionActions = ({
     case "column":
     case "header-column":
       return <ColumnSelectionActions editor={editor} rect={rect} />
-    case "table":
+    case "table": {
+      const isFullyMergedRow = selectionIsFullyMergedRow(rect)
+      const isFullyMergedColumn = selectionIsFullyMergedColumn(rect)
+      const showSplit = isFullyMergedRow || isFullyMergedColumn
+
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          <ActionButton
-            label="Delete table"
-            icon={<BiTrash fontSize="1rem" />}
-            onClick={() => editor.chain().focus().deleteTable().run()}
-          />
+          {showSplit ? (
+            <SplitCellButton editor={editor} />
+          ) : (
+            <ActionButton
+              label="Delete table"
+              icon={<BiTrash fontSize="1rem" />}
+              onClick={() => editor.chain().focus().deleteTable().run()}
+            />
+          )}
         </ActionGroup>
       )
+    }
+
     case "multi-cell":
       return (
         <ActionGroup>
@@ -557,11 +630,7 @@ const SelectionActions = ({
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          <ActionButton
-            label="Split cell"
-            icon={<IconSplitCell boxSize="1rem" />}
-            onClick={() => editor.chain().focus().splitCell().run()}
-          />
+          <SplitCellButton editor={editor} />
         </ActionGroup>
       )
     default:

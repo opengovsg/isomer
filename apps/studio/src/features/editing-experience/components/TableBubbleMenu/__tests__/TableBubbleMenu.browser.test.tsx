@@ -107,6 +107,28 @@ const selectCells = (editor: Editor, startIndex: number, endIndex: number) => {
   })
 }
 
+const selectRowAtCell = (editor: Editor, cellIndex: number) => {
+  const cellPos = nthCellPos(editor, cellIndex)
+  act(() => {
+    editor.view.dispatch(
+      editor.state.tr.setSelection(
+        CellSelection.rowSelection(editor.state.doc.resolve(cellPos)),
+      ),
+    )
+  })
+}
+
+const selectColumnAtCell = (editor: Editor, cellIndex: number) => {
+  const cellPos = nthCellPos(editor, cellIndex)
+  act(() => {
+    editor.view.dispatch(
+      editor.state.tr.setSelection(
+        CellSelection.colSelection(editor.state.doc.resolve(cellPos)),
+      ),
+    )
+  })
+}
+
 const activateTableBubbleMenu = async (
   findByRole: (role: string, options: { name: string }) => Promise<HTMLElement>,
 ) => {
@@ -889,6 +911,94 @@ describe("TableBubbleMenu", () => {
     expect(await findByText("Clear contents")).toBeTruthy()
     expect(await findByText("Split cell")).toBeTruthy()
     expect(queryByText("Merge cells")).toBeNull()
+  })
+
+  it("shows Split cell for a fully merged row selected via the row handle", async () => {
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
+
+    // Arrange
+    selectCells(editor, 3, 5)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    expect(rowCellCount(editor, 1)).toBe(1)
+
+    selectRowAtCell(editor, 3)
+    // Act
+    await activateTableBubbleMenu(findByRole)
+
+    // Assert
+    expect(await findByText("Split cell")).toBeTruthy()
+    expect(await findByText("Delete row")).toBeTruthy()
+    expect(queryByText("Merge cells")).toBeNull()
+  })
+
+  it("splits a fully merged row back into separate cells from the row menu", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    // Arrange
+    selectCells(editor, 3, 5)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    selectRowAtCell(editor, 3)
+    await activateTableBubbleMenu(findByRole)
+    const splitCell = await findByText("Split cell")
+
+    // Act
+    act(() => {
+      splitCell.click()
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(rowCellCount(editor, 1)).toBe(3)
+      expect(rowTextsAt(editor, 1)).toEqual([
+        "Row 1, A",
+        "Row 1, B",
+        "Row 1, C",
+      ])
+    })
+  })
+
+  it("shows Split cell for a fully merged column selected via the column handle", async () => {
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
+
+    // Arrange
+    selectCells(editor, 1, 7)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    selectColumnAtCell(editor, 1)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+
+    // Assert
+    expect(await findByText("Split cell")).toBeTruthy()
+    expect(await findByText("Delete column")).toBeTruthy()
+    expect(queryByText("Merge cells")).toBeNull()
+  })
+
+  it("does not show Split cell for a full row that only partially merged", async () => {
+    const { editor, findByRole, findByText, queryByText } =
+      await renderHarness()
+
+    // Arrange
+    selectCells(editor, 3, 4)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    selectRowAtCell(editor, 3)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+
+    // Assert
+    expect(queryByText("Split cell")).toBeNull()
+    expect(await findByText("Merge cells")).toBeTruthy()
   })
 
   it("shows Clear contents and Merge cells for an irregular multi-cell selection", async () => {
