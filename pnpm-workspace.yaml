@@ -181,6 +181,9 @@ catalog:
   wretch: ^3.0.9
 
 catalogs:
+  env:
+    "@t3-oss/env-core": ^0.13.8
+    "@t3-oss/env-nextjs": ^0.13.8
   atlaskitPragmaticDnd:
     "@atlaskit/pragmatic-drag-and-drop": ^3.1.0
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^2.2.2

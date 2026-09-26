@@ -508,6 +508,13 @@ catalogs:
     zod:
       specifier: 4.5.4
       version: 4.5.4
+  env:
+    '@t3-oss/env-core':
+      specifier: ^0.13.8
+      version: 0.13.11
+    '@t3-oss/env-nextjs':
+      specifier: ^0.13.8
+      version: 0.13.11
   growthbook:
     '@growthbook/growthbook':
       specifier: ^1.7.0
@@ -882,6 +889,9 @@ importers:
       '@sinclair/typebox':
         specifier: 'catalog:'
         version: 0.33.24
+      '@t3-oss/env-nextjs':
+        specifier: catalog:env
+        version: 0.13.11(typescript@6.0.3)(valibot@1.4.2(typescript@6.0.3))(zod@4.5.4)
       '@tanstack/query-devtools':
         specifier: catalog:tanstack-query
         version: 5.103.2(csstype@3.2.3)
@@ -1567,6 +1577,9 @@ importers:
 
   packages/logging:
     dependencies:
+      '@t3-oss/env-core':
+        specifier: catalog:env
+        version: 0.13.11(typescript@6.0.3)(valibot@1.4.2(typescript@6.0.3))(zod@4.5.4)
       dd-trace:
         specifier: 'catalog:'
         version: 6.16.0
@@ -1604,6 +1617,9 @@ importers:
       '@isomer/logging':
         specifier: workspace:*
         version: link:../logging
+      '@t3-oss/env-core':
+        specifier: catalog:env
+        version: 0.13.11(typescript@6.0.3)(valibot@1.4.2(typescript@6.0.3))(zod@4.5.4)
       pg-boss:
         specifier: 'catalog:'
         version: 12.32.0
@@ -2005,6 +2021,9 @@ importers:
       '@octokit/rest':
         specifier: 'catalog:'
         version: 22.0.1
+      '@t3-oss/env-core':
+        specifier: catalog:env
+        version: 0.13.11(typescript@6.0.3)(valibot@1.4.2(typescript@6.0.3))(zod@4.5.4)
       axios:
         specifier: 'catalog:'
         version: 1.20.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
@@ -6782,6 +6801,40 @@ packages:
   '@szmarczak/http-timer@5.0.1':
     resolution: {integrity: sha512-+PmQX0PiAYPMeVYe237LJAYvOMYW1j2rH5YROyS3b4CTVJum34HfRvKvAzozHAQG0TnHNdUfY9nCeUyRAs//cw==}
     engines: {node: '>=14.16'}
+
+  '@t3-oss/env-core@0.13.11':
+    resolution: {integrity: sha512-sM7GYY+KL7H/Hl0BE0inWfk3nRHZOLhmVn7sHGxaZt9FAR6KqREXAE+6TqKfiavfXmpRxO/OZ2QgKRd+oiBYRQ==}
+    peerDependencies:
+      arktype: ^2.1.0
+      typescript: '>=5.0.0'
+      valibot: ^1.0.0-beta.7 || ^1.0.0
+      zod: ^3.24.0 || ^4.0.0
+    peerDependenciesMeta:
+      arktype:
+        optional: true
+      typescript:
+        optional: true
+      valibot:
+        optional: true
+      zod:
+        optional: true
+
+  '@t3-oss/env-nextjs@0.13.11':
+    resolution: {integrity: sha512-NC+3j7YWgpzdFu1t5y/8wqibTK0lm5RS4bjXA1n8uwik3wIR4iZM4Fa+U2BaMa5k3Qk8RZiYhoAIX0WogmGkzg==}
+    peerDependencies:
+      arktype: ^2.1.0
+      typescript: '>=5.0.0'
+      valibot: ^1.0.0-beta.7 || ^1.0.0
+      zod: ^3.24.0 || ^4.0.0
+    peerDependenciesMeta:
+      arktype:
+        optional: true
+      typescript:
+        optional: true
+      valibot:
+        optional: true
+      zod:
+        optional: true
 
   '@tanstack/match-sorter-utils@8.19.4':
     resolution: {integrity: sha512-Wo1iKt2b9OT7d+YGhvEPD3DXvPv2etTusIMhMUoG7fbhmxcXCtIjJDEygy91Y2JFlwGyjqiBPRozme7UD8hoqg==}
@@ -18263,6 +18316,20 @@ snapshots:
   '@szmarczak/http-timer@5.0.1':
     dependencies:
       defer-to-connect: 2.0.1
+
+  '@t3-oss/env-core@0.13.11(typescript@6.0.3)(valibot@1.4.2(typescript@6.0.3))(zod@4.5.4)':
+    optionalDependencies:
+      typescript: 6.0.3
+      valibot: 1.4.2(typescript@6.0.3)
+      zod: 4.5.4
+
+  '@t3-oss/env-nextjs@0.13.11(typescript@6.0.3)(valibot@1.4.2(typescript@6.0.3))(zod@4.5.4)':
+    dependencies:
+      '@t3-oss/env-core': 0.13.11(typescript@6.0.3)(valibot@1.4.2(typescript@6.0.3))(zod@4.5.4)
+    optionalDependencies:
+      typescript: 6.0.3
+      valibot: 1.4.2(typescript@6.0.3)
+      zod: 4.5.4
 
   '@tanstack/match-sorter-utils@8.19.4':
     dependencies:

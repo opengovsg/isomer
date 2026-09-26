@@ -17,6 +17,7 @@
     "typecheck": "tsgo"
   },
   "dependencies": {
+    "@t3-oss/env-core": "catalog:env",
     "dd-trace": "catalog:",
     "nanoid": "catalog:",
     "pino": "catalog:",

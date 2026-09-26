@@ -1,10 +1,12 @@
 import { CreateInvalidationCommand } from "@aws-sdk/client-cloudfront"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { env } from "~/env.mjs"
 
 import { invalidateAssetPaths } from "../cloudfront.service"
 
-const { mockSend } = vi.hoisted(() => ({ mockSend: vi.fn() }))
+const { mockEnv, mockSend } = vi.hoisted(() => ({
+  mockEnv: { CLOUDFRONT_ASSETS_DISTRIBUTION_ID: "" },
+  mockSend: vi.fn(),
+}))
 
 vi.mock("@aws-sdk/client-cloudfront", () => ({
   // `function`, not an arrow, so `new CloudFrontClient(...)` /
@@ -19,7 +21,7 @@ vi.mock("@aws-sdk/client-cloudfront", () => ({
 }))
 
 vi.mock("~/env.mjs", () => ({
-  env: { CLOUDFRONT_ASSETS_DISTRIBUTION_ID: "" },
+  env: mockEnv,
 }))
 
 const mockLogger = { error: vi.fn() } as unknown as Parameters<
@@ -29,7 +31,7 @@ const mockLogger = { error: vi.fn() } as unknown as Parameters<
 describe("invalidateAssetPaths", () => {
   beforeEach(() => {
     mockSend.mockReset()
-    env.CLOUDFRONT_ASSETS_DISTRIBUTION_ID = ""
+    mockEnv.CLOUDFRONT_ASSETS_DISTRIBUTION_ID = ""
   })
 
   it("should return success without calling CloudFront when there are no keys", async () => {
@@ -55,7 +57,7 @@ describe("invalidateAssetPaths", () => {
 
   it("should create one invalidation batching a path per unique key when configured", async () => {
     // Arrange
-    env.CLOUDFRONT_ASSETS_DISTRIBUTION_ID = "DIST123"
+    mockEnv.CLOUDFRONT_ASSETS_DISTRIBUTION_ID = "DIST123"
     mockSend.mockResolvedValueOnce({ Invalidation: { Id: "INV123" } })
 
     // Act
@@ -79,7 +81,7 @@ describe("invalidateAssetPaths", () => {
 
   it("should return a generic failure message when CloudFront throws, without leaking the underlying error", async () => {
     // Arrange
-    env.CLOUDFRONT_ASSETS_DISTRIBUTION_ID = "DIST123"
+    mockEnv.CLOUDFRONT_ASSETS_DISTRIBUTION_ID = "DIST123"
     mockSend.mockRejectedValueOnce(new Error("Access denied"))
 
     // Act
