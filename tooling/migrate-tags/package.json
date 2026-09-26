@@ -1,6 +1,7 @@
 {
   "name": "@isomer/migrate-tags",
   "type": "module",
+  "private": true,
   "exports": {
     ".": "./index.ts"
   },
