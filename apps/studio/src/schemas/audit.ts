@@ -14,6 +14,8 @@ import {
 } from "~/server/modules/audit/audit.errors"
 import { AuditLogExportReportType } from "~prisma/generated/generatedEnums"
 
+import { infiniteOffsetPaginationSchema } from "./pagination"
+
 const SINGAPORE_TIME_ZONE = "Asia/Singapore"
 
 export const validateIsNotFutureMonth = (
@@ -63,6 +65,17 @@ export const AuditLogExportScope = {
 } as const
 export type AuditLogExportScope =
   (typeof AuditLogExportScope)[keyof typeof AuditLogExportScope]
+
+// Input for the page editor's "History" panel — lists ResourceUpdate audit
+// log rows for one page, paginated. `pageId`/`siteId` match the shape
+// `basePageSchema` (in `~/schemas/page.ts`) already uses across the page
+// editor, since this is always called with the same route params.
+export const listResourceUpdatesSchema = z
+  .object({
+    pageId: z.number().min(1),
+    siteId: z.number().min(1),
+  })
+  .merge(infiniteOffsetPaginationSchema)
 
 // A calendar month in ISO `yyyy-MM` form, e.g. "2026-03". This is the shape
 // every month value in the audit-export flow is passed around in (picker →

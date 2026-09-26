@@ -9,6 +9,7 @@ import CollectionEditorStateDrawer from "./CollectionEditorStateDrawer"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import DatabaseEditorStateDrawer from "./DatabaseEditorStateDrawer"
 import HeroEditorDrawer from "./HeroEditorDrawer"
+import HistoryStateDrawer from "./HistoryStateDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
 import RawJsonEditorModeStateDrawer from "./RawJsonEditorModeStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
@@ -55,6 +56,8 @@ export function EditPageDrawer(): JSX.Element {
       return <ComplexEditorStateDrawer />
     case "metadataEditor":
       return <MetadataEditorStateDrawer />
+    case "history":
+      return <HistoryStateDrawer />
     case "databaseEditor":
       return <DatabaseEditorStateDrawer />
     case "heroEditor":

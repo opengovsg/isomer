@@ -110,5 +110,8 @@ describe("RootStateDrawer", () => {
     // Assert
     expect(screen.queryByRole("button", { name: "Add block" })).not.toBeNull()
     expect(screen.queryByText("Custom blocks")).not.toBeNull()
+    expect(
+      screen.queryByRole("button", { name: "View page history" }),
+    ).not.toBeNull()
   })
 })
