@@ -3,6 +3,7 @@
  */
 
 import { publicProcedure, router } from "../trpc"
+import { aiRouter } from "./ai/ai.router"
 import { assetRouter } from "./asset/asset.router"
 import { auditRouter } from "./audit/audit.router"
 import { authRouter } from "./auth/auth.router"
@@ -28,6 +29,7 @@ export const appRouter = router({
   folder: folderRouter,
   collection: collectionRouter,
   gazette: gazetteRouter,
+  ai: aiRouter,
   site: siteRouter,
   redirect: redirectRouter,
   resource: resourceRouter,

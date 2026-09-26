@@ -1,17 +1,27 @@
 import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
 import { Box, FormControl } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
-import { withJsonFormsControlProps } from "@jsonforms/react"
+import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
+import { useMutation } from "@tanstack/react-query"
+import { get } from "lodash-es"
+import { useRef } from "react"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
+import { useAiAltTextGenerationEnabled } from "~/hooks/useAiAltTextGenerationEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
+import { trpc } from "~/utils/trpc"
 
-import { getCustomErrorMessage } from "./utils"
+import { AltTextSuggestion } from "./AltTextSuggestion"
+import {
+  getCustomErrorMessage,
+  getImageFieldPaths,
+  getSurroundingText,
+} from "./utils"
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,
@@ -38,6 +48,43 @@ function JsonFormsImageControl({
   schema,
 }: JsonFormsImageControlProps) {
   const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
+  const isAiAltTextGenerationEnabled = useAiAltTextGenerationEnabled(siteId)
+  const ctx = useJsonForms()
+
+  const { parentPath, altPath } = getImageFieldPaths(path)
+  const parentData = get(ctx.core?.data, parentPath) as
+    | Record<string, unknown>
+    | undefined
+
+  const utils = trpc.useUtils()
+  const altTextRequest = useRef<AbortController | null>(null)
+  const {
+    mutate: generateAltText,
+    reset: resetAltText,
+    isPending: isGeneratingAltText,
+    isSuccess: hasAltText,
+    isError: hasAltTextFailed,
+    data: altTextResult,
+  } = useMutation({
+    mutationFn: (
+      input: Parameters<typeof utils.client.ai.generateAltText.mutate>[0],
+    ) => {
+      // A newer upload replaces the in-flight suggestion. The observer only
+      // keeps the latest mutation, and aborting stops the previous request.
+      altTextRequest.current?.abort()
+      const controller = new AbortController()
+      altTextRequest.current = controller
+      return utils.client.ai.generateAltText.mutate(input, {
+        signal: controller.signal,
+      })
+    },
+  })
+  const altText = hasAltText ? altTextResult.altText : undefined
+  const dismissAltText = () => {
+    resetAltText()
+    altTextRequest.current?.abort()
+    altTextRequest.current = null
+  }
 
   return (
     <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
@@ -45,7 +92,10 @@ function JsonFormsImageControl({
       {data ? (
         <AttachmentData
           data={data.split("/").pop() ?? "Unknown"}
-          onClick={() => handleChange(path, undefined)}
+          onClick={() => {
+            handleChange(path, undefined)
+            dismissAltText()
+          }}
         />
       ) : (
         <FileAttachment
@@ -55,10 +105,41 @@ function JsonFormsImageControl({
           }
           siteId={siteId}
           resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
-          setHref={(src) => handleChange(path, src)}
+          setHref={(src) => {
+            handleChange(path, src)
+            if (!isAiAltTextGenerationEnabled) {
+              return
+            }
+            // Suggestions only apply on a page whose image field has a sibling alt.
+            if (!pageId || !altPath) {
+              return
+            }
+            // Skip the empty href FileAttachment sends while the upload is in flight.
+            if (!src) {
+              return
+            }
+
+            generateAltText({
+              siteId,
+              pageId,
+              src,
+              surroundingText: getSurroundingText(parentData),
+            })
+          }}
           shouldFetchResource={true}
         />
       )}
+      <AltTextSuggestion
+        isGenerating={isGeneratingAltText}
+        suggestion={altText}
+        hasFailed={hasAltTextFailed}
+        onApply={() => {
+          if (!altPath || !altText) return
+          handleChange(altPath, altText)
+          dismissAltText()
+        }}
+        onDismiss={dismissAltText}
+      />
       {!!errors && (
         <FormErrorMessage>
           {label} {getCustomErrorMessage(errors)}

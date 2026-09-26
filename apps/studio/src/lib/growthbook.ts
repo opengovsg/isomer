@@ -29,6 +29,47 @@ export const IS_UNPUBLISH_ENABLED_FEATURE_KEY = "is-unpublish-enabled"
 export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY = "is-date-filters-enabled"
 export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
 
+// Gates the live Pair Foundry call. The value is the sites in the canary.
+// An empty list is off everywhere. Widen `enabledSites` over time. To limit
+// the canary to specific people, target their `email` in GrowthBook and serve
+// this same shape. The server sets `email` before reading the flag.
+export const ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY =
+  "enable-ai-alt-text-generation"
+// `interface` has no string index signature, so it is not a GrowthBook JSONValue.
+// oxlint-disable-next-line typescript/consistent-type-definitions
+export type AiAltTextGenerationFeatureValue = {
+  enabledSites: string[]
+}
+export const ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE: AiAltTextGenerationFeatureValue =
+  { enabledSites: [] }
+
+export const isAiAltTextGenerationEnabledForSite = ({
+  value,
+  siteId,
+}: {
+  value: AiAltTextGenerationFeatureValue
+  siteId: number
+}): boolean => value.enabledSites.includes(siteId.toString())
+
+export const getIsAiAltTextGenerationEnabled = async ({
+  gb,
+  siteId,
+  email,
+}: {
+  gb: GrowthBook
+  siteId: number
+  email: string
+}): Promise<boolean> => {
+  await gb.setAttributes({ email })
+  return isAiAltTextGenerationEnabledForSite({
+    value: gb.getFeatureValue(
+      ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY,
+      ENABLE_AI_ALT_TEXT_GENERATION_FEATURE_KEY_FALLBACK_VALUE,
+    ),
+    siteId,
+  })
+}
+
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
 interface GetIsSingpassEnabledProps {

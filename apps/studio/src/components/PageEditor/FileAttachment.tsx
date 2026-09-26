@@ -3,7 +3,7 @@ import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment, useToast } from "@opengovsg/design-system-react"
 import { uniq } from "lodash-es"
 import dynamic from "next/dynamic"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
@@ -51,11 +51,15 @@ export const FileAttachment = ({
   })
   const { handleAssetUpload, isLoading } = useAssetUpload({})
   const toast = useToast()
+  const setHrefRef = useRef(setHref)
+  setHrefRef.current = setHref
 
   useEffect(() => {
-    // NOTE: The outer link modal uses this to disable the button
-    if (isLoading) setHref("")
-  }, [isLoading, setHref])
+    // Clear the href once when the upload starts so the link modal can
+    // disable save. setHref is a new function every render; depending on it
+    // would wipe a path that was saved while this upload was still loading.
+    if (isLoading) setHrefRef.current("")
+  }, [isLoading])
 
   const doUpload = (file: File) => {
     uploadFile(

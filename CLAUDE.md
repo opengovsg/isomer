@@ -80,6 +80,7 @@ pnpm clean            # Clean build artifacts
 ### Monorepo Structure
 - `apps/studio` - Main Next.js 16 application (CMS/site builder)
 - `packages/components` - Reusable component library (@opengovsg/isomer-components)
+- `packages/ai` - Shared model calls (@isomer/ai)
 - `packages/pgboss` - Job queue wrapper (@isomer/pgboss)
 - `tooling/*` - Shared configs (TypeScript, Oxlint, Storybook)
 
