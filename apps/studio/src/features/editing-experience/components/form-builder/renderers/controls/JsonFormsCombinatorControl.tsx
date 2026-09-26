@@ -19,6 +19,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { keepMatchingArrayFields } from "~/utils/combinatorArrayFields"
 
 export const jsonFormsOneOfControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.OneOfControl,
@@ -91,18 +92,19 @@ function JsonFormsCombinatorControl({
       renderInfos[options.findIndex((option) => option.value === value)]?.schema
     if (!newSchema) {
       handleChange(path, {})
+    } else if (newSchema.type === "string") {
+      handleChange(path, newSchema.const || "")
     } else {
       // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const newData = createDefaultValue(newSchema, rootSchema)
-
-      if (newSchema.type === "string") {
-        handleChange(path, newSchema.const || "")
-      } else {
-        handleChange(path, {
-          ...data,
-          ...newData,
-        })
-      }
+      handleChange(path, {
+        ...data,
+        ...newData,
+        ...keepMatchingArrayFields(
+          data as Record<string, unknown> | undefined,
+          newSchema,
+        ),
+      })
     }
   }
 

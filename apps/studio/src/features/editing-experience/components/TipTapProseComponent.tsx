@@ -8,6 +8,7 @@ import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { serializePageBlob } from "~/utils/combinatorArrayFields"
 import { trpc } from "~/utils/trpc"
 
 import { useTextEditor } from "../hooks/useTextEditor"
@@ -89,7 +90,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
     mutate({
       pageId,
       siteId,
-      content: JSON.stringify(newPageState),
+      content: serializePageBlob(newPageState),
     })
   }
 
@@ -168,7 +169,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
                     {
                       pageId,
                       siteId,
-                      content: JSON.stringify(previewPageState),
+                      content: serializePageBlob(previewPageState),
                     },
                     {
                       onSuccess: () => {
