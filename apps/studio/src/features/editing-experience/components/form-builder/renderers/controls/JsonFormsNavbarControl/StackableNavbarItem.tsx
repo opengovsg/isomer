@@ -45,6 +45,7 @@ interface StackableNavbarItemProps {
   errors: ErrorObject<string, Record<string, any>, unknown>[]
   onEdit: (subItemIndex?: number) => void
   removeItem: (subItemIndex?: number) => void
+  onNest: (subItemIndex?: number) => void
   name?: string
   description?: string
   subItems?: Pick<StackableNavbarItemProps, "name" | "description">[]
@@ -55,6 +56,7 @@ export const StackableNavbarItem = ({
   errors,
   onEdit,
   removeItem,
+  onNest,
   name,
   description,
   subItems,
@@ -251,6 +253,7 @@ export const StackableNavbarItem = ({
             isNavbarItemDragging={isNavbarItemDragging}
             onEditItem={onEdit}
             onDeleteItem={onDeleteGroupModalOpen}
+            onNestItem={() => onNest()}
             isItemBeingDraggedOver={isItemBeingDraggedOver}
             setIsItemBeingDraggedOver={setIsItemBeingDraggedOver}
             isInvalid={numberOfErrors > 0}
@@ -289,6 +292,7 @@ export const StackableNavbarItem = ({
                         setSubItemToDelete(idx)
                         onDeleteSubItemModalOpen()
                       }}
+                      onNestItem={() => onNest(idx)}
                       isInvalid={isInvalid}
                     />
                   )

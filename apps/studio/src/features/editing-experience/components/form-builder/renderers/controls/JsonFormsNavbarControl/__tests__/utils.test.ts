@@ -6,6 +6,7 @@ import {
   handleMoveItem,
   isFirstLevelLinksOverLimit,
   isSubItemPath,
+  nestNavbarItemUnder,
 } from "../utils"
 
 describe("getNavbarItemPath", () => {
@@ -558,5 +559,227 @@ describe("handleMoveItem", () => {
 
     // Assert
     expect(actual).toEqual(prevData)
+  })
+})
+
+describe("nestNavbarItemUnder", () => {
+  it("should nest a childless main item under a later main item without subitems", () => {
+    // Arrange
+    const prevData = [
+      { name: "Item 1", url: "/item1" },
+      { name: "Item 2", url: "/item2" },
+      { name: "Item 3", url: "/item3" },
+    ]
+
+    // Act
+    const actual = nestNavbarItemUnder(prevData, 8, { index: 0 }, 1)
+
+    // Assert
+    const expected = [
+      {
+        name: "Item 2",
+        url: "/item2",
+        items: [{ name: "Item 1", url: "/item1" }],
+      },
+      { name: "Item 3", url: "/item3" },
+    ]
+    expect(actual).toEqual(expected)
+  })
+
+  it("should nest a childless main item under an earlier main item", () => {
+    // Arrange
+    const prevData = [
+      { name: "Item 1", url: "/item1" },
+      { name: "Item 2", url: "/item2" },
+      { name: "Item 3", url: "/item3" },
+    ]
+
+    // Act
+    const actual = nestNavbarItemUnder(prevData, 8, { index: 2 }, 0)
+
+    // Assert
+    const expected = [
+      {
+        name: "Item 1",
+        url: "/item1",
+        items: [{ name: "Item 3", url: "/item3" }],
+      },
+      { name: "Item 2", url: "/item2" },
+    ]
+    expect(actual).toEqual(expected)
+  })
+
+  it("should nest a childless main item at the end of an item with existing subitems", () => {
+    // Arrange
+    const prevData = [
+      {
+        name: "Item 1",
+        url: "/item1",
+        items: [
+          { name: "Subitem 1-1", url: "/item1/subitem1" },
+          { name: "Subitem 1-2", url: "/item1/subitem2" },
+        ],
+      },
+      { name: "Item 2", url: "/item2" },
+    ]
+
+    // Act
+    const actual = nestNavbarItemUnder(prevData, 8, { index: 1 }, 0)
+
+    // Assert
+    const expected = [
+      {
+        name: "Item 1",
+        url: "/item1",
+        items: [
+          { name: "Subitem 1-1", url: "/item1/subitem1" },
+          { name: "Subitem 1-2", url: "/item1/subitem2" },
+          { name: "Item 2", url: "/item2" },
+        ],
+      },
+    ]
+    expect(actual).toEqual(expected)
+  })
+
+  it("should not nest a main item that has subitems", () => {
+    // Arrange
+    const prevData = [
+      {
+        name: "Item 1",
+        url: "/item1",
+        items: [{ name: "Subitem 1-1", url: "/item1/subitem1" }],
+      },
+      { name: "Item 2", url: "/item2" },
+    ]
+
+    // Act
+    const actual = nestNavbarItemUnder(prevData, 8, { index: 0 }, 1)
+
+    // Assert
+    expect(actual).toEqual(prevData)
+  })
+
+  it("should move a subitem to the end of another main item's subitems", () => {
+    // Arrange
+    const prevData = [
+      {
+        name: "Item 1",
+        url: "/item1",
+        items: [
+          { name: "Subitem 1-1", url: "/item1/subitem1" },
+          { name: "Subitem 1-2", url: "/item1/subitem2" },
+        ],
+      },
+      { name: "Item 2", url: "/item2" },
+    ]
+
+    // Act
+    const actual = nestNavbarItemUnder(
+      prevData,
+      8,
+      { index: 0, parentIndex: 0 },
+      1,
+    )
+
+    // Assert
+    const expected = [
+      {
+        name: "Item 1",
+        url: "/item1",
+        items: [{ name: "Subitem 1-2", url: "/item1/subitem2" }],
+      },
+      {
+        name: "Item 2",
+        url: "/item2",
+        items: [{ name: "Subitem 1-1", url: "/item1/subitem1" }],
+      },
+    ]
+    expect(actual).toEqual(expected)
+  })
+
+  it("should promote a subitem to the end of the first level when destination is root", () => {
+    // Arrange
+    const prevData = [
+      {
+        name: "Item 1",
+        url: "/item1",
+        items: [
+          { name: "Subitem 1-1", url: "/item1/subitem1" },
+          { name: "Subitem 1-2", url: "/item1/subitem2" },
+        ],
+      },
+      { name: "Item 2", url: "/item2" },
+    ]
+
+    // Act
+    const actual = nestNavbarItemUnder(
+      prevData,
+      8,
+      { index: 0, parentIndex: 0 },
+      "root",
+    )
+
+    // Assert
+    const expected = [
+      {
+        name: "Item 1",
+        url: "/item1",
+        items: [{ name: "Subitem 1-2", url: "/item1/subitem2" }],
+      },
+      { name: "Item 2", url: "/item2" },
+      { name: "Subitem 1-1", url: "/item1/subitem1" },
+    ]
+    expect(actual).toEqual(expected)
+  })
+
+  it("should not promote a subitem to root when the first level is at maxItems", () => {
+    // Arrange
+    const prevData = [
+      {
+        name: "Item 1",
+        url: "/item1",
+        items: [{ name: "Subitem 1-1", url: "/item1/subitem1" }],
+      },
+      { name: "Item 2", url: "/item2" },
+    ]
+
+    // Act
+    const actual = nestNavbarItemUnder(
+      prevData,
+      2,
+      { index: 0, parentIndex: 0 },
+      "root",
+    )
+
+    // Assert
+    expect(actual).toEqual(prevData)
+  })
+
+  it("should promote a subitem to root when maxItems is undefined", () => {
+    // Arrange
+    const prevData = [
+      {
+        name: "Item 1",
+        url: "/item1",
+        items: [{ name: "Subitem 1-1", url: "/item1/subitem1" }],
+      },
+      { name: "Item 2", url: "/item2" },
+    ]
+
+    // Act
+    const actual = nestNavbarItemUnder(
+      prevData,
+      undefined,
+      { index: 0, parentIndex: 0 },
+      "root",
+    )
+
+    // Assert
+    const expected = [
+      { name: "Item 1", url: "/item1", items: [] },
+      { name: "Item 2", url: "/item2" },
+      { name: "Subitem 1-1", url: "/item1/subitem1" },
+    ]
+    expect(actual).toEqual(expected)
   })
 })
