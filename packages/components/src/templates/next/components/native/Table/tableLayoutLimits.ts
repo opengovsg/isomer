@@ -21,3 +21,7 @@ export const normalizeColspan = (value: unknown): number =>
 /** Clamp untrusted rowspan to [1, MAX_TABLE_ROWS]. */
 export const normalizeRowspan = (value: unknown): number =>
   normalizeBoundedSpan(value, MAX_TABLE_ROWS)
+
+/** `getJSON()` drops `content` when a row has no cells. */
+export const rowCells = <T>(row: { content?: T[] | null }): T[] =>
+  row.content ?? []

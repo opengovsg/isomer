@@ -52,6 +52,81 @@ export const selectionIsLeftmostColumn = (rect: {
   right: number
 }): boolean => rect.left === 0 && rect.right === 1
 
+interface MergeSelectionRect {
+  top: number
+  bottom: number
+  left: number
+  right: number
+  map: TableMap
+  table: Node
+}
+
+const cellRectIntersectsSelection = (
+  cell: { top: number; bottom: number; left: number; right: number },
+  selection: Pick<MergeSelectionRect, "top" | "bottom" | "left" | "right">,
+): boolean =>
+  cell.top < selection.bottom &&
+  cell.bottom > selection.top &&
+  cell.left < selection.right &&
+  cell.right > selection.left
+
+// Merging removes every selected cell except the anchor; rows below the anchor
+// lose all direct children when each child intersects the selection.
+const mergeWouldLeaveEmptyRow = (rect: MergeSelectionRect): boolean => {
+  const { table, map, top, bottom, left, right } = rect
+  if (top + 1 >= bottom) return false
+
+  const selection = { top, bottom, left, right }
+  const cellRectByOffset = new Map<number, ReturnType<TableMap["findCell"]>>()
+  for (const offset of new Set(map.map)) {
+    cellRectByOffset.set(offset, map.findCell(offset))
+  }
+
+  let rowOffset = 0
+  for (let r = 0; r < top + 1; r++) {
+    rowOffset += table.child(r).nodeSize
+  }
+
+  for (let row = top + 1; row < bottom; row++) {
+    const rowNode = table.child(row)
+    if (rowNode.childCount === 0) {
+      rowOffset += rowNode.nodeSize
+      continue
+    }
+
+    let allChildrenInSelection = true
+    let cellOffset = rowOffset + 1
+    for (let cellIndex = 0; cellIndex < rowNode.childCount; cellIndex++) {
+      const cellRect = cellRectByOffset.get(cellOffset)
+      if (!cellRect || !cellRectIntersectsSelection(cellRect, selection)) {
+        allChildrenInSelection = false
+        break
+      }
+      cellOffset += rowNode.child(cellIndex).nodeSize
+    }
+
+    if (allChildrenInSelection) return true
+    rowOffset += rowNode.nodeSize
+  }
+
+  return false
+}
+
+// TipTap can omit row `content` when a row has no cells, which breaks publish layout.
+export const canMergeCellSelection = (rect: MergeSelectionRect): boolean => {
+  const coversMultipleWholeRows =
+    rect.left === 0 &&
+    rect.right === rect.map.width &&
+    rect.bottom - rect.top > 1
+  const coversMultipleWholeColumns =
+    rect.top === 0 &&
+    rect.bottom === rect.map.height &&
+    rect.bottom - rect.top > 1 &&
+    rect.right - rect.left > 1
+  if (coversMultipleWholeRows || coversMultipleWholeColumns) return false
+  return !mergeWouldLeaveEmptyRow(rect)
+}
+
 export const getTableSelectionKind = ({
   spansEntireTableWidth,
   spansEntireTableHeight,

@@ -437,6 +437,48 @@ describe("TableBubbleMenu", () => {
     expect(await findByText("Merge cells")).toBeTruthy()
   })
 
+  it("hides Merge cells and refuses the command for two full rows", async () => {
+    // Arrange
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
+    selectCells(editor, 3, 8)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+    let merged = false
+    act(() => {
+      merged = editor.chain().focus().mergeCells().run()
+    })
+
+    // Assert
+    expect(await findByText("Delete row")).toBeTruthy()
+    expect(queryByText("Merge cells")).toBeNull()
+    expect(merged).toBe(false)
+    expect(rowCellCount(editor, 1)).toBe(3)
+    expect(rowCellCount(editor, 2)).toBe(3)
+  })
+
+  it("hides Merge cells and refuses the command for two full columns", async () => {
+    // Arrange
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
+    selectCells(editor, 0, 7)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+    let merged = false
+    act(() => {
+      merged = editor.chain().focus().mergeCells().run()
+    })
+
+    // Assert
+    expect(await findByText("Delete column")).toBeTruthy()
+    expect(queryByText("Merge cells")).toBeNull()
+    expect(merged).toBe(false)
+    expect(tableColumnCount(editor)).toBe(3)
+    expect(rowCellCount(editor, 0)).toBe(3)
+  })
+
   it("shows Merge cells for a full column selection", async () => {
     // Arrange
     const { editor, findByText, findByRole } = await renderHarness()

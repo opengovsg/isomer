@@ -56,6 +56,7 @@ import {
   duplicateSelectedRows,
 } from "./TableBubbleMenu.duplicate"
 import {
+  canMergeCellSelection,
   getColumnMovePlan,
   getRowMovePlan,
   restoreMovedBlockSelection,
@@ -413,7 +414,7 @@ const RowSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
-      <MergeCellsButton editor={editor} />
+      {canMergeCellSelection(rect) && <MergeCellsButton editor={editor} />}
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
@@ -487,7 +488,7 @@ const ColumnSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
-      <MergeCellsButton editor={editor} />
+      {canMergeCellSelection(rect) && <MergeCellsButton editor={editor} />}
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
@@ -544,7 +545,7 @@ const SelectionActions = ({
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          <MergeCellsButton editor={editor} />
+          {canMergeCellSelection(rect) && <MergeCellsButton editor={editor} />}
         </ActionGroup>
       )
     case "single-cell":
