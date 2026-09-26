@@ -377,6 +377,42 @@ export const Default: Story = {
         },
       },
       {
+        type: "callout",
+        variant: "urgent",
+        content: {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Applications close on 31 December 2024. Submissions received after this date will not be considered.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        type: "callout",
+        variant: "information",
+        content: {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Processing of proposals typically takes 6 to 8 weeks. You will be notified of the outcome via email.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
         type: "prose",
         content: [
           {
