@@ -13,7 +13,6 @@ import { useMemo } from "react"
 import { BiCalendar, BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
-import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 
 import type { FilterType } from "../../components/FilterTypeChoiceModal"
@@ -73,8 +72,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     onOpen: onTypeChoiceModalOpen,
     onClose: onTypeChoiceModalClose,
   } = useDisclosure()
-  const isDateFiltersEnabled = useDateFiltersEnabled()
-
   const arrayResult = useArray({
     data,
     path,
@@ -163,11 +160,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               {label}
             </Text>
             <AddItemButton
-              onClick={() =>
-                isDateFiltersEnabled
-                  ? onTypeChoiceModalOpen()
-                  : handleAddFilter(TAG_CATEGORY_TYPE.Text)
-              }
+              onClick={onTypeChoiceModalOpen}
               isDisabled={isAddItemDisabled}
             >
               Add a filter
@@ -301,7 +294,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
         isOpen={isTypeChoiceModalOpen}
         onClose={onTypeChoiceModalClose}
         onSelect={handleAddFilter}
-        isDateFilterEnabled={isDateFiltersEnabled}
       />
     </NestedDrawerSwitch>
   )
