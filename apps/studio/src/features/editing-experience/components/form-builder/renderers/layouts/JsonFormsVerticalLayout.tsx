@@ -5,12 +5,8 @@ import type {
 } from "@jsonforms/core"
 import type { IsomerExtendedJsonSchema } from "~/types/schema"
 import { Box } from "@chakra-ui/react"
-import { createAjv, rankWith, RuleEffect, uiTypeIs } from "@jsonforms/core"
-import {
-  JsonFormsDispatch,
-  useJsonForms,
-  withJsonFormsLayoutProps,
-} from "@jsonforms/react"
+import { rankWith, uiTypeIs } from "@jsonforms/core"
+import { JsonFormsDispatch, withJsonFormsLayoutProps } from "@jsonforms/react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { isVerticalLayout } from "~/types/schema"
 
@@ -24,8 +20,6 @@ export const jsonFormsVerticalLayoutTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.VerticalLayoutRenderer,
   uiTypeIs("VerticalLayout"),
 )
-
-const ajv = createAjv()
 
 function getUiSchemaWithGroup(
   jsonSchema: IsomerExtendedJsonSchema,
@@ -83,15 +77,6 @@ function getUiSchemaWithGroup(
         type: "Group",
         label,
         elements: groupElements,
-        rule: group.visibleWhen
-          ? {
-              effect: RuleEffect.SHOW,
-              condition: {
-                scope: `#/properties/${group.visibleWhen.property}`,
-                schema: group.visibleWhen.schema,
-              },
-            }
-          : undefined,
       })
 
       tempUiSchema = tempUiSchema.filter(
@@ -104,28 +89,6 @@ function getUiSchemaWithGroup(
   return newUiSchema
 }
 
-function isFieldVisible(
-  jsonSchema: IsomerExtendedJsonSchema,
-  element: UISchemaElementWithScope,
-  rootData: unknown,
-) {
-  const propertyName = element.scope?.split("/").pop()
-  const visibleWhen = propertyName
-    ? jsonSchema.properties?.[propertyName]?.visibleWhen
-    : undefined
-
-  if (!visibleWhen?.root) {
-    return true
-  }
-
-  if (typeof rootData !== "object" || rootData === null) {
-    return false
-  }
-
-  const value = (rootData as Record<string, unknown>)[visibleWhen.property]
-  return ajv.validate(visibleWhen.schema, value)
-}
-
 function JsonFormsVerticalLayoutRenderer({
   uischema,
   schema,
@@ -134,7 +97,6 @@ function JsonFormsVerticalLayoutRenderer({
   renderers,
   cells,
 }: LayoutProps) {
-  const { core } = useJsonForms()
   // Note: We have to perform this check here due to inaccuracies in JSONForms'
   // type definitions.
   // Ref: https://github.com/eclipsesource/jsonforms/blob/c3cead71d08ff11837bdeb5fbea66e5313137218/packages/material-renderers/src/layouts/MaterialVerticalLayout.tsx#L57
@@ -142,7 +104,7 @@ function JsonFormsVerticalLayoutRenderer({
   const newElements = getUiSchemaWithGroup(
     schema,
     elements as UISchemaElementWithScope[],
-  ).filter((element) => isFieldVisible(schema, element, core?.data))
+  )
 
   return (
     <Box w="100%" display="flex" flexDirection="column" gap="1.25rem" h="full">
@@ -161,4 +123,4 @@ function JsonFormsVerticalLayoutRenderer({
   )
 }
 
-export default withJsonFormsLayoutProps(JsonFormsVerticalLayoutRenderer, false)
+export default withJsonFormsLayoutProps(JsonFormsVerticalLayoutRenderer)

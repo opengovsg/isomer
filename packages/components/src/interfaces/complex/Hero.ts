@@ -11,7 +11,11 @@ import {
   TRIMMED_NON_EMPTY_STRING_REGEX,
 } from "~/utils/validation"
 
-import { ARRAY_RADIO_FORMAT, HERO_ACTION_LAYOUT_FORMAT } from "../format"
+import {
+  ARRAY_RADIO_FORMAT,
+  HERO_ACTION_LAYOUT_FORMAT,
+  HERO_QUICK_ACTIONS_FORMAT,
+} from "../format"
 import { generateImageSrcSchema } from "./Image"
 
 export const HERO_STYLE = {
@@ -119,11 +123,6 @@ const HeroActionLayoutQuickActionItemSchema = Type.Object({
     {
       title: "Column icon",
       type: "string",
-      visibleWhen: {
-        property: "showIcon",
-        schema: { const: true },
-        root: true,
-      },
     },
   ),
   title: Type.String({
@@ -206,10 +205,32 @@ const HeroGradientSharedSchema = Type.Composite(
   },
 )
 
+const HeroGradientQuickActionsFieldsSchema = Type.Object({
+  quickActionsTitle: Type.Optional(
+    Type.String({
+      title: "Title",
+      pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+      errorMessage: {
+        pattern: "cannot be empty or contain only spaces",
+      },
+    }),
+  ),
+  showIcon: Type.Boolean({
+    title: "Show icons",
+    default: true,
+  }),
+  quickActionsItems: Type.Array(HeroActionLayoutQuickActionItemSchema, {
+    title: "Content",
+    format: HERO_QUICK_ACTIONS_FORMAT,
+    minItems: 2,
+    maxItems: 4,
+  }),
+})
+
 const HeroGradientButtonsLayoutSchema = Type.Composite(
   [
     Type.Object({
-      // Optional so existing gradient heroes with no actionLayout still match this branch.
+      // Optional so existing gradient heroes with no actionLayout still match buttons.
       actionLayout: Type.Optional(
         Type.Literal(HERO_ACTION_LAYOUT.buttons, {
           default: HERO_ACTION_LAYOUT.buttons,
@@ -227,30 +248,15 @@ const HeroGradientButtonsLayoutSchema = Type.Composite(
   },
 )
 
-const HeroGradientQuickActionsLayoutSchema = Type.Object(
-  {
-    actionLayout: Type.Literal(HERO_ACTION_LAYOUT.quickActions, {
-      default: HERO_ACTION_LAYOUT.quickActions,
-    }),
-    quickActionsTitle: Type.Optional(
-      Type.String({
-        title: "Title",
-        pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
-        errorMessage: {
-          pattern: "cannot be empty or contain only spaces",
-        },
+const HeroGradientQuickActionsLayoutSchema = Type.Composite(
+  [
+    Type.Object({
+      actionLayout: Type.Literal(HERO_ACTION_LAYOUT.quickActions, {
+        default: HERO_ACTION_LAYOUT.quickActions,
       }),
-    ),
-    showIcon: Type.Boolean({
-      title: "Show icons",
-      default: true,
     }),
-    quickActionsItems: Type.Array(HeroActionLayoutQuickActionItemSchema, {
-      title: "Content",
-      minItems: 2,
-      maxItems: 4,
-    }),
-  },
+    HeroGradientQuickActionsFieldsSchema,
+  ],
   {
     title: "Quick actions",
     groups: [
@@ -265,8 +271,6 @@ const HeroGradientQuickActionsLayoutSchema = Type.Object(
 const HeroGradientSchema = Type.Intersect(
   [
     HeroGradientSharedSchema,
-    // Same shape as InfoCards: shared fields, then a oneOf for the variant.
-    // No discriminator — existing heroes omit actionLayout and must still match buttons.
     Type.Unsafe<
       | Static<typeof HeroGradientButtonsLayoutSchema>
       | Static<typeof HeroGradientQuickActionsLayoutSchema>
@@ -410,18 +414,18 @@ export type HeroActionLayoutQuickActionsPanelProps = Simplify<
 export type HeroGradientButtonsProps = Simplify<
   CommonProps &
     Static<typeof HeroGradientSharedSchema> &
-    Static<typeof HeroGradientButtonsLayoutSchema>
+    Static<typeof HeroGradientCallToActionsSchema>
 >
 
 export type HeroActionLayoutQuickActionsProps = Simplify<
   CommonProps &
     Static<typeof HeroGradientSharedSchema> &
-    Static<typeof HeroGradientQuickActionsLayoutSchema>
+    Static<typeof HeroGradientQuickActionsFieldsSchema>
 >
 
-export type HeroGradientProps =
-  | HeroGradientButtonsProps
-  | HeroActionLayoutQuickActionsProps
+export type HeroGradientProps = Simplify<
+  CommonProps & Static<typeof HeroGradientSchema>
+>
 
 export type HeroBlockProps = Simplify<
   CommonProps & Static<typeof HeroBlockSchema>

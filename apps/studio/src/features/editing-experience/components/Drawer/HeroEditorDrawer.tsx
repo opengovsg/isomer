@@ -14,7 +14,6 @@ import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
 import { pageSchema } from "../../schema"
-import { prepareHeroEditorData } from "../../utils/prepareHeroEditorData"
 import {
   CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
   PLACEHOLDER_IMAGE_FILENAME,
@@ -219,7 +218,6 @@ export default function HeroEditorDrawer(): JSX.Element {
                 validateFn={validateHeroFn}
                 data={previewPageState.content[0]}
                 handleChange={handleChange}
-                prepareData={prepareHeroEditorData}
               />
             </Box>
           </Box>

@@ -1,30 +1,22 @@
-import type {
-  CombinatorRendererProps,
-  JsonSchema,
-  RankedTester,
-} from "@jsonforms/core"
+import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
 import { Box, Flex, FormControl } from "@chakra-ui/react"
-import {
-  createCombinatorRenderInfos,
-  createDefaultValue,
-  isOneOfControl,
-  rankWith,
-} from "@jsonforms/core"
-import { JsonFormsDispatch, withJsonFormsOneOfProps } from "@jsonforms/react"
+import { Generate, rankWith, schemaMatches } from "@jsonforms/core"
+import { JsonFormsDispatch, withJsonFormsControlProps } from "@jsonforms/react"
 import { Badge, FormLabel, Radio } from "@opengovsg/design-system-react"
 import {
   HERO_ACTION_LAYOUT,
   HERO_ACTION_LAYOUT_FORMAT,
 } from "@opengovsg/isomer-components"
-import { useEffect, useState } from "react"
 import {
   IconHeroActionLayoutButtons,
   IconHeroActionLayoutQuickActions,
 } from "~/components/icons"
-import { HERO_QUICK_ACTIONS_DEFAULT_TITLE } from "~/components/PageEditor/constants"
+import {
+  createDefaultHeroActionLayoutQuickActionItem,
+  HERO_QUICK_ACTIONS_DEFAULT_TITLE,
+  HERO_QUICK_ACTIONS_MIN_ITEMS,
+} from "~/components/PageEditor/constants"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-
-// TODO: Merge with JsonFormsChildPageLayoutControl — same titled layout + preview pattern.
 
 /** DS Radio wraps label + preview; suppress full-card focus ring on click. */
 const heroActionLayoutRadioCss = {
@@ -34,21 +26,11 @@ const heroActionLayoutRadioCss = {
   },
 }
 
-const readActionLayout = (value: unknown) => {
-  if (
-    typeof value !== "object" ||
-    value === null ||
-    !("actionLayout" in value)
-  ) {
-    return HERO_ACTION_LAYOUT.buttons
-  }
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null
 
-  const layout = value.actionLayout
-  return typeof layout === "string" ? layout : HERO_ACTION_LAYOUT.buttons
-}
-
-const actionLayoutConst = (schema: JsonSchema) => {
-  const actionLayout = schema.properties?.actionLayout
+const branchLayout = (branch: JsonSchema) => {
+  const actionLayout = branch.properties?.actionLayout
   if (!actionLayout || typeof actionLayout !== "object") {
     return undefined
   }
@@ -58,50 +40,67 @@ const actionLayoutConst = (schema: JsonSchema) => {
     : undefined
 }
 
-const propertyKeys = (schema: JsonSchema) =>
-  schema.properties ? Object.keys(schema.properties) : []
+const layoutSpecificFieldKeys = (branch: JsonSchema): string[] => {
+  const properties = branch.properties
+  if (!properties || typeof properties !== "object") {
+    return []
+  }
 
-/** Keep shared hero fields and the selected layout. Drop the other layout's keys. */
-export const nextHeroActionLayoutData = ({
-  current,
-  nextData,
-  selectedSchema,
-  otherSchemas,
-  layout,
-}: {
-  current: unknown
-  nextData: unknown
-  selectedSchema: JsonSchema
-  otherSchemas: JsonSchema[]
-  layout: string
-}) => {
-  const selectedKeys = new Set(propertyKeys(selectedSchema))
-  const keysToDrop = otherSchemas.flatMap((schema) =>
-    propertyKeys(schema).filter((key) => !selectedKeys.has(key)),
-  )
-  const kept: Record<string, unknown> =
-    typeof current === "object" && current !== null
-      ? { ...(current as Record<string, unknown>) }
-      : {}
+  return Object.keys(properties).filter((key) => key !== "actionLayout")
+}
 
-  for (const key of keysToDrop) {
+/** Property keys owned by branches other than the selected layout. */
+const heroActionLayoutKeysToDrop = (
+  branches: JsonSchema[],
+  selectedLayout: string,
+): string[] => {
+  const keys = new Set<string>()
+
+  for (const branch of branches) {
+    const branchActionLayout = branchLayout(branch)
+    if (branchActionLayout === selectedLayout) {
+      continue
+    }
+
+    for (const key of layoutSpecificFieldKeys(branch)) {
+      keys.add(key)
+    }
+  }
+
+  return [...keys]
+}
+
+/** Keep shared hero fields. Drop the layout that was not selected. */
+export const nextHeroActionLayoutData = (
+  current: unknown,
+  layout: string,
+  branches: JsonSchema[],
+) => {
+  const kept = isRecord(current) ? { ...current } : {}
+
+  for (const key of heroActionLayoutKeysToDrop(branches, layout)) {
     delete kept[key]
   }
 
   return {
     ...kept,
-    ...(typeof nextData === "object" && nextData !== null ? nextData : {}),
+    actionLayout: layout,
     ...(layout === HERO_ACTION_LAYOUT.quickActions
-      ? { quickActionsTitle: HERO_QUICK_ACTIONS_DEFAULT_TITLE }
+      ? {
+          quickActionsTitle: HERO_QUICK_ACTIONS_DEFAULT_TITLE,
+          showIcon: true,
+          quickActionsItems: Array.from(
+            { length: HERO_QUICK_ACTIONS_MIN_ITEMS },
+            () => createDefaultHeroActionLayoutQuickActionItem(),
+          ),
+        }
       : {}),
   }
 }
 
 export const jsonFormsHeroActionLayoutControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.HeroActionLayoutControl,
-  (uischema, schema, context) =>
-    schema.format === HERO_ACTION_LAYOUT_FORMAT &&
-    isOneOfControl(uischema, schema, context),
+  schemaMatches((schema) => schema.format === HERO_ACTION_LAYOUT_FORMAT),
 )
 
 function JsonFormsHeroActionLayoutControl({
@@ -112,56 +111,22 @@ function JsonFormsHeroActionLayoutControl({
   description,
   schema,
   rootSchema,
-  uischema,
-  uischemas,
+  enabled,
   renderers,
   cells,
-  indexOfFittingSchema,
-}: CombinatorRendererProps): JSX.Element {
-  const [variant, setVariant] = useState("")
-  const renderInfos = createCombinatorRenderInfos(
-    schema.oneOf ?? [],
-    rootSchema,
-    "oneOf",
-    uischema,
-    path,
-    uischemas,
-  )
+}: ControlProps): JSX.Element {
+  const selectedLayout =
+    isRecord(data) && data.actionLayout === HERO_ACTION_LAYOUT.quickActions
+      ? HERO_ACTION_LAYOUT.quickActions
+      : HERO_ACTION_LAYOUT.buttons
+  const branches = Array.isArray(schema.oneOf) ? schema.oneOf : []
+  const selectedBranch =
+    branches.find((branch) => branchLayout(branch) === selectedLayout) ??
+    branches[0]
 
   const onChange = (layout: string) => {
-    const renderInfo = renderInfos.find(
-      (info) => actionLayoutConst(info.schema) === layout,
-    )
-    if (!renderInfo?.schema || !renderInfo.label) {
-      return
-    }
-
-    setVariant(String(renderInfo.label))
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const newData: unknown = createDefaultValue(renderInfo.schema, rootSchema)
-    handleChange(
-      path,
-      nextHeroActionLayoutData({
-        current: data,
-        nextData: newData,
-        selectedSchema: renderInfo.schema,
-        otherSchemas: renderInfos
-          .filter((info) => info !== renderInfo)
-          .map((info) => info.schema),
-        layout,
-      }),
-    )
+    handleChange(path, nextHeroActionLayoutData(data, layout, branches))
   }
-
-  useEffect(() => {
-    const match = renderInfos[indexOfFittingSchema]
-    if (match?.label) {
-      setVariant(String(match.label))
-    }
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [indexOfFittingSchema])
-
-  const selectedLayout = readActionLayout(data)
 
   return (
     <>
@@ -201,21 +166,23 @@ function JsonFormsHeroActionLayoutControl({
           </Radio.RadioGroup>
         </FormControl>
       </Box>
-      {renderInfos.map(
-        (renderInfo) =>
-          variant === renderInfo.label && (
-            <JsonFormsDispatch
-              key={renderInfo.label}
-              uischema={renderInfo.uischema}
-              schema={renderInfo.schema}
-              path={path}
-              renderers={renderers}
-              cells={cells}
-            />
-          ),
+      {selectedBranch && (
+        <JsonFormsDispatch
+          uischema={Generate.uiSchema(
+            selectedBranch,
+            "VerticalLayout",
+            undefined,
+            rootSchema,
+          )}
+          schema={selectedBranch}
+          path={path}
+          enabled={enabled}
+          renderers={renderers}
+          cells={cells}
+        />
       )}
     </>
   )
 }
 
-export default withJsonFormsOneOfProps(JsonFormsHeroActionLayoutControl)
+export default withJsonFormsControlProps(JsonFormsHeroActionLayoutControl)
