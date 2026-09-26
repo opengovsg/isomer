@@ -17,8 +17,12 @@ import {
   jsonFormsArrayControlTester,
   JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
+  JsonFormsImageRadioControl,
+  jsonFormsImageRadioControlTester,
   JsonFormsChildrenPagesLayoutControl,
   jsonFormsChildrenPagesLayoutControlTester,
+  JsonFormsHeroActionLayoutControl,
+  jsonFormsHeroActionLayoutControlTester,
   JsonFormsChildrenPagesOrderingControl,
   jsonFormsChildrenPagesOrderingControlTester,
   JsonFormsCollectionDropdownControl,
@@ -49,8 +53,6 @@ import {
   jsonFormsHiddenControlTester,
   JsonFormsImageControl,
   jsonFormsImageControlTester,
-  JsonFormsImageRadioControl,
-  jsonFormsImageRadioControlTester,
   JsonFormsIntegerControl,
   jsonFormsIntegerControlTester,
   JsonFormsLinkArrayControl,
@@ -205,6 +207,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: JsonFormsChildrenPagesLayoutControl,
   },
   {
+    tester: jsonFormsHeroActionLayoutControlTester,
+    renderer: JsonFormsHeroActionLayoutControl,
+  },
+  {
     tester: jsonFormsMaxColumnsControlTester,
     renderer: JsonFormsMaxColumnsControl,
   },
@@ -241,6 +247,8 @@ interface FormBuilderProps<T> {
   validateFn: ValidateFunction<T>
   data: unknown
   handleChange: (data: T) => void
+  /** Runs before validation — use to inject editor defaults (e.g. min array items). */
+  prepareData?: (data: T) => T
 }
 
 export default function FormBuilder<T>({
@@ -248,6 +256,7 @@ export default function FormBuilder<T>({
   validateFn,
   data,
   handleChange,
+  prepareData,
 }: FormBuilderProps<T>): JSX.Element {
   const { setErrors } = useBuilderErrors()
 
@@ -257,8 +266,9 @@ export default function FormBuilder<T>({
       data={data}
       renderers={renderers}
       onChange={({ data, errors }) => {
-        if (validateFn(data)) {
-          handleChange(data)
+        const prepared = prepareData ? prepareData(data as T) : (data as T)
+        if (validateFn(prepared)) {
+          handleChange(prepared)
         }
         setErrors(groupBy(errors, "instancePath"))
       }}

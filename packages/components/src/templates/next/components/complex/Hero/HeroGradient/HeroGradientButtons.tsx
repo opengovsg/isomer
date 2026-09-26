@@ -1,12 +1,11 @@
-import type { HeroGradientProps } from "~/interfaces/complex/Hero"
+import type { HeroGradientButtonsProps } from "~/interfaces/complex/Hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
-import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
-import { ComponentContent } from "../../internal/customCssClass"
-import { ImageClient } from "../../internal/ImageClient"
-import { LinkButton } from "../../internal/LinkButton/LinkButton"
+import { ComponentContent } from "../../../internal/customCssClass"
+import { ImageClient } from "../../../internal/ImageClient"
+import { Buttons } from "../shared/Buttons"
 
-export const HeroGradient = ({
+export const HeroGradientButtons = ({
   title,
   subtitle,
   buttonLabel,
@@ -16,7 +15,7 @@ export const HeroGradient = ({
   backgroundUrl,
   site,
   headingLevel,
-}: HeroGradientProps) => {
+}: HeroGradientButtonsProps) => {
   const Tag = getHeadingTag(headingLevel)
   return (
     <section className="relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]">
@@ -43,36 +42,13 @@ export const HeroGradient = ({
               <Tag className="prose-display-xl break-words">{title}</Tag>
               {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
             </div>
-            {buttonLabel && buttonUrl && (
-              <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
-                <LinkButton
-                  href={getReferenceLinkHref(
-                    buttonUrl,
-                    site.siteMapArray,
-                    site.assetsBaseUrl,
-                  )}
-                  size="lg"
-                  isWithFocusVisibleHighlight
-                >
-                  {buttonLabel}
-                </LinkButton>
-                {secondaryButtonLabel && secondaryButtonUrl && (
-                  <LinkButton
-                    colorScheme="inverse"
-                    variant="outline"
-                    size="lg"
-                    href={getReferenceLinkHref(
-                      secondaryButtonUrl,
-                      site.siteMapArray,
-                      site.assetsBaseUrl,
-                    )}
-                    isWithFocusVisibleHighlight
-                  >
-                    {secondaryButtonLabel}
-                  </LinkButton>
-                )}
-              </div>
-            )}
+            <Buttons
+              buttonLabel={buttonLabel}
+              buttonUrl={buttonUrl}
+              secondaryButtonLabel={secondaryButtonLabel}
+              secondaryButtonUrl={secondaryButtonUrl}
+              site={site}
+            />
           </div>
         </div>
       </div>

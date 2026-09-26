@@ -5,11 +5,23 @@ import {
   type VerticalLayout,
 } from "@jsonforms/core"
 
+export interface FieldVisibleWhen {
+  property: string
+  schema: JsonSchema
+  /** Resolve `property` from the form root. Needed for fields nested under another object. */
+  root?: boolean
+}
+
 export type IsomerExtendedJsonSchema = JsonSchema & {
   groups?: {
     label: string
     fields: string[]
+    visibleWhen?: {
+      property: string
+      schema: JsonSchema
+    }
   }[]
+  properties?: Record<string, JsonSchema & { visibleWhen?: FieldVisibleWhen }>
 }
 
 export function isGroupLayout(
