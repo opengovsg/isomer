@@ -27,9 +27,9 @@
   },
   "devDependencies": {
     "@isomer/db": "workspace:*",
+    "@opengovsg/testcontainers": "catalog:",
     "@types/node": "catalog:",
     "@types/pg": "catalog:pg",
-    "testcontainers": "catalog:",
     "vitest": "catalog:vitest"
   }
 }
