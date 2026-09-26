@@ -1,6 +1,7 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { render, screen } from "@testing-library/react"
+import type * as DesignSystemReact from "@opengovsg/design-system-react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { theme } from "~/theme"
@@ -9,6 +10,13 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import RootStateDrawer from "../RootStateDrawer"
 
 const noop = vi.hoisted(() => vi.fn())
+const toastMock = vi.hoisted(() => vi.fn())
+const capturedUpdateBlobOptions = vi.hoisted(() => [] as unknown[])
+
+vi.mock("@opengovsg/design-system-react", async (importOriginal) => {
+  const actual = await importOriginal<typeof DesignSystemReact>()
+  return { ...actual, useToast: () => toastMock }
+})
 
 vi.mock("next/router", () => ({
   useRouter: () => ({ query: { pageId: "1", siteId: "1" } }),
@@ -30,7 +38,19 @@ vi.mock("~/utils/trpc", () => ({
         useMutation: () => ({ mutate: noop }),
       },
       updatePageBlob: {
-        useMutation: () => ({ mutate: noop, isPending: false }),
+        useMutation: (options: unknown) => {
+          capturedUpdateBlobOptions.push(options)
+          return {
+            // Simulate a failed save: real tRPC would route the failure
+            // to the mutation-level onError handler.
+            mutate: () => {
+              const onError = (options as { onError?: (e: Error) => void })
+                ?.onError
+              onError?.(new Error("network down"))
+            },
+            isPending: false,
+          }
+        },
       },
     },
     useUtils: () => ({
@@ -63,16 +83,18 @@ const renderDrawer = ({
   pageState,
   permalink,
   title,
+  type = ResourceType.Page,
 }: {
   pageState: IsomerSchema
   permalink: string
   title: string
+  type?: ResourceType
 }) =>
   render(
     <ThemeProvider theme={theme}>
       <EditorDrawerProvider
         initialPageState={pageState}
-        type={ResourceType.Page}
+        type={type}
         permalink={permalink}
         siteId={1}
         pageId={1}
@@ -110,5 +132,31 @@ describe("RootStateDrawer", () => {
     // Assert
     expect(screen.queryByRole("button", { name: "Add block" })).not.toBeNull()
     expect(screen.queryByText("Custom blocks")).not.toBeNull()
+  })
+
+  it("shows an error toast when saving the index-page conversion fails", () => {
+    // Arrange — an IndexPage with a custom layout shows the conversion
+    // infobox; drive the real preview → accept → save path.
+    renderDrawer({
+      pageState: CONTENT_PAGE,
+      permalink: "about-us",
+      title: "About us",
+      type: ResourceType.IndexPage,
+    })
+    fireEvent.click(
+      screen.getByRole("button", { name: "Preview what this looks like" }),
+    )
+    fireEvent.click(
+      screen.getByRole("button", { name: "Accept this change" }),
+    )
+
+    // Act — confirming runs handleSaveConversionToIndexPage; the mocked
+    // save fails and must surface an error toast instead of failing silent.
+    fireEvent.click(screen.getByRole("button", { name: "Accept changes" }))
+
+    // Assert
+    expect(toastMock).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "error" }),
+    )
   })
 })
