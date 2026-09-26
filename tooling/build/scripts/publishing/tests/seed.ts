@@ -6,18 +6,11 @@ const DB_USERNAME = process.env.TEST_DB_USERNAME ?? ""
 const DB_PASSWORD = process.env.TEST_DB_PASSWORD ?? ""
 const DB_NAME = process.env.TEST_DB_NAME ?? ""
 
-export const db = createDb({
-  connectionString: `postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}`,
-})
+export const TEST_DATABASE_URL = `postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}`
 
-// Connection env vars for spawning the publishing script as a subprocess
-export const TEST_DB_ENV = {
-  DB_HOST,
-  DB_PORT,
-  DB_USERNAME,
-  DB_PASSWORD,
-  DB_NAME,
-}
+export const db = createDb({
+  connectionString: TEST_DATABASE_URL,
+})
 
 const USER_ID = "publishing-e2e-user"
 
