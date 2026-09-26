@@ -15,7 +15,9 @@ import posthog from "posthog-js"
 import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { getCollectionItemDateProperties } from "~/features/editing-experience/utils/dateFilterAnalytics"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { captureCollectionItemDateSaved } from "~/lib/analytics/collectionFilters"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -58,12 +60,16 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const isCollectionItem =
     type === ResourceType.CollectionPage || type === ResourceType.CollectionLink
 
-  const { data: collectionTags = [], isLoading: isCollectionTagsLoading } =
-    useCollectionTags({
-      resourceId: pageId,
-      siteId,
-      enabled: isCollectionItem,
-    })
+  const {
+    data: collectionTags = [],
+    isLoading: isCollectionTagsLoading,
+    isSuccess: hasCollectionTags,
+    refetch: refetchCollectionTags,
+  } = useCollectionTags({
+    resourceId: pageId,
+    siteId,
+    enabled: isCollectionItem,
+  })
 
   const toast = useToast()
   const utils = trpc.useUtils()
@@ -110,6 +116,27 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const validateFn = ajv.compile<Static<typeof metadataSchema>>(filteredSchema)
 
   const handleSaveChanges = useCallback(() => {
+    const dateTagged = (
+      previewPageState.page as Pick<ArticlePagePageProps, "dateTagged">
+    ).dateTagged
+    const captureItemDates = (tags: CollectionTags | undefined) => {
+      if (!isCollectionItem || !tags) {
+        return
+      }
+      const itemDateProperties = getCollectionItemDateProperties({
+        tags,
+        dateTagged,
+      })
+      if (!itemDateProperties) {
+        return
+      }
+      captureCollectionItemDateSaved({
+        siteId,
+        resourceId: pageId,
+        ...itemDateProperties,
+      })
+    }
+
     setSavedPageState(previewPageState)
     mutate(
       {
@@ -118,13 +145,26 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
         content: JSON.stringify(previewPageState),
       },
       {
-        onSuccess: () => setDrawerState({ state: "root" }),
+        onSuccess: () => {
+          if (hasCollectionTags) {
+            captureItemDates(collectionTags)
+          } else if (isCollectionItem) {
+            void refetchCollectionTags().then((result) => {
+              captureItemDates(result.data)
+            })
+          }
+          setDrawerState({ state: "root" })
+        },
       },
     )
   }, [
+    collectionTags,
+    hasCollectionTags,
+    isCollectionItem,
     mutate,
     pageId,
     previewPageState,
+    refetchCollectionTags,
     setDrawerState,
     setSavedPageState,
     siteId,

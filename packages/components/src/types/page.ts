@@ -59,7 +59,8 @@ const createFilterLabelSchemaObject = ({
 })
 
 const tagCategoryIsRequiredSchemaObject = {
-  // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
+  // Optional for backward compatibility. Missing/`undefined` must be read as
+  // `DEFAULT_FILTER_IS_REQUIRED`.
   // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
   // same default to legacy rows that omit this key. New filters set `isRequired: true` in
   // the tag-categories JsonForms control when adding an item.
@@ -73,9 +74,9 @@ const tagCategoryIsRequiredSchemaObject = {
 }
 
 const dateFilterIsRequiredSchemaObject = {
-  // Same semantics as `tagCategoryIsRequiredSchemaObject`, but date filters use
-  // item-specific copy in Studio because the requirement applies to dates, not
-  // tag options.
+  // Same semantics as `tagCategoryIsRequiredSchemaObject`: missing/`undefined`
+  // is `DEFAULT_FILTER_IS_REQUIRED`. Date filters use item-specific copy in
+  // Studio because the requirement applies to dates, not tag options.
   isRequired: Type.Optional(
     Type.Boolean({
       title: "This date is required",

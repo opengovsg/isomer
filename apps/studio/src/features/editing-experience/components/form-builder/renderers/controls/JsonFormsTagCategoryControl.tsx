@@ -15,6 +15,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useDateFiltersEnabled } from "~/hooks/useDateFiltersEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { captureFilterCreated } from "~/lib/analytics/collectionFilters"
 
 import type { FilterType } from "../../components/FilterTypeChoiceModal"
 import { AddItemButton } from "../../components/AddItemButton"
@@ -144,6 +145,11 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     )()
     setSelectedIndex(newIndex)
     onTypeChoiceModalClose()
+    captureFilterCreated({
+      siteId,
+      resourceId: pageId,
+      filterType: type,
+    })
   }
 
   return (
@@ -152,7 +158,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
       {...arrayResult}
       banner={
         isDateFilterEditorOpen(page?.tagCategories, selectedIndex) ? (
-          <DateFilterOnboardingBanner />
+          <DateFilterOnboardingBanner siteId={siteId} resourceId={pageId} />
         ) : undefined
       }
     >

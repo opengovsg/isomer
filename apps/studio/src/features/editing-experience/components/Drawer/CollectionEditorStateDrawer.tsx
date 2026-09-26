@@ -12,7 +12,16 @@ import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
+import {
+  getChangedDateFilterSortDirection,
+  getCollectionIndex,
+  listChangedDateFilters,
+} from "~/features/editing-experience/utils/dateFilterAnalytics"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import {
+  captureCollectionDateFilterSortSaved,
+  captureDateFilterSaved,
+} from "~/lib/analytics/collectionFilters"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
@@ -102,6 +111,25 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   )
 
   const handleSaveChanges = useCallback(() => {
+    const savedCollectionIndex = getCollectionIndex({ state: savedPageState })
+    const previewCollectionIndex = getCollectionIndex({
+      state: previewPageState,
+    })
+    const changedDateFilters =
+      drawerStateType === "filter"
+        ? listChangedDateFilters({
+            before: savedCollectionIndex?.tagCategories,
+            after: previewCollectionIndex?.tagCategories,
+          })
+        : []
+    const sortDirection =
+      drawerStateType === "display"
+        ? getChangedDateFilterSortDirection({
+            before: savedCollectionIndex?.sortOrder,
+            after: previewCollectionIndex?.sortOrder,
+          })
+        : undefined
+
     setSavedPageState(previewPageState)
     mutate(
       {
@@ -111,14 +139,30 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
       },
       {
         onSuccess: () => {
+          changedDateFilters.forEach((properties) => {
+            captureDateFilterSaved({
+              siteId,
+              resourceId: pageId,
+              ...properties,
+            })
+          })
+          if (sortDirection) {
+            captureCollectionDateFilterSortSaved({
+              siteId,
+              resourceId: pageId,
+              direction: sortDirection,
+            })
+          }
           setDrawerState({ state: "root" })
         },
       },
     )
   }, [
+    drawerStateType,
     mutate,
     pageId,
     previewPageState,
+    savedPageState,
     setDrawerState,
     setSavedPageState,
     siteId,

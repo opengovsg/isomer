@@ -38,6 +38,7 @@ export {
   TRIMMED_NON_EMPTY_STRING_REGEX,
   TRIMMED_STRING_OR_EMPTY_REGEX,
   GTM_ID_STRING_REGEX,
+  DATE_FILTER_SORT_ORDER_REGEX,
 } from "./validation"
 
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"

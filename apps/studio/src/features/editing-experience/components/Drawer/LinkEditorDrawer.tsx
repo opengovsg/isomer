@@ -9,12 +9,17 @@ import { z } from "zod"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { captureCollectionItemDateSaved } from "~/lib/analytics/collectionFilters"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-import { useCollectionTags } from "../../hooks/useCollectionTags"
+import {
+  useCollectionTags,
+  type CollectionTags,
+} from "../../hooks/useCollectionTags"
+import { getCollectionItemDateProperties } from "../../utils/dateFilterAnalytics"
 import { validateRequiredDateFilters } from "../../utils/validateRequiredDateFilters"
 import { validateRequiredTags } from "../../utils/validateRequiredTags"
 import { ActivateRawJsonEditorMode } from "../ActivateRawJsonEditorMode"
@@ -193,6 +198,10 @@ export const LinkEditorDrawer = ({
   setLink,
 }: LinkEditorDrawerProps) => {
   const { linkId, siteId } = useQueryParse(editLinkSchema)
+  const collectionTagsQuery = useCollectionTags({
+    resourceId: linkId,
+    siteId,
+  })
   const utils = trpc.useUtils()
   const toast = useToast()
 
@@ -217,7 +226,44 @@ export const LinkEditorDrawer = ({
         previewPageState={link}
         isLoading={isPending}
         handleChange={(data) => setLink(data)}
-        handleSaveChanges={() => mutate({ siteId, linkId, ...link })}
+        handleSaveChanges={() => {
+          const dateTagged = link.dateTagged
+          const captureItemDates = (tags: CollectionTags | undefined) => {
+            if (!tags) {
+              return
+            }
+            const itemDateProperties = getCollectionItemDateProperties({
+              tags,
+              dateTagged,
+            })
+            if (!itemDateProperties) {
+              return
+            }
+            captureCollectionItemDateSaved({
+              siteId,
+              resourceId: linkId,
+              ...itemDateProperties,
+            })
+          }
+
+          mutate(
+            { siteId, linkId, ...link },
+            {
+              onSuccess: () => {
+                if (collectionTagsQuery.isSuccess) {
+                  captureItemDates(collectionTagsQuery.data)
+                  return
+                }
+                // A missing result is not an empty tag list. Refetch once so a
+                // save from the raw JSON editor, or a failed query, can still
+                // record the item dates.
+                void collectionTagsQuery.refetch().then((result) => {
+                  captureItemDates(result.data)
+                })
+              },
+            },
+          )
+        }}
       />
     </ErrorProvider>
   )

@@ -4,8 +4,17 @@ import NextLink from "next/link"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { NextImage } from "~/components/NextImage"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
+import { captureDateFilterOnboardingBannerSupportLinkClicked } from "~/lib/analytics/collectionFilters"
 
-export const DateFilterOnboardingBanner = (): JSX.Element | null => {
+interface DateFilterOnboardingBannerProps {
+  siteId: number
+  resourceId: number
+}
+
+export const DateFilterOnboardingBanner = ({
+  siteId,
+  resourceId,
+}: DateFilterOnboardingBannerProps): JSX.Element | null => {
   const [hasSeenOnboardingBanner, setHasSeenOnboardingBanner] = useLocalStorage(
     "date-filter-onboarding-banner-seen",
     false,
@@ -39,7 +48,13 @@ export const DateFilterOnboardingBanner = (): JSX.Element | null => {
           as={NextLink}
           href="https://support.isomer.gov.sg/en/articles/15461505-how-to-manage-collection-filters"
           color="interaction.links.default"
-          onClick={() => setHasSeenOnboardingBanner(true)}
+          onClick={() => {
+            setHasSeenOnboardingBanner(true)
+            captureDateFilterOnboardingBannerSupportLinkClicked({
+              siteId,
+              resourceId,
+            })
+          }}
         >
           <HStack as="span" spacing="0.25rem">
             <Text as="span" textStyle="caption-1">
