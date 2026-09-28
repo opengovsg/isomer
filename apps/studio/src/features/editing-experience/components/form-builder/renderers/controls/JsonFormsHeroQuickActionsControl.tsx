@@ -3,20 +3,20 @@ import type {
   OwnPropsOfMasterListItem,
   RankedTester,
   StatePropsOfMasterItem,
+  UISchemaElement,
 } from "@jsonforms/core"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import {
-  composePaths,
-  createDefaultValue,
-  rankWith,
-  schemaMatches,
-} from "@jsonforms/core"
-import {
+  useJsonForms,
   withJsonFormsArrayLayoutProps,
   withJsonFormsMasterListItemProps,
 } from "@jsonforms/react"
 import { HERO_QUICK_ACTIONS_FORMAT } from "@opengovsg/isomer-components"
+import { get } from "lodash-es"
+import { useCallback } from "react"
+import { createDefaultHeroActionLayoutQuickActionItem } from "~/components/PageEditor/constants"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { AddItemButton } from "../../components/AddItemButton"
@@ -27,6 +27,27 @@ import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 
 // Copy of JsonFormsArrayControl. The row preview is the item title, not the first field.
+
+const omitUiSchemaFields = (
+  uischema: UISchemaElement,
+  hiddenFields: string[],
+): UISchemaElement => {
+  if (!("elements" in uischema) || !Array.isArray(uischema.elements)) {
+    return uischema
+  }
+
+  const hidden = new Set(hiddenFields)
+
+  return {
+    ...uischema,
+    elements: uischema.elements.filter((element) => {
+      const scope = (element as { scope?: string }).scope
+      const field = scope?.split("/").pop()
+
+      return !field || !hidden.has(field)
+    }),
+  }
+}
 
 const TitleLabelRaw = withJsonFormsMasterListItemProps(
   ({ childLabel, index }: StatePropsOfMasterItem) => (
@@ -74,6 +95,17 @@ function JsonFormsHeroQuickActionsControl(props: ArrayLayoutProps) {
     description,
   } = props
   const { hasErrorAt } = useBuilderErrors()
+  const ctx = useJsonForms()
+  const showIcon = get(
+    ctx.core?.data as Record<string, unknown>,
+    "showIcon",
+    true,
+  )
+  const mapChildUiSchema = useCallback(
+    (uischema: UISchemaElement) =>
+      showIcon ? uischema : omitUiSchemaFields(uischema, ["icon"]),
+    [showIcon],
+  )
   const arrayResult = useArray({
     data,
     path,
@@ -95,7 +127,11 @@ function JsonFormsHeroQuickActionsControl(props: ArrayLayoutProps) {
   } = arrayResult
 
   return (
-    <NestedDrawerSwitch {...props} {...arrayResult}>
+    <NestedDrawerSwitch
+      {...props}
+      {...arrayResult}
+      mapChildUiSchema={mapChildUiSchema}
+    >
       <VStack spacing={0} align="start">
         <VStack align="start" spacing="0.25rem" w="full">
           <HStack w="full" justifyContent="space-between" align="center">
@@ -104,7 +140,7 @@ function JsonFormsHeroQuickActionsControl(props: ArrayLayoutProps) {
             </Text>
             <AddItemButton
               onClick={() => {
-                addItem(path, createDefaultValue(schema, rootSchema))()
+                addItem(path, createDefaultHeroActionLayoutQuickActionItem())()
                 setSelectedIndex(data)
               }}
               isDisabled={isAddItemDisabled}
