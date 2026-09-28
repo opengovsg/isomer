@@ -1,7 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
-import { formatSupportedIconLabel, SUPPORTED_ICON_NAMES } from "~/common/icons"
+import { SUPPORTED_ICON_NAMES } from "~/common/icons"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 import { ICON_PICKER_FORMAT } from "../format"
@@ -19,7 +19,8 @@ const InfoBoxSchema = Type.Object({
     Type.Union(
       SUPPORTED_ICON_NAMES.map((icon) =>
         Type.Literal(icon, {
-          title: formatSupportedIconLabel(icon),
+          title:
+            icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-/g, " "),
         }),
       ),
       {

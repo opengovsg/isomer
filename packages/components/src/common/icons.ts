@@ -38,10 +38,6 @@ export const SUPPORTED_ICON_NAMES = [
 ] as const
 
 export type SupportedIconName = (typeof SUPPORTED_ICON_NAMES)[number]
-
-export const formatSupportedIconLabel = (icon: SupportedIconName): string =>
-  icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-/g, " ")
-
 // TODO: use union types to support more icon libraries apart from react-icons
 type SupportedIconType = IconType
 export const SUPPORTED_ICONS_MAP: Record<SupportedIconName, SupportedIconType> =
