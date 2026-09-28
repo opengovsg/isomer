@@ -17,14 +17,17 @@ const createStepsStyles = tv({
     list: "grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-2 lg:grid-cols-3",
   },
   variants: {
+    // Block spacing lives on the root <section>, which is a direct child of the
+    // page content container. Putting `first:` on the nested outerContainer
+    // would always match (it is the section's only child) and zero the gap.
     layout: {
       homepage: {
-        outerContainer: "py-12 first:pt-0 md:py-16",
+        section: "py-12 first:pt-0 md:py-16",
         header: "gap-2.5",
         headerSubtitle: "prose-headline-lg-regular",
       },
       default: {
-        outerContainer: "mt-14 first:mt-0",
+        section: "mt-14 first:mt-0",
         header: "gap-6",
         headerSubtitle: "prose-body-base",
       },
@@ -57,8 +60,8 @@ export const Steps = ({
   const hasTwo = steps.length === 2
 
   return (
-    <section id={id} className={styles.section()}>
-      <div className={styles.outerContainer({ layout: simplifiedLayout })}>
+    <section id={id} className={styles.section({ layout: simplifiedLayout })}>
+      <div className={styles.outerContainer()}>
         <div className={styles.innerContainer()}>
           <div className={styles.header({ layout: simplifiedLayout })}>
             <TitleTag className={styles.headerTitle()}>{title}</TitleTag>
