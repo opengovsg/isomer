@@ -76,6 +76,55 @@ export const ColourBlockInverse: Story = {
   },
 }
 
+export const ColourBlockCurvedCutout: Story = {
+  args: {
+    headingLevel: 1,
+    site: generateSiteConfig(),
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Riverside Secondary School",
+    subtitle:
+      "Find our term dates, apply through Direct School Admission, or browse the CCAs and clubs open to your child.",
+    buttonLabel: "Search",
+    buttonUrl: "/",
+    variant: "block",
+    theme: "inverse",
+    shape: "curved",
+  },
+}
+
+export const ColourBlockCurvedCutoutDefault: Story = {
+  args: {
+    headingLevel: 1,
+    site: generateSiteConfig(),
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Your hero title goes here, please keep it short and sweet",
+    subtitle:
+      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
+    buttonLabel: "Main CTA",
+    buttonUrl: "/",
+    secondaryButtonLabel: "Sub CTA",
+    secondaryButtonUrl: "/",
+    variant: "block",
+    theme: "default",
+    shape: "curved",
+  },
+}
+
+export const ColourBlockCurvedCutoutTitleOnly: Story = {
+  args: {
+    headingLevel: 1,
+    site: generateSiteConfig(),
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Short title",
+    variant: "block",
+    theme: "inverse",
+    shape: "curved",
+  },
+}
+
 export const ColourBlockLongWord: Story = {
   args: {
     headingLevel: 1,

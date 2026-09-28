@@ -1,4 +1,8 @@
-import type { HeroBlockProps } from "~/interfaces/complex/Hero"
+import {
+  type HeroBlockProps,
+  HERO_BLOCK_SHAPE,
+} from "~/interfaces/complex/Hero"
+import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
@@ -6,10 +10,6 @@ import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
 const HERO_THEME_MAPPINGS = {
-  hero: {
-    default: "bg-brand-canvas-inverse",
-    inverse: "bg-brand-canvas-alt",
-  },
   text: {
     default: "text-base-content-inverse",
     inverse: "text-base-content",
@@ -20,6 +20,78 @@ const HERO_THEME_MAPPINGS = {
   },
 } as const
 
+// Desktop cutout: a circle whose diameter is 76% of the hero width, centered
+// at 82% across. The left edge lands near 44% of the hero and the section
+// clips everything past the hero box. Below `lg` the image stays a rectangle.
+const CURVED_CUTOUT_CLIP =
+  "lg:bottom-auto lg:right-auto lg:top-1/2 lg:left-[82%] lg:h-auto lg:w-[76%] lg:aspect-square lg:-translate-x-1/2 lg:-translate-y-1/2 lg:overflow-hidden lg:rounded-full"
+
+const heroBlockStyles = tv({
+  slots: {
+    section:
+      "flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row",
+    textColumn:
+      "flex flex-row px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-8",
+    imageColumn:
+      "relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2",
+    imageClip: "absolute inset-0",
+    image: "absolute inset-0 h-full w-full object-cover object-center",
+  },
+  variants: {
+    theme: {
+      default: {},
+      inverse: {},
+    },
+    shape: {
+      straight: {},
+      curved: {
+        section: "lg:relative lg:overflow-hidden",
+        // Keep copy left of the curve, which begins near 44% of the hero.
+        textColumn: "lg:relative lg:z-10 lg:w-2/5 lg:justify-start",
+        imageColumn:
+          "lg:static lg:h-0 lg:max-h-none lg:min-h-0 lg:w-0 lg:overflow-visible",
+        imageClip: CURVED_CUTOUT_CLIP,
+      },
+    },
+  },
+  compoundVariants: [
+    {
+      theme: "default",
+      shape: HERO_BLOCK_SHAPE.straight,
+      class: {
+        textColumn: "bg-brand-canvas-inverse",
+      },
+    },
+    {
+      theme: "inverse",
+      shape: HERO_BLOCK_SHAPE.straight,
+      class: {
+        textColumn: "bg-brand-canvas-alt",
+      },
+    },
+    {
+      theme: "default",
+      shape: HERO_BLOCK_SHAPE.curved,
+      class: {
+        section: "lg:bg-brand-canvas-inverse",
+        textColumn: "max-lg:bg-brand-canvas-inverse",
+      },
+    },
+    {
+      theme: "inverse",
+      shape: HERO_BLOCK_SHAPE.curved,
+      class: {
+        section: "lg:bg-brand-canvas-alt",
+        textColumn: "max-lg:bg-brand-canvas-alt",
+      },
+    },
+  ],
+  defaultVariants: {
+    theme: "default",
+    shape: HERO_BLOCK_SHAPE.straight,
+  },
+})
+
 export const HeroBlock = ({
   title,
   subtitle,
@@ -28,20 +100,19 @@ export const HeroBlock = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   backgroundUrl,
+  shape = HERO_BLOCK_SHAPE.straight,
   site,
   theme = "default",
   headingLevel,
 }: HeroBlockProps) => {
-  const heroColour = HERO_THEME_MAPPINGS.hero[theme]
   const heroTextColour = HERO_THEME_MAPPINGS.text[theme]
   const heroButton = HERO_THEME_MAPPINGS.button[theme]
   const Tag = getHeadingTag(headingLevel)
+  const styles = heroBlockStyles({ theme, shape })
 
   return (
-    <section className="flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row">
-      <div
-        className={`flex flex-row ${heroColour} px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-8`}
-      >
+    <section className={styles.section()}>
+      <div className={styles.textColumn()}>
         <div
           className={`flex w-full max-w-[548px] flex-col justify-center gap-9 ${heroTextColour}`}
         >
@@ -86,17 +157,21 @@ export const HeroBlock = ({
         </div>
       </div>
       <div
-        className="relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2"
-        style={{ contain: "layout" }}
+        className={styles.imageColumn()}
+        style={
+          shape === HERO_BLOCK_SHAPE.curved ? undefined : { contain: "layout" }
+        }
       >
-        <ImageClient
-          src={backgroundUrl}
-          alt=""
-          width="100%"
-          className="absolute inset-0 h-full w-full object-cover object-center"
-          assetsBaseUrl={site.assetsBaseUrl}
-          lazyLoading={false} // hero is always above the fold
-        />
+        <div className={styles.imageClip()}>
+          <ImageClient
+            src={backgroundUrl}
+            alt=""
+            width="100%"
+            className={styles.image()}
+            assetsBaseUrl={site.assetsBaseUrl}
+            lazyLoading={false} // hero is always above the fold
+          />
+        </div>
       </div>
     </section>
   )

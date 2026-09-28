@@ -17,6 +17,11 @@ export const HERO_STYLE = {
   searchbar: "searchbar",
 } as const
 
+export const HERO_BLOCK_SHAPE = {
+  straight: "straight",
+  curved: "curved",
+} as const
+
 const HeroBaseSchema = Type.Object({
   type: Type.Literal("hero", { default: "hero" }),
   title: Type.String({
@@ -122,6 +127,24 @@ const HeroBlockSchema = Type.Composite(
     Type.Object({
       variant: Type.Literal(HERO_STYLE.block, { default: HERO_STYLE.block }),
       backgroundUrl: BackgroundUrlSchema,
+      shape: Type.Optional(
+        Type.Union(
+          [
+            Type.Literal(HERO_BLOCK_SHAPE.straight, {
+              title: "Straight (Default)",
+            }),
+            Type.Literal(HERO_BLOCK_SHAPE.curved, { title: "Curved" }),
+          ],
+          {
+            title: "Shape",
+            description:
+              "Curved clips the image into a curve on desktop. On smaller screens the image stays rectangular.",
+            default: HERO_BLOCK_SHAPE.straight,
+            format: ARRAY_RADIO_FORMAT,
+            type: "string",
+          },
+        ),
+      ),
     }),
     HeroBaseSchema,
     CallToActionsSchema,
