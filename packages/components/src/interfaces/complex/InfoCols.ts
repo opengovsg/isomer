@@ -1,8 +1,10 @@
 import type { Static } from "@sinclair/typebox"
 import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
-import { SUPPORTED_ICON_NAMES } from "~/common/icons"
+import { SUPPORTED_ICON_LABELS, SUPPORTED_ICON_NAMES } from "~/common/icons"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
+
+import { ICON_PICKER_FORMAT } from "../format"
 
 const InfoBoxSchema = Type.Object({
   title: Type.String({
@@ -17,13 +19,13 @@ const InfoBoxSchema = Type.Object({
     Type.Union(
       SUPPORTED_ICON_NAMES.map((icon) =>
         Type.Literal(icon, {
-          title:
-            icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-/g, " "),
+          title: SUPPORTED_ICON_LABELS[icon],
         }),
       ),
       {
         title: "Column icon",
         type: "string",
+        format: ICON_PICKER_FORMAT,
       },
     ),
   ),

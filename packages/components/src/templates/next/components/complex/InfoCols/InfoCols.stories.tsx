@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { InfoColsProps } from "~/interfaces"
+import { SUPPORTED_ICON_LABELS, SUPPORTED_ICON_NAMES } from "~/common/icons"
 import { generateSiteConfig } from "~/stories/helpers"
 
 import { InfoCols } from "./InfoCols"
@@ -116,6 +117,19 @@ export const FourInfoBoxes: Story = {
         icon: "bar-chart",
       },
     ],
+  },
+}
+
+export const AllSupportedIcons: Story = {
+  args: {
+    sectionIdx: 0,
+    title: "All supported icons",
+    subtitle: "Every icon that can be selected from the Studio icon picker",
+    infoBoxes: SUPPORTED_ICON_NAMES.map((icon) => ({
+      title: SUPPORTED_ICON_LABELS[icon],
+      description: `Rendered with the "${icon}" icon`,
+      icon,
+    })),
   },
 }
 
