@@ -2475,7 +2475,7 @@ export const publishResource = async (
         }),
     )
 
-  return db.transaction().execute(async (tx) => {
+  await db.transaction().execute(async (tx) => {
     await logPublishEvent(tx, {
       siteId: resource.siteId,
       by: byUser,
@@ -2483,9 +2483,9 @@ export const publishResource = async (
       eventType: AuditLogEvent.Publish,
       metadata: resource,
     })
-
-    await publishSite(logger, { siteId: resource.siteId })
   })
+
+  await publishSite(logger, { siteId: resource.siteId })
 }
 
 export const publishSiteConfig = async (
@@ -2508,7 +2508,7 @@ export const publishSiteConfig = async (
         }),
     )
 
-  return db.transaction().execute(async (tx) => {
+  await db.transaction().execute(async (tx) => {
     await logPublishEvent(tx, {
       siteId: site.id,
       by: byUser,
@@ -2516,9 +2516,9 @@ export const publishSiteConfig = async (
       eventType: AuditLogEvent.Publish,
       metadata: { site, ...rest },
     })
-
-    await publishSite(logger, { siteId: site.id })
   })
+
+  await publishSite(logger, { siteId: site.id })
 }
 
 export const getBatchAncestryWithSelfQuery = async ({

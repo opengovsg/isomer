@@ -11,12 +11,17 @@ import {
   RenderEngine,
   shouldBlockIndexing,
 } from "@opengovsg/isomer-components"
+import { notFound } from "next/navigation"
 
 import { serializeForInlineScript } from "@isomer/validators"
 
 export const dynamic = "force-static"
 
 const INDEX_PAGE_PERMALINK = "_index"
+const isModuleNotFoundError = (error: unknown) =>
+  error instanceof Error &&
+  "code" in error &&
+  ["MODULE_NOT_FOUND", "ERR_MODULE_NOT_FOUND"].includes(error.code as string)
 
 interface ParamsContent {
   permalink: string[]
@@ -55,7 +60,9 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
     // this might be the case where the file is an index page
     // and has `_index` appended to the original permalink
     // so we have to do another import w the appended index path
-    .catch(async () => {
+    .catch(async (error: unknown) => {
+      if (!isModuleNotFoundError(error)) throw error
+
       if (joinedPermalink === "") {
         // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
         return import(`@/schema/${INDEX_PAGE_PERMALINK}.json`).then(
@@ -68,6 +75,10 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
         `@/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
         // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       ).then((module) => module.default)
+    })
+    .catch((error: unknown) => {
+      if (isModuleNotFoundError(error)) notFound()
+      throw error
     })) as IsomerPageSchemaType
 
   const lastModified =

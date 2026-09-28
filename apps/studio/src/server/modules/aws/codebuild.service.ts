@@ -1,4 +1,8 @@
 import { pick } from "lodash-es"
+import { spawn } from "node:child_process"
+import { existsSync } from "node:fs"
+import { copyFile, mkdtemp, rename, rm } from "node:fs/promises"
+import path from "node:path"
 import { env } from "~/env.mjs"
 
 import type { Logger } from "@isomer/logging"
@@ -19,10 +23,139 @@ interface PublishSiteArgs {
   }
 }
 
+const REPO_ROOT = path.resolve(process.cwd(), "../..")
+const PUBLISHING_DIR = path.join(REPO_ROOT, "tooling/build/scripts/publishing")
+const LOCAL_PUBLISH_DIR = path.join(
+  REPO_ROOT,
+  "tooling/template/.local-publish",
+)
+const LOCAL_PUBLISH_BACKUP_DIR = `${LOCAL_PUBLISH_DIR}-backup`
+const LOCAL_PUBLISH_TIMEOUT_MS = 120_000
+let localPublishQueue = Promise.resolve()
+let localPublishWaitingCount = 0
+
+const publishLocalSite = async (logger: Logger<string>, siteId: number) => {
+  const outputDir = await mkdtemp(`${LOCAL_PUBLISH_DIR}-`)
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const child = spawn("pnpm", ["start"], {
+        cwd: PUBLISHING_DIR,
+        env: {
+          // oxlint-disable-next-line node/no-process-env
+          ...process.env,
+          SITE_ID: String(siteId),
+          OUTPUT_DIR: outputDir,
+        },
+        stdio: "inherit",
+        // Keep pnpm and its tsx descendants in one group so a timeout stops all of them.
+        detached: true,
+      })
+
+      let timedOut = false
+      const timeout = setTimeout(() => {
+        timedOut = true
+        try {
+          if (child.pid) process.kill(-child.pid, "SIGKILL")
+        } catch (error) {
+          reject(
+            new Error("Could not stop timed-out local publisher", {
+              cause: error,
+            }),
+          )
+        }
+      }, LOCAL_PUBLISH_TIMEOUT_MS)
+
+      child.once("error", (error) => {
+        clearTimeout(timeout)
+        reject(error)
+      })
+      child.once("exit", (code, signal) => {
+        clearTimeout(timeout)
+        if (timedOut) {
+          reject(
+            new Error(
+              `Local publisher timed out after ${LOCAL_PUBLISH_TIMEOUT_MS}ms`,
+            ),
+          )
+        } else if (code === 0) resolve()
+        else
+          reject(
+            new Error(
+              `Local publisher exited with code ${code}, signal ${signal}`,
+            ),
+          )
+      })
+    })
+
+    await copyFile(
+      path.join(outputDir, "schema/_index.json"),
+      path.join(outputDir, "schema/not-found.json"),
+    )
+    await rm(LOCAL_PUBLISH_BACKUP_DIR, { recursive: true, force: true })
+    const hadPreviousPublish = existsSync(LOCAL_PUBLISH_DIR)
+    if (hadPreviousPublish) {
+      await rename(LOCAL_PUBLISH_DIR, LOCAL_PUBLISH_BACKUP_DIR)
+    }
+    try {
+      await rename(outputDir, LOCAL_PUBLISH_DIR)
+    } catch (error) {
+      if (hadPreviousPublish) {
+        await rename(LOCAL_PUBLISH_BACKUP_DIR, LOCAL_PUBLISH_DIR)
+      }
+      throw error
+    }
+    await rm(LOCAL_PUBLISH_BACKUP_DIR, { recursive: true, force: true })
+    logger.info(
+      { siteId },
+      "Published site to the local template at http://localhost:3001",
+    )
+  } catch (error) {
+    await rm(outputDir, { recursive: true, force: true })
+    throw error
+  }
+}
+
 export const publishSite = async (
   logger: Logger<string>,
   { siteId, codebuildJob }: PublishSiteArgs,
 ) => {
+  if (env.NEXT_PUBLIC_APP_ENV === "development") {
+    const queuedAt = performance.now()
+    localPublishWaitingCount += 1
+    logger.info(
+      { siteId, waitingCount: localPublishWaitingCount },
+      "Local publish queued",
+    )
+    localPublishQueue = localPublishQueue.then(async () => {
+      localPublishWaitingCount -= 1
+      const startedAt = performance.now()
+      logger.info(
+        {
+          siteId,
+          waitingCount: localPublishWaitingCount,
+          waitMs: Math.round(startedAt - queuedAt),
+        },
+        "Local publish started",
+      )
+      try {
+        await publishLocalSite(logger, siteId)
+      } catch (error) {
+        logger.error({ error, siteId }, "Local publish failed")
+      } finally {
+        logger.info(
+          {
+            siteId,
+            waitingCount: localPublishWaitingCount,
+            durationMs: Math.round(performance.now() - startedAt),
+          },
+          "Local publish finished",
+        )
+      }
+    })
+    return
+  }
+
   if (env.NEXT_PUBLIC_APP_ENV === "preview") {
     logger.info({ siteId }, "Preview env: skipping CodeBuild publish")
     return
