@@ -137,8 +137,6 @@ const HeroBlockSchema = Type.Composite(
           ],
           {
             title: "Shape",
-            description:
-              "Curved clips the image into a curve on desktop. On smaller screens the image stays rectangular.",
             default: HERO_BLOCK_SHAPE.straight,
             format: ARRAY_RADIO_FORMAT,
             type: "string",

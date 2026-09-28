@@ -20,16 +20,6 @@ const HERO_THEME_MAPPINGS = {
   },
 } as const
 
-// Desktop cutout. The image column widens from 50% to 52% of the hero and
-// pulls left by 2%, so it spans 48%-100%. A circle clip centred at 84% of the
-// hero (69.23% of the column) with a radius of 36% of the hero then starts
-// exactly at the column's left edge. The section is the size container, so
-// `36cqw` is 36% of the hero width. The image still covers a near-identical
-// box to the straight layout, so its scale barely changes. Below `lg` the
-// image stays a rectangle.
-const CURVED_CUTOUT_CLIP =
-  "lg:-ml-[2%] lg:w-[52%] lg:[clip-path:circle(36cqw_at_69.23%_50%)]"
-
 const heroBlockStyles = tv({
   slots: {
     section:
@@ -48,11 +38,13 @@ const heroBlockStyles = tv({
     shape: {
       straight: {},
       curved: {
+        // `36cqw` is 36% of the hero, so the circle starts at the column's left edge. Desktop only.
         section: "lg:[container-type:inline-size]",
         // The curve starts just left of the column split, so the straight
         // `lg:pr-8` leaves the copy almost touching it.
         textColumn: "lg:pr-24",
-        imageColumn: CURVED_CUTOUT_CLIP,
+        imageColumn:
+          "lg:-ml-[2%] lg:w-[52%] lg:[clip-path:circle(36cqw_at_69.23%_50%)]",
       },
     },
   },
