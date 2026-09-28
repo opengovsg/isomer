@@ -1,4 +1,6 @@
+import type { JsonSchema } from "@jsonforms/core"
 import { HERO_ACTION_LAYOUT } from "@opengovsg/isomer-components"
+import { createDefaultHeroActionLayoutQuickActionItem } from "~/components/PageEditor/constants"
 
 import { nextHeroActionLayoutData } from "../JsonFormsHeroActionLayoutControl"
 
@@ -8,7 +10,7 @@ const buttonsSchema = {
     buttonLabel: {},
     buttonUrl: {},
   },
-}
+} satisfies JsonSchema
 
 const quickActionsSchema = {
   properties: {
@@ -17,7 +19,9 @@ const quickActionsSchema = {
     showIcon: {},
     quickActionsItems: {},
   },
-}
+} satisfies JsonSchema
+
+const branches = [buttonsSchema, quickActionsSchema]
 
 describe("nextHeroActionLayoutData", () => {
   it("drops quick-action fields when switching to buttons", () => {
@@ -33,13 +37,11 @@ describe("nextHeroActionLayoutData", () => {
     }
 
     // Act
-    const actual = nextHeroActionLayoutData({
+    const actual = nextHeroActionLayoutData(
       current,
-      nextData: { actionLayout: "buttons" },
-      selectedSchema: buttonsSchema,
-      otherSchemas: [quickActionsSchema],
-      layout: HERO_ACTION_LAYOUT.buttons,
-    })
+      HERO_ACTION_LAYOUT.buttons,
+      branches,
+    )
 
     // Assert
     expect(actual).toEqual({
@@ -61,13 +63,11 @@ describe("nextHeroActionLayoutData", () => {
     }
 
     // Act
-    const actual = nextHeroActionLayoutData({
+    const actual = nextHeroActionLayoutData(
       current,
-      nextData: { actionLayout: "quickActions", showIcon: true },
-      selectedSchema: quickActionsSchema,
-      otherSchemas: [buttonsSchema],
-      layout: HERO_ACTION_LAYOUT.quickActions,
-    })
+      HERO_ACTION_LAYOUT.quickActions,
+      branches,
+    )
 
     // Assert
     expect(actual).toEqual({
@@ -75,8 +75,12 @@ describe("nextHeroActionLayoutData", () => {
       variant: "gradient",
       title: "Welcome",
       actionLayout: "quickActions",
-      showIcon: true,
       quickActionsTitle: "Get started",
+      showIcon: true,
+      quickActionsItems: [
+        createDefaultHeroActionLayoutQuickActionItem(),
+        createDefaultHeroActionLayoutQuickActionItem(),
+      ],
     })
   })
 })
