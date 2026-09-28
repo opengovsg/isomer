@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
+import { Box } from "@chakra-ui/react"
 import { InfoColsSchema } from "@opengovsg/isomer-components"
 import { Type } from "@sinclair/typebox"
 
@@ -7,6 +8,14 @@ import { FormBuilder } from "./formBuilder"
 const meta: Meta<typeof FormBuilder> = {
   title: "Pages/Edit Page/components/JsonFormsIconPickerControl",
   component: FormBuilder,
+  decorators: [
+    (Story) => (
+      // Mimic the width of the editor sidebar the control is rendered in
+      <Box maxW="24rem" p="1.5rem">
+        <Story />
+      </Box>
+    ),
+  ],
 }
 
 export default meta

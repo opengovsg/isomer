@@ -18,6 +18,9 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getCustomErrorMessage } from "./utils"
 
 const ICON_PICKER_ROWS = 2
+// Buttons are capped so they stay compact in wide containers, but shrink to
+// keep both rows inside the editor sidebar on narrow viewports
+const ICON_PICKER_BUTTON_MAX_SIZE = "2.5rem"
 
 export const jsonFormsIconPickerControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.IconPickerControl,
@@ -143,7 +146,7 @@ function JsonFormsIconPickerControl({
         <Grid
           role="group"
           aria-label={label}
-          templateColumns={`repeat(${columns}, minmax(0, 1fr))`}
+          templateColumns={`repeat(${columns}, minmax(0, ${ICON_PICKER_BUTTON_MAX_SIZE}))`}
           gap="0.5rem"
         >
           {options.map((option) => {
