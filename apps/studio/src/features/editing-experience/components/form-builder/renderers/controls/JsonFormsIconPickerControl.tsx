@@ -6,7 +6,6 @@ import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
 import {
   ICON_PICKER_FORMAT,
-  SUPPORTED_ICON_LABELS,
   SUPPORTED_ICONS_MAP,
 } from "@opengovsg/isomer-components"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -23,11 +22,6 @@ export const jsonFormsIconPickerControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === ICON_PICKER_FORMAT),
 )
 
-interface IconPickerOption {
-  value: SupportedIconName
-  label: string
-}
-
 const isSupportedIconName = (value: unknown): value is SupportedIconName =>
   typeof value === "string" && value in SUPPORTED_ICONS_MAP
 
@@ -36,38 +30,34 @@ const isSupportedIconName = (value: unknown): value is SupportedIconName =>
 // working if the schema shape changes.
 export const getIconPickerOptions = (
   schema: JsonSchema,
-): IconPickerOption[] => {
+): SupportedIconName[] => {
   const literalSchemas = schema.anyOf ?? schema.oneOf
   const candidates: unknown[] = literalSchemas
     ? literalSchemas.map((literal) => literal.const as unknown)
     : (schema.enum ?? [])
 
-  return candidates.flatMap((value) =>
-    isSupportedIconName(value)
-      ? [{ value, label: SUPPORTED_ICON_LABELS[value] }]
-      : [],
-  )
+  return candidates.filter(isSupportedIconName)
 }
 
 interface IconPickerButtonProps {
-  option: IconPickerOption
+  value: SupportedIconName
   isSelected: boolean
   isDisabled: boolean
   onClick: () => void
 }
 
 const IconPickerButton = ({
-  option,
+  value,
   isSelected,
   isDisabled,
   onClick,
 }: IconPickerButtonProps) => {
-  const IconComponent = SUPPORTED_ICONS_MAP[option.value]
+  const IconComponent = SUPPORTED_ICONS_MAP[value]
 
   return (
     <chakra.button
       type="button"
-      aria-label={option.label}
+      aria-label={value}
       aria-pressed={isSelected}
       disabled={isDisabled}
       onClick={onClick}
@@ -140,13 +130,13 @@ function JsonFormsIconPickerControl({
           templateColumns={`repeat(${columns}, minmax(0, ${ICON_PICKER_BUTTON_MAX_SIZE}))`}
           gap="0.5rem"
         >
-          {options.map((option) => {
-            const isSelected = data === option.value
+          {options.map((value) => {
+            const isSelected = data === value
 
             return (
               <IconPickerButton
-                key={option.value}
-                option={option}
+                key={value}
+                value={value}
                 isSelected={isSelected}
                 isDisabled={!enabled}
                 onClick={() => {
@@ -155,7 +145,7 @@ function JsonFormsIconPickerControl({
                     handleChange(path, undefined)
                     return
                   }
-                  handleChange(path, option.value)
+                  handleChange(path, value)
                 }}
               />
             )
