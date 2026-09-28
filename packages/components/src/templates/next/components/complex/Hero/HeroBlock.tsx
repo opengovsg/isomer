@@ -49,6 +49,9 @@ const heroBlockStyles = tv({
       straight: {},
       curved: {
         section: "lg:[container-type:inline-size]",
+        // The curve starts just left of the column split, so the straight
+        // `lg:pr-8` leaves the copy almost touching it.
+        textColumn: "lg:pr-24",
         imageColumn: CURVED_CUTOUT_CLIP,
       },
     },
