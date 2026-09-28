@@ -8,8 +8,8 @@ import { Step } from "./Step"
 
 const createStepsStyles = tv({
   slots: {
-    section: "bg-white",
-    outerContainer: `${ComponentContent}`,
+    outerContainer: "bg-white",
+    contentContainer: `${ComponentContent}`,
     innerContainer: "flex flex-col gap-12",
     header: "flex w-full max-w-[47.5rem] flex-col items-start text-left",
     headerTitle: "prose-display-sm break-words text-base-content-strong",
@@ -18,16 +18,16 @@ const createStepsStyles = tv({
   },
   variants: {
     // Block spacing lives on the root <section>, which is a direct child of the
-    // page content container. Putting `first:` on the nested outerContainer
+    // page content container. Putting `first:` on the nested contentContainer
     // would always match (it is the section's only child) and zero the gap.
     layout: {
       homepage: {
-        section: "py-12 first:pt-0 md:py-16",
+        outerContainer: "py-12 first:pt-0 md:py-16",
         header: "gap-2.5",
         headerSubtitle: "prose-headline-lg-regular",
       },
       default: {
-        section: "mt-14 first:mt-0",
+        outerContainer: "mt-14 first:mt-0",
         header: "gap-6",
         headerSubtitle: "prose-body-base",
       },
@@ -60,8 +60,11 @@ export const Steps = ({
   const hasTwo = steps.length === 2
 
   return (
-    <section id={id} className={styles.section({ layout: simplifiedLayout })}>
-      <div className={styles.outerContainer()}>
+    <section
+      id={id}
+      className={styles.outerContainer({ layout: simplifiedLayout })}
+    >
+      <div className={styles.contentContainer()}>
         <div className={styles.innerContainer()}>
           <div className={styles.header({ layout: simplifiedLayout })}>
             <TitleTag className={styles.headerTitle()}>{title}</TitleTag>
