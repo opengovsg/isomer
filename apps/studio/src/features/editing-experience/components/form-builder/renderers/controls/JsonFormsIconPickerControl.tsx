@@ -90,10 +90,10 @@ const IconPickerButton = ({
       transitionDuration="normal"
       _hover={{
         borderColor: isSelected
-          ? "interaction.main.hover"
+          ? "interaction.main.default"
           : "interaction.main-subtle.hover",
         bg: isSelected
-          ? "interaction.main-subtle.hover"
+          ? "interaction.muted.main.active"
           : "interaction.muted.main.hover",
       }}
       _focusVisible={{
