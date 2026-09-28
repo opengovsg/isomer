@@ -20,11 +20,15 @@ const HERO_THEME_MAPPINGS = {
   },
 } as const
 
-// Desktop cutout: a circle whose diameter is 76% of the hero width, centered
-// at 82% across. The left edge lands near 44% of the hero and the section
-// clips everything past the hero box. Below `lg` the image stays a rectangle.
+// Desktop cutout. The image column widens from 50% to 52% of the hero and
+// pulls left by 2%, so it spans 48%-100%. A circle clip centred at 84% of the
+// hero (69.23% of the column) with a radius of 36% of the hero then starts
+// exactly at the column's left edge. The section is the size container, so
+// `36cqw` is 36% of the hero width. The image still covers a near-identical
+// box to the straight layout, so its scale barely changes. Below `lg` the
+// image stays a rectangle.
 const CURVED_CUTOUT_CLIP =
-  "lg:bottom-auto lg:right-auto lg:top-1/2 lg:left-[82%] lg:h-auto lg:w-[76%] lg:aspect-square lg:-translate-x-1/2 lg:-translate-y-1/2 lg:overflow-hidden lg:rounded-full"
+  "lg:-ml-[2%] lg:w-[52%] lg:[clip-path:circle(36cqw_at_69.23%_50%)]"
 
 const heroBlockStyles = tv({
   slots: {
@@ -34,7 +38,6 @@ const heroBlockStyles = tv({
       "flex flex-row px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-8",
     imageColumn:
       "relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2",
-    imageClip: "absolute inset-0",
     image: "absolute inset-0 h-full w-full object-cover object-center",
   },
   variants: {
@@ -45,12 +48,8 @@ const heroBlockStyles = tv({
     shape: {
       straight: {},
       curved: {
-        section: "lg:relative lg:overflow-hidden",
-        // Keep copy left of the curve, which begins near 44% of the hero.
-        textColumn: "lg:relative lg:z-10 lg:w-2/5 lg:justify-start",
-        imageColumn:
-          "lg:static lg:h-0 lg:max-h-none lg:min-h-0 lg:w-0 lg:overflow-visible",
-        imageClip: CURVED_CUTOUT_CLIP,
+        section: "lg:[container-type:inline-size]",
+        imageColumn: CURVED_CUTOUT_CLIP,
       },
     },
   },
@@ -156,22 +155,15 @@ export const HeroBlock = ({
           )}
         </div>
       </div>
-      <div
-        className={styles.imageColumn()}
-        style={
-          shape === HERO_BLOCK_SHAPE.curved ? undefined : { contain: "layout" }
-        }
-      >
-        <div className={styles.imageClip()}>
-          <ImageClient
-            src={backgroundUrl}
-            alt=""
-            width="100%"
-            className={styles.image()}
-            assetsBaseUrl={site.assetsBaseUrl}
-            lazyLoading={false} // hero is always above the fold
-          />
-        </div>
+      <div className={styles.imageColumn()} style={{ contain: "layout" }}>
+        <ImageClient
+          src={backgroundUrl}
+          alt=""
+          width="100%"
+          className={styles.image()}
+          assetsBaseUrl={site.assetsBaseUrl}
+          lazyLoading={false} // hero is always above the fold
+        />
       </div>
     </section>
   )
