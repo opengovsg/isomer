@@ -127,10 +127,8 @@ const HeroBlockSchema = Type.Composite(
     Type.Object({
       variant: Type.Literal(HERO_STYLE.block, { default: HERO_STYLE.block }),
       backgroundUrl: BackgroundUrlSchema,
-      // NOTE: `right` must be listed first. Studio's combinator radio falls back
-      // to the first option when the value is absent (legacy heroes), and AJV
-      // ignores `default` inside the variant anyOf, so the option order is what
-      // keeps the editor in sync with HeroBlock's right-side fallback.
+      // Keep `right` first. Studio's radio selects the first option when the
+      // value is missing, and AJV ignores `default` inside an anyOf.
       imagePosition: Type.Optional(
         Type.Union(
           [
