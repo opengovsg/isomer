@@ -1,18 +1,28 @@
 import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
-import type { SupportedIconName } from "@opengovsg/isomer-components"
+import type { IconType } from "react-icons"
 import { Box, chakra, FormControl, Grid, Icon } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
+import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
+import { ICON_PICKER_FORMAT } from "@opengovsg/isomer-components"
 import {
-  FormErrorMessage,
-  FormLabel,
-  Tooltip,
-} from "@opengovsg/design-system-react"
-import {
-  ICON_PICKER_FORMAT,
-  SUPPORTED_ICON_LABELS,
-  SUPPORTED_ICONS_MAP,
-} from "@opengovsg/isomer-components"
+  BiBarChartAlt2,
+  BiBookOpen,
+  BiBuildings,
+  BiCalendar,
+  BiChart,
+  BiChat,
+  BiFile,
+  BiGlobe,
+  BiGroup,
+  BiHelpCircle,
+  BiIdCard,
+  BiMapPin,
+  BiNews,
+  BiPhone,
+  BiRightArrowAlt,
+  BiStar,
+} from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { getCustomErrorMessage } from "./utils"
@@ -22,18 +32,35 @@ const ICON_PICKER_ROWS = 2
 // keep both rows inside the editor sidebar on narrow viewports
 const ICON_PICKER_BUTTON_MAX_SIZE = "2.5rem"
 
+// Mirrors the InfoCols icon set rendered on published sites
+const ICON_PICKER_ICONS: Record<string, IconType> = {
+  "right-arrow": BiRightArrowAlt,
+  "bar-chart": BiBarChartAlt2,
+  "line-chart": BiChart,
+  users: BiGroup,
+  "office-building": BiBuildings,
+  stars: BiStar,
+  globe: BiGlobe,
+  calendar: BiCalendar,
+  "book-open": BiBookOpen,
+  news: BiNews,
+  file: BiFile,
+  "help-circle": BiHelpCircle,
+  phone: BiPhone,
+  "id-card": BiIdCard,
+  "map-pin": BiMapPin,
+  chat: BiChat,
+}
+
 export const jsonFormsIconPickerControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.IconPickerControl,
   schemaMatches((schema) => schema.format === ICON_PICKER_FORMAT),
 )
 
 interface IconPickerOption {
-  value: SupportedIconName
+  value: string
   label: string
 }
-
-const isSupportedIconName = (value: unknown): value is SupportedIconName =>
-  typeof value === "string" && value in SUPPORTED_ICONS_MAP
 
 // The icon field is a union of string literals, which TypeBox emits as
 // `anyOf: [{ const, title }]`. Fall back to `oneOf`/`enum` so the picker keeps
@@ -50,8 +77,8 @@ export const getIconPickerOptions = (
     : (schema.enum ?? []).map((value: unknown) => ({ value }))
 
   return candidates.flatMap(({ value, title }) =>
-    isSupportedIconName(value)
-      ? [{ value, label: title ?? SUPPORTED_ICON_LABELS[value] }]
+    typeof value === "string" && value in ICON_PICKER_ICONS
+      ? [{ value, label: title ?? value }]
       : [],
   )
 }
@@ -69,59 +96,59 @@ const IconPickerButton = ({
   isDisabled,
   onClick,
 }: IconPickerButtonProps) => {
-  const IconComponent = SUPPORTED_ICONS_MAP[option.value]
+  const IconComponent = ICON_PICKER_ICONS[option.value]
 
   return (
-    <Tooltip label={option.label} placement="top" hasArrow>
-      <chakra.button
-        type="button"
-        aria-label={option.label}
-        aria-pressed={isSelected}
-        disabled={isDisabled}
-        onClick={onClick}
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        minW={0}
-        w="100%"
-        sx={{ aspectRatio: "1 / 1" }}
-        borderRadius="4px"
-        borderWidth="1.5px"
-        borderStyle="solid"
-        borderColor={
-          isSelected ? "interaction.main.default" : "base.divider.medium"
-        }
-        bg={isSelected ? "interaction.muted.main.active" : "white"}
-        color={isSelected ? "base.content.brand" : "base.content.default"}
-        cursor="pointer"
-        transitionProperty="common"
-        transitionDuration="normal"
-        _hover={{
+    <chakra.button
+      type="button"
+      aria-label={option.label}
+      aria-pressed={isSelected}
+      disabled={isDisabled}
+      onClick={onClick}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      minW={0}
+      w="100%"
+      sx={{ aspectRatio: "1 / 1" }}
+      borderRadius="4px"
+      borderWidth="1.5px"
+      borderStyle="solid"
+      borderColor={
+        isSelected ? "interaction.main.default" : "base.divider.medium"
+      }
+      bg={isSelected ? "interaction.muted.main.active" : "white"}
+      color={isSelected ? "base.content.brand" : "base.content.default"}
+      cursor="pointer"
+      transitionProperty="common"
+      transitionDuration="normal"
+      _hover={{
+        borderColor: isSelected
+          ? "interaction.main.default"
+          : "interaction.main-subtle.hover",
+        bg: isSelected
+          ? "interaction.muted.main.active"
+          : "interaction.muted.main.hover",
+      }}
+      _focusVisible={{
+        outline: "none",
+        boxShadow: "0 0 0 2px var(--chakra-colors-utility-focus-default)",
+      }}
+      _disabled={{
+        cursor: "not-allowed",
+        opacity: 0.5,
+        _hover: {
           borderColor: isSelected
             ? "interaction.main.default"
-            : "interaction.main-subtle.hover",
-          bg: isSelected
-            ? "interaction.muted.main.active"
-            : "interaction.muted.main.hover",
-        }}
-        _focusVisible={{
-          outline: "none",
-          boxShadow: "0 0 0 2px var(--chakra-colors-utility-focus-default)",
-        }}
-        _disabled={{
-          cursor: "not-allowed",
-          opacity: 0.5,
-          _hover: {
-            borderColor: isSelected
-              ? "interaction.main.default"
-              : "base.divider.medium",
-            bg: isSelected ? "interaction.muted.main.active" : "white",
-          },
-        }}
-      >
+            : "base.divider.medium",
+          bg: isSelected ? "interaction.muted.main.active" : "white",
+        },
+      }}
+    >
+      {IconComponent && (
         <Icon as={IconComponent} boxSize="1.25rem" aria-hidden />
-      </chakra.button>
-    </Tooltip>
+      )}
+    </chakra.button>
   )
 }
 
