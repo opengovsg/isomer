@@ -13,9 +13,6 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { getCustomErrorMessage } from "./utils"
 
 const ICON_PICKER_ROWS = 2
-// Buttons are capped so they stay compact in wide containers, but shrink to
-// keep both rows inside the editor sidebar on narrow viewports
-const ICON_PICKER_BUTTON_MAX_SIZE = "2.5rem"
 
 export const jsonFormsIconPickerControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.IconPickerControl,
@@ -57,8 +54,6 @@ const IconPickerButton = ({
   return (
     <chakra.button
       type="button"
-      aria-label={value}
-      aria-pressed={isSelected}
       disabled={isDisabled}
       onClick={onClick}
       display="flex"
@@ -88,7 +83,8 @@ const IconPickerButton = ({
       }}
       _focusVisible={{
         outline: "none",
-        boxShadow: "0 0 0 2px var(--chakra-colors-utility-focus-default)",
+        borderColor: "utility.focus-default",
+        boxShadow: "0 0 0 1px var(--chakra-colors-utility-focus-default)",
       }}
       _disabled={{
         cursor: "not-allowed",
@@ -126,8 +122,7 @@ function JsonFormsIconPickerControl({
         <FormLabel description={description}>{label}</FormLabel>
         <Grid
           role="group"
-          aria-label={label}
-          templateColumns={`repeat(${columns}, minmax(0, ${ICON_PICKER_BUTTON_MAX_SIZE}))`}
+          templateColumns={`repeat(${columns}, minmax(0, 2.5rem))`}
           gap="0.5rem"
         >
           {options.map((value) => {
@@ -140,7 +135,6 @@ function JsonFormsIconPickerControl({
                 isSelected={isSelected}
                 isDisabled={!enabled}
                 onClick={() => {
-                  // Clicking the selected icon again clears an optional field
                   if (isSelected && !required) {
                     handleChange(path, undefined)
                     return
