@@ -1,4 +1,5 @@
 import type { HeroBlockProps } from "~/interfaces/complex/Hero"
+import { HERO_BLOCK_IMAGE_POSITION } from "~/interfaces/complex/Hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
@@ -20,6 +21,19 @@ const HERO_THEME_MAPPINGS = {
   },
 } as const
 
+// On mobile the text always stacks above the image; the position only
+// affects the side-by-side layout on large screens.
+const IMAGE_POSITION_MAPPINGS = {
+  [HERO_BLOCK_IMAGE_POSITION.right]: {
+    section: "lg:flex-row",
+    text: "lg:justify-end lg:pl-10 lg:pr-8",
+  },
+  [HERO_BLOCK_IMAGE_POSITION.left]: {
+    section: "lg:flex-row-reverse",
+    text: "lg:justify-start lg:pl-8 lg:pr-10",
+  },
+} as const
+
 export const HeroBlock = ({
   title,
   subtitle,
@@ -28,6 +42,7 @@ export const HeroBlock = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   backgroundUrl,
+  imagePosition = HERO_BLOCK_IMAGE_POSITION.right,
   site,
   theme = "default",
   headingLevel,
@@ -35,12 +50,15 @@ export const HeroBlock = ({
   const heroColour = HERO_THEME_MAPPINGS.hero[theme]
   const heroTextColour = HERO_THEME_MAPPINGS.text[theme]
   const heroButton = HERO_THEME_MAPPINGS.button[theme]
+  const positionStyles = IMAGE_POSITION_MAPPINGS[imagePosition]
   const Tag = getHeadingTag(headingLevel)
 
   return (
-    <section className="flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row">
+    <section
+      className={`flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] ${positionStyles.section}`}
+    >
       <div
-        className={`flex flex-row ${heroColour} px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-8`}
+        className={`flex flex-row ${heroColour} px-6 pb-12 pt-11 md:px-10 lg:w-1/2 ${positionStyles.text}`}
       >
         <div
           className={`flex w-full max-w-[548px] flex-col justify-center gap-9 ${heroTextColour}`}

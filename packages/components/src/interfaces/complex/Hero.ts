@@ -17,6 +17,11 @@ export const HERO_STYLE = {
   searchbar: "searchbar",
 } as const
 
+export const HERO_BLOCK_IMAGE_POSITION = {
+  left: "left",
+  right: "right",
+} as const
+
 const HeroBaseSchema = Type.Object({
   type: Type.Literal("hero", { default: "hero" }),
   title: Type.String({
@@ -122,6 +127,24 @@ const HeroBlockSchema = Type.Composite(
     Type.Object({
       variant: Type.Literal(HERO_STYLE.block, { default: HERO_STYLE.block }),
       backgroundUrl: BackgroundUrlSchema,
+      imagePosition: Type.Optional(
+        Type.Union(
+          [
+            Type.Literal(HERO_BLOCK_IMAGE_POSITION.left, {
+              title: "Left",
+            }),
+            Type.Literal(HERO_BLOCK_IMAGE_POSITION.right, {
+              title: "Right",
+            }),
+          ],
+          {
+            title: "Image position",
+            format: ARRAY_RADIO_FORMAT,
+            type: "string",
+            default: HERO_BLOCK_IMAGE_POSITION.right,
+          },
+        ),
+      ),
     }),
     HeroBaseSchema,
     CallToActionsSchema,
