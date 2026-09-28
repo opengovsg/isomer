@@ -1,38 +1,49 @@
 import type { HeroBlockProps } from "~/interfaces/complex/Hero"
 import { HERO_BLOCK_IMAGE_POSITION } from "~/interfaces/complex/Hero"
+import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
-const HERO_THEME_MAPPINGS = {
-  hero: {
-    default: "bg-brand-canvas-inverse",
-    inverse: "bg-brand-canvas-alt",
-  },
-  text: {
-    default: "text-base-content-inverse",
-    inverse: "text-base-content",
-  },
-  button: {
-    default: "inverse",
-    inverse: "default",
-  },
+const HERO_BUTTON_COLOR_SCHEME = {
+  default: "inverse",
+  inverse: "default",
 } as const
 
-// On mobile the text always stacks above the image; the position only
-// affects the side-by-side layout on large screens.
-const IMAGE_POSITION_MAPPINGS = {
-  [HERO_BLOCK_IMAGE_POSITION.right]: {
-    section: "lg:flex-row",
-    text: "lg:justify-end lg:pl-10 lg:pr-8",
+const heroBlockStyles = tv({
+  slots: {
+    section:
+      "flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem]",
+    textContainer: "flex flex-row px-6 pb-12 pt-11 md:px-10 lg:w-1/2",
+    text: "flex w-full max-w-[548px] flex-col justify-center gap-9",
   },
-  [HERO_BLOCK_IMAGE_POSITION.left]: {
-    section: "lg:flex-row-reverse",
-    text: "lg:justify-start lg:pl-8 lg:pr-10",
+  variants: {
+    theme: {
+      default: {
+        textContainer: "bg-brand-canvas-inverse",
+        text: "text-base-content-inverse",
+      },
+      inverse: {
+        textContainer: "bg-brand-canvas-alt",
+        text: "text-base-content",
+      },
+    },
+    // On mobile the text always stacks above the image; the position only
+    // affects the side-by-side layout on large screens.
+    imagePosition: {
+      [HERO_BLOCK_IMAGE_POSITION.right]: {
+        section: "lg:flex-row",
+        textContainer: "lg:justify-end lg:pl-10 lg:pr-8",
+      },
+      [HERO_BLOCK_IMAGE_POSITION.left]: {
+        section: "lg:flex-row-reverse",
+        textContainer: "lg:justify-start lg:pl-8 lg:pr-10",
+      },
+    },
   },
-} as const
+})
 
 export const HeroBlock = ({
   title,
@@ -47,22 +58,14 @@ export const HeroBlock = ({
   theme = "default",
   headingLevel,
 }: HeroBlockProps) => {
-  const heroColour = HERO_THEME_MAPPINGS.hero[theme]
-  const heroTextColour = HERO_THEME_MAPPINGS.text[theme]
-  const heroButton = HERO_THEME_MAPPINGS.button[theme]
-  const positionStyles = IMAGE_POSITION_MAPPINGS[imagePosition]
+  const heroButton = HERO_BUTTON_COLOR_SCHEME[theme]
+  const styles = heroBlockStyles({ theme, imagePosition })
   const Tag = getHeadingTag(headingLevel)
 
   return (
-    <section
-      className={`flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] ${positionStyles.section}`}
-    >
-      <div
-        className={`flex flex-row ${heroColour} px-6 pb-12 pt-11 md:px-10 lg:w-1/2 ${positionStyles.text}`}
-      >
-        <div
-          className={`flex w-full max-w-[548px] flex-col justify-center gap-9 ${heroTextColour}`}
-        >
+    <section className={styles.section()}>
+      <div className={styles.textContainer()}>
+        <div className={styles.text()}>
           <div className="flex flex-col gap-6">
             <Tag className="wrap-break-word prose-display-xl text-balance">
               {title}
