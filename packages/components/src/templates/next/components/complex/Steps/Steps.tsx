@@ -17,9 +17,6 @@ const createStepsStyles = tv({
     list: "grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-2 lg:grid-cols-3",
   },
   variants: {
-    // Block spacing lives on the root <section>, which is a direct child of the
-    // page content container. Putting `first:` on the nested contentContainer
-    // would always match (it is the section's only child) and zero the gap.
     layout: {
       homepage: {
         outerContainer: "py-12 first:pt-0 md:py-16",
