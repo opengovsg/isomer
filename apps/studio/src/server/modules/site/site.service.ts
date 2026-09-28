@@ -14,7 +14,7 @@ import type {
 } from "../database"
 import type { UserPermissionsProps } from "../permissions/permissions.type"
 import { logConfigEvent } from "../audit/audit.service"
-import { AuditLogEvent, db, jsonb, RoleType } from "../database"
+import { AuditLogEvent, db, jsonb, RoleType, sql } from "../database"
 import {
   definePermissionsForSite,
   isActiveIsomerAdmin,
@@ -73,6 +73,96 @@ export const getAdminSiteIds = async (userId: string): Promise<number[]> => {
     .orderBy("Site.id", "asc")
     .execute()
   return sites.map((site) => site.id)
+}
+
+// Active Isomer admins are excluded from "ask this person to add you back"
+// — same rule as the inactivity deactivation email.
+const activeIsomerAdminUserIds = () =>
+  db
+    .selectFrom("IsomerAdmin")
+    .where((eb) =>
+      eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
+    )
+    .select("userId")
+
+// Sites whose latest site-wide permission for this user was removed for
+// inactivity. A later re-grant (active row) or a later manual removal
+// (different permission id, no inactivity audit on that row) hides the site.
+// Active Isomer admins still have implicit access to every site, so this
+// list is empty for them.
+export const listSitesWithExpiredAccess = async (userId: string) => {
+  if (await isActiveIsomerAdmin(userId)) {
+    return []
+  }
+
+  const sites = await db
+    .with("latestPermission", (qb) =>
+      qb
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", userId)
+        .where("resourceId", "is", null)
+        .distinctOn("siteId")
+        .orderBy("siteId")
+        .orderBy(sql`"deletedAt" desc nulls first`)
+        .orderBy("id", "desc")
+        .select(["id", "siteId", "deletedAt"]),
+    )
+    .selectFrom("latestPermission")
+    .innerJoin("Site", "Site.id", "latestPermission.siteId")
+    .where("latestPermission.deletedAt", "is not", null)
+    .where((eb) =>
+      eb.exists(
+        eb
+          .selectFrom("AuditLog")
+          .select("AuditLog.id")
+          .whereRef("AuditLog.siteId", "=", "latestPermission.siteId")
+          .where("AuditLog.eventType", "=", AuditLogEvent.PermissionDelete)
+          .where(sql<boolean>`"AuditLog".metadata->>'reason' = 'inactivity'`)
+          .where(
+            sql<boolean>`"AuditLog".delta -> 'before' ->> 'id' = "latestPermission"."id"::text`,
+          )
+          .where(
+            sql<boolean>`"AuditLog".delta -> 'before' ->> 'userId' = ${userId}`,
+          ),
+      ),
+    )
+    .select(["Site.id", "Site.config"])
+    .orderBy("Site.id", "asc")
+    .execute()
+
+  if (sites.length === 0) return []
+
+  const admins = await db
+    .selectFrom("ResourcePermission")
+    .innerJoin("User", "User.id", "ResourcePermission.userId")
+    .where(
+      "ResourcePermission.siteId",
+      "in",
+      sites.map((site) => site.id),
+    )
+    .where("ResourcePermission.deletedAt", "is", null)
+    .where("ResourcePermission.resourceId", "is", null)
+    .where("ResourcePermission.role", "=", RoleType.Admin)
+    .where("User.deletedAt", "is", null)
+    .where("User.id", "!=", userId)
+    .where("User.id", "not in", activeIsomerAdminUserIds())
+    .select(["ResourcePermission.siteId as siteId", "User.email as email"])
+    .execute()
+
+  const emailsBySiteId = new Map<number, string[]>()
+  for (const admin of admins) {
+    const existing = emailsBySiteId.get(admin.siteId) ?? []
+    existing.push(admin.email)
+    emailsBySiteId.set(admin.siteId, existing)
+  }
+
+  return sites.map((site) => ({
+    id: site.id,
+    config: site.config,
+    adminEmails: (emailsBySiteId.get(site.id) ?? []).sort((a, b) =>
+      a.localeCompare(b),
+    ),
+  }))
 }
 
 type SiteSearchConfig = IsomerSiteConfigProps["search"]

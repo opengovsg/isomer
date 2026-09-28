@@ -1,4 +1,5 @@
 import { Flex, Text } from "@chakra-ui/react"
+import { ExpiredSiteAccess } from "~/features/dashboard/ExpiredSiteAccess"
 import { SiteList } from "~/features/dashboard/SiteList"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
@@ -12,6 +13,7 @@ const DashboardPage: NextPageWithLayout = () => {
         </Text>
         <SiteList />
       </Flex>
+      <ExpiredSiteAccess />
     </Flex>
   )
 }
