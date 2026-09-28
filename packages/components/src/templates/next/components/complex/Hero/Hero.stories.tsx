@@ -76,6 +76,25 @@ export const ColourBlockInverse: Story = {
   },
 }
 
+export const ColourBlockImageLeft: Story = {
+  args: {
+    headingLevel: 1,
+    site: generateSiteConfig(),
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Your hero title goes here, please keep it short and sweet",
+    subtitle:
+      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
+    buttonLabel: "Main CTA",
+    buttonUrl: "/",
+    secondaryButtonLabel: "Sub CTA",
+    secondaryButtonUrl: "/",
+    variant: "block",
+    imagePosition: "left",
+    theme: "default",
+  },
+}
+
 export const ColourBlockLongWord: Story = {
   args: {
     headingLevel: 1,
