@@ -26,3 +26,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS "User_email_deletedAt_key" ON "User"("email", 
 CREATE INDEX CONCURRENTLY IF NOT EXISTS "Version_resourceId_versionNum_idx" ON "Version"("resourceId", "versionNum");
 
 ---------------------------------
+
+---------------------------------
+-- PermissionDelete lookups by site and actor (admin vs system user), e.g.
+-- filtering metadata->>'reason' = 'inactivity' for inactive-user removals.
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS "AuditLog_siteId_eventType_userId_idx" ON "AuditLog"("siteId", "eventType", "userId");
+
+---------------------------------

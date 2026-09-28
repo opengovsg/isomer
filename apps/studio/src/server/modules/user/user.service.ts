@@ -265,6 +265,7 @@ export const deleteUserPermission = async ({
         by: byUser,
         delta: { before, after: deletedUserPermission },
         siteId,
+        metadata: { reason: "manual" },
       })
     }
   })

@@ -768,6 +768,7 @@ describe("user.router", () => {
       expect(permissionsAuditLogs).toHaveLength(1)
       expect(permissionsAuditLogs[0]).toMatchObject({
         eventType: "PermissionDelete",
+        metadata: { reason: "manual" },
         delta: expect.objectContaining({
           before: expect.objectContaining({
             ...omit(deletedUserPermissions[0], [
