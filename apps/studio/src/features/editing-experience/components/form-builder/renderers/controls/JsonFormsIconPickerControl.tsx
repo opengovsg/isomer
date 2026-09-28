@@ -1,28 +1,14 @@
 import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
-import type { IconType } from "react-icons"
+import type { SupportedIconName } from "@opengovsg/isomer-components"
 import { Box, chakra, FormControl, Grid, Icon } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
-import { ICON_PICKER_FORMAT } from "@opengovsg/isomer-components"
 import {
-  BiBarChartAlt2,
-  BiBookOpen,
-  BiBuildings,
-  BiCalendar,
-  BiChart,
-  BiChat,
-  BiFile,
-  BiGlobe,
-  BiGroup,
-  BiHelpCircle,
-  BiIdCard,
-  BiMapPin,
-  BiNews,
-  BiPhone,
-  BiRightArrowAlt,
-  BiStar,
-} from "react-icons/bi"
+  ICON_PICKER_FORMAT,
+  SUPPORTED_ICON_LABELS,
+  SUPPORTED_ICONS_MAP,
+} from "@opengovsg/isomer-components"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { getCustomErrorMessage } from "./utils"
@@ -32,53 +18,33 @@ const ICON_PICKER_ROWS = 2
 // keep both rows inside the editor sidebar on narrow viewports
 const ICON_PICKER_BUTTON_MAX_SIZE = "2.5rem"
 
-// Mirrors the InfoCols icon set rendered on published sites
-const ICON_PICKER_ICONS: Record<string, IconType> = {
-  "right-arrow": BiRightArrowAlt,
-  "bar-chart": BiBarChartAlt2,
-  "line-chart": BiChart,
-  users: BiGroup,
-  "office-building": BiBuildings,
-  stars: BiStar,
-  globe: BiGlobe,
-  calendar: BiCalendar,
-  "book-open": BiBookOpen,
-  news: BiNews,
-  file: BiFile,
-  "help-circle": BiHelpCircle,
-  phone: BiPhone,
-  "id-card": BiIdCard,
-  "map-pin": BiMapPin,
-  chat: BiChat,
-}
-
 export const jsonFormsIconPickerControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.IconPickerControl,
   schemaMatches((schema) => schema.format === ICON_PICKER_FORMAT),
 )
 
 interface IconPickerOption {
-  value: string
+  value: SupportedIconName
   label: string
 }
 
+const isSupportedIconName = (value: unknown): value is SupportedIconName =>
+  typeof value === "string" && value in SUPPORTED_ICONS_MAP
+
 // The icon field is a union of string literals, which TypeBox emits as
-// `anyOf: [{ const, title }]`. Fall back to `oneOf`/`enum` so the picker keeps
+// `anyOf: [{ const }]`. Fall back to `oneOf`/`enum` so the picker keeps
 // working if the schema shape changes.
 export const getIconPickerOptions = (
   schema: JsonSchema,
 ): IconPickerOption[] => {
   const literalSchemas = schema.anyOf ?? schema.oneOf
-  const candidates: { value: unknown; title?: string }[] = literalSchemas
-    ? literalSchemas.map((literal) => ({
-        value: literal.const as unknown,
-        title: literal.title,
-      }))
-    : (schema.enum ?? []).map((value: unknown) => ({ value }))
+  const candidates: unknown[] = literalSchemas
+    ? literalSchemas.map((literal) => literal.const as unknown)
+    : (schema.enum ?? [])
 
-  return candidates.flatMap(({ value, title }) =>
-    typeof value === "string" && value in ICON_PICKER_ICONS
-      ? [{ value, label: title ?? value }]
+  return candidates.flatMap((value) =>
+    isSupportedIconName(value)
+      ? [{ value, label: SUPPORTED_ICON_LABELS[value] }]
       : [],
   )
 }
@@ -96,7 +62,7 @@ const IconPickerButton = ({
   isDisabled,
   onClick,
 }: IconPickerButtonProps) => {
-  const IconComponent = ICON_PICKER_ICONS[option.value]
+  const IconComponent = SUPPORTED_ICONS_MAP[option.value]
 
   return (
     <chakra.button
@@ -124,10 +90,10 @@ const IconPickerButton = ({
       transitionDuration="normal"
       _hover={{
         borderColor: isSelected
-          ? "interaction.main.default"
+          ? "interaction.main.hover"
           : "interaction.main-subtle.hover",
         bg: isSelected
-          ? "interaction.muted.main.active"
+          ? "interaction.main-subtle.hover"
           : "interaction.muted.main.hover",
       }}
       _focusVisible={{
@@ -145,9 +111,7 @@ const IconPickerButton = ({
         },
       }}
     >
-      {IconComponent && (
-        <Icon as={IconComponent} boxSize="1.25rem" aria-hidden />
-      )}
+      <Icon as={IconComponent} boxSize="1.25rem" aria-hidden />
     </chakra.button>
   )
 }
