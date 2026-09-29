@@ -13,6 +13,7 @@ import type {
   GazetteDeletionEmailTemplateData,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
+  OtpEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
   SchedulePageTemplateData,
@@ -75,6 +76,14 @@ export async function sendInvitation(
     data,
     template: templates.invitation(data),
     emailType: "invitation",
+  })
+}
+
+export async function sendOtpEmail(data: OtpEmailTemplateData): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.otp(data),
+    emailType: "OTP",
   })
 }
 
