@@ -22,7 +22,7 @@ export const HERO_BLOCK_IMAGE_POSITION = {
   right: "right",
 } as const
 
-export const HERO_BLOCK_SHAPE = {
+export const HERO_BLOCK_IMAGE_EDGE = {
   straight: "straight",
   curved: "curved",
 } as const
@@ -152,17 +152,17 @@ const HeroBlockSchema = Type.Composite(
           },
         ),
       ),
-      shape: Type.Optional(
+      imageEdge: Type.Optional(
         Type.Union(
           [
-            Type.Literal(HERO_BLOCK_SHAPE.straight, {
+            Type.Literal(HERO_BLOCK_IMAGE_EDGE.straight, {
               title: "Straight (Default)",
             }),
-            Type.Literal(HERO_BLOCK_SHAPE.curved, { title: "Curved" }),
+            Type.Literal(HERO_BLOCK_IMAGE_EDGE.curved, { title: "Curved" }),
           ],
           {
-            title: "Shape",
-            default: HERO_BLOCK_SHAPE.straight,
+            title: "Image edge",
+            default: HERO_BLOCK_IMAGE_EDGE.straight,
             format: ARRAY_RADIO_FORMAT,
             type: "string",
           },

@@ -1,7 +1,7 @@
 import {
   type HeroBlockProps,
+  HERO_BLOCK_IMAGE_EDGE,
   HERO_BLOCK_IMAGE_POSITION,
-  HERO_BLOCK_SHAPE,
 } from "~/interfaces/complex/Hero"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
@@ -47,7 +47,7 @@ const heroBlockStyles = tv({
         textColumn: "lg:justify-start lg:pl-8 lg:pr-10",
       },
     },
-    shape: {
+    imageEdge: {
       straight: {},
       curved: {
         // `36cqw` is 36% of the hero, so the circle starts at the column's left edge. Desktop only.
@@ -63,21 +63,21 @@ const heroBlockStyles = tv({
   compoundVariants: [
     {
       theme: "default",
-      shape: HERO_BLOCK_SHAPE.straight,
+      imageEdge: HERO_BLOCK_IMAGE_EDGE.straight,
       class: {
         textColumn: "bg-brand-canvas-inverse",
       },
     },
     {
       theme: "inverse",
-      shape: HERO_BLOCK_SHAPE.straight,
+      imageEdge: HERO_BLOCK_IMAGE_EDGE.straight,
       class: {
         textColumn: "bg-brand-canvas-alt",
       },
     },
     {
       theme: "default",
-      shape: HERO_BLOCK_SHAPE.curved,
+      imageEdge: HERO_BLOCK_IMAGE_EDGE.curved,
       class: {
         section: "lg:bg-brand-canvas-inverse",
         textColumn: "max-lg:bg-brand-canvas-inverse",
@@ -85,7 +85,7 @@ const heroBlockStyles = tv({
     },
     {
       theme: "inverse",
-      shape: HERO_BLOCK_SHAPE.curved,
+      imageEdge: HERO_BLOCK_IMAGE_EDGE.curved,
       class: {
         section: "lg:bg-brand-canvas-alt",
         textColumn: "max-lg:bg-brand-canvas-alt",
@@ -94,7 +94,7 @@ const heroBlockStyles = tv({
   ],
   defaultVariants: {
     theme: "default",
-    shape: HERO_BLOCK_SHAPE.straight,
+    imageEdge: HERO_BLOCK_IMAGE_EDGE.straight,
     imagePosition: HERO_BLOCK_IMAGE_POSITION.right,
   },
 })
@@ -108,7 +108,7 @@ export const HeroBlock = ({
   secondaryButtonUrl,
   backgroundUrl,
   imagePosition = HERO_BLOCK_IMAGE_POSITION.right,
-  shape = HERO_BLOCK_SHAPE.straight,
+  imageEdge = HERO_BLOCK_IMAGE_EDGE.straight,
   site,
   theme = "default",
   headingLevel,
@@ -116,7 +116,7 @@ export const HeroBlock = ({
   const heroTextColour = HERO_THEME_MAPPINGS.text[theme]
   const heroButton = HERO_THEME_MAPPINGS.button[theme]
   const Tag = getHeadingTag(headingLevel)
-  const styles = heroBlockStyles({ theme, shape, imagePosition })
+  const styles = heroBlockStyles({ theme, imageEdge, imagePosition })
 
   return (
     <section className={styles.section()}>

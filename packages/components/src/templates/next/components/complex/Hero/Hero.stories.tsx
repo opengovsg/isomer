@@ -108,7 +108,7 @@ export const ColourBlockCurvedCutout: Story = {
     buttonUrl: "/",
     variant: "block",
     theme: "inverse",
-    shape: "curved",
+    imageEdge: "curved",
   },
 }
 
@@ -127,7 +127,7 @@ export const ColourBlockCurvedCutoutDefault: Story = {
     secondaryButtonUrl: "/",
     variant: "block",
     theme: "default",
-    shape: "curved",
+    imageEdge: "curved",
   },
 }
 
@@ -140,7 +140,7 @@ export const ColourBlockCurvedCutoutTitleOnly: Story = {
     title: "Short title",
     variant: "block",
     theme: "inverse",
-    shape: "curved",
+    imageEdge: "curved",
   },
 }
 
