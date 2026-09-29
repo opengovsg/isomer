@@ -19,7 +19,7 @@ import { useInterval } from "usehooks-ts"
 import { CALLBACK_URL_KEY } from "~/constants/params"
 import { useLoginState } from "~/features/auth"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
-import { OTP_LENGTH } from "~/lib/auth"
+import { normaliseOtpInput } from "~/lib/auth"
 import { useZodForm } from "~/lib/form"
 import { SIGN_IN_SINGPASS } from "~/lib/routes"
 import { emailVerifyOtpSchema } from "~/schemas/auth/email/sign-in"
@@ -148,10 +148,12 @@ export const VerificationInput = (): JSX.Element | null => {
                   autoCorrect="false"
                   autoComplete="one-time-code"
                   placeholder="ABC123"
-                  maxLength={OTP_LENGTH}
                   {...field}
                   value={value}
-                  onChange={(e) => onChange(e.target.value.toUpperCase())}
+                  // No maxLength: it would cut a pasted "MZS-JHDZRB" to
+                  // "MZS-JH" before it could be cleaned. The length is capped
+                  // after normalising instead.
+                  onChange={(e) => onChange(normaliseOtpInput(e.target.value))}
                 />
               </InputGroup>
             )}
