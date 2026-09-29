@@ -49,10 +49,10 @@ export const renderStudioLink = () => {
 }
 
 export const renderParagraph = (html: string) =>
-  `<p style="margin: 0 0 16px; font-family: ${FONT_FAMILY}; font-size: 15px; line-height: 24px; color: ${COLORS.text};">${html}</p>`
+  `<p style="margin: 0 0 24px; font-family: ${FONT_FAMILY}; font-size: 15px; line-height: 24px; color: ${COLORS.text};">${html}</p>`
 
 export const renderHeading = (text: string) =>
-  `<h1 style="margin: 0 0 20px; font-family: ${FONT_FAMILY}; font-size: 22px; line-height: 30px; font-weight: bold; color: ${COLORS.text};">${text}</h1>`
+  `<h1 style="margin: 0 0 24px; font-family: ${FONT_FAMILY}; font-size: 22px; line-height: 30px; font-weight: bold; color: ${COLORS.text};">${text}</h1>`
 
 export const renderLink = (href: string, text: string) =>
   `<a href="${href}" style="color: ${COLORS.link}; text-decoration: underline;">${text}</a>`
@@ -66,7 +66,7 @@ export const renderCodeBox = ({
 }: {
   code: string
   prefix?: string
-}) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 24px; border-collapse: separate;">
+}) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 32px; border-collapse: separate;">
   <tr>
     ${
       prefix
@@ -82,7 +82,7 @@ export const renderCodeBox = ({
 // keeps its meaning. A bordered table cell, because classic Outlook drops
 // borders on <div>s (it also squares the corners, which is acceptable).
 export const renderCallout = (html: string) =>
-  `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 16px; border-collapse: separate;">
+  `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 24px; border-collapse: separate;">
   <tr>
     <td class="callout" bgcolor="${COLORS.calloutBackground}" style="background-color: ${COLORS.calloutBackground}; border: 1px solid ${COLORS.calloutBorder}; border-radius: 8px; padding: 16px 20px; font-family: ${FONT_FAMILY}; font-size: 15px; line-height: 24px; color: ${COLORS.text};">${html}</td>
   </tr>
@@ -150,10 +150,10 @@ ${renderPreheader(preheader)}
       <!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
       <table class="card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${COLORS.cardBackground}" style="max-width: 600px; background-color: ${COLORS.cardBackground}; border: 1px solid ${COLORS.cardBorder}; border-radius: 8px;">
         <tr>
-          <td style="padding: 32px;">
-            <div style="margin: 0 0 28px;">${renderLogo()}</div>
+          <td style="padding: 40px;">
+            <div style="margin: 0 0 36px;">${renderLogo()}</div>
             ${content}
-            <p class="footer" style="margin: 24px 0 0; padding: 16px 0 0; border-top: 1px solid ${COLORS.divider}; font-family: ${FONT_FAMILY}; font-size: 12px; line-height: 18px; color: ${COLORS.mutedText};">${FOOTER_TEXT}</p>
+            <p class="footer" style="margin: 16px 0 0; padding: 24px 0 0; border-top: 1px solid ${COLORS.divider}; font-family: ${FONT_FAMILY}; font-size: 12px; line-height: 18px; color: ${COLORS.mutedText};">${FOOTER_TEXT}</p>
           </td>
         </tr>
       </table>
