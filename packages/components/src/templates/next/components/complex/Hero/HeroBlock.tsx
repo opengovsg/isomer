@@ -50,7 +50,8 @@ const heroBlockStyles = tv({
     imageEdge: {
       straight: {},
       curved: {
-        section: "lg:[container-type:inline-size]",
+        // `cqw` in the clips below is the hero width.
+        section: "[container-type:inline-size]",
       },
     },
   },
@@ -59,19 +60,18 @@ const heroBlockStyles = tv({
       imagePosition: HERO_BLOCK_IMAGE_POSITION.right,
       imageEdge: HERO_BLOCK_IMAGE_EDGE.curved,
       class: {
-        // Desktop: center sits one radius in from the inner edge, so the
-        // curve is tangent to the 50% split.
+        // Below `lg` the copy is above, so the arc is the top edge.
         imageColumn:
-          "max-lg:[clip-path:path('M_0_1.5rem_Q_50%_0_100%_1.5rem_L_100%_100%_L_0_100%_Z')] lg:[clip-path:circle(36cqw_at_36cqw_50%)]",
+          "max-lg:[clip-path:circle(100cqw_at_50%_100cqw)] lg:[clip-path:circle(36cqw_at_36cqw_50%)]",
       },
     },
     {
       imagePosition: HERO_BLOCK_IMAGE_POSITION.left,
       imageEdge: HERO_BLOCK_IMAGE_EDGE.curved,
       class: {
-        // Desktop: mirrored so the curve is tangent to the 50% split.
+        // Below `lg` the image is above, so the arc is the bottom edge.
         imageColumn:
-          "max-lg:[clip-path:path('M_0_0_L_100%_0_L_100%_calc(100%-1.5rem)_Q_50%_100%_0_calc(100%-1.5rem)_Z')] lg:[clip-path:circle(36cqw_at_calc(100%_-_36cqw)_50%)]",
+          "max-lg:[clip-path:circle(100cqw_at_50%_calc(100%_-_100cqw))] lg:[clip-path:circle(36cqw_at_calc(100%_-_36cqw)_50%)]",
       },
     },
     {
@@ -92,16 +92,15 @@ const heroBlockStyles = tv({
       theme: "default",
       imageEdge: HERO_BLOCK_IMAGE_EDGE.curved,
       class: {
-        section: "lg:bg-brand-canvas-inverse",
-        textColumn: "max-lg:bg-brand-canvas-inverse",
+        // Shows through the circle cutout.
+        section: "bg-brand-canvas-inverse",
       },
     },
     {
       theme: "inverse",
       imageEdge: HERO_BLOCK_IMAGE_EDGE.curved,
       class: {
-        section: "lg:bg-brand-canvas-alt",
-        textColumn: "max-lg:bg-brand-canvas-alt",
+        section: "bg-brand-canvas-alt",
       },
     },
   ],
