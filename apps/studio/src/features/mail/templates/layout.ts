@@ -22,7 +22,8 @@ const COLORS = {
   codeBackground: "#EEF3FC",
   codeBorder: "#C9D6F5",
   codeText: "#1B3A80",
-  callout: "#2B5FCE",
+  calloutBackground: "#F5F6F8",
+  calloutBorder: "#D5D7DB",
 } as const
 
 const FONT_FAMILY = "Arial, Helvetica, sans-serif"
@@ -76,12 +77,14 @@ export const renderCodeBox = ({
   </tr>
 </table>`
 
-// Use at most once per email so it keeps its meaning. A bordered table cell,
-// because classic Outlook drops borders on <div>s.
+// The grey "note" callout from the Isomer component library. Grey so it
+// doesn't compete with the blue code box. Use at most once per email so it
+// keeps its meaning. A bordered table cell, because classic Outlook drops
+// borders on <div>s (it also squares the corners, which is acceptable).
 export const renderCallout = (html: string) =>
-  `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 16px;">
+  `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 16px; border-collapse: separate;">
   <tr>
-    <td class="callout" style="border-left: 3px solid ${COLORS.callout}; padding: 2px 0 2px 14px; font-family: ${FONT_FAMILY}; font-size: 15px; line-height: 24px; color: ${COLORS.text};">${html}</td>
+    <td class="callout" bgcolor="${COLORS.calloutBackground}" style="background-color: ${COLORS.calloutBackground}; border: 1px solid ${COLORS.calloutBorder}; border-radius: 8px; padding: 16px 20px; font-family: ${FONT_FAMILY}; font-size: 15px; line-height: 24px; color: ${COLORS.text};">${html}</td>
   </tr>
 </table>`
 
@@ -98,7 +101,7 @@ const DARK_MODE_STYLES = `
     .card a { color: #8AB4F8 !important; }
     .card .code-prefix { color: #9AA0A6 !important; }
     .card .code-box { background-color: #1E2A44 !important; border-color: #3A4E7A !important; color: #C9D8FF !important; }
-    .callout { border-left-color: #6E95E8 !important; }
+    .card .callout { background-color: #2A2B2E !important; border-color: #4A4C50 !important; }
     .card .footer { border-top-color: #3C4043 !important; color: #9AA0A6 !important; }
     .logo-light { display: none !important; }
     .logo-dark { display: block !important; max-height: none !important; }
