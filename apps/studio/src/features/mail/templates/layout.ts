@@ -22,8 +22,9 @@ const COLORS = {
   codeBackground: "#EEF3FC",
   codeBorder: "#C9D6F5",
   codeText: "#1B3A80",
-  calloutBackground: "#F5F6F8",
-  calloutBorder: "#D5D7DB",
+  // Component library `note` callout: base-canvas-backdrop / base-divider-medium
+  calloutBackground: "#F3F4F6",
+  calloutBorder: "#D1D5DB",
 } as const
 
 const FONT_FAMILY = "Arial, Helvetica, sans-serif"
@@ -84,7 +85,7 @@ export const renderCodeBox = ({
 export const renderCallout = (html: string) =>
   `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 24px; border-collapse: separate;">
   <tr>
-    <td class="callout" bgcolor="${COLORS.calloutBackground}" style="background-color: ${COLORS.calloutBackground}; border: 1px solid ${COLORS.calloutBorder}; border-radius: 8px; padding: 16px 20px; font-family: ${FONT_FAMILY}; font-size: 15px; line-height: 24px; color: ${COLORS.text};">${html}</td>
+    <td class="callout" bgcolor="${COLORS.calloutBackground}" style="background-color: ${COLORS.calloutBackground}; border: 1.5px solid ${COLORS.calloutBorder}; border-radius: 8px; padding: 16px 20px; font-family: ${FONT_FAMILY}; font-size: 15px; line-height: 24px; color: ${COLORS.text};">${html}</td>
   </tr>
 </table>`
 
