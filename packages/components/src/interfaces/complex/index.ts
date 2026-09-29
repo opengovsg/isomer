@@ -13,6 +13,7 @@ export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
 export {
   HERO_BLOCK_IMAGE_POSITION,
+  HERO_BLOCK_SHAPE,
   HERO_STYLE,
   HeroSchema,
   type HeroProps,

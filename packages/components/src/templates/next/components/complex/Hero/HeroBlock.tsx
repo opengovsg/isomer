@@ -1,5 +1,8 @@
-import type { HeroBlockProps } from "~/interfaces/complex/Hero"
-import { HERO_BLOCK_IMAGE_POSITION } from "~/interfaces/complex/Hero"
+import {
+  type HeroBlockProps,
+  HERO_BLOCK_IMAGE_POSITION,
+  HERO_BLOCK_SHAPE,
+} from "~/interfaces/complex/Hero"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
@@ -7,41 +10,92 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
-const HERO_BUTTON_COLOR_SCHEME = {
-  default: "inverse",
-  inverse: "default",
+const HERO_THEME_MAPPINGS = {
+  text: {
+    default: "text-base-content-inverse",
+    inverse: "text-base-content",
+  },
+  button: {
+    default: "inverse",
+    inverse: "default",
+  },
 } as const
 
 const heroBlockStyles = tv({
   slots: {
     section:
       "flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem]",
-    textContainer: "flex flex-row px-6 pb-12 pt-11 md:px-10 lg:w-1/2",
-    text: "flex w-full max-w-[548px] flex-col justify-center gap-9",
+    textColumn: "flex flex-row px-6 pb-12 pt-11 md:px-10 lg:w-1/2",
+    imageColumn:
+      "relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2",
+    image: "absolute inset-0 h-full w-full object-cover object-center",
   },
   variants: {
     theme: {
-      default: {
-        textContainer: "bg-brand-canvas-inverse",
-        text: "text-base-content-inverse",
-      },
-      inverse: {
-        textContainer: "bg-brand-canvas-alt",
-        text: "text-base-content",
-      },
+      default: {},
+      inverse: {},
     },
     // On mobile the text always stacks above the image; the position only
     // affects the side-by-side layout on large screens.
     imagePosition: {
       [HERO_BLOCK_IMAGE_POSITION.right]: {
         section: "lg:flex-row",
-        textContainer: "lg:justify-end lg:pl-10 lg:pr-8",
+        textColumn: "lg:justify-end lg:pl-10 lg:pr-8",
       },
       [HERO_BLOCK_IMAGE_POSITION.left]: {
         section: "lg:flex-row-reverse",
-        textContainer: "lg:justify-start lg:pl-8 lg:pr-10",
+        textColumn: "lg:justify-start lg:pl-8 lg:pr-10",
       },
     },
+    shape: {
+      straight: {},
+      curved: {
+        // `36cqw` is 36% of the hero, so the circle starts at the column's left edge. Desktop only.
+        section: "lg:[container-type:inline-size]",
+        // The curve starts just left of the column split, so the straight
+        // `lg:pr-8` leaves the copy almost touching it.
+        textColumn: "lg:pr-24",
+        imageColumn:
+          "lg:-ml-[2%] lg:w-[52%] lg:[clip-path:circle(36cqw_at_69.23%_50%)]",
+      },
+    },
+  },
+  compoundVariants: [
+    {
+      theme: "default",
+      shape: HERO_BLOCK_SHAPE.straight,
+      class: {
+        textColumn: "bg-brand-canvas-inverse",
+      },
+    },
+    {
+      theme: "inverse",
+      shape: HERO_BLOCK_SHAPE.straight,
+      class: {
+        textColumn: "bg-brand-canvas-alt",
+      },
+    },
+    {
+      theme: "default",
+      shape: HERO_BLOCK_SHAPE.curved,
+      class: {
+        section: "lg:bg-brand-canvas-inverse",
+        textColumn: "max-lg:bg-brand-canvas-inverse",
+      },
+    },
+    {
+      theme: "inverse",
+      shape: HERO_BLOCK_SHAPE.curved,
+      class: {
+        section: "lg:bg-brand-canvas-alt",
+        textColumn: "max-lg:bg-brand-canvas-alt",
+      },
+    },
+  ],
+  defaultVariants: {
+    theme: "default",
+    shape: HERO_BLOCK_SHAPE.straight,
+    imagePosition: HERO_BLOCK_IMAGE_POSITION.right,
   },
 })
 
@@ -54,18 +108,22 @@ export const HeroBlock = ({
   secondaryButtonUrl,
   backgroundUrl,
   imagePosition = HERO_BLOCK_IMAGE_POSITION.right,
+  shape = HERO_BLOCK_SHAPE.straight,
   site,
   theme = "default",
   headingLevel,
 }: HeroBlockProps) => {
-  const heroButton = HERO_BUTTON_COLOR_SCHEME[theme]
-  const styles = heroBlockStyles({ theme, imagePosition })
+  const heroTextColour = HERO_THEME_MAPPINGS.text[theme]
+  const heroButton = HERO_THEME_MAPPINGS.button[theme]
   const Tag = getHeadingTag(headingLevel)
+  const styles = heroBlockStyles({ theme, shape, imagePosition })
 
   return (
     <section className={styles.section()}>
-      <div className={styles.textContainer()}>
-        <div className={styles.text()}>
+      <div className={styles.textColumn()}>
+        <div
+          className={`flex w-full max-w-[548px] flex-col justify-center gap-9 ${heroTextColour}`}
+        >
           <div className="flex flex-col gap-6">
             <Tag className="wrap-break-word prose-display-xl text-balance">
               {title}
@@ -106,15 +164,12 @@ export const HeroBlock = ({
           )}
         </div>
       </div>
-      <div
-        className="relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2"
-        style={{ contain: "layout" }}
-      >
+      <div className={styles.imageColumn()} style={{ contain: "layout" }}>
         <ImageClient
           src={backgroundUrl}
           alt=""
           width="100%"
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          className={styles.image()}
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={false} // hero is always above the fold
         />

@@ -22,6 +22,11 @@ export const HERO_BLOCK_IMAGE_POSITION = {
   right: "right",
 } as const
 
+export const HERO_BLOCK_SHAPE = {
+  straight: "straight",
+  curved: "curved",
+} as const
+
 const HeroBaseSchema = Type.Object({
   type: Type.Literal("hero", { default: "hero" }),
   title: Type.String({
@@ -144,6 +149,22 @@ const HeroBlockSchema = Type.Composite(
             format: ARRAY_RADIO_FORMAT,
             type: "string",
             default: HERO_BLOCK_IMAGE_POSITION.right,
+          },
+        ),
+      ),
+      shape: Type.Optional(
+        Type.Union(
+          [
+            Type.Literal(HERO_BLOCK_SHAPE.straight, {
+              title: "Straight (Default)",
+            }),
+            Type.Literal(HERO_BLOCK_SHAPE.curved, { title: "Curved" }),
+          ],
+          {
+            title: "Shape",
+            default: HERO_BLOCK_SHAPE.straight,
+            format: ARRAY_RADIO_FORMAT,
+            type: "string",
           },
         ),
       ),
