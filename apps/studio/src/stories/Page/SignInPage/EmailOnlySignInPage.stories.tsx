@@ -66,3 +66,28 @@ export const VerifyOTP: Story = {
     })
   },
 }
+
+// Copying the code from the OTP email often picks up the reference and dash
+// ("TST – ABC234"); the input should keep only the code.
+export const PasteOtpWithReference: Story = {
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement)
+
+    await step("Request an OTP", async () => {
+      await userEvent.type(
+        await canvas.findByLabelText(/email/i),
+        VALID_AUTH_EMAIL,
+      )
+      await userEvent.click(await canvas.findByText(/send/i))
+    })
+
+    await step("Paste the OTP with its reference", async () => {
+      const otpInput = await canvas.findByLabelText(/enter otp/i)
+      await userEvent.click(otpInput)
+      await userEvent.paste("TST – ABC234 ")
+
+      await expect(otpInput).toHaveValue("ABC234")
+      await expect(await canvas.findByText(/sign in/i)).toBeEnabled()
+    })
+  },
+}
