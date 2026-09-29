@@ -14,7 +14,7 @@ import {
   seedPublishingSite,
   SITE_CONFIG,
   SITE_THEME,
-  TEST_DB_ENV,
+  TEST_DATABASE_URL,
 } from "./seed"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -68,7 +68,7 @@ beforeAll(async () => {
       // dd-trace (loaded via NODE_OPTIONS in CI) breaks spawned subprocesses
       NODE_OPTIONS: "",
       SITE_ID: String(siteId),
-      ...TEST_DB_ENV,
+      DATABASE_URL: TEST_DATABASE_URL,
       OUTPUT_DIR: outputDir,
     },
   })
@@ -376,6 +376,35 @@ describe("redirects.json", () => {
     // Assert
     expect(
       redirects.find((redirect) => redirect.source === "/ref-wrong-site"),
+    ).toBeUndefined()
+  })
+
+  it("drops a redirect whose reference resolves back to its own source", () => {
+    // Arrange / Act
+    const redirects = readOutput("redirects.json") as {
+      source: string
+      destination: string
+    }[]
+
+    // Assert — publishing this row would replace the live page object with a
+    // redirect to the same URL, causing the loop reported in ISOM-2525.
+    expect(
+      redirects.find((redirect) => redirect.source === "/about/our-team"),
+    ).toBeUndefined()
+  })
+
+  it("drops a wildcard whose folder reference resolves back to its own prefix", () => {
+    // Arrange / Act
+    const redirects = readOutput("redirects.json") as {
+      source: string
+      destination: string
+    }[]
+
+    // Assert — this exercises GET_REDIRECTS' wildcard prefix branch. The edge
+    // resolver would otherwise append each matched remainder to /about and
+    // redirect every /about/... request back to itself.
+    expect(
+      redirects.find((redirect) => redirect.source === "/about/*"),
     ).toBeUndefined()
   })
 })

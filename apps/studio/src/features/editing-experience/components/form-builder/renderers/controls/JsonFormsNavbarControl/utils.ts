@@ -1,5 +1,5 @@
-import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge"
-import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
+import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
+import { reorder } from "@atlaskit/pragmatic-drag-and-drop/utils/reorder"
 import { cloneDeep, get, set } from "lodash-es"
 
 import type {
@@ -23,6 +23,13 @@ export const getNavbarItemPath = (
 
 export const isSubItemPath = (path: string): path is NavbarItemPath =>
   path.includes(".items.")
+
+// Helper function to determine whether the number of first-level navbar
+// items exceeds the maxItems limit defined on the navbar items array schema
+export const isFirstLevelLinksOverLimit = (
+  itemCount: number,
+  maxItems?: number,
+): boolean => !!(maxItems && itemCount > maxItems)
 
 export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) => {
   return `/${path.replace(/\./g, "/")}`

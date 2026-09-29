@@ -36,6 +36,7 @@ export const CollectionLayout = ({
     showThumbnail,
   })
   const processedItems = processCollectionItems(items)
+  const filters = getAvailableFilters(processedItems, tagCategories)
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
     page.permalink.split("/").slice(1),
@@ -47,7 +48,7 @@ export const CollectionLayout = ({
         page={page}
         breadcrumb={breadcrumb}
         items={processedItems}
-        filters={getAvailableFilters(processedItems, tagCategories)}
+        filters={filters}
         shouldShowDate={shouldShowDate(processedItems)}
         siteAssetsBaseUrl={site.assetsBaseUrl}
       />

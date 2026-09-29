@@ -76,7 +76,6 @@ export const renderPrefillText = (content: IsomerSchema): PrefillContent => {
         description: page.subtitle,
       }
     }
-    case "file":
     case "link": {
       const page = refPageSchema.parse(content.page)
       return {

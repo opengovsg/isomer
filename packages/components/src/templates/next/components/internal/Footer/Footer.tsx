@@ -30,7 +30,7 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
 
 import { Link } from "../Link"
-import { ClientCopyrightYear } from "./ClientCopyrightYear"
+import { ClientCopyright } from "./ClientCopyright"
 
 const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
   facebook: FaFacebook,
@@ -53,11 +53,6 @@ const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
 const footerItemLinkStyle = tv({
   extend: focusVisibleHighlight,
   base: "prose-body-sm line-clamp-1 flex w-fit items-center gap-1 text-base-content-inverse outline-none hover:text-base-content-inverse hover:underline hover:underline-offset-4 focus-visible:-m-0.5 focus-visible:p-0.5 focus-visible:shadow-none",
-  variants: {
-    showExternalIcon: {
-      true: `after:content-['_↗']`,
-    },
-  },
 })
 
 const FooterItem = ({ title, url }: FooterItemType) => {
@@ -70,7 +65,10 @@ const FooterItem = ({ title, url }: FooterItemType) => {
         isWithFocusVisibleHighlight
       >
         {title}
-        <BiLinkExternal className="h-auto w-3.5 flex-shrink-0 lg:w-4" />
+        <BiLinkExternal
+          aria-hidden
+          className="h-auto w-3.5 flex-shrink-0 lg:w-4"
+        />
       </Link>
     )
   }
@@ -238,9 +236,11 @@ const LegalSection = ({
     <div className="flex h-full">
       <div className="flex flex-col justify-end gap-4 lg:gap-2">
         <p className="prose-label-md-regular text-base-content-inverse-subtle">
-          <ClientCopyrightYear />{" "}
-          {isGovernment ? "Government of Singapore" : agencyName}, last updated{" "}
-          {getFormattedDate(lastUpdated)}
+          <ClientCopyright
+            isGovernment={isGovernment}
+            agencyName={agencyName}
+            formattedLastUpdated={getFormattedDate(lastUpdated)}
+          />
         </p>
         <div className="prose-body-sm flex flex-col gap-3 lg:flex-row lg:gap-8">
           {isGovernment && (

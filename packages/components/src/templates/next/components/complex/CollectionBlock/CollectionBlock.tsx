@@ -5,6 +5,7 @@ import type {
 } from "~/interfaces/complex/CollectionBlock"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getResourceIdFromReferenceLink } from "~/utils/getResourceIdFromReferenceLink"
 import { isExternalUrl } from "~/utils/isExternalUrl"
@@ -87,8 +88,10 @@ const SingleCard = ({
   shouldLazyLoad,
   numberOfCards,
   formattedDate,
+  headingLevel,
 }: CollectionBlockSingleCardProps): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
+  const CardTitleTag = getHeadingTag(headingLevel)
 
   const renderImage = () => {
     if (!image?.src) {
@@ -123,7 +126,7 @@ const SingleCard = ({
           <p className={compoundStyles.cardDate()}>{formattedDate}</p>
         )}
 
-        <h3 className={compoundStyles.cardTitle()}>
+        <CardTitleTag className={compoundStyles.cardTitle()}>
           {title}
           <BiRightArrowAlt
             aria-hidden
@@ -131,7 +134,7 @@ const SingleCard = ({
               isExternalLink,
             })}
           />
-        </h3>
+        </CardTitleTag>
 
         {displayCategory && (
           <PlaintextTags
@@ -147,15 +150,18 @@ const SingleCard = ({
 interface CollectionBlockSkeletonProps {
   title: string
   description: string
+  headingLevel: number
 }
 const CollectionBlockSkeleton = ({
   title,
   description,
+  headingLevel,
 }: CollectionBlockSkeletonProps) => {
+  const TitleTag = getHeadingTag(headingLevel)
   return (
     <section className={compoundStyles.container()}>
       <div className={compoundStyles.headingContainer()}>
-        <h2 className={compoundStyles.headingTitle()}>{title}</h2>
+        <TitleTag className={compoundStyles.headingTitle()}>{title}</TitleTag>
         <p>{description}</p>
       </div>
     </section>
@@ -171,6 +177,7 @@ export const CollectionBlock = ({
   displayCategory,
   buttonLabel,
   shouldLazyLoad,
+  headingLevel,
 }: CollectionBlockProps): JSX.Element => {
   const collectionId = getResourceIdFromReferenceLink(collectionReferenceLink)
 
@@ -180,6 +187,7 @@ export const CollectionBlock = ({
       <CollectionBlockSkeleton
         title="No collection selected"
         description="Choose a collection to display its content."
+        headingLevel={headingLevel}
       />
     )
   }
@@ -201,13 +209,14 @@ export const CollectionBlock = ({
 
   const numberOfCards =
     collectionPages.length as CollectionBlockNumberOfCards["numberOfCards"]
+  const TitleTag = getHeadingTag(headingLevel)
 
   return (
     <section className={compoundStyles.container()}>
       <div className={compoundStyles.headingContainer()}>
-        <h2 className={compoundStyles.headingTitle()}>
+        <TitleTag className={compoundStyles.headingTitle()}>
           {customTitle ?? collectionParent.title}
-        </h2>
+        </TitleTag>
         <p>{customDescription ?? collectionParent.summary}</p>
       </div>
 
@@ -220,6 +229,7 @@ export const CollectionBlock = ({
             site={site}
             shouldLazyLoad={shouldLazyLoad}
             numberOfCards={numberOfCards}
+            headingLevel={headingLevel + 1}
             {...card}
           />
         ))}

@@ -71,7 +71,9 @@
         "storybook-static/**"
       ]
     },
-    "generate": {},
+    "generate": {
+      "dependsOn": ["^generate"]
+    },
     "format": {
       "dependsOn": [
         "^build"

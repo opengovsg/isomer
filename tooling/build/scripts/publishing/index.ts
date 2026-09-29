@@ -29,6 +29,8 @@ const DB_PASSWORD = process.env.DB_PASSWORD
 const DB_HOST = process.env.DB_HOST
 const DB_PORT = process.env.DB_PORT
 const DB_NAME = process.env.DB_NAME
+const DB_IAM_AUTH = process.env.DB_IAM_AUTH === "true"
+const DB_SSL_SERVERNAME = process.env.DB_SSL_SERVERNAME
 const SITE_ID = Number(process.env.SITE_ID)
 // Defaults to this package's directory, which publisher.sh expects in production
 const OUTPUT_DIR = process.env.OUTPUT_DIR ?? __dirname
@@ -67,13 +69,30 @@ function logDebug(message: string, ...optionalParams: any[]) {
 }
 
 async function main() {
-  const client = new Client({
-    user: DB_USERNAME,
-    host: DB_HOST,
-    database: DB_NAME,
-    password: decodeURIComponent(DB_PASSWORD ?? ""),
-    port: Number(DB_PORT),
-  })
+  const client = new Client(
+    process.env.DATABASE_URL
+      ? { connectionString: process.env.DATABASE_URL }
+      : {
+          user: DB_USERNAME,
+          host: DB_HOST,
+          database: DB_NAME,
+          password: DB_IAM_AUTH
+            ? (DB_PASSWORD ?? "")
+            : decodeURIComponent(DB_PASSWORD ?? ""),
+          port: Number(DB_PORT),
+          ...(DB_IAM_AUTH && DB_SSL_SERVERNAME
+            ? {
+                ssl: {
+                  // IAM requires TLS. Node does not trust the Amazon RDS CA, and the
+                  // SSM tunnel presents that cert on localhost, so we encrypt without
+                  // verifying the issuer.
+                  rejectUnauthorized: false,
+                  servername: DB_SSL_SERVERNAME,
+                },
+              }
+            : {}),
+        },
+  )
 
   const start = performance.now() // Start profiling
 
@@ -144,6 +163,7 @@ async function main() {
           category: resource.content.page.category,
           tags: resource.content.page.tags,
           tagged: resource.content.page.tagged,
+          dateTagged: resource.content.page.dateTagged,
           date: resource.content.page.date,
           image: resource.content.page.image,
           firstImage: getResourceFirstImage(resource),
@@ -202,6 +222,7 @@ async function main() {
       logDebug(`Successfully wrote file: ${filePath}`)
     } catch (error) {
       console.error(`Error writing sitemap to file:`, error)
+      throw error
     }
   } finally {
     await client.end()
@@ -461,7 +482,7 @@ async function getAllResourcesWithFullPermalinks(
     return res.rows
   } catch (err) {
     console.error("Error fetching resources:", err)
-    return []
+    throw err
   }
 }
 
@@ -510,6 +531,7 @@ function writeContentToFile(
     logDebug(`Successfully wrote file: ${filePath}`)
   } catch (error) {
     console.error("Error writing content to file:", error)
+    throw error
   }
 }
 
@@ -541,6 +563,7 @@ async function fetchAndWriteSiteData(client: Client) {
     }
   } catch (err) {
     console.error("Error fetching site data:", err)
+    throw err
   }
 }
 
@@ -553,11 +576,7 @@ async function fetchAndWriteRedirects(client: Client) {
     logDebug(`Successfully wrote redirects: ${filePath}`)
   } catch (err) {
     console.error("Error fetching redirects:", err)
-    fs.writeFileSync(
-      path.join(OUTPUT_DIR, "redirects.json"),
-      JSON.stringify([]),
-      "utf-8",
-    )
+    throw err
   }
 }
 
@@ -574,7 +593,11 @@ function writeJsonToFile(content: any, filename: string) {
     logDebug(`Successfully wrote file: ${filePath}`)
   } catch (error) {
     console.error(`Error writing ${filename} to file:`, error)
+    throw error
   }
 }
 
-main().catch((err) => console.error(err))
+main().catch((err) => {
+  console.error(err)
+  process.exitCode = 1
+})

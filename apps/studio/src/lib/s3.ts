@@ -18,11 +18,18 @@ import {
 } from "@aws-sdk/client-s3"
 import { Upload } from "@aws-sdk/lib-storage"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
+import { create as createContentDisposition } from "content-disposition"
 import { addDays } from "date-fns"
 import { env } from "~/env.mjs"
 
 const DELETE_TAG = "deletedAt"
 const EGAZETTE_COMPLIANCE_HOLD_IN_DAYS = 10000
+
+// Unlike Key params (which the SDK URL-encodes), CopySource is sent verbatim
+// as the x-amz-copy-source header, so keys with spaces or reserved characters
+// (e.g. "2026/Government Gazette/...") must be encoded per path segment here.
+const getEncodedCopySource = (Bucket: string, Key: string) =>
+  `${Bucket}/${Key?.split("/").map(encodeURIComponent).join("/")}`
 
 // R2 credentials are only set for preview, but the choice of backend is
 // driven by their presence rather than the environment name. Exported so
@@ -150,20 +157,27 @@ export const deleteFile = async ({
   )
 }
 
-// NOTE: In order to set the asset as published, we have to do 2 things:
-// 1. we have to set the object lock retention
-// 2. we have to remove the scheduledAt tag
+// NOTE: In order to set the asset as published, we have to do 3 things:
+// 1. we rewrite the Content-Disposition (when given) so downloads are named
+//    after the gazette title rather than the raw S3 key
+// 2. we have to set the object lock retention
+// 3. we have to remove the scheduledAt tag
 // this is required to guarantee that the gazettes
 // can be seen and cannot be deleted
 export const setAssetAsPublished = async ({
   Key,
   Bucket,
-}: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
+  ContentDisposition,
+}: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket"> &
+  Pick<PutObjectCommandInput, "ContentDisposition">) => {
   // Skip on R2: the COMPLIANCE-mode Object Lock below is irreversible for
   // ~27 years — applying it to a shared preview bucket would permanently
   // lock every test upload. The GuardDuty malware-scan tag check is also
   // moot, since GuardDuty is an AWS-only service that never scans R2 objects.
   if (isR2Configured) return
+  if (!Bucket) throw new Error("Bucket must be defined")
+  if (!Key) throw new Error("Key must be defined")
+
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,
@@ -185,6 +199,38 @@ export const setAssetAsPublished = async ({
   )
   if (hasFailedScan) {
     throw new Error("Cannot publish asset with failed malware scan")
+  }
+
+  // NOTE: S3 object metadata is immutable, so rewriting Content-Disposition
+  // requires a self-copy with MetadataDirective REPLACE. This must happen
+  // before the retention lock below — once the object lock is applied the
+  // object can no longer be overwritten. REPLACE drops all existing metadata,
+  // so ContentType and user metadata are read back and re-supplied; object
+  // tags carry over via the default TaggingDirective (COPY).
+  if (ContentDisposition) {
+    const head = await storage.send(new HeadObjectCommand({ Bucket, Key }))
+    // Skip the (paid) self-copy when the disposition is already correct,
+    // e.g. on a pg-boss retry after an earlier attempt already rewrote it.
+    if (head.ContentDisposition !== ContentDisposition) {
+      await storage.send(
+        new CopyObjectCommand({
+          Bucket,
+          CopySource: getEncodedCopySource(Bucket, Key),
+          Key,
+          MetadataDirective: "REPLACE",
+          ContentDisposition,
+          // Only re-supply ContentType/Metadata when HeadObject actually
+          // returned them. Passing an explicit `undefined` value (rather
+          // than omitting the key) for these fields is a known
+          // aws-sdk-js-v3 SignatureDoesNotMatch trigger on
+          // CopyObjectCommand.
+          ...(head.ContentType ? { ContentType: head.ContentType } : {}),
+          ...(head.Metadata && Object.keys(head.Metadata).length > 0
+            ? { Metadata: head.Metadata }
+            : {}),
+        }),
+      )
+    }
   }
 
   // NOTE: Lock first to preserve guarantee that once published
@@ -228,7 +274,7 @@ export const setAssetAsPublished = async ({
 // or an HTTP 404. Every other failure (throttling, network blips, auth) is
 // transient/operational and MUST propagate — swallowing it as `null` would let
 // callers mistake a present object for a missing one.
-const isNotFoundError = (error: unknown): boolean => {
+export const isNotFoundError = (error: unknown): boolean => {
   if (typeof error !== "object" || error === null) return false
   const { name, $metadata } = error as {
     name?: unknown
@@ -264,10 +310,12 @@ export const copyFile = async ({
   SourceKey: string
   DestKey: string
 }) => {
+  if (!Bucket) throw new Error("Bucket must be defined")
+
   return storage.send(
     new CopyObjectCommand({
       Bucket,
-      CopySource: `${Bucket}/${SourceKey}`,
+      CopySource: getEncodedCopySource(Bucket, SourceKey),
       Key: DestKey,
     }),
   )
@@ -388,7 +436,15 @@ export const uploadAuditLogExport = async ({
       Key: key,
       Body: body,
       ContentType: "text/csv",
-      ContentDisposition: `attachment; filename="${filename}"`,
+      // Key segments can carry arbitrary site names (see
+      // auditLogExport.service.ts); a raw template string would let a `"` in
+      // `filename` break out of the quoted value. `createContentDisposition`
+      // escapes quotes/backslashes and RFC 5987-encodes non-ASCII/control
+      // chars instead (same fix as getContentDispositionForTitle in
+      // packages/algolia/src/gazette.ts).
+      ContentDisposition: createContentDisposition(filename, {
+        type: "attachment",
+      }),
     },
   })
   await upload.done()

@@ -1,4 +1,5 @@
 import type { HeroFloatingProps } from "~/interfaces/complex/Hero"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { ComponentContent } from "../../internal/customCssClass"
@@ -34,11 +35,13 @@ export const HeroFloating = ({
   backgroundUrl,
   site,
   theme = "default",
+  headingLevel,
 }: HeroFloatingProps) => {
   const heroColour = HERO_THEME_MAPPINGS.hero[theme]
   const heroTitleColour = HERO_THEME_MAPPINGS.title[theme]
   const heroSubtitleColour = HERO_THEME_MAPPINGS.subtitle[theme]
   const heroButton = HERO_THEME_MAPPINGS.button[theme]
+  const Tag = getHeadingTag(headingLevel)
 
   return (
     <section
@@ -63,7 +66,7 @@ export const HeroFloating = ({
         >
           {/* Text container */}
           <div className={`flex flex-col gap-6 text-start ${heroTitleColour}`}>
-            <h1 className={`prose-display-xl ${heroTitleColour}`}>{title}</h1>
+            <Tag className={`prose-display-xl ${heroTitleColour}`}>{title}</Tag>
             {subtitle && (
               <p className={`prose-title-lg-regular ${heroSubtitleColour}`}>
                 {subtitle}

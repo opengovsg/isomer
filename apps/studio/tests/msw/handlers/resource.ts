@@ -1,3 +1,5 @@
+import type { RouterOutput } from "~/utils/trpc"
+
 import { trpcMsw } from "../mockTrpc"
 import { DEFAULT_COLLECTION_ITEMS } from "./collection"
 import { DEFAULT_PAGE_ITEMS } from "./page"
@@ -82,6 +84,22 @@ export const resourceHandlers = {
           parentId: null,
           parent: null,
           title: "a collection",
+        }
+      })
+    },
+    collectionLink: () => {
+      return trpcMsw.resource.getParentOf.query(() => {
+        return {
+          type: "CollectionLink",
+          id: "1",
+          parentId: "1",
+          title: "yet another link",
+          parent: {
+            type: "Collection",
+            id: "1",
+            parentId: null,
+            title: "a collection",
+          },
         }
       })
     },
@@ -198,6 +216,18 @@ export const resourceHandlers = {
       })
     },
   },
+  getMoveLockInfo: {
+    default: () => {
+      return trpcMsw.resource.getMoveLockInfo.query(() => {
+        return { isBlocked: false }
+      })
+    },
+    blocked: () => {
+      return trpcMsw.resource.getMoveLockInfo.query(() => {
+        return { isBlocked: true }
+      })
+    },
+  },
   getMetadataById: {
     homepage: () =>
       trpcMsw.resource.getMetadataById.query(() => {
@@ -258,6 +288,22 @@ export const resourceHandlers = {
           siteId: 1,
           publishedVersionId: null,
         }
+      }),
+    // Resolves the mocked metadata by the requested `resourceId`, so a story
+    // can give the moved resource and the picked destination distinct types
+    // (e.g. a Page moved onto a Collection) to exercise move validation.
+    byId: (
+      resourcesById: Record<
+        string,
+        RouterOutput["resource"]["getMetadataById"]
+      >,
+    ) =>
+      trpcMsw.resource.getMetadataById.query(({ input: { resourceId } }) => {
+        const resource = resourcesById[resourceId]
+        if (!resource) {
+          throw new Error(`No mocked resource for id ${resourceId}`)
+        }
+        return resource
       }),
   },
   search: {

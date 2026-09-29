@@ -42,7 +42,8 @@ import {
   getNotification,
   getSiteConfig,
   getSiteTheme,
-  resolveEgazetteAlgoliaSearchConfig,
+  normalizeAskgovConfig,
+  resolveSearchConfig,
   setSiteNotification,
   validateUserPermissionsForSite,
 } from "./site.service"
@@ -136,21 +137,21 @@ export const siteRouter = router({
         .executeTakeFirstOrThrow()
 
       const { config } = site
+      const normalizedConfig = normalizeAskgovConfig({ ...rest, siteName })
 
       const updatedConfig = await db.transaction().execute(async (tx) => {
-        // Preserve the existing clientId from DB - only admins can update it via setSiteConfigByAdmin
-        const searchConfig =
-          rest.search?.type === "searchSG" && config.search?.type === "searchSG"
-            ? { ...rest.search, clientId: config.search.clientId }
-            : // egazette-algolia is admin-managed; site admins cannot switch
-              // to/from it or tamper with its Algolia credentials.
-              resolveEgazetteAlgoliaSearchConfig(config.search, rest.search)
+        // searchSG and egazette-algolia are admin-managed; their credentials
+        // always come from the DB, never from site-admin input.
+        const searchConfig = resolveSearchConfig(
+          config.search,
+          normalizedConfig.search,
+        )
 
         const updatedSite = await tx
           .updateTable("Site")
           .set({
             name: siteName,
-            config: jsonb({ ...rest, siteName, search: searchConfig }),
+            config: jsonb({ ...normalizedConfig, search: searchConfig }),
           })
           .where("id", "=", siteId)
           .returningAll()
@@ -201,8 +202,9 @@ export const siteRouter = router({
         .where("id", "=", ctx.user.id)
         .selectAll()
         .executeTakeFirstOrThrow()
+      const normalizedData = normalizeAskgovConfig(data)
 
-      return await db.transaction().execute(async (tx) => {
+      const result = await db.transaction().execute(async (tx) => {
         const site = await tx
           .selectFrom("Site")
           .where("id", "=", siteId)
@@ -214,7 +216,7 @@ export const siteRouter = router({
         // a site admin from switching back to localSearch once SearchSG is set.
         if (
           site.config.search?.type === "searchSG" &&
-          data.search?.type === "localSearch"
+          normalizedData.search?.type === "localSearch"
         ) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -223,16 +225,16 @@ export const siteRouter = router({
           })
         }
 
-        // egazette-algolia is admin-managed; site admins cannot switch to/from
-        // it or tamper with its Algolia credentials.
-        const search = resolveEgazetteAlgoliaSearchConfig(
+        // searchSG and egazette-algolia are admin-managed; their credentials
+        // always come from the DB, never from site-admin input.
+        const search = resolveSearchConfig(
           site.config.search,
-          data.search,
+          normalizedData.search,
         )
 
         const updatedSite = await tx
           .updateTable("Site")
-          .set({ config: jsonb({ ...data, search }) })
+          .set({ config: jsonb({ ...normalizedData, search }) })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirstOrThrow()
@@ -244,10 +246,11 @@ export const siteRouter = router({
           siteId,
         })
 
-        await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
-
-        return updatedSite
+        return { site, updatedSite }
       })
+
+      await publishSiteConfig(ctx.user.id, { site: result.site }, ctx.logger)
+      return result.updatedSite
     }),
   getTheme: protectedProcedure
     .input(getConfigSchema)
@@ -326,9 +329,10 @@ export const siteRouter = router({
           by: user,
         })
 
-        await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
         return newSite
       })
+
+      await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
 
       // NOTE: if the users update their `canvas.inverse`
       // we also need to update their searchsg theme settings
@@ -368,7 +372,7 @@ export const siteRouter = router({
         action: "update",
       })
 
-      await db.transaction().execute(async (tx) => {
+      const result = await db.transaction().execute(async (tx) => {
         const user = await tx
           .selectFrom("User")
           .where("id", "=", ctx.user.id)
@@ -436,12 +440,14 @@ export const siteRouter = router({
           by: user,
         })
 
-        await publishSiteConfig(
-          ctx.user.id,
-          { site, footer: newFooter },
-          ctx.logger,
-        )
+        return { site, newFooter }
       })
+
+      await publishSiteConfig(
+        ctx.user.id,
+        { site: result.site, footer: result.newFooter },
+        ctx.logger,
+      )
     }),
   getNavbar: protectedProcedure
     .input(getConfigSchema)
@@ -462,7 +468,7 @@ export const siteRouter = router({
         action: "update",
       })
 
-      await db.transaction().execute(async (tx) => {
+      const result = await db.transaction().execute(async (tx) => {
         const user = await tx
           .selectFrom("User")
           .where("id", "=", ctx.user.id)
@@ -529,12 +535,14 @@ export const siteRouter = router({
           by: user,
         })
 
-        await publishSiteConfig(
-          ctx.user.id,
-          { site, navbar: newNavbar },
-          ctx.logger,
-        )
+        return { site, newNavbar }
       })
+
+      await publishSiteConfig(
+        ctx.user.id,
+        { site: result.site, navbar: result.newNavbar },
+        ctx.logger,
+      )
     }),
   getLocalisedSitemap: protectedProcedure
     .input(getLocalisedSitemapSchema)
@@ -594,7 +602,7 @@ export const siteRouter = router({
           roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
         })
 
-        await db.transaction().execute(async (tx) => {
+        const result = await db.transaction().execute(async (tx) => {
           const user = await tx
             .selectFrom("User")
             .where("id", "=", ctx.user.id)
@@ -729,12 +737,18 @@ export const siteRouter = router({
             by: user,
           })
 
-          await publishSiteConfig(
-            ctx.user.id,
-            { site: newSite, navbar: newNavbar, footer: newFooter },
-            ctx.logger,
-          )
+          return { newSite, newNavbar, newFooter }
         })
+
+        await publishSiteConfig(
+          ctx.user.id,
+          {
+            site: result.newSite,
+            navbar: result.newNavbar,
+            footer: result.newFooter,
+          },
+          ctx.logger,
+        )
       },
     ),
   create: protectedProcedure
@@ -767,7 +781,7 @@ export const siteRouter = router({
             }),
         )
 
-      return db.transaction().execute(async (tx) => {
+      await db.transaction().execute(async (tx) => {
         await logPublishEvent(tx, {
           by: byUser,
           eventType: AuditLogEvent.Publish,
@@ -775,7 +789,8 @@ export const siteRouter = router({
           metadata: {},
           siteId,
         })
-        await publishSite(ctx.logger, { siteId: siteId })
       })
+
+      await publishSite(ctx.logger, { siteId })
     }),
 })

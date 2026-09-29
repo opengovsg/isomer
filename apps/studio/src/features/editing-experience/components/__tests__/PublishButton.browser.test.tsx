@@ -10,22 +10,6 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import PublishButton from "../PublishButton"
 
-// The "Schedule for later" dropdown relies on Chakra's Menu context, which does
-// not initialise under jsdom. It is unrelated to the permission gate under test,
-// so stub the menu primitives to plain passthroughs.
-vi.mock("@chakra-ui/react", async (importActual) => {
-  const actual = (await importActual()) as Record<string, unknown>
-  return {
-    ...actual,
-    Menu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    MenuButton: ({ "aria-label": ariaLabel }: { "aria-label"?: string }) => (
-      <button aria-label={ariaLabel} />
-    ),
-    MenuList: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    MenuItem: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  }
-})
-
 // PublishButton is wrapped in withSuspense, whose Suspense wrapper waits for the
 // Next.js router to be ready before mounting children. Provide a ready router.
 vi.mock("next/router", () => ({
@@ -100,8 +84,10 @@ describe("PublishButton permission gating", () => {
   // `{ isAllowed }` object instead of a positional boolean. Destructuring it as a
   // positional boolean made `allowed` an always-truthy object, leaking the button
   // to editors regardless of their permissions.
-  it("does NOT render the Publish button for editors", () => {
+  it("renders the Publish button disabled for editors", () => {
     renderForRole(RoleType.Editor)
-    expect(screen.queryByRole("button", { name: "Publish" })).toBeNull()
+    const button = screen.queryByRole("button", { name: "Publish" })
+    expect(button).not.toBeNull()
+    expect(button).toBeDisabled()
   })
 })

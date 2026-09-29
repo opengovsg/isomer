@@ -28,6 +28,7 @@ export const Contentpic = ({
   imageAlt,
   site,
   shouldLazyLoad = true,
+  headingLevel,
 }: ContentpicProps): JSX.Element => {
   return (
     <div className={compoundStyles.container()}>
@@ -41,7 +42,7 @@ export const Contentpic = ({
       />
 
       <div className={compoundStyles.content()}>
-        <Prose {...content} site={site} />
+        <Prose {...content} site={site} headingLevel={headingLevel} />
       </div>
     </div>
   )

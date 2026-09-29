@@ -1,4 +1,5 @@
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import type { InfopicProps } from "../types"
@@ -17,7 +18,9 @@ export const FullInfopic = ({
   description,
   isTextOnRight,
   site,
+  headingLevel,
 }: FullInfopicProps) => {
+  const Tag = getHeadingTag(headingLevel)
   const compoundStyles = infopicStyles({
     isTextOnRight,
     variant: InfopicVariants.Full.value,
@@ -49,7 +52,7 @@ export const FullInfopic = ({
         >
           <div className={compoundStyles.container()}>
             <div className={compoundStyles.content()}>
-              <h2 className={compoundStyles.title()}>{title}</h2>
+              <Tag className={compoundStyles.title()}>{title}</Tag>
               <p className={compoundStyles.description()}>{description}</p>
               {hasLinkButton && (
                 <div className={compoundStyles.button()}>

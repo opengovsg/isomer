@@ -377,6 +377,42 @@ export const Default: Story = {
         },
       },
       {
+        type: "callout",
+        variant: "urgent",
+        content: {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Applications close on 31 December 2024. Submissions received after this date will not be considered.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        type: "callout",
+        variant: "information",
+        content: {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Processing of proposals typically takes 6 to 8 weeks. You will be notified of the outcome via email.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
         type: "prose",
         content: [
           {
@@ -1087,6 +1123,36 @@ export const Default: Story = {
             ],
           },
           {
+            type: "unorderedList",
+            content: [
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [
+                      {
+                        type: "text",
+                        text: "List item directly below a table",
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [
+                      { type: "text", text: "Second item to show the rhythm" },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
             type: "paragraph",
             content: [{ type: "text", text: "This is yet another paragraph" }],
           },
@@ -1104,6 +1170,47 @@ export const Default: Story = {
               {
                 type: "text",
                 text: "In the realm of human cognition, irrationality often reigns supreme, defying the logic that ostensibly governs our decisions and actions. It manifests in myriad ways, from the subtle biases that influence our perceptions to the outright contradictions that confound our rational minds. We find ourselves ensnared in cognitive dissonance, grappling with conflicting beliefs and emotions that lead us astray from the path of reason. Despite our best intentions, we succumb to the allure of irrationality, surrendering to the whims of impulse and emotion. Our choices become a tangled web of contradictions, driven by instinct rather than careful deliberation. We cling to superstitions and fallacies, seeking comfort in the irrationality that offers solace amidst life's uncertainties. It is a paradoxical dance, where the irrational often masquerades as wisdom, leading us down paths fraught with confusion and folly. Yet, in embracing our irrationality, we find a peculiar sort of freedom, liberated from the constraints of logic and reason. We navigate the world with a blend of intuition and irrationality, embracing the chaos that defines the human experience. And so, in the tapestry of existence, irrationality weaves its intricate threads, adding depth and complexity to the fabric of our lives.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1527436826045-8805c615a6df?w=1280",
+        alt: "Two rhinos. A rhino is peacefully grazing on grass in a field in front of the other rhino.",
+        caption: "An image directly followed by a list",
+      },
+      {
+        type: "prose",
+        content: [
+          {
+            type: "unorderedList",
+            content: [
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [
+                      {
+                        type: "text",
+                        text: "List item directly below an image",
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [
+                      { type: "text", text: "Second item to show the rhythm" },
+                    ],
+                  },
+                ],
               },
             ],
           },
@@ -1383,6 +1490,38 @@ export const Default: Story = {
             buttonLabel: "Read article",
             buttonUrl: "https://google.com",
             icon: "bar-chart",
+          },
+        ],
+      },
+      {
+        type: "steps",
+        title: "How to apply",
+        subtitle:
+          "Applying takes about 15 minutes. Have your documents ready before you start.",
+        numberStyle: "numeral",
+        steps: [
+          {
+            title: "Check if you are eligible",
+            description:
+              "You must be a Singapore Citizen or Permanent Resident aged 21 and above.",
+          },
+          {
+            title: "Prepare your documents",
+            description:
+              "You will need your NRIC and proof of income for the past 3 months.",
+            buttonLabel: "See the full document checklist",
+            buttonUrl: "/faq",
+          },
+          {
+            title: "Submit your application",
+            description:
+              "Applications are submitted online and take about 15 minutes to complete.",
+            buttonLabel: "Start your application",
+            buttonUrl: "https://form.gov.sg",
+          },
+          {
+            title: "Wait for the outcome",
+            description: "We will email you the outcome within 4 weeks.",
           },
         ],
       },
@@ -2903,6 +3042,38 @@ export const Image: Story = {
             buttonLabel: "Read article",
             buttonUrl: "https://google.com",
             icon: "bar-chart",
+          },
+        ],
+      },
+      {
+        type: "steps",
+        title: "How to apply",
+        subtitle:
+          "Applying takes about 15 minutes. Have your documents ready before you start.",
+        numberStyle: "numeral",
+        steps: [
+          {
+            title: "Check if you are eligible",
+            description:
+              "You must be a Singapore Citizen or Permanent Resident aged 21 and above.",
+          },
+          {
+            title: "Prepare your documents",
+            description:
+              "You will need your NRIC and proof of income for the past 3 months.",
+            buttonLabel: "See the full document checklist",
+            buttonUrl: "/faq",
+          },
+          {
+            title: "Submit your application",
+            description:
+              "Applications are submitted online and take about 15 minutes to complete.",
+            buttonLabel: "Start your application",
+            buttonUrl: "https://form.gov.sg",
+          },
+          {
+            title: "Wait for the outcome",
+            description: "We will email you the outcome within 4 weeks.",
           },
         ],
       },

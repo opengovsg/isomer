@@ -16,6 +16,33 @@ pnpm install
 
 The `turbo` CLI is available via `pnpm exec turbo` / `pnpm turbo` after install.
 
+### Local publishing
+
+With your local Studio environment and database set up, run `pnpm dev` from the
+repository root. Studio runs at `http://localhost:3000` and the template preview
+at `http://localhost:3001`.
+
+When `NEXT_PUBLIC_APP_ENV=development`, publishing in Studio queues a local
+export instead of starting CodeBuild. The publisher uses Studio's `DATABASE_URL`
+when provided; otherwise it falls back to its `DB_*` connection settings.
+
+- Studio logs `Local publish queued`, `Local publish started`, and
+  `Local publish finished`, including the site ID, number of waiting publishes
+  (excluding the running publish), queue wait time, and run duration.
+- Wait for `Published site to the local template at http://localhost:3001` before
+  checking the preview. The template checks for file changes every second;
+  recompilation can take longer. Studio's publish response only confirms enqueueing.
+- Exports run one at a time and replace `tooling/template/.local-publish` after
+  successful generation. This directory is gitignored and initially seeded from
+  the template fixtures. The most recently completed publish determines which
+  site appears in the preview.
+- On macOS/Linux, an exporter that runs for more than two minutes is terminated
+  along with its child processes. Failed output is removed, the previous preview
+  is retained, and the next queued publish proceeds. Check `Local publish failed`
+  for errors.
+- Replacement uses a backup and two renames, with rollback if installation fails;
+  it is not an atomic directory swap.
+
 ### Credentials
 
 There are a few steps to getting started:

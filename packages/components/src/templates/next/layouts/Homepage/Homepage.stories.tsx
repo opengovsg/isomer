@@ -8,10 +8,10 @@ import {
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
 import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
+import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
 import { HomepageLayout } from "./Homepage"
 
 const meta: Meta<typeof HomepageLayout> = {
@@ -52,6 +52,13 @@ const meta: Meta<typeof HomepageLayout> = {
 }
 export default meta
 type Story = StoryObj<typeof HomepageLayout>
+
+const chromaticWithoutMobileSmall = {
+  modes: {
+    // Chromatic stacks story modes with the modes inherited from meta.
+    mobileSmall: { disable: true },
+  },
+}
 
 // Category is now an ordinary tagCategories group — the option a card is
 // tagged with is what CollectionBlock displays under its title.
@@ -361,30 +368,6 @@ const generateArgs = ({
         buttonUrl: "[resource:1:1]",
       },
       {
-        variant: "full",
-        type: "infopic",
-        title:
-          "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
-        description:
-          "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
-        imageAlt: "alt",
-        imageSrc: "https://placehold.co/200x200",
-        buttonLabel: "Primary CTA",
-        buttonUrl: "/",
-      },
-      {
-        variant: "full",
-        type: "infopic",
-        title:
-          "Explore your great neighbourhood with us can’t stretch all the way so this needs a max width",
-        description:
-          "They will try to close the door on you, just open it. Lion! The other day the grass was brown, now it’s green because I ain’t give up. Never surrender.",
-        imageAlt: "alt",
-        imageSrc: "https://placehold.co/200x200",
-        buttonLabel: "Primary CTA",
-        buttonUrl: "/",
-      },
-      {
         type: "infocards",
         variant: "cardsWithFullImages",
         title: "Section title ministry highlights",
@@ -524,6 +507,38 @@ const generateArgs = ({
             buttonLabel: "Read article",
             buttonUrl: "https://google.com",
             icon: "bar-chart",
+          },
+        ],
+      },
+      {
+        type: "steps",
+        title: "How to apply",
+        subtitle:
+          "Applying takes about 15 minutes. Have your documents ready before you start.",
+        numberStyle: "numeral",
+        steps: [
+          {
+            title: "Check if you are eligible",
+            description:
+              "You must be a Singapore Citizen or Permanent Resident aged 21 and above.",
+          },
+          {
+            title: "Prepare your documents",
+            description:
+              "You will need your NRIC and proof of income for the past 3 months.",
+            buttonLabel: "See the full document checklist",
+            buttonUrl: "/faq",
+          },
+          {
+            title: "Submit your application",
+            description:
+              "Applications are submitted online and take about 15 minutes to complete.",
+            buttonLabel: "Start your application",
+            buttonUrl: "https://form.gov.sg",
+          },
+          {
+            title: "Wait for the outcome",
+            description: "We will email you the outcome within 4 weeks.",
           },
         ],
       },
@@ -685,6 +700,8 @@ export const Dark: Story = {
 }
 
 export const HeroBlock: Story = {
+  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
+  parameters: { chromatic: chromaticWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -702,6 +719,8 @@ export const HeroBlock: Story = {
 }
 
 export const HeroLargeImage: Story = {
+  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
+  parameters: { chromatic: chromaticWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -719,6 +738,8 @@ export const HeroLargeImage: Story = {
 }
 
 export const HeroFloating: Story = {
+  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
+  parameters: { chromatic: chromaticWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",

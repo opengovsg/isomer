@@ -38,7 +38,7 @@ export const DgsContactInformation = ({
       <ContactInformationUI
         isLoading={isLoading}
         methods={[]} // not needed for loading state but its required prop
-        {...pick(rest, "type", "layout")}
+        {...pick(rest, "type", "layout", "headingLevel")}
         acceptHtmlTags
       />
     )
@@ -87,6 +87,7 @@ export const DgsTransformedContactInformation = ({
       otherInformation={otherInformation}
       type={rest.type}
       layout={rest.layout}
+      headingLevel={rest.headingLevel}
       {...omit(rest, InjectableContactInformationKeys)}
       acceptHtmlTags
     />

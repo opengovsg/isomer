@@ -183,6 +183,7 @@ export const InfoCardsSchema = Type.Intersect(
 export type SingleCardNoImageProps = Static<typeof SingleCardNoImageSchema> & {
   site: IsomerSiteProps
   isExternalLink?: boolean
+  headingLevel: number
 }
 export type SingleCardWithImageProps = Static<
   typeof SingleCardWithImageSchema
@@ -194,10 +195,12 @@ export type SingleCardWithImageProps = Static<
     shouldLazyLoad?: boolean
     variant?: InfoCardVariants
     isFallback?: boolean
+    headingLevel: number
   }
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
   sectionIdx?: number // TODO: Remove this property, only used in classic theme
   shouldLazyLoad?: boolean
+  headingLevel: number
 }

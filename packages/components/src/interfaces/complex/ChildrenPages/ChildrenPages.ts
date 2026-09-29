@@ -74,4 +74,5 @@ export interface ChildrenPagesProps extends Static<typeof ChildrenPagesSchema> {
   shouldLazyLoad?: boolean
   permalink: string
   site: IsomerSiteProps
+  headingLevel: number
 }

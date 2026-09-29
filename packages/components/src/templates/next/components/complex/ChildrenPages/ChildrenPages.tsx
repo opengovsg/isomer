@@ -32,6 +32,7 @@ interface ChildpageLayoutProps
       | "shouldLazyLoad"
       | "site"
       | "maxColumns"
+      | "headingLevel"
     >,
     Pick<ImageClientProps, "assetsBaseUrl"> {
   childpages: Childpage[]
@@ -47,6 +48,7 @@ const BoxLayout = ({
   site,
   maxColumns = "2",
   imageFit = "cover",
+  headingLevel,
 }: ChildpageLayoutProps) => {
   return (
     <div
@@ -76,6 +78,7 @@ const BoxLayout = ({
               site={site}
               isFallback={!hasImage}
               shouldLazyLoad={shouldLazyLoad}
+              headingLevel={headingLevel}
             />
           )
         }
@@ -87,6 +90,7 @@ const BoxLayout = ({
             description={showSummary ? description : undefined}
             url={url}
             site={site}
+            headingLevel={headingLevel}
           />
         )
       })}
@@ -224,6 +228,7 @@ export const ChildrenPages = ({
   shouldLazyLoad,
   maxColumns = "2",
   imageFit = IMAGE_FIT.Cover,
+  headingLevel,
 }: ChildrenPagesProps) => {
   const currentPageNode = getNodeFromSiteMap(site.siteMap, permalink)
 
@@ -254,6 +259,7 @@ export const ChildrenPages = ({
         site={site}
         maxColumns={maxColumns}
         imageFit={imageFit}
+        headingLevel={headingLevel}
       />
     )
   }
@@ -272,6 +278,7 @@ export const ChildrenPages = ({
       shouldLazyLoad={shouldLazyLoad}
       site={site}
       imageFit={imageFit}
+      headingLevel={headingLevel}
     />
   )
 }

@@ -1,8 +1,5 @@
 import { formatInTimeZone } from "date-fns-tz"
-import {
-  AUDIT_LOG_EXPORT_MAX_MONTHS,
-  AuditLogExportRequestedReportType,
-} from "~/schemas/audit"
+import { AUDIT_LOG_EXPORT_MAX_MONTHS } from "~/schemas/audit"
 
 // Audit log months are calendar months in Singapore time on the server
 // (SGT = UTC+8, no DST), so we anchor the option list to the same zone to
@@ -19,26 +16,6 @@ const toMonthValue = (date: Date): string =>
 
 const toMonthLabel = (date: Date): string =>
   formatInTimeZone(date, SINGAPORE_TIME_ZONE, "MMMM yyyy")
-
-// The two selectable cards map onto the report types the server accepts:
-// "User access review logs" -> Access, "Audit logs" -> Activity, and both
-// together -> Both. Toggling one card moves between those states; clearing
-// the last selection returns null (the schema's typed "unset" sentinel) so
-// the form can fall back to its empty (submit-disabled) state.
-export const toggleReportType = (
-  current: AuditLogExportRequestedReportType | null,
-  toggled:
-    | typeof AuditLogExportRequestedReportType.Access
-    | typeof AuditLogExportRequestedReportType.Activity,
-): AuditLogExportRequestedReportType | null => {
-  const { Access, Activity, Both } = AuditLogExportRequestedReportType
-  const other = toggled === Access ? Activity : Access
-  const isToggledOn = current === toggled || current === Both
-  const isOtherOn = current === other || current === Both
-
-  if (!isToggledOn) return isOtherOn ? Both : toggled
-  return isOtherOn ? other : null
-}
 
 // Build the list of selectable months, newest first: the current (partial)
 // month followed by up to `maxMonths - 1` complete months before it. Never

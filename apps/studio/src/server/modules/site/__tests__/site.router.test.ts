@@ -42,6 +42,11 @@ const createCaller = createCallerFactory(siteRouter)
 const MOCK_SITE_NAME = "isobad"
 const MOCK_LOGO_URL = "https://isobad.com/logo.png"
 const MOCK_SEARCHSG_CLIENT_ID = "550e8400-e29b-41d4-a716-446655440000"
+// A UUID belonging to a different site's SearchSG project. It has to satisfy
+// `isValidSearchSGClientId` (RFC 4122, so version 4 and variant 8 here), because
+// clearing that check is what lets a tampered clientId reach the SearchSG API.
+const MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID =
+  "11111111-2222-4333-8444-555555555555"
 const MOCK_EGAZETTE_ALGOLIA_SEARCH = {
   type: "egazette-algolia",
   appId: "MOCK_APP_ID",
@@ -571,6 +576,30 @@ describe("site.router", async () => {
         .executeTakeFirstOrThrow()
       expect(updatedSite.name).toEqual(MOCK_SITE_NAME)
     })
+    it("should normalize an AskGov URL when updating the site config", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        askgov: {
+          "data-agency":
+            "https://www.ask.gov.sg/mha/questions/question-id?from=widget",
+        },
+      })
+
+      // Assert
+      expect(result.askgov).toEqual({ "data-agency": "mha" })
+    })
     it("should generate an audit log entry", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -713,6 +742,50 @@ describe("site.router", async () => {
         { name: MOCK_SITE_NAME, _kind: "name" },
         existingClientId,
         result.url,
+      )
+    })
+    it("uses clientId fixtures that pass the SearchSG format check", () => {
+      // Guards the premise of the tampering tests below: a malformed clientId
+      // is rejected downstream anyway, so the fixtures have to be well-formed
+      // for those tests to cover the case that actually reaches SearchSG.
+      expect(
+        searchSgService.isValidSearchSGClientId(MOCK_SEARCHSG_CLIENT_ID),
+      ).toBe(true)
+      expect(
+        searchSgService.isValidSearchSGClientId(
+          MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID,
+        ),
+      ).toBe(true)
+    })
+    it("should not allow a site admin to enable searchSG with a supplied clientId", async () => {
+      // Arrange - no search integration, so there is no clientId in the DB to
+      // fall back on. The clientId is a valid UUID belonging to another site.
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        search: {
+          type: "searchSG",
+          clientId: MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID,
+        },
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Cannot enable the SearchSG search integration. Contact Isomer Support to set it up.",
+        }),
       )
     })
     it("should not allow a site admin to switch search to egazette-algolia", async () => {
@@ -899,6 +972,41 @@ describe("site.router", async () => {
       // Assert
       expect(result.config).toEqual(MOCK_INTEGRATION_DATA)
     })
+    it.each([
+      {
+        input: "http://ask.gov.sg/mom/?topic=employment#contact",
+        expected: "mom",
+        description: "URL",
+      },
+      {
+        input: "www.ask.gov.sg/help/questions/question-id",
+        expected: "help",
+        description: "scheme-less URL",
+      },
+      { input: "mha", expected: "mha", description: "ID" },
+    ])(
+      "should store an AskGov $description as the agency ID when updating site integrations",
+      async ({ input, expected }) => {
+        // Arrange
+        const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        // Act
+        const result = await caller.updateSiteIntegrations({
+          data: {
+            ...MOCK_INTEGRATION_DATA,
+            askgov: { "data-agency": input },
+          },
+          siteId: site.id,
+        })
+
+        // Assert
+        expect(result.config.askgov).toEqual({ "data-agency": expected })
+      },
+    )
     it("should generate an audit log entry", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -959,6 +1067,71 @@ describe("site.router", async () => {
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
+    it("should not allow a site admin to change the searchSG clientId", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({
+          config: {
+            ...site.config,
+            search: { type: "searchSG", clientId: MOCK_SEARCHSG_CLIENT_ID },
+          },
+        })
+        .where("id", "=", site.id)
+        .execute()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - submit another site's clientId
+      const result = await caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: {
+          ...MOCK_INTEGRATION_DATA,
+          search: {
+            type: "searchSG",
+            clientId: MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID,
+          },
+        },
+      })
+
+      // Assert - the stored clientId should be the original DB value
+      expect(result.config.search).toEqual({
+        type: "searchSG",
+        clientId: MOCK_SEARCHSG_CLIENT_ID,
+      })
+    })
+    it("should not allow a site admin to enable searchSG with a supplied clientId", async () => {
+      // Arrange - no search integration, so there is no clientId in the DB
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: {
+          ...MOCK_INTEGRATION_DATA,
+          search: {
+            type: "searchSG",
+            clientId: MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID,
+          },
+        },
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Cannot enable the SearchSG search integration. Contact Isomer Support to set it up.",
+        }),
+      )
+    })
     it("should throw 400 if downgrading search integration from searchSG to localSearch", async () => {
       // Arrange
       const { site } = await setupSite()

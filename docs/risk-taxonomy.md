@@ -18,8 +18,10 @@ Match top-down — the first matching glob wins for that file. The PR's tier is 
 
 ### `risk:high`
 
-- `apps/studio/prisma/migrations/**`
-- `apps/studio/prisma/schema.prisma`
+- `packages/db/prisma/migrations/**`
+- `packages/db/prisma/schema.prisma`
+- `packages/db/prisma/custom/**`
+- `packages/db/prisma.config.ts`
 - `apps/studio/src/server/modules/auth/**`
 - `apps/studio/src/server/modules/permissions/**`
 - `apps/studio/src/server/modules/audit/**`
@@ -70,6 +72,7 @@ Server-side logic, data contracts, and shared libraries — things where a bug c
 - `packages/components/src/templates/**`
 - `packages/components/src/schemas/**`
 - `packages/components/src/engine/**`
+- `packages/db/src/**`, `packages/db/prisma/generate.cts`
 - `packages/pgboss/**`, `packages/redis/**`, `packages/logging/**`, `packages/validators/**` — exception: removing/renaming a pgboss job handler or changing its payload type triggers the reversibility modifier and bumps to risk:high
 
 ### `risk:low`
@@ -95,8 +98,8 @@ There is no bot that submits an actual GitHub APPROVE review — the `pr-review`
 
 1. The PR touches no file outside the `risk:low` globs.
 2. CI is green (lint, typecheck, build, tests).
-3. Code review (human, since there is no automated code-review skill) surfaces no blocking issues.
-4. Security review (human, since there is no automated security-review skill) surfaces no blocking issues.
+3. Any automated code-review findings, including GitHub Copilot findings when a review runs, are resolved or explicitly dismissed as non-blocking.
+4. Human code and security review surfaces no blocking issues.
 5. The PR does not change `package.json` scripts, `engines`, `pnpm.overrides`, or workspace dependencies.
 6. No reversibility modifier applies (external side-effects, row mutations, pgboss handler removal/rename/payload change, S3 object deletions).
 

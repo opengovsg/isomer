@@ -1,7 +1,13 @@
 export { AccordionSchema, type AccordionProps } from "./Accordion"
 export { BlockquoteSchema, type BlockquoteProps } from "./Blockquote"
+export { ButtonSchema, type ButtonProps } from "./Button"
 export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
-export { CalloutSchema, type CalloutProps } from "./Callout"
+export {
+  CalloutSchema,
+  DEFAULT_CALLOUT_VARIANT,
+  type CalloutProps,
+  type CalloutVariant,
+} from "./Callout"
 export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
@@ -28,6 +34,7 @@ export {
 } from "./Infobar"
 export { InfopicSchema, type InfopicProps } from "./Infopic"
 export { KeyStatisticsSchema, type KeyStatisticsProps } from "./KeyStatistics"
+export { StepsSchema, type StepsProps } from "./Steps"
 export { MapSchema, type MapProps } from "./Map"
 export { AudioSchema, type AudioProps } from "./Audio"
 export { VideoSchema, type VideoProps } from "./Video"

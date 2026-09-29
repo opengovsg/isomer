@@ -6,7 +6,7 @@ import { UnorderedList } from "../UnorderedList"
 
 export const ListItem = ({ content, level, site }: ListItemProps) => {
   return (
-    <li className="my-[15px] pl-2 sm:my-5 [&_>_p]:inline">
+    <li className="my-3 pl-2 [&_>_p]:inline">
       {content.map((item, index) => {
         if (item.type === "paragraph") {
           return <Paragraph key={index} {...item} site={site} />

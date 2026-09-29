@@ -3,6 +3,8 @@ export const JSON_FORMS_RANKING = {
   ArrayControl: 4,
   TagCategoryControl: 5,
   TagCategoryOptionsControl: 5,
+  DateFilterStatusLabelsControl: 5,
+  DateFilterValuesControl: 4,
   TaggedControl: 4,
   BooleanControl: 2,
   ConstControl: 2,
@@ -28,6 +30,7 @@ export const JSON_FORMS_RANKING = {
   ChildrenPagesControl: 4,
   // NOTE: needs to have higher priority than anyof
   CollectionVariantControl: 4,
+  CollectionSortOrderControl: 4,
   // NOTE: needs to have higher priority than array
   ChildrenPagesOrderingControl: 5,
   // NOTE: needs to have higher priority than array

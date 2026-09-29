@@ -1,4 +1,5 @@
 import type { HeroBlockProps } from "~/interfaces/complex/Hero"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { ImageClient } from "../../internal/ImageClient"
@@ -29,10 +30,12 @@ export const HeroBlock = ({
   backgroundUrl,
   site,
   theme = "default",
+  headingLevel,
 }: HeroBlockProps) => {
   const heroColour = HERO_THEME_MAPPINGS.hero[theme]
   const heroTextColour = HERO_THEME_MAPPINGS.text[theme]
   const heroButton = HERO_THEME_MAPPINGS.button[theme]
+  const Tag = getHeadingTag(headingLevel)
 
   return (
     <section className="flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row">
@@ -43,9 +46,9 @@ export const HeroBlock = ({
           className={`flex w-full max-w-[548px] flex-col justify-center gap-9 ${heroTextColour}`}
         >
           <div className="flex flex-col gap-6">
-            <h1 className="wrap-break-word prose-display-xl text-balance">
+            <Tag className="wrap-break-word prose-display-xl text-balance">
               {title}
-            </h1>
+            </Tag>
             {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
           </div>
           {buttonLabel && buttonUrl && (

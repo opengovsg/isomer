@@ -1,13 +1,17 @@
 import { TRPCError } from "@trpc/server"
+import { randomUUID } from "crypto"
 import { addDays, differenceInCalendarMonths, format, parseISO } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
 import { sql } from "kysely"
 import { Readable } from "node:stream"
+import { AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import {
+  sendAuditLogExportBatchReadyEmail,
   sendAuditLogExportFailedEmail,
   sendAuditLogExportReadyEmail,
 } from "~/features/mail/service"
+import { formatScheduledAtDate } from "~/lib/dates"
 import { createBaseLogger } from "~/lib/logger"
 import {
   getFileSize,
@@ -16,7 +20,7 @@ import {
 } from "~/lib/s3"
 import {
   AUDIT_LOG_EXPORT_MAX_MONTHS,
-  AuditLogExportRequestedReportType,
+  AuditLogExportScope,
   type CreateAuditLogExportRequestInput,
   getCurrentSingaporeMonth,
   validateIsMonthInPastYear,
@@ -28,7 +32,7 @@ import type { BaseLogger } from "@isomer/logging"
 
 import { AuditLogExportReportType, db, RoleType } from "../database"
 import { getResourcePermission } from "../permissions/permissions.service"
-import { logAuditLogExportEvent } from "./audit.service"
+import { logAuditLogExportEvents } from "./audit.service"
 import {
   accessReportQuery,
   activityReportQuery,
@@ -39,40 +43,21 @@ import {
 } from "./auditLogExport.query"
 import { sealAuditLogExportToken } from "./auditLogExportToken"
 
-type CreateAuditLogExportRequestProps = CreateAuditLogExportRequestInput & {
-  userId: string
-  // Requester IP, resolved by the router (getIP(ctx.req)) and recorded on the
-  // AuditLogExportCreate event, matching sibling resource/permission/login
-  // events. Optional so non-request callers (tests, future jobs) can omit it.
-  ip?: string
-}
+// The user-facing fields of a create-export ask, independent of which site(s)
+// it resolves to — "scope"/"siteId" are a router-level concept resolved into
+// a list of siteIds before ever reaching the service (see audit.router.ts).
+type CreateAuditLogExportRequestFields = Omit<
+  CreateAuditLogExportRequestInput,
+  "scope" | "siteId"
+>
 
 // Statuses that represent an export that is still in-flight; a duplicate
 // request for the same (site, user, range, report type) is accepted
 // idempotently (the existing row is returned) while one of these exists.
 const IN_FLIGHT_STATUSES = ["Pending", "Processing"] as const
 
-// Fan-out from the requested (input) report type to the DB rows to insert.
-// `Both` is UX vocabulary only (see schemas/audit.ts): it becomes TWO
-// AuditLogExportRequest rows — one Access, one Activity — each fulfilled as an
-// independent job. The DB enum has no `Both` member.
-const REPORT_TYPES_BY_REQUESTED_TYPE: Record<
-  AuditLogExportRequestedReportType,
-  readonly AuditLogExportReportType[]
-> = {
-  [AuditLogExportRequestedReportType.Access]: [AuditLogExportReportType.Access],
-  [AuditLogExportRequestedReportType.Activity]: [
-    AuditLogExportReportType.Activity,
-  ],
-  [AuditLogExportRequestedReportType.Both]: [
-    AuditLogExportReportType.Activity,
-    AuditLogExportReportType.Access,
-  ],
-}
-
-// The single report each row produces. `Both` is fanned out into two rows at
-// request time (see REPORT_TYPES_BY_REQUESTED_TYPE), so every row here maps to
-// exactly one report — one CSV, one download link, one email.
+// The single report each row produces — one CSV, one download link, one
+// email.
 const REPORT_BY_TYPE = {
   [AuditLogExportReportType.Access]: {
     kind: AuditLogExportReportType.Access,
@@ -84,13 +69,27 @@ const REPORT_BY_TYPE = {
   },
 } as const
 
-export const createAuditLogExportRequest = async ({
-  siteId,
-  userId,
-  month,
-  reportType,
-  ip,
-}: CreateAuditLogExportRequestProps) => {
+// Validates the requested month, then resolves the concrete half-open date
+// range the request covers. The month picker is the user-facing input, but
+// it only ever applies to Activity ("Audit logs") — an Access export always
+// reflects the CURRENT month regardless of what's picked, since its own
+// surface (ExportAccessLogsButton) never shows a month picker at all.
+const resolveAuditLogDateRange = (
+  month: CreateAuditLogExportRequestFields["month"],
+  reportType: CreateAuditLogExportRequestFields["reportType"],
+): string => {
+  const now = new Date()
+
+  // An Access export always covers the server's current month regardless of
+  // what was submitted, so validating the submitted month's window here
+  // would reject an otherwise-fine request over a value that's discarded
+  // anyway (e.g. browser clock skew nudging it into "next month"). The
+  // schema-level check (createAuditLogExportRequestServerSchema) is likewise
+  // scoped to Activity only.
+  if (reportType === AuditLogExportReportType.Access) {
+    return getMonthDateRange(getCurrentSingaporeMonth(), now)
+  }
+
   const futureMonthCheck = validateIsNotFutureMonth(month)
   const possibleError =
     futureMonthCheck !== true
@@ -104,129 +103,215 @@ export const createAuditLogExportRequest = async ({
     })
   }
 
-  // The month picker is the user-facing input, but it only ever applies to
-  // Activity ("Audit logs") — the Access ("User access review logs") card
-  // renders no month picker at all, so an Access export must always reflect
-  // CURRENT access, never whatever past month was picked for Activity in a
-  // "Both" ask. Both are stored as the same half-open SGT calendar-date range
-  // shape (see getMonthDateRange — a current-month request is clamped to
-  // today + 1); Access's range is simply always the current month's.
-  const now = new Date()
-  const auditLogDateRangeByReportType: Record<
-    AuditLogExportReportType,
-    string
-  > = {
-    [AuditLogExportReportType.Access]: getMonthDateRange(
-      getCurrentSingaporeMonth(),
-      now,
-    ),
-    [AuditLogExportReportType.Activity]: getMonthDateRange(month, now),
+  return getMonthDateRange(month, now)
+}
+
+// Create one audit-log export request per site this ask covers (already
+// permission-vetted by the caller — see audit.router.ts), as ONE transaction
+// with set-based queries rather than one transaction per site. An "allSites"
+// ask resolves to every site the caller Admins — for an Isomer Admin, every
+// site on the platform — so a per-site transaction loop would open one DB
+// transaction per site; batching keeps this to a fixed handful of queries
+// regardless of how many sites are resolved. `scope: "site"` reuses this same
+// path unchanged, as a one-element `siteIds` fan-out.
+export const createAuditLogExportRequestsForSites = async ({
+  siteIds,
+  scope,
+  userId,
+  month,
+  reportType,
+  ip,
+}: {
+  siteIds: number[]
+  scope: AuditLogExportScope
+  userId: string
+  month: CreateAuditLogExportRequestFields["month"]
+  reportType: CreateAuditLogExportRequestFields["reportType"]
+  ip?: string
+}) => {
+  if (siteIds.length === 0) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You are not an Admin on any site",
+    })
   }
 
-  // The concrete DB report types this request fans out to: one row for
-  // Access/Activity, two rows for Both.
-  const reportTypes = REPORT_TYPES_BY_REQUESTED_TYPE[reportType]
+  const auditLogDateRange = resolveAuditLogDateRange(month, reportType)
 
   // Asking is ALWAYS safe (ADR docs/adr/0005): a duplicate ask is accepted
   // idempotently, never rejected. The PARTIAL UNIQUE INDEX on (siteId, userId,
   // auditLogDateRange, reportType) WHERE status IN ('Pending','Processing')
   // (defined in the PR #2603 migration) is now purely a RACE GUARD — it is
   // what lets two concurrent identical asks resolve to ONE in-flight row
-  // instead of two, not a reason to error. Per fanned-out report type:
+  // instead of two, not a reason to error. Resolved for every site in the ask
+  // at once:
   //
-  //   1. Fast path: an in-flight row for the same (site, user, range, type)
-  //      already exists → use it, insert nothing.
-  //   2. Otherwise INSERT ... ON CONFLICT DO NOTHING targeting that partial
-  //      index. Losing the race between the SELECT and the INSERT therefore
-  //      cannot raise a unique-violation (which would abort the whole
-  //      Postgres transaction and roll back the other fan-out half); the
-  //      insert simply returns no row, and we SELECT the winner's in-flight
-  //      row and use that instead. Any other insert error still rethrows.
+  //   1. Fast path: one SELECT finds every site in `siteIds` that already has
+  //      an in-flight row for this (user, range, type).
+  //   2. Every remaining site is INSERTed in a single multi-row statement,
+  //      targeting the same partial unique index via ON CONFLICT DO NOTHING.
+  //      Postgres evaluates ON CONFLICT per row within one statement, so one
+  //      site's conflict doesn't block another site's insert in the same
+  //      statement — it just returns no row for that one site.
+  //   3. Any site that lost the race between (1) and (2) — a concurrent
+  //      identical ask inserted its in-flight row in between — is resolved
+  //      with one more SELECT for exactly those sites; the winner's row is
+  //      committed and visible by now.
   //
-  // Every ask — including one where all halves were idempotent-accepted — is
-  // recorded as ONE AuditLogExportCreate audit event in the same transaction,
-  // so agencies can always see who asked to export their logs.
+  // All three steps run inside one transaction, so this is a small, fixed
+  // number of queries no matter how many sites are in `siteIds` — the
+  // property that bounds the DoS risk of one transaction per site.
   return db.transaction().execute(async (tx) => {
-    const rows = []
-    for (const dbReportType of reportTypes) {
-      const auditLogDateRange = auditLogDateRangeByReportType[dbReportType]
-      const inFlightRowQuery = tx
-        .selectFrom("AuditLogExportRequest")
-        .where("siteId", "=", siteId)
-        .where("userId", "=", userId)
-        .where("auditLogDateRange", "=", auditLogDateRange)
-        .where("reportType", "=", dbReportType)
-        .where("status", "in", IN_FLIGHT_STATUSES)
-        .selectAll()
+    const inFlightRowsQuery = tx
+      .selectFrom("AuditLogExportRequest")
+      .where("siteId", "in", siteIds)
+      .where("userId", "=", userId)
+      .where("auditLogDateRange", "=", auditLogDateRange)
+      .where("reportType", "=", reportType)
+      .where("status", "in", IN_FLIGHT_STATUSES)
+      .selectAll()
 
-      // Fast path: idempotent-accept the common (non-racing) duplicate.
-      const existing = await inFlightRowQuery.executeTakeFirst()
-      if (existing) {
-        rows.push(existing)
-        continue
-      }
+    const existingRows = await inFlightRowsQuery.execute()
+    const existingSiteIds = new Set(existingRows.map((row) => row.siteId))
+    const siteIdsToInsert = siteIds.filter((id) => !existingSiteIds.has(id))
 
-      const inserted = await tx
-        .insertInto("AuditLogExportRequest")
-        .values({
-          siteId,
-          userId,
-          auditLogDateRange,
-          reportType: dbReportType,
-          status: AuditLogExportStatus.Pending,
-          attempts: 0,
-        })
-        // Target the partial unique index so a race-losing insert is a no-op
-        // rather than a transaction-aborting unique-violation.
-        .onConflict((oc) =>
-          oc
-            .columns(["siteId", "userId", "auditLogDateRange", "reportType"])
-            .where("status", "in", [...IN_FLIGHT_STATUSES])
-            .doNothing(),
-        )
-        .returningAll()
-        .executeTakeFirst()
+    // Only an "allSites" ask correlates the rows IT creates into one batch,
+    // so its admin gets a single combined email once every site is terminal
+    // (the cron sweep sends it — see maybeSendAuditLogExportBatchEmail and the
+    // backstop in processPendingAuditLogExports). "site" rows keep batchId null
+    // and their existing immediate one-row-one-email send.
+    //
+    // Deliberately minted once per ask and stamped ONLY on rows THIS call
+    // inserts: a row reused from (or that lost the race to) an earlier ask via
+    // `existingRows`/`raceLoserRows` below keeps whatever batchId it already
+    // has — possibly null (earlier scope "site" ask), possibly another batch's
+    // id (earlier "allSites" ask) — rather than being folded into this batch.
+    //
+    // KNOWN TRADE-OFF (deliberately not fixed): if the SAME user fires an
+    // "allSites" ask that overlaps one of their own still-in-flight asks for
+    // the SAME (range, reportType), the overlapping site(s) are reused, so they
+    // are NOT siblings of this batch. This batch's summary can then be sent
+    // before those sites finish and omit them, while their results arrive via
+    // their original channel (a per-row email, or the earlier batch's summary)
+    // — i.e. the "one combined email" is split across >1 email for those sites.
+    // No data is lost, and it requires a self-overlapping ask inside the short
+    // in-flight window. Folding reused rows into this batch would mean either
+    // stealing rows from a donor batch (breaking ITS completeness) or racing an
+    // already-claimed row's captured batchId; not worth that complexity here.
+    const batchId = scope === AuditLogExportScope.AllSites ? randomUUID() : null
 
-      if (inserted) {
-        rows.push(inserted)
-        continue
-      }
-
-      // Race-loser path: a concurrent identical ask inserted its in-flight
-      // row between our SELECT and INSERT, so DO NOTHING swallowed ours.
-      // The winner's row is committed and visible by now — use it.
-      rows.push(await inFlightRowQuery.executeTakeFirstOrThrow())
+    // Create the parent batch row before inserting the request rows that FK to
+    // it. Only for an "allSites" ask that actually inserts at least one fresh
+    // row — a "site" ask never batches, and an "allSites" ask whose sites were
+    // all reused stamps no new rows, so it needs no batch row either.
+    if (batchId !== null && siteIdsToInsert.length > 0) {
+      await tx
+        .insertInto("AuditLogExportBatch")
+        .values({ id: batchId })
+        .execute()
     }
 
-    // ONE event per ask, not one per fanned-out row: the delta keeps the
-    // user's requested vocabulary ("Both" included), never the DB fan-out.
+    const insertedRows =
+      siteIdsToInsert.length === 0
+        ? []
+        : await tx
+            .insertInto("AuditLogExportRequest")
+            .values(
+              siteIdsToInsert.map((siteId) => ({
+                siteId,
+                userId,
+                auditLogDateRange,
+                reportType,
+                status: AuditLogExportStatus.Pending,
+                attempts: 0,
+                batchId,
+              })),
+            )
+            // Target the partial unique index so a race-losing row is a
+            // no-op rather than aborting the whole statement.
+            .onConflict((oc) =>
+              oc
+                .columns([
+                  "siteId",
+                  "userId",
+                  "auditLogDateRange",
+                  "reportType",
+                ])
+                .where("status", "in", [...IN_FLIGHT_STATUSES])
+                .doNothing(),
+            )
+            .returningAll()
+            .execute()
+
+    // Race-loser path: a concurrent identical ask may have inserted its
+    // in-flight row for some of `siteIdsToInsert` between the SELECT and the
+    // INSERT above, so DO NOTHING silently skipped exactly those sites — one
+    // more SELECT resolves every winner's row at once. Deliberately NOT
+    // filtered to IN_FLIGHT_STATUSES: the row that caused our conflict was
+    // in-flight at that instant, but by the time this query runs it may
+    // already have been claimed and finished processing (Done/Failed) by a
+    // cron sweep — filtering it out here would silently drop that site from
+    // the response and its audit event despite the ask having been accepted.
+    // A stale row from an unrelated, already-completed past ask for the same
+    // (site, user, range, type) can't be mistaken for the race winner: it
+    // wouldn't have blocked our insert (the partial unique index only covers
+    // in-flight rows), so `raceLoserSiteIds` only contains sites where a
+    // genuinely concurrent insert is racing ours — picking the most recently
+    // created row per site resolves to that one.
+    const insertedSiteIds = new Set(insertedRows.map((row) => row.siteId))
+    const raceLoserSiteIds = siteIdsToInsert.filter(
+      (id) => !insertedSiteIds.has(id),
+    )
+    const raceLoserCandidates =
+      raceLoserSiteIds.length === 0
+        ? []
+        : await tx
+            .selectFrom("AuditLogExportRequest")
+            .where("siteId", "in", raceLoserSiteIds)
+            .where("userId", "=", userId)
+            .where("auditLogDateRange", "=", auditLogDateRange)
+            .where("reportType", "=", reportType)
+            .selectAll()
+            .execute()
+    const latestRaceLoserRowBySiteId = new Map<
+      number,
+      (typeof raceLoserCandidates)[number]
+    >()
+    for (const row of raceLoserCandidates) {
+      const current = latestRaceLoserRowBySiteId.get(row.siteId)
+      if (!current || row.createdAt > current.createdAt) {
+        latestRaceLoserRowBySiteId.set(row.siteId, row)
+      }
+    }
+    const raceLoserRows = [...latestRaceLoserRowBySiteId.values()]
+
+    const rows = [...existingRows, ...insertedRows, ...raceLoserRows]
+
     const requestedBy = await tx
       .selectFrom("User")
       .where("id", "=", userId)
       .selectAll()
       .executeTakeFirstOrThrow()
-    await Promise.all(
-      reportTypes.map((reportType) => {
-        return logAuditLogExportEvent(tx, {
-          eventType: "AuditLogExportCreate",
-          by: requestedBy,
-          siteId,
-          ip,
-          delta: {
-            before: null,
-            after: {
-              auditLogDateRange: auditLogDateRangeByReportType[reportType],
-              reportType,
-            },
-          },
-        })
-      }),
+
+    // One AuditLogExportCreate event per site, batched into the same
+    // multi-row statement (see `logAuditLogExportEvents`) and the same
+    // transaction as the writes above — every ask (new or idempotent-
+    // accepted) is recorded, so agencies can always see who asked to export
+    // their logs.
+    await logAuditLogExportEvents(
+      tx,
+      rows.map((row) => ({
+        eventType: "AuditLogExportCreate" as const,
+        by: requestedBy,
+        siteId: row.siteId,
+        ip,
+        delta: {
+          before: null,
+          after: { auditLogDateRange, reportType },
+        },
+      })),
     )
 
-    // Return every row backing this ask (one for Access/Activity, two for
-    // Both) — existing in-flight rows and fresh inserts alike. The UI ignores
-    // the payload, so the array shape is chosen purely to reflect the fan-out
-    // honestly.
     return rows
   })
 }
@@ -294,6 +379,13 @@ const BATCH_SIZE = 20
 // multipart upload, so a large export never fully materialises in memory.
 const STREAM_CHUNK_SIZE = 500
 
+// Max characters of the (free-text) site name kept in the S3 object key. The
+// key must stay under S3's 1024-byte limit; the rest of the key (prefix, ids,
+// report kind, range slug, extension) is small and bounded, so capping the
+// name here keeps the whole key comfortably within the limit. Uniqueness does
+// not depend on the name — `${requestId}` is already in the key prefix.
+const MAX_SITE_NAME_KEY_SLUG_LENGTH = 100
+
 // A row is moved to `Processing` the moment a sweep claims it, and only moved
 // back to `Pending` by the in-process `catch`. If the worker is killed or
 // redeployed after the claim but before that catch runs, the row would
@@ -319,6 +411,43 @@ const getExportPeriodLabel = (auditLogDateRange: string): string => {
 }
 
 /**
+ * Email-facing period label. An Activity export always covers the whole
+ * picked month (see `resolveAuditLogDateRange`), so the month name alone is
+ * unambiguous. An Access export always runs from the 1st of the CURRENT
+ * month through "now", so two same-month requests produce the identical
+ * `getExportPeriodLabel` output despite covering different day ranges —
+ * include the day boundary so repeat requests aren't indistinguishable in
+ * the subject/body.
+ */
+const getExportPeriodBoundaryLabel = (
+  auditLogDateRange: string,
+  reportType: AuditLogExportReportType,
+): string => {
+  if (reportType !== AuditLogExportReportType.Access) {
+    return getExportPeriodLabel(auditLogDateRange)
+  }
+
+  const { lowerInclusive, upperExclusive } =
+    parseAuditLogDateRange(auditLogDateRange)
+  const lower = parseISO(lowerInclusive)
+  const upperInclusive = addDays(parseISO(upperExclusive), -1)
+
+  if (format(lower, "MMMM yyyy") === format(upperInclusive, "MMMM yyyy")) {
+    return `${format(lower, "d")}–${format(upperInclusive, "d MMMM yyyy")}`
+  }
+  return `${format(lower, "d MMMM yyyy")} – ${format(upperInclusive, "d MMMM yyyy")}`
+}
+
+/**
+ * Absolute, timezone-labelled expiry instant for a Download Window that
+ * started at `completedAt` — dogfooding feedback flagged the previous
+ * relative "expires in N days" copy as ambiguous (relative to an anchor the
+ * recipient never sees).
+ */
+const getExpiryLabel = (completedAt: Date): string =>
+  formatScheduledAtDate(addDays(completedAt, AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS))
+
+/**
  * Slug for the S3 object key, rendering the half-open stored range with an
  * INCLUSIVE end for human readability: `[2026-04-01,2026-05-01)` →
  * `2026-04-01-to-2026-04-30`. Plain calendar arithmetic on the date string —
@@ -332,6 +461,228 @@ const getRangeSlug = (auditLogDateRange: string): string => {
     "yyyy-MM-dd",
   )
   return `${lowerInclusive}-to-${upperInclusive}`
+}
+
+/**
+ * Sends ONE combined email for a whole "allSites" ask once every site it
+ * covers is terminal (Done/Failed) — a no-op unless every sibling is terminal
+ * and the batch has not already been emailed. Driven by the cron sweep
+ * (`processPendingAuditLogExports`), which is both the trigger and the retry
+ * path: a row never calls this inline, so a transient send failure here does
+ * not touch any row's export state and simply retries on the next sweep.
+ *
+ * Exactly-once + bounded-retry is a claim/send/release cycle, all keyed off the
+ * single AuditLogExportBatch row (its `emailedAt`/`emailAttempts`), not the
+ * sibling request rows:
+ *   1. Under an advisory lock scoped to `batchId`, atomically claim the send by
+ *      stamping `emailedAt` and charging `emailAttempts += 1` on the batch row
+ *      — but only if every sibling request is terminal and `emailedAt` is still
+ *      null. Two siblings finishing near-simultaneously (or two sweeps) can't
+ *      both claim: the second to acquire the lock sees the stamp and returns.
+ *   2. Gather download metadata and send the email OUTSIDE the lock (no DB
+ *      connection is held across S3/SMTP).
+ *   3. If the send throws, either release the claim (reset `emailedAt` to null)
+ *      so the next sweep retries, or — once `emailAttempts` has reached
+ *      MAX_ATTEMPTS — leave it stamped and give up, so a permanently failing
+ *      email (bad recipient, template error) is not retried forever. Mirrors
+ *      the per-row `attempts` cap. The claim in (1) guarantees no other caller
+ *      is mid-send while we release.
+ *
+ * Residual window: a crash between the successful send and (nothing) — or
+ * between a failed send and the reset in (3) — mirrors the crash-window the
+ * per-row path already accepts (a Done row whose email never went out).
+ */
+const maybeSendAuditLogExportBatchEmail = async (
+  batchId: string,
+): Promise<void> => {
+  const claim = await db.transaction().execute(async (tx) => {
+    // A bigint key is required by the single-argument overload of
+    // pg_advisory_xact_lock, hence hashtextextended (bigint) over hashtext
+    // (int4). Scoped to this batchId so unrelated batches never contend on
+    // the same lock.
+    await sql`select pg_advisory_xact_lock(hashtextextended(${batchId}, 0))`.execute(
+      tx,
+    )
+
+    const batch = await tx
+      .selectFrom("AuditLogExportBatch")
+      .where("id", "=", batchId)
+      .selectAll()
+      .executeTakeFirst()
+
+    // No such batch, or already claimed/sent/given-up.
+    if (!batch || batch.emailedAt !== null) {
+      return null
+    }
+
+    const siblings = await tx
+      .selectFrom("AuditLogExportRequest")
+      .where("batchId", "=", batchId)
+      .selectAll()
+      .execute()
+
+    if (siblings.length === 0) {
+      return null
+    }
+
+    const allTerminal = siblings.every(
+      (row) =>
+        row.status === AuditLogExportStatus.Done ||
+        row.status === AuditLogExportStatus.Failed,
+    )
+
+    if (!allTerminal) {
+      return null
+    }
+
+    // Claim the send and charge the attempt on the batch row under the lock.
+    // The `emailedAt` stamp — not the lock itself — is the durable record that
+    // the send is claimed (the lock only serialises the check; it remembers
+    // nothing once released).
+    await tx
+      .updateTable("AuditLogExportBatch")
+      .set({
+        emailedAt: new Date(),
+        emailAttempts: sql<number>`"emailAttempts" + 1`,
+      })
+      .where("id", "=", batchId)
+      .execute()
+
+    return {
+      siblings,
+      // Post-increment attempt number for this send.
+      attempt: batch.emailAttempts + 1,
+    }
+  })
+
+  if (claim === null) {
+    return
+  }
+
+  const { siblings: readySiblings, attempt } = claim
+
+  // The claim (batchEmailedAt) is now stamped and committed. If anything below
+  // — token sealing, S3 metadata, or the send itself — throws, we either
+  // release the claim so a later sweep retries, or (once attempts are
+  // exhausted) leave it stamped and give up — see the catch below.
+  try {
+    // Every row in a batch shares the same requester, month, and report type —
+    // they're all created by one "allSites" ask (see
+    // createAuditLogExportRequestsForSites).
+    const firstSibling = readySiblings[0]
+    if (!firstSibling) {
+      // Unreachable: guarded by the `readySiblings.length === 0` check above.
+      return
+    }
+    const { userId, auditLogDateRange, reportType } = firstSibling
+
+    const [user, sites] = await Promise.all([
+      db
+        .selectFrom("User")
+        .where("User.id", "=", userId)
+        .where("User.deletedAt", "is", null)
+        .select(["email"])
+        .executeTakeFirst(),
+      db
+        .selectFrom("Site")
+        .where(
+          "id",
+          "in",
+          readySiblings.map((row) => row.siteId),
+        )
+        .select(["id", "name", "config"])
+        .execute(),
+    ])
+
+    if (!user) {
+      logger.warn(
+        { batchId, userId },
+        "Batch requester no longer exists; skipping batch email",
+      )
+      return
+    }
+
+    const siteNameById = new Map(
+      sites.map((site) => [site.id, site.config?.siteName || site.name]),
+    )
+    const report = REPORT_BY_TYPE[reportType]
+    const bucket = getStudioAssetsBucketName()
+
+    // Sorted alphabetically by site name so a batch of dozens of sites is
+    // scannable rather than left in arbitrary DB query order.
+    const failedSiteNames = readySiblings
+      .filter(
+        (row) =>
+          row.status !== AuditLogExportStatus.Done || row.objectKey === null,
+      )
+      .map((row) => siteNameById.get(row.siteId) ?? `Site ${row.siteId}`)
+      .sort((a, b) => a.localeCompare(b))
+
+    const links = (
+      await Promise.all(
+        readySiblings
+          // A Done row always has both `objectKey` and `completedAt` stamped
+          // together (see the single-export path above) — narrow both here.
+          .filter(
+            (
+              row,
+            ): row is typeof row & { objectKey: string; completedAt: Date } =>
+              row.status === AuditLogExportStatus.Done &&
+              row.objectKey !== null,
+          )
+          .map(async (row) => {
+            const siteName =
+              siteNameById.get(row.siteId) ?? `Site ${row.siteId}`
+            const token = await sealAuditLogExportToken(row.id)
+            const url = `${env.NEXT_PUBLIC_APP_URL}/api/audit-log-exports/download?token=${encodeURIComponent(token)}`
+            const sizeInBytes = await getFileSize({
+              Bucket: bucket,
+              Key: row.objectKey,
+            })
+            return {
+              siteName,
+              url,
+              sizeInBytes,
+              expiresAt: getExpiryLabel(row.completedAt),
+            }
+          }),
+      )
+    ).sort((a, b) => a.siteName.localeCompare(b.siteName))
+
+    await sendAuditLogExportBatchReadyEmail({
+      recipientEmail: user.email,
+      month: getExportPeriodBoundaryLabel(auditLogDateRange, reportType),
+      reportLabel: report.label,
+      links,
+      failedSiteNames,
+    })
+  } catch (error) {
+    if (attempt < MAX_ATTEMPTS) {
+      // Release the claim so the next sweep retries this batch's email. Only
+      // this call holds the claim (the atomic stamp above serialises callers),
+      // so resetting to null cannot race a concurrent send. `emailAttempts` was
+      // already charged under the lock, so the retry count carries over.
+      await db
+        .updateTable("AuditLogExportBatch")
+        .set({ emailedAt: null })
+        .where("id", "=", batchId)
+        .execute()
+      logger.warn(
+        { error, batchId, attempt },
+        "Batch audit log export email failed; will retry on a later sweep",
+      )
+      return
+    }
+
+    // Exhausted retries — leave `emailedAt` stamped so no later sweep picks
+    // this batch up again. A permanently-failing send (bad recipient, template
+    // error) is given up here rather than retried forever, mirroring the
+    // per-row `attempts` cap.
+    logger.error(
+      { error, batchId, attempt },
+      "Batch audit log export email exhausted retries; giving up",
+    )
+  }
 }
 
 /**
@@ -433,6 +784,9 @@ export const processAuditLogExportRequest = async (
       })
       .where("id", "=", requestId)
       .execute()
+    // This row is now terminal. If it belongs to a batch, the cron sweep sends
+    // the one combined email once every sibling is terminal — never inline, so
+    // this row's Failed state can't hinge on an email send.
     return
   }
 
@@ -443,8 +797,7 @@ export const processAuditLogExportRequest = async (
   try {
     // Step 3 + 4: run the row's single report query, serialise to CSV
     // (always — header-only CSV for zero rows), upload, and sign a download
-    // URL. `Both` requests were fanned out into two rows at request time, so
-    // one row is always exactly one report.
+    // URL. Every row is exactly one report.
     const report = REPORT_BY_TYPE[request.reportType]
     const bucket = getStudioAssetsBucketName()
 
@@ -507,9 +860,7 @@ export const processAuditLogExportRequest = async (
     // Step 4: no reusable artifact — run the row's single report query and
     // stream it straight to S3: Postgres cursor → CSV transform → multipart
     // upload, so a large export never buffers fully in memory. An empty result
-    // yields an empty object (matching the former buffered behaviour). `Both`
-    // requests were fanned out into two rows at request time, so one row is
-    // always exactly one report.
+    // yields an empty object (matching the former buffered behaviour).
     if (objectKey === null) {
       // The CSV's contents are frozen the moment the report query's cursor
       // starts reading, so the completeness instant is captured HERE —
@@ -533,8 +884,22 @@ export const processAuditLogExportRequest = async (
       rowStream.on("error", (error) => csvStream.destroy(error))
       rowStream.pipe(csvStream)
 
+      // Reuse the `site` already loaded above (Step 2) instead of re-querying.
       const rangeSlug = getRangeSlug(request.auditLogDateRange)
-      objectKey = `audit-log-exports/${request.siteId}/${requestId}/${report.kind.toLowerCase()}-${rangeSlug}.csv`
+      // Site names are free text (schemas/site.ts enforces only non-empty
+      // after trim) and land directly in the S3 key; an unreplaced "/" would
+      // nest extra "directories" under this request's key prefix. Any other
+      // character (quotes, unicode, control chars) is safe here — it's the
+      // download filename derived from this key that needs escaping, which
+      // `uploadAuditLogExport` now handles via `content-disposition`. The name
+      // is also truncated: a valid but very long name could otherwise push the
+      // key past S3's 1024-byte limit and fail an otherwise-fine export. The
+      // key stays unique regardless — `${requestId}` is already in the prefix,
+      // so the (possibly truncated) name is purely a human-readable label.
+      const siteNameSlug = site.name
+        .replace(/[/\\]/g, "-")
+        .slice(0, MAX_SITE_NAME_KEY_SLUG_LENGTH)
+      objectKey = `audit-log-exports/${request.siteId}/${requestId}/${siteNameSlug}-${report.kind.toLowerCase()}-${rangeSlug}.csv`
 
       try {
         await uploadAuditLogExport({ key: objectKey, body: csvStream })
@@ -578,12 +943,13 @@ export const processAuditLogExportRequest = async (
     // Done row whose email never went out (sweeps skip Done rows); that window
     // is two adjacent awaits, versus the deterministic dead-link window the
     // old ordering had on every single request.
+    const completedAt = queriedAt ?? new Date()
     await db
       .updateTable("AuditLogExportRequest")
       .set({
         status: AuditLogExportStatus.Done,
         objectKey,
-        completedAt: queriedAt ?? new Date(),
+        completedAt,
         errorMessage: null,
         updatedAt: new Date(),
       })
@@ -595,16 +961,24 @@ export const processAuditLogExportRequest = async (
       "Audit log export CSV ready for delivery",
     )
 
-    // Step 6: one ready email with the single download link. A "Both" user
-    // request is two independent rows, so it yields two independent emails —
-    // no cross-job coordination.
-    await sendAuditLogExportReadyEmail({
-      recipientEmail,
-      siteName,
-      month: getExportPeriodLabel(request.auditLogDateRange),
-      link: { label: report.label, url },
-      sizeInBytes: objectSize,
-    })
+    // Step 6: a row belonging to a batch never sends its own email inline — the
+    // cron sweep sends the one combined email once every sibling site is
+    // terminal (see processPendingAuditLogExports). Keeping it out of this
+    // try means a batch-email failure can never revert this already-Done row.
+    // A per-row (scope:"site") request sends its single ready email as before.
+    if (request.batchId === null) {
+      await sendAuditLogExportReadyEmail({
+        recipientEmail,
+        siteName,
+        month: getExportPeriodBoundaryLabel(
+          request.auditLogDateRange,
+          request.reportType,
+        ),
+        link: { label: report.label, url },
+        sizeInBytes: objectSize,
+        expiresAt: getExpiryLabel(completedAt),
+      })
+    }
   } catch (error) {
     // Step 7: failure handling. The claim already charged this attempt, so
     // `request.attempts` (post-claim) is authoritative — re-queue or fail.
@@ -642,19 +1016,27 @@ export const processAuditLogExportRequest = async (
       .where("id", "=", requestId)
       .execute()
 
-    try {
-      // Reuse the site/user already loaded above instead of re-querying.
-      await sendAuditLogExportFailedEmail({
-        recipientEmail,
-        siteName,
-        month: getExportPeriodLabel(request.auditLogDateRange),
-      })
-    } catch (emailError) {
-      // The row is already Failed; a failed failure-email must not throw.
-      logger.error(
-        { error: emailError, requestId },
-        "Failed to send audit log export failure email",
-      )
+    // A batched row never sends its failure email inline — the cron sweep
+    // sends the one combined email once every sibling is terminal. A per-row
+    // (scope:"site") request emails its own failure, best-effort.
+    if (request.batchId === null) {
+      try {
+        // Reuse the site/user already loaded above instead of re-querying.
+        await sendAuditLogExportFailedEmail({
+          recipientEmail,
+          siteName,
+          month: getExportPeriodBoundaryLabel(
+            request.auditLogDateRange,
+            request.reportType,
+          ),
+        })
+      } catch (emailError) {
+        // The row is already Failed; a failed failure-email must not throw.
+        logger.error(
+          { error: emailError, requestId },
+          "Failed to send audit log export failure email",
+        )
+      }
     }
   }
 }
@@ -672,11 +1054,32 @@ export const processAuditLogExportRequest = async (
  * a batch slot on a guaranteed no-op — and with `BATCH_SIZE` candidates
  * ordered oldest-first, enough exhausted rows would starve newer `Pending`
  * exports out of every sweep.
+ *
+ * After processing rows, the sweep sends the combined email for any "allSites"
+ * batch whose siblings are ALL terminal but which has not yet been emailed.
+ * This is the sole trigger AND the retry path for that email: rows never send
+ * it inline, so a transient send failure just leaves the batch un-emailed and
+ * retries on the next sweep (see `maybeSendAuditLogExportBatchEmail`).
  */
 export const processPendingAuditLogExports = async (): Promise<void> => {
   // A single cutoff instant for the whole sweep: the batch selector and the
   // per-row atomic claim must agree on what counts as "stale".
   const staleCutoff = new Date(Date.now() - PROCESSING_LEASE_MS)
+
+  // NOTE: If a job dies at the third attempt in the processing state,
+  // we need to manually mark it as failed here so that it is not skipped forever
+  // as the `pending` query omits `Processing` requests that are beyond the stale time.
+  await db
+    .updateTable("AuditLogExportRequest")
+    .set({
+      status: AuditLogExportStatus.Failed,
+      errorMessage: "Export processing lease expired after exhausting retries",
+      updatedAt: new Date(),
+    })
+    .where("status", "=", AuditLogExportStatus.Processing)
+    .where("updatedAt", "<", staleCutoff)
+    .where("attempts", ">=", MAX_ATTEMPTS)
+    .execute()
 
   const pending = await db
     .selectFrom("AuditLogExportRequest")
@@ -704,6 +1107,57 @@ export const processPendingAuditLogExports = async (): Promise<void> => {
       logger.error(
         { error, requestId: id },
         "Unexpected error processing audit log export request in batch",
+      )
+    }
+  }
+
+  // Batches ready for their combined email: not yet emailed, with at least one
+  // sibling request and none still in-flight (so every sibling is terminal — a
+  // request is either in-flight or terminal). `maybeSend...` re-checks this and
+  // claims atomically under a lock, so this list only needs to be a superset of
+  // what's actually sendable.
+  const batchesToEmail = await db
+    .selectFrom("AuditLogExportBatch")
+    .where("emailedAt", "is", null)
+    .where((eb) =>
+      eb.and([
+        eb.exists(
+          eb
+            .selectFrom("AuditLogExportRequest")
+            .whereRef(
+              "AuditLogExportRequest.batchId",
+              "=",
+              "AuditLogExportBatch.id",
+            )
+            .select("id"),
+        ),
+        eb.not(
+          eb.exists(
+            eb
+              .selectFrom("AuditLogExportRequest")
+              .whereRef(
+                "AuditLogExportRequest.batchId",
+                "=",
+                "AuditLogExportBatch.id",
+              )
+              .where("status", "in", IN_FLIGHT_STATUSES)
+              .select("id"),
+          ),
+        ),
+      ]),
+    )
+    .select("id")
+    .execute()
+
+  for (const { id } of batchesToEmail) {
+    try {
+      await maybeSendAuditLogExportBatchEmail(id)
+    } catch (error) {
+      // Left un-emailed; the next sweep retries. Guard the loop so one failing
+      // batch can't halt the rest.
+      logger.error(
+        { error, batchId: id },
+        "Failed to send audit log export batch email",
       )
     }
   }

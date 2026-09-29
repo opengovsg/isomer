@@ -83,11 +83,11 @@ For an agent to read a frame reliably:
 
 ## PR review
 
-There is no automated review bot. Risk tiering and review grading are done via the `pr-review` skill, which reads `docs/risk-taxonomy.md` (file-glob rules, reversibility modifiers, hot paths) and diffs the current branch against `main`. It posts a single informational comment — it never approves, requests changes, or merges.
+Automated review has two separate roles. GitHub Copilot code review can leave code findings on pull requests, guided by the repository-wide `.github/copilot-instructions.md` and scoped rules under `.github/instructions/`. The `pr-review` skill handles repository-specific risk tiering and review grading: it reads `docs/risk-taxonomy.md` (file-glob rules, reversibility modifiers, hot paths), diffs the current branch against `main`, and posts a single informational comment. It never approves, requests changes, or merges.
 
 For a full human-authority review (the typical "review this PR" ask), use the `review-pr` skill instead; `pr-review` is for automation-style grading only.
 
-All PRs require human approval before merge, regardless of risk tier.
+All PRs require human approval before merge, regardless of automated findings or risk tier.
 
 ## GitHub PR conventions
 

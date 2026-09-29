@@ -21,6 +21,10 @@ export const HomepageLayout = ({
           layout,
           site,
           permalink: page.permalink,
+          // renderPageContent special-cases layout === "homepage" to treat
+          // the first block (expected to be a Hero) as the page's h1, since
+          // this is the only layout with no dedicated page header.
+          headingLevel: 2,
         })}
       </div>
     </Skeleton>

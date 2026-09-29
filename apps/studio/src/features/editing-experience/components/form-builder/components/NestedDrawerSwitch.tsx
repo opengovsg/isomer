@@ -7,12 +7,14 @@ import { ComplexEditorNestedDrawer } from "./ComplexEditorNestedDrawer"
 type NestedDrawerSwitchProps = ArrayLayoutProps &
   UseArrayReturn & {
     children: ReactNode
+    banner?: ReactNode
   }
 /**
  * Renders the nested item drawer when a row is selected, the list otherwise.
  */
 export const NestedDrawerSwitch = ({
   children,
+  banner,
   selectedIndex,
   cells,
   renderers,
@@ -44,6 +46,7 @@ export const NestedDrawerSwitch = ({
       handleRemoveItem={handleRemoveSelectedItem(path, selectedIndex)}
       selectedIndex={selectedIndex}
       maxIndex={data - 1}
+      banner={banner}
     />
   )
 }

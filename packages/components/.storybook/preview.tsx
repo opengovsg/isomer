@@ -79,7 +79,31 @@ const CUSTOM_GSIB_VIEWPORTS = {
   },
 }
 
+const ISOMER_QUERY_PARAM_KEYS = ["filters", "page", "search"] as const
+
+const resetIsomerQueryParams = () => {
+  const url = new URL(window.location.href)
+  const previousSearch = url.search
+
+  ISOMER_QUERY_PARAM_KEYS.forEach((key) => url.searchParams.delete(key))
+
+  if (url.search !== previousSearch) {
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${url.pathname}${url.search}${url.hash}`,
+    )
+  }
+}
+
 const preview: Preview = {
+  // Storybook's preview iframe is a single persistent document, so query
+  // state written by a previous story can leak into the next one. Reset only
+  // Isomer's parameters before rendering; Storybook owns the other parameters
+  // in the search string. A lifecycle hook keeps this side effect out of
+  // React's render phase, which is required by Chromatic's story renderer.
+  beforeEach: resetIsomerQueryParams,
+
   loaders: [
     mswLoader(async () => {
       const worker = setupWorker()

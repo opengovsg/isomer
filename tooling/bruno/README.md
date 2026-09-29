@@ -16,10 +16,10 @@ The SearchSG requests require an API key (a base64-encoded Basic-auth credential
 
 1. Copy the sample environment file:
    ```
-   cp tooling/bruno/searchsg/environments/production.bru.sample \
+   cp tooling/bruno/searchsg/environments/sample.bru\
       tooling/bruno/searchsg/environments/production.bru
    ```
-2. Open `production.bru` and fill in `searchsgApiKey` with the value from
+2. Open `Bruno` and select the `production.bru` environment and fill in `searchsgApiKey` with the value from
    **1Password "Isomer Next"** or **AWS Secrets Manager** at `/searchsg/api-key`.
 3. The real `production.bru` is gitignored — never commit it.
 

@@ -199,6 +199,8 @@ type DisplayableAuditLogEvent = Exclude<
   | "PermissionUpdate"
   | "SchedulePublish"
   | "CancelSchedulePublish"
+  | "ScheduleUnpublish"
+  | "CancelScheduleUnpublish"
 >
 
 const AUDIT_LOGS_EVENTS_QUERIES: Record<
@@ -209,6 +211,7 @@ const AUDIT_LOGS_EVENTS_QUERIES: Record<
   ResourceUpdate: sql<string>`CONCAT('"', al.delta -> 'before' -> 'resource' ->> 'title', '" (', al.delta -> 'before' -> 'resource' ->> 'type', ' ', al.delta -> 'before' -> 'resource' ->> 'id', ') updated')`,
   ResourceDelete: sql<string>`CONCAT('"', al.delta -> 'before' ->> 'title', '" (', al.delta -> 'before' ->> 'type', ' ', al.delta -> 'before' ->> 'id', ') deleted')`,
   Publish: sql<string>`CONCAT('"', al.metadata ->> 'title', '" (', al.metadata ->> 'type', ' ', al.metadata ->> 'id', ') published to Version No. ', al.delta -> 'after' ->> 'versionNum')`,
+  Unpublish: sql<string>`CONCAT('"', al.metadata ->> 'title', '" (', al.metadata ->> 'type', ' ', al.metadata ->> 'id', ') unpublished')`,
   NavbarUpdate: sql<string>`'Navbar has been updated'`,
   FooterUpdate: sql<string>`'Footer has been updated'`,
   SiteConfigUpdate: sql<string>`'Site configuration has been updated'`,
@@ -218,8 +221,8 @@ const AUDIT_LOGS_EVENTS_QUERIES: Record<
   PermissionDelete: sql<string>`CONCAT('Permission (', al.delta -> 'before' ->> 'role', ') revoked from ', pu.email)`,
   Login: sql<string>`CONCAT('Login attempt by ', SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 1), ' from IP address ', SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 2))`,
   Logout: sql<string>`CONCAT('Logout attempt by ', al.delta -> 'before' ->> 'email', ' from IP address ', al."ipAddress")`,
-  // The delta stores the REQUESTED report type (possibly "Both"), so the
-  // description reflects the user's ask, not the fanned-out DB rows.
+  // The delta stores the REQUESTED report type, so the description reflects
+  // the user's ask verbatim.
   AuditLogExportCreate: sql<string>`CONCAT('Audit log export requested for ', al.delta -> 'after' ->> 'auditLogDateRange', ' (', al.delta -> 'after' ->> 'reportType', ')')`,
 }
 
@@ -337,6 +340,8 @@ export const activityReportQuery = ({
         .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.ResourceDelete])
         .when("al.eventType", "=", AuditLogEvent.Publish)
         .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.Publish])
+        .when("al.eventType", "=", AuditLogEvent.Unpublish)
+        .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.Unpublish])
         .when("al.eventType", "=", AuditLogEvent.NavbarUpdate)
         .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.NavbarUpdate])
         .when("al.eventType", "=", AuditLogEvent.FooterUpdate)

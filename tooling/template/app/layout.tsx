@@ -1,8 +1,12 @@
 import type { Metadata } from "next"
+import type { CSSProperties } from "react"
 import config from "@/data/config.json"
+import footer from "@/data/footer.json"
 import "@/styles/globals.css"
 import sitemap from "@/sitemap.json"
 import {
+  getSiteJsonLd,
+  type IsomerSitemap,
   RenderApplicationHeadScripts,
   RenderApplicationScripts,
 } from "@opengovsg/isomer-components"
@@ -22,12 +26,14 @@ const inter = Inter({
   variable: "--font-inter",
 })
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: config.site.siteName || "Isomer",
-  url: config.site.url || "https://www.isomer.gov.sg",
-}
+const jsonLd = getSiteJsonLd({
+  site: {
+    ...config.site,
+    assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
+  },
+  footer,
+  sitemap: sitemap as IsomerSitemap,
+})
 
 export const dynamic = "force-static"
 
@@ -39,11 +45,28 @@ export const metadata: Metadata = {
 }
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
+  const localTheme =
+    process.env.NODE_ENV === "development"
+      ? ({
+          "--color-brand-canvas-default": config.colors.brand.canvas.default,
+          "--color-brand-canvas-alt": config.colors.brand.canvas.alt,
+          "--color-brand-canvas-backdrop": config.colors.brand.canvas.backdrop,
+          "--color-brand-canvas-inverse": config.colors.brand.canvas.inverse,
+          "--color-brand-interaction-default":
+            config.colors.brand.interaction.default,
+          "--color-brand-interaction-hover":
+            config.colors.brand.interaction.hover,
+          "--color-brand-interaction-pressed":
+            config.colors.brand.interaction.pressed,
+        } as CSSProperties)
+      : undefined
+
   return (
     <html
       lang="en"
       data-theme={config.site.theme || "isomer-next"}
       className={inter.variable}
+      style={localTheme}
     >
       <head>
         <RenderApplicationHeadScripts
@@ -66,6 +89,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
             isomerMsClarityId:
               process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
           }}
+          themeColors={config.colors}
           ScriptComponent={Script}
         />
 

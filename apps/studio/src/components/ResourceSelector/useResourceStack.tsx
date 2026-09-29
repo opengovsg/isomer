@@ -1,6 +1,7 @@
 import type { ResourceItemContent } from "~/schemas/resource"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 interface UseResourceStackProps {
   siteId: number
@@ -13,6 +14,8 @@ export const useResourceStack = ({
   selectedResourceId,
   existingResource,
 }: UseResourceStackProps) => {
+  const [rootPage] = trpc.page.getRootPage.useSuspenseQuery({ siteId })
+
   const { data: pendingMovedItemAncestryStack } =
     trpc.resource.getAncestryStack.useQuery({
       siteId: String(siteId),
@@ -20,11 +23,26 @@ export const useResourceStack = ({
       includeSelf: !!selectedResourceId,
     })
 
+  // NOTE: getAncestryStack's underlying query excludes RootPage from its base
+  // case, so it always resolves to an empty stack when selectedResourceId is
+  // the homepage's own id. Special-case it here so reopening a homepage
+  // selection still highlights "Home" instead of showing nothing selected.
+  const isSelectedResourceHome = selectedResourceId === rootPage.id
+  const homeAncestryItem: ResourceItemContent = {
+    title: "Home",
+    permalink: "",
+    type: ResourceType.RootPage,
+    id: rootPage.id,
+    parentId: null,
+  }
+
   // NOTE: This is the stack of user's navigation through the resource tree
   // NOTE: We should always start the stack from `/` (root)
   // so that the user will see a full overview of their site structure
   const [resourceStack, setResourceStack] = useState<ResourceItemContent[]>(
-    pendingMovedItemAncestryStack ?? [],
+    isSelectedResourceHome
+      ? [homeAncestryItem]
+      : (pendingMovedItemAncestryStack ?? []),
   )
 
   useEffect(() => {
@@ -71,6 +89,7 @@ export const useResourceStack = ({
 
   // currently do not support fetching next page for search
   return {
+    rootPage,
     fullPermalink,
     moveDestPermalink,
     moveDest,

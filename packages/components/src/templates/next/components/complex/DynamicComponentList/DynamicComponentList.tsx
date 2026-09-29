@@ -15,6 +15,7 @@ export const DynamicComponentList = ({
   dataSource: { resourceId, sort, filters },
   component,
   layout,
+  headingLevel,
 }: DynamicComponentListProps) => {
   const params = useMemo(
     () => ({
@@ -50,6 +51,7 @@ export const DynamicComponentList = ({
           {...component}
           layout={layout}
           isLoading={isLoading}
+          headingLevel={headingLevel}
         />
       ))
 

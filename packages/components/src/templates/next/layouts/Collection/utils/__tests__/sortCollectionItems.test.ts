@@ -485,4 +485,209 @@ describe("sortCollectionItems", () => {
       expect(sortedTwo.map((item) => item.date)).toEqual(expectedDates)
     })
   })
+
+  describe("sortBy date filter", () => {
+    const filterId = "550e8400-e29b-41d4-a716-446655440000"
+
+    it("should sort items by a date filter start date (newest first)", () => {
+      const items = [
+        createItem({
+          title: "Oldest",
+          dateTagged: [{ id: filterId, date: "2023-01-01" }],
+        }),
+        createItem({
+          title: "Newest",
+          dateTagged: [{ id: filterId, date: "2023-12-31" }],
+        }),
+        createItem({
+          title: "Middle",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+      ]
+
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: `date-filter-${filterId}-desc`,
+      })
+
+      expect(sorted.map((item) => item.title)).toEqual([
+        "Newest",
+        "Middle",
+        "Oldest",
+      ])
+    })
+
+    it("should sort items by a date filter start date (oldest first)", () => {
+      // Arrange
+      const items = [
+        createItem({
+          title: "Oldest",
+          dateTagged: [{ id: filterId, date: "2023-01-01" }],
+        }),
+        createItem({
+          title: "Newest",
+          dateTagged: [{ id: filterId, date: "2023-12-31" }],
+        }),
+        createItem({
+          title: "Middle",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+      ]
+
+      // Act
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: `date-filter-${filterId}-asc`,
+      })
+
+      // Assert
+      expect(sorted.map((item) => item.title)).toEqual([
+        "Oldest",
+        "Middle",
+        "Newest",
+      ])
+    })
+
+    it("should place items without the date filter value at the end", () => {
+      const items = [
+        createItem({
+          title: "No date",
+        }),
+        createItem({
+          title: "Has date",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+      ]
+
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: `date-filter-${filterId}-asc`,
+      })
+
+      expect(sorted.map((item) => item.title)).toEqual(["Has date", "No date"])
+    })
+
+    it("should use title A → Z as a tiebreaker for the same date filter date", () => {
+      const items = [
+        createItem({
+          title: "Zebra",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+        createItem({
+          title: "Alpha",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+      ]
+
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: `date-filter-${filterId}-desc`,
+      })
+
+      expect(sorted.map((item) => item.title)).toEqual(["Alpha", "Zebra"])
+    })
+
+    it("should sort by last modified when date filter dates and titles are equal", () => {
+      const items = [
+        createItem({
+          title: "Same title",
+          lastModified: "2025-01-01T12:00:00Z",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+        createItem({
+          title: "Same title",
+          lastModified: "2025-03-01T12:00:00Z",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+        createItem({
+          title: "Same title",
+          lastModified: "2025-02-01T12:00:00Z",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+      ]
+
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: `date-filter-${filterId}-desc`,
+      })
+
+      expect(sorted.map((item) => item.lastModified)).toEqual([
+        "2025-03-01T12:00:00Z",
+        "2025-02-01T12:00:00Z",
+        "2025-01-01T12:00:00Z",
+      ])
+    })
+
+    it("should sort by last modified rather than title when date filter dates are equal", () => {
+      // Arrange
+      const items = [
+        createItem({
+          title: "Alpha",
+          lastModified: "2025-01-01T12:00:00Z",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+        createItem({
+          title: "Zebra",
+          lastModified: "2025-03-01T12:00:00Z",
+          dateTagged: [{ id: filterId, date: "2023-06-15" }],
+        }),
+      ]
+
+      // Act
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: `date-filter-${filterId}-desc`,
+      })
+
+      // Assert
+      expect(sorted.map((item) => item.title)).toEqual(["Zebra", "Alpha"])
+    })
+
+    it("should fall back to publish date when both items lack the date filter value", () => {
+      const items = [
+        createItem({
+          title: "Older publish",
+          date: new Date("2023-01-01"),
+        }),
+        createItem({
+          title: "Newer publish",
+          date: new Date("2023-12-31"),
+        }),
+      ]
+
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: `date-filter-${filterId}-desc`,
+      })
+
+      expect(sorted.map((item) => item.title)).toEqual([
+        "Newer publish",
+        "Older publish",
+      ])
+    })
+  })
+
+  describe("malformed sortOrder", () => {
+    it("should sort by published date newest first instead of trusting dirty data", () => {
+      // Arrange
+      const items = [
+        createItem({ title: "Oldest", date: new Date("2023-01-01") }),
+        createItem({ title: "Newest", date: new Date("2023-12-31") }),
+        createItem({ title: "Middle", date: new Date("2023-06-15") }),
+      ]
+
+      // Act
+      const sorted = sortCollectionItems({
+        items,
+        sortOrder: "totally-made-up",
+      })
+
+      // Assert
+      expect(sorted.map((item) => item.title)).toEqual([
+        "Newest",
+        "Middle",
+        "Oldest",
+      ])
+    })
+  })
 })

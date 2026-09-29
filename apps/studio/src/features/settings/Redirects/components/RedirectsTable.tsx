@@ -1,4 +1,8 @@
-import type { OnChangeFn, SortingState } from "@tanstack/react-table"
+import type {
+  OnChangeFn,
+  SortingState,
+  StockFeatures,
+} from "@tanstack/react-table"
 import {
   Box,
   HStack,
@@ -13,9 +17,8 @@ import {
 import { useToast } from "@opengovsg/design-system-react"
 import {
   createColumnHelper,
-  getCoreRowModel,
-  getPaginationRowModel,
-  useReactTable,
+  stockFeatures,
+  useTable,
 } from "@tanstack/react-table"
 import { useEffect, useMemo, useState } from "react"
 import {
@@ -54,7 +57,7 @@ import {
 import { DeleteRedirectModal } from "./DeleteRedirectModal"
 import { RedirectsEmptyPlaceholder } from "./RedirectsEmptyPlaceholder"
 
-const columnsHelper = createColumnHelper<RedirectRow>()
+const columnsHelper = createColumnHelper<StockFeatures, RedirectRow>()
 
 // Copy shown when a reference destination's page has since been deleted. Kept
 // here (the render site) so it can change without touching the resolution logic.
@@ -299,83 +302,84 @@ const getColumns = (
   onDeleteClick: (row: RedirectRow) => void,
   infoByDestination: Map<string, ResolvedDestination>,
   canDelete: boolean,
-) => [
-  columnsHelper.accessor("source", {
-    minSize: 250,
-    enableSorting: true,
-    header: ({ column }) => (
-      <SortableHeader
-        label="When someone visits"
-        isSorted={column.getIsSorted()}
-        onClick={column.getToggleSortingHandler()}
-      />
-    ),
-    cell: ({ row }) => <SourceCell source={row.original.source} />,
-  }),
-  columnsHelper.accessor("destination", {
-    minSize: 250,
-    enableSorting: true,
-    header: ({ column }) => (
-      <SortableHeader
-        label="Redirect them to"
-        isSorted={column.getIsSorted()}
-        onClick={column.getToggleSortingHandler()}
-      />
-    ),
-    cell: ({ getValue }) => (
-      <DestinationCell
-        display={getDestinationDisplay(getValue(), infoByDestination)}
-        showWarning={shouldWarnDestination(getValue(), infoByDestination)}
-      />
-    ),
-  }),
-  columnsHelper.accessor("publishedAt", {
-    size: 80,
-    enableSorting: true,
-    header: ({ column }) => (
-      <SortableHeader
-        label="Added"
-        isSorted={column.getIsSorted()}
-        onClick={column.getToggleSortingHandler()}
-      />
-    ),
-    cell: ({ getValue }) => (
-      <Text textStyle="body-2" color="base.content.medium">
-        {formatAddedAt(getValue())}
-      </Text>
-    ),
-  }),
-  ...(canDelete
-    ? [
-        columnsHelper.display({
-          id: "delete",
-          size: 80,
-          enableSorting: false,
-          header: () => (
-            <TableHeader textStyle="subhead-2" color="base.content.medium">
-              <VisuallyHidden>Actions</VisuallyHidden>
-            </TableHeader>
-          ),
-          // The button is inline-flex, so on a text baseline it claims a hair
-          // more than its own 2.5rem and rounds the row up past ROW_HEIGHT.
-          // A flex wrapper takes it out of the line box, keeping this row
-          // exactly as tall as one without the column.
-          cell: ({ row }) => (
-            <Box display="flex" alignItems="center" h="2.5rem">
-              <IconButton
-                aria-label={`Delete redirect for ${row.original.source}`}
-                icon={<BiTrash />}
-                variant="clear"
-                colorScheme="critical"
-                size="sm"
-                onClick={() => onDeleteClick(row.original)}
-              />
-            </Box>
-          ),
-        }),
-      ]
-    : []),
-]
+) =>
+  columnsHelper.columns([
+    columnsHelper.accessor("source", {
+      minSize: 250,
+      enableSorting: true,
+      header: ({ column }) => (
+        <SortableHeader
+          label="When someone visits"
+          isSorted={column.getIsSorted()}
+          onClick={column.getToggleSortingHandler()}
+        />
+      ),
+      cell: ({ row }) => <SourceCell source={row.original.source} />,
+    }),
+    columnsHelper.accessor("destination", {
+      minSize: 250,
+      enableSorting: true,
+      header: ({ column }) => (
+        <SortableHeader
+          label="Redirect them to"
+          isSorted={column.getIsSorted()}
+          onClick={column.getToggleSortingHandler()}
+        />
+      ),
+      cell: ({ getValue }) => (
+        <DestinationCell
+          display={getDestinationDisplay(getValue(), infoByDestination)}
+          showWarning={shouldWarnDestination(getValue(), infoByDestination)}
+        />
+      ),
+    }),
+    columnsHelper.accessor("publishedAt", {
+      size: 80,
+      enableSorting: true,
+      header: ({ column }) => (
+        <SortableHeader
+          label="Added"
+          isSorted={column.getIsSorted()}
+          onClick={column.getToggleSortingHandler()}
+        />
+      ),
+      cell: ({ getValue }) => (
+        <Text textStyle="body-2" color="base.content.medium">
+          {formatAddedAt(getValue())}
+        </Text>
+      ),
+    }),
+    ...(canDelete
+      ? [
+          columnsHelper.display({
+            id: "delete",
+            size: 80,
+            enableSorting: false,
+            header: () => (
+              <TableHeader textStyle="subhead-2" color="base.content.medium">
+                <VisuallyHidden>Actions</VisuallyHidden>
+              </TableHeader>
+            ),
+            // The button is inline-flex, so on a text baseline it claims a hair
+            // more than its own 2.5rem and rounds the row up past ROW_HEIGHT.
+            // A flex wrapper takes it out of the line box, keeping this row
+            // exactly as tall as one without the column.
+            cell: ({ row }) => (
+              <Box display="flex" alignItems="center" h="2.5rem">
+                <IconButton
+                  aria-label={`Delete redirect for ${row.original.source}`}
+                  icon={<BiTrash />}
+                  variant="clear"
+                  colorScheme="critical"
+                  size="sm"
+                  onClick={() => onDeleteClick(row.original)}
+                />
+              </Box>
+            ),
+          }),
+        ]
+      : []),
+  ])
 
 interface RedirectsTableProps {
   siteId: number
@@ -484,7 +488,8 @@ export const RedirectsTable = ({
       },
     )
 
-  const tableInstance = useReactTable<RedirectRow>({
+  const tableInstance = useTable({
+    features: stockFeatures,
     columns,
     data: redirects,
     state: { sorting, pagination },
@@ -495,8 +500,6 @@ export const RedirectsTable = ({
     // click) would show headers as sorted without actually applying them
     enableMultiSort: false,
     autoResetPageIndex: false,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     onPaginationChange,
     pageCount,
   })

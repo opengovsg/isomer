@@ -32,6 +32,12 @@ export const DEFAULT_BLOCKS = {
     source: "Describe who said the quote.",
     imageAlt: "Enter a descriptive alt text.",
   },
+  button: {
+    type: "button",
+    alignment: "left",
+    buttonLabel: "Enter your button text.",
+    buttonUrl: "https://www.google.com",
+  },
   callout: {
     type: "callout",
     content: {
@@ -42,7 +48,7 @@ export const DEFAULT_BLOCKS = {
           content: [
             {
               type: "text",
-              text: "Callout content",
+              text: "We’re closing applications for this position on Thursday, July 3rd. Make sure to apply by then.",
             },
           ],
         },
@@ -169,6 +175,26 @@ export const DEFAULT_BLOCKS = {
       {
         label: "Highlight core values",
         value: "Integrity",
+      },
+    ],
+  },
+  steps: {
+    type: "steps",
+    title: "How to apply",
+    subtitle: "Tell users what to expect before they start.",
+    numberStyle: "numeral",
+    steps: [
+      {
+        title: "Check if you are eligible",
+        description: "Say who this is for, in one sentence.",
+      },
+      {
+        title: "Prepare your documents",
+        description: "List what users need to have on hand.",
+      },
+      {
+        title: "Submit your application",
+        description: "Say how long it takes and what happens next.",
       },
     ],
   },
@@ -340,6 +366,13 @@ export const BLOCK_TO_META: Record<
     usageText: "Share key wins or highlight your values in short words.",
     imageSrc: "/assets/block-images/KeyStatistics.png",
   },
+  steps: {
+    label: "Steps",
+    description: "Break a process into numbered steps.",
+    usageText:
+      "Show users what to do in order, like applying for a scheme or making a report.",
+    imageSrc: "/assets/block-images/Steps.png",
+  },
   infobar: {
     label: "Call-to-Action",
     description: "Add a strong Call-to-Action.",
@@ -390,6 +423,7 @@ export const BLOCK_TO_META: Record<
     label: "Audio",
     description: "Embed an audio from Spotify or Apple Podcast.",
     usageText: "The audio will be playable directly on the page.",
+    imageSrc: "/assets/block-images/Podcast.png",
   },
   video: {
     label: "Video",
@@ -417,7 +451,6 @@ export const BLOCK_TO_META: Record<
     imageSrc: "/assets/block-images/LogoCloud.png",
   },
   collectionblock: {
-    // TODO: Add image source
     label: "Link a Collection",
     description: "Automatically display recent items from a Collection.",
     usageText:
@@ -425,10 +458,10 @@ export const BLOCK_TO_META: Record<
     imageSrc: "/assets/block-images/CollectionBlock.png",
   },
   imagegallery: {
-    // TODO: Add image source
     label: "Image gallery",
     description: "Display up to 30 images in a slideshow.",
     usageText: "Share memorable moments from an event.",
+    imageSrc: "/assets/block-images/ImageGallery.png",
   },
   blockquote: {
     label: "Quote",
@@ -437,11 +470,18 @@ export const BLOCK_TO_META: Record<
       "Humanise your site with powerful quotes or stories from real people.",
     imageSrc: "/assets/block-images/Blockquote.png",
   },
+  button: {
+    label: "Button",
+    description: "Add one or two buttons that link somewhere.",
+    usageText:
+      "Use when you want to show a clear next step or two, without a heading or coloured background.",
+    imageSrc: "/assets/block-images/Button.png",
+  },
   contactinformation: {
     label: "Contact information",
     description: "Display contact information.",
     usageText: "Let people know how they can reach you.",
-    // TODO: Add imageSrc
+    imageSrc: "/assets/block-images/ContactInformation.png",
   },
   dynamiccomponentlist: {
     label: "Dynamic component list",
@@ -473,6 +513,7 @@ export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "callout",
       "blockquote",
       "imagegallery",
+      "button",
     ],
   },
   { label: "Embed external content", types: ["map", "video"] },
@@ -490,11 +531,12 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
       "contentpic",
       "infobar",
       "imagegallery",
+      "button",
     ],
   },
   {
     label: "Add a new section",
-    types: ["infocards", "infocols", "keystatistics"],
+    types: ["infocards", "infocols", "keystatistics", "steps"],
   },
   { label: "Embed external content", types: ["map", "video", "formsg"] },
 ]
@@ -519,6 +561,7 @@ export const getHomepageAllowedBlocks = ({
       "infocards",
       "keystatistics",
       "infocols",
+      "steps",
       "infopic",
       "infobar",
       "blockquote",

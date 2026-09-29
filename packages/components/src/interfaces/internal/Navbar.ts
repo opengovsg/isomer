@@ -60,6 +60,9 @@ export const NavbarItemsSchema = Type.Object({
     format: "navbar",
     minItems: 1,
     maxItems: 8,
+    errorMessage: {
+      maxItems: "You can only have up to 8 first-level links.",
+    },
   }),
 })
 

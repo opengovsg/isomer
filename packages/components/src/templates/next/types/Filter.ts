@@ -1,4 +1,9 @@
 import type { TagCategoryDisplay } from "~/types/constants"
+import type { DateFilterSidebarVisibility } from "~/types/page"
+import { format, isValid, parse } from "date-fns"
+import { TAG_CATEGORY_TYPE } from "~/types/constants"
+
+const ISO_DATE_FORMAT = "yyyy-MM-dd"
 
 export interface FilterItem {
   id: string
@@ -6,12 +11,23 @@ export interface FilterItem {
   count: number
 }
 
+// TODO: refactor to use type union instead of type property
 export interface Filter {
   id: string
   label: string
   items: FilterItem[]
   // NOTE: only set for tag-category filters; category/year filters omit this.
   display?: TagCategoryDisplay
+  // NOTE: only set for date-type tag-category filters (see getDateFilters) —
+  // text-category/year filters omit this. `items` are the fixed status
+  // buckets (ongoing/upcoming/ended); the sidebar also renders a date-range
+  // control for this filter (see Filter.tsx), whose value lives in
+  // `AppliedFilter.dateRange`, not `items`.
+  type?: typeof TAG_CATEGORY_TYPE.Date
+  showStatusLabelsFilter?: DateFilterSidebarVisibility["showStatusLabelsFilter"]
+  showDateRangeFilter?: DateFilterSidebarVisibility["showDateRangeFilter"]
+  /** Cards with a dateTagged entry for this filter; set by getDateFilters. */
+  dateTaggedItemCount?: number
 }
 
 interface AppliedFilterItem {
@@ -21,10 +37,54 @@ interface AppliedFilterItem {
 export interface AppliedFilter {
   id: Filter["id"]
   items: AppliedFilterItem[]
+  // NOTE: only meaningful when the filter is date-type. Independent of
+  // `items` (the bucket selection) — both apply together (AND'd) when both
+  // are set. Dates are "yyyy-MM-dd" strings, same convention as the
+  // underlying `dateTagged` schema field. Either bound may be omitted for
+  // an open-ended range.
+  dateRange?: { start?: string; end?: string }
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value)
+
+// ISO calendar date (YYYY-MM-DD) from URL-parsed filter JSON. Rejects time, locale,
+// and calendrically impossible dates (e.g. 2026-02-30).
+const isIsoDateString = (value: string): boolean => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false
+  }
+
+  const parsed = parse(value, ISO_DATE_FORMAT, new Date())
+  return isValid(parsed) && format(parsed, ISO_DATE_FORMAT) === value
+}
+
+const isOptionalIsoDateString = (value: unknown): value is string | undefined =>
+  value === undefined || (typeof value === "string" && isIsoDateString(value))
+
+const isValidDateRange = (value: unknown): boolean => {
+  if (value === undefined) {
+    return true
+  }
+
+  if (
+    !isRecord(value) ||
+    !isOptionalIsoDateString(value.start) ||
+    !isOptionalIsoDateString(value.end)
+  ) {
+    return false
+  }
+
+  if (value.start === undefined && value.end === undefined) {
+    return false
+  }
+
+  return (
+    value.start === undefined ||
+    value.end === undefined ||
+    value.start <= value.end
+  )
+}
 
 export const isAppliedFilters = (value: unknown): value is AppliedFilter[] =>
   Array.isArray(value) &&
@@ -35,7 +95,8 @@ export const isAppliedFilters = (value: unknown): value is AppliedFilter[] =>
       Array.isArray(filter.items) &&
       filter.items.every(
         (item) => isRecord(item) && typeof item.id === "string",
-      ),
+      ) &&
+      isValidDateRange(filter.dateRange),
   )
 
 export interface FilterProps {
@@ -43,5 +104,9 @@ export interface FilterProps {
   appliedFilters: AppliedFilter[]
   setAppliedFilters: (appliedFilters: AppliedFilter[]) => void
   handleFilterToggle: (filterId: string, itemId: string) => void
+  handleDateRangeChange?: (
+    filterId: string,
+    dateRange: AppliedFilter["dateRange"],
+  ) => void
   handleClearFilter: () => void
 }

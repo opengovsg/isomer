@@ -469,6 +469,30 @@ describe("auditLogExport.query", () => {
       })
     })
 
+    it("resolves a Description for Unpublish events instead of falling through to '-'", async () => {
+      const { site } = await setupSite()
+      const user = await setupUser({ email: "editor@agency.gov.sg" })
+
+      await insertAuditLog({
+        eventType: AuditLogEvent.Unpublish,
+        userId: user.id,
+        siteId: site.id,
+        delta: { before: { versionId: "1" }, after: null },
+        metadata: { title: "Homepage", type: "Page", id: "42" },
+        createdAt: new Date("2024-03-10T02:00:00Z"),
+      })
+
+      const rows = await getActivityReportRows({
+        siteId: site.id,
+        auditLogDateRange,
+      })
+
+      expect(rows).toHaveLength(1)
+      expect(rows[0]?.['"Event type"']).toBe(AuditLogEvent.Unpublish)
+      expect(rows[0]?.Description).toBe('"Homepage" (Page 42) unpublished')
+      expect(rows[0]?.Description).not.toBe("-")
+    })
+
     it("buckets a boundary event by SGT, not UTC", async () => {
       const { site } = await setupSite()
       const user = await setupUser({ email: "editor@agency.gov.sg" })
@@ -801,8 +825,8 @@ describe("auditLogExport.query", () => {
       const { site } = await setupSite()
       const admin = await setupUser({ email: "exporter@agency.gov.sg" })
 
-      // The delta stores what was ASKED for — the requested report type may
-      // be "Both", which never exists as a DB row type.
+      // The delta stores what was ASKED for, so the description echoes it
+      // verbatim regardless of report type.
       await insertAuditLog({
         eventType: AuditLogEvent.AuditLogExportCreate,
         userId: admin.id,
@@ -811,7 +835,7 @@ describe("auditLogExport.query", () => {
           before: null,
           after: {
             auditLogDateRange: "[2024-02-01,2024-03-01)",
-            reportType: "Both",
+            reportType: "Activity",
           },
         },
         createdAt: new Date("2024-03-14T02:00:00Z"),
@@ -825,7 +849,7 @@ describe("auditLogExport.query", () => {
       expect(rows).toHaveLength(1)
       expect(rows[0]?.['"Event type"']).toBe(AuditLogEvent.AuditLogExportCreate)
       expect(rows[0]?.Description).toBe(
-        "Audit log export requested for [2024-02-01,2024-03-01) (Both)",
+        "Audit log export requested for [2024-02-01,2024-03-01) (Activity)",
       )
     })
 

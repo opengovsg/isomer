@@ -1,8 +1,6 @@
 import type {
   ArticlePagePageProps,
   CollectionPagePageProps,
-  FileRefPageProps,
-  IsomerComponent,
   IsomerSitemap,
   LinkRefPageProps,
 } from "@opengovsg/isomer-components"
@@ -17,6 +15,13 @@ import {
 } from "~/server/modules/resource/resource.service"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+// Projected in SQL from the first top-level image block of the page body, so
+// the body itself never has to leave the database
+export interface FirstImage {
+  src: string | null
+  alt: string | null
+}
+
 type ResourceDto = Omit<
   Resource,
   "id" | "parentId" | "publishedVersionId" | "draftBlobId"
@@ -27,8 +32,9 @@ type ResourceDto = Omit<
   thumbnail?: string
   category?: string
   tagged?: string | null
+  dateTagged?: string | null
   date?: string
-  content?: string
+  firstImage?: FirstImage | null
 }
 
 const parseTagged = (raw: string | null | undefined): string[] | undefined => {
@@ -36,6 +42,20 @@ const parseTagged = (raw: string | null | undefined): string[] | undefined => {
   try {
     const parsed = JSON.parse(raw) as unknown
     return Array.isArray(parsed) ? (parsed as string[]) : undefined
+  } catch {
+    return undefined
+  }
+}
+
+const parseDateTagged = (
+  raw: string | null | undefined,
+): ArticlePagePageProps["dateTagged"] => {
+  if (!raw) return undefined
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    return Array.isArray(parsed)
+      ? (parsed as ArticlePagePageProps["dateTagged"])
+      : undefined
   } catch {
     return undefined
   }
@@ -84,15 +104,10 @@ const getSitemapTreeFromArray = (
   // TODO: Sort the children by the page ordering if the FolderMeta resource exists
   return children.map((resource) => {
     const permalink = `${path}${resource.permalink}`
-    const parsedContent =
-      typeof resource.content === "string" && resource.content !== ""
-        ? (JSON.parse(resource.content) as IsomerComponent[])
-        : undefined
-    const firstImageComponent = Array.isArray(parsedContent)
-      ? parsedContent.find(
-          (item): item is Extract<IsomerComponent, { type: "image" }> =>
-            item.type === "image",
-        )
+    // Null when the body has no image block at all; `src` is null only when a
+    // block exists but omits it
+    const firstImage = resource.firstImage?.src
+      ? { src: resource.firstImage.src, alt: resource.firstImage.alt ?? "" }
       : undefined
 
     if (resource.type === ResourceType.Page) {
@@ -108,12 +123,7 @@ const getSitemapTreeFromArray = (
           src: resource.thumbnail ?? "",
           alt: "",
         },
-        firstImage: firstImageComponent
-          ? {
-              src: firstImageComponent.src,
-              alt: firstImageComponent.alt,
-            }
-          : undefined,
+        firstImage,
       }
     } else if (resource.type === ResourceType.CollectionPage) {
       return {
@@ -126,17 +136,13 @@ const getSitemapTreeFromArray = (
         permalink,
         category: resource.category ?? "Others",
         tagged: parseTagged(resource.tagged),
+        dateTagged: parseDateTagged(resource.dateTagged),
         date: resource.date ?? "",
         image: {
           src: resource.thumbnail ?? "",
           alt: "",
         },
-        firstImage: firstImageComponent
-          ? {
-              src: firstImageComponent.src,
-              alt: firstImageComponent.alt,
-            }
-          : undefined,
+        firstImage,
       }
     } else if (resource.type === ResourceType.CollectionLink) {
       return {
@@ -149,17 +155,13 @@ const getSitemapTreeFromArray = (
         permalink,
         category: resource.category ?? "Others",
         tagged: parseTagged(resource.tagged),
+        dateTagged: parseDateTagged(resource.dateTagged),
         date: resource.date ?? "",
         image: {
           src: resource.thumbnail ?? "",
           alt: "",
         },
-        firstImage: firstImageComponent
-          ? {
-              src: firstImageComponent.src,
-              alt: firstImageComponent.alt,
-            }
-          : undefined,
+        firstImage,
         ref: "/",
       }
     }
@@ -189,12 +191,7 @@ const getSitemapTreeFromArray = (
       image: !!indexPage?.thumbnail
         ? { src: indexPage.thumbnail, alt: "" }
         : undefined,
-      firstImage: firstImageComponent
-        ? {
-            src: firstImageComponent.src,
-            alt: firstImageComponent.alt,
-          }
-        : undefined,
+      firstImage,
       children: getSitemapTreeFromArray(
         resources,
         resource.id,
@@ -285,7 +282,6 @@ export const injectTagMappings = async (
 
   const childPageProps = draftBlobOfResource.content.page as
     | ArticlePagePageProps
-    | FileRefPageProps
     | LinkRefPageProps
 
   const collectionPageProps = publishedIndexBlob.content
@@ -300,6 +296,7 @@ export const injectTagMappings = async (
     // we cast to all the possible `page` props
     // of a collection item
     childPageProps.tagged,
+    childPageProps.dateTagged,
     collectionPageProps.tagCategories,
     resource.id,
     resource.parentId,
@@ -310,6 +307,7 @@ export const injectTagMappings = async (
 const _injectTagMappings = (
   sitemap: IsomerSitemap,
   tagged: ArticlePagePageProps["tagged"],
+  dateTagged: ArticlePagePageProps["dateTagged"],
   tagCategories: CollectionPagePageProps["tagCategories"],
   childId: CollectionItemResourceDto["id"],
   collectionId: CollectionItemResourceDto["parentId"],
@@ -317,7 +315,7 @@ const _injectTagMappings = (
   // NOTE: If the child id matches,
   // inject the tags
   if (sitemap.id === childId) {
-    return { ...sitemap, tagged }
+    return { ...sitemap, tagged, dateTagged }
   }
 
   // NOTE: If the collection id matches,
@@ -333,7 +331,14 @@ const _injectTagMappings = (
         tagCategories,
       },
       children: sitemap.children?.map((child) =>
-        _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
+        _injectTagMappings(
+          child,
+          tagged,
+          dateTagged,
+          tagCategories,
+          childId,
+          collectionId,
+        ),
       ),
     }
   }
@@ -343,7 +348,14 @@ const _injectTagMappings = (
   return {
     ...sitemap,
     children: sitemap.children?.map((child) =>
-      _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
+      _injectTagMappings(
+        child,
+        tagged,
+        dateTagged,
+        tagCategories,
+        childId,
+        collectionId,
+      ),
     ),
   }
 }

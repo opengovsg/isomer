@@ -17,4 +17,5 @@ export const AccordionSchema = Type.Object(
 
 export type AccordionProps = Static<typeof AccordionSchema> & {
   site: IsomerSiteProps
+  headingLevel: number
 }
