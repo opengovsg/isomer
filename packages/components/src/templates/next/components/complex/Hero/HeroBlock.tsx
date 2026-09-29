@@ -35,32 +35,45 @@ const heroBlockStyles = tv({
       default: {},
       inverse: {},
     },
-    // On mobile the text always stacks above the image; the position only
-    // affects the side-by-side layout on large screens.
+    // Right: copy above image on small screens. Left: image above copy on small
+    // screens. Position only affects side-by-side layout from `lg` upward.
     imagePosition: {
       [HERO_BLOCK_IMAGE_POSITION.right]: {
         section: "lg:flex-row",
         textColumn: "lg:justify-end lg:pl-10 lg:pr-8",
       },
       [HERO_BLOCK_IMAGE_POSITION.left]: {
-        section: "lg:flex-row-reverse",
+        section: "max-lg:flex-col-reverse lg:flex-row-reverse",
         textColumn: "lg:justify-start lg:pl-8 lg:pr-10",
       },
     },
     imageEdge: {
       straight: {},
       curved: {
-        // `36cqw` is 36% of the hero, so the circle starts at the column's left edge. Desktop only.
         section: "lg:[container-type:inline-size]",
-        // The curve starts just left of the column split, so the straight
-        // `lg:pr-8` leaves the copy almost touching it.
-        textColumn: "lg:pr-24",
-        imageColumn:
-          "lg:-ml-[2%] lg:w-[52%] lg:[clip-path:circle(36cqw_at_69.23%_50%)]",
       },
     },
   },
   compoundVariants: [
+    {
+      imagePosition: HERO_BLOCK_IMAGE_POSITION.right,
+      imageEdge: HERO_BLOCK_IMAGE_EDGE.curved,
+      class: {
+        // Desktop: center sits one radius in from the inner edge, so the
+        // curve is tangent to the 50% split.
+        imageColumn:
+          "max-lg:[clip-path:path('M_0_1.5rem_Q_50%_0_100%_1.5rem_L_100%_100%_L_0_100%_Z')] lg:[clip-path:circle(36cqw_at_36cqw_50%)]",
+      },
+    },
+    {
+      imagePosition: HERO_BLOCK_IMAGE_POSITION.left,
+      imageEdge: HERO_BLOCK_IMAGE_EDGE.curved,
+      class: {
+        // Desktop: mirrored so the curve is tangent to the 50% split.
+        imageColumn:
+          "max-lg:[clip-path:path('M_0_0_L_100%_0_L_100%_calc(100%-1.5rem)_Q_50%_100%_0_calc(100%-1.5rem)_Z')] lg:[clip-path:circle(36cqw_at_calc(100%_-_36cqw)_50%)]",
+      },
+    },
     {
       theme: "default",
       imageEdge: HERO_BLOCK_IMAGE_EDGE.straight,
@@ -107,8 +120,7 @@ export const HeroBlock = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   backgroundUrl,
-  imagePosition = HERO_BLOCK_IMAGE_POSITION.right,
-  imageEdge = HERO_BLOCK_IMAGE_EDGE.straight,
+  blockImage,
   site,
   theme = "default",
   headingLevel,
@@ -116,7 +128,11 @@ export const HeroBlock = ({
   const heroTextColour = HERO_THEME_MAPPINGS.text[theme]
   const heroButton = HERO_THEME_MAPPINGS.button[theme]
   const Tag = getHeadingTag(headingLevel)
-  const styles = heroBlockStyles({ theme, imageEdge, imagePosition })
+  const styles = heroBlockStyles({
+    theme,
+    imageEdge: blockImage?.imageEdge,
+    imagePosition: blockImage?.imagePosition,
+  })
 
   return (
     <section className={styles.section()}>

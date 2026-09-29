@@ -6,7 +6,7 @@ import { omit } from "lodash-es"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
-import { ARRAY_RADIO_FORMAT } from "../format"
+import { ARRAY_RADIO_FORMAT, HERO_BLOCK_IMAGE_FORMAT } from "../format"
 import { generateImageSrcSchema } from "./Image"
 
 export const HERO_STYLE = {
@@ -132,39 +132,36 @@ const HeroBlockSchema = Type.Composite(
     Type.Object({
       variant: Type.Literal(HERO_STYLE.block, { default: HERO_STYLE.block }),
       backgroundUrl: BackgroundUrlSchema,
-      // Keep `right` first. Studio's radio selects the first option when the
-      // value is missing, and AJV ignores `default` inside an anyOf.
-      imagePosition: Type.Optional(
-        Type.Union(
-          [
-            Type.Literal(HERO_BLOCK_IMAGE_POSITION.right, {
-              title: "Right",
-            }),
-            Type.Literal(HERO_BLOCK_IMAGE_POSITION.left, {
-              title: "Left",
-            }),
-          ],
+      blockImage: Type.Optional(
+        Type.Object(
           {
-            title: "Image position",
-            format: ARRAY_RADIO_FORMAT,
-            type: "string",
-            default: HERO_BLOCK_IMAGE_POSITION.right,
+            imagePosition: Type.Union(
+              [
+                Type.Literal(HERO_BLOCK_IMAGE_POSITION.right),
+                Type.Literal(HERO_BLOCK_IMAGE_POSITION.left),
+              ],
+              {
+                type: "string",
+                default: HERO_BLOCK_IMAGE_POSITION.right,
+              },
+            ),
+            imageEdge: Type.Union(
+              [
+                Type.Literal(HERO_BLOCK_IMAGE_EDGE.straight),
+                Type.Literal(HERO_BLOCK_IMAGE_EDGE.curved),
+              ],
+              {
+                type: "string",
+                default: HERO_BLOCK_IMAGE_EDGE.straight,
+              },
+            ),
           },
-        ),
-      ),
-      imageEdge: Type.Optional(
-        Type.Union(
-          [
-            Type.Literal(HERO_BLOCK_IMAGE_EDGE.straight, {
-              title: "Straight (Default)",
-            }),
-            Type.Literal(HERO_BLOCK_IMAGE_EDGE.curved, { title: "Curved" }),
-          ],
           {
-            title: "Image edge",
-            default: HERO_BLOCK_IMAGE_EDGE.straight,
-            format: ARRAY_RADIO_FORMAT,
-            type: "string",
+            format: HERO_BLOCK_IMAGE_FORMAT,
+            default: {
+              imagePosition: HERO_BLOCK_IMAGE_POSITION.right,
+              imageEdge: HERO_BLOCK_IMAGE_EDGE.straight,
+            },
           },
         ),
       ),

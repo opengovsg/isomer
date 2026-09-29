@@ -76,71 +76,46 @@ export const ColourBlockInverse: Story = {
   },
 }
 
-export const ColourBlockImageLeft: Story = {
+const colourBlockImageMatrixArgs = {
+  headingLevel: 1,
+  site: generateSiteConfig(),
+  backgroundUrl:
+    "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  title: "Block hero image position and edge",
+  subtitle:
+    "Use mobile and tablet viewports to check stack order and curved edges.",
+  buttonLabel: "Main CTA",
+  buttonUrl: "/",
+  variant: "block" as const,
+  theme: "default" as const,
+}
+
+/** Image position × image edge matrix for Block hero. */
+export const ColourBlockRightStraight: Story = {
   args: {
-    headingLevel: 1,
-    site: generateSiteConfig(),
-    backgroundUrl:
-      "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Your hero title goes here, please keep it short and sweet",
-    subtitle:
-      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
-    buttonLabel: "Main CTA",
-    buttonUrl: "/",
-    secondaryButtonLabel: "Sub CTA",
-    secondaryButtonUrl: "/",
-    variant: "block",
-    imagePosition: "left",
-    theme: "default",
+    ...colourBlockImageMatrixArgs,
+    blockImage: { imagePosition: "right", imageEdge: "straight" },
   },
 }
 
-export const ColourBlockCurvedCutout: Story = {
+export const ColourBlockRightCurved: Story = {
   args: {
-    headingLevel: 1,
-    site: generateSiteConfig(),
-    backgroundUrl:
-      "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Riverside Secondary School",
-    subtitle:
-      "Find our term dates, apply through Direct School Admission, or browse the CCAs and clubs open to your child.",
-    buttonLabel: "Search",
-    buttonUrl: "/",
-    variant: "block",
-    theme: "inverse",
-    imageEdge: "curved",
+    ...colourBlockImageMatrixArgs,
+    blockImage: { imagePosition: "right", imageEdge: "curved" },
   },
 }
 
-export const ColourBlockCurvedCutoutDefault: Story = {
+export const ColourBlockLeftStraight: Story = {
   args: {
-    headingLevel: 1,
-    site: generateSiteConfig(),
-    backgroundUrl:
-      "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Your hero title goes here, please keep it short and sweet",
-    subtitle:
-      "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
-    buttonLabel: "Main CTA",
-    buttonUrl: "/",
-    secondaryButtonLabel: "Sub CTA",
-    secondaryButtonUrl: "/",
-    variant: "block",
-    theme: "default",
-    imageEdge: "curved",
+    ...colourBlockImageMatrixArgs,
+    blockImage: { imagePosition: "left", imageEdge: "straight" },
   },
 }
 
-export const ColourBlockCurvedCutoutTitleOnly: Story = {
+export const ColourBlockLeftCurved: Story = {
   args: {
-    headingLevel: 1,
-    site: generateSiteConfig(),
-    backgroundUrl:
-      "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Short title",
-    variant: "block",
-    theme: "inverse",
-    imageEdge: "curved",
+    ...colourBlockImageMatrixArgs,
+    blockImage: { imagePosition: "left", imageEdge: "curved" },
   },
 }
 
