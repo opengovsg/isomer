@@ -17,8 +17,8 @@ const mockUseInfiniteQuery = vi.hoisted(() => vi.fn())
 
 vi.mock("~/utils/trpc", () => ({
   trpc: {
-    audit: {
-      listResourceUpdates: {
+    version: {
+      listHistory: {
         useInfiniteQuery: (...args: unknown[]) =>
           // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
           mockUseInfiniteQuery(...args),
@@ -96,10 +96,10 @@ describe("HistoryStateDrawer", () => {
     renderDrawer()
 
     // Assert
-    expect(screen.queryByText("No changes yet")).not.toBeNull()
+    expect(screen.queryByText("No published versions yet")).not.toBeNull()
   })
 
-  it("renders one row per ResourceUpdate entry with a View changes button", () => {
+  it("renders one row per version with a View changes button", () => {
     // Arrange
     mockUseInfiniteQuery.mockReturnValue({
       data: {
@@ -108,8 +108,9 @@ describe("HistoryStateDrawer", () => {
             items: [
               {
                 id: "1",
-                createdAt: new Date("2026-01-01T00:00:00Z"),
-                actor: {
+                versionNum: 2,
+                publishedAt: new Date("2026-01-01T00:00:00Z"),
+                publisher: {
                   id: "u1",
                   name: "Alice",
                   email: "alice@example.com",
@@ -119,8 +120,9 @@ describe("HistoryStateDrawer", () => {
               },
               {
                 id: "2",
-                createdAt: new Date("2026-01-02T00:00:00Z"),
-                actor: { id: "u2", name: "Bob", email: "bob@example.com" },
+                versionNum: 1,
+                publishedAt: new Date("2026-01-02T00:00:00Z"),
+                publisher: { id: "u2", name: "Bob", email: "bob@example.com" },
                 beforeContent: EMPTY_PAGE,
                 afterContent: EMPTY_PAGE,
               },
@@ -143,8 +145,10 @@ describe("HistoryStateDrawer", () => {
     expect(
       screen.getAllByRole("button", { name: "View changes" }),
     ).toHaveLength(2)
-    expect(screen.queryByText("Alice")).not.toBeNull()
-    expect(screen.queryByText("Bob")).not.toBeNull()
+    expect(screen.queryByText("Version 2")).not.toBeNull()
+    expect(screen.queryByText("Version 1")).not.toBeNull()
+    expect(screen.queryByText(/Alice/)).not.toBeNull()
+    expect(screen.queryByText(/Bob/)).not.toBeNull()
   })
 
   it("calls fetchNextPage when Load more is clicked", () => {
@@ -183,7 +187,7 @@ describe("HistoryStateDrawer", () => {
 
     // Assert
     expect(screen.queryByText("Loading...")).not.toBeNull()
-    expect(screen.queryByText("No changes yet")).toBeNull()
+    expect(screen.queryByText("No published versions yet")).toBeNull()
   })
 
   it("shows an error state when the query fails, not the empty state", () => {
@@ -206,7 +210,7 @@ describe("HistoryStateDrawer", () => {
         "Something went wrong while loading page history. Please try again.",
       ),
     ).not.toBeNull()
-    expect(screen.queryByText("No changes yet")).toBeNull()
+    expect(screen.queryByText("No published versions yet")).toBeNull()
   })
 
   it("opens the diff modal with the row's data when View changes is clicked", async () => {
@@ -218,8 +222,13 @@ describe("HistoryStateDrawer", () => {
             items: [
               {
                 id: "1",
-                createdAt: new Date("2026-01-01T00:00:00Z"),
-                actor: { id: "u1", name: "Alice", email: "alice@example.com" },
+                versionNum: 2,
+                publishedAt: new Date("2026-01-01T00:00:00Z"),
+                publisher: {
+                  id: "u1",
+                  name: "Alice",
+                  email: "alice@example.com",
+                },
                 beforeContent: EMPTY_PAGE,
                 afterContent: EMPTY_PAGE,
               },
@@ -248,5 +257,45 @@ describe("HistoryStateDrawer", () => {
     expect(
       within(dialog).getByRole("checkbox", { name: "Highlight changes" }),
     ).not.toBeNull()
+  })
+
+  it("opens the diff modal for a first version, which has no previous content", async () => {
+    // Arrange
+    mockUseInfiniteQuery.mockReturnValue({
+      data: {
+        pages: [
+          {
+            items: [
+              {
+                id: "1",
+                versionNum: 1,
+                publishedAt: new Date("2026-01-01T00:00:00Z"),
+                publisher: {
+                  id: "u1",
+                  name: "Alice",
+                  email: "alice@example.com",
+                },
+                beforeContent: null,
+                afterContent: EMPTY_PAGE,
+              },
+            ],
+            nextOffset: null,
+          },
+        ],
+      },
+      fetchNextPage: noop,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      isLoading: false,
+      isError: false,
+    })
+
+    // Act
+    renderDrawer()
+    screen.getByRole("button", { name: "View changes" }).click()
+
+    // Assert
+    const dialog = await screen.findByRole("dialog")
+    expect(within(dialog).queryByText("Changes in version 1")).not.toBeNull()
   })
 })

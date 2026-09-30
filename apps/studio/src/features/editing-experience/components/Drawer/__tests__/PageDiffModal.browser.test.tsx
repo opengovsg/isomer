@@ -102,9 +102,10 @@ const renderModal = (isOpen: boolean) =>
           isOpen={isOpen}
           onClose={noop}
           row={{
-            id: "audit-log-1",
-            createdAt: new Date("2026-01-01T00:00:00Z"),
-            actor: { name: "Alice" },
+            id: "version-1",
+            versionNum: 2,
+            publishedAt: new Date("2026-01-01T00:00:00Z"),
+            publisher: { name: "Alice" },
             beforeContent: BEFORE_PAGE,
             afterContent: AFTER_PAGE,
           }}
@@ -122,14 +123,14 @@ const renderModal = (isOpen: boolean) =>
 describe("PageDiffModal", () => {
   it("does not render modal content when closed", () => {
     renderModal(false)
-    expect(screen.queryByText("Alice")).toBeNull()
+    expect(screen.queryByText("Changes in version 2")).toBeNull()
   })
 
   it("shows the change metadata and a highlight toggle when open", async () => {
     renderModal(true)
 
     await waitFor(() => {
-      expect(screen.queryByText("Alice")).not.toBeNull()
+      expect(screen.queryByText("Changes in version 2")).not.toBeNull()
     })
     expect(
       screen.queryByRole("checkbox", { name: "Highlight changes" }),

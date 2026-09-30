@@ -3,17 +3,12 @@ import {
   AuditLogExportScope,
   createAuditLogExportRequestServerSchema,
   getAuditLogExportWindowSchema,
-  listResourceUpdatesSchema,
 } from "~/schemas/audit"
 import getIP from "~/utils/getClientIp"
 
 import { protectedProcedure, router } from "../../trpc"
-import {
-  bulkValidateUserPermissionsForResources,
-  validateUserIsSiteAdmin,
-} from "../permissions/permissions.service"
+import { validateUserIsSiteAdmin } from "../permissions/permissions.service"
 import { getAdminSiteIds } from "../site/site.service"
-import { listResourceUpdates } from "./audit.service"
 import {
   createAuditLogExportRequestsForSites,
   getAuditLogExportWindow,
@@ -103,21 +98,5 @@ export const auditRouter = router({
           message: "Failed to create audit log export request",
         })
       }
-    }),
-  listResourceUpdates: protectedProcedure
-    .input(listResourceUpdatesSchema)
-    .query(async ({ ctx, input: { pageId, siteId, cursor, limit } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      return listResourceUpdates({
-        resourceId: pageId,
-        siteId,
-        cursor,
-        limit,
-      })
     }),
 })
