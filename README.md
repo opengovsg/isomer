@@ -32,7 +32,7 @@ when provided; otherwise it falls back to its `DB_*` connection settings.
 - Wait for `Published site to the local template at http://localhost:3001` before
   checking the preview. The template checks for file changes every second;
   recompilation can take longer. Studio's publish response only confirms enqueueing.
-- Exports run one at a time and replace `tooling/template/.local-publish` after
+- Exports run one at a time and replace `apps/template/.local-publish` after
   successful generation. This directory is gitignored and initially seeded from
   the template fixtures. The most recently completed publish determines which
   site appears in the preview.
