@@ -15,6 +15,7 @@ import { redirectRouter } from "./redirect/redirect.router"
 import { resourceRouter } from "./resource/resource.router"
 import { siteRouter } from "./site/site.router"
 import { userRouter } from "./user/user.router"
+import { versionRouter } from "./version/version.router"
 import { webhookRouter } from "./webhook/webhook.router"
 import { whitelistRouter } from "./whitelist/whitelist.router"
 
@@ -32,6 +33,7 @@ export const appRouter = router({
   redirect: redirectRouter,
   resource: resourceRouter,
   user: userRouter,
+  version: versionRouter,
   whitelist: whitelistRouter,
   webhook: webhookRouter,
 })

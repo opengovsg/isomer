@@ -25,8 +25,9 @@ import { useDomDiff } from "./useDomDiff"
 
 export interface PageDiffModalRow {
   id: string
-  createdAt: Date
-  actor: { name: string }
+  versionNum: number
+  publishedAt: Date
+  publisher: { name: string }
   beforeContent: IsomerSchema
   afterContent: IsomerSchema
 }
@@ -87,11 +88,10 @@ export const PageDiffModal = ({
             borderColor="base.divider.medium"
           >
             <Box>
-              <Text textStyle="h6">
-                Changes from {format(row.createdAt, "d MMM yyyy, h:mm a")}
-              </Text>
+              <Text textStyle="h6">Changes in version {row.versionNum}</Text>
               <Text textStyle="caption-2" color="base.content.medium">
-                {row.actor.name}
+                Published {format(row.publishedAt, "d MMM yyyy, h:mm a")} by{" "}
+                {row.publisher.name}
               </Text>
             </Box>
             <Flex align="center" gap="0.75rem">
