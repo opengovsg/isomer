@@ -25,6 +25,7 @@ const NewBadge = () => (
   <Badge
     variant="subtle"
     colorScheme="success"
+    bgColor="interaction.success-subtle.default"
     size="xs"
     px="0.5rem"
     py="0.25rem"
@@ -92,7 +93,9 @@ function JsonFormsHeroBlockImageControl({
       </FormControl>
 
       <FormControl isRequired gap="0.5rem">
-        <FormLabel>Image edge</FormLabel>
+        <FormLabel description="Check the desktop layout in Fullscreen, under preview options">
+          Image edge
+        </FormLabel>
         <Radio.RadioGroup
           display="flex"
           flexDir="row"
@@ -109,7 +112,7 @@ function JsonFormsHeroBlockImageControl({
             allowDeselect={false}
             size="sm"
           >
-            Straight (Default)
+            Straight
             <Box mt="0.625rem">
               {imagePosition === HERO_BLOCK_IMAGE_POSITION.left ? (
                 <HeroBlockImagePreviewLeftStraightIcon />
