@@ -90,7 +90,6 @@ const colourBlockImageMatrixArgs = {
   theme: "default" as const,
 }
 
-/** Image position × image edge matrix for Block hero. */
 export const ColourBlockRightStraight: Story = {
   args: {
     ...colourBlockImageMatrixArgs,

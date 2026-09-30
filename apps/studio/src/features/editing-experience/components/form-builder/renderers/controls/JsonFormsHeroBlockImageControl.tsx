@@ -7,19 +7,18 @@ import {
   HERO_BLOCK_IMAGE_EDGE,
   HERO_BLOCK_IMAGE_FORMAT,
   HERO_BLOCK_IMAGE_POSITION,
+  type HeroBlockProps,
 } from "@opengovsg/isomer-components"
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import {
   HeroBlockImagePreviewLeftCurvedIcon,
   HeroBlockImagePreviewLeftStraightIcon,
   HeroBlockImagePreviewRightCurvedIcon,
   HeroBlockImagePreviewRightStraightIcon,
-} from "~/components/icons/heroBlock/HeroBlockImagePreviewIcon"
-import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+} from "./heroBlockImagePreview"
 
-interface HeroBlockImageData {
-  imagePosition?: (typeof HERO_BLOCK_IMAGE_POSITION)[keyof typeof HERO_BLOCK_IMAGE_POSITION]
-  imageEdge?: (typeof HERO_BLOCK_IMAGE_EDGE)[keyof typeof HERO_BLOCK_IMAGE_EDGE]
-}
+type HeroBlockImageData = NonNullable<HeroBlockProps["blockImage"]>
 
 const NewBadge = () => (
   <Badge
@@ -48,13 +47,18 @@ function JsonFormsHeroBlockImageControl({
   handleChange,
   path,
 }: ControlProps): JSX.Element {
-  const blockImage = (data ?? {}) as HeroBlockImageData
+  const blockImage = data as HeroBlockImageData | undefined
+  // Display-only fallbacks when no value is stored yet (schema defaults are
+  // avoided because AJV's `useDefaults` would dirty saved pages).
   const imagePosition =
-    blockImage.imagePosition ?? HERO_BLOCK_IMAGE_POSITION.right
-  const imageEdge = blockImage.imageEdge ?? HERO_BLOCK_IMAGE_EDGE.straight
+    blockImage?.imagePosition ?? HERO_BLOCK_IMAGE_POSITION.right
+  const imageEdge = blockImage?.imageEdge ?? HERO_BLOCK_IMAGE_EDGE.straight
 
   const updateBlockImage = (patch: Partial<HeroBlockImageData>) => {
-    handleChange(path, { ...blockImage, ...patch })
+    handleChange(path, {
+      imagePosition: patch.imagePosition ?? imagePosition,
+      imageEdge: patch.imageEdge ?? imageEdge,
+    })
   }
 
   return (

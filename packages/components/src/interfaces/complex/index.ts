@@ -16,6 +16,7 @@ export {
   HERO_BLOCK_IMAGE_EDGE,
   HERO_STYLE,
   HeroSchema,
+  type HeroBlockProps,
   type HeroProps,
 } from "./Hero"
 export { IframeSchema, type IframeProps } from "./Iframe"

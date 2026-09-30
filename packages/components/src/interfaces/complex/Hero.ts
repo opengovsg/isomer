@@ -140,28 +140,18 @@ const HeroBlockSchema = Type.Composite(
                 Type.Literal(HERO_BLOCK_IMAGE_POSITION.right),
                 Type.Literal(HERO_BLOCK_IMAGE_POSITION.left),
               ],
-              {
-                type: "string",
-                default: HERO_BLOCK_IMAGE_POSITION.right,
-              },
+              { type: "string" },
             ),
             imageEdge: Type.Union(
               [
                 Type.Literal(HERO_BLOCK_IMAGE_EDGE.straight),
                 Type.Literal(HERO_BLOCK_IMAGE_EDGE.curved),
               ],
-              {
-                type: "string",
-                default: HERO_BLOCK_IMAGE_EDGE.straight,
-              },
+              { type: "string" },
             ),
           },
           {
             format: HERO_BLOCK_IMAGE_FORMAT,
-            default: {
-              imagePosition: HERO_BLOCK_IMAGE_POSITION.right,
-              imageEdge: HERO_BLOCK_IMAGE_EDGE.straight,
-            },
           },
         ),
       ),
