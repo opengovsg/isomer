@@ -26,63 +26,67 @@ const setCellKind = (
   return tr.setNodeMarkup(tablePos + 1 + cellOffset, nextType, cell.attrs)
 }
 
-/** After a row move, keep row 0 as header cells and demote headers elsewhere. */
-export const normalizeHeaderRowTypes = (
-  tr: Transaction,
-  tablePos: number,
-  table: ProseMirrorNode,
-  schema: Schema,
-): Transaction => {
-  const map = TableMap.get(table)
-  for (let row = 0; row < map.height; row++) {
-    for (let col = 0; col < map.width; col++) {
-      const cellOffset = map.map[row * map.width + col]
-      if (cellOffset === undefined) continue
-      const cell = table.nodeAt(cellOffset)
-      if (!cell) continue
-      tr = setCellKind(tr, tablePos, cellOffset, cell, schema, row === 0)
-    }
-  }
-  return tr
+export interface HeaderAxisFlags {
+  preserveHeaderRow: boolean
+  preserveHeaderColumn: boolean
 }
 
-/** After a column move, keep column 0 as header cells and demote headers elsewhere. */
-export const normalizeHeaderColumnTypes = (
-  tr: Transaction,
-  tablePos: number,
-  table: ProseMirrorNode,
-  schema: Schema,
-): Transaction => {
-  const map = TableMap.get(table)
-  for (let row = 0; row < map.height; row++) {
-    for (let col = 0; col < map.width; col++) {
-      const cellOffset = map.map[row * map.width + col]
-      if (cellOffset === undefined) continue
-      const cell = table.nodeAt(cellOffset)
-      if (!cell) continue
-      tr = setCellKind(tr, tablePos, cellOffset, cell, schema, col === 0)
-    }
-  }
-  return tr
-}
-
-export const shouldNormalizeHeaderAxis = (
-  table: ProseMirrorNode,
-  axis: Axis,
-): boolean => {
+export const getHeaderAxisFlags = (table: ProseMirrorNode): HeaderAxisFlags => {
   const mapped = { map: TableMap.get(table), table }
-  return axis === "row" ? hasHeaderRow(mapped) : hasHeaderColumn(mapped)
+  return {
+    preserveHeaderRow: hasHeaderRow(mapped),
+    preserveHeaderColumn: hasHeaderColumn(mapped),
+  }
+}
+
+/** Match pre-drag header axes: row drags only when a header row exists, etc. */
+export const shouldNormalizeHeaderTypesAfterDrag = (
+  axis: Axis,
+  flags: HeaderAxisFlags,
+): boolean =>
+  axis === "row" ? flags.preserveHeaderRow : flags.preserveHeaderColumn
+
+const normalizeHeaderTypes = (
+  tr: Transaction,
+  tablePos: number,
+  table: ProseMirrorNode,
+  schema: Schema,
+  flags: HeaderAxisFlags,
+): Transaction => {
+  const { preserveHeaderRow, preserveHeaderColumn } = flags
+  if (!preserveHeaderRow && !preserveHeaderColumn) return tr
+
+  const map = TableMap.get(table)
+  const wantHeaderByCellOffset = new Map<number, boolean>()
+
+  for (let row = 0; row < map.height; row++) {
+    for (let col = 0; col < map.width; col++) {
+      const cellOffset = map.map[row * map.width + col]
+      if (cellOffset === undefined) continue
+      const slotWantsHeader =
+        (preserveHeaderRow && row === 0) || (preserveHeaderColumn && col === 0)
+      wantHeaderByCellOffset.set(
+        cellOffset,
+        (wantHeaderByCellOffset.get(cellOffset) ?? false) || slotWantsHeader,
+      )
+    }
+  }
+
+  for (const [cellOffset, wantHeader] of wantHeaderByCellOffset) {
+    const cell = table.nodeAt(cellOffset)
+    if (!cell) continue
+    tr = setCellKind(tr, tablePos, cellOffset, cell, schema, wantHeader)
+  }
+  return tr
 }
 
 export const applyHeaderAxisNormalization = (
   tr: Transaction,
   tablePos: number,
-  axis: Axis,
+  flags: HeaderAxisFlags,
   schema: Schema,
 ): Transaction => {
   const table = getTableAt(tr.doc, tablePos)
-  if (!table || !shouldNormalizeHeaderAxis(table, axis)) return tr
-  return axis === "row"
-    ? normalizeHeaderRowTypes(tr, tablePos, table, schema)
-    : normalizeHeaderColumnTypes(tr, tablePos, table, schema)
+  if (!table) return tr
+  return normalizeHeaderTypes(tr, tablePos, table, schema, flags)
 }
