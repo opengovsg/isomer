@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { expect, waitFor, within } from "storybook/test"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { PermissionsProvider } from "~/features/permissions"
 
-import PublishButton from "./PublishButton"
+import PublishButton, { PUBLISH_BUTTON_HINT } from "./PublishButton"
 
 // PublishButton renders its own <Can> gate, which reads the ability built by
 // PermissionsProvider from the user's roles. Each story below swaps the
@@ -63,6 +63,23 @@ export const Publisher: Story = {
       expect(
         await canvas.findByRole("button", { name: "Publish" }),
       ).toBeVisible(),
+    )
+  },
+}
+
+// Hovering the enabled button explains that clicking offers both publishing
+// now and scheduling for later.
+export const PublisherHoverHint: Story = {
+  parameters: handlersForRole(resourceHandlers.getRolesFor.publisher()),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", { name: "Publish" })
+    await waitFor(() => expect(button).toBeEnabled())
+    await userEvent.hover(button)
+    // The tooltip renders in a portal outside the story canvas.
+    const body = within(canvasElement.ownerDocument.body)
+    await expect(await body.findByRole("tooltip")).toHaveTextContent(
+      PUBLISH_BUTTON_HINT,
     )
   },
 }

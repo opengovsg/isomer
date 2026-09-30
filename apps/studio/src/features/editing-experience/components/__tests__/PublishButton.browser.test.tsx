@@ -2,13 +2,20 @@ import type { ResourceAbility } from "~/server/modules/permissions/permissions.t
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { AbilityProvider } from "@casl/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { render, screen } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { fireEvent, render, screen } from "@testing-library/react"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { buildPermissionsForResource } from "~/server/modules/permissions/permissions.util"
 import { theme } from "~/theme"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import PublishButton from "../PublishButton"
+import PublishButton, { PUBLISH_BUTTON_HINT } from "../PublishButton"
+
+// Mutable so individual tests can drive the enabled/disabled states.
+const currPage = vi.hoisted(() => ({
+  value: {} as Record<string, unknown>,
+}))
+
+const PENDING_PAGE = { draftBlobId: "draft-1", scheduledAt: null }
 
 // PublishButton is wrapped in withSuspense, whose Suspense wrapper waits for the
 // Next.js router to be ready before mounting children. Provide a ready router.
@@ -34,9 +41,7 @@ vi.mock("~/utils/trpc", () => {
     trpc: {
       page: {
         readPage: {
-          useSuspenseQuery: () => [
-            { draftBlobId: "draft-1", scheduledAt: null },
-          ],
+          useSuspenseQuery: () => [currPage.value],
         },
         publishPage: {
           useMutation: () => ({ mutate: noop, isPending: false }),
@@ -69,6 +74,16 @@ const renderForRole = (role: RoleType) =>
     </ThemeProvider>,
   )
 
+beforeEach(() => {
+  currPage.value = PENDING_PAGE
+})
+
+// TouchableTooltip opens on mouseenter of the span it wraps around the button.
+const hoverPublishButton = async () => {
+  const button = await screen.findByRole("button", { name: "Publish" })
+  fireEvent.mouseEnter(button.parentElement!)
+}
+
 describe("PublishButton permission gating", () => {
   it("renders the Publish button for publishers", () => {
     renderForRole(RoleType.Publisher)
@@ -89,5 +104,34 @@ describe("PublishButton permission gating", () => {
     const button = screen.queryByRole("button", { name: "Publish" })
     expect(button).not.toBeNull()
     expect(button).toBeDisabled()
+  })
+})
+
+describe("PublishButton tooltip", () => {
+  it("shows the publish hint when the button is enabled", async () => {
+    renderForRole(RoleType.Publisher)
+    await hoverPublishButton()
+    expect(await screen.findByRole("tooltip")).toHaveTextContent(
+      PUBLISH_BUTTON_HINT,
+    )
+  })
+
+  it("shows the permission reason instead of the hint for editors", async () => {
+    renderForRole(RoleType.Editor)
+    await hoverPublishButton()
+    const tooltip = await screen.findByRole("tooltip")
+    expect(tooltip).toHaveTextContent(
+      "You need to be a Publisher or Admin to publish.",
+    )
+    expect(tooltip).not.toHaveTextContent(PUBLISH_BUTTON_HINT)
+  })
+
+  it("shows the disabled reason instead of the hint when nothing is pending", async () => {
+    currPage.value = { draftBlobId: null, scheduledAt: null }
+    renderForRole(RoleType.Publisher)
+    await hoverPublishButton()
+    const tooltip = await screen.findByRole("tooltip")
+    expect(tooltip).toHaveTextContent("All changes have been published")
+    expect(tooltip).not.toHaveTextContent(PUBLISH_BUTTON_HINT)
   })
 })
