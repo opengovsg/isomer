@@ -1,3 +1,4 @@
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { SelectExpression } from "kysely"
 import { TRPCError } from "@trpc/server"
 import { ResourceState } from "~prisma/generated/generatedEnums"
@@ -115,4 +116,71 @@ export const incrementVersion = async ({
     tx,
   )
   return { newVersion, previousVersion }
+}
+
+export interface VersionHistoryRow {
+  id: string
+  versionNum: number
+  publishedAt: Date
+  publisher: { id: string; name: string; email: string }
+  // `null` for a resource's first version, which has nothing to diff against.
+  beforeContent: IsomerSchema | null
+  afterContent: IsomerSchema
+}
+
+interface ListVersionHistoryProps {
+  resourceId: number
+  siteId: number
+  cursor: number
+  limit: number
+}
+
+export const listVersionHistory = async ({
+  resourceId,
+  siteId,
+  cursor: offset,
+  limit,
+}: ListVersionHistoryProps): Promise<{
+  items: VersionHistoryRow[]
+  nextOffset: number | null
+}> => {
+  // Fetch one extra row: it tells us whether there's another page, and its
+  // blob is the "before" content for the last row of this page.
+  const rows = await db
+    .selectFrom("Version")
+    .innerJoin("Resource", "Resource.id", "Version.resourceId")
+    .innerJoin("Blob", "Blob.id", "Version.blobId")
+    .innerJoin("User", "User.id", "Version.publishedBy")
+    .select([
+      "Version.id",
+      "Version.versionNum",
+      "Version.publishedAt",
+      "Blob.content",
+      "User.id as publisherId",
+      "User.name as publisherName",
+      "User.email as publisherEmail",
+    ])
+    .where("Version.resourceId", "=", String(resourceId))
+    .where("Resource.siteId", "=", siteId)
+    .orderBy("Version.versionNum", "desc")
+    .offset(offset)
+    .limit(limit + 1)
+    .execute()
+
+  const hasMore = rows.length > limit
+
+  const items = rows.slice(0, limit).map((row, index) => ({
+    id: row.id,
+    versionNum: row.versionNum,
+    publishedAt: row.publishedAt,
+    publisher: {
+      id: row.publisherId,
+      name: row.publisherName,
+      email: row.publisherEmail,
+    },
+    beforeContent: rows[index + 1]?.content ?? null,
+    afterContent: row.content,
+  }))
+
+  return { items, nextOffset: hasMore ? offset + limit : null }
 }
