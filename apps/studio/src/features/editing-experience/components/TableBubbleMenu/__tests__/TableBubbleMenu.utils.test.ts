@@ -9,7 +9,10 @@ import {
   getTableSelectionKind,
   selectionIncludesHeaderColumn,
   selectionIncludesHeaderRow,
+  selectionIsFullyMergedColumn,
+  selectionIsFullyMergedRow,
   type TableHeaderOverlapRect,
+  type TableSelectionRect,
 } from "../TableBubbleMenu.utils"
 
 // Builds a minimal rect for header-overlap helpers (no live editor).
@@ -135,6 +138,159 @@ describe("getTableSelectionKind", () => {
 
   it("classifies the remaining selection shape as multi-cell", () => {
     expect(getTableSelectionKind(partialSelection)).toBe("multi-cell")
+  })
+})
+
+const cellNode = (attrs: { colspan?: number; rowspan?: number }) =>
+  ({ attrs: { colspan: 1, rowspan: 1, ...attrs } }) as unknown as Node
+
+const selectionRect = ({
+  width,
+  height,
+  top = 0,
+  bottom,
+  left = 0,
+  right,
+  cell,
+}: {
+  width: number
+  height: number
+  top?: number
+  bottom?: number
+  left?: number
+  right?: number
+  cell: Node
+}): TableSelectionRect => {
+  const resolvedBottom = bottom ?? top + 1
+  const resolvedRight = right ?? width
+
+  return {
+    tableStart: 1,
+    top,
+    bottom: resolvedBottom,
+    left,
+    right: resolvedRight,
+    map: {
+      width,
+      height,
+      map: Array.from({ length: width * height }, () => 0),
+    } as TableMap,
+    table: {
+      nodeAt: () => cell,
+    } as unknown as Node,
+  }
+}
+
+describe("selectionIsFullyMergedRow", () => {
+  it("is true for a full-width row that is one merged cell", () => {
+    // Arrange
+    const rect = selectionRect({
+      width: 3,
+      height: 3,
+      cell: cellNode({ colspan: 3 }),
+    })
+
+    // Act / Assert
+    expect(selectionIsFullyMergedRow(rect)).toBe(true)
+  })
+
+  it("is false when the row still has multiple cells", () => {
+    // Arrange
+    const rect = selectionRect({
+      width: 3,
+      height: 3,
+      cell: cellNode({ colspan: 2 }),
+    })
+
+    // Act / Assert
+    expect(selectionIsFullyMergedRow(rect)).toBe(false)
+  })
+
+  it("is false when the selection does not span the full table width", () => {
+    // Arrange
+    const rect = selectionRect({
+      width: 3,
+      height: 3,
+      left: 0,
+      right: 2,
+      cell: cellNode({ colspan: 2 }),
+    })
+
+    // Act / Assert
+    expect(selectionIsFullyMergedRow(rect)).toBe(false)
+  })
+
+  it("is false when the selection spans multiple rows", () => {
+    // Arrange
+    const rect = selectionRect({
+      width: 3,
+      height: 3,
+      bottom: 2,
+      cell: cellNode({ colspan: 3 }),
+    })
+
+    // Act / Assert
+    expect(selectionIsFullyMergedRow(rect)).toBe(false)
+  })
+})
+
+describe("selectionIsFullyMergedColumn", () => {
+  it("is true for a full-height column that is one merged cell", () => {
+    // Arrange
+    const rect = selectionRect({
+      width: 3,
+      height: 3,
+      bottom: 3,
+      left: 1,
+      right: 2,
+      cell: cellNode({ rowspan: 3 }),
+    })
+
+    // Act / Assert
+    expect(selectionIsFullyMergedColumn(rect)).toBe(true)
+  })
+
+  it("is false when the column still has multiple cells", () => {
+    // Arrange
+    const rect = selectionRect({
+      width: 3,
+      height: 3,
+      left: 1,
+      right: 2,
+      cell: cellNode({ rowspan: 2 }),
+    })
+
+    // Act / Assert
+    expect(selectionIsFullyMergedColumn(rect)).toBe(false)
+  })
+
+  it("is false when the selection does not span the full table height", () => {
+    // Arrange
+    const rect = selectionRect({
+      width: 3,
+      height: 3,
+      top: 1,
+      bottom: 3,
+      left: 1,
+      right: 2,
+      cell: cellNode({ rowspan: 2 }),
+    })
+
+    // Act / Assert
+    expect(selectionIsFullyMergedColumn(rect)).toBe(false)
+  })
+
+  it("is false when the selection spans multiple columns", () => {
+    // Arrange
+    const rect = selectionRect({
+      width: 3,
+      height: 3,
+      right: 2,
+      cell: cellNode({ rowspan: 3 }),
+    })
+
+    // Act / Assert
+    expect(selectionIsFullyMergedColumn(rect)).toBe(false)
   })
 })
 
