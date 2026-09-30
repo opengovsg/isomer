@@ -24,7 +24,7 @@ export default function HistoryStateDrawer(): JSX.Element {
     isFetchingNextPage,
     isLoading,
     isError,
-  } = trpc.audit.listResourceUpdates.useInfiniteQuery(
+  } = trpc.version.listHistory.useInfiniteQuery(
     { pageId, siteId, limit: PAGE_SIZE },
     { getNextPageParam: (lastPage) => lastPage.nextOffset },
   )
@@ -53,24 +53,34 @@ export default function HistoryStateDrawer(): JSX.Element {
           )}
           {!isLoading && !isError && rows.length === 0 && (
             <Text textStyle="body-2" color="base.content.medium">
-              No changes yet
+              No published versions yet
             </Text>
           )}
           {rows.map((row, index) => (
             <Box key={row.id}>
               <Flex justify="space-between" align="center" py="0.5rem">
                 <Box>
-                  <Text textStyle="body-2">
-                    {format(row.createdAt, "d MMM yyyy, h:mm a")}
-                  </Text>
+                  <Text textStyle="body-2">Version {row.versionNum}</Text>
                   <Text textStyle="caption-2" color="base.content.medium">
-                    {row.actor.name}
+                    {format(row.publishedAt, "d MMM yyyy, h:mm a")} ·{" "}
+                    {row.publisher.name}
                   </Text>
                 </Box>
                 <Button
                   size="xs"
                   variant="outline"
-                  onClick={() => setSelectedRow(row)}
+                  onClick={() =>
+                    setSelectedRow({
+                      ...row,
+                      // A first version has nothing before it, so diff it
+                      // against the same page with no content: every block
+                      // shows up as added.
+                      beforeContent: row.beforeContent ?? {
+                        ...row.afterContent,
+                        content: [],
+                      },
+                    })
+                  }
                 >
                   View changes
                 </Button>
