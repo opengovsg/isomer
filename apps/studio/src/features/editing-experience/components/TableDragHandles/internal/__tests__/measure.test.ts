@@ -17,6 +17,21 @@ describe("coordinate conversion", () => {
 
     expect(result).toEqual({ x: 55, y: 70 })
   })
+
+  it("cancels an ancestor scale so the point stays in layout pixels", () => {
+    // The expand modal scales in from 0.95. Viewport deltas shrink by that
+    // factor; layout coordinates must not.
+    const result = viewportPointToContainerPoint({
+      clientX: 90,
+      clientY: 130,
+      containerRect,
+      ...scroll,
+      scale: { x: 0.95, y: 0.95 },
+    })
+
+    expect(result.x).toBeCloseTo((90 - 50) / 0.95 + 15)
+    expect(result.y).toBeCloseTo((130 - 100) / 0.95 + 40)
+  })
 })
 
 describe("reconcileGeometries", () => {

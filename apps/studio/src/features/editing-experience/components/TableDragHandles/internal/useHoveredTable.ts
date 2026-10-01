@@ -4,7 +4,10 @@ import { TABLE_GUTTER_PX } from "~/features/editing-experience/utils/tableEditor
 
 import type { TableGeometry } from "./axisMath"
 import { getTableBounds } from "./axisMath"
-import { viewportPointToContainerPoint } from "./measure"
+import {
+  readAncestorLayoutScale,
+  viewportPointToContainerPoint,
+} from "./measure"
 
 /** How far into the table the select button stays visible from the top-left corner. */
 export const SELECT_TABLE_CORNER_REACH_PX = 40
@@ -22,6 +25,7 @@ export const findHoveredTablePos = ({
   containerRect,
   scrollTop,
   scrollLeft,
+  scale,
 }: {
   geometries: TableGeometry[]
   clientX: number
@@ -29,6 +33,7 @@ export const findHoveredTablePos = ({
   containerRect: Pick<DOMRect, "top" | "left">
   scrollTop: number
   scrollLeft: number
+  scale?: { x: number; y: number }
 }): number | null => {
   const { x, y } = viewportPointToContainerPoint({
     clientX,
@@ -36,6 +41,7 @@ export const findHoveredTablePos = ({
     containerRect,
     scrollTop,
     scrollLeft,
+    scale,
   })
 
   // A table counts as hovered anywhere in its gutter, including outside cells.
@@ -65,6 +71,7 @@ export const findHoveredTableCornerPos = ({
   containerRect,
   scrollTop,
   scrollLeft,
+  scale,
 }: {
   geometries: TableGeometry[]
   clientX: number
@@ -72,6 +79,7 @@ export const findHoveredTableCornerPos = ({
   containerRect: Pick<DOMRect, "top" | "left">
   scrollTop: number
   scrollLeft: number
+  scale?: { x: number; y: number }
 }): number | null => {
   const { x, y } = viewportPointToContainerPoint({
     clientX,
@@ -79,6 +87,7 @@ export const findHoveredTableCornerPos = ({
     containerRect,
     scrollTop,
     scrollLeft,
+    scale,
   })
 
   const match = geometries.find((geometry) => {
@@ -128,6 +137,7 @@ export const useHoveredTable = (
         containerRect: container.getBoundingClientRect(),
         scrollTop: container.scrollTop,
         scrollLeft: container.scrollLeft,
+        scale: readAncestorLayoutScale(container),
       }
       setHoverTablePos(findHoveredTablePos(hit))
       setCornerTablePos(findHoveredTableCornerPos(hit))
