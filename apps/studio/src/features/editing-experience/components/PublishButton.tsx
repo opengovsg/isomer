@@ -50,8 +50,8 @@ const SuspendablePublishButton = ({
     <Can do="publish" on="Resource" passThrough>
       {({ isAllowed }) => (
         <TouchableTooltip
-          // The scheduled indicator replaces the button and carries its own
-          // tooltip, so the publish hint would be misleading over it.
+          // The scheduled indicator replaces the button, so the publish hint
+          // would be misleading over it.
           hidden={isScheduledToPublish && isAllowed}
           label={
             !isAllowed
