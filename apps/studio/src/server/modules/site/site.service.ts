@@ -75,16 +75,6 @@ export const getAdminSiteIds = async (userId: string): Promise<number[]> => {
   return sites.map((site) => site.id)
 }
 
-// Active Isomer admins are excluded from "ask this person to add you back"
-// — same rule as the inactivity deactivation email.
-const activeIsomerAdminUserIds = () =>
-  db
-    .selectFrom("IsomerAdmin")
-    .where((eb) =>
-      eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
-    )
-    .select("userId")
-
 // Sites whose latest site-wide permission for this user was removed for
 // inactivity. A later re-grant (active row) or a later manual removal
 // (different permission id, no inactivity audit on that row) hides the site.
@@ -95,7 +85,7 @@ export const listSitesWithExpiredAccess = async (userId: string) => {
     return []
   }
 
-  const sites = await db
+  const rows = await db
     .with("latestPermission", (qb) =>
       qb
         .selectFrom("ResourcePermission")
@@ -107,61 +97,104 @@ export const listSitesWithExpiredAccess = async (userId: string) => {
         .orderBy("id", "desc")
         .select(["id", "siteId", "deletedAt"]),
     )
-    .selectFrom("latestPermission")
-    .innerJoin("Site", "Site.id", "latestPermission.siteId")
-    .where("latestPermission.deletedAt", "is not", null)
-    .where((eb) =>
-      eb.exists(
-        eb
-          .selectFrom("AuditLog")
-          .select("AuditLog.id")
-          .whereRef("AuditLog.siteId", "=", "latestPermission.siteId")
-          .where("AuditLog.eventType", "=", AuditLogEvent.PermissionDelete)
-          .where(sql<boolean>`"AuditLog".metadata->>'reason' = 'inactivity'`)
-          .where(
-            sql<boolean>`"AuditLog".delta -> 'before' ->> 'id' = "latestPermission"."id"::text`,
-          )
-          .where(
-            sql<boolean>`"AuditLog".delta -> 'before' ->> 'userId' = ${userId}`,
+    .with("expiredSites", (qb) =>
+      qb
+        .selectFrom("latestPermission")
+        .innerJoin("Site", "Site.id", "latestPermission.siteId")
+        .where("latestPermission.deletedAt", "is not", null)
+        .where((eb) =>
+          eb.exists(
+            eb
+              .selectFrom("AuditLog")
+              .select("AuditLog.id")
+              .whereRef("AuditLog.siteId", "=", "latestPermission.siteId")
+              .where("AuditLog.eventType", "=", AuditLogEvent.PermissionDelete)
+              .where(
+                sql<boolean>`"AuditLog".metadata->>'reason' = 'inactivity'`,
+              )
+              .where(
+                sql<boolean>`"AuditLog".delta -> 'before' ->> 'id' = "latestPermission"."id"::text`,
+              )
+              .where(
+                sql<boolean>`"AuditLog".delta -> 'before' ->> 'userId' = ${userId}`,
+              ),
           ),
-      ),
+        )
+        .select(["Site.id as id", "Site.config as config"])
+        .orderBy("Site.id", "asc"),
     )
-    .select(["Site.id", "Site.config"])
-    .orderBy("Site.id", "asc")
+    // Active Isomer admins are excluded from "ask this person to add you back"
+    // — same rule as the inactivity deactivation email.
+    .with("ActiveIsomerAdmin", (qb) =>
+      qb
+        .selectFrom("IsomerAdmin")
+        .where((eb) =>
+          eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
+        )
+        .select("userId"),
+    )
+    .with("siteAdmins", (qb) =>
+      qb
+        .selectFrom("ResourcePermission")
+        .innerJoin(
+          "expiredSites",
+          "expiredSites.id",
+          "ResourcePermission.siteId",
+        )
+        .innerJoin("User", "User.id", "ResourcePermission.userId")
+        .where("ResourcePermission.deletedAt", "is", null)
+        .where("ResourcePermission.resourceId", "is", null)
+        .where("ResourcePermission.role", "=", RoleType.Admin)
+        .where("User.deletedAt", "is", null)
+        .where("User.id", "!=", userId)
+        .where((eb) =>
+          eb.not(
+            eb.exists(
+              eb
+                .selectFrom("ActiveIsomerAdmin")
+                .whereRef("ActiveIsomerAdmin.userId", "=", "User.id"),
+            ),
+          ),
+        )
+        .select(["ResourcePermission.siteId as siteId", "User.email as email"]),
+    )
+    .selectFrom("expiredSites")
+    .leftJoin("siteAdmins", "siteAdmins.siteId", "expiredSites.id")
+    .select([
+      "expiredSites.id as id",
+      "expiredSites.config as config",
+      "siteAdmins.email as email",
+    ])
+    .orderBy("expiredSites.id", "asc")
     .execute()
 
-  if (sites.length === 0) return []
+  if (rows.length === 0) return []
 
-  const admins = await db
-    .selectFrom("ResourcePermission")
-    .innerJoin("User", "User.id", "ResourcePermission.userId")
-    .where(
-      "ResourcePermission.siteId",
-      "in",
-      sites.map((site) => site.id),
-    )
-    .where("ResourcePermission.deletedAt", "is", null)
-    .where("ResourcePermission.resourceId", "is", null)
-    .where("ResourcePermission.role", "=", RoleType.Admin)
-    .where("User.deletedAt", "is", null)
-    .where("User.id", "!=", userId)
-    .where("User.id", "not in", activeIsomerAdminUserIds())
-    .select(["ResourcePermission.siteId as siteId", "User.email as email"])
-    .execute()
+  const sitesById = new Map<
+    number,
+    {
+      id: number
+      config: (typeof rows)[number]["config"]
+      adminEmails: string[]
+    }
+  >()
 
-  const emailsBySiteId = new Map<number, string[]>()
-  for (const admin of admins) {
-    const existing = emailsBySiteId.get(admin.siteId) ?? []
-    existing.push(admin.email)
-    emailsBySiteId.set(admin.siteId, existing)
+  for (const row of rows) {
+    const existing = sitesById.get(row.id) ?? {
+      id: row.id,
+      config: row.config,
+      adminEmails: [],
+    }
+    if (row.email) {
+      existing.adminEmails.push(row.email)
+    }
+    sitesById.set(row.id, existing)
   }
 
-  return sites.map((site) => ({
+  return [...sitesById.values()].map((site) => ({
     id: site.id,
     config: site.config,
-    adminEmails: (emailsBySiteId.get(site.id) ?? []).sort((a, b) =>
-      a.localeCompare(b),
-    ),
+    adminEmails: site.adminEmails.sort((a, b) => a.localeCompare(b)),
   }))
 }
 
