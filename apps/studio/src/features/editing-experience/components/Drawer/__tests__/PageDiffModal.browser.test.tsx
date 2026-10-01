@@ -105,7 +105,7 @@ const renderModal = (isOpen: boolean) =>
             id: "version-1",
             versionNum: 2,
             publishedAt: new Date("2026-01-01T00:00:00Z"),
-            publisher: { name: "Alice" },
+            publisher: { email: "alice@example.com" },
             beforeContent: BEFORE_PAGE,
             afterContent: AFTER_PAGE,
           }}
@@ -132,6 +132,7 @@ describe("PageDiffModal", () => {
     await waitFor(() => {
       expect(screen.queryByText("Changes in version 2")).not.toBeNull()
     })
+    expect(screen.queryByText("About us")).not.toBeNull()
     expect(
       screen.queryByRole("checkbox", { name: "Highlight changes" }),
     ).not.toBeNull()
