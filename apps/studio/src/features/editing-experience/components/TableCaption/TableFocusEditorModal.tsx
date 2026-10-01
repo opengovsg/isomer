@@ -4,11 +4,10 @@ import {
   Modal,
   ModalBody,
   ModalContent,
-  ModalFooter,
   ModalHeader,
   ModalOverlay,
 } from "@chakra-ui/react"
-import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/design-system-react"
 import { useEffect, useRef } from "react"
 import { TableMenuBar } from "~/components/PageEditor/MenuBar/TableMenuBar"
 import { Editor as TiptapEditorSurface } from "~/features/editing-experience/components/form-builder/renderers/TipTapEditor/components"
@@ -22,6 +21,7 @@ interface TableFocusEditorModalProps {
   getPos: () => number | undefined
   isOpen: boolean
   onClose: () => void
+  onExited: () => void
 }
 
 export const TableFocusEditorModal = ({
@@ -30,11 +30,13 @@ export const TableFocusEditorModal = ({
   getPos,
   isOpen,
   onClose,
+  onExited,
 }: TableFocusEditorModalProps) => {
   const docRef = useRef<JSONContent>({
     type: "prose",
     content: [table],
   })
+  const shouldSaveRef = useRef(false)
   const editor = useTableFocusEditor({
     data: docRef.current,
     handleChange: (next) => {
@@ -46,28 +48,49 @@ export const TableFocusEditorModal = ({
     editor?.commands.focus("start")
   }, [editor])
 
-  const handleClose = () => {
-    commitFocusedTableEdit(parentEditor, getPos, docRef.current)
+  const requestClose = () => {
+    shouldSaveRef.current = true
     onClose()
+  }
+
+  const handleCloseComplete = () => {
+    if (!shouldSaveRef.current) return
+    shouldSaveRef.current = false
+    // Save after the exit transition so replacing the table node does not
+    // tear down this dialog mid-animation.
+    commitFocusedTableEdit(parentEditor, getPos, docRef.current)
+    onExited()
   }
 
   return (
     // trapFocus off: the table bubble menu and link menu are portaled outside
     // this dialog, and Chakra's focus lock swallows Tab into those menus.
-    <Modal isOpen={isOpen} onClose={handleClose} size="full" trapFocus={false}>
+    <Modal
+      isOpen={isOpen}
+      onClose={requestClose}
+      onCloseComplete={handleCloseComplete}
+      closeOnEsc={false}
+      size="full"
+      trapFocus={false}
+    >
       <ModalOverlay />
       <ModalContent
-        my="1.5rem"
-        h="calc(100vh - 3rem)"
-        minH="0"
-        maxW="calc(100vw - 3rem)"
-        borderRadius="0.25rem"
+        height="$100vh"
         overflow="hidden"
         display="flex"
         flexDirection="column"
       >
-        <ModalHeader mr="3.5rem">Edit table</ModalHeader>
-        <ModalCloseButton size="lg" />
+        <ModalHeader mr="6rem">Edit table</ModalHeader>
+        <Button
+          position="absolute"
+          top="0.75rem"
+          right="1rem"
+          zIndex={1}
+          variant="solid"
+          onClick={requestClose}
+        >
+          Done
+        </Button>
         <ModalBody flex="1" minH="0" display="flex" p="0" overflow="hidden">
           <Box flex="1" minH="0" h="100%" w="100%">
             {editor && (
@@ -79,11 +102,6 @@ export const TableFocusEditorModal = ({
             )}
           </Box>
         </ModalBody>
-        <ModalFooter>
-          <Button variant="solid" onClick={handleClose}>
-            Done
-          </Button>
-        </ModalFooter>
       </ModalContent>
     </Modal>
   )
