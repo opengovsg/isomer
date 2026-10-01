@@ -1,4 +1,5 @@
 import { Box, Button, Divider, Flex, Text, VStack } from "@chakra-ui/react"
+import { Badge } from "@opengovsg/design-system-react"
 import { format } from "date-fns"
 import { useState } from "react"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -36,6 +37,18 @@ export default function HistoryStateDrawer(): JSX.Element {
       <Flex direction="column" h="full">
         <DrawerHeader
           label="Page history"
+          badge={
+            <Badge
+              size="sm"
+              variant="subtle"
+              colorScheme="main"
+              border="1px solid"
+              borderColor="blue.200"
+              ms="1rem"
+            >
+              Beta
+            </Badge>
+          }
           onBackClick={() => setDrawerState({ state: "root" })}
         />
         <VStack
