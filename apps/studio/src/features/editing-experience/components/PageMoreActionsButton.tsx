@@ -70,11 +70,14 @@ const SuspendablePageMoreActionsButton = ({
   const isBlockInfoPending =
     isIndexPage && (isBlockInfoLoading || isBlockInfoError)
 
-  // RootPage can't be unpublished — mirrors the backend's rejection and the
-  // dashboard's equivalent exclusion (see RootpageRow.tsx).
-  if (!isUnpublishEnabled || currPage.type === ResourceType.RootPage) {
+  if (!isUnpublishEnabled) {
     return null
   }
+
+  // RootPage can't be unpublished — mirrors the backend's rejection and the
+  // dashboard's equivalent exclusion (see RootpageRow.tsx). Shown disabled
+  // with a reason rather than hidden, so the action is discoverable.
+  const isRootPage = currPage.type === ResourceType.RootPage
 
   // isIndexPage must gate both of these explicitly, not just the query's
   // `enabled`. Every child page in a folder shares the same query key as
@@ -105,13 +108,15 @@ const SuspendablePageMoreActionsButton = ({
   // Live (because a descendant is), so leading with "isn't live" would
   // contradict what the user just saw. Live descendants are the actionable
   // blocker in that case.
-  const disabledReason = isBlockedFromScheduling
-    ? "There are child pages that are or will be live"
-    : !isLive
-      ? "This page isn't live"
-      : isScheduledToPublish
-        ? "This page has a scheduled publish. Cancel it before unpublishing."
-        : undefined
+  const disabledReason = isRootPage
+    ? "The homepage can't be unpublished."
+    : isBlockedFromScheduling
+      ? "There are child pages that are or will be live"
+      : !isLive
+        ? "This page isn't live"
+        : isScheduledToPublish
+          ? "This page has a scheduled publish. Cancel it before unpublishing."
+          : undefined
 
   // "Cancel schedule" has no disabled condition of its own, so the trigger
   // reads as active whenever that's the action on offer. Otherwise it
@@ -184,7 +189,7 @@ const SuspendablePageMoreActionsButton = ({
                             >
                               {isScheduledToUnpublish
                                 ? "Scheduled to unpublish"
-                                : isBlockedFromScheduling
+                                : isBlockedFromScheduling || isRootPage
                                   ? "This page can't be unpublished"
                                   : "Unpublish page"}
                             </Text>
