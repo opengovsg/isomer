@@ -1,5 +1,6 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type { PropsWithChildren } from "react"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import {
   Box,
@@ -22,12 +23,13 @@ import { PreviewIframe } from "../preview/PreviewIframe"
 import PreviewWithCustomSitemap from "../preview/PreviewWithCustomSitemap"
 import { setHighlightsVisible } from "./applyDiffHighlights"
 import { useDomDiff } from "./useDomDiff"
+import { useResizableSplit } from "./useResizableSplit"
 
 export interface PageDiffModalRow {
   id: string
   versionNum: number
   publishedAt: Date
-  publisher: { name: string }
+  publisher: { email: string }
   beforeContent: IsomerSchema
   afterContent: IsomerSchema
 }
@@ -39,12 +41,26 @@ interface PageDiffModalProps extends Pick<
   row: PageDiffModalRow | null
 }
 
+const PaneHeader = ({ children }: PropsWithChildren): JSX.Element => (
+  <Flex
+    align="baseline"
+    flexWrap="wrap"
+    columnGap="0.5rem"
+    px="1.5rem"
+    py="0.75rem"
+    borderBottom="1px solid"
+    borderColor="base.divider.medium"
+  >
+    {children}
+  </Flex>
+)
+
 export const PageDiffModal = ({
   isOpen,
   onClose,
   row,
 }: PageDiffModalProps): JSX.Element => {
-  const { siteId, pageId, permalink } = useEditorDrawerContext()
+  const { siteId, pageId, permalink, title } = useEditorDrawerContext()
   const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
     siteId,
     resourceId: pageId,
@@ -67,6 +83,9 @@ export const PageDiffModal = ({
 
   const { status } = useDomDiff({ beforeDocument, afterDocument })
 
+  const { containerRef, firstPanePercent, isDragging, separatorProps } =
+    useResizableSplit()
+
   useEffect(() => {
     if (beforeDocument) setHighlightsVisible(beforeDocument, showHighlights)
     if (afterDocument) setHighlightsVisible(afterDocument, showHighlights)
@@ -82,19 +101,15 @@ export const PageDiffModal = ({
           <Flex
             justify="space-between"
             align="center"
+            gap="1rem"
             px="1.5rem"
-            py="1rem"
             borderBottom="1px solid"
             borderColor="base.divider.medium"
           >
-            <Box>
-              <Text textStyle="h6">Changes in version {row.versionNum}</Text>
-              <Text textStyle="caption-2" color="base.content.medium">
-                Published {format(row.publishedAt, "d MMM yyyy, h:mm a")} by{" "}
-                {row.publisher.name}
-              </Text>
-            </Box>
-            <Flex align="center" gap="0.75rem">
+            <Text textStyle="h6" noOfLines={1}>
+              {title}
+            </Text>
+            <Flex align="center" gap="0.75rem" flexShrink={0}>
               {status === "error" && (
                 <Text textStyle="caption-2" color="utility.feedback.critical">
                   Couldn't compute a detailed diff — showing before/after only.
@@ -118,32 +133,74 @@ export const PageDiffModal = ({
               />
             </Flex>
           </Flex>
-          <Flex flex={1} overflow="hidden">
-            <Box
-              flex={1}
-              borderRight="1px solid"
-              borderColor="base.divider.medium"
-              overflow="auto"
+          <Flex
+            ref={containerRef}
+            flex={1}
+            overflow="hidden"
+            cursor={isDragging ? "col-resize" : undefined}
+          >
+            <Flex
+              direction="column"
+              flexBasis={`${firstPanePercent}%`}
+              flexShrink={0}
+              minW={0}
+              pointerEvents={isDragging ? "none" : undefined}
             >
-              <PreviewIframe style={themeCssVars} callback={handleBeforeMount}>
-                <PreviewWithCustomSitemap
-                  {...row.beforeContent}
-                  siteId={siteId}
-                  permalink={permalink}
-                  siteMap={siteMap}
-                />
-              </PreviewIframe>
-            </Box>
-            <Box flex={1} overflow="auto">
-              <PreviewIframe style={themeCssVars} callback={handleAfterMount}>
-                <PreviewWithCustomSitemap
-                  {...row.afterContent}
-                  siteId={siteId}
-                  permalink={permalink}
-                  siteMap={siteMap}
-                />
-              </PreviewIframe>
-            </Box>
+              <PaneHeader>
+                <Text textStyle="h6">Changes in version {row.versionNum}</Text>
+                <Text textStyle="caption-2" color="base.content.medium">
+                  Published {format(row.publishedAt, "d MMM yyyy, h:mm a")} by{" "}
+                  {row.publisher.email}
+                </Text>
+              </PaneHeader>
+              <Box flex={1} overflow="auto">
+                <PreviewIframe
+                  style={themeCssVars}
+                  callback={handleBeforeMount}
+                >
+                  <PreviewWithCustomSitemap
+                    {...row.beforeContent}
+                    siteId={siteId}
+                    permalink={permalink}
+                    siteMap={siteMap}
+                  />
+                </PreviewIframe>
+              </Box>
+            </Flex>
+            <Box
+              {...separatorProps}
+              flexShrink={0}
+              w="0.25rem"
+              cursor="col-resize"
+              bg={
+                isDragging ? "interaction.main.default" : "base.divider.medium"
+              }
+              _hover={{ bg: "interaction.main.default" }}
+              _focusVisible={{
+                bg: "interaction.main.default",
+                outline: "none",
+              }}
+            />
+            <Flex
+              direction="column"
+              flex={1}
+              minW={0}
+              pointerEvents={isDragging ? "none" : undefined}
+            >
+              <PaneHeader>
+                <Text textStyle="h6">Current Version</Text>
+              </PaneHeader>
+              <Box flex={1} overflow="auto">
+                <PreviewIframe style={themeCssVars} callback={handleAfterMount}>
+                  <PreviewWithCustomSitemap
+                    {...row.afterContent}
+                    siteId={siteId}
+                    permalink={permalink}
+                    siteMap={siteMap}
+                  />
+                </PreviewIframe>
+              </Box>
+            </Flex>
           </Flex>
         </Flex>
       </ModalContent>
