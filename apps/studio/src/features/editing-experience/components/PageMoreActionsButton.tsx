@@ -70,11 +70,14 @@ const SuspendablePageMoreActionsButton = ({
   const isBlockInfoPending =
     isIndexPage && (isBlockInfoLoading || isBlockInfoError)
 
-  // RootPage can't be unpublished — mirrors the backend's rejection and the
-  // dashboard's equivalent exclusion (see RootpageRow.tsx).
-  if (!isUnpublishEnabled || currPage.type === ResourceType.RootPage) {
+  if (!isUnpublishEnabled) {
     return null
   }
+
+  // RootPage can't be unpublished — mirrors the backend's rejection and the
+  // dashboard's equivalent exclusion (see RootpageRow.tsx). Shown disabled
+  // with a reason rather than hidden, so the action is discoverable.
+  const isRootPage = currPage.type === ResourceType.RootPage
 
   // isIndexPage must gate both of these explicitly, not just the query's
   // `enabled`. Every child page in a folder shares the same query key as
@@ -100,18 +103,27 @@ const SuspendablePageMoreActionsButton = ({
     !!parentIndexPageInfo &&
     parentIndexPageInfo.unschedulableDescendantCount > 0
 
+  // Ordered by priority — first match wins, and drives both the popover
+  // title and (via disabledReason) whether the button is disabled.
   // isBlockedFromScheduling takes priority over !isLive: an IndexPage can
   // read "not live" on its own while its container-aware badge still shows
   // Live (because a descendant is), so leading with "isn't live" would
   // contradict what the user just saw. Live descendants are the actionable
   // blocker in that case.
-  const disabledReason = isBlockedFromScheduling
-    ? "There are child pages that are or will be live"
-    : !isLive
-      ? "This page isn't live"
-      : isScheduledToPublish
-        ? "This page has a scheduled publish. Cancel it before unpublishing."
-        : undefined
+  let title = "Unpublish page"
+  let disabledReason: string | undefined
+  if (isRootPage) {
+    title = "This page can't be unpublished"
+    disabledReason = "The homepage can't be unpublished."
+  } else if (isBlockedFromScheduling) {
+    title = "This page can't be unpublished"
+    disabledReason = "There are child pages that are or will be live"
+  } else if (!isLive) {
+    disabledReason = "This page isn't live"
+  } else if (isScheduledToPublish) {
+    disabledReason =
+      "This page has a scheduled publish. Cancel it before unpublishing."
+  }
 
   // "Cancel schedule" has no disabled condition of its own, so the trigger
   // reads as active whenever that's the action on offer. Otherwise it
@@ -184,9 +196,7 @@ const SuspendablePageMoreActionsButton = ({
                             >
                               {isScheduledToUnpublish
                                 ? "Scheduled to unpublish"
-                                : isBlockedFromScheduling
-                                  ? "This page can't be unpublished"
-                                  : "Unpublish page"}
+                                : title}
                             </Text>
                             <Text
                               textStyle="body-2"
