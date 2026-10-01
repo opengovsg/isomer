@@ -23,6 +23,7 @@ import { PreviewIframe } from "../preview/PreviewIframe"
 import PreviewWithCustomSitemap from "../preview/PreviewWithCustomSitemap"
 import { setHighlightsVisible } from "./applyDiffHighlights"
 import { useDomDiff } from "./useDomDiff"
+import { useResizableSplit } from "./useResizableSplit"
 import { useSyncedScroll } from "./useSyncedScroll"
 
 export interface PageDiffModalRow {
@@ -44,7 +45,8 @@ interface PageDiffModalProps extends Pick<
 const PaneHeader = ({ children }: PropsWithChildren): JSX.Element => (
   <Flex
     align="baseline"
-    gap="0.5rem"
+    flexWrap="wrap"
+    columnGap="0.5rem"
     px="1.5rem"
     py="0.75rem"
     borderBottom="1px solid"
@@ -81,6 +83,9 @@ export const PageDiffModal = ({
   )
 
   const { status } = useDomDiff({ beforeDocument, afterDocument })
+
+  const { containerRef, firstPanePercent, isDragging, separatorProps } =
+    useResizableSplit()
 
   const beforePaneRef = useRef<HTMLDivElement>(null)
   const afterPaneRef = useRef<HTMLDivElement>(null)
@@ -138,12 +143,18 @@ export const PageDiffModal = ({
               />
             </Flex>
           </Flex>
-          <Flex flex={1} overflow="hidden">
+          <Flex
+            ref={containerRef}
+            flex={1}
+            overflow="hidden"
+            cursor={isDragging ? "col-resize" : undefined}
+          >
             <Flex
               direction="column"
-              flex={1}
-              borderRight="1px solid"
-              borderColor="base.divider.medium"
+              flexBasis={`${firstPanePercent}%`}
+              flexShrink={0}
+              minW={0}
+              pointerEvents={isDragging ? "none" : undefined}
             >
               <PaneHeader>
                 <Text textStyle="h6">Changes in version {row.versionNum}</Text>
@@ -166,7 +177,26 @@ export const PageDiffModal = ({
                 </PreviewIframe>
               </Box>
             </Flex>
-            <Flex direction="column" flex={1}>
+            <Box
+              {...separatorProps}
+              flexShrink={0}
+              w="0.25rem"
+              cursor="col-resize"
+              bg={
+                isDragging ? "interaction.main.default" : "base.divider.medium"
+              }
+              _hover={{ bg: "interaction.main.default" }}
+              _focusVisible={{
+                bg: "interaction.main.default",
+                outline: "none",
+              }}
+            />
+            <Flex
+              direction="column"
+              flex={1}
+              minW={0}
+              pointerEvents={isDragging ? "none" : undefined}
+            >
               <PaneHeader>
                 <Text textStyle="h6">Current Version</Text>
               </PaneHeader>
