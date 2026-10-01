@@ -88,6 +88,23 @@ export const createPublishedPage = async ({
   return { ...page, publishedVersionId: version.id }
 }
 
+// A draft folder to nest published pages under (for container-blocking tests).
+export const createFolder = async () =>
+  db
+    .insertInto("Resource")
+    .values({
+      permalink: `e2e-unpublish-folder-${uniqueSuffix()}`,
+      siteId: getSeedSiteId(),
+      parentId: null,
+      title: "E2E Unpublish Folder",
+      draftBlobId: null,
+      state: ResourceState.Draft,
+      type: ResourceType.Folder,
+      publishedVersionId: null,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
 // Deletes the resource; cascades to its Version (and any child resources).
 export const deleteResourceById = (resourceId: string) =>
   db.deleteFrom("Resource").where("id", "=", resourceId).execute()
