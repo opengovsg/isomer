@@ -117,16 +117,14 @@ describe("HistoryStateDrawer", () => {
                   name: "Alice",
                   email: "alice@example.com",
                 },
-                beforeContent: EMPTY_PAGE,
-                afterContent: EMPTY_PAGE,
+                content: EMPTY_PAGE,
               },
               {
                 id: "2",
                 versionNum: 1,
                 publishedAt: new Date("2026-01-02T00:00:00Z"),
                 publisher: { id: "u2", name: "Bob", email: "bob@example.com" },
-                beforeContent: EMPTY_PAGE,
-                afterContent: EMPTY_PAGE,
+                content: EMPTY_PAGE,
               },
             ],
             nextOffset: null,
@@ -231,8 +229,7 @@ describe("HistoryStateDrawer", () => {
                   name: "Alice",
                   email: "alice@example.com",
                 },
-                beforeContent: EMPTY_PAGE,
-                afterContent: EMPTY_PAGE,
+                content: EMPTY_PAGE,
               },
             ],
             nextOffset: null,
@@ -261,7 +258,7 @@ describe("HistoryStateDrawer", () => {
     ).not.toBeNull()
   })
 
-  it("opens the diff modal for a first version, which has no previous content", async () => {
+  it("opens the diff modal for a first version, which has no content", async () => {
     // Arrange
     mockUseInfiniteQuery.mockReturnValue({
       data: {
@@ -277,8 +274,7 @@ describe("HistoryStateDrawer", () => {
                   name: "Alice",
                   email: "alice@example.com",
                 },
-                beforeContent: null,
-                afterContent: EMPTY_PAGE,
+                content: null,
               },
             ],
             nextOffset: null,

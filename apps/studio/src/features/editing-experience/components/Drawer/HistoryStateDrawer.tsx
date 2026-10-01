@@ -14,7 +14,7 @@ import { PageDiffModal } from "./PageDiffModal"
 const PAGE_SIZE = 20
 
 export default function HistoryStateDrawer(): JSX.Element {
-  const { setDrawerState } = useEditorDrawerContext()
+  const { setDrawerState, savedPageState } = useEditorDrawerContext()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const [selectedRow, setSelectedRow] = useState<PageDiffModalRow | null>(null)
 
@@ -85,13 +85,14 @@ export default function HistoryStateDrawer(): JSX.Element {
                   onClick={() =>
                     setSelectedRow({
                       ...row,
-                      // A first version has nothing before it, so diff it
-                      // against the same page with no content: every block
-                      // shows up as added.
-                      beforeContent: row.beforeContent ?? {
-                        ...row.afterContent,
+                      // Compare this version against the page as it is now.
+                      // Without version content, diff against the same page
+                      // with no content: every block shows up as added.
+                      beforeContent: row.content ?? {
+                        ...savedPageState,
                         content: [],
                       },
+                      afterContent: savedPageState,
                     })
                   }
                 >
