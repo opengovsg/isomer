@@ -1,3 +1,5 @@
+import { useRouter } from "next/router"
+import { useEffect } from "react"
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
@@ -18,7 +20,22 @@ export function EditPageDrawer(): JSX.Element {
     previewPageState,
     drawerState: currState,
     currActiveIdx,
+    setDrawerState,
   } = useEditorDrawerContext()
+  const router = useRouter()
+
+  // The navbar sits outside EditorDrawerProvider, so use a one-shot route
+  // request to open history without moving or duplicating editor state.
+  useEffect(() => {
+    if (router.query.history !== "true") return
+
+    setDrawerState({ state: "history" })
+    const { history: _, ...query } = router.query
+    void router.replace({ pathname: router.pathname, query }, undefined, {
+      shallow: true,
+      scroll: false,
+    })
+  }, [router, setDrawerState])
 
   switch (currState.state) {
     case "root":
