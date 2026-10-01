@@ -1,7 +1,7 @@
 import type { Editor, JSONContent } from "@tiptap/react"
 import { Flex, Icon, Text, Tooltip, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
-import { lazy, Suspense } from "react"
+import { lazy, Suspense, useState } from "react"
 import { BiExpand, BiPencil, BiRevision } from "react-icons/bi"
 import { TableSettingsModal } from "~/features/editing-experience/components/TableSettingsModal/TableSettingsModal"
 
@@ -44,6 +44,9 @@ export const TableCaption = ({
     onOpen: onTableEditorModalOpen,
     onClose: onTableEditorModalClose,
   } = useDisclosure()
+  // Stay mounted through the close transition. Unmounting with isOpen still
+  // true skips Chakra's exit animation.
+  const [isTableEditorPresent, setIsTableEditorPresent] = useState(false)
 
   const hasCaption = !isPlaceholderTableCaption(caption)
 
@@ -97,11 +100,11 @@ export const TableCaption = ({
             </Tooltip>
           )}
           {showTableEditorButton && (
-            <Tooltip label="Edit table" hasArrow openDelay={500}>
+            <Tooltip label="Expand" hasArrow openDelay={500}>
               <IconButton
                 variant="clear"
                 size="xs"
-                aria-label="Edit table"
+                aria-label="Expand"
                 color="interaction.links.default"
                 icon={
                   <Icon
@@ -111,7 +114,10 @@ export const TableCaption = ({
                   />
                 }
                 flexShrink={0}
-                onClick={onTableEditorModalOpen}
+                onClick={() => {
+                  setIsTableEditorPresent(true)
+                  onTableEditorModalOpen()
+                }}
               />
             </Tooltip>
           )}
@@ -128,14 +134,15 @@ export const TableCaption = ({
         />
       )}
 
-      {showTableEditorButton && isTableEditorModalOpen && (
+      {showTableEditorButton && isTableEditorPresent && (
         <Suspense fallback={null}>
           <TableFocusEditorModal
             table={table}
             parentEditor={editor}
             getPos={getPos}
-            isOpen
+            isOpen={isTableEditorModalOpen}
             onClose={onTableEditorModalClose}
+            onExited={() => setIsTableEditorPresent(false)}
           />
         </Suspense>
       )}
