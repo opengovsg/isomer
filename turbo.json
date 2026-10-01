@@ -54,6 +54,11 @@
       "cache": false,
       "persistent": true
     },
+    "playground#dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
     "services:setup": {
       "cache": false
     },
