@@ -13,6 +13,7 @@ import {
 } from "@chakra-ui/react"
 import {
   Button,
+  Infobox,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
@@ -337,6 +338,9 @@ export const PublishOrUnpublishModal = ({
               {action === "unpublish" && hasDraftChanges && (
                 <DraftChangesBanner mode={mode} scheduledAt={scheduledAt} />
               )}
+              {action === "unpublish" && (
+                <UnpublishRedirectWarning pageId={pageId} siteId={siteId} />
+              )}
             </VStack>
           </FormProvider>
         </ModalBody>
@@ -365,6 +369,36 @@ export const PublishOrUnpublishModal = ({
         </ModalFooter>
       </ModalContent>
     </Modal>
+  )
+}
+
+// Redirects whose destination resolves to this page dead-end once it's
+// unpublished. Unlike deleting (which soft-deletes them), unpublishing leaves
+// them in place, so this only warns — it never removes anything.
+const UnpublishRedirectWarning = ({
+  pageId,
+  siteId,
+}: {
+  pageId: number
+  siteId: number
+}) => {
+  const { data: redirectCount = 0 } =
+    trpc.redirect.countByDestinationResource.useQuery({
+      siteId,
+      resourceId: String(pageId),
+    })
+
+  if (redirectCount === 0) {
+    return null
+  }
+
+  return (
+    <Infobox variant="warning" size="sm">
+      {redirectCount === 1
+        ? "1 redirect points"
+        : `${redirectCount} redirects point`}{" "}
+      to this page and will stop working once it's unpublished.
+    </Infobox>
   )
 }
 
