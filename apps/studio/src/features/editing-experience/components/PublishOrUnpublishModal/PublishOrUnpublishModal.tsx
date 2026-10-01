@@ -84,10 +84,9 @@ export const PublishOrUnpublishModal = ({
   const utils = trpc.useUtils()
   const fireContentEditSurveyEvent = useFireContentEditSurveyEvent()
   // Skip straight to "later" when "now" isn't an option, since there's
-  // nothing else to pick. Otherwise default publish to "now" (unpublish
-  // keeps no default, per product call).
+  // nothing else to pick. Otherwise default both publish and unpublish to "now".
   const [mode, setMode] = useState<ActionMode | undefined>(
-    disableNow ? "later" : action === "publish" ? "now" : undefined,
+    disableNow ? "later" : "now",
   )
   const lastScheduledAtRef = useRef<Date | null>(null)
 
