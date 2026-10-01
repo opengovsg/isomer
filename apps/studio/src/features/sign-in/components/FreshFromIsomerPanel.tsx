@@ -118,7 +118,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
             borderRadius="full"
             flexShrink={0}
           >
-            Sep 2026 edition
+            Oct 2026 edition
           </Badge>
         </Flex>
 
@@ -281,6 +281,10 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
               variant="subtle"
               colorScheme="success"
               borderRadius="full"
+              bg="interaction.success-subtle.default"
+              border="1px solid"
+              borderColor="interaction.success-subtle.hover"
+              color="utility.feedback.success"
               flexShrink={0}
             >
               {active.badge}
