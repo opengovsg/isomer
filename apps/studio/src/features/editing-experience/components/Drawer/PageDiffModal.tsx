@@ -4,6 +4,7 @@ import type { PropsWithChildren } from "react"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import {
   Box,
+  ButtonGroup,
   Flex,
   IconButton,
   Modal,
@@ -11,7 +12,7 @@ import {
   ModalOverlay,
   Text,
 } from "@chakra-ui/react"
-import { Switch } from "@opengovsg/design-system-react"
+import { Button, Switch } from "@opengovsg/design-system-react"
 import { format } from "date-fns"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { BiX } from "react-icons/bi"
@@ -42,6 +43,36 @@ interface PageDiffModalProps extends Pick<
   row: PageDiffModalRow | null
 }
 
+type ViewMode = "sideBySide" | "overlay"
+type Pane = "before" | "after"
+
+interface SegmentedToggleProps<T extends string> {
+  label: string
+  value: T
+  options: { value: T; label: string }[]
+  onChange: (value: T) => void
+}
+
+const SegmentedToggle = <T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: SegmentedToggleProps<T>): JSX.Element => (
+  <ButtonGroup isAttached size="xs" role="group" aria-label={label}>
+    {options.map((option) => (
+      <Button
+        key={option.value}
+        variant={option.value === value ? "solid" : "outline"}
+        aria-pressed={option.value === value}
+        onClick={() => onChange(option.value)}
+      >
+        {option.label}
+      </Button>
+    ))}
+  </ButtonGroup>
+)
+
 const PaneHeader = ({ children }: PropsWithChildren): JSX.Element => (
   <Flex
     align="baseline"
@@ -71,6 +102,10 @@ export const PageDiffModal = ({
   const [beforeDocument, setBeforeDocument] = useState<Document | null>(null)
   const [afterDocument, setAfterDocument] = useState<Document | null>(null)
   const [showHighlights, setShowHighlights] = useState(true)
+  const [viewMode, setViewMode] = useState<ViewMode>("sideBySide")
+  // In overlay mode, which version is shown on top.
+  const [overlayPane, setOverlayPane] = useState<Pane>("before")
+  const isOverlay = viewMode === "overlay"
 
   const handleBeforeMount = useCallback(
     ({ document }: IframeCallbackFnProps) =>
@@ -103,6 +138,21 @@ export const PageDiffModal = ({
 
   if (!row) return <></>
 
+  // Both panes stay mounted in either mode: the diff and its highlights need
+  // both iframes' documents. Overlay mode stacks them and hides the one not
+  // selected, and scroll syncing keeps the hidden one in step.
+  const getPaneLayout = (pane: Pane) =>
+    isOverlay
+      ? {
+          position: "absolute" as const,
+          inset: 0,
+          visibility:
+            overlayPane === pane ? ("visible" as const) : ("hidden" as const),
+        }
+      : pane === "before"
+        ? { flexBasis: `${firstPanePercent}%`, flexShrink: 0 }
+        : { flex: 1 }
+
   return (
     <Modal size="full" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -120,6 +170,26 @@ export const PageDiffModal = ({
               {title}
             </Text>
             <Flex align="center" gap="0.75rem" flexShrink={0}>
+              <SegmentedToggle
+                label="View mode"
+                value={viewMode}
+                options={[
+                  { value: "sideBySide", label: "Side by side" },
+                  { value: "overlay", label: "Overlay" },
+                ]}
+                onChange={setViewMode}
+              />
+              {isOverlay && (
+                <SegmentedToggle
+                  label="Version shown"
+                  value={overlayPane}
+                  options={[
+                    { value: "before", label: `Version ${row.versionNum}` },
+                    { value: "after", label: "Current" },
+                  ]}
+                  onChange={setOverlayPane}
+                />
+              )}
               {status === "error" && (
                 <Text textStyle="caption-2" color="utility.feedback.critical">
                   Couldn't compute a detailed diff — showing before/after only.
@@ -145,16 +215,16 @@ export const PageDiffModal = ({
           </Flex>
           <Flex
             ref={containerRef}
+            position="relative"
             flex={1}
             overflow="hidden"
             cursor={isDragging ? "col-resize" : undefined}
           >
             <Flex
               direction="column"
-              flexBasis={`${firstPanePercent}%`}
-              flexShrink={0}
               minW={0}
               pointerEvents={isDragging ? "none" : undefined}
+              {...getPaneLayout("before")}
             >
               <PaneHeader>
                 <Text textStyle="h6">Changes in version {row.versionNum}</Text>
@@ -179,6 +249,9 @@ export const PageDiffModal = ({
             </Flex>
             <Box
               {...separatorProps}
+              // Hidden rather than unmounted, so the panes either side keep
+              // their positions in the tree and don't remount.
+              display={isOverlay ? "none" : undefined}
               flexShrink={0}
               w="0.25rem"
               cursor="col-resize"
@@ -193,9 +266,9 @@ export const PageDiffModal = ({
             />
             <Flex
               direction="column"
-              flex={1}
               minW={0}
               pointerEvents={isDragging ? "none" : undefined}
+              {...getPaneLayout("after")}
             >
               <PaneHeader>
                 <Text textStyle="h6">Current Version</Text>
