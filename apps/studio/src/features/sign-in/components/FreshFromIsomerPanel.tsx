@@ -194,54 +194,59 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
         aria-labelledby={`fresh-from-isomer-tab-${active.id}`}
         borderRadius="lg"
         overflow="hidden"
-        bg="white"
         borderWidth="1px"
         borderColor="base.divider.medium"
         boxShadow="md"
         w="100%"
-        aspectRatio={SPOTLIGHT_MEDIA_ASPECT_RATIO}
-        position="relative"
       >
-        {active.media.type === "video" ? (
-          <Box
-            key={active.id}
-            as="video"
-            ref={videoRef}
-            src={active.media.src}
-            muted
-            playsInline
-            autoPlay
-            loop={SPOTLIGHTS.length === 1}
-            preload="auto"
-            aria-label={active.title}
-            position="absolute"
-            inset={0}
-            w="100%"
-            h="100%"
-            objectFit="contain"
-            display="block"
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-            onWaiting={() => setIsBuffering(true)}
-            onPlaying={() => setIsBuffering(false)}
-            onEnded={() => {
-              if (SPOTLIGHTS.length > 1) {
-                selectSpotlight((activeIndex + 1) % SPOTLIGHTS.length)
-              }
-            }}
-          />
-        ) : (
-          <Box
-            as="img"
-            src={active.media.src}
-            position="absolute"
-            inset={0}
-            w="100%"
-            h="100%"
-            objectFit="contain"
-            display="block"
-          />
-        )}
+        <Box
+          w="100%"
+          aspectRatio={SPOTLIGHT_MEDIA_ASPECT_RATIO}
+          position="relative"
+          overflow="hidden"
+          bg="#ebebeb"
+        >
+          {active.media.type === "video" ? (
+            <Box
+              key={active.id}
+              as="video"
+              ref={videoRef}
+              src={active.media.src}
+              muted
+              playsInline
+              autoPlay
+              loop={SPOTLIGHTS.length === 1}
+              preload="auto"
+              aria-label={active.title}
+              position="absolute"
+              inset={0}
+              w="100%"
+              h="100%"
+              objectFit="cover"
+              display="block"
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              onWaiting={() => setIsBuffering(true)}
+              onPlaying={() => setIsBuffering(false)}
+              onEnded={() => {
+                if (SPOTLIGHTS.length > 1) {
+                  selectSpotlight((activeIndex + 1) % SPOTLIGHTS.length)
+                }
+              }}
+            />
+          ) : (
+            <Box
+              as="img"
+              src={active.media.src}
+              position="absolute"
+              inset={0}
+              w="100%"
+              h="100%"
+              objectFit="cover"
+              display="block"
+            />
+          )}
+        </Box>
       </Box>
 
       <Stack spacing="0.75rem">
