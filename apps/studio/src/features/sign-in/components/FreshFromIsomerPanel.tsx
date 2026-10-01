@@ -31,6 +31,9 @@ const SPOTLIGHTS: Spotlight[] = [
   },
 ]
 
+// Matches unpublishing.mp4 so the frame size is stable before metadata loads.
+const SPOTLIGHT_MEDIA_ASPECT_RATIO = 1280 / 868
+
 export const FreshFromIsomerPanel = (): JSX.Element | null => {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
@@ -195,6 +198,9 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
         borderWidth="1px"
         borderColor="base.divider.medium"
         boxShadow="md"
+        w="100%"
+        aspectRatio={SPOTLIGHT_MEDIA_ASPECT_RATIO}
+        position="relative"
       >
         {active.media.type === "video" ? (
           <Box
@@ -208,8 +214,11 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
             loop={SPOTLIGHTS.length === 1}
             preload="auto"
             aria-label={active.title}
+            position="absolute"
+            inset={0}
             w="100%"
-            h="auto"
+            h="100%"
+            objectFit="contain"
             display="block"
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
@@ -222,7 +231,16 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
             }}
           />
         ) : (
-          <Box as="img" src={active.media.src} w="100%" display="block" />
+          <Box
+            as="img"
+            src={active.media.src}
+            position="absolute"
+            inset={0}
+            w="100%"
+            h="100%"
+            objectFit="contain"
+            display="block"
+          />
         )}
       </Box>
 
