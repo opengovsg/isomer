@@ -139,8 +139,7 @@ export interface VersionHistoryRow {
   publishedAt: Date
   publisher: { id: string; name: string; email: string }
   // `null` for a resource's first version, which has nothing to diff against.
-  beforeContent: IsomerSchema | null
-  afterContent: IsomerSchema
+  content: IsomerSchema | null
 }
 
 interface ListVersionHistoryProps {
@@ -184,7 +183,7 @@ export const listVersionHistory = async ({
 
   const hasMore = rows.length > limit
 
-  const items = rows.slice(0, limit).map((row, index) => ({
+  const items = rows.slice(0, limit).map((row) => ({
     id: row.id,
     versionNum: row.versionNum,
     publishedAt: row.publishedAt,
@@ -193,8 +192,7 @@ export const listVersionHistory = async ({
       name: row.publisherName,
       email: row.publisherEmail,
     },
-    beforeContent: rows[index + 1]?.content ?? null,
-    afterContent: row.content,
+    content: row.content,
   }))
 
   return { items, nextOffset: hasMore ? offset + limit : null }
