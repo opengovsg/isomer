@@ -132,7 +132,7 @@ export const PROSE_EXTENSIONS: Extensions = [
 declare module "@tiptap/extension-table" {
   interface TableOptions {
     // The focused table modal sets this so its node view does not offer
-    // another "Edit table" button.
+    // another expand control.
     focusEdit: boolean
   }
 }

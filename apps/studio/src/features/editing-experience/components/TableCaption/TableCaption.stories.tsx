@@ -76,7 +76,7 @@ export const PlaceholderCaption: Story = {
       await canvas.findByRole("button", { name: "Add table caption" }),
     ).toHaveTextContent("Add caption")
     await expect(
-      await canvas.findByRole("button", { name: "Edit table" }),
+      await canvas.findByRole("button", { name: "Expand" }),
     ).toBeInTheDocument()
   },
 }
@@ -93,7 +93,7 @@ export const PopulatedCaption: Story = {
       await canvas.findByRole("button", { name: "Edit table caption" }),
     ).toHaveTextContent("Edit caption")
     await expect(
-      await canvas.findByRole("button", { name: "Edit table" }),
+      await canvas.findByRole("button", { name: "Expand" }),
     ).toBeInTheDocument()
   },
 }
@@ -171,7 +171,7 @@ const expectTableEditingControls = async (dialog: HTMLElement) => {
     modal.queryByRole("button", { name: /^table$/i }),
   ).not.toBeInTheDocument()
   await expect(
-    modal.queryByRole("button", { name: "Edit table" }),
+    modal.queryByRole("button", { name: "Expand" }),
   ).not.toBeInTheDocument()
 }
 
@@ -181,9 +181,7 @@ export const EditEmptyTable: Story = {
     const canvas = within(canvasElement)
     const body = within(canvasElement.ownerDocument.body)
 
-    await userEvent.click(
-      await canvas.findByRole("button", { name: "Edit table" }),
-    )
+    await userEvent.click(await canvas.findByRole("button", { name: "Expand" }))
 
     const dialog = await body.findByRole("dialog", { name: "Edit table" })
     await expectTableEditingControls(dialog)
@@ -196,9 +194,7 @@ export const EditPopulatedTable: Story = {
     const canvas = within(canvasElement)
     const body = within(canvasElement.ownerDocument.body)
 
-    await userEvent.click(
-      await canvas.findByRole("button", { name: "Edit table" }),
-    )
+    await userEvent.click(await canvas.findByRole("button", { name: "Expand" }))
 
     const dialog = await body.findByRole("dialog", { name: "Edit table" })
     await expect(

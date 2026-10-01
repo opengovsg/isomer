@@ -299,7 +299,7 @@ describe("TableCaption", () => {
     }
   })
 
-  it("places an Edit table button to the right of the caption button", async () => {
+  it("places an expand control to the right of the caption button", async () => {
     // Arrange
     renderHarness({
       type: "prose",
@@ -309,11 +309,11 @@ describe("TableCaption", () => {
     // Act
     const captionButton = await getCaptionButton("Edit table caption")
     const editTableButton = await screen.findByRole("button", {
-      name: "Edit table",
+      name: "Expand",
     })
 
     // Assert
-    expect(editTableButton).not.toHaveTextContent(/edit table/i)
+    expect(editTableButton).not.toHaveTextContent(/expand/i)
     expect(
       captionButton.compareDocumentPosition(editTableButton) &
         Node.DOCUMENT_POSITION_FOLLOWING,
@@ -336,15 +336,17 @@ describe("TableCaption", () => {
 
     // Act
     const editButtons = await screen.findAllByRole("button", {
-      name: "Edit table",
+      name: "Expand",
     })
     await userEvent.click(editButtons[0]!)
 
     // Assert
     const dialog = await screen.findByRole("dialog", { name: "Edit table" })
-    const bounds = dialog.getBoundingClientRect()
-    expect(bounds.width).toBeGreaterThan(window.innerWidth * 0.85)
-    expect(bounds.height).toBeGreaterThan(window.innerHeight * 0.85)
+    await waitFor(() => {
+      const bounds = dialog.getBoundingClientRect()
+      expect(bounds.width).toBeGreaterThan(window.innerWidth * 0.98)
+      expect(bounds.height).toBeGreaterThan(window.innerHeight * 0.98)
+    })
     const modal = within(dialog)
     expect(modal.getByText("First table")).toBeInTheDocument()
     expect(modal.getByText("Column A")).toBeInTheDocument()
@@ -367,8 +369,17 @@ describe("TableCaption", () => {
       modal.queryByRole("button", { name: /^divider$/i }),
     ).not.toBeInTheDocument()
     expect(
-      modal.queryByRole("button", { name: "Edit table" }),
+      modal.queryByRole("button", { name: "Expand" }),
     ).not.toBeInTheDocument()
+    expect(
+      modal.queryByRole("button", { name: /^close$/i }),
+    ).not.toBeInTheDocument()
+    expect(modal.getByRole("button", { name: "Done" })).toBeInTheDocument()
+
+    await userEvent.keyboard("{Escape}")
+    expect(
+      screen.getByRole("dialog", { name: "Edit table" }),
+    ).toBeInTheDocument()
   })
 
   it("writes cell edits from the modal back to that table", async () => {
@@ -388,7 +399,7 @@ describe("TableCaption", () => {
 
     // Act
     const editButtons = await screen.findAllByRole("button", {
-      name: "Edit table",
+      name: "Expand",
     })
     await userEvent.click(editButtons[1]!)
     const dialog = await screen.findByRole("dialog", { name: "Edit table" })
