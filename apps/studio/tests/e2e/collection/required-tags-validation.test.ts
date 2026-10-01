@@ -145,7 +145,7 @@ test.describe("collection page — required tag categories", () => {
     await saveButton.click()
     await expect(
       page.getByText(
-        "Changes saved. Click 'Publish' when you're ready to go live.",
+        "Changes saved. Click 'Publish options' when you're ready to go live.",
       ),
     ).toBeVisible()
 
