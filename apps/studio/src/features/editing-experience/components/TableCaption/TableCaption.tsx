@@ -1,23 +1,46 @@
-import { Flex, Icon, Text, useDisclosure } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
-import { BiPencil } from "react-icons/bi"
+import type { Editor, JSONContent } from "@tiptap/react"
+import { Flex, Icon, Text, Tooltip, useDisclosure } from "@chakra-ui/react"
+import { Button, IconButton } from "@opengovsg/design-system-react"
+import { lazy, Suspense } from "react"
+import { BiExpand, BiPencil } from "react-icons/bi"
 import { TableSettingsModal } from "~/features/editing-experience/components/TableSettingsModal/TableSettingsModal"
 
 import { isPlaceholderTableCaption } from "./utils"
 
+// Lazy so the node view does not statically import the editor hook. That hook
+// loads this node view and would cycle.
+const TableFocusEditorModal = lazy(() =>
+  import("./TableFocusEditorModal").then((module) => ({
+    default: module.TableFocusEditorModal,
+  })),
+)
+
 export interface TableCaptionProps {
   caption: string
   onCaptionChange: (caption: string) => void
+  editor: Editor
+  getPos: () => number | undefined
+  table: JSONContent
+  showTableEditorButton?: boolean
 }
 
 export const TableCaption = ({
   caption,
   onCaptionChange,
+  editor,
+  getPos,
+  table,
+  showTableEditorButton = true,
 }: TableCaptionProps) => {
   const {
     isOpen: isTableSettingsModalOpen,
     onOpen: onTableSettingsModalOpen,
     onClose: onTableSettingsModalClose,
+  } = useDisclosure()
+  const {
+    isOpen: isTableEditorModalOpen,
+    onOpen: onTableEditorModalOpen,
+    onClose: onTableEditorModalClose,
   } = useDisclosure()
 
   const hasCaption = !isPlaceholderTableCaption(caption)
@@ -35,25 +58,46 @@ export const TableCaption = ({
         >
           {caption}
         </Text>
-        <Button
-          variant="clear"
-          size="xs"
-          leftIcon={
-            <Icon
-              as={BiPencil}
-              color="interaction.links.default"
-              boxSize="1rem"
-            />
-          }
-          color="interaction.links.default"
-          textStyle="caption-1"
-          padding="0.5rem"
-          flexShrink={0}
-          onClick={onTableSettingsModalOpen}
-          aria-label={hasCaption ? "Edit table caption" : "Add table caption"}
-        >
-          {hasCaption ? "Edit caption" : "Add caption"}
-        </Button>
+        <Flex align="center" gap="0.25rem" flexShrink={0}>
+          <Button
+            variant="clear"
+            size="xs"
+            leftIcon={
+              <Icon
+                as={BiPencil}
+                color="interaction.links.default"
+                boxSize="1rem"
+              />
+            }
+            color="interaction.links.default"
+            textStyle="caption-1"
+            padding="0.5rem"
+            flexShrink={0}
+            onClick={onTableSettingsModalOpen}
+            aria-label={hasCaption ? "Edit table caption" : "Add table caption"}
+          >
+            {hasCaption ? "Edit caption" : "Add caption"}
+          </Button>
+          {showTableEditorButton && (
+            <Tooltip label="Edit table" hasArrow openDelay={500}>
+              <IconButton
+                variant="clear"
+                size="xs"
+                aria-label="Edit table"
+                color="interaction.links.default"
+                icon={
+                  <Icon
+                    as={BiExpand}
+                    color="interaction.links.default"
+                    boxSize="1rem"
+                  />
+                }
+                flexShrink={0}
+                onClick={onTableEditorModalOpen}
+              />
+            </Tooltip>
+          )}
+        </Flex>
       </Flex>
 
       {/* Unmount while closed so defaultValues match the caption at open time. */}
@@ -64,6 +108,18 @@ export const TableCaption = ({
           onClose={onTableSettingsModalClose}
           onSave={onCaptionChange}
         />
+      )}
+
+      {showTableEditorButton && isTableEditorModalOpen && (
+        <Suspense fallback={null}>
+          <TableFocusEditorModal
+            table={table}
+            parentEditor={editor}
+            getPos={getPos}
+            isOpen
+            onClose={onTableEditorModalClose}
+          />
+        </Suspense>
       )}
     </>
   )
