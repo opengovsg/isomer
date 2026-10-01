@@ -68,7 +68,12 @@ export function useDomDiff({
     if (!beforeDocument?.body || !afterDocument?.body) return
 
     try {
-      const dd = new DiffDOM()
+      // diff-dom's default element check goes through
+      // `ownerDocument.defaultView`, which can be null for the preview
+      // iframes' documents. It then treats the bodies as plain objects, both
+      // serialise to `{}`, and the diff silently comes back empty. The
+      // simplified check identifies elements by `nodeType` instead.
+      const dd = new DiffDOM({ simplifiedElementCheck: true })
       const operations = dd.diff(
         beforeDocument.body,
         afterDocument.body,
