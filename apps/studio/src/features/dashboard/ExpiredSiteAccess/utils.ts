@@ -15,8 +15,9 @@ export const getAdminInitials = (email: string): string => {
   const parts = getEmailLocalPart(email)
     .split(/[._-]+/)
     .filter(Boolean)
-  if (parts.length >= 2) {
-    return `${parts[0]!.charAt(0)}${parts[1]!.charAt(0)}`.toUpperCase()
+  const [first, second] = parts
+  if (first !== undefined && second !== undefined) {
+    return `${first.charAt(0)}${second.charAt(0)}`.toUpperCase()
   }
   const local = parts[0] ?? email
   return local.slice(0, 2).toUpperCase()
