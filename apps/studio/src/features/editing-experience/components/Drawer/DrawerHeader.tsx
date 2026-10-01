@@ -1,9 +1,11 @@
 import type { TextProps } from "@chakra-ui/react"
+import type { ReactNode } from "react"
 import { Flex, IconButton, Text } from "@chakra-ui/react"
 import { BiChevronLeft } from "react-icons/bi"
 
 interface DrawerHeaderProps extends TextProps {
   label: string
+  badge?: ReactNode
   onBackClick: () => void
   isDisabled?: boolean
   backAriaLabel?: string
@@ -12,6 +14,7 @@ interface DrawerHeaderProps extends TextProps {
 export const DrawerHeader = ({
   onBackClick,
   label,
+  badge,
   isDisabled,
   backAriaLabel,
   ...textProps
@@ -39,6 +42,7 @@ export const DrawerHeader = ({
       <Text textStyle="h6" {...textProps}>
         {label}
       </Text>
+      {badge}
     </Flex>
   )
 }
