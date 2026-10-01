@@ -2,6 +2,7 @@ import { Box, Flex, Stack, Text } from "@chakra-ui/react"
 import { Badge, IconButton, Link } from "@opengovsg/design-system-react"
 import { useEffect, useRef, useState } from "react"
 import { BiPause, BiPlay } from "react-icons/bi"
+import { useHover } from "usehooks-ts"
 
 interface Spotlight {
   id: string
@@ -39,8 +40,29 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
   const [isPlaying, setIsPlaying] = useState(true)
   const [isBuffering, setIsBuffering] = useState(true)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const mediaFrameRef = useRef<HTMLDivElement>(null)
   const underlineRef = useRef<HTMLDivElement>(null)
+  const pausedForHoverRef = useRef(false)
+  const isMediaHovered = useHover(mediaFrameRef)
   const active = SPOTLIGHTS[activeIndex]
+
+  useEffect(() => {
+    if (active?.media.type !== "video") return
+
+    const video = videoRef.current
+    if (!video) return
+
+    if (isMediaHovered) {
+      if (video.paused) return
+      pausedForHoverRef.current = true
+      video.pause()
+      return
+    }
+
+    if (!pausedForHoverRef.current) return
+    pausedForHoverRef.current = false
+    void video.play()
+  }, [active?.media.type, activeIndex, isMediaHovered])
 
   useEffect(() => {
     if (!isPlaying || isBuffering || active?.media.type !== "video") return
@@ -66,6 +88,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
   const selectSpotlight = (index: number) => {
     const next = SPOTLIGHTS[index]
     if (!next) return
+    pausedForHoverRef.current = false
     setActiveIndex(index)
     setIsPlaying(next.media.type === "video")
     setIsBuffering(next.media.type === "video")
@@ -74,6 +97,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
   const togglePlayback = () => {
     const video = videoRef.current
     if (!video) return
+    pausedForHoverRef.current = false
     if (video.paused) {
       void video.play()
     } else {
@@ -200,6 +224,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
         w="100%"
       >
         <Box
+          ref={mediaFrameRef}
           w="100%"
           aspectRatio={SPOTLIGHT_MEDIA_ASPECT_RATIO}
           position="relative"
@@ -256,10 +281,6 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
               variant="subtle"
               colorScheme="success"
               borderRadius="full"
-              bg="transparent"
-              border="1px solid"
-              borderColor="utility.feedback.success"
-              color="utility.feedback.success"
               flexShrink={0}
             >
               {active.badge}
@@ -275,7 +296,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
         <Link
           href={active.learnMoreHref}
           isExternal
-          variant="standalone"
+          variant="inline"
           w="fit-content"
         >
           Learn more
