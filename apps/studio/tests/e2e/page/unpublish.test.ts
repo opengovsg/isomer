@@ -66,6 +66,49 @@ test.describe("admin — unpublish now", () => {
   })
 })
 
+test.describe("admin — schedule unpublish", () => {
+  test.use({ storageState: storageStateFor("admin") })
+
+  let pageId: string
+
+  test.beforeEach(async () => {
+    await dismissWelcomeModal(TEST_EMAILS.admin)
+    pageId = (await createPublishedPage()).id
+  })
+
+  test.afterEach(async () => {
+    await deleteResourceById(pageId)
+  })
+
+  test("admin can schedule a page to unpublish later", async ({ page }) => {
+    await page.goto(`/sites/${getSeedSiteId()}/pages/${pageId}`)
+
+    await page.getByRole("button", { name: "More actions" }).click()
+    await page.getByRole("button", { name: "Unpublish page" }).click()
+
+    await page.locator("label").filter({ hasText: "Unpublish later" }).click()
+
+    // A week out, so any time of day is a valid (far-future) schedule.
+    const when = WEEK_FROM_NOW()
+    const dd = String(when.getDate()).padStart(2, "0")
+    const mm = String(when.getMonth() + 1).padStart(2, "0")
+    await page
+      .getByRole("textbox", { name: "Date" })
+      .fill(`${dd}/${mm}/${when.getFullYear()}`)
+
+    // TimeSelect is a react-select: open the combobox and pick an option.
+    await page.getByRole("dialog").getByRole("combobox").click()
+    await page.getByRole("option", { name: "11:00 AM" }).click()
+
+    await page.getByRole("button", { name: "Schedule unpublish" }).click()
+
+    await expect(page.getByText(/scheduled to unpublish on/i)).toBeVisible()
+    await expect
+      .poll(() => scheduledActionOf(pageId))
+      .toBe(ScheduledAction.Unpublish)
+  })
+})
+
 const scheduledActionOf = (pageId: string) =>
   db
     .selectFrom("Resource")
