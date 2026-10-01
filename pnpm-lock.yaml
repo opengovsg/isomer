@@ -108,11 +108,11 @@ settings:
 catalogs:
   atlaskitPragmaticDnd:
     '@atlaskit/pragmatic-drag-and-drop':
-      specifier: ^3.1.0
-      version: 3.1.0
+      specifier: ^4.0.0
+      version: 4.0.0
     '@atlaskit/pragmatic-drag-and-drop-hitbox':
-      specifier: ^2.2.2
-      version: 2.2.2
+      specifier: ^3.0.0
+      version: 3.0.0
   aws-sdk:
     '@aws-sdk/client-acm':
       specifier: ^3.1137.0
@@ -779,10 +779,10 @@ importers:
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop':
         specifier: catalog:atlaskitPragmaticDnd
-        version: 3.1.0
+        version: 4.0.0
       '@atlaskit/pragmatic-drag-and-drop-hitbox':
         specifier: catalog:atlaskitPragmaticDnd
-        version: 2.2.2
+        version: 3.0.0
       '@aws-sdk/client-cloudfront':
         specifier: catalog:aws-sdk
         version: 3.1141.0
@@ -2185,11 +2185,11 @@ packages:
     resolution: {integrity: sha512-lSWTBMjAcmu2xn5yEDU7jh6QDV+C8GEKtdJ4pIQhXh26RkKQ7S3FuQlt+zZkUbTdJ4d3XyV1kPI/G0zWXxqaqw==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
-  '@atlaskit/pragmatic-drag-and-drop-hitbox@2.2.2':
-    resolution: {integrity: sha512-2Or4BWVX9ZlgsCCvgbmGEwjv2134vZARL5SezP8Dsrh3ayPYThU55Ug4dBzDAqiIJE2q8aPn+zO8YYoATa4wuA==}
+  '@atlaskit/pragmatic-drag-and-drop-hitbox@3.0.0':
+    resolution: {integrity: sha512-AGLp1ewjm07eRN2NL62awllSM19FrWVZMQYfZA/jugQlpaeoTr5ah2DE7zfiEt7yrg34htoKQVM+y6SGIQYs2A==}
 
-  '@atlaskit/pragmatic-drag-and-drop@3.1.0':
-    resolution: {integrity: sha512-VU+2Oh6OgvC6D1xiX3lfm1gZJsaSPD+ZKjAHodOQ9IO6RfOvAyReLlK5ut9gIUpPmbD8d09wlCs7y4A6/I8c5Q==}
+  '@atlaskit/pragmatic-drag-and-drop@4.0.0':
+    resolution: {integrity: sha512-pyDo2B5NiaExoKGmgeXKGNUL4aR4UzzSZm8QWWjYTEyBLVqSqKyKUwtVxMw2YEkakagOGFONUdHM32LAH2nPug==}
 
   '@aws-sdk/checksums@3.1001.1':
     resolution: {integrity: sha512-x12Q17KYlJAd3nKf8LV5LV0vt8sh8/6YfQLGPtrGnQf/tW4jqxPGq5GPpuVitpQYM3eUR4XB7CbxZf751NMbLw==}
@@ -13544,12 +13544,12 @@ snapshots:
       is-potential-custom-element-name: 1.0.1
       lru-cache: 11.5.3
 
-  '@atlaskit/pragmatic-drag-and-drop-hitbox@2.2.2':
+  '@atlaskit/pragmatic-drag-and-drop-hitbox@3.0.0':
     dependencies:
-      '@atlaskit/pragmatic-drag-and-drop': 3.1.0
+      '@atlaskit/pragmatic-drag-and-drop': 4.0.0
       '@babel/runtime': 7.29.7
 
-  '@atlaskit/pragmatic-drag-and-drop@3.1.0':
+  '@atlaskit/pragmatic-drag-and-drop@4.0.0':
     dependencies:
       '@babel/runtime': 7.29.7
       bind-event-listener: 3.0.0
