@@ -66,11 +66,60 @@ const siteListQuery = ({
   })
 }
 
+const expiredSiteListQuery = ({
+  wait,
+  isEmpty,
+}: {
+  wait?: DelayMode | number
+  isEmpty?: boolean
+} = {}) => {
+  return trpcMsw.site.listExpired.query(async () => {
+    if (wait !== undefined) {
+      await delay(wait)
+    }
+
+    if (isEmpty) {
+      return []
+    }
+
+    return [
+      {
+        id: 101,
+        config: {
+          theme: "isomer-next",
+          siteName: "ACME Gov",
+          url: "https://www.mti.gov.sg",
+          logoUrl: "",
+          search: undefined,
+          isGovernment: true,
+        } as PrismaJson.SiteJsonConfig,
+        adminEmails: ["alpha.admin@mti.gov.sg", "zebra.admin@mti.gov.sg"],
+      },
+      {
+        id: 102,
+        config: {
+          theme: "isomer-next",
+          siteName: "Agency with no site admins",
+          url: "https://www.example.gov.sg",
+          logoUrl: "",
+          search: undefined,
+          isGovernment: true,
+        } as PrismaJson.SiteJsonConfig,
+        adminEmails: [],
+      },
+    ]
+  })
+}
+
 export const sitesHandlers = {
   list: {
     default: () => siteListQuery({}),
     loading: () => siteListQuery({ wait: "infinite" }),
     empty: () => siteListQuery({ isEmpty: true }),
+  },
+  listExpired: {
+    default: () => expiredSiteListQuery({}),
+    empty: () => expiredSiteListQuery({ isEmpty: true }),
   },
   getSiteName: {
     default: () => {
