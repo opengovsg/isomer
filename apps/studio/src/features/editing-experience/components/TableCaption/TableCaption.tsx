@@ -1,7 +1,7 @@
 import type { Editor, JSONContent } from "@tiptap/react"
 import { Flex, Icon, Text, Tooltip, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
-import { lazy, Suspense, useState } from "react"
+import { lazy, Suspense, useEffect, useState } from "react"
 import { BiExpand, BiPencil } from "react-icons/bi"
 import { TableSettingsModal } from "~/features/editing-experience/components/TableSettingsModal/TableSettingsModal"
 
@@ -47,6 +47,14 @@ export const TableCaption = ({
   const [isTableEditorPresent, setIsTableEditorPresent] = useState(false)
 
   const hasCaption = !isPlaceholderTableCaption(caption)
+
+  // Warm the focused-editor chunk once the caption is on screen. The modal
+  // stays lazy to avoid a cycle through the table node view, and the first
+  // Expand click should not wait on that download.
+  useEffect(() => {
+    if (!showTableEditorButton) return
+    void import("./TableFocusEditorModal")
+  }, [showTableEditorButton])
 
   return (
     <>

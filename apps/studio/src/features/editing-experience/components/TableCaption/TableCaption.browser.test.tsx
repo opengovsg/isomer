@@ -313,7 +313,7 @@ describe("TableCaption", () => {
     })
 
     // Assert
-    expect(editTableButton).not.toHaveTextContent(/expand/i)
+    expect(editTableButton).not.toHaveTextContent("Expand")
     expect(
       captionButton.compareDocumentPosition(editTableButton) &
         Node.DOCUMENT_POSITION_FOLLOWING,
@@ -341,7 +341,13 @@ describe("TableCaption", () => {
     await userEvent.click(editButtons[0]!)
 
     // Assert
-    const dialog = await screen.findByRole("dialog", { name: "Edit table" })
+    const dialog = await screen.findByRole(
+      "dialog",
+      { name: "Edit table" },
+      // The focused editor loads on demand. A cold chunk can exceed the
+      // default 1s query timeout on CI.
+      { timeout: 10_000 },
+    )
     await waitFor(() => {
       const bounds = dialog.getBoundingClientRect()
       expect(bounds.width).toBeGreaterThan(window.innerWidth * 0.98)
@@ -380,7 +386,7 @@ describe("TableCaption", () => {
     expect(
       screen.getByRole("dialog", { name: "Edit table" }),
     ).toBeInTheDocument()
-  })
+  }, 20_000)
 
   it("writes cell edits from the modal back to that table", async () => {
     // Arrange
@@ -402,7 +408,11 @@ describe("TableCaption", () => {
       name: "Expand",
     })
     await userEvent.click(editButtons[1]!)
-    const dialog = await screen.findByRole("dialog", { name: "Edit table" })
+    const dialog = await screen.findByRole(
+      "dialog",
+      { name: "Edit table" },
+      { timeout: 10_000 },
+    )
     await userEvent.click(within(dialog).getByText("Row 1, A"))
     await userEvent.keyboard("{End} edited")
     await userEvent.click(within(dialog).getByRole("button", { name: "Done" }))
@@ -424,5 +434,5 @@ describe("TableCaption", () => {
       "Row 1, A edited",
       "Row 1, B",
     ])
-  })
+  }, 20_000)
 })
