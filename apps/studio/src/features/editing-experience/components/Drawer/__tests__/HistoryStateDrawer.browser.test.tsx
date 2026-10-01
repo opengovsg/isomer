@@ -97,6 +97,8 @@ describe("HistoryStateDrawer", () => {
 
     // Assert
     expect(screen.queryByText("No published versions yet")).not.toBeNull()
+    expect(screen.getByText("Page history")).toBeTruthy()
+    expect(screen.getByText("Beta")).toBeTruthy()
   })
 
   it("renders one row per version with a View changes button", () => {
