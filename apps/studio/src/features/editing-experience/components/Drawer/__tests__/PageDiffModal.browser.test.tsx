@@ -138,6 +138,36 @@ describe("PageDiffModal", () => {
     ).not.toBeNull()
   })
 
+  it("shows one version at a time in overlay mode", async () => {
+    renderModal(true)
+    const versionHeader = await screen.findByText("Changes in version 2")
+    const currentHeader = screen.getByText("Current Version")
+
+    // Side by side by default: both versions and the separator show.
+    expect(versionHeader).toBeVisible()
+    expect(currentHeader).toBeVisible()
+    expect(
+      screen.getByRole("separator", { name: "Resize panes" }),
+    ).toBeVisible()
+    expect(screen.queryByRole("group", { name: "Version shown" })).toBeNull()
+    const iframesBefore = Array.from(document.querySelectorAll("iframe"))
+
+    screen.getByRole("button", { name: "Overlay" }).click()
+
+    await waitFor(() => expect(currentHeader).not.toBeVisible())
+    expect(versionHeader).toBeVisible()
+    expect(screen.queryByRole("separator", { name: "Resize panes" })).toBeNull()
+
+    screen.getByRole("button", { name: "Current" }).click()
+
+    await waitFor(() => expect(currentHeader).toBeVisible())
+    expect(versionHeader).not.toBeVisible()
+    // The same previews stay mounted, so the diff still has both documents.
+    expect(Array.from(document.querySelectorAll("iframe"))).toEqual(
+      iframesBefore,
+    )
+  })
+
   it("toggles highlight visibility on the rendered iframes", async () => {
     renderModal(true)
 
