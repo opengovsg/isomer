@@ -83,7 +83,49 @@ function findParagraph(doc: Document | null | undefined, text: string) {
 // minimal fixtures below, each isolating exactly one kind of change so
 // diff-dom's front-anchored heuristic can't blend it with an unrelated
 // change.
+// A document with no window, like a preview iframe's document can be.
+const windowlessDocument = (html: string) => {
+  const doc = document.implementation.createHTMLDocument()
+  doc.body.innerHTML = html
+  return doc
+}
+
+const WindowlessHarness = ({
+  beforeDocument,
+  afterDocument,
+}: {
+  beforeDocument: Document
+  afterDocument: Document
+}) => {
+  const { status } = useDomDiff({ beforeDocument, afterDocument })
+  return <div data-testid="status">{status}</div>
+}
+
 describe("useDomDiff", () => {
+  it("diffs documents that have no window", async () => {
+    const beforeDocument = windowlessDocument("<p>Kept paragraph</p>")
+    const afterDocument = windowlessDocument(
+      "<p>Added paragraph</p><p>Kept paragraph</p>",
+    )
+    expect(beforeDocument.defaultView).toBeNull()
+
+    const { getByTestId } = render(
+      <WindowlessHarness
+        beforeDocument={beforeDocument}
+        afterDocument={afterDocument}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(getByTestId("status").textContent).toBe("ready")
+    })
+    expect(
+      findParagraph(afterDocument, "Added paragraph")?.classList.contains(
+        "isomer-diff-highlight--added",
+      ),
+    ).toBe(true)
+  })
+
   it("highlights a removed paragraph in the before pane only", async () => {
     const { beforeDoc, afterDoc } = await renderDiff(
       <div>
