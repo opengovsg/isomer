@@ -48,7 +48,7 @@ export const Admin: Story = {
     const canvas = within(canvasElement)
     await waitFor(async () =>
       expect(
-        await canvas.findByRole("button", { name: "Publish" }),
+        await canvas.findByRole("button", { name: "Publish options" }),
       ).toBeVisible(),
     )
   },
@@ -61,7 +61,7 @@ export const Publisher: Story = {
     const canvas = within(canvasElement)
     await waitFor(async () =>
       expect(
-        await canvas.findByRole("button", { name: "Publish" }),
+        await canvas.findByRole("button", { name: "Publish options" }),
       ).toBeVisible(),
     )
   },
@@ -73,7 +73,9 @@ export const PublisherHoverHint: Story = {
   parameters: handlersForRole(resourceHandlers.getRolesFor.publisher()),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", { name: "Publish" })
+    const button = await canvas.findByRole("button", {
+      name: "Publish options",
+    })
     await waitFor(() => expect(button).toBeEnabled())
     await userEvent.hover(button)
     // The tooltip renders in a portal outside the story canvas.
@@ -91,7 +93,7 @@ export const Editor: Story = {
     const canvas = within(canvasElement)
     await waitFor(() =>
       expect(
-        canvas.queryByRole("button", { name: "Publish" }),
+        canvas.queryByRole("button", { name: "Publish options" }),
       ).not.toBeInTheDocument(),
     )
   },

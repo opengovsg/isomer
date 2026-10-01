@@ -80,19 +80,23 @@ beforeEach(() => {
 
 // TouchableTooltip opens on mouseenter of the span it wraps around the button.
 const hoverPublishButton = async () => {
-  const button = await screen.findByRole("button", { name: "Publish" })
+  const button = await screen.findByRole("button", { name: "Publish options" })
   fireEvent.mouseEnter(button.parentElement!)
 }
 
 describe("PublishButton permission gating", () => {
   it("renders the Publish button for publishers", () => {
     renderForRole(RoleType.Publisher)
-    expect(screen.queryByRole("button", { name: "Publish" })).not.toBeNull()
+    expect(
+      screen.queryByRole("button", { name: "Publish options" }),
+    ).not.toBeNull()
   })
 
   it("renders the Publish button for admins", () => {
     renderForRole(RoleType.Admin)
-    expect(screen.queryByRole("button", { name: "Publish" })).not.toBeNull()
+    expect(
+      screen.queryByRole("button", { name: "Publish options" }),
+    ).not.toBeNull()
   })
 
   // Regression: @casl/react v7 changed the render-prop to receive a single
@@ -101,7 +105,7 @@ describe("PublishButton permission gating", () => {
   // to editors regardless of their permissions.
   it("renders the Publish button disabled for editors", () => {
     renderForRole(RoleType.Editor)
-    const button = screen.queryByRole("button", { name: "Publish" })
+    const button = screen.queryByRole("button", { name: "Publish options" })
     expect(button).not.toBeNull()
     expect(button).toBeDisabled()
   })

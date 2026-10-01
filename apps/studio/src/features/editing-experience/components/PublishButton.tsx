@@ -88,7 +88,7 @@ const SuspendablePublishButton = ({
                 }}
                 {...rest}
               >
-                Publish
+                Publish options
               </Button>
             )}
           </>
