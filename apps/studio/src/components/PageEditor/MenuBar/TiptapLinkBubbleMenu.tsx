@@ -12,12 +12,16 @@ interface TiptapLinkBubbleMenuProps {
   editor: Editor
   onEdit: () => void
   isLinkModalOpen: boolean
+  // The menu node is portaled to document.body. Inside a modal it needs a
+  // z-index above the dialog or the link actions render behind the overlay.
+  menuZIndex?: number | string
 }
 
 export const TiptapLinkBubbleMenu = ({
   editor,
   onEdit,
   isLinkModalOpen,
+  menuZIndex,
 }: TiptapLinkBubbleMenuProps) => {
   const shouldShow = useCallback(
     ({ editor }: { editor: Editor }) =>
@@ -26,7 +30,12 @@ export const TiptapLinkBubbleMenu = ({
   )
 
   return (
-    <BubbleMenu editor={editor} options={options} shouldShow={shouldShow}>
+    <BubbleMenu
+      editor={editor}
+      options={options}
+      shouldShow={shouldShow}
+      style={menuZIndex == null ? undefined : { zIndex: menuZIndex }}
+    >
       <Box
         bg="white"
         borderRadius="lg"

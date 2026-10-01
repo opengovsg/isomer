@@ -1,4 +1,4 @@
-import type { NodeViewProps } from "@tiptap/react"
+import type { JSONContent, NodeViewProps } from "@tiptap/react"
 import { Box } from "@chakra-ui/react"
 import { TableMap } from "@tiptap/pm/tables"
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
@@ -19,8 +19,12 @@ export const TableNodeView = ({
   getPos,
   updateAttributes,
   editor,
+  extension,
 }: NodeViewProps) => {
   const caption = (node.attrs.caption as string | undefined) ?? ""
+  const isFocusEdit = Boolean(
+    (extension.options as { focusEdit?: boolean }).focusEdit,
+  )
   const columnCount = TableMap.get(node).width
   const widths = storedColumnWidths(node, columnCount)
   // Widths before the current drag. undefined when no drag is in progress.
@@ -88,6 +92,10 @@ export const TableNodeView = ({
               ? () => commitColumnWidths(null)
               : undefined
           }
+          editor={editor}
+          getPos={getPos}
+          table={node.toJSON() as JSONContent}
+          showTableEditorButton={!isFocusEdit}
         />
       </Box>
       <Box p={`${TABLE_GUTTER_PX}px`} minW={0}>

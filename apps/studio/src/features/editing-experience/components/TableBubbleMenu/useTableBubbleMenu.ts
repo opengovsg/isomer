@@ -97,11 +97,13 @@ export const useTableBubbleMenu = (
       previous.isDragging === next.isDragging,
   })
 
+  // `view.dom` throws until the editor has mounted.
+  const editorDom = editor.isInitialized ? editor.view.dom : null
   const show =
     kind !== "none" &&
     !isDragging &&
     !isDragReordering &&
-    !isEditorModalOpen() &&
+    !isEditorModalOpen(editorDom) &&
     (isFocused || menuHasFocus)
 
   const selectionRangeKey = getSelectionRangeKey(selection)
