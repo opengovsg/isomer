@@ -20,7 +20,10 @@ import type {
 import { AXIS_TABLE_OPS, getTableAt } from "./axisTableOps"
 import { AXIS_VIEW } from "./axisView"
 import { IDLE_GESTURE, reduceGesture } from "./dragMachine"
-import { viewportPointToContainerPoint } from "./measure"
+import {
+  readAncestorLayoutScale,
+  viewportPointToContainerPoint,
+} from "./measure"
 import {
   applyHeaderAxisNormalization,
   getHeaderAxisFlags,
@@ -197,6 +200,7 @@ export const useAxisDragGesture = ({
               containerRect: container.getBoundingClientRect(),
               scrollTop: container.scrollTop,
               scrollLeft: container.scrollLeft,
+              scale: readAncestorLayoutScale(container),
             })
           : null,
       })
