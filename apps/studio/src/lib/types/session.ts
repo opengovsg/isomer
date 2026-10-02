@@ -16,6 +16,7 @@ export interface SessionData {
       verificationToken: VerificationToken
       codeVerifier: string
       nonce?: string
+      landingUrl?: string
     }
   }
 }
