@@ -15,10 +15,16 @@ import {
 import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
 import {
   ARRAY_RADIO_FORMAT,
+  HERO_BANNER_STYLE_FORMAT,
   TAG_CATEGORY_ITEM_FORMAT,
 } from "@opengovsg/isomer-components"
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
+import {
+  HeroBannerStyleDrawer,
+  HeroBannerStyleTrigger,
+} from "./HeroBannerStyleControl"
 
 export const jsonFormsOneOfControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.OneOfControl,
@@ -77,6 +83,10 @@ function JsonFormsCombinatorControl({
 
   // Snapshot the fitting branch once. Re-reading indexOfFittingSchema on every
   // change would jump to the first branch whenever a required field is cleared.
+  const [isHeroStyleDrawerOpen, setIsHeroStyleDrawerOpen] = useState(false)
+  const closeHeroStyleDrawer = useCallback(() => {
+    setIsHeroStyleDrawerOpen(false)
+  }, [])
   const [variant, setVariant] = useState(
     () =>
       (indexOfFittingSchema >= 0 && options[indexOfFittingSchema]
@@ -109,6 +119,19 @@ function JsonFormsCombinatorControl({
   const activeRenderInfo = renderInfos.find(
     (renderInfo) => variant === renderInfo.label,
   )
+  const selectedHeroStyle =
+    options.find((option) => option.label === variant)?.value ?? ""
+
+  if (schema.format === HERO_BANNER_STYLE_FORMAT && isHeroStyleDrawerOpen) {
+    return (
+      <HeroBannerStyleDrawer
+        options={options}
+        value={selectedHeroStyle}
+        onChange={onChange}
+        onClose={closeHeroStyleDrawer}
+      />
+    )
+  }
 
   return (
     <>
@@ -118,7 +141,15 @@ function JsonFormsCombinatorControl({
             <FormLabel description={description}>
               {label || "Variant"}
             </FormLabel>
-            {schema.format === ARRAY_RADIO_FORMAT ? (
+            {schema.format === HERO_BANNER_STYLE_FORMAT ? (
+              <HeroBannerStyleTrigger
+                label={
+                  options.find((option) => option.value === selectedHeroStyle)
+                    ?.label ?? ""
+                }
+                onOpen={() => setIsHeroStyleDrawerOpen(true)}
+              />
+            ) : schema.format === ARRAY_RADIO_FORMAT ? (
               <RadioGroup
                 onChange={onChange}
                 value={

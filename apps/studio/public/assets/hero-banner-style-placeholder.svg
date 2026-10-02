@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="123" height="76" viewBox="0 0 123 76" fill="none">
+  <!-- Shared placeholder until each hero banner style has its own preview. -->
+  <rect width="123" height="76" rx="4" fill="#E6EFFE"/>
+  <rect x="10" y="16" width="64" height="7" rx="2" fill="#2164DA"/>
+  <rect x="10" y="28" width="48" height="4" rx="2" fill="#7CA9F7"/>
+  <rect x="10" y="46" width="26" height="12" rx="2" fill="#2164DA"/>
+  <rect x="40" y="46" width="26" height="12" rx="2" fill="#ADC9FA"/>
+  <rect x="82" y="14" width="31" height="48" rx="2" fill="#ADC9FA"/>
+</svg>
