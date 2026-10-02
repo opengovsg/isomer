@@ -250,6 +250,7 @@ const HeroCarouselSchema = Type.Composite(
         {
           title: "Slide",
           default: HERO_CAROUSEL_SLIDE_MODE.entire,
+          format: ARRAY_RADIO_FORMAT,
         },
       ),
       slides: Type.Array(HeroCarouselSlideSchema, {
