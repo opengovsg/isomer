@@ -1,4 +1,4 @@
-import type { SessionData } from "~/lib/types/session"
+import type { SessionData, SessionVerificationToken } from "~/lib/types/session"
 import { TRPCError } from "@trpc/server"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -11,6 +11,7 @@ import { env } from "~/env.mjs"
 import { AuditLogEvent, db } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
 
+import { toSessionVerificationToken } from "../../session"
 import { singpassRouter } from "../singpass.router"
 import * as SingpassService from "../singpass.service"
 
@@ -18,6 +19,21 @@ const createCaller = createCallerFactory(singpassRouter)
 const TEST_VALID_EMAIL = "test@open.gov.sg"
 const MOCK_ORIGINAL_UUID = "2625dd66-2cbb-414b-a136-f62bb516653c"
 const MOCK_SINGPASS_UUID = "beef6054-985f-4073-ae91-cd61552e2a7d"
+
+const MOCK_SESSION_VERIFICATION_TOKEN: SessionVerificationToken = {
+  identifier: "identifier",
+  token: "token",
+  attempts: 0,
+  expires: Date.now(),
+}
+
+const expectLoginAuditDelta = () => ({
+  before: expect.objectContaining({
+    attempts: 1,
+    identifier: MOCK_SESSION_VERIFICATION_TOKEN.identifier,
+  }),
+  after: null,
+})
 
 describe("auth.singpass", () => {
   let caller: ReturnType<typeof createCaller>
@@ -63,7 +79,7 @@ describe("auth.singpass", () => {
           userId: "test-user-id" as NonNullable<
             NonNullable<SessionData["singpass"]>["sessionState"]
           >["userId"],
-          verificationToken,
+          verificationToken: toSessionVerificationToken(verificationToken),
           codeVerifier: "code-verifier",
           nonce: "nonce",
         },
@@ -247,7 +263,7 @@ describe("auth.singpass", () => {
           userId: user.id as NonNullable<
             NonNullable<SessionData["singpass"]>["sessionState"]
           >["userId"],
-          verificationToken: {} as never,
+          verificationToken: MOCK_SESSION_VERIFICATION_TOKEN,
           codeVerifier: "code-verifier",
           nonce: "nonce",
         },
@@ -286,10 +302,7 @@ describe("auth.singpass", () => {
         }),
         expect.objectContaining({
           eventType: AuditLogEvent.Login,
-          delta: {
-            before: { attempts: null },
-            after: null,
-          },
+          delta: expectLoginAuditDelta(),
         }),
       ])
     })
@@ -307,7 +320,7 @@ describe("auth.singpass", () => {
           userId: user.id as NonNullable<
             NonNullable<SessionData["singpass"]>["sessionState"]
           >["userId"],
-          verificationToken: {} as never,
+          verificationToken: MOCK_SESSION_VERIFICATION_TOKEN,
           codeVerifier: "code-verifier",
           nonce: "nonce",
         },
@@ -330,10 +343,7 @@ describe("auth.singpass", () => {
       expect(auditLogs).toEqual([
         expect.objectContaining({
           eventType: AuditLogEvent.Login,
-          delta: {
-            before: { attempts: null },
-            after: null,
-          },
+          delta: expectLoginAuditDelta(),
         }),
       ])
     })
