@@ -1,7 +1,4 @@
 import type { IconType } from "react-icons"
-
-import { BiClipboardCheck } from "./custom-icons/BiClipboardCheck"
-import { BiMegaphone } from "./custom-icons/BiMegaphone"
 import {
   BiBarChartAlt2,
   BiBookOpen,
@@ -20,6 +17,9 @@ import {
   BiRightArrowAlt,
   BiStar,
 } from "react-icons/bi"
+
+import { BiClipboardCheck } from "./custom-icons/BiClipboardCheck"
+import { BiMegaphone } from "./custom-icons/BiMegaphone"
 
 export const SUPPORTED_ICON_NAMES = [
   "right-arrow",
