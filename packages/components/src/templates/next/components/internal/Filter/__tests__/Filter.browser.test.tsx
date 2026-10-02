@@ -36,6 +36,7 @@ const openMobileDrawer = () => {
 
 describe("Filter", () => {
   it("uses a space-free panel id for aria-controls when the filter id is a label", async () => {
+    // Arrange
     render(
       <Filter
         filters={[
@@ -53,11 +54,14 @@ describe("Filter", () => {
       />,
     )
 
+    // Act
     const sectionButton = screen.getByRole("button", {
       name: "Assurance Level",
       expanded: true,
     })
     const panelId = sectionButton.getAttribute("aria-controls")
+
+    // Assert
     expect(panelId).toBe("filter-panel-Assurance-Level")
     expect(panelId).not.toMatch(/\s/)
     expect(document.getElementById(panelId!)).not.toBeNull()
