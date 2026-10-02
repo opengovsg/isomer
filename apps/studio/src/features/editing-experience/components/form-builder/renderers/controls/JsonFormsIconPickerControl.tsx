@@ -12,6 +12,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { getCustomErrorMessage } from "./utils"
 
+// Two rows of icons in the picker; column count sets the grid width.
 const ICON_PICKER_COLUMNS = 9
 
 export const jsonFormsIconPickerControlTester: RankedTester = rankWith(
