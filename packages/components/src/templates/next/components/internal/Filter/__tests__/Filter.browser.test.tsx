@@ -35,7 +35,7 @@ const openMobileDrawer = () => {
 }
 
 describe("Filter", () => {
-  it("uses a space-free panel id for aria-controls when the filter id is a label", async () => {
+  it("uses a space-free panel id for aria-controls when the filter id is a label", () => {
     // Arrange
     render(
       <Filter
@@ -43,7 +43,6 @@ describe("Filter", () => {
           {
             id: "Assurance Level",
             label: "Assurance Level",
-            type: TAG_CATEGORY_TYPE.Text,
             items: [{ id: "gold", label: "Gold", count: 1 }],
           },
         ]}
