@@ -5,9 +5,24 @@ import { BiCheck, BiChevronRight } from "react-icons/bi"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 
-// Shared placeholder until each hero banner style has its own preview image.
+// Search bar (hidden in the picker) still uses the shared placeholder preview.
 const HERO_BANNER_STYLE_PLACEHOLDER_SRC =
   "/assets/hero-banner-style-placeholder.svg"
+
+const HERO_BANNER_STYLE_PREVIEW_SRC: Record<string, string> = {
+  "Gradient (Default)": "/assets/hero-banner-style-gradient.png",
+  Block: "/assets/hero-banner-style-block.png",
+  "Large image": "/assets/hero-banner-style-large-image.png",
+  Floating: "/assets/hero-banner-style-floating.png",
+  "Search bar": HERO_BANNER_STYLE_PLACEHOLDER_SRC,
+}
+
+function heroBannerStylePreviewSrc(optionValue: string) {
+  return (
+    HERO_BANNER_STYLE_PREVIEW_SRC[optionValue] ??
+    HERO_BANNER_STYLE_PLACEHOLDER_SRC
+  )
+}
 
 const EXPLORE_STYLES_LABEL = "Click to explore different styles"
 const CHOOSE_STYLE_LABEL = "Choose a hero banner style"
@@ -17,11 +32,11 @@ export interface HeroBannerStyleOption {
   value: string
 }
 
-function HeroBannerStyleThumbnail() {
+function HeroBannerStyleThumbnail({ src }: { src: string }) {
   return (
     <Box
       as="img"
-      src={HERO_BANNER_STYLE_PLACEHOLDER_SRC}
+      src={src}
       alt=""
       w="123px"
       h="76px"
@@ -165,7 +180,9 @@ export function HeroBannerStyleDrawer({
                   onChange={() => onChange(option.value)}
                   srOnly
                 />
-                <HeroBannerStyleThumbnail />
+                <HeroBannerStyleThumbnail
+                  src={heroBannerStylePreviewSrc(option.value)}
+                />
                 <Text
                   textStyle="subhead-1"
                   color="utility.feedback.info"
