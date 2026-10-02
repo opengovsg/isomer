@@ -104,6 +104,9 @@ export const LoadingResourceItemsResults = () => {
 
 interface SuspendableContentProps {
   resourceItemsWithAncestryStack: ResourceItemContent[][] | undefined
+  hasError: boolean
+  isRetrying: boolean
+  onRetry: () => void
   isResourceIdHighlighted: (resourceId: string) => boolean
   isResourceItemDisabled: (resourceItem: ResourceItemContent) => boolean
   hasAdditionalLeftPadding: boolean
@@ -117,6 +120,9 @@ interface SuspendableContentProps {
 }
 export const SuspendableContent = ({
   resourceItemsWithAncestryStack,
+  hasError,
+  isRetrying,
+  onRetry,
   isResourceIdHighlighted,
   isResourceItemDisabled,
   hasAdditionalLeftPadding,
@@ -126,6 +132,23 @@ export const SuspendableContent = ({
   clearSearchValue,
   isLoading,
 }: SuspendableContentProps) => {
+  if (hasError && !isLoading)
+    return (
+      <VStack flex={1} justifyContent="center" gap="0.75rem">
+        <Text role="alert" textStyle="caption-2" textAlign="center">
+          We couldn't load your pages and folders.
+        </Text>
+        <Button
+          variant="link"
+          size="xs"
+          onClick={onRetry}
+          isLoading={isRetrying}
+        >
+          Retry
+        </Button>
+      </VStack>
+    )
+
   if (isLoading || !resourceItemsWithAncestryStack)
     return <LoadingResourceItemsResults />
 
