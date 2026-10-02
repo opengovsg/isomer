@@ -50,23 +50,30 @@ export function HeroBannerStyleTrigger({
       textAlign="left"
       py="1rem"
       px="1.25rem"
-      gap="1.5rem"
       borderWidth="2px"
       borderStyle="solid"
-      borderColor="utility.feedback.info"
+      borderColor="base.divider.medium"
       borderRadius="0.5rem"
-      bg="base.canvas.default"
+      bg="utility.ui"
       cursor="pointer"
       onClick={onOpen}
-      _hover={{ bg: "utility.feedback.info-subtle" }}
+      _hover={{
+        borderColor: "utility.feedback.info",
+        bg: "utility.feedback.info-subtle",
+      }}
       _focusVisible={{
         outline: "2px solid",
         outlineColor: "utility.focus-default",
         outlineOffset: "2px",
       }}
     >
-      <HeroBannerStyleThumbnail />
-      <Flex direction="column" flex="1" minW={0} alignItems="flex-start">
+      <Flex
+        direction="column"
+        flex="1"
+        minW={0}
+        alignItems="flex-start"
+        gap="0.25rem"
+      >
         <Text textStyle="subhead-1" color="utility.feedback.info">
           {label}
         </Text>
@@ -141,18 +148,13 @@ export function HeroBannerStyleDrawer({
                 py="1rem"
                 px="1.25rem"
                 gap="1.5rem"
-                borderWidth="1px"
+                borderWidth="2px"
                 borderStyle="solid"
                 borderColor={
-                  isSelected ? "utility.feedback.info" : "base.divider.strong"
+                  isSelected ? "utility.feedback.info" : "base.divider.medium"
                 }
                 borderRadius="0.5rem"
-                bg="base.canvas.default"
-                _hover={
-                  isSelected
-                    ? undefined
-                    : { borderColor: "utility.feedback.info" }
-                }
+                bg={isSelected ? "utility.feedback.info-subtle" : "utility.ui"}
               >
                 <Box
                   as="input"
@@ -166,7 +168,7 @@ export function HeroBannerStyleDrawer({
                 <HeroBannerStyleThumbnail />
                 <Text
                   textStyle="subhead-1"
-                  color="base.content.strong"
+                  color="utility.feedback.info"
                   flex="1"
                   minW={0}
                 >
