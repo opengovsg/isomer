@@ -304,6 +304,283 @@ describe("site.router", async () => {
     })
   })
 
+  describe("listExpired", () => {
+    const insertPermissionDeleteAudit = async ({
+      actorUserId,
+      permissionId,
+      reason,
+      siteId,
+      subjectUserId,
+    }: {
+      actorUserId: string
+      permissionId: string | bigint | number
+      reason?: string
+      siteId: number
+      subjectUserId: string
+    }) => {
+      await db
+        .insertInto("AuditLog")
+        .values({
+          eventType: AuditLogEvent.PermissionDelete,
+          userId: actorUserId,
+          siteId,
+          delta: jsonb({
+            before: { id: String(permissionId), userId: subjectUserId },
+            after: { id: String(permissionId), userId: subjectUserId },
+          }) as never,
+          metadata: jsonb(reason ? { reason } : {}),
+        })
+        .execute()
+    }
+
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.listExpired()
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should return an empty array when the user has no expired site access", async () => {
+      // Act
+      const result = await caller.listExpired()
+
+      // Assert
+      expect(result).toEqual([])
+    })
+
+    it("should return a site removed for inactivity with current site admin emails", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const removed = await setupEditorPermissions({
+        userId: user.id,
+        siteId: site.id,
+        isDeleted: true,
+      })
+      await insertPermissionDeleteAudit({
+        actorUserId: user.id,
+        permissionId: removed.id,
+        reason: "inactivity",
+        siteId: site.id,
+        subjectUserId: user.id,
+      })
+
+      const adminA = await setupUser({ email: "zebra.admin@agency.gov.sg" })
+      const adminB = await setupUser({ email: "alpha.admin@agency.gov.sg" })
+      await setupAdminPermissions({ userId: adminA.id, siteId: site.id })
+      await setupAdminPermissions({ userId: adminB.id, siteId: site.id })
+
+      const editor = await setupUser({ email: "editor@agency.gov.sg" })
+      await setupEditorPermissions({ userId: editor.id, siteId: site.id })
+
+      const isomerAdmin = await setupUser({ email: "ops@isomer.gov.sg" })
+      await setupAdminPermissions({ userId: isomerAdmin.id, siteId: site.id })
+      await setupIsomerAdmin({ userId: isomerAdmin.id })
+
+      const removedAdmin = await setupUser({
+        email: "former.admin@agency.gov.sg",
+      })
+      await setupAdminPermissions({
+        userId: removedAdmin.id,
+        siteId: site.id,
+        isDeleted: true,
+      })
+
+      // Act
+      const result = await caller.listExpired()
+
+      // Assert
+      expect(result).toEqual([
+        {
+          id: site.id,
+          config: site.config,
+          adminEmails: [
+            "alpha.admin@agency.gov.sg",
+            "zebra.admin@agency.gov.sg",
+          ],
+        },
+      ])
+    })
+
+    it("should not return a site the user still has access to", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: user.id, siteId: site.id })
+
+      // Act
+      const result = await caller.listExpired()
+
+      // Assert
+      expect(result).toEqual([])
+    })
+
+    it("should not return a site whose permission was removed without an inactivity audit", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const removed = await setupEditorPermissions({
+        userId: user.id,
+        siteId: site.id,
+        isDeleted: true,
+      })
+      await insertPermissionDeleteAudit({
+        actorUserId: user.id,
+        permissionId: removed.id,
+        reason: "manual",
+        siteId: site.id,
+        subjectUserId: user.id,
+      })
+
+      // Act
+      const result = await caller.listExpired()
+
+      // Assert
+      expect(result).toEqual([])
+    })
+
+    it("should not return a site when a later removal was not for inactivity", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const removedForInactivity = await setupEditorPermissions({
+        userId: user.id,
+        siteId: site.id,
+        isDeleted: true,
+      })
+      await insertPermissionDeleteAudit({
+        actorUserId: user.id,
+        permissionId: removedForInactivity.id,
+        reason: "inactivity",
+        siteId: site.id,
+        subjectUserId: user.id,
+      })
+      const removedManually = await setupEditorPermissions({
+        userId: user.id,
+        siteId: site.id,
+        isDeleted: true,
+        useCurrentTime: true,
+      })
+      await insertPermissionDeleteAudit({
+        actorUserId: user.id,
+        permissionId: removedManually.id,
+        reason: "manual",
+        siteId: site.id,
+        subjectUserId: user.id,
+      })
+
+      // Act
+      const result = await caller.listExpired()
+
+      // Assert
+      expect(result).toEqual([])
+    })
+
+    it("should not return a site after the user is granted access again", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const removed = await setupEditorPermissions({
+        userId: user.id,
+        siteId: site.id,
+        isDeleted: true,
+      })
+      await insertPermissionDeleteAudit({
+        actorUserId: user.id,
+        permissionId: removed.id,
+        reason: "inactivity",
+        siteId: site.id,
+        subjectUserId: user.id,
+      })
+      await setupEditorPermissions({ userId: user.id, siteId: site.id })
+
+      // Act
+      const result = await caller.listExpired()
+
+      // Assert
+      expect(result).toEqual([])
+    })
+
+    it("should return an empty array for an active Isomer admin", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const removed = await setupEditorPermissions({
+        userId: user.id,
+        siteId: site.id,
+        isDeleted: true,
+      })
+      await insertPermissionDeleteAudit({
+        actorUserId: user.id,
+        permissionId: removed.id,
+        reason: "inactivity",
+        siteId: site.id,
+        subjectUserId: user.id,
+      })
+      await setupIsomerAdmin({ userId: user.id })
+
+      // Act
+      const result = await caller.listExpired()
+
+      // Assert
+      expect(result).toEqual([])
+    })
+
+    it("should return an empty admin list when the site has no remaining site admins", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const removed = await setupAdminPermissions({
+        userId: user.id,
+        siteId: site.id,
+        isDeleted: true,
+      })
+      await insertPermissionDeleteAudit({
+        actorUserId: user.id,
+        permissionId: removed.id,
+        reason: "inactivity",
+        siteId: site.id,
+        subjectUserId: user.id,
+      })
+
+      // Act
+      const result = await caller.listExpired()
+
+      // Assert
+      expect(result).toEqual([
+        {
+          id: site.id,
+          config: site.config,
+          adminEmails: [],
+        },
+      ])
+    })
+
+    it("should not return another user's expired site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const otherUser = await setupUser({ email: "other@agency.gov.sg" })
+      const removed = await setupEditorPermissions({
+        userId: otherUser.id,
+        siteId: site.id,
+        isDeleted: true,
+      })
+      await insertPermissionDeleteAudit({
+        actorUserId: user.id,
+        permissionId: removed.id,
+        reason: "inactivity",
+        siteId: site.id,
+        subjectUserId: otherUser.id,
+      })
+
+      // Act
+      const result = await caller.listExpired()
+
+      // Assert
+      expect(result).toEqual([])
+    })
+  })
+
   describe("listAllSites", () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange
