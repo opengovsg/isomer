@@ -279,8 +279,8 @@ export const HeroSchema = Type.Intersect(
         HeroBlockSchema,
         HeroLargeImageSchema,
         HeroFloatingSchema,
-        HeroSearchbarSchema,
         HeroCarouselSchema,
+        HeroSearchbarSchema,
       ],
       {
         title: "Hero banner style",
