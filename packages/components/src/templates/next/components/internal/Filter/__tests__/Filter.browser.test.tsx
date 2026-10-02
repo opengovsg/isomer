@@ -62,7 +62,7 @@ describe("Filter", () => {
     const panelId = sectionButton.getAttribute("aria-controls")
 
     // Assert
-    expect(panelId).toBe("drawer-filter-panel-Assurance-Level")
+    expect(panelId).toBe("drawer-filter-panel-Assurance%20Level")
     expect(panelId).not.toMatch(/\s/)
     expect(document.getElementById(panelId!)).not.toBeNull()
   })
