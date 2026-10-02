@@ -27,7 +27,7 @@ const SITE_WITHOUT_ADMINS: ExpiredSite = {
   id: 102,
   config: {
     theme: "isomer-next",
-    siteName: "Agency with no site admins",
+    siteName: "ACME NoAdminGov",
     url: "https://www.example.gov.sg",
     logoUrl: "",
     search: undefined,
