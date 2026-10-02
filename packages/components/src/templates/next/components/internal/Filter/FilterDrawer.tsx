@@ -24,7 +24,7 @@ import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { IconButton } from "../IconButton"
 import { DateFilterControls } from "./DateFilterControls"
-import { getFilterPanelDomId } from "./filterPanelDomId"
+import { getFilterPanelIdSuffix } from "./filterPanelIdSuffix"
 import { filterChevronStyles } from "./filterStyles"
 
 const expandFilterButtonStyle = tv({
@@ -171,7 +171,7 @@ const FilterDrawerContent = ({
             showStatusLabelsFilter,
             showDateRangeFilter,
           }) => {
-            const panelId = getFilterPanelDomId(id, "drawer")
+            const panelId = `drawer-filter-panel-${getFilterPanelIdSuffix(id)}`
             const isExpanded = showFilter[id] ?? false
 
             return (
