@@ -8,6 +8,7 @@ describe("getTableOfContents", () => {
   const anchorPattern = /^#[a-f0-9]{32}$/
 
   it("preserves literal HTML and entities in heading text", () => {
+    // Arrange
     const site = generateSiteConfig()
     const content = getTransformedPageContent([
       {
@@ -22,9 +23,11 @@ describe("getTableOfContents", () => {
       },
     ])
 
-    expect(getTableOfContents(site, content)[0]?.content).toBe(
-      "A & B <br> &amp;",
-    )
+    // Act
+    const result = getTableOfContents(site, content)
+
+    // Assert
+    expect(result[0]?.content).toBe("A & B <br> &amp;")
   })
 
   it("generates toc entries from level-2 prose headings only", () => {

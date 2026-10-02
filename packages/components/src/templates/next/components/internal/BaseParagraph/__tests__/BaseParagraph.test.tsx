@@ -6,13 +6,13 @@ import { beforeAll, describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
-import { Accordion } from "../../complex/Accordion"
-import { Callout } from "../../complex/Callout"
-import { Contentpic } from "../../complex/Contentpic"
-import { Heading } from "../../native/Heading"
-import { Prose } from "../../native/Prose"
-import { Notification } from "../Notification"
-import { BaseParagraph } from "./BaseParagraph"
+import { Accordion } from "../../../complex/Accordion"
+import { Callout } from "../../../complex/Callout"
+import { Contentpic } from "../../../complex/Contentpic"
+import { Heading } from "../../../native/Heading"
+import { Prose } from "../../../native/Prose"
+import { Notification } from "../../Notification"
+import { BaseParagraph } from "../BaseParagraph"
 
 beforeAll(() => polyfill())
 
@@ -129,7 +129,10 @@ describe("prose text rendering", () => {
       marks,
     })) {
       it(`safely renders ${marks ? "marked" : "unmarked"} text in ${name}`, () => {
+        // Act
         const html = renderToStaticMarkup(element)
+
+        // Assert
         expect(html).not.toMatch(/<a\b/i)
         expect(html).not.toContain('src="injected.png"')
         expect(unescape(html.replace(/<[^>]*>/g, ""))).toContain(
@@ -142,6 +145,7 @@ describe("prose text rendering", () => {
   it.each([undefined, [{ type: "bold" } as const]])(
     "preserves HTML stripping and entity handling with marks %j",
     (marks) => {
+      // Arrange
       const content = getTextAsHtml({
         site,
         shouldStripContentHtmlTags: true,
@@ -153,7 +157,11 @@ describe("prose text rendering", () => {
           },
         ],
       })
+
+      // Act
       const html = renderToStaticMarkup(<BaseParagraph content={content} />)
+
+      // Assert
       expect(unescape(html.replace(/<[^>]*>/g, ""))).toBe(
         "Before label after & <b>",
       )
@@ -165,25 +173,27 @@ describe("prose text rendering", () => {
   )
 
   it("preserves formatting, hard breaks and legitimate link marks", () => {
-    const html = renderToStaticMarkup(
-      <BaseParagraph
-        content={getTextAsHtml({
-          site,
-          content: [
-            {
-              type: "text",
-              text: "A & B < C",
-              marks: [
-                { type: "bold" },
-                { type: "link", attrs: { href: "/page?a=1&b=2" } },
-              ],
-            },
-            { type: "hardBreak" },
-            { type: "text", text: "End", marks: [{ type: "italic" }] },
+    // Arrange
+    const content = getTextAsHtml({
+      site,
+      content: [
+        {
+          type: "text",
+          text: "A & B < C",
+          marks: [
+            { type: "bold" },
+            { type: "link", attrs: { href: "/page?a=1&b=2" } },
           ],
-        })}
-      />,
-    )
+        },
+        { type: "hardBreak" },
+        { type: "text", text: "End", marks: [{ type: "italic" }] },
+      ],
+    })
+
+    // Act
+    const html = renderToStaticMarkup(<BaseParagraph content={content} />)
+
+    // Assert
     expect(html).toContain('href="/page?a=1&amp;b=2"')
     expect(html).toContain("<b>A &amp; B &lt; C</b>")
     expect(html).toContain("<br/>")
@@ -191,32 +201,27 @@ describe("prose text rendering", () => {
   })
 
   it("escapes quotes in link mark attributes", () => {
+    // Arrange
+    const href = '/page"><a href="javascript:alert(1)"><img src="injected.png'
+
+    // Act
     const html = getTextAsHtml({
       site,
       content: [
         {
           type: "text",
           text: "Link",
-          marks: [
-            {
-              type: "link",
-              attrs: {
-                href: '/page"><a href="javascript:alert(1)"><img src="injected.png',
-                target: "_self",
-              },
-            },
-          ],
+          marks: [{ type: "link", attrs: { href, target: "_self" } }],
         },
       ],
     })
-    expect(html.match(/<a\b/g)).toHaveLength(1)
-    expect(html).not.toMatch(/<img\b/)
-    expect(html).toContain(
-      escape('/page"><a href="javascript:alert(1)"><img src="injected.png'),
-    )
+
+    // Assert
+    expect(html).toBe(`<a target="_self" href="${escape(href)}">Link</a>`)
   })
 
   it("preserves literal special characters in headings", () => {
+    // Act
     const html = renderToStaticMarkup(
       <Heading
         attrs={{ level: 2 }}
@@ -225,6 +230,8 @@ describe("prose text rendering", () => {
         headingLevel={2}
       />,
     )
+
+    // Assert
     expect(unescape(html.replace(/<[^>]*>/g, ""))).toBe("A & B < C")
   })
 })
@@ -237,9 +244,12 @@ describe("BaseParagraph anchor transformation", () => {
     "data:text/html,evil",
     "vbscript:evil",
   ])("rejects unsafe href %s", (href) => {
+    // Act
     const html = renderToStaticMarkup(
       <BaseParagraph content={`<a href="${href}">Download form</a>`} />,
     )
+
+    // Assert
     expect(html).not.toMatch(/<a\b/i)
     expect(html).toContain("Download form")
   })
@@ -251,19 +261,25 @@ describe("BaseParagraph anchor transformation", () => {
     "mailto:hello@example.com",
     "tel:+6512345678",
   ])("preserves safe href %s", (href) => {
+    // Act
     const html = renderToStaticMarkup(
       <BaseParagraph content={`<a href="${href}">Link</a>`} />,
     )
+
+    // Assert
     expect(html).toContain(`href="${href}"`)
   })
 
   it("respects the caller's allowed tags for transformed anchors", () => {
+    // Act
     const html = renderToStaticMarkup(
       <BaseParagraph
         allowedTags={["br"]}
         content='<a href="https://example.com">Link</a>'
       />,
     )
+
+    // Assert
     expect(html).not.toMatch(/<a\b/i)
     expect(html).toContain("Link")
   })
