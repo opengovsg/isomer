@@ -136,6 +136,13 @@ export interface AuditLogExportBatchReadyEmailTemplateData extends BaseEmailTemp
   failedSiteNames: string[]
 }
 
+export interface OtpEmailTemplateData extends BaseEmailTemplateData {
+  // Shown beside the code so users can match the email to the sign-in page
+  otpPrefix: string
+  token: string
+  expiryMinutes: number
+}
+
 export interface EmailTemplate {
   subject: string
   body: string

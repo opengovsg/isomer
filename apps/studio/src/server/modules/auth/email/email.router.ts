@@ -3,18 +3,16 @@ import type { GrowthbookAttributes } from "~/types/growthbook"
 import { TRPCError } from "@trpc/server"
 import { pick, set } from "lodash-es"
 import { env } from "~/env.mjs"
-import { sendLoginAlertEmail } from "~/features/mail/service"
+import { sendLoginAlertEmail, sendOtpEmail } from "~/features/mail/service"
 import {
   getIsSingpassDisabledInNonPreview,
   getIsSingpassEnabled,
 } from "~/lib/growthbook"
-import { sendMail } from "~/lib/mail"
 import {
   emailSignInSchema,
   emailVerifyOtpSchema,
 } from "~/schemas/auth/email/sign-in"
 import { publicProcedure, router } from "~/server/trpc"
-import { getBaseUrl } from "~/utils/getBaseUrl"
 
 import { db } from "../../database"
 import { defaultUserSelect } from "../../me/me.select"
@@ -70,8 +68,6 @@ export const emailSessionRouter = router({
         }
       }
 
-      const url = new URL(getBaseUrl())
-
       ctx.logger.info({ email, expires }, "Generated OTP for email sign in")
 
       // May have one of them fail,
@@ -95,12 +91,11 @@ export const emailSessionRouter = router({
           }),
           isStaticOtp
             ? Promise.resolve()
-            : sendMail({
-                subject: `Sign in to ${url.host}`,
-                body: `Your OTP is ${otpPrefix}-<b>${token}</b>. It expires in ${expiryMinutes} minutes.
-      Please use this to login to your account.
-      <p>If your OTP does not work, please request for a new one.</p>`,
-                recipient: email,
+            : sendOtpEmail({
+                recipientEmail: email,
+                otpPrefix,
+                token,
+                expiryMinutes,
               }),
         ])
       } catch (e) {
