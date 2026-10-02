@@ -735,6 +735,38 @@ describe("TableDragHandles", () => {
     ).toBeLessThan(2)
   })
 
+  it("places add pills outside the table when an ancestor is scaled", async () => {
+    // Arrange
+    // The expand modal scales in from 0.95. A measurement taken then must still
+    // sit in layout pixels, or the pills overlap the table until the next edit.
+    let editor: Editor | undefined
+    const { container, getByLabelText } = render(
+      <ThemeProvider theme={theme}>
+        <div style={{ transform: "scale(0.8)", width: "40rem" }}>
+          <Harness onReady={(next) => (editor = next)} />
+        </div>
+      </ThemeProvider>,
+    )
+    await waitFor(() => {
+      if (!editor) throw new Error("editor not ready")
+    })
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const { x, y } = centreOf(findByCellText(container, "Column A"))
+
+    // Act
+    await hoverUntil(x, y, () => getByLabelText("Add row below"))
+
+    // Assert
+    const tableRect = table.getBoundingClientRect()
+    expect(
+      getByLabelText("Add row below").getBoundingClientRect().top,
+    ).toBeGreaterThan(tableRect.bottom - 1)
+    expect(
+      getByLabelText("Add column to the right").getBoundingClientRect().left,
+    ).toBeGreaterThan(tableRect.right - 1)
+  })
+
   it("keeps add pills visible when the pointer moves into the gap below the table", async () => {
     // Arrange
     const { container, getByLabelText } = await renderHarness()

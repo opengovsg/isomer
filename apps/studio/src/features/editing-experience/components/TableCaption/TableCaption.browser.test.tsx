@@ -1,7 +1,7 @@
 import type { JSONContent } from "@tiptap/react"
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import { EditorContent } from "@tiptap/react"
 import { useState } from "react"
 import { describe, expect, it } from "vitest"
@@ -298,4 +298,141 @@ describe("TableCaption", () => {
       expect(editButton).toHaveTextContent("Edit caption")
     }
   })
+
+  it("places an expand control to the right of the caption button", async () => {
+    // Arrange
+    renderHarness({
+      type: "prose",
+      content: [tableContent("Existing caption")],
+    })
+
+    // Act
+    const captionButton = await getCaptionButton("Edit table caption")
+    const editTableButton = await screen.findByRole("button", {
+      name: "Expand",
+    })
+
+    // Assert
+    expect(editTableButton).not.toHaveTextContent("Expand")
+    expect(
+      captionButton.compareDocumentPosition(editTableButton) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it("opens only that table with table formatting controls", async () => {
+    // Arrange
+    renderHarness({
+      type: "prose",
+      content: [
+        tableContent("First table"),
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "between tables" }],
+        },
+        tableContent("Second table"),
+      ],
+    })
+
+    // Act
+    const editButtons = await screen.findAllByRole("button", {
+      name: "Expand",
+    })
+    await userEvent.click(editButtons[0]!)
+
+    // Assert
+    const dialog = await screen.findByRole(
+      "dialog",
+      { name: "Edit table" },
+      // The focused editor loads on demand. A cold chunk can exceed the
+      // default 1s query timeout on CI.
+      { timeout: 10_000 },
+    )
+    await waitFor(() => {
+      const bounds = dialog.getBoundingClientRect()
+      expect(bounds.width).toBeGreaterThan(window.innerWidth * 0.98)
+      expect(bounds.height).toBeGreaterThan(window.innerHeight * 0.98)
+    })
+    const modal = within(dialog)
+    expect(modal.getByText("First table")).toBeInTheDocument()
+    expect(modal.getByText("Column A")).toBeInTheDocument()
+    expect(modal.queryByText("Second table")).not.toBeInTheDocument()
+    expect(modal.queryByText("between tables")).not.toBeInTheDocument()
+    expect(
+      modal.getByRole("button", { name: "Superscript" }),
+    ).toBeInTheDocument()
+    expect(modal.getByRole("button", { name: "Subscript" })).toBeInTheDocument()
+    expect(
+      modal.queryByRole("button", { name: /^text styles$/i }),
+    ).not.toBeInTheDocument()
+    expect(
+      modal.queryByRole("button", { name: /^more options$/i }),
+    ).not.toBeInTheDocument()
+    expect(
+      modal.queryByRole("button", { name: /^table$/i }),
+    ).not.toBeInTheDocument()
+    expect(
+      modal.queryByRole("button", { name: /^divider$/i }),
+    ).not.toBeInTheDocument()
+    expect(
+      modal.queryByRole("button", { name: "Expand" }),
+    ).not.toBeInTheDocument()
+    expect(
+      modal.queryByRole("button", { name: /^close$/i }),
+    ).not.toBeInTheDocument()
+    expect(modal.getByRole("button", { name: "Done" })).toBeInTheDocument()
+
+    await userEvent.keyboard("{Escape}")
+    expect(
+      screen.getByRole("dialog", { name: "Edit table" }),
+    ).toBeInTheDocument()
+  }, 20_000)
+
+  it("writes cell edits from the modal back to that table", async () => {
+    // Arrange
+    const { getEditor } = renderHarness({
+      type: "prose",
+      content: [
+        tableContent("Keep me"),
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "between tables" }],
+        },
+        tableContent("Leave me"),
+      ],
+    })
+    await screen.findByText("Leave me")
+
+    // Act
+    const editButtons = await screen.findAllByRole("button", {
+      name: "Expand",
+    })
+    await userEvent.click(editButtons[1]!)
+    const dialog = await screen.findByRole(
+      "dialog",
+      { name: "Edit table" },
+      { timeout: 10_000 },
+    )
+    await userEvent.click(within(dialog).getByText("Row 1, A"))
+    await userEvent.keyboard("{End} edited")
+    await userEvent.click(within(dialog).getByRole("button", { name: "Done" }))
+
+    // Assert
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Edit table" }),
+      ).not.toBeInTheDocument()
+    })
+    expect(getTableCaptions(getEditor()!)).toEqual(["Keep me", "Leave me"])
+    const cellTexts: string[] = []
+    getEditor()!.state.doc.descendants((node) => {
+      if (node.type.name === "tableCell") cellTexts.push(node.textContent)
+    })
+    expect(cellTexts).toEqual([
+      "Row 1, A",
+      "Row 1, B",
+      "Row 1, A edited",
+      "Row 1, B",
+    ])
+  }, 20_000)
 })
