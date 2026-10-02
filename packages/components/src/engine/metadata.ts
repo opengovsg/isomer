@@ -2,6 +2,7 @@ import type { DistributedOmit } from "type-fest"
 import type { IsomerPageSchemaType } from "~/types/schema"
 import type { IsomerSiteConfigProps } from "~/types/site"
 import type { IsomerSitemap } from "~/types/sitemap"
+import { HERO_STYLE } from "~/interfaces/complex/Hero"
 import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
@@ -205,11 +206,17 @@ const getMetaImage = (props: IsomerPageSchemaType) => {
     case ISOMER_PAGE_LAYOUTS.Index:
     case ISOMER_PAGE_LAYOUTS.Collection:
       return props.meta?.image
-    case ISOMER_PAGE_LAYOUTS.Homepage:
-      return (
-        props.meta?.image ||
-        props.content.find((item) => item.type === "hero")?.backgroundUrl
-      )
+    case ISOMER_PAGE_LAYOUTS.Homepage: {
+      const hero = props.content.find((item) => item.type === "hero")
+      const heroBackgroundUrl =
+        hero?.variant === HERO_STYLE.carousel
+          ? hero.slides[0]?.backgroundUrl
+          : hero && "backgroundUrl" in hero
+            ? hero.backgroundUrl
+            : undefined
+
+      return props.meta?.image || heroBackgroundUrl
+    }
     case ISOMER_PAGE_LAYOUTS.Link:
     case ISOMER_PAGE_LAYOUTS.Search:
     case ISOMER_PAGE_LAYOUTS.NotFound:

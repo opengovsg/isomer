@@ -2,6 +2,7 @@ import type { HeroProps } from "~/interfaces/complex/Hero"
 import { HERO_STYLE } from "~/interfaces/complex/Hero"
 
 import { HeroBlock } from "./HeroBlock"
+import { HeroCarousel } from "./HeroCarousel"
 import { HeroFloating } from "./HeroFloating"
 import { HeroGradient } from "./HeroGradient"
 import { HeroLargeImage } from "./HeroLargeImage"
@@ -20,6 +21,8 @@ export const Hero = (props: HeroProps) => {
       return <HeroFloating {...props} />
     case HERO_STYLE.searchbar:
       return <HeroSearchbar {...props} />
+    case HERO_STYLE.carousel:
+      return <HeroCarousel {...props} />
     default:
       const _exhaustiveCheck: never = variant
       return null
