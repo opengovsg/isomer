@@ -1,5 +1,7 @@
 import type { IsomerComponent, ProseProps } from "@opengovsg/isomer-components"
 import { getComponentSchema } from "@opengovsg/isomer-components"
+import { useRouter } from "next/router"
+import { useEffect } from "react"
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { ajv } from "~/utils/ajv"
@@ -9,6 +11,7 @@ import CollectionEditorStateDrawer from "./CollectionEditorStateDrawer"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import DatabaseEditorStateDrawer from "./DatabaseEditorStateDrawer"
 import HeroEditorDrawer from "./HeroEditorDrawer"
+import HistoryStateDrawer from "./HistoryStateDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
 import RawJsonEditorModeStateDrawer from "./RawJsonEditorModeStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
@@ -23,7 +26,22 @@ export function EditPageDrawer(): JSX.Element {
     previewPageState,
     drawerState: currState,
     currActiveIdx,
+    setDrawerState,
   } = useEditorDrawerContext()
+  const router = useRouter()
+
+  // The navbar sits outside EditorDrawerProvider, so use a one-shot route
+  // request to open history without moving or duplicating editor state.
+  useEffect(() => {
+    if (router.query.history !== "true") return
+
+    setDrawerState({ state: "history" })
+    const { history: _, ...query } = router.query
+    void router.replace({ pathname: router.pathname, query }, undefined, {
+      shallow: true,
+      scroll: false,
+    })
+  }, [router, setDrawerState])
 
   const inferAsProse = (component?: IsomerComponent): ProseProps => {
     if (!component) {
@@ -55,6 +73,8 @@ export function EditPageDrawer(): JSX.Element {
       return <ComplexEditorStateDrawer />
     case "metadataEditor":
       return <MetadataEditorStateDrawer />
+    case "history":
+      return <HistoryStateDrawer />
     case "databaseEditor":
       return <DatabaseEditorStateDrawer />
     case "heroEditor":

@@ -1,4 +1,5 @@
 import {
+  Divider,
   HStack,
   Icon,
   Popover,
@@ -11,12 +12,9 @@ import {
   useDisclosure,
   VStack,
 } from "@chakra-ui/react"
-import {
-  Button,
-  IconButton,
-  TouchableTooltip,
-} from "@opengovsg/design-system-react"
-import { BiDotsHorizontalRounded, BiHide } from "react-icons/bi"
+import { Button, IconButton } from "@opengovsg/design-system-react"
+import { useRouter } from "next/router"
+import { BiDotsHorizontalRounded, BiHide, BiHistory } from "react-icons/bi"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { useIsUnpublishEnabled } from "~/hooks/useIsUnpublishEnabled"
@@ -35,6 +33,7 @@ const SuspendablePageMoreActionsButton = ({
   pageId,
   siteId,
 }: PageMoreActionsButtonProps): JSX.Element | null => {
+  const router = useRouter()
   const isUnpublishEnabled = useIsUnpublishEnabled()
   const unpublishModalDisclosure = useDisclosure()
   const cancelScheduleDisclosure = useDisclosure()
@@ -70,11 +69,12 @@ const SuspendablePageMoreActionsButton = ({
   const isBlockInfoPending =
     isIndexPage && (isBlockInfoLoading || isBlockInfoError)
 
-  // RootPage can't be unpublished — mirrors the backend's rejection and the
-  // dashboard's equivalent exclusion (see RootpageRow.tsx).
-  if (!isUnpublishEnabled || currPage.type === ResourceType.RootPage) {
-    return null
-  }
+  // History is independent of unpublishing availability and permissions.
+  const showUnpublish =
+    isUnpublishEnabled && currPage.type !== ResourceType.RootPage
+  const showHistory = currPage.type !== ResourceType.CollectionLink
+
+  if (!showUnpublish && !showHistory) return null
 
   // isIndexPage must gate both of these explicitly, not just the query's
   // `enabled`. Every child page in a folder shares the same query key as
@@ -121,140 +121,191 @@ const SuspendablePageMoreActionsButton = ({
 
   return (
     <Can do="unpublish" on="Resource" passThrough>
-      {({ isAllowed }) =>
-        isAllowed ? (
-          <>
-            {unpublishModalDisclosure.isOpen && (
-              <PublishOrUnpublishModal
-                action="unpublish"
-                pageId={pageId}
-                siteId={siteId}
-                hasDraftChanges={currPage.draftBlobId !== null}
-                containerType={
-                  isIndexPage ? parentIndexPageInfo?.parentType : undefined
-                }
-                disableNow={isBlockedFromUnpublishingNow}
-                {...unpublishModalDisclosure}
-              />
-            )}
-            {cancelScheduleDisclosure.isOpen && (
-              <CancelScheduleModal
-                action="unpublish"
-                pageId={pageId}
-                siteId={siteId}
-                {...cancelScheduleDisclosure}
-              />
-            )}
-            <Popover placement="bottom-end">
-              {({ onClose }) => (
-                <>
-                  <PopoverTrigger>
-                    <IconButton
-                      aria-label="More actions"
-                      icon={<BiDotsHorizontalRounded />}
-                      variant="outline"
-                      colorScheme={
-                        isPrimaryActionAvailable ? "main" : "neutral"
-                      }
-                      // Stays clickable either way (the popover explains why
-                      // when blocked), so we can't rely on isDisabled for the
-                      // grayed-out look — match its colours by hand instead.
-                      sx={
-                        isPrimaryActionAvailable
-                          ? undefined
-                          : {
-                              borderColor:
-                                "interaction.support.disabled-content",
-                              color: "interaction.support.disabled-content",
-                            }
-                      }
-                      size="sm"
-                    />
-                  </PopoverTrigger>
-                  <Portal>
-                    <PopoverContent w="fit-content">
-                      <PopoverBody>
-                        <HStack spacing="1.5rem" py="0.25rem">
-                          <VStack align="stretch" spacing="0.125rem">
-                            <Text
-                              textStyle="subhead-2"
-                              fontWeight={600}
-                              color="base.content.strong"
-                              whiteSpace="nowrap"
-                            >
-                              {isScheduledToUnpublish
-                                ? "Scheduled to unpublish"
-                                : isBlockedFromScheduling
-                                  ? "This page can't be unpublished"
-                                  : "Unpublish page"}
-                            </Text>
-                            <Text
-                              textStyle="body-2"
-                              color="base.content.default"
-                              whiteSpace="nowrap"
-                            >
-                              {isScheduledToUnpublish
-                                ? "Cancel the schedule to make changes."
-                                : (disabledReason ??
-                                  "Hide this page from the public.")}
-                            </Text>
-                          </VStack>
-                          {isScheduledToUnpublish ? (
-                            <Button
-                              variant="outline"
-                              colorScheme="critical"
-                              size="xs"
-                              flexShrink={0}
-                              onClick={() => {
-                                onClose()
-                                cancelScheduleDisclosure.onOpen()
-                              }}
-                            >
-                              Cancel schedule
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              size="xs"
-                              flexShrink={0}
-                              isDisabled={
-                                !!disabledReason || isBlockInfoPending
-                              }
-                              isLoading={isBlockInfoLoading}
-                              leftIcon={<Icon as={BiHide} boxSize="1rem" />}
-                              onClick={() => {
-                                onClose()
-                                unpublishModalDisclosure.onOpen()
-                              }}
-                            >
-                              Unpublish page
-                            </Button>
-                          )}
-                        </HStack>
-                      </PopoverBody>
-                    </PopoverContent>
-                  </Portal>
-                </>
-              )}
-            </Popover>
-          </>
-        ) : (
-          <TouchableTooltip label="You need to be a Publisher or Admin to unpublish.">
-            <IconButton
-              aria-label="More actions"
-              icon={<BiDotsHorizontalRounded />}
-              variant="outline"
-              colorScheme="neutral"
-              sx={{
-                borderColor: "interaction.support.disabled-content",
-                color: "interaction.support.disabled-content",
-              }}
-              size="sm"
-              isDisabled
+      {({ isAllowed }) => (
+        <>
+          {unpublishModalDisclosure.isOpen && (
+            <PublishOrUnpublishModal
+              action="unpublish"
+              pageId={pageId}
+              siteId={siteId}
+              hasDraftChanges={currPage.draftBlobId !== null}
+              containerType={
+                isIndexPage ? parentIndexPageInfo?.parentType : undefined
+              }
+              disableNow={isBlockedFromUnpublishingNow}
+              {...unpublishModalDisclosure}
             />
-          </TouchableTooltip>
-        )
-      }
+          )}
+          {cancelScheduleDisclosure.isOpen && (
+            <CancelScheduleModal
+              action="unpublish"
+              pageId={pageId}
+              siteId={siteId}
+              {...cancelScheduleDisclosure}
+            />
+          )}
+          <Popover placement="bottom-end">
+            {({ onClose }) => (
+              <>
+                <PopoverTrigger>
+                  <IconButton
+                    aria-label="More actions"
+                    icon={<BiDotsHorizontalRounded />}
+                    variant="outline"
+                    colorScheme={
+                      showHistory || (isAllowed && isPrimaryActionAvailable)
+                        ? "main"
+                        : "neutral"
+                    }
+                    // Stays clickable either way (the popover explains why
+                    // when blocked), so we can't rely on isDisabled for the
+                    // grayed-out look — match its colours by hand instead.
+                    sx={
+                      showHistory || (isAllowed && isPrimaryActionAvailable)
+                        ? undefined
+                        : {
+                            borderColor: "interaction.support.disabled-content",
+                            color: "interaction.support.disabled-content",
+                          }
+                    }
+                    size="sm"
+                  />
+                </PopoverTrigger>
+                <Portal>
+                  <PopoverContent w="fit-content">
+                    <PopoverBody>
+                      <VStack
+                        align="stretch"
+                        spacing="1.5rem"
+                        py="1rem"
+                        px="0.75rem"
+                      >
+                        {showUnpublish && (
+                          <HStack
+                            justify="space-between"
+                            spacing="1.5rem"
+                            py="0.25rem"
+                          >
+                            <VStack align="stretch" spacing="0.125rem">
+                              <Text
+                                textStyle="subhead-2"
+                                fontWeight={600}
+                                color="base.content.strong"
+                                whiteSpace="nowrap"
+                              >
+                                {isScheduledToUnpublish
+                                  ? "Scheduled to unpublish"
+                                  : isBlockedFromScheduling
+                                    ? "This page can't be unpublished"
+                                    : "Unpublish page"}
+                              </Text>
+                              <Text
+                                textStyle="body-2"
+                                color="base.content.default"
+                                whiteSpace="nowrap"
+                              >
+                                {isScheduledToUnpublish
+                                  ? "Cancel the schedule to make changes."
+                                  : !isAllowed
+                                    ? "You need to be a Publisher or Admin to unpublish."
+                                    : (disabledReason ??
+                                      "Hide this page from the public.")}
+                              </Text>
+                            </VStack>
+                            {isScheduledToUnpublish ? (
+                              <Button
+                                variant="outline"
+                                colorScheme="critical"
+                                isDisabled={!isAllowed}
+                                size="xs"
+                                flexShrink={0}
+                                onClick={() => {
+                                  onClose()
+                                  cancelScheduleDisclosure.onOpen()
+                                }}
+                              >
+                                Cancel schedule
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="xs"
+                                flexShrink={0}
+                                isDisabled={
+                                  !isAllowed ||
+                                  !!disabledReason ||
+                                  isBlockInfoPending
+                                }
+                                isLoading={isBlockInfoLoading}
+                                leftIcon={<Icon as={BiHide} boxSize="1rem" />}
+                                onClick={() => {
+                                  onClose()
+                                  unpublishModalDisclosure.onOpen()
+                                }}
+                              >
+                                Unpublish page
+                              </Button>
+                            )}
+                          </HStack>
+                        )}
+                        {showUnpublish && showHistory && <Divider />}
+                        {showHistory && (
+                          <HStack
+                            spacing="1.5rem"
+                            py="0.25rem"
+                            justify="space-between"
+                          >
+                            <VStack align="stretch" spacing="0.125rem">
+                              <Text
+                                textStyle="subhead-2"
+                                fontWeight={600}
+                                color="base.content.strong"
+                                whiteSpace="nowrap"
+                              >
+                                Page history
+                              </Text>
+                              <Text
+                                textStyle="body-2"
+                                color="base.content.default"
+                                whiteSpace="nowrap"
+                              >
+                                View previously published versions of this page.
+                              </Text>
+                            </VStack>
+                            <Button
+                              variant="outline"
+                              size="xs"
+                              flexShrink={0}
+                              leftIcon={<Icon as={BiHistory} boxSize="1rem" />}
+                              onClick={() => {
+                                onClose()
+                                void router.push(
+                                  {
+                                    pathname: `/sites/${siteId}/pages/${pageId}`,
+                                    query: { history: "true" },
+                                  },
+                                  undefined,
+                                  {
+                                    shallow:
+                                      router.pathname ===
+                                      "/sites/[siteId]/pages/[pageId]",
+                                  },
+                                )
+                              }}
+                            >
+                              View history
+                            </Button>
+                          </HStack>
+                        )}
+                      </VStack>
+                    </PopoverBody>
+                  </PopoverContent>
+                </Portal>
+              </>
+            )}
+          </Popover>
+        </>
+      )}
     </Can>
   )
 }
