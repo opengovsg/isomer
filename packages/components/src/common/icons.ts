@@ -1,4 +1,7 @@
 import type { IconType } from "react-icons"
+
+import { BiClipboardCheck } from "./custom-icons/BiClipboardCheck"
+import { BiMegaphone } from "./custom-icons/BiMegaphone"
 import {
   BiBarChartAlt2,
   BiBookOpen,
@@ -35,6 +38,8 @@ export const SUPPORTED_ICON_NAMES = [
   "id-card",
   "map-pin",
   "chat",
+  "megaphone",
+  "clipboard-check",
 ] as const
 
 export type SupportedIconName = (typeof SUPPORTED_ICON_NAMES)[number]
@@ -58,4 +63,6 @@ export const SUPPORTED_ICONS_MAP: Record<SupportedIconName, SupportedIconType> =
     "id-card": BiIdCard,
     "map-pin": BiMapPin,
     chat: BiChat,
+    megaphone: BiMegaphone,
+    "clipboard-check": BiClipboardCheck,
   }

@@ -12,7 +12,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { getCustomErrorMessage } from "./utils"
 
-const ICON_PICKER_ROWS = 2
+const ICON_PICKER_COLUMNS = 9
 
 export const jsonFormsIconPickerControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.IconPickerControl,
@@ -114,7 +114,7 @@ function JsonFormsIconPickerControl({
   handleChange,
 }: ControlProps): JSX.Element {
   const options = getIconPickerOptions(schema)
-  const columns = Math.max(1, Math.ceil(options.length / ICON_PICKER_ROWS))
+  const columns = ICON_PICKER_COLUMNS
 
   return (
     <Box>
