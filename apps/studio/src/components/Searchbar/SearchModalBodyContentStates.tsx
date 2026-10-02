@@ -171,7 +171,7 @@ export const SearchResultsState = ({
   return (
     <ModalBody>
       <HeaderTextAndContent
-        headerText={`${totalResultsCount} search result${totalResultsCount === 1 ? "" : "s"} with "${searchTerm}" in title`}
+        headerText={`${totalResultsCount} search result${totalResultsCount === 1 ? "" : "s"} for "${searchTerm}"`}
         shouldShowHint={shouldShowHint}
         content={
           <SearchResults
