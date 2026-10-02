@@ -25,7 +25,6 @@ interface FilterTypeChoiceModalProps {
   isOpen: boolean
   onClose: () => void
   onSelect: (type: FilterType) => void
-  isDateFilterEnabled?: boolean
 }
 
 interface FilterTypeCardProps {
@@ -116,7 +115,6 @@ export function FilterTypeChoiceModal({
   isOpen,
   onClose,
   onSelect,
-  isDateFilterEnabled = true,
 }: FilterTypeChoiceModalProps) {
   const [selectedType, setSelectedType] = useState<FilterType>(
     TAG_CATEGORY_TYPE.Text,
@@ -177,13 +175,7 @@ export function FilterTypeChoiceModal({
           </HStack>
         </ModalBody>
         <ModalFooter pt="0">
-          <Button
-            variant="solid"
-            onClick={handleAddFilter}
-            isDisabled={
-              selectedType === TAG_CATEGORY_TYPE.Date && !isDateFilterEnabled
-            }
-          >
+          <Button variant="solid" onClick={handleAddFilter}>
             Add filter
           </Button>
         </ModalFooter>
