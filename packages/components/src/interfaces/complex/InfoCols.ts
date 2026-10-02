@@ -4,6 +4,8 @@ import { Type } from "@sinclair/typebox"
 import { SUPPORTED_ICON_NAMES } from "~/common/icons"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
+import { ICON_PICKER_FORMAT } from "../format"
+
 const InfoBoxSchema = Type.Object({
   title: Type.String({
     title: "Title",
@@ -24,6 +26,7 @@ const InfoBoxSchema = Type.Object({
       {
         title: "Column icon",
         type: "string",
+        format: ICON_PICKER_FORMAT,
       },
     ),
   ),
