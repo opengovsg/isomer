@@ -19,10 +19,11 @@ export const HeroCarousel = (props: HeroCarouselProps) => {
 
   const processedSlides = slides.map((slide) => ({
     ...slide,
-    backgroundUrl: resolveBackgroundUrl(slide.backgroundUrl, site.assetsBaseUrl),
+    backgroundUrl: resolveBackgroundUrl(
+      slide.backgroundUrl,
+      site.assetsBaseUrl,
+    ),
   }))
 
-  return (
-    <HeroCarouselClient site={site} slides={processedSlides} {...rest} />
-  )
+  return <HeroCarouselClient site={site} slides={processedSlides} {...rest} />
 }

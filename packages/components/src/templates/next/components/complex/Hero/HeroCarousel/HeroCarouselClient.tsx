@@ -1,13 +1,13 @@
 "use client"
 
 import type { HeroCarouselProps } from "~/interfaces/complex/Hero"
-import { HERO_CAROUSEL_SLIDE_MODE } from "~/interfaces/complex/Hero"
 import { useCallback, useState, useTransition } from "react"
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi"
-import { getHeadingTag } from "~/utils/getHeadingTag"
-import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { HERO_CAROUSEL_SLIDE_MODE } from "~/interfaces/complex/Hero"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
+import { getHeadingTag } from "~/utils/getHeadingTag"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { ImageClient } from "../../../internal/ImageClient"
 import { LinkButton } from "../../../internal/LinkButton/LinkButton"
@@ -265,49 +265,54 @@ export const HeroCarouselClient = ({
     return null
   }
 
+  const currentSlide = slides[currentIndex]
+  if (!currentSlide) {
+    return null
+  }
+
   const isEntireSlideMode = slideMode === HERO_CAROUSEL_SLIDE_MODE.entire
   const activeContent = getSlideContent({
     slideMode,
     rootContent,
-    slide: slides[currentIndex],
+    slide: currentSlide,
   })
-  const showPrimaryCta = Boolean(
-    activeContent.buttonLabel && activeContent.buttonUrl,
-  )
+  const primaryButtonUrl = activeContent.buttonUrl
+  const primaryButtonLabel = activeContent.buttonLabel
 
-  const ctaButtons = showPrimaryCta ? (
-    <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
-      <LinkButton
-        href={getReferenceLinkHref(
-          activeContent.buttonUrl!,
-          site.siteMapArray,
-          site.assetsBaseUrl,
-        )}
-        size="lg"
-        variant="solid"
-        colorScheme={heroButton}
-        isWithFocusVisibleHighlight
-      >
-        {activeContent.buttonLabel}
-      </LinkButton>
-      {activeContent.secondaryButtonLabel &&
-        activeContent.secondaryButtonUrl && (
-          <LinkButton
-            colorScheme={heroButton}
-            variant="outline"
-            size="lg"
-            href={getReferenceLinkHref(
-              activeContent.secondaryButtonUrl,
-              site.siteMapArray,
-              site.assetsBaseUrl,
-            )}
-            isWithFocusVisibleHighlight
-          >
-            {activeContent.secondaryButtonLabel}
-          </LinkButton>
-        )}
-    </div>
-  ) : null
+  const ctaButtons =
+    primaryButtonLabel && primaryButtonUrl ? (
+      <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
+        <LinkButton
+          href={getReferenceLinkHref(
+            primaryButtonUrl,
+            site.siteMapArray,
+            site.assetsBaseUrl,
+          )}
+          size="lg"
+          variant="solid"
+          colorScheme={heroButton}
+          isWithFocusVisibleHighlight
+        >
+          {primaryButtonLabel}
+        </LinkButton>
+        {activeContent.secondaryButtonLabel &&
+          activeContent.secondaryButtonUrl && (
+            <LinkButton
+              colorScheme={heroButton}
+              variant="outline"
+              size="lg"
+              href={getReferenceLinkHref(
+                activeContent.secondaryButtonUrl,
+                site.siteMapArray,
+                site.assetsBaseUrl,
+              )}
+              isWithFocusVisibleHighlight
+            >
+              {activeContent.secondaryButtonLabel}
+            </LinkButton>
+          )}
+      </div>
+    ) : null
 
   return (
     <section
@@ -322,47 +327,47 @@ export const HeroCarouselClient = ({
           className={`flex w-full max-w-[548px] flex-col justify-center gap-9 lg:mx-0 lg:ml-auto ${heroTextColour}`}
         >
           <div className="relative">
-            {isEntireSlideMode
-              ? slides.map((slide, index) => {
-                  const content = getSlideContent({
-                    slideMode,
-                    rootContent,
-                    slide,
-                  })
-                  const isCurrent = index === currentIndex
-
-                  return (
-                    <div
-                      key={index}
-                      className={slideContentStyles({
-                        isCurrent,
-                        isHidden: !isCurrent,
-                      })}
-                      aria-hidden={!isCurrent}
-                    >
-                      <div className="flex flex-col gap-6">
-                        <Tag className="wrap-break-word prose-display-xl text-balance">
-                          {content.title}
-                        </Tag>
-                        {content.subtitle && (
-                          <p className="prose-title-lg-regular">
-                            {content.subtitle}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )
+            {isEntireSlideMode ? (
+              slides.map((slide, index) => {
+                const content = getSlideContent({
+                  slideMode,
+                  rootContent,
+                  slide,
                 })
-              : (
-                  <div className="flex flex-col gap-6">
-                    <Tag className="wrap-break-word prose-display-xl text-balance">
-                      {title}
-                    </Tag>
-                    {subtitle && (
-                      <p className="prose-title-lg-regular">{subtitle}</p>
-                    )}
+                const isCurrent = index === currentIndex
+
+                return (
+                  <div
+                    key={index}
+                    className={slideContentStyles({
+                      isCurrent,
+                      isHidden: !isCurrent,
+                    })}
+                    aria-hidden={!isCurrent}
+                  >
+                    <div className="flex flex-col gap-6">
+                      <Tag className="wrap-break-word prose-display-xl text-balance">
+                        {content.title}
+                      </Tag>
+                      {content.subtitle && (
+                        <p className="prose-title-lg-regular">
+                          {content.subtitle}
+                        </p>
+                      )}
+                    </div>
                   </div>
+                )
+              })
+            ) : (
+              <div className="flex flex-col gap-6">
+                <Tag className="wrap-break-word prose-display-xl text-balance">
+                  {title}
+                </Tag>
+                {subtitle && (
+                  <p className="prose-title-lg-regular">{subtitle}</p>
                 )}
+              </div>
+            )}
           </div>
 
           {isEntireSlideMode ? (
@@ -374,9 +379,10 @@ export const HeroCarouselClient = ({
                   slide,
                 })
                 const isCurrent = index === currentIndex
-                const hasCta = content.buttonLabel && content.buttonUrl
+                const slidePrimaryButtonUrl = content.buttonUrl
+                const slidePrimaryButtonLabel = content.buttonLabel
 
-                if (!hasCta) {
+                if (!slidePrimaryButtonLabel || !slidePrimaryButtonUrl) {
                   return null
                 }
 
@@ -392,7 +398,7 @@ export const HeroCarouselClient = ({
                     <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
                       <LinkButton
                         href={getReferenceLinkHref(
-                          content.buttonUrl!,
+                          slidePrimaryButtonUrl,
                           site.siteMapArray,
                           site.assetsBaseUrl,
                         )}
@@ -401,7 +407,7 @@ export const HeroCarouselClient = ({
                         colorScheme={heroButton}
                         isWithFocusVisibleHighlight
                       >
-                        {content.buttonLabel}
+                        {slidePrimaryButtonLabel}
                       </LinkButton>
                       {content.secondaryButtonLabel &&
                         content.secondaryButtonUrl && (

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import { HERO_CAROUSEL_SLIDE_MODE } from "~/interfaces/complex/Hero"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
@@ -6,8 +7,6 @@ import {
 import { generateSiteConfig } from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
-
-import { HERO_CAROUSEL_SLIDE_MODE } from "~/interfaces/complex/Hero"
 
 import { Hero } from "./Hero"
 
