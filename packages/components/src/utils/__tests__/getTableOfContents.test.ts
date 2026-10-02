@@ -7,6 +7,26 @@ import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
 describe("getTableOfContents", () => {
   const anchorPattern = /^#[a-f0-9]{32}$/
 
+  it("preserves literal HTML and entities in heading text", () => {
+    const site = generateSiteConfig()
+    const content = getTransformedPageContent([
+      {
+        type: "prose",
+        content: [
+          {
+            type: "heading",
+            attrs: { level: 2 },
+            content: [{ type: "text", text: "A & B <br> &amp;" }],
+          },
+        ],
+      },
+    ])
+
+    expect(getTableOfContents(site, content)[0]?.content).toBe(
+      "A & B <br> &amp;",
+    )
+  })
+
   it("generates toc entries from level-2 prose headings only", () => {
     // Arrange
     const site = generateSiteConfig()
