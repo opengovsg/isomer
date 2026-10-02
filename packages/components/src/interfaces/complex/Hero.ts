@@ -15,6 +15,7 @@ import {
   ARRAY_RADIO_FORMAT,
   HERO_ACTION_LAYOUT_FORMAT,
   HERO_QUICK_ACTIONS_FORMAT,
+  ICON_PICKER_FORMAT,
 } from "../format"
 import { generateImageSrcSchema } from "./Image"
 
@@ -123,6 +124,7 @@ const HeroActionLayoutQuickActionItemSchema = Type.Object({
     {
       title: "Column icon",
       type: "string",
+      format: ICON_PICKER_FORMAT,
     },
   ),
   title: Type.String({

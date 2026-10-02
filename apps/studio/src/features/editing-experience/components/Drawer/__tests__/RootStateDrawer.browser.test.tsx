@@ -20,10 +20,6 @@ vi.mock("~/hooks/useIsUserIsomerAdmin", () => ({
   useIsUserIsomerAdmin: () => ({ isAdmin: false, isLoading: false }),
 }))
 
-vi.mock("~/hooks/useNewCollectionTagsManagement", () => ({
-  useNewCollectionTagsManagement: () => false,
-}))
-
 vi.mock("~/utils/trpc", () => ({
   trpc: {
     page: {
@@ -43,7 +39,7 @@ vi.mock("~/utils/trpc", () => ({
         readPageAndBlob: { invalidate: noop },
       },
       collection: {
-        countTagOptionsUsage: { invalidate: noop },
+        countFilterUsage: { invalidate: noop },
       },
     }),
   },

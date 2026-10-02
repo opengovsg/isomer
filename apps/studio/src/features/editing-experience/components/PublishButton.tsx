@@ -10,6 +10,10 @@ import { ScheduledAction } from "~prisma/generated/generatedEnums"
 import { CancelSchedulePublishIndicator } from "./PublishingModal/CancelSchedulePublishIndicator"
 import { PublishOrUnpublishModal } from "./PublishOrUnpublishModal"
 
+// Shown when the button is enabled, so users know clicking lets them choose
+// between publishing immediately and scheduling.
+export const PUBLISH_BUTTON_HINT = "Publish now or schedule for later"
+
 interface PublishButtonProps extends ButtonProps {
   pageId: number
   siteId: number
@@ -46,11 +50,13 @@ const SuspendablePublishButton = ({
     <Can do="publish" on="Resource" passThrough>
       {({ isAllowed }) => (
         <TouchableTooltip
-          hidden={!disabledReason && isAllowed}
+          // The scheduled indicator replaces the button, so the publish hint
+          // would be misleading over it.
+          hidden={isScheduledToPublish && isAllowed}
           label={
             !isAllowed
               ? "You need to be a Publisher or Admin to publish."
-              : disabledReason
+              : (disabledReason ?? PUBLISH_BUTTON_HINT)
           }
         >
           <>
@@ -82,7 +88,7 @@ const SuspendablePublishButton = ({
                 }}
                 {...rest}
               >
-                Publish
+                Publish options
               </Button>
             )}
           </>

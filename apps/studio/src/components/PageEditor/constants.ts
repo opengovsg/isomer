@@ -552,11 +552,7 @@ export const INDEX_ALLOWED_BLOCKS: AllowedBlockSections = [
 export const DATABASE_ALLOWED_BLOCKS: AllowedBlockSections =
   CONTENT_ALLOWED_BLOCKS
 
-export const getHomepageAllowedBlocks = ({
-  includeAntiScamBanner,
-}: {
-  includeAntiScamBanner: boolean
-}): AllowedBlockSections => [
+export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
   {
     label: "Add a new section",
     // TODO(ISOM-1552): Add back iframe component when implemented
@@ -570,7 +566,7 @@ export const getHomepageAllowedBlocks = ({
       "blockquote",
       "collectionblock",
       "logocloud",
-      ...(includeAntiScamBanner ? (["antiscambanner"] as const) : []),
+      "antiscambanner",
     ],
   },
 ]

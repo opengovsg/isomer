@@ -32,6 +32,7 @@ type ResourceDto = Omit<
   thumbnail?: string
   category?: string
   tagged?: string | null
+  dateTagged?: string | null
   date?: string
   firstImage?: FirstImage | null
 }
@@ -41,6 +42,20 @@ const parseTagged = (raw: string | null | undefined): string[] | undefined => {
   try {
     const parsed = JSON.parse(raw) as unknown
     return Array.isArray(parsed) ? (parsed as string[]) : undefined
+  } catch {
+    return undefined
+  }
+}
+
+const parseDateTagged = (
+  raw: string | null | undefined,
+): ArticlePagePageProps["dateTagged"] => {
+  if (!raw) return undefined
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    return Array.isArray(parsed)
+      ? (parsed as ArticlePagePageProps["dateTagged"])
+      : undefined
   } catch {
     return undefined
   }
@@ -121,6 +136,7 @@ const getSitemapTreeFromArray = (
         permalink,
         category: resource.category ?? "Others",
         tagged: parseTagged(resource.tagged),
+        dateTagged: parseDateTagged(resource.dateTagged),
         date: resource.date ?? "",
         image: {
           src: resource.thumbnail ?? "",
@@ -139,6 +155,7 @@ const getSitemapTreeFromArray = (
         permalink,
         category: resource.category ?? "Others",
         tagged: parseTagged(resource.tagged),
+        dateTagged: parseDateTagged(resource.dateTagged),
         date: resource.date ?? "",
         image: {
           src: resource.thumbnail ?? "",
@@ -279,6 +296,7 @@ export const injectTagMappings = async (
     // we cast to all the possible `page` props
     // of a collection item
     childPageProps.tagged,
+    childPageProps.dateTagged,
     collectionPageProps.tagCategories,
     resource.id,
     resource.parentId,
@@ -289,6 +307,7 @@ export const injectTagMappings = async (
 const _injectTagMappings = (
   sitemap: IsomerSitemap,
   tagged: ArticlePagePageProps["tagged"],
+  dateTagged: ArticlePagePageProps["dateTagged"],
   tagCategories: CollectionPagePageProps["tagCategories"],
   childId: CollectionItemResourceDto["id"],
   collectionId: CollectionItemResourceDto["parentId"],
@@ -296,7 +315,7 @@ const _injectTagMappings = (
   // NOTE: If the child id matches,
   // inject the tags
   if (sitemap.id === childId) {
-    return { ...sitemap, tagged }
+    return { ...sitemap, tagged, dateTagged }
   }
 
   // NOTE: If the collection id matches,
@@ -312,7 +331,14 @@ const _injectTagMappings = (
         tagCategories,
       },
       children: sitemap.children?.map((child) =>
-        _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
+        _injectTagMappings(
+          child,
+          tagged,
+          dateTagged,
+          tagCategories,
+          childId,
+          collectionId,
+        ),
       ),
     }
   }
@@ -322,7 +348,14 @@ const _injectTagMappings = (
   return {
     ...sitemap,
     children: sitemap.children?.map((child) =>
-      _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
+      _injectTagMappings(
+        child,
+        tagged,
+        dateTagged,
+        tagCategories,
+        childId,
+        collectionId,
+      ),
     ),
   }
 }

@@ -1,5 +1,7 @@
 import type { ProseProps } from "~/interfaces"
 
+import { rowCells } from "../Table/tableLayoutLimits"
+
 export const hasContent = (content: ProseProps["content"]) => {
   // NOTE: top level is always `prose`
   return content.map(_hasContent).some(Boolean)
@@ -30,7 +32,7 @@ const _hasContent = (content: ProseProps["content"][number]): boolean => {
       )
     case "table":
       return !!content.content.some((tableRow) => {
-        return tableRow.content.some((tableCell) => {
+        return rowCells(tableRow).some((tableCell) => {
           return tableCell.content.some((cellContent) =>
             _hasContent(cellContent),
           )

@@ -11,6 +11,7 @@ import { ComplexEditorNestedDrawer } from "./ComplexEditorNestedDrawer"
 type NestedDrawerSwitchProps = ArrayLayoutProps &
   UseArrayReturn & {
     children: ReactNode
+    banner?: ReactNode
     mapChildUiSchema?: (uischema: UISchemaElement) => UISchemaElement
   }
 /**
@@ -18,6 +19,7 @@ type NestedDrawerSwitchProps = ArrayLayoutProps &
  */
 export const NestedDrawerSwitch = ({
   children,
+  banner,
   selectedIndex,
   cells,
   renderers,
@@ -54,6 +56,7 @@ export const NestedDrawerSwitch = ({
       handleRemoveItem={handleRemoveSelectedItem(path, selectedIndex)}
       selectedIndex={selectedIndex}
       maxIndex={data - 1}
+      banner={banner}
     />
   )
 }

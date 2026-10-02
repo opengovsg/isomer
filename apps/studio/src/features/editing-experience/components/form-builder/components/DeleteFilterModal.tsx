@@ -16,16 +16,21 @@ import {
   Infobox,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
+import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { Suspense, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "~/schemas/collection"
 import { trpc } from "~/utils/trpc"
 
+export type DeleteFilterModalTarget =
+  | { type: typeof TAG_CATEGORY_TYPE.Text; tagOptionIds: string[] }
+  | { type: typeof TAG_CATEGORY_TYPE.Date; dateFilterId: string }
+
 interface DeleteFilterModalProps {
   isOpen: boolean
   siteId: number
   pageId: number
-  tagOptionIds: string[]
+  target: DeleteFilterModalTarget
   onClose: () => void
   onConfirm: () => void
 }
@@ -36,16 +41,16 @@ const DELETE_FILTER_UNDO_TEXT =
 function FilterUsageInfobox({
   siteId,
   pageId,
-  tagOptionIds,
+  target,
 }: {
   siteId: number
   pageId: number
-  tagOptionIds: string[]
+  target: DeleteFilterModalTarget
 }) {
-  const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
+  const [{ count }] = trpc.collection.countFilterUsage.useSuspenseQuery({
     siteId,
     pageId,
-    tagOptionIds,
+    ...target,
   })
 
   return (
@@ -62,7 +67,7 @@ export function DeleteFilterModal({
   isOpen,
   siteId,
   pageId,
-  tagOptionIds,
+  target,
   onClose,
   onConfirm,
 }: DeleteFilterModalProps) {
@@ -92,7 +97,9 @@ export function DeleteFilterModal({
                 request/SQL cost at that scale. Skip the query entirely and say so, rather
                 than sending a request we know will fail or truncating to a misleading
                 capped number like "999+". */}
-                {tagOptionIds.length > MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT ? (
+                {target.type === TAG_CATEGORY_TYPE.Text &&
+                target.tagOptionIds.length >
+                  MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT ? (
                   <Text textStyle="body-1" color="base.content.strong">
                     It’s being used on a large number of results.{" "}
                     {DELETE_FILTER_UNDO_TEXT}
@@ -102,7 +109,7 @@ export function DeleteFilterModal({
                     <FilterUsageInfobox
                       siteId={siteId}
                       pageId={pageId}
-                      tagOptionIds={tagOptionIds}
+                      target={target}
                     />
                   </Suspense>
                 )}

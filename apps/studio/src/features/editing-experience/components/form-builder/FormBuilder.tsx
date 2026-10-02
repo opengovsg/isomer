@@ -29,12 +29,18 @@ import {
   jsonFormsCollectionDropdownControlTester,
   JsonFormsCollectionVariantControl,
   jsonFormsCollectionVariantControlTester,
+  JsonFormsCollectionSortOrderControl,
+  jsonFormsCollectionSortOrderControlTester,
   JsonFormsColourPickerControl,
   jsonFormsColourPickerControlTester,
   JsonFormsConstControl,
   jsonFormsConstControlTester,
   JsonFormsDateControl,
   jsonFormsDateControlTester,
+  JsonFormsDateFilterStatusLabelsControl,
+  jsonFormsDateFilterStatusLabelsControlTester,
+  JsonFormsDateFilterValuesControl,
+  jsonFormsDateFilterValuesControlTester,
   JsonFormsDgsDatasetIdControl,
   jsonFormsDgsDatasetIdControlTester,
   JsonFormsEmbedControl,
@@ -45,6 +51,8 @@ import {
   jsonFormsGroupLayoutTester,
   JsonFormsHiddenControl,
   jsonFormsHiddenControlTester,
+  JsonFormsIconPickerControl,
+  jsonFormsIconPickerControlTester,
   JsonFormsImageControl,
   jsonFormsImageControlTester,
   JsonFormsImageRadioControl,
@@ -120,8 +128,16 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     tester: jsonFormsTagCategoryOptionsControlTester,
     renderer: JsonFormsTagCategoryOptionsControl,
   },
+  {
+    tester: jsonFormsDateFilterStatusLabelsControlTester,
+    renderer: JsonFormsDateFilterStatusLabelsControl,
+  },
   { renderer: JsonFormsUuidControl, tester: jsonFormsUuidControlTester },
   { renderer: JsonFormsTaggedControl, tester: jsonFormsTaggedControlTester },
+  {
+    renderer: JsonFormsDateFilterValuesControl,
+    tester: jsonFormsDateFilterValuesControlTester,
+  },
   {
     renderer: JsonFormsChildrenPagesOrderingControl,
     tester: jsonFormsChildrenPagesOrderingControlTester,
@@ -161,6 +177,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsImageRadioControlTester,
     renderer: JsonFormsImageRadioControl,
+  },
+  {
+    tester: jsonFormsIconPickerControlTester,
+    renderer: JsonFormsIconPickerControl,
   },
   { tester: jsonFormsImageControlTester, renderer: JsonFormsImageControl },
   { tester: jsonFormsLinkControlTester, renderer: JsonFormsLinkControl },
@@ -209,6 +229,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsCollectionVariantControlTester,
     renderer: JsonFormsCollectionVariantControl,
+  },
+  {
+    tester: jsonFormsCollectionSortOrderControlTester,
+    renderer: JsonFormsCollectionSortOrderControl,
   },
   {
     // NOTE: If we fall through all our previous testers,

@@ -3,6 +3,8 @@ export const JSON_FORMS_RANKING = {
   ArrayControl: 4,
   TagCategoryControl: 5,
   TagCategoryOptionsControl: 5,
+  DateFilterStatusLabelsControl: 5,
+  DateFilterValuesControl: 4,
   TaggedControl: 4,
   BooleanControl: 2,
   ConstControl: 2,
@@ -14,6 +16,9 @@ export const JSON_FORMS_RANKING = {
   ColourPickerControl: 2,
   TextControl: 1,
   ImageRadioControl: 4,
+  // NOTE: needs to have higher priority than anyof, since the icon field is a
+  // union of string literals
+  IconPickerControl: 4,
   // NOTE: has to be higher than `TextControl`
   UuidControl: 2,
   WidgetControl: 3,
@@ -31,6 +36,7 @@ export const JSON_FORMS_RANKING = {
   HeroQuickActionsControl: 5,
   // NOTE: needs to have higher priority than anyof
   CollectionVariantControl: 4,
+  CollectionSortOrderControl: 4,
   // NOTE: needs to have higher priority than array
   ChildrenPagesOrderingControl: 5,
   // NOTE: needs to have higher priority than array

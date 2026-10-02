@@ -700,6 +700,13 @@ export const getLocalisedSitemap = async (
       ELSE NULL
     END
 `.as("tagged")
+  const dateTaggedSql = sql<string | null>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('article','link')
+      THEN (published.content -> 'page' ->> 'dateTagged')
+      ELSE NULL
+    END
+`.as("dateTagged")
 
   // Get the actual resource first
   const resource = await getById(db, { resourceId, siteId })
@@ -723,6 +730,7 @@ export const getLocalisedSitemap = async (
           dateSql,
           firstImageSql,
           taggedSql,
+          dateTaggedSql,
           ...defaultResourceSelect,
         ])
         .unionAll((fb) =>
@@ -744,6 +752,7 @@ export const getLocalisedSitemap = async (
                 .cast<FirstImage | null>(eb.val(null), "jsonb")
                 .as("firstImage"),
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
+              eb.cast<string | null>(eb.val(null), "text").as("dateTagged"),
               ...defaultResourceSelect,
             ]),
         ),
@@ -772,6 +781,7 @@ export const getLocalisedSitemap = async (
           dateSql,
           firstImageSql,
           taggedSql,
+          dateTaggedSql,
           ...defaultResourceSelect,
         ]),
     )
@@ -795,6 +805,7 @@ export const getLocalisedSitemap = async (
           dateSql,
           firstImageSql,
           eb.cast<string | null>(eb.val(null), "text").as("tagged"),
+          eb.cast<string | null>(eb.val(null), "text").as("dateTagged"),
           ...defaultResourceSelect,
         ])
         .unionAll((fb) =>
@@ -821,6 +832,7 @@ export const getLocalisedSitemap = async (
               dateSql,
               firstImageSql,
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
+              eb.cast<string | null>(eb.val(null), "text").as("dateTagged"),
               ...defaultResourceSelect,
             ]),
         ),
@@ -834,6 +846,7 @@ export const getLocalisedSitemap = async (
       "date",
       "firstImage",
       "tagged",
+      "dateTagged",
       ...defaultResourceSelect,
     ])
     .union((eb) =>
@@ -846,6 +859,7 @@ export const getLocalisedSitemap = async (
           "date",
           "firstImage",
           "tagged",
+          "dateTagged",
           ...defaultResourceSelect,
         ]),
     )
@@ -859,6 +873,7 @@ export const getLocalisedSitemap = async (
           "date",
           "firstImage",
           "tagged",
+          "dateTagged",
           ...defaultResourceSelect,
         ]),
     )
@@ -2460,7 +2475,7 @@ export const publishResource = async (
         }),
     )
 
-  return db.transaction().execute(async (tx) => {
+  await db.transaction().execute(async (tx) => {
     await logPublishEvent(tx, {
       siteId: resource.siteId,
       by: byUser,
@@ -2468,9 +2483,9 @@ export const publishResource = async (
       eventType: AuditLogEvent.Publish,
       metadata: resource,
     })
-
-    await publishSite(logger, { siteId: resource.siteId })
   })
+
+  await publishSite(logger, { siteId: resource.siteId })
 }
 
 export const publishSiteConfig = async (
@@ -2493,7 +2508,7 @@ export const publishSiteConfig = async (
         }),
     )
 
-  return db.transaction().execute(async (tx) => {
+  await db.transaction().execute(async (tx) => {
     await logPublishEvent(tx, {
       siteId: site.id,
       by: byUser,
@@ -2501,9 +2516,9 @@ export const publishSiteConfig = async (
       eventType: AuditLogEvent.Publish,
       metadata: { site, ...rest },
     })
-
-    await publishSite(logger, { siteId: site.id })
   })
+
+  await publishSite(logger, { siteId: site.id })
 }
 
 export const getBatchAncestryWithSelfQuery = async ({
