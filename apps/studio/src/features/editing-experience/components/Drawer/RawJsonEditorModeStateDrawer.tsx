@@ -8,6 +8,7 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
+import { serializePageBlob } from "~/utils/combinatorArrayFields"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
 
@@ -51,7 +52,7 @@ export default function RawJsonEditorModeStateDrawer(): JSX.Element {
       {
         pageId,
         siteId,
-        content: JSON.stringify(previewPageState),
+        content: serializePageBlob(previewPageState),
       },
       {
         onSuccess: () => setDrawerState({ state: "root" }),
