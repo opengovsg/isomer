@@ -283,6 +283,8 @@ const HeroGradientSchema = Type.Intersect(
       ],
       format: HERO_ACTION_LAYOUT_FORMAT,
       title: "Layout",
+      description:
+        "Check the desktop layout in Fullscreen, under preview options",
     }),
   ],
   {

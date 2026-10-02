@@ -157,7 +157,12 @@ function JsonFormsHeroActionLayoutControl({
             >
               <Flex alignItems="center" gap="8px">
                 Quick actions
-                <Badge variant="subtle" colorScheme="success" size="xs">
+                <Badge
+                  variant="subtle"
+                  colorScheme="success"
+                  size="xs"
+                  bg="interaction.success-subtle.default"
+                >
                   New
                 </Badge>
               </Flex>
