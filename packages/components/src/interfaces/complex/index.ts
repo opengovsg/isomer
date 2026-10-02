@@ -11,7 +11,15 @@ export {
 export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
-export { HERO_STYLE, HeroSchema, type HeroProps } from "./Hero"
+export {
+  HERO_ACTION_LAYOUT,
+  HERO_STYLE,
+  HeroSchema,
+  type HeroActionLayout,
+  type HeroActionLayoutQuickActionsProps,
+  type HeroActionLayoutQuickActionItem,
+  type HeroProps,
+} from "./Hero"
 export { IframeSchema, type IframeProps } from "./Iframe"
 export {
   generateImageSrcSchema,
