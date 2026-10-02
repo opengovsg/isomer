@@ -15,6 +15,12 @@ export const HERO_STYLE = {
   largeImage: "largeImage",
   floating: "floating",
   searchbar: "searchbar",
+  carousel: "carousel",
+} as const
+
+export const HERO_CAROUSEL_SLIDE_MODE = {
+  entire: "entire",
+  imageOnly: "imageOnly",
 } as const
 
 const HeroBaseSchema = Type.Object({
@@ -195,6 +201,76 @@ const HeroSearchbarSchema = Type.Composite(
   },
 )
 
+const HeroCarouselSlideSchema = Type.Composite(
+  [
+    Type.Object({
+      backgroundUrl: BackgroundUrlSchema,
+      title: Type.Optional(
+        Type.String({
+          title: "Hero text",
+          description: "The title of the hero banner",
+          maxLength: 100,
+          pattern: NON_EMPTY_STRING_REGEX,
+          errorMessage: {
+            pattern: "cannot be empty or contain only spaces",
+          },
+        }),
+      ),
+      subtitle: Type.Optional(
+        Type.String({
+          title: "Description",
+          description: "The contents of the hero banner",
+          format: "textarea",
+          maxLength: 300,
+        }),
+      ),
+    }),
+    CallToActionsSchema,
+  ],
+  {
+    title: "Slide",
+  },
+)
+
+const HeroCarouselSchema = Type.Composite(
+  [
+    Type.Object({
+      variant: Type.Literal(HERO_STYLE.carousel, {
+        default: HERO_STYLE.carousel,
+      }),
+      slide: Type.Union(
+        [
+          Type.Literal(HERO_CAROUSEL_SLIDE_MODE.entire, {
+            title: "entire",
+          }),
+          Type.Literal(HERO_CAROUSEL_SLIDE_MODE.imageOnly, {
+            title: "image only",
+          }),
+        ],
+        {
+          title: "Slide",
+          default: HERO_CAROUSEL_SLIDE_MODE.entire,
+        },
+      ),
+      slides: Type.Array(HeroCarouselSlideSchema, {
+        title: "Slides",
+        minItems: 2,
+        maxItems: 3,
+      }),
+    }),
+    HeroBaseSchema,
+    CallToActionsSchema,
+  ],
+  {
+    title: "Carousel",
+    groups: [
+      GROUPINGS.TEXT,
+      GROUPINGS.PRIMARY_CALL_TO_ACTION,
+      GROUPINGS.SECONDARY_CALL_TO_ACTION,
+    ],
+  },
+)
+
 export const HeroSchema = Type.Intersect(
   [
     Type.Union(
@@ -204,6 +280,7 @@ export const HeroSchema = Type.Intersect(
         HeroLargeImageSchema,
         HeroFloatingSchema,
         HeroSearchbarSchema,
+        HeroCarouselSchema,
       ],
       {
         title: "Hero banner style",
@@ -242,9 +319,14 @@ export type HeroSearchbarProps = Simplify<
   CommonProps & Static<typeof HeroSearchbarSchema>
 >
 
+export type HeroCarouselProps = Simplify<
+  CommonProps & Static<typeof HeroCarouselSchema>
+>
+
 export type HeroProps =
   | HeroGradientProps
   | HeroBlockProps
   | HeroLargeImageProps
   | HeroFloatingProps
   | HeroSearchbarProps
+  | HeroCarouselProps
