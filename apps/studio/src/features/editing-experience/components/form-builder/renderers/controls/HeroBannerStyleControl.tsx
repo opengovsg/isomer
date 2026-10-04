@@ -149,6 +149,11 @@ export function HeroBannerStyleDrawer({
                 borderRadius="0.5rem"
                 bg={isSelected ? "utility.feedback.info-subtle" : "white"}
                 {...heroBannerStyleBlockInteractionProps}
+                _hover={
+                  isSelected
+                    ? undefined
+                    : heroBannerStyleBlockInteractionProps._hover
+                }
               >
                 <Box
                   as="input"
