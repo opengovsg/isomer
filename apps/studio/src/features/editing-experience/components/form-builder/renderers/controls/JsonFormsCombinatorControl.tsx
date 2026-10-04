@@ -1,8 +1,4 @@
-import type {
-  CombinatorRendererProps,
-  JsonSchema,
-  RankedTester,
-} from "@jsonforms/core"
+import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
@@ -26,7 +22,9 @@ import { useCallback, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import {
+  type HeroBannerStyleOption,
   HeroBannerStyleDrawer,
+  heroBannerStyleOptionFromBranchSchema,
   HeroBannerStyleTrigger,
 } from "./HeroBannerStyleControl"
 
@@ -44,44 +42,16 @@ interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
   combinatorType: "oneOf" | "anyOf"
 }
 
-function readVariantKeyFromSchema(schema: JsonSchema): string | undefined {
-  const properties = schema.properties
-  if (properties && typeof properties === "object") {
-    const variantSchema = properties.variant
-    if (
-      variantSchema &&
-      typeof variantSchema === "object" &&
-      typeof variantSchema.const === "string"
-    ) {
-      return variantSchema.const
-    }
-  }
-
-  const allOf = schema.allOf
-  if (Array.isArray(allOf)) {
-    for (const part of allOf) {
-      const variant = readVariantKeyFromSchema(part)
-      if (variant) {
-        return variant
-      }
-    }
-  }
-
-  return undefined
-}
-
 type CombinatorRenderInfo = ReturnType<
   typeof createCombinatorRenderInfos
 >[number]
 
 function combinatorOptionFromRenderInfo(renderInfo: CombinatorRenderInfo) {
   const option = String(renderInfo.label || renderInfo.schema.const)
-  const variantKey = readVariantKeyFromSchema(renderInfo.schema)
 
   return {
     label: option.charAt(0).toUpperCase() + option.slice(1),
     value: option,
-    key: variantKey ?? option,
   }
 }
 
@@ -120,7 +90,13 @@ function JsonFormsCombinatorControl({
         return null
       }
 
-      return combinatorOptionFromRenderInfo(renderInfo)
+      const option = combinatorOptionFromRenderInfo(renderInfo)
+
+      if (schema.format === HERO_BANNER_STYLE_FORMAT) {
+        return heroBannerStyleOptionFromBranchSchema(renderInfo.schema, option)
+      }
+
+      return option
     })
     .filter((option) => option !== null)
 
@@ -177,7 +153,7 @@ function JsonFormsCombinatorControl({
   if (schema.format === HERO_BANNER_STYLE_FORMAT && isHeroStyleDrawerOpen) {
     return (
       <HeroBannerStyleDrawer
-        options={options}
+        options={options as HeroBannerStyleOption[]}
         value={selectedHeroStyle}
         onChange={onChange}
         onClose={closeHeroStyleDrawer}

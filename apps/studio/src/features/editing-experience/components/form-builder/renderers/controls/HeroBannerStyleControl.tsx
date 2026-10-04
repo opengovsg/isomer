@@ -1,9 +1,54 @@
+import type { JsonSchema } from "@jsonforms/core"
 import { Box, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { useId } from "react"
 import { BiCheck, BiChevronRight } from "react-icons/bi"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
+
+export interface HeroBannerStyleOption {
+  label: string
+  value: string
+  key: string
+}
+
+function readHeroBannerStyleVariantKeyFromSchema(
+  schema: JsonSchema,
+): string | undefined {
+  const properties = schema.properties
+  if (properties && typeof properties === "object") {
+    const variantSchema = properties.variant
+    if (
+      variantSchema &&
+      typeof variantSchema === "object" &&
+      typeof variantSchema.const === "string"
+    ) {
+      return variantSchema.const
+    }
+  }
+
+  const allOf = schema.allOf
+  if (Array.isArray(allOf)) {
+    for (const part of allOf) {
+      const variant = readHeroBannerStyleVariantKeyFromSchema(part)
+      if (variant) {
+        return variant
+      }
+    }
+  }
+
+  return undefined
+}
+
+export function heroBannerStyleOptionFromBranchSchema(
+  schema: JsonSchema,
+  option: { label: string; value: string },
+): HeroBannerStyleOption {
+  return {
+    ...option,
+    key: readHeroBannerStyleVariantKeyFromSchema(schema) ?? option.value,
+  }
+}
 
 // Match Fixed blocks "Hero banner" row hover in BaseBlock.
 const heroBannerStyleBlockInteractionProps = {
@@ -19,12 +64,6 @@ const heroBannerStyleBlockInteractionProps = {
     borderColor: "interaction.main-subtle.hover",
     boxShadow: "0px 1px 6px 0px #1361F026",
   },
-}
-
-export interface HeroBannerStyleOption {
-  label: string
-  value: string
-  key: string
 }
 
 export function HeroBannerStyleTrigger({
