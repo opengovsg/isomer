@@ -1,6 +1,5 @@
 import { Box, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { HERO_STYLE } from "@opengovsg/isomer-components"
 import { useId } from "react"
 import { BiCheck, BiChevronRight } from "react-icons/bi"
 
@@ -145,11 +144,7 @@ export function HeroBannerStyleDrawer({
                 />
                 <Box
                   as="img"
-                  src={
-                    option.key === HERO_STYLE.searchbar
-                      ? `${HERO_BANNER_STYLE_ASSET_DIR}/placeholder.svg`
-                      : `${HERO_BANNER_STYLE_ASSET_DIR}/${option.key}.png`
-                  }
+                  src={`${HERO_BANNER_STYLE_ASSET_DIR}/${option.key}.png`}
                   alt=""
                   w="123px"
                   h="76px"
