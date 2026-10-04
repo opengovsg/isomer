@@ -9,28 +9,21 @@ import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 import { HERO_BANNER_STYLE_FORMAT } from "../format"
 import { generateImageSrcSchema } from "./Image"
 
-export const HERO_STYLE = {
-  gradient: "gradient",
-  block: "block",
-  largeImage: "largeImage",
-  floating: "floating",
-  searchbar: "searchbar",
+export const HERO_BANNER_STYLE_BRANCHES = {
+  gradient: { title: "Gradient (Default)" },
+  block: { title: "Block" },
+  largeImage: { title: "Large image" },
+  floating: { title: "Floating" },
+  searchbar: { title: "Search bar" },
 } as const
 
-/** Titles must match each hero style composite's `title` (oneOf branch labels). */
-export const HERO_BANNER_STYLE_BRANCHES = [
-  { title: "Gradient (Default)", variant: HERO_STYLE.gradient },
-  { title: "Block", variant: HERO_STYLE.block },
-  { title: "Large image", variant: HERO_STYLE.largeImage },
-  { title: "Floating", variant: HERO_STYLE.floating },
-  { title: "Search bar", variant: HERO_STYLE.searchbar },
-] as const
+type HeroBannerStyleKey = keyof typeof HERO_BANNER_STYLE_BRANCHES
 
-export function getHeroBannerStyleVariantKeyForBranchTitle(branchTitle: string) {
-  return HERO_BANNER_STYLE_BRANCHES.find(
-    (branch) => branch.title === branchTitle,
-  )?.variant
-}
+export const HERO_STYLE = Object.fromEntries(
+  (Object.keys(HERO_BANNER_STYLE_BRANCHES) as HeroBannerStyleKey[]).map(
+    (variant) => [variant, variant],
+  ),
+) as { [K in HeroBannerStyleKey]: K }
 
 const HeroBaseSchema = Type.Object({
   type: Type.Literal("hero", { default: "hero" }),
@@ -123,7 +116,7 @@ const HeroGradientSchema = Type.Composite(
     CallToActionsSchema,
   ],
   {
-    title: "Gradient (Default)",
+    title: HERO_BANNER_STYLE_BRANCHES.gradient.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -142,7 +135,7 @@ const HeroBlockSchema = Type.Composite(
     CallToActionsSchema,
   ],
   {
-    title: "Block",
+    title: HERO_BANNER_STYLE_BRANCHES.block.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -163,7 +156,7 @@ const HeroLargeImageSchema = Type.Composite(
     CallToActionsSchema,
   ],
   {
-    title: "Large image",
+    title: HERO_BANNER_STYLE_BRANCHES.largeImage.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -184,7 +177,7 @@ const HeroFloatingSchema = Type.Composite(
     CallToActionsSchema,
   ],
   {
-    title: "Floating",
+    title: HERO_BANNER_STYLE_BRANCHES.floating.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -204,7 +197,7 @@ const HeroSearchbarSchema = Type.Composite(
     HeroBaseSchema,
   ],
   {
-    title: "Search bar",
+    title: HERO_BANNER_STYLE_BRANCHES.searchbar.title,
     format: "hidden", // beta: we don't want to show this in the UI yet
     groups: [GROUPINGS.TEXT],
   },

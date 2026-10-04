@@ -12,7 +12,6 @@ export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
 export {
-  getHeroBannerStyleVariantKeyForBranchTitle,
   HERO_BANNER_STYLE_BRANCHES,
   HERO_STYLE,
   HeroSchema,

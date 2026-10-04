@@ -1,6 +1,6 @@
 import { Box, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { getHeroBannerStyleVariantKeyForBranchTitle } from "@opengovsg/isomer-components"
+import { HERO_BANNER_STYLE_BRANCHES } from "@opengovsg/isomer-components"
 import { useId } from "react"
 import { BiCheck, BiChevronRight } from "react-icons/bi"
 
@@ -10,6 +10,14 @@ export interface HeroBannerStyleOption {
   label: string
   value: string
   key: string
+}
+
+function getHeroBannerStyleVariantKeyForBranchTitle(branchTitle: string) {
+  return (
+    Object.keys(
+      HERO_BANNER_STYLE_BRANCHES,
+    ) as (keyof typeof HERO_BANNER_STYLE_BRANCHES)[]
+  ).find((variant) => HERO_BANNER_STYLE_BRANCHES[variant].title === branchTitle)
 }
 
 export function heroBannerStyleOptionFromCombinatorOption(option: {
