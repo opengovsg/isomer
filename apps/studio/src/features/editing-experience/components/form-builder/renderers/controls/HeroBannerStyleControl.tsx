@@ -1,12 +1,19 @@
-import { Box, Flex, Icon, Text, VStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import type {
+  JsonFormsCellRendererRegistryEntry,
+  JsonFormsRendererRegistryEntry,
+  JsonSchema,
+  UISchemaElement,
+} from "@jsonforms/core"
+import { Box, Flex, FormControl, Icon, Text, VStack } from "@chakra-ui/react"
+import { JsonFormsDispatch } from "@jsonforms/react"
+import { Button, FormLabel } from "@opengovsg/design-system-react"
 import { HERO_BANNER_STYLE_BRANCHES } from "@opengovsg/isomer-components"
-import { useId } from "react"
+import { useId, useState } from "react"
 import { BiCheck, BiChevronRight } from "react-icons/bi"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 
-export interface HeroBannerStyleOption {
+interface HeroBannerStyleOption {
   label: string
   value: string
   key: string
@@ -20,7 +27,7 @@ function getHeroBannerStyleVariantKeyForBranchTitle(branchTitle: string) {
   ).find((variant) => HERO_BANNER_STYLE_BRANCHES[variant].title === branchTitle)
 }
 
-export function heroBannerStyleOptionFromCombinatorOption(option: {
+function heroBannerStyleOptionFromCombinatorOption(option: {
   label: string
   value: string
 }): HeroBannerStyleOption {
@@ -47,7 +54,7 @@ const heroBannerStyleBlockInteractionProps = {
   },
 }
 
-export function HeroBannerStyleTrigger({
+function HeroBannerStyleTrigger({
   label,
   onOpen,
 }: {
@@ -97,7 +104,7 @@ export function HeroBannerStyleTrigger({
   )
 }
 
-export function HeroBannerStyleDrawer({
+function HeroBannerStyleDrawer({
   options,
   value,
   onChange,
@@ -212,5 +219,97 @@ export function HeroBannerStyleDrawer({
         </Button>
       </Box>
     </VStack>
+  )
+}
+
+interface HeroBannerStyleRenderInfo {
+  label: string
+  schema: JsonSchema
+  uischema: UISchemaElement
+}
+
+function combinatorOptionFromRenderInfo(renderInfo: HeroBannerStyleRenderInfo) {
+  const option = String(renderInfo.label || renderInfo.schema.const)
+
+  return {
+    label: option.charAt(0).toUpperCase() + option.slice(1),
+    value: option,
+  }
+}
+
+export function HeroBannerStyleCombinator({
+  label,
+  description,
+  renderInfos,
+  variant,
+  onChange,
+  activeRenderInfo,
+  path,
+  renderers,
+  cells,
+}: {
+  label: string | undefined
+  description: string | undefined
+  renderInfos: HeroBannerStyleRenderInfo[]
+  variant: string
+  onChange: (value: string) => void
+  activeRenderInfo: HeroBannerStyleRenderInfo | undefined
+  path: string
+  renderers: JsonFormsRendererRegistryEntry[] | undefined
+  cells: JsonFormsCellRendererRegistryEntry[] | undefined
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  const options = renderInfos
+    .map((renderInfo) => {
+      const option = combinatorOptionFromRenderInfo(renderInfo)
+      const isHidden = renderInfo.schema.format === "hidden"
+      const isSelected = option.label === variant || option.value === variant
+
+      if (isHidden && !isSelected) {
+        return null
+      }
+
+      return heroBannerStyleOptionFromCombinatorOption(option)
+    })
+    .filter((option) => option !== null)
+
+  const selected = options.find(
+    (option) => option.label === variant || option.value === variant,
+  )
+
+  if (isOpen) {
+    return (
+      <HeroBannerStyleDrawer
+        options={options}
+        value={selected?.value ?? ""}
+        onChange={onChange}
+        onClose={() => setIsOpen(false)}
+      />
+    )
+  }
+
+  return (
+    <>
+      <Box>
+        <FormControl isRequired gap="0.5rem">
+          <FormLabel description={description}>{label || "Variant"}</FormLabel>
+          <HeroBannerStyleTrigger
+            label={selected?.label ?? ""}
+            onOpen={() => setIsOpen(true)}
+          />
+        </FormControl>
+      </Box>
+      {activeRenderInfo && (
+        <JsonFormsDispatch
+          key={activeRenderInfo.label}
+          uischema={activeRenderInfo.uischema}
+          schema={activeRenderInfo.schema}
+          path={path}
+          renderers={renderers}
+          cells={cells}
+        />
+      )}
+    </>
   )
 }
