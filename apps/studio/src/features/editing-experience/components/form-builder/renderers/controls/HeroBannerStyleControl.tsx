@@ -5,8 +5,6 @@ import { BiCheck, BiChevronRight } from "react-icons/bi"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 
-const HERO_BANNER_STYLE_ASSET_DIR = "/assets/hero-banner-style"
-
 // Match Fixed blocks "Hero banner" row hover in BaseBlock.
 const heroBannerStyleBlockInteractionProps = {
   layerStyle: "focusRing",
@@ -144,7 +142,7 @@ export function HeroBannerStyleDrawer({
                 />
                 <Box
                   as="img"
-                  src={`${HERO_BANNER_STYLE_ASSET_DIR}/${option.key}.png`}
+                  src={`/assets/hero-banner-style/${option.key}.png`}
                   alt=""
                   w="123px"
                   h="76px"
