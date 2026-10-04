@@ -6,17 +6,7 @@ import { BiCheck, BiChevronRight } from "react-icons/bi"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 
-// Search bar (hidden in the picker) still uses the shared placeholder preview.
-const HERO_BANNER_STYLE_PLACEHOLDER_SRC =
-  "/assets/hero-banner-style-placeholder.svg"
-
-const HERO_BANNER_STYLE_PREVIEW_SRC: Record<string, string> = {
-  [HERO_STYLE.gradient]: "/assets/hero-banner-style-gradient.png",
-  [HERO_STYLE.block]: "/assets/hero-banner-style-block.png",
-  [HERO_STYLE.largeImage]: "/assets/hero-banner-style-large-image.png",
-  [HERO_STYLE.floating]: "/assets/hero-banner-style-floating.png",
-  [HERO_STYLE.searchbar]: HERO_BANNER_STYLE_PLACEHOLDER_SRC,
-}
+const HERO_BANNER_STYLE_ASSET_DIR = "/assets/hero-banner-style"
 
 export interface HeroBannerStyleOption {
   label: string
@@ -158,8 +148,9 @@ export function HeroBannerStyleDrawer({
                 <Box
                   as="img"
                   src={
-                    HERO_BANNER_STYLE_PREVIEW_SRC[option.key] ??
-                    HERO_BANNER_STYLE_PLACEHOLDER_SRC
+                    option.key === HERO_STYLE.searchbar
+                      ? `${HERO_BANNER_STYLE_ASSET_DIR}/placeholder.svg`
+                      : `${HERO_BANNER_STYLE_ASSET_DIR}/${option.key}.png`
                   }
                   alt=""
                   w="123px"
