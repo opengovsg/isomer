@@ -108,9 +108,7 @@ function JsonFormsCombinatorControl({
   }, [])
   const [variant, setVariant] = useState(() => {
     const fittingInfo =
-      indexOfFittingSchema >= 0
-        ? renderInfos[indexOfFittingSchema]
-        : undefined
+      indexOfFittingSchema >= 0 ? renderInfos[indexOfFittingSchema] : undefined
 
     if (fittingInfo) {
       return combinatorOptionFromRenderInfo(fittingInfo).label

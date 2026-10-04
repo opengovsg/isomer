@@ -26,7 +26,8 @@ export function heroBannerStyleOptionFromCombinatorOption(option: {
 }): HeroBannerStyleOption {
   return {
     ...option,
-    key: getHeroBannerStyleVariantKeyForBranchTitle(option.value) ?? option.value,
+    key:
+      getHeroBannerStyleVariantKeyForBranchTitle(option.value) ?? option.value,
   }
 }
 
