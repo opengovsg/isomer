@@ -1,4 +1,8 @@
-import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
+import type {
+  CombinatorRendererProps,
+  JsonSchema,
+  RankedTester,
+} from "@jsonforms/core"
 import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
@@ -40,6 +44,32 @@ interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
   combinatorType: "oneOf" | "anyOf"
 }
 
+function readVariantKeyFromSchema(schema: JsonSchema): string | undefined {
+  const properties = schema.properties
+  if (properties && typeof properties === "object") {
+    const variantSchema = properties.variant
+    if (
+      variantSchema &&
+      typeof variantSchema === "object" &&
+      typeof variantSchema.const === "string"
+    ) {
+      return variantSchema.const
+    }
+  }
+
+  const allOf = schema.allOf
+  if (Array.isArray(allOf)) {
+    for (const part of allOf) {
+      const variant = readVariantKeyFromSchema(part)
+      if (variant) {
+        return variant
+      }
+    }
+  }
+
+  return undefined
+}
+
 function JsonFormsCombinatorControl({
   schema,
   path,
@@ -74,9 +104,12 @@ function JsonFormsCombinatorControl({
 
       const option = String(renderInfo.label || renderInfo.schema.const)
 
+      const variantKey = readVariantKeyFromSchema(renderInfo.schema)
+
       return {
         label: option.charAt(0).toUpperCase() + option.slice(1),
         value: option,
+        key: variantKey ?? option,
       }
     })
     .filter((option) => option !== null)

@@ -1,5 +1,6 @@
 import { Box, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
+import { HERO_STYLE } from "@opengovsg/isomer-components"
 import { useEffect, useId } from "react"
 import { BiCheck, BiChevronRight } from "react-icons/bi"
 
@@ -10,43 +11,17 @@ const HERO_BANNER_STYLE_PLACEHOLDER_SRC =
   "/assets/hero-banner-style-placeholder.svg"
 
 const HERO_BANNER_STYLE_PREVIEW_SRC: Record<string, string> = {
-  "Gradient (Default)": "/assets/hero-banner-style-gradient.png",
-  Block: "/assets/hero-banner-style-block.png",
-  "Large image": "/assets/hero-banner-style-large-image.png",
-  Floating: "/assets/hero-banner-style-floating.png",
-  "Search bar": HERO_BANNER_STYLE_PLACEHOLDER_SRC,
+  [HERO_STYLE.gradient]: "/assets/hero-banner-style-gradient.png",
+  [HERO_STYLE.block]: "/assets/hero-banner-style-block.png",
+  [HERO_STYLE.largeImage]: "/assets/hero-banner-style-large-image.png",
+  [HERO_STYLE.floating]: "/assets/hero-banner-style-floating.png",
+  [HERO_STYLE.searchbar]: HERO_BANNER_STYLE_PLACEHOLDER_SRC,
 }
-
-function heroBannerStylePreviewSrc(optionValue: string) {
-  return (
-    HERO_BANNER_STYLE_PREVIEW_SRC[optionValue] ??
-    HERO_BANNER_STYLE_PLACEHOLDER_SRC
-  )
-}
-
-const EXPLORE_STYLES_LABEL = "Click to explore different styles"
-const CHOOSE_STYLE_LABEL = "Choose a hero banner style"
 
 export interface HeroBannerStyleOption {
   label: string
   value: string
-}
-
-function HeroBannerStyleThumbnail({ src }: { src: string }) {
-  return (
-    <Box
-      as="img"
-      src={src}
-      alt=""
-      w="123px"
-      h="76px"
-      maxW="240px"
-      flexShrink={0}
-      objectFit="cover"
-      borderRadius="0.25rem"
-      boxShadow="0 0 20px 0 rgba(104, 104, 104, 0.30)"
-    />
-  )
+  key: string
 }
 
 export function HeroBannerStyleTrigger({
@@ -93,7 +68,7 @@ export function HeroBannerStyleTrigger({
           {label}
         </Text>
         <Text textStyle="caption-2" color="base.content.medium">
-          {EXPLORE_STYLES_LABEL}
+          Click to explore different styles
         </Text>
       </Flex>
       <Icon
@@ -134,7 +109,7 @@ export function HeroBannerStyleDrawer({
   return (
     <VStack
       role="dialog"
-      aria-label={CHOOSE_STYLE_LABEL}
+      aria-label="Choose a hero banner style"
       position="absolute"
       top={0}
       left={0}
@@ -145,7 +120,7 @@ export function HeroBannerStyleDrawer({
       gap={0}
     >
       <DrawerHeader
-        label={CHOOSE_STYLE_LABEL}
+        label="Choose a hero banner style"
         onBackClick={onClose}
         backAriaLabel="Back to hero banner"
       />
@@ -180,8 +155,20 @@ export function HeroBannerStyleDrawer({
                   onChange={() => onChange(option.value)}
                   srOnly
                 />
-                <HeroBannerStyleThumbnail
-                  src={heroBannerStylePreviewSrc(option.value)}
+                <Box
+                  as="img"
+                  src={
+                    HERO_BANNER_STYLE_PREVIEW_SRC[option.key] ??
+                    HERO_BANNER_STYLE_PLACEHOLDER_SRC
+                  }
+                  alt=""
+                  w="123px"
+                  h="76px"
+                  maxW="240px"
+                  flexShrink={0}
+                  objectFit="cover"
+                  borderRadius="0.25rem"
+                  boxShadow="0 0 20px 0 rgba(104, 104, 104, 0.30)"
                 />
                 <Text
                   textStyle="subhead-1"
