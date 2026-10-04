@@ -147,7 +147,7 @@ function JsonFormsHeroActionLayoutControl({
               __css={heroActionLayoutRadioCss}
             >
               Buttons only
-              <IconHeroActionLayoutButtons mt="10px" />
+              <IconHeroActionLayoutButtons aria-hidden mt="10px" />
             </Radio>
             <Radio
               value={HERO_ACTION_LAYOUT.quickActions}
@@ -166,7 +166,7 @@ function JsonFormsHeroActionLayoutControl({
                   New
                 </Badge>
               </Flex>
-              <IconHeroActionLayoutQuickActions mt="10px" />
+              <IconHeroActionLayoutQuickActions aria-hidden mt="10px" />
             </Radio>
           </Radio.RadioGroup>
         </FormControl>

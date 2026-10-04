@@ -2,7 +2,8 @@ import { getBuilderFieldErrorMessage } from "../getBuilderFieldErrorMessage"
 
 describe("getBuilderFieldErrorMessage", () => {
   it("returns pattern errors on the field instance path", () => {
-    const actual = getBuilderFieldErrorMessage("quickActionsItems.0.title", {
+    // Arrange
+    const errors = {
       "/quickActionsItems/0/title": [
         {
           instancePath: "/quickActionsItems/0/title",
@@ -12,13 +13,21 @@ describe("getBuilderFieldErrorMessage", () => {
           params: {},
         },
       ],
-    })
+    }
 
+    // Act
+    const actual = getBuilderFieldErrorMessage(
+      "quickActionsItems.0.title",
+      errors,
+    )
+
+    // Assert
     expect(actual).toBe("cannot be empty or contain only spaces")
   })
 
   it("returns required errors attached to the parent object path", () => {
-    const actual = getBuilderFieldErrorMessage("quickActionsItems.0.title", {
+    // Arrange
+    const errors = {
       "/quickActionsItems/0": [
         {
           instancePath: "/quickActionsItems/0",
@@ -28,8 +37,15 @@ describe("getBuilderFieldErrorMessage", () => {
           params: { missingProperty: "title" },
         },
       ],
-    })
+    }
 
+    // Act
+    const actual = getBuilderFieldErrorMessage(
+      "quickActionsItems.0.title",
+      errors,
+    )
+
+    // Assert
     expect(actual).toBe("must have required property 'title'")
   })
 })

@@ -11,7 +11,7 @@ const QUICK_ACTIONS_TITLE_ID = "quick-actions-title"
 const quickActionsStyles = tv({
   slots: {
     root: [
-      "flex h-full w-full flex-col items-start gap-6 rounded-lg border border-base-divider-subtle bg-white p-6 shadow-[0_6px_24px_0_rgba(0,0,0,0.10)]",
+      "flex h-full w-full flex-col items-start gap-6 rounded-lg border border-base-divider-subtle bg-white p-6 shadow-[0_0.375rem_1.5rem_0_rgba(0,0,0,0.10)]",
       "md:px-10 md:pb-9 md:pt-8",
     ],
     title: "prose-display-sm break-words text-base-content-strong",

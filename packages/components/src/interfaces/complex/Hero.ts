@@ -159,39 +159,6 @@ const HeroActionLayoutQuickActionItemSchema = Type.Object({
   }),
 })
 
-const HeroGradientCallToActionsSchema = Type.Object({
-  buttonLabel: Type.Optional(
-    Type.String({
-      title: "Primary Call-to-Action text",
-      description:
-        "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
-    }),
-  ),
-  buttonUrl: Type.Optional(
-    Type.String({
-      title: "Button destination",
-      description: "When this is clicked, open:",
-      format: "link",
-      pattern: LINK_HREF_PATTERN,
-    }),
-  ),
-  secondaryButtonLabel: Type.Optional(
-    Type.String({
-      title: "Secondary Call-to-Action text",
-      description:
-        "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
-    }),
-  ),
-  secondaryButtonUrl: Type.Optional(
-    Type.String({
-      title: "Button destination",
-      description: "When this is clicked, open:",
-      format: "link",
-      pattern: LINK_HREF_PATTERN,
-    }),
-  ),
-})
-
 const HeroGradientSharedSchema = Type.Composite(
   [
     Type.Object({
@@ -239,7 +206,7 @@ const HeroGradientButtonsLayoutSchema = Type.Composite(
         }),
       ),
     }),
-    HeroGradientCallToActionsSchema,
+    CallToActionsSchema,
   ],
   {
     title: "Buttons only",
@@ -403,7 +370,7 @@ export type HeroActionLayoutQuickActionItem = Static<
 
 /** Props for the shared CTA buttons row (gradient `actionLayout` only today). */
 export type HeroActionLayoutButtonsPanelProps = Simplify<
-  Pick<CommonProps, "site"> & Static<typeof HeroGradientCallToActionsSchema>
+  Pick<CommonProps, "site"> & Static<typeof CallToActionsSchema>
 >
 
 /** Props for the shared quick-actions panel (gradient `actionLayout` only today). */
@@ -418,7 +385,7 @@ export type HeroActionLayoutQuickActionsPanelProps = Simplify<
 export type HeroGradientButtonsProps = Simplify<
   CommonProps &
     Static<typeof HeroGradientSharedSchema> &
-    Static<typeof HeroGradientCallToActionsSchema>
+    Static<typeof CallToActionsSchema>
 >
 
 export type HeroActionLayoutQuickActionsProps = Simplify<
