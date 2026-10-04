@@ -70,6 +70,21 @@ function readVariantKeyFromSchema(schema: JsonSchema): string | undefined {
   return undefined
 }
 
+type CombinatorRenderInfo = ReturnType<
+  typeof createCombinatorRenderInfos
+>[number]
+
+function combinatorOptionFromRenderInfo(renderInfo: CombinatorRenderInfo) {
+  const option = String(renderInfo.label || renderInfo.schema.const)
+  const variantKey = readVariantKeyFromSchema(renderInfo.schema)
+
+  return {
+    label: option.charAt(0).toUpperCase() + option.slice(1),
+    value: option,
+    key: variantKey ?? option,
+  }
+}
+
 function JsonFormsCombinatorControl({
   schema,
   path,
@@ -97,20 +112,15 @@ function JsonFormsCombinatorControl({
   )
 
   const options = renderInfos
-    .map((renderInfo) => {
-      if (renderInfo.schema.format === "hidden") {
+    .map((renderInfo, index) => {
+      if (
+        renderInfo.schema.format === "hidden" &&
+        index !== indexOfFittingSchema
+      ) {
         return null
       }
 
-      const option = String(renderInfo.label || renderInfo.schema.const)
-
-      const variantKey = readVariantKeyFromSchema(renderInfo.schema)
-
-      return {
-        label: option.charAt(0).toUpperCase() + option.slice(1),
-        value: option,
-        key: variantKey ?? option,
-      }
+      return combinatorOptionFromRenderInfo(renderInfo)
     })
     .filter((option) => option !== null)
 
@@ -120,18 +130,27 @@ function JsonFormsCombinatorControl({
   const closeHeroStyleDrawer = useCallback(() => {
     setIsHeroStyleDrawerOpen(false)
   }, [])
-  const [variant, setVariant] = useState(
-    () =>
-      (indexOfFittingSchema >= 0 && options[indexOfFittingSchema]
-        ? options[indexOfFittingSchema].label
-        : options[0]?.label) ?? "",
-  )
+  const [variant, setVariant] = useState(() => {
+    const fittingInfo =
+      indexOfFittingSchema >= 0
+        ? renderInfos[indexOfFittingSchema]
+        : undefined
+
+    if (fittingInfo) {
+      return combinatorOptionFromRenderInfo(fittingInfo).label
+    }
+
+    return options[0]?.label ?? ""
+  })
 
   const onChange = (value: string) => {
-    setVariant(value)
+    const selectedOption = options.find((option) => option.value === value)
+    setVariant(selectedOption?.label ?? value)
 
-    const newSchema =
-      renderInfos[options.findIndex((option) => option.value === value)]?.schema
+    const newSchema = renderInfos.find((renderInfo) => {
+      const option = String(renderInfo.label || renderInfo.schema.const)
+      return option === value
+    })?.schema
     if (!newSchema) {
       handleChange(path, {})
     } else {

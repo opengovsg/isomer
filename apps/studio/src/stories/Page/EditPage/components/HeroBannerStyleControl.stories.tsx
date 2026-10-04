@@ -6,21 +6,24 @@ import { expect, userEvent, within } from "storybook/test"
 
 import { FormBuilder } from "./formBuilder"
 
-const styleBranch = (title: string, variant: string, hidden = false) =>
-  Type.Object(
-    { variant: Type.Literal(variant) },
-    hidden ? { title, format: "hidden" } : { title },
-  )
-
 const schema = Type.Unsafe({
   title: "Hero banner style",
   format: HERO_BANNER_STYLE_FORMAT,
   oneOf: [
-    styleBranch("Gradient (Default)", "gradient"),
-    styleBranch("Block", "block"),
-    styleBranch("Large image", "largeImage"),
-    styleBranch("Floating", "floating"),
-    styleBranch("Search bar", "searchbar", true),
+    Type.Object(
+      { variant: Type.Literal("gradient") },
+      { title: "Gradient (Default)" },
+    ),
+    Type.Object({ variant: Type.Literal("block") }, { title: "Block" }),
+    Type.Object(
+      { variant: Type.Literal("largeImage") },
+      { title: "Large image" },
+    ),
+    Type.Object({ variant: Type.Literal("floating") }, { title: "Floating" }),
+    Type.Object(
+      { variant: Type.Literal("searchbar") },
+      { title: "Search bar", format: "hidden" },
+    ),
   ],
 })
 
