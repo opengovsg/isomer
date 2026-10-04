@@ -8,6 +8,22 @@ import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 
 const HERO_BANNER_STYLE_ASSET_DIR = "/assets/hero-banner-style"
 
+// Match Fixed blocks "Hero banner" row hover in BaseBlock.
+const heroBannerStyleBlockInteractionProps = {
+  layerStyle: "focusRing",
+  transitionProperty: "common",
+  transitionDuration: "normal",
+  _hover: {
+    bg: "interaction.muted.main.hover",
+    borderColor: "interaction.main-subtle.hover",
+  },
+  _active: {
+    bg: "interaction.main-subtle.default",
+    borderColor: "interaction.main-subtle.hover",
+    boxShadow: "0px 1px 6px 0px #1361F026",
+  },
+}
+
 export interface HeroBannerStyleOption {
   label: string
   value: string
@@ -34,18 +50,10 @@ export function HeroBannerStyleTrigger({
       borderStyle="solid"
       borderColor="base.divider.medium"
       borderRadius="0.5rem"
-      bg="utility.ui"
+      bg="white"
       cursor="pointer"
       onClick={onOpen}
-      _hover={{
-        borderColor: "utility.feedback.info",
-        bg: "utility.feedback.info-subtle",
-      }}
-      _focusVisible={{
-        outline: "2px solid",
-        outlineColor: "utility.focus-default",
-        outlineOffset: "2px",
-      }}
+      {...heroBannerStyleBlockInteractionProps}
     >
       <Flex
         direction="column"
@@ -134,7 +142,8 @@ export function HeroBannerStyleDrawer({
                   isSelected ? "utility.feedback.info" : "base.divider.medium"
                 }
                 borderRadius="0.5rem"
-                bg={isSelected ? "utility.feedback.info-subtle" : "utility.ui"}
+                bg={isSelected ? "utility.feedback.info-subtle" : "white"}
+                {...heroBannerStyleBlockInteractionProps}
               >
                 <Box
                   as="input"
