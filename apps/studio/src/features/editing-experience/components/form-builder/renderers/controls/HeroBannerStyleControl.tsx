@@ -1,6 +1,6 @@
-import type { JsonSchema } from "@jsonforms/core"
 import { Box, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
+import { getHeroBannerStyleVariantKeyForBranchTitle } from "@opengovsg/isomer-components"
 import { useId } from "react"
 import { BiCheck, BiChevronRight } from "react-icons/bi"
 
@@ -12,41 +12,13 @@ export interface HeroBannerStyleOption {
   key: string
 }
 
-function readHeroBannerStyleVariantKeyFromSchema(
-  schema: JsonSchema,
-): string | undefined {
-  const properties = schema.properties
-  if (properties && typeof properties === "object") {
-    const variantSchema = properties.variant
-    if (
-      variantSchema &&
-      typeof variantSchema === "object" &&
-      typeof variantSchema.const === "string"
-    ) {
-      return variantSchema.const
-    }
-  }
-
-  const allOf = schema.allOf
-  if (Array.isArray(allOf)) {
-    for (const part of allOf) {
-      const variant = readHeroBannerStyleVariantKeyFromSchema(part)
-      if (variant) {
-        return variant
-      }
-    }
-  }
-
-  return undefined
-}
-
-export function heroBannerStyleOptionFromBranchSchema(
-  schema: JsonSchema,
-  option: { label: string; value: string },
-): HeroBannerStyleOption {
+export function heroBannerStyleOptionFromCombinatorOption(option: {
+  label: string
+  value: string
+}): HeroBannerStyleOption {
   return {
     ...option,
-    key: readHeroBannerStyleVariantKeyFromSchema(schema) ?? option.value,
+    key: getHeroBannerStyleVariantKeyForBranchTitle(option.value) ?? option.value,
   }
 }
 

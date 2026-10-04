@@ -24,7 +24,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import {
   type HeroBannerStyleOption,
   HeroBannerStyleDrawer,
-  heroBannerStyleOptionFromBranchSchema,
+  heroBannerStyleOptionFromCombinatorOption,
   HeroBannerStyleTrigger,
 } from "./HeroBannerStyleControl"
 
@@ -93,7 +93,7 @@ function JsonFormsCombinatorControl({
       const option = combinatorOptionFromRenderInfo(renderInfo)
 
       if (schema.format === HERO_BANNER_STYLE_FORMAT) {
-        return heroBannerStyleOptionFromBranchSchema(renderInfo.schema, option)
+        return heroBannerStyleOptionFromCombinatorOption(option)
       }
 
       return option

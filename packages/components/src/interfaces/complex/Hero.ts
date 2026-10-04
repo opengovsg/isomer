@@ -17,6 +17,21 @@ export const HERO_STYLE = {
   searchbar: "searchbar",
 } as const
 
+/** Titles must match each hero style composite's `title` (oneOf branch labels). */
+export const HERO_BANNER_STYLE_BRANCHES = [
+  { title: "Gradient (Default)", variant: HERO_STYLE.gradient },
+  { title: "Block", variant: HERO_STYLE.block },
+  { title: "Large image", variant: HERO_STYLE.largeImage },
+  { title: "Floating", variant: HERO_STYLE.floating },
+  { title: "Search bar", variant: HERO_STYLE.searchbar },
+] as const
+
+export function getHeroBannerStyleVariantKeyForBranchTitle(branchTitle: string) {
+  return HERO_BANNER_STYLE_BRANCHES.find(
+    (branch) => branch.title === branchTitle,
+  )?.variant
+}
+
 const HeroBaseSchema = Type.Object({
   type: Type.Literal("hero", { default: "hero" }),
   title: Type.String({
