@@ -1,7 +1,7 @@
 import { Box, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { HERO_STYLE } from "@opengovsg/isomer-components"
-import { useEffect, useId } from "react"
+import { useId } from "react"
 import { BiCheck, BiChevronRight } from "react-icons/bi"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
@@ -92,17 +92,6 @@ export function HeroBannerStyleDrawer({
   onClose: () => void
 }) {
   const radioGroupName = useId()
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose()
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown)
-    return () => document.removeEventListener("keydown", onKeyDown)
-  }, [onClose])
 
   return (
     <VStack
