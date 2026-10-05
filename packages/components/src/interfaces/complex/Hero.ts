@@ -23,8 +23,9 @@ export type HeroStyleVariant =
 export function getHeroStyleVariantForBranchTitle(
   branchTitle: string,
 ): HeroStyleVariant | undefined {
-  return Object.values(HERO_STYLE).find((branch) => branch.title === branchTitle)
-    ?.key
+  return Object.values(HERO_STYLE).find(
+    (branch) => branch.title === branchTitle,
+  )?.key
 }
 
 const HeroBaseSchema = Type.Object({
