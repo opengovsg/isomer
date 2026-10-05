@@ -124,18 +124,29 @@ export const TableSchema = Type.Object(
         description: "The caption of the table",
       }),
       columnWidths: Type.Optional(
-        Type.Array(
-          Type.Integer({
-            minimum: 80,
-            maximum: 600,
-            title: "Column width (px)",
-            description:
-              "Optional fixed column widths in pixels. Omitted for automatic layout.",
-          }),
+        Type.Union(
+          [
+            Type.Array(
+              Type.Integer({
+                minimum: 80,
+                maximum: 600,
+                title: "Column width (px)",
+                description:
+                  "Optional fixed column widths in pixels. Omitted for automatic layout.",
+              }),
+              {
+                title: "Column widths",
+                description:
+                  "One width per table column. When invalid or absent, the table uses automatic layout.",
+              },
+            ),
+            // TipTap persists the unset default as null in getJSON().
+            Type.Null(),
+          ],
           {
             title: "Column widths",
             description:
-              "One width per table column. When invalid or absent, the table uses automatic layout.",
+              "One width per table column, or null when the table uses automatic layout.",
           },
         ),
       ),
