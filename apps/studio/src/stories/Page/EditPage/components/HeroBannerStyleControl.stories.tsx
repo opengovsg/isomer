@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { Box } from "@chakra-ui/react"
-import { HERO_BANNER_STYLE_FORMAT, HERO_STYLE } from "@opengovsg/isomer-components"
+import {
+  HERO_BANNER_STYLE_FORMAT,
+  HERO_STYLE,
+} from "@opengovsg/isomer-components"
 import { Type } from "@sinclair/typebox"
 import { expect, userEvent, within } from "storybook/test"
 
