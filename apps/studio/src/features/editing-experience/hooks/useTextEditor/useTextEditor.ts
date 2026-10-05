@@ -6,6 +6,7 @@ import { useEditor } from "@tiptap/react"
 import TextDirection from "tiptap-text-direction"
 
 import { BANNER_MAX_CHARACTERS } from "../../components/constants"
+import { normalizeProseContentForEditor } from "../../utils/normalizeProseContentForEditor"
 import {
   BASE_EXTENSIONS,
   HEADING_TYPE,
@@ -42,8 +43,16 @@ const useBaseEditor = ({
       }),
     ],
     // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    content: data,
-    onContentError,
+    content: normalizeProseContentForEditor(data),
+    onContentError: (props) => {
+      props.editor.commands.setContent(
+        normalizeProseContentForEditor({
+          type: "prose",
+          content: [],
+        }) as JSONContent,
+      )
+      onContentError?.(props)
+    },
     onUpdate: (e) => {
       const jsonContent = e.editor.getJSON()
       handleChange(jsonContent)

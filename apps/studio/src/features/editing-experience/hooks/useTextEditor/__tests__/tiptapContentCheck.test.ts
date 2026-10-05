@@ -1,6 +1,7 @@
 import { Editor } from "@tiptap/react"
 import { describe, expect, it } from "vitest"
 
+import { normalizeProseContentForEditor } from "../../../utils/normalizeProseContentForEditor"
 import { BASE_EXTENSIONS, TEXT_EDITOR_EXTRA_EXTENSIONS } from "../constants"
 
 const proseEditorExtensions = [
@@ -34,8 +35,11 @@ describe("TipTap enableContentCheck", () => {
     editor.destroy()
   })
 
-  it("should emit contentError for empty prose content", () => {
-    const content = { type: "prose", content: [] }
+  it("should not emit contentError for empty prose content after normalization", () => {
+    const content = normalizeProseContentForEditor({
+      type: "prose",
+      content: [],
+    })
     let contentError: Error | undefined
 
     const editor = new Editor({
@@ -47,7 +51,7 @@ describe("TipTap enableContentCheck", () => {
       },
     })
 
-    expect(contentError).toBeDefined()
+    expect(contentError).toBeUndefined()
     editor.destroy()
   })
 })

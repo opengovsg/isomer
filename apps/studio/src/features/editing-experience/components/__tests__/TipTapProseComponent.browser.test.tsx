@@ -1,7 +1,6 @@
 import type { IsomerSchema, ProseProps } from "@opengovsg/isomer-components"
-import type { EditorEvents, JSONContent } from "@tiptap/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { act, render, screen } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { theme } from "~/theme"
@@ -10,15 +9,6 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import TipTapProseComponent from "../TipTapProseComponent"
 
 const noop = vi.hoisted(() => vi.fn())
-
-const editorCallbacks = vi.hoisted(() => ({
-  handleChange: undefined as
-    | ((content: JSONContent | undefined) => void)
-    | undefined,
-  onContentError: undefined as
-    | ((props: EditorEvents["contentError"]) => void)
-    | undefined,
-}))
 
 vi.mock("next/router", () => ({
   useRouter: () => ({ query: { pageId: "1", siteId: "1" } }),
@@ -41,17 +31,7 @@ vi.mock("~/utils/trpc", () => ({
 }))
 
 vi.mock("../../hooks/useTextEditor", () => ({
-  useTextEditor: ({
-    handleChange,
-    onContentError,
-  }: {
-    handleChange: (content: JSONContent | undefined) => void
-    onContentError?: (props: EditorEvents["contentError"]) => void
-  }) => {
-    editorCallbacks.handleChange = handleChange
-    editorCallbacks.onContentError = onContentError
-    return {}
-  },
+  useTextEditor: () => ({}),
 }))
 
 vi.mock("../form-builder/renderers/TipTapEditor", () => ({
@@ -75,7 +55,7 @@ const PAGE_STATE: IsomerSchema = {
   content: [VALID_PROSE],
 }
 
-const renderComponent = () =>
+const renderComponent = (content: ProseProps) =>
   render(
     <ThemeProvider theme={theme}>
       <EditorDrawerProvider
@@ -87,29 +67,29 @@ const renderComponent = () =>
         updatedAt={new Date()}
         title="About us"
       >
-        <TipTapProseComponent content={VALID_PROSE as ProseProps} />
+        <TipTapProseComponent content={content} />
       </EditorDrawerProvider>
     </ThemeProvider>,
   )
 
 describe("TipTapProseComponent", () => {
-  it("keeps Save disabled after a TipTap schema error even if later content is valid prose", () => {
-    // Arrange
-    renderComponent()
-    const saveButton = screen.getByRole("button", { name: "Save changes" })
-    expect(saveButton).toBeEnabled()
+  it("enables Save for schema-valid prose content", () => {
+    renderComponent(VALID_PROSE as ProseProps)
 
-    // Act
-    act(() => {
-      editorCallbacks.onContentError?.({
-        error: new Error("invalid schema"),
-      } as EditorEvents["contentError"])
-    })
-    act(() => {
-      editorCallbacks.handleChange?.(VALID_PROSE)
-    })
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeEnabled()
+  })
 
-    // Assert
-    expect(saveButton).toBeDisabled()
+  it("disables Save when prose content fails schema validation", () => {
+    renderComponent({
+      type: "prose",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥" }],
+        },
+      ],
+    } as ProseProps)
+
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled()
   })
 })
