@@ -300,8 +300,5 @@ export const isEditorModalOpen = (editorDom?: HTMLElement | null) => {
   const dialogs = document.querySelectorAll(
     '[role="dialog"][aria-modal="true"]',
   )
-  for (const dialog of dialogs) {
-    if (!editorDom || !dialog.contains(editorDom)) return true
-  }
-  return false
+  return [...dialogs].some((dialog) => !editorDom || !dialog.contains(editorDom))
 }

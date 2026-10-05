@@ -36,7 +36,6 @@ export const TableFocusEditorModal = ({
     type: "prose",
     content: [table],
   })
-  const shouldSaveRef = useRef(false)
   const editor = useTableFocusEditor({
     data: docRef.current,
     handleChange: (next) => {
@@ -48,14 +47,7 @@ export const TableFocusEditorModal = ({
     editor?.commands.focus("start")
   }, [editor])
 
-  const requestClose = () => {
-    shouldSaveRef.current = true
-    onClose()
-  }
-
   const handleCloseComplete = () => {
-    if (!shouldSaveRef.current) return
-    shouldSaveRef.current = false
     // Save after the exit transition so replacing the table node does not
     // tear down this dialog mid-animation.
     commitFocusedTableEdit(parentEditor, getPos, docRef.current)
@@ -67,7 +59,7 @@ export const TableFocusEditorModal = ({
     // this dialog, and Chakra's focus lock swallows Tab into those menus.
     <Modal
       isOpen={isOpen}
-      onClose={requestClose}
+      onClose={onClose}
       onCloseComplete={handleCloseComplete}
       closeOnEsc={false}
       size="full"
@@ -87,7 +79,7 @@ export const TableFocusEditorModal = ({
           right="1rem"
           zIndex={1}
           variant="solid"
-          onClick={requestClose}
+          onClick={onClose}
         >
           Done
         </Button>
