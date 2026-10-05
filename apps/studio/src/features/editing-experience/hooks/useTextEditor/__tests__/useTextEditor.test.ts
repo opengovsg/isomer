@@ -10,6 +10,7 @@ vi.mock("@tiptap/react", () => ({
   useEditor: (options: unknown): object => useEditorMock(options),
 }))
 
+import { normalizeProseContentForEditor } from "../../../utils/normalizeProseContentForEditor"
 import { useTextEditor } from "../useTextEditor"
 
 describe("useTextEditor", () => {
@@ -30,8 +31,21 @@ describe("useTextEditor", () => {
     expect(useEditorMock).toHaveBeenCalledWith(
       expect.objectContaining({
         enableContentCheck: true,
-        onContentError,
+        onContentError: expect.any(Function),
         content: data,
+      }),
+    )
+  })
+
+  it("normalizes empty prose content before passing it to useEditor", () => {
+    const handleChange = vi.fn()
+    const data: JSONContent = { type: "prose", content: [] }
+
+    renderHook(() => useTextEditor({ data, handleChange }))
+
+    expect(useEditorMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: normalizeProseContentForEditor(data),
       }),
     )
   })
