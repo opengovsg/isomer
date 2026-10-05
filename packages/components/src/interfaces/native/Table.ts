@@ -123,6 +123,22 @@ export const TableSchema = Type.Object(
         title: "Table caption",
         description: "The caption of the table",
       }),
+      columnWidths: Type.Optional(
+        Type.Union(
+          [
+            Type.Null(),
+            Type.Array(Type.Integer(), {
+              title: "Column widths",
+              description:
+                "Whole-pixel width of each column, in order. Omitted, null, a length that does not match the column count, or a non-numeric entry means automatic layout. Rendered widths are clamped to 60–400px.",
+            }),
+          ],
+          {
+            description:
+              "Omitted or invalid data means automatic column layout.",
+          },
+        ),
+      ),
     }),
     content: Type.Array(
       Type.Union([TableHeaderRowSchema, TableContentRowSchema]),

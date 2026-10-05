@@ -32,6 +32,11 @@ import { CellSelection, selectedRect } from "@tiptap/pm/tables"
 import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
 import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
+import {
+  insertColumnWidth,
+  removeColumnWidths,
+  withStoredColumnWidths,
+} from "~/features/editing-experience/utils/columnWidths"
 
 import { canMergeCellSelection } from "../../components/TableBubbleMenu/TableBubbleMenu.utils"
 import {
@@ -157,12 +162,27 @@ export const IsomerTable = Table.extend({
       toggleHeaderColumn: wrapHeaderToggleCommand(
         parentToggleHeaderColumn?.() as HeaderToggleCommand | undefined,
       ),
+      addColumnBefore: () =>
+        withStoredColumnWidths(parent?.addColumnBefore?.(), (widths, rect) =>
+          insertColumnWidth(widths, rect.left),
+        ),
+      addColumnAfter: () =>
+        withStoredColumnWidths(parent?.addColumnAfter?.(), (widths, rect) =>
+          insertColumnWidth(widths, rect.right),
+        ),
+      deleteColumn: () =>
+        withStoredColumnWidths(parent?.deleteColumn?.(), (widths, rect) =>
+          removeColumnWidths(widths, rect.left, rect.right),
+        ),
     }
   },
   addAttributes() {
     return {
       caption: {
         default: DEFAULT_TABLE_CAPTION,
+      },
+      columnWidths: {
+        default: null,
       },
     }
   },

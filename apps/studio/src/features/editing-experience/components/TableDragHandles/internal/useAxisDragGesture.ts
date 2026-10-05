@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react"
+import { moveTableColumnWithWidths } from "~/features/editing-experience/utils/columnWidths"
 
 import type { Rect, TableGeometry } from "./axisMath"
 import type { Axis } from "./axisView"
@@ -83,11 +84,19 @@ export const useAxisDragGesture = ({
         const normalize =
           !!headerAxisFlags &&
           shouldNormalizeHeaderTypesAfterDrag(intent.axis, headerAxisFlags)
-        const move = AXIS_TABLE_OPS[intent.axis].move({
-          from: intent.from,
-          to: intent.to,
-          pos: intent.tablePos + 1,
-        })
+        const move =
+          intent.axis === "column"
+            ? moveTableColumnWithWidths({
+                from: intent.from,
+                to: intent.to,
+                pos: intent.tablePos + 1,
+                tablePos: intent.tablePos,
+              })
+            : AXIS_TABLE_OPS[intent.axis].move({
+                from: intent.from,
+                to: intent.to,
+                pos: intent.tablePos + 1,
+              })
         const { state, schema } = editor
         let transaction = state.tr
         const moved = move(state, (tr) => {
