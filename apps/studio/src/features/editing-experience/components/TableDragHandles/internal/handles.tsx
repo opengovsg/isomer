@@ -10,6 +10,7 @@ import {
   ADD_PILL_ICON_SIZE_PX,
   ADD_PILL_RADIUS_PX,
   HANDLE_BORDER_RADIUS_PX,
+  TABLE_CHROME_ELEVATION_SHADOW,
 } from "./chrome"
 
 const handleBaseStyle = {
@@ -88,6 +89,7 @@ export const AxisHandle = ({
       {...handleChrome(isActive, isLocked)}
       w={`${handle.w}px`}
       h={`${handle.h}px`}
+      boxShadow={isRow ? TABLE_CHROME_ELEVATION_SHADOW : undefined}
       onMouseDown={onMouseDown}
       onClick={onClick}
       title={isLocked ? `Select ${axis}` : `Select or drag to reorder ${axis}`}
@@ -132,6 +134,9 @@ export const AddPillButton = ({
     borderRadius={`${ADD_PILL_RADIUS_PX}px`}
     cursor="pointer"
     zIndex="2"
+    boxShadow={
+      axis === "column" ? TABLE_CHROME_ELEVATION_SHADOW : undefined
+    }
     transition="background-color 0.15s"
     aria-label={AXIS_VIEW[axis].addPillLabel}
     data-table-add-handle={axis}

@@ -6,6 +6,7 @@ import { Fragment, useMemo } from "react"
 import {
   TABLE_CHROME_GAP_PX,
   TABLE_CHROME_THICKNESS_PX,
+  TABLE_GUTTER_PX,
 } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import type { TableGeometry } from "./internal/axisMath"
@@ -117,9 +118,6 @@ export const TableDragHandles = ({
     }
     const editorLeft = container.scrollLeft
     const editorWidth = container.clientWidth
-    const rowPillWidth = Math.max(editorWidth, ADD_PILL_MIN_LENGTH_PX)
-    const colPillHeight = Math.max(bounds.height, ADD_PILL_MIN_LENGTH_PX)
-    const besideTable = bounds.left + bounds.width + TABLE_CHROME_GAP_PX
     const nodeDom = editor.view.nodeDOM(geometry.pos)
     const scrollPort =
       nodeDom instanceof HTMLElement
@@ -132,6 +130,24 @@ export const TableDragHandles = ({
           containerRect.left +
           container.scrollLeft
         : editorLeft + editorWidth
+    // The width the table is given before column resizing: the scrollport,
+    // minus the left gutter. Inner scroll does not move this slot.
+    const assignedLeft =
+      scrollPort instanceof HTMLElement
+        ? scrollPort.getBoundingClientRect().left -
+          containerRect.left +
+          container.scrollLeft +
+          TABLE_GUTTER_PX
+        : bounds.left
+    const assignedWidth =
+      scrollPort instanceof HTMLElement
+        ? Math.max(
+            scrollPort.clientWidth - TABLE_GUTTER_PX,
+            ADD_PILL_MIN_LENGTH_PX,
+          )
+        : Math.max(bounds.width, ADD_PILL_MIN_LENGTH_PX)
+    const colPillHeight = Math.max(bounds.height, ADD_PILL_MIN_LENGTH_PX)
+    const besideTable = bounds.left + bounds.width + TABLE_CHROME_GAP_PX
     const columnPillLeft = Math.min(
       besideTable,
       scrollPortRight + TABLE_CHROME_GAP_PX,
@@ -141,9 +157,9 @@ export const TableDragHandles = ({
       <>
         <AddPillButton
           axis="row"
-          left={editorLeft}
+          left={assignedLeft}
           top={bounds.top + bounds.height + TABLE_CHROME_GAP_PX}
-          width={rowPillWidth}
+          width={assignedWidth}
           height={TABLE_CHROME_THICKNESS_PX}
           onClick={() => addSlotAfter(editor, geometry.pos, "row")}
         />

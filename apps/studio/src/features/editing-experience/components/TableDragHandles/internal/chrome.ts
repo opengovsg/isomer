@@ -12,7 +12,11 @@ export const HANDLE_BORDER_RADIUS_PX = 4
 export const ROW_HANDLE = { w: TABLE_CHROME_THICKNESS_PX, h: HANDLE_LENGTH_PX }
 export const COL_HANDLE = { w: HANDLE_LENGTH_PX, h: TABLE_CHROME_THICKNESS_PX }
 
-/** Add pills stay tappable on tiny tables. The row pill uses the editor width. */
+/** Add pills stay tappable on tiny tables. The row pill uses the table's layout width. */
 export const ADD_PILL_MIN_LENGTH_PX = 48
 export const ADD_PILL_RADIUS_PX = 99
 export const ADD_PILL_ICON_SIZE_PX = 12
+
+/** Row handles and the add-column pill sit over the table. */
+export const TABLE_CHROME_ELEVATION_SHADOW =
+  "0 1px 3px rgba(44, 46, 52, 0.18)"
