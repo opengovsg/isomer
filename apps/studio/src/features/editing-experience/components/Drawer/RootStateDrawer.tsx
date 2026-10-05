@@ -36,6 +36,7 @@ import { BlockEditingPlaceholder } from "~/components/Svg"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { CanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
+import { useSelectBlock } from "~/features/editing-experience/hooks/useSelectBlock"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
@@ -84,8 +85,8 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
 }
 
 const FixedBlock = () => {
-  const { setCurrActiveIdx, setDrawerState, previewPageState } =
-    useEditorDrawerContext()
+  const { setDrawerState, previewPageState } = useEditorDrawerContext()
+  const selectBlock = useSelectBlock()
   const pageLayout = previewPageState.layout
   const isHeroFixedBlock = getIsHeroFirstBlock(pageLayout, previewPageState)
 
@@ -95,10 +96,7 @@ const FixedBlock = () => {
     const isValid = validateHeroComponentFn(fixedBlock)
     return (
       <BaseBlock
-        onClick={() => {
-          setCurrActiveIdx(0)
-          setDrawerState({ state: "heroEditor" })
-        }}
+        onClick={() => selectBlock(0, { state: "heroEditor" })}
         label="Hero banner"
         description="Title, subtitle, and Call-to-Action"
         icon={TYPE_TO_ICON.hero}
@@ -114,10 +112,9 @@ const FixedBlock = () => {
       <>
         <BaseBlock
           variant="vertical"
-          onClick={() => {
-            setCurrActiveIdx(0)
-            setDrawerState({ state: "collectionEditor", type: "display" })
-          }}
+          onClick={() =>
+            selectBlock(0, { state: "collectionEditor", type: "display" })
+          }
           label="Collection display"
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
           icon={BiCog}
@@ -125,10 +122,9 @@ const FixedBlock = () => {
         <CanManageCollectionFilters>
           <BaseBlock
             variant="vertical"
-            onClick={() => {
-              setCurrActiveIdx(0)
-              setDrawerState({ state: "collectionEditor", type: "filter" })
-            }}
+            onClick={() =>
+              selectBlock(0, { state: "collectionEditor", type: "filter" })
+            }
             label="Filters"
             description="Define and manage filters for this Collection."
             icon={BiSlider}
@@ -181,12 +177,12 @@ export default function RootStateDrawer() {
   const {
     type,
     setDrawerState,
-    setCurrActiveIdx,
     savedPageState,
     setSavedPageState,
     previewPageState,
     setPreviewPageState,
   } = useEditorDrawerContext()
+  const selectBlock = useSelectBlock()
   const [isPreviewingIndexPage, setIsPreviewingIndexPage] = useState(false)
   const {
     isOpen: isConfirmConvertIndexPageModalOpen,
@@ -608,7 +604,6 @@ export default function RootStateDrawer() {
                                         draggableId={`${block.type}-${index}`}
                                         index={index}
                                         onClick={() => {
-                                          setCurrActiveIdx(index)
                                           // TODO: we should automatically do this probably?
                                           const nextState =
                                             savedPageState.content[index]
@@ -616,7 +611,9 @@ export default function RootStateDrawer() {
                                               ? "nativeEditor"
                                               : "complexEditor"
                                           // NOTE: SNAPSHOT
-                                          setDrawerState({ state: nextState })
+                                          selectBlock(index, {
+                                            state: nextState,
+                                          })
                                         }}
                                         invalidProps={
                                           invalidBlockIndexes.has(index)
