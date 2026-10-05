@@ -7,6 +7,7 @@ import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   measureColumnWidths,
+  setTableColumnWidths,
   storedColumnWidths,
 } from "~/features/editing-experience/utils/columnWidths"
 import { TABLE_GUTTER_PX } from "~/features/editing-experience/utils/tableEditorChrome"
@@ -48,7 +49,7 @@ const ColumnResizeHandles = ({
   columnCount: number
   widths: number[] | null
   onDrag: (widths: number[] | null) => void
-  onCommit: (widths: number[]) => void
+  onCommit: (widths: number[] | null, recordHistory: boolean) => void
 }) => {
   const stopDrag = useRef<(() => void) | null>(null)
   const [hoverIndex, setHoverIndex] = useState<number | null>(null)
@@ -78,26 +79,40 @@ const ColumnResizeHandles = ({
       if (!(table instanceof HTMLTableElement)) return
 
       const origin = widths ?? measureColumnWidths(table, columnCount)
+      const storedAtStart = widths
       const startX = event.clientX
       const startWidth = origin[index] ?? clampTableColumnWidth(0)
+      let lastWidth = startWidth
+      let wrote = false
       setActiveIndex(index)
 
-      const move = (pointer: PointerEvent) => {
+      const widthsAt = (clientX: number) => {
         const next = origin.slice()
-        next[index] = clampTableColumnWidth(
-          startWidth + pointer.clientX - startX,
-        )
-        onDrag(next)
+        next[index] = clampTableColumnWidth(startWidth + clientX - startX)
+        return next
+      }
+      const move = (pointer: PointerEvent) => {
+        const next = widthsAt(pointer.clientX)
+        const width = next[index] ?? startWidth
+        if (width === lastWidth) return
+        lastWidth = width
+        wrote = true
+        onCommit(next, false)
       }
       const up = (pointer: PointerEvent) => {
         stop()
         setActiveIndex(null)
-        const next = origin.slice()
-        next[index] = clampTableColumnWidth(
-          startWidth + pointer.clientX - startX,
-        )
-        if (next.some((width, i) => width !== origin[i])) onCommit(next)
-        else onDrag(null)
+        const next = widthsAt(pointer.clientX)
+        const changed = next.some((width, i) => width !== origin[i])
+        if (!changed) {
+          if (wrote) onCommit(storedAtStart, false)
+          else onDrag(null)
+          return
+        }
+        // Live writes stay out of history. Put the start width back, then
+        // record one step from there to the released width.
+        if (wrote) onCommit(storedAtStart, false)
+        onCommit(next, true)
       }
       const stop = () => {
         document.removeEventListener("pointermove", move)
@@ -152,6 +167,7 @@ const ColumnResizeHandles = ({
 
 export const TableNodeView = ({
   node,
+  getPos,
   updateAttributes,
   editor,
 }: NodeViewProps) => {
@@ -206,9 +222,14 @@ export const TableNodeView = ({
                 columnCount={columnCount}
                 widths={widths}
                 onDrag={setPreview}
-                onCommit={(next) => {
+                onCommit={(next, recordHistory) => {
                   setPreview(next)
-                  updateAttributes({ columnWidths: next })
+                  const pos = getPos()
+                  if (typeof pos !== "number") return
+                  const tr = editor.state.tr
+                  setTableColumnWidths(tr, pos, next)
+                  if (!recordHistory) tr.setMeta("addToHistory", false)
+                  if (tr.docChanged) editor.view.dispatch(tr)
                 }}
               />
             )}

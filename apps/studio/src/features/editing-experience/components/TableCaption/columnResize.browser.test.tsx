@@ -80,6 +80,14 @@ describe("column resize", () => {
         clientY: y,
         pointerType: "mouse",
       })
+    })
+
+    await waitFor(() => {
+      const widths = editor ? widthsOf(editor) : null
+      expect(widths?.[0]).toBeGreaterThan(60)
+    })
+
+    act(() => {
       fireEvent.pointerUp(handle, {
         clientX: x + 120,
         clientY: y,
