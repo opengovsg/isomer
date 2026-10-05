@@ -1,23 +1,23 @@
 import type { NodeViewProps } from "@tiptap/react"
 import { Box } from "@chakra-ui/react"
-import { validateTableColumnWidths } from "@opengovsg/isomer-components"
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
-import { TableMap } from "@tiptap/pm/tables"
+import { useRef } from "react"
 import { TABLE_GUTTER_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import { TableCaption } from "./TableCaption"
+import { TableColumnResizeOverlay } from "./TableColumnResizeOverlay"
 
-export const TableNodeView = ({ node, updateAttributes }: NodeViewProps) => {
+export const TableNodeView = ({
+  node,
+  updateAttributes,
+  editor,
+  getPos,
+}: NodeViewProps) => {
   const caption = (node.attrs.caption as string | undefined) ?? ""
-  const map = TableMap.get(node)
-  const columnWidths = validateTableColumnWidths(
-    node.attrs.columnWidths,
-    map.width,
-  )
-  const tableWidthPx = columnWidths?.reduce((sum, width) => sum + width, 0)
+  const tableRef = useRef<HTMLTableElement | null>(null)
 
   return (
-    <Box as={NodeViewWrapper} display="flex" flexDirection="column">
+    <Box as={NodeViewWrapper} display="flex" flexDirection="column" w="100%">
       <Box contentEditable={false}>
         <TableCaption
           caption={caption}
@@ -27,31 +27,24 @@ export const TableNodeView = ({ node, updateAttributes }: NodeViewProps) => {
         />
       </Box>
       <Box overflowX="auto" w="100%">
-        <Box p={`${TABLE_GUTTER_PX}px`} display="inline-block" minW="100%">
+        <Box p={`${TABLE_GUTTER_PX}px`} w="100%">
           <Box
-            as="table"
-            className={
-              columnWidths ? "isomer-table--author-sized" : undefined
-            }
-            style={
-              columnWidths && tableWidthPx
-                ? { width: `${tableWidthPx}px` }
-                : undefined
-            }
+            ref={(element) => {
+              tableRef.current = element?.querySelector("table") ?? null
+            }}
+            position="relative"
+            w="100%"
           >
-            {columnWidths && (
-              <Box as="colgroup" contentEditable={false}>
-                {columnWidths.map((width, index) => (
-                  <Box
-                    as="col"
-                    key={index}
-                    contentEditable={false}
-                    style={{ width: `${width}px` }}
-                  />
-                ))}
-              </Box>
-            )}
-            <NodeViewContent as="tbody" />
+            {/*
+              TipTap appends a tbody into this table. Column widths are applied
+              through the DOM so React does not replace that tbody.
+            */}
+            <NodeViewContent<"table"> as="table" />
+            <TableColumnResizeOverlay
+              tableRef={tableRef}
+              editor={editor}
+              getPos={getPos}
+            />
           </Box>
         </Box>
       </Box>
