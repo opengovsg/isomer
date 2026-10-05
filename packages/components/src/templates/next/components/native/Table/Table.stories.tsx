@@ -2306,6 +2306,26 @@ export const ListInTable: Story = {
  * Staggered merges: row 1 spans cols 2-3, row 2 spans cols 1-2 (rowspan 2).
  * No cell sits alone in column 2. Auto layout collapses that track without colgroup.
  */
+export const WithAuthorColumnWidths: Story = {
+  args: {
+    attrs: {
+      caption: "Fixed column widths",
+      columnWidths: [120, 160, 200, 160, 120],
+    },
+    content: Simple.args!.content!.slice(0, 2),
+  },
+}
+
+export const WithInvalidColumnWidths: Story = {
+  args: {
+    attrs: {
+      caption: "Invalid widths fall back to auto layout",
+      columnWidths: [120],
+    },
+    content: Simple.args!.content!.slice(0, 2),
+  },
+}
+
 export const StaggeredMergesPhantomColumn: Story = {
   args: {
     attrs: {

@@ -26,6 +26,7 @@ import {
   shouldNormalizeHeaderTypesAfterDrag,
 } from "./normalizeHeaderAxis"
 import { selectWholeSlot } from "./selection"
+import { syncTableColumnWidthsAfterMove } from "~/features/editing-experience/utils/tableColumnWidthSync"
 
 export const TABLE_DRAGGING_ATTR = "data-table-drag-handles-dragging"
 
@@ -102,6 +103,14 @@ export const useAxisDragGesture = ({
             headerAxisFlags,
             schema,
           )
+        }
+        if (intent.axis === "column") {
+          transaction = syncTableColumnWidthsAfterMove({
+            tr: transaction,
+            tablePos: intent.tablePos,
+            from: intent.from,
+            to: intent.to,
+          })
         }
         editor.view.dispatch(transaction)
         return

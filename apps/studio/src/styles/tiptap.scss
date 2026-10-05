@@ -116,6 +116,10 @@ $max-depth: 13;
     table-layout: fixed;
     width: 100%;
 
+    &.isomer-table--author-sized {
+      width: auto;
+    }
+
     .selectedCell:after {
       border-color: #2164da;
       border-style: solid;

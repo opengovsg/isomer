@@ -56,6 +56,12 @@ import {
   duplicateSelectedRows,
 } from "./TableBubbleMenu.duplicate"
 import {
+  tableHasStoredColumnWidths,
+} from "~/features/editing-experience/hooks/useTextEditor/isomerTableColumnWidth"
+import {
+  syncTableColumnWidthsAfterMove,
+} from "~/features/editing-experience/utils/tableColumnWidthSync"
+import {
   canMergeCellSelection,
   getColumnMovePlan,
   getRowMovePlan,
@@ -82,7 +88,16 @@ const moveTableBlock = (
     select: false,
     pos: rect.tableStart,
   })(state, (tr) => {
-    restoreMovedBlockSelection(view, tr, tablePos, plan, axis)
+    let next = tr
+    if (axis === "column") {
+      next = syncTableColumnWidthsAfterMove({
+        tr: next,
+        tablePos,
+        from: plan.from,
+        to: plan.to,
+      })
+    }
+    restoreMovedBlockSelection(view, next, tablePos, plan, axis)
   })
   editor.commands.focus()
 }
@@ -534,6 +549,13 @@ const SelectionActions = ({
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
+          {tableHasStoredColumnWidths(editor) && (
+            <ActionButton
+              label="Reset column widths"
+              icon={<BiX fontSize="1rem" />}
+              onClick={() => editor.chain().focus().resetTableColumnWidths().run()}
+            />
+          )}
           <ActionButton
             label="Delete table"
             icon={<BiTrash fontSize="1rem" />}

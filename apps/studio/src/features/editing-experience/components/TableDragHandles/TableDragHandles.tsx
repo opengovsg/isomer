@@ -27,7 +27,8 @@ import {
 } from "./internal/selection"
 import { useAxisDragGesture } from "./internal/useAxisDragGesture"
 import { useHoveredTable } from "./internal/useHoveredTable"
-import { useTableGeometries } from "./internal/useTableGeometries"
+import { ColumnResizeOverlay } from "./internal/ColumnResizeOverlay"
+import { useColumnResizeGesture } from "./internal/useColumnResizeGesture"
 
 export interface TableDragHandlesProps {
   editor: TiptapEditor | null
@@ -48,6 +49,12 @@ export const TableDragHandles = ({
   const geometries = useTableGeometries(editor, containerRef)
   const { drag, beginGesture, isGestureActive, consumeClickSuppression } =
     useAxisDragGesture({ editor, containerRef, geometries, onDragStateChange })
+  const columnResize = useColumnResizeGesture({
+    editor,
+    containerRef,
+    geometries,
+    disabled: !!drag,
+  })
   const hoverTablePos = useHoveredTable(
     geometries,
     containerRef,
@@ -155,6 +162,17 @@ export const TableDragHandles = ({
           bg="interaction.main.default"
           zIndex="3"
           pointerEvents="none"
+        />
+      )}
+
+      {!drag && (
+        <ColumnResizeOverlay
+          targets={columnResize.targets}
+          hoverLine={columnResize.hoverLine}
+          dragLine={columnResize.dragLine}
+          onGripMouseDown={columnResize.onGripMouseDown}
+          onGripMouseEnter={columnResize.onGripMouseEnter}
+          onGripMouseLeave={columnResize.onGripMouseLeave}
         />
       )}
     </>

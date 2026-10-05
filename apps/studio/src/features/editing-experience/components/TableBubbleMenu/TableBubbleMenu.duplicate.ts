@@ -14,6 +14,7 @@ import {
   selectionIncludesHeaderColumn,
   selectionIncludesHeaderRow,
 } from "./TableBubbleMenu.utils"
+import { syncTableColumnWidthsAfterDuplicate } from "~/features/editing-experience/utils/tableColumnWidthSync"
 
 /**
  * Duplicate selected rows/columns with cell content preserved.
@@ -307,7 +308,15 @@ const insertDuplicateColumn = ({
     if (!info) return false
 
     const { map, tableStart, table } = info
-    if (row >= map.height) return true
+    if (row >= map.height) {
+      syncTableColumnWidthsAfterDuplicate({
+        tr,
+        tablePos,
+        sourceCol,
+        insertAt,
+      })
+      return true
+    }
 
     if (isSlotCoveredFromColumnLeft({ map, row, insertAt })) {
       const resolved = resolveCell({

@@ -76,7 +76,7 @@ const getCellDom = (
 
 // The React node view wraps the `<table>`, so `nodeDOM` on the table position
 // is that wrapper. A plain table element is returned as-is.
-const getTableElement = (
+export const getTableElement = (
   editor: TiptapEditor,
   tablePos: number,
 ): HTMLTableElement | null => {

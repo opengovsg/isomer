@@ -32,6 +32,10 @@ import { CellSelection, selectedRect } from "@tiptap/pm/tables"
 import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
 import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
+import {
+  extendIsomerTableColumnWidthCommands,
+  tableColumnWidthsAttribute,
+} from "~/features/editing-experience/hooks/useTextEditor/isomerTableColumnWidth"
 
 import { canMergeCellSelection } from "../../components/TableBubbleMenu/TableBubbleMenu.utils"
 import {
@@ -133,11 +137,8 @@ export const IsomerTable = Table.extend({
   priority: 101,
   addCommands() {
     const parent = this.parent?.()
-    const parentToggleHeaderRow = parent?.toggleHeaderRow
-    const parentToggleHeaderColumn = parent?.toggleHeaderColumn
-    const parentMergeCells = parent?.mergeCells
 
-    return {
+    return extendIsomerTableColumnWidthCommands({
       ...parent,
       mergeCells: () => (props) => {
         const { selection } = props.state
@@ -145,25 +146,26 @@ export const IsomerTable = Table.extend({
           const rect = selectedRect(props.state)
           if (!canMergeCellSelection(rect)) return false
         }
-        return parentMergeCells?.()(props) ?? false
+        return parent?.mergeCells?.()(props) ?? false
       },
       focusTableBubbleMenuTrigger:
         () =>
         ({ editor }: { editor: Editor }) =>
           runTableBubbleMenuFocusTrigger(editor),
       toggleHeaderRow: wrapHeaderToggleCommand(
-        parentToggleHeaderRow?.() as HeaderToggleCommand | undefined,
+        parent?.toggleHeaderRow?.() as HeaderToggleCommand | undefined,
       ),
       toggleHeaderColumn: wrapHeaderToggleCommand(
-        parentToggleHeaderColumn?.() as HeaderToggleCommand | undefined,
+        parent?.toggleHeaderColumn?.() as HeaderToggleCommand | undefined,
       ),
-    }
+    })
   },
   addAttributes() {
     return {
       caption: {
         default: DEFAULT_TABLE_CAPTION,
       },
+      columnWidths: tableColumnWidthsAttribute,
     }
   },
   // Custom node view renders the caption above the table.

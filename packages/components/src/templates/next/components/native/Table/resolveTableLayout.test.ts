@@ -112,6 +112,7 @@ describe("resolveTableLayout", () => {
     expect(resolveTableLayout(rows)).toEqual({
       kind: "fixed",
       columnWidths: [`${100 / 3}%`, `${100 / 3}%`, `${100 / 3}%`],
+      tableWidthPx: 0,
     })
   })
 
@@ -144,5 +145,70 @@ describe("resolveTableLayout", () => {
       // Assert
       expect(layout.kind).toBe(kind)
     }
+  })
+
+  it("uses author column widths when valid", () => {
+    const rows = [
+      {
+        type: "tableRow" as const,
+        content: [
+          {
+            type: "tableHeader" as const,
+            content: [
+              {
+                type: "paragraph" as const,
+                content: [{ type: "text" as const, text: "A" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader" as const,
+            content: [
+              {
+                type: "paragraph" as const,
+                content: [{ type: "text" as const, text: "B" }],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    expect(resolveTableLayout(rows, [120, 200])).toEqual({
+      kind: "fixed",
+      columnWidths: ["120px", "200px"],
+      tableWidthPx: 320,
+    })
+  })
+
+  it("ignores invalid author column widths", () => {
+    const rows = [
+      {
+        type: "tableRow" as const,
+        content: [
+          {
+            type: "tableHeader" as const,
+            content: [
+              {
+                type: "paragraph" as const,
+                content: [{ type: "text" as const, text: "" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader" as const,
+            content: [
+              {
+                type: "paragraph" as const,
+                content: [{ type: "text" as const, text: "" }],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    expect(resolveTableLayout(rows, [120])).toEqual({ kind: "auto" })
+    expect(resolveTableLayout(rows, [120, NaN])).toEqual({ kind: "auto" })
   })
 })
