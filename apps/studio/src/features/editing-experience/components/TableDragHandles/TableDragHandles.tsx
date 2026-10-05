@@ -26,9 +26,10 @@ import {
   selectWholeSlot,
 } from "./internal/selection"
 import { useAxisDragGesture } from "./internal/useAxisDragGesture"
-import { useHoveredTable } from "./internal/useHoveredTable"
 import { ColumnResizeOverlay } from "./internal/ColumnResizeOverlay"
 import { useColumnResizeGesture } from "./internal/useColumnResizeGesture"
+import { useHoveredTable } from "./internal/useHoveredTable"
+import { useTableGeometries } from "./internal/useTableGeometries"
 
 export interface TableDragHandlesProps {
   editor: TiptapEditor | null
