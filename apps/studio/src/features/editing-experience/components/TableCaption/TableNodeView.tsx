@@ -26,27 +26,40 @@ export const TableNodeView = ({
           }
         />
       </Box>
-      <Box overflowX="auto" w="100%">
-        <Box p={`${TABLE_GUTTER_PX}px`} w="100%">
+      <Box display="flex" w="100%" alignItems="stretch">
+        <Box
+          data-table-h-scroll=""
+          overflowX="auto"
+          flex="1 1 auto"
+          minW={0}
+        >
           <Box
-            ref={(element) => {
-              tableRef.current = element?.querySelector("table") ?? null
-            }}
-            position="relative"
-            w="100%"
+            pt={`${TABLE_GUTTER_PX}px`}
+            pb={`${TABLE_GUTTER_PX}px`}
+            pl={`${TABLE_GUTTER_PX}px`}
           >
-            {/*
-              TipTap appends a tbody into this table. Column widths are applied
-              through the DOM so React does not replace that tbody.
-            */}
-            <NodeViewContent<"table"> as="table" />
-            <TableColumnResizeOverlay
-              tableRef={tableRef}
-              editor={editor}
-              getPos={getPos}
-            />
+            <Box
+              ref={(element) => {
+                tableRef.current = element?.querySelector("table") ?? null
+              }}
+              position="relative"
+              w="100%"
+            >
+              {/*
+                TipTap appends a tbody into this table. Column widths are applied
+                through the DOM so React does not replace that tbody.
+              */}
+              <NodeViewContent<"table"> as="table" />
+              <TableColumnResizeOverlay
+                tableRef={tableRef}
+                editor={editor}
+                getPos={getPos}
+              />
+            </Box>
           </Box>
         </Box>
+        {/* Stays put while the table scrolls, so the add-column pill has a lane. */}
+        <Box flex={`0 0 ${TABLE_GUTTER_PX}px`} aria-hidden />
       </Box>
     </Box>
   )

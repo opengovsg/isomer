@@ -111,14 +111,37 @@ export const TableDragHandles = ({
 
   const renderAddPills = (geometry: TableGeometry) => {
     const bounds = getTableBounds(geometry)
-    if (!bounds || hoverTablePos !== geometry.pos || drag) return null
-    const rowPillWidth = Math.max(bounds.width, ADD_PILL_MIN_LENGTH_PX)
+    const container = containerRef.current
+    if (!bounds || !container || hoverTablePos !== geometry.pos || drag) {
+      return null
+    }
+    const editorLeft = container.scrollLeft
+    const editorWidth = container.clientWidth
+    const rowPillWidth = Math.max(editorWidth, ADD_PILL_MIN_LENGTH_PX)
     const colPillHeight = Math.max(bounds.height, ADD_PILL_MIN_LENGTH_PX)
+    const besideTable = bounds.left + bounds.width + TABLE_CHROME_GAP_PX
+    const nodeDom = editor.view.nodeDOM(geometry.pos)
+    const scrollPort =
+      nodeDom instanceof HTMLElement
+        ? nodeDom.querySelector("[data-table-h-scroll]")
+        : null
+    const containerRect = container.getBoundingClientRect()
+    const scrollPortRight =
+      scrollPort instanceof HTMLElement
+        ? scrollPort.getBoundingClientRect().right -
+          containerRect.left +
+          container.scrollLeft
+        : editorLeft + editorWidth
+    const columnPillLeft = Math.min(
+      besideTable,
+      scrollPortRight + TABLE_CHROME_GAP_PX,
+      editorLeft + editorWidth - TABLE_CHROME_THICKNESS_PX,
+    )
     return (
       <>
         <AddPillButton
           axis="row"
-          left={bounds.left + (bounds.width - rowPillWidth) / 2}
+          left={editorLeft}
           top={bounds.top + bounds.height + TABLE_CHROME_GAP_PX}
           width={rowPillWidth}
           height={TABLE_CHROME_THICKNESS_PX}
@@ -126,7 +149,7 @@ export const TableDragHandles = ({
         />
         <AddPillButton
           axis="column"
-          left={bounds.left + bounds.width + TABLE_CHROME_GAP_PX}
+          left={columnPillLeft}
           top={bounds.top + (bounds.height - colPillHeight) / 2}
           width={TABLE_CHROME_THICKNESS_PX}
           height={colPillHeight}

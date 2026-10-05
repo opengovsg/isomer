@@ -19,6 +19,7 @@ export const findHoveredTablePos = ({
   containerRect,
   scrollTop,
   scrollLeft,
+  horizontalSpan,
 }: {
   geometries: TableGeometry[]
   clientX: number
@@ -26,6 +27,8 @@ export const findHoveredTablePos = ({
   containerRect: Pick<DOMRect, "top" | "left">
   scrollTop: number
   scrollLeft: number
+  /** Visible editor span. The add-row pill covers this, not the table width. */
+  horizontalSpan?: { left: number; right: number }
 }): number | null => {
   const { x, y } = viewportPointToContainerPoint({
     clientX,
@@ -39,9 +42,12 @@ export const findHoveredTablePos = ({
   const match = geometries.find((geometry) => {
     const bounds = getTableBounds(geometry)
     if (!bounds) return false
+    const left = horizontalSpan?.left ?? bounds.left - TABLE_GUTTER_PX
+    const right =
+      horizontalSpan?.right ?? bounds.left + bounds.width + TABLE_GUTTER_PX
     return (
-      x >= bounds.left - TABLE_GUTTER_PX &&
-      x <= bounds.left + bounds.width + TABLE_GUTTER_PX &&
+      x >= left &&
+      x <= right &&
       y >= bounds.top - TABLE_GUTTER_PX &&
       y <= bounds.top + bounds.height + TABLE_GUTTER_PX
     )
@@ -78,6 +84,10 @@ export const useHoveredTable = (
           containerRect: container.getBoundingClientRect(),
           scrollTop: container.scrollTop,
           scrollLeft: container.scrollLeft,
+          horizontalSpan: {
+            left: container.scrollLeft,
+            right: container.scrollLeft + container.clientWidth,
+          },
         }),
       )
     }
