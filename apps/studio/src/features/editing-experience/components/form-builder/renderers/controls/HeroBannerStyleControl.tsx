@@ -27,17 +27,6 @@ function getHeroBannerStyleVariantKeyForBranchTitle(branchTitle: string) {
   ).find((variant) => HERO_BANNER_STYLE_BRANCHES[variant].title === branchTitle)
 }
 
-function heroBannerStyleOptionFromCombinatorOption(option: {
-  label: string
-  value: string
-}): HeroBannerStyleOption {
-  return {
-    ...option,
-    key:
-      getHeroBannerStyleVariantKeyForBranchTitle(option.value) ?? option.value,
-  }
-}
-
 // Match Fixed blocks "Hero banner" row hover in BaseBlock.
 const heroBannerStyleBlockInteractionProps = {
   layerStyle: "focusRing",
@@ -50,7 +39,7 @@ const heroBannerStyleBlockInteractionProps = {
   _active: {
     bg: "interaction.main-subtle.default",
     borderColor: "interaction.main-subtle.hover",
-    boxShadow: "0px 1px 6px 0px #1361F026",
+    boxShadow: "0rem 0.0625rem 0.375rem 0rem #1361F026",
   },
 }
 
@@ -270,7 +259,12 @@ export function HeroBannerStyleCombinator({
         return null
       }
 
-      return heroBannerStyleOptionFromCombinatorOption(option)
+      return {
+        ...option,
+        key:
+          getHeroBannerStyleVariantKeyForBranchTitle(option.value) ??
+          option.value,
+      }
     })
     .filter((option) => option !== null)
 
