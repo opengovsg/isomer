@@ -46,6 +46,8 @@ jobs:
       app-s3-assets-domain-name: "isomer-user-content-uat.by.gov.sg"
       app-growthbook-client-key: "sdk-JCHWTUKA5qK7GAZA"
       app-intercom-app-id: "jv2tjc3g"
+      # Sandbox uses the Singpass staging issuer.
+      singpass-fapi-issuer-endpoint: "https://stg-id.singpass.gov.sg/fapi"
 
   build_components:
     name: Build and publish components

@@ -117,6 +117,11 @@ on:
         description: "Posthog project token"
         required: false
         type: string
+      singpass-fapi-issuer-endpoint:
+        description: "Public Singpass FAPI 2.0 issuer URL. Not a secret."
+        required: false
+        default: ""
+        type: string
     secrets:
       SLACK_BOT_TOKEN:
         description: "Slack bot token with permissions to post messages"
@@ -333,6 +338,7 @@ jobs:
           ECS_TASK_ROLE: ${{ inputs.ecs-task-role }}
           ECS_TASK_EXEC_ROLE: ${{ inputs.ecs-task-exec-role }}
           ECS_TASK_DEFINITION_PATH: ${{ inputs.ecs-task-definition-path }}
+          SINGPASS_FAPI_ISSUER_ENDPOINT: ${{ inputs.singpass-fapi-issuer-endpoint }}
         run: |
           CPU=$([[ "$ENVIRONMENT" == "production" ]] && echo "2048" || echo "512")
           MEMORY=$([[ "$ENVIRONMENT" == "production" ]] && echo "16384" || echo "1024")
@@ -344,6 +350,8 @@ jobs:
           sed -i "s/<DD_COMMIT_SHA>/$DD_COMMIT_SHA/g" "$ECS_TASK_DEFINITION_PATH"
           sed -i "s/<ECS_TASK_ROLE>/$ECS_TASK_ROLE/g" "$ECS_TASK_DEFINITION_PATH"
           sed -i "s/<ECS_TASK_EXEC_ROLE>/$ECS_TASK_EXEC_ROLE/g" "$ECS_TASK_DEFINITION_PATH"
+          # URL contains slashes, so this substitution cannot use / as the delimiter.
+          sed -i "s|<SINGPASS_FAPI_ISSUER_ENDPOINT>|${SINGPASS_FAPI_ISSUER_ENDPOINT}|g" "$ECS_TASK_DEFINITION_PATH"
 
       - name: Replace variables in appspec
         env:
