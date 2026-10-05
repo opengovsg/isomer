@@ -1,8 +1,8 @@
+import type * as DesignSystemReact from "@opengovsg/design-system-react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import type * as DesignSystemReact from "@opengovsg/design-system-react"
 import { render, screen, fireEvent } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { theme } from "~/theme"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -11,7 +11,8 @@ import RootStateDrawer from "../RootStateDrawer"
 
 const noop = vi.hoisted(() => vi.fn())
 const toastMock = vi.hoisted(() => vi.fn())
-const capturedUpdateBlobOptions = vi.hoisted(() => [] as unknown[])
+// When set, the mocked updatePageBlob mutation fails with this error.
+const saveError = vi.hoisted(() => ({ current: null as Error | null }))
 
 vi.mock("@opengovsg/design-system-react", async (importOriginal) => {
   const actual = await importOriginal<typeof DesignSystemReact>()
@@ -42,19 +43,13 @@ vi.mock("~/utils/trpc", () => ({
         useMutation: () => ({ mutate: noop }),
       },
       updatePageBlob: {
-        useMutation: (options: unknown) => {
-          capturedUpdateBlobOptions.push(options)
-          return {
-            // Simulate a failed save: real tRPC would route the failure
-            // to the mutation-level onError handler.
-            mutate: () => {
-              const onError = (options as { onError?: (e: Error) => void })
-                ?.onError
-              onError?.(new Error("network down"))
-            },
-            isPending: false,
-          }
-        },
+        useMutation: (options: { onError?: (e: Error) => void }) => ({
+          // Real tRPC routes a failure to the mutation-level onError handler.
+          mutate: () => {
+            if (saveError.current) options.onError?.(saveError.current)
+          },
+          isPending: false,
+        }),
       },
     },
     useUtils: () => ({
@@ -111,6 +106,11 @@ const renderDrawer = ({
   )
 
 describe("RootStateDrawer", () => {
+  beforeEach(() => {
+    toastMock.mockClear()
+    saveError.current = null
+  })
+
   it("does not allow adding blocks on the system Search page", () => {
     // Arrange / Act
     renderDrawer({
@@ -141,6 +141,7 @@ describe("RootStateDrawer", () => {
   it("shows an error toast when saving the index-page conversion fails", () => {
     // Arrange — an IndexPage with a custom layout shows the conversion
     // infobox; drive the real preview → accept → save path.
+    saveError.current = new Error("network down")
     renderDrawer({
       pageState: CONTENT_PAGE,
       permalink: "about-us",
@@ -150,9 +151,7 @@ describe("RootStateDrawer", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Preview what this looks like" }),
     )
-    fireEvent.click(
-      screen.getByRole("button", { name: "Accept this change" }),
-    )
+    fireEvent.click(screen.getByRole("button", { name: "Accept this change" }))
 
     // Act — confirming runs handleSaveConversionToIndexPage; the mocked
     // save fails and must surface an error toast instead of failing silent.
@@ -160,7 +159,11 @@ describe("RootStateDrawer", () => {
 
     // Assert
     expect(toastMock).toHaveBeenCalledWith(
-      expect.objectContaining({ status: "error" }),
+      expect.objectContaining({
+        title: "Failed to convert page",
+        description: "network down",
+        status: "error",
+      }),
     )
   })
 })
