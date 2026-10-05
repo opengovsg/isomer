@@ -35,6 +35,38 @@ const openMobileDrawer = () => {
 }
 
 describe("Filter", () => {
+  it("uses a space-free panel id for aria-controls when the filter id is a label", async () => {
+    // Arrange
+    render(
+      <Filter
+        filters={[
+          {
+            id: "Assurance Level",
+            label: "Assurance Level",
+            items: [{ id: "gold", label: "Gold", count: 1 }],
+          },
+        ]}
+        appliedFilters={[]}
+        setAppliedFilters={vi.fn()}
+        handleFilterToggle={vi.fn()}
+        handleClearFilter={vi.fn()}
+      />,
+    )
+
+    // Act
+    const dialog = await openMobileDrawer()
+    const sectionButton = within(dialog).getByRole("button", {
+      name: "Assurance Level",
+      expanded: true,
+    })
+    const panelId = sectionButton.getAttribute("aria-controls")
+
+    // Assert
+    expect(panelId).toBe("drawer-filter-panel-Assurance%20Level")
+    expect(panelId).not.toMatch(/\s/)
+    expect(document.getElementById(panelId!)).not.toBeNull()
+  })
+
   it("exposes the date section as an expanded disclosure, not a label inside the button", async () => {
     // Arrange
     renderDateFilter()

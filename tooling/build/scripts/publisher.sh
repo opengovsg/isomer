@@ -176,18 +176,18 @@ calculate_duration "$start_time"
 
 # Prebuilding...
 echo "Prebuilding site..."
-rm -rf ../../../template/schema
-rm -rf ../../../template/data
-mv schema/ ../../../template/
-mv data/ ../../../template/
-cp sitemap.json ../../../template/public/
-mv sitemap.json ../../../template/
-mv redirects.json ../../../template/
+rm -rf ../../../../apps/template/schema
+rm -rf ../../../../apps/template/data
+mv schema/ ../../../../apps/template/
+mv data/ ../../../../apps/template/
+cp sitemap.json ../../../../apps/template/public/
+mv sitemap.json ../../../../apps/template/
+mv redirects.json ../../../../apps/template/
 # Capture absolute path now; the upload step runs from a different CWD later.
-REDIRECTS_JSON="$(realpath ../../../template/redirects.json)"
-cd ../../../template
+REDIRECTS_JSON="$(realpath ../../../../apps/template/redirects.json)"
+cd ../../../../apps/template
 # Create not-found.json by copying _index.json if it doesn't exist
-# Refer to tooling/template/app/not-found.tsx for more context
+# Refer to apps/template/app/not-found.tsx for more context
 if [ ! -f "schema/not-found.json" ]; then
   echo "Creating not-found.json..."
   cp schema/_index.json schema/not-found.json
@@ -220,7 +220,7 @@ RSS_SITEMAP_JSON="$(realpath sitemap.json)"
 RSS_CONFIG_JSON="$(realpath data/config.json)"
 RSS_OUT_DIR="$(realpath out)"
 (
-  cd ../build/scripts/publishing
+  cd ../../tooling/build/scripts/publishing
   SITEMAP_JSON="$RSS_SITEMAP_JSON" \
     CONFIG_JSON="$RSS_CONFIG_JSON" \
     OUT_DIR="$RSS_OUT_DIR" \
@@ -262,7 +262,7 @@ calculate_duration "$start_time"
 start_time=$(date +%s)
 echo "Uploading redirect files to S3..."
 (
-  cd ../../build/scripts/publishing
+  cd ../../../tooling/build/scripts/publishing
   pnpm exec tsx uploadRedirects.ts \
     --redirects-json "$REDIRECTS_JSON" \
     --s3-bucket-name "$S3_BUCKET_NAME" \
