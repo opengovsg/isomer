@@ -38,6 +38,7 @@ import {
   IconDelCol,
   IconDelRow,
   IconMergeCells,
+  IconResetColumnWidths,
   IconSplitCell,
 } from "~/components/icons"
 
@@ -552,8 +553,10 @@ const SelectionActions = ({
           {tableHasStoredColumnWidths(editor) && (
             <ActionButton
               label="Reset column widths"
-              icon={<BiX fontSize="1rem" />}
-              onClick={() => editor.chain().focus().resetTableColumnWidths().run()}
+              icon={<IconResetColumnWidths boxSize="1rem" />}
+              onClick={() =>
+                editor.chain().focus().resetTableColumnWidths().run()
+              }
             />
           )}
           <ActionButton

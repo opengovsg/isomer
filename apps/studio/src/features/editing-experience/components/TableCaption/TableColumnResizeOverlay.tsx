@@ -165,17 +165,25 @@ export const TableColumnResizeOverlay = ({
 
   if (layout.columnCount < 1) return null
 
-  const commitWidths = (columnWidths: number[]) => {
+  const commitWidths = (
+    columnWidths: number[] | null,
+    options: { addToHistory?: boolean; preventUpdate?: boolean } = {},
+  ) => {
     const tablePos = getPos()
     if (tablePos == null) return
     const current = editor.state.doc.nodeAt(tablePos)
-    if (!current) return
-    editor.view.dispatch(
-      editor.view.state.tr.setNodeMarkup(tablePos, undefined, {
-        ...current.attrs,
-        columnWidths,
-      }),
-    )
+    if (!current || current.type.name !== "table") return
+    const tr = editor.view.state.tr.setNodeMarkup(tablePos, undefined, {
+      ...current.attrs,
+      columnWidths,
+    })
+    if (options.addToHistory === false) {
+      tr.setMeta("addToHistory", false)
+    }
+    if (options.preventUpdate) {
+      tr.setMeta("preventUpdate", true)
+    }
+    editor.view.dispatch(tr)
   }
 
   const startDrag = (event: ReactPointerEvent, columnIndex: number) => {
@@ -191,6 +199,7 @@ export const TableColumnResizeOverlay = ({
 
     const startWidths =
       layout.widths ?? measureTableColumnWidths(table, layout.columnCount)
+    const preDragWidths = layout.widths
     const startX = event.clientX
     let latest = startWidths
     let moved = false
@@ -200,6 +209,18 @@ export const TableColumnResizeOverlay = ({
     handlesRef.current[columnIndex]?.setAttribute("data-resizing", "")
 
     const win = editor.view.dom.ownerDocument.defaultView ?? window
+    let previewFrame: number | null = null
+
+    const paintWidths = (widths: number[]) => {
+      applyAuthorColumnWidths(table, widths)
+      positionHandles(handlesRef.current, widths, widths.length)
+    }
+
+    const cancelPreviewFrame = () => {
+      if (previewFrame == null) return
+      win.cancelAnimationFrame(previewFrame)
+      previewFrame = null
+    }
 
     const onPointerMove = (moveEvent: PointerEvent) => {
       moved = true
@@ -208,8 +229,14 @@ export const TableColumnResizeOverlay = ({
         startWidths[columnIndex]! + (moveEvent.clientX - startX),
       )
       latest = next
-      applyAuthorColumnWidths(table, next)
-      positionHandles(handlesRef.current, next, next.length)
+      paintWidths(next)
+      if (previewFrame != null) return
+      previewFrame = win.requestAnimationFrame(() => {
+        previewFrame = null
+        if (!draggingRef.current) return
+        commitWidths(latest, { addToHistory: false })
+        paintWidths(latest)
+      })
     }
 
     const endDrag = () => {
@@ -221,16 +248,33 @@ export const TableColumnResizeOverlay = ({
     }
 
     const onPointerUp = () => {
+      cancelPreviewFrame()
       const finalWidths = latest
       const changed =
-        !layout.widths ||
+        !preDragWidths ||
         finalWidths[columnIndex] !== startWidths[columnIndex]
-      endDrag()
-      if (moved && changed) commitWidths(finalWidths)
-      else positionHandles(handlesRef.current, layout.widths, layout.columnCount)
-      if (!moved || !changed) {
-        applyAuthorColumnWidths(table, layout.widths)
+      if (moved && changed) {
+        // Drop the live preview steps, then record one undoable change.
+        // The reset must not repaint the preview, or the page flashes the old widths.
+        commitWidths(preDragWidths, {
+          addToHistory: false,
+          preventUpdate: true,
+        })
+        commitWidths(finalWidths)
+        endDrag()
+        paintWidths(finalWidths)
+        return
       }
+      if (moved) {
+        commitWidths(preDragWidths, { addToHistory: false })
+      }
+      endDrag()
+      applyAuthorColumnWidths(table, preDragWidths)
+      positionHandles(
+        handlesRef.current,
+        preDragWidths,
+        preDragWidths?.length ?? layout.columnCount,
+      )
     }
 
     win.addEventListener("pointermove", onPointerMove)
