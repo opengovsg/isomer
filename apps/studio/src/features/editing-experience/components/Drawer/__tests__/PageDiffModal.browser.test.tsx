@@ -150,11 +150,19 @@ describe("PageDiffModal", () => {
       screen.getByRole("separator", { name: "Resize panes" }),
     ).toBeVisible()
     expect(screen.queryByRole("group", { name: "Version shown" })).toBeNull()
+    expect(screen.getByRole("tab", { name: "Side by side" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    )
     const iframesBefore = Array.from(document.querySelectorAll("iframe"))
 
-    screen.getByRole("button", { name: "Overlay" }).click()
+    screen.getByRole("tab", { name: "Overlay" }).click()
 
     await waitFor(() => expect(currentHeader).not.toBeVisible())
+    expect(screen.getByRole("tab", { name: "Overlay" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    )
     expect(versionHeader).toBeVisible()
     expect(screen.queryByRole("separator", { name: "Resize panes" })).toBeNull()
 

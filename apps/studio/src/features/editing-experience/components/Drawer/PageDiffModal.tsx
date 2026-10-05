@@ -6,13 +6,15 @@ import {
   Box,
   ButtonGroup,
   Flex,
+  Grid,
   IconButton,
   Modal,
   ModalContent,
   ModalOverlay,
+  TabList,
   Text,
 } from "@chakra-ui/react"
-import { Button, Switch } from "@opengovsg/design-system-react"
+import { Button, Switch, Tab, Tabs } from "@opengovsg/design-system-react"
 import { format } from "date-fns"
 import { useCallback, useEffect, useState } from "react"
 import { BiX } from "react-icons/bi"
@@ -42,7 +44,11 @@ interface PageDiffModalProps extends Pick<
   row: PageDiffModalRow | null
 }
 
-type ViewMode = "sideBySide" | "overlay"
+const VIEW_MODES = [
+  { value: "sideBySide", label: "Side by side" },
+  { value: "overlay", label: "Overlay" },
+] as const
+type ViewMode = (typeof VIEW_MODES)[number]["value"]
 type Pane = "before" | "after"
 
 interface SegmentedToggleProps<T extends string> {
@@ -148,9 +154,11 @@ export const PageDiffModal = ({
       <ModalOverlay />
       <ModalContent height="100vh" overflow="hidden">
         <Flex direction="column" h="full" key={row.id}>
-          <Flex
-            justify="space-between"
-            align="center"
+          {/* Equal outer columns keep the tabs centred whatever the width
+              of the title or the controls. */}
+          <Grid
+            templateColumns="1fr auto 1fr"
+            alignItems="center"
             gap="1rem"
             px="1.5rem"
             borderBottom="1px solid"
@@ -159,16 +167,24 @@ export const PageDiffModal = ({
             <Text textStyle="h6" noOfLines={1}>
               {title}
             </Text>
-            <Flex align="center" gap="0.75rem" flexShrink={0}>
-              <SegmentedToggle
-                label="View mode"
-                value={viewMode}
-                options={[
-                  { value: "sideBySide", label: "Side by side" },
-                  { value: "overlay", label: "Overlay" },
-                ]}
-                onChange={setViewMode}
-              />
+            {/* Tabs without panels: both modes share the same mounted panes
+                below, so the tab only switches their layout. */}
+            <Tabs
+              size="sm"
+              index={VIEW_MODES.findIndex(({ value }) => value === viewMode)}
+              onChange={(index) =>
+                setViewMode(VIEW_MODES[index]?.value ?? "sideBySide")
+              }
+            >
+              <TabList aria-label="View mode" borderBottom="none">
+                {VIEW_MODES.map(({ value, label }) => (
+                  <Tab key={value} mx={0}>
+                    <Text textStyle="subhead-3">{label}</Text>
+                  </Tab>
+                ))}
+              </TabList>
+            </Tabs>
+            <Flex align="center" justify="flex-end" gap="0.75rem">
               {isOverlay && (
                 <SegmentedToggle
                   label="Version shown"
@@ -202,7 +218,7 @@ export const PageDiffModal = ({
                 onClick={onClose}
               />
             </Flex>
-          </Flex>
+          </Grid>
           <Flex
             ref={containerRef}
             position="relative"
