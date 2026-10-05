@@ -309,7 +309,7 @@ describe("TableCaption", () => {
     // Act
     const captionButton = await getCaptionButton("Edit table caption")
     const editTableButton = await screen.findByRole("button", {
-      name: "Expand",
+      name: "Expand table",
     })
 
     // Assert
@@ -336,7 +336,7 @@ describe("TableCaption", () => {
 
     // Act
     const editButtons = await screen.findAllByRole("button", {
-      name: "Expand",
+      name: "Expand table",
     })
     await userEvent.click(editButtons[0]!)
 
@@ -375,7 +375,7 @@ describe("TableCaption", () => {
       modal.queryByRole("button", { name: /^divider$/i }),
     ).not.toBeInTheDocument()
     expect(
-      modal.queryByRole("button", { name: "Expand" }),
+      modal.queryByRole("button", { name: "Expand table" }),
     ).not.toBeInTheDocument()
     expect(
       modal.queryByRole("button", { name: /^close$/i }),
@@ -405,7 +405,7 @@ describe("TableCaption", () => {
 
     // Act
     const editButtons = await screen.findAllByRole("button", {
-      name: "Expand",
+      name: "Expand table",
     })
     await userEvent.click(editButtons[1]!)
     const dialog = await screen.findByRole(
