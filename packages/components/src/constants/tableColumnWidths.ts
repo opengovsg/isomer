@@ -1,5 +1,5 @@
-export const TABLE_COLUMN_WIDTH_MIN_PX = 64
-export const TABLE_COLUMN_WIDTH_MAX_PX = 600
+export const TABLE_COLUMN_WIDTH_MIN_PX = 48
+export const TABLE_COLUMN_WIDTH_MAX_PX = 400
 export const TABLE_COLUMN_WIDTH_DEFAULT_PX = 160
 
 export const clampTableColumnWidth = (value: number): number =>

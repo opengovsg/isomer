@@ -2,6 +2,10 @@ import type { Static } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { TABLE_CELL_BACKGROUND_COLOR_TOKENS } from "~/constants/tableCellBackgroundColor"
+import {
+  TABLE_COLUMN_WIDTH_MAX_PX,
+  TABLE_COLUMN_WIDTH_MIN_PX,
+} from "~/constants/tableColumnWidths"
 
 import type { DividerProps } from "./Divider"
 import type { OrderedListProps } from "./OrderedList"
@@ -128,8 +132,8 @@ export const TableSchema = Type.Object(
           [
             Type.Array(
               Type.Integer({
-                minimum: 80,
-                maximum: 600,
+                minimum: TABLE_COLUMN_WIDTH_MIN_PX,
+                maximum: TABLE_COLUMN_WIDTH_MAX_PX,
                 title: "Column width (px)",
                 description:
                   "Optional fixed column widths in pixels. Omitted for automatic layout.",
