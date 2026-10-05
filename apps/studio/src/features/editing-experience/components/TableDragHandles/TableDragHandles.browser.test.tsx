@@ -979,4 +979,109 @@ describe("TableDragHandles", () => {
       ])
     })
   })
+
+  it("lets a wide table slide under the row handles and the add-column pill", async () => {
+    // Arrange
+    let editor: Editor | undefined
+    const ClipHarness = () => {
+      const tipTap = useTextEditor({
+        data: SEED_CONTENT,
+        handleChange: () => null,
+      })
+      const containerRef = useRef<HTMLDivElement>(null)
+      if (tipTap) editor = tipTap
+      return (
+        <div
+          data-testid="clip-root"
+          ref={containerRef}
+          style={{ position: "relative", overflowX: "hidden", width: 420 }}
+        >
+          {tipTap && (
+            <TableDragHandles editor={tipTap} containerRef={containerRef} />
+          )}
+          {tipTap && <EditorContent editor={tipTap} />}
+        </div>
+      )
+    }
+    const { getByLabelText, getByTestId } = render(<ClipHarness />)
+    await waitFor(() => {
+      if (!editor) throw new Error("editor not ready")
+    })
+    const readyEditor = editor
+    if (!readyEditor) throw new Error("editor not ready")
+    let tablePos = -1
+    readyEditor.state.doc.descendants((node, pos) => {
+      if (node.type.name === "table") {
+        tablePos = pos
+        return false
+      }
+      return true
+    })
+    act(() => {
+      readyEditor.commands.setTableColumnWidthsAt(tablePos, [400, 400, 400])
+    })
+    const clipRoot = getByTestId("clip-root")
+    const scroller = await waitFor(() => {
+      const element = clipRoot.querySelector("[data-table-h-scroll]")
+      if (!(element instanceof HTMLElement))
+        throw new Error("scroller not found")
+      if (element.scrollWidth <= element.clientWidth + 40) {
+        throw new Error("table is not wider than the scrollport")
+      }
+      return element
+    })
+    const cell = findByCellText(clipRoot, "Row 1, A")
+    const { x, y } = centreOf(cell)
+    const pill = await hoverUntil(x, y, () =>
+      getByLabelText("Add column to the right"),
+    )
+    const rowHandle = await waitForHandle(clipRoot, "row", 1)
+    const row = cell.closest("tr")
+    if (!row) throw new Error("row not found")
+    expect(rowHandle.getBoundingClientRect().right).toBeLessThanOrEqual(
+      row.getBoundingClientRect().left,
+    )
+    expect(getComputedStyle(rowHandle).boxShadow).toBe("none")
+    expect(getComputedStyle(pill).boxShadow).toBe("none")
+
+    // Act
+    const maxScroll = scroller.scrollWidth - scroller.clientWidth
+    act(() => {
+      scroller.scrollLeft = Math.min(40, maxScroll)
+    })
+
+    // Assert
+    await waitFor(() => {
+      const handle = queryHandle(clipRoot, "row", 1)
+      const scrolledRow = findByCellText(clipRoot, "Row 1, A").closest("tr")
+      if (!handle || !scrolledRow) throw new Error("handle not measured")
+      const handleRect = handle.getBoundingClientRect()
+      const port = scroller.getBoundingClientRect()
+      expect(Math.abs(handleRect.left - port.left)).toBeLessThan(1)
+      expect(scrolledRow.getBoundingClientRect().left).toBeLessThan(
+        handleRect.right,
+      )
+      const pillRect = pill.getBoundingClientRect()
+      expect(Math.abs(pillRect.right - port.right)).toBeLessThan(1)
+      expect(pillRect.left).toBeLessThan(port.right)
+    })
+
+    act(() => {
+      scroller.scrollLeft =
+        scroller.scrollLeft > 0 ? 0 : Math.min(40, maxScroll)
+    })
+    await waitFor(() => {
+      const handle = queryHandle(clipRoot, "row", 1)
+      expect(handle && getComputedStyle(handle).boxShadow).not.toBe("none")
+      expect(getComputedStyle(pill).boxShadow).not.toBe("none")
+    })
+    await waitFor(
+      () => {
+        const handle = queryHandle(clipRoot, "row", 1)
+        expect(handle && getComputedStyle(handle).boxShadow).toBe("none")
+        expect(getComputedStyle(pill).boxShadow).toBe("none")
+      },
+      { timeout: 1000 },
+    )
+  })
 })

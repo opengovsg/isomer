@@ -13,8 +13,8 @@ export const TABLE_CHROME_GAP_PX = 8
 export const TABLE_CHROME_THICKNESS_PX = 20
 
 /**
- * The band reserved on every side of a table. Handles occupy the top and left
- * of it, add pills the bottom and right, and the pointer counts as hovering a
- * table anywhere within it.
+ * The band around a table, inside its horizontal scroller. Handles occupy the
+ * top and left, add pills the bottom and right. A wide table scrolls through
+ * the left and right bands, under the row handles and the add-column pill.
  */
 export const TABLE_GUTTER_PX = TABLE_CHROME_GAP_PX + TABLE_CHROME_THICKNESS_PX
