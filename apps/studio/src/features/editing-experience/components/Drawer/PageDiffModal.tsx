@@ -179,6 +179,22 @@ const PageDiffContent = ({ row, onClose }: PageDiffContentProps) => {
         ? { flexBasis: `${firstPanePercent}%`, flexShrink: 0 }
         : { flex: 1 }
 
+  // Shown in whichever pane header is visible in overlay mode. The hidden
+  // pane's copy is `visibility: hidden`, so only one is ever reachable.
+  const versionToggle = isOverlay && (
+    <Box ml="auto" alignSelf="center">
+      <SegmentedToggle
+        label="Version shown"
+        value={overlayPane}
+        options={[
+          { value: "before", label: `Version ${row.versionNum}` },
+          { value: "after", label: "Current" },
+        ]}
+        onChange={setOverlayPane}
+      />
+    </Box>
+  )
+
   return (
     <Flex direction="column" h="full">
       {/* Equal outer columns keep the tabs centred whatever the width
@@ -212,17 +228,6 @@ const PageDiffContent = ({ row, onClose }: PageDiffContentProps) => {
           </TabList>
         </Tabs>
         <Flex align="center" justify="flex-end" gap="0.75rem">
-          {isOverlay && (
-            <SegmentedToggle
-              label="Version shown"
-              value={overlayPane}
-              options={[
-                { value: "before", label: `Version ${row.versionNum}` },
-                { value: "after", label: "Current" },
-              ]}
-              onChange={setOverlayPane}
-            />
-          )}
           {status === "error" && (
             <Text textStyle="caption-2" color="utility.feedback.critical">
               Couldn't compute a detailed diff — showing before/after only.
@@ -265,6 +270,7 @@ const PageDiffContent = ({ row, onClose }: PageDiffContentProps) => {
               Published {format(row.publishedAt, "d MMM yyyy, h:mm a")} by{" "}
               {row.publisher.email}
             </Text>
+            {versionToggle}
           </PaneHeader>
           <Box flex={1} overflow="auto">
             <PreviewIframe style={themeCssVars} callback={before.onMount}>
@@ -301,6 +307,7 @@ const PageDiffContent = ({ row, onClose }: PageDiffContentProps) => {
         >
           <PaneHeader>
             <Text textStyle="h6">Current Version</Text>
+            {versionToggle}
           </PaneHeader>
           <Box flex={1} overflow="auto">
             <PreviewIframe style={themeCssVars} callback={after.onMount}>
