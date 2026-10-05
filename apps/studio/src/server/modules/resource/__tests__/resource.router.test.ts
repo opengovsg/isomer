@@ -4577,7 +4577,10 @@ describe("resource.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrow(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "The root page cannot be deleted",
+        }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
     })
