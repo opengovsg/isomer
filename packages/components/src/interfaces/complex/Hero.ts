@@ -10,21 +10,21 @@ import { HERO_BANNER_STYLE_FORMAT } from "../format"
 import { generateImageSrcSchema } from "./Image"
 
 export const HERO_STYLE = {
-  gradient: { title: "Gradient (Default)" },
-  block: { title: "Block" },
-  largeImage: { title: "Large image" },
-  floating: { title: "Floating" },
-  searchbar: { title: "Search bar" },
+  gradient: { key: "gradient", title: "Gradient (Default)" },
+  block: { key: "block", title: "Block" },
+  largeImage: { key: "largeImage", title: "Large image" },
+  floating: { key: "floating", title: "Floating" },
+  searchbar: { key: "searchbar", title: "Search bar" },
 } as const
 
-export type HeroStyleVariant = keyof typeof HERO_STYLE
+export type HeroStyleVariant =
+  (typeof HERO_STYLE)[keyof typeof HERO_STYLE]["key"]
 
 export function getHeroStyleVariantForBranchTitle(
   branchTitle: string,
 ): HeroStyleVariant | undefined {
-  return (Object.keys(HERO_STYLE) as HeroStyleVariant[]).find(
-    (variant) => HERO_STYLE[variant].title === branchTitle,
-  )
+  return Object.values(HERO_STYLE).find((branch) => branch.title === branchTitle)
+    ?.key
 }
 
 const HeroBaseSchema = Type.Object({
@@ -109,7 +109,9 @@ const GROUPINGS = {
 const HeroGradientSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal("gradient", { default: "gradient" }),
+      variant: Type.Literal(HERO_STYLE.gradient.key, {
+        default: HERO_STYLE.gradient.key,
+      }),
       backgroundUrl: BackgroundUrlSchema,
     }),
     HeroBaseSchema,
@@ -128,7 +130,9 @@ const HeroGradientSchema = Type.Composite(
 const HeroBlockSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal("block", { default: "block" }),
+      variant: Type.Literal(HERO_STYLE.block.key, {
+        default: HERO_STYLE.block.key,
+      }),
       backgroundUrl: BackgroundUrlSchema,
     }),
     HeroBaseSchema,
@@ -147,7 +151,9 @@ const HeroBlockSchema = Type.Composite(
 const HeroLargeImageSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal("largeImage", { default: "largeImage" }),
+      variant: Type.Literal(HERO_STYLE.largeImage.key, {
+        default: HERO_STYLE.largeImage.key,
+      }),
       backgroundUrl: BackgroundUrlSchema,
     }),
     HeroBaseSchema,
@@ -166,7 +172,9 @@ const HeroLargeImageSchema = Type.Composite(
 const HeroFloatingSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal("floating", { default: "floating" }),
+      variant: Type.Literal(HERO_STYLE.floating.key, {
+        default: HERO_STYLE.floating.key,
+      }),
       backgroundUrl: BackgroundUrlSchema,
     }),
     HeroBaseSchema,
@@ -185,7 +193,9 @@ const HeroFloatingSchema = Type.Composite(
 const HeroSearchbarSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal("searchbar", { default: "searchbar" }),
+      variant: Type.Literal(HERO_STYLE.searchbar.key, {
+        default: HERO_STYLE.searchbar.key,
+      }),
       backgroundUrl: Type.Optional(BackgroundUrlSchema),
     }),
     HeroBaseSchema,

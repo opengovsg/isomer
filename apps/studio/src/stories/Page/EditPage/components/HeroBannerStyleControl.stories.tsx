@@ -11,23 +11,23 @@ const schema = Type.Unsafe({
   format: HERO_BANNER_STYLE_FORMAT,
   oneOf: [
     Type.Object(
-      { variant: Type.Literal("gradient") },
+      { variant: Type.Literal(HERO_STYLE.gradient.key) },
       { title: HERO_STYLE.gradient.title },
     ),
     Type.Object(
-      { variant: Type.Literal("block") },
+      { variant: Type.Literal(HERO_STYLE.block.key) },
       { title: HERO_STYLE.block.title },
     ),
     Type.Object(
-      { variant: Type.Literal("largeImage") },
+      { variant: Type.Literal(HERO_STYLE.largeImage.key) },
       { title: HERO_STYLE.largeImage.title },
     ),
     Type.Object(
-      { variant: Type.Literal("floating") },
+      { variant: Type.Literal(HERO_STYLE.floating.key) },
       { title: HERO_STYLE.floating.title },
     ),
     Type.Object(
-      { variant: Type.Literal("searchbar") },
+      { variant: Type.Literal(HERO_STYLE.searchbar.key) },
       { title: HERO_STYLE.searchbar.title, format: "hidden" },
     ),
   ],
