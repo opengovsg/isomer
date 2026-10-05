@@ -27,7 +27,10 @@ describe("validateTableColumnWidths", () => {
 
   it("returns null when any entry is not a finite number", () => {
     expect(validateTableColumnWidths([100, NaN], 2)).toBeNull()
-    expect(validateTableColumnWidths([100, -1], 2)).toEqual([100, 80])
+    expect(validateTableColumnWidths([100, -1], 2)).toEqual([
+      100,
+      TABLE_COLUMN_WIDTH_MIN_PX,
+    ])
     expect(validateTableColumnWidths([100, "200"], 2)).toBeNull()
   })
 

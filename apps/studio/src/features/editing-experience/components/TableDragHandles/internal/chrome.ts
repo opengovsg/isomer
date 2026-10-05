@@ -18,5 +18,4 @@ export const ADD_PILL_RADIUS_PX = 99
 export const ADD_PILL_ICON_SIZE_PX = 12
 
 /** Row handles and the add-column pill sit over the table. */
-export const TABLE_CHROME_ELEVATION_SHADOW =
-  "0 1px 3px rgba(44, 46, 52, 0.18)"
+export const TABLE_CHROME_ELEVATION_SHADOW = "0 1px 3px rgba(44, 46, 52, 0.18)"

@@ -41,6 +41,8 @@ import {
   IconResetColumnWidths,
   IconSplitCell,
 } from "~/components/icons"
+import { tableHasStoredColumnWidths } from "~/features/editing-experience/hooks/useTextEditor/isomerTableColumnWidth"
+import { syncTableColumnWidthsAfterMove } from "~/features/editing-experience/utils/tableColumnWidthSync"
 
 import type {
   SelectionKind,
@@ -56,12 +58,6 @@ import {
   duplicateSelectedColumns,
   duplicateSelectedRows,
 } from "./TableBubbleMenu.duplicate"
-import {
-  tableHasStoredColumnWidths,
-} from "~/features/editing-experience/hooks/useTextEditor/isomerTableColumnWidth"
-import {
-  syncTableColumnWidthsAfterMove,
-} from "~/features/editing-experience/utils/tableColumnWidthSync"
 import {
   canMergeCellSelection,
   getColumnMovePlan,

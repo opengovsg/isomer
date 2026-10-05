@@ -9,12 +9,12 @@ import {
   TableMap,
   tableNodeTypes,
 } from "@tiptap/pm/tables"
+import { syncTableColumnWidthsAfterDuplicate } from "~/features/editing-experience/utils/tableColumnWidthSync"
 
 import {
   selectionIncludesHeaderColumn,
   selectionIncludesHeaderRow,
 } from "./TableBubbleMenu.utils"
-import { syncTableColumnWidthsAfterDuplicate } from "~/features/editing-experience/utils/tableColumnWidthSync"
 
 /**
  * Duplicate selected rows/columns with cell content preserved.

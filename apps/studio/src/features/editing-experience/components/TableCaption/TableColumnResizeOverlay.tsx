@@ -138,8 +138,7 @@ export const TableColumnResizeOverlay = ({
         widths: validateTableColumnWidths(node.attrs.columnWidths, columnCount),
       }
     },
-    equalityFn: (left, right) =>
-      !!left && !!right && layoutsEqual(left, right),
+    equalityFn: (left, right) => !!left && !!right && layoutsEqual(left, right),
   })
 
   useLayoutEffect(() => {
@@ -251,8 +250,7 @@ export const TableColumnResizeOverlay = ({
       cancelPreviewFrame()
       const finalWidths = latest
       const changed =
-        !preDragWidths ||
-        finalWidths[columnIndex] !== startWidths[columnIndex]
+        !preDragWidths || finalWidths[columnIndex] !== startWidths[columnIndex]
       if (moved && changed) {
         // Drop the live preview steps, then record one undoable change.
         // The reset must not repaint the preview, or the page flashes the old widths.

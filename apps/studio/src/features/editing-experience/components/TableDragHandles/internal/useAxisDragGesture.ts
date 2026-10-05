@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react"
+import { syncTableColumnWidthsAfterMove } from "~/features/editing-experience/utils/tableColumnWidthSync"
 
 import type { Rect, TableGeometry } from "./axisMath"
 import type { Axis } from "./axisView"
@@ -26,7 +27,6 @@ import {
   shouldNormalizeHeaderTypesAfterDrag,
 } from "./normalizeHeaderAxis"
 import { selectWholeSlot } from "./selection"
-import { syncTableColumnWidthsAfterMove } from "~/features/editing-experience/utils/tableColumnWidthSync"
 
 export const TABLE_DRAGGING_ATTR = "data-table-drag-handles-dragging"
 

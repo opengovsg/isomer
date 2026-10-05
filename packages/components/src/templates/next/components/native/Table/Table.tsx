@@ -46,8 +46,7 @@ export const Table = ({
 }: TableProps) => {
   const tableDescriptionId = useId()
   const layout = resolveTableLayout(content, storedColumnWidths)
-  const isAuthorSized =
-    layout.kind === "fixed" && layout.tableWidthPx > 0
+  const isAuthorSized = layout.kind === "fixed" && layout.tableWidthPx > 0
 
   return (
     <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">

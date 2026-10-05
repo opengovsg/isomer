@@ -5,7 +5,6 @@ import {
   deleteColumn,
   selectedRect,
 } from "@tiptap/pm/tables"
-
 import {
   resetTableColumnWidths,
   setTableColumnWidthsOnTransaction,
@@ -63,30 +62,24 @@ export const extendIsomerTableColumnWidthCommands = (
   parent: ParentCommands,
 ): Partial<RawCommands> => ({
   ...parent,
-  addColumnBefore:
-    () =>
-    (props) =>
-      runWithColumnSync(
-        addColumnBefore,
-        syncTableColumnWidthsAfterAdd,
-        (rect) => rect.left,
-      )(props),
-  addColumnAfter:
-    () =>
-    (props) =>
-      runWithColumnSync(
-        addColumnAfter,
-        syncTableColumnWidthsAfterAdd,
-        (rect) => rect.right,
-      )(props),
-  deleteColumn:
-    () =>
-    (props) =>
-      runWithColumnSync(
-        deleteColumn,
-        syncTableColumnWidthsAfterDelete,
-        (rect) => rect.left,
-      )(props),
+  addColumnBefore: () => (props) =>
+    runWithColumnSync(
+      addColumnBefore,
+      syncTableColumnWidthsAfterAdd,
+      (rect) => rect.left,
+    )(props),
+  addColumnAfter: () => (props) =>
+    runWithColumnSync(
+      addColumnAfter,
+      syncTableColumnWidthsAfterAdd,
+      (rect) => rect.right,
+    )(props),
+  deleteColumn: () => (props) =>
+    runWithColumnSync(
+      deleteColumn,
+      syncTableColumnWidthsAfterDelete,
+      (rect) => rect.left,
+    )(props),
   setTableColumnWidths:
     (columnWidths: number[]) =>
     ({ state, dispatch }) => {

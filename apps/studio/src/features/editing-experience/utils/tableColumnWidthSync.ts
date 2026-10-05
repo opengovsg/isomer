@@ -6,9 +6,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { TableMap } from "@tiptap/pm/tables"
 
-const readStoredColumnWidths = (
-  table: ProseMirrorNode,
-): number[] | null => {
+const readStoredColumnWidths = (table: ProseMirrorNode): number[] | null => {
   const raw = table.attrs.columnWidths
   return Array.isArray(raw) ? [...raw] : null
 }

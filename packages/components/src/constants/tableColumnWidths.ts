@@ -1,4 +1,4 @@
-export const TABLE_COLUMN_WIDTH_MIN_PX = 80
+export const TABLE_COLUMN_WIDTH_MIN_PX = 64
 export const TABLE_COLUMN_WIDTH_MAX_PX = 600
 export const TABLE_COLUMN_WIDTH_DEFAULT_PX = 160
 

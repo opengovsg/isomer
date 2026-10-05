@@ -1,8 +1,8 @@
 import type { TableProps } from "~/interfaces"
 import { validateTableColumnWidths } from "~/constants/tableColumnWidths"
 
-import { checkPhantomColumns } from "./hasPhantomColumns"
 import { getTableColumnCount } from "./getTableColumnCount"
+import { checkPhantomColumns } from "./hasPhantomColumns"
 
 type TableRows = TableProps["content"]
 
@@ -42,10 +42,7 @@ export const resolveTableLayout = (
 
   return {
     kind: "fixed",
-    columnWidths: Array.from(
-      { length: phantomColumnCount },
-      () => columnWidth,
-    ),
+    columnWidths: Array.from({ length: phantomColumnCount }, () => columnWidth),
     tableWidthPx: 0,
   }
 }
