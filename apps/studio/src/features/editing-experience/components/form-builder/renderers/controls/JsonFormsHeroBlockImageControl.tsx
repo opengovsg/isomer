@@ -2,7 +2,7 @@ import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, Flex, FormControl, VStack } from "@chakra-ui/react"
 import { and, isObjectControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-import { Badge, FormLabel, Radio } from "@opengovsg/design-system-react"
+import { FormLabel, Radio } from "@opengovsg/design-system-react"
 import {
   HERO_BLOCK_IMAGE_EDGE,
   HERO_BLOCK_IMAGE_FORMAT,
@@ -11,6 +11,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
+import { NewFeatureBadge } from "../../components/NewFeatureBadge"
 import {
   HeroBlockImagePreviewLeftCurvedIcon,
   HeroBlockImagePreviewLeftStraightIcon,
@@ -19,20 +20,6 @@ import {
 } from "./heroBlockImagePreview"
 
 type HeroBlockImageData = NonNullable<HeroBlockProps["blockImage"]>
-
-const NewBadge = () => (
-  <Badge
-    variant="subtle"
-    colorScheme="success"
-    bgColor="interaction.success-subtle.default"
-    size="xs"
-    px="0.5rem"
-    py="0.25rem"
-    ml="0.75rem"
-  >
-    New
-  </Badge>
-)
 
 export const jsonFormsHeroBlockImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.HeroBlockImageControl,
@@ -90,7 +77,7 @@ function JsonFormsHeroBlockImageControl({
           >
             <Flex as="span" align="center">
               Left
-              <NewBadge />
+              <NewFeatureBadge />
             </Flex>
           </Radio>
         </Radio.RadioGroup>
@@ -132,7 +119,7 @@ function JsonFormsHeroBlockImageControl({
           >
             <Flex as="span" align="center">
               Curved
-              <NewBadge />
+              <NewFeatureBadge />
             </Flex>
             <Box mt="0.625rem">
               {imagePosition === HERO_BLOCK_IMAGE_POSITION.left ? (
