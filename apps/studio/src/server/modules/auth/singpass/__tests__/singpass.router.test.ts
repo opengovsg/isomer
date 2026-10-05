@@ -27,14 +27,6 @@ const MOCK_SESSION_VERIFICATION_TOKEN: SessionVerificationToken = {
   expires: Date.now(),
 }
 
-const expectLoginAuditDelta = () => ({
-  before: expect.objectContaining({
-    attempts: 1,
-    identifier: MOCK_SESSION_VERIFICATION_TOKEN.identifier,
-  }),
-  after: null,
-})
-
 describe("auth.singpass", () => {
   let caller: ReturnType<typeof createCaller>
   let session: ReturnType<typeof applySession>
@@ -302,7 +294,13 @@ describe("auth.singpass", () => {
         }),
         expect.objectContaining({
           eventType: AuditLogEvent.Login,
-          delta: expectLoginAuditDelta(),
+          delta: {
+            before: expect.objectContaining({
+              attempts: 1,
+              identifier: MOCK_SESSION_VERIFICATION_TOKEN.identifier,
+            }),
+            after: null,
+          },
         }),
       ])
     })
@@ -343,7 +341,13 @@ describe("auth.singpass", () => {
       expect(auditLogs).toEqual([
         expect.objectContaining({
           eventType: AuditLogEvent.Login,
-          delta: expectLoginAuditDelta(),
+          delta: {
+            before: expect.objectContaining({
+              attempts: 1,
+              identifier: MOCK_SESSION_VERIFICATION_TOKEN.identifier,
+            }),
+            after: null,
+          },
         }),
       ])
     })
