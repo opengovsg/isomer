@@ -13,8 +13,9 @@ export const TABLE_CHROME_GAP_PX = 8
 export const TABLE_CHROME_THICKNESS_PX = 20
 
 /**
- * The band around a table, inside its horizontal scroller. Handles occupy the
- * top and left, add pills the bottom and right. A wide table scrolls through
- * the left and right bands, under the row handles and the add-column pill.
+ * The band reserved on every side of a table. The left and right bands sit
+ * outside the horizontal scroller, so row handles and the add-column pill stay
+ * put and the table never scrolls underneath them. Top and bottom bands are
+ * inside the scroller, for column handles and the add-row pill.
  */
 export const TABLE_GUTTER_PX = TABLE_CHROME_GAP_PX + TABLE_CHROME_THICKNESS_PX

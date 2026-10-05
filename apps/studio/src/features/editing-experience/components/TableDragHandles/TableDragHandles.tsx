@@ -29,7 +29,29 @@ import {
 import { useAxisDragGesture } from "./internal/useAxisDragGesture"
 import { useHoveredTable } from "./internal/useHoveredTable"
 import { useTableGeometries } from "./internal/useTableGeometries"
-import { useTableHorizontalScrolling } from "./internal/useTableHorizontalScrolling"
+
+const scrollPortBox = (
+  scroller: HTMLElement,
+  container: HTMLElement,
+): { left: number; right: number } => {
+  const scrollerRect = scroller.getBoundingClientRect()
+  const containerRect = container.getBoundingClientRect()
+  const left = scrollerRect.left - containerRect.left + container.scrollLeft
+  return { left, right: left + scroller.clientWidth }
+}
+
+/** Column handles track their cells, but stay inside the frame so they cannot cover the side lanes. */
+const fitsInScrollPort = (
+  rect: { left: number; width: number },
+  port: { left: number; right: number },
+): boolean => {
+  const handleWidth = AXIS_VIEW.column.handle.w
+  const handleLeft = rect.left + (rect.width - handleWidth) / 2
+  return (
+    handleLeft >= port.left - 0.5 &&
+    handleLeft + handleWidth <= port.right + 0.5
+  )
+}
 
 export interface TableDragHandlesProps {
   editor: TiptapEditor | null
@@ -55,7 +77,6 @@ export const TableDragHandles = ({
     containerRef,
     isGestureActive,
   )
-  const scrollingScroller = useTableHorizontalScrolling(containerRef)
 
   const selectionTarget = useEditorState({
     editor,
@@ -96,21 +117,18 @@ export const TableDragHandles = ({
     const rects = AXIS_VIEW[axis].rectsOf(geometry)
     const scroller = horizontalScrollerFor(geometry.pos)
     const container = containerRef.current
-    const elevated =
-      axis === "row" &&
-      scrollingScroller !== null &&
-      scroller === scrollingScroller
-    // Stay on the visible left edge. At rest this matches the gutter; once the
-    // table scrolls, cells pass underneath.
-    const pinnedRowLeft =
-      axis === "row" && scroller && container
-        ? scroller.getBoundingClientRect().left -
-          container.getBoundingClientRect().left +
-          container.scrollLeft
-        : undefined
+    const port =
+      scroller && container ? scrollPortBox(scroller, container) : null
+    // Row handles live in the left lane, outside the scroller, so they stay
+    // put while cells scroll inside the frame.
+    const rowHandleLeft =
+      axis === "row" && port ? port.left - TABLE_GUTTER_PX : undefined
 
     return rects.map((rect, index) => {
       if (!rect) return null
+      if (axis === "column" && port && !fitsInScrollPort(rect, port)) {
+        return null
+      }
       const isActive =
         // A multi-slot selection leaves every handle passive.
         (selected.length === 1 && selected.includes(index)) ||
@@ -126,8 +144,7 @@ export const TableDragHandles = ({
           tablePos={geometry.pos}
           index={index}
           isLocked={false}
-          elevated={elevated}
-          left={pinnedRowLeft}
+          left={rowHandleLeft}
           onMouseDown={beginGesture(axis, geometry.pos, index, rects)}
           onClick={() => onHandleClick(axis, geometry.pos, index)}
         />
@@ -148,39 +165,22 @@ export const TableDragHandles = ({
       nodeDom instanceof HTMLElement
         ? nodeDom.querySelector("[data-table-h-scroll]")
         : null
-    const containerRect = container.getBoundingClientRect()
-    const scrollPortRight =
+    const port =
       scrollPort instanceof HTMLElement
-        ? scrollPort.getBoundingClientRect().right -
-          containerRect.left +
-          container.scrollLeft
-        : editorLeft + editorWidth
-    // The width the table is given before column resizing: the scrollport,
-    // minus both gutters. Inner scroll does not move this slot.
-    const assignedLeft =
-      scrollPort instanceof HTMLElement
-        ? scrollPort.getBoundingClientRect().left -
-          containerRect.left +
-          container.scrollLeft +
-          TABLE_GUTTER_PX
-        : bounds.left
-    const assignedWidth =
-      scrollPort instanceof HTMLElement
-        ? Math.max(
-            scrollPort.clientWidth - TABLE_GUTTER_PX * 2,
-            ADD_PILL_MIN_LENGTH_PX,
-          )
-        : Math.max(bounds.width, ADD_PILL_MIN_LENGTH_PX)
+        ? scrollPortBox(scrollPort, container)
+        : null
+    // The fixed frame between the side lanes. Inner scroll does not move it.
+    const assignedLeft = port ? port.left : bounds.left
+    const assignedWidth = port
+      ? Math.max(port.right - port.left, ADD_PILL_MIN_LENGTH_PX)
+      : Math.max(bounds.width, ADD_PILL_MIN_LENGTH_PX)
     const colPillHeight = Math.max(bounds.height, ADD_PILL_MIN_LENGTH_PX)
-    // Beside a narrow table, or pinned to the scrollport's right edge so a
-    // wide table slides underneath the pill.
     const besideTable = bounds.left + bounds.width + TABLE_CHROME_GAP_PX
-    const columnPillLeft = Math.min(
-      besideTable,
-      scrollPortRight - TABLE_CHROME_THICKNESS_PX,
-    )
-    const columnElevated =
-      scrollingScroller !== null && scrollPort === scrollingScroller
+    const frameRight = port
+      ? port.right + TABLE_CHROME_GAP_PX
+      : editorLeft + editorWidth - TABLE_CHROME_THICKNESS_PX
+    // In the right lane when the table fills the frame. Beside a narrower table.
+    const columnPillLeft = Math.min(besideTable, frameRight)
     return (
       <>
         <AddPillButton
@@ -198,7 +198,6 @@ export const TableDragHandles = ({
           width={TABLE_CHROME_THICKNESS_PX}
           height={colPillHeight}
           onClick={() => addSlotAfter(editor, geometry.pos, "column")}
-          elevated={columnElevated}
         />
       </>
     )

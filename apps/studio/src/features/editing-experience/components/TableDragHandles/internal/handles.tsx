@@ -10,7 +10,6 @@ import {
   ADD_PILL_ICON_SIZE_PX,
   ADD_PILL_RADIUS_PX,
   HANDLE_BORDER_RADIUS_PX,
-  TABLE_CHROME_ELEVATION_SHADOW,
 } from "./chrome"
 
 const handleBaseStyle = {
@@ -55,7 +54,6 @@ export const AxisHandle = ({
   tablePos,
   index,
   isLocked,
-  elevated = false,
   left,
   onMouseDown,
   onClick,
@@ -67,9 +65,7 @@ export const AxisHandle = ({
   tablePos: number
   index: number
   isLocked: boolean
-  /** Light shadow while the table is scrolling underneath. */
-  elevated?: boolean
-  /** Pins a row handle to the scrollport so cells can slide under it. */
+  /** Places a row handle in the left lane, which does not scroll with the table. */
   left?: number
   onMouseDown: (event: ReactMouseEvent) => void
   onClick: () => void
@@ -96,7 +92,6 @@ export const AxisHandle = ({
       {...handleChrome(isActive, isLocked)}
       w={`${handle.w}px`}
       h={`${handle.h}px`}
-      boxShadow={isRow && elevated ? TABLE_CHROME_ELEVATION_SHADOW : undefined}
       onMouseDown={onMouseDown}
       onClick={onClick}
       title={isLocked ? `Select ${axis}` : `Select or drag to reorder ${axis}`}
@@ -118,7 +113,6 @@ export const AddPillButton = ({
   width,
   height,
   onClick,
-  elevated = false,
 }: {
   axis: Axis
   left: number
@@ -126,8 +120,6 @@ export const AddPillButton = ({
   width: number
   height: number
   onClick: () => void
-  /** Light shadow while the table is scrolling underneath. */
-  elevated?: boolean
 }) => (
   <Box
     as="button"
@@ -144,10 +136,7 @@ export const AddPillButton = ({
     borderRadius={`${ADD_PILL_RADIUS_PX}px`}
     cursor="pointer"
     zIndex="4"
-    boxShadow={
-      axis === "column" && elevated ? TABLE_CHROME_ELEVATION_SHADOW : undefined
-    }
-    transition="background-color 0.15s, box-shadow 0.15s"
+    transition="background-color 0.15s"
     aria-label={AXIS_VIEW[axis].addPillLabel}
     data-table-add-handle={axis}
     sx={{

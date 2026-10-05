@@ -980,7 +980,7 @@ describe("TableDragHandles", () => {
     })
   })
 
-  it("lets a wide table slide under the row handles and the add-column pill", async () => {
+  it("keeps row handles and the add-column pill outside the horizontal scroll", async () => {
     // Arrange
     let editor: Editor | undefined
     const ClipHarness = () => {
@@ -1036,18 +1036,22 @@ describe("TableDragHandles", () => {
       getByLabelText("Add column to the right"),
     )
     const rowHandle = await waitForHandle(clipRoot, "row", 1)
-    const row = cell.closest("tr")
-    if (!row) throw new Error("row not found")
+    const port = scroller.getBoundingClientRect()
     expect(rowHandle.getBoundingClientRect().right).toBeLessThanOrEqual(
-      row.getBoundingClientRect().left,
+      port.left + 0.5,
+    )
+    expect(pill.getBoundingClientRect().left).toBeGreaterThanOrEqual(
+      port.right - 0.5,
     )
     expect(getComputedStyle(rowHandle).boxShadow).toBe("none")
     expect(getComputedStyle(pill).boxShadow).toBe("none")
+    const handleLeft = rowHandle.getBoundingClientRect().left
+    const pillLeft = pill.getBoundingClientRect().left
 
     // Act
     const maxScroll = scroller.scrollWidth - scroller.clientWidth
     act(() => {
-      scroller.scrollLeft = Math.min(40, maxScroll)
+      scroller.scrollLeft = Math.min(80, maxScroll)
     })
 
     // Assert
@@ -1056,32 +1060,17 @@ describe("TableDragHandles", () => {
       const scrolledRow = findByCellText(clipRoot, "Row 1, A").closest("tr")
       if (!handle || !scrolledRow) throw new Error("handle not measured")
       const handleRect = handle.getBoundingClientRect()
-      const port = scroller.getBoundingClientRect()
-      expect(Math.abs(handleRect.left - port.left)).toBeLessThan(1)
-      expect(scrolledRow.getBoundingClientRect().left).toBeLessThan(
-        handleRect.right,
-      )
+      const portNow = scroller.getBoundingClientRect()
       const pillRect = pill.getBoundingClientRect()
-      expect(Math.abs(pillRect.right - port.right)).toBeLessThan(1)
-      expect(pillRect.left).toBeLessThan(port.right)
+      expect(Math.abs(handleRect.left - handleLeft)).toBeLessThan(1)
+      expect(Math.abs(pillRect.left - pillLeft)).toBeLessThan(1)
+      expect(handleRect.right).toBeLessThanOrEqual(portNow.left + 0.5)
+      expect(pillRect.left).toBeGreaterThanOrEqual(portNow.right - 0.5)
+      expect(scrolledRow.getBoundingClientRect().left).toBeLessThan(
+        portNow.left,
+      )
+      expect(getComputedStyle(handle).boxShadow).toBe("none")
+      expect(getComputedStyle(pill).boxShadow).toBe("none")
     })
-
-    act(() => {
-      scroller.scrollLeft =
-        scroller.scrollLeft > 0 ? 0 : Math.min(40, maxScroll)
-    })
-    await waitFor(() => {
-      const handle = queryHandle(clipRoot, "row", 1)
-      expect(handle && getComputedStyle(handle).boxShadow).not.toBe("none")
-      expect(getComputedStyle(pill).boxShadow).not.toBe("none")
-    })
-    await waitFor(
-      () => {
-        const handle = queryHandle(clipRoot, "row", 1)
-        expect(handle && getComputedStyle(handle).boxShadow).toBe("none")
-        expect(getComputedStyle(pill).boxShadow).toBe("none")
-      },
-      { timeout: 1000 },
-    )
   })
 })
