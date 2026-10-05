@@ -82,11 +82,11 @@ export const TableCaption = ({
             {hasCaption ? "Edit caption" : "Add caption"}
           </Button>
           {showTableEditorButton && (
-            <Tooltip label="Expand" hasArrow openDelay={500}>
+            <Tooltip label="Expand table" hasArrow openDelay={500}>
               <IconButton
                 variant="clear"
                 size="xs"
-                aria-label="Expand"
+                aria-label="Expand table"
                 color="interaction.links.default"
                 icon={
                   <Icon
