@@ -211,7 +211,13 @@ const LabelRaw = withJsonFormsMasterListItemProps(
 
 type LabelProps = Pick<
   OwnPropsOfMasterListItem,
-  "index" | "path" | "schema" | "uischema" | "enabled" | "removeItem"
+  | "index"
+  | "path"
+  | "schema"
+  | "uischema"
+  | "enabled"
+  | "removeItem"
+  | "childLabelProp"
 >
 
 const Label = (props: LabelProps) => (
@@ -219,7 +225,6 @@ const Label = (props: LabelProps) => (
     {...props}
     handleSelect={() => () => undefined}
     selected={false}
-    childLabelProp={undefined}
     translations={{}}
   />
 )

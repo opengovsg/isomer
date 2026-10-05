@@ -36,7 +36,9 @@ export {
   VIDEO_EMBED_URL_REGEXES,
   NON_EMPTY_STRING_REGEX,
   TRIMMED_NON_EMPTY_STRING_REGEX,
+  TRIMMED_STRING_OR_EMPTY_REGEX,
   GTM_ID_STRING_REGEX,
 } from "./validation"
 
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
+export { resolveCollectionSortOrder } from "../templates/next/layouts/Collection/utils/collectionSortOrder"

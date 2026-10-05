@@ -1,5 +1,5 @@
 {
   "regions": ["sin1"],
-  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm run vercel-build"
+  "installCommand": "bash scripts/vercel-pnpm-install.sh",
+  "buildCommand": "source scripts/vercel-pnpm-env.sh && pnpm run vercel-build"
 }

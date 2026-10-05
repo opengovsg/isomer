@@ -1,12 +1,10 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { RequireAllOrNone } from "type-fest"
 import { chakra, Flex, Icon, Stack, Text, VStack } from "@chakra-ui/react"
-import { useFeatureValue } from "@growthbook/growthbook-react"
 import { Button, TouchableTooltip } from "@opengovsg/design-system-react"
 import { useMemo } from "react"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
-import { IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { type DrawerState } from "~/types/editorDrawer"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -17,7 +15,7 @@ import {
   CONTENT_ALLOWED_BLOCKS,
   DATABASE_ALLOWED_BLOCKS,
   DEFAULT_BLOCKS,
-  getHomepageAllowedBlocks,
+  HOMEPAGE_ALLOWED_BLOCKS,
   INDEX_ALLOWED_BLOCKS,
 } from "./constants"
 import { type SectionType } from "./types"
@@ -125,11 +123,6 @@ function ComponentSelector() {
     type,
   } = useEditorDrawerContext()
 
-  const isHomepageAntiScamBannerEnabled = useFeatureValue<boolean>(
-    IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY,
-    false,
-  )
-
   const onProceed = (sectionType: SectionType) => {
     if (
       sectionType === "childrenpages" &&
@@ -184,9 +177,7 @@ function ComponentSelector() {
   const availableBlocks = useMemo(() => {
     switch (type) {
       case ResourceType.RootPage:
-        return getHomepageAllowedBlocks({
-          includeAntiScamBanner: isHomepageAntiScamBannerEnabled,
-        })
+        return HOMEPAGE_ALLOWED_BLOCKS
       case ResourceType.Page:
         if (savedPageState.layout === "content") {
           return CONTENT_ALLOWED_BLOCKS
@@ -211,7 +202,7 @@ function ComponentSelector() {
         const exhaustiveCheck: never = type
         return exhaustiveCheck
     }
-  }, [isHomepageAntiScamBannerEnabled, savedPageState.layout, type])
+  }, [savedPageState.layout, type])
 
   return (
     <VStack w="full" h="full" gap="0">

@@ -1,11 +1,52 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
-import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
+import {
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+} from "~/types/constants"
 
 import { getTagFilters } from "../getTagFilters"
 
 describe("getTagFilters", () => {
+  it("skips date-type categories when resolving display/ordering, without crashing", () => {
+    // Arrange
+    const items: ProcessedCollectionCardProps[] = [
+      {
+        title: "Item 1",
+        tags: [{ selected: ["Health"], category: "Topic" }],
+      } as ProcessedCollectionCardProps,
+    ]
+
+    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+      {
+        label: "Event Date",
+        id: "date-1",
+        type: "date",
+        statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
+      },
+      {
+        label: "Topic",
+        id: "topic-1",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+        options: [{ label: "Health", id: "topic-opt-1" }],
+      },
+    ]
+
+    // Act
+    const result = getTagFilters(items, tagCategories)
+
+    // Assert
+    expect(result).toEqual([
+      {
+        id: "Topic",
+        label: "Topic",
+        display: "plaintext",
+        items: [{ id: "Health", label: "Health", count: 1 }],
+      },
+    ])
+  })
+
   it("returns filters grouped by tag category", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [

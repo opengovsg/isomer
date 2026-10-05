@@ -92,7 +92,7 @@ calculate_duration "$start_time"
 pwd
 
 corepack enable
-corepack install -g pnpm@11.5.1
+corepack install -g pnpm@12.0.0
 
 # Use a project-local store only in this CodeBuild job so the S3 tarball is self-contained.
 # Do not set storeDir in pnpm-workspace.yaml: local dev keeps the default global store.
@@ -129,7 +129,7 @@ if [[ -n "$ISOMER_BUILD_REPO_BRANCH" ]]; then
 
   echo "Installing workspace dependencies..."
   start_time=$(date +%s)
-  pnpm install --frozen-lockfile --filter isomer-base-template...
+  pnpm install --frozen-lockfile --filter isomer-base-template... --filter publishing...
   calculate_duration "$start_time"
 
   if [ "$RESTORED_STORE" -eq 0 ]; then
@@ -159,7 +159,7 @@ else
   # nothing needs to be built in a per-site job.
   echo "Re-linking workspace from cached store..."
   start_time=$(date +%s)
-  pnpm install --frozen-lockfile --filter isomer-base-template...
+  pnpm install --frozen-lockfile --filter isomer-base-template... --filter publishing...
   calculate_duration "$start_time"
 
   fetch_cached "s3://$S3_CACHE_BUCKET_NAME/isomer/$GIT_SHA/$COMPONENTS_DIST_TGZ" "$COMPONENTS_DIST_TGZ" packages/components ||
@@ -171,24 +171,23 @@ echo "Fetching from database..."
 start_time=$(date +%s)
 cd tooling/build/scripts/publishing
 pwd
-pnpm install --frozen-lockfile --filter publishing...
 pnpm run start
 calculate_duration "$start_time"
 
 # Prebuilding...
 echo "Prebuilding site..."
-rm -rf ../../../template/schema
-rm -rf ../../../template/data
-mv schema/ ../../../template/
-mv data/ ../../../template/
-cp sitemap.json ../../../template/public/
-mv sitemap.json ../../../template/
-mv redirects.json ../../../template/
+rm -rf ../../../../apps/template/schema
+rm -rf ../../../../apps/template/data
+mv schema/ ../../../../apps/template/
+mv data/ ../../../../apps/template/
+cp sitemap.json ../../../../apps/template/public/
+mv sitemap.json ../../../../apps/template/
+mv redirects.json ../../../../apps/template/
 # Capture absolute path now; the upload step runs from a different CWD later.
-REDIRECTS_JSON="$(realpath ../../../template/redirects.json)"
-cd ../../../template
+REDIRECTS_JSON="$(realpath ../../../../apps/template/redirects.json)"
+cd ../../../../apps/template
 # Create not-found.json by copying _index.json if it doesn't exist
-# Refer to tooling/template/app/not-found.tsx for more context
+# Refer to apps/template/app/not-found.tsx for more context
 if [ ! -f "schema/not-found.json" ]; then
   echo "Creating not-found.json..."
   cp schema/_index.json schema/not-found.json
@@ -209,6 +208,25 @@ fi
 
 ls -al
 find ./out -type f | wc -l
+
+# Generate RSS feeds for collections into out/<permalink>/rss.xml so they ride
+# the S3 sync below. Fatal: collection pages already advertise <permalink>/rss.xml
+# via metadata baked in by the build step above, so a generation failure here
+# must halt the publish (via `set -e`) rather than ship pages that link to a
+# feed that doesn't exist.
+echo "Generating RSS feeds..."
+start_time=$(date +%s)
+RSS_SITEMAP_JSON="$(realpath sitemap.json)"
+RSS_CONFIG_JSON="$(realpath data/config.json)"
+RSS_OUT_DIR="$(realpath out)"
+(
+  cd ../../tooling/build/scripts/publishing
+  SITEMAP_JSON="$RSS_SITEMAP_JSON" \
+    CONFIG_JSON="$RSS_CONFIG_JSON" \
+    OUT_DIR="$RSS_OUT_DIR" \
+    pnpm run generate-rss
+)
+calculate_duration $start_time
 
 cd out/
 pwd
@@ -244,7 +262,7 @@ calculate_duration "$start_time"
 start_time=$(date +%s)
 echo "Uploading redirect files to S3..."
 (
-  cd ../../build/scripts/publishing
+  cd ../../../tooling/build/scripts/publishing
   pnpm exec tsx uploadRedirects.ts \
     --redirects-json "$REDIRECTS_JSON" \
     --s3-bucket-name "$S3_BUCKET_NAME" \

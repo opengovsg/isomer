@@ -38,24 +38,6 @@ const getDirectoryItemStats = async (filePath) => {
   }
 }
 
-const getHumanReadableFileSize = (bytes) => {
-  const unit = 1000
-
-  if (Math.abs(bytes) < unit) {
-    return bytes + " B"
-  }
-
-  const units = ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
-  let index = -1
-
-  while (Math.abs(bytes) >= unit && index < units.length - 1) {
-    bytes /= unit
-    index++
-  }
-
-  return `${bytes.toFixed(1)} ${units[index]}`
-}
-
 const getSiteMapEntry = async (fullPath, relativePath, name) => {
   const permalink = relativePath.split(".").slice(0, -1).join("-")
   const schemaData = await getSchemaJson(fullPath)
@@ -97,24 +79,6 @@ const getSiteMapEntry = async (fullPath, relativePath, name) => {
         defaultSortBy: collectionProps.defaultSortBy,
         defaultSortDirection: collectionProps.defaultSortDirection,
       }
-    }
-  }
-
-  if (schemaData.layout === "file") {
-    const refFilePath = path.join(__dirname, "../public", schemaData.page.ref)
-    const refFileStats = await getDirectoryItemStats(refFilePath)
-
-    if (!refFileStats) {
-      return null
-    }
-
-    return {
-      ...siteMapEntry,
-      ref: schemaData.page.ref,
-      fileDetails: {
-        type: path.extname(refFilePath).slice(1).toUpperCase(),
-        size: getHumanReadableFileSize(refFileStats.size),
-      },
     }
   }
 

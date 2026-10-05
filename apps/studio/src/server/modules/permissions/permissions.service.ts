@@ -89,7 +89,7 @@ export const definePermissionsForSite = async ({
 // TODO: this is using site wide permissions for now
 // we should fetch the oldest `parent` of this resource eventually
 interface BulkValidateUserPermissionsForResourcesProps extends BulkPermissionsProps {
-  action: CrudResourceActions | "publish"
+  action: CrudResourceActions | "publish" | "unpublish"
 }
 export const bulkValidateUserPermissionsForResources = async ({
   action,

@@ -118,6 +118,10 @@ export const Typography: Story = {
             <p className="prose-label-md-medium">
               The five boxing wizards jump quickly. 1234567890
             </p>
+            <p className="prose-title-md-medium">Label MD Bold</p>
+            <p className="prose-label-md-bold">
+              The five boxing wizards jump quickly. 1234567890
+            </p>
             <p className="prose-title-md-medium">Label MD Regular</p>
             <p className="prose-label-md-regular">
               The five boxing wizards jump quickly. 1234567890

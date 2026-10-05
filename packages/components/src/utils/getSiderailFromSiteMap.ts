@@ -22,7 +22,7 @@ export const getSiderailFromSiteMap = (
     parentTitle: parentNode.title,
     parentUrl: parentNode.permalink,
     pages: parentNode.children
-      .filter(({ layout }) => layout !== "file" && layout !== "link")
+      .filter(({ layout }) => layout !== "link")
       .map((sibling) => ({
         title: sibling.title,
         url: sibling.permalink,

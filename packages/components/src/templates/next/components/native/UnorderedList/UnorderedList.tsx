@@ -1,6 +1,8 @@
 import type { UnorderedListProps } from "~/interfaces"
+import { twMerge } from "~/lib/twMerge"
 
 import { ListItem } from "../ListItem"
+import { listStyles } from "../listStyles"
 
 const getUnorderedListType = (level?: number) => {
   // We rotate between disc, circle and square
@@ -19,7 +21,10 @@ export const UnorderedList = ({ content, level, site }: UnorderedListProps) => {
     // on ListItem). Top-level lists keep `mt-6` because preceding blocks like
     // Table or Callout have no bottom margin to collapse over a smaller value.
     <ul
-      className={`${level ? "mt-3" : "mt-6"} ps-9 marker:text-base-content ${getUnorderedListType(level)}`}
+      className={twMerge(
+        listStyles({ isNested: !!level }),
+        getUnorderedListType(level),
+      )}
     >
       {content.map((item, index) => (
         <ListItem key={index} {...item} level={level} site={site} />

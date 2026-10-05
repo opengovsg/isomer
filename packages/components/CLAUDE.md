@@ -91,7 +91,7 @@ Bump the package version only when preparing an npm release for consumers outsid
 
 ### Styling
 
-- Tailwind classes drive styling. Tokens come from the Isomer theme (`tooling/template/styles/`).
+- Tailwind classes drive styling. Tokens come from the Isomer theme (`apps/template/styles/`).
 - Hardcoded hex / px values are an anti-pattern.
 - The classic template is **frozen** — bug fixes only, never new features.
 
