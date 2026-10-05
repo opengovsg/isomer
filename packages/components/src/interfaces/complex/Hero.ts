@@ -9,7 +9,7 @@ import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 import { HERO_BANNER_STYLE_FORMAT } from "../format"
 import { generateImageSrcSchema } from "./Image"
 
-export const HERO_BANNER_STYLE_BRANCHES = {
+export const HERO_STYLE = {
   gradient: { title: "Gradient (Default)" },
   block: { title: "Block" },
   largeImage: { title: "Large image" },
@@ -17,13 +17,15 @@ export const HERO_BANNER_STYLE_BRANCHES = {
   searchbar: { title: "Search bar" },
 } as const
 
-type HeroBannerStyleKey = keyof typeof HERO_BANNER_STYLE_BRANCHES
+export type HeroStyleVariant = keyof typeof HERO_STYLE
 
-export const HERO_STYLE = Object.fromEntries(
-  (Object.keys(HERO_BANNER_STYLE_BRANCHES) as HeroBannerStyleKey[]).map(
-    (variant) => [variant, variant],
-  ),
-) as { [K in HeroBannerStyleKey]: K }
+export function getHeroStyleVariantForBranchTitle(
+  branchTitle: string,
+): HeroStyleVariant | undefined {
+  return (Object.keys(HERO_STYLE) as HeroStyleVariant[]).find(
+    (variant) => HERO_STYLE[variant].title === branchTitle,
+  )
+}
 
 const HeroBaseSchema = Type.Object({
   type: Type.Literal("hero", { default: "hero" }),
@@ -107,16 +109,14 @@ const GROUPINGS = {
 const HeroGradientSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.gradient, {
-        default: HERO_STYLE.gradient,
-      }),
+      variant: Type.Literal("gradient", { default: "gradient" }),
       backgroundUrl: BackgroundUrlSchema,
     }),
     HeroBaseSchema,
     CallToActionsSchema,
   ],
   {
-    title: HERO_BANNER_STYLE_BRANCHES.gradient.title,
+    title: HERO_STYLE.gradient.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -128,14 +128,14 @@ const HeroGradientSchema = Type.Composite(
 const HeroBlockSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.block, { default: HERO_STYLE.block }),
+      variant: Type.Literal("block", { default: "block" }),
       backgroundUrl: BackgroundUrlSchema,
     }),
     HeroBaseSchema,
     CallToActionsSchema,
   ],
   {
-    title: HERO_BANNER_STYLE_BRANCHES.block.title,
+    title: HERO_STYLE.block.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -147,16 +147,14 @@ const HeroBlockSchema = Type.Composite(
 const HeroLargeImageSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.largeImage, {
-        default: HERO_STYLE.largeImage,
-      }),
+      variant: Type.Literal("largeImage", { default: "largeImage" }),
       backgroundUrl: BackgroundUrlSchema,
     }),
     HeroBaseSchema,
     CallToActionsSchema,
   ],
   {
-    title: HERO_BANNER_STYLE_BRANCHES.largeImage.title,
+    title: HERO_STYLE.largeImage.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -168,16 +166,14 @@ const HeroLargeImageSchema = Type.Composite(
 const HeroFloatingSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.floating, {
-        default: HERO_STYLE.floating,
-      }),
+      variant: Type.Literal("floating", { default: "floating" }),
       backgroundUrl: BackgroundUrlSchema,
     }),
     HeroBaseSchema,
     CallToActionsSchema,
   ],
   {
-    title: HERO_BANNER_STYLE_BRANCHES.floating.title,
+    title: HERO_STYLE.floating.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -189,15 +185,13 @@ const HeroFloatingSchema = Type.Composite(
 const HeroSearchbarSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.searchbar, {
-        default: HERO_STYLE.searchbar,
-      }),
+      variant: Type.Literal("searchbar", { default: "searchbar" }),
       backgroundUrl: Type.Optional(BackgroundUrlSchema),
     }),
     HeroBaseSchema,
   ],
   {
-    title: HERO_BANNER_STYLE_BRANCHES.searchbar.title,
+    title: HERO_STYLE.searchbar.title,
     format: "hidden", // beta: we don't want to show this in the UI yet
     groups: [GROUPINGS.TEXT],
   },

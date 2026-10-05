@@ -7,7 +7,7 @@ import type {
 import { Box, Flex, FormControl, Icon, Text, VStack } from "@chakra-ui/react"
 import { JsonFormsDispatch } from "@jsonforms/react"
 import { Button, FormLabel } from "@opengovsg/design-system-react"
-import { HERO_BANNER_STYLE_BRANCHES } from "@opengovsg/isomer-components"
+import { getHeroStyleVariantForBranchTitle } from "@opengovsg/isomer-components"
 import { useId, useState } from "react"
 import { BiCheck, BiChevronRight } from "react-icons/bi"
 
@@ -17,14 +17,6 @@ interface HeroBannerStyleOption {
   label: string
   value: string
   key: string
-}
-
-function getHeroBannerStyleVariantKeyForBranchTitle(branchTitle: string) {
-  return (
-    Object.keys(
-      HERO_BANNER_STYLE_BRANCHES,
-    ) as (keyof typeof HERO_BANNER_STYLE_BRANCHES)[]
-  ).find((variant) => HERO_BANNER_STYLE_BRANCHES[variant].title === branchTitle)
 }
 
 // Match Fixed blocks "Hero banner" row hover in BaseBlock.
@@ -261,9 +253,7 @@ export function HeroBannerStyleCombinator({
 
       return {
         ...option,
-        key:
-          getHeroBannerStyleVariantKeyForBranchTitle(option.value) ??
-          option.value,
+        key: getHeroStyleVariantForBranchTitle(option.value) ?? option.value,
       }
     })
     .filter((option) => option !== null)

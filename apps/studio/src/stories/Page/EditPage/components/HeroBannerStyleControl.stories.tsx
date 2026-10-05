@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { Box } from "@chakra-ui/react"
-import { HERO_BANNER_STYLE_FORMAT } from "@opengovsg/isomer-components"
+import { HERO_BANNER_STYLE_FORMAT, HERO_STYLE } from "@opengovsg/isomer-components"
 import { Type } from "@sinclair/typebox"
 import { expect, userEvent, within } from "storybook/test"
 
@@ -12,17 +12,23 @@ const schema = Type.Unsafe({
   oneOf: [
     Type.Object(
       { variant: Type.Literal("gradient") },
-      { title: "Gradient (Default)" },
+      { title: HERO_STYLE.gradient.title },
     ),
-    Type.Object({ variant: Type.Literal("block") }, { title: "Block" }),
+    Type.Object(
+      { variant: Type.Literal("block") },
+      { title: HERO_STYLE.block.title },
+    ),
     Type.Object(
       { variant: Type.Literal("largeImage") },
-      { title: "Large image" },
+      { title: HERO_STYLE.largeImage.title },
     ),
-    Type.Object({ variant: Type.Literal("floating") }, { title: "Floating" }),
+    Type.Object(
+      { variant: Type.Literal("floating") },
+      { title: HERO_STYLE.floating.title },
+    ),
     Type.Object(
       { variant: Type.Literal("searchbar") },
-      { title: "Search bar", format: "hidden" },
+      { title: HERO_STYLE.searchbar.title, format: "hidden" },
     ),
   ],
 })

@@ -12,10 +12,11 @@ export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
 export {
-  HERO_BANNER_STYLE_BRANCHES,
+  getHeroStyleVariantForBranchTitle,
   HERO_STYLE,
   HeroSchema,
   type HeroProps,
+  type HeroStyleVariant,
 } from "./Hero"
 export { IframeSchema, type IframeProps } from "./Iframe"
 export {
