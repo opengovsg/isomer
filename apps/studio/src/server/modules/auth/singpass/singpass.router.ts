@@ -1,6 +1,7 @@
 import type { SessionData } from "~/lib/types/session"
 import { TRPCError } from "@trpc/server"
 import { set } from "lodash-es"
+import { getIsSingpassFapi2Enabled } from "~/lib/growthbook"
 import { DASHBOARD } from "~/lib/routes"
 import {
   singpassCallbackSchema,
@@ -12,11 +13,14 @@ import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { logUserEvent } from "../../audit/audit.service"
 import { recordUserLogin } from "../auth.service"
 import { generateSessionOptions } from "../session"
+import { SingpassRequestError } from "./singpass.error"
 import { getAuthorizationUrl, login } from "./singpass.service"
+import { singpassLogFields } from "./singpass.utils"
 
 export const singpassRouter = router({
   login: publicProcedure
     .input(singpassLoginSchema)
+    .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { landingUrl } }) => {
       // NOTE: The Singpass login flow is not the first login mechanism that the
       // user encounters, as they should have completed the email OTP
@@ -36,7 +40,46 @@ export const singpassRouter = router({
         `Starting Singpass login flow: ${landingUrl.toString()}`,
       )
 
-      const { authorizationUrl, session } = await getAuthorizationUrl()
+      // GrowthBook is created per request. The email attribute set during OTP
+      // verification does not carry over, so reload it from the user row
+      // before evaluating the FAPI flag. Targeting lives in the GrowthBook
+      // dashboard (`email` is in the list), not in an in-app allowlist.
+      const user = await ctx.db
+        .selectFrom("User")
+        .select(["email"])
+        .where("User.id", "=", userId)
+        .executeTakeFirstOrThrow(
+          () => new TRPCError({ code: "NOT_FOUND", message: "User not found" }),
+        )
+
+      if (!user.email) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid login flow",
+        })
+      }
+
+      await ctx.gb.setAttributes({ email: user.email })
+      const useFapi = getIsSingpassFapi2Enabled({ gb: ctx.gb })
+
+      let authorizationUrl: string
+      let session: Awaited<ReturnType<typeof getAuthorizationUrl>>["session"]
+      try {
+        const authorization = await getAuthorizationUrl({ useFapi })
+        authorizationUrl = authorization.authorizationUrl
+        session = authorization.session
+      } catch (error) {
+        if (error instanceof TRPCError) throw error
+        ctx.logger.error(
+          singpassLogFields(error),
+          "Singpass authorization request failed",
+        )
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Singpass login failed",
+          cause: error instanceof SingpassRequestError ? error : undefined,
+        })
+      }
 
       // Reset session state
       ctx.session.destroy()
@@ -82,7 +125,8 @@ export const singpassRouter = router({
 
   callback: publicProcedure
     .input(singpassCallbackSchema)
-    .query(async ({ ctx, input: { state, code } }) => {
+    .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
+    .query(async ({ ctx, input: { state, code, iss } }) => {
       if (!ctx.session.singpass?.sessionState) {
         ctx.logger.warn("No Singpass session state found")
 
@@ -92,10 +136,25 @@ export const singpassRouter = router({
         })
       }
 
-      const { codeVerifier, nonce, userId, verificationToken } =
-        ctx.session.singpass.sessionState
+      const {
+        codeVerifier,
+        nonce,
+        userId,
+        verificationToken,
+        state: expectedState,
+        useFapi,
+        dpopPrivateJwk,
+      } = ctx.session.singpass.sessionState
 
-      if (!code || !codeVerifier || !nonce || !userId) {
+      if (
+        !code ||
+        !codeVerifier ||
+        !nonce ||
+        !userId ||
+        !expectedState ||
+        state !== expectedState ||
+        (useFapi && !dpopPrivateJwk)
+      ) {
         // Do not log `code`, `codeVerifier`, or `nonce` — they are OAuth/OIDC secrets
         // (PKCE verifier + auth code complete the token exchange; nonce binds the ID token).
         ctx.logger.error(
@@ -103,6 +162,10 @@ export const singpassRouter = router({
             hasCode: !!code,
             hasCodeVerifier: !!codeVerifier,
             hasNonce: !!nonce,
+            hasState: !!expectedState,
+            stateMatches: state === expectedState,
+            useFapi: useFapi === true,
+            hasDpopKey: !!dpopPrivateJwk,
             userId,
           },
           "Invalid Singpass session state",
@@ -114,12 +177,30 @@ export const singpassRouter = router({
         })
       }
 
-      const { uuid } = await login({
-        code,
-        codeVerifier,
-        nonce,
-        state,
-      })
+      let uuid: string | undefined
+      try {
+        const result = await login({
+          code,
+          codeVerifier,
+          nonce,
+          state: expectedState,
+          useFapi: useFapi === true,
+          dpopPrivateJwk,
+          iss,
+        })
+        uuid = result.uuid
+      } catch (error) {
+        if (error instanceof TRPCError) throw error
+        ctx.logger.error(
+          singpassLogFields(error),
+          "Failed to login to Singpass",
+        )
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Singpass login failed",
+          cause: error instanceof SingpassRequestError ? error : undefined,
+        })
+      }
 
       if (!uuid) {
         // Do not log `code`, `codeVerifier`, or `nonce` — see comment above.

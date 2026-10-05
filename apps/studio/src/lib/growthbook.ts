@@ -8,6 +8,11 @@ export const ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY =
   "enable-emails-for-regular-publishes"
 export const BANNER_FEATURE_KEY = "isomer-next-banner"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
+// FAPI 2.0 Singpass login. OFF by default so a GrowthBook outage keeps the
+// legacy flow. Target pilot users with the `email` attribute in GrowthBook;
+// do not allowlist emails in application code.
+export const IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY = "is-singpass-fapi2-enabled"
+export const IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
 export const EGAZETTE_INFO_FEATURE_KEY = "egazette-info"
 // Gates the audit-log export surface (settings sidenav entry + page). OFF by
 // default so the feature can ship dark and be enabled per-environment.
@@ -40,6 +45,15 @@ export const getIsSingpassEnabled = ({
   return gb.getFeatureValue(
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
+  )
+}
+
+export const getIsSingpassFapi2Enabled = ({
+  gb,
+}: GetIsSingpassEnabledProps): boolean => {
+  return gb.getFeatureValue(
+    IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY,
+    IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
   )
 }
 
