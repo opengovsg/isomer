@@ -10,8 +10,8 @@ import {
   type HeroBlockProps,
 } from "@opengovsg/isomer-components"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { NewFeatureBadge } from "~/features/editing-experience/components/shared/NewFeatureBadge"
 
-import { NewFeatureBadge } from "../../components/NewFeatureBadge"
 import {
   HeroBlockImagePreviewLeftCurvedIcon,
   HeroBlockImagePreviewLeftStraightIcon,
