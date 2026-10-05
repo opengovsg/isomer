@@ -113,6 +113,8 @@ export const measureTableGeometry = (
         })
       : null
 
+  const scrollport = tableElement?.closest("[data-table-scrollport]")
+
   return {
     pos: table.pos,
     rowRects: Array.from({ length: map.height }, (_, row) =>
@@ -120,6 +122,9 @@ export const measureTableGeometry = (
     ),
     colRects: Array.from({ length: map.width }, (_, col) =>
       toContainerRect(getCellDom(editor, table.pos, map, 0, col)),
+    ),
+    frame: toContainerRect(
+      scrollport instanceof HTMLElement ? scrollport : null,
     ),
   }
 }
@@ -145,7 +150,8 @@ const sameGeometry = (
   !!a &&
   a.pos === b.pos &&
   rectListsEqual(a.rowRects, b.rowRects) &&
-  rectListsEqual(a.colRects, b.colRects)
+  rectListsEqual(a.colRects, b.colRects) &&
+  rectsEqual(a.frame ?? null, b.frame ?? null)
 
 /**
  * Chooses what to publish after a fresh measurement.

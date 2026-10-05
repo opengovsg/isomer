@@ -17,7 +17,7 @@ import {
 } from "@opengovsg/isomer-components"
 import {
   CellSelection,
-  moveTableColumn,
+  isInTable,
   moveTableRow,
   selectedRect,
 } from "@tiptap/pm/tables"
@@ -25,6 +25,7 @@ import {
   BiCopy,
   BiDownArrowAlt,
   BiLeftArrowAlt,
+  BiReset,
   BiRightArrowAlt,
   BiTrash,
   BiUpArrowAlt,
@@ -40,6 +41,11 @@ import {
   IconMergeCells,
   IconSplitCell,
 } from "~/components/icons"
+import {
+  moveTableColumnWithWidths,
+  setTableColumnWidths,
+  storedColumnWidths,
+} from "~/features/editing-experience/utils/columnWidths"
 
 import type {
   SelectionKind,
@@ -75,14 +81,23 @@ const moveTableBlock = (
   const { state, view } = editor
   const rect = selectedRect(state)
   const tablePos = rect.tableStart - 1
-  const move = axis === "row" ? moveTableRow : moveTableColumn
+  const move =
+    axis === "row"
+      ? moveTableRow({
+          from: plan.from,
+          to: plan.to,
+          select: false,
+          pos: rect.tableStart,
+        })
+      : moveTableColumnWithWidths({
+          from: plan.from,
+          to: plan.to,
+          select: false,
+          pos: rect.tableStart,
+          tablePos,
+        })
 
-  move({
-    from: plan.from,
-    to: plan.to,
-    select: false,
-    pos: rect.tableStart,
-  })(state, (tr) => {
+  move(state, (tr) => {
     restoreMovedBlockSelection(view, tr, tablePos, plan, axis)
   })
   editor.commands.focus()
@@ -578,6 +593,25 @@ const SelectionActions = ({
   }
 }
 
+const ResetColumnWidths = ({ editor }: { editor: Editor }) => {
+  if (!isInTable(editor.state)) return null
+  const rect = selectedRect(editor.state)
+  if (!storedColumnWidths(rect.table, rect.map.width)) return null
+
+  return (
+    <ActionButton
+      label="Reset column widths"
+      icon={<BiReset fontSize="1rem" />}
+      onClick={() => {
+        const tr = editor.state.tr
+        setTableColumnWidths(tr, rect.tableStart - 1, null)
+        editor.view.dispatch(tr)
+        editor.commands.focus()
+      }}
+    />
+  )
+}
+
 export const TableBubbleMenuActions = ({
   editor,
   kind,
@@ -588,6 +622,7 @@ export const TableBubbleMenuActions = ({
   onColorSet: () => void
 }) => (
   <>
+    <ResetColumnWidths editor={editor} />
     <SelectionActions editor={editor} kind={kind} />
     <BackgroundColor editor={editor} kind={kind} onColorSet={onColorSet} />
   </>
