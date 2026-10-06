@@ -62,6 +62,32 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
   ],
 }
 
+// Tier B — responsive full-bleed image hero with the largest aspect-ratio swing
+// of any Hero variant (aspect-square on mobile, md:aspect-[2/1] on desktop).
+// Focal anchors the subject across this extreme swing; crop is free (custom).
+// The preview states' aspect ratios capture the real ratio extremes so editors
+// can judge which focal axis bites hardest at each breakpoint — mobile square
+// emphasizes vertical focal movement, desktop 2:1 emphasizes horizontal.
+const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
+  componentType: "hero:largeImage",
+  cropMode: "custom",
+  focalEnabled: true,
+  previewStates: [
+    {
+      id: "mobile",
+      label: "Mobile",
+      viewportWidth: 375,
+      aspectRatio: { width: 1, height: 1 },
+    },
+    {
+      id: "desktop",
+      label: "Desktop",
+      viewportWidth: 1440,
+      aspectRatio: { width: 2, height: 1 },
+    },
+  ],
+}
+
 /**
  * Resolves the adjustment config for an image field, by the containing block's
  * discriminators. Returns undefined for components not yet wired — the entry
@@ -73,6 +99,8 @@ export function resolveAdjustmentConfig(args: {
 }): AdjustmentConfig | undefined {
   const { type, variant } = asBlock(args.block)
   if (type === "hero" && variant === "gradient") return HERO_GRADIENT_CONFIG
+  if (type === "hero" && variant === "largeImage")
+    return HERO_LARGE_IMAGE_CONFIG
   if (type === "contentpic") return CONTENTPIC_CONFIG
   return undefined
 }
