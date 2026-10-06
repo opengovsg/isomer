@@ -36,14 +36,12 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
       aspectRatio: { width: 1440, height: 500 },
     },
   ],
-  scrims: [
-    // Mirrors HeroGradient's left-to-right dark gradient so editors can judge
-    // text contrast against the chosen crop/focal.
-    {
-      id: "gradient",
-      className: "bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)]",
-    },
-  ],
+  // Mirrors HeroGradient's left-to-right dark gradient so editors can judge
+  // text contrast against the chosen crop/focal.
+  scrim: {
+    id: "gradient",
+    className: "bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)]",
+  },
 }
 
 // Tier A — fixed 5:6 crop (aspect-[5/6]), no focal. The crop is baked into the

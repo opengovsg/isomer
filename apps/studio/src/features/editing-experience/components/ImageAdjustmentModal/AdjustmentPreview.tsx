@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react"
 import { bakeImage, canBakeImage } from "~/lib/imageBake"
 
 import type {
-  AdjustmentMask,
   AdjustmentPreviewState,
   AdjustmentScrim,
 } from "./AdjustmentConfig"
@@ -15,8 +14,7 @@ interface AdjustmentPreviewProps {
   src: string
   adjustment?: ImageAdjustment
   previewStates: AdjustmentPreviewState[]
-  masks?: AdjustmentMask[]
-  scrims?: AdjustmentScrim[]
+  scrim?: AdjustmentScrim
   // W0-G injects the real template component here; default = the framed <img>
   renderFrameContent?: (args: {
     state: AdjustmentPreviewState
@@ -28,8 +26,7 @@ export const AdjustmentPreview = ({
   src,
   adjustment,
   previewStates,
-  masks,
-  scrims,
+  scrim,
   renderFrameContent,
 }: AdjustmentPreviewProps): JSX.Element => {
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
@@ -147,40 +144,21 @@ export const AdjustmentPreview = ({
           />
         )
 
-        // Render mask if applicable
-        const maskOverlay = masks?.find((mask) => mask.id === state.id)
-        const maskBorderRadius =
-          maskOverlay?.shape === "circle"
-            ? "9999px"
-            : maskOverlay?.shape === "rounded"
-              ? "0.25rem"
-              : undefined
-
-        // Find all scrims that apply to this state (or all states if no id filter)
-        const appliedScrims = scrims || []
-
         const frameContent = renderFrameContent?.({
           state,
           imageNode,
         }) ?? (
-          <Box
-            w="100%"
-            h="100%"
-            position="relative"
-            overflow="hidden"
-            borderRadius={maskBorderRadius}
-          >
+          <Box w="100%" h="100%" position="relative" overflow="hidden">
             {imageNode}
-            {/* Overlay scrims for contrast visualization */}
-            {appliedScrims.map((scrim) => (
+            {/* Scrim overlay for contrast visualization */}
+            {scrim && (
               <Box
-                key={scrim.id}
                 position="absolute"
                 inset={0}
                 className={scrim.className}
                 pointerEvents="none"
               />
-            ))}
+            )}
           </Box>
         )
 

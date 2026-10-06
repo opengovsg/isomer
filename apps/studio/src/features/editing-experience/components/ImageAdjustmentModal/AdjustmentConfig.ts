@@ -25,13 +25,6 @@ export interface AdjustmentPreviewState {
   aspectRatio?: AspectRatio
 }
 
-// Optional non-rectangular mask overlaid on the preview (e.g. Blockquote circle).
-export interface AdjustmentMask {
-  id: string
-  label: string
-  shape: "circle" | "square" | "rounded"
-}
-
 // Optional scrim/overlay drawn over the preview to mirror the live component
 // (e.g. HeroGradient's left-to-right dark gradient) so editors can judge contrast.
 export interface AdjustmentScrim {
@@ -50,8 +43,8 @@ export interface AdjustmentConfig {
   focalEnabled: boolean
   // Breakpoint/layout previews to render; array order = tab order in the modal.
   previewStates: AdjustmentPreviewState[]
-  masks?: AdjustmentMask[]
-  scrims?: AdjustmentScrim[]
+  // A single overlay mirroring the live component (e.g. HeroGradient's gradient).
+  scrim?: AdjustmentScrim
   // Guidance copy shown before/around upload (resolution hints etc.).
   preUploadCopy?: string
   // Tier C conditional enablement: adjustment is offered only when this returns

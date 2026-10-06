@@ -116,8 +116,7 @@ export const ImageAdjustmentModal = ({
                   src={src}
                   adjustment={draft}
                   previewStates={config.previewStates}
-                  masks={config.masks}
-                  scrims={config.scrims}
+                  scrim={config.scrim}
                 />
               </GridItem>
 
@@ -209,43 +208,15 @@ export const ImageAdjustmentModal = ({
                     </Box>
                   )}
 
-                  {/* Masks */}
-                  {config.masks && config.masks.length > 0 && (
+                  {/* Overlay */}
+                  {config.scrim && (
                     <Box w="100%">
                       <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
-                        Masks
+                        Overlay
                       </Text>
-                      <VStack align="start" spacing="0.25rem">
-                        {config.masks.map((mask) => (
-                          <Text
-                            key={mask.id}
-                            textStyle="body-2"
-                            color="base.content.medium"
-                          >
-                            {mask.label} ({mask.shape})
-                          </Text>
-                        ))}
-                      </VStack>
-                    </Box>
-                  )}
-
-                  {/* Scrims */}
-                  {config.scrims && config.scrims.length > 0 && (
-                    <Box w="100%">
-                      <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
-                        Overlays
+                      <Text textStyle="body-2" color="base.content.medium">
+                        {config.scrim.className}
                       </Text>
-                      <VStack align="start" spacing="0.25rem">
-                        {config.scrims.map((scrim) => (
-                          <Text
-                            key={scrim.id}
-                            textStyle="body-2"
-                            color="base.content.medium"
-                          >
-                            {scrim.className}
-                          </Text>
-                        ))}
-                      </VStack>
                     </Box>
                   )}
 
