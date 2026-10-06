@@ -44,6 +44,31 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   },
 }
 
+// Tier B — responsive two-column layout with a hard mobile image height.
+// The only Hero variant with a non-content-dependent mobile height band (h-80).
+// Focal anchors the subject as the image panel reshapes: mobile is a full-width
+// fixed 320px band, desktop is half-width with 500px min-height. Crop is free
+// (custom).
+const HERO_BLOCK_CONFIG: AdjustmentConfig = {
+  componentType: "hero:block",
+  cropMode: "custom",
+  focalEnabled: true,
+  previewStates: [
+    {
+      id: "mobile",
+      label: "Mobile",
+      viewportWidth: 375,
+      aspectRatio: { width: 375, height: 320 },
+    },
+    {
+      id: "desktop",
+      label: "Desktop",
+      viewportWidth: 1440,
+      aspectRatio: { width: 720, height: 500 },
+    },
+  ],
+}
+
 // Tier A — fixed 5:6 crop (aspect-[5/6]), no focal. The crop is baked into the
 // src, so the renderer needs nothing at runtime; the config only drives the
 // editor's fixed-ratio crop UI.
@@ -58,6 +83,28 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
       label: "Desktop",
       viewportWidth: 200,
       aspectRatio: { width: 5, height: 6 },
+    },
+  ],
+}
+
+// Tier B — responsive image with text. Content-dependent cover: frame height
+// varies with copy length, so preview aspect ratios are approximations.
+const INFOPIC_CONFIG: AdjustmentConfig = {
+  componentType: "infopic",
+  cropMode: "custom",
+  focalEnabled: true,
+  previewStates: [
+    {
+      id: "mobile",
+      label: "Mobile",
+      viewportWidth: 375,
+      aspectRatio: { width: 375, height: 300 },
+    },
+    {
+      id: "desktop",
+      label: "Desktop",
+      viewportWidth: 1440,
+      aspectRatio: { width: 720, height: 450 },
     },
   ],
 }
@@ -101,6 +148,8 @@ export function resolveAdjustmentConfig(args: {
   if (type === "hero" && variant === "gradient") return HERO_GRADIENT_CONFIG
   if (type === "hero" && variant === "largeImage")
     return HERO_LARGE_IMAGE_CONFIG
+  if (type === "hero" && variant === "block") return HERO_BLOCK_CONFIG
   if (type === "contentpic") return CONTENTPIC_CONFIG
+  if (type === "infopic") return INFOPIC_CONFIG
   return undefined
 }
