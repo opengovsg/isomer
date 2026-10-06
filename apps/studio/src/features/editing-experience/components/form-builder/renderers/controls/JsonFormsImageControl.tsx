@@ -87,7 +87,14 @@ function JsonFormsImageControl({
         <Box>
           <AttachmentData
             data={data.split("/").pop() ?? "Unknown"}
-            onClick={() => handleChange(path, undefined)}
+            onClick={() => {
+              // Clear the sibling adjustment too — otherwise a stale
+              // imageAdjustment (with an originalKey pointing at the removed
+              // image) survives and gets misapplied to whatever is uploaded
+              // next at this field.
+              handleChange(path, undefined)
+              if (currentAdjustment) handleChange(siblingPath, undefined)
+            }}
           />
           {/* Adjustment entry point — only for components with a config */}
           {config && (
