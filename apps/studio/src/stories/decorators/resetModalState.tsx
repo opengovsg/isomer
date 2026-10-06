@@ -1,4 +1,4 @@
-import type { Decorator } from "@storybook/nextjs"
+import type { Decorator } from "@storybook/nextjs-vite"
 import { useSetAtom } from "jotai"
 import { useEffect } from "react"
 import {

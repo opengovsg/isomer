@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { authSingpassHandlers } from "tests/msw/handlers/auth/singpass"
 import { meHandlers } from "tests/msw/handlers/me"
 import SingpassSignInPage from "~/pages/sign-in/singpass"

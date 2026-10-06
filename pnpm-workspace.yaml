@@ -255,7 +255,7 @@ catalogs:
     "@storybook/addon-docs": 10.4.6
     "@storybook/addon-links": 10.4.6
     "@storybook/addon-themes": 10.4.6
-    "@storybook/nextjs": 10.4.6
+    "@storybook/nextjs-vite": 10.4.6
     "@storybook/react-vite": 10.4.6
     eslint-plugin-storybook: 10.4.6
     storybook-addon-pseudo-states: 10.4.6

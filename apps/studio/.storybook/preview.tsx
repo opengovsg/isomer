@@ -12,7 +12,7 @@ import {
   type Decorator,
   type Preview,
   type ReactRenderer,
-} from "@storybook/nextjs"
+} from "@storybook/nextjs-vite"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"

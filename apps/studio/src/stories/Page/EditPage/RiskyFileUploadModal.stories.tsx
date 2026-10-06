@@ -1,5 +1,5 @@
 import { Box } from "@chakra-ui/react"
-import { type Meta, type StoryObj } from "@storybook/nextjs"
+import { type Meta, type StoryObj } from "@storybook/nextjs-vite"
 import { expect, userEvent, within } from "storybook/test"
 import { RiskyFileUploadModal } from "~/components/PageEditor/RiskyFileUploadModal"
 

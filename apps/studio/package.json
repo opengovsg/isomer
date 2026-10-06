@@ -186,7 +186,7 @@
     "@storybook/addon-docs": "catalog:storybook",
     "@storybook/addon-links": "catalog:storybook",
     "@storybook/addon-themes": "catalog:storybook",
-    "@storybook/nextjs": "catalog:storybook",
+    "@storybook/nextjs-vite": "catalog:storybook",
     "@testing-library/react": "catalog:",
     "@types/lodash-es": "catalog:",
     "@types/node": "catalog:",

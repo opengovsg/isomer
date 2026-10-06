@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { Box } from "@chakra-ui/react"
 import { useSetAtom } from "jotai"
 import { useEffect } from "react"
