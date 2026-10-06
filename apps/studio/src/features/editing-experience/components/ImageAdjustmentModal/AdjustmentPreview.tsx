@@ -10,6 +10,7 @@ import type {
   AdjustmentPreviewState,
   AdjustmentScrim,
 } from "./AdjustmentConfig"
+import { resolveOriginalKey } from "./useSaveImageAdjustment"
 
 interface AdjustmentPreviewProps {
   src: string
@@ -36,14 +37,24 @@ export const AdjustmentPreview = ({
   const prevPreviewUrlRef = useRef<string | null>(null)
 
   // src arrives as the raw stored path (e.g. "/1/uuid/file.png"); resolve it to
-  // the asset domain for display/fetch, same as ImageClient does at render time.
+  // the asset domain for DISPLAY (the fallback shown before any bake exists),
+  // same as ImageClient does at render time.
   const displaySrc = generateAssetUrl(src)
 
-  // Fetch the original image once on mount. Comment notes CORS must be readable.
+  // The bake INPUT must always be the original, never a previous bake — same
+  // rule useSaveImageAdjustment follows (RFC: re-encode loss must not
+  // compound). On a first edit `src` IS the original; on a re-edit, `src` is
+  // the previous bake and only `adjustment.originalKey` points at the true
+  // original, so reuse the same resolver Save uses to keep the two agreed.
+  const originalKey = resolveOriginalKey(src, adjustment ?? {})
+  const originalFetchUrl = generateAssetUrl(`/${originalKey}`)
+
+  // Fetch the original image once per resolved original. Comment notes CORS
+  // must be readable.
   useEffect(() => {
     const fetchOriginal = async () => {
       try {
-        const response = await fetch(displaySrc)
+        const response = await fetch(originalFetchUrl)
         if (!response.ok) {
           throw new Error(`Failed to fetch image: ${response.status}`)
         }
@@ -56,7 +67,7 @@ export const AdjustmentPreview = ({
       }
     }
     fetchOriginal()
-  }, [displaySrc])
+  }, [originalFetchUrl])
 
   // Debounced bake effect (~150ms) keyed on crop/rotate/flipH/flipV changes.
   useEffect(() => {
