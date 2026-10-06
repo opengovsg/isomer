@@ -6,10 +6,10 @@ import { trpc } from "~/utils/trpc"
 // unpublished. Unlike deleting (which soft-deletes them), unpublishing leaves
 // them in place, so this only warns — it never removes anything.
 //
-// Counting mirrors the delete modal exactly (same query): it's reference-only,
-// so a redirect stored as a literal path or against a container id is out of
-// scope here just as it is for delete — the count stays aligned with the set
-// delete would actually remove.
+// Shares the delete modal's query, reference-only: a literal-path destination
+// stays out of scope here just as it is for delete. includeContainerReference
+// opts in to also counting a redirect to the parent folder/collection when
+// `pageId` is its IndexPage — see countRedirectsPointingToResource.
 export const UnpublishRedirectWarning = ({
   pageId,
   siteId,
@@ -28,6 +28,7 @@ export const UnpublishRedirectWarning = ({
   } = trpc.redirect.countByDestinationResource.useQuery({
     siteId,
     resourceId: String(pageId),
+    includeContainerReference: true,
   })
 
   useEffect(() => {
