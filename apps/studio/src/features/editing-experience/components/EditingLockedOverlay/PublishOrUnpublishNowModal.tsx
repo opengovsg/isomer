@@ -12,6 +12,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
+import { useCallback, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { trpc } from "~/utils/trpc"
 
@@ -62,6 +63,16 @@ export const PublishOrUnpublishNowModal = ({
 }: PublishOrUnpublishNowModalProps): JSX.Element => {
   const { title, description, confirmLabel, successTitle, errorTitle } =
     COPY[action]
+  // Starts true for unpublish (the redirect check mounts with the modal, so
+  // there's a real pending window) and stays false for publish, which never
+  // renders the check at all.
+  const [isRedirectCheckPending, setIsRedirectCheckPending] = useState(
+    action === "unpublish",
+  )
+  const handleRedirectCheckPendingChange = useCallback(
+    (pending: boolean) => setIsRedirectCheckPending(pending),
+    [],
+  )
   const utils = trpc.useUtils()
   const toast = useToast()
   const invalidateAfterAction = () =>
@@ -130,7 +141,11 @@ export const PublishOrUnpublishNowModal = ({
           <Text textStyle="body-2">{description}</Text>
           {action === "unpublish" && (
             <Box mt="1rem">
-              <UnpublishRedirectWarning pageId={pageId} siteId={siteId} />
+              <UnpublishRedirectWarning
+                pageId={pageId}
+                siteId={siteId}
+                onPendingChange={handleRedirectCheckPendingChange}
+              />
             </Box>
           )}
         </ModalBody>
@@ -143,7 +158,11 @@ export const PublishOrUnpublishNowModal = ({
           >
             No, keep scheduled
           </Button>
-          <Button onClick={handleConfirm} isLoading={isPending}>
+          <Button
+            onClick={handleConfirm}
+            isDisabled={isRedirectCheckPending}
+            isLoading={isPending}
+          >
             {confirmLabel}
           </Button>
         </ModalFooter>
