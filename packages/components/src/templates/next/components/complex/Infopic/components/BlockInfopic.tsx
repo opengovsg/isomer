@@ -15,6 +15,7 @@ export const BlockInfopic = ({
   buttonUrl,
   description,
   imageAlt,
+  imageAdjustment,
   isTextOnRight,
   shouldLazyLoad,
   site,
@@ -27,6 +28,10 @@ export const BlockInfopic = ({
     colorScheme: "default",
   })
   const hasLinkButton = !!buttonLabel && !!buttonUrl
+  const objectPosition =
+    imageAdjustment?.focal != null
+      ? `${imageAdjustment.focal.x * 100}% ${imageAdjustment.focal.y * 100}%`
+      : undefined
 
   return (
     <section id={id} className={compoundStyles.container()}>
@@ -56,6 +61,7 @@ export const BlockInfopic = ({
           className={compoundStyles.image()}
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={shouldLazyLoad}
+          objectPosition={objectPosition}
         />
       </div>
     </section>

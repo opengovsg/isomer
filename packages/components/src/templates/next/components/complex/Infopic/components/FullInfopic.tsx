@@ -16,6 +16,7 @@ export const FullInfopic = ({
   buttonLabel,
   buttonUrl,
   description,
+  imageAdjustment,
   isTextOnRight,
   site,
   headingLevel,
@@ -27,13 +28,17 @@ export const FullInfopic = ({
     colorScheme: "inverse",
   })
   const hasLinkButton = !!buttonLabel && !!buttonUrl
+  const backgroundPosition =
+    imageAdjustment?.focal != null
+      ? `${imageAdjustment.focal.x * 100}% ${imageAdjustment.focal.y * 100}%`
+      : "center"
 
   return (
     <section
       style={{
         backgroundImage: `url('${imageSrc}')`,
         backgroundSize: "cover",
-        backgroundPosition: "center",
+        backgroundPosition,
       }}
       id={id}
     >

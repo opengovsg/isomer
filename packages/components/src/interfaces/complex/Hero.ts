@@ -137,6 +137,7 @@ const HeroBlockSchema = Type.Composite(
         default: HERO_STYLE.block.key,
       }),
       backgroundUrl: BackgroundUrlSchema,
+      imageAdjustment: Type.Optional(imageAdjustmentSchema),
     }),
     HeroBaseSchema,
     CallToActionsSchema,
