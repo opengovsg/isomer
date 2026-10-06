@@ -33,7 +33,7 @@ Per UI surface: **one happy-path** + **one permission-gate** where the UI shows 
 signal (hidden button, redirect, disabled control). Do not translate audit-log or
 validation-edge-case scenarios — those stay in integration tests.
 
-## Per-site isolation (PR-2)
+## Per-site isolation
 
 Every test file gets a dedicated site via `provisionE2ESite` in `beforeAll` —
 including read-only tests. There is no per-test/per-site teardown: the whole
