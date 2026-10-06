@@ -4,6 +4,7 @@ import type { ImageAdjustment } from "@opengovsg/isomer-components"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { useEffect, useRef, useState } from "react"
 import { bakeImage, canBakeImage } from "~/lib/imageBake"
+import { generateAssetUrl } from "~/utils/generateAssetUrl"
 
 import type {
   AdjustmentPreviewState,
@@ -34,11 +35,15 @@ export const AdjustmentPreview = ({
   const bakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevPreviewUrlRef = useRef<string | null>(null)
 
+  // src arrives as the raw stored path (e.g. "/1/uuid/file.png"); resolve it to
+  // the asset domain for display/fetch, same as ImageClient does at render time.
+  const displaySrc = generateAssetUrl(src)
+
   // Fetch the original image once on mount. Comment notes CORS must be readable.
   useEffect(() => {
     const fetchOriginal = async () => {
       try {
-        const response = await fetch(src)
+        const response = await fetch(displaySrc)
         if (!response.ok) {
           throw new Error(`Failed to fetch image: ${response.status}`)
         }
@@ -51,7 +56,7 @@ export const AdjustmentPreview = ({
       }
     }
     fetchOriginal()
-  }, [src])
+  }, [displaySrc])
 
   // Debounced bake effect (~150ms) keyed on crop/rotate/flipH/flipV changes.
   useEffect(() => {
@@ -133,7 +138,7 @@ export const AdjustmentPreview = ({
         const imageNode = (
           <Box
             as="img"
-            src={previewUrl ?? src}
+            src={previewUrl ?? displaySrc}
             alt={`Preview: ${state.label}`}
             w="100%"
             h="100%"

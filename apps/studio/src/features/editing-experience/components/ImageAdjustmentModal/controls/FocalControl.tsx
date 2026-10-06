@@ -3,6 +3,7 @@
 import type { CSSProperties } from "react"
 import { Box, Text, VStack } from "@chakra-ui/react"
 import { useRef, useState } from "react"
+import { generateAssetUrl } from "~/utils/generateAssetUrl"
 
 import { pointToFocal } from "./focalGeometry"
 
@@ -109,7 +110,7 @@ export const FocalControl = ({
       >
         {/* oxlint-disable-next-line @next/next/no-img-element -- needs naturalWidth/Height for the no-letterbox aspect mapping; user image, not an LCP hero */}
         <img
-          src={src}
+          src={generateAssetUrl(src)}
           alt="Image for focal point adjustment"
           onLoad={handleImageLoad}
           style={{
