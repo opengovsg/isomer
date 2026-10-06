@@ -159,13 +159,7 @@ export const AdjustmentPreview = ({
 
   // Real-component preview: render the actual published block (real copy,
   // scrim, frame behaviour) with the adjusted image + draft imageAdjustment
-  // spliced in, instead of the framed-<img> approximation. MVP = one frame at
-  // the default viewport, not per-breakpoint — getting each breakpoint's own
-  // CSS media queries to fire correctly needs an iframe sized to that exact
-  // viewport width (Tailwind responds to the iframe's own viewport, not an
-  // outer container's size), which PreviewIframe's current fixed
-  // mobile/tablet/responsive presets don't support; deferred until dogfood
-  // feedback justifies the extra per-breakpoint-scaled-iframe work.
+  // spliced in, instead of the framed-<img> approximation below.
   let previewComponent: React.ReactNode = null
   if (block && typeof block === "object" && imageFieldName) {
     try {
@@ -191,28 +185,86 @@ export const AdjustmentPreview = ({
   }
 
   if (previewComponent) {
+    const DISPLAY_WIDTH_CAP = 200
+
     return (
-      <Box>
-        <Text
-          textStyle="body-2"
-          fontWeight="semibold"
-          color="base.content.medium"
-          mb="0.5rem"
-        >
-          Live preview
-        </Text>
-        <Box
-          borderWidth="1px"
-          borderColor="base.divider.medium"
-          borderRadius="0.25rem"
-          overflow="hidden"
-          h="24rem"
-        >
-          <PreviewIframe viewport="responsive">
-            {previewComponent}
-          </PreviewIframe>
-        </Box>
-      </Box>
+      <HStack
+        align="flex-start"
+        spacing="1rem"
+        w="100%"
+        overflowX="auto"
+        overflowY="hidden"
+        pb="0.5rem"
+      >
+        {previewStates.map((state) => {
+          // Simulate a real device viewport at this breakpoint's exact width
+          // (so the real component's own sm:/md:/lg: Tailwind classes
+          // evaluate correctly, which they can't if we just shrink an outer
+          // container — the iframe's OWN layout viewport is what media
+          // queries read) sized to this breakpoint's aspect ratio, then
+          // CSS-scale the whole simulated viewport down to fit the small
+          // preview column. The scale only affects the rendered OUTPUT box,
+          // not the iframe's internal viewport, so breakpoint classes still
+          // evaluate against the real width.
+          const viewportWidth = state.viewportWidth ?? 1024
+          const viewportHeight = state.aspectRatio
+            ? Math.round(
+                (viewportWidth * state.aspectRatio.height) /
+                  state.aspectRatio.width,
+              )
+            : 600
+          const displayWidth = Math.min(viewportWidth, DISPLAY_WIDTH_CAP)
+          const scale = displayWidth / viewportWidth
+
+          return (
+            <VStack
+              key={state.id}
+              align="stretch"
+              spacing="0.5rem"
+              flexShrink={0}
+              minW="fit-content"
+            >
+              <Text
+                textStyle="body-2"
+                fontWeight="semibold"
+                color="base.content.medium"
+              >
+                {state.label}
+                {state.viewportWidth && ` (${state.viewportWidth}px)`}
+              </Text>
+
+              <Box
+                borderWidth="1px"
+                borderColor="base.divider.medium"
+                borderRadius="0.25rem"
+                overflow="hidden"
+                style={{
+                  width: displayWidth,
+                  height: viewportHeight * scale,
+                  position: "relative",
+                }}
+              >
+                <Box
+                  style={{
+                    width: viewportWidth,
+                    height: viewportHeight,
+                    transform: `scale(${scale})`,
+                    transformOrigin: "top left",
+                  }}
+                >
+                  <PreviewIframe
+                    widthPx={viewportWidth}
+                    heightPx={viewportHeight}
+                    preventPointerEvents
+                  >
+                    {previewComponent}
+                  </PreviewIframe>
+                </Box>
+              </Box>
+            </VStack>
+          )
+        })}
+      </HStack>
     )
   }
 
