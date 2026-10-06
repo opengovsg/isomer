@@ -26,6 +26,7 @@ import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
 import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
+import { CropControl } from "./controls/CropControl"
 import { FocalControl } from "./controls/FocalControl"
 import { useSaveImageAdjustment } from "./useSaveImageAdjustment"
 
@@ -177,18 +178,20 @@ export const ImageAdjustmentModal = ({
                     />
                   )}
 
-                  {/* Crop Mode Section */}
+                  {/* Crop Control */}
                   {config.cropMode !== "none" && (
-                    <Box w="100%">
-                      <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
-                        Crop mode
-                      </Text>
-                      <Text textStyle="body-2" color="base.content.medium">
-                        {config.cropMode === "fixed"
-                          ? "Fixed aspect ratio"
-                          : "Custom crop"}
-                      </Text>
-                    </Box>
+                    <CropControl
+                      src={src}
+                      crop={draft?.crop}
+                      lockedRatio={
+                        config.cropMode === "fixed"
+                          ? config.lockedRatios?.[0]
+                          : undefined
+                      }
+                      onChange={(crop) =>
+                        setDraft((d) => ({ ...ensureAdjustment(d), crop }))
+                      }
+                    />
                   )}
 
                   {/* Preserve-only note */}
