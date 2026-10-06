@@ -27,7 +27,10 @@ import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
 import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
 import { CropFocalControl } from "./controls/CropFocalControl"
-import { useSaveImageAdjustment } from "./useSaveImageAdjustment"
+import {
+  resolveOriginalKey,
+  useSaveImageAdjustment,
+} from "./useSaveImageAdjustment"
 
 interface ImageAdjustmentModalProps {
   isOpen: boolean
@@ -74,6 +77,13 @@ export const ImageAdjustmentModal = ({
 
   // Check if draft differs from original value.
   const isModified = JSON.stringify(draft) !== JSON.stringify(value)
+
+  // The crop/focal canvas and the live preview must both edit/bake from the
+  // TRUE original, never a previous bake — same rule useSaveImageAdjustment
+  // follows (RFC: re-encode loss must not compound). On a first edit `src`
+  // IS the original; on a re-edit, `src` is the previous bake and only
+  // `draft.originalKey` points at the true original.
+  const originalSrc = `/${resolveOriginalKey(src, draft ?? {})}`
 
   const handleClose = () => {
     if (isModified) {
@@ -164,6 +174,7 @@ export const ImageAdjustmentModal = ({
               <GridItem>
                 <AdjustmentPreview
                   src={src}
+                  originalSrc={originalSrc}
                   adjustment={draft}
                   previewStates={config.previewStates}
                   scrim={config.scrim}
@@ -179,7 +190,7 @@ export const ImageAdjustmentModal = ({
                       is only meaningful relative to the crop. */}
                   {(config.cropMode !== "none" || config.focalEnabled) && (
                     <CropFocalControl
-                      src={src}
+                      src={originalSrc}
                       crop={draft?.crop}
                       focal={draft?.focal}
                       cropMode={config.cropMode}

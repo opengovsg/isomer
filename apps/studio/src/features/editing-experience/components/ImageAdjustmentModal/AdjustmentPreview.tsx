@@ -16,7 +16,6 @@ import type {
   AdjustmentPreviewState,
   AdjustmentScrim,
 } from "./AdjustmentConfig"
-import { resolveOriginalKey } from "./useSaveImageAdjustment"
 
 // Minimal site stub for an ISOLATED single-block preview — there is no real
 // page/nav/footer context here (this renders one block, not a whole page), so
@@ -31,6 +30,12 @@ const PREVIEW_SITE_STUB = {
 
 interface AdjustmentPreviewProps {
   src: string
+  // The TRUE original's raw stored path (e.g. "/1/uuid/file.png"), resolved
+  // once by the parent modal via resolveOriginalKey — the bake input must
+  // always be the original, never a previous bake (RFC: re-encode loss must
+  // not compound). On a first edit this equals `src`; on a re-edit, `src` is
+  // the previous bake and only this points at the true original.
+  originalSrc: string
   adjustment?: ImageAdjustment
   previewStates: AdjustmentPreviewState[]
   scrim?: AdjustmentScrim
@@ -44,6 +49,7 @@ interface AdjustmentPreviewProps {
 
 export const AdjustmentPreview = ({
   src,
+  originalSrc,
   adjustment,
   previewStates,
   scrim,
@@ -59,14 +65,7 @@ export const AdjustmentPreview = ({
   // the asset domain for DISPLAY (the fallback shown before any bake exists),
   // same as ImageClient does at render time.
   const displaySrc = generateAssetUrl(src)
-
-  // The bake INPUT must always be the original, never a previous bake — same
-  // rule useSaveImageAdjustment follows (RFC: re-encode loss must not
-  // compound). On a first edit `src` IS the original; on a re-edit, `src` is
-  // the previous bake and only `adjustment.originalKey` points at the true
-  // original, so reuse the same resolver Save uses to keep the two agreed.
-  const originalKey = resolveOriginalKey(src, adjustment ?? {})
-  const originalFetchUrl = generateAssetUrl(`/${originalKey}`)
+  const originalFetchUrl = generateAssetUrl(originalSrc)
 
   // Fetch the original image once per resolved original. Comment notes CORS
   // must be readable.
