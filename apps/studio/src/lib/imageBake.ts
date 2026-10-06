@@ -23,22 +23,31 @@ export interface PixelRect {
   sh: number
 }
 
+// Static raster formats a browser canvas can reliably re-encode. Single source
+// of truth for both the client gate (canBakeImage) and the server presign
+// schema's `ext`. Deliberately distinct from CONTENT_TYPE_TO_FORMAT (the infra
+// optimizer): avif/tiff are excluded because canvas.toBlob support is
+// unreliable, and animated WebP/APNG can't be told from MIME alone (TODO: sniff).
+export const BAKEABLE_FORMAT_BY_MIME = {
+  "image/jpeg": "jpeg",
+  "image/png": "png",
+  "image/webp": "webp",
+} as const
+
+export type BakeableExtension =
+  (typeof BAKEABLE_FORMAT_BY_MIME)[keyof typeof BAKEABLE_FORMAT_BY_MIME]
+
+export const BAKEABLE_EXTENSIONS = Object.values(BAKEABLE_FORMAT_BY_MIME) as [
+  BakeableExtension,
+  ...BakeableExtension[],
+]
+
 /**
- * Determines whether an image MIME type can be baked.
- * Allows static raster formats only: JPEG, PNG, and WebP.
- * Blocks SVG and GIF. Animated WebP/APNG cannot be detected from MIME alone;
- * TODO: implement byte-sniffing for animated-format detection (follow-up).
- *
+ * Whether an image MIME type can be baked (see BAKEABLE_FORMAT_BY_MIME).
  * @param mimeType - The MIME type string (e.g., "image/jpeg")
- * @returns true if the format is bakeable; false otherwise
  */
-export const canBakeImage = (mimeType: string): boolean => {
-  return (
-    mimeType === "image/jpeg" ||
-    mimeType === "image/png" ||
-    mimeType === "image/webp"
-  )
-}
+export const canBakeImage = (mimeType: string): boolean =>
+  Object.hasOwn(BAKEABLE_FORMAT_BY_MIME, mimeType)
 
 /**
  * Convert a normalized crop rectangle to pixel coordinates.
