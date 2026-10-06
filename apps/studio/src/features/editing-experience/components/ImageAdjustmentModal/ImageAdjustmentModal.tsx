@@ -26,8 +26,7 @@ import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
 import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
-import { CropControl } from "./controls/CropControl"
-import { FocalControl } from "./controls/FocalControl"
+import { CropFocalControl } from "./controls/CropFocalControl"
 import { useSaveImageAdjustment } from "./useSaveImageAdjustment"
 
 interface ImageAdjustmentModalProps {
@@ -167,29 +166,25 @@ export const ImageAdjustmentModal = ({
               {/* Controls Panel */}
               <GridItem>
                 <VStack align="start" spacing="1.5rem" w="100%">
-                  {/* Focal Point Section */}
-                  {config.focalEnabled && (
-                    <FocalControl
-                      src={src}
-                      focal={draft?.focal}
-                      onChange={(focal) =>
-                        setDraft((d) => ({ ...ensureAdjustment(d), focal }))
-                      }
-                    />
-                  )}
-
-                  {/* Crop Control */}
-                  {config.cropMode !== "none" && (
-                    <CropControl
+                  {/* Crop + focal point: one shared image canvas, since focal
+                      is only meaningful relative to the crop. */}
+                  {(config.cropMode !== "none" || config.focalEnabled) && (
+                    <CropFocalControl
                       src={src}
                       crop={draft?.crop}
+                      focal={draft?.focal}
+                      cropMode={config.cropMode}
                       lockedRatio={
                         config.cropMode === "fixed"
                           ? config.lockedRatios?.[0]
                           : undefined
                       }
-                      onChange={(crop) =>
+                      focalEnabled={config.focalEnabled}
+                      onCropChange={(crop) =>
                         setDraft((d) => ({ ...ensureAdjustment(d), crop }))
+                      }
+                      onFocalChange={(focal) =>
+                        setDraft((d) => ({ ...ensureAdjustment(d), focal }))
                       }
                     />
                   )}

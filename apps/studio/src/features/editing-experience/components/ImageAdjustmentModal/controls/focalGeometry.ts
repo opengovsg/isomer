@@ -2,6 +2,7 @@
  * Pure utility functions for focal point geometry calculations.
  * No dependencies, fully unit-testable.
  */
+import type { CropRectNormalized } from "./cropGeometry"
 
 /**
  * Clamps a number to [0, 1] range.
@@ -29,3 +30,31 @@ export const pointToFocal = (
     y: clampUnit((clientY - top) / height),
   }
 }
+
+/**
+ * Converts a point normalized to the WHOLE image into a point normalized to
+ * the crop rect (0,0 = crop's top-left, 1,1 = crop's bottom-right), clamping
+ * to the crop's bounds. The renderer applies `focal` as object-position
+ * directly on the baked (already-cropped) image, so focal must be stored
+ * relative to the crop, not the original, for the two to agree post-bake.
+ */
+export const pointToCropRelativeFocal = (
+  point: { x: number; y: number },
+  crop: CropRectNormalized,
+): { x: number; y: number } => ({
+  x: crop.width > 0 ? clampUnit((point.x - crop.x) / crop.width) : 0.5,
+  y: crop.height > 0 ? clampUnit((point.y - crop.y) / crop.height) : 0.5,
+})
+
+/**
+ * Inverse of pointToCropRelativeFocal: converts a crop-relative focal point
+ * back into whole-image-normalized space, for drawing the marker over the
+ * whole (uncropped) image preview.
+ */
+export const focalToWholeImagePoint = (
+  focal: { x: number; y: number },
+  crop: CropRectNormalized,
+): { x: number; y: number } => ({
+  x: crop.x + focal.x * crop.width,
+  y: crop.y + focal.y * crop.height,
+})
