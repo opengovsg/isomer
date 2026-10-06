@@ -1,4 +1,3 @@
-import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import { sql } from "kysely"
 import { db, jsonb } from "~/server/modules/database"
 
@@ -10,24 +9,16 @@ const DEFAULT_AGENCY_SITE_NAME = "Isomer"
 export const resetSiteAgencySettings = async (
   siteId: number,
   siteName: string = DEFAULT_AGENCY_SITE_NAME,
-) => {
-  const site = await db
-    .selectFrom("Site")
-    .where("id", "=", siteId)
-    .select("config")
-    .executeTakeFirstOrThrow()
-
-  const config = site.config as IsomerSiteConfigProps
-
-  await db
+) =>
+  db
     .updateTable("Site")
     .set({
       name: siteName,
-      config: jsonb({ ...config, siteName }),
+      config: sql`jsonb_set(config, '{siteName}', to_jsonb(${siteName}::text))`,
     })
     .where("id", "=", siteId)
-    .execute()
-}
+    .returning("id")
+    .executeTakeFirstOrThrow()
 
 /** Remove notification config so the banner toggle starts off. */
 export const resetSiteNotification = (siteId: number) =>
