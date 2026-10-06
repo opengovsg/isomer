@@ -14,7 +14,6 @@ const asBlock = (block: unknown): { type?: string; variant?: string } =>
 // wide band the vertical focal moves the image, the horizontal barely does.
 const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   componentType: "hero:gradient",
-  tier: "B",
   cropMode: "custom",
   focalEnabled: true,
   previewStates: [
@@ -52,7 +51,6 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
 // editor's fixed-ratio crop UI.
 const CONTENTPIC_CONFIG: AdjustmentConfig = {
   componentType: "contentpic",
-  tier: "A",
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 5, height: 6 }],
@@ -66,41 +64,17 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
   ],
 }
 
-// Generic fallback for image fields not yet wired to a component-specific config
-// (every component other than HeroGradient/Contentpic until its M2/M3 fan-out).
-const GENERIC_CONFIG: AdjustmentConfig = {
-  componentType: "generic",
-  tier: "A",
-  cropMode: "custom",
-  focalEnabled: true,
-  previewStates: [
-    {
-      id: "desktop",
-      label: "Desktop",
-      viewportWidth: 1240,
-      aspectRatio: { width: 4, height: 3 },
-    },
-    {
-      id: "mobile",
-      label: "Mobile",
-      viewportWidth: 360,
-      aspectRatio: { width: 4, height: 3 },
-    },
-  ],
-}
-
 /**
  * Resolves the adjustment config for an image field, by the containing block's
- * discriminators. W0-G wires HeroGradient (Tier B) and Contentpic (Tier A);
- * every other component falls back to GENERIC_CONFIG until its fan-out task
- * (M2/M3) adds a matching entry here.
+ * discriminators. Returns undefined for components not yet wired — the entry
+ * point hides the "Adjust image" action rather than offering a dead modal.
  */
 export function resolveAdjustmentConfig(args: {
   block: unknown
   fieldName: string
-}): AdjustmentConfig {
+}): AdjustmentConfig | undefined {
   const { type, variant } = asBlock(args.block)
   if (type === "hero" && variant === "gradient") return HERO_GRADIENT_CONFIG
   if (type === "contentpic") return CONTENTPIC_CONFIG
-  return GENERIC_CONFIG
+  return undefined
 }

@@ -7,7 +7,6 @@ import { ImageAdjustmentModal } from "./ImageAdjustmentModal"
 
 const TIER_B_CONFIG: AdjustmentConfig = {
   componentType: "hero",
-  tier: "B",
   cropMode: "fixed",
   lockedRatios: [
     { width: 16, height: 9 },

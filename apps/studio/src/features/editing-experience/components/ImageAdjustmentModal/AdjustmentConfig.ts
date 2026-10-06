@@ -4,10 +4,6 @@
 // it and contains no component-specific logic of its own. Change this only with
 // orchestrator sign-off — it is the interface the whole feature is built on.
 
-// Image tier taxonomy (see KB GLOSSARY): A = fixed-ratio crop, B = responsive
-// crop + focal, C = conditional Fit/Fill, D = preserve-only.
-export type ImageTier = "A" | "B" | "C" | "D"
-
 // fixed  = one or more locked aspect ratios.
 // custom = free-form crop (native Image block, P2 — out of scope for v1).
 // none   = no crop offered (Tier D preserve-only).
@@ -46,7 +42,6 @@ export interface AdjustmentScrim {
 export interface AdjustmentConfig {
   // Block/component type key this config applies to.
   componentType: string
-  tier: ImageTier
   cropMode: CropMode
   // For cropMode "fixed": the ratio(s) to enforce. One entry = Tier A. Multiple
   // = Tier B responsive (ratio varies by breakpoint, paired with previewStates).

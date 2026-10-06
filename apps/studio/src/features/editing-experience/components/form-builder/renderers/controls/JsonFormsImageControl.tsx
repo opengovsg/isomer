@@ -64,6 +64,7 @@ function JsonFormsImageControl({
     | ImageAdjustment
     | undefined
   const block = get(rootData, parentPath)
+  const config = resolveAdjustmentConfig({ block, fieldName })
 
   const handleAdjustmentSave = (next: ImageAdjustment | undefined) => {
     handleChange(siblingPath, next)
@@ -78,34 +79,34 @@ function JsonFormsImageControl({
             data={data.split("/").pop() ?? "Unknown"}
             onClick={() => handleChange(path, undefined)}
           />
-          {/* Adjustment entry point: button + status */}
-          <HStack spacing="1rem" mt="1rem">
-            <Button
-              leftIcon={<BiPencil />}
-              variant="clear"
-              colorScheme="neutral"
-              onClick={onOpen}
-            >
-              Adjust image
-            </Button>
-            <Text textStyle="body-2" color="base.content.medium">
-              {currentAdjustment ? "Adjusted" : "Not adjusted"}
-            </Text>
-          </HStack>
+          {/* Adjustment entry point — only for components with a config */}
+          {config && (
+            <>
+              <HStack spacing="1rem" mt="1rem">
+                <Button
+                  leftIcon={<BiPencil />}
+                  variant="clear"
+                  colorScheme="neutral"
+                  onClick={onOpen}
+                >
+                  Adjust image
+                </Button>
+                <Text textStyle="body-2" color="base.content.medium">
+                  {currentAdjustment ? "Adjusted" : "Not adjusted"}
+                </Text>
+              </HStack>
 
-          {/* Modal controlled by disclosure */}
-          <ImageAdjustmentModal
-            key={data}
-            isOpen={isOpen}
-            onClose={onClose}
-            config={resolveAdjustmentConfig({
-              block,
-              fieldName,
-            })}
-            src={data}
-            value={currentAdjustment}
-            onSave={handleAdjustmentSave}
-          />
+              <ImageAdjustmentModal
+                key={data}
+                isOpen={isOpen}
+                onClose={onClose}
+                config={config}
+                src={data}
+                value={currentAdjustment}
+                onSave={handleAdjustmentSave}
+              />
+            </>
+          )}
         </Box>
       ) : (
         <FileAttachment
