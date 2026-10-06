@@ -10,17 +10,17 @@ introduces a **new reusable pattern** — not when merely adding test cases. See
 
 ## File layout
 
-- `tests/e2e/<module>/<surface>.test.ts` — one file per UI surface
+- `tests/e2e/<module>/<screen>.test.ts` — name the file after the screen, not the assertion (`resource/collection.test.ts`, not `required-tags-validation.test.ts`). Several scenarios for that screen share the file. A second file is only for a distinct part of the same area (`resource/collection-filters.test.ts`), not one file per module.
 - `fixtures/` — shared infrastructure (auth, seed, helpers, page objects)
 - Import `test` / `expect` from `@playwright/test` directly (no `fixtures/test.ts` re-export)
 
 ## Helpers vs page objects
 
-| Layer | File | Use for |
-|-------|------|---------|
-| **Helpers** | `fixtures/helpers.ts` | Multi-step flows crossing pages or modals (wizard, invite) |
-| **Page objects** | `fixtures/*.po.ts` | Locators + actions on one UI surface (`SitePO`, `DashboardPO`, …) |
-| **DB setup** | `fixtures/reset.ts`, `fixtures/site.ts` | Non-UI reset and site lifecycle |
+| Layer            | File                                    | Use for                                                           |
+| ---------------- | --------------------------------------- | ----------------------------------------------------------------- |
+| **Helpers**      | `fixtures/helpers.ts`                   | Multi-step flows crossing pages or modals (wizard, invite)        |
+| **Page objects** | `fixtures/*.po.ts`                      | Locators + actions on one UI surface (`SitePO`, `DashboardPO`, …) |
+| **DB setup**     | `fixtures/reset.ts`, `fixtures/site.ts` | Non-UI reset and site lifecycle                                   |
 
 ## Welcome modal
 
@@ -33,7 +33,7 @@ Per UI surface: **one happy-path** + **one permission-gate** where the UI shows 
 signal (hidden button, redirect, disabled control). Do not translate audit-log or
 validation-edge-case scenarios — those stay in integration tests.
 
-## Per-site isolation
+## Per-site isolation (PR-2)
 
 Every test file gets a dedicated site via `provisionE2ESite` in `beforeAll` —
 including read-only tests. There is no per-test/per-site teardown: the whole
@@ -61,7 +61,31 @@ test.beforeAll(async () => {
 - `provisionE2ESite` creates a root page + search page so the site dashboard loads
 - Do not add a `teardownE2ESite`/per-test cleanup call — it doesn't exist; cleanup is run-scoped, not test-scoped
 
+## Role projects and tags (PR-3)
+
+Playwright config defines one project per role plus `unauthenticated` (smoke) and `singpass`. Role projects set `storageState` and filter with `grep: /@role:<role>\b/` (for example `/@role:admin\b/`). `roleTag("admin")` emits `@role:admin`.
+
+```ts
+import { roleTag } from "../fixtures/auth"
+
+test.describe("admin", { tag: roleTag("admin") }, () => {
+  test("...", async ({ page }) => {
+    /* cookies come from the admin project — do not call test.use({ storageState }) */
+  })
+})
+```
+
+Use `roleTag(...)` (typed from `ROLES`) — not a raw `"@role:admin"` string. Multi-role files should map over `ROLES` with an exhaustive `Record<Role, …>` when every role must be classified (see `site/admin.test.ts`).
+
+| Do                                                        | Don't                                              |
+| --------------------------------------------------------- | -------------------------------------------------- |
+| `{ tag: roleTag("admin") }` on each role `describe`       | `test.use({ storageState: storageStateFor(...) })` |
+| Put smoke in `smoke.test.ts` (no role tag)                | Mix unauthenticated smoke into role-tagged files   |
+| Run `pnpm exec playwright test --project=admin` to filter | Rely on file path alone for role selection         |
+
 ## How to detect violations
 
 - Asserting "Sample Site", hardcoding a site ID, or calling `teardownE2ESite`/`getSeedSiteId()` (neither exists anymore) → use `provisionE2ESite` and assert on the returned site
 - Duplicated wizard/invite flows in test files → move to `helpers.ts` or a PO
+- `test.use({ storageState: storageStateFor(...) })` in a test file → use `{ tag: roleTag(...) }` on `test.describe` instead
+- Raw `{ tag: "@role:admin" }` → use `roleTag("admin")` so unknown roles fail typecheck
