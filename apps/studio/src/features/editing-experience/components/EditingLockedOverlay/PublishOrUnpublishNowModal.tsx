@@ -1,5 +1,6 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import {
+  Box,
   Button,
   Modal,
   ModalBody,
@@ -13,6 +14,8 @@ import {
 import { useToast } from "@opengovsg/design-system-react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { trpc } from "~/utils/trpc"
+
+import { UnpublishRedirectWarning } from "../UnpublishRedirectWarning"
 
 type PublishOrUnpublishNowAction = "publish" | "unpublish"
 
@@ -125,6 +128,11 @@ export const PublishOrUnpublishNowModal = ({
         <ModalCloseButton size="lg" />
         <ModalBody>
           <Text textStyle="body-2">{description}</Text>
+          {action === "unpublish" && (
+            <Box mt="1rem">
+              <UnpublishRedirectWarning pageId={pageId} siteId={siteId} />
+            </Box>
+          )}
         </ModalBody>
         <ModalFooter>
           <Button
