@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  CORNER_HANDLES,
+  EDGE_HANDLES,
   MIN_CROP_SIZE,
   clampRectToBounds,
   clientDeltaToNormalized,
   defaultCropRect,
   moveRect,
-  resizeRectBottomRight,
+  resizeRectByHandle,
 } from "./cropGeometry"
 
 describe("cropGeometry", () => {
@@ -84,62 +86,93 @@ describe("cropGeometry", () => {
     })
   })
 
-  describe("resizeRectBottomRight", () => {
-    it("resizes both dimensions freely without lockedRatio", () => {
+  describe("resizeRectByHandle", () => {
+    it("exposes 4 corner handles and 4 edge handles", () => {
+      expect(CORNER_HANDLES).toEqual(
+        expect.arrayContaining(["nw", "ne", "se", "sw"]),
+      )
+      expect(EDGE_HANDLES).toEqual(expect.arrayContaining(["n", "e", "s", "w"]))
+    })
+
+    it("se resizes both dimensions freely, anchored at top-left", () => {
       const rect = { x: 0, y: 0, width: 0.2, height: 0.2 }
-      const resized = resizeRectBottomRight(rect, 0.7, 0.8, undefined)
+      const resized = resizeRectByHandle(rect, "se", 0.7, 0.8, undefined)
       expect(resized.width).toBeCloseTo(0.7)
       expect(resized.height).toBeCloseTo(0.8)
       expect(resized.x).toBe(0)
       expect(resized.y).toBe(0)
     })
 
-    it("derives height from width to preserve lockedRatio", () => {
-      const rect = { x: 0, y: 0, width: 0.2, height: 0.2 }
-      const ratio = { width: 2, height: 1 } // 2:1 ratio
-      const resized = resizeRectBottomRight(rect, 0.8, 0.6, ratio)
-      // width should be clamped to 0.8
-      // height should be width / ratio = 0.8 / 2 = 0.4
-      expect(resized.width).toBeCloseTo(0.8)
+    it("nw resizes both dimensions, anchored at the opposite (bottom-right) corner", () => {
+      const rect = { x: 0.3, y: 0.3, width: 0.2, height: 0.2 }
+      const resized = resizeRectByHandle(rect, "nw", 0.1, 0.1, undefined)
+      // bottom-right corner (0.5, 0.5) must stay fixed
+      expect(resized.x + resized.width).toBeCloseTo(0.5)
+      expect(resized.y + resized.height).toBeCloseTo(0.5)
+      expect(resized.x).toBeCloseTo(0.1)
+      expect(resized.y).toBeCloseTo(0.1)
+    })
+
+    it("e resizes width only, anchored at the left edge", () => {
+      const rect = { x: 0.2, y: 0.2, width: 0.2, height: 0.3 }
+      const resized = resizeRectByHandle(rect, "e", 0.7, 0.9, undefined)
+      expect(resized.x).toBe(0.2)
+      expect(resized.y).toBe(0.2)
+      expect(resized.height).toBe(0.3)
+      expect(resized.width).toBeCloseTo(0.5)
+    })
+
+    it("s resizes height only, anchored at the top edge", () => {
+      const rect = { x: 0.2, y: 0.2, width: 0.3, height: 0.2 }
+      const resized = resizeRectByHandle(rect, "s", 0.1, 0.6, undefined)
+      expect(resized.x).toBe(0.2)
+      expect(resized.y).toBe(0.2)
+      expect(resized.width).toBe(0.3)
       expect(resized.height).toBeCloseTo(0.4)
     })
 
-    it("shifts to height-first resize when width-first would overflow bottom", () => {
+    it("derives height from width to preserve a locked ratio (se)", () => {
+      const rect = { x: 0, y: 0, width: 0.2, height: 0.2 }
+      const ratio = { width: 2, height: 1 } // 2:1 ratio
+      const resized = resizeRectByHandle(rect, "se", 0.8, 0.6, ratio)
+      expect(resized.width).toBeCloseTo(0.8)
+      expect(resized.height).toBeCloseTo(0.4)
+      expect(resized.x).toBe(0)
+      expect(resized.y).toBe(0)
+    })
+
+    it("preserves a locked ratio for nw, anchored at the opposite corner", () => {
+      const rect = { x: 0.3, y: 0.3, width: 0.2, height: 0.2 }
+      const ratio = { width: 2, height: 1 }
+      const resized = resizeRectByHandle(rect, "nw", 0.0, 0.0, ratio)
+      expect(resized.width / resized.height).toBeCloseTo(2)
+      expect(resized.x + resized.width).toBeCloseTo(0.5)
+      expect(resized.y + resized.height).toBeCloseTo(0.5)
+    })
+
+    it("clamps the ratio-derived dimension when it would overflow the image bounds", () => {
       const rect = { x: 0.1, y: 0.6, width: 0.2, height: 0.2 }
       const ratio = { width: 1, height: 1 } // square
-      const resized = resizeRectBottomRight(rect, 0.95, 0.95, ratio)
-      // pointer would be at (0.95, 0.95)
-      // width = 0.95 - 0.1 = 0.85, height = 0.95 - 0.6 = 0.35
-      // With 1:1 ratio, height should limit: height = 1 - 0.6 = 0.4
-      // then width = height * ratio = 0.4 * 1 = 0.4
+      const resized = resizeRectByHandle(rect, "se", 0.95, 0.95, ratio)
+      // anchored at (0.1, 0.6); room to bottom is 1-0.6=0.4, so height caps at 0.4
       expect(resized.height).toBeLessThanOrEqual(0.4)
       expect(resized.width).toBeCloseTo(resized.height)
+      expect(resized.x + resized.width).toBeLessThanOrEqual(1)
+      expect(resized.y + resized.height).toBeLessThanOrEqual(1)
     })
 
     it("enforces MIN_CROP_SIZE", () => {
       const rect = { x: 0.5, y: 0.5, width: 0.2, height: 0.2 }
-      const resized = resizeRectBottomRight(rect, 0.51, 0.51, undefined)
+      const resized = resizeRectByHandle(rect, "se", 0.51, 0.51, undefined)
       expect(resized.width).toBeGreaterThanOrEqual(MIN_CROP_SIZE)
       expect(resized.height).toBeGreaterThanOrEqual(MIN_CROP_SIZE)
     })
 
-    it("anchors at top-left (x,y unchanged)", () => {
+    it("clamps pointer coordinates outside [0, 1]", () => {
       const rect = { x: 0.3, y: 0.3, width: 0.2, height: 0.2 }
-      const resized = resizeRectBottomRight(rect, 0.8, 0.8, undefined)
-      expect(resized.x).toBe(0.3)
-      expect(resized.y).toBe(0.3)
-    })
-
-    it("handles tall ratio (1:2) correctly", () => {
-      const rect = { x: 0.25, y: 0.1, width: 0.2, height: 0.2 }
-      const ratio = { width: 1, height: 2 }
-      const resized = resizeRectBottomRight(rect, 0.6, 0.9, ratio)
-      // width first: 0.6 - 0.25 = 0.35, clamped to 1 - 0.25 = 0.75, so 0.35
-      // height = width / ratio = 0.35 / 0.5 = 0.7
-      // Check within bounds
+      const resized = resizeRectByHandle(rect, "se", 2, 2, undefined)
       expect(resized.x + resized.width).toBeLessThanOrEqual(1)
       expect(resized.y + resized.height).toBeLessThanOrEqual(1)
-      expect(resized.width / resized.height).toBeCloseTo(0.5, 1)
     })
   })
 

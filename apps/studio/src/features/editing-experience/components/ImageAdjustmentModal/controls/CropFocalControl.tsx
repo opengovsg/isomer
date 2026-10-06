@@ -5,18 +5,35 @@ import { Box, Text, VStack } from "@chakra-ui/react"
 import { useEffect, useRef, useState } from "react"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 
-import type { CropRectNormalized } from "./cropGeometry"
+import type { CropRectNormalized, HandlePosition } from "./cropGeometry"
 import {
+  CORNER_HANDLES,
+  EDGE_HANDLES,
   clientDeltaToNormalized,
   defaultCropRect,
   moveRect,
-  resizeRectBottomRight,
+  resizeRectByHandle,
 } from "./cropGeometry"
 import {
   focalToWholeImagePoint,
   pointToCropRelativeFocal,
   pointToFocal,
 } from "./focalGeometry"
+
+// Percentage anchor + resize cursor for each of the 8 standard handles.
+const HANDLE_LAYOUT: Record<
+  HandlePosition,
+  { left: string; top: string; cursor: string }
+> = {
+  nw: { left: "0%", top: "0%", cursor: "nwse-resize" },
+  n: { left: "50%", top: "0%", cursor: "ns-resize" },
+  ne: { left: "100%", top: "0%", cursor: "nesw-resize" },
+  e: { left: "100%", top: "50%", cursor: "ew-resize" },
+  se: { left: "100%", top: "100%", cursor: "nwse-resize" },
+  s: { left: "50%", top: "100%", cursor: "ns-resize" },
+  sw: { left: "0%", top: "100%", cursor: "nesw-resize" },
+  w: { left: "0%", top: "50%", cursor: "ew-resize" },
+}
 
 interface CropFocalControlProps {
   src: string
@@ -29,7 +46,7 @@ interface CropFocalControlProps {
   onFocalChange: (focal: { x: number; y: number }) => void
 }
 
-type DragTarget = "rect" | "handle" | "focal" | null
+type DragTarget = "rect" | "focal" | HandlePosition | null
 
 // One shared image canvas for both crop and focal editing (crop frame +
 // focal marker rendered together), rather than two separate whole-image
@@ -99,23 +116,38 @@ export const CropFocalControl = ({
 
   const handleResizePointerDown = (
     event: React.PointerEvent<HTMLDivElement>,
+    handle: HandlePosition,
   ) => {
     event.stopPropagation()
-    setDragTarget("handle")
+    setDragTarget(handle)
     event.currentTarget.setPointerCapture(event.pointerId)
   }
 
   const handleResizePointerMove = (
     event: React.PointerEvent<HTMLDivElement>,
+    handle: HandlePosition,
   ) => {
-    if (dragTarget !== "handle" || !boxRef.current) return
+    if (dragTarget !== handle || !boxRef.current) return
     const boxRect = boxRef.current.getBoundingClientRect()
     const normalizedX = (event.clientX - boxRect.left) / boxRect.width
     const normalizedY = (event.clientY - boxRect.top) / boxRect.height
     onCropChange(
-      resizeRectBottomRight(currentCrop, normalizedX, normalizedY, lockedRatio),
+      resizeRectByHandle(
+        currentCrop,
+        handle,
+        normalizedX,
+        normalizedY,
+        lockedRatio,
+      ),
     )
   }
+
+  // Ratio-locked crops only offer corner handles — resizing a single edge
+  // under a fixed ratio is ambiguous (which dimension derives from the
+  // other?), the same restriction mainstream crop tools apply.
+  const activeHandles: readonly HandlePosition[] = lockedRatio
+    ? CORNER_HANDLES
+    : [...CORNER_HANDLES, ...EDGE_HANDLES]
 
   const handleFocalPointerDown = (
     event: React.PointerEvent<HTMLDivElement>,
@@ -161,19 +193,20 @@ export const CropFocalControl = ({
     zIndex: 10,
   }
 
-  const handleStyle: CSSProperties = {
+  const getHandleStyle = (handle: HandlePosition): CSSProperties => ({
     position: "absolute",
-    right: "-5px",
-    bottom: "-5px",
+    left: HANDLE_LAYOUT[handle].left,
+    top: HANDLE_LAYOUT[handle].top,
+    transform: "translate(-50%, -50%)",
     width: "10px",
     height: "10px",
     backgroundColor: "white",
     border: "2px solid #0066cc",
     borderRadius: "2px",
-    cursor: dragTarget === "handle" ? "grabbing" : "nwse-resize",
+    cursor: dragTarget === handle ? "grabbing" : HANDLE_LAYOUT[handle].cursor,
     pointerEvents: "auto",
     zIndex: 12,
-  }
+  })
 
   const focalWholeImagePoint = focalToWholeImagePoint(currentFocal, currentCrop)
   const markerStyle: CSSProperties = {
@@ -199,7 +232,7 @@ export const CropFocalControl = ({
         ? "Crop"
         : "Focal point"
   const hint = [
-    showCrop && "Drag the frame to reposition, the corner handle to resize.",
+    showCrop && "Drag the frame to reposition, the handles to resize.",
     focalEnabled && "Drag the dot to choose the part to keep in view.",
   ]
     .filter(Boolean)
@@ -249,13 +282,20 @@ export const CropFocalControl = ({
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
           >
-            <div
-              style={handleStyle}
-              onPointerDown={handleResizePointerDown}
-              onPointerMove={handleResizePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerLeave={handlePointerUp}
-            />
+            {activeHandles.map((handle) => (
+              <div
+                key={handle}
+                style={getHandleStyle(handle)}
+                onPointerDown={(event) =>
+                  handleResizePointerDown(event, handle)
+                }
+                onPointerMove={(event) =>
+                  handleResizePointerMove(event, handle)
+                }
+                onPointerUp={handlePointerUp}
+                onPointerLeave={handlePointerUp}
+              />
+            ))}
           </div>
         )}
 

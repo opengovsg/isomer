@@ -36,30 +36,143 @@ export const moveRect = (
 ): CropRectNormalized =>
   clampRectToBounds({ ...rect, x: rect.x + dx, y: rect.y + dy })
 
+// The 8 standard crop-tool selection points. Corner handles resize both
+// dimensions (anchored at the opposite corner); edge handles resize one
+// dimension (anchored at the opposite edge).
+export type HandlePosition = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w"
+
+export const CORNER_HANDLES: readonly HandlePosition[] = [
+  "nw",
+  "ne",
+  "se",
+  "sw",
+]
+export const EDGE_HANDLES: readonly HandlePosition[] = ["n", "e", "s", "w"]
+
+const clampUnit = (n: number): number => Math.min(1, Math.max(0, n))
+
+interface HandleEdges {
+  movesLeft: boolean
+  movesTop: boolean
+  movesRight: boolean
+  movesBottom: boolean
+}
+
+const HANDLE_EDGES: Record<HandlePosition, HandleEdges> = {
+  nw: {
+    movesLeft: true,
+    movesTop: true,
+    movesRight: false,
+    movesBottom: false,
+  },
+  n: {
+    movesLeft: false,
+    movesTop: true,
+    movesRight: false,
+    movesBottom: false,
+  },
+  ne: {
+    movesLeft: false,
+    movesTop: true,
+    movesRight: true,
+    movesBottom: false,
+  },
+  e: {
+    movesLeft: false,
+    movesTop: false,
+    movesRight: true,
+    movesBottom: false,
+  },
+  se: {
+    movesLeft: false,
+    movesTop: false,
+    movesRight: true,
+    movesBottom: true,
+  },
+  s: {
+    movesLeft: false,
+    movesTop: false,
+    movesRight: false,
+    movesBottom: true,
+  },
+  sw: {
+    movesLeft: true,
+    movesTop: false,
+    movesRight: false,
+    movesBottom: true,
+  },
+  w: {
+    movesLeft: true,
+    movesTop: false,
+    movesRight: false,
+    movesBottom: false,
+  },
+}
+
 /**
- * Resize by dragging the bottom-right corner to a new normalized point,
- * anchored at the rect's existing top-left (x,y unchanged). When lockedRatio
- * is given, height is derived from width to preserve width/height = ratio,
- * re-deriving from height if that would overflow the bottom edge.
+ * Resize a rect by dragging a specific handle to a new normalized pointer
+ * position. Corner handles (nw/ne/se/sw) move two edges, anchored at the
+ * OPPOSITE corner, which never moves. Edge handles (n/e/s/w) move exactly one
+ * edge, anchored at the opposite edge — the perpendicular dimension is
+ * untouched.
+ *
+ * When lockedRatio is given, only corner handles should be offered by the
+ * caller (resizing a single edge under a fixed ratio is ambiguous — which
+ * dimension should the other derive from? — the same restriction mainstream
+ * crop tools apply). The ratio-derived dimension is clamped against the room
+ * available from the anchor to the image edge, so the anchor corner never
+ * moves and the rect never exceeds the unit square — no separate bounds clamp
+ * needed (unlike moveRect, shifting x/y here would move the anchor, which is
+ * wrong for a resize).
  */
-export const resizeRectBottomRight = (
+export const resizeRectByHandle = (
   rect: CropRectNormalized,
+  handle: HandlePosition,
   pointerX: number,
   pointerY: number,
   lockedRatio?: { width: number; height: number },
 ): CropRectNormalized => {
-  let width = Math.max(pointerX - rect.x, MIN_CROP_SIZE)
-  let height = Math.max(pointerY - rect.y, MIN_CROP_SIZE)
-  if (lockedRatio) {
+  const edges = HANDLE_EDGES[handle]
+  const px = clampUnit(pointerX)
+  const py = clampUnit(pointerY)
+
+  let left = rect.x
+  let top = rect.y
+  let right = rect.x + rect.width
+  let bottom = rect.y + rect.height
+
+  if (edges.movesLeft) left = Math.min(px, right - MIN_CROP_SIZE)
+  if (edges.movesRight) right = Math.max(px, left + MIN_CROP_SIZE)
+  if (edges.movesTop) top = Math.min(py, bottom - MIN_CROP_SIZE)
+  if (edges.movesBottom) bottom = Math.max(py, top + MIN_CROP_SIZE)
+
+  if (lockedRatio && CORNER_HANDLES.includes(handle)) {
     const ratio = lockedRatio.width / lockedRatio.height
-    width = Math.min(width, 1 - rect.x)
-    height = width / ratio
-    if (rect.y + height > 1) {
-      height = 1 - rect.y
+    const anchorX = edges.movesLeft ? right : left
+    const anchorY = edges.movesTop ? bottom : top
+    const maxWidth = edges.movesLeft ? anchorX : 1 - anchorX
+    const maxHeight = edges.movesTop ? anchorY : 1 - anchorY
+
+    let width = Math.max(Math.abs(px - anchorX), MIN_CROP_SIZE)
+    let height = width / ratio
+    if (height > maxHeight) {
+      height = maxHeight
       width = height * ratio
     }
+    if (width > maxWidth) {
+      width = maxWidth
+      height = width / ratio
+    }
+    width = Math.max(width, MIN_CROP_SIZE)
+    height = Math.max(height, MIN_CROP_SIZE)
+
+    left = edges.movesLeft ? anchorX - width : anchorX
+    right = edges.movesLeft ? anchorX : anchorX + width
+    top = edges.movesTop ? anchorY - height : anchorY
+    bottom = edges.movesTop ? anchorY : anchorY + height
   }
-  return clampRectToBounds({ x: rect.x, y: rect.y, width, height })
+
+  return { x: left, y: top, width: right - left, height: bottom - top }
 }
 
 /**
