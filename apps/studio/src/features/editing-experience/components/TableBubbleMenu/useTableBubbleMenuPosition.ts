@@ -61,17 +61,48 @@ const getBottomRightCellDocumentPos = (state: EditorState): number | null => {
   return bottomRightPos
 }
 
-const getBottomRightCellRect = (
+const getBottomRightCell = (
   view: EditorView,
   state: EditorState,
-): DOMRect | null => {
+): HTMLElement | null => {
   const cellPos = getBottomRightCellDocumentPos(state)
   if (cellPos === null) return null
 
   const dom = view.nodeDOM(cellPos)
-  if (!(dom instanceof HTMLElement)) return null
+  return dom instanceof HTMLElement ? dom : null
+}
 
-  return dom.getBoundingClientRect()
+const clips = (overflow: string) =>
+  overflow === "auto" || overflow === "scroll" || overflow === "hidden"
+
+// The pencil is portaled, so it keeps painting after its corner scrolls out
+// of the editor. Hide it until that corner is visible again.
+const isCornerOutsideEditor = (
+  view: EditorView,
+  cellEl: HTMLElement,
+): boolean => {
+  const { right, bottom } = cellEl.getBoundingClientRect()
+  const scrollParent = getEditorScrollParent(view)
+  const root = scrollParent instanceof HTMLElement ? scrollParent : view.dom
+  let element: HTMLElement | null = cellEl.parentElement
+
+  while (element) {
+    const { overflowX, overflowY } = getComputedStyle(element)
+    const bounds = element.getBoundingClientRect()
+    const outsideX =
+      clips(overflowX) && (right < bounds.left || right > bounds.right)
+    // Only the editor's own scrollport clips vertically. Nested boxes such as
+    // the table's horizontal scroller compute overflow-y to auto as well.
+    const outsideY =
+      element === scrollParent &&
+      clips(overflowY) &&
+      (bottom < bounds.top || bottom > bounds.bottom)
+    if (outsideX || outsideY) return true
+    if (element === root) break
+    element = element.parentElement
+  }
+
+  return false
 }
 
 interface TriggerPlacement extends TableBubbleMenuPosition {
@@ -81,14 +112,18 @@ interface TriggerPlacement extends TableBubbleMenuPosition {
 
 // The pencil is centered on the selection's bottom-right corner. The actions
 // list is positioned from this rect, so viewport shifting never moves the pencil.
+// `false` means the corner is outside the editor, so hide the pencil.
+// `null` means the cell or trigger is not measurable yet.
 const measureTrigger = (
   view: EditorView,
   state: EditorState,
   triggerEl: HTMLElement,
-): TriggerPlacement | null => {
-  const cell = getBottomRightCellRect(view, state)
-  if (!cell) return null
+): TriggerPlacement | null | false => {
+  const cellEl = getBottomRightCell(view, state)
+  if (!cellEl) return null
+  if (isCornerOutsideEditor(view, cellEl)) return false
 
+  const cell = cellEl.getBoundingClientRect()
   const width = triggerEl.offsetWidth
   const height = triggerEl.offsetHeight
   if (width === 0 || height === 0) return null
@@ -131,13 +166,18 @@ const attachScrollListeners = (
   const scrollTarget = getEditorScrollParent(view)
 
   if (scrollTarget instanceof HTMLElement) {
-    scrollTarget.addEventListener("scroll", onUpdate, { passive: true })
+    // Capture so a table's horizontal scrollport, nested inside the editor,
+    // hides the pencil too.
+    scrollTarget.addEventListener("scroll", onUpdate, {
+      passive: true,
+      capture: true,
+    })
   }
   window.addEventListener("resize", onUpdate, { passive: true })
 
   return () => {
     if (scrollTarget instanceof HTMLElement) {
-      scrollTarget.removeEventListener("scroll", onUpdate)
+      scrollTarget.removeEventListener("scroll", onUpdate, { capture: true })
     }
     window.removeEventListener("resize", onUpdate)
   }
@@ -212,8 +252,17 @@ export const useTableBubbleMenuPosition = ({
     const pencilReference = createPencilReference(() => placement, triggerEl)
 
     const update = () => {
-      placement = measureTrigger(getView(), getState(), triggerEl)
-      if (!placement) return
+      const measured = measureTrigger(getView(), getState(), triggerEl)
+      if (measured === false) {
+        requestId += 1
+        placement = null
+        const flush = layoutEffectDepth.current === 0
+        commitPosition(setTrigger, null, flush)
+        commitPosition(setActions, null, flush)
+        return
+      }
+      if (!measured) return
+      placement = measured
 
       commitPosition(
         setTrigger,

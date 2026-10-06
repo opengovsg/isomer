@@ -1570,11 +1570,11 @@ describe("TableBubbleMenu", () => {
       return (
         <div
           data-testid="scroll-parent"
-          style={{ height: "80px", overflowY: "auto" }}
+          style={{ height: "360px", overflowY: "auto" }}
         >
-          <div style={{ height: "600px" }} />
           {e && <TableBubbleMenu editor={e} />}
           {e && <EditorContent editor={e} />}
+          <div style={{ height: "800px" }} />
         </div>
       )
     }
@@ -1607,15 +1607,73 @@ describe("TableBubbleMenu", () => {
       '[data-testid="scroll-parent"]',
     ) as HTMLElement
 
-    // Act
+    // Act: scroll while the selection corner is still inside the editor.
     act(() => {
-      scrollParent.scrollTop = 300
+      scrollParent.scrollTop = 40
       scrollParent.dispatchEvent(new Event("scroll"))
     })
 
     // Assert
     await waitFor(() => {
+      expect(getComputedStyle(menuEl!).visibility).toBe("visible")
       expect(menuEl?.getBoundingClientRect().top).not.toBe(initialTop)
+    })
+  })
+
+  it("hides the pencil when the selection corner leaves the editor viewport", async () => {
+    // Arrange: the table starts inside a scrollable editor, with room to
+    // scroll the highlighted cells out of that viewport.
+    let editor: Editor | undefined
+
+    const ScrollingHarness = () => {
+      const e = useTextEditor({ data: SEED_CONTENT, handleChange: () => null })
+      useEffect(() => {
+        if (e) editor = e
+      }, [e])
+      return (
+        <div
+          data-testid="scroll-parent"
+          style={{ height: "360px", overflowY: "auto" }}
+        >
+          {e && <TableBubbleMenu editor={e} />}
+          {e && <EditorContent editor={e} />}
+          <div style={{ height: "800px" }} />
+        </div>
+      )
+    }
+
+    const { findByRole, container } = render(
+      <ThemeProvider theme={theme}>
+        <ScrollingHarness />
+      </ThemeProvider>,
+    )
+    await waitFor(() => {
+      if (!editor) throw new Error("editor not ready")
+    })
+    const readyEditor = editor!
+
+    selectCells(readyEditor, 3, 5)
+    const trigger = await findByRole("button", { name: "Table actions" })
+    const scrollParent = container.querySelector(
+      '[data-testid="scroll-parent"]',
+    ) as HTMLElement
+    const cell = readyEditor.view.nodeDOM(nthCellPos(readyEditor, 5))
+    if (!(cell instanceof HTMLElement)) throw new Error("cell missing")
+
+    // Act: scroll until the selection's bottom-right corner is above the editor.
+    act(() => {
+      const cellRect = cell.getBoundingClientRect()
+      const parentRect = scrollParent.getBoundingClientRect()
+      scrollParent.scrollTop += cellRect.bottom - parentRect.top + 8
+      scrollParent.dispatchEvent(new Event("scroll"))
+    })
+
+    // Assert
+    await waitFor(() => {
+      const cellRect = cell.getBoundingClientRect()
+      const parentRect = scrollParent.getBoundingClientRect()
+      expect(cellRect.bottom).toBeLessThan(parentRect.top)
+      expect(getComputedStyle(trigger).visibility).toBe("hidden")
     })
   })
 
