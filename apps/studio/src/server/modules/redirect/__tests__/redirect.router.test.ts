@@ -1977,6 +1977,69 @@ describe("redirect.router", async () => {
       expect(count).toBe(1)
     })
 
+    it("should count a redirect to the container when given its IndexPage's id", async () => {
+      // Arrange — the published site keys a folder's URL on the folder's own
+      // id (see getResourceIdByPermalink), so the redirect references the
+      // folder, not its IndexPage child. The unpublish warning only has the
+      // IndexPage's id on hand, so the count must still surface it.
+      const { folder } = await setupFolder({ siteId, permalink: "folder" })
+      const { page: indexPage } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/a",
+          destination: `[resource:${siteId}:${folder.id}]`,
+        })
+        .execute()
+
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: String(indexPage.id),
+      })
+
+      // Assert
+      expect(count).toBe(1)
+    })
+
+    it("should not count a page's own siblings as a container reference when it is not an IndexPage", async () => {
+      // Arrange — a non-IndexPage resource has no container to fold in, so a
+      // redirect to its parent folder stays uncounted, same as before.
+      const { folder } = await setupFolder({ siteId, permalink: "folder" })
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        permalink: "leaf",
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/a",
+          destination: `[resource:${siteId}:${folder.id}]`,
+        })
+        .execute()
+
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: String(page.id),
+      })
+
+      // Assert
+      expect(count).toBe(0)
+    })
+
     it("should not count a literal-path destination (reference-only)", async () => {
       // Arrange — a literal-path destination that happens to match the page's
       // path is not a reference, so it is intentionally not counted
