@@ -42,6 +42,8 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
     id: "gradient",
     className: "bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)]",
   },
+  preUploadCopy:
+    "Use a high-resolution image (at least 2560×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text — this variant adds a gradient overlay.",
 }
 
 // Tier B — responsive two-column layout with a hard mobile image height.
@@ -67,6 +69,8 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
       aspectRatio: { width: 720, height: 500 },
     },
   ],
+  preUploadCopy:
+    "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text.",
 }
 
 // Tier A — fixed 5:6 crop (aspect-[5/6]), no focal. The crop is baked into the
@@ -107,6 +111,8 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
       aspectRatio: { width: 720, height: 450 },
     },
   ],
+  preUploadCopy:
+    "Use a high-resolution image (at least 1280×500px). Place the key subject on the side matching where the image sits (left or right) rather than centering it.",
 }
 
 // Tier B — responsive full-bleed image hero with the largest aspect-ratio swing
@@ -133,6 +139,8 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
       aspectRatio: { width: 2, height: 1 },
     },
   ],
+  preUploadCopy:
+    "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed.",
 }
 
 /**
