@@ -346,9 +346,16 @@ export type GetRedirectBySourceInput = z.infer<typeof getRedirectBySourceSchema>
 // of its descendants — so the delete-page modal can warn that deleting the page
 // will remove those redirects. Descendants are resolved server-side from the
 // resource being deleted.
+//
+// includeContainerReference is unpublish-only: a Folder/Collection's own
+// reference lives outside the IndexPage's descendant subtree, so leave it out
+// by default to keep this count matching exactly what the delete cascade
+// removes. The unpublish warning opts in because unpublishing the IndexPage
+// breaks the container's redirect too, even though nothing gets deleted.
 export const countRedirectsByDestinationSchema = z.object({
   siteId: z.number().min(1, { message: "Site ID is required" }),
   resourceId: generateBigIntSchema("resource ID"),
+  includeContainerReference: z.boolean().optional(),
 })
 export type CountRedirectsByDestinationInput = z.infer<
   typeof countRedirectsByDestinationSchema
