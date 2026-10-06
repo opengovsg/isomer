@@ -19,9 +19,7 @@ vi.mock("~/utils/trpc", () => ({
   trpc: {
     version: {
       listHistory: {
-        useInfiniteQuery: (...args: unknown[]) =>
-          // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
-          mockUseInfiniteQuery(...args),
+        useInfiniteQuery: mockUseInfiniteQuery,
       },
     },
     site: {

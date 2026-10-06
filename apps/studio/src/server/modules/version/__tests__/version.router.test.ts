@@ -80,7 +80,7 @@ describe("version.router", async () => {
   })
 
   describe("listHistory", () => {
-    it("returns versions newest first, each paired with the previous version's content", async () => {
+    it("returns versions newest first, each carrying its own content", async () => {
       // Arrange
       const { page } = await setupPageResource({ resourceType: "Page" })
       await setupAdminPermissions({ userId: user.id, siteId: page.siteId })
@@ -113,9 +113,9 @@ describe("version.router", async () => {
 
       // Assert
       expect(result.items.map((item) => item.versionNum)).toEqual([3, 2, 1])
-      expect(result.items[0]?.afterContent).toEqual(makeContent("three"))
-      expect(result.items[0]?.beforeContent).toEqual(makeContent("two"))
-      expect(result.items[1]?.beforeContent).toEqual(makeContent("one"))
+      expect(result.items[0]?.content).toEqual(makeContent("three"))
+      expect(result.items[1]?.content).toEqual(makeContent("two"))
+      expect(result.items[2]?.content).toEqual(makeContent("one"))
       expect(result.items[0]?.publisher).toMatchObject({
         id: user.id,
         name: "Alice",
@@ -124,7 +124,7 @@ describe("version.router", async () => {
       expect(result.nextOffset).toBeNull()
     })
 
-    it("returns a null beforeContent for the first version", async () => {
+    it("returns its own content for a resource's only version", async () => {
       // Arrange
       const { page } = await setupPageResource({ resourceType: "Page" })
       await setupAdminPermissions({ userId: user.id, siteId: page.siteId })
@@ -145,10 +145,10 @@ describe("version.router", async () => {
 
       // Assert
       expect(result.items).toHaveLength(1)
-      expect(result.items[0]?.beforeContent).toBeNull()
+      expect(result.items[0]?.content).toEqual(makeContent("one"))
     })
 
-    it("paginates, still pairing the last row of a page with the next page's first version", async () => {
+    it("paginates newest first, carrying content on every page", async () => {
       // Arrange
       const { page } = await setupPageResource({ resourceType: "Page" })
       await setupAdminPermissions({ userId: user.id, siteId: page.siteId })
@@ -181,10 +181,11 @@ describe("version.router", async () => {
 
       // Assert
       expect(firstPage.items.map((item) => item.versionNum)).toEqual([3, 2])
-      expect(firstPage.items[1]?.beforeContent).toEqual(makeContent("one"))
+      expect(firstPage.items[0]?.content).toEqual(makeContent("three"))
+      expect(firstPage.items[1]?.content).toEqual(makeContent("two"))
       expect(firstPage.nextOffset).toBe(2)
       expect(secondPage.items.map((item) => item.versionNum)).toEqual([1])
-      expect(secondPage.items[0]?.beforeContent).toBeNull()
+      expect(secondPage.items[0]?.content).toEqual(makeContent("one"))
       expect(secondPage.nextOffset).toBeNull()
     })
 
@@ -236,7 +237,7 @@ describe("version.router", async () => {
 
       // Assert
       expect(result.items).toHaveLength(1)
-      expect(result.items[0]?.afterContent).toEqual(makeContent("mine"))
+      expect(result.items[0]?.content).toEqual(makeContent("mine"))
       expect(crossSite.items).toHaveLength(0)
     })
 

@@ -138,7 +138,8 @@ export interface VersionHistoryRow {
   versionNum: number
   publishedAt: Date
   publisher: { id: string; name: string; email: string }
-  // `null` for a resource's first version, which has nothing to diff against.
+  // This version's own published content. Callers diff it against the
+  // resource's current draft, so no pairing between rows is needed here.
   content: IsomerSchema | null
 }
 
@@ -158,8 +159,7 @@ export const listVersionHistory = async ({
   items: VersionHistoryRow[]
   nextOffset: number | null
 }> => {
-  // Fetch one extra row: it tells us whether there's another page, and its
-  // blob is the "before" content for the last row of this page.
+  // Fetch one extra row to tell us whether there's another page.
   const rows = await db
     .selectFrom("Version")
     .innerJoin("Resource", "Resource.id", "Version.resourceId")

@@ -65,7 +65,7 @@ const openMenu = async () => {
     </ThemeProvider>,
   )
   fireEvent.click(await screen.findByRole("button", { name: "More actions" }))
-  await screen.findByRole("button", { name: "View page history" })
+  await screen.findByRole("button", { name: "View history" })
 }
 
 describe("PageMoreActionsButton", () => {
@@ -79,7 +79,7 @@ describe("PageMoreActionsButton", () => {
     await openMenu()
 
     expect(screen.getByRole("button", { name: "Unpublish page" })).toBeTruthy()
-    fireEvent.click(screen.getByRole("button", { name: "View page history" }))
+    fireEvent.click(screen.getByRole("button", { name: "View history" }))
 
     expect(mocks.push).toHaveBeenCalledWith(
       { pathname: "/sites/1/pages/2", query: { history: "true" } },
@@ -99,7 +99,7 @@ describe("PageMoreActionsButton", () => {
     ).toBe(true)
     expect(
       screen
-        .getByRole("button", { name: "View page history" })
+        .getByRole("button", { name: "View history" })
         .hasAttribute("disabled"),
     ).toBe(false)
   })
@@ -113,8 +113,6 @@ describe("PageMoreActionsButton", () => {
         .getByRole("button", { name: "Unpublish page" })
         .hasAttribute("disabled"),
     ).toBe(true)
-    expect(
-      screen.getByRole("button", { name: "View page history" }),
-    ).toBeTruthy()
+    expect(screen.getByRole("button", { name: "View history" })).toBeTruthy()
   })
 })
