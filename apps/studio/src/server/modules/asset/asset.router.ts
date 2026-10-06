@@ -4,19 +4,25 @@ import {
   deleteAssetsSchema,
   getPresignedGetUrlSchema,
   getPresignedPutUrlSchema,
+  getPresignedPutUrlForBakeSchema,
   uploadSvgSchema,
 } from "~/schemas/asset"
 import { protectedProcedure, router } from "~/server/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { invalidateAssetPaths } from "../aws/cloudfront.service"
+import { db } from "../database"
 import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
+import { getBlobOfResource } from "../resource/resource.service"
 import {
+  blobReferencesUrl,
   deleteAssetsByUrl,
+  deriveBakeKey,
   doAllFileKeysBelongToSite,
   getFileKey,
   getPresignedGetUrl,
   getPresignedPutUrl,
+  isBakeKey,
   markFileAsDeleted,
   putFileDirect,
   sanitizeSvg,
@@ -93,6 +99,47 @@ export const assetRouter = router({
       return { presignedGetUrl }
     }),
 
+  getPresignedPutUrlForBake: protectedProcedure
+    .input(getPresignedPutUrlForBakeSchema)
+    .mutation(
+      async ({ ctx, input: { siteId, resourceId, src, ext, fileSize } }) => {
+        await validateUserPermissionsForAsset({
+          siteId,
+          resourceId,
+          action: "create",
+          userId: ctx.user.id,
+        })
+
+        const blob = await getBlobOfResource({ db, resourceId })
+
+        if (!blobReferencesUrl(blob, src)) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Image does not belong to this resource",
+          })
+        }
+
+        const fileKey = deriveBakeKey({ src, ext, siteId })
+
+        const uploadConfig = await getPresignedPutUrl({
+          key: fileKey,
+          fileSize,
+        })
+
+        ctx.logger.info(
+          {
+            userId: ctx.session?.userId,
+            siteId,
+            resourceId,
+            fileKey,
+          },
+          `Generated upload config for bake ${fileKey} for site ${siteId}`,
+        )
+
+        return { fileKey, uploadConfig }
+      },
+    ),
+
   // No rate limit: all agency editors reach Studio through a single shared
   // egress IP (remote browser isolation), and the limiter keys on IP, so any
   // limit here would be shared across every editor. Abuse risk is already low
@@ -117,8 +164,12 @@ export const assetRouter = router({
         })
       }
 
+      // Bakes are swept with their folder by the asset lifecycle;
+      // the editor must never delete the object its src points at.
+      const deletableKeys = fileKeys.filter((k) => !isBakeKey(k))
+
       await Promise.allSettled(
-        fileKeys.map((fileKey) => markFileAsDeleted({ key: fileKey })),
+        deletableKeys.map((fileKey) => markFileAsDeleted({ key: fileKey })),
       ).then((results) => {
         const deleteFailedCounts = results.filter(
           (result) => result.status === "rejected",

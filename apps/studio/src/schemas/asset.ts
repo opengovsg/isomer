@@ -167,3 +167,19 @@ export const deleteAssetsByUrlSchema = z.object({
       message: `You can only delete up to ${MAX_DELETE_ASSET_URLS} assets at a time`,
     }),
 })
+
+export const getPresignedPutUrlForBakeSchema = z.object({
+  siteId: z.number().min(1),
+  resourceId: z.string(),
+  src: z.string({
+    error: "Missing image source",
+  }),
+  ext: z.enum(["jpeg", "png", "webp"], {
+    message: "Unsupported image format. Use jpeg, png, or webp.",
+  }),
+  fileSize: fileSizeSchema,
+})
+
+export type GetPresignedPutUrlForBakeInput = z.infer<
+  typeof getPresignedPutUrlForBakeSchema
+>

@@ -48,7 +48,8 @@ export const generateTagsQueryString = (
   return entries.join("&")
 }
 
-const getFilenameFromKey = (key: string): string => key.split("/").pop() ?? ""
+export const getFilenameFromKey = (key: string): string =>
+  key.split("/").pop() ?? ""
 
 const getExtensionFromFilename = (filename: string): string =>
   filename.includes(".") ? filename.substring(filename.lastIndexOf(".")) : ""
@@ -153,6 +154,78 @@ export const getPresignedPutUrl = async ({
     Tagging: tags && generateTagsQueryString(tags),
   })
   return { presignedPutUrl, contentType, contentDisposition }
+}
+
+/**
+ * Derive a bake key from the source image's current location.
+ * Bridges relative path to full URL, extracts folder, and mints server leaf.
+ */
+export const deriveBakeKey = ({
+  src,
+  ext,
+  siteId,
+}: {
+  src: string
+  ext: string
+  siteId: number
+}): string => {
+  // Bridge relative path to full URL
+  const fullUrl = `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${src}`
+  const key = parseAssetUrlToKey(fullUrl)
+
+  if (!key) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Invalid image source URL",
+    })
+  }
+
+  // Extract folder: drop the leaf (last segment) from `${siteId}/${uuid}/${file}`
+  const folder = key.substring(0, key.lastIndexOf("/"))
+
+  // Defense-in-depth: assert folder starts with `${siteId}/`
+  if (!folder.startsWith(`${siteId}/`)) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Image source does not belong to this site",
+    })
+  }
+
+  // Mint server leaf and return full bake key
+  return `${folder}/baked-${randomUUID()}.${ext}`
+}
+
+/**
+ * Check if a key is a bake object (filename starts with "baked-").
+ */
+export const isBakeKey = (key: string): boolean => {
+  const filename = getFilenameFromKey(key)
+  return filename.startsWith("baked-")
+}
+
+/**
+ * Recursively scan blob JSON for a string value matching src.
+ */
+export const blobReferencesUrl = (blob: unknown, src: string): boolean => {
+  if (typeof blob === "string") {
+    return blob === src
+  }
+
+  if (blob === null || typeof blob !== "object") {
+    return false
+  }
+
+  if (Array.isArray(blob)) {
+    return blob.some((item) => blobReferencesUrl(item, src))
+  }
+
+  for (const value of Object.values(blob)) {
+    if (blobReferencesUrl(value, src)) {
+      return true
+    }
+  }
+
+  return false
 }
 
 // Best-effort delete: the derived format may not exist for every asset

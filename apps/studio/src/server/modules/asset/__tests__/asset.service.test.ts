@@ -3,11 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { deleteFile } from "~/lib/s3"
 
 import {
+  blobReferencesUrl,
   deleteAssetsByUrl,
+  deriveBakeKey,
   doAllFileKeysBelongToSite,
   getContentDispositionForKey,
   getContentTypeFromKey,
   getFileKey,
+  isBakeKey,
   parseAssetUrlToKey,
   sanitizeSvg,
 } from "../asset.service"
@@ -673,6 +676,144 @@ describe("asset.service", () => {
           message: "SVG failed to parse as valid XML",
         }),
       )
+    })
+  })
+
+  describe("deriveBakeKey", () => {
+    const UUID = "11111111-1111-1111-1111-111111111111"
+    const BAKE_UUID_PATTERN =
+      /^36\/11111111-1111-1111-1111-111111111111\/baked-[0-9a-f\-]{36}\.jpeg$/i
+
+    it("should mint a server leaf while preserving the source folder", () => {
+      // Arrange
+      const src = `/${36}/${UUID}/source.png`
+      const siteId = 36
+      const ext = "jpeg"
+
+      // Act
+      const key1 = deriveBakeKey({ src, ext, siteId })
+      const key2 = deriveBakeKey({ src, ext, siteId })
+
+      // Assert — same folder, different leaves
+      expect(key1).toMatch(BAKE_UUID_PATTERN)
+      expect(key2).toMatch(BAKE_UUID_PATTERN)
+      expect(key1).not.toEqual(key2)
+      expect(
+        key1.startsWith("36/11111111-1111-1111-1111-111111111111/baked-"),
+      ).toBe(true)
+    })
+
+    it("should use the correct extension from input", () => {
+      // Arrange
+      const src = `/${36}/${UUID}/source.png`
+      const siteId = 36
+
+      // Act
+      const keyJpeg = deriveBakeKey({ src, ext: "jpeg", siteId })
+      const keyPng = deriveBakeKey({ src, ext: "png", siteId })
+      const keyWebp = deriveBakeKey({ src, ext: "webp", siteId })
+
+      // Assert
+      expect(keyJpeg).toMatch(/\.jpeg$/)
+      expect(keyPng).toMatch(/\.png$/)
+      expect(keyWebp).toMatch(/\.webp$/)
+    })
+
+    it("should throw BAD_REQUEST for invalid source URL", () => {
+      // Arrange
+      const src = "/invalid-path"
+      const siteId = 36
+      const ext = "jpeg"
+
+      // Act & Assert
+      expect(() => deriveBakeKey({ src, ext, siteId })).toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid image source URL",
+        }),
+      )
+    })
+
+    it("should throw BAD_REQUEST for source from different site", () => {
+      // Arrange — source belongs to siteId 99, but we're deriving for siteId 36
+      const src = `/99/${UUID}/source.png`
+      const siteId = 36
+      const ext = "jpeg"
+
+      // Act & Assert
+      expect(() => deriveBakeKey({ src, ext, siteId })).toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Image source does not belong to this site",
+        }),
+      )
+    })
+  })
+
+  describe("isBakeKey", () => {
+    it("should return true for a bake key with expected prefix", () => {
+      expect(isBakeKey("36/uuid/baked-something.jpeg")).toBe(true)
+      expect(isBakeKey("1/another-uuid/baked-12345.png")).toBe(true)
+      expect(isBakeKey("100/uuid/baked-.webp")).toBe(true)
+    })
+
+    it("should return false for a normal asset key", () => {
+      expect(isBakeKey("36/uuid/image.png")).toBe(false)
+      expect(isBakeKey("36/uuid/photo.jpeg")).toBe(false)
+      expect(isBakeKey("36/uuid/file.pdf")).toBe(false)
+    })
+
+    it("should return false for a key with baked in the middle", () => {
+      expect(isBakeKey("36/uuid/my-baked-image.png")).toBe(false)
+    })
+
+    it("should return false for an empty key", () => {
+      expect(isBakeKey("")).toBe(false)
+    })
+  })
+
+  describe("blobReferencesUrl", () => {
+    it("should return true when url is a top-level string value", () => {
+      expect(blobReferencesUrl("hello", "hello")).toBe(true)
+    })
+
+    it("should return true when url is nested in object", () => {
+      const blob = { content: { image: "/36/uuid/file.png" } }
+      expect(blobReferencesUrl(blob, "/36/uuid/file.png")).toBe(true)
+    })
+
+    it("should return true when url is in array", () => {
+      const blob = { images: ["/36/uuid/a.png", "/36/uuid/b.png"] }
+      expect(blobReferencesUrl(blob, "/36/uuid/a.png")).toBe(true)
+    })
+
+    it("should return true for deeply nested url", () => {
+      const blob = {
+        sections: [
+          {
+            blocks: [{ settings: { image: "/36/uuid/nested.png" } }],
+          },
+        ],
+      }
+      expect(blobReferencesUrl(blob, "/36/uuid/nested.png")).toBe(true)
+    })
+
+    it("should return false when url is not in blob", () => {
+      const blob = { content: { image: "/36/uuid/file.png" } }
+      expect(blobReferencesUrl(blob, "/36/uuid/other.png")).toBe(false)
+    })
+
+    it("should return false for empty blob", () => {
+      expect(blobReferencesUrl({}, "/36/uuid/file.png")).toBe(false)
+    })
+
+    it("should return false for null blob", () => {
+      expect(blobReferencesUrl(null, "/36/uuid/file.png")).toBe(false)
+    })
+
+    it("should return false when partial match in string", () => {
+      const blob = { content: "prefix-/36/uuid/file.png-suffix" }
+      expect(blobReferencesUrl(blob, "/36/uuid/file.png")).toBe(false)
     })
   })
 })

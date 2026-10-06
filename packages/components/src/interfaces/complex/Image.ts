@@ -27,6 +27,42 @@ export const generateImageSrcSchema = ({
 
 export const ImageSrcSchema = generateImageSrcSchema({})
 
+// Normalized [0,1] coordinate, shared by crop + focal in imageAdjustment.
+const NormalizedUnit = Type.Number({ minimum: 0, maximum: 1 })
+
+// The imageAdjustment sibling object (Engineering RFC 09). Optional per
+// image-bearing component; absence = unedited. crop/rotate/flip are baked into
+// the rendered pixels and kept only so the editor can re-bake from the original;
+// focal is emitted at render time as object-position. Written by the adjustment
+// modal, never a hand-edited JSONForms control -> format: "hidden".
+export const imageAdjustmentSchema = Type.Object(
+  {
+    crop: Type.Object({
+      x: NormalizedUnit,
+      y: NormalizedUnit,
+      width: NormalizedUnit,
+      height: NormalizedUnit,
+    }),
+    focal: Type.Object({
+      x: NormalizedUnit,
+      y: NormalizedUnit,
+    }),
+    rotate: Type.Union(
+      [Type.Literal(0), Type.Literal(90), Type.Literal(180), Type.Literal(270)],
+      { default: 0 },
+    ),
+    flipH: Type.Boolean({ default: false }),
+    flipV: Type.Boolean({ default: false }),
+    originalKey: Type.String(),
+  },
+  {
+    title: "Image adjustment",
+    format: "hidden",
+  },
+)
+
+export type ImageAdjustment = Static<typeof imageAdjustmentSchema>
+
 // Note: ajv pattern does not support the use of patternFlag like "i" for case-insensitive
 // Thus, we manually add the case-insensitive flag to the regex pattern
 // Refer to "/altTextRegexPattern.test.ts" for the explanation of the regex pattern
