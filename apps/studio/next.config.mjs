@@ -153,9 +153,7 @@ const config = {
   // served via plain `next start` and never reads `.next/standalone`.
   output:
     // oxlint-disable-next-line node/no-process-env -- Vercel sets VERCEL; it is not in the app env schema
-    env.SKIP_STANDALONE_OUTPUT || process.env.VERCEL
-      ? undefined
-      : "standalone",
+    env.SKIP_STANDALONE_OUTPUT || process.env.VERCEL ? undefined : "standalone",
   // Pin the tracing root so the standalone layout is always
   // `.next/standalone/apps/studio/server.js` (what the Dockerfile and start:standalone expect).
   // Without this, Next infers the workspace root from the outermost lockfile, which varies by
