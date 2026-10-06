@@ -1,5 +1,5 @@
-import { useEffect } from "react"
 import { Infobox } from "@opengovsg/design-system-react"
+import { useEffect } from "react"
 import { trpc } from "~/utils/trpc"
 
 // Redirects whose destination resolves to this page dead-end once it's
