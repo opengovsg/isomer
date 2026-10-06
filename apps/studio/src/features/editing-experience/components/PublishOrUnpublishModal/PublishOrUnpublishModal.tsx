@@ -13,7 +13,6 @@ import {
 } from "@chakra-ui/react"
 import {
   Button,
-  Infobox,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
@@ -38,6 +37,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import type { ActionMode, PublishOrUnpublishAction } from "./ActionOptionsInput"
 import { PUBLISHED_AFTER_EDITING_EVENT } from "../../constants"
 import { useFireContentEditSurveyEvent } from "../../hooks/useContentEditSurvey"
+import { UnpublishRedirectWarning } from "../UnpublishRedirectWarning"
 import { ActionOptionsInput } from "./ActionOptionsInput"
 import { ScheduleBanner, UNPUBLISH_WINDOW_MINUTES } from "./ScheduleBanner"
 import { ScheduleDateTimeFields } from "./ScheduleDateTimeFields"
@@ -369,36 +369,6 @@ export const PublishOrUnpublishModal = ({
         </ModalFooter>
       </ModalContent>
     </Modal>
-  )
-}
-
-// Redirects whose destination resolves to this page dead-end once it's
-// unpublished. Unlike deleting (which soft-deletes them), unpublishing leaves
-// them in place, so this only warns — it never removes anything.
-const UnpublishRedirectWarning = ({
-  pageId,
-  siteId,
-}: {
-  pageId: number
-  siteId: number
-}) => {
-  const { data: redirectCount = 0 } =
-    trpc.redirect.countByDestinationResource.useQuery({
-      siteId,
-      resourceId: String(pageId),
-    })
-
-  if (redirectCount === 0) {
-    return null
-  }
-
-  return (
-    <Infobox variant="warning" size="sm">
-      {redirectCount === 1
-        ? "1 redirect points"
-        : `${redirectCount} redirects point`}{" "}
-      to this page and will stop working once it's unpublished.
-    </Infobox>
   )
 }
 
