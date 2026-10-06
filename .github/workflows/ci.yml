@@ -62,7 +62,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Build
-        run: pnpm run build
+        run: pnpm run build -- --ui=stream --log-order=stream
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -73,7 +73,7 @@ jobs:
 
       - parallel:
           - name: Lint
-            run: pnpm run lint && pnpm run lint:ws
+            run: pnpm run lint -- --ui=stream --log-order=stream && pnpm run lint:ws
           - name: Lint Dockerfile
             uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387
             with:
@@ -89,7 +89,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Format
-        run: pnpm run format
+        run: pnpm run format -- --ui=stream --log-order=stream
 
   typecheck:
     runs-on: ubuntu-latest
@@ -100,7 +100,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Typecheck
-        run: pnpm run typecheck
+        run: pnpm run typecheck -- --ui=stream --log-order=stream
 
   test-studio:
     name: Test Studio (${{ matrix.shard }}/${{ matrix.total_shards }})
@@ -124,7 +124,7 @@ jobs:
             run: pnpm --filter isomer-studio exec playwright install chromium
           - name: Install dependencies
             # Not using test:unit dependency in Turbo because Datadog Test Visibility requires only the test suite to be run
-            run: pnpm exec turbo run generate --filter=isomer-studio
+            run: pnpm exec turbo run generate --filter=isomer-studio --ui=stream --log-order=stream
           - name: Configure Datadog Test Visibility
             uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
             with:
@@ -133,7 +133,7 @@ jobs:
               api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Studio
         # Loose env mode required for env vars to be passed to the run
-        run: pnpm exec turbo test-ci:unit --filter=isomer-studio --env-mode=loose -- --shard=${{ matrix.shard }}/${{ matrix.total_shards }}
+        run: pnpm exec turbo test-ci:unit --filter=isomer-studio --env-mode=loose --ui=stream --log-order=stream -- --shard=${{ matrix.shard }}/${{ matrix.total_shards }}
         env:
           # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
@@ -160,7 +160,7 @@ jobs:
               service: isomer-studio
               api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Components
-        run: pnpm exec turbo test-ci:unit --filter=@opengovsg/isomer-components --env-mode=loose
+        run: pnpm exec turbo test-ci:unit --filter=@opengovsg/isomer-components --env-mode=loose --ui=stream --log-order=stream
         env:
           # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
@@ -183,7 +183,7 @@ jobs:
           service: isomer-template
           api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test template bundle pruning
-        run: pnpm exec turbo test-ci:e2e --filter=isomer-base-template --env-mode=loose
+        run: pnpm exec turbo test-ci:e2e --filter=isomer-base-template --env-mode=loose --ui=stream --log-order=stream
         env:
           # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
@@ -205,7 +205,7 @@ jobs:
           service: isomer-studio
           api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Validators
-        run: pnpm exec turbo test-ci:unit --filter=@isomer/validators --env-mode=loose
+        run: pnpm exec turbo test-ci:unit --filter=@isomer/validators --env-mode=loose --ui=stream --log-order=stream
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
@@ -221,7 +221,7 @@ jobs:
         uses: ./.github/actions/setup
       - parallel:
           - name: Start test containers
-            run: pnpm exec turbo run setup:test --filter=@isomer/pgboss
+            run: pnpm exec turbo run setup:test --filter=@isomer/pgboss --ui=stream --log-order=stream
           - name: Configure Datadog Test Visibility
             uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
             with:
@@ -229,7 +229,7 @@ jobs:
               service: isomer-pgboss
               api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test pgboss
-        run: pnpm exec turbo test-ci:unit --filter=@isomer/pgboss --env-mode=loose
+        run: pnpm exec turbo test-ci:unit --filter=@isomer/pgboss --env-mode=loose --ui=stream --log-order=stream
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
@@ -251,14 +251,14 @@ jobs:
           api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test publishing script
         # Loose env mode required for env vars to be passed to the run
-        run: pnpm exec turbo test-ci:unit --filter=publishing --env-mode=loose
+        run: pnpm exec turbo test-ci:unit --filter=publishing --env-mode=loose --ui=stream --log-order=stream
         env:
           # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           # Set timezone to Singapore to ensure that the tests are run in the correct timezone
           TZ: Asia/Singapore
       - name: Test full template build from publishing script output
-        run: pnpm exec turbo test-ci:build --filter=publishing --env-mode=loose
+        run: pnpm exec turbo test-ci:build --filter=publishing --env-mode=loose --ui=stream --log-order=stream
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
@@ -313,7 +313,7 @@ jobs:
             run: pnpm --filter isomer-studio exec playwright install chromium
           - name: Build Studio app
             # Loose env mode required for env vars to be passed to the run
-            run: pnpm exec turbo build --filter=isomer-studio --env-mode=loose
+            run: pnpm exec turbo build --filter=isomer-studio --env-mode=loose --ui=stream --log-order=stream
             env:
               # These source maps exist for Datadog RUM error tracking on real
               # deploys; e2e gets no benefit from them, and generating them is
@@ -324,7 +324,7 @@ jobs:
               # `output: standalone` requires for Docker/start:standalone deploys.
               SKIP_STANDALONE_OUTPUT: "true"
           - name: Start test containers
-            run: pnpm run setup:test
+            run: pnpm run setup:test -- --ui=stream --log-order=stream
           - name: Configure Datadog Test Visibility
             uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
             with:
@@ -332,12 +332,12 @@ jobs:
               service: isomer-studio
               api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Run Playwright tests
-        run: pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
+        run: pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose --ui=stream --log-order=stream
         env:
           PLAYWRIGHT_TEST_PATHS: ${{ matrix.paths }}
 
       - name: Stop test containers
-        run: pnpm run teardown
+        run: pnpm run teardown -- --ui=stream --log-order=stream
 
       - name: Upload test results
         if: ${{ !cancelled() }}
