@@ -44,11 +44,13 @@ const TIER_B_CONFIG: AdjustmentConfig = {
 interface ImageAdjustmentModalHarnessProps {
   isOpen: boolean
   value?: ImageAdjustment
+  block?: unknown
 }
 
 const ImageAdjustmentModalHarness = ({
   isOpen: initialIsOpen,
   value,
+  block,
 }: ImageAdjustmentModalHarnessProps) => {
   const [isOpen, setIsOpen] = useState(initialIsOpen)
   const [savedValue, setSavedValue] = useState<ImageAdjustment | undefined>(
@@ -80,6 +82,8 @@ const ImageAdjustmentModalHarness = ({
         config={TIER_B_CONFIG}
         src={savedSrc}
         value={value}
+        block={block}
+        imageFieldName="backgroundUrl"
         siteId={1}
         resourceId="test-resource"
         onSave={({ src, imageAdjustment }) => {
@@ -124,6 +128,25 @@ export const WithExistingValue: Story = {
       flipH: false,
       flipV: false,
       originalKey: "existing-key-123",
+    },
+  },
+}
+
+// Exercises the W0-I real-component preview path: with a real block object
+// present, AdjustmentPreview renders the actual HeroGradient (real title,
+// gradient scrim, focal) inside a PreviewIframe instead of the framed-<img>
+// approximation.
+export const WithRealComponentPreview: Story = {
+  args: {
+    isOpen: true,
+    block: {
+      type: "hero",
+      variant: "gradient",
+      title: "A real HeroGradient, rendered live",
+      subtitle:
+        "This copy, gradient, and crop all come from the real component.",
+      buttonLabel: "Explore",
+      buttonUrl: "/",
     },
   },
 }

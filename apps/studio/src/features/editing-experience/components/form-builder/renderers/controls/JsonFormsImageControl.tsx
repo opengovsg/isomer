@@ -120,6 +120,8 @@ function JsonFormsImageControl({
                 config={config}
                 src={data}
                 value={currentAdjustment}
+                block={block}
+                imageFieldName={fieldName}
                 siteId={siteId}
                 resourceId={
                   (pageId ?? linkId) ? String(pageId ?? linkId) : undefined

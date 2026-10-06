@@ -1,10 +1,16 @@
 "use client"
 
-import type { ImageAdjustment } from "@opengovsg/isomer-components"
+import type {
+  IsomerComponent,
+  IsomerSiteProps,
+  ImageAdjustment,
+} from "@opengovsg/isomer-components"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
+import { renderComponent } from "@opengovsg/isomer-components"
 import { useEffect, useRef, useState } from "react"
+import { PreviewIframe } from "~/features/editing-experience/components/preview/PreviewIframe"
 import { bakeImage, canBakeImage } from "~/lib/imageBake"
-import { generateAssetUrl } from "~/utils/generateAssetUrl"
+import { ASSETS_BASE_URL, generateAssetUrl } from "~/utils/generateAssetUrl"
 
 import type {
   AdjustmentPreviewState,
@@ -12,16 +18,28 @@ import type {
 } from "./AdjustmentConfig"
 import { resolveOriginalKey } from "./useSaveImageAdjustment"
 
+// Minimal site stub for an ISOLATED single-block preview — there is no real
+// page/nav/footer context here (this renders one block, not a whole page), so
+// only the fields HeroGradient/Contentpic actually read (assetsBaseUrl,
+// siteMapArray for reference-link resolution, which degrades gracefully to
+// the raw link on a miss) are populated. Mirrors the same escape hatch
+// PreviewWithCustomSitemap.tsx already uses for its own site prop.
+const PREVIEW_SITE_STUB = {
+  assetsBaseUrl: ASSETS_BASE_URL,
+  siteMapArray: [],
+} as unknown as IsomerSiteProps
+
 interface AdjustmentPreviewProps {
   src: string
   adjustment?: ImageAdjustment
   previewStates: AdjustmentPreviewState[]
   scrim?: AdjustmentScrim
-  // W0-G injects the real template component here; default = the framed <img>
-  renderFrameContent?: (args: {
-    state: AdjustmentPreviewState
-    imageNode: React.ReactNode
-  }) => React.ReactNode
+  // The real block content + the field name holding the image, so the real
+  // published component can be rendered (real copy/scrim/frame) instead of
+  // the framed-<img> approximation below. Falls back to the approximation
+  // when absent or when rendering the real component fails for any reason.
+  block?: unknown
+  imageFieldName?: string
 }
 
 export const AdjustmentPreview = ({
@@ -29,7 +47,8 @@ export const AdjustmentPreview = ({
   adjustment,
   previewStates,
   scrim,
-  renderFrameContent,
+  block,
+  imageFieldName,
 }: AdjustmentPreviewProps): JSX.Element => {
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -136,6 +155,67 @@ export const AdjustmentPreview = ({
     return `${(focal.x ?? 0.5) * 100}% ${(focal.y ?? 0.5) * 100}%`
   }
 
+  const adjustedSrc = previewUrl ?? displaySrc
+
+  // Real-component preview: render the actual published block (real copy,
+  // scrim, frame behaviour) with the adjusted image + draft imageAdjustment
+  // spliced in, instead of the framed-<img> approximation. MVP = one frame at
+  // the default viewport, not per-breakpoint — getting each breakpoint's own
+  // CSS media queries to fire correctly needs an iframe sized to that exact
+  // viewport width (Tailwind responds to the iframe's own viewport, not an
+  // outer container's size), which PreviewIframe's current fixed
+  // mobile/tablet/responsive presets don't support; deferred until dogfood
+  // feedback justifies the extra per-breakpoint-scaled-iframe work.
+  let previewComponent: React.ReactNode = null
+  if (block && typeof block === "object" && imageFieldName) {
+    try {
+      const component = {
+        ...block,
+        [imageFieldName]: adjustedSrc,
+        imageAdjustment: adjustment,
+      } as IsomerComponent
+      previewComponent = renderComponent({
+        component,
+        layout: "content",
+        site: PREVIEW_SITE_STUB,
+        permalink: "",
+        headingLevel: 1,
+      })
+    } catch (error) {
+      console.debug(
+        "Failed to render real-component preview, falling back to approximation",
+        error,
+      )
+      previewComponent = null
+    }
+  }
+
+  if (previewComponent) {
+    return (
+      <Box>
+        <Text
+          textStyle="body-2"
+          fontWeight="semibold"
+          color="base.content.medium"
+          mb="0.5rem"
+        >
+          Live preview
+        </Text>
+        <Box
+          borderWidth="1px"
+          borderColor="base.divider.medium"
+          borderRadius="0.25rem"
+          overflow="hidden"
+          h="24rem"
+        >
+          <PreviewIframe viewport="responsive">
+            {previewComponent}
+          </PreviewIframe>
+        </Box>
+      </Box>
+    )
+  }
+
   return (
     <HStack
       align="flex-start"
@@ -149,7 +229,7 @@ export const AdjustmentPreview = ({
         const imageNode = (
           <Box
             as="img"
-            src={previewUrl ?? displaySrc}
+            src={adjustedSrc}
             alt={`Preview: ${state.label}`}
             w="100%"
             h="100%"
@@ -160,10 +240,7 @@ export const AdjustmentPreview = ({
           />
         )
 
-        const frameContent = renderFrameContent?.({
-          state,
-          imageNode,
-        }) ?? (
+        const frameContent = (
           <Box w="100%" h="100%" position="relative" overflow="hidden">
             {imageNode}
             {/* Scrim overlay for contrast visualization */}

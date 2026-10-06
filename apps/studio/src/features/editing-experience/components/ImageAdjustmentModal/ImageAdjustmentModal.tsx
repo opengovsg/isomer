@@ -35,6 +35,11 @@ interface ImageAdjustmentModalProps {
   config: AdjustmentConfig
   src: string
   value?: ImageAdjustment
+  // The real block content + the name of the field holding the image, so the
+  // preview can render the actual published component (real copy, scrim,
+  // crop frame) rather than an approximation.
+  block: unknown
+  imageFieldName: string
   siteId: number
   resourceId?: string
   onSave: (result: {
@@ -48,6 +53,8 @@ export const ImageAdjustmentModal = ({
   onClose,
   config,
   src,
+  block,
+  imageFieldName,
   value,
   siteId,
   resourceId,
@@ -160,6 +167,8 @@ export const ImageAdjustmentModal = ({
                   adjustment={draft}
                   previewStates={config.previewStates}
                   scrim={config.scrim}
+                  block={block}
+                  imageFieldName={imageFieldName}
                 />
               </GridItem>
 
