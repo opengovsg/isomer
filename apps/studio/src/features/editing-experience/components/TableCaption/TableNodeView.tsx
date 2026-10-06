@@ -13,6 +13,8 @@ import {
 import { TABLE_GUTTER_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import { TableCaption } from "./TableCaption"
+import { tableScrollFadeLabel, tableScrollFadeMask } from "./tableScrollFade"
+import { useTableScrollFade } from "./useTableScrollFade"
 
 const applyColumnWidths = (
   table: HTMLTableElement,
@@ -177,7 +179,14 @@ export const TableNodeView = ({
   const [preview, setPreview] = useState<number[] | null>(null)
   const widths = preview ?? stored
   const rootRef = useRef<HTMLDivElement>(null)
+  const scrollportRef = useRef<HTMLDivElement>(null)
   const sum = widths?.reduce((total, width) => total + width, 0)
+  const fade = useTableScrollFade(
+    scrollportRef,
+    `${columnCount}:${sum ?? "auto"}`,
+  )
+  const fadeLabel = tableScrollFadeLabel(fade)
+  const fadeMask = tableScrollFadeMask(fade)
 
   useEffect(() => {
     if (!preview || !stored) return
@@ -196,7 +205,13 @@ export const TableNodeView = ({
   }, [widths, node])
 
   return (
-    <Box as={NodeViewWrapper} display="flex" flexDirection="column">
+    <Box
+      as={NodeViewWrapper}
+      display="flex"
+      flexDirection="column"
+      w="100%"
+      minW={0}
+    >
       <Box contentEditable={false}>
         <TableCaption
           caption={caption}
@@ -205,8 +220,20 @@ export const TableNodeView = ({
           }
         />
       </Box>
-      <Box p={`${TABLE_GUTTER_PX}px`}>
-        <Box data-table-scrollport="" w="100%" overflowX="auto">
+      <Box p={`${TABLE_GUTTER_PX}px`} minW={0}>
+        <Box
+          ref={scrollportRef}
+          data-table-scrollport=""
+          {...(fadeLabel ? { "data-table-scroll-fade": fadeLabel } : {})}
+          w="100%"
+          minW={0}
+          overflowX="auto"
+          style={
+            fadeMask
+              ? { maskImage: fadeMask, WebkitMaskImage: fadeMask }
+              : undefined
+          }
+        >
           <Box
             ref={rootRef}
             data-column-resize-root=""
