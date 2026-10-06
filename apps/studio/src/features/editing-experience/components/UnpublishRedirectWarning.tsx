@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { Infobox } from "@opengovsg/design-system-react"
 import { trpc } from "~/utils/trpc"
 
@@ -12,9 +13,13 @@ import { trpc } from "~/utils/trpc"
 export const UnpublishRedirectWarning = ({
   pageId,
   siteId,
+  onPendingChange,
 }: {
   pageId: number
   siteId: number
+  // Lets the caller block confirmation until this check settles, so a user
+  // can't unpublish before (or despite) seeing the warning.
+  onPendingChange?: (isPending: boolean) => void
 }) => {
   const {
     data: redirectCount,
@@ -24,6 +29,10 @@ export const UnpublishRedirectWarning = ({
     siteId,
     resourceId: String(pageId),
   })
+
+  useEffect(() => {
+    onPendingChange?.(isPending)
+  }, [isPending, onPendingChange])
 
   // A pending or failed check must not silently read as "no redirects": the
   // user could otherwise unpublish and break redirects without ever seeing the

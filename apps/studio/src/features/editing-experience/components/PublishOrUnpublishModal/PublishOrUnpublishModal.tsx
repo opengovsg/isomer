@@ -18,7 +18,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { add, format, isSameDay } from "date-fns"
 import posthog from "posthog-js"
-import { useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { BiSolidInfoCircle } from "react-icons/bi"
 import {
@@ -91,6 +91,16 @@ export const PublishOrUnpublishModal = ({
     disableNow ? "later" : action === "publish" ? "now" : undefined,
   )
   const lastScheduledAtRef = useRef<Date | null>(null)
+  // Starts true for unpublish (the redirect check mounts with the modal, so
+  // there's a real pending window) and stays false for publish, which never
+  // renders the check at all.
+  const [isRedirectCheckPending, setIsRedirectCheckPending] = useState(
+    action === "unpublish",
+  )
+  const handleRedirectCheckPendingChange = useCallback(
+    (pending: boolean) => setIsRedirectCheckPending(pending),
+    [],
+  )
 
   const schema =
     action === "publish"
@@ -339,7 +349,11 @@ export const PublishOrUnpublishModal = ({
                 <DraftChangesBanner mode={mode} scheduledAt={scheduledAt} />
               )}
               {action === "unpublish" && (
-                <UnpublishRedirectWarning pageId={pageId} siteId={siteId} />
+                <UnpublishRedirectWarning
+                  pageId={pageId}
+                  siteId={siteId}
+                  onPendingChange={handleRedirectCheckPendingChange}
+                />
               )}
             </VStack>
           </FormProvider>
@@ -355,7 +369,7 @@ export const PublishOrUnpublishModal = ({
           </Button>
           <Button
             onClick={handleSubmitClick}
-            isDisabled={!mode}
+            isDisabled={!mode || isRedirectCheckPending}
             isLoading={isSubmitting}
           >
             {mode === "later"
