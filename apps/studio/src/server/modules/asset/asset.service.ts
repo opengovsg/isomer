@@ -203,31 +203,6 @@ export const isBakeKey = (key: string): boolean => {
   return filename.startsWith("baked-")
 }
 
-/**
- * Recursively scan blob JSON for a string value matching src.
- */
-export const blobReferencesUrl = (blob: unknown, src: string): boolean => {
-  if (typeof blob === "string") {
-    return blob === src
-  }
-
-  if (blob === null || typeof blob !== "object") {
-    return false
-  }
-
-  if (Array.isArray(blob)) {
-    return blob.some((item) => blobReferencesUrl(item, src))
-  }
-
-  for (const value of Object.values(blob)) {
-    if (blobReferencesUrl(value, src)) {
-      return true
-    }
-  }
-
-  return false
-}
-
 // Best-effort delete: the derived format may not exist for every asset
 // (e.g. it was never generated), so a missing key is not an error.
 const deleteFileIfExists = async ({ Key }: { Key: string }) => {

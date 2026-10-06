@@ -11,11 +11,8 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { invalidateAssetPaths } from "../aws/cloudfront.service"
-import { db } from "../database"
 import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
-import { getBlobOfResource } from "../resource/resource.service"
 import {
-  blobReferencesUrl,
   deleteAssetsByUrl,
   deriveBakeKey,
   doAllFileKeysBelongToSite,
@@ -103,21 +100,18 @@ export const assetRouter = router({
     .input(getPresignedPutUrlForBakeSchema)
     .mutation(
       async ({ ctx, input: { siteId, resourceId, src, ext, fileSize } }) => {
+        // Ownership of `src` is NOT re-verified against the resource's
+        // persisted blob here (deliberate: a just-uploaded-but-not-yet-saved
+        // image has no persisted reference yet, and requiring a page save
+        // first was judged worse UX than this). The resourceId/siteId
+        // "create" permission check below is the sole gate; deriveBakeKey
+        // still confirms `src` resolves to a key under this siteId.
         await validateUserPermissionsForAsset({
           siteId,
           resourceId,
           action: "create",
           userId: ctx.user.id,
         })
-
-        const blob = await getBlobOfResource({ db, resourceId })
-
-        if (!blobReferencesUrl(blob, src)) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Image does not belong to this resource",
-          })
-        }
 
         const fileKey = deriveBakeKey({ src, ext, siteId })
 

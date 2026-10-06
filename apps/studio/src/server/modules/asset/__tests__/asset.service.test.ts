@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { deleteFile } from "~/lib/s3"
 
 import {
-  blobReferencesUrl,
   deleteAssetsByUrl,
   deriveBakeKey,
   doAllFileKeysBelongToSite,
@@ -769,51 +768,6 @@ describe("asset.service", () => {
 
     it("should return false for an empty key", () => {
       expect(isBakeKey("")).toBe(false)
-    })
-  })
-
-  describe("blobReferencesUrl", () => {
-    it("should return true when url is a top-level string value", () => {
-      expect(blobReferencesUrl("hello", "hello")).toBe(true)
-    })
-
-    it("should return true when url is nested in object", () => {
-      const blob = { content: { image: "/36/uuid/file.png" } }
-      expect(blobReferencesUrl(blob, "/36/uuid/file.png")).toBe(true)
-    })
-
-    it("should return true when url is in array", () => {
-      const blob = { images: ["/36/uuid/a.png", "/36/uuid/b.png"] }
-      expect(blobReferencesUrl(blob, "/36/uuid/a.png")).toBe(true)
-    })
-
-    it("should return true for deeply nested url", () => {
-      const blob = {
-        sections: [
-          {
-            blocks: [{ settings: { image: "/36/uuid/nested.png" } }],
-          },
-        ],
-      }
-      expect(blobReferencesUrl(blob, "/36/uuid/nested.png")).toBe(true)
-    })
-
-    it("should return false when url is not in blob", () => {
-      const blob = { content: { image: "/36/uuid/file.png" } }
-      expect(blobReferencesUrl(blob, "/36/uuid/other.png")).toBe(false)
-    })
-
-    it("should return false for empty blob", () => {
-      expect(blobReferencesUrl({}, "/36/uuid/file.png")).toBe(false)
-    })
-
-    it("should return false for null blob", () => {
-      expect(blobReferencesUrl(null, "/36/uuid/file.png")).toBe(false)
-    })
-
-    it("should return false when partial match in string", () => {
-      const blob = { content: "prefix-/36/uuid/file.png-suffix" }
-      expect(blobReferencesUrl(blob, "/36/uuid/file.png")).toBe(false)
     })
   })
 })
