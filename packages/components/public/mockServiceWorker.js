@@ -7,9 +7,9 @@
  * - Please do NOT modify this file.
  */
 
-const PACKAGE_VERSION = '3.0.2'
-const INTEGRITY_CHECKSUM = '5cd5cf8b54c3a90f82960cedcd637772'
-const IS_MOCKED_RESPONSE = Symbol('isMockedResponse')
+const PACKAGE_VERSION = "3.0.2"
+const INTEGRITY_CHECKSUM = "5cd5cf8b54c3a90f82960cedcd637772"
+const IS_MOCKED_RESPONSE = Symbol("isMockedResponse")
 
 const activeClientIds = new Set()
 /**
@@ -17,16 +17,16 @@ const activeClientIds = new Set()
  */
 const pendingRequests = new Map()
 
-addEventListener('install', function () {
+addEventListener("install", function () {
   self.skipWaiting()
 })
 
-addEventListener('activate', function (event) {
+addEventListener("activate", function (event) {
   event.waitUntil(self.clients.claim())
 })
 
-addEventListener('message', function (event) {
-  const clientId = Reflect.get(event.source || {}, 'id')
+addEventListener("message", function (event) {
+  const clientId = Reflect.get(event.source || {}, "id")
 
   if (!clientId || !self.clients) {
     return
@@ -34,9 +34,9 @@ addEventListener('message', function (event) {
 
   event.waitUntil(
     (async () => {
-      if (event.data === 'CLIENT_CLOSE') {
+      if (event.data === "CLIENT_CLOSE") {
         const allClients = await self.clients.matchAll({
-          type: 'window',
+          type: "window",
         })
 
         activeClientIds.delete(clientId)
@@ -62,7 +62,7 @@ addEventListener('message', function (event) {
 
         if (client != null) {
           await sendToClient(client, {
-            type: 'CLIENT_CLOSED',
+            type: "CLIENT_CLOSED",
           })
         }
 
@@ -82,16 +82,16 @@ addEventListener('message', function (event) {
       }
 
       switch (event.data) {
-        case 'KEEPALIVE_REQUEST': {
+        case "KEEPALIVE_REQUEST": {
           await sendToClient(client, {
-            type: 'KEEPALIVE_RESPONSE',
+            type: "KEEPALIVE_RESPONSE",
           })
           break
         }
 
-        case 'INTEGRITY_CHECK_REQUEST': {
+        case "INTEGRITY_CHECK_REQUEST": {
           await sendToClient(client, {
-            type: 'INTEGRITY_CHECK_RESPONSE',
+            type: "INTEGRITY_CHECK_RESPONSE",
             payload: {
               packageVersion: PACKAGE_VERSION,
               checksum: INTEGRITY_CHECKSUM,
@@ -100,11 +100,11 @@ addEventListener('message', function (event) {
           break
         }
 
-        case 'MOCK_ACTIVATE': {
+        case "MOCK_ACTIVATE": {
           activeClientIds.add(clientId)
 
           await sendToClient(client, {
-            type: 'MOCKING_ENABLED',
+            type: "MOCKING_ENABLED",
             payload: {
               client: {
                 id: client.id,
@@ -119,12 +119,12 @@ addEventListener('message', function (event) {
   )
 })
 
-addEventListener('fetch', function (event) {
+addEventListener("fetch", function (event) {
   // Opening the DevTools triggers the "only-if-cached" request
   // that cannot be handled by the worker. Bypass such requests.
   if (
-    event.request.cache === 'only-if-cached' &&
-    event.request.mode !== 'same-origin'
+    event.request.cache === "only-if-cached" &&
+    event.request.mode !== "same-origin"
   ) {
     return
   }
@@ -173,7 +173,7 @@ async function handleRequest(event, requestId) {
     // can release the resources associated with this request.
     if (client && activeClientIds.has(client.id)) {
       sendToClient(client, {
-        type: 'REQUEST_ERROR',
+        type: "REQUEST_ERROR",
         payload: {
           request: {
             id: requestId,
@@ -198,9 +198,9 @@ async function handleRequest(event, requestId) {
     // source once both of its branches cancel) and would buffer the
     // entire stream into the unconsumed clone indefinitely.
     const isEventStreamResponse = response.headers
-      .get('content-type')
+      .get("content-type")
       ?.toLowerCase()
-      .startsWith('text/event-stream')
+      .startsWith("text/event-stream")
 
     // Clone the response so both the client and the library could consume it.
     const responseClone = isEventStreamResponse ? null : response.clone()
@@ -208,7 +208,7 @@ async function handleRequest(event, requestId) {
     sendToClient(
       client,
       {
-        type: 'RESPONSE',
+        type: "RESPONSE",
         payload: {
           isMockedResponse: IS_MOCKED_RESPONSE in response,
           request: {
@@ -248,18 +248,18 @@ async function resolveMainClient(event) {
     return client
   }
 
-  if (client?.frameType === 'top-level') {
+  if (client?.frameType === "top-level") {
     return client
   }
 
   const allClients = await self.clients.matchAll({
-    type: 'window',
+    type: "window",
   })
 
   return allClients
     .filter((client) => {
       // Get only those clients that are currently visible.
-      return client.visibilityState === 'visible'
+      return client.visibilityState === "visible"
     })
     .find((client) => {
       // Find the client ID that's recorded in the
@@ -302,17 +302,17 @@ async function getResponse(event, client, requestId) {
     // Remove the "accept" header value that marked this request as passthrough.
     // This prevents request alteration and also keeps it compliant with the
     // user-defined CORS policies.
-    const acceptHeader = headers.get('accept')
+    const acceptHeader = headers.get("accept")
     if (acceptHeader) {
-      const values = acceptHeader.split(',').map((value) => value.trim())
+      const values = acceptHeader.split(",").map((value) => value.trim())
       const filteredValues = values.filter(
-        (value) => value !== 'msw/passthrough',
+        (value) => value !== "msw/passthrough",
       )
 
       if (filteredValues.length > 0) {
-        headers.set('accept', filteredValues.join(', '))
+        headers.set("accept", filteredValues.join(", "))
       } else {
-        headers.delete('accept')
+        headers.delete("accept")
       }
     }
 
@@ -337,7 +337,7 @@ async function getResponse(event, client, requestId) {
   const clientMessage = await sendToClient(
     client,
     {
-      type: 'REQUEST',
+      type: "REQUEST",
       payload: {
         id: requestId,
         ...serializedRequest,
@@ -347,11 +347,11 @@ async function getResponse(event, client, requestId) {
   )
 
   switch (clientMessage.type) {
-    case 'MOCK_RESPONSE': {
+    case "MOCK_RESPONSE": {
       return respondWithMock(clientMessage.data, event)
     }
 
-    case 'PASSTHROUGH': {
+    case "PASSTHROUGH": {
       return passthrough(clientMessage.data)
     }
   }
@@ -372,7 +372,7 @@ function serializeError(error) {
   }
 
   return {
-    name: 'Error',
+    name: "Error",
     message: String(error),
   }
 }
@@ -424,7 +424,7 @@ async function respondWithMock(response, event) {
   // and the stream will never complete, resulting in an empty document.
   // Buffering here keeps "event.respondWith()" pending (the navigation
   // cannot commit) until the entire body arrives from the client.
-  if (event.request.mode === 'navigate' && body instanceof ReadableStream) {
+  if (event.request.mode === "navigate" && body instanceof ReadableStream) {
     body = await new Response(body).arrayBuffer()
   }
 
