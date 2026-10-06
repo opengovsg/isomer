@@ -158,6 +158,7 @@ const HeroLargeImageSchema = Type.Composite(
         default: HERO_STYLE.largeImage.key,
       }),
       backgroundUrl: BackgroundUrlSchema,
+      imageAdjustment: Type.Optional(imageAdjustmentSchema),
     }),
     HeroBaseSchema,
     CallToActionsSchema,

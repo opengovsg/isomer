@@ -14,9 +14,14 @@ export const HeroLargeImage = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   backgroundUrl,
+  imageAdjustment,
   site,
   headingLevel,
 }: HeroLargeImageProps) => {
+  const objectPosition =
+    imageAdjustment?.focal != null
+      ? `${imageAdjustment.focal.x * 100}% ${imageAdjustment.focal.y * 100}%`
+      : undefined
   const Tag = getHeadingTag(headingLevel)
   return (
     <section className="flex w-full flex-col">
@@ -66,6 +71,7 @@ export const HeroLargeImage = ({
         imageSrc={backgroundUrl}
         imageAlt=""
         assetsBaseUrl={site.assetsBaseUrl}
+        objectPosition={objectPosition}
       />
     </section>
   )
