@@ -2077,15 +2077,10 @@ const getDescendantReferences = async (
   )
 }
 
-// A Folder/Collection's published URL keys on the container's own id, not its
-// IndexPage child's (see getResourceIdByPermalink), so a redirect destination
-// stored against the container is invisible to a subtree walk started from the
-// IndexPage. Resolves the container's reference when `resourceId` is an
-// IndexPage, so a caller that only has the index page's id (the unpublish-page
-// warning) can still surface those redirects. Never called for the delete
-// count: deleting an IndexPage removes only its own subtree, not the
-// container, so folding this in there would overstate what the cascade
-// actually clears.
+// A folder/collection's published URL keys on the container's own id, not its
+// IndexPage's (see getResourceIdByPermalink), so a subtree walk from the
+// IndexPage misses a redirect stored against the container. Skip this for the
+// delete count — deleting an IndexPage alone never removes the container.
 const getContainerReferenceIfIndexPage = async (
   trx: SafeKysely,
   { siteId, resourceId }: { siteId: number; resourceId: string },
@@ -2106,14 +2101,10 @@ const getContainerReferenceIfIndexPage = async (
 }
 
 // Counts the live redirects whose destination points at the resource or any
-// descendant. Shared by two callers with different semantics, selected via
-// includeContainerReference:
-// - the delete-page modal (flag off): must match exactly what the cascade
-//   below removes, so a container reference from an IndexPage input is
-//   deliberately excluded (see getContainerReferenceIfIndexPage).
-// - the unpublish-page warning (flag on): unpublishing a folder/collection's
-//   IndexPage breaks its container's redirect too, even though the container
-//   resource itself is untouched, so that reference must be folded in.
+// descendant. includeContainerReference also counts the parent container's
+// reference when resourceId is an IndexPage — opt in for unpublish (which
+// breaks that redirect without deleting it); the delete count must stay exact
+// to what the cascade below removes.
 export const countRedirectsPointingToResource = async ({
   siteId,
   resourceId,
