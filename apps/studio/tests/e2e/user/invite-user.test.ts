@@ -1,17 +1,27 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { db } from "~/server/modules/database"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
 import { inviteCollaborator, openInviteModal } from "../fixtures/helpers"
-import { getSeedSiteId } from "../fixtures/seed"
+import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
+
+test.describe.configure({ mode: "serial" })
 
 const UNIQUE_INVITEE = () =>
   `e2e-invitee-${crypto.randomUUID().slice(0, 8)}@open.gov.sg`
 
 const UNIQUE_VENDOR = () =>
   `e2e-vendor-${crypto.randomUUID().slice(0, 8)}@vendor.example.com`
+
+let siteId: number
+
+test.beforeAll(async () => {
+  const site = await provisionE2ESite({ roles: [RoleType.Admin] })
+  siteId = site.siteId
+})
 
 const whitelistVendor = async (email: string) => {
   const expiry = new Date()
@@ -34,7 +44,7 @@ const expectGrantedRole = (email: string) =>
         .selectFrom("User as u")
         .innerJoin("ResourcePermission as rp", "rp.userId", "u.id")
         .where("u.email", "=", email)
-        .where("rp.siteId", "=", getSeedSiteId())
+        .where("rp.siteId", "=", siteId)
         .where("rp.deletedAt", "is", null)
         .select(["rp.role"])
         .executeTakeFirst()
@@ -71,7 +81,6 @@ test.afterEach(async () => {
 })
 
 test("admin can invite a new collaborator as Editor", async ({ page }) => {
-  const siteId = getSeedSiteId()
   const inviteeEmail = UNIQUE_INVITEE()
   await inviteCollaborator(page, {
     email: inviteeEmail,
@@ -82,7 +91,6 @@ test("admin can invite a new collaborator as Editor", async ({ page }) => {
 })
 
 test("admin can invite a new collaborator as Publisher", async ({ page }) => {
-  const siteId = getSeedSiteId()
   const inviteeEmail = UNIQUE_INVITEE()
   await inviteCollaborator(page, {
     email: inviteeEmail,
@@ -93,7 +101,6 @@ test("admin can invite a new collaborator as Publisher", async ({ page }) => {
 })
 
 test("admin can invite a new collaborator as Admin", async ({ page }) => {
-  const siteId = getSeedSiteId()
   const inviteeEmail = UNIQUE_INVITEE()
   await inviteCollaborator(page, {
     email: inviteeEmail,
@@ -106,7 +113,6 @@ test("admin can invite a new collaborator as Admin", async ({ page }) => {
 test("admin can invite a whitelisted vendor collaborator as Admin", async ({
   page,
 }) => {
-  const siteId = getSeedSiteId()
   const vendorEmail = UNIQUE_VENDOR()
   await whitelistVendor(vendorEmail)
   await inviteCollaborator(page, {
@@ -120,7 +126,6 @@ test("admin can invite a whitelisted vendor collaborator as Admin", async ({
 test("admin cannot invite a non-whitelisted vendor collaborator", async ({
   page,
 }) => {
-  const siteId = getSeedSiteId()
   const vendorEmail = UNIQUE_VENDOR()
   await openInviteModal(page, siteId)
   await page.getByLabel("Email address").fill(vendorEmail)
@@ -134,7 +139,6 @@ test("admin cannot invite a non-whitelisted vendor collaborator", async ({
 test("admin cannot invite a non-whitelisted vendor collaborator, even as Admin", async ({
   page,
 }) => {
-  const siteId = getSeedSiteId()
   const vendorEmail = UNIQUE_VENDOR()
   await openInviteModal(page, siteId)
 
