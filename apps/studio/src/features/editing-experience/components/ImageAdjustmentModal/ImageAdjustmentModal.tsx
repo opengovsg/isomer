@@ -24,7 +24,9 @@ import { useState } from "react"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
+import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
+import { FocalControl } from "./controls/FocalControl"
 import { useSaveImageAdjustment } from "./useSaveImageAdjustment"
 
 interface ImageAdjustmentModalProps {
@@ -166,14 +168,13 @@ export const ImageAdjustmentModal = ({
                 <VStack align="start" spacing="1.5rem" w="100%">
                   {/* Focal Point Section */}
                   {config.focalEnabled && (
-                    <Box w="100%">
-                      <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
-                        Focal point
-                      </Text>
-                      <Text textStyle="body-2" color="base.content.medium">
-                        Focal point control will be implemented in W0-H
-                      </Text>
-                    </Box>
+                    <FocalControl
+                      src={src}
+                      focal={draft?.focal}
+                      onChange={(focal) =>
+                        setDraft((d) => ({ ...ensureAdjustment(d), focal }))
+                      }
+                    />
                   )}
 
                   {/* Crop Mode Section */}
