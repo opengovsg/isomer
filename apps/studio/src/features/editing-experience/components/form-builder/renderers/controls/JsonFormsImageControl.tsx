@@ -63,7 +63,10 @@ function JsonFormsImageControl({
   const currentAdjustment = get(rootData, siblingPath) as
     | ImageAdjustment
     | undefined
-  const block = get(rootData, parentPath)
+  // Per-block editor forms (e.g. HeroEditorDrawer) mount the form with the block
+  // itself as the data root, so the image field is top-level and parentPath is
+  // empty — in that case the block IS rootData.
+  const block = parentPath ? get(rootData, parentPath) : rootData
   const config = resolveAdjustmentConfig({ block, fieldName })
 
   const handleAdjustmentSave = ({
