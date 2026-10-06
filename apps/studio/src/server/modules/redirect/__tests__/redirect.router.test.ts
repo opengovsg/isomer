@@ -1977,11 +1977,44 @@ describe("redirect.router", async () => {
       expect(count).toBe(1)
     })
 
-    it("should count a redirect to the container when given its IndexPage's id", async () => {
+    it("should count a redirect to the container when given its IndexPage's id and includeContainerReference", async () => {
       // Arrange — the published site keys a folder's URL on the folder's own
       // id (see getResourceIdByPermalink), so the redirect references the
       // folder, not its IndexPage child. The unpublish warning only has the
-      // IndexPage's id on hand, so the count must still surface it.
+      // IndexPage's id on hand, so it opts in to surface it.
+      const { folder } = await setupFolder({ siteId, permalink: "folder" })
+      const { page: indexPage } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/a",
+          destination: `[resource:${siteId}:${folder.id}]`,
+        })
+        .execute()
+
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: String(indexPage.id),
+        includeContainerReference: true,
+      })
+
+      // Assert
+      expect(count).toBe(1)
+    })
+
+    it("should not count the container reference for an IndexPage id by default (delete-cascade parity)", async () => {
+      // Arrange — same setup as above, but without opting in. The delete
+      // modal relies on this count matching exactly what
+      // softDeleteRedirectsPointingToResource removes, which never touches
+      // the parent container when only the IndexPage is deleted.
       const { folder } = await setupFolder({ siteId, permalink: "folder" })
       const { page: indexPage } = await setupPageResource({
         siteId,
@@ -2006,12 +2039,13 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(count).toBe(1)
+      expect(count).toBe(0)
     })
 
-    it("should not count a page's own siblings as a container reference when it is not an IndexPage", async () => {
-      // Arrange — a non-IndexPage resource has no container to fold in, so a
-      // redirect to its parent folder stays uncounted, same as before.
+    it("should not count a parent folder's reference as a container reference when the resource is not an IndexPage", async () => {
+      // Arrange — a non-IndexPage resource has no container to fold in, even
+      // with includeContainerReference set, so a redirect to its parent
+      // folder stays uncounted.
       const { folder } = await setupFolder({ siteId, permalink: "folder" })
       const { page } = await setupPageResource({
         siteId,
@@ -2034,6 +2068,7 @@ describe("redirect.router", async () => {
       const count = await caller.countByDestinationResource({
         siteId,
         resourceId: String(page.id),
+        includeContainerReference: true,
       })
 
       // Assert
