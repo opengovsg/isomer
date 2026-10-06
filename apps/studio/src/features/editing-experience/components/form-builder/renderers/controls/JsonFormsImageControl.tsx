@@ -66,8 +66,15 @@ function JsonFormsImageControl({
   const block = get(rootData, parentPath)
   const config = resolveAdjustmentConfig({ block, fieldName })
 
-  const handleAdjustmentSave = (next: ImageAdjustment | undefined) => {
-    handleChange(siblingPath, next)
+  const handleAdjustmentSave = ({
+    src,
+    imageAdjustment,
+  }: {
+    src: string
+    imageAdjustment: ImageAdjustment | undefined
+  }) => {
+    handleChange(path, src)
+    handleChange(siblingPath, imageAdjustment)
   }
 
   return (
@@ -103,6 +110,10 @@ function JsonFormsImageControl({
                 config={config}
                 src={data}
                 value={currentAdjustment}
+                siteId={siteId}
+                resourceId={
+                  (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
+                }
                 onSave={handleAdjustmentSave}
               />
             </>

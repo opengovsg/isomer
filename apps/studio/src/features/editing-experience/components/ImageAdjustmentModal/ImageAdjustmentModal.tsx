@@ -15,12 +15,17 @@ import {
   VStack,
   useDisclosure,
 } from "@chakra-ui/react"
-import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
+import {
+  Button,
+  ModalCloseButton,
+  useToast,
+} from "@opengovsg/design-system-react"
 import { useState } from "react"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
 import { AdjustmentPreview } from "./AdjustmentPreview"
+import { useSaveImageAdjustment } from "./useSaveImageAdjustment"
 
 interface ImageAdjustmentModalProps {
   isOpen: boolean
@@ -28,7 +33,12 @@ interface ImageAdjustmentModalProps {
   config: AdjustmentConfig
   src: string
   value?: ImageAdjustment
-  onSave: (next: ImageAdjustment | undefined) => void
+  siteId: number
+  resourceId?: string
+  onSave: (result: {
+    src: string
+    imageAdjustment: ImageAdjustment | undefined
+  }) => void
 }
 
 export const ImageAdjustmentModal = ({
@@ -37,6 +47,8 @@ export const ImageAdjustmentModal = ({
   config,
   src,
   value,
+  siteId,
+  resourceId,
   onSave,
 }: ImageAdjustmentModalProps): JSX.Element => {
   const [draft, setDraft] = useState<ImageAdjustment | undefined>(value)
@@ -45,6 +57,11 @@ export const ImageAdjustmentModal = ({
     onOpen: onDiscardChangesModalOpen,
     onClose: onDiscardChangesModalClose,
   } = useDisclosure()
+  const toast = useToast()
+  const { save, isSaving } = useSaveImageAdjustment({
+    siteId,
+    resourceId,
+  })
 
   // Check if draft differs from original value.
   const isModified = JSON.stringify(draft) !== JSON.stringify(value)
@@ -62,13 +79,37 @@ export const ImageAdjustmentModal = ({
     onDiscardChangesModalClose()
   }
 
-  const handleSave = () => {
-    onSave(draft)
-    onClose()
+  const handleSave = async () => {
+    if (!draft) {
+      // Nothing adjusted, just close
+      onClose()
+      return
+    }
+
+    try {
+      const result = await save(src, draft)
+      onSave(result)
+      onClose()
+    } catch (err) {
+      toast({
+        title: "Failed to save image adjustment",
+        description: err instanceof Error ? err.message : "An error occurred",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      })
+    }
   }
 
   const handleReset = () => {
-    setDraft(undefined)
+    if (value?.originalKey) {
+      // Restore to original
+      onSave({ src: `/${value.originalKey}`, imageAdjustment: undefined })
+      onClose()
+    } else {
+      // No prior adjustment, just clear draft
+      setDraft(undefined)
+    }
   }
 
   const handleUndo = () => {
@@ -265,7 +306,7 @@ export const ImageAdjustmentModal = ({
               >
                 Cancel
               </Button>
-              <Button variant="solid" onClick={handleSave}>
+              <Button variant="solid" onClick={handleSave} isLoading={isSaving}>
                 Save
               </Button>
             </HStack>

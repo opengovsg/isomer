@@ -54,6 +54,9 @@ const ImageAdjustmentModalHarness = ({
   const [savedValue, setSavedValue] = useState<ImageAdjustment | undefined>(
     value,
   )
+  const [savedSrc, setSavedSrc] = useState(
+    "https://images.unsplash.com/photo-1549887534-f3e6e4db3513?w=1600&h=900&fit=crop",
+  )
 
   return (
     <>
@@ -66,6 +69,8 @@ const ImageAdjustmentModalHarness = ({
       <div
         style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #ccc" }}
       >
+        <strong>Saved src:</strong>
+        <pre>{savedSrc}</pre>
         <strong>Saved value:</strong>
         <pre>{JSON.stringify(savedValue, null, 2)}</pre>
       </div>
@@ -73,10 +78,13 @@ const ImageAdjustmentModalHarness = ({
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         config={TIER_B_CONFIG}
-        src="https://images.unsplash.com/photo-1549887534-f3e6e4db3513?w=1600&h=900&fit=crop"
+        src={savedSrc}
         value={value}
-        onSave={(next) => {
-          setSavedValue(next)
+        siteId={1}
+        resourceId="test-resource"
+        onSave={({ src, imageAdjustment }) => {
+          setSavedSrc(src)
+          setSavedValue(imageAdjustment)
           setIsOpen(false)
         }}
       />
