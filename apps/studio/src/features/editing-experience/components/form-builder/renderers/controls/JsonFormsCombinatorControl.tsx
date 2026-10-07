@@ -1,4 +1,5 @@
 import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
+import type { ReactNode } from "react"
 import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
@@ -50,6 +51,61 @@ function combinatorOptionFromRenderInfo(renderInfo: CombinatorRenderInfo) {
   }
 }
 
+interface CombinatorFormatContext {
+  label: string | undefined
+  description: string | undefined
+  renderInfos: CombinatorRenderInfo[]
+  variant: string
+  onChange: (value: string) => void
+  activeRenderInfo: CombinatorRenderInfo | undefined
+  path: string
+  renderers: JsonFormsCombinatorControlProps["renderers"]
+  cells: JsonFormsCombinatorControlProps["cells"]
+}
+
+function CombinatorActiveBranch({
+  activeRenderInfo,
+  path,
+  renderers,
+  cells,
+}: Pick<
+  CombinatorFormatContext,
+  "activeRenderInfo" | "path" | "renderers" | "cells"
+>) {
+  if (!activeRenderInfo) {
+    return null
+  }
+
+  return (
+    <JsonFormsDispatch
+      key={activeRenderInfo.label}
+      uischema={activeRenderInfo.uischema}
+      schema={activeRenderInfo.schema}
+      path={path}
+      renderers={renderers}
+      cells={cells}
+    />
+  )
+}
+
+// Format-specific combinators replace the default variant picker.
+// Unlisted formats fall through to radio or select.
+const combinatorFormatHandlers: Partial<
+  Record<string, (context: CombinatorFormatContext) => ReactNode>
+> = {
+  [HERO_BANNER_STYLE_FORMAT]: (context) => (
+    <HeroBannerStyleCombinator {...context} />
+  ),
+  [TAG_CATEGORY_ITEM_FORMAT]: (context) => (
+    <CombinatorActiveBranch
+      activeRenderInfo={context.activeRenderInfo}
+      path={context.path}
+      renderers={context.renderers}
+      cells={context.cells}
+    />
+  ),
+}
+
 function JsonFormsCombinatorControl({
   schema,
   path,
@@ -65,7 +121,6 @@ function JsonFormsCombinatorControl({
   data,
   combinatorType,
 }: JsonFormsCombinatorControlProps) {
-  const hidePicker = schema.format === TAG_CATEGORY_ITEM_FORMAT
   const combinatorSchemas = schema[combinatorType] ?? []
   const renderInfos = createCombinatorRenderInfos(
     combinatorSchemas,
@@ -127,72 +182,63 @@ function JsonFormsCombinatorControl({
     (renderInfo) => variant === renderInfo.label,
   )
 
-  if (schema.format === HERO_BANNER_STYLE_FORMAT) {
-    return (
-      <HeroBannerStyleCombinator
-        label={label}
-        description={description}
-        renderInfos={renderInfos}
-        variant={variant}
-        onChange={onChange}
+  const formatContext: CombinatorFormatContext = {
+    label,
+    description,
+    renderInfos,
+    variant,
+    onChange,
+    activeRenderInfo,
+    path,
+    renderers,
+    cells,
+  }
+  const formatHandler = schema.format
+    ? combinatorFormatHandlers[schema.format]
+    : undefined
+
+  if (formatHandler) {
+    return formatHandler(formatContext)
+  }
+
+  return (
+    <>
+      <Box>
+        <FormControl isRequired gap="0.5rem">
+          <FormLabel description={description}>{label || "Variant"}</FormLabel>
+          {schema.format === ARRAY_RADIO_FORMAT ? (
+            <RadioGroup
+              onChange={onChange}
+              value={options.find((option) => option.label === variant)?.value}
+            >
+              {options.map((option) => (
+                <Radio
+                  my="1px"
+                  key={option.label}
+                  value={option.value}
+                  allowDeselect={false}
+                >
+                  {option.label.charAt(0).toUpperCase() + option.label.slice(1)}
+                </Radio>
+              ))}
+            </RadioGroup>
+          ) : (
+            <SingleSelect
+              value={variant}
+              name={label}
+              items={options}
+              isClearable={false}
+              onChange={onChange}
+            />
+          )}
+        </FormControl>
+      </Box>
+      <CombinatorActiveBranch
         activeRenderInfo={activeRenderInfo}
         path={path}
         renderers={renderers}
         cells={cells}
       />
-    )
-  }
-
-  return (
-    <>
-      {!hidePicker && (
-        <Box>
-          <FormControl isRequired gap="0.5rem">
-            <FormLabel description={description}>
-              {label || "Variant"}
-            </FormLabel>
-            {schema.format === ARRAY_RADIO_FORMAT ? (
-              <RadioGroup
-                onChange={onChange}
-                value={
-                  options.find((option) => option.label === variant)?.value
-                }
-              >
-                {options.map((option) => (
-                  <Radio
-                    my="1px"
-                    key={option.label}
-                    value={option.value}
-                    allowDeselect={false}
-                  >
-                    {option.label.charAt(0).toUpperCase() +
-                      option.label.slice(1)}
-                  </Radio>
-                ))}
-              </RadioGroup>
-            ) : (
-              <SingleSelect
-                value={variant}
-                name={label}
-                items={options}
-                isClearable={false}
-                onChange={onChange}
-              />
-            )}
-          </FormControl>
-        </Box>
-      )}
-
-      {activeRenderInfo && (
-        <JsonFormsDispatch
-          key={activeRenderInfo.label}
-          uischema={activeRenderInfo.uischema}
-          schema={activeRenderInfo.schema}
-          path={path}
-          renderers={renderers}
-          cells={cells}
-        />
-      )}
     </>
   )
 }
