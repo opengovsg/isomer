@@ -57,9 +57,6 @@ const validateHeroComponentFn = ajv.compile<IsomerComponent>(
 
 const validateFn = ajv.compile<IsomerSchema>(schema)
 
-// instancePath for a content block is "content/0", "content/1", ...
-const CONTENT_BLOCK_INDEX = /^\/content\/(\d+)/
-
 const invalidBlockDescription = "Fix errors in this block to publish"
 
 interface FixedBlockContent {
@@ -364,9 +361,11 @@ export default function RootStateDrawer() {
   // inside this memo.
   const invalidBlockIndexes = useMemo(() => {
     validateFn(savedPageState)
+    // instancePath for a content block is "/content/0", "/content/1", ...
+    const contentIndexRegex = /^\/content\/(\d+)/
     return new Set(
       (validateFn.errors ?? [])
-        .map((e) => CONTENT_BLOCK_INDEX.exec(e.instancePath)?.[1])
+        .map((e) => contentIndexRegex.exec(e.instancePath)?.[1])
         .filter(Boolean)
         .map(Number),
     )
