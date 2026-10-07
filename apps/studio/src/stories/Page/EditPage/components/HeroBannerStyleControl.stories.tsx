@@ -79,14 +79,21 @@ export const ChoosingStyle: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
-    await userEvent.click(
-      canvas.getByText(/click to explore different styles/i),
+    // The preview decorator renders a skeleton until the router is ready, so
+    // the trigger is not in the canvas on the first paint.
+    const caption = await canvas.findByText(
+      /click to explore different styles/i,
     )
+    await userEvent.click(caption.closest("button") ?? caption)
 
     await expect(
-      canvas.getByRole("dialog", { name: "Choose a hero banner style" }),
+      await canvas.findByRole("dialog", {
+        name: "Choose a hero banner style",
+      }),
     ).toBeVisible()
-    await expect(canvas.getByRole("radio", { name: "Block" })).toBeVisible()
+    await expect(
+      await canvas.findByRole("radio", { name: "Block" }),
+    ).toBeVisible()
     await expect(canvas.queryByRole("radio", { name: "Search bar" })).toBeNull()
   },
 }
