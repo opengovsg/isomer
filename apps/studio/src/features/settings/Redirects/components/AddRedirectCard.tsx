@@ -28,6 +28,7 @@ import {
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
+import { siteEventProps } from "~/lib/posthog"
 import { redirectKind } from "~/schemas/redirect"
 import { normalizeRedirectSource } from "~/schemas/redirect/utils"
 
@@ -130,7 +131,7 @@ export const AddRedirectCard = ({
       {
         onSuccess: () => {
           posthog.capture("redirect_created", {
-            site_id: String(siteId),
+            ...siteEventProps(siteId),
             destination_type: destination.startsWith("/")
               ? "internal"
               : "external",
@@ -210,9 +211,10 @@ export const AddRedirectCard = ({
             textStyle="subhead-2"
             color="interaction.links.default"
             onClick={() => {
-              posthog.capture("redirect_bulk_upload_modal_opened", {
-                site_id: String(siteId),
-              })
+              posthog.capture(
+                "redirect_bulk_upload_modal_opened",
+                siteEventProps(siteId),
+              )
               onBulkUploadOpen()
             }}
           >

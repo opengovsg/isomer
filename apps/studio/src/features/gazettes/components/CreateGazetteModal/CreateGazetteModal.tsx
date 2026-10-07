@@ -18,6 +18,7 @@ import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useUploadGazetteMutation } from "~/hooks/useUploadGazetteMutation"
 import { useZodForm } from "~/lib/form"
+import { siteEventProps } from "~/lib/posthog"
 import { createGazetteSchema } from "~/schemas/gazette"
 import { trpc } from "~/utils/trpc"
 
@@ -129,7 +130,7 @@ const CreateGazetteModalContent = ({
       })
 
       posthog.capture("gazette_created", {
-        site_id: String(siteId),
+        ...siteEventProps(siteId),
         category: data.category,
         has_subcategory: !!data.subcategory,
         is_scheduled: scheduledAt > new Date(),

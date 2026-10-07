@@ -20,6 +20,7 @@ import { upperFirst } from "lodash-es"
 import posthog from "posthog-js"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { siteEventProps } from "~/lib/posthog"
 import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -109,7 +110,7 @@ const DeleteResourceModalContent = ({
     onSettled: onClose,
     onSuccess: async () => {
       posthog.capture("resource_deleted", {
-        site_id: String(siteId),
+        ...siteEventProps(siteId),
         resource_type: resourceType,
         has_redirects: redirectCount > 0,
       })

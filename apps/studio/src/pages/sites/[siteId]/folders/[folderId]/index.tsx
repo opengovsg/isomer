@@ -20,6 +20,7 @@ import { CreateFolderModal } from "~/features/editing-experience/components/Crea
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { siteEventProps } from "~/lib/posthog"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getFolderHref } from "~/utils/resource"
@@ -98,7 +99,7 @@ const FolderPage: NextPageWithLayout = () => {
                       <Menu.Item
                         onClick={() => {
                           posthog.capture("folder_create_modal_opened", {
-                            site_id: siteId,
+                            ...siteEventProps(siteId),
                             parent_type: "folder",
                           })
                           onFolderCreateModalOpen()
@@ -110,7 +111,7 @@ const FolderPage: NextPageWithLayout = () => {
                       <Menu.Item
                         onClick={() => {
                           posthog.capture("page_create_modal_opened", {
-                            site_id: siteId,
+                            ...siteEventProps(siteId),
                             parent_type: "folder",
                           })
                           onPageCreateModalOpen()
@@ -122,7 +123,7 @@ const FolderPage: NextPageWithLayout = () => {
                       <Menu.Item
                         onClick={() => {
                           posthog.capture("collection_create_modal_opened", {
-                            site_id: siteId,
+                            ...siteEventProps(siteId),
                             parent_type: "folder",
                           })
                           onCollectionCreateModalOpen()
