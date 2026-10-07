@@ -188,10 +188,19 @@ export const AdjustmentPreview = ({
   ): React.ReactNode => {
     if (!block || typeof block !== "object" || !imageFieldName) return null
     try {
+      // Preview-only safety net: some components (e.g. Blockquote) gate
+      // whether they render the image at all on a sibling `imageAlt` field,
+      // to avoid publishing an inaccessible image when alt text was never
+      // filled in. An editor adjusting crop/focal mid-edit shouldn't have
+      // that silently blank the very image they're trying to preview — the
+      // real saved value (and the production render path) is untouched.
+      const existingAlt = (block as Record<string, unknown>).imageAlt
+      const hasAlt = typeof existingAlt === "string" && existingAlt.length > 0
       const component = {
         ...block,
         [imageFieldName]: adjustedSrc,
         imageAdjustment: adjustment,
+        ...(hasAlt ? {} : { imageAlt: "Preview image" }),
       } as IsomerComponent
       const rendered = renderComponent({
         component,
