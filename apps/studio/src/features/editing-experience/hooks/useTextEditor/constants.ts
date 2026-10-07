@@ -36,6 +36,7 @@ import {
   insertColumnWidth,
   removeColumnWidths,
   withStoredColumnWidths,
+  type WidthCommand,
 } from "~/features/editing-experience/utils/columnWidths"
 
 import { canMergeCellSelection } from "../../components/TableBubbleMenu/TableBubbleMenu.utils"
@@ -163,16 +164,19 @@ export const IsomerTable = Table.extend({
         parentToggleHeaderColumn?.() as HeaderToggleCommand | undefined,
       ),
       addColumnBefore: () =>
-        withStoredColumnWidths(parent?.addColumnBefore?.(), (widths, rect) =>
-          insertColumnWidth(widths, rect.left),
+        withStoredColumnWidths(
+          parent?.addColumnBefore?.() as WidthCommand | undefined,
+          (widths, rect) => insertColumnWidth(widths, rect.left),
         ),
       addColumnAfter: () =>
-        withStoredColumnWidths(parent?.addColumnAfter?.(), (widths, rect) =>
-          insertColumnWidth(widths, rect.right),
+        withStoredColumnWidths(
+          parent?.addColumnAfter?.() as WidthCommand | undefined,
+          (widths, rect) => insertColumnWidth(widths, rect.right),
         ),
       deleteColumn: () =>
-        withStoredColumnWidths(parent?.deleteColumn?.(), (widths, rect) =>
-          removeColumnWidths(widths, rect.left, rect.right),
+        withStoredColumnWidths(
+          parent?.deleteColumn?.() as WidthCommand | undefined,
+          (widths, rect) => removeColumnWidths(widths, rect.left, rect.right),
         ),
     }
   },

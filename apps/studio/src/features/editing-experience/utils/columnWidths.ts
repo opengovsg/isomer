@@ -84,7 +84,7 @@ export const setTableColumnWidths = (
   tr.setNodeMarkup(tablePos, undefined, { ...table.attrs, columnWidths })
 }
 
-type WidthCommand = (props: {
+export type WidthCommand = (props: {
   state: EditorState
   dispatch?: ((tr: Transaction) => void) | undefined
 }) => boolean
