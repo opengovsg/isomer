@@ -27,35 +27,21 @@ export const useUploadAssetMutation = ({
     trpc.asset.getPresignedPutUrl.useMutation()
   const { mutateAsync: uploadSvg } = trpc.asset.uploadSvg.useMutation()
 
-  return useMutation<UploadAssetMutationOutput, void, UploadAssetMutationInput>(
-    {
-      mutationFn: async ({ file, fileName, scheduledAt }) => {
-        const effectiveName = fileName ?? file.name
+  return useMutation<
+    UploadAssetMutationOutput,
+    unknown,
+    UploadAssetMutationInput
+  >({
+    mutationFn: async ({ file, fileName, scheduledAt }) => {
+      const effectiveName = fileName ?? file.name
 
-        if (effectiveName.toLowerCase().endsWith(".svg")) {
-          const content = await file.text()
-          const { fileKey } = await uploadSvg({
-            siteId,
-            resourceId,
-            fileName: effectiveName,
-            content,
-            tags: scheduledAt
-              ? [
-                  {
-                    key: "scheduledAt",
-                    value: scheduledAt.getTime().toString(),
-                  },
-                ]
-              : undefined,
-          })
-          return { path: `/${fileKey}` }
-        }
-
-        const { fileKey, uploadConfig } = await getPresignedPutUrl({
+      if (effectiveName.toLowerCase().endsWith(".svg")) {
+        const content = await file.text()
+        const { fileKey } = await uploadSvg({
           siteId,
           resourceId,
           fileName: effectiveName,
-          fileSize: file.size,
+          content,
           tags: scheduledAt
             ? [
                 {
@@ -65,11 +51,27 @@ export const useUploadAssetMutation = ({
               ]
             : undefined,
         })
+        return { path: `/${fileKey}` }
+      }
 
-        const path = await performUpload(file, fileKey, uploadConfig)
-        return { path }
-      },
-      retry: false,
+      const { fileKey, uploadConfig } = await getPresignedPutUrl({
+        siteId,
+        resourceId,
+        fileName: effectiveName,
+        fileSize: file.size,
+        tags: scheduledAt
+          ? [
+              {
+                key: "scheduledAt",
+                value: scheduledAt.getTime().toString(),
+              },
+            ]
+          : undefined,
+      })
+
+      const path = await performUpload(file, fileKey, uploadConfig)
+      return { path }
     },
-  )
+    retry: false,
+  })
 }

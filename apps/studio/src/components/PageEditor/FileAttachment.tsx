@@ -76,6 +76,19 @@ export const FileAttachment = ({
               })
           } else setHref(path)
         },
+        // Without this, a failure in the presign call or the S3 PUT itself
+        // (permission denied, validation, network/CORS) silently reverts the
+        // control to its pre-upload state with no visible error at all.
+        onError: (error) => {
+          console.error("Failed to upload file", error)
+          toast({
+            title: "Failed to upload file",
+            description:
+              error instanceof Error ? error.message : "Please try again.",
+            status: "error",
+            ...BRIEF_TOAST_SETTINGS,
+          })
+        },
       },
     )
   }
