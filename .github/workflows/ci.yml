@@ -325,9 +325,6 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
-  # Single status check for branch protection — require only "CI passed" in repo
-  # settings so new jobs can be added to `needs` here without updating GitHub.
-  # Jobs listed in allowed-skips may be skipped (Graphite CI optimizer, path filters).
   ci-passed:
     name: CI passed
     if: always()
