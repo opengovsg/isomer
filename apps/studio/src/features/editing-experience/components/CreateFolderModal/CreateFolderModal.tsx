@@ -88,7 +88,7 @@ const CreateFolderModalContent = ({
   const { mutate, isPending } = trpc.folder.create.useMutation({
     onSuccess: async () => {
       posthog.capture("folder_created", {
-        site_id: siteId,
+        site_id: String(siteId),
         has_parent_folder: !!parentFolderId,
       })
       await utils.site.list.invalidate()

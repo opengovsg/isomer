@@ -128,7 +128,7 @@ export const PublishOrUnpublishModal = ({
         onClose()
       },
       onSuccess: () => {
-        posthog.capture("page_published", { site_id: siteId })
+        posthog.capture("page_published", { site_id: String(siteId) })
         fireContentEditSurveyEvent(PUBLISHED_AFTER_EDITING_EVENT)
         toast({
           status: "success",

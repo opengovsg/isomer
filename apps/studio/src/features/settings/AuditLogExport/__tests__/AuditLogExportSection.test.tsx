@@ -181,7 +181,7 @@ describe("AuditLogExportSection", () => {
     await waitFor(() => expect(posthogCapture).toHaveBeenCalledTimes(1))
     expect(posthogCapture).toHaveBeenCalledWith(
       "audit_log_requested",
-      expect.objectContaining({ site_id: SITE_ID }),
+      expect.objectContaining({ site_id: String(SITE_ID) }),
     )
 
     // Ask again, identically.

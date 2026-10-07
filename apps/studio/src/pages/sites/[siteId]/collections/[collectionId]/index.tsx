@@ -81,7 +81,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             <Button
               onClick={() => {
                 posthog.capture("collection_page_create_modal_opened", {
-                  site_id: siteId,
+                  site_id: String(siteId),
                 })
                 onPageCreateModalOpen()
               }}

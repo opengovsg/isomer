@@ -56,7 +56,7 @@ export const UserTableMenu = ({
   const { mutate: resendInvite, isPending: isResendingInvite } =
     trpc.user.resendInvite.useMutation({
       onSuccess: (result) => {
-        posthog.capture("user_invite_resent", { site_id: siteId })
+        posthog.capture("user_invite_resent", { site_id: String(siteId) })
         toast({
           status: "success",
           title: `Invite resent to ${result.email}`,

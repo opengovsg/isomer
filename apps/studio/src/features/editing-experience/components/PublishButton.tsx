@@ -82,7 +82,7 @@ const SuspendablePublishButton = ({
                 isDisabled={!!disabledReason || !isAllowed}
                 onClick={() => {
                   posthog.capture("publish_modal_opened", {
-                    site_id: siteId,
+                    site_id: String(siteId),
                   })
                   publishDisclosure.onOpen()
                 }}

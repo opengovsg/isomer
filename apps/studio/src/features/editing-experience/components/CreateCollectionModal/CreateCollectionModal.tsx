@@ -94,7 +94,7 @@ const CreateCollectionModalContent = ({
   const { mutate, isPending } = trpc.collection.create.useMutation({
     onSuccess: async () => {
       posthog.capture("collection_created", {
-        site_id: siteId,
+        site_id: String(siteId),
         has_parent_folder: !!parentFolderId,
       })
       await utils.resource.listWithoutRoot.invalidate()

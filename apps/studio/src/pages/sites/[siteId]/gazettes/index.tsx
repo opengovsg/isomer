@@ -95,7 +95,7 @@ const GazettesPage: NextPageWithLayout = () => {
                 leftIcon={<BiPlus fontSize="1.25rem" />}
                 onClick={() => {
                   posthog.capture("gazette_create_modal_opened", {
-                    site_id: siteId,
+                    site_id: String(siteId),
                   })
                   onOpen()
                 }}

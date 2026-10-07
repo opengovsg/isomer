@@ -85,7 +85,7 @@ export const AddUserModal = () => {
   const { mutate: createUser, isPending } = trpc.user.create.useMutation({
     onSuccess: async (createdUsers) => {
       posthog.capture("site_user_invited", {
-        site_id: siteId,
+        site_id: String(siteId),
         invited_user_count: createdUsers.length,
         role: getValues("role"),
       })

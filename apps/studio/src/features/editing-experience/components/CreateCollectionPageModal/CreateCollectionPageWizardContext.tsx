@@ -107,7 +107,7 @@ const useCreateCollectionPageWizardContext = ({
         {
           onSuccess: ({ pageId }) => {
             posthog.capture("collection_page_created", {
-              site_id: siteId,
+              site_id: String(siteId),
               resource_type: values.type,
             })
             const nextType = getResourceSubpath(type)

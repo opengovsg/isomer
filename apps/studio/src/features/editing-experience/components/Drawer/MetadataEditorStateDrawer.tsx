@@ -69,7 +69,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const utils = trpc.useUtils()
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: () => {
-      posthog.capture("page_changes_saved", { site_id: siteId })
+      posthog.capture("page_changes_saved", { site_id: String(siteId) })
       void Promise.all([
         utils.page.readPageAndBlob.invalidate({ pageId, siteId }),
         utils.page.readPage.invalidate({ pageId, siteId }),
