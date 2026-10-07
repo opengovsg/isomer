@@ -37,6 +37,11 @@ export const getIsSingpassEnabled = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
   if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) return false
+  // E2E (`NEXT_PUBLIC_APP_ENV=test`) must not follow the remote flag. The
+  // browser GrowthBook loads asynchronously (fallback is on) while each
+  // server request re-fetches with a 2s cap, so OTP can send the user home
+  // or to Singpass depending on which side finished first.
+  if (env.NEXT_PUBLIC_APP_ENV === "test") return true
   return gb.getFeatureValue(
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,

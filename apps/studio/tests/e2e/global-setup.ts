@@ -139,12 +139,7 @@ const globalSetup = async (config: FullConfig) => {
     }
   }
 
-  // Serial sign-in matches pre-#2941 global setup. #2941 switched this to
-  // Promise.all for speed; restore serial until we have evidence parallel
-  // sign-in is safe on CI runners.
-  for (const role of roles) {
-    await signInOnce(role, baseURL)
-  }
+  await Promise.all(roles.map((role) => signInOnce(role, baseURL)))
 }
 
 export default globalSetup

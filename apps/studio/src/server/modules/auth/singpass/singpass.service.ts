@@ -10,36 +10,45 @@ import {
 } from "./singpass.constants"
 import { extractUuid } from "./singpass.utils"
 
-let singpassClient: Client | null = null
+// One in-flight discovery shared by concurrent logins. A bare
+// `if (!client) { client = await discover() }` lets Promise.all sign-ins
+// each call Issuer.discover and overwrite the client mid-flight.
+let singpassClientPromise: Promise<Client> | null = null
 
 // Lazy-initialise so that importing this module doesn't trigger a DNS lookup at
 // module load time. auth.router.ts imports singpass.router.ts unconditionally,
 // meaning every request (including email login when SingPass is skipped) would
 // otherwise attempt to resolve SINGPASS_ISSUER_ENDPOINT.
-const getSingpassClient = async (): Promise<Client> => {
+const getSingpassClient = (): Promise<Client> => {
   // getIsSingpassEnabled() already returns false when SingPass is skipped, so
   // this code path should never be reached. Guard explicitly anyway to avoid a
   // DNS lookup against the placeholder SINGPASS_ISSUER_ENDPOINT value set in
   // preview.
   if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) {
-    throw new Error("SingPass is disabled in this environment")
+    return Promise.reject(new Error("SingPass is disabled in this environment"))
   }
 
-  if (!singpassClient) {
-    const singpassIssuer = await Issuer.discover(env.SINGPASS_ISSUER_ENDPOINT)
-    singpassClient = new singpassIssuer.Client(
-      {
-        client_id: env.SINGPASS_CLIENT_ID,
-        response_types: ["code"],
-        token_endpoint_auth_method: "private_key_jwt",
-        id_token_signed_response_alg: "ES256",
-      },
-      {
-        keys: [SINGPASS_SIGNING_JWK, SINGPASS_ENCRYPTION_JWK],
-      },
+  singpassClientPromise ??= Issuer.discover(env.SINGPASS_ISSUER_ENDPOINT)
+    .then(
+      (singpassIssuer) =>
+        new singpassIssuer.Client(
+          {
+            client_id: env.SINGPASS_CLIENT_ID,
+            response_types: ["code"],
+            token_endpoint_auth_method: "private_key_jwt",
+            id_token_signed_response_alg: "ES256",
+          },
+          {
+            keys: [SINGPASS_SIGNING_JWK, SINGPASS_ENCRYPTION_JWK],
+          },
+        ),
     )
-  }
-  return singpassClient
+    .catch((error: unknown) => {
+      singpassClientPromise = null
+      throw error
+    })
+
+  return singpassClientPromise
 }
 
 export const getAuthorizationUrl = async () => {
