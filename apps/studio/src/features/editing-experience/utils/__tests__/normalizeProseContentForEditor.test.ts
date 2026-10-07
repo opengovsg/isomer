@@ -35,4 +35,52 @@ describe("normalizeProseContentForEditor", () => {
 
     expect(normalizeProseContentForEditor(content)).toBe(content)
   })
+
+  it("should strip stored empty text nodes, including inside table cells", () => {
+    const content = {
+      type: "prose",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "" }] },
+        { type: "paragraph", content: [{ type: "text", text: "keep" }] },
+        {
+          type: "table",
+          content: [
+            {
+              type: "tableRow",
+              content: [
+                {
+                  type: "tableCell",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [{ type: "text", text: "" }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }
+
+    expect(normalizeProseContentForEditor(content)).toEqual({
+      type: "prose",
+      content: [
+        { type: "paragraph" },
+        { type: "paragraph", content: [{ type: "text", text: "keep" }] },
+        {
+          type: "table",
+          content: [
+            {
+              type: "tableRow",
+              content: [
+                { type: "tableCell", content: [{ type: "paragraph" }] },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+  })
 })

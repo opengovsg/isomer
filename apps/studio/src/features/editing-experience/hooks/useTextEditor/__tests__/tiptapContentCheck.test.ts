@@ -54,4 +54,28 @@ describe("TipTap enableContentCheck", () => {
     expect(contentError).toBeUndefined()
     editor.destroy()
   })
+
+  it("should not emit contentError for stored empty text nodes after normalization", () => {
+    const content = normalizeProseContentForEditor({
+      type: "prose",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "" }] },
+        { type: "paragraph", content: [{ type: "text", text: "keep" }] },
+      ],
+    })
+    let contentError: Error | undefined
+
+    const editor = new Editor({
+      extensions: proseEditorExtensions,
+      content,
+      enableContentCheck: true,
+      onContentError: ({ error }) => {
+        contentError = error
+      },
+    })
+
+    expect(contentError).toBeUndefined()
+    expect(editor.getText()).toContain("keep")
+    editor.destroy()
+  })
 })

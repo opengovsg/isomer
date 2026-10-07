@@ -14,6 +14,30 @@ const isProseContent = (
   return (data as { type: unknown }).type === "prose"
 }
 
+// Stored blobs commonly contain `{ type: "text", text: "" }` (e.g. empty
+// paragraphs and table cells). TipTap throws on these when content checking is
+// on, so drop them; a node left with no children just omits `content`. Returns
+// the same reference when nothing was stripped.
+const stripEmptyTextNodes = (node: JSONContent): JSONContent => {
+  if (!Array.isArray(node.content)) {
+    return node
+  }
+
+  const { content, ...rest } = node
+  const children = content
+    .filter((child) => !(child.type === "text" && child.text === ""))
+    .map(stripEmptyTextNodes)
+  const changed =
+    children.length !== content.length ||
+    children.some((child, i) => child !== content[i])
+
+  if (!changed) {
+    return node
+  }
+
+  return children.length > 0 ? { ...rest, content: children } : rest
+}
+
 export const normalizeProseContentForEditor = (
   data: ControlProps["data"],
 ): ControlProps["data"] => {
@@ -21,14 +45,11 @@ export const normalizeProseContentForEditor = (
     return data
   }
 
-  const content = Array.isArray(data.content) ? data.content : []
+  const normalized = stripEmptyTextNodes(data)
 
-  if (content.length === 0) {
-    return {
-      ...data,
-      content: [EMPTY_PROSE_PARAGRAPH],
-    }
+  if (!normalized.content?.length) {
+    return { ...normalized, content: [EMPTY_PROSE_PARAGRAPH] }
   }
 
-  return data
+  return normalized
 }
