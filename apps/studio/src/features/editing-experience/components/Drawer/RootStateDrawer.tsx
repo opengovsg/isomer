@@ -21,7 +21,7 @@ import {
   schema,
 } from "@opengovsg/isomer-components"
 import posthog from "posthog-js"
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import {
   BiCog,
   BiData,
@@ -56,6 +56,9 @@ const validateHeroComponentFn = ajv.compile<IsomerComponent>(
 )
 
 const validateFn = ajv.compile<IsomerSchema>(schema)
+
+// instancePath for a content block is "content/0", "content/1", ...
+const CONTENT_BLOCK_INDEX = /^\/content\/(\d+)/
 
 const invalidBlockDescription = "Fix errors in this block to publish"
 
@@ -356,18 +359,18 @@ export default function RootStateDrawer() {
     pageLayout !== "index" &&
     pageLayout !== "collection"
 
-  validateFn(savedPageState)
-
-  const contentIndexRegex = /^\/content\/(\d+)/
-  const invalidBlockIndexes = new Set(
-    (validateFn.errors ?? [])
-      // When validating content array directly,
-      // instancePath will be like "content/0", "content/1", "content/2", etc.
-      // where the number is the index of the invalid component
-      .map((e) => contentIndexRegex.exec(e.instancePath)?.[1])
-      .filter(Boolean)
-      .map(Number),
-  )
+  // Full-page validation walks every block. Repeat renders with the same
+  // saved page skip it; AJV still mutates `validateFn.errors`, so read those
+  // inside this memo.
+  const invalidBlockIndexes = useMemo(() => {
+    validateFn(savedPageState)
+    return new Set(
+      (validateFn.errors ?? [])
+        .map((e) => CONTENT_BLOCK_INDEX.exec(e.instancePath)?.[1])
+        .filter(Boolean)
+        .map(Number),
+    )
+  }, [savedPageState])
 
   // Collection and system-managed Search pages do not render custom content.
   const canAddBlocks =
