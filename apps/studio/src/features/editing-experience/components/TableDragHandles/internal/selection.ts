@@ -10,10 +10,7 @@ export interface SelectionHandleTarget {
   cols: number[]
 }
 
-/**
- * Selects every cell in the table. The anchor and head are the grid corners,
- * so merged cells still expand to a selection that outlines the whole table.
- */
+/** Selects from the top-left cell to the bottom-right, so merged cells are included. */
 export const selectWholeTable = (editor: TiptapEditor, tablePos: number) => {
   if (editor.isDestroyed) return
   const table = getTableAt(editor.state.doc, tablePos)

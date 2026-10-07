@@ -1053,8 +1053,7 @@ describe("TableDragHandles", () => {
     if (!table) throw new Error("table not found")
     const tableRect = table.getBoundingClientRect()
 
-    // Act: keep moving below the gutter until the hover chrome actually leaves.
-    // Pointer moves are frame-throttled, so a single move can be dropped.
+    // Act. Retry the move. useHoveredTable drops a mousemove while a frame is pending.
     await waitFor(() => {
       hoverAt(tableRect.left + tableRect.width / 2, tableRect.bottom + 80)
       expect(queryByRole("button", { name: "Add row below" })).toBeNull()

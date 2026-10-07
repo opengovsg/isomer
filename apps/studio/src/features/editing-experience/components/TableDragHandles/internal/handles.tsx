@@ -47,10 +47,7 @@ const handleChrome = (isActive: boolean, isLocked: boolean) => ({
   },
 })
 
-/**
- * Circular overlay on the table's top-left corner, styled like the pencil
- * trigger. `left` and `top` are the corner in container coordinates.
- */
+/** `left` and `top` are the table's top-left corner, in container coordinates. */
 export const SelectTableButton = ({
   left,
   top,

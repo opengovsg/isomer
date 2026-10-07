@@ -61,8 +61,8 @@ export const TableDragHandles = ({
   const [dismissedTablePos, setDismissedTablePos] = useState<number | null>(
     null,
   )
-  // Hide after a click until the pointer leaves. Clearing on the next hover
-  // would leave the button under the cursor, unlike the pencil which stays.
+  // Stay hidden after a click until the pointer leaves this table. Resetting
+  // while it is still over the table would show the button again immediately.
   if (dismissedTablePos !== null && hoverTablePos !== dismissedTablePos) {
     setDismissedTablePos(null)
   }
