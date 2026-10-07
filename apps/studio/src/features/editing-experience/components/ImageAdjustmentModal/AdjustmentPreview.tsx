@@ -189,13 +189,28 @@ export const AdjustmentPreview = ({
         [imageFieldName]: adjustedSrc,
         imageAdjustment: adjustment,
       } as IsomerComponent
-      previewComponent = renderComponent({
+      const rendered = renderComponent({
         component,
         layout: "content",
         site: PREVIEW_SITE_STUB,
         permalink: "",
         headingLevel: 1,
       })
+      // renderComponent dispatches a bare component with no page layout
+      // around it. In a real page, the horizontal gutter/max-width for any
+      // element marked `.component-content` (e.g. HeroGradient's text block)
+      // comes from an ANCESTOR selector the page layout applies —
+      // `[&_.component-content]:px-6 [&_.component-content]:md:px-10
+      // [&_.component-content]:max-w-screen-xl [&_.component-content]:mx-auto`
+      // (see Homepage.tsx) — not from the component itself. Without this
+      // wrapper the text/buttons sit flush left with no padding, even though
+      // the background image (a separate, non-"component-content" sibling)
+      // renders correctly full-bleed either way.
+      previewComponent = (
+        <div className="break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10">
+          {rendered}
+        </div>
+      )
     } catch (error) {
       console.debug(
         "Failed to render real-component preview, falling back to approximation",
