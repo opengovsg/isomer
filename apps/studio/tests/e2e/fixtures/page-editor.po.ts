@@ -179,4 +179,65 @@ export class PageEditorPO {
       ),
     ).toBeVisible()
   }
+
+  private moreActionsButton() {
+    return this.page.getByRole("button", { name: "More actions" })
+  }
+
+  async openUnpublishModal() {
+    await this.moreActionsButton().click()
+    await this.page.getByRole("button", { name: "Unpublish page" }).click()
+  }
+
+  async unpublishNow() {
+    // No default mode on the modal, so pick "now" explicitly by clicking its
+    // option card (the radio input is visually hidden inside the label).
+    await this.page
+      .locator("label")
+      .filter({ hasText: "Unpublish now" })
+      .click()
+    await this.page.getByRole("button", { name: "Unpublish now" }).click()
+  }
+
+  async expectUnpublishedToast() {
+    await expect(
+      this.page.getByText("Page unpublished successfully"),
+    ).toBeVisible()
+  }
+
+  /** Schedules the unpublish for `date` at the 11:00 AM slot. Use a far-future
+   * date so that slot is always past the schedule lead time. */
+  async scheduleUnpublishFor(date: Date) {
+    await this.page
+      .locator("label")
+      .filter({ hasText: "Unpublish later" })
+      .click()
+    const dd = String(date.getDate()).padStart(2, "0")
+    const mm = String(date.getMonth() + 1).padStart(2, "0")
+    await this.page
+      .getByRole("textbox", { name: "Date" })
+      .fill(`${dd}/${mm}/${date.getFullYear()}`)
+    // TimeSelect is a react-select; scope the combobox to the modal dialog.
+    await this.page.getByRole("dialog").getByRole("combobox").click()
+    await this.page.getByRole("option", { name: "11:00 AM" }).click()
+    await this.page.getByRole("button", { name: "Schedule unpublish" }).click()
+  }
+
+  async expectScheduledUnpublishToast() {
+    await expect(
+      this.page.getByText(/scheduled to unpublish on/i),
+    ).toBeVisible()
+  }
+
+  async expectUnpublishBlockedByLiveChildren() {
+    await this.moreActionsButton().click()
+    // The block is driven by a live child, not the landing page itself, so the
+    // action is offered-but-disabled with a reason naming live children.
+    await expect(
+      this.page.getByText(/child pages that are or will be live/i),
+    ).toBeVisible()
+    await expect(
+      this.page.getByRole("button", { name: "Unpublish page" }),
+    ).toBeDisabled()
+  }
 }

@@ -1,6 +1,10 @@
 import crypto from "crypto"
 import { setupFolder, setupPageResource } from "tests/integration/helpers/seed"
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+import {
+  ResourceState,
+  ResourceType,
+  type ScheduledAction,
+} from "~prisma/generated/generatedEnums"
 
 /** Prose preview label from the default integration seed blob. */
 export const SEEDED_PROSE_BLOCK_LABEL = "Test block"
@@ -43,6 +47,46 @@ export const seedRootPage = async ({
     permalink: pagePermalink ?? `e2e-page-${suffix}`,
     state,
     userId,
+  })
+  return { page }
+}
+
+// Seeds a live (published) page — Published state + a published version, which
+// is what "live" means to the unpublish flow. Pass `scheduledAt` +
+// `scheduledAction` to seed a page that's also scheduled (e.g. a pending
+// unpublish). `parentId`/`resourceType` let callers seed a container's index
+// page or a child under it.
+export const seedPublishedPage = async ({
+  siteId,
+  userId,
+  pageTitle = "E2E Live Page",
+  pagePermalink,
+  parentId = null,
+  resourceType = ResourceType.Page,
+  scheduledAt = null,
+  scheduledAction = null,
+}: {
+  siteId: number
+  userId: string
+  pageTitle?: string
+  pagePermalink?: string
+  parentId?: string | null
+  resourceType?: ResourceType
+  scheduledAt?: Date | null
+  scheduledAction?: ScheduledAction | null
+}) => {
+  const suffix = crypto.randomUUID().slice(0, 8)
+  const { page } = await setupPageResource({
+    siteId,
+    resourceType,
+    parentId,
+    title: pageTitle,
+    permalink: pagePermalink ?? `e2e-live-${suffix}`,
+    state: ResourceState.Published,
+    userId,
+    scheduledAt,
+    scheduledBy: scheduledAt ? userId : null,
+    scheduledAction,
   })
   return { page }
 }
