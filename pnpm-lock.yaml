@@ -510,11 +510,11 @@ catalogs:
       version: 4.5.4
   growthbook:
     '@growthbook/growthbook':
-      specifier: ^1.7.0
-      version: 1.7.0
+      specifier: ^1.8.0
+      version: 1.8.0
     '@growthbook/growthbook-react':
-      specifier: ^1.7.0
-      version: 1.7.0
+      specifier: ^1.8.0
+      version: 1.8.0
   jsonforms:
     '@jsonforms/core':
       specifier: ^3.8.0
@@ -833,10 +833,10 @@ importers:
         version: 0.10.0
       '@growthbook/growthbook':
         specifier: catalog:growthbook
-        version: 1.7.0
+        version: 1.8.0
       '@growthbook/growthbook-react':
         specifier: catalog:growthbook
-        version: 1.7.0(react@18.3.1)
+        version: 1.8.0(react@18.3.1)
       '@hello-pangea/dnd':
         specifier: 'catalog:'
         version: 18.0.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -4461,14 +4461,14 @@ packages:
   '@formkit/auto-animate@0.10.0':
     resolution: {integrity: sha512-KGomRttjUfORuPUaR/ZGQw+6xfMrTM+sxnILv7JAd9AmabU9rg9i6gF/iC0Ih+QpKCubJpCA/1DX9UHKE8cX+A==}
 
-  '@growthbook/growthbook-react@1.7.0':
-    resolution: {integrity: sha512-7TU0Yjmkl2Me8LKpG5cjqIsLSK+sz9T/1vocJAm49KsBeTvse6QwR9544KB9sU7eJF9qYVGr4GekW/r9bqmaWg==}
+  '@growthbook/growthbook-react@1.8.0':
+    resolution: {integrity: sha512-mJo31XBfZlsuLV6ud/YdhFtJsJd2SEvn2/M96mP1ZqCn8PRRsOSkdBnO/kFILneoJWtV9IxbMZWCsJCenW3Huw==}
     engines: {node: '>=10'}
     peerDependencies:
       react: ^16.8.0-0 || ^17.0.0-0 || ^18.0.0-0 || ^19.0.0-0
 
-  '@growthbook/growthbook@1.7.0':
-    resolution: {integrity: sha512-Vmad3fWRh1XaFH4q+AS62ofX6Q3IxSTD7sBGuhEHCaad8VyZerxrVdojucjzlnJDUocfrnZFUSpEkR6R/wCV+A==}
+  '@growthbook/growthbook@1.8.0':
+    resolution: {integrity: sha512-WlS5bCwm0EJQDdTNkiPGE1X9EdvU7BIaAbHP8pg/5xP1stRyUI7sPQMpC21p6B2c/VvgxatGn/tM+r0SYnhfQw==}
     engines: {node: '>=10'}
 
   '@grpc/grpc-js@1.14.4':
@@ -12032,9 +12032,6 @@ packages:
     resolution: {integrity: sha512-9LkiTwjUh6rT555DtE9rTX+BKByPfrMzEAtnlEtdEwr3Nkffwiihqe2bWADg+OQRjt9gl6ICdmB/ZFDCGAtSow==}
     engines: {node: '>= 4'}
 
-  rettime@0.11.11:
-    resolution: {integrity: sha512-ILJRqVWBCTlg9r42fFgwVZx1gnFAcQF8mRoMkbgQfIrjEDf9nbBFDFx00oloOa+Q869FUtaYDXZvEfnecQSCoQ==}
-
   rettime@0.11.12:
     resolution: {integrity: sha512-5ExtR1ppiDBQkVoPw5NAqdbfH4Iq2VOmQKHMtUoaFxA9bo2krzFYBtyq6K40xxbYp+2w/YOr6D+1ToF6tTN53A==}
 
@@ -16245,12 +16242,12 @@ snapshots:
 
   '@formkit/auto-animate@0.10.0': {}
 
-  '@growthbook/growthbook-react@1.7.0(react@18.3.1)':
+  '@growthbook/growthbook-react@1.8.0(react@18.3.1)':
     dependencies:
-      '@growthbook/growthbook': 1.7.0
+      '@growthbook/growthbook': 1.8.0
       react: 18.3.1
 
-  '@growthbook/growthbook@1.7.0':
+  '@growthbook/growthbook@1.8.0':
     dependencies:
       dom-mutator: 0.6.0
 
@@ -22647,7 +22644,7 @@ snapshots:
       outvariant: 1.4.3
       path-to-regexp: 6.3.0
       picocolors: 1.1.1
-      rettime: 0.11.11
+      rettime: 0.11.12
       statuses: 2.0.2
       strict-event-emitter: 0.5.1
       tough-cookie: 6.0.2
@@ -24485,9 +24482,6 @@ snapshots:
   ret@0.5.0: {}
 
   retry@0.12.0: {}
-
-  rettime@0.11.11:
-    optional: true
 
   rettime@0.11.12: {}
 
