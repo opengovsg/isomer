@@ -109,7 +109,7 @@ const DeleteResourceModalContent = ({
     onSettled: onClose,
     onSuccess: async () => {
       posthog.capture("resource_deleted", {
-        site_id: siteId,
+        site_id: String(siteId),
         resource_type: resourceType,
         has_redirects: redirectCount > 0,
       })

@@ -35,7 +35,9 @@ const Site = ({
       <LinkOverlay
         href={`/sites/${siteId}`}
         as={NextLink}
-        onClick={() => posthog.capture("site_selected", { site_id: siteId })}
+        onClick={() =>
+          posthog.capture("site_selected", { site_id: String(siteId) })
+        }
       >
         <Flex key={siteId} flexDirection="column" gap="1rem" width="100%">
           <Box position="relative">

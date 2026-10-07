@@ -26,10 +26,13 @@ export const useCreateAuditLogExportRequest = ({
   return trpc.audit.createExportRequest.useMutation({
     onSuccess: (_data, { scope, reportType: requestedReportType, month }) => {
       if (requestedReportType === AuditLogExportRequestedReportType.Access) {
-        posthog.capture("user_access_log_requested", { site_id: siteId, scope })
+        posthog.capture("user_access_log_requested", {
+          site_id: String(siteId),
+          scope,
+        })
       } else {
         posthog.capture("audit_log_requested", {
-          site_id: siteId,
+          site_id: String(siteId),
           month,
           scope,
         })

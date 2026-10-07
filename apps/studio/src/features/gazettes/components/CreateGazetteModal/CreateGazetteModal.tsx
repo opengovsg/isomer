@@ -129,7 +129,7 @@ const CreateGazetteModalContent = ({
       })
 
       posthog.capture("gazette_created", {
-        site_id: siteId,
+        site_id: String(siteId),
         category: data.category,
         has_subcategory: !!data.subcategory,
         is_scheduled: scheduledAt > new Date(),

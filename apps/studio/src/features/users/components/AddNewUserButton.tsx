@@ -35,7 +35,7 @@ export const AddNewUserButton = ({
       variant="solid"
       leftIcon={<BiPlus />}
       onClick={() => {
-        posthog.capture("add_user_modal_opened", { site_id: siteId })
+        posthog.capture("add_user_modal_opened", { site_id: String(siteId) })
         setAddUserModalState({ ...DEFAULT_ADD_USER_MODAL_STATE, siteId })
       }}
       isDisabled={isButtonDisabled}

@@ -130,7 +130,7 @@ export const AddRedirectCard = ({
       {
         onSuccess: () => {
           posthog.capture("redirect_created", {
-            site_id: siteId,
+            site_id: String(siteId),
             destination_type: destination.startsWith("/")
               ? "internal"
               : "external",
@@ -211,7 +211,7 @@ export const AddRedirectCard = ({
             color="interaction.links.default"
             onClick={() => {
               posthog.capture("redirect_bulk_upload_modal_opened", {
-                site_id: siteId,
+                site_id: String(siteId),
               })
               onBulkUploadOpen()
             }}

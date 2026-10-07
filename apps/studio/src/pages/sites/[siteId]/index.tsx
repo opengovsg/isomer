@@ -118,21 +118,21 @@ const SitePage: NextPageWithLayout = () => {
           <HomepageMenuButton
             onPageCreateModalOpen={() => {
               posthog.capture("page_create_modal_opened", {
-                site_id: siteId,
+                site_id: String(siteId),
                 parent_type: "site",
               })
               onPageCreateModalOpen()
             }}
             onFolderCreateModalOpen={() => {
               posthog.capture("folder_create_modal_opened", {
-                site_id: siteId,
+                site_id: String(siteId),
                 parent_type: "site",
               })
               onFolderCreateModalOpen()
             }}
             onCollectionCreateModalOpen={() => {
               posthog.capture("collection_create_modal_opened", {
-                site_id: siteId,
+                site_id: String(siteId),
                 parent_type: "site",
               })
               onCollectionCreateModalOpen()

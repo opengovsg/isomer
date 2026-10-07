@@ -115,7 +115,7 @@ const useCreatePageWizardContext = ({
       {
         onSuccess: ({ pageId }) => {
           posthog.capture("page_created", {
-            site_id: siteId,
+            site_id: String(siteId),
             has_parent_folder: !!folderId,
             layout: values.layout,
           })

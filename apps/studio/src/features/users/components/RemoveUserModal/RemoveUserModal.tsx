@@ -36,7 +36,7 @@ export const RemoveUserModal = () => {
   const { mutate, isPending } = trpc.user.delete.useMutation({
     onSettled: onClose,
     onSuccess: (result) => {
-      posthog.capture("site_user_removed", { site_id: siteId })
+      posthog.capture("site_user_removed", { site_id: String(siteId) })
       void utils.user.list.invalidate()
       void utils.user.count.invalidate()
       toast({
