@@ -80,9 +80,7 @@ export const ChoosingStyle: Story = {
     const canvas = within(canvasElement)
 
     await userEvent.click(
-      canvas.getByRole("button", {
-        name: /click to explore different styles/i,
-      }),
+      canvas.getByText(/click to explore different styles/i),
     )
 
     await expect(
