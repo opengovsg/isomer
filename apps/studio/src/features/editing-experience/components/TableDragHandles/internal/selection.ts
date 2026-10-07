@@ -10,6 +10,26 @@ export interface SelectionHandleTarget {
   cols: number[]
 }
 
+/**
+ * Selects every cell in the table. The anchor and head are the grid corners,
+ * so merged cells still expand to a selection that outlines the whole table.
+ */
+export const selectWholeTable = (editor: TiptapEditor, tablePos: number) => {
+  if (editor.isDestroyed) return
+  const table = getTableAt(editor.state.doc, tablePos)
+  if (!table) return
+  const map = TableMap.get(table)
+  const tableStart = tablePos + 1
+  const anchor = tableStart + map.positionAt(0, 0, table)
+  const head = tableStart + map.positionAt(map.height - 1, map.width - 1, table)
+  editor.view.dispatch(
+    editor.state.tr.setSelection(
+      CellSelection.create(editor.state.doc, anchor, head),
+    ),
+  )
+  editor.view.focus()
+}
+
 /** Selects the whole row or column at `index`, mirroring a handle click. */
 export const selectWholeSlot = (
   editor: TiptapEditor,
