@@ -133,7 +133,9 @@ export class PageEditorPO {
     await this.page
       .getByRole("button", { name: "Focus on today's date" })
       .click()
-    await this.page.getByText("Select time", { exact: true }).click()
+    // The "Select time" placeholder sits under the react-select control,
+    // which intercepts the click. The combobox is the control itself.
+    await this.page.getByRole("combobox").click()
     await this.page
       .getByRole("option", { name: optionLabel, exact: true })
       .click()
