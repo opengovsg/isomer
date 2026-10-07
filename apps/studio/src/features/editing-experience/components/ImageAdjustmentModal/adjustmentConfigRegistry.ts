@@ -32,8 +32,8 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
     {
       id: "desktop",
       label: "Desktop",
-      viewportWidth: 1440,
-      aspectRatio: { width: 1440, height: 500 },
+      viewportWidth: 1280,
+      aspectRatio: { width: 1280, height: 500 },
     },
   ],
   // Mirrors HeroGradient's left-to-right dark gradient so editors can judge
@@ -46,11 +46,13 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
     "Use a high-resolution image (at least 2560×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text — this variant adds a gradient overlay.",
 }
 
-// Tier B — responsive two-column layout with a hard mobile image height.
-// The only Hero variant with a non-content-dependent mobile height band (h-80).
-// Focal anchors the subject as the image panel reshapes: mobile is a full-width
-// fixed 320px band, desktop is half-width with 500px min-height. Crop is free
-// (custom).
+// Tier B — responsive layout that STACKS (text, then the 320px image band)
+// below lg (1024px), switching to side-by-side only at lg and up. The
+// previewStates' aspect ratios are only an initial guess shown before
+// PreviewFrame measures the real rendered height (which includes the full
+// stacked text block on mobile/tablet, not just the image band) — matching
+// HeroGradient's own min-h scale (15/22.5/31.25rem), since both use the same
+// Tailwind breakpoints for their section's min-height.
 const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   componentType: "hero:block",
   cropMode: "custom",
@@ -60,16 +62,19 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
       id: "mobile",
       label: "Mobile",
       viewportWidth: 375,
-      // Taller than the real 320px image band on purpose — this frames a
-      // full mobile screen (so the preview reads as "a phone"), not just the
-      // hero's own content height.
-      aspectRatio: { width: 375, height: 667 },
+      aspectRatio: { width: 375, height: 240 },
+    },
+    {
+      id: "tablet",
+      label: "Tablet",
+      viewportWidth: 768,
+      aspectRatio: { width: 768, height: 360 },
     },
     {
       id: "desktop",
       label: "Desktop",
-      viewportWidth: 1440,
-      aspectRatio: { width: 720, height: 500 },
+      viewportWidth: 1280,
+      aspectRatio: { width: 1280, height: 500 },
     },
   ],
   preUploadCopy:
@@ -108,10 +113,16 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
       aspectRatio: { width: 375, height: 300 },
     },
     {
+      id: "tablet",
+      label: "Tablet",
+      viewportWidth: 768,
+      aspectRatio: { width: 768, height: 400 },
+    },
+    {
       id: "desktop",
       label: "Desktop",
-      viewportWidth: 1440,
-      aspectRatio: { width: 720, height: 450 },
+      viewportWidth: 1280,
+      aspectRatio: { width: 1280, height: 450 },
     },
   ],
   preUploadCopy:
@@ -119,11 +130,10 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
 }
 
 // Tier B — responsive full-bleed image hero with the largest aspect-ratio swing
-// of any Hero variant (aspect-square on mobile, md:aspect-[2/1] on desktop).
+// of any Hero variant (aspect-square below md, md:aspect-[2/1] from md/768 up).
 // Focal anchors the subject across this extreme swing; crop is free (custom).
-// The preview states' aspect ratios capture the real ratio extremes so editors
-// can judge which focal axis bites hardest at each breakpoint — mobile square
-// emphasizes vertical focal movement, desktop 2:1 emphasizes horizontal.
+// md is 768, so the tablet breakpoint already sits in the 2:1 regime — only
+// mobile (375, below md) gets the square guess.
 const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   componentType: "hero:largeImage",
   cropMode: "custom",
@@ -136,9 +146,15 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
       aspectRatio: { width: 1, height: 1 },
     },
     {
+      id: "tablet",
+      label: "Tablet",
+      viewportWidth: 768,
+      aspectRatio: { width: 2, height: 1 },
+    },
+    {
       id: "desktop",
       label: "Desktop",
-      viewportWidth: 1440,
+      viewportWidth: 1280,
       aspectRatio: { width: 2, height: 1 },
     },
   ],

@@ -5,9 +5,10 @@ import type {
   IsomerSiteProps,
   ImageAdjustment,
 } from "@opengovsg/isomer-components"
+import type { IframeCallbackFnProps } from "~/types/dom"
 import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { renderComponent } from "@opengovsg/isomer-components"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import Suspense from "~/components/Suspense"
 import { PreviewIframe } from "~/features/editing-experience/components/preview/PreviewIframe"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
@@ -52,34 +53,20 @@ interface AdjustmentPreviewProps {
   siteId: number
 }
 
-// Fixed on-screen window per breakpoint, shared by EVERY component's preview
-// — this is what makes the preview set look like one consistent family of
-// frames instead of each component getting a bespoke box shaped to its own
-// content height. `state.aspectRatio` still governs the iframe's internal
-// simulated viewport (so real sm:/md:/lg: breakpoint classes evaluate
-// correctly), but has no say over how large the frame appears here; content
-// taller than this window scrolls instead of resizing the frame to fit it.
-const FRAME_DISPLAY_SIZE: Record<string, { width: number; height: number }> = {
-  mobile: { width: 160, height: 320 },
-  tablet: { width: 200, height: 260 },
-  desktop: { width: 320, height: 200 },
+// Fixed on-screen DISPLAY WIDTH per breakpoint, shared by every component's
+// preview — narrower for mobile, wider for tablet/desktop. This alone tends
+// to produce portrait-looking mobile frames and landscape-looking
+// tablet/desktop frames, since that mirrors how each component's own
+// responsive layout actually behaves at those widths (e.g. mobile widths
+// stack content vertically). The resulting HEIGHT is never guessed or
+// capped — see PreviewFrame — so nothing is ever cropped or hidden behind a
+// scrollbar; what's shown always exactly matches the real published result.
+const FRAME_DISPLAY_WIDTH: Record<string, number> = {
+  mobile: 140,
+  tablet: 220,
+  desktop: 320,
 }
-const DEFAULT_FRAME_DISPLAY_SIZE = { width: 240, height: 240 }
-
-// A plain (non-iframe) scrollable box's native scrollbar already auto-hides
-// until hover — style it to stay visible, same rationale as
-// alwaysShowScrollbar on PreviewIframe, so overflowing content is obviously
-// scrollable at a glance.
-const persistentScrollbarSx = {
-  scrollbarWidth: "thin",
-  scrollbarColor: "rgba(0, 0, 0, 0.3) transparent",
-  "&::-webkit-scrollbar": { width: "6px", height: "6px" },
-  "&::-webkit-scrollbar-thumb": {
-    background: "rgba(0, 0, 0, 0.3)",
-    borderRadius: "4px",
-  },
-  "&::-webkit-scrollbar-track": { background: "transparent" },
-} as const
+const DEFAULT_FRAME_DISPLAY_WIDTH = 220
 
 export const AdjustmentPreview = ({
   src,
@@ -222,84 +209,17 @@ export const AdjustmentPreview = ({
     return (
       <Flex wrap="wrap" align="flex-start" gap="1rem" w="100%">
         {previewStates.map((state) => {
-          // Simulate a real device viewport at this breakpoint's exact width
-          // (so the real component's own sm:/md:/lg: Tailwind classes
-          // evaluate correctly, which they can't if we just shrink an outer
-          // container — the iframe's OWN layout viewport is what media
-          // queries read). This drives the iframe's internal rendering only —
-          // the visible on-screen window size comes from FRAME_DISPLAY_SIZE
-          // below, shared by every component, so the frame itself doesn't
-          // balloon or shrink to match each component's own content height.
-          const viewportWidth = state.viewportWidth ?? 1024
-          const viewportHeight = state.aspectRatio
-            ? Math.round(
-                (viewportWidth * state.aspectRatio.height) /
-                  state.aspectRatio.width,
-              )
-            : 600
-          const frameSize =
-            FRAME_DISPLAY_SIZE[state.id] ?? DEFAULT_FRAME_DISPLAY_SIZE
-          // Scale to the fixed window's WIDTH only — height is whatever it
-          // is, and the outer window scrolls (overflow: auto) to reveal
-          // anything taller, rather than resizing the frame to fit it.
-          const scale = frameSize.width / viewportWidth
-
+          const displayWidth =
+            FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
           return (
-            <VStack
+            <Suspense
               key={state.id}
-              align="stretch"
-              spacing="0.5rem"
-              flexShrink={0}
+              fallback={<Skeleton w={`${displayWidth}px`} h="9rem" />}
             >
-              <Text
-                textStyle="body-2"
-                fontWeight="semibold"
-                color="base.content.medium"
-              >
-                {state.label}
-                {state.viewportWidth && ` (${state.viewportWidth}px)`}
-              </Text>
-
-              <Box
-                borderWidth="1px"
-                borderColor="base.divider.medium"
-                borderRadius="0.25rem"
-                overflow="auto"
-                sx={persistentScrollbarSx}
-                style={{
-                  width: frameSize.width,
-                  height: frameSize.height,
-                  position: "relative",
-                }}
-              >
-                <Box
-                  style={{
-                    width: viewportWidth,
-                    height: viewportHeight,
-                    transform: `scale(${scale})`,
-                    transformOrigin: "top left",
-                  }}
-                >
-                  <Suspense
-                    fallback={
-                      <Skeleton
-                        w={`${viewportWidth}px`}
-                        h={`${viewportHeight}px`}
-                      />
-                    }
-                  >
-                    <ThemedPreviewFrame
-                      siteId={siteId}
-                      viewportWidth={viewportWidth}
-                      viewportHeight={viewportHeight}
-                      scale={scale}
-                    >
-                      {previewComponent}
-                    </ThemedPreviewFrame>
-                  </Suspense>
-                </Box>
-              </Box>
-            </VStack>
+              <PreviewFrame siteId={siteId} state={state}>
+                {previewComponent}
+              </PreviewFrame>
+            </Suspense>
           )
         })}
       </Flex>
@@ -309,8 +229,12 @@ export const AdjustmentPreview = ({
   return (
     <Flex wrap="wrap" align="flex-start" gap="1rem" w="100%">
       {previewStates.map((state) => {
-        const frameSize =
-          FRAME_DISPLAY_SIZE[state.id] ?? DEFAULT_FRAME_DISPLAY_SIZE
+        const displayWidth =
+          FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
+        const aspect = state.aspectRatio
+          ? state.aspectRatio.width / state.aspectRatio.height
+          : 1
+        const displayHeight = displayWidth / aspect
 
         const imageNode = (
           <Box
@@ -358,7 +282,7 @@ export const AdjustmentPreview = ({
               {state.viewportWidth && ` (${state.viewportWidth}px)`}
             </Text>
 
-            {/* Frame box, sized to the same fixed per-breakpoint window as
+            {/* Frame box, using the same per-breakpoint display width as
                 every other component's preview. */}
             <Box
               borderWidth="1px"
@@ -368,8 +292,8 @@ export const AdjustmentPreview = ({
               bg="base.canvas.default"
               position="relative"
               style={{
-                width: frameSize.width,
-                height: frameSize.height,
+                width: displayWidth,
+                height: displayHeight,
               }}
             >
               {frameContent}
@@ -381,39 +305,100 @@ export const AdjustmentPreview = ({
   )
 }
 
-// Pulls the site's brand theme CSS vars into the preview iframe — without
-// them, Tailwind classes like `bg-brand-canvas-inverse` resolve to nothing,
-// which is what caused white-on-white text in the HeroBlock preview. Split
-// out since useSiteThemeCssVars suspends (useSuspenseQuery).
-const ThemedPreviewFrame = ({
+// Renders the real component inside a simulated device viewport at this
+// breakpoint's exact width (so the component's own sm:/md:/lg: Tailwind
+// classes evaluate correctly — the iframe's OWN layout viewport is what
+// media queries read, which a container shrunk from outside can't fake),
+// scaled down to a fixed DISPLAY WIDTH (see FRAME_DISPLAY_WIDTH). The
+// frame's HEIGHT is measured from the real rendered content via a
+// ResizeObserver inside the iframe, never guessed — so condition (1), the
+// preview exactly reflecting the post-publish look, holds regardless of how
+// tall any given component's content turns out to be, with nothing cropped
+// or hidden behind a scrollbar.
+//
+// Also pulls the site's brand theme CSS vars into the iframe — without them,
+// Tailwind classes like `bg-brand-canvas-inverse` resolve to nothing, which
+// previously caused white-on-white text in the HeroBlock preview.
+const PreviewFrame = ({
   siteId,
-  viewportWidth,
-  viewportHeight,
-  scale,
+  state,
   children,
 }: {
   siteId: number
-  viewportWidth: number
-  viewportHeight: number
-  // The outer `transform: scale()` wrapper shrinks EVERYTHING it contains,
-  // including the iframe's own native scrollbar — an 8px scrollbar renders
-  // at 8*scale screen pixels, which can be imperceptible at small scales.
-  // Compensate by sizing it up by 1/scale so it reads as ~8px after the
-  // transform shrinks it back down.
-  scale: number
+  state: AdjustmentPreviewState
   children: React.ReactNode
 }) => {
+  const viewportWidth = state.viewportWidth ?? 1024
+  // Used only as the initial guess before the real height is measured, to
+  // avoid a 0-height flash — corrected immediately on mount.
+  const estimatedHeight = state.aspectRatio
+    ? Math.round(
+        (viewportWidth * state.aspectRatio.height) / state.aspectRatio.width,
+      )
+    : viewportWidth
+  const [measuredHeight, setMeasuredHeight] = useState<number | null>(null)
+  const viewportHeight = measuredHeight ?? estimatedHeight
+
+  const handleIframeMount = useCallback(
+    ({ document: iframeDocument }: IframeCallbackFnProps) => {
+      if (!iframeDocument?.body) return
+      const update = () => setMeasuredHeight(iframeDocument.body.scrollHeight)
+      update()
+      // The global ResizeObserver can observe elements belonging to another
+      // same-origin document just fine — no need to reach into the iframe's
+      // own window for its constructor.
+      const observer = new ResizeObserver(update)
+      observer.observe(iframeDocument.body)
+    },
+    [],
+  )
+
+  const displayWidth =
+    FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
+  const scale = displayWidth / viewportWidth
   const themeCssVars = useSiteThemeCssVars({ siteId })
+
   return (
-    <PreviewIframe
-      widthPx={viewportWidth}
-      heightPx={viewportHeight}
-      preventPointerEvents
-      alwaysShowScrollbar
-      scrollbarWidthPx={scale > 0 ? 8 / scale : 8}
-      style={themeCssVars}
-    >
-      {children}
-    </PreviewIframe>
+    <VStack align="stretch" spacing="0.5rem" flexShrink={0}>
+      <Text
+        textStyle="body-2"
+        fontWeight="semibold"
+        color="base.content.medium"
+      >
+        {state.label}
+        {state.viewportWidth && ` (${state.viewportWidth}px)`}
+      </Text>
+
+      <Box
+        borderWidth="1px"
+        borderColor="base.divider.medium"
+        borderRadius="0.25rem"
+        overflow="hidden"
+        style={{
+          width: displayWidth,
+          height: viewportHeight * scale,
+          position: "relative",
+        }}
+      >
+        <Box
+          style={{
+            width: viewportWidth,
+            height: viewportHeight,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+          }}
+        >
+          <PreviewIframe
+            widthPx={viewportWidth}
+            heightPx={viewportHeight}
+            preventPointerEvents
+            style={themeCssVars}
+            callback={handleIframeMount}
+          >
+            {children}
+          </PreviewIframe>
+        </Box>
+      </Box>
+    </VStack>
   )
 }

@@ -21,18 +21,6 @@ interface PreviewIframeProps {
   // output box, not the iframe's own layout viewport).
   widthPx?: number
   heightPx?: number
-  // Forces a persistently-visible scrollbar inside the iframe's document,
-  // instead of the OS/browser default of hiding it until hover — needed for
-  // small non-interactive previews (e.g. the image-adjustment modal's
-  // per-breakpoint frames) where content can overflow the simulated
-  // viewport and `preventPointerEvents` means the user can't hover to
-  // discover it's scrollable in the first place.
-  alwaysShowScrollbar?: boolean
-  // CSS pixel width for the forced scrollbar. Defaults to 8 — raise this when
-  // the iframe itself sits inside a `transform: scale()` wrapper, since the
-  // scale shrinks the rendered scrollbar along with everything else (e.g. a
-  // scale of 0.4 needs ~20px here to still read as ~8px on screen).
-  scrollbarWidthPx?: number
   callback?: (props: IframeCallbackFnProps) => void
 }
 
@@ -44,8 +32,6 @@ export const PreviewIframe = ({
   viewport,
   widthPx,
   heightPx,
-  alwaysShowScrollbar,
-  scrollbarWidthPx = 8,
   callback,
 }: PropsWithChildren<PreviewIframeProps>): JSX.Element => {
   const extraProps = preventPointerEvents
@@ -110,22 +96,12 @@ export const PreviewIframe = ({
         style={containerStyles}
         {...extraProps}
         head={
-          <>
-            {/* oxlint-disable-next-line @next/next/no-css-tags */}
-            <link
-              rel="stylesheet"
-              type="text/css"
-              href="/assets/css/preview-tw.css"
-            />
-            {alwaysShowScrollbar && (
-              <style>{`
-                html { scrollbar-width: thin; scrollbar-color: rgba(0, 0, 0, 0.3) transparent; }
-                ::-webkit-scrollbar { width: ${scrollbarWidthPx}px; height: ${scrollbarWidthPx}px; }
-                ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.3); border-radius: 4px; }
-                ::-webkit-scrollbar-track { background: transparent; }
-              `}</style>
-            )}
-          </>
+          // oxlint-disable-next-line @next/next/no-css-tags
+          <link
+            rel="stylesheet"
+            type="text/css"
+            href="/assets/css/preview-tw.css"
+          />
         }
       >
         <IframeInnerComponent
