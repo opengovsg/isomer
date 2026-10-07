@@ -5,10 +5,12 @@ import type {
   IsomerSiteProps,
   ImageAdjustment,
 } from "@opengovsg/isomer-components"
-import { Box, HStack, Text, VStack } from "@chakra-ui/react"
+import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { renderComponent } from "@opengovsg/isomer-components"
 import { useEffect, useRef, useState } from "react"
+import Suspense from "~/components/Suspense"
 import { PreviewIframe } from "~/features/editing-experience/components/preview/PreviewIframe"
+import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { bakeImage, canBakeImage } from "~/lib/imageBake"
 import { ASSETS_BASE_URL, generateAssetUrl } from "~/utils/generateAssetUrl"
 
@@ -45,7 +47,16 @@ interface AdjustmentPreviewProps {
   // when absent or when rendering the real component fails for any reason.
   block?: unknown
   imageFieldName?: string
+  // Needed to pull the site's brand theme CSS vars into the preview iframe —
+  // without them, classes like `bg-brand-canvas-inverse` resolve to nothing.
+  siteId: number
 }
+
+// Consistent display HEIGHT across every preview block, so a tall mobile
+// portrait frame and a short wide desktop frame read as comparably "real
+// device" previews, instead of being capped to the same width regardless of
+// their actual shape (which produced visually arbitrary block sizes).
+const DISPLAY_HEIGHT = 240
 
 export const AdjustmentPreview = ({
   src,
@@ -55,6 +66,7 @@ export const AdjustmentPreview = ({
   scrim,
   block,
   imageFieldName,
+  siteId,
 }: AdjustmentPreviewProps): JSX.Element => {
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -184,25 +196,16 @@ export const AdjustmentPreview = ({
   }
 
   if (previewComponent) {
-    const DISPLAY_WIDTH_CAP = 200
-
     return (
-      <HStack
-        align="flex-start"
-        spacing="1rem"
-        w="100%"
-        overflowX="auto"
-        overflowY="hidden"
-        pb="0.5rem"
-      >
+      <Flex wrap="wrap" align="flex-start" gap="1rem" w="100%">
         {previewStates.map((state) => {
           // Simulate a real device viewport at this breakpoint's exact width
           // (so the real component's own sm:/md:/lg: Tailwind classes
           // evaluate correctly, which they can't if we just shrink an outer
           // container — the iframe's OWN layout viewport is what media
           // queries read) sized to this breakpoint's aspect ratio, then
-          // CSS-scale the whole simulated viewport down to fit the small
-          // preview column. The scale only affects the rendered OUTPUT box,
+          // CSS-scale the whole simulated viewport down to fit a consistent
+          // display height. The scale only affects the rendered OUTPUT box,
           // not the iframe's internal viewport, so breakpoint classes still
           // evaluate against the real width.
           const viewportWidth = state.viewportWidth ?? 1024
@@ -212,8 +215,8 @@ export const AdjustmentPreview = ({
                   state.aspectRatio.width,
               )
             : 600
-          const displayWidth = Math.min(viewportWidth, DISPLAY_WIDTH_CAP)
-          const scale = displayWidth / viewportWidth
+          const scale = DISPLAY_HEIGHT / viewportHeight
+          const displayWidth = viewportWidth * scale
 
           return (
             <VStack
@@ -221,7 +224,6 @@ export const AdjustmentPreview = ({
               align="stretch"
               spacing="0.5rem"
               flexShrink={0}
-              minW="fit-content"
             >
               <Text
                 textStyle="body-2"
@@ -239,7 +241,7 @@ export const AdjustmentPreview = ({
                 overflow="hidden"
                 style={{
                   width: displayWidth,
-                  height: viewportHeight * scale,
+                  height: DISPLAY_HEIGHT,
                   position: "relative",
                 }}
               >
@@ -251,32 +253,39 @@ export const AdjustmentPreview = ({
                     transformOrigin: "top left",
                   }}
                 >
-                  <PreviewIframe
-                    widthPx={viewportWidth}
-                    heightPx={viewportHeight}
-                    preventPointerEvents
+                  <Suspense
+                    fallback={
+                      <Skeleton
+                        w={`${viewportWidth}px`}
+                        h={`${viewportHeight}px`}
+                      />
+                    }
                   >
-                    {previewComponent}
-                  </PreviewIframe>
+                    <ThemedPreviewFrame
+                      siteId={siteId}
+                      viewportWidth={viewportWidth}
+                      viewportHeight={viewportHeight}
+                    >
+                      {previewComponent}
+                    </ThemedPreviewFrame>
+                  </Suspense>
                 </Box>
               </Box>
             </VStack>
           )
         })}
-      </HStack>
+      </Flex>
     )
   }
 
   return (
-    <HStack
-      align="flex-start"
-      spacing="1rem"
-      w="100%"
-      overflowX="auto"
-      overflowY="hidden"
-      pb="0.5rem"
-    >
+    <Flex wrap="wrap" align="flex-start" gap="1rem" w="100%">
       {previewStates.map((state) => {
+        const aspect = state.aspectRatio
+          ? state.aspectRatio.width / state.aspectRatio.height
+          : 1
+        const displayWidth = DISPLAY_HEIGHT * aspect
+
         const imageNode = (
           <Box
             as="img"
@@ -312,7 +321,6 @@ export const AdjustmentPreview = ({
             align="stretch"
             spacing="0.5rem"
             flexShrink={0}
-            minW="fit-content"
           >
             {/* Label with optional viewport width */}
             <Text
@@ -324,9 +332,8 @@ export const AdjustmentPreview = ({
               {state.viewportWidth && ` (${state.viewportWidth}px)`}
             </Text>
 
-            {/* Frame box with aspect ratio */}
+            {/* Frame box, sized to a consistent display height */}
             <Box
-              w="auto"
               borderWidth="1px"
               borderColor="base.divider.medium"
               borderRadius="0.25rem"
@@ -334,12 +341,8 @@ export const AdjustmentPreview = ({
               bg="base.canvas.default"
               position="relative"
               style={{
-                aspectRatio: state.aspectRatio
-                  ? `${state.aspectRatio.width} / ${state.aspectRatio.height}`
-                  : undefined,
-                width: state.viewportWidth
-                  ? Math.min(state.viewportWidth, 200)
-                  : 200,
+                width: displayWidth,
+                height: DISPLAY_HEIGHT,
               }}
             >
               {frameContent}
@@ -347,6 +350,34 @@ export const AdjustmentPreview = ({
           </VStack>
         )
       })}
-    </HStack>
+    </Flex>
+  )
+}
+
+// Pulls the site's brand theme CSS vars into the preview iframe — without
+// them, Tailwind classes like `bg-brand-canvas-inverse` resolve to nothing,
+// which is what caused white-on-white text in the HeroBlock preview. Split
+// out since useSiteThemeCssVars suspends (useSuspenseQuery).
+const ThemedPreviewFrame = ({
+  siteId,
+  viewportWidth,
+  viewportHeight,
+  children,
+}: {
+  siteId: number
+  viewportWidth: number
+  viewportHeight: number
+  children: React.ReactNode
+}) => {
+  const themeCssVars = useSiteThemeCssVars({ siteId })
+  return (
+    <PreviewIframe
+      widthPx={viewportWidth}
+      heightPx={viewportHeight}
+      preventPointerEvents
+      style={themeCssVars}
+    >
+      {children}
+    </PreviewIframe>
   )
 }

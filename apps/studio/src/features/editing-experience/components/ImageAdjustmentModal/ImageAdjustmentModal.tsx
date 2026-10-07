@@ -180,6 +180,7 @@ export const ImageAdjustmentModal = ({
                   scrim={config.scrim}
                   block={block}
                   imageFieldName={imageFieldName}
+                  siteId={siteId}
                 />
               </GridItem>
 

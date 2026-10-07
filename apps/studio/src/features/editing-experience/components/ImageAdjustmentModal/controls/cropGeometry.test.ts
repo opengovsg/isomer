@@ -7,6 +7,7 @@ import {
   clampRectToBounds,
   clientDeltaToNormalized,
   defaultCropRect,
+  getContainedImageBounds,
   moveRect,
   resizeRectByHandle,
 } from "./cropGeometry"
@@ -255,6 +256,40 @@ describe("cropGeometry", () => {
       const normalized = clientDeltaToNormalized(0, 0, boxRect)
       expect(normalized.dx).toBe(0)
       expect(normalized.dy).toBe(0)
+    })
+  })
+
+  describe("getContainedImageBounds", () => {
+    it("fills the box exactly when aspect ratios match", () => {
+      const bounds = getContainedImageBounds({ width: 400, height: 300 }, 4 / 3)
+      expect(bounds).toEqual({ x: 0, y: 0, width: 1, height: 1 })
+    })
+
+    it("pillarboxes (blank left/right) when the image is narrower than the box", () => {
+      // Box is a wide 2:1, image is a portrait 1:2 — image fills height only.
+      const bounds = getContainedImageBounds({ width: 400, height: 200 }, 0.5)
+      expect(bounds.y).toBe(0)
+      expect(bounds.height).toBe(1)
+      expect(bounds.width).toBeCloseTo(0.25)
+      expect(bounds.x).toBeCloseTo(0.375)
+    })
+
+    it("letterboxes (blank top/bottom) when the image is wider than the box", () => {
+      // Box is a square, image is a wide 4:1 — image fills width only.
+      const bounds = getContainedImageBounds({ width: 300, height: 300 }, 4)
+      expect(bounds.x).toBe(0)
+      expect(bounds.width).toBe(1)
+      expect(bounds.height).toBeCloseTo(0.25)
+      expect(bounds.y).toBeCloseTo(0.375)
+    })
+
+    it("falls back to the full box when dimensions are unknown", () => {
+      expect(getContainedImageBounds({ width: 0, height: 0 }, 1)).toEqual({
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+      })
     })
   })
 })

@@ -60,7 +60,10 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
       id: "mobile",
       label: "Mobile",
       viewportWidth: 375,
-      aspectRatio: { width: 375, height: 320 },
+      // Taller than the real 320px image band on purpose — this frames a
+      // full mobile screen (so the preview reads as "a phone"), not just the
+      // hero's own content height.
+      aspectRatio: { width: 375, height: 667 },
     },
     {
       id: "desktop",

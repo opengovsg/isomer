@@ -206,3 +206,38 @@ export const clientDeltaToNormalized = (
   dx: boxRect.width > 0 ? dxPx / boxRect.width : 0,
   dy: boxRect.height > 0 ? dyPx / boxRect.height : 0,
 })
+
+export interface NormalizedRect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+/**
+ * Where an image actually renders inside a box under `object-fit: contain`,
+ * as a rect normalized to the BOX (not the image) — i.e. the complement of
+ * this rect is the letterboxed/pillarboxed "bleed" space. Crop/focal values
+ * are normalized to the IMAGE, so callers must map through this rect before
+ * treating box-space pointer/percentage math as image-space — otherwise the
+ * crop UI lets you drag into bleed space that doesn't exist in the real image.
+ */
+export const getContainedImageBounds = (
+  box: { width: number; height: number },
+  imageAspect: number,
+): NormalizedRect => {
+  if (box.width <= 0 || box.height <= 0 || !Number.isFinite(imageAspect)) {
+    return { x: 0, y: 0, width: 1, height: 1 }
+  }
+  const boxAspect = box.width / box.height
+  if (imageAspect > boxAspect) {
+    // Image is relatively wider than the box: fills box width, letterboxed
+    // (blank bars) top/bottom.
+    const height = boxAspect / imageAspect
+    return { x: 0, y: (1 - height) / 2, width: 1, height }
+  }
+  // Image is relatively narrower/taller than the box: fills box height,
+  // pillarboxed (blank bars) left/right.
+  const width = imageAspect / boxAspect
+  return { x: (1 - width) / 2, y: 0, width, height: 1 }
+}
