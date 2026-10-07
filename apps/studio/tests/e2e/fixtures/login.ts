@@ -53,7 +53,22 @@ export class LoginPage {
     await this.secondaryLoginButton.click()
   }
 
+  /**
+   * After email OTP succeeds, Studio routes to Singpass linking before home.
+   * The page shows a spinner until `auth.singpass.getUserProps` resolves; the
+   * Singpass button mounting is the signal that step finished.
+   */
+  async waitForSingpassLinkScreen() {
+    await this.page.waitForURL(/\/sign-in\/singpass(?:\?|$)/)
+    await this.singpassButton.waitFor({ state: "visible" })
+  }
+
   async mockpassLoginWith(uuid?: UUID) {
+    if (!this.page.url().includes("/sign-in/singpass")) {
+      await this.waitForSingpassLinkScreen()
+    } else {
+      await this.singpassButton.waitFor({ state: "visible" })
+    }
     await this.singpassButton.click()
     await this.singpassLoginButton.click()
     // NOTE: There are 2 login buttons on mockpass -
