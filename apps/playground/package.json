@@ -1,0 +1,35 @@
+{
+  "name": "playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm --filter @opengovsg/isomer-components run build:module && tsc && vite build",
+    "clean": "git clean -xdf dist .turbo node_modules",
+    "dev": "pnpm --filter @opengovsg/isomer-components run build:module && vite",
+    "format": "oxfmt --check . --ignore-path ../../.gitignore",
+    "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
+    "lint": "oxlint --type-aware .",
+    "lint:fix": "oxlint --type-aware --fix .",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "catalog:",
+    "@opengovsg/isomer-components": "workspace:*",
+    "ajv": "catalog:",
+    "react": "catalog:react",
+    "react-dom": "catalog:react"
+  },
+  "devDependencies": {
+    "@isomer/oxlint-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:react",
+    "@types/react-dom": "catalog:react",
+    "@vitejs/plugin-react": "catalog:vitest",
+    "autoprefixer": "catalog:",
+    "postcss": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:vitest"
+  }
+}

@@ -14,7 +14,7 @@
     "db:connect:staging": "dotenv -- turbo run db:connect:staging",
     "db:connect:uat": "dotenv -- turbo run db:connect:uat",
     "db:connect:vapt": "dotenv -- turbo run db:connect:vapt",
-    "dev": "dotenv -- turbo run dev",
+    "dev": "dotenv -- turbo run dev --filter=isomer-studio",
     "dev:e2e": "dotenv -- turbo run dev:e2e",
     "format": "turbo format --continue",
     "format:fix": "turbo format:fix --continue",

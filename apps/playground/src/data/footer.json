@@ -1,0 +1,64 @@
+{
+  "siteNavItems": [
+    {
+      "title": "About us",
+      "url": "/about"
+    },
+    {
+      "title": "Our partners",
+      "url": "/partners"
+    },
+    {
+      "title": "Grants and programmes",
+      "url": "/grants-and-programmes"
+    },
+    {
+      "title": "Contact us",
+      "url": "/contact-us"
+    },
+    {
+      "title": "Something else",
+      "url": "/something-else"
+    },
+    {
+      "title": "Resources",
+      "url": "/resources"
+    }
+  ],
+  "customNavItems": [
+    {
+      "title": "Careers",
+      "url": "/careers"
+    },
+    {
+      "title": "2024 Budget Increase",
+      "url": "/2024-budget-increase"
+    },
+    {
+      "title": "Events Calendar",
+      "url": "/events-calendar"
+    },
+    {
+      "title": "Our Corp Site",
+      "url": "https://www.google.com"
+    }
+  ],
+  "socialMediaLinks": [
+    {
+      "type": "linkedin",
+      "url": "https://www.linkedin.com/company/open-government-products/"
+    },
+    {
+      "type": "instagram",
+      "url": "https://www.instagram.com/opengovsg/"
+    },
+    {
+      "type": "youtube",
+      "url": "https://www.youtube.com/channel/UCuyiflEmkfLfIwOuuN5hAfg"
+    }
+  ],
+  "contactUsLink": "/contact-us",
+  "feedbackFormLink": "https://www.form.gov.sg",
+  "privacyStatementLink": "/privacy",
+  "termsOfUseLink": "/terms-of-use"
+}
