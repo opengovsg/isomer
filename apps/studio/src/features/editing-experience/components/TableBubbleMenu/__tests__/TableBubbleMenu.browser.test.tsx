@@ -426,7 +426,8 @@ describe("TableBubbleMenu", () => {
 
   it("shows Merge cells for a full row selection", async () => {
     // Arrange
-    const { editor, findByText, findByRole } = await renderHarness()
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
     selectCells(editor, 3, 5) // first body row: cells 3-5
 
     // Act
@@ -435,6 +436,7 @@ describe("TableBubbleMenu", () => {
     // Assert
     expect(await findByText("Delete row")).toBeTruthy()
     expect(await findByText("Merge cells")).toBeTruthy()
+    expect(queryByText("Split cell")).toBeNull()
   })
 
   it("hides Merge cells and refuses the command for two full rows", async () => {
@@ -481,7 +483,8 @@ describe("TableBubbleMenu", () => {
 
   it("shows Merge cells for a full column selection", async () => {
     // Arrange
-    const { editor, findByText, findByRole } = await renderHarness()
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
     selectCells(editor, 1, 7) // column B (header + both body rows)
 
     // Act
@@ -490,6 +493,92 @@ describe("TableBubbleMenu", () => {
     // Assert
     expect(await findByText("Delete column")).toBeTruthy()
     expect(await findByText("Merge cells")).toBeTruthy()
+    expect(queryByText("Split cell")).toBeNull()
+  })
+
+  it("splits a cell created by merging a full row", async () => {
+    // Arrange
+    const { editor, findByText, findByRole } = await renderHarness()
+    selectCells(editor, 3, 5)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    expect(rowCellCount(editor, 1)).toBe(1)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+    const split = await findByText("Split cell")
+    expect(await findByText("Delete row")).toBeTruthy()
+    act(() => {
+      split.click()
+    })
+
+    // Assert
+    expect(rowCellCount(editor, 1)).toBe(3)
+  })
+
+  it("splits a cell created by merging a full column", async () => {
+    // Arrange
+    const { editor, findByText, findByRole } = await renderHarness()
+    selectCells(editor, 1, 7)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    expect(rowCellCount(editor, 1)).toBe(2)
+    expect(rowCellCount(editor, 2)).toBe(2)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+    const split = await findByText("Split cell")
+    expect(await findByText("Delete column")).toBeTruthy()
+    act(() => {
+      split.click()
+    })
+
+    // Assert
+    expect(rowCellCount(editor, 0)).toBe(3)
+    expect(rowCellCount(editor, 1)).toBe(3)
+    expect(rowCellCount(editor, 2)).toBe(3)
+  })
+
+  it("splits a cell created by merging the only row of a table", async () => {
+    // Arrange: one row spanning the whole table is a table selection, not a row selection
+    const { editor, findByText, findByRole } = await renderHarness({
+      type: "prose",
+      content: [
+        {
+          type: "table",
+          attrs: { caption: "One row" },
+          content: [
+            {
+              type: "tableRow",
+              content: ["A", "B"].map((text) => ({
+                type: "tableCell",
+                content: [
+                  { type: "paragraph", content: [{ type: "text", text }] },
+                ],
+              })),
+            },
+          ],
+        },
+      ],
+    })
+    selectCells(editor, 0, 1)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    expect(rowCellCount(editor, 0)).toBe(1)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+    const split = await findByText("Split cell")
+    expect(await findByText("Delete table")).toBeTruthy()
+    act(() => {
+      split.click()
+    })
+
+    // Assert
+    expect(rowCellCount(editor, 0)).toBe(2)
   })
 
   it("shows Header row/column only for the exact top row / leftmost column", async () => {

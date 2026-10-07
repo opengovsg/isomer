@@ -268,6 +268,14 @@ const isMergedCell = (rect: ReturnType<typeof selectedRect>): boolean => {
   )
 }
 
+// A full-row or full-column merge is still one cell. Axis menus classify that
+// selection as a row or column, so split has to be offered separately from the
+// merged-cell menu.
+export const canSplitCellSelection = (
+  selection: CellSelection,
+  rect: ReturnType<typeof selectedRect>,
+): boolean => isSingleCellSelection(selection) && isMergedCell(rect)
+
 export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   const { selection } = editor.state
   if (!(selection instanceof CellSelection)) return "none"
