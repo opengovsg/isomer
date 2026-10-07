@@ -46,6 +46,8 @@ describe("auth.email", () => {
     it("should log the user out and have an audit log of the change", async () => {
       // Arrange
       const spy = vi.spyOn(authService, "logAuthEvent")
+      // destroy() wipes the session, so capture the id before logging out
+      const userId = session.userId!
 
       // Act
       const result = await caller.logout()
@@ -57,7 +59,7 @@ describe("auth.email", () => {
       expect(result.isLoggedIn).toBeFalsy()
       const user = db
         .selectFrom("User")
-        .where("id", "=", session.userId!)
+        .where("id", "=", userId)
         .selectAll()
         .executeTakeFirstOrThrow()
       const log = await db

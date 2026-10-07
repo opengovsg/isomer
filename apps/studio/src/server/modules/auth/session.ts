@@ -19,13 +19,16 @@ export const getIronPassword = (): SessionOptions["password"] => ({
   "1": env.SESSION_SECRET,
 })
 
-/** Clear session fields without `destroy()` — v9 treats destroy as terminal. */
-export const clearSessionData = (session: {
-  userId?: SessionData["userId"]
-  singpass?: SessionData["singpass"]
-}) => {
-  delete session.userId
-  delete session.singpass
+/**
+ * Clear every session field without `destroy()` — v9 treats destroy as
+ * terminal. Wipes all keys (like `destroy()` does) so fields added to
+ * SessionData later can't leak into the next login. `save`/`destroy`/
+ * `updateConfig` are non-enumerable, so they survive.
+ */
+export const clearSessionData = (session: Partial<SessionData>) => {
+  for (const key of Object.keys(session)) {
+    delete (session as Record<string, unknown>)[key]
+  }
 }
 
 /** iron-session v9 rejects Date objects at seal time. */
