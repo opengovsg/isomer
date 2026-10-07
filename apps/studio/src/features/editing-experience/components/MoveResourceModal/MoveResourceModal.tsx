@@ -172,8 +172,10 @@ const MoveResourceContent = withSuspense(
     // Moving a page into its current parent leaves the URL unchanged, so there's
     // nothing to redirect — only offer the option when the URL actually changes.
     // An invalid destination has no resulting URL, so gate on a valid move too.
+    // A blocked move won't happen, so don't contradict the block warning.
     const showRedirectOption =
       isValidMove === true &&
+      !isMoveBlocked &&
       isRedirectableType &&
       isDestinationResolved &&
       oldFullPermalink !== newFullPermalink
@@ -182,6 +184,7 @@ const MoveResourceContent = withSuspense(
     // An invalid destination has no resulting URL, so gate on a valid move too.
     const showUrlChangeNotice =
       isValidMove === true &&
+      !isMoveBlocked &&
       type !== ResourceType.CollectionLink &&
       isDestinationResolved &&
       oldFullPermalink !== newFullPermalink
