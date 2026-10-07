@@ -19,7 +19,6 @@ import {
 import { BiDotsHorizontalRounded, BiHide } from "react-icons/bi"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
-import { useIsUnpublishEnabled } from "~/hooks/useIsUnpublishEnabled"
 import { trpc } from "~/utils/trpc"
 import { ResourceType, ScheduledAction } from "~prisma/generated/generatedEnums"
 
@@ -35,7 +34,6 @@ const SuspendablePageMoreActionsButton = ({
   pageId,
   siteId,
 }: PageMoreActionsButtonProps): JSX.Element | null => {
-  const isUnpublishEnabled = useIsUnpublishEnabled()
   const unpublishModalDisclosure = useDisclosure()
   const cancelScheduleDisclosure = useDisclosure()
 
@@ -69,10 +67,6 @@ const SuspendablePageMoreActionsButton = ({
   // read as "nothing blocks this" on error.
   const isBlockInfoPending =
     isIndexPage && (isBlockInfoLoading || isBlockInfoError)
-
-  if (!isUnpublishEnabled) {
-    return null
-  }
 
   // RootPage can't be unpublished — mirrors the backend's rejection and the
   // dashboard's equivalent exclusion (see RootpageRow.tsx). Shown disabled
