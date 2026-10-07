@@ -162,6 +162,62 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
     "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed.",
 }
 
+// Tier A — fixed 3:2 crop (aspect-[3/2]), no focal; same shape at every
+// breakpoint (only the frame's width changes at lg, never the ratio). Like
+// Contentpic, the crop is baked into the src so the renderer needs nothing at
+// runtime. Risk-first per the orchestration plan: the floating text card
+// overlaps the bottom of the image, so the real-component preview (which
+// renders the actual overlapping card) is what lets an editor catch a subject
+// hidden behind it — nothing extra is needed here for that to work.
+const HERO_FLOATING_CONFIG: AdjustmentConfig = {
+  componentType: "hero:floating",
+  cropMode: "fixed",
+  focalEnabled: false,
+  lockedRatios: [{ width: 3, height: 2 }],
+  previewStates: [
+    {
+      id: "desktop",
+      label: "Desktop",
+      viewportWidth: 1280,
+      aspectRatio: { width: 3, height: 2 },
+    },
+  ],
+  preUploadCopy:
+    "Use a high-resolution image (at least 1500×1000px) with a 3:2 aspect ratio. Keep key subjects out of the bottom third — the text card floats over it.",
+}
+
+// Tier A — fixed 1:1 crop, no focal; crop is baked into the src like every
+// other Tier A component. Blockquote renders the SAME 1:1 image two different
+// shapes depending on the page's layout — a circle (rounded-full, every
+// layout except homepage/notfound) or a square (homepage) — so both are
+// previewed, each forcing its own `layout` on the shared real-component
+// preview (see AdjustmentPreview's per-state layout override) rather than
+// relying on a breakpoint/viewport difference.
+const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
+  componentType: "blockquote",
+  cropMode: "fixed",
+  focalEnabled: false,
+  lockedRatios: [{ width: 1, height: 1 }],
+  previewStates: [
+    {
+      id: "circle",
+      label: "Circle (content pages)",
+      layout: "content",
+      viewportWidth: 768,
+      aspectRatio: { width: 1, height: 1 },
+    },
+    {
+      id: "square",
+      label: "Square (homepage)",
+      layout: "homepage",
+      viewportWidth: 768,
+      aspectRatio: { width: 1, height: 1 },
+    },
+  ],
+  preUploadCopy:
+    "Use a square (1:1) image, at least 240×240px. The subject should sit centered — this image is masked into a circle on most pages.",
+}
+
 /**
  * Resolves the adjustment config for an image field, by the containing block's
  * discriminators. Returns undefined for components not yet wired — the entry
@@ -176,7 +232,9 @@ export function resolveAdjustmentConfig(args: {
   if (type === "hero" && variant === "largeImage")
     return HERO_LARGE_IMAGE_CONFIG
   if (type === "hero" && variant === "block") return HERO_BLOCK_CONFIG
+  if (type === "hero" && variant === "floating") return HERO_FLOATING_CONFIG
   if (type === "contentpic") return CONTENTPIC_CONFIG
   if (type === "infopic") return INFOPIC_CONFIG
+  if (type === "blockquote") return BLOCKQUOTE_CONFIG
   return undefined
 }
