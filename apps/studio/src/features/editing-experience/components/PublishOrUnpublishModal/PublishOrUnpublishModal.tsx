@@ -103,7 +103,8 @@ export const PublishOrUnpublishModal = ({
   const redirectCount = redirectCountData ?? null
   // Gate on isPending, not isLoading, so an offline-paused first fetch still
   // disables confirm. Scoped to unpublish: the query is disabled for publish.
-  const isRedirectCheckPending = action === "unpublish" && isRedirectQueryPending
+  const isRedirectCheckPending =
+    action === "unpublish" && isRedirectQueryPending
 
   const schema =
     action === "publish"

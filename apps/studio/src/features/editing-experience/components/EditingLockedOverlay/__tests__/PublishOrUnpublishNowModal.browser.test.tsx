@@ -31,7 +31,9 @@ vi.mock("~/utils/trpc", () => {
         },
       },
       page: {
-        publishPage: { useMutation: () => ({ mutate: noop, isPending: false }) },
+        publishPage: {
+          useMutation: () => ({ mutate: noop, isPending: false }),
+        },
         unpublishPage: {
           useMutation: () => ({ mutate: noop, isPending: false }),
         },
