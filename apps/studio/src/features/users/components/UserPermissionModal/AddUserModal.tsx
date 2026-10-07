@@ -84,9 +84,10 @@ export const AddUserModal = () => {
   )
 
   const { mutate: createUser, isPending } = trpc.user.create.useMutation({
-    onSuccess: async (createdUsers) => {
+    onSuccess: async (createdUsers, variables) => {
+      // Closing the modal resets its siteId, so read the one this request used.
       posthog.capture("site_user_invited", {
-        ...siteEventProps(siteId),
+        ...siteEventProps(variables.siteId),
         invited_user_count: createdUsers.length,
         role: getValues("role"),
       })
