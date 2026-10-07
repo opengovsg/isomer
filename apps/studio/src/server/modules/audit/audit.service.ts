@@ -20,7 +20,7 @@ type WithoutMeta<T> = Omit<T, "createdAt" | "updatedAt">
 
 // NOTE: Either a folder/collection that doesn't have a blob
 // or a page w/ blob
-type FullResource =
+export type FullResource =
   | WithoutMeta<Resource>
   | {
       blob: WithoutMeta<Blob>

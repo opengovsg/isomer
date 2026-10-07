@@ -1,9 +1,10 @@
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { SelectExpression } from "kysely"
 import { TRPCError } from "@trpc/server"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
 
-import type { SafeKysely, Transaction } from "../database"
+import { db, type SafeKysely, type Transaction } from "../database"
 import { getPageById, updatePageById } from "../resource/resource.service"
 
 interface Version {
@@ -130,4 +131,69 @@ export const incrementVersion = async ({
     tx,
   )
   return { newVersion, previousVersion }
+}
+
+export interface VersionHistoryRow {
+  id: string
+  versionNum: number
+  publishedAt: Date
+  publisher: { id: string; name: string; email: string }
+  // This version's own published content. Callers diff it against the
+  // resource's current draft, so no pairing between rows is needed here.
+  content: IsomerSchema | null
+}
+
+interface ListVersionHistoryProps {
+  resourceId: number
+  siteId: number
+  cursor: number
+  limit: number
+}
+
+export const listVersionHistory = async ({
+  resourceId,
+  siteId,
+  cursor: offset,
+  limit,
+}: ListVersionHistoryProps): Promise<{
+  items: VersionHistoryRow[]
+  nextOffset: number | null
+}> => {
+  // Fetch one extra row to tell us whether there's another page.
+  const rows = await db
+    .selectFrom("Version")
+    .innerJoin("Resource", "Resource.id", "Version.resourceId")
+    .innerJoin("Blob", "Blob.id", "Version.blobId")
+    .innerJoin("User", "User.id", "Version.publishedBy")
+    .select([
+      "Version.id",
+      "Version.versionNum",
+      "Version.publishedAt",
+      "Blob.content",
+      "User.id as publisherId",
+      "User.name as publisherName",
+      "User.email as publisherEmail",
+    ])
+    .where("Version.resourceId", "=", String(resourceId))
+    .where("Resource.siteId", "=", siteId)
+    .orderBy("Version.versionNum", "desc")
+    .offset(offset)
+    .limit(limit + 1)
+    .execute()
+
+  const hasMore = rows.length > limit
+
+  const items = rows.slice(0, limit).map((row) => ({
+    id: row.id,
+    versionNum: row.versionNum,
+    publishedAt: row.publishedAt,
+    publisher: {
+      id: row.publisherId,
+      name: row.publisherName,
+      email: row.publisherEmail,
+    },
+    content: row.content,
+  }))
+
+  return { items, nextOffset: hasMore ? offset + limit : null }
 }

@@ -133,6 +133,7 @@
     "date-fns": "catalog:",
     "date-fns-tz": "catalog:",
     "dd-trace": "catalog:",
+    "diff-dom": "^5.2.1",
     "exponential-backoff": "catalog:",
     "filenamify": "catalog:",
     "flat": "catalog:",

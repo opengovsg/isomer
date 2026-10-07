@@ -77,6 +77,9 @@ describe("audit.router", async () => {
       "AuditLog",
       "IsomerAdmin",
       "ResourcePermission",
+      "Blob",
+      "Version",
+      "Resource",
       "Site",
       "User",
     )
