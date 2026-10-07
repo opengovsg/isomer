@@ -98,6 +98,13 @@ export const PublishOrUnpublishModal = ({
     (pending: boolean) => setIsRedirectCheckPending(pending),
     [],
   )
+  // Captured on the unpublish success events so we can measure how often users
+  // unpublish despite live redirects pointing at the page. null until resolved.
+  const [redirectCount, setRedirectCount] = useState<number | null>(null)
+  const handleRedirectCountChange = useCallback(
+    (count: number | undefined) => setRedirectCount(count ?? null),
+    [],
+  )
 
   const schema =
     action === "publish"
@@ -207,6 +214,10 @@ export const PublishOrUnpublishModal = ({
         onClose()
       },
       onSuccess: () => {
+        posthog.capture("page_unpublished", {
+          site_id: siteId,
+          redirect_count: redirectCount,
+        })
         toast({
           status: "success",
           title: "Page unpublished successfully",
@@ -238,6 +249,10 @@ export const PublishOrUnpublishModal = ({
       onClose()
     },
     onSuccess: () => {
+      posthog.capture("page_unpublish_scheduled", {
+        site_id: siteId,
+        redirect_count: redirectCount,
+      })
       const formattedDate = lastScheduledAtRef.current
         ? format(lastScheduledAtRef.current, "d MMM yyyy, h:mm a")
         : ""
@@ -350,6 +365,7 @@ export const PublishOrUnpublishModal = ({
                   pageId={pageId}
                   siteId={siteId}
                   onPendingChange={handleRedirectCheckPendingChange}
+                  onRedirectCountChange={handleRedirectCountChange}
                 />
               )}
             </VStack>

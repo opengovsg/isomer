@@ -9,11 +9,15 @@ export const UnpublishRedirectWarning = ({
   pageId,
   siteId,
   onPendingChange,
+  onRedirectCountChange,
 }: {
   pageId: number
   siteId: number
   // Reports the check's loading state so the caller can gate confirmation.
   onPendingChange?: (isPending: boolean) => void
+  // Reports the resolved count (undefined while pending or on error) so the
+  // caller can tag its analytics with how many redirects were at stake.
+  onRedirectCountChange?: (count: number | undefined) => void
 }) => {
   const {
     data: redirectCount,
@@ -28,6 +32,10 @@ export const UnpublishRedirectWarning = ({
   useEffect(() => {
     onPendingChange?.(isPending)
   }, [isPending, onPendingChange])
+
+  useEffect(() => {
+    onRedirectCountChange?.(redirectCount)
+  }, [redirectCount, onRedirectCountChange])
 
   // A pending or failed check must not read as "no redirects" — show both.
   if (isPending) {
