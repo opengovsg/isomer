@@ -1,10 +1,8 @@
 import type { ControlProps } from "@jsonforms/core"
 import type { JSONContent } from "@tiptap/react"
 
-const EMPTY_PROSE_PARAGRAPH: JSONContent = {
-  type: "paragraph",
-  content: [{ type: "text", text: "" }],
-}
+// TipTap rejects empty text nodes, so an empty paragraph has no content at all.
+const EMPTY_PROSE_PARAGRAPH: JSONContent = { type: "paragraph" }
 
 const isProseContent = (
   data: ControlProps["data"],
