@@ -375,6 +375,7 @@ const ThemedPreviewFrame = ({
       widthPx={viewportWidth}
       heightPx={viewportHeight}
       preventPointerEvents
+      alwaysShowScrollbar
       style={themeCssVars}
     >
       {children}
