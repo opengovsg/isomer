@@ -61,17 +61,20 @@ export class PageEditorPO {
     ).toBeVisible()
   }
 
+  private publishOptionsButton() {
+    return this.page.getByRole("button", {
+      name: "Publish options",
+      exact: true,
+    })
+  }
+
   async clickPublish() {
-    await this.page
-      .getByRole("button", { name: "Publish", exact: true })
-      .click()
+    await this.publishOptionsButton().click()
     await this.page.getByRole("button", { name: "Publish now" }).click()
   }
 
   async cancelPublishConfirmation() {
-    await this.page
-      .getByRole("button", { name: "Publish", exact: true })
-      .click()
+    await this.publishOptionsButton().click()
     await this.page.getByRole("button", { name: "No, don't publish" }).click()
     await expect(this.page.getByText("Publish this page?")).not.toBeVisible()
   }
@@ -84,27 +87,20 @@ export class PageEditorPO {
   }
 
   async expectPublishButtonVisible() {
-    await expect(
-      this.page.getByRole("button", { name: "Publish", exact: true }),
-    ).toBeVisible()
+    await expect(this.publishOptionsButton()).toBeVisible()
   }
 
   async expectPublishButtonDisabled() {
-    await expect(
-      this.page.getByRole("button", { name: "Publish", exact: true }),
-    ).toBeDisabled()
+    await expect(this.publishOptionsButton()).toBeDisabled()
   }
 
   async expectPublishButtonEnabled() {
-    await expect(
-      this.page.getByRole("button", { name: "Publish", exact: true }),
-    ).toBeEnabled()
+    await expect(this.publishOptionsButton()).toBeEnabled()
   }
 
   async expectScheduleOptionsDisabled() {
-    await expect(
-      this.page.getByRole("button", { name: "More options" }),
-    ).toBeDisabled()
+    // Scheduling is inside the Publish options modal. Editors cannot open it.
+    await expect(this.publishOptionsButton()).toBeDisabled()
   }
 
   async openMetaSettingsTab() {
@@ -113,34 +109,31 @@ export class PageEditorPO {
   }
 
   async openScheduleModal() {
-    const publish = this.page.getByRole("button", {
-      name: "Publish",
-      exact: true,
-    })
+    const publish = this.publishOptionsButton()
     await expect(publish).toBeVisible()
     await expect(publish).toBeEnabled()
-    await this.page.getByRole("button", { name: "More options" }).click()
-    await this.page
-      .getByRole("menuitem", { name: /Schedule for later/i })
-      .click()
+    await publish.click()
+    await expect(this.page.getByText("Publish this page?")).toBeVisible()
+    await this.page.getByRole("radio", { name: /Publish later/i }).click()
     await expect(
-      this.page.getByText("When should we publish this page?"),
+      this.page.getByRole("button", { name: /Select from date picker/i }),
     ).toBeVisible()
   }
 
-  /** `quickSelectLabel` must match one of QUICK_SELECT_TIMES' rendered labels
-   * exactly (e.g. "9:00 AM", "5:00 PM") — pass a different label than a prior
-   * call to reschedule to a distinct time. Matching by exact label, rather
-   * than position, avoids ambiguity with the (also form-scoped) TimeSelect
-   * control, which renders the same label text once a time is selected. */
-  async schedulePublishForToday(quickSelectLabel = "5:00 PM") {
+  /** `timeLabel` is a 12-hour clock label such as "9:00 AM" or "5:00 PM".
+   * TimeSelect renders zero-padded options ("09:00 AM", "05:00 PM"). Pass a
+   * different label than a prior call to reschedule to a distinct time. */
+  async schedulePublishForToday(timeLabel = "5:00 PM") {
+    const optionLabel = timeLabel.replace(/^(\d):/, "0$1:")
     await this.page
-      .getByRole("button", { name: "Select from date picker." })
+      .getByRole("button", { name: /Select from date picker/i })
       .click()
-    await this.page.getByRole("button", { name: "Today" }).click()
     await this.page
-      .locator("form")
-      .getByText(quickSelectLabel, { exact: true })
+      .getByRole("button", { name: "Focus on today's date" })
+      .click()
+    await this.page.getByText("Select time", { exact: true }).click()
+    await this.page
+      .getByRole("option", { name: optionLabel, exact: true })
       .click()
     await this.page.getByRole("button", { name: "Schedule publish" }).click()
   }

@@ -11,8 +11,8 @@ import { ensureUserOnboarded } from "../fixtures/user"
 
 const DEFAULT_PAGE_TITLE = "E2E Seed Page"
 
-// Quick-select presets compare against the browser's local wall-clock. Pin SGT
-// so the frozen instant below is always early morning with every preset visible.
+// TimeSelect hides times earlier than the schedule lead time. Pin SGT so the
+// frozen instant below is early morning and both 9:00 AM and 5:00 PM stay open.
 test.use({ timezoneId: "Asia/Singapore" })
 
 const SCHEDULE_TEST_FROZEN_TIME = new Date("2099-01-01T00:01:00+08:00")
@@ -39,11 +39,9 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
 
     // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
-    // Freeze the clock at a fixed early-morning SGT time so the "Quick select a
-    // time?" presets (00:00/09:00/13:00/17:00) are always available: they're
-    // hidden once every preset for the day has already passed, which made
-    // this flow fail deterministically whenever the suite ran late in the
-    // day (real time was in the past relative to those presets).
+    // Freeze the clock at a fixed early-morning SGT time so later TimeSelect
+    // slots stay selectable. Options earlier than the schedule lead time are
+    // hidden, which made this flow fail whenever the suite ran late in the day.
     await page.clock.install({ time: SCHEDULE_TEST_FROZEN_TIME })
 
     await editor.openScheduleModal()
@@ -78,11 +76,11 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     page,
   }) => {
     // Arrange. With the file-level SGT timezone pinned above, the frozen
-    // instant is early morning so multiple quick-select presets stay visible.
+    // instant is early morning so both TimeSelect slots below stay visible.
     const { page: seededPage } = await seedFolderWithPage({ siteId })
     await page.clock.install({ time: SCHEDULE_TEST_FROZEN_TIME })
 
-    // Act: schedule for the 5:00 PM quick-select slot
+    // Act: schedule for the 5:00 PM slot
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.openScheduleModal()
     await editor.schedulePublishForToday("5:00 PM")
@@ -92,7 +90,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
       .not.toBeNull()
     const scheduledAtFirst = (await getResource(seededPage.id))?.scheduledAt
 
-    // Act: cancel and reschedule to a different (earlier) quick-select slot.
+    // Act: cancel and reschedule to a different (earlier) slot.
     // Wait for the cancel's DB write (and its readPage refetch) to fully
     // settle before reopening — otherwise a query invalidation mid-way can
     // remount PublishButton's Suspense boundary and silently close the modal
