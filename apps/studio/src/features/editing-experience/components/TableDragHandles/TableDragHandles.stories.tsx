@@ -70,11 +70,20 @@ export const HiddenUntilHover: Story = {
 export const SelectEntireTable: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const cell = await canvas.findByText("Row 1, A")
+    await canvas.findByText("Row 1, A")
 
-    await userEvent.hover(cell)
-    const selectTable = await canvas.findByRole("button", {
-      name: "Select entire table",
+    const selectTable = await waitFor(() => {
+      const table = canvasElement.querySelector("table")
+      if (!table) throw new Error("table not found")
+      const rect = table.getBoundingClientRect()
+      canvasElement.ownerDocument.defaultView?.dispatchEvent(
+        new MouseEvent("mousemove", {
+          bubbles: true,
+          clientX: rect.left + 8,
+          clientY: rect.top + 8,
+        }),
+      )
+      return canvas.getByRole("button", { name: "Select entire table" })
     })
     await userEvent.click(selectTable)
 

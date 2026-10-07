@@ -53,7 +53,7 @@ export const TableDragHandles = ({
   const geometries = useTableGeometries(editor, containerRef)
   const { drag, beginGesture, isGestureActive, consumeClickSuppression } =
     useAxisDragGesture({ editor, containerRef, geometries, onDragStateChange })
-  const hoverTablePos = useHoveredTable(
+  const { tablePos: hoverTablePos, cornerTablePos } = useHoveredTable(
     geometries,
     containerRef,
     isGestureActive,
@@ -126,7 +126,7 @@ export const TableDragHandles = ({
     const bounds = getTableBounds(geometry)
     if (
       !bounds ||
-      hoverTablePos !== geometry.pos ||
+      cornerTablePos !== geometry.pos ||
       drag ||
       dismissedTablePos === geometry.pos
     ) {
