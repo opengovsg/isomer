@@ -1,6 +1,10 @@
 import type { ImageProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ImageClient } from "../../internal/ImageClient"
 
 const createImageStyles = tv({
@@ -41,9 +45,13 @@ export const Image = ({
   size,
   site,
   shouldLazyLoad = true,
-}: ImageProps) => {
+  contentBlockIndex,
+}: ImageProps & ContentBlockIndexProps) => {
   return (
-    <div className={compoundStyles.container()}>
+    <div
+      className={compoundStyles.container()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <ImageClient
         src={src}
         alt={alt}

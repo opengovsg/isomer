@@ -3,7 +3,7 @@ import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Flex, Portal } from "@chakra-ui/react"
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { convertThemeToCss } from "~/features/settings/utils"
 
@@ -27,6 +27,8 @@ interface ViewportContainerProps {
   callback?: (props: IframeCallbackFnProps) => void
   theme?: IsomerSiteThemeProps
   header?: React.ReactNode
+  viewport?: ViewportOptions
+  onViewportChange?: (viewport: ViewportOptions) => void
 }
 export const ViewportContainer = ({
   children,
@@ -34,13 +36,26 @@ export const ViewportContainer = ({
   callback,
   theme,
   header,
+  viewport: viewportProp,
+  onViewportChange,
 }: PropsWithChildren<ViewportContainerProps>) => {
   const themeCssVars = useSiteThemeCssVars({ siteId })
   const mergedTheme = theme
     ? { ...themeCssVars, ...convertThemeToCss(theme) }
     : themeCssVars
 
-  const [viewport, setViewport] = useState<ViewportOptions>("responsive")
+  const [internalViewport, setInternalViewport] =
+    useState<ViewportOptions>("responsive")
+  const viewport = viewportProp ?? internalViewport
+  const setViewport = useCallback(
+    (nextViewport: ViewportOptions) => {
+      if (viewportProp === undefined) {
+        setInternalViewport(nextViewport)
+      }
+      onViewportChange?.(nextViewport)
+    },
+    [viewportProp, onViewportChange],
+  )
 
   const containerProps: Partial<FlexProps> = useMemo(() => {
     if (viewport === "fullscreen") {

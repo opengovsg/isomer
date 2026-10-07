@@ -1,10 +1,13 @@
 import type { ContactInformationUIProps } from "~/interfaces"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
+import { type ContentBlockIndexProps } from "../../../../render/contentBlockIndex"
 import { DefaultContactInformationUI } from "./DefaultContactInformationUI"
 import { HomepageContactInformationUI } from "./HomepageContactInformationUI"
 
-export const ContactInformationUI = (props: ContactInformationUIProps) => {
+export const ContactInformationUI = (
+  props: ContactInformationUIProps & ContentBlockIndexProps,
+) => {
   const simplifiedLayout = getTailwindVariantLayout(props.layout)
 
   switch (simplifiedLayout) {

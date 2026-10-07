@@ -9,6 +9,10 @@ import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 
@@ -159,12 +163,17 @@ export const InfoCols = ({
   layout,
   site,
   headingLevel,
-}: InfoColsProps) => {
+  contentBlockIndex,
+}: InfoColsProps & ContentBlockIndexProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const Tag = getHeadingTag(headingLevel)
 
   return (
-    <section id={id} className={compoundStyles.section()}>
+    <section
+      id={id}
+      className={compoundStyles.section()}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <div
         className={compoundStyles.outerContainer({ layout: simplifiedLayout })}
       >

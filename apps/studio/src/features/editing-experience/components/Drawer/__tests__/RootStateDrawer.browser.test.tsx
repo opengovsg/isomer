@@ -29,6 +29,16 @@ vi.mock("~/hooks/useIsUserIsomerAdmin", () => ({
   useIsUserIsomerAdmin: () => ({ isAdmin: false, isLoading: false }),
 }))
 
+// Preview highlighting reads a GrowthBook flag through ~/lib/growthbook, which
+// imports env.mjs. That module touches `process`, which Vitest browser mode
+// does not provide. The flag defaults off, so stub the hook.
+vi.mock(
+  "~/features/editing-experience/hooks/useShowPreviewBlockHighlight",
+  () => ({
+    useShowPreviewBlockHighlight: () => false,
+  }),
+)
+
 vi.mock("~/utils/trpc", () => ({
   trpc: {
     page: {

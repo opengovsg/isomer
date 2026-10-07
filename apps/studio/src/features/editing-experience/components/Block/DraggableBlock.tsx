@@ -5,8 +5,10 @@ import {
   getComponentSchema,
   renderComponentPreviewText,
 } from "@opengovsg/isomer-components"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
+import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useShowPreviewBlockHighlight } from "~/features/editing-experience/hooks/useShowPreviewBlockHighlight"
 
 import type { BaseBlockProps } from "./BaseBlock"
 import { TYPE_TO_ICON } from "../../constants"
@@ -30,6 +32,18 @@ export const DraggableBlock = ({
   invalidProps,
   isHidden,
 }: DraggableBlockProps): JSX.Element => {
+  const { hoveredBlockIndex, setHoveredBlockIndex } = useEditorDrawerContext()
+  const showPreviewBlockHighlight = useShowPreviewBlockHighlight()
+
+  useEffect(() => {
+    // If this row unmounts while hovered (e.g. clicking it navigates the
+    // drawer away, or the block is deleted), no `mouseleave` fires — clear
+    // the hover state directly so the preview highlight doesn't get stuck.
+    return () => {
+      setHoveredBlockIndex((prev) => (prev === index ? null : prev))
+    }
+  }, [index, setHoveredBlockIndex])
+
   const icon = TYPE_TO_ICON[block.type]
 
   const blockComponentName = useMemo(() => {
@@ -63,7 +77,20 @@ export const DraggableBlock = ({
           >
             <BaseBlock
               isHidden={isHidden}
+              isHighlighted={
+                showPreviewBlockHighlight && hoveredBlockIndex === index
+              }
               onClick={onClick}
+              onMouseEnter={
+                showPreviewBlockHighlight
+                  ? () => setHoveredBlockIndex(index)
+                  : undefined
+              }
+              onMouseLeave={
+                showPreviewBlockHighlight
+                  ? () => setHoveredBlockIndex(null)
+                  : undefined
+              }
               dragHandle={
                 <BaseBlockDragHandle
                   isDragging={isDragging}

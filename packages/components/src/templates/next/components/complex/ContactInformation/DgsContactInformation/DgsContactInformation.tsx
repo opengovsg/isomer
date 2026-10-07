@@ -12,12 +12,14 @@ import { transformDgsField, useDgsData } from "~/hooks/useDgsData"
 import { InjectableContactInformationKeys } from "~/interfaces/complex/ContactInformation/constants"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 
+import { type ContentBlockIndexProps } from "../../../../render/contentBlockIndex"
 import { ContactInformationUI } from "../components"
 
 export const DgsContactInformation = ({
   dataSource: { resourceId, filters },
+  contentBlockIndex,
   ...rest
-}: DgsContactInformationProps) => {
+}: DgsContactInformationProps & ContentBlockIndexProps) => {
   const params = useMemo(
     () => ({
       resourceId,
@@ -40,6 +42,7 @@ export const DgsContactInformation = ({
         methods={[]} // not needed for loading state but its required prop
         {...pick(rest, "type", "layout", "headingLevel")}
         acceptHtmlTags
+        contentBlockIndex={contentBlockIndex}
       />
     )
   }
@@ -52,14 +55,21 @@ export const DgsContactInformation = ({
     return null
   }
 
-  return <DgsTransformedContactInformation {...rest} record={record} />
+  return (
+    <DgsTransformedContactInformation
+      {...rest}
+      record={record}
+      contentBlockIndex={contentBlockIndex}
+    />
+  )
 }
 
 export const DgsTransformedContactInformation = ({
   record,
   isLoading,
+  contentBlockIndex,
   ...rest
-}: DgsTransformedContactInformationProps) => {
+}: DgsTransformedContactInformationProps & ContentBlockIndexProps) => {
   const title = transformDgsField(
     rest.title,
     record,
@@ -88,6 +98,7 @@ export const DgsTransformedContactInformation = ({
       type={rest.type}
       layout={rest.layout}
       headingLevel={rest.headingLevel}
+      contentBlockIndex={contentBlockIndex}
       {...omit(rest, InjectableContactInformationKeys)}
       acceptHtmlTags
     />

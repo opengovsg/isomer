@@ -1,6 +1,10 @@
 import type { UnorderedListProps } from "~/interfaces"
 import { twMerge } from "~/lib/twMerge"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ListItem } from "../ListItem"
 import { listStyles } from "../listStyles"
 
@@ -15,7 +19,12 @@ const getUnorderedListType = (level?: number) => {
   }
 }
 
-export const UnorderedList = ({ content, level, site }: UnorderedListProps) => {
+export const UnorderedList = ({
+  content,
+  level,
+  site,
+  contentBlockIndex,
+}: UnorderedListProps & ContentBlockIndexProps) => {
   return (
     // Nested sublists (level set) use `mt-3` to match the item rhythm (`my-3`
     // on ListItem). Top-level lists keep `mt-6` because preceding blocks like
@@ -25,6 +34,7 @@ export const UnorderedList = ({ content, level, site }: UnorderedListProps) => {
         listStyles({ isNested: !!level }),
         getUnorderedListType(level),
       )}
+      {...contentBlockIndexAttr(contentBlockIndex)}
     >
       {content.map((item, index) => (
         <ListItem key={index} {...item} level={level} site={site} />

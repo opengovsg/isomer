@@ -2,6 +2,7 @@ import type { JSX } from "react"
 import type { ProseProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
+import { type ContentBlockIndexProps } from "../../../render/contentBlockIndex"
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { Divider } from "../Divider"
 import { Heading } from "../Heading"
@@ -14,22 +15,35 @@ const ProseComponent = ({
   site,
   shouldStripContentHtmlTags,
   headingLevel,
+  contentBlockIndex,
 }: {
   component: NonNullable<ProseProps["content"]>[number]
-} & Pick<
-  ProseProps,
-  "site" | "shouldStripContentHtmlTags" | "headingLevel"
->): JSX.Element => {
+} & Pick<ProseProps, "site" | "shouldStripContentHtmlTags" | "headingLevel"> &
+  ContentBlockIndexProps): JSX.Element => {
   switch (component.type) {
     case "divider":
-      return <Divider {...component} />
+      return <Divider {...component} contentBlockIndex={contentBlockIndex} />
     case "heading":
-      return <Heading {...component} site={site} headingLevel={headingLevel} />
+      return (
+        <Heading
+          {...component}
+          contentBlockIndex={contentBlockIndex}
+          site={site}
+          headingLevel={headingLevel}
+        />
+      )
     case "orderedList":
-      return <OrderedList {...component} site={site} />
+      return (
+        <OrderedList
+          {...component}
+          contentBlockIndex={contentBlockIndex}
+          site={site}
+        />
+      )
     case "paragraph":
       return (
         <BaseParagraph
+          contentBlockIndex={contentBlockIndex}
           content={getTextAsHtml({
             site,
             content: component.content,
@@ -40,9 +54,21 @@ const ProseComponent = ({
         />
       )
     case "table":
-      return <Table {...component} site={site} />
+      return (
+        <Table
+          {...component}
+          contentBlockIndex={contentBlockIndex}
+          site={site}
+        />
+      )
     case "unorderedList":
-      return <UnorderedList {...component} site={site} />
+      return (
+        <UnorderedList
+          {...component}
+          contentBlockIndex={contentBlockIndex}
+          site={site}
+        />
+      )
   }
 }
 
@@ -51,7 +77,8 @@ export const Prose = ({
   site,
   shouldStripContentHtmlTags = false,
   headingLevel,
-}: ProseProps) => {
+  contentBlockIndex,
+}: ProseProps & ContentBlockIndexProps) => {
   if (!content) {
     return <></>
   }
@@ -65,6 +92,7 @@ export const Prose = ({
           site={site}
           shouldStripContentHtmlTags={shouldStripContentHtmlTags}
           headingLevel={headingLevel}
+          contentBlockIndex={contentBlockIndex}
         />
       ))}
     </>

@@ -1,15 +1,35 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
+import type { ViewportOptions } from "~/features/editing-experience/components/preview/IframeToolbar"
 import type { ModifiedAsset } from "~/types/assets"
 import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { createContext, useCallback, useContext, useState } from "react"
 import { flushSync } from "react-dom"
 import { type DrawerState } from "~/types/editorDrawer"
 
-interface DrawerContextType extends Pick<
-  EditorDrawerProviderProps,
-  "type" | "permalink" | "siteId" | "pageId" | "updatedAt" | "title"
-> {
+// Preview-iframe interaction state: which block is hovered/active in the
+// editor, and a reference to the preview iframe's document to act on it.
+interface PreviewInteractionState {
+  hoveredBlockIndex: number | null
+  setHoveredBlockIndex: Dispatch<SetStateAction<number | null>>
+  // Block to flash-highlight in the preview after a click-to-scroll — decoupled
+  // from `hoveredBlockIndex` since selecting a block can unmount its hover
+  // source (e.g. switching drawer state) well before the scroll settles.
+  flashBlockIndex: number | null
+  setFlashBlockIndex: Dispatch<SetStateAction<number | null>>
+  iframeDocument: Document | null
+  setIframeDocument: Dispatch<SetStateAction<Document | null>>
+  previewViewport: ViewportOptions
+  setPreviewViewport: Dispatch<SetStateAction<ViewportOptions>>
+}
+
+interface DrawerContextType
+  extends
+    PreviewInteractionState,
+    Pick<
+      EditorDrawerProviderProps,
+      "type" | "permalink" | "siteId" | "pageId" | "updatedAt" | "title"
+    > {
   currActiveIdx: number
   setCurrActiveIdx: (currActiveIdx: number) => void
   drawerState: DrawerState
@@ -59,6 +79,13 @@ export function EditorDrawerProvider({
   // Holding state for images/files that have been modified in the page
   const [modifiedAssets, setModifiedAssets] = useState<ModifiedAsset[]>([])
   const [addedBlockIndex, setAddedBlockIndex] = useState<number | null>(null)
+  const [hoveredBlockIndex, setHoveredBlockIndex] = useState<number | null>(
+    null,
+  )
+  const [flashBlockIndex, setFlashBlockIndex] = useState<number | null>(null)
+  const [iframeDocument, setIframeDocument] = useState<Document | null>(null)
+  const [previewViewport, setPreviewViewport] =
+    useState<ViewportOptions>("responsive")
 
   const setPreviewPageState = useCallback(
     (previewPageState: SetStateAction<IsomerSchema>) => {
@@ -90,6 +117,14 @@ export function EditorDrawerProvider({
         setModifiedAssets,
         addedBlockIndex,
         setAddedBlockIndex,
+        hoveredBlockIndex,
+        setHoveredBlockIndex,
+        flashBlockIndex,
+        setFlashBlockIndex,
+        iframeDocument,
+        setIframeDocument,
+        previewViewport,
+        setPreviewViewport,
         type,
         permalink,
         siteId,

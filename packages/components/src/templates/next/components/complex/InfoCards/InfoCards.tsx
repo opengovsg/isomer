@@ -9,6 +9,10 @@ import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { LinkButton } from "../../internal/LinkButton"
 import { compoundStyles } from "./common"
 import {
@@ -30,7 +34,8 @@ export const InfoCards = ({
   site,
   shouldLazyLoad,
   headingLevel,
-}: InfoCardsProps): JSX.Element => {
+  contentBlockIndex,
+}: InfoCardsProps & ContentBlockIndexProps): JSX.Element => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const cardVariant =
     variant === CARDS_WITH_FULL_IMAGES
@@ -97,6 +102,7 @@ export const InfoCards = ({
     <section
       id={id}
       className={compoundStyles.container({ layout: simplifiedLayout })}
+      {...contentBlockIndexAttr(contentBlockIndex)}
     >
       {(title || subtitle) && (
         <div

@@ -1,6 +1,10 @@
 import type { IframeProps } from "~/interfaces"
 import { getSanitizedIframeWithTitle } from "~/utils/getSanitizedIframeWithTitle"
 
+import {
+  contentBlockIndexAttr,
+  type ContentBlockIndexProps,
+} from "../../../render/contentBlockIndex"
 import { ComponentContent } from "../../internal/customCssClass"
 
 // Sets the appropriate padding for the iframe based on the URL
@@ -33,7 +37,8 @@ export const Iframe = ({
   title,
   content,
   shouldLazyLoad = true,
-}: IframeProps) => {
+  contentBlockIndex,
+}: IframeProps & ContentBlockIndexProps) => {
   const sanitizedIframe = getSanitizedIframeWithTitle(content, title)
 
   if (!sanitizedIframe) {
@@ -45,7 +50,10 @@ export const Iframe = ({
   const iframeUrl = sanitizedIframe.getAttribute("src")
 
   return (
-    <section className={`mt-7 first:mt-0 ${ComponentContent}`}>
+    <section
+      className={`mt-7 first:mt-0 ${ComponentContent}`}
+      {...contentBlockIndexAttr(contentBlockIndex)}
+    >
       <div
         className={`relative w-full overflow-hidden ${getPaddingForEmbed(
           iframeUrl,

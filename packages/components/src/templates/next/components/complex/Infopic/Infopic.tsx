@@ -2,6 +2,7 @@ import { InfopicVariants } from "~/interfaces/complex/Infopic"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import type { InfopicProps } from "./types"
+import { type ContentBlockIndexProps } from "../../../render/contentBlockIndex"
 import { BlockInfopic } from "./components/BlockInfopic"
 import { FullInfopic } from "./components/FullInfopic"
 
@@ -10,8 +11,9 @@ export const Infopic = ({
   site,
   // NOTE: We need to set a default value here for back-compat
   variant = InfopicVariants.Block.value,
+  contentBlockIndex,
   ...rest
-}: InfopicProps): JSX.Element => {
+}: InfopicProps & ContentBlockIndexProps): JSX.Element => {
   const imgSrc =
     isExternalUrl(imageSrc) || site.assetsBaseUrl === undefined
       ? imageSrc
@@ -19,9 +21,23 @@ export const Infopic = ({
 
   switch (variant) {
     case InfopicVariants.Block.value:
-      return <BlockInfopic {...rest} site={site} imageSrc={imgSrc} />
+      return (
+        <BlockInfopic
+          {...rest}
+          site={site}
+          imageSrc={imgSrc}
+          contentBlockIndex={contentBlockIndex}
+        />
+      )
     case InfopicVariants.Full.value:
-      return <FullInfopic {...rest} site={site} imageSrc={imgSrc} />
+      return (
+        <FullInfopic
+          {...rest}
+          site={site}
+          imageSrc={imgSrc}
+          contentBlockIndex={contentBlockIndex}
+        />
+      )
     default:
       const missingVariant: never = variant
       return missingVariant
