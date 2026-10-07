@@ -2077,10 +2077,8 @@ const getDescendantReferences = async (
   )
 }
 
-// A folder/collection's published URL keys on the container's own id, not its
-// IndexPage's (see getResourceIdByPermalink), so a subtree walk from the
-// IndexPage misses a redirect stored against the container. Skip this for the
-// delete count — deleting an IndexPage alone never removes the container.
+// A container's published URL keys on its own id, not its IndexPage's, so a
+// subtree walk from the IndexPage misses a redirect stored against the container.
 const getContainerReferenceIfIndexPage = async (
   trx: SafeKysely,
   { siteId, resourceId }: { siteId: number; resourceId: string },
@@ -2100,11 +2098,10 @@ const getContainerReferenceIfIndexPage = async (
   })
 }
 
-// Counts the live redirects whose destination points at the resource or any
-// descendant. includeContainerReference also counts the parent container's
-// reference when resourceId is an IndexPage — opt in for unpublish (which
-// breaks that redirect without deleting it); the delete count must stay exact
-// to what the cascade below removes.
+// Counts live redirects pointing at the resource or any descendant.
+// includeContainerReference also counts the parent container's reference when
+// resourceId is an IndexPage: opt in for unpublish, but the delete count must
+// stay exact to what the cascade below removes.
 export const countRedirectsPointingToResource = async ({
   siteId,
   resourceId,

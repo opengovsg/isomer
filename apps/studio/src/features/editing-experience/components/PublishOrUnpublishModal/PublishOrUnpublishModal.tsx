@@ -91,9 +91,7 @@ export const PublishOrUnpublishModal = ({
     disableNow ? "later" : action === "publish" ? "now" : undefined,
   )
   const lastScheduledAtRef = useRef<Date | null>(null)
-  // Starts true for unpublish (the redirect check mounts with the modal, so
-  // there's a real pending window) and stays false for publish, which never
-  // renders the check at all.
+  // Only unpublish renders the redirect check, so only it has a pending window.
   const [isRedirectCheckPending, setIsRedirectCheckPending] = useState(
     action === "unpublish",
   )
