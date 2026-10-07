@@ -2,14 +2,9 @@ import { Infobox } from "@opengovsg/design-system-react"
 import { useEffect } from "react"
 import { trpc } from "~/utils/trpc"
 
-// Redirects whose destination resolves to this page dead-end once it's
-// unpublished. Unlike deleting (which soft-deletes them), unpublishing leaves
-// them in place, so this only warns — it never removes anything.
-//
-// Shares the delete modal's query, reference-only: a literal-path destination
-// stays out of scope here just as it is for delete. includeContainerReference
-// opts in to also counting a redirect to the parent folder/collection when
-// `pageId` is its IndexPage — see countRedirectsPointingToResource.
+// Warns when live redirects point to this page — unpublishing dead-ends them
+// (unlike delete, it only warns; the redirects stay). Reuses the delete modal's
+// reference-only count, opting in to container references too.
 export const UnpublishRedirectWarning = ({
   pageId,
   siteId,
@@ -17,8 +12,7 @@ export const UnpublishRedirectWarning = ({
 }: {
   pageId: number
   siteId: number
-  // Lets the caller block confirmation until this check settles, so a user
-  // can't unpublish before (or despite) seeing the warning.
+  // Reports the check's loading state so the caller can gate confirmation.
   onPendingChange?: (isPending: boolean) => void
 }) => {
   const {
@@ -35,9 +29,7 @@ export const UnpublishRedirectWarning = ({
     onPendingChange?.(isPending)
   }, [isPending, onPendingChange])
 
-  // A pending or failed check must not silently read as "no redirects": the
-  // user could otherwise unpublish and break redirects without ever seeing the
-  // warning. Surface both states instead of returning nothing.
+  // A pending or failed check must not read as "no redirects" — show both.
   if (isPending) {
     return (
       <Infobox size="sm">
