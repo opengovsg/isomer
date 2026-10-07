@@ -134,8 +134,9 @@ export class PageEditorPO {
       .getByRole("button", { name: "Focus on today's date" })
       .click()
     // The "Select time" placeholder sits under the react-select control,
-    // which intercepts the click. The combobox is the control itself.
-    await this.page.getByRole("combobox").click()
+    // which intercepts the click. Name the combobox: the open date picker
+    // also exposes month and year comboboxes.
+    await this.page.getByRole("combobox", { name: "Time" }).click()
     await this.page
       .getByRole("option", { name: optionLabel, exact: true })
       .click()
