@@ -45,7 +45,7 @@ interface UploadModifiedAssetsParams {
   modifiedAssets: ModifiedAsset[]
   uploadAsset: UseMutateAsyncFunction<
     UploadAssetMutationOutput,
-    void,
+    unknown,
     UploadAssetMutationInput,
     unknown
   >

@@ -27,6 +27,7 @@ import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
 import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
 import { CropFocalControl } from "./controls/CropFocalControl"
+import { defaultCropRect } from "./controls/cropGeometry"
 import {
   resolveOriginalKey,
   useSaveImageAdjustment,
@@ -64,6 +65,11 @@ export const ImageAdjustmentModal = ({
   onSave,
 }: ImageAdjustmentModalProps): JSX.Element => {
   const [draft, setDraft] = useState<ImageAdjustment | undefined>(value)
+  // The source image's true pixel aspect ratio, reported by CropFocalControl
+  // once its <img> loads — needed so "Reset image" can seed the same
+  // ratio-correct crop the control itself would (see defaultCropRect).
+  // Defaults to 1 (square) until then, matching every call site's default.
+  const [imageAspect, setImageAspect] = useState(1)
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
@@ -77,6 +83,9 @@ export const ImageAdjustmentModal = ({
 
   // Check if draft differs from original value.
   const isModified = JSON.stringify(draft) !== JSON.stringify(value)
+
+  const lockedRatio =
+    config.cropMode === "fixed" ? config.lockedRatios?.[0] : undefined
 
   // The crop/focal canvas and the live preview must both edit/bake from the
   // TRUE original, never a previous bake — same rule useSaveImageAdjustment
@@ -120,15 +129,16 @@ export const ImageAdjustmentModal = ({
     }
   }
 
+  // Resets just the crop/focal draft back to defaults (full-image crop, or
+  // the largest centered rect under a locked ratio; centered focal) — it
+  // does NOT save or close, same as any other crop/focal edit, so the editor
+  // can see the reset in the preview and still Save/Undo/Cancel from there.
   const handleReset = () => {
-    if (value?.originalKey) {
-      // Restore to original
-      onSave({ src: `/${value.originalKey}`, imageAdjustment: undefined })
-      onClose()
-    } else {
-      // No prior adjustment, just clear draft
-      setDraft(undefined)
-    }
+    setDraft((d) => ({
+      ...ensureAdjustment(d),
+      crop: defaultCropRect(lockedRatio, imageAspect),
+      focal: { x: 0.5, y: 0.5 },
+    }))
   }
 
   const handleUndo = () => {
@@ -180,6 +190,7 @@ export const ImageAdjustmentModal = ({
                   scrim={config.scrim}
                   block={block}
                   imageFieldName={imageFieldName}
+                  siteId={siteId}
                 />
               </GridItem>
 
@@ -194,11 +205,7 @@ export const ImageAdjustmentModal = ({
                       crop={draft?.crop}
                       focal={draft?.focal}
                       cropMode={config.cropMode}
-                      lockedRatio={
-                        config.cropMode === "fixed"
-                          ? config.lockedRatios?.[0]
-                          : undefined
-                      }
+                      lockedRatio={lockedRatio}
                       focalEnabled={config.focalEnabled}
                       onCropChange={(crop) =>
                         setDraft((d) => ({ ...ensureAdjustment(d), crop }))
@@ -206,6 +213,7 @@ export const ImageAdjustmentModal = ({
                       onFocalChange={(focal) =>
                         setDraft((d) => ({ ...ensureAdjustment(d), focal }))
                       }
+                      onImageAspectChange={setImageAspect}
                     />
                   )}
 
@@ -307,7 +315,7 @@ export const ImageAdjustmentModal = ({
                 colorScheme="neutral"
                 onClick={handleReset}
               >
-                Reset image
+                Reset crop & focal
               </Button>
               <Button
                 variant="clear"

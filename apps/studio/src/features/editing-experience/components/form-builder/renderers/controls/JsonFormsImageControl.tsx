@@ -132,16 +132,36 @@ function JsonFormsImageControl({
           )}
         </Box>
       ) : (
-        <FileAttachment
-          maxSizeInBytes={schema.maxSizeInBytes ?? MAX_IMG_FILE_SIZE_BYTES}
-          acceptedFileTypes={
-            schema.allowedMimeTypeMappings ?? IMAGE_ACCEPTED_MIME_TYPE_MAPPING
-          }
-          siteId={siteId}
-          resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
-          setHref={(src) => handleChange(path, src)}
-          shouldFetchResource={true}
-        />
+        <Box>
+          {/* Pre-upload guidance — shown before a file is chosen, per the
+              component's real frame behaviour (never a universal ratio for a
+              responsive frame). */}
+          {config?.preUploadCopy && (
+            <Box
+              w="100%"
+              mb="0.75rem"
+              p="1rem"
+              bgColor="utility.ui"
+              borderRadius="0.25rem"
+              borderWidth="1px"
+              borderColor="base.divider.medium"
+            >
+              <Text textStyle="body-2">{config.preUploadCopy}</Text>
+            </Box>
+          )}
+          <FileAttachment
+            maxSizeInBytes={schema.maxSizeInBytes ?? MAX_IMG_FILE_SIZE_BYTES}
+            acceptedFileTypes={
+              schema.allowedMimeTypeMappings ?? IMAGE_ACCEPTED_MIME_TYPE_MAPPING
+            }
+            siteId={siteId}
+            resourceId={
+              (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
+            }
+            setHref={(src) => handleChange(path, src)}
+            shouldFetchResource={true}
+          />
+        </Box>
       )}
       {!!errors && (
         <FormErrorMessage>

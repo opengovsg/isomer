@@ -2,15 +2,20 @@
 
 import type { CSSProperties } from "react"
 import { Box, Text, VStack } from "@chakra-ui/react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 
-import type { CropRectNormalized, HandlePosition } from "./cropGeometry"
+import type {
+  CropRectNormalized,
+  HandlePosition,
+  NormalizedRect,
+} from "./cropGeometry"
 import {
   CORNER_HANDLES,
   EDGE_HANDLES,
   clientDeltaToNormalized,
   defaultCropRect,
+  getContainedImageBounds,
   moveRect,
   resizeRectByHandle,
 } from "./cropGeometry"
@@ -44,6 +49,10 @@ interface CropFocalControlProps {
   focalEnabled: boolean
   onCropChange: (crop: CropRectNormalized) => void
   onFocalChange: (focal: { x: number; y: number }) => void
+  // Fired once the image's true pixel aspect ratio is known, so a caller
+  // that needs to compute a ratio-correct crop independently (e.g. the
+  // modal's "Reset image" button) can do the same math this control does.
+  onImageAspectChange?: (aspect: number) => void
 }
 
 type DragTarget = "rect" | "focal" | HandlePosition | null
@@ -62,30 +71,76 @@ export const CropFocalControl = ({
   focalEnabled,
   onCropChange,
   onFocalChange,
+  onImageAspectChange,
 }: CropFocalControlProps): JSX.Element => {
   const boxRef = useRef<HTMLDivElement>(null)
   const [aspectRatio, setAspectRatio] = useState<number | undefined>(undefined)
+  const [boxSize, setBoxSize] = useState({ width: 0, height: 0 })
   const [dragTarget, setDragTarget] = useState<DragTarget>(null)
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null)
 
   const showCrop = cropMode !== "none"
-  const currentCrop = crop ?? defaultCropRect(lockedRatio)
+  const currentCrop = crop ?? defaultCropRect(lockedRatio, aspectRatio ?? 1)
   const currentFocal = focal ?? { x: 0.5, y: 0.5 }
 
-  // Seed a ratio-correct crop default on mount. The generic full-image
-  // default would violate a locked ratio, so a fixed-ratio component must
-  // start from a ratio-correct centered rect, not {0,0,1,1}.
+  // Track the canvas box's own pixel size, so we can work out exactly where
+  // the image renders inside it (object-fit: contain letterboxes/pillarboxes
+  // whenever the box's aspect ratio doesn't match the image's).
   useEffect(() => {
-    if (showCrop && crop === undefined) {
-      onCropChange(defaultCropRect(lockedRatio))
+    const el = boxRef.current
+    if (!el) return
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (entry) {
+        setBoxSize({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
+        })
+      }
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  // The image's true rendered rect within the box, normalized to the BOX —
+  // crop/focal values are normalized to the IMAGE, so every box-space
+  // pointer/percentage calculation below must map through this rect. Without
+  // it, the crop UI treats the whole box (including blank bleed space) as if
+  // it were the image.
+  const imageBounds: NormalizedRect = useMemo(
+    () =>
+      aspectRatio
+        ? getContainedImageBounds(boxSize, aspectRatio)
+        : { x: 0, y: 0, width: 1, height: 1 },
+    [boxSize, aspectRatio],
+  )
+
+  // Map an image-normalized rect/point into box-normalized space for display.
+  const toBoxSpace = (r: { x: number; y: number }) => ({
+    x: imageBounds.x + r.x * imageBounds.width,
+    y: imageBounds.y + r.y * imageBounds.height,
+  })
+
+  // Seed a ratio-correct crop default once the image's true pixel aspect
+  // ratio is known. The generic full-image default would violate a locked
+  // ratio, so a fixed-ratio component must start from a ratio-correct
+  // centered rect, not {0,0,1,1} — and "ratio-correct" depends on the
+  // image's own aspect (see defaultCropRect), which isn't known until the
+  // <img> below fires onLoad, hence waiting on `aspectRatio` rather than
+  // seeding unconditionally on mount.
+  useEffect(() => {
+    if (showCrop && crop === undefined && aspectRatio !== undefined) {
+      onCropChange(defaultCropRect(lockedRatio, aspectRatio))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [aspectRatio])
 
   const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
     const img = event.currentTarget
     if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-      setAspectRatio(img.naturalWidth / img.naturalHeight)
+      const aspect = img.naturalWidth / img.naturalHeight
+      setAspectRatio(aspect)
+      onImageAspectChange?.(aspect)
     }
   }
 
@@ -105,10 +160,15 @@ export const CropFocalControl = ({
     if (dragTarget !== "rect" || !lastPointerRef.current || !boxRef.current)
       return
     const boxRect = boxRef.current.getBoundingClientRect()
+    // Scale against the image's actual rendered pixel size, not the box's —
+    // otherwise a pointer delta gets under-scaled whenever there's bleed space.
     const delta = clientDeltaToNormalized(
       event.clientX - lastPointerRef.current.x,
       event.clientY - lastPointerRef.current.y,
-      { width: boxRect.width, height: boxRect.height },
+      {
+        width: boxRect.width * imageBounds.width,
+        height: boxRect.height * imageBounds.height,
+      },
     )
     onCropChange(moveRect(currentCrop, delta.dx, delta.dy))
     lastPointerRef.current = { x: event.clientX, y: event.clientY }
@@ -129,8 +189,15 @@ export const CropFocalControl = ({
   ) => {
     if (dragTarget !== handle || !boxRef.current) return
     const boxRect = boxRef.current.getBoundingClientRect()
-    const normalizedX = (event.clientX - boxRect.left) / boxRect.width
-    const normalizedY = (event.clientY - boxRect.top) / boxRect.height
+    // Map the pointer into the image's rendered pixel rect, not the box's —
+    // otherwise a handle can be dragged past the image's true edge into
+    // blank bleed space.
+    const imagePixelLeft = boxRect.left + imageBounds.x * boxRect.width
+    const imagePixelTop = boxRect.top + imageBounds.y * boxRect.height
+    const imagePixelWidth = imageBounds.width * boxRect.width
+    const imagePixelHeight = imageBounds.height * boxRect.height
+    const normalizedX = (event.clientX - imagePixelLeft) / imagePixelWidth
+    const normalizedY = (event.clientY - imagePixelTop) / imagePixelHeight
     onCropChange(
       resizeRectByHandle(
         currentCrop,
@@ -138,6 +205,7 @@ export const CropFocalControl = ({
         normalizedX,
         normalizedY,
         lockedRatio,
+        aspectRatio ?? 1,
       ),
     )
   }
@@ -163,10 +231,10 @@ export const CropFocalControl = ({
     if (dragTarget !== "focal" || !boxRef.current) return
     const boxRect = boxRef.current.getBoundingClientRect()
     const wholeImagePoint = pointToFocal(event.clientX, event.clientY, {
-      left: boxRect.left,
-      top: boxRect.top,
-      width: boxRect.width,
-      height: boxRect.height,
+      left: boxRect.left + imageBounds.x * boxRect.width,
+      top: boxRect.top + imageBounds.y * boxRect.height,
+      width: imageBounds.width * boxRect.width,
+      height: imageBounds.height * boxRect.height,
     })
     onFocalChange(pointToCropRelativeFocal(wholeImagePoint, currentCrop))
   }
@@ -180,12 +248,13 @@ export const CropFocalControl = ({
     lastPointerRef.current = null
   }
 
+  const cropBoxSpace = toBoxSpace(currentCrop)
   const rectStyle: CSSProperties = {
     position: "absolute",
-    left: `${currentCrop.x * 100}%`,
-    top: `${currentCrop.y * 100}%`,
-    width: `${currentCrop.width * 100}%`,
-    height: `${currentCrop.height * 100}%`,
+    left: `${cropBoxSpace.x * 100}%`,
+    top: `${cropBoxSpace.y * 100}%`,
+    width: `${currentCrop.width * imageBounds.width * 100}%`,
+    height: `${currentCrop.height * imageBounds.height * 100}%`,
     border: "2px solid #0066cc",
     boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.45)",
     cursor: dragTarget === "rect" ? "grabbing" : "move",
@@ -209,10 +278,11 @@ export const CropFocalControl = ({
   })
 
   const focalWholeImagePoint = focalToWholeImagePoint(currentFocal, currentCrop)
+  const focalBoxSpace = toBoxSpace(focalWholeImagePoint)
   const markerStyle: CSSProperties = {
     position: "absolute",
-    left: `${focalWholeImagePoint.x * 100}%`,
-    top: `${focalWholeImagePoint.y * 100}%`,
+    left: `${focalBoxSpace.x * 100}%`,
+    top: `${focalBoxSpace.y * 100}%`,
     transform: "translate(-50%, -50%)",
     width: "16px",
     height: "16px",
@@ -257,7 +327,14 @@ export const CropFocalControl = ({
         borderColor="base.divider.medium"
         borderRadius="0.25rem"
         overflow="hidden"
-        backgroundColor="base.canvas.neutral"
+        style={{
+          // Checkerboard makes the letterboxed/pillarboxed "bleed" area (where
+          // the box's aspect ratio doesn't match the image's) visually obvious
+          // — it only ever shows through where the <img> (object-fit: contain)
+          // doesn't cover, since the image sits on top of this background.
+          background:
+            "repeating-conic-gradient(#d9d9d9 0% 25%, #f1f1f1 0% 50%) 50% / 20px 20px",
+        }}
       >
         {/* oxlint-disable-next-line @next/next/no-img-element -- needs naturalWidth/Height for the no-letterbox aspect mapping; user image, not an LCP hero */}
         <img

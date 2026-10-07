@@ -3,7 +3,7 @@ import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment, useToast } from "@opengovsg/design-system-react"
 import { uniq } from "lodash-es"
 import dynamic from "next/dynamic"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
@@ -52,10 +52,21 @@ export const FileAttachment = ({
   const { handleAssetUpload, isLoading } = useAssetUpload({})
   const toast = useToast()
 
+  // setHref is recreated on every render by callers (it's an inline closure
+  // over path/handleChange), so it can't be a dependency here without the
+  // effect re-firing on every render while isLoading is true -- each firing
+  // writes "" back into the form state, which can race with and clobber the
+  // real uploaded src. A ref keeps this effect tied only to isLoading's
+  // actual true/false transitions, which is its real intent.
+  const setHrefRef = useRef(setHref)
+  useEffect(() => {
+    setHrefRef.current = setHref
+  })
+
   useEffect(() => {
     // NOTE: The outer link modal uses this to disable the button
-    if (isLoading) setHref("")
-  }, [isLoading, setHref])
+    if (isLoading) setHrefRef.current("")
+  }, [isLoading])
 
   const doUpload = (file: File) => {
     uploadFile(
@@ -75,6 +86,19 @@ export const FileAttachment = ({
                 })
               })
           } else setHref(path)
+        },
+        // Without this, a failure in the presign call or the S3 PUT itself
+        // (permission denied, validation, network/CORS) silently reverts the
+        // control to its pre-upload state with no visible error at all.
+        onError: (error) => {
+          console.error("Failed to upload file", error)
+          toast({
+            title: "Failed to upload file",
+            description:
+              error instanceof Error ? error.message : "Please try again.",
+            status: "error",
+            ...BRIEF_TOAST_SETTINGS,
+          })
         },
       },
     )

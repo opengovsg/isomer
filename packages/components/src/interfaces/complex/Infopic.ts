@@ -3,7 +3,7 @@ import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
-import { AltTextSchema, ImageSrcSchema } from "./Image"
+import { AltTextSchema, ImageSrcSchema, imageAdjustmentSchema } from "./Image"
 
 export const InfopicVariants = {
   Block: {
@@ -69,6 +69,7 @@ export const InfopicSchema = Type.Object(
     ),
     imageSrc: ImageSrcSchema,
     imageAlt: AltTextSchema,
+    imageAdjustment: Type.Optional(imageAdjustmentSchema),
   },
   {
     title: "Image with text",

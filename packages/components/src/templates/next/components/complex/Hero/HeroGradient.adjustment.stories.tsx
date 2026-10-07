@@ -13,7 +13,7 @@ import { HeroGradient } from "./HeroGradient"
 // band reshapes. (Horizontal focal is near-inert on this wide band — the
 // W0-S-F geometry finding.)
 const meta: Meta<typeof HeroGradient> = {
-  title: "Next/Components/Hero/ImageAdjustment",
+  title: "Next/Components/Hero/HeroGradient/ImageAdjustment",
   component: HeroGradient,
   parameters: {
     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
