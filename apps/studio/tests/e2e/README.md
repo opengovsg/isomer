@@ -2,20 +2,24 @@
 
 ## Fixtures
 
-| Module                | Purpose                                                        |
-| --------------------- | -------------------------------------------------------------- |
-| `fixtures/user.ts`    | `ensureUserOnboarded(email)` — skip welcome modal              |
-| `fixtures/reset.ts`   | Site-scoped DB reset helpers (`resetSiteAgencySettings`, etc.) |
-| `fixtures/helpers.ts` | Shared UI flows (create page/folder, invite user)              |
-| `fixtures/auth.ts`    | Role storage-state paths and `TEST_EMAILS`                     |
-| `fixtures/seed.ts`    | Idempotent E2E role seeding                                    |
-| `fixtures/site.po.ts` | Site settings page object                                      |
+| Module                       | Purpose                                                        |
+| ---------------------------- | -------------------------------------------------------------- |
+| `fixtures/user.ts`           | `ensureUserOnboarded(email)` — skip welcome modal              |
+| `fixtures/reset.ts`          | Site-scoped DB reset helpers (`resetSiteAgencySettings`, etc.) |
+| `fixtures/helpers.ts`        | Cross-surface UI flows (create page/folder, invite user)       |
+| `fixtures/auth.ts`           | Role storage-state paths and `TEST_EMAILS`                     |
+| `fixtures/seed.ts`           | Idempotent E2E role seeding                                    |
+| `fixtures/site.po.ts`        | Site settings page object                                      |
+| `fixtures/dashboard.po.ts`   | Site dashboard / resource table page object                    |
+| `fixtures/page-editor.po.ts` | Page editor / publish page object                              |
+| `fixtures/users.po.ts`       | Users / collaborators page object                              |
 
 ## Structure
 
 - `fixtures/` — reusable test infrastructure (login flow, page objects, role storage state).
 - `storage-state/` — gitignored; populated by `global-setup.ts` with one signed-in cookie jar per role.
-- `<module>/` — one directory per backend router module (`site/`, `page/`, `resource/`, …). Each file inside covers a single UI surface (e.g. `site/settings-agency.test.ts`).
+- `<module>/` — one directory per backend router module (`site/`, `resource/`, `user/`, …).
+- Name each file after the screen it drives, not the assertion (`resource/collection.test.ts`, not `required-tags-validation.test.ts`). Several scenarios for that screen live in the same file under `test.describe`. Add a second file only for a distinct part of the same area (`resource/collection-filters.test.ts`), not one file for the whole module.
 
 ## Adding tests for a new module
 
@@ -25,9 +29,57 @@
 4. Write **one permission-gate test per surface** for the most restrictive role boundary that has UI signal.
 5. Do **not** translate validation-error or audit-log scenarios — those stay in integration tests.
 
+## Page objects vs. generic Playwright calls
+
+A `.po.ts` method wraps `page.goto`/`page.waitForURL` **only when it's the
+canonical entry point onto that PO's surface**, reused across tests (e.g.
+`SitePO.gotoSettings`, `DashboardPO.gotoSite`, `UsersPO.goto`). These exist so
+every test lands on the surface the same way, and so a route change is a
+one-line fix instead of a multi-file find-and-replace.
+
+Generic, one-off Playwright calls — `page.reload()`, ad hoc `page.goto(...)`
+to a path with no dedicated PO, a `page.waitForURL(...)` just confirming
+state after an action — stay inline in the test as plain `page.*` calls.
+Wrapping them in a PO method adds a layer with no app-specific knowledge to
+encapsulate.
+
+## Role projects and `@role:` tags
+
+Auth is wired through Playwright **projects**, not per-file `test.use({ storageState })`.
+
+`roleTag("admin")` emits `@role:admin`. The `role:` prefix keeps role tags from colliding with any other `@…` tag.
+
+| Project                                                        | How tests are selected            | Auth                         |
+| -------------------------------------------------------------- | --------------------------------- | ---------------------------- |
+| `unauthenticated`                                              | `testMatch: /smoke\.test\.ts/`    | none                         |
+| `singpass`                                                     | `testMatch: /singpass\.test\.ts/` | none (suite skipped)         |
+| `admin`, `editor`, `publisher`, `nomember`, `core`, `migrator` | `grep: /@role:<role>\b/`          | `storageState` for that role |
+
+**New tests must use `roleTag(...)` on `test.describe`**, not `test.use({ storageState })`:
+
+```ts
+import { roleTag } from "../fixtures/auth"
+
+test.describe("admin", { tag: roleTag("admin") }, () => {
+  test("...", async ({ page }) => {
+    /* project supplies admin cookies */
+  })
+})
+
+test.describe("publisher", { tag: roleTag("publisher") }, () => {
+  test("...", async ({ page }) => {
+    /* ... */
+  })
+})
+```
+
+`roleTag` is typed against `ROLES` in `fixtures/auth.ts`, so an unknown role fails at compile time.
+
+Run a single role: `pnpm exec playwright test --project=admin`.
+
 ## Why storage-state, not per-test login
 
-OTP + Mockpass adds ~4s per login. Without storage state, a 10-test suite spends 40s on auth alone. Global-setup signs in each role once at startup; tests reuse cookies via `test.use({ storageState: storageStateFor("admin") })`.
+OTP + Mockpass adds ~4s per login. Without storage state, a 10-test suite spends 40s on auth alone. Global-setup signs in each role once at startup (in parallel); role projects reuse cookies via project `storageState`.
 
 ## Why we still keep integration tests
 
@@ -40,5 +92,5 @@ E2E covers user-visible behavior. Integration tests cover server-side correctnes
 
 ## Open follow-ups
 
-- **Admin dashboard bypass in `settings-agency.test.ts`.** The admin test navigates directly to `/sites/1/settings/agency` instead of clicking through the dashboard site list. Reason: the admin storage state was hitting an empty/unmatched site list at the time of writing. The editor test in `site/list.test.ts` does click through successfully, so this is admin-specific. Worth investigating whether admin sees a different dashboard render or whether it's a session/timing race.
+- **Admin dashboard bypass in `settings-agency.test.ts`.** Resolved — tests navigate directly to the provisioned site settings URL.
 - **`.chakra-switch` selector in `settings-notification.test.ts`.** Couples the test to Chakra UI's class naming. Right fix is upstream: add an `aria-label` to the Switch in the FormBuilder render path for optional object groups, then update the locator to `getByRole("switch", { name: ... })`.
