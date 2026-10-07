@@ -31,15 +31,15 @@ interface ChildpageLayoutProps
       | "showThumbnail"
       | "shouldLazyLoad"
       | "site"
+      | "maxColumns"
       | "headingLevel"
     >,
     Pick<ImageClientProps, "assetsBaseUrl"> {
   childpages: Childpage[]
   fallback: Required<NonNullable<IsomerSitemap["image"]>>
-  maxColumns?: "1" | NonNullable<ChildrenPagesProps["maxColumns"]>
 }
 
-const InfoCardsChildPagesList = ({
+const BoxLayout = ({
   childpages,
   showSummary,
   showThumbnail,
@@ -55,7 +55,7 @@ const InfoCardsChildPagesList = ({
       <div
         className={compoundStyles.grid({
           maxColumns,
-          variant: INFOCARD_VARIANT.default,
+          variant: "default",
         })}
       >
         {childpages.map(({ title, description, url, image }, idx) => {
@@ -156,25 +156,7 @@ const RowLayout = ({
   shouldLazyLoad,
   site,
   imageFit,
-  headingLevel,
 }: ChildpageLayoutProps): JSX.Element => {
-  if (!showThumbnail) {
-    return (
-      <InfoCardsChildPagesList
-        assetsBaseUrl={assetsBaseUrl}
-        childpages={childpages}
-        showSummary={showSummary}
-        showThumbnail={showThumbnail}
-        fallback={fallback}
-        shouldLazyLoad={shouldLazyLoad}
-        site={site}
-        maxColumns="1"
-        imageFit={imageFit}
-        headingLevel={headingLevel}
-      />
-    )
-  }
-
   const styles = createRowStyles()
 
   return (
@@ -268,7 +250,7 @@ export const ChildrenPages = ({
 
   if (variant === "boxes") {
     return (
-      <InfoCardsChildPagesList
+      <BoxLayout
         assetsBaseUrl={site.assetsBaseUrl}
         childpages={children}
         showSummary={showSummary}
