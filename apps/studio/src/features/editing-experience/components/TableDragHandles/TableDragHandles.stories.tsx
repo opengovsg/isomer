@@ -70,20 +70,37 @@ export const HiddenUntilHover: Story = {
 export const SelectEntireTable: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await canvas.findByText("Row 1, A")
+    const awayFromCorner = await canvas.findByText("Column B")
+    const awayRect = awayFromCorner.getBoundingClientRect()
+    const moveTo = (clientX: number, clientY: number) => {
+      canvasElement.ownerDocument.defaultView?.dispatchEvent(
+        new MouseEvent("mousemove", { bubbles: true, clientX, clientY }),
+      )
+    }
+
+    const quietButton = await waitFor(() => {
+      moveTo(
+        awayRect.left + awayRect.width / 2,
+        awayRect.top + awayRect.height / 2,
+      )
+      const button = canvas.getByRole("button", { name: "Select entire table" })
+      if (button.getAttribute("data-emphasis") !== "quiet") {
+        throw new Error("select button is not quiet yet")
+      }
+      return button
+    })
+    await expect(quietButton).toBeInTheDocument()
 
     const selectTable = await waitFor(() => {
       const table = canvasElement.querySelector("table")
       if (!table) throw new Error("table not found")
       const rect = table.getBoundingClientRect()
-      canvasElement.ownerDocument.defaultView?.dispatchEvent(
-        new MouseEvent("mousemove", {
-          bubbles: true,
-          clientX: rect.left + 8,
-          clientY: rect.top + 8,
-        }),
-      )
-      return canvas.getByRole("button", { name: "Select entire table" })
+      moveTo(rect.left + 8, rect.top + 8)
+      const button = canvas.getByRole("button", { name: "Select entire table" })
+      if (button.getAttribute("data-emphasis") !== "ready") {
+        throw new Error("select button is not ready yet")
+      }
+      return button
     })
     await userEvent.click(selectTable)
 

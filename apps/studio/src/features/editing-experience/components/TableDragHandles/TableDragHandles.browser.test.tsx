@@ -934,7 +934,7 @@ describe("TableDragHandles", () => {
     })
   })
 
-  it("hides the select-table button until the pointer is near the top-left corner", async () => {
+  it("hides the select-table button until the pointer is over the table", async () => {
     // Arrange / Act
     const { queryByRole } = await renderHarness()
 
@@ -969,6 +969,8 @@ describe("TableDragHandles", () => {
       parseFloat(getComputedStyle(button).borderTopLeftRadius),
     ).toBeGreaterThan(buttonRect.width / 2)
     expect(getComputedStyle(button).backgroundColor).toBe("rgb(255, 255, 255)")
+    expect(button.getAttribute("data-emphasis")).toBe("ready")
+    expect(getComputedStyle(button).opacity).toBe("1")
   })
 
   it("shows the select-table button in the gutter at the top-left corner", async () => {
@@ -988,17 +990,30 @@ describe("TableDragHandles", () => {
     expect(button).toBeTruthy()
   })
 
-  it("hides the select-table button while the pointer is over the rest of the table", async () => {
+  it("shows a quiet select-table button while the pointer is over the rest of the table", async () => {
     // Arrange
-    const { container, getByLabelText, queryByRole } = await renderHarness()
+    const { container, getByLabelText, getByRole } = await renderHarness()
     const cell = findByCellText(container, "Row 2, B")
     const { x, y } = centreOf(cell)
 
     // Act
     await hoverUntil(x, y, () => getByLabelText("Add row below"))
+    const button = getByRole("button", { name: "Select entire table" })
 
     // Assert
-    expect(queryByRole("button", { name: "Select entire table" })).toBeNull()
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const buttonRect = button.getBoundingClientRect()
+    const tableRect = table.getBoundingClientRect()
+    expect(
+      Math.abs(buttonRect.left + buttonRect.width / 2 - tableRect.left),
+    ).toBeLessThan(2)
+    expect(
+      Math.abs(buttonRect.top + buttonRect.height / 2 - tableRect.top),
+    ).toBeLessThan(2)
+    expect(button.getAttribute("data-emphasis")).toBe("quiet")
+    expect(Number(getComputedStyle(button).opacity)).toBeLessThan(1)
+    expect(getComputedStyle(button).boxShadow).toBe("none")
   })
 
   it("selects every cell and hides the button after it is clicked", async () => {

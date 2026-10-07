@@ -126,7 +126,7 @@ export const TableDragHandles = ({
     const bounds = getTableBounds(geometry)
     if (
       !bounds ||
-      cornerTablePos !== geometry.pos ||
+      hoverTablePos !== geometry.pos ||
       drag ||
       dismissedTablePos === geometry.pos
     ) {
@@ -137,6 +137,7 @@ export const TableDragHandles = ({
         left={bounds.left}
         top={bounds.top}
         tablePos={geometry.pos}
+        isEmphasized={cornerTablePos === geometry.pos}
         onClick={() => {
           selectWholeTable(editor, geometry.pos)
           setDismissedTablePos(geometry.pos)
