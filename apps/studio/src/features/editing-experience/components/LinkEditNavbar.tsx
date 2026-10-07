@@ -13,6 +13,7 @@ import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
 
+import { PageMoreActionsButton } from "./PageMoreActionsButton"
 import PublishButton from "./PublishButton"
 
 interface NavigationBreadcrumbsProps {
@@ -113,8 +114,9 @@ export const LinkEditNavbar = (): JSX.Element => {
       <NavigationBreadcrumbs siteId={String(siteId)} pageId={String(linkId)} />
 
       {linkId && siteId && (
-        <Flex justifyContent={"end"} alignItems={"center"} flex={1}>
+        <Flex justifyContent={"end"} alignItems={"center"} flex={1} gap="1rem">
           <PublishButton pageId={linkId} siteId={siteId} />
+          <PageMoreActionsButton pageId={linkId} siteId={siteId} />
         </Flex>
       )}
     </Flex>

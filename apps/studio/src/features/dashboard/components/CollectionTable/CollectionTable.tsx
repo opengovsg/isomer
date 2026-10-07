@@ -11,6 +11,7 @@ import { useMemo, useState } from "react"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
+import { LiveStatusBadges } from "~/components/LiveStatusBadges"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -29,7 +30,7 @@ const getColumns = ({ siteId }: CollectionTableProps) =>
       header: () => <TableHeader>Title</TableHeader>,
       cell: ({ row }) => (
         <TitleCell
-          scheduledAt={row.original.scheduledAt}
+          draftBlobId={row.original.draftBlobId}
           siteId={siteId}
           id={row.original.id}
           title={row.original.title}
@@ -43,6 +44,17 @@ const getColumns = ({ siteId }: CollectionTableProps) =>
       ),
     }),
     columnsHelper.display({
+      id: "status",
+      header: () => <TableHeader>Status</TableHeader>,
+      cell: ({ row }) => (
+        <LiveStatusBadges
+          liveStatus={row.original.liveStatus}
+          scheduledAt={row.original.scheduledAt}
+          scheduledAction={row.original.scheduledAction}
+        />
+      ),
+    }),
+    columnsHelper.display({
       id: "resource_menu",
       header: () => <TableHeader>Actions</TableHeader>,
       cell: ({ row }) => (
@@ -52,6 +64,8 @@ const getColumns = ({ siteId }: CollectionTableProps) =>
           resourceType={row.original.type}
           title={row.original.title}
           resourceId={row.original.id}
+          liveStatus={row.original.liveStatus}
+          scheduledAt={row.original.scheduledAt}
         />
       ),
       size: 24,

@@ -1,7 +1,8 @@
+import type * as DesignSystemReact from "@opengovsg/design-system-react"
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { render, screen } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { render, screen, fireEvent } from "@testing-library/react"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { theme } from "~/theme"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -9,6 +10,14 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import RootStateDrawer from "../RootStateDrawer"
 
 const noop = vi.hoisted(() => vi.fn())
+const toastMock = vi.hoisted(() => vi.fn())
+// When set, the mocked updatePageBlob mutation fails with this error.
+const saveError = vi.hoisted(() => ({ current: null as Error | null }))
+
+vi.mock("@opengovsg/design-system-react", async (importOriginal) => {
+  const actual = await importOriginal<typeof DesignSystemReact>()
+  return { ...actual, useToast: () => toastMock }
+})
 
 vi.mock("next/router", () => ({
   useRouter: () => ({ query: { pageId: "1", siteId: "1" } }),
@@ -18,10 +27,6 @@ vi.mock("posthog-js", () => ({ default: { capture: noop } }))
 
 vi.mock("~/hooks/useIsUserIsomerAdmin", () => ({
   useIsUserIsomerAdmin: () => ({ isAdmin: false, isLoading: false }),
-}))
-
-vi.mock("~/hooks/useNewCollectionTagsManagement", () => ({
-  useNewCollectionTagsManagement: () => false,
 }))
 
 vi.mock("~/utils/trpc", () => ({
@@ -34,7 +39,13 @@ vi.mock("~/utils/trpc", () => ({
         useMutation: () => ({ mutate: noop }),
       },
       updatePageBlob: {
-        useMutation: () => ({ mutate: noop, isPending: false }),
+        useMutation: (options: { onError?: (e: Error) => void }) => ({
+          // Real tRPC routes a failure to the mutation-level onError handler.
+          mutate: () => {
+            if (saveError.current) options.onError?.(saveError.current)
+          },
+          isPending: false,
+        }),
       },
     },
     useUtils: () => ({
@@ -43,7 +54,7 @@ vi.mock("~/utils/trpc", () => ({
         readPageAndBlob: { invalidate: noop },
       },
       collection: {
-        countTagOptionsUsage: { invalidate: noop },
+        countFilterUsage: { invalidate: noop },
       },
     }),
   },
@@ -67,16 +78,18 @@ const renderDrawer = ({
   pageState,
   permalink,
   title,
+  type = ResourceType.Page,
 }: {
   pageState: IsomerSchema
   permalink: string
   title: string
+  type?: ResourceType
 }) =>
   render(
     <ThemeProvider theme={theme}>
       <EditorDrawerProvider
         initialPageState={pageState}
-        type={ResourceType.Page}
+        type={type}
         permalink={permalink}
         siteId={1}
         pageId={1}
@@ -89,6 +102,11 @@ const renderDrawer = ({
   )
 
 describe("RootStateDrawer", () => {
+  beforeEach(() => {
+    toastMock.mockClear()
+    saveError.current = null
+  })
+
   it("does not allow adding blocks on the system Search page", () => {
     // Arrange / Act
     renderDrawer({
@@ -114,5 +132,34 @@ describe("RootStateDrawer", () => {
     // Assert
     expect(screen.queryByRole("button", { name: "Add block" })).not.toBeNull()
     expect(screen.queryByText("Custom blocks")).not.toBeNull()
+  })
+
+  it("shows an error toast when saving the index-page conversion fails", () => {
+    // Arrange — an IndexPage with a custom layout shows the conversion
+    // infobox; drive the real preview → accept → save path.
+    saveError.current = new Error("network down")
+    renderDrawer({
+      pageState: CONTENT_PAGE,
+      permalink: "about-us",
+      title: "About us",
+      type: ResourceType.IndexPage,
+    })
+    fireEvent.click(
+      screen.getByRole("button", { name: "Preview what this looks like" }),
+    )
+    fireEvent.click(screen.getByRole("button", { name: "Accept this change" }))
+
+    // Act — confirming runs handleSaveConversionToIndexPage; the mocked
+    // save fails and must surface an error toast instead of failing silent.
+    fireEvent.click(screen.getByRole("button", { name: "Accept changes" }))
+
+    // Assert
+    expect(toastMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Failed to convert page",
+        description: "network down",
+        status: "error",
+      }),
+    )
   })
 })
