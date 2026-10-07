@@ -110,6 +110,8 @@ export interface AuditLogExportReadyEmailTemplateData extends BaseEmailTemplateD
   // Each export job produces exactly one report, so exactly one link.
   link: AuditLogExportDownloadLink
   sizeInBytes: number | null
+  // Absolute, timezone-labelled expiry instant, e.g. "22/09/2026, 11:59pm (SGT)".
+  expiresAt: string
 }
 
 export interface AuditLogExportFailedEmailTemplateData extends BaseEmailTemplateData {
@@ -123,7 +125,14 @@ export interface AuditLogExportBatchReadyEmailTemplateData extends BaseEmailTemp
   reportLabel: AuditLogExportDownloadLink["label"]
   // One entry per site whose export succeeded — every site in the ask that
   // didn't succeed is named (with no link) in `failedSiteNames` instead.
-  links: { siteName: string; url: string; sizeInBytes: number | null }[]
+  links: {
+    siteName: string
+    url: string
+    sizeInBytes: number | null
+    // Absolute, timezone-labelled expiry instant for THIS link — each row
+    // completes independently, so expiry can differ link to link.
+    expiresAt: string
+  }[]
   failedSiteNames: string[]
 }
 

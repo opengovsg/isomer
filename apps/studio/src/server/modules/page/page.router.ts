@@ -846,7 +846,7 @@ export const pageRouter = router({
               }),
           )
 
-        return db.transaction().execute(async (tx) => {
+        const updatedResource = await db.transaction().execute(async (tx) => {
           const fullPage = await getFullPageById(tx, {
             resourceId: pageId,
             siteId,
@@ -943,21 +943,7 @@ export const pageRouter = router({
               })
             }
 
-            // We do an implicit publish so that we can make the changes to the
-            // page settings immediately visible on the end site. A page that
-            // has never been published has no live presence, so skip the site
-            // rebuild and Publish audit entry for it.
-            if (updatedResource.publishedVersionId !== null) {
-              await publishResource(ctx.user.id, updatedResource, ctx.logger)
-            }
-
-            return pick(updatedResource, [
-              "id",
-              "type",
-              "title",
-              "permalink",
-              "draftBlobId",
-            ])
+            return updatedResource
           } catch (err) {
             if (err instanceof TRPCError) {
               throw err
@@ -970,6 +956,22 @@ export const pageRouter = router({
             })
           }
         })
+
+        // We do an implicit publish so that we can make the changes to the
+        // page settings immediately visible on the end site. A page that
+        // has never been published has no live presence, so skip the site
+        // rebuild and Publish audit entry for it.
+        if (updatedResource.publishedVersionId !== null) {
+          await publishResource(ctx.user.id, updatedResource, ctx.logger)
+        }
+
+        return pick(updatedResource, [
+          "id",
+          "type",
+          "title",
+          "permalink",
+          "draftBlobId",
+        ])
       },
     ),
   getFullPermalink: protectedProcedure

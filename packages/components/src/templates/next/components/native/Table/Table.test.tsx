@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers"
@@ -383,5 +384,41 @@ describe("Table backgroundColor", () => {
     expect(cellTags).toEqual(["th", "td"])
     expect(openTags[0]).toContain("prose-label-md-bold")
     expect(openTags[1]).not.toContain("prose-label-md-bold")
+  })
+
+  it("renders a rowspan row that omits content", () => {
+    // Arrange / Act
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{ caption: "Merged rows" }}
+        content={
+          [
+            {
+              type: "tableRow",
+              content: [
+                {
+                  type: "tableCell",
+                  attrs: { colspan: 2, rowspan: 2 },
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [{ type: "text", text: "Both rows" }],
+                    },
+                  ],
+                },
+              ],
+            },
+            { type: "tableRow" },
+          ] as unknown as ComponentProps<typeof Table>["content"]
+        }
+      />,
+    )
+
+    // Assert
+    expect(html).toContain("Both rows")
+    expect(html).toContain('rowspan="2"')
+    expect(html.match(/<tr/g)).toHaveLength(2)
   })
 })

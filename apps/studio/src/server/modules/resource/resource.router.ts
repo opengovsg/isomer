@@ -866,6 +866,14 @@ export const resourceRouter = router({
           })
         }
 
+        // Prevent the root page from being deleted
+        if (before.type === ResourceType.RootPage) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "The root page cannot be deleted",
+          })
+        }
+
         // Gated on the flag: with unpublish unreachable, a live resource
         // could never become deletable, so skip the guard entirely rather
         // than lock it out permanently.

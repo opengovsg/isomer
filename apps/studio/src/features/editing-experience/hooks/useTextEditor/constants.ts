@@ -32,6 +32,7 @@ import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
 import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
 
+import { canMergeCells } from "../../components/TableBubbleMenu/TableBubbleMenu.utils"
 import {
   focusTableBubbleMenuTrigger,
   runTableBubbleMenuFocusTrigger,
@@ -44,6 +45,7 @@ import {
   wrapHeaderToggleCommand,
   type HeaderToggleCommand,
 } from "./clearTableCellBackgroundOnKindChange"
+import { deleteEmptyTextblockBeforeTable } from "./deleteEmptyTextblockBeforeTable"
 import { selectTableCellContent } from "./selectTableCellContent"
 
 export { TableRow } from "@tiptap/extension-table-row"
@@ -132,9 +134,14 @@ export const IsomerTable = Table.extend({
     const parent = this.parent?.()
     const parentToggleHeaderRow = parent?.toggleHeaderRow
     const parentToggleHeaderColumn = parent?.toggleHeaderColumn
+    const parentMergeCells = parent?.mergeCells
 
     return {
       ...parent,
+      mergeCells: () => (props) => {
+        if (!canMergeCells(props.state)) return false
+        return parentMergeCells?.()(props) ?? false
+      },
       focusTableBubbleMenuTrigger:
         () =>
         ({ editor }: { editor: Editor }) =>
@@ -162,6 +169,13 @@ export const IsomerTable = Table.extend({
   },
   addKeyboardShortcuts() {
     const parentShortcuts = this.parent?.() ?? {}
+    const deleteTableWhenAllCellsSelected = parentShortcuts.Backspace
+
+    const handleBackspace = () =>
+      deleteEmptyTextblockBeforeTable(this.editor) ||
+      deleteTableWhenAllCellsSelected?.({ editor: this.editor }) ||
+      false
+
     return {
       ...parentShortcuts,
       "Mod-a": () =>
@@ -172,6 +186,9 @@ export const IsomerTable = Table.extend({
         }
         return parentShortcuts.Tab?.({ editor }) ?? false
       },
+      Backspace: handleBackspace,
+      "Mod-Backspace": handleBackspace,
+      "Shift-Backspace": handleBackspace,
     }
   },
   addProseMirrorPlugins() {

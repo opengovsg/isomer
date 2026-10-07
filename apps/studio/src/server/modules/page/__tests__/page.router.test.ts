@@ -26,7 +26,7 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import { IS_UNPUBLISH_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
-import { normalizeRedirectPath } from "~/schemas/redirect"
+import { normalizeRedirectPath } from "~/schemas/redirect/utils"
 import { createCallerFactory } from "~/server/trpc"
 import {
   AuditLogEvent,

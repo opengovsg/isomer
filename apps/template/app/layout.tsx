@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import type { CSSProperties } from "react"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import "@/styles/globals.css"
@@ -44,11 +45,28 @@ export const metadata: Metadata = {
 }
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
+  const localTheme =
+    process.env.NODE_ENV === "development"
+      ? ({
+          "--color-brand-canvas-default": config.colors.brand.canvas.default,
+          "--color-brand-canvas-alt": config.colors.brand.canvas.alt,
+          "--color-brand-canvas-backdrop": config.colors.brand.canvas.backdrop,
+          "--color-brand-canvas-inverse": config.colors.brand.canvas.inverse,
+          "--color-brand-interaction-default":
+            config.colors.brand.interaction.default,
+          "--color-brand-interaction-hover":
+            config.colors.brand.interaction.hover,
+          "--color-brand-interaction-pressed":
+            config.colors.brand.interaction.pressed,
+        } as CSSProperties)
+      : undefined
+
   return (
     <html
       lang="en"
       data-theme={config.site.theme || "isomer-next"}
       className={inter.variable}
+      style={localTheme}
     >
       <head>
         <RenderApplicationHeadScripts
