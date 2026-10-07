@@ -9,7 +9,7 @@ import {
 } from "react"
 import { LOGGED_IN_KEY } from "~/constants/localStorage"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
-import { withPosthog } from "~/lib/posthog"
+import { SITE_GROUP_TYPE, withPosthog } from "~/lib/posthog"
 import { normalizeEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
 
@@ -116,12 +116,12 @@ const PostHogSiteGroup = () => {
         siteId &&
         sites?.some((site) => String(site.id) === siteId)
       ) {
-        posthog.group("site", siteId)
+        posthog.group(SITE_GROUP_TYPE, siteId)
         return
       }
 
       // resetGroups reloads feature flags, so skip it when there's nothing to clear.
-      if (posthog.getGroups().site) {
+      if (posthog.getGroups()[SITE_GROUP_TYPE]) {
         posthog.resetGroups()
       }
     })

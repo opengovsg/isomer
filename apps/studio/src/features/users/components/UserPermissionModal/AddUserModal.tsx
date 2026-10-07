@@ -26,6 +26,7 @@ import { useCallback, useEffect, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { useZodForm } from "~/lib/form"
+import { siteEventProps } from "~/lib/posthog"
 import { createUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
@@ -85,7 +86,7 @@ export const AddUserModal = () => {
   const { mutate: createUser, isPending } = trpc.user.create.useMutation({
     onSuccess: async (createdUsers) => {
       posthog.capture("site_user_invited", {
-        site_id: String(siteId),
+        ...siteEventProps(siteId),
         invited_user_count: createdUsers.length,
         role: getValues("role"),
       })

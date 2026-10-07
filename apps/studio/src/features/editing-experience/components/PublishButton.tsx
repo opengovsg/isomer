@@ -4,6 +4,7 @@ import { Button, TouchableTooltip } from "@opengovsg/design-system-react"
 import posthog from "posthog-js"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
+import { siteEventProps } from "~/lib/posthog"
 import { trpc } from "~/utils/trpc"
 import { ScheduledAction } from "~prisma/generated/generatedEnums"
 
@@ -81,9 +82,10 @@ const SuspendablePublishButton = ({
                 size="sm"
                 isDisabled={!!disabledReason || !isAllowed}
                 onClick={() => {
-                  posthog.capture("publish_modal_opened", {
-                    site_id: String(siteId),
-                  })
+                  posthog.capture(
+                    "publish_modal_opened",
+                    siteEventProps(siteId),
+                  )
                   publishDisclosure.onOpen()
                 }}
                 {...rest}

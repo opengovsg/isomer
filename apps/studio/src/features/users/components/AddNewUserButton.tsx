@@ -10,6 +10,7 @@ import {
   DEFAULT_ADD_USER_MODAL_STATE,
 } from "~/features/users/atoms"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
+import { siteEventProps } from "~/lib/posthog"
 
 import { SingpassConditionalTooltip } from "./SingpassConditionalTooltip"
 
@@ -35,7 +36,7 @@ export const AddNewUserButton = ({
       variant="solid"
       leftIcon={<BiPlus />}
       onClick={() => {
-        posthog.capture("add_user_modal_opened", { site_id: String(siteId) })
+        posthog.capture("add_user_modal_opened", siteEventProps(siteId))
         setAddUserModalState({ ...DEFAULT_ADD_USER_MODAL_STATE, siteId })
       }}
       isDisabled={isButtonDisabled}

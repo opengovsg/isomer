@@ -4,6 +4,7 @@ import { Button } from "@opengovsg/design-system-react"
 import { isEmpty } from "lodash-es"
 import { useRouter } from "next/router"
 import posthog from "posthog-js"
+import { siteEventProps } from "~/lib/posthog"
 
 import { useBuilderErrors } from "../editing-experience/components/form-builder/ErrorProvider"
 import { Can } from "../permissions"
@@ -50,7 +51,7 @@ export const SettingsHeader = ({
           isLoading={isLoading}
           onClick={() => {
             posthog.capture("settings_saved", {
-              site_id: router.query.siteId,
+              ...siteEventProps(String(router.query.siteId)),
               settings_section: router.pathname.split("/").pop(),
             })
             onClick()
