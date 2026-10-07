@@ -10,6 +10,7 @@ import {
 import { LOGGED_IN_KEY } from "~/constants/localStorage"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
 import { withPosthog } from "~/lib/posthog"
+import { normalizeEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
 
 interface LoginStateContextReturn {
@@ -83,6 +84,7 @@ const PostHogIdentity = () => {
 
       posthog.identify(user.id, {
         email: user.email,
+        email_domain: normalizeEmail(user.email).split("@")[1],
         ...(user.name ? { name: user.name } : {}),
         site_roles: sites.map((site) => `${site.id}:${site.role}`),
       })
