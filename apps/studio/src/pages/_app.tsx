@@ -17,6 +17,7 @@ import Suspense from "~/components/Suspense"
 import { VersionWrapper } from "~/components/VersionWrapper"
 import { env } from "~/env.mjs"
 import { LoginStateProvider } from "~/features/auth"
+import { createOfflineGrowthBook } from "~/lib/growthbookOffline"
 import { type NextPageWithLayout } from "~/lib/types"
 import { DefaultLayout } from "~/templates/layouts/DefaultLayout"
 import { theme } from "~/theme"
@@ -52,17 +53,23 @@ datadogRum.init({
   ],
 })
 
-// Create a GrowthBook instance
-const gb = new GrowthBook({
-  apiHost: "https://cdn.growthbook.io",
-  clientKey: env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
-  enabled: true,
-})
+// Test builds (NEXT_PUBLIC_APP_ENV=test, including e2e) never call init(),
+// which is what fetches cdn.growthbook.io and opens the streaming connection.
+const gb =
+  env.NEXT_PUBLIC_APP_ENV === "test"
+    ? createOfflineGrowthBook(env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY)
+    : new GrowthBook({
+        apiHost: "https://cdn.growthbook.io",
+        clientKey: env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
+        enabled: true,
+      })
 
-void gb.init({
-  // Optional, enable streaming updates
-  streaming: true,
-})
+if (env.NEXT_PUBLIC_APP_ENV !== "test") {
+  void gb.init({
+    // Optional, enable streaming updates
+    streaming: true,
+  })
+}
 
 const MyApp = ((props: AppPropsWithAuthAndLayout) => {
   // ErrorBoundary keeps the fallback until resetKeys changes. asPath remounts
