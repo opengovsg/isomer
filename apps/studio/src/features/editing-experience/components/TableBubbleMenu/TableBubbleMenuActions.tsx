@@ -56,8 +56,8 @@ import {
   duplicateSelectedRows,
 } from "./TableBubbleMenu.duplicate"
 import {
-  canMergeCellSelection,
-  canSplitCellSelection,
+  canMergeCells,
+  canSplitCell,
   getColumnMovePlan,
   getRowMovePlan,
   restoreMovedBlockSelection,
@@ -338,23 +338,6 @@ const SplitCellButton = ({ editor }: { editor: Editor }) => (
   />
 )
 
-const SplitCellAction = ({
-  editor,
-  rect,
-}: {
-  editor: Editor
-  rect: SelectionRect
-}) => {
-  const { selection } = editor.state
-  if (
-    !(selection instanceof CellSelection) ||
-    !canSplitCellSelection(selection, rect)
-  ) {
-    return null
-  }
-  return <SplitCellButton editor={editor} />
-}
-
 const HeaderToggle = ({
   label,
   isChecked,
@@ -393,15 +376,6 @@ const HeaderToggle = ({
 )
 
 type SelectionRect = ReturnType<typeof selectedRect>
-
-const canOfferMerge = (editor: Editor, rect: SelectionRect) => {
-  const { selection } = editor.state
-  return (
-    selection instanceof CellSelection &&
-    selection.$anchorCell.pos !== selection.$headCell.pos &&
-    canMergeCellSelection(rect)
-  )
-}
 
 const RowSelectionActions = ({
   editor,
@@ -449,8 +423,8 @@ const RowSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
-      {canOfferMerge(editor, rect) && <MergeCellsButton editor={editor} />}
-      <SplitCellAction editor={editor} rect={rect} />
+      {canMergeCells(editor.state) && <MergeCellsButton editor={editor} />}
+      {canSplitCell(editor.state) && <SplitCellButton editor={editor} />}
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
@@ -524,8 +498,8 @@ const ColumnSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
-      {canOfferMerge(editor, rect) && <MergeCellsButton editor={editor} />}
-      <SplitCellAction editor={editor} rect={rect} />
+      {canMergeCells(editor.state) && <MergeCellsButton editor={editor} />}
+      {canSplitCell(editor.state) && <SplitCellButton editor={editor} />}
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
@@ -571,7 +545,7 @@ const SelectionActions = ({
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          <SplitCellAction editor={editor} rect={rect} />
+          {canSplitCell(editor.state) && <SplitCellButton editor={editor} />}
           <ActionButton
             label="Delete table"
             icon={<BiTrash fontSize="1rem" />}
@@ -583,7 +557,7 @@ const SelectionActions = ({
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          {canOfferMerge(editor, rect) && <MergeCellsButton editor={editor} />}
+          {canMergeCells(editor.state) && <MergeCellsButton editor={editor} />}
         </ActionGroup>
       )
     case "single-cell":
@@ -596,7 +570,7 @@ const SelectionActions = ({
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          <SplitCellButton editor={editor} />
+          {canSplitCell(editor.state) && <SplitCellButton editor={editor} />}
         </ActionGroup>
       )
     default:
