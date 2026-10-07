@@ -27,6 +27,7 @@ import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
+import { siteEventProps } from "~/lib/posthog"
 import {
   createFolderSchema,
   MAX_FOLDER_PERMALINK_LENGTH,
@@ -88,7 +89,7 @@ const CreateFolderModalContent = ({
   const { mutate, isPending } = trpc.folder.create.useMutation({
     onSuccess: async () => {
       posthog.capture("folder_created", {
-        site_id: siteId,
+        ...siteEventProps(siteId),
         has_parent_folder: !!parentFolderId,
       })
       await utils.site.list.invalidate()

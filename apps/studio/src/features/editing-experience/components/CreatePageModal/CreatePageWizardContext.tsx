@@ -9,6 +9,7 @@ import articleLayoutPreview from "~/features/editing-experience/data/articleLayo
 import contentLayoutPreview from "~/features/editing-experience/data/contentLayoutPreview.json"
 import databaseLayoutPreview from "~/features/editing-experience/data/databaseLayoutPreview.json"
 import { useZodForm } from "~/lib/form"
+import { siteEventProps } from "~/lib/posthog"
 import { createPageSchema } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
 
@@ -115,7 +116,7 @@ const useCreatePageWizardContext = ({
       {
         onSuccess: ({ pageId }) => {
           posthog.capture("page_created", {
-            site_id: siteId,
+            ...siteEventProps(siteId),
             has_parent_folder: !!folderId,
             layout: values.layout,
           })

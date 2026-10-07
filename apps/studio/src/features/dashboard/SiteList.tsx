@@ -16,6 +16,7 @@ import posthog from "posthog-js"
 import { NoResultIcon } from "~/components/Svg/NoResultIcon"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { withSuspense } from "~/hocs/withSuspense"
+import { siteEventProps } from "~/lib/posthog"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
 
@@ -35,7 +36,14 @@ const Site = ({
       <LinkOverlay
         href={`/sites/${siteId}`}
         as={NextLink}
-        onClick={() => posthog.capture("site_selected", { site_id: siteId })}
+        onClick={() => {
+          // The loading skeleton renders without a site.
+          if (siteId === undefined) {
+            return
+          }
+
+          posthog.capture("site_selected", siteEventProps(siteId))
+        }}
       >
         <Flex key={siteId} flexDirection="column" gap="1rem" width="100%">
           <Box position="relative">

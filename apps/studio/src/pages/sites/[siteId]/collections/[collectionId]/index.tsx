@@ -21,6 +21,7 @@ import { CreateCollectionPageModal } from "~/features/editing-experience/compone
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useEgazetteInfo } from "~/hooks/useEgazetteInfo"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { siteEventProps } from "~/lib/posthog"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getCollectionHref } from "~/utils/resource"
@@ -80,9 +81,10 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             </Button>
             <Button
               onClick={() => {
-                posthog.capture("collection_page_create_modal_opened", {
-                  site_id: siteId,
-                })
+                posthog.capture(
+                  "collection_page_create_modal_opened",
+                  siteEventProps(siteId),
+                )
                 onPageCreateModalOpen()
               }}
               size="md"

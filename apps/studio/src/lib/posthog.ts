@@ -18,3 +18,15 @@ export const withPosthog = (fn: (posthog: typeof PostHogInstance) => void) => {
     })
   return queue
 }
+
+export const SITE_GROUP_TYPE = "site"
+
+/**
+ * Properties tying an event to a site. The event-level `$groups` overrides the
+ * persisted site group, so events that complete after the user has switched
+ * sites or tabs keep their originating site.
+ */
+export const siteEventProps = (siteId: number | string) => {
+  const site = String(siteId)
+  return { site_id: site, $groups: { [SITE_GROUP_TYPE]: site } }
+}

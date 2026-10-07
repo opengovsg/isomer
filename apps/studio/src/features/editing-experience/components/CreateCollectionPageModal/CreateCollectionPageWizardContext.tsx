@@ -9,6 +9,7 @@ import { createContext, useContext, useMemo, useState } from "react"
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import collectionLinkPreview from "~/features/editing-experience/data/collectionLinkPreview.json"
 import { useZodForm } from "~/lib/form"
+import { siteEventProps } from "~/lib/posthog"
 import { createCollectionPageFormSchema } from "~/schemas/page"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
@@ -107,7 +108,7 @@ const useCreateCollectionPageWizardContext = ({
         {
           onSuccess: ({ pageId }) => {
             posthog.capture("collection_page_created", {
-              site_id: siteId,
+              ...siteEventProps(siteId),
               resource_type: values.type,
             })
             const nextType = getResourceSubpath(type)

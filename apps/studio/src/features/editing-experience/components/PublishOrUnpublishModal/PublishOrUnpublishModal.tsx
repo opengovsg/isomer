@@ -26,6 +26,7 @@ import {
   BRIEF_TOAST_SETTINGS,
 } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
+import { siteEventProps } from "~/lib/posthog"
 import {
   MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
   schedulePublishClientSchema,
@@ -128,7 +129,7 @@ export const PublishOrUnpublishModal = ({
         onClose()
       },
       onSuccess: () => {
-        posthog.capture("page_published", { site_id: siteId })
+        posthog.capture("page_published", siteEventProps(siteId))
         fireContentEditSurveyEvent(PUBLISHED_AFTER_EDITING_EVENT)
         toast({
           status: "success",

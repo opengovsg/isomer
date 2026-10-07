@@ -16,6 +16,7 @@ import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { siteEventProps } from "~/lib/posthog"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -69,7 +70,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const utils = trpc.useUtils()
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: () => {
-      posthog.capture("page_changes_saved", { site_id: siteId })
+      posthog.capture("page_changes_saved", siteEventProps(siteId))
       void Promise.all([
         utils.page.readPageAndBlob.invalidate({ pageId, siteId }),
         utils.page.readPage.invalidate({ pageId, siteId }),

@@ -14,6 +14,7 @@ import { useAtomValue, useSetAtom } from "jotai"
 import posthog from "posthog-js"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
+import { siteEventProps } from "~/lib/posthog"
 import { trpc } from "~/utils/trpc"
 
 import {
@@ -35,8 +36,9 @@ export const RemoveUserModal = () => {
 
   const { mutate, isPending } = trpc.user.delete.useMutation({
     onSettled: onClose,
-    onSuccess: async (result) => {
-      posthog.capture("site_user_removed", { site_id: siteId })
+    onSuccess: async (result, variables) => {
+      // Closing the modal resets its siteId, so read the one this request used.
+      posthog.capture("site_user_removed", siteEventProps(variables.siteId))
       await utils.user.list.invalidate()
       await utils.user.count.invalidate()
       toast({

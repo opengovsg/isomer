@@ -20,6 +20,7 @@ import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UserManagementContext } from "~/features/users"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
+import { siteEventProps } from "~/lib/posthog"
 import { trpc } from "~/utils/trpc"
 
 import type { UserTableData } from "./types"
@@ -56,7 +57,7 @@ export const UserTableMenu = ({
   const { mutate: resendInvite, isPending: isResendingInvite } =
     trpc.user.resendInvite.useMutation({
       onSuccess: (result) => {
-        posthog.capture("user_invite_resent", { site_id: siteId })
+        posthog.capture("user_invite_resent", siteEventProps(siteId))
         toast({
           status: "success",
           title: `Invite resent to ${result.email}`,

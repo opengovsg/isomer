@@ -13,6 +13,7 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { siteEventProps } from "~/lib/posthog"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
@@ -55,7 +56,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
 
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
-      posthog.capture("page_changes_saved", { site_id: siteId })
+      posthog.capture("page_changes_saved", siteEventProps(siteId))
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
       toast({

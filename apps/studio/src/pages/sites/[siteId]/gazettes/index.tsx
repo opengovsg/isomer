@@ -18,6 +18,7 @@ import { useMe } from "~/features/me/api/useMe"
 import { useEgazetteInfo } from "~/hooks/useEgazetteInfo"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { siteEventProps } from "~/lib/posthog"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteMinimalLayout } from "~/templates/layouts/SiteMinimalLayout"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
@@ -94,9 +95,10 @@ const GazettesPage: NextPageWithLayout = () => {
                 size="md"
                 leftIcon={<BiPlus fontSize="1.25rem" />}
                 onClick={() => {
-                  posthog.capture("gazette_create_modal_opened", {
-                    site_id: siteId,
-                  })
+                  posthog.capture(
+                    "gazette_create_modal_opened",
+                    siteEventProps(siteId),
+                  )
                   onOpen()
                 }}
               >
