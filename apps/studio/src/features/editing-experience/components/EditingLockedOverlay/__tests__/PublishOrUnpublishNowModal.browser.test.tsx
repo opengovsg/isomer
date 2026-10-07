@@ -1,6 +1,7 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { render, screen } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
+import posthog from "posthog-js"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { theme } from "~/theme"
 
@@ -35,7 +36,11 @@ vi.mock("~/utils/trpc", () => {
           useMutation: () => ({ mutate: noop, isPending: false }),
         },
         unpublishPage: {
-          useMutation: () => ({ mutate: noop, isPending: false }),
+          // mutate fires onSuccess so the analytics capture under test runs.
+          useMutation: (opts?: { onSuccess?: () => void }) => ({
+            mutate: () => opts?.onSuccess?.(),
+            isPending: false,
+          }),
         },
       },
       useUtils: () => ({
@@ -75,6 +80,7 @@ const renderModal = (action: "publish" | "unpublish") =>
 
 beforeEach(() => {
   redirectQuery.value = { data: 0, isPending: false, isError: false }
+  vi.mocked(posthog.capture).mockClear()
 })
 
 describe("PublishOrUnpublishNowModal redirect-check gating", () => {
@@ -121,5 +127,23 @@ describe("PublishOrUnpublishNowModal redirect-check gating", () => {
     expect(
       screen.getByRole("button", { name: "Yes, publish now" }),
     ).toBeEnabled()
+  })
+})
+
+describe("PublishOrUnpublishNowModal redirect-count analytics", () => {
+  // React Query keeps the last successful data after a failed refetch, so on an
+  // errored check the modal must tag the count unknown (null), not send the
+  // stale value as if it were current.
+  it("tags redirect_count null on the success event when the check errored", () => {
+    redirectQuery.value = { data: 3, isPending: false, isError: true }
+    renderModal("unpublish")
+    fireEvent.click(screen.getByRole("button", { name: "Yes, unpublish now" }))
+    expect(posthog.capture).toHaveBeenCalledWith(
+      "page_unpublished",
+      expect.objectContaining({
+        redirect_count: null,
+        source: "scheduled_override",
+      }),
+    )
   })
 })
