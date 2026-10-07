@@ -114,7 +114,9 @@ export class PageEditorPO {
     await expect(publish).toBeEnabled()
     await publish.click()
     await expect(this.page.getByText("Publish this page?")).toBeVisible()
-    await this.page.getByRole("radio", { name: /Publish later/i }).click()
+    // Chakra's useRadio marks the visible card aria-hidden, so the radio
+    // input has an empty accessible name. Click the visible label instead.
+    await this.page.getByText("Publish later", { exact: true }).click()
     await expect(
       this.page.getByRole("button", { name: /Select from date picker/i }),
     ).toBeVisible()
@@ -140,7 +142,7 @@ export class PageEditorPO {
 
   async expectScheduledSuccessfully() {
     await expect(
-      this.page.getByText("Page scheduled successfully"),
+      this.page.getByText("scheduled to publish on"),
     ).toBeVisible()
   }
 

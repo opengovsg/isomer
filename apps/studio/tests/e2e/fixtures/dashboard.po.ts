@@ -61,6 +61,6 @@ export class DashboardPO {
 
   async expectScheduledBadge(title: string) {
     const row = this.page.getByRole("row").filter({ hasText: title })
-    await expect(row.getByText("Scheduled")).toBeVisible()
+    await expect(row.getByText("Scheduled to publish")).toBeVisible()
   }
 }

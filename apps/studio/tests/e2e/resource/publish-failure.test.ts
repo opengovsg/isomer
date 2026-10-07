@@ -35,8 +35,9 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
       destination: "https://example.com",
     })
 
-    // Act: publishing fails on the conflicting redirect. The confirmation
-    // modal only auto-closes on success, so it's still open behind the toast.
+    // Act: publishing fails on the conflicting redirect. The modal closes
+    // when the request settles, including this conflict, and the error
+    // toast is the only remaining signal.
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.clickPublish()
     await expect(
@@ -44,7 +45,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
         `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
       ),
     ).toBeVisible()
-    await page.getByRole("button", { name: "No, don't publish" }).click()
+    await expect(page.getByText("Publish this page?")).not.toBeVisible()
 
     // Assert: the draft is untouched by the failed attempt
     await editor.expectPublishButtonEnabled()
@@ -59,7 +60,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   test("publish succeeds after removing the blocking redirect", async ({
     page,
   }) => {
-    // Arrange: same redirect conflict, failed publish dismissed, blocker removed
+    // Arrange: same redirect conflict, failed publish, blocker removed
     const { folder, page: seededPage } = await seedFolderWithPage({ siteId })
     const fullPermalink = `/${folder.permalink}/${seededPage.permalink}`
     await seedRedirect({
@@ -74,7 +75,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
         `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
       ),
     ).toBeVisible()
-    await page.getByRole("button", { name: "No, don't publish" }).click()
+    await expect(page.getByText("Publish this page?")).not.toBeVisible()
     await deleteRedirectBySource({ siteId, source: fullPermalink })
 
     // Act
