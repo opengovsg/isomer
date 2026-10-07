@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from "react"
+import { useRouter } from "next/router"
 import {
   createContext,
   useCallback,
@@ -32,6 +33,7 @@ export const LoginStateProvider = ({ children }: PropsWithChildren) => {
   return (
     <LoginStateContext.Provider value={loginState}>
       <PostHogIdentity />
+      <PostHogSiteGroup />
       {children}
     </LoginStateContext.Provider>
   )
@@ -87,6 +89,41 @@ const PostHogIdentity = () => {
       identifiedUserId.current = user.id
     })
   }, [user, sites, hasLoginStateFlag])
+
+  return null
+}
+
+const PostHogSiteGroup = () => {
+  const { hasLoginStateFlag } = useLoginState()
+  const { isReady, query } = useRouter()
+  const siteId = typeof query.siteId === "string" ? query.siteId : undefined
+  const { data: sites } = trpc.site.list.useQuery(undefined, {
+    enabled: hasLoginStateFlag,
+  })
+
+  useEffect(() => {
+    if (!isReady) {
+      return
+    }
+
+    void withPosthog((posthog) => {
+      // Only group sites the user can access, so mistyped or unauthorised
+      // URLs don't create junk groups. Isomer admins get every site.
+      if (
+        hasLoginStateFlag &&
+        siteId &&
+        sites?.some((site) => String(site.id) === siteId)
+      ) {
+        posthog.group("site", siteId)
+        return
+      }
+
+      // resetGroups reloads feature flags, so skip it when there's nothing to clear.
+      if (posthog.getGroups().site) {
+        posthog.resetGroups()
+      }
+    })
+  }, [isReady, siteId, sites, hasLoginStateFlag])
 
   return null
 }
