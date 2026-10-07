@@ -379,6 +379,8 @@ jobs:
     name: ✅ CI passed
     if: always()
     needs:
+      - optimize_ci
+      - changes
       - build
       - format
       - lint
