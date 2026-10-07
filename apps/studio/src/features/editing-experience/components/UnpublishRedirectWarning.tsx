@@ -1,41 +1,21 @@
 import { Infobox } from "@opengovsg/design-system-react"
-import { useEffect } from "react"
-import { trpc } from "~/utils/trpc"
+
+import { useUnpublishRedirectCount } from "../hooks/useUnpublishRedirectCount"
 
 // Warns when live redirects point to this page — unpublishing dead-ends them
-// (unlike delete, it only warns; the redirects stay). Reuses the delete modal's
-// reference-only count, opting in to container references too.
+// (unlike delete, it only warns; the redirects stay).
 export const UnpublishRedirectWarning = ({
   pageId,
   siteId,
-  onPendingChange,
-  onRedirectCountChange,
 }: {
   pageId: number
   siteId: number
-  // Reports the check's loading state so the caller can gate confirmation.
-  onPendingChange?: (isPending: boolean) => void
-  // Reports the resolved count (undefined while pending or on error) so the
-  // caller can tag its analytics with how many redirects were at stake.
-  onRedirectCountChange?: (count: number | undefined) => void
 }) => {
   const {
     data: redirectCount,
     isPending,
     isError,
-  } = trpc.redirect.countByDestinationResource.useQuery({
-    siteId,
-    resourceId: String(pageId),
-    includeContainerReference: true,
-  })
-
-  useEffect(() => {
-    onPendingChange?.(isPending)
-  }, [isPending, onPendingChange])
-
-  useEffect(() => {
-    onRedirectCountChange?.(redirectCount)
-  }, [redirectCount, onRedirectCountChange])
+  } = useUnpublishRedirectCount({ pageId, siteId })
 
   // A pending or failed check must not read as "no redirects" — show both.
   if (isPending) {

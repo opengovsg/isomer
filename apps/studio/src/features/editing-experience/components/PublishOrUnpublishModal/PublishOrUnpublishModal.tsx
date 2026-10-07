@@ -18,7 +18,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { add, format, isSameDay } from "date-fns"
 import posthog from "posthog-js"
-import { useCallback, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { BiSolidInfoCircle } from "react-icons/bi"
 import {
@@ -37,6 +37,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import type { ActionMode, PublishOrUnpublishAction } from "./ActionOptionsInput"
 import { PUBLISHED_AFTER_EDITING_EVENT } from "../../constants"
 import { useFireContentEditSurveyEvent } from "../../hooks/useContentEditSurvey"
+import { useUnpublishRedirectCount } from "../../hooks/useUnpublishRedirectCount"
 import { UnpublishRedirectWarning } from "../UnpublishRedirectWarning"
 import { ActionOptionsInput } from "./ActionOptionsInput"
 import { ScheduleBanner, UNPUBLISH_WINDOW_MINUTES } from "./ScheduleBanner"
@@ -90,21 +91,16 @@ export const PublishOrUnpublishModal = ({
     disableNow ? "later" : "now",
   )
   const lastScheduledAtRef = useRef<Date | null>(null)
-  // Only unpublish renders the redirect check, so only it has a pending window.
-  const [isRedirectCheckPending, setIsRedirectCheckPending] = useState(
-    action === "unpublish",
-  )
-  const handleRedirectCheckPendingChange = useCallback(
-    (pending: boolean) => setIsRedirectCheckPending(pending),
-    [],
-  )
-  // Captured on the unpublish success events so we can measure how often users
-  // unpublish despite live redirects pointing at the page. null until resolved.
-  const [redirectCount, setRedirectCount] = useState<number | null>(null)
-  const handleRedirectCountChange = useCallback(
-    (count: number | undefined) => setRedirectCount(count ?? null),
-    [],
-  )
+  // Only unpublish renders the redirect check. The count is captured on the
+  // unpublish success events to measure how often users unpublish despite live
+  // redirects pointing at the page. null until resolved.
+  const { data: redirectCountData, isLoading: isRedirectCheckPending } =
+    useUnpublishRedirectCount({
+      pageId,
+      siteId,
+      enabled: action === "unpublish",
+    })
+  const redirectCount = redirectCountData ?? null
 
   const schema =
     action === "publish"
@@ -361,12 +357,7 @@ export const PublishOrUnpublishModal = ({
                 <DraftChangesBanner mode={mode} scheduledAt={scheduledAt} />
               )}
               {action === "unpublish" && (
-                <UnpublishRedirectWarning
-                  pageId={pageId}
-                  siteId={siteId}
-                  onPendingChange={handleRedirectCheckPendingChange}
-                  onRedirectCountChange={handleRedirectCountChange}
-                />
+                <UnpublishRedirectWarning pageId={pageId} siteId={siteId} />
               )}
             </VStack>
           </FormProvider>
