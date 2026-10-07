@@ -8,6 +8,7 @@ import {
   hasHeaderRow,
   type MappedTable,
 } from "~/features/editing-experience/utils/tableHeaderAxis"
+import { isRowSlotClippedByVerticalSpan } from "~/features/editing-experience/utils/tableSlotSelection"
 
 import type {
   SelectionKind,
@@ -282,9 +283,12 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   })
 
   const selectsSingleCellNode = isSingleCellSelection(selection)
+  const clippedRowSlot = isRowSlotClippedByVerticalSpan(rect)
   return getTableSelectionKind({
-    spansEntireTableWidth: rect.left === 0 && rect.right === rect.map.width,
-    spansEntireTableHeight: rect.top === 0 && rect.bottom === rect.map.height,
+    spansEntireTableWidth:
+      (rect.left === 0 && rect.right === rect.map.width) || clippedRowSlot,
+    spansEntireTableHeight:
+      rect.top === 0 && rect.bottom === rect.map.height && !clippedRowSlot,
     allCellsAreHeaders: allHeader,
     isTopRow: selectionIsTopRow(rect),
     isLeftmostColumn: selectionIsLeftmostColumn(rect),
