@@ -52,11 +52,34 @@ interface AdjustmentPreviewProps {
   siteId: number
 }
 
-// Consistent display HEIGHT across every preview block, so a tall mobile
-// portrait frame and a short wide desktop frame read as comparably "real
-// device" previews, instead of being capped to the same width regardless of
-// their actual shape (which produced visually arbitrary block sizes).
-const DISPLAY_HEIGHT = 240
+// Fixed on-screen window per breakpoint, shared by EVERY component's preview
+// — this is what makes the preview set look like one consistent family of
+// frames instead of each component getting a bespoke box shaped to its own
+// content height. `state.aspectRatio` still governs the iframe's internal
+// simulated viewport (so real sm:/md:/lg: breakpoint classes evaluate
+// correctly), but has no say over how large the frame appears here; content
+// taller than this window scrolls instead of resizing the frame to fit it.
+const FRAME_DISPLAY_SIZE: Record<string, { width: number; height: number }> = {
+  mobile: { width: 160, height: 320 },
+  tablet: { width: 200, height: 260 },
+  desktop: { width: 320, height: 200 },
+}
+const DEFAULT_FRAME_DISPLAY_SIZE = { width: 240, height: 240 }
+
+// A plain (non-iframe) scrollable box's native scrollbar already auto-hides
+// until hover — style it to stay visible, same rationale as
+// alwaysShowScrollbar on PreviewIframe, so overflowing content is obviously
+// scrollable at a glance.
+const persistentScrollbarSx = {
+  scrollbarWidth: "thin",
+  scrollbarColor: "rgba(0, 0, 0, 0.3) transparent",
+  "&::-webkit-scrollbar": { width: "6px", height: "6px" },
+  "&::-webkit-scrollbar-thumb": {
+    background: "rgba(0, 0, 0, 0.3)",
+    borderRadius: "4px",
+  },
+  "&::-webkit-scrollbar-track": { background: "transparent" },
+} as const
 
 export const AdjustmentPreview = ({
   src,
@@ -203,11 +226,10 @@ export const AdjustmentPreview = ({
           // (so the real component's own sm:/md:/lg: Tailwind classes
           // evaluate correctly, which they can't if we just shrink an outer
           // container — the iframe's OWN layout viewport is what media
-          // queries read) sized to this breakpoint's aspect ratio, then
-          // CSS-scale the whole simulated viewport down to fit a consistent
-          // display height. The scale only affects the rendered OUTPUT box,
-          // not the iframe's internal viewport, so breakpoint classes still
-          // evaluate against the real width.
+          // queries read). This drives the iframe's internal rendering only —
+          // the visible on-screen window size comes from FRAME_DISPLAY_SIZE
+          // below, shared by every component, so the frame itself doesn't
+          // balloon or shrink to match each component's own content height.
           const viewportWidth = state.viewportWidth ?? 1024
           const viewportHeight = state.aspectRatio
             ? Math.round(
@@ -215,8 +237,12 @@ export const AdjustmentPreview = ({
                   state.aspectRatio.width,
               )
             : 600
-          const scale = DISPLAY_HEIGHT / viewportHeight
-          const displayWidth = viewportWidth * scale
+          const frameSize =
+            FRAME_DISPLAY_SIZE[state.id] ?? DEFAULT_FRAME_DISPLAY_SIZE
+          // Scale to the fixed window's WIDTH only — height is whatever it
+          // is, and the outer window scrolls (overflow: auto) to reveal
+          // anything taller, rather than resizing the frame to fit it.
+          const scale = frameSize.width / viewportWidth
 
           return (
             <VStack
@@ -238,10 +264,11 @@ export const AdjustmentPreview = ({
                 borderWidth="1px"
                 borderColor="base.divider.medium"
                 borderRadius="0.25rem"
-                overflow="hidden"
+                overflow="auto"
+                sx={persistentScrollbarSx}
                 style={{
-                  width: displayWidth,
-                  height: DISPLAY_HEIGHT,
+                  width: frameSize.width,
+                  height: frameSize.height,
                   position: "relative",
                 }}
               >
@@ -265,6 +292,7 @@ export const AdjustmentPreview = ({
                       siteId={siteId}
                       viewportWidth={viewportWidth}
                       viewportHeight={viewportHeight}
+                      scale={scale}
                     >
                       {previewComponent}
                     </ThemedPreviewFrame>
@@ -281,10 +309,8 @@ export const AdjustmentPreview = ({
   return (
     <Flex wrap="wrap" align="flex-start" gap="1rem" w="100%">
       {previewStates.map((state) => {
-        const aspect = state.aspectRatio
-          ? state.aspectRatio.width / state.aspectRatio.height
-          : 1
-        const displayWidth = DISPLAY_HEIGHT * aspect
+        const frameSize =
+          FRAME_DISPLAY_SIZE[state.id] ?? DEFAULT_FRAME_DISPLAY_SIZE
 
         const imageNode = (
           <Box
@@ -332,7 +358,8 @@ export const AdjustmentPreview = ({
               {state.viewportWidth && ` (${state.viewportWidth}px)`}
             </Text>
 
-            {/* Frame box, sized to a consistent display height */}
+            {/* Frame box, sized to the same fixed per-breakpoint window as
+                every other component's preview. */}
             <Box
               borderWidth="1px"
               borderColor="base.divider.medium"
@@ -341,8 +368,8 @@ export const AdjustmentPreview = ({
               bg="base.canvas.default"
               position="relative"
               style={{
-                width: displayWidth,
-                height: DISPLAY_HEIGHT,
+                width: frameSize.width,
+                height: frameSize.height,
               }}
             >
               {frameContent}
@@ -362,11 +389,18 @@ const ThemedPreviewFrame = ({
   siteId,
   viewportWidth,
   viewportHeight,
+  scale,
   children,
 }: {
   siteId: number
   viewportWidth: number
   viewportHeight: number
+  // The outer `transform: scale()` wrapper shrinks EVERYTHING it contains,
+  // including the iframe's own native scrollbar — an 8px scrollbar renders
+  // at 8*scale screen pixels, which can be imperceptible at small scales.
+  // Compensate by sizing it up by 1/scale so it reads as ~8px after the
+  // transform shrinks it back down.
+  scale: number
   children: React.ReactNode
 }) => {
   const themeCssVars = useSiteThemeCssVars({ siteId })
@@ -376,6 +410,7 @@ const ThemedPreviewFrame = ({
       heightPx={viewportHeight}
       preventPointerEvents
       alwaysShowScrollbar
+      scrollbarWidthPx={scale > 0 ? 8 / scale : 8}
       style={themeCssVars}
     >
       {children}

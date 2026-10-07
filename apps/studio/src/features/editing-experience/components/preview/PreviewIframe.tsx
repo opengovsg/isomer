@@ -28,6 +28,11 @@ interface PreviewIframeProps {
   // viewport and `preventPointerEvents` means the user can't hover to
   // discover it's scrollable in the first place.
   alwaysShowScrollbar?: boolean
+  // CSS pixel width for the forced scrollbar. Defaults to 8 — raise this when
+  // the iframe itself sits inside a `transform: scale()` wrapper, since the
+  // scale shrinks the rendered scrollbar along with everything else (e.g. a
+  // scale of 0.4 needs ~20px here to still read as ~8px on screen).
+  scrollbarWidthPx?: number
   callback?: (props: IframeCallbackFnProps) => void
 }
 
@@ -40,6 +45,7 @@ export const PreviewIframe = ({
   widthPx,
   heightPx,
   alwaysShowScrollbar,
+  scrollbarWidthPx = 8,
   callback,
 }: PropsWithChildren<PreviewIframeProps>): JSX.Element => {
   const extraProps = preventPointerEvents
@@ -114,7 +120,7 @@ export const PreviewIframe = ({
             {alwaysShowScrollbar && (
               <style>{`
                 html { scrollbar-width: thin; scrollbar-color: rgba(0, 0, 0, 0.3) transparent; }
-                ::-webkit-scrollbar { width: 8px; height: 8px; }
+                ::-webkit-scrollbar { width: ${scrollbarWidthPx}px; height: ${scrollbarWidthPx}px; }
                 ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.3); border-radius: 4px; }
                 ::-webkit-scrollbar-track { background: transparent; }
               `}</style>
