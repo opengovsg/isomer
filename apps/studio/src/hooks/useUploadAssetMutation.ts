@@ -1,6 +1,7 @@
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { useMutation } from "@tanstack/react-query"
+import { normalizeUploadedImage } from "~/lib/images/normalizeUploadedImage"
 import { performUpload } from "~/lib/storage/client"
 import { trpc } from "~/utils/trpc"
 
@@ -51,11 +52,15 @@ export const useUploadAssetMutation = ({
           return { path: `/${fileKey}` }
         }
 
+        // Bake EXIF orientation into the pixels before the presigned upload
+        // so the stored object matches what the editor saw on their computer.
+        const image = await normalizeUploadedImage(file, effectiveName)
+
         const { fileKey, uploadConfig } = await getPresignedPutUrl({
           siteId,
           resourceId,
           fileName: effectiveName,
-          fileSize: file.size,
+          fileSize: image.size,
           tags: scheduledAt
             ? [
                 {
@@ -66,7 +71,7 @@ export const useUploadAssetMutation = ({
             : undefined,
         })
 
-        const path = await performUpload(file, fileKey, uploadConfig)
+        const path = await performUpload(image, fileKey, uploadConfig)
         return { path }
       },
       retry: false,

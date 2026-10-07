@@ -133,6 +133,7 @@
     "date-fns": "catalog:",
     "date-fns-tz": "catalog:",
     "dd-trace": "catalog:",
+    "exifr": "catalog:",
     "exponential-backoff": "catalog:",
     "filenamify": "catalog:",
     "flat": "catalog:",

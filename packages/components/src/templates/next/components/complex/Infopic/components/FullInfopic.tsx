@@ -3,15 +3,16 @@ import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import type { InfopicProps } from "../types"
+import { ImageClient } from "../../../internal/ImageClient"
 import { LinkButton } from "../../../internal/LinkButton"
 import { infopicStyles } from "../common"
 
-// backgroundImage cannot be lazy loaded
 type FullInfopicProps = Omit<InfopicProps, "variant" | "shouldLazyLoad">
 
 export const FullInfopic = ({
   id,
   imageSrc,
+  imageAlt,
   title,
   buttonLabel,
   buttonUrl,
@@ -29,14 +30,17 @@ export const FullInfopic = ({
   const hasLinkButton = !!buttonLabel && !!buttonUrl
 
   return (
-    <section
-      style={{
-        backgroundImage: `url('${imageSrc}')`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-      id={id}
-    >
+    <section id={id} className={compoundStyles.section()}>
+      {/* CSS background-image ignores EXIF orientation, so phone photos
+          render rotated or flipped. An img lets the browser apply the tag. */}
+      <ImageClient
+        src={imageSrc}
+        alt={imageAlt || ""}
+        width="100%"
+        className={compoundStyles.background()}
+        assetsBaseUrl={site.assetsBaseUrl}
+        lazyLoading={false}
+      />
       <div className={compoundStyles.overlay()}>
         <div
           // NOTE: This cannot be a tailwind css className
