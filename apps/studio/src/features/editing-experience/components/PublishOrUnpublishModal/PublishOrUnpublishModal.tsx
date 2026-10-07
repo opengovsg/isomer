@@ -94,13 +94,16 @@ export const PublishOrUnpublishModal = ({
   // Only unpublish renders the redirect check. The count is captured on the
   // unpublish success events to measure how often users unpublish despite live
   // redirects pointing at the page. null until resolved.
-  const { data: redirectCountData, isLoading: isRedirectCheckPending } =
+  const { data: redirectCountData, isPending: isRedirectQueryPending } =
     useUnpublishRedirectCount({
       pageId,
       siteId,
       enabled: action === "unpublish",
     })
   const redirectCount = redirectCountData ?? null
+  // Gate on isPending, not isLoading, so an offline-paused first fetch still
+  // disables confirm. Scoped to unpublish: the query is disabled for publish.
+  const isRedirectCheckPending = action === "unpublish" && isRedirectQueryPending
 
   const schema =
     action === "publish"

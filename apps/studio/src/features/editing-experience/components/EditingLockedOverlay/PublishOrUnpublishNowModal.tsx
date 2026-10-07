@@ -65,12 +65,15 @@ export const PublishOrUnpublishNowModal = ({
   const { title, description, confirmLabel, successTitle, errorTitle } =
     COPY[action]
   // Only unpublish renders the redirect check, so only it can be pending.
-  const { data: redirectCountData, isLoading: isRedirectCheckPending } =
+  const { data: redirectCountData, isPending: isRedirectQueryPending } =
     useUnpublishRedirectCount({
       pageId,
       siteId,
       enabled: action === "unpublish",
     })
+  // Gate on isPending, not isLoading, so an offline-paused first fetch still
+  // disables confirm. Scoped to unpublish: the query is disabled for publish.
+  const isRedirectCheckPending = action === "unpublish" && isRedirectQueryPending
   // Tagged on the unpublish success event, mirroring PublishOrUnpublishModal.
   const redirectCount = redirectCountData ?? null
   const utils = trpc.useUtils()
