@@ -95,25 +95,20 @@ export class DashboardPO {
     )
   }
 
-  /** Collection table uses the same options menu as the resource table. */
-  async openCollectionResourceMenu(title: string) {
-    await this.openResourceMenu(title)
-  }
-
   async clickDelete() {
     await this.page
       .getByRole("menuitem", { name: "Delete", exact: true })
       .click()
   }
 
+  private get moveMenuItem() {
+    return this.page
+      .getByRole("menuitem", { name: /Move resource to another location for/ })
+      .or(this.page.getByRole("menuitem", { name: "Move to..." }))
+  }
+
   async clickMove() {
-    const moveByVisibleText = this.page.getByRole("menuitem", {
-      name: "Move to...",
-    })
-    const moveByAriaLabel = this.page.getByRole("menuitem", {
-      name: /Move resource to another location for/,
-    })
-    await moveByAriaLabel.or(moveByVisibleText).click()
+    await this.moveMenuItem.click()
   }
 
   async expectDeleteMenuDisabled() {
@@ -123,13 +118,7 @@ export class DashboardPO {
   }
 
   async expectMoveMenuDisabled() {
-    const moveByVisibleText = this.page.getByRole("menuitem", {
-      name: "Move to...",
-    })
-    const moveByAriaLabel = this.page.getByRole("menuitem", {
-      name: /Move resource to another location for/,
-    })
-    await expect(moveByAriaLabel.or(moveByVisibleText)).toBeDisabled()
+    await expect(this.moveMenuItem).toBeDisabled()
   }
 
   async expectResourceLinkVisible(title: string) {
@@ -146,33 +135,6 @@ export class DashboardPO {
 
   async expectOnPageEditor(siteId: number, pageId: string) {
     await this.page.waitForURL(new RegExp(`/sites/${siteId}/pages/${pageId}`))
-  }
-
-  async capturePageEditorIdFromUrl(siteId: number) {
-    await this.page.waitForURL(new RegExp(`/sites/${siteId}/pages/\\d+$`))
-    const pageId = this.page.url().match(/\/pages\/(\d+)$/)?.[1]
-    if (!pageId) {
-      throw new Error(
-        `Expected page editor URL after wizard, got ${this.page.url()}`,
-      )
-    }
-    return pageId
-  }
-
-  async captureCollectionItemIdFromUrl(
-    siteId: number,
-    type: "Page" | "Link or file",
-  ) {
-    const subpath = type === "Page" ? "pages" : "links"
-    const pattern = new RegExp(`/sites/${siteId}/${subpath}/(\\d+)$`)
-    await this.page.waitForURL(pattern)
-    const itemId = this.page.url().match(pattern)?.[1]
-    if (!itemId) {
-      throw new Error(
-        `Expected ${subpath} URL after wizard, got ${this.page.url()}`,
-      )
-    }
-    return itemId
   }
 
   async expectOnFolder(siteId: number, folderId: string) {

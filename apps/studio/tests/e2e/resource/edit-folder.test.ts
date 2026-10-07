@@ -1,11 +1,12 @@
-import { test } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import { FolderSettingsPO } from "../fixtures/folder-settings.po"
-import { expectResourceTitle, seedFolder } from "../fixtures/page-seed"
+import { seedFolder } from "../fixtures/page-seed"
+import { getResourceTitle } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -42,7 +43,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.saveChanges()
 
     // Assert
-    await expectResourceTitle(folder.id).toBe(newTitle)
+    await expect.poll(() => getResourceTitle(folder.id)).toBe(newTitle)
     await dashboard.expectResourceLinkVisible(newTitle)
   })
 
@@ -64,7 +65,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.closeWithoutSaving()
 
     // Assert
-    await expectResourceTitle(folder.id).toBe(folderTitle)
+    await expect.poll(() => getResourceTitle(folder.id)).toBe(folderTitle)
     await dashboard.expectResourceLinkVisible(folderTitle)
     await dashboard.expectResourceLinkHidden(newTitle)
   })
@@ -94,7 +95,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await settings.saveChanges()
 
     // Assert
-    await expectResourceTitle(folder.id).toBe(newTitle)
+    await expect.poll(() => getResourceTitle(folder.id)).toBe(newTitle)
     await dashboard.expectResourceLinkVisible(newTitle)
   })
 })

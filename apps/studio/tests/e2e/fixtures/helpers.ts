@@ -99,7 +99,12 @@ export const createPageViaWizard = async (
   await dashboard.clickCreatePage()
   await dashboard.fillPageWizard(title)
 
-  const pageId = await dashboard.capturePageEditorIdFromUrl(siteId)
+  // Create-page wizard navigates to `/sites/:siteId/pages/:numericPageId`.
+  await page.waitForURL(new RegExp(`/sites/${siteId}/pages/\\d+$`))
+  const pageId = page.url().match(/\/pages\/(\d+)$/)?.[1]
+  if (!pageId) {
+    throw new Error(`Expected page editor URL after wizard, got ${page.url()}`)
+  }
   return { pageId }
 }
 
@@ -156,7 +161,13 @@ export const createCollectionItemViaWizard = async (
   await dashboard.selectCollectionItemType(type)
   await dashboard.fillCollectionItemWizard(title)
 
-  const itemId = await dashboard.captureCollectionItemIdFromUrl(siteId, type)
+  const subpath = type === "Page" ? "pages" : "links"
+  const pattern = new RegExp(`/sites/${siteId}/${subpath}/(\\d+)$`)
+  await page.waitForURL(pattern)
+  const itemId = page.url().match(pattern)?.[1]
+  if (!itemId) {
+    throw new Error(`Expected ${subpath} URL after wizard, got ${page.url()}`)
+  }
   return { itemId }
 }
 

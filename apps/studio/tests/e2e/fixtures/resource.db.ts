@@ -34,6 +34,33 @@ export const getResource = (resourceId: string) =>
     .selectAll()
     .executeTakeFirst()
 
+export const findResourceId = async (resourceId: string) =>
+  (
+    await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("id")
+      .executeTakeFirst()
+  )?.id ?? null
+
+export const getResourceParentId = async (resourceId: string) =>
+  (
+    await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("parentId")
+      .executeTakeFirst()
+  )?.parentId ?? null
+
+export const getResourceTitle = async (resourceId: string) =>
+  (
+    await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("title")
+      .executeTakeFirst()
+  )?.title ?? null
+
 export const getResourceDraftBlobContent = async (resourceId: string) => {
   const row = await db
     .selectFrom("Resource")

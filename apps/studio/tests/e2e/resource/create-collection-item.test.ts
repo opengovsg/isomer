@@ -5,7 +5,6 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { createCollectionItemViaWizard } from "../fixtures/helpers"
 import { seedRootCollection } from "../fixtures/page-seed"
-import { deleteResource } from "../fixtures/reset"
 import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -28,10 +27,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     collectionId = (
       await seedRootCollection({ siteId, collectionTitle: "E2E Item Coll" })
     ).collection.id
-  })
-
-  test.afterEach(async () => {
-    await deleteResource(collectionId)
   })
 
   test("admin can create a collection page via the wizard", async ({

@@ -193,17 +193,10 @@ Rules:
   under the existing DB setup convention (`reset.ts`, `site.ts`) — this only
   covers read queries used to verify an action's effect
 
-## DB assertions (`fixtures/page-seed.ts`)
-
-After UI mutations (delete, move, rename, publish), assert persisted state via
-`expect.poll` helpers in `page-seed.ts` — not inline `db.selectFrom(...)` in test
-files. Examples:
-
-- `expectResourceAbsent` / `expectResourcePresent` — row existence
-- `expectResourceParentId` — move outcomes
-- `expectResourceTitle` — title changes (pages, folders, collections)
-
-Use Playwright's default poll timeout unless a specific surface needs more.
+Persisted state written asynchronously after a UI mutation (delete, move,
+rename) is asserted by wrapping the `*.db.ts` getter in `expect.poll` in the
+test: `await expect.poll(() => getResourceParentId(id)).toBe(folder.id)`. The
+getter stays a plain query; the `expect` stays in the test.
 
 ## How to detect violations
 
@@ -213,5 +206,4 @@ Use Playwright's default poll timeout unless a specific surface needs more.
 - Raw `{ tag: "@role:admin" }` → use `roleTag("admin")` so unknown roles fail typecheck
 - Raw `page.getByRole("button", { name: "Create new..." })` repeated across files → use `DashboardPO`
 - Inline `db.selectFrom(...)` (or Prisma query) in a test file feeding an `expect()` → extract the query into `fixtures/<entity>.db.ts`
-- Inline `db.selectFrom("Resource")` in `*.test.ts` → use `page-seed.ts` poll helpers
 - Raw `page.waitForURL(...)` for dashboard navigation → use `DashboardPO.expectOnFolder` / `expectOnCollection` / `expectOnPageEditor`

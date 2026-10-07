@@ -1,4 +1,3 @@
-import { expect } from "@playwright/test"
 import crypto from "crypto"
 import {
   setupCollection,
@@ -7,10 +6,7 @@ import {
   setupFolder,
   setupPageResource,
 } from "tests/integration/helpers/seed"
-import { db } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
-
-import { getRedirectDestination } from "./redirect.db"
 
 /** Prose preview label from the default integration seed blob. */
 export const SEEDED_PROSE_BLOCK_LABEL = "Test block"
@@ -201,47 +197,3 @@ export const seedRootCollection = async ({
   })
   return { collection }
 }
-
-export const expectResourceAbsent = (resourceId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .where("id", "=", resourceId)
-      .select("id")
-      .executeTakeFirst()
-    return row?.id ?? null
-  })
-
-export const expectResourcePresent = (resourceId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .where("id", "=", resourceId)
-      .select("id")
-      .executeTakeFirst()
-    return row?.id ?? null
-  })
-
-export const expectResourceParentId = (resourceId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .where("id", "=", resourceId)
-      .select("parentId")
-      .executeTakeFirst()
-    return row?.parentId ?? null
-  })
-
-export const expectResourceTitle = (resourceId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .where("id", "=", resourceId)
-      .select("title")
-      .executeTakeFirst()
-    return row?.title ?? null
-  })
-
-/** `source` should already be normalized (see `normalizeRedirectSource`). */
-export const expectRedirectDestination = (siteId: number, source: string) =>
-  expect.poll(async () => getRedirectDestination({ siteId, source }))

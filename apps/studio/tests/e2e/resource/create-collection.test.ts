@@ -6,7 +6,6 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import { createCollectionViaWizard } from "../fixtures/helpers"
 import { seedFolder } from "../fixtures/page-seed"
-import { deleteResource, deleteResourcesByTitleLike } from "../fixtures/reset"
 import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -26,10 +25,6 @@ test.beforeAll(async () => {
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
-  })
-
-  test.afterEach(async () => {
-    await deleteResourcesByTitleLike(siteId, "E2E Test Collection %")
   })
 
   test("admin can create a new collection via the wizard", async ({ page }) => {
@@ -93,10 +88,6 @@ test.describe(
       await ensureUserOnboarded(TEST_EMAILS.admin)
       folderId = (await seedFolder({ siteId, folderTitle: "E2E Test Folder" }))
         .folder.id
-    })
-
-    test.afterEach(async () => {
-      await deleteResource(folderId)
     })
 
     test("admin can create a new collection inside a folder", async ({
