@@ -865,6 +865,14 @@ export const resourceRouter = router({
           })
         }
 
+        // Prevent the root page from being deleted
+        if (before.type === ResourceType.RootPage) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "The root page cannot be deleted",
+          })
+        }
+
         // A live resource must be unpublished before it can be deleted.
         await assertResourceNotLive(tx, {
           siteId: Number(siteId),
