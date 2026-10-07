@@ -70,6 +70,11 @@ export const ImageAdjustmentModal = ({
   onSave,
 }: ImageAdjustmentModalProps): JSX.Element => {
   const [draft, setDraft] = useState<ImageAdjustment | undefined>(value)
+  // The source image's true pixel aspect ratio, reported by CropFocalControl
+  // once its <img> loads — needed so "Reset image" can seed the same
+  // ratio-correct crop the control itself would (see defaultCropRect).
+  // Defaults to 1 (square) until then, matching every call site's default.
+  const [imageAspect, setImageAspect] = useState(1)
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
@@ -157,7 +162,7 @@ export const ImageAdjustmentModal = ({
   const handleReset = () => {
     setDraft((d) => ({
       ...ensureAdjustment(d),
-      crop: defaultCropRect(lockedRatio),
+      crop: defaultCropRect(lockedRatio, imageAspect),
       focal: { x: 0.5, y: 0.5 },
     }))
   }
@@ -240,6 +245,7 @@ export const ImageAdjustmentModal = ({
                       onFocalChange={(focal) =>
                         setDraft((d) => ({ ...ensureAdjustment(d), focal }))
                       }
+                      onImageAspectChange={setImageAspect}
                     />
                   )}
 

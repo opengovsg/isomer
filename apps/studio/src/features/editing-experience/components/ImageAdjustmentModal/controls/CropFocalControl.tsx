@@ -49,6 +49,10 @@ interface CropFocalControlProps {
   focalEnabled: boolean
   onCropChange: (crop: CropRectNormalized) => void
   onFocalChange: (focal: { x: number; y: number }) => void
+  // Fired once the image's true pixel aspect ratio is known, so a caller
+  // that needs to compute a ratio-correct crop independently (e.g. the
+  // modal's "Reset image" button) can do the same math this control does.
+  onImageAspectChange?: (aspect: number) => void
 }
 
 type DragTarget = "rect" | "focal" | HandlePosition | null
@@ -67,6 +71,7 @@ export const CropFocalControl = ({
   focalEnabled,
   onCropChange,
   onFocalChange,
+  onImageAspectChange,
 }: CropFocalControlProps): JSX.Element => {
   const boxRef = useRef<HTMLDivElement>(null)
   const [aspectRatio, setAspectRatio] = useState<number | undefined>(undefined)
@@ -75,7 +80,7 @@ export const CropFocalControl = ({
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null)
 
   const showCrop = cropMode !== "none"
-  const currentCrop = crop ?? defaultCropRect(lockedRatio)
+  const currentCrop = crop ?? defaultCropRect(lockedRatio, aspectRatio ?? 1)
   const currentFocal = focal ?? { x: 0.5, y: 0.5 }
 
   // Track the canvas box's own pixel size, so we can work out exactly where
@@ -121,12 +126,15 @@ export const CropFocalControl = ({
   // Save bakes a full-frame image for an untouched picture). The default stays
   // local — shown via `currentCrop` and committed only on the first real edit
   // (crop drag commits the dragged rect; focal drag commits the default crop,
-  // see handleFocalPointerDown).
+  // see handleFocalPointerDown). A ratio-correct default needs the image's true
+  // aspect, which isn't known until the <img> below fires onLoad.
 
   const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
     const img = event.currentTarget
     if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-      setAspectRatio(img.naturalWidth / img.naturalHeight)
+      const aspect = img.naturalWidth / img.naturalHeight
+      setAspectRatio(aspect)
+      onImageAspectChange?.(aspect)
     }
   }
 
@@ -191,6 +199,7 @@ export const CropFocalControl = ({
         normalizedX,
         normalizedY,
         lockedRatio,
+        aspectRatio ?? 1,
       ),
     )
   }

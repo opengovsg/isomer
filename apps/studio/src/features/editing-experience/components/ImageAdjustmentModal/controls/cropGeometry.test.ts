@@ -175,6 +175,38 @@ describe("cropGeometry", () => {
       expect(resized.x + resized.width).toBeLessThanOrEqual(1)
       expect(resized.y + resized.height).toBeLessThanOrEqual(1)
     })
+
+    it("compensates for a non-square source so the BAKED pixel ratio matches lockedRatio, not the normalized rect", () => {
+      // A 3:2 source image (e.g. 1500x1000px) locked to a 1:1 (square) crop.
+      // cropRectToPixels later multiplies the rect's normalized width/height
+      // by the source's actual (unequal) pixel width/height independently,
+      // so the normalized rect itself must be pre-divided by imageAspect for
+      // the final baked pixels to land on the intended 1:1 ratio.
+      const rect = { x: 0, y: 0, width: 0.2, height: 0.2 }
+      const ratio = { width: 1, height: 1 }
+      const imageAspect = 3 / 2
+      const resized = resizeRectByHandle(
+        rect,
+        "se",
+        0.8,
+        0.8,
+        ratio,
+        imageAspect,
+      )
+      // Final baked pixel ratio = (normWidth/normHeight) * imageAspect.
+      const bakedRatio = (resized.width / resized.height) * imageAspect
+      expect(bakedRatio).toBeCloseTo(1)
+      // ...which means the normalized rect itself is NOT 1:1 here.
+      expect(resized.width / resized.height).toBeCloseTo(1 / imageAspect)
+    })
+
+    it("defaults imageAspect to 1 (prior square-only behavior unchanged)", () => {
+      const rect = { x: 0, y: 0, width: 0.2, height: 0.2 }
+      const ratio = { width: 2, height: 1 }
+      const withDefault = resizeRectByHandle(rect, "se", 0.8, 0.6, ratio)
+      const withExplicitOne = resizeRectByHandle(rect, "se", 0.8, 0.6, ratio, 1)
+      expect(withDefault).toEqual(withExplicitOne)
+    })
   })
 
   describe("defaultCropRect", () => {
@@ -219,6 +251,26 @@ describe("cropGeometry", () => {
       expect(rect.height).toBeCloseTo(9 / 16)
       expect(rect.x).toBeCloseTo(0)
       expect(rect.y).toBeCloseTo((1 - 9 / 16) / 2)
+    })
+
+    it("compensates for a non-square source so the BAKED pixel ratio matches lockedRatio", () => {
+      // Same compensation as resizeRectByHandle: a 3:2 source locked to a
+      // 1:1 crop must NOT be a 1:1 normalized rect, since cropRectToPixels
+      // multiplies normalized width/height by the source's unequal pixel
+      // width/height independently.
+      const ratio = { width: 1, height: 1 }
+      const imageAspect = 3 / 2
+      const rect = defaultCropRect(ratio, imageAspect)
+      const bakedRatio = (rect.width / rect.height) * imageAspect
+      expect(bakedRatio).toBeCloseTo(1)
+      expect(rect.width / rect.height).toBeCloseTo(1 / imageAspect)
+    })
+
+    it("defaults imageAspect to 1 (prior square-only behavior unchanged)", () => {
+      const ratio = { width: 16, height: 9 }
+      const withDefault = defaultCropRect(ratio)
+      const withExplicitOne = defaultCropRect(ratio, 1)
+      expect(withDefault).toEqual(withExplicitOne)
     })
   })
 
