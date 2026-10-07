@@ -374,3 +374,32 @@ jobs:
           path: /tmp/e2e-metadata/
           retention-days: 1
           if-no-files-found: error
+
+  # One stable check for branch protection. The matrix jobs above are named
+  # "E2E tests (site)" and so on, so requiring each of them breaks whenever a
+  # shard is added. Require "E2E tests passed" instead.
+  # Always runs: a skipped required check can block merges. Passes when every
+  # shard succeeded, or when e2e was intentionally not run (Graphite optimizer,
+  # or a PR that does not touch Studio e2e). Fails if any shard failed, the
+  # run was cancelled, or e2e never started because optimize_ci/changes failed.
+  e2e-tests-passed:
+    name: E2E tests passed
+    needs: [optimize_ci, changes, e2e-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: All e2e shards passed, or e2e was not required
+        run: |
+          e2e="${{ needs.e2e-tests.result }}"
+          optimize="${{ needs.optimize_ci.result }}"
+          changes="${{ needs.changes.result }}"
+          echo "optimize_ci=$optimize changes=$changes e2e-tests=$e2e"
+          if [ "$e2e" = "success" ]; then
+            exit 0
+          fi
+          if [ "$e2e" = "skipped" ] && [ "$optimize" = "success" ] && [ "$changes" = "success" ]; then
+            echo "E2E was not required for this run."
+            exit 0
+          fi
+          echo "E2E did not pass."
+          exit 1
