@@ -376,7 +376,7 @@ jobs:
           if-no-files-found: error
 
   ci-passed:
-    name: CI passed
+    name: ✅ CI passed
     if: always()
     needs:
       - build
