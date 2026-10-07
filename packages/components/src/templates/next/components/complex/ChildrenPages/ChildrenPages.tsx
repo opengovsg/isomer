@@ -31,15 +31,15 @@ interface ChildpageLayoutProps
       | "showThumbnail"
       | "shouldLazyLoad"
       | "site"
-      | "maxColumns"
       | "headingLevel"
     >,
     Pick<ImageClientProps, "assetsBaseUrl"> {
   childpages: Childpage[]
   fallback: Required<NonNullable<IsomerSitemap["image"]>>
+  maxColumns?: "1" | NonNullable<ChildrenPagesProps["maxColumns"]>
 }
 
-const BoxLayout = ({
+const InfoCardsChildPagesList = ({
   childpages,
   showSummary,
   showThumbnail,
@@ -51,61 +51,62 @@ const BoxLayout = ({
   headingLevel,
 }: ChildpageLayoutProps) => {
   return (
-    <div
-      className={compoundStyles.grid({
-        maxColumns,
-        variant: "default",
-        class: "[&:not(:first-child)]:mt-7",
-      })}
-    >
-      {childpages.map(({ title, description, url, image }, idx) => {
-        if (showThumbnail) {
-          const hasImage = !!image?.src
-          const imageUrl = hasImage ? image.src : fallback.src
-          const imageAlt = hasImage ? (image.alt ?? "") : fallback.alt
+    <section className={compoundStyles.container({ layout: "default" })}>
+      <div
+        className={compoundStyles.grid({
+          maxColumns,
+          variant: INFOCARD_VARIANT.default,
+        })}
+      >
+        {childpages.map(({ title, description, url, image }, idx) => {
+          if (showThumbnail) {
+            const hasImage = !!image?.src
+            const imageUrl = hasImage ? image.src : fallback.src
+            const imageAlt = hasImage ? (image.alt ?? "") : fallback.alt
+
+            return (
+              <InfoCardWithImage
+                key={`${title}-${idx}`}
+                title={title}
+                description={showSummary ? description : undefined}
+                url={url}
+                imageUrl={imageUrl}
+                imageAlt={imageAlt}
+                imageFit={imageFit}
+                maxColumns={maxColumns}
+                layout="index"
+                site={site}
+                isFallback={!hasImage}
+                shouldLazyLoad={shouldLazyLoad}
+                headingLevel={headingLevel}
+              />
+            )
+          }
 
           return (
-            <InfoCardWithImage
+            <InfoCardNoImage
               key={`${title}-${idx}`}
               title={title}
               description={showSummary ? description : undefined}
               url={url}
-              imageUrl={imageUrl}
-              imageAlt={imageAlt}
-              imageFit={imageFit}
-              maxColumns={maxColumns}
-              layout="index"
               site={site}
-              isFallback={!hasImage}
-              shouldLazyLoad={shouldLazyLoad}
               headingLevel={headingLevel}
             />
           )
-        }
-
-        return (
-          <InfoCardNoImage
-            key={`${title}-${idx}`}
-            title={title}
-            description={showSummary ? description : undefined}
-            url={url}
-            site={site}
-            headingLevel={headingLevel}
-          />
-        )
-      })}
-    </div>
+        })}
+      </div>
+    </section>
   )
 }
 
 const createRowStyles = tv({
   slots: {
-    container: `${ComponentContent} grid grid-cols-3 gap-9 md:grid-cols-6 lg:grid-cols-12 [&:not(:first-child)]:mt-7`,
+    container: `${ComponentContent} mt-14 grid grid-cols-3 gap-10 first:mt-0 md:grid-cols-6 md:gap-7 lg:grid-cols-12 lg:gap-y-12`,
     image: "bg-white",
     imageContainer:
       "flex aspect-[3/2] h-full w-full justify-center overflow-hidden rounded-lg border bg-base-canvas drop-shadow-none transition ease-in group-hover:drop-shadow-md max-md:col-span-full max-md:row-span-1 md:col-span-2 lg:col-span-3",
     textContainer:
-      "flex flex-col justify-center gap-2 break-words max-md:col-span-full max-md:row-span-1",
+      "flex flex-col justify-center gap-3 break-words max-md:col-span-full max-md:row-span-1",
     contentContainer:
       "max-md:grid-rows-[1fr fit-content] group grid grid-cols-subgrid max-md:col-span-full max-md:gap-y-5 md:col-span-6 lg:col-span-12",
     title: [
@@ -155,7 +156,25 @@ const RowLayout = ({
   shouldLazyLoad,
   site,
   imageFit,
+  headingLevel,
 }: ChildpageLayoutProps): JSX.Element => {
+  if (!showThumbnail) {
+    return (
+      <InfoCardsChildPagesList
+        assetsBaseUrl={assetsBaseUrl}
+        childpages={childpages}
+        showSummary={showSummary}
+        showThumbnail={showThumbnail}
+        fallback={fallback}
+        shouldLazyLoad={shouldLazyLoad}
+        site={site}
+        maxColumns="1"
+        imageFit={imageFit}
+        headingLevel={headingLevel}
+      />
+    )
+  }
+
   const styles = createRowStyles()
 
   return (
@@ -249,7 +268,7 @@ export const ChildrenPages = ({
 
   if (variant === "boxes") {
     return (
-      <BoxLayout
+      <InfoCardsChildPagesList
         assetsBaseUrl={site.assetsBaseUrl}
         childpages={children}
         showSummary={showSummary}
