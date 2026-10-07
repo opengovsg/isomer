@@ -4,7 +4,7 @@ import Ajv from "ajv"
 import { useCallback, useEffect, useState } from "react"
 
 import placeholder from "../../data/placeholder.json"
-import Preview, { type PreviewSchema } from "../Preview/Preview"
+import { Preview, type PreviewSchema } from "../Preview/Preview"
 
 const ajv = new Ajv({ strict: false })
 const validatePageSchema = ajv.compile(schema)
@@ -22,7 +22,7 @@ function downloadIsomerSchema(): void {
   URL.revokeObjectURL(url)
 }
 
-export default function Editor() {
+export function Editor() {
   const [isEditorOpen, setIsEditorOpen] = useState(true)
   const [editorValue, setEditorValue] = useState(
     JSON.stringify(placeholder, null, 2),

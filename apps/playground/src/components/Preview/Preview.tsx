@@ -38,7 +38,7 @@ const FakeLink = forwardRef<
   )
 })
 
-export default function Preview({ schema }: PreviewProps) {
+export function Preview({ schema }: PreviewProps) {
   const renderSchema = schema ?? placeholderSchema
 
   return (

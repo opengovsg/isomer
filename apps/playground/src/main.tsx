@@ -1,7 +1,7 @@
 import React from "react"
 import ReactDOM from "react-dom/client"
 
-import Editor from "./components/Editor/Editor.tsx"
+import { Editor } from "./components/Editor/Editor.tsx"
 import "./styles.css"
 
 const rootElement = document.getElementById("root")

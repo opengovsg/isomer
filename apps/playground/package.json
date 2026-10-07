@@ -10,6 +10,8 @@
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
+    "prebuild": "pnpm --filter @opengovsg/isomer-components run build:module",
+    "predev": "pnpm --filter @opengovsg/isomer-components run build:module",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json"
   },
