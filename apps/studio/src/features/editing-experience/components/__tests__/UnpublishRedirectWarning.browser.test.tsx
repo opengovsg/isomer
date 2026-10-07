@@ -22,13 +22,10 @@ vi.mock("~/utils/trpc", () => ({
   },
 }))
 
-const renderWarning = (props?: {
-  onPendingChange?: (isPending: boolean) => void
-  onRedirectCountChange?: (count: number | undefined) => void
-}) =>
+const renderWarning = () =>
   render(
     <ThemeProvider theme={theme}>
-      <UnpublishRedirectWarning pageId={1} siteId={1} {...props} />
+      <UnpublishRedirectWarning pageId={1} siteId={1} />
     </ThemeProvider>,
   )
 
@@ -68,30 +65,5 @@ describe("UnpublishRedirectWarning", () => {
     expect(
       screen.queryByText(/couldn't check whether redirects point to this page/),
     ).not.toBeNull()
-  })
-
-  it("reports its pending state so callers can block confirmation on it", () => {
-    queryResult.value = { data: undefined, isPending: true, isError: false }
-    const onPendingChange = vi.fn()
-    renderWarning({ onPendingChange })
-    expect(onPendingChange).toHaveBeenCalledWith(true)
-
-    queryResult.value = { data: 0, isPending: false, isError: false }
-    renderWarning({ onPendingChange })
-    expect(onPendingChange).toHaveBeenCalledWith(false)
-  })
-
-  it("reports the resolved redirect count so callers can tag analytics", () => {
-    queryResult.value = { data: 3, isPending: false, isError: false }
-    const onRedirectCountChange = vi.fn()
-    renderWarning({ onRedirectCountChange })
-    expect(onRedirectCountChange).toHaveBeenCalledWith(3)
-  })
-
-  it("reports undefined when the check fails", () => {
-    queryResult.value = { data: undefined, isPending: false, isError: true }
-    const onRedirectCountChange = vi.fn()
-    renderWarning({ onRedirectCountChange })
-    expect(onRedirectCountChange).toHaveBeenCalledWith(undefined)
   })
 })

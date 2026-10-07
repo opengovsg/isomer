@@ -12,10 +12,10 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
-import { useCallback, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { trpc } from "~/utils/trpc"
 
+import { useUnpublishRedirectCount } from "../../hooks/useUnpublishRedirectCount"
 import { UnpublishRedirectWarning } from "../UnpublishRedirectWarning"
 
 type PublishOrUnpublishNowAction = "publish" | "unpublish"
@@ -63,14 +63,12 @@ export const PublishOrUnpublishNowModal = ({
 }: PublishOrUnpublishNowModalProps): JSX.Element => {
   const { title, description, confirmLabel, successTitle, errorTitle } =
     COPY[action]
-  // Only unpublish renders the redirect check, so only it has a pending window.
-  const [isRedirectCheckPending, setIsRedirectCheckPending] = useState(
-    action === "unpublish",
-  )
-  const handleRedirectCheckPendingChange = useCallback(
-    (pending: boolean) => setIsRedirectCheckPending(pending),
-    [],
-  )
+  // Only unpublish renders the redirect check, so only it can be pending.
+  const { isLoading: isRedirectCheckPending } = useUnpublishRedirectCount({
+    pageId,
+    siteId,
+    enabled: action === "unpublish",
+  })
   const utils = trpc.useUtils()
   const toast = useToast()
   const invalidateAfterAction = () =>
@@ -139,11 +137,7 @@ export const PublishOrUnpublishNowModal = ({
           <Text textStyle="body-2">{description}</Text>
           {action === "unpublish" && (
             <Box mt="1rem">
-              <UnpublishRedirectWarning
-                pageId={pageId}
-                siteId={siteId}
-                onPendingChange={handleRedirectCheckPendingChange}
-              />
+              <UnpublishRedirectWarning pageId={pageId} siteId={siteId} />
             </Box>
           )}
         </ModalBody>
