@@ -105,7 +105,7 @@ const renderModal = (isOpen: boolean) =>
             id: "version-1",
             versionNum: 2,
             publishedAt: new Date("2026-01-01T00:00:00Z"),
-            publisher: { name: "Alice" },
+            publisher: { email: "alice@example.com" },
             beforeContent: BEFORE_PAGE,
             afterContent: AFTER_PAGE,
           }}
@@ -132,9 +132,48 @@ describe("PageDiffModal", () => {
     await waitFor(() => {
       expect(screen.queryByText("Changes in version 2")).not.toBeNull()
     })
+    expect(screen.queryByText("About us")).not.toBeNull()
     expect(
       screen.queryByRole("checkbox", { name: "Highlight changes" }),
     ).not.toBeNull()
+  })
+
+  it("shows one version at a time in overlay mode", async () => {
+    renderModal(true)
+    const versionHeader = await screen.findByText("Changes in version 2")
+    const currentHeader = screen.getByText("Current Version")
+
+    // Side by side by default: both versions and the separator show.
+    expect(versionHeader).toBeVisible()
+    expect(currentHeader).toBeVisible()
+    expect(
+      screen.getByRole("separator", { name: "Resize panes" }),
+    ).toBeVisible()
+    expect(screen.queryByRole("group", { name: "Version shown" })).toBeNull()
+    expect(screen.getByRole("tab", { name: "Side by side" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    )
+    const iframesBefore = Array.from(document.querySelectorAll("iframe"))
+
+    screen.getByRole("tab", { name: "Overlay" }).click()
+
+    await waitFor(() => expect(currentHeader).not.toBeVisible())
+    expect(screen.getByRole("tab", { name: "Overlay" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    )
+    expect(versionHeader).toBeVisible()
+    expect(screen.queryByRole("separator", { name: "Resize panes" })).toBeNull()
+
+    screen.getByRole("button", { name: "Current" }).click()
+
+    await waitFor(() => expect(currentHeader).toBeVisible())
+    expect(versionHeader).not.toBeVisible()
+    // The same previews stay mounted, so the diff still has both documents.
+    expect(Array.from(document.querySelectorAll("iframe"))).toEqual(
+      iframesBefore,
+    )
   })
 
   it("toggles highlight visibility on the rendered iframes", async () => {

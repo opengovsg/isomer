@@ -13,7 +13,9 @@ vi.mock("next/router", () => ({
 }))
 
 const noop = vi.hoisted(() => vi.fn())
-const mockUseInfiniteQuery = vi.hoisted(() => vi.fn())
+const mockUseInfiniteQuery = vi.hoisted(() =>
+  vi.fn<(...args: unknown[]) => unknown>(),
+)
 
 vi.mock("~/utils/trpc", () => ({
   trpc: {
