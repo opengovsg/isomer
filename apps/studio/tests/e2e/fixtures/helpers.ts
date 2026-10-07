@@ -99,6 +99,7 @@ export const createPageViaWizard = async (
   await dashboard.clickCreatePage()
   await dashboard.fillPageWizard(title)
 
+  // Create-page wizard navigates to `/sites/:siteId/pages/:numericPageId`.
   await page.waitForURL(new RegExp(`/sites/${siteId}/pages/\\d+$`))
   const pageId = page.url().match(/\/pages\/(\d+)$/)?.[1]
   if (!pageId) {

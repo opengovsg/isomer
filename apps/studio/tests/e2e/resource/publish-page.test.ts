@@ -173,7 +173,6 @@ test.describe("separation of duties", { tag: roleTag("editor") }, () => {
     const editedText = `Edited ${crypto.randomUUID().slice(0, 8)}`
     const { page: seededPage } = await seedFolderWithPage({ siteId })
 
-    // Act: editor edits and saves a draft, but has no publish access
     const editorPO = await openSeededPageEditor(page, siteId, seededPage.id)
     await editorPO.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
     await editorPO.expectPublishButtonDisabled()
@@ -181,8 +180,7 @@ test.describe("separation of duties", { tag: roleTag("editor") }, () => {
       .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
       .not.toBeNull()
 
-    // Act: a publisher signs in with their own session and publishes the
-    // editor's draft
+    // Act — publisher publishes the editor's draft in a separate session
     await withSeededPageEditorAsRole(
       browser,
       "publisher",
@@ -191,16 +189,17 @@ test.describe("separation of duties", { tag: roleTag("editor") }, () => {
       async (publisher) => {
         await publisher.editor.clickPublish()
         await publisher.editor.expectPublishedToast()
-
-        // Assert
-        await expect
-          .poll(async () => (await getResource(seededPage.id))?.state)
-          .toBe(ResourceState.Published)
-        await expect
-          .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
-          .toBeNull()
-        await publisher.editor.expectBlockPreview(editedText)
       },
     )
+
+    // Assert
+    await expect
+      .poll(async () => (await getResource(seededPage.id))?.state)
+      .toBe(ResourceState.Published)
+    await expect
+      .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
+      .toBeNull()
+    await editorPO.reload()
+    await editorPO.expectBlockPreview(editedText)
   })
 })

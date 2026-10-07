@@ -7,7 +7,6 @@ import {
   createCollectionLink,
   createCollectionPage,
   createCollectionWithTagCategories,
-  deleteCollection,
   getRootPageId,
 } from "../fixtures/collection"
 import { CollectionPO } from "../fixtures/collection.po"
@@ -63,23 +62,18 @@ test.describe(
       linkId = link.id
     })
 
-    test.afterEach(async () => {
-      await deleteCollection(collectionId)
-    })
-
     test("admin can save after filling the required tag category", async ({
       page,
     }) => {
       // Arrange
       const collection = new CollectionPO(page)
       await page.goto(`/sites/${siteId}/links/${linkId}`)
-      const saveButton = page.getByRole("button", { name: "Save", exact: true })
-      await expect(saveButton).toBeDisabled()
+      await collection.expectLinkSaveDisabled()
 
       // Act
       await collection.selectTagOption(TAG_CATEGORY_LABEL, TAG_OPTION_LABEL)
-      await expect(saveButton).toBeEnabled()
-      await saveButton.click()
+      await collection.expectLinkSaveEnabled()
+      await collection.clickLinkSave()
       await expect(page.getByText("Link updated!")).toBeVisible()
 
       // Assert
@@ -95,9 +89,7 @@ test.describe(
       await page.goto(`/sites/${siteId}/links/${linkId}`)
 
       // Assert
-      await expect(
-        page.getByRole("button", { name: "Save", exact: true }),
-      ).toBeDisabled()
+      await collection.expectLinkSaveDisabled()
       await collection.expectRequiredTagError()
     })
   },
@@ -132,27 +124,19 @@ test.describe(
       pageId = collectionPage.id
     })
 
-    test.afterEach(async () => {
-      await deleteCollection(collectionId)
-    })
-
     test("admin can save after filling the required tag category", async ({
       page,
     }) => {
       // Arrange
       const collection = new CollectionPO(page)
       await page.goto(`/sites/${siteId}/pages/${pageId}`)
-      await page.getByRole("button", { name: "Article page header" }).click()
-      const saveButton = page.getByRole("button", {
-        name: "Save changes",
-        exact: true,
-      })
-      await expect(saveButton).toBeDisabled()
+      await collection.openArticlePageHeader()
+      await collection.expectPageSaveChangesDisabled()
 
       // Act
       await collection.selectTagOption(TAG_CATEGORY_LABEL, TAG_OPTION_LABEL)
-      await expect(saveButton).toBeEnabled()
-      await saveButton.click()
+      await collection.expectPageSaveChangesEnabled()
+      await collection.clickPageSaveChanges()
       await expect(
         page.getByText(
           "Changes saved. Click 'Publish options' when you're ready to go live.",
@@ -170,12 +154,10 @@ test.describe(
       // Arrange
       const collection = new CollectionPO(page)
       await page.goto(`/sites/${siteId}/pages/${pageId}`)
-      await page.getByRole("button", { name: "Article page header" }).click()
+      await collection.openArticlePageHeader()
 
       // Assert
-      await expect(
-        page.getByRole("button", { name: "Save changes", exact: true }),
-      ).toBeDisabled()
+      await collection.expectPageSaveChangesDisabled()
       await collection.expectRequiredTagError()
     })
   },

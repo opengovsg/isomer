@@ -7,7 +7,6 @@ import { DashboardPO } from "../fixtures/dashboard.po"
 import { createPageViaWizard } from "../fixtures/helpers"
 import { PageEditorPO } from "../fixtures/page-editor.po"
 import { seedFolder } from "../fixtures/page-seed"
-import { deleteResource, deleteResourcesByTitleLike } from "../fixtures/reset"
 import { getResourceByTitle } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -26,10 +25,6 @@ test.beforeAll(async () => {
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
-  })
-
-  test.afterEach(async () => {
-    await deleteResourcesByTitleLike(siteId, "E2E Test Page %")
   })
 
   test("admin can create a new page via the wizard", async ({ page }) => {
@@ -101,10 +96,6 @@ test.describe(
         .folder.id
     })
 
-    test.afterEach(async () => {
-      await deleteResource(folderId)
-    })
-
     test("admin can create a new page inside a folder", async ({ page }) => {
       // Arrange
       const title = UNIQUE_TITLE()
@@ -137,10 +128,6 @@ test.describe(
       await ensureUserOnboarded(TEST_EMAILS.publisher)
       folderId = (await seedFolder({ siteId, folderTitle: "E2E Test Folder" }))
         .folder.id
-    })
-
-    test.afterEach(async () => {
-      await deleteResource(folderId)
     })
 
     test("publisher can create a new page inside a folder", async ({
@@ -177,10 +164,6 @@ test.describe(
       await ensureUserOnboarded(TEST_EMAILS.editor)
       folderId = (await seedFolder({ siteId, folderTitle: "E2E Test Folder" }))
         .folder.id
-    })
-
-    test.afterEach(async () => {
-      await deleteResource(folderId)
     })
 
     test("editor can create a new page inside a folder", async ({ page }) => {

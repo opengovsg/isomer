@@ -6,12 +6,7 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { inviteCollaborator, openInviteModal } from "../fixtures/helpers"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
-import {
-  deleteUsersByEmailLike,
-  deleteWhitelistByEmailLike,
-  getGrantedRole,
-  whitelistVendorEmail,
-} from "../fixtures/user.db"
+import { getGrantedRole, whitelistVendorEmail } from "../fixtures/user.db"
 
 test.describe("invite user", { tag: roleTag("admin") }, () => {
   test.describe.configure({ mode: "serial" })
@@ -37,12 +32,6 @@ test.describe("invite user", { tag: roleTag("admin") }, () => {
 
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
-  })
-
-  test.afterEach(async () => {
-    await deleteUsersByEmailLike("e2e-invitee-%@open.gov.sg")
-    await deleteUsersByEmailLike("e2e-vendor-%@vendor.example.com")
-    await deleteWhitelistByEmailLike("e2e-vendor-%@vendor.example.com")
   })
 
   test("admin can invite a new collaborator as Editor", async ({ page }) => {

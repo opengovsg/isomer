@@ -5,6 +5,7 @@ export class PageEditorPO {
 
   async gotoPage(siteId: number, pageId: string) {
     await this.page.goto(`/sites/${siteId}/pages/${pageId}`)
+    // Wait until the editor route matches this page id (guards against redirects).
     await this.page.waitForURL(new RegExp(`/sites/${siteId}/pages/${pageId}`))
   }
 
@@ -44,6 +45,7 @@ export class PageEditorPO {
 
   async addTextBlock() {
     await this.page.getByRole("button", { name: "Add block" }).click()
+    // Add-block catalog row: visible label is "Text" plus the description suffix.
     await this.page
       .getByRole("button", { name: /^Text Add text, links, lists/i })
       .click()
@@ -56,6 +58,7 @@ export class PageEditorPO {
   }
 
   async expectBlockPreview(text: string) {
+    // Drawer block buttons mirror fillBlock's case-insensitive label match.
     await expect(
       this.page.getByRole("button", { name: new RegExp(text, "i") }),
     ).toBeVisible()
@@ -105,6 +108,7 @@ export class PageEditorPO {
 
   async openMetaSettingsTab() {
     await this.page.getByRole("link", { name: "Meta Settings" }).click()
+    // In-editor settings tab always ends at `/pages/<id>/settings`.
     await this.page.waitForURL(/\/pages\/\d+\/settings$/)
   }
 
@@ -126,6 +130,7 @@ export class PageEditorPO {
    * TimeSelect renders zero-padded options ("09:00 AM", "05:00 PM"). Pass a
    * different label than a prior call to reschedule to a distinct time. */
   async schedulePublishForToday(timeLabel = "5:00 PM") {
+    // TimeSelect lists zero-padded hours ("05:00 PM"); pad a single leading digit.
     const optionLabel = timeLabel.replace(/^(\d):/, "0$1:")
     await this.page
       .getByRole("button", { name: /Select from date picker/i })
