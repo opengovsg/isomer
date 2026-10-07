@@ -270,17 +270,16 @@ describe("BaseParagraph anchor transformation", () => {
     expect(html).toContain(`href="${href}"`)
   })
 
-  it("respects the caller's allowed tags for transformed anchors", () => {
+  it("keeps anchors as links when the caller's allowed tags exclude them", () => {
     // Act
     const html = renderToStaticMarkup(
       <BaseParagraph
-        allowedTags={["br"]}
+        allowedTags={["b"]}
         content='<a href="https://example.com">Link</a>'
       />,
     )
 
     // Assert
-    expect(html).not.toMatch(/<a\b/i)
-    expect(html).toContain("Link")
+    expect(html).toContain('href="https://example.com"')
   })
 })

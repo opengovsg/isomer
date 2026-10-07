@@ -60,7 +60,6 @@ export const BaseParagraph = ({
       )}
       content={isContentEmpty ? "<br />" : content}
       transform={transform}
-      transformOnlyAllowList
       tagName="p"
     />
   )
