@@ -158,17 +158,7 @@ function JsonFormsImageControl({
             resourceId={
               (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
             }
-            setHref={(src) => {
-              // TEMP DIAGNOSTIC — remove once resolved.
-              console.warn(
-                "[diag] JsonFormsImageControl calling JsonForms handleChange",
-                {
-                  path,
-                  src,
-                },
-              )
-              handleChange(path, src)
-            }}
+            setHref={(src) => handleChange(path, src)}
             shouldFetchResource={true}
           />
         </Box>

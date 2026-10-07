@@ -3,7 +3,7 @@ import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment, useToast } from "@opengovsg/design-system-react"
 import { uniq } from "lodash-es"
 import dynamic from "next/dynamic"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
@@ -52,10 +52,21 @@ export const FileAttachment = ({
   const { handleAssetUpload, isLoading } = useAssetUpload({})
   const toast = useToast()
 
+  // setHref is recreated on every render by callers (it's an inline closure
+  // over path/handleChange), so it can't be a dependency here without the
+  // effect re-firing on every render while isLoading is true -- each firing
+  // writes "" back into the form state, which can race with and clobber the
+  // real uploaded src. A ref keeps this effect tied only to isLoading's
+  // actual true/false transitions, which is its real intent.
+  const setHrefRef = useRef(setHref)
+  useEffect(() => {
+    setHrefRef.current = setHref
+  })
+
   useEffect(() => {
     // NOTE: The outer link modal uses this to disable the button
-    if (isLoading) setHref("")
-  }, [isLoading, setHref])
+    if (isLoading) setHrefRef.current("")
+  }, [isLoading])
 
   const doUpload = (file: File) => {
     uploadFile(
@@ -65,11 +76,7 @@ export const FileAttachment = ({
           onUploadedFile?.(file)
           if (shouldFetchResource) {
             void handleAssetUpload(path)
-              .then((src) => {
-                // TEMP DIAGNOSTIC — remove once resolved.
-                console.warn("[diag] FileAttachment calling setHref", { src })
-                setHref(src)
-              })
+              .then((src) => setHref(src))
               .catch(() => {
                 toast({
                   title: "Failed to upload file",
