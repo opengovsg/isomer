@@ -77,8 +77,10 @@ describe("LinkHrefEditor", () => {
       inputValue: "user@example.com",
     },
   ])("opens with $label selected for the matching href", (case_) => {
+    // Arrange / Act
     renderLinkHrefEditor(case_.linkHref)
 
+    // Assert
     expect(getLinkTypeRadio(case_.label)).toBeChecked()
 
     if ("visibleTestId" in case_) {
@@ -90,19 +92,25 @@ describe("LinkHrefEditor", () => {
   })
 
   it("updates the selected type and visible destination input when switching types", async () => {
+    // Arrange / Act — open existing page link
     renderLinkHrefEditor("[resource:1:42]")
 
+    // Assert — page type and picker
     expect(getLinkTypeRadio("Page")).toBeChecked()
     expect(screen.getByTestId("page-link-editor")).toBeVisible()
 
+    // Act — switch to external
     await userEvent.click(getLinkTypeRadio("External"))
 
+    // Assert — external input
     expect(getLinkTypeRadio("External")).toBeChecked()
     expect(screen.queryByTestId("page-link-editor")).not.toBeInTheDocument()
     expect(screen.getByRole("textbox")).toBeVisible()
 
+    // Act — switch to email
     await userEvent.click(getLinkTypeRadio("Email"))
 
+    // Assert — email input
     expect(getLinkTypeRadio("Email")).toBeChecked()
     expect(screen.getByRole("textbox")).toHaveAttribute(
       "placeholder",

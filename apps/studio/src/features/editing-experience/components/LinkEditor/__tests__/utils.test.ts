@@ -11,7 +11,11 @@ describe("getExternalLinkInputDisplayValue", () => {
     ["mailto:user@example.com", ""],
     ["[resource:1:42]", ""],
   ])("strips scheme for display: %s", (href, expected) => {
-    expect(getExternalLinkInputDisplayValue(href)).toBe(expected)
+    // Act
+    const displayValue = getExternalLinkInputDisplayValue(href)
+
+    // Assert
+    expect(displayValue).toBe(expected)
   })
 })
 
