@@ -16,7 +16,10 @@ const expectRedirectToDashboard = async (page: Page, path: string) => {
 
 test.describe("core", { tag: roleTag("core") }, () => {
   test("core admin can access all godmode routes", async ({ page }) => {
+    // Act
     await page.goto("/godmode")
+
+    // Assert
     await expect(page.getByRole("heading", { name: /God Mode/ })).toBeVisible()
     await expect(
       page.getByRole("link", { name: "Create a new site" }),
@@ -37,7 +40,10 @@ test.describe("migrator", { tag: roleTag("migrator") }, () => {
   test("migrator can only access whitelist godmode routes", async ({
     page,
   }) => {
+    // Act
     await page.goto("/godmode")
+
+    // Assert
     await expect(page.getByRole("heading", { name: /God Mode/ })).toBeVisible()
     await expect(page.getByRole("link", { name: "Whitelist" })).toBeVisible()
     await expect(
@@ -57,6 +63,7 @@ test.describe("migrator", { tag: roleTag("migrator") }, () => {
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test("site admin without godmode access is redirected", async ({ page }) => {
+    // Act / Assert
     await expectRedirectToDashboard(page, "/godmode")
     for (const route of GODMODE_ROUTES) {
       await expectRedirectToDashboard(page, route.path)

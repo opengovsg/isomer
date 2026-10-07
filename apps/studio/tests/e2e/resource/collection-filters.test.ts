@@ -3,10 +3,7 @@ import crypto from "crypto"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import {
-  createCollectionWithTagCategories,
-  deleteCollection,
-} from "../fixtures/collection"
+import { createCollectionWithTagCategories } from "../fixtures/collection"
 import { CollectionPO } from "../fixtures/collection.po"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -34,25 +31,22 @@ const seedCollection = () =>
   )
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
-  let collectionId: string
   let indexPageId: string
 
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
-    ;({ collectionId, indexPageId } = await seedCollection())
-  })
-
-  test.afterEach(async () => {
-    await deleteCollection(collectionId)
+    ;({ indexPageId } = await seedCollection())
   })
 
   test("can see and open Filters on the collection index", async ({ page }) => {
+    // Act
     const collection = new CollectionPO(page)
     await page.goto(`/sites/${siteId}/pages/${indexPageId}`)
-
     await collection.expectManageCollectionVisible()
     await collection.expectFiltersVisible()
     await collection.openFilters()
+
+    // Assert
     await collection.expectManageFiltersDrawerOpen()
   })
 })
@@ -65,27 +59,24 @@ for (const role of ["core", "migrator"] as const) {
     `isomer admin (${role}) without site permission`,
     { tag: roleTag(role) },
     () => {
-      let collectionId: string
       let indexPageId: string
 
       test.beforeEach(async () => {
         await ensureUserOnboarded(TEST_EMAILS[role])
-        ;({ collectionId, indexPageId } = await seedCollection())
-      })
-
-      test.afterEach(async () => {
-        await deleteCollection(collectionId)
+        ;({ indexPageId } = await seedCollection())
       })
 
       test("can see and open Filters on the collection index", async ({
         page,
       }) => {
+        // Act
         const collection = new CollectionPO(page)
         await page.goto(`/sites/${siteId}/pages/${indexPageId}`)
-
         await collection.expectManageCollectionVisible()
         await collection.expectFiltersVisible()
         await collection.openFilters()
+
+        // Assert
         await collection.expectManageFiltersDrawerOpen()
       })
     },
@@ -94,24 +85,21 @@ for (const role of ["core", "migrator"] as const) {
 
 for (const role of ["editor", "publisher"] as const) {
   test.describe(role, { tag: roleTag(role) }, () => {
-    let collectionId: string
     let indexPageId: string
 
     test.beforeEach(async () => {
       await ensureUserOnboarded(TEST_EMAILS[role])
-      ;({ collectionId, indexPageId } = await seedCollection())
-    })
-
-    test.afterEach(async () => {
-      await deleteCollection(collectionId)
+      ;({ indexPageId } = await seedCollection())
     })
 
     test("cannot see Filters on the collection index", async ({ page }) => {
+      // Act
       const collection = new CollectionPO(page)
       await page.goto(`/sites/${siteId}/pages/${indexPageId}`)
-
       await collection.expectManageCollectionVisible()
       await collection.expectCollectionDisplayVisible()
+
+      // Assert
       await collection.expectFiltersHidden()
     })
   })

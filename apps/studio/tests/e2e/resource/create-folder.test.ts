@@ -1,11 +1,10 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { createFolderViaWizard } from "../fixtures/helpers"
-import { getResourceByTitle } from "../fixtures/resource.db"
+import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -23,22 +22,18 @@ test.describe("create folder", { tag: roleTag("admin") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
-  test.afterEach(async () => {
-    await db
-      .deleteFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "like", "E2E Test Folder %")
-      .execute()
-  })
-
   test("admin can create a folder via the Create new wizard", async ({
     page,
   }) => {
+    // Arrange
     const title = UNIQUE_TITLE()
-    await createFolderViaWizard(page, { siteId, title })
 
-    const created = await getResourceByTitle({ siteId, title })
-    expect(created).toBeTruthy()
+    // Act
+    const { folderId } = await createFolderViaWizard(page, { siteId, title })
+
+    // Assert. A folder and its index page share this title, so look up the
+    // folder the wizard returned instead of the first row with that title.
+    const created = await getResource(folderId)
     expect(created?.type).toBe("Folder")
   })
 })

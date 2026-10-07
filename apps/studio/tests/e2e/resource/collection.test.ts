@@ -1,19 +1,18 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import { roleTag, storageStateFor, TEST_EMAILS } from "../fixtures/auth"
+import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import {
   createCollectionLink,
   createCollectionPage,
   createCollectionWithTagCategories,
-  deleteCollection,
   getRootPageId,
-  readBlobContent,
 } from "../fixtures/collection"
 import { CollectionPO } from "../fixtures/collection.po"
+import { getResourceDraftTagged } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
+import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number
 
@@ -21,13 +20,6 @@ test.beforeAll(async () => {
   const site = await provisionE2ESite({ roles: [RoleType.Admin] })
   siteId = site.siteId
 })
-
-const dismissWelcomeModal = (email: string) =>
-  db
-    .updateTable("User")
-    .set({ name: "test-e2e", phone: "82345678" })
-    .where("email", "=", email)
-    .execute()
 
 // Shared across every test in this file: one required tag category with a
 // single option, so both drawers have something to validate against.
@@ -40,13 +32,11 @@ test.describe(
   "collection link — required tag categories",
   { tag: roleTag("admin") },
   () => {
-    test.use({ storageState: storageStateFor("admin") })
-
     let collectionId: string
     let linkId: string
 
     test.beforeEach(async () => {
-      await dismissWelcomeModal(TEST_EMAILS.admin)
+      await ensureUserOnboarded(TEST_EMAILS.admin)
       const collection = await createCollectionWithTagCategories(
         [
           {
@@ -72,43 +62,34 @@ test.describe(
       linkId = link.id
     })
 
-    test.afterEach(async () => {
-      await deleteCollection(collectionId)
-    })
-
     test("admin can save after filling the required tag category", async ({
       page,
     }) => {
+      // Arrange
       const collection = new CollectionPO(page)
       await page.goto(`/sites/${siteId}/links/${linkId}`)
+      await collection.expectLinkSaveDisabled()
 
-      const saveButton = page.getByRole("button", { name: "Save", exact: true })
-      await expect(saveButton).toBeDisabled()
-
+      // Act
       await collection.selectTagOption(TAG_CATEGORY_LABEL, TAG_OPTION_LABEL)
-      await expect(saveButton).toBeEnabled()
-
-      await saveButton.click()
+      await collection.expectLinkSaveEnabled()
+      await collection.clickLinkSave()
       await expect(page.getByText("Link updated!")).toBeVisible()
 
-      const resource = await db
-        .selectFrom("Resource")
-        .where("id", "=", linkId)
-        .select("draftBlobId")
-        .executeTakeFirstOrThrow()
-      const content = await readBlobContent(resource.draftBlobId!)
-      expect(content.page.tagged).toContain(TAG_OPTION_ID)
+      // Assert
+      const tagged = await getResourceDraftTagged(linkId)
+      expect(tagged).toContain(TAG_OPTION_ID)
     })
 
     test("save stays disabled while the required tag category is unfilled", async ({
       page,
     }) => {
+      // Arrange
       const collection = new CollectionPO(page)
       await page.goto(`/sites/${siteId}/links/${linkId}`)
 
-      await expect(
-        page.getByRole("button", { name: "Save", exact: true }),
-      ).toBeDisabled()
+      // Assert
+      await collection.expectLinkSaveDisabled()
       await collection.expectRequiredTagError()
     })
   },
@@ -118,13 +99,11 @@ test.describe(
   "collection page — required tag categories",
   { tag: roleTag("admin") },
   () => {
-    test.use({ storageState: storageStateFor("admin") })
-
     let collectionId: string
     let pageId: string
 
     test.beforeEach(async () => {
-      await dismissWelcomeModal(TEST_EMAILS.admin)
+      await ensureUserOnboarded(TEST_EMAILS.admin)
       const collection = await createCollectionWithTagCategories(
         [
           {
@@ -145,52 +124,40 @@ test.describe(
       pageId = collectionPage.id
     })
 
-    test.afterEach(async () => {
-      await deleteCollection(collectionId)
-    })
-
     test("admin can save after filling the required tag category", async ({
       page,
     }) => {
+      // Arrange
       const collection = new CollectionPO(page)
       await page.goto(`/sites/${siteId}/pages/${pageId}`)
-      await page.getByRole("button", { name: "Article page header" }).click()
+      await collection.openArticlePageHeader()
+      await collection.expectPageSaveChangesDisabled()
 
-      const saveButton = page.getByRole("button", {
-        name: "Save changes",
-        exact: true,
-      })
-      await expect(saveButton).toBeDisabled()
-
+      // Act
       await collection.selectTagOption(TAG_CATEGORY_LABEL, TAG_OPTION_LABEL)
-      await expect(saveButton).toBeEnabled()
-
-      await saveButton.click()
+      await collection.expectPageSaveChangesEnabled()
+      await collection.clickPageSaveChanges()
       await expect(
         page.getByText(
           "Changes saved. Click 'Publish options' when you're ready to go live.",
         ),
       ).toBeVisible()
 
-      const resource = await db
-        .selectFrom("Resource")
-        .where("id", "=", pageId)
-        .select("draftBlobId")
-        .executeTakeFirstOrThrow()
-      const content = await readBlobContent(resource.draftBlobId!)
-      expect(content.page.tagged).toContain(TAG_OPTION_ID)
+      // Assert
+      const tagged = await getResourceDraftTagged(pageId)
+      expect(tagged).toContain(TAG_OPTION_ID)
     })
 
     test("save stays disabled while the required tag category is unfilled", async ({
       page,
     }) => {
+      // Arrange
       const collection = new CollectionPO(page)
       await page.goto(`/sites/${siteId}/pages/${pageId}`)
-      await page.getByRole("button", { name: "Article page header" }).click()
+      await collection.openArticlePageHeader()
 
-      await expect(
-        page.getByRole("button", { name: "Save changes", exact: true }),
-      ).toBeDisabled()
+      // Assert
+      await collection.expectPageSaveChangesDisabled()
       await collection.expectRequiredTagError()
     })
   },
