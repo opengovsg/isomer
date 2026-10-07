@@ -50,7 +50,7 @@ export function JsonFormsTextControl({
   const remainingCharacterCount = maxLength
     ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)
     : -1
-  const keepEmptyString = required || schema.pattern !== undefined
+  const keepEmptyString = required
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target
 

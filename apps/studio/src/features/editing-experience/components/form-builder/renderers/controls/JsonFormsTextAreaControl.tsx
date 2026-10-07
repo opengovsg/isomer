@@ -56,7 +56,7 @@ function JsonFormsTextAreaControl({
       )
     : TEXTAREA_DEFAULT_ROWS
 
-  const keepEmptyString = required || schema.pattern !== undefined
+  const keepEmptyString = required
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = e.target
 
