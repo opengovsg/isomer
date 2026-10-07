@@ -1,10 +1,13 @@
 import type { Node, NodeSpec } from "@tiptap/pm/model"
 import { Schema } from "@tiptap/pm/model"
-import { TableMap } from "@tiptap/pm/tables"
+import { EditorState } from "@tiptap/pm/state"
+import { CellSelection, TableMap } from "@tiptap/pm/tables"
 import { describe, expect, it } from "vitest"
 
 import {
   canMergeCellSelection,
+  canMergeCells,
+  canSplitCell,
   getColumnMovePlan,
   getMovedBlockCellCorners,
   getRowMovePlan,
@@ -352,6 +355,79 @@ describe("canMergeCellSelection", () => {
 
     // Act / Assert
     expect(canMergeCellSelection(columnSelection)).toBe(false)
+  })
+})
+
+const selectionState = (
+  table: Node,
+  anchorIndex: number,
+  headIndex = anchorIndex,
+) => {
+  const doc = tableSchema.nodes.doc.create(null, [table])
+  const positions: number[] = []
+  doc.descendants((node, pos) => {
+    if (node.type.name === "tableCell" || node.type.name === "tableHeader") {
+      positions.push(pos)
+      return false
+    }
+    return true
+  })
+  const anchor = positions[anchorIndex]
+  const head = positions[headIndex]
+  if (anchor === undefined || head === undefined) {
+    throw new Error("Cell index is outside the test table")
+  }
+  return EditorState.create({
+    doc,
+    selection: CellSelection.create(doc, anchor, head),
+  })
+}
+
+describe("canMergeCells and canSplitCell", () => {
+  const tableRow = tableSchema.nodes.tableRow
+  const tableCell = tableSchema.nodes.tableCell
+  const table = tableSchema.nodes.table
+
+  it("merges two cells and refuses to split them", () => {
+    // Arrange
+    const twoCells = table.create(null, [
+      tableRow.create(null, [
+        tableCell.create(null, [paragraph()]),
+        tableCell.create(null, [paragraph()]),
+      ]),
+    ])
+    const state = selectionState(twoCells, 0, 1)
+
+    // Act / Assert
+    expect(canMergeCells(state)).toBe(true)
+    expect(canSplitCell(state)).toBe(false)
+  })
+
+  it("splits one merged cell and refuses to merge it", () => {
+    // Arrange
+    const mergedRow = table.create(null, [
+      tableRow.create(null, [tableCell.create({ colspan: 2 }, [paragraph()])]),
+    ])
+    const state = selectionState(mergedRow, 0)
+
+    // Act / Assert
+    expect(canMergeCells(state)).toBe(false)
+    expect(canSplitCell(state)).toBe(true)
+  })
+
+  it("refuses to split when a merged cell is selected with another cell", () => {
+    // Arrange
+    const mixedRow = table.create(null, [
+      tableRow.create(null, [
+        tableCell.create({ colspan: 2 }, [paragraph()]),
+        tableCell.create(null, [paragraph()]),
+      ]),
+    ])
+    const state = selectionState(mixedRow, 0, 1)
+
+    // Act / Assert
+    expect(canMergeCells(state)).toBe(true)
+    expect(canSplitCell(state)).toBe(false)
   })
 })
 
