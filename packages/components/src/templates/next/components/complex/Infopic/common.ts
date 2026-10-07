@@ -15,8 +15,6 @@ export const infopicStyles = tv({
     description: "prose-body-base mt-4 break-words md:mt-6",
     button: "mt-9",
     overlay: "",
-    section: "",
-    background: "",
   },
   variants: {
     isTextOnRight: {
@@ -48,11 +46,6 @@ export const infopicStyles = tv({
       [InfopicVariants.Full.value]: {
         container: "[grid-template-rows:1fr_1fr]",
         overlay: "bg-base-canvas-inverse-overlay/65",
-        // `isolate` keeps the image's negative z-index behind this block
-        // instead of slipping behind the rest of the page.
-        section: "relative isolate",
-        background:
-          "pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover object-center",
       },
     },
   },
