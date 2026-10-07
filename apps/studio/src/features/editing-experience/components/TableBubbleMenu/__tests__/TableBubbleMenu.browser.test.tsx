@@ -542,7 +542,7 @@ describe("TableBubbleMenu", () => {
   })
 
   it("splits a cell created by merging the only row of a table", async () => {
-    // Arrange: one row spanning the whole table is a table selection, not a row selection
+    // Arrange: 1×2 table; full selection is kind "table", not "row"
     const { editor, findByText, findByRole } = await renderHarness({
       type: "prose",
       content: [
