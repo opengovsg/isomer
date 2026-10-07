@@ -148,13 +148,17 @@ export class PageEditorPO {
   }
 
   async expectCancelScheduleVisible() {
-    await expect(
-      this.page.getByRole("button", { name: "Cancel schedule" }),
-    ).toBeVisible()
+    // The header indicator and the editing lock both render this button
+    // once a publish is scheduled.
+    await expect(this.cancelScheduleButton()).toBeVisible()
+  }
+
+  private cancelScheduleButton() {
+    return this.page.getByRole("button", { name: "Cancel schedule" }).first()
   }
 
   async cancelSchedule() {
-    await this.page.getByRole("button", { name: "Cancel schedule" }).click()
+    await this.cancelScheduleButton().click()
     await this.page
       .getByRole("button", { name: "Yes, cancel the schedule" })
       .click()
