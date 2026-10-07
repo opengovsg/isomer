@@ -377,6 +377,42 @@ export const Default: Story = {
         },
       },
       {
+        type: "callout",
+        variant: "urgent",
+        content: {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Applications close on 31 December 2024. Submissions received after this date will not be considered.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        type: "callout",
+        variant: "information",
+        content: {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Processing of proposals typically takes 6 to 8 weeks. You will be notified of the outcome via email.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
         type: "prose",
         content: [
           {
@@ -1454,6 +1490,38 @@ export const Default: Story = {
             buttonLabel: "Read article",
             buttonUrl: "https://google.com",
             icon: "bar-chart",
+          },
+        ],
+      },
+      {
+        type: "steps",
+        title: "How to apply",
+        subtitle:
+          "Applying takes about 15 minutes. Have your documents ready before you start.",
+        numberStyle: "numeral",
+        steps: [
+          {
+            title: "Check if you are eligible",
+            description:
+              "You must be a Singapore Citizen or Permanent Resident aged 21 and above.",
+          },
+          {
+            title: "Prepare your documents",
+            description:
+              "You will need your NRIC and proof of income for the past 3 months.",
+            buttonLabel: "See the full document checklist",
+            buttonUrl: "/faq",
+          },
+          {
+            title: "Submit your application",
+            description:
+              "Applications are submitted online and take about 15 minutes to complete.",
+            buttonLabel: "Start your application",
+            buttonUrl: "https://form.gov.sg",
+          },
+          {
+            title: "Wait for the outcome",
+            description: "We will email you the outcome within 4 weeks.",
           },
         ],
       },
@@ -2974,6 +3042,38 @@ export const Image: Story = {
             buttonLabel: "Read article",
             buttonUrl: "https://google.com",
             icon: "bar-chart",
+          },
+        ],
+      },
+      {
+        type: "steps",
+        title: "How to apply",
+        subtitle:
+          "Applying takes about 15 minutes. Have your documents ready before you start.",
+        numberStyle: "numeral",
+        steps: [
+          {
+            title: "Check if you are eligible",
+            description:
+              "You must be a Singapore Citizen or Permanent Resident aged 21 and above.",
+          },
+          {
+            title: "Prepare your documents",
+            description:
+              "You will need your NRIC and proof of income for the past 3 months.",
+            buttonLabel: "See the full document checklist",
+            buttonUrl: "/faq",
+          },
+          {
+            title: "Submit your application",
+            description:
+              "Applications are submitted online and take about 15 minutes to complete.",
+            buttonLabel: "Start your application",
+            buttonUrl: "https://form.gov.sg",
+          },
+          {
+            title: "Wait for the outcome",
+            description: "We will email you the outcome within 4 weeks.",
           },
         ],
       },

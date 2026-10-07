@@ -20,6 +20,10 @@ export const TEST_EMAILS: Record<Role, string> = {
   migrator: "migrator-e2e@open.gov.sg",
 }
 
+/** Playwright tag for a role project (`grep: /@role:admin\b/`). Typed so typos fail at compile time. */
+export const roleTag = <R extends Role>(role: R): `@role:${R}` =>
+  `@role:${role}`
+
 const STORAGE_DIR = fileURLToPath(new URL("../storage-state", import.meta.url))
 
 export const storageStateFor = (role: Role): string =>

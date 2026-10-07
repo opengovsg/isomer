@@ -57,6 +57,7 @@ export const CollectionClient = ({
     paginatedItems,
     filteredCount,
     searchValue,
+    availableFilters,
     appliedFilters,
     handleFilterToggle,
     setAppliedFilters,
@@ -65,7 +66,11 @@ export const CollectionClient = ({
     currPage,
     setCurrPage,
     totalCount,
-  } = useCollection({ items })
+  } = useCollection({
+    items,
+    tagCategories: page.tagCategories,
+    filters,
+  })
 
   const articleContainerRef = useRef<HTMLDivElement>(null)
   const onPageChange = () => {
@@ -74,7 +79,7 @@ export const CollectionClient = ({
     })
   }
 
-  const hasNoFilters = filters.length === 0
+  const hasNoFilters = availableFilters.length === 0
 
   return (
     <>
@@ -96,7 +101,7 @@ export const CollectionClient = ({
           })}
         >
           <Filter
-            filters={filters}
+            filters={availableFilters}
             appliedFilters={appliedFilters}
             handleFilterToggle={handleFilterToggle}
             setAppliedFilters={setAppliedFilters}

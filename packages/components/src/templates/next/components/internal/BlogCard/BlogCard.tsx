@@ -1,7 +1,9 @@
 import type { CollectionCardProps } from "~/interfaces"
-import type { CollectionPageSchemaType } from "~/types"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
+import { cardImageStyles } from "../CollectionCard/cardImageStyles"
+import { DateFilterDates } from "../CollectionCard/DateFilterDates"
+import { DateFilterStatusClient } from "../CollectionCard/DateFilterStatusClient"
 import { Title } from "../CollectionCard/Title" // Reusing since the logic is the same for both
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
@@ -20,12 +22,14 @@ export const BlogCard = ({
   pillTags,
   formattedDate,
   headingLevel,
+  dateFilterDisplayEntries,
 }: CollectionCardProps & {
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
   headingLevel: number
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
+  const hasDateFilters = (dateFilterDisplayEntries?.length ?? 0) > 0
 
   return (
     // NOTE: In smaller viewports, we render a border between items for easy distinguishing
@@ -42,23 +46,36 @@ export const BlogCard = ({
               src={imageSrc || ""}
               alt={image.alt}
               width="100%"
-              className={`absolute left-0 h-full w-full rounded ${isContainNeeded ? "object-contain" : "object-cover"}`}
+              className={cardImageStyles({ contain: isContainNeeded })}
               assetsBaseUrl={siteAssetsBaseUrl}
             />
           }
         </div>
       )}
       {shouldShowDate && (
-        <p className="prose-label-md-regular shrink-0 text-base-content-subtle">
+        <p className="prose-label-md-regular hidden shrink-0 text-base-content-subtle md:block">
           {formattedDate ? formattedDate : "-"}
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
+        {hasDateFilters && (
+          <DateFilterStatusClient entries={dateFilterDisplayEntries} />
+        )}
+        {shouldShowDate && (
+          <p className="prose-label-md-regular text-base-content-subtle md:hidden">
+            {formattedDate ? formattedDate : "-"}
+          </p>
+        )}
         <Title
           title={itemTitle}
           isExternalLink={isExternalLink}
           headingLevel={headingLevel}
         />
+        {hasDateFilters && (
+          <div className="flex flex-col gap-y-3">
+            <DateFilterDates entries={dateFilterDisplayEntries} />
+          </div>
+        )}
         <PillTags
           tags={pillTags}
           className="flex w-full flex-wrap items-center gap-1.5"

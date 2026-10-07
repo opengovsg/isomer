@@ -3,7 +3,6 @@ import { db, jsonb } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS } from "./auth"
-import { getSeedSiteId } from "./seed"
 
 export const uniqueSuffix = () => crypto.randomUUID().slice(0, 8)
 
@@ -25,8 +24,8 @@ export interface TagCategory {
 // must be published, not just drafted, or drawers under test won't see them.
 export const createCollectionWithTagCategories = async (
   tagCategories: TagCategory[],
+  siteId: number,
 ) => {
-  const siteId = getSeedSiteId()
   const suffix = uniqueSuffix()
 
   const collection = await db
@@ -110,11 +109,11 @@ export const deleteCollection = (collectionId: string) =>
 export const createCollectionLink = async ({
   collectionId,
   ref,
-  siteId = getSeedSiteId(),
+  siteId,
 }: {
   collectionId: string
   ref: string
-  siteId?: number
+  siteId: number
 }) => {
   const blob = await db
     .insertInto("Blob")
@@ -147,10 +146,10 @@ export const createCollectionLink = async ({
 
 export const createCollectionPage = async ({
   collectionId,
-  siteId = getSeedSiteId(),
+  siteId,
 }: {
   collectionId: string
-  siteId?: number
+  siteId: number
 }) => {
   const blob = await db
     .insertInto("Blob")
@@ -194,7 +193,7 @@ export const readBlobContent = async (blobId: string) => {
   return blob.content as unknown as { page: { tagged?: string[] } }
 }
 
-export const getRootPageId = async (siteId = getSeedSiteId()) => {
+export const getRootPageId = async (siteId: number) => {
   const rootPage = await db
     .selectFrom("Resource")
     .where("siteId", "=", siteId)

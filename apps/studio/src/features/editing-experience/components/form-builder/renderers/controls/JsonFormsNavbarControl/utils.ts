@@ -1,5 +1,5 @@
-import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge"
-import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
+import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
+import { reorder } from "@atlaskit/pragmatic-drag-and-drop/utils/reorder"
 import { cloneDeep, get, set } from "lodash-es"
 
 import type {

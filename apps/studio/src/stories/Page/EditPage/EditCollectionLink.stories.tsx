@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { userEvent, within } from "storybook/test"
 import { collectionHandlers } from "tests/msw/handlers/collection"
+import { folderHandlers } from "tests/msw/handlers/folder"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -26,10 +27,11 @@ const COMMON_HANDLERS = [
   resourceHandlers.getBatchAncestryWithSelf.default(),
   resourceHandlers.getChildrenOf.default(),
   resourceHandlers.getMetadataById.article(),
-  resourceHandlers.getParentOf.collection(),
+  resourceHandlers.getParentOf.collectionLink(),
   collectionHandlers.getMetadata.default(),
   collectionHandlers.readCollectionLink.default(),
-  pageHandlers.readPageAndBlob.article(),
+  folderHandlers.getIndexpage.default(),
+  pageHandlers.readPageAndBlob.collection(),
   pageHandlers.readPage.article(),
   pageHandlers.getFullPermalink.article(),
   pageHandlers.getCollectionTags.default(),

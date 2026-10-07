@@ -6,13 +6,12 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
 import Link from "next/link"
 import { useEffect } from "react"
-import { BiChevronRight, BiSolidCircle } from "react-icons/bi"
-import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
+import { BiChevronRight } from "react-icons/bi"
+import { DraftIndicator } from "~/components/DraftIndicator"
+import { LiveStatusBadges } from "~/components/LiveStatusBadges"
 import { trpc } from "~/utils/trpc"
-import { ResourceState } from "~prisma/generated/generatedEnums"
 
 import type { IndexpageRowProps } from "./types"
 import { getIndexPageIcon, getIndexPageSubtitle } from "./utils"
@@ -49,8 +48,6 @@ export const IndexpageRow = ({
     resourceId,
   ])
 
-  const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
-
   return (
     <Skeleton w="full" isLoaded={!isPending && !!data}>
       <HStack
@@ -70,29 +67,22 @@ export const IndexpageRow = ({
       >
         <Icon as={getIndexPageIcon(type)} fontSize="1.25rem" />
         <VStack flex={1} gap="0.25rem" alignItems="flex-start">
-          <HStack gap="0.25rem">
+          <HStack gap="0.75rem">
             <Text textStyle="subhead-2">{data?.title}</Text>
-            <Badge
-              size="xs"
-              variant="clear"
-              colorScheme={data?.draftBlobId ? "warning" : "success"}
-            >
-              <BadgeLeftIcon fontSize="0.5rem" as={BiSolidCircle} />
-              <Text textStyle="legal">
-                {data?.draftBlobId
-                  ? ResourceState.Draft
-                  : ResourceState.Published}
-              </Text>
-            </Badge>
+            {data && (
+              <LiveStatusBadges
+                liveStatus={data.liveStatus}
+                scheduledAt={data.scheduledAt}
+                scheduledAction={data.scheduledAction}
+              />
+            )}
+            <DraftIndicator draftBlobId={data?.draftBlobId ?? null} />
           </HStack>
           {/*   TODO: we require the last updated at and to display it */}
           {/* as a relative time. */}
           {/* we also need to give the user who did the update */}
           <Text textStyle="caption-2" textColor="base.content.medium">
-            {getIndexPageSubtitle({
-              type,
-              isNewCollectionTagsManagementEnabled,
-            })}
+            {getIndexPageSubtitle({ type })}
           </Text>
         </VStack>
         <Text

@@ -1,4 +1,7 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type {
+  ArticlePagePageProps,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
@@ -20,6 +23,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import type { CollectionTags } from "../../hooks/useCollectionTags"
 import { useCollectionTags } from "../../hooks/useCollectionTags"
 import { pageSchema } from "../../schema"
+import { validateRequiredDateFilters } from "../../utils/validateRequiredDateFilters"
 import { validateRequiredTags } from "../../utils/validateRequiredTags"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
 import { DiscardChangesModal } from "../DiscardChangesModal"
@@ -28,7 +32,7 @@ import FormBuilder from "../form-builder/FormBuilder"
 import { DrawerHeader } from "./DrawerHeader"
 
 const HEADER_LABELS: Record<string, string> = {
-  article: "Edit article page header",
+  article: "Edit item page header",
   content: "Edit content page header",
   index: "Edit index page header",
   database: "Edit page header",
@@ -204,6 +208,14 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
                 onClick={handleSaveChanges}
                 tags={collectionTags}
                 tagged={(previewPageState.page as { tagged?: string[] }).tagged}
+                dateTagged={
+                  (
+                    previewPageState.page as Pick<
+                      ArticlePagePageProps,
+                      "dateTagged"
+                    >
+                  ).dateTagged
+                }
               />
             ) : (
               <SaveButton
@@ -247,15 +259,25 @@ const TagsAwareSaveButton = ({
   isLoading,
   tags,
   tagged,
+  dateTagged,
 }: {
   onClick: () => void
   isLoading: boolean
   tags: CollectionTags
   tagged: string[] | undefined
+  dateTagged: ArticlePagePageProps["dateTagged"]
 }) => {
-  const { isValid } = validateRequiredTags(tags, tagged)
+  const { isValid: isTaggedValid } = validateRequiredTags(tags, tagged)
+  const { isValid: isDateTaggedValid } = validateRequiredDateFilters(
+    tags,
+    dateTagged,
+  )
 
   return (
-    <SaveButton isLoading={isLoading} onClick={onClick} isTagsValid={isValid} />
+    <SaveButton
+      isLoading={isLoading}
+      onClick={onClick}
+      isTagsValid={isTaggedValid && isDateTaggedValid}
+    />
   )
 }
