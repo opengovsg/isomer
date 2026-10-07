@@ -219,7 +219,7 @@ catalogs:
     "@playwright/test": ^1.63.0
     playwright: ^1.63.0
   pg:
-    pg: ^8.23.0
+    pg: ^8.23.1
     pg-cursor: ^2.22.0
     "@types/pg": ^8.23.1
     "@types/pg-cursor": ^2.7.2
