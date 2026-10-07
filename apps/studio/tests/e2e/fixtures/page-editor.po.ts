@@ -141,9 +141,7 @@ export class PageEditorPO {
   }
 
   async expectScheduledSuccessfully() {
-    await expect(
-      this.page.getByText("scheduled to publish on"),
-    ).toBeVisible()
+    await expect(this.page.getByText("scheduled to publish on")).toBeVisible()
   }
 
   async expectCancelScheduleVisible() {
