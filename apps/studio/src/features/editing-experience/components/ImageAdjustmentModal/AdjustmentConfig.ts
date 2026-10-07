@@ -1,3 +1,5 @@
+import type { IsomerPageLayoutType } from "@opengovsg/isomer-components"
+
 // FROZEN CONTRACT (W0-A / ISOM-2587). The per-component declaration that drives
 // the component-agnostic image adjustment modal (W0-D). Every per-component
 // fan-out task (M2/M3) adds one entry implementing this shape; the modal reads
@@ -17,12 +19,18 @@ export interface AspectRatio {
 // One preview pane in the modal: a real render of the target component at a
 // given breakpoint/layout, all sharing the single crop + focal. For Tier B the
 // biting aspect ratio differs per breakpoint — declared here so the preview can
-// show which axis the focal actually moves at that state.
+// show which axis the focal actually moves at that state. For a component
+// whose rendered shape changes with the page's `layout` rather than the
+// viewport (e.g. Blockquote: circle on a content page, square on the
+// homepage), set `layout` per state instead of (or alongside) viewportWidth —
+// the real-component preview passes it straight to `renderComponent`,
+// defaulting to "content" when omitted.
 export interface AdjustmentPreviewState {
   id: string
   label: string
   viewportWidth?: number
   aspectRatio?: AspectRatio
+  layout?: IsomerPageLayoutType
 }
 
 // Optional scrim/overlay drawn over the preview to mirror the live component

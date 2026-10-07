@@ -211,9 +211,13 @@ export const AdjustmentPreview = ({
 
   // Real-component preview: render the actual published block (real copy,
   // scrim, frame behaviour) with the adjusted image + draft imageAdjustment
-  // spliced in, instead of the framed-<img> approximation below.
-  let previewComponent: React.ReactNode = null
-  if (block && typeof block === "object" && imageFieldName) {
+  // spliced in, instead of the framed-<img> approximation below. Rendered
+  // per-state (rather than once and reused) because a state can request a
+  // non-default `layout` (e.g. Blockquote's homepage/square variant).
+  const renderPreviewComponent = (
+    layout: AdjustmentPreviewState["layout"],
+  ): React.ReactNode => {
+    if (!block || typeof block !== "object" || !imageFieldName) return null
     try {
       const component = {
         ...block,
@@ -222,7 +226,7 @@ export const AdjustmentPreview = ({
       } as IsomerComponent
       const rendered = renderComponent({
         component,
-        layout: "content",
+        layout: layout ?? "content",
         site: PREVIEW_SITE_STUB,
         permalink: "",
         headingLevel: 1,
@@ -237,7 +241,7 @@ export const AdjustmentPreview = ({
       // wrapper the text/buttons sit flush left with no padding, even though
       // the background image (a separate, non-"component-content" sibling)
       // renders correctly full-bleed either way.
-      previewComponent = (
+      return (
         <div className="break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10">
           {rendered}
         </div>
@@ -247,16 +251,28 @@ export const AdjustmentPreview = ({
         "Failed to render real-component preview, falling back to approximation",
         error,
       )
-      previewComponent = null
+      return null
     }
   }
 
-  if (previewComponent) {
+  // Gate on the default-layout render succeeding, same as every state did
+  // before per-state layout existed — a failure here falls through to the
+  // framed-<img> approximation below for every state, not just the one that
+  // failed. A state requesting a non-default `layout` re-renders on its own
+  // and, in the rarer case that only its specific layout throws, is simply
+  // skipped (its sibling states still render for real).
+  const defaultRender = renderPreviewComponent(undefined)
+
+  if (defaultRender) {
     return (
       <Flex wrap="wrap" align="flex-start" gap="1rem" w="100%">
         {previewStates.map((state) => {
           const displayWidth =
             FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
+          const rendered = state.layout
+            ? renderPreviewComponent(state.layout)
+            : defaultRender
+          if (!rendered) return null
           return (
             // The theme fetch suspends AND can throw; without the ErrorBoundary
             // a failed getTheme would tear down the whole modal instead of this
@@ -264,14 +280,14 @@ export const AdjustmentPreview = ({
             <ErrorBoundary
               key={state.id}
               fallbackRender={() => (
-                <PreviewFrame state={state}>{previewComponent}</PreviewFrame>
+                <PreviewFrame state={state}>{rendered}</PreviewFrame>
               )}
             >
               <Suspense
                 fallback={<Skeleton w={`${displayWidth}px`} h="9rem" />}
               >
                 <ThemedPreviewFrame siteId={siteId} state={state}>
-                  {previewComponent}
+                  {rendered}
                 </ThemedPreviewFrame>
               </Suspense>
             </ErrorBoundary>
