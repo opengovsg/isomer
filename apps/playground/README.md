@@ -10,7 +10,7 @@ From the repository root:
 pnpm --filter playground dev
 ```
 
-`predev` / `prebuild` compile `@opengovsg/isomer-components` (`build:module`) so a clean clone works without a separate build step. Root `pnpm dev` starts Studio only. Use the command above to run the playground.
+`dev` / `build` compile `@opengovsg/isomer-components` (`build:module`) first so a clean clone works without a separate build step. Root `pnpm dev` starts Studio only. Use the command above to run the playground.
 
 Alternatively, Turbo runs the same dependency ordering:
 

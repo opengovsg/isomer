@@ -3,16 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "pnpm --filter @opengovsg/isomer-components run build:module && tsc && vite build",
     "clean": "git clean -xdf dist .turbo node_modules",
-    "dev": "vite",
+    "dev": "pnpm --filter @opengovsg/isomer-components run build:module && vite",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
-    "prebuild": "pnpm --filter @opengovsg/isomer-components run build:module",
-    "predev": "pnpm --filter @opengovsg/isomer-components run build:module",
-    "preview": "vite preview",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json"
   },
   "dependencies": {
