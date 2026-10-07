@@ -180,18 +180,31 @@ export const AdjustmentPreview = ({
 
   // Real-component preview: render the actual published block (real copy,
   // scrim, frame behaviour) with the adjusted image + draft imageAdjustment
-  // spliced in, instead of the framed-<img> approximation below.
-  let previewComponent: React.ReactNode = null
-  if (block && typeof block === "object" && imageFieldName) {
+  // spliced in, instead of the framed-<img> approximation below. Rendered
+  // per-state (rather than once and reused) because a state can request a
+  // non-default `layout` (e.g. Blockquote's homepage/square variant).
+  const renderPreviewComponent = (
+    layout: AdjustmentPreviewState["layout"],
+  ): React.ReactNode => {
+    if (!block || typeof block !== "object" || !imageFieldName) return null
     try {
+      // Preview-only safety net: some components (e.g. Blockquote) gate
+      // whether they render the image at all on a sibling `imageAlt` field,
+      // to avoid publishing an inaccessible image when alt text was never
+      // filled in. An editor adjusting crop/focal mid-edit shouldn't have
+      // that silently blank the very image they're trying to preview — the
+      // real saved value (and the production render path) is untouched.
+      const existingAlt = (block as Record<string, unknown>).imageAlt
+      const hasAlt = typeof existingAlt === "string" && existingAlt.length > 0
       const component = {
         ...block,
         [imageFieldName]: adjustedSrc,
         imageAdjustment: adjustment,
+        ...(hasAlt ? {} : { imageAlt: "Preview image" }),
       } as IsomerComponent
       const rendered = renderComponent({
         component,
-        layout: "content",
+        layout: layout ?? "content",
         site: PREVIEW_SITE_STUB,
         permalink: "",
         headingLevel: 1,
@@ -206,7 +219,7 @@ export const AdjustmentPreview = ({
       // wrapper the text/buttons sit flush left with no padding, even though
       // the background image (a separate, non-"component-content" sibling)
       // renders correctly full-bleed either way.
-      previewComponent = (
+      return (
         <div className="break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10">
           {rendered}
         </div>
@@ -216,23 +229,35 @@ export const AdjustmentPreview = ({
         "Failed to render real-component preview, falling back to approximation",
         error,
       )
-      previewComponent = null
+      return null
     }
   }
 
-  if (previewComponent) {
+  // Gate on the default-layout render succeeding, same as every state did
+  // before per-state layout existed — a failure here falls through to the
+  // framed-<img> approximation below for every state, not just the one that
+  // failed. A state requesting a non-default `layout` re-renders on its own
+  // and, in the rarer case that only its specific layout throws, is simply
+  // skipped (its sibling states still render for real).
+  const defaultRender = renderPreviewComponent(undefined)
+
+  if (defaultRender) {
     return (
       <Flex wrap="wrap" align="flex-start" gap="1rem" w="100%">
         {previewStates.map((state) => {
           const displayWidth =
             FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
+          const rendered = state.layout
+            ? renderPreviewComponent(state.layout)
+            : defaultRender
+          if (!rendered) return null
           return (
             <Suspense
               key={state.id}
               fallback={<Skeleton w={`${displayWidth}px`} h="9rem" />}
             >
               <PreviewFrame siteId={siteId} state={state}>
-                {previewComponent}
+                {rendered}
               </PreviewFrame>
             </Suspense>
           )
