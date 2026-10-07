@@ -49,6 +49,10 @@ interface CropFocalControlProps {
   focalEnabled: boolean
   onCropChange: (crop: CropRectNormalized) => void
   onFocalChange: (focal: { x: number; y: number }) => void
+  // Fired once the image's true pixel aspect ratio is known, so a caller
+  // that needs to compute a ratio-correct crop independently (e.g. the
+  // modal's "Reset image" button) can do the same math this control does.
+  onImageAspectChange?: (aspect: number) => void
 }
 
 type DragTarget = "rect" | "focal" | HandlePosition | null
@@ -67,6 +71,7 @@ export const CropFocalControl = ({
   focalEnabled,
   onCropChange,
   onFocalChange,
+  onImageAspectChange,
 }: CropFocalControlProps): JSX.Element => {
   const boxRef = useRef<HTMLDivElement>(null)
   const [aspectRatio, setAspectRatio] = useState<number | undefined>(undefined)
@@ -75,7 +80,7 @@ export const CropFocalControl = ({
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null)
 
   const showCrop = cropMode !== "none"
-  const currentCrop = crop ?? defaultCropRect(lockedRatio)
+  const currentCrop = crop ?? defaultCropRect(lockedRatio, aspectRatio ?? 1)
   const currentFocal = focal ?? { x: 0.5, y: 0.5 }
 
   // Track the canvas box's own pixel size, so we can work out exactly where
@@ -116,20 +121,26 @@ export const CropFocalControl = ({
     y: imageBounds.y + r.y * imageBounds.height,
   })
 
-  // Seed a ratio-correct crop default on mount. The generic full-image
-  // default would violate a locked ratio, so a fixed-ratio component must
-  // start from a ratio-correct centered rect, not {0,0,1,1}.
+  // Seed a ratio-correct crop default once the image's true pixel aspect
+  // ratio is known. The generic full-image default would violate a locked
+  // ratio, so a fixed-ratio component must start from a ratio-correct
+  // centered rect, not {0,0,1,1} — and "ratio-correct" depends on the
+  // image's own aspect (see defaultCropRect), which isn't known until the
+  // <img> below fires onLoad, hence waiting on `aspectRatio` rather than
+  // seeding unconditionally on mount.
   useEffect(() => {
-    if (showCrop && crop === undefined) {
-      onCropChange(defaultCropRect(lockedRatio))
+    if (showCrop && crop === undefined && aspectRatio !== undefined) {
+      onCropChange(defaultCropRect(lockedRatio, aspectRatio))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [aspectRatio])
 
   const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
     const img = event.currentTarget
     if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-      setAspectRatio(img.naturalWidth / img.naturalHeight)
+      const aspect = img.naturalWidth / img.naturalHeight
+      setAspectRatio(aspect)
+      onImageAspectChange?.(aspect)
     }
   }
 
@@ -194,6 +205,7 @@ export const CropFocalControl = ({
         normalizedX,
         normalizedY,
         lockedRatio,
+        aspectRatio ?? 1,
       ),
     )
   }
