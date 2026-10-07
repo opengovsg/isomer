@@ -213,6 +213,7 @@ export const PublishOrUnpublishModal = ({
         posthog.capture("page_unpublished", {
           site_id: siteId,
           redirect_count: redirectCount,
+          source: "more_actions",
         })
         toast({
           status: "success",
@@ -248,6 +249,7 @@ export const PublishOrUnpublishModal = ({
       posthog.capture("page_unpublish_scheduled", {
         site_id: siteId,
         redirect_count: redirectCount,
+        source: "more_actions",
       })
       const formattedDate = lastScheduledAtRef.current
         ? format(lastScheduledAtRef.current, "d MMM yyyy, h:mm a")

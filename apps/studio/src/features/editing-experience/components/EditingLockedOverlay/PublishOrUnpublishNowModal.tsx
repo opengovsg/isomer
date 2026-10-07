@@ -12,6 +12,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
+import posthog from "posthog-js"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { trpc } from "~/utils/trpc"
 
@@ -64,11 +65,14 @@ export const PublishOrUnpublishNowModal = ({
   const { title, description, confirmLabel, successTitle, errorTitle } =
     COPY[action]
   // Only unpublish renders the redirect check, so only it can be pending.
-  const { isLoading: isRedirectCheckPending } = useUnpublishRedirectCount({
-    pageId,
-    siteId,
-    enabled: action === "unpublish",
-  })
+  const { data: redirectCountData, isLoading: isRedirectCheckPending } =
+    useUnpublishRedirectCount({
+      pageId,
+      siteId,
+      enabled: action === "unpublish",
+    })
+  // Tagged on the unpublish success event, mirroring PublishOrUnpublishModal.
+  const redirectCount = redirectCountData ?? null
   const utils = trpc.useUtils()
   const toast = useToast()
   const invalidateAfterAction = () =>
@@ -109,6 +113,13 @@ export const PublishOrUnpublishNowModal = ({
         onClose()
       },
       onSuccess: () => {
+        // "scheduled_override" sets this apart from the more-actions flow: the
+        // user brought a scheduled unpublish forward, cancelling the schedule.
+        posthog.capture("page_unpublished", {
+          site_id: siteId,
+          redirect_count: redirectCount,
+          source: "scheduled_override",
+        })
         toast({
           status: "success",
           title: successTitle,
