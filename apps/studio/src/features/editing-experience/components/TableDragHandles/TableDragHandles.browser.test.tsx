@@ -971,6 +971,10 @@ describe("TableDragHandles", () => {
     expect(getComputedStyle(button).backgroundColor).toBe("rgb(255, 255, 255)")
     expect(button.getAttribute("data-emphasis")).toBe("ready")
     expect(getComputedStyle(button).opacity).toBe("1")
+    const readyIcon = button.querySelector("svg")
+    expect(readyIcon && getComputedStyle(readyIcon).color).toBe(
+      "rgb(33, 100, 218)",
+    )
   })
 
   it("shows the select-table button in the gutter at the top-left corner", async () => {
@@ -1012,8 +1016,12 @@ describe("TableDragHandles", () => {
       Math.abs(buttonRect.top + buttonRect.height / 2 - tableRect.top),
     ).toBeLessThan(2)
     expect(button.getAttribute("data-emphasis")).toBe("quiet")
-    expect(Number(getComputedStyle(button).opacity)).toBeLessThan(1)
-    expect(getComputedStyle(button).boxShadow).toBe("none")
+    expect(getComputedStyle(button).opacity).toBe("1")
+    expect(getComputedStyle(button).boxShadow).not.toBe("none")
+    const quietIcon = button.querySelector("svg")
+    expect(quietIcon && getComputedStyle(quietIcon).color).toBe(
+      "rgb(160, 164, 173)",
+    )
   })
 
   it("selects every cell and hides the button after it is clicked", async () => {

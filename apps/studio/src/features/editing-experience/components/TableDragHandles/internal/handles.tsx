@@ -71,15 +71,14 @@ export const SelectTableButton = ({
     position="absolute"
     left={`${left}px`}
     top={`${top}px`}
-    transform={`translate(-50%, -50%) scale(${isEmphasized ? 1 : 0.85})`}
+    transform="translate(-50%, -50%)"
     zIndex="4"
     p="0.5rem"
     borderRadius="full"
     cursor="pointer"
-    opacity={isEmphasized ? 1 : 0.45}
     bg="base.canvas.default"
-    boxShadow={isEmphasized ? "0 0 10px 0 rgba(191, 191, 191, 0.50)" : "none"}
-    transition="opacity 0.15s, box-shadow 0.15s, transform 0.15s, background-color 0.15s"
+    boxShadow="0 0 10px 0 rgba(191, 191, 191, 0.50)"
+    transition="box-shadow 0.15s, background-color 0.15s, color 0.15s"
     sx={{
       appearance: "none",
       WebkitAppearance: "none",
