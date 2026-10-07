@@ -156,6 +156,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
 
   const handleChange = useCallback(
     (data: IsomerComponent) => {
+      // TEMP DIAGNOSTIC — remove once resolved.
+      console.warn("[diag] ComplexEditorStateDrawer handleChange received", {
+        currActiveIdx,
+        data,
+      })
       setPreviewPageState((oldPageState) => {
         const updatedBlocks = Array.from(oldPageState.content)
         updatedBlocks[currActiveIdx] = data
@@ -290,10 +295,26 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   }, [componentType, pageLayout])
 
   if (currActiveIdx === -1 || currActiveIdx > previewPageState.content.length) {
+    // TEMP DIAGNOSTIC — investigating an upload silently reverting; remove once resolved.
+    console.warn(
+      "[diag] ComplexEditorStateDrawer unmounting FormBuilder: currActiveIdx out of range",
+      { currActiveIdx, contentLength: previewPageState.content.length },
+    )
     return <></>
   }
 
   if (!component || !subSchema || !validateFn) {
+    // TEMP DIAGNOSTIC — investigating an upload silently reverting; remove once resolved.
+    console.warn(
+      "[diag] ComplexEditorStateDrawer unmounting FormBuilder: missing component/schema",
+      {
+        hasComponent: !!component,
+        hasSubSchema: !!subSchema,
+        hasValidateFn: !!validateFn,
+        componentType,
+        pageLayout,
+      },
+    )
     return <></>
   }
 

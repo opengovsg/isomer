@@ -65,7 +65,11 @@ export const FileAttachment = ({
           onUploadedFile?.(file)
           if (shouldFetchResource) {
             void handleAssetUpload(path)
-              .then((src) => setHref(src))
+              .then((src) => {
+                // TEMP DIAGNOSTIC — remove once resolved.
+                console.warn("[diag] FileAttachment calling setHref", { src })
+                setHref(src)
+              })
               .catch(() => {
                 toast({
                   title: "Failed to upload file",
