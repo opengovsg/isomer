@@ -1,6 +1,6 @@
 import { trpc } from "~/utils/trpc"
 
-import type { UseCollectionTagsInput } from "./collectionTagsTypes"
+import type { UseCollectionTagsInput } from "./types"
 
 export function useSuspenseCollectionTags({
   resourceId,
