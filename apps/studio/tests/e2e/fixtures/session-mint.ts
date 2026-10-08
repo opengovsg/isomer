@@ -7,13 +7,11 @@ import { type SessionData } from "~/lib/types/session"
 import {
   generateSessionOptions,
   getIronPassword,
+  SINGPASS_COMPLETED_SESSION_TTL_HOURS,
 } from "~/server/modules/auth/session"
 import { db } from "~/server/modules/database"
 
 import { storageStateFor, TEST_EMAILS, type Role } from "./auth"
-
-/** Matches post–Singpass-callback session TTL in `singpass.router.ts`. */
-export const E2E_SESSION_TTL_HOURS = 12
 
 export const setSingpassUuidFor = async (email: string, uuid: string) => {
   await db
@@ -25,7 +23,7 @@ export const setSingpassUuidFor = async (email: string, uuid: string) => {
 
 export const sealSessionCookieValue = async (
   userId: string,
-  ttlInHours = E2E_SESSION_TTL_HOURS,
+  ttlInHours = SINGPASS_COMPLETED_SESSION_TTL_HOURS,
 ): Promise<string> => {
   const options = generateSessionOptions({ ttlInHours })
   return sealData(
@@ -36,7 +34,7 @@ export const sealSessionCookieValue = async (
 
 export const unsealSessionCookieValue = async (
   cookieValue: string,
-  ttlInHours = E2E_SESSION_TTL_HOURS,
+  ttlInHours = SINGPASS_COMPLETED_SESSION_TTL_HOURS,
 ) =>
   unsealData<{ userId?: string }>(cookieValue, {
     password: getIronPassword(),
@@ -46,7 +44,7 @@ export const unsealSessionCookieValue = async (
 export const buildPlaywrightStorageState = (
   baseURL: string,
   sessionCookieValue: string,
-  ttlInHours = E2E_SESSION_TTL_HOURS,
+  ttlInHours = SINGPASS_COMPLETED_SESSION_TTL_HOURS,
 ) => {
   const url = new URL(baseURL)
   const expires = Math.floor(Date.now() / 1000) + ttlInHours * 60 * 60
