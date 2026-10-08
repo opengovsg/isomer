@@ -14,7 +14,7 @@ If the request is to "review this PR" with full sign-off authority (typical huma
 - The current branch's diff against `main`.
 - `docs/risk-taxonomy.md` — file-glob → risk tier mapping. **Read this at run time, not from memory.**
 - `docs/ai-workflow.md` — canonical Linear/Figma fields and PR conventions.
-- All `CLAUDE.md` files under directories touched by the diff.
+- All `AGENTS.md` files under directories touched by the diff.
 
 ## Procedure
 
@@ -22,7 +22,7 @@ If the request is to "review this PR" with full sign-off authority (typical huma
 2. **Load the taxonomy.** Read `docs/risk-taxonomy.md`. Build the glob → tier table from the file as-is — do not hardcode.
 3. **Tier each file.** Match top-down; first match wins for that file. The PR tier is the max across all files.
 4. **Hot-path scan.** Cross-reference the "Hot paths to flag" section. Note any matches.
-5. **Convention scan.** For each touched directory with a `CLAUDE.md`, read it and look for diff content that violates a documented "Anti-pattern" or rule. Cite the file:line.
+5. **Convention scan.** For each touched directory with a `AGENTS.md`, read it and look for diff content that violates a documented "Anti-pattern" or rule. Cite the file:line.
 6. **Coverage scan.**
    - Touched `apps/studio/src/server/modules/**` without a corresponding `__tests__/` change → flag missing test.
    - Touched `packages/components/src/templates/**/components/**` without a `*.stories.tsx` change → flag missing story.
@@ -63,7 +63,7 @@ The PR comment must be exactly this shape:
 
 - **Never approve, never request changes, never merge.** This skill comments only.
 - **Never bypass the taxonomy.** If the taxonomy says `risk:high`, the comment says `risk:high` — even if the diff "looks small".
-- **Read the taxonomy and CLAUDE.md files at run time.** Do not cache assumptions about file contents; the team updates them frequently.
+- **Read the taxonomy and AGENTS.md files at run time.** Do not cache assumptions about file contents; the team updates them frequently.
 - **Cite file:line for every convention violation.** Vague comments are worse than no comments.
 - **Do not summarise the diff.** That's the PR description's job. This comment is grading only.
 

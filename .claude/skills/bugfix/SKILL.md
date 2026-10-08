@@ -37,7 +37,7 @@ If you can't fit the fix inside these limits, stop. Post a Linear comment listin
 
 - Make the change on the current (triage) branch — same branch as the failing test, so the fix and the test land together.
 - Reuse existing helpers and utilities. Do not introduce new abstractions for a single bug fix.
-- Respect the area's `CLAUDE.md` (read it before editing). Cite the rule you're following in the PR body if non-obvious.
+- Respect the area's `AGENTS.md` (read it before editing). Cite the rule you're following in the PR body if non-obvious.
 - Add no comments unless the *why* of the fix would surprise a future reader (see project convention).
 
 ### 4. Run the full local suite
