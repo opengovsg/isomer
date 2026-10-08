@@ -7,7 +7,6 @@ import { omit, pick } from "lodash-es"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
-import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
 import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
@@ -26,6 +25,7 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import { IS_UNPUBLISH_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import { mockFeatureFlags } from "~/lib/growthbookOffline"
 import { normalizeRedirectPath } from "~/schemas/redirect/utils"
 import { createCallerFactory } from "~/server/trpc"
 import {
