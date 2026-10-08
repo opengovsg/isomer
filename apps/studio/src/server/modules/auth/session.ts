@@ -41,6 +41,9 @@ export const toSessionVerificationToken = (
   expires: new Date(token.expires).getTime(),
 })
 
+/** Iron-session cookie TTL after a completed Singpass login (callback). */
+export const SINGPASS_COMPLETED_SESSION_TTL_HOURS = 12
+
 interface GenerateSessionOptionsProps {
   ttlInHours?: number
 }

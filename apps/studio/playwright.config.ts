@@ -22,6 +22,8 @@ export default defineConfig({
   // logs also show each test's pass/fail line with its duration.
   reporter: process.env.CI ? [["github"], ["list"]] : "list",
   testDir: "./tests/e2e",
+  // Vitest-only specs colocated under fixtures/ (e.g. session-mint.test.ts).
+  testIgnore: [/fixtures\/.*\.test\.ts$/],
   outputDir: "./tests/e2e/test-results", // CI uploads this path as the e2e-test-results artifact (.github/workflows/ci.yml)
   timeout: 35e3,
   fullyParallel: true, // run tests fully in parallel
@@ -38,6 +40,11 @@ export default defineConfig({
     {
       name: "singpass",
       testMatch: /singpass\.test\.ts/,
+      use: { ...baseUse },
+    },
+    {
+      name: "login-flow",
+      testMatch: /login-flow\.test\.ts/,
       use: { ...baseUse },
     },
     ...ROLES.map((role) => ({

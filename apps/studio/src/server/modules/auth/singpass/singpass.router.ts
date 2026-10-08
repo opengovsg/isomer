@@ -11,7 +11,11 @@ import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import { logUserEvent } from "../../audit/audit.service"
 import { recordUserLogin } from "../auth.service"
-import { clearSessionData, generateSessionOptions } from "../session"
+import {
+  clearSessionData,
+  generateSessionOptions,
+  SINGPASS_COMPLETED_SESSION_TTL_HOURS,
+} from "../session"
 import { getAuthorizationUrl, login } from "./singpass.service"
 
 export const singpassRouter = router({
@@ -195,7 +199,11 @@ export const singpassRouter = router({
 
       clearSessionData(ctx.session)
       ctx.session.userId = verifiedUserId
-      ctx.session.updateConfig(generateSessionOptions({ ttlInHours: 12 }))
+      ctx.session.updateConfig(
+        generateSessionOptions({
+          ttlInHours: SINGPASS_COMPLETED_SESSION_TTL_HOURS,
+        }),
+      )
       await ctx.session.save()
 
       return {
