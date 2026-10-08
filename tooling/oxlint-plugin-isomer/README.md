@@ -10,7 +10,7 @@ Keep `@oxlint/plugins` on the **same version** as `oxlint` when upgrading.
 
 ### `isomer/one-hook-per-file`
 
-Any TypeScript file may export at most **one** custom React hook (identifiers matching `use[A-Z]…`).
+Any TypeScript file may export at most **one** custom React hook (identifiers matching `use[A-Z]…`), except **barrel** files that only re-export hooks via `export { … } from "…"` (for example a folder `index.ts`).
 
 ## Development
 

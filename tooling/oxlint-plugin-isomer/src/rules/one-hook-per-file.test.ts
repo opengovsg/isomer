@@ -15,6 +15,10 @@ tester.run("isomer/one-hook-per-file", oneHookPerFileRule, {
       export const usePublic = () => useInternal()
     `,
     "export type UseFooOptions = { x: number }",
+    `
+      export { useFoo } from "./useFoo"
+      export { useBar } from "./useBar"
+    `,
   ],
   invalid: [
     {

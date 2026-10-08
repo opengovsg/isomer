@@ -101,12 +101,24 @@ export const oneHookPerFileRule = defineRule({
   // Per-file state: `createOnce` would share the hook map across the whole lint run.
   create(context) {
     const exportedHooks = new Map<string, HookExport>()
+    let hasLocalHookExport = false
 
     return {
       ExportNamedDeclaration(node) {
-        for (const hook of hooksFromExportNamedDeclaration(
-          node as Parameters<typeof hooksFromExportNamedDeclaration>[0],
-        )) {
+        const exportNode = node as Parameters<
+          typeof hooksFromExportNamedDeclaration
+        >[0] & { source?: unknown | null }
+
+        const hooks = hooksFromExportNamedDeclaration(exportNode)
+        if (hooks.length === 0) {
+          return
+        }
+
+        if (exportNode.source == null) {
+          hasLocalHookExport = true
+        }
+
+        for (const hook of hooks) {
           exportedHooks.set(hook.name, hook)
         }
       },
@@ -119,6 +131,11 @@ export const oneHookPerFileRule = defineRule({
       },
       "Program:exit"() {
         if (exportedHooks.size <= 1) {
+          return
+        }
+
+        // Barrel files may re-export multiple hooks via `export { … } from "…"`.
+        if (!hasLocalHookExport) {
           return
         }
 
