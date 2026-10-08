@@ -60,18 +60,6 @@ export const Empty: Story = {
   },
 }
 
-export const GradientSelected: Story = {
-  args: {
-    data: { variant: "gradient" },
-  },
-}
-
-export const BlockSelected: Story = {
-  args: {
-    data: { variant: "block" },
-  },
-}
-
 export const ChoosingStyle: Story = {
   args: {
     data: { variant: "gradient" },
