@@ -3,7 +3,7 @@ import {
   TAG_CATEGORY_TYPE,
 } from "@opengovsg/isomer-components"
 
-import type { CollectionTags } from "../../hooks/useCollectionTags"
+import type { CollectionTags } from "../../hooks/collectionTagsTypes"
 import { getCollectionSortOptions } from "../getCollectionSortOptions"
 
 const EVENT_FILTER_ID = "550e8400-e29b-41d4-a716-446655440000"

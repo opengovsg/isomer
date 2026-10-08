@@ -1,5 +1,5 @@
 import type { JsonFormsRendererRegistryEntry } from "@jsonforms/core"
-import type { CollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
+import type { CollectionTags } from "~/features/editing-experience/hooks/collectionTagsTypes"
 import { JsonForms } from "@jsonforms/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import {

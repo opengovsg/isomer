@@ -6,8 +6,6 @@ import type { UseCollectionTagsInput } from "./collectionTagsTypes"
 // item (via resourceId). Callers gate UI on whether tags.length > 0 — e.g.
 // JsonFormsTaggedControl, MetadataEditorStateDrawer, EditLinkPreview.
 
-export type { CollectionTags } from "./collectionTagsTypes"
-
 export function useCollectionTags({
   resourceId,
   siteId,
