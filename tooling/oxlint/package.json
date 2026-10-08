@@ -10,8 +10,8 @@
     "./base.json": "./base.json"
   },
   "dependencies": {
-    "oxlint-plugin-isomer": "workspace:*",
     "oxlint": "catalog:",
+    "oxlint-plugin-isomer": "workspace:*",
     "oxlint-tsgolint": "catalog:"
   }
 }
