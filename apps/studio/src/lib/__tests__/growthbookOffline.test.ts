@@ -4,7 +4,6 @@ import { env } from "~/env.mjs"
 import {
   IS_AUDIT_LOG_ENABLED_FEATURE_KEY,
   IS_SINGPASS_ENABLED_FEATURE_KEY,
-  IS_UNPUBLISH_ENABLED_FEATURE_KEY,
 } from "~/lib/growthbook"
 import { createOfflineGrowthBook } from "~/lib/growthbookOffline"
 import { createGrowthBookContext } from "~/server/context"
@@ -29,7 +28,6 @@ describe("createOfflineGrowthBook", () => {
     expect(gb.getFeatureValue(IS_SINGPASS_ENABLED_FEATURE_KEY, false)).toBe(
       true,
     )
-    expect(gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)).toBe(true)
     expect(gb.isOn(IS_AUDIT_LOG_ENABLED_FEATURE_KEY)).toBe(false)
   })
 })

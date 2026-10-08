@@ -7,7 +7,6 @@ import { omit, pick } from "lodash-es"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
-import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
   applySession,
@@ -24,8 +23,6 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { IS_UNPUBLISH_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
-import { mockFeatureFlags } from "~/lib/growthbookOffline"
 import { normalizeRedirectPath } from "~/schemas/redirect/utils"
 import { createCallerFactory } from "~/server/trpc"
 import {
@@ -2413,48 +2410,6 @@ describe("page.router", async () => {
       )
     })
 
-    describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
-      afterEach(() => {
-        // Restore the baseline forced features so the flag doesn't leak.
-        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
-      })
-
-      it("should throw 404 as if the page cannot be unpublished, even for an otherwise-valid page", async () => {
-        // Arrange — dark-launch guard: same NOT_FOUND a caller would see for
-        // an unsupported resource type, so the flag's existence isn't
-        // observable from the error shape
-        mockGrowthBook.setForcedFeatures(
-          new Map([
-            ...mockFeatureFlags,
-            [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
-          ]),
-        )
-        const { site, page } = await setupPageResource({
-          resourceType: ResourceType.Page,
-          state: ResourceState.Published,
-          userId: session.userId ?? undefined,
-        })
-        await setupPublisherPermissions({
-          userId: session.userId ?? undefined,
-          siteId: site.id,
-        })
-
-        // Act
-        const result = caller.unpublishPage({
-          siteId: site.id,
-          pageId: Number(page.id),
-        })
-
-        // Assert
-        await expect(result).rejects.toThrow(
-          new TRPCError({
-            code: "NOT_FOUND",
-            message: "This page either does not exist or cannot be unpublished",
-          }),
-        )
-      })
-    })
-
     it("should throw if the page is not currently published", async () => {
       // Arrange
       const { site, page } = await setupPageResource({
@@ -4469,43 +4424,6 @@ describe("page.router", async () => {
       )
     })
 
-    describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
-      afterEach(() => {
-        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
-      })
-
-      it("should throw 404 as if the page cannot be unpublished, even for an otherwise-valid schedule request", async () => {
-        mockGrowthBook.setForcedFeatures(
-          new Map([
-            ...mockFeatureFlags,
-            [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
-          ]),
-        )
-        const { site, page } = await setupPageResource({
-          resourceType: ResourceType.Page,
-          state: ResourceState.Published,
-          userId: session.userId ?? undefined,
-        })
-        await setupPublisherPermissions({
-          userId: session.userId ?? undefined,
-          siteId: site.id,
-        })
-
-        const result = caller.scheduleUnpublish({
-          siteId: site.id,
-          pageId: Number(page.id),
-          scheduledAt: futureDate,
-        })
-
-        await expect(result).rejects.toThrow(
-          new TRPCError({
-            code: "NOT_FOUND",
-            message: "This page either does not exist or cannot be unpublished",
-          }),
-        )
-      })
-    })
-
     it("should throw 404 if pageId refers to the RootPage — otherwise it could be scheduled for unpublish and executed unchecked by the cron", async () => {
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.RootPage,
@@ -4999,45 +4917,6 @@ describe("page.router", async () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
-    })
-
-    describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
-      afterEach(() => {
-        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
-      })
-
-      it("should throw 404 as if the page cannot be unpublished, even for an otherwise-valid cancel request", async () => {
-        mockGrowthBook.setForcedFeatures(
-          new Map([
-            ...mockFeatureFlags,
-            [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
-          ]),
-        )
-        const { site, page } = await setupPageResource({
-          resourceType: ResourceType.Page,
-          state: ResourceState.Published,
-          userId: session.userId ?? undefined,
-          scheduledAt: futureDate,
-          scheduledBy: session.userId,
-          scheduledAction: ScheduledAction.Unpublish,
-        })
-        await setupPublisherPermissions({
-          userId: session.userId ?? undefined,
-          siteId: site.id,
-        })
-
-        const result = caller.cancelScheduleUnpublish({
-          siteId: site.id,
-          pageId: Number(page.id),
-        })
-
-        await expect(result).rejects.toThrow(
-          new TRPCError({
-            code: "NOT_FOUND",
-            message: "This page either does not exist or cannot be unpublished",
-          }),
-        )
-      })
     })
 
     it("should throw if the page has no scheduled unpublish (e.g. scheduled for publish instead)", async () => {
