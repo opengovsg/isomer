@@ -13,9 +13,9 @@ import {
   buildPlaywrightStorageState,
   sealSessionCookieValue,
   unsealSessionCookieValue,
-} from "../tests/e2e/fixtures/session-mint"
+} from "./session-mint"
 
-describe("e2e session mint", () => {
+describe("session-mint", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })

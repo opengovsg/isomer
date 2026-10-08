@@ -107,17 +107,19 @@ const globalSetup = async (config: FullConfig) => {
     }
   }
 
-  for (const role of roles) {
-    try {
-      await mintStorageStateForRole({ role, baseURL })
-    } catch (error) {
-      console.error(
-        `Failed to mint storage state for role=${role} email=${TEST_EMAILS[role]}:`,
-        error,
-      )
-      throw error
-    }
-  }
+  await Promise.all(
+    roles.map(async (role) => {
+      try {
+        await mintStorageStateForRole({ role, baseURL })
+      } catch (error) {
+        console.error(
+          `Failed to mint storage state for role=${role} email=${TEST_EMAILS[role]}:`,
+          error,
+        )
+        throw error
+      }
+    }),
+  )
 }
 
 export default globalSetup
