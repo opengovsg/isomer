@@ -10,6 +10,10 @@ const queryResult = vi.hoisted(() => ({
   value: {} as Record<string, unknown>,
 }))
 
+// The redirect-warning funnel checkpoint captures via posthog on render; stub
+// it so these tests don't reach the real client.
+vi.mock("posthog-js", () => ({ default: { capture: vi.fn() } }))
+
 // The component only touches this one read; stub it so we can render each
 // branch without a backend.
 vi.mock("~/utils/trpc", () => ({

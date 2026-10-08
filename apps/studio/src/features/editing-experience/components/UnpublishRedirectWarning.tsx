@@ -1,4 +1,5 @@
 import { Infobox } from "@opengovsg/design-system-react"
+import { usePostHogOptionalStep } from "~/hooks/usePostHogOptionalStep"
 import { trpc } from "~/utils/trpc"
 
 // Warns when live redirects point to this page — unpublishing dead-ends them
@@ -20,6 +21,16 @@ export const UnpublishRedirectWarning = ({
     siteId,
     resourceId: String(pageId),
     includeContainerReference: true,
+  })
+
+  // Funnel checkpoint: fires once the count resolves, tagged skipped when there
+  // were no redirects — so "warned about N and proceeded" is distinguishable
+  // from "nothing to warn about". An errored check stays un-fired (unknown).
+  usePostHogOptionalStep({
+    event: "unpublish_redirect_warning",
+    isReady: !isPending && !isError,
+    isBypassed: redirectCount === 0,
+    properties: { site_id: siteId, redirect_count: redirectCount ?? 0 },
   })
 
   // A pending or failed check must not read as "no redirects" — show both.
