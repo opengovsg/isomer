@@ -23,8 +23,8 @@ describe("createOfflineGrowthBook", () => {
     const gb = createOfflineGrowthBook()
 
     // Assert
-    expect(init).not.toHaveBeenCalled()
-    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(init).toHaveBeenCalledTimes(0)
+    expect(fetchSpy).toHaveBeenCalledTimes(0)
     expect(gb.ready).toBe(true)
     expect(gb.getFeatureValue(IS_SINGPASS_ENABLED_FEATURE_KEY, false)).toBe(
       true,
@@ -48,7 +48,7 @@ describe("createGrowthBookContext", () => {
     const gb = await createGrowthBookContext()
 
     // Assert
-    expect(init).not.toHaveBeenCalled()
+    expect(init).toHaveBeenCalledTimes(0)
     expect(gb.ready).toBe(true)
     expect(gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)).toBe(true)
   })
