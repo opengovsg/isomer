@@ -2,8 +2,8 @@ import type { Extensions } from "@tiptap/react"
 import { useEditor } from "@tiptap/react"
 import TextDirection from "tiptap-text-direction"
 
-import { type BaseEditorProps } from "./baseEditorTypes"
 import { BASE_EXTENSIONS, HEADING_TYPE, PARAGRAPH_TYPE } from "./constants"
+import { type BaseEditorProps } from "./types"
 
 export const useBaseEditor = ({
   data,

@@ -1,7 +1,7 @@
 import CharacterCount from "@tiptap/extension-character-count"
 
 import { BANNER_MAX_CHARACTERS } from "../../components/constants"
-import { type BaseEditorProps } from "./baseEditorTypes"
+import { type BaseEditorProps } from "./types"
 import { useBaseEditor } from "./useBaseEditor"
 
 // NOTE: The same for now because no extra extensions
