@@ -41,10 +41,12 @@ import { useTablePagination } from "~/hooks/useTablePagination"
 import type { RedirectRow, RedirectSortField } from "../types"
 import type { DestinationDisplay, ResolvedDestination } from "../utils"
 import { REDIRECTS_PAGE_SIZE } from "../constants"
-import { useCountRedirects } from "../hooks/useCountRedirects"
-import { useDeleteRedirect } from "../hooks/useDeleteRedirect"
-import { useListRedirects } from "../hooks/useListRedirects"
-import { useResolveRedirectReferences } from "../hooks/useResolveRedirectReferences"
+import {
+  useCountRedirects,
+  useDeleteRedirect,
+  useListRedirects,
+  useResolveRedirectReferences,
+} from "../hooks"
 import { useRedirectManagement } from "../RedirectManagementContext"
 import {
   formatAddedAt,

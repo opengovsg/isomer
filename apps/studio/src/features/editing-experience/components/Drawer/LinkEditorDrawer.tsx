@@ -14,7 +14,7 @@ import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-import { useCollectionTags } from "../../hooks/useCollectionTags"
+import { useCollectionTags } from "../../hooks/collectionTags"
 import { validateRequiredDateFilters } from "../../utils/validateRequiredDateFilters"
 import { validateRequiredTags } from "../../utils/validateRequiredTags"
 import { ActivateRawJsonEditorMode } from "../ActivateRawJsonEditorMode"

@@ -32,7 +32,7 @@ import { redirectKind } from "~/schemas/redirect"
 import { normalizeRedirectSource } from "~/schemas/redirect/utils"
 
 import { WILDCARD_HINT } from "../constants"
-import { useCreateRedirect } from "../hooks/useCreateRedirect"
+import { useCreateRedirect } from "../hooks"
 import { addRedirectSchema, type AddRedirectInput } from "../types"
 import { BulkUploadRedirectsModal } from "./BulkUploadRedirectsModal"
 import { SelectDestinationPageModal } from "./SelectDestinationPageModal"

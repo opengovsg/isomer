@@ -1,4 +1,4 @@
-import type { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
+import type { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { TextMenuBar } from "~/components/PageEditor/MenuBar"
 
 import { Editor } from "./components"

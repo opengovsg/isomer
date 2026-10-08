@@ -1,5 +1,5 @@
 import type { JsonFormsRendererRegistryEntry } from "@jsonforms/core"
-import type { CollectionTags } from "~/features/editing-experience/hooks/collectionTagsTypes"
+import type { CollectionTags } from "~/features/editing-experience/hooks/collectionTags"
 import { JsonForms } from "@jsonforms/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import {
@@ -26,7 +26,7 @@ vi.mock("~/hooks/useQueryParse", () => ({
   useQueryParse: () => ({ siteId: 1, pageId: 1 }),
 }))
 
-vi.mock("~/features/editing-experience/hooks/useCollectionTags", () => ({
+vi.mock("~/features/editing-experience/hooks/collectionTags", () => ({
   useCollectionTags,
 }))
 

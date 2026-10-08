@@ -3,7 +3,7 @@ import { isEqual } from "lodash-es"
 import { useEffect, useRef } from "react"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
-import { hasContentEditAtom } from "../atoms"
+import { hasContentEditAtom } from "../../atoms"
 
 export const useContentEditTracker = (): void => {
   const store = useStore()

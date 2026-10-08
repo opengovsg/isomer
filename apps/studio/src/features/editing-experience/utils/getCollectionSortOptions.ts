@@ -3,7 +3,7 @@ import {
   isDateFilter,
 } from "@opengovsg/isomer-components"
 
-import type { CollectionTags } from "../hooks/collectionTagsTypes"
+import type { CollectionTags } from "../hooks/collectionTags"
 
 const BASE_COLLECTION_SORT_OPTIONS = [
   {

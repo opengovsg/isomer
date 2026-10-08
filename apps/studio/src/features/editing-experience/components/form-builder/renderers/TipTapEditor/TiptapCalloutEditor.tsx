@@ -1,4 +1,4 @@
-import type { useCalloutEditor } from "~/features/editing-experience/hooks/useTextEditor/useCalloutEditor"
+import type { useCalloutEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { CalloutMenuBar } from "~/components/PageEditor/MenuBar"
 
 import { Editor } from "./components"

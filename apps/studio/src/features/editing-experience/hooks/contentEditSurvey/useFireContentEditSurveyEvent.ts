@@ -2,8 +2,8 @@ import { useStore } from "jotai"
 import { useCallback } from "react"
 import { trackEvent } from "~/lib/intercom"
 
-import type { ContentEditSurveyEvent } from "../constants"
-import { hasContentEditAtom } from "../atoms"
+import type { ContentEditSurveyEvent } from "../../constants"
+import { hasContentEditAtom } from "../../atoms"
 
 export const useFireContentEditSurveyEvent = (): ((
   eventName: ContentEditSurveyEvent,

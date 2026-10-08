@@ -1,6 +1,6 @@
 import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 
-import type { CollectionTags } from "../../hooks/collectionTagsTypes"
+import type { CollectionTags } from "../../hooks/collectionTags"
 import { validateRequiredTags } from "../validateRequiredTags"
 
 const REQUIRED_OPTION_ID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"

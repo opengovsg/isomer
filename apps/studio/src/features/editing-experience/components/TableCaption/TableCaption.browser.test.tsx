@@ -6,7 +6,7 @@ import { EditorContent } from "@tiptap/react"
 import { useState } from "react"
 import { describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
-import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
+import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { theme } from "~/theme"
 
 import { DEFAULT_TABLE_CAPTION, LEGACY_DEFAULT_TABLE_CAPTION } from "./utils"

@@ -27,7 +27,7 @@ vi.mock("next/router", () => ({
 // directly at module scope — harmless under jsdom but a ReferenceError under
 // Browser Mode's real-browser runtime, where `process` doesn't exist. It's
 // unrelated to the permission gate under test, so stub it out.
-vi.mock("../../hooks/useFireContentEditSurveyEvent", () => ({
+vi.mock("../../hooks/contentEditSurvey", () => ({
   useFireContentEditSurveyEvent: () => vi.fn(),
 }))
 

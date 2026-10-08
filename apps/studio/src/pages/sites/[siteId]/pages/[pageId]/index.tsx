@@ -5,8 +5,10 @@ import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { EditPageDrawer } from "~/features/editing-experience/components/Drawer/EditPageDrawer"
 import { EditingLockedOverlay } from "~/features/editing-experience/components/EditingLockedOverlay"
 import { EditPagePreview } from "~/features/editing-experience/components/preview/EditPagePreview"
-import { useContentEditTracker } from "~/features/editing-experience/hooks/useContentEditTracker"
-import { useLeftEditorSurveyTracker } from "~/features/editing-experience/hooks/useLeftEditorSurveyTracker"
+import {
+  useContentEditTracker,
+  useLeftEditorSurveyTracker,
+} from "~/features/editing-experience/hooks/contentEditSurvey"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useResourceLocalViewHistory } from "~/hooks/useResourceLocalViewHistory"

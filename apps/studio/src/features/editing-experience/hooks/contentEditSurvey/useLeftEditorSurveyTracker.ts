@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useEffect } from "react"
 
-import { LEFT_EDITOR_AFTER_EDITING_EVENT } from "../constants"
+import { LEFT_EDITOR_AFTER_EDITING_EVENT } from "../../constants"
 import { useFireContentEditSurveyEvent } from "./useFireContentEditSurveyEvent"
 
 export const useLeftEditorSurveyTracker = (): void => {

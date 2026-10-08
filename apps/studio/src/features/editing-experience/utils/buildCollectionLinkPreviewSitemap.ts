@@ -2,7 +2,7 @@ import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 
-import type { CollectionTags } from "../hooks/collectionTagsTypes"
+import type { CollectionTags } from "../hooks/collectionTags"
 
 interface BuildCollectionLinkPreviewSitemapProps {
   /** Full permalink of the link being edited, e.g. `/resources/circulars/my-link`. */

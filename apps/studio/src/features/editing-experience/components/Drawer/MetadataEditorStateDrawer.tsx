@@ -20,8 +20,10 @@ import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-import type { CollectionTags } from "../../hooks/collectionTagsTypes"
-import { useCollectionTags } from "../../hooks/useCollectionTags"
+import {
+  type CollectionTags,
+  useCollectionTags,
+} from "../../hooks/collectionTags"
 import { pageSchema } from "../../schema"
 import { validateRequiredDateFilters } from "../../utils/validateRequiredDateFilters"
 import { validateRequiredTags } from "../../utils/validateRequiredTags"

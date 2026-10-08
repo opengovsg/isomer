@@ -1,3 +1,7 @@
 export { HEADING_TYPE, PARAGRAPH_TYPE } from "./constants"
 export type { BaseEditorProps, BaseEditorType } from "./baseEditor"
+export { useAccordionEditor } from "./useAccordionEditor"
+export { useCalloutEditor } from "./useCalloutEditor"
+export { useProseEditor } from "./useProseEditor"
+export { useSimpleProseEditor } from "./useSimpleProseEditor"
 export { useTextEditor } from "./useTextEditor"

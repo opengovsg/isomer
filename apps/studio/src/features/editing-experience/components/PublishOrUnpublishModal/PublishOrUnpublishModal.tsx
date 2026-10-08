@@ -36,7 +36,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { ActionMode, PublishOrUnpublishAction } from "./ActionOptionsInput"
 import { PUBLISHED_AFTER_EDITING_EVENT } from "../../constants"
-import { useFireContentEditSurveyEvent } from "../../hooks/useFireContentEditSurveyEvent"
+import { useFireContentEditSurveyEvent } from "../../hooks/contentEditSurvey"
 import { UnpublishRedirectWarning } from "../UnpublishRedirectWarning"
 import { ActionOptionsInput } from "./ActionOptionsInput"
 import { ScheduleBanner, UNPUBLISH_WINDOW_MINUTES } from "./ScheduleBanner"
