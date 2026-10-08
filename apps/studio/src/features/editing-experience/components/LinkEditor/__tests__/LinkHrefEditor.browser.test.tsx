@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest"
 import { userEvent } from "vitest/browser"
 import { theme } from "~/theme"
 
-import { LINK_TYPES_MAPPING } from "../constants"
+import { LINK_TYPES, LINK_TYPES_MAPPING } from "../constants"
 import { LinkEditorContextProvider } from "../LinkEditorContext"
 import { LinkHrefEditor } from "../LinkHrefEditor"
 
@@ -32,17 +32,34 @@ const renderLinkHrefEditor = (linkHref: string) => {
   return { onChange }
 }
 
-const getLinkTypeRadio = (label: string) =>
-  screen.getByRole("radio", { name: new RegExp(label, "i") })
+type LinkTypeLabel = "Page" | "File" | "External" | "Email"
+
+const LINK_TYPE_RADIO_VALUE: Record<LinkTypeLabel, string> = {
+  Page: LINK_TYPES.Page,
+  File: LINK_TYPES.File,
+  External: LINK_TYPES.External,
+  Email: LINK_TYPES.Email,
+}
+
+/** Chakra radios omit visible label text from the accessible name in real browsers. */
+const getLinkTypeRadio = (linkType: LinkTypeLabel) => {
+  const radio = screen
+    .getAllByRole("radio")
+    .find((el) => el.getAttribute("value") === LINK_TYPE_RADIO_VALUE[linkType])
+  if (!radio) {
+    throw new Error(`Link type radio not found: ${linkType}`)
+  }
+  return radio
+}
 
 type InitialLinkTypeCase =
   | {
-      label: string
+      linkType: LinkTypeLabel
       linkHref: string
       visibleTestId: string
     }
   | {
-      label: string
+      linkType: LinkTypeLabel
       linkHref: string
       inputValue: string
     }
@@ -50,38 +67,38 @@ type InitialLinkTypeCase =
 describe("LinkHrefEditor", () => {
   it.each<InitialLinkTypeCase>([
     {
-      label: "Page",
+      linkType: "Page",
       linkHref: "[resource:1:42]",
       visibleTestId: "page-link-editor",
     },
     {
-      label: "File",
+      linkType: "File",
       linkHref: "/123/550e8400-e29b-41d4-a716-446655440000/doc.pdf",
       visibleTestId: "file-link-editor",
     },
     {
-      label: "External",
+      linkType: "External",
       linkHref: "https://www.isomer.gov.sg/about",
       inputValue: "www.isomer.gov.sg/about",
     },
     {
-      label: "External",
+      linkType: "External",
       linkHref:
         "http://malicious-site.com/path/456/01234567-89ab-cdef-0123-456789abcdef/phishing.html",
       inputValue:
         "malicious-site.com/path/456/01234567-89ab-cdef-0123-456789abcdef/phishing.html",
     },
     {
-      label: "Email",
+      linkType: "Email",
       linkHref: "mailto:user@example.com",
       inputValue: "user@example.com",
     },
-  ])("opens with $label selected for the matching href", (case_) => {
+  ])("opens with $linkType selected for the matching href", (case_) => {
     // Arrange / Act
     renderLinkHrefEditor(case_.linkHref)
 
     // Assert
-    expect(getLinkTypeRadio(case_.label)).toBeChecked()
+    expect(getLinkTypeRadio(case_.linkType)).toBeChecked()
 
     if ("visibleTestId" in case_) {
       expect(screen.getByTestId(case_.visibleTestId)).toBeVisible()
