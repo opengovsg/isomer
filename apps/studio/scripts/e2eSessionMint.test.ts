@@ -21,16 +21,25 @@ describe("e2e session mint", () => {
   })
 
   it("seals a session cookie that unseals to the expected userId", async () => {
+    // Arrange
     const userId = "user-abc-123"
+
+    // Act
     const sealed = await sealSessionCookieValue(userId)
     const payload = await unsealSessionCookieValue(sealed)
+
+    // Assert
     expect(payload.userId).toBe(userId)
   })
 
   it("builds Playwright storage state with session cookie and login flag", async () => {
+    // Arrange
     const sealed = await sealSessionCookieValue("editor-user-id")
+
+    // Act
     const state = buildPlaywrightStorageState("http://127.0.0.1:3000", sealed)
 
+    // Assert
     expect(state.cookies[0]?.name).toBe("auth.session-token")
     expect(state.cookies[0]?.value).toBe(sealed)
     expect(state.cookies[0]?.domain).toBe("127.0.0.1")
