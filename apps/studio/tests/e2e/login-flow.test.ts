@@ -18,9 +18,12 @@ test("email OTP + Singpass + Mockpass signs in editor", async ({ page }) => {
   await expect(page.getByText("Enter OTP")).toBeVisible()
   await loginPage.fillToken(email)
   await page.getByRole("button", { name: "Sign in" }).click()
+  await expect(page).toHaveURL(/\/sign-in\/singpass(?:\?|$)/)
+  await expect(loginPage.singpassButton).toBeVisible()
   await loginPage.mockpassLoginWith(uuid)
 
   // Assert
+  // Post-callback redirect lands on app root (`/`), not `/sign-in` or a trailing path.
   await expect(page).toHaveURL(/\/$/)
   await expect(page.getByRole("heading", { name: "Your sites" })).toBeVisible()
 })
