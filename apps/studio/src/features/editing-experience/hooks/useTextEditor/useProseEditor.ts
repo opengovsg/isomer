@@ -1,4 +1,5 @@
-import { type BaseEditorProps, useBaseEditor } from "./baseEditor"
+import { type BaseEditorProps } from "./baseEditorTypes"
+import { useBaseEditor } from "./useBaseEditor"
 import { IsomerHeading, PROSE_EXTENSIONS } from "./constants"
 
 export const useProseEditor = (props: BaseEditorProps) =>

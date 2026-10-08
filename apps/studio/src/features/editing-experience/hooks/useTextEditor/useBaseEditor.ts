@@ -1,14 +1,9 @@
-import type { ControlProps } from "@jsonforms/core"
-import type { Extensions, JSONContent } from "@tiptap/react"
+import type { Extensions } from "@tiptap/react"
 import { useEditor } from "@tiptap/react"
 import TextDirection from "tiptap-text-direction"
 
+import { type BaseEditorProps } from "./baseEditorTypes"
 import { BASE_EXTENSIONS, HEADING_TYPE, PARAGRAPH_TYPE } from "./constants"
-
-export interface BaseEditorProps {
-  data: ControlProps["data"]
-  handleChange: (content: JSONContent | undefined) => void
-}
 
 export const useBaseEditor = ({
   data,
