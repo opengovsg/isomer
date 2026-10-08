@@ -92,7 +92,8 @@
     "lint": {
       "dependsOn": [
         "generate",
-        "^build"
+        "^build",
+        "oxlint-plugin-isomer#build"
       ],
       "outputs": []
     },
