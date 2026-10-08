@@ -290,7 +290,7 @@ jobs:
           - feature: godmode
             paths: tests/e2e/godmode
           - feature: root
-            paths: tests/e2e/smoke.test.ts tests/e2e/singpass.test.ts
+            paths: tests/e2e/smoke.test.ts tests/e2e/singpass.test.ts tests/e2e/login-flow.test.ts
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup

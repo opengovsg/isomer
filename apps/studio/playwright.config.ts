@@ -40,6 +40,11 @@ export default defineConfig({
       testMatch: /singpass\.test\.ts/,
       use: { ...baseUse },
     },
+    {
+      name: "login-flow",
+      testMatch: /login-flow\.test\.ts/,
+      use: { ...baseUse },
+    },
     ...ROLES.map((role) => ({
       name: role,
       // `@role:admin`, not a bare `@admin`, so a role filter cannot collide

@@ -1,5 +1,5 @@
-import type { Locator, Page } from "@playwright/test"
 import type { UUID } from "crypto"
+import { expect, type Locator, type Page } from "@playwright/test"
 
 import { overwriteToken } from "../utils"
 
@@ -56,9 +56,9 @@ export class LoginPage {
   async mockpassLoginWith(uuid?: UUID) {
     // OTP success routes here. Match the linking path with an optional query
     // (`?error=true` is the failure redirect) and nothing after it, so a
-    // later `/sign-in/singpass/callback` does not count. Default navigation
-    // timeout — the button only exists once getUserProps has resolved.
-    await this.page.waitForURL(/\/sign-in\/singpass(?:\?|$)/)
+    // later `/sign-in/singpass/callback` does not count.
+    await expect(this.page).toHaveURL(/\/sign-in\/singpass(?:\?|$)/)
+    await expect(this.singpassButton).toBeVisible()
     await this.singpassButton.click()
     await this.singpassLoginButton.click()
     // NOTE: There are 2 login buttons on mockpass -
