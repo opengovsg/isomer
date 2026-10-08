@@ -1,9 +1,7 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { ComponentsWithProse } from "@opengovsg/isomer-components"
-import type {
-  BaseEditorProps,
-  BaseEditorType,
-} from "~/features/editing-experience/hooks/useTextEditor"
+import type { BaseEditorProps } from "~/features/editing-experience/hooks/useTextEditor/types"
+import type { BaseEditorType } from "~/features/editing-experience/hooks/useTextEditor/useBaseEditor"
 import { Box, FormControl } from "@chakra-ui/react"
 import { and, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
@@ -14,8 +12,8 @@ import {
   useAccordionEditor,
   useCalloutEditor,
   useProseEditor,
+  useSimpleProseEditor,
 } from "~/features/editing-experience/hooks/useTextEditor"
-import { useSimpleProseEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
 
 import {
   TiptapAccordionEditor,

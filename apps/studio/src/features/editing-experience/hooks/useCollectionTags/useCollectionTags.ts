@@ -1,16 +1,10 @@
-import { trpc, type RouterOutput } from "~/utils/trpc"
+import { trpc } from "~/utils/trpc"
+
+import type { UseCollectionTagsInput } from "./types"
 
 // Single source of truth for fetching published tag categories on a collection
 // item (via resourceId). Callers gate UI on whether tags.length > 0 — e.g.
 // JsonFormsTaggedControl, MetadataEditorStateDrawer, EditLinkPreview.
-
-export type CollectionTags = RouterOutput["collection"]["getCollectionTags"]
-
-interface UseCollectionTagsInput {
-  resourceId: number
-  siteId: number
-  enabled?: boolean
-}
 
 export function useCollectionTags({
   resourceId,
@@ -21,14 +15,4 @@ export function useCollectionTags({
     { resourceId, siteId },
     { enabled },
   )
-}
-
-export function useSuspenseCollectionTags({
-  resourceId,
-  siteId,
-}: Omit<UseCollectionTagsInput, "enabled">) {
-  return trpc.collection.getCollectionTags.useSuspenseQuery({
-    resourceId,
-    siteId,
-  })
 }

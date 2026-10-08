@@ -1,4 +1,4 @@
-import type { useSimpleProseEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
+import type { useSimpleProseEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { Text } from "@chakra-ui/react"
 import { SimpleProseMenuBar } from "~/components/PageEditor/MenuBar"
 

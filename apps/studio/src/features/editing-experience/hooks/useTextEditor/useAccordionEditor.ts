@@ -1,5 +1,4 @@
 import {
-  IsomerHeading,
   IsomerTable,
   IsomerTableCell,
   IsomerTableHeader,
@@ -9,7 +8,7 @@ import {
 import { type BaseEditorProps } from "./types"
 import { useBaseEditor } from "./useBaseEditor"
 
-export const useTextEditor = (props: BaseEditorProps) =>
+export const useAccordionEditor = (props: BaseEditorProps) =>
   useBaseEditor({
     ...props,
     extensions: [
@@ -18,6 +17,5 @@ export const useTextEditor = (props: BaseEditorProps) =>
       IsomerTable,
       IsomerTableCell,
       IsomerTableHeader,
-      IsomerHeading,
     ],
   })

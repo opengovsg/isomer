@@ -40,13 +40,13 @@ import { useTablePagination } from "~/hooks/useTablePagination"
 
 import type { RedirectRow, RedirectSortField } from "../types"
 import type { DestinationDisplay, ResolvedDestination } from "../utils"
+import { REDIRECTS_PAGE_SIZE } from "../constants"
 import {
-  REDIRECTS_PAGE_SIZE,
   useCountRedirects,
   useDeleteRedirect,
   useListRedirects,
   useResolveRedirectReferences,
-} from "../api"
+} from "../hooks"
 import { useRedirectManagement } from "../RedirectManagementContext"
 import {
   formatAddedAt,

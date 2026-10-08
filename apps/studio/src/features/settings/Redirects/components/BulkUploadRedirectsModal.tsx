@@ -33,7 +33,7 @@ import { buildRedirectErrorsCsv, parseRedirectCsv } from "~/lib/redirectCsv"
 import { MAX_BULK_REDIRECT_CSV_BYTES } from "~/schemas/redirect"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 
-import { useBulkCreateRedirects, useBulkValidateRedirects } from "../api"
+import { useBulkCreateRedirects, useBulkValidateRedirects } from "../hooks"
 
 type BulkValidation = RouterOutput["redirect"]["bulkValidate"]
 type FileRejections = NonNullable<AttachmentProps<false>["rejections"]>
