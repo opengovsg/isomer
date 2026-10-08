@@ -11,6 +11,7 @@ import { FormLabel } from "@opengovsg/design-system-react"
 import { LINK_TYPES } from "./constants"
 import { useLinkEditor } from "./LinkEditorContext"
 import { LinkEditorRadioGroup } from "./LinkEditorRadioGroup"
+import { getExternalLinkInputDisplayValue } from "./utils"
 
 const HTTPS_PREFIX = "https://"
 type HttpsLink = `https://${string}`
@@ -56,11 +57,7 @@ export const LinkHrefEditor = ({
             <InputLeftAddon>https://</InputLeftAddon>
             <Input
               type="text"
-              value={
-                curHref.startsWith(HTTPS_PREFIX)
-                  ? curHref.slice(HTTPS_PREFIX.length)
-                  : ""
-              }
+              value={getExternalLinkInputDisplayValue(curHref)}
               onChange={(e) => {
                 if (!e.target.value) {
                   setHref(e.target.value)

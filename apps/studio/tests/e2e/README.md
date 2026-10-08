@@ -49,11 +49,12 @@ Auth is wired through Playwright **projects**, not per-file `test.use({ storageS
 
 `roleTag("admin")` emits `@role:admin`. The `role:` prefix keeps role tags from colliding with any other `@…` tag.
 
-| Project                                                        | How tests are selected            | Auth                         |
-| -------------------------------------------------------------- | --------------------------------- | ---------------------------- |
-| `unauthenticated`                                              | `testMatch: /smoke\.test\.ts/`    | none                         |
-| `singpass`                                                     | `testMatch: /singpass\.test\.ts/` | none (suite skipped)         |
-| `admin`, `editor`, `publisher`, `nomember`, `core`, `migrator` | `grep: /@role:<role>\b/`          | `storageState` for that role |
+| Project                                                        | How tests are selected              | Auth                         |
+| -------------------------------------------------------------- | ----------------------------------- | ---------------------------- |
+| `unauthenticated`                                              | `testMatch: /smoke\.test\.ts/`      | none                         |
+| `singpass`                                                     | `testMatch: /singpass\.test\.ts/`   | none (suite skipped)         |
+| `login-flow`                                                   | `testMatch: /login-flow\.test\.ts/` | none (full UI sign-in)       |
+| `admin`, `editor`, `publisher`, `nomember`, `core`, `migrator` | `grep: /@role:<role>\b/`            | `storageState` for that role |
 
 **New tests must use `roleTag(...)` on `test.describe`**, not `test.use({ storageState })`:
 
@@ -79,7 +80,9 @@ Run a single role: `pnpm exec playwright test --project=admin`.
 
 ## Why storage-state, not per-test login
 
-OTP + Mockpass adds ~4s per login. Without storage state, a 10-test suite spends 40s on auth alone. Global-setup signs in each role once at startup (in parallel); role projects reuse cookies via project `storageState`.
+OTP + Mockpass adds several seconds per full UI login. Without storage state, a 10-test suite spends most of its time on auth. **Global setup** programmatically mints one Playwright `storage-state/<role>.json` per role the shard needs (iron-session cookie + client `is-logged-in` flag)—no browser, no OTP UI. **Role projects** reuse those jars via project `storageState`.
+
+**Login coverage** lives in `login-flow.test.ts` (root CI shard, `login-flow` project, no preloaded storage state): one serial happy-path through email OTP → Singpass → Mockpass. Router integration tests still cover validation and error paths.
 
 ## Why we still keep integration tests
 

@@ -1,5 +1,11 @@
 import { type SessionOptions } from "iron-session"
 import { env } from "~/env.mjs"
+import {
+  type SessionData,
+  type SessionVerificationToken,
+} from "~/lib/types/session"
+
+import { type VerificationToken } from "../database"
 
 // The versioned iron-session password map used to seal/unseal every iron
 // blob Studio produces — session cookies AND audit-log-export Download
@@ -12,6 +18,31 @@ import { env } from "~/env.mjs"
 export const getIronPassword = (): SessionOptions["password"] => ({
   "1": env.SESSION_SECRET,
 })
+
+/**
+ * Clear every session field without `destroy()` — v9 treats destroy as
+ * terminal. Wipes all keys (like `destroy()` does) so fields added to
+ * SessionData later can't leak into the next login. `save`/`destroy`/
+ * `updateConfig` are non-enumerable, so they survive.
+ */
+export const clearSessionData = (session: Partial<SessionData>) => {
+  for (const key of Object.keys(session)) {
+    delete (session as Record<string, unknown>)[key]
+  }
+}
+
+/** iron-session v9 rejects Date objects at seal time. */
+export const toSessionVerificationToken = (
+  token: VerificationToken,
+): SessionVerificationToken => ({
+  identifier: token.identifier,
+  token: token.token,
+  attempts: token.attempts,
+  expires: new Date(token.expires).getTime(),
+})
+
+/** Iron-session cookie TTL after a completed Singpass login (callback). */
+export const SINGPASS_COMPLETED_SESSION_TTL_HOURS = 12
 
 interface GenerateSessionOptionsProps {
   ttlInHours?: number
