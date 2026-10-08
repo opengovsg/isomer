@@ -718,6 +718,44 @@ export const HeroBlock: Story = {
   }),
 }
 
+const heroBlockCurvedHomepageProps = {
+  type: "hero" as const,
+  variant: "block" as const,
+  backgroundUrl:
+    "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  title: "Block hero image position and edge",
+  subtitle:
+    "Use mobile and tablet viewports to check stack order and curved edges.",
+  buttonLabel: "Main CTA",
+  buttonUrl: "/",
+  secondaryButtonLabel: "Sub CTA",
+  secondaryButtonUrl: "/",
+}
+
+export const HeroBlockLeftCurved: Story = {
+  name: "Curve+Left",
+  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
+  parameters: { chromatic: chromaticWithoutMobileSmall },
+  args: generateArgs({
+    heroProps: {
+      ...heroBlockCurvedHomepageProps,
+      blockImage: { imagePosition: "left", imageEdge: "curved" },
+    },
+  }),
+}
+
+export const HeroBlockRightCurved: Story = {
+  name: "Curve+Right",
+  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
+  parameters: { chromatic: chromaticWithoutMobileSmall },
+  args: generateArgs({
+    heroProps: {
+      ...heroBlockCurvedHomepageProps,
+      blockImage: { imagePosition: "right", imageEdge: "curved" },
+    },
+  }),
+}
+
 export const HeroLargeImage: Story = {
   // The full page exceeds Chromatic's capture pixel limit at 320px wide.
   parameters: { chromatic: chromaticWithoutMobileSmall },

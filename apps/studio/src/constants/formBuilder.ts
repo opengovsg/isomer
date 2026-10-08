@@ -16,6 +16,7 @@ export const JSON_FORMS_RANKING = {
   ColourPickerControl: 2,
   TextControl: 1,
   ImageRadioControl: 4,
+  HeroBlockImageControl: 4,
   // NOTE: needs to have higher priority than anyof, since the icon field is a
   // union of string literals
   IconPickerControl: 4,

@@ -13,8 +13,11 @@ export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
 export {
   getHeroStyleVariantForBranchTitle,
+  HERO_BLOCK_IMAGE_EDGE,
+  HERO_BLOCK_IMAGE_POSITION,
   HERO_STYLE,
   HeroSchema,
+  type HeroBlockProps,
   type HeroProps,
   type HeroStyleVariant,
 } from "./Hero"
