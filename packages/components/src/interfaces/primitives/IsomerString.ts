@@ -5,14 +5,23 @@ import { NO_STYLIZED_UNICODE_REGEX } from "~/utils/validation"
 const NO_STYLIZED_UNICODE_ERROR_MESSAGE =
   "cannot contain stylised or decorative unicode characters"
 
+// One copy of the lookahead. Every `IsomerString` points at this `$id`.
+// The object has to be reachable from each document Ajv compiles on its own
+// (`componentSchemaDefinitions`) or registered with `ajv.addSchema`.
+export const NO_STYLIZED_UNICODE_STRING_ID = "isomer-string-no-stylized-unicode"
+
+export const NoStylizedUnicodeStringSchema = Type.String({
+  $id: NO_STYLIZED_UNICODE_STRING_ID,
+  pattern: NO_STYLIZED_UNICODE_REGEX,
+  errorMessage: {
+    pattern: NO_STYLIZED_UNICODE_ERROR_MESSAGE,
+  },
+})
+
 // Drop-in replacement for `Type.String` that additionally rejects stylized
-// unicode lookalikes (see `NO_STYLIZED_UNICODE_REGEX` in ~/utils/validation).
-// If the caller already passes a `pattern`, the two checks are joined into
-// one regex — the caller's pattern is wrapped in a non-capturing group first
-// so alternation inside it (e.g. `LINK_HREF_PATTERN`'s
-// `(^https://)|(^tel:)|...`) can't silently only bind to part of the combined
-// pattern. `errorMessage.pattern` is joined the same way, since a single
-// combined `pattern` keyword can no longer tell AJV which half failed.
+// unicode lookalikes. The caller's `pattern`, `format`, `title`, and
+// `errorMessage` stay on this node. The unicode check is a separate `$ref`,
+// so a `|` inside the caller's pattern cannot skip it.
 export const IsomerString = (options: StringOptions = {}) => {
   const {
     pattern: existingPattern,
@@ -24,14 +33,8 @@ export const IsomerString = (options: StringOptions = {}) => {
 
   return Type.String({
     ...rest,
-    pattern: existingPattern
-      ? `${NO_STYLIZED_UNICODE_REGEX}(?:${existingPattern})`
-      : NO_STYLIZED_UNICODE_REGEX,
-    errorMessage: {
-      ...errorMessage,
-      pattern: errorMessage?.pattern
-        ? `${errorMessage.pattern}; ${NO_STYLIZED_UNICODE_ERROR_MESSAGE}`
-        : NO_STYLIZED_UNICODE_ERROR_MESSAGE,
-    },
+    ...(existingPattern ? { pattern: existingPattern } : {}),
+    ...(errorMessage ? { errorMessage } : {}),
+    allOf: [{ $ref: NO_STYLIZED_UNICODE_STRING_ID }],
   })
 }
