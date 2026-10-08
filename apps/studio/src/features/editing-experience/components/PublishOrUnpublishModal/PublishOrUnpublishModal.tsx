@@ -37,7 +37,6 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import type { ActionMode, PublishOrUnpublishAction } from "./ActionOptionsInput"
 import { PUBLISHED_AFTER_EDITING_EVENT } from "../../constants"
 import { useFireContentEditSurveyEvent } from "../../hooks/useContentEditSurvey"
-import { useUnpublishRedirectCount } from "../../hooks/useUnpublishRedirectCount"
 import { UnpublishRedirectWarning } from "../UnpublishRedirectWarning"
 import { ActionOptionsInput } from "./ActionOptionsInput"
 import { ScheduleBanner, UNPUBLISH_WINDOW_MINUTES } from "./ScheduleBanner"
@@ -94,15 +93,20 @@ export const PublishOrUnpublishModal = ({
   // Only unpublish renders the redirect check. The count is captured on the
   // unpublish success events to measure how often users unpublish despite live
   // redirects pointing at the page. null until resolved.
+  // Shares a cache entry with UnpublishRedirectWarning (same query key); opts
+  // into container references like the delete modal's count.
   const {
     data: redirectCountData,
     isPending: isRedirectQueryPending,
     isError: isRedirectCheckError,
-  } = useUnpublishRedirectCount({
-    pageId,
-    siteId,
-    enabled: action === "unpublish",
-  })
+  } = trpc.redirect.countByDestinationResource.useQuery(
+    {
+      siteId,
+      resourceId: String(pageId),
+      includeContainerReference: true,
+    },
+    { enabled: action === "unpublish" },
+  )
   // Guard on isError: React Query keeps the last successful data after a failed
   // refetch, so tag the count as unknown (null) rather than send a stale one.
   const redirectCount = isRedirectCheckError

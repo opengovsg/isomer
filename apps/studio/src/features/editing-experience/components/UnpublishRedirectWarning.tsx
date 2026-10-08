@@ -1,6 +1,5 @@
 import { Infobox } from "@opengovsg/design-system-react"
-
-import { useUnpublishRedirectCount } from "../hooks/useUnpublishRedirectCount"
+import { trpc } from "~/utils/trpc"
 
 // Warns when live redirects point to this page — unpublishing dead-ends them
 // (unlike delete, it only warns; the redirects stay).
@@ -11,11 +10,17 @@ export const UnpublishRedirectWarning = ({
   pageId: number
   siteId: number
 }) => {
+  // Reuses the delete modal's reference-only count, opting in to container
+  // references too. Both modals share this cache entry (same query key).
   const {
     data: redirectCount,
     isPending,
     isError,
-  } = useUnpublishRedirectCount({ pageId, siteId })
+  } = trpc.redirect.countByDestinationResource.useQuery({
+    siteId,
+    resourceId: String(pageId),
+    includeContainerReference: true,
+  })
 
   // A pending or failed check must not read as "no redirects" — show both.
   if (isPending) {

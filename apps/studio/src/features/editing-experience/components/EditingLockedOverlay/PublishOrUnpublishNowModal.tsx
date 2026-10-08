@@ -16,7 +16,6 @@ import posthog from "posthog-js"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { trpc } from "~/utils/trpc"
 
-import { useUnpublishRedirectCount } from "../../hooks/useUnpublishRedirectCount"
 import { UnpublishRedirectWarning } from "../UnpublishRedirectWarning"
 
 type PublishOrUnpublishNowAction = "publish" | "unpublish"
@@ -65,15 +64,20 @@ export const PublishOrUnpublishNowModal = ({
   const { title, description, confirmLabel, successTitle, errorTitle } =
     COPY[action]
   // Only unpublish renders the redirect check, so only it can be pending.
+  // Shares a cache entry with UnpublishRedirectWarning (same query key); opts
+  // into container references like the delete modal's count.
   const {
     data: redirectCountData,
     isPending: isRedirectQueryPending,
     isError: isRedirectCheckError,
-  } = useUnpublishRedirectCount({
-    pageId,
-    siteId,
-    enabled: action === "unpublish",
-  })
+  } = trpc.redirect.countByDestinationResource.useQuery(
+    {
+      siteId,
+      resourceId: String(pageId),
+      includeContainerReference: true,
+    },
+    { enabled: action === "unpublish" },
+  )
   // Gate on isPending, not isLoading, so an offline-paused first fetch still
   // disables confirm. Scoped to unpublish: the query is disabled for publish.
   const isRedirectCheckPending =

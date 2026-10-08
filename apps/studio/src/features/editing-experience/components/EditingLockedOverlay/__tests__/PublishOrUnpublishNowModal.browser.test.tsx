@@ -19,9 +19,9 @@ const redirectQuery = vi.hoisted(() => ({
 vi.mock("posthog-js", () => ({ default: { capture: vi.fn() } }))
 
 // The modal owns two publish mutations and reads the redirect count through
-// useUnpublishRedirectCount (→ countByDestinationResource). None of the mutation
-// machinery runs on render — the gate is all we test — so stub the tRPC surface
-// to the minimum the component touches.
+// countByDestinationResource. None of the mutation machinery runs on render —
+// the gate is all we test — so stub the tRPC surface to the minimum the
+// component touches.
 vi.mock("~/utils/trpc", () => {
   const noop = vi.fn()
   return {
