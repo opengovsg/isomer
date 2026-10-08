@@ -37,6 +37,7 @@ import {
   UnorderedListSchema,
   VideoSchema,
 } from "~/interfaces"
+import { NoStylizedUnicodeStringSchema } from "~/interfaces/primitives/IsomerString"
 
 export const IsomerComplexComponentsMap = {
   accordion: AccordionSchema,
@@ -82,6 +83,9 @@ export const componentSchemaDefinitions = {
     complex: IsomerComplexComponentsMap,
     native: IsomerNativeComponentsMap,
   },
+  // Ajv indexes this by `$id` while walking the document. `IsomerString`
+  // only stores a `$ref`, so the lookahead is not repeated on every field.
+  noStylizedUnicodeString: NoStylizedUnicodeStringSchema,
 }
 
 interface ComponentSchema {

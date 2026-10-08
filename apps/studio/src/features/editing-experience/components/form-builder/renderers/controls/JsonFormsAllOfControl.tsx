@@ -1,15 +1,23 @@
 import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
 import {
+  and,
   createCombinatorRenderInfos,
   isAllOfControl,
   rankWith,
+  schemaMatches,
 } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsAllOfProps } from "@jsonforms/react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsAllOfControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.AllOfControl,
-  isAllOfControl,
+  and(
+    isAllOfControl,
+    // `IsomerString` puts the shared unicode check in `allOf`. That is a
+    // constraint on the string, not a combinator field. Object intersects
+    // (collection page settings) still use this control.
+    schemaMatches((schema) => schema.type !== "string"),
+  ),
 )
 
 function JsonFormsAllOfControl({
