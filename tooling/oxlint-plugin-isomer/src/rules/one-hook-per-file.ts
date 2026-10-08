@@ -1,5 +1,7 @@
 import { defineRule } from "@oxlint/plugins"
 
+// React custom-hook names: `use` plus an uppercase letter (`useFoo`).
+// `userId` and bare `use` are ordinary identifiers, not hooks.
 const HOOK_NAME_PATTERN = /^use[A-Z]/
 
 function isCustomHookName(name: string | undefined | null): boolean {
@@ -8,16 +10,105 @@ function isCustomHookName(name: string | undefined | null): boolean {
 
 type HookExport = { name: string; node: object }
 
+type ModuleExportName = {
+  type: string
+  name?: string
+  value?: unknown
+}
+
+function moduleExportName(
+  node: ModuleExportName | null | undefined,
+): string | null {
+  if (node?.type === "Identifier" && typeof node.name === "string") {
+    return node.name
+  }
+
+  if (node?.type === "Literal" && typeof node.value === "string") {
+    return node.value
+  }
+
+  return null
+}
+
+type BindingPattern = {
+  type: string
+  name?: string
+  properties?: BindingProperty[]
+  elements?: (BindingPattern | null)[] | null
+  left?: BindingPattern | null
+  argument?: BindingPattern | null
+  value?: BindingPattern | null
+}
+
+type BindingProperty = {
+  type: string
+  value?: BindingPattern | null
+  argument?: BindingPattern | null
+}
+
+function collectHooksFromPattern(
+  pattern: BindingPattern | null | undefined,
+  hooks: HookExport[],
+): void {
+  if (!pattern) {
+    return
+  }
+
+  switch (pattern.type) {
+    case "Identifier": {
+      if (isCustomHookName(pattern.name)) {
+        hooks.push({ name: pattern.name as string, node: pattern })
+      }
+      return
+    }
+    case "ObjectPattern": {
+      for (const property of pattern.properties ?? []) {
+        if (property.type === "RestElement") {
+          collectHooksFromPattern(property.argument, hooks)
+          continue
+        }
+
+        // Keys are not bindings (`{ useFoo: notAHook }`, computed keys).
+        collectHooksFromPattern(property.value, hooks)
+      }
+      return
+    }
+    case "ArrayPattern": {
+      for (const element of pattern.elements ?? []) {
+        collectHooksFromPattern(element, hooks)
+      }
+      return
+    }
+    case "AssignmentPattern": {
+      collectHooksFromPattern(pattern.left, hooks)
+      return
+    }
+    case "RestElement": {
+      collectHooksFromPattern(pattern.argument, hooks)
+      return
+    }
+    default:
+      return
+  }
+}
+
 function hooksFromExportNamedDeclaration(node: {
+  exportKind?: string
   declaration?: {
     type: string
     id?: { name: string } | null
-    declarations?: { id: { type: string; name: string } }[]
+    declarations?: { id: BindingPattern }[]
   } | null
   specifiers: {
-    exported: { type: string; name?: string; value?: unknown }
+    exportKind?: string
+    local: ModuleExportName
+    exported: ModuleExportName
   }[]
 }): HookExport[] {
+  if (node.exportKind === "type") {
+    return []
+  }
+
   const hooks: HookExport[] = []
 
   if (node.declaration) {
@@ -33,27 +124,30 @@ function hooksFromExportNamedDeclaration(node: {
 
     if (node.declaration.type === "VariableDeclaration") {
       for (const declarator of node.declaration.declarations ?? []) {
-        if (declarator.id.type === "Identifier") {
-          const { name } = declarator.id
-          if (isCustomHookName(name)) {
-            hooks.push({ name, node: declarator.id })
-          }
-        }
+        collectHooksFromPattern(declarator.id, hooks)
       }
     }
   }
 
   for (const specifier of node.specifiers) {
-    const exportedName =
-      specifier.exported.type === "Identifier"
-        ? specifier.exported.name
-        : specifier.exported.type === "Literal" &&
-            typeof specifier.exported.value === "string"
-          ? specifier.exported.value
-          : null
+    if (specifier.exportKind === "type") {
+      continue
+    }
 
-    if (exportedName !== null && isCustomHookName(exportedName)) {
-      hooks.push({ name: exportedName as string, node: specifier })
+    const exportedName = moduleExportName(specifier.exported)
+    if (exportedName === null) {
+      continue
+    }
+
+    // `export { useFoo as default }` — Identifier or `"default"`.
+    // The hook name is the local binding, not the exported name `default`.
+    const name =
+      exportedName === "default"
+        ? moduleExportName(specifier.local)
+        : exportedName
+
+    if (isCustomHookName(name)) {
+      hooks.push({ name: name as string, node: specifier })
     }
   }
 
@@ -85,7 +179,6 @@ function hooksFromExportDefaultDeclaration(node: {
   return []
 }
 
-/** Require at most one exported custom React hook per file. */
 export const oneHookPerFileRule = defineRule({
   meta: {
     type: "suggestion",
@@ -123,9 +216,17 @@ export const oneHookPerFileRule = defineRule({
         }
       },
       ExportDefaultDeclaration(node) {
-        for (const hook of hooksFromExportDefaultDeclaration(
+        const hooks = hooksFromExportDefaultDeclaration(
           node as Parameters<typeof hooksFromExportDefaultDeclaration>[0],
-        )) {
+        )
+        if (hooks.length === 0) {
+          return
+        }
+
+        // A default-exported hook is local, so this file is not a barrel.
+        hasLocalHookExport = true
+
+        for (const hook of hooks) {
           exportedHooks.set(hook.name, hook)
         }
       },
