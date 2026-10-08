@@ -1,0 +1,4 @@
+{
+  "extends": "@isomer/tsconfig/base.json",
+  "include": ["vitest.config.ts"]
+}

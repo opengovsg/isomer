@@ -207,6 +207,21 @@
         "no-empty-function": "off"
       },
       "plugins": ["typescript"]
+    },
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "excludeFiles": [
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.stories.ts",
+        "**/*.stories.tsx"
+      ],
+      "jsPlugins": ["eslint-plugin-isomer"],
+      "rules": {
+        "isomer/one-hook-per-file": "error"
+      }
     }
   ]
 }
