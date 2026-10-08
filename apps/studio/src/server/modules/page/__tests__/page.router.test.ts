@@ -7,7 +7,6 @@ import { omit, pick } from "lodash-es"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
-import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
 import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
@@ -26,6 +25,7 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import { IS_UNPUBLISH_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import { testGrowthBookFeatures } from "~/lib/growthbookOffline"
 import { normalizeRedirectPath } from "~/schemas/redirect/utils"
 import { createCallerFactory } from "~/server/trpc"
 import {
@@ -2416,7 +2416,7 @@ describe("page.router", async () => {
     describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
       afterEach(() => {
         // Restore the baseline forced features so the flag doesn't leak.
-        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
+        mockGrowthBook.setForcedFeatures(testGrowthBookFeatures)
       })
 
       it("should throw 404 as if the page cannot be unpublished, even for an otherwise-valid page", async () => {
@@ -2425,7 +2425,7 @@ describe("page.router", async () => {
         // observable from the error shape
         mockGrowthBook.setForcedFeatures(
           new Map([
-            ...mockFeatureFlags,
+            ...testGrowthBookFeatures,
             [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
           ]),
         )
@@ -4471,13 +4471,13 @@ describe("page.router", async () => {
 
     describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
       afterEach(() => {
-        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
+        mockGrowthBook.setForcedFeatures(testGrowthBookFeatures)
       })
 
       it("should throw 404 as if the page cannot be unpublished, even for an otherwise-valid schedule request", async () => {
         mockGrowthBook.setForcedFeatures(
           new Map([
-            ...mockFeatureFlags,
+            ...testGrowthBookFeatures,
             [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
           ]),
         )
@@ -5003,13 +5003,13 @@ describe("page.router", async () => {
 
     describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
       afterEach(() => {
-        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
+        mockGrowthBook.setForcedFeatures(testGrowthBookFeatures)
       })
 
       it("should throw 404 as if the page cannot be unpublished, even for an otherwise-valid cancel request", async () => {
         mockGrowthBook.setForcedFeatures(
           new Map([
-            ...mockFeatureFlags,
+            ...testGrowthBookFeatures,
             [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
           ]),
         )

@@ -3,7 +3,6 @@ import { subDays, subMinutes } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
-import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
 import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
@@ -21,6 +20,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
 import * as mailService from "~/features/mail/service"
 import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
+import { testGrowthBookFeatures } from "~/lib/growthbookOffline"
 import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
 import {
@@ -1099,7 +1099,7 @@ describe("gazette.router", async () => {
       vi.restoreAllMocks()
       // Mock external services.
       // The flag ENABLE_SEARCHSG_GAZETTE_INGESTION is OFF by default in tests
-      // (not in mockFeatureFlags), so the Algolia path is exercised here.
+      // (not in testGrowthBookFeatures), so the Algolia path is exercised here.
       // SearchSG is mocked too so tests that enable the flag don't hit the network.
       vi.spyOn(gazetteService, "removeGazetteFromAlgolia").mockResolvedValue(
         undefined,
@@ -1119,10 +1119,10 @@ describe("gazette.router", async () => {
     afterEach(() => {
       // Restore the GrowthBook forced features to the baseline so flag state
       // set by individual tests (e.g. the ENABLE_SEARCHSG_GAZETTE_INGESTION ON
-      // test) does not leak into subsequent tests. Restoring to mockFeatureFlags
+      // test) does not leak into subsequent tests. Restoring to testGrowthBookFeatures
       // (rather than an empty Map) preserves IS_SINGPASS_ENABLED and any other
       // baseline flags that other tests may depend on.
-      mockGrowthBook.setForcedFeatures(mockFeatureFlags)
+      mockGrowthBook.setForcedFeatures(testGrowthBookFeatures)
     })
 
     it("deletes a gazette within the 15-minute grace period", async () => {
@@ -1439,7 +1439,7 @@ describe("gazette.router", async () => {
       })
 
       // Enable the SearchSG flag for this test only.
-      // The afterEach in this describe block restores mockFeatureFlags baseline.
+      // The afterEach in this describe block restores testGrowthBookFeatures baseline.
       mockGrowthBook.setForcedFeatures(
         new Map([[ENABLE_SEARCHSG_GAZETTE_INGESTION, true]]),
       )

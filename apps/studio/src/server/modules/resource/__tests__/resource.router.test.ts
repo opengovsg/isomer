@@ -2,7 +2,6 @@ import { TRPCError } from "@trpc/server"
 import { omit, pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
-import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
 import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
@@ -26,6 +25,7 @@ import {
 } from "tests/integration/helpers/seed"
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { IS_UNPUBLISH_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import { testGrowthBookFeatures } from "~/lib/growthbookOffline"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
@@ -3975,7 +3975,7 @@ describe("resource.router", async () => {
 
     describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
       afterEach(() => {
-        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
+        mockGrowthBook.setForcedFeatures(testGrowthBookFeatures)
       })
 
       it("should allow deleting a still-published page, falling back to pre-unpublish behaviour", async () => {
@@ -3985,7 +3985,7 @@ describe("resource.router", async () => {
         // undeletable.
         mockGrowthBook.setForcedFeatures(
           new Map([
-            ...mockFeatureFlags,
+            ...testGrowthBookFeatures,
             [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
           ]),
         )
