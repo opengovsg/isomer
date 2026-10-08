@@ -52,6 +52,15 @@ const getLinkTypeRadio = (linkType: LinkTypeLabel) => {
   return radio
 }
 
+/** Chakra useRadio overlays the input; click the wrapping label, not the input. */
+const clickLinkTypeRadio = async (linkType: LinkTypeLabel) => {
+  const label = getLinkTypeRadio(linkType).closest("label")
+  if (!label) {
+    throw new Error(`Link type radio label not found: ${linkType}`)
+  }
+  await userEvent.click(label)
+}
+
 type InitialLinkTypeCase =
   | {
       linkType: LinkTypeLabel
@@ -117,7 +126,7 @@ describe("LinkHrefEditor", () => {
     expect(screen.getByTestId("page-link-editor")).toBeVisible()
 
     // Act — switch to external
-    await userEvent.click(getLinkTypeRadio("External"))
+    await clickLinkTypeRadio("External")
 
     // Assert — external input
     expect(getLinkTypeRadio("External")).toBeChecked()
@@ -125,7 +134,7 @@ describe("LinkHrefEditor", () => {
     expect(screen.getByRole("textbox")).toBeVisible()
 
     // Act — switch to email
-    await userEvent.click(getLinkTypeRadio("Email"))
+    await clickLinkTypeRadio("Email")
 
     // Assert — email input
     expect(getLinkTypeRadio("Email")).toBeChecked()
