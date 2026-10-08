@@ -16,6 +16,7 @@ import {
   IconButton,
   TouchableTooltip,
 } from "@opengovsg/design-system-react"
+import posthog from "posthog-js"
 import { BiDotsHorizontalRounded, BiHide } from "react-icons/bi"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
@@ -151,7 +152,14 @@ const SuspendablePageMoreActionsButton = ({
                 {...cancelScheduleDisclosure}
               />
             )}
-            <Popover placement="bottom-end">
+            <Popover
+              placement="bottom-end"
+              onOpen={() =>
+                posthog.capture("unpublish_more_actions_opened", {
+                  site_id: siteId,
+                })
+              }
+            >
               {({ onClose }) => (
                 <>
                   <PopoverTrigger>
@@ -227,6 +235,9 @@ const SuspendablePageMoreActionsButton = ({
                               isLoading={isBlockInfoLoading}
                               leftIcon={<Icon as={BiHide} boxSize="1rem" />}
                               onClick={() => {
+                                posthog.capture("unpublish_modal_opened", {
+                                  site_id: siteId,
+                                })
                                 onClose()
                                 unpublishModalDisclosure.onOpen()
                               }}

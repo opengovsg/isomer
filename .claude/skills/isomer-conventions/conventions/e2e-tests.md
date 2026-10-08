@@ -20,7 +20,7 @@ introduces a **new reusable pattern** — not when merely adding test cases. See
 |-------|------|---------|
 | **Helpers** | `fixtures/helpers.ts` | Flows that **cross surfaces** (e.g. create page: dashboard wizard → page editor) |
 | **Page objects** | `fixtures/*.po.ts` | Locators + actions on **one** UI surface, including multi-step modals/forms on that surface (`fillPageWizard`, `fillInviteForm`, …) |
-| **DB setup** | `fixtures/reset.ts`, `fixtures/site.ts` | Non-UI reset and site lifecycle |
+| **DB setup** | `fixtures/reset.ts`, `fixtures/site.ts`, `fixtures/session-mint.ts` | Non-UI reset, site lifecycle, auth storage-state mint (`setSingpassUuidFor`, `mintStorageStateForRole`) |
 | **DB assertions** | `fixtures/*.db.ts` | Query helpers that fetch persisted state for a test to assert on (`resource.db.ts`, `user.db.ts`, …) |
 
 **Wizards** here means multi-step modals on a single surface (e.g. Create Page:
@@ -33,7 +33,24 @@ dashboard wizard completes).
 ## Welcome modal
 
 Call `ensureUserOnboarded(TEST_EMAILS.<role>)` in `beforeEach` so the welcome modal
-does not block tests (singpass global-setup can blank profiles).
+does not block tests (global-setup minting sets `name`/`phone`/`singpassUuid` per
+role, but other tests or skipped `singpass.test.ts` hooks can still blank profiles).
+
+## Auth setup: minted storage state vs UI login
+
+**Default (all role shards):** `global-setup.ts` wipes the e2e DB, seeds roles, then
+**mints** `storage-state/<role>.json` for each role the shard needs — no browser.
+`fixtures/session-mint.ts` seals an iron-session cookie (same TTL as post-Singpass
+callback) and sets client `localStorage` `is-logged-in`. Role Playwright projects
+load those files via `storageStateFor(role)`.
+
+**UI login coverage (root shard only):** `login-flow.test.ts` runs under the
+`login-flow` project (no preloaded `storageState`). One serial happy-path through
+email OTP → Singpass → Mockpass. Use `LoginPage` for actions; keep `expect(...)` in
+the test, not in `fixtures/login.ts`.
+
+Do not use `Promise.all` to sign in multiple roles via the UI in setup or login
+coverage — mint in setup, or one browser / serial flow in tests.
 
 ## Test pattern
 
@@ -73,7 +90,10 @@ test.beforeAll(async () => {
 
 ## Role projects and tags (PR-3)
 
-Playwright config defines one project per role plus `unauthenticated` (smoke) and `singpass`. Role projects set `storageState` and filter with `grep: /@role:<role>\b/` (for example `/@role:admin\b/`). `roleTag("admin")` emits `@role:admin`.
+Playwright config defines one project per role plus `unauthenticated` (smoke),
+`singpass` (skipped legacy suite), and `login-flow` (full UI sign-in). Role
+projects set `storageState` and filter with `grep: /@role:<role>\b/` (for example
+`/@role:admin\b/`). `roleTag("admin")` emits `@role:admin`.
 
 ```ts
 import { roleTag } from "../fixtures/auth"
@@ -189,8 +209,8 @@ Rules:
 - Query helpers return raw rows/values — no `expect()` inside `fixtures/*.db.ts`
 - One file per entity (`resource.db.ts`, `user.db.ts`), not per test
 - Setup/teardown mutations (inserts/deletes for fixtures, not assertions) stay
-  under the existing DB setup convention (`reset.ts`, `site.ts`) — this only
-  covers read queries used to verify an action's effect
+  under the existing DB setup convention (`reset.ts`, `site.ts`, `session-mint.ts`
+  for auth jars) — this only covers read queries used to verify an action's effect
 
 ## How to detect violations
 
