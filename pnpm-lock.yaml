@@ -533,8 +533,8 @@ catalogs:
       specifier: ^8.23.1
       version: 8.23.1
     pg-cursor:
-      specifier: ^2.22.0
-      version: 2.22.0
+      specifier: ^2.22.1
+      version: 2.22.1
   playwright:
     '@playwright/test':
       specifier: ^1.63.0
@@ -1239,7 +1239,7 @@ importers:
         version: 9.0.3
       pg-cursor:
         specifier: catalog:pg
-        version: 2.22.0(pg@8.23.1)
+        version: 2.22.1(pg@8.23.1)
       playwright:
         specifier: catalog:playwright
         version: 1.63.0
@@ -1584,7 +1584,7 @@ importers:
         version: 8.23.1
       pg-cursor:
         specifier: catalog:pg
-        version: 2.22.0(pg@8.23.1)
+        version: 2.22.1(pg@8.23.1)
     devDependencies:
       '@isomer/oxlint-config':
         specifier: workspace:*
@@ -11054,8 +11054,8 @@ packages:
   pg-connection-string@2.14.1:
     resolution: {integrity: sha512-qR3kGNPBLpCNtz0evbKA0Y/MRFXwSSdT+pTJvYp/bXTcReZbvX1kzF0IyTc1QnxqF7AZbOeBhNL8R5mYQZV/MA==}
 
-  pg-cursor@2.22.0:
-    resolution: {integrity: sha512-knzXLKqarTjOvb3qDSW0JiGsazmxwEKXrqHfWRte7XUsOYccQRafn3BLnQobWwInkzFJSyOej8y8cQRh2z3kGw==}
+  pg-cursor@2.22.1:
+    resolution: {integrity: sha512-X10ldv3wwBONQkOSwgWEbaEITMGLd92V2Zd+xsFPhDt3nhhU3hpAT08SERBChnIFmomczLax6lKXLJrHPPXfxA==}
     peerDependencies:
       pg: ^8
 
@@ -23325,7 +23325,7 @@ snapshots:
 
   pg-connection-string@2.14.1: {}
 
-  pg-cursor@2.22.0(pg@8.23.1):
+  pg-cursor@2.22.1(pg@8.23.1):
     dependencies:
       pg: 8.23.1
 
