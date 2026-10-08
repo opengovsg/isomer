@@ -8,7 +8,7 @@ import { CellSelection } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
 import { useRef } from "react"
 import { describe, expect, it } from "vitest"
-import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
+import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
 import {
   TABLE_CHROME_GAP_PX,
   TABLE_CHROME_THICKNESS_PX,

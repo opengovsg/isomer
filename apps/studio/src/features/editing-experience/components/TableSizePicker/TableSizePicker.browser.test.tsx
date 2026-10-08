@@ -10,7 +10,7 @@ import { EditorContent } from "@tiptap/react"
 import { afterEach, describe, expect, it } from "vitest"
 import { theme } from "~/theme"
 
-import { useTextEditor } from "../../hooks/useTextEditor"
+import { useTextEditor } from "../../hooks/useTextEditor/useTextEditor"
 import { TableSizePicker } from "./TableSizePicker"
 
 // A minimal harness that mounts a real TipTap editor (the same extensions

@@ -4,7 +4,7 @@ import { Box } from "@chakra-ui/react"
 import { useState } from "react"
 import { expect, userEvent, waitFor, within } from "storybook/test"
 import { TiptapProseEditor } from "~/features/editing-experience/components/form-builder/renderers/TipTapEditor"
-import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
+import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor/useTextEditor"
 
 import { DEFAULT_TABLE_CAPTION } from "./utils"
 

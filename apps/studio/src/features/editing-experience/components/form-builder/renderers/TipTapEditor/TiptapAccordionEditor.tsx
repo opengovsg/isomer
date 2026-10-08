@@ -1,4 +1,4 @@
-import type { useAccordionEditor } from "~/features/editing-experience/hooks/useTextEditor"
+import type { useAccordionEditor } from "~/features/editing-experience/hooks/useTextEditor/useAccordionEditor"
 import { AccordionMenuBar } from "~/components/PageEditor/MenuBar"
 
 import { Editor } from "./components"

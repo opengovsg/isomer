@@ -14,11 +14,9 @@ import {
   LEFT_EDITOR_AFTER_EDITING_EVENT,
   PUBLISHED_AFTER_EDITING_EVENT,
 } from "../constants"
-import {
-  useContentEditTracker,
-  useFireContentEditSurveyEvent,
-  useLeftEditorSurveyTracker,
-} from "../hooks/useContentEditSurvey"
+import { useContentEditTracker } from "../hooks/useContentEditTracker"
+import { useFireContentEditSurveyEvent } from "../hooks/useFireContentEditSurveyEvent"
+import { useLeftEditorSurveyTracker } from "../hooks/useLeftEditorSurveyTracker"
 
 const trackEventMock = vi.hoisted(() => vi.fn())
 vi.mock("@intercom/messenger-js-sdk", () => ({ trackEvent: trackEventMock }))
