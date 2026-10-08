@@ -1,7 +1,7 @@
 import type { ArticlePagePageProps } from "@opengovsg/isomer-components"
 import { isTextFilter } from "@opengovsg/isomer-components"
 
-import type { CollectionTags } from "../hooks/collectionTags"
+import type { CollectionTags } from "../hooks/useCollectionTags"
 
 export function validateRequiredTags(
   tags: CollectionTags,

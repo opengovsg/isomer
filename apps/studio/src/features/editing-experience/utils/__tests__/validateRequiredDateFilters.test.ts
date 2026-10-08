@@ -1,6 +1,6 @@
 import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 
-import type { CollectionTags } from "../../hooks/collectionTags"
+import type { CollectionTags } from "../../hooks/useCollectionTags"
 import { validateRequiredDateFilters } from "../validateRequiredDateFilters"
 
 const REQUIRED_DATE_FILTER_ID = "f47ac10b-58cc-4372-a567-0e02b2c3d479"

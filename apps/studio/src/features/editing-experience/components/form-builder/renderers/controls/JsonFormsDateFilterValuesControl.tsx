@@ -13,7 +13,7 @@ import { isDateFilter } from "@opengovsg/isomer-components"
 import { format, parseISO } from "date-fns"
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/collectionTags"
+import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 

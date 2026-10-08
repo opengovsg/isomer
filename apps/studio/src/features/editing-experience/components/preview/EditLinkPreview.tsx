@@ -1,7 +1,7 @@
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { useMemo } from "react"
-import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/collectionTags"
+import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
 import {
   buildCollectionLinkPreviewSitemap,
   getCollectionPermalink,

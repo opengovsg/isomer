@@ -14,7 +14,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { useEffect } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { useCollectionTags } from "~/features/editing-experience/hooks/collectionTags"
+import { useCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { getCollectionSortOptions } from "~/features/editing-experience/utils"
 import { useQueryParse } from "~/hooks/useQueryParse"

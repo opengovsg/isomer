@@ -1,7 +1,7 @@
 import type { ArticlePagePageProps } from "@opengovsg/isomer-components"
 import { isDateFilter } from "@opengovsg/isomer-components"
 
-import type { CollectionTags } from "../hooks/collectionTags"
+import type { CollectionTags } from "../hooks/useCollectionTags"
 
 // Mirrors validateRequiredTags, but for date filters: `isRequired` is
 // satisfied by the item having a `dateTagged` entry (with a `date`

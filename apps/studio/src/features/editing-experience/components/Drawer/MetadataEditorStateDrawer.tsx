@@ -23,7 +23,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import {
   type CollectionTags,
   useCollectionTags,
-} from "../../hooks/collectionTags"
+} from "../../hooks/useCollectionTags"
 import { pageSchema } from "../../schema"
 import { validateRequiredDateFilters } from "../../utils/validateRequiredDateFilters"
 import { validateRequiredTags } from "../../utils/validateRequiredTags"
