@@ -7,7 +7,7 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
-import { generateImageSrcSchema } from "./Image"
+import { generateImageSrcSchema, imageAdjustmentSchema } from "./Image"
 
 export const HERO_STYLE = {
   gradient: "gradient",
@@ -103,6 +103,7 @@ const HeroGradientSchema = Type.Composite(
         default: HERO_STYLE.gradient,
       }),
       backgroundUrl: BackgroundUrlSchema,
+      imageAdjustment: Type.Optional(imageAdjustmentSchema),
     }),
     HeroBaseSchema,
     CallToActionsSchema,
