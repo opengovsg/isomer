@@ -20,7 +20,7 @@ describe("createOfflineGrowthBook", () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch")
 
     // Act
-    const gb = createOfflineGrowthBook("sdk-test")
+    const gb = createOfflineGrowthBook()
 
     // Assert
     expect(init).not.toHaveBeenCalled()

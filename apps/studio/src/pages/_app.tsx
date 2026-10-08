@@ -57,7 +57,7 @@ datadogRum.init({
 // which is what fetches cdn.growthbook.io and opens the streaming connection.
 const gb =
   env.NEXT_PUBLIC_APP_ENV === "test"
-    ? createOfflineGrowthBook(env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY)
+    ? createOfflineGrowthBook()
     : new GrowthBook({
         apiHost: "https://cdn.growthbook.io",
         clientKey: env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,

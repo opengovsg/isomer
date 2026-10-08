@@ -56,7 +56,7 @@ export const createGrowthBookContext = async () => {
   // E2E boots this server with NEXT_PUBLIC_APP_ENV=test. Skip init() so a
   // request never waits on cdn.growthbook.io.
   if (env.NEXT_PUBLIC_APP_ENV === "test") {
-    return createOfflineGrowthBook(env.GROWTHBOOK_CLIENT_KEY)
+    return createOfflineGrowthBook()
   }
 
   const growthbookContext = new GrowthBook({

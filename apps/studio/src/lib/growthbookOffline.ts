@@ -17,12 +17,10 @@ export const mockFeatureFlags = new Map<string, unknown>([
   [IS_UNPUBLISH_ENABLED_FEATURE_KEY, true],
 ])
 
-// `init()` fetches https://cdn.growthbook.io. Tests pass `features` so the
-// instance is ready immediately, then force the map above. No `init()` call.
-export const createOfflineGrowthBook = (clientKey?: string): GrowthBook => {
+// `init()` is what fetches https://cdn.growthbook.io, and it requires a client
+// key. This instance never calls `init()`, so it takes neither.
+export const createOfflineGrowthBook = (): GrowthBook => {
   const gb = new GrowthBook({
-    apiHost: "https://cdn.growthbook.io",
-    clientKey,
     features: {},
   })
   gb.setForcedFeatures(new Map(mockFeatureFlags))
