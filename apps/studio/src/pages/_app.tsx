@@ -53,8 +53,7 @@ datadogRum.init({
   ],
 })
 
-// Test builds (NEXT_PUBLIC_APP_ENV=test, including e2e) never call init(),
-// which is what fetches cdn.growthbook.io and opens the streaming connection.
+// Next inlines NEXT_PUBLIC_APP_ENV at build time. E2E builds with .env.test.
 const gb =
   env.NEXT_PUBLIC_APP_ENV === "test"
     ? createOfflineGrowthBook()

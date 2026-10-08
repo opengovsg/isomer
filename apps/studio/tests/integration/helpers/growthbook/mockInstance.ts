@@ -5,8 +5,7 @@ import {
 
 const mockGrowthBook = createOfflineGrowthBook()
 
-// Point at the shared map (not the copy createOfflineGrowthBook makes) so
-// `setForcedFeatures(mockFeatureFlags)` resets this singleton.
+// Store the shared map. Tests pass that same map to setForcedFeatures to restore this instance.
 mockGrowthBook.setForcedFeatures(mockFeatureFlags)
 
 export { mockGrowthBook }

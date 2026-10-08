@@ -6,9 +6,8 @@ import {
   IS_UNPUBLISH_ENABLED_FEATURE_KEY,
 } from "./growthbook"
 
-// Shared with the Vitest GrowthBook singleton. Unpublish is on here, unlike
-// production, so test suites don't depend on the live flag. Tests that care
-// about the flag force it off themselves.
+// Unpublish is on so existing tests don't have to know the flag exists.
+// Tests for the flag force it off.
 export const mockFeatureFlags = new Map<string, unknown>([
   [
     IS_SINGPASS_ENABLED_FEATURE_KEY,
@@ -17,8 +16,7 @@ export const mockFeatureFlags = new Map<string, unknown>([
   [IS_UNPUBLISH_ENABLED_FEATURE_KEY, true],
 ])
 
-// `init()` is what fetches https://cdn.growthbook.io, and it requires a client
-// key. This instance never calls `init()`, so it takes neither.
+// Passing `features` marks the instance ready without a CDN fetch.
 export const createOfflineGrowthBook = (): GrowthBook => {
   const gb = new GrowthBook({
     features: {},
