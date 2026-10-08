@@ -5,8 +5,6 @@ import { TEST_EMAILS } from "./fixtures/auth"
 import { LoginPage } from "./fixtures/login"
 import { setSingpassUuidFor } from "./fixtures/session-mint"
 
-test.describe.configure({ mode: "serial" })
-
 test("email OTP + Singpass + Mockpass signs in editor", async ({ page }) => {
   // Arrange
   const email = TEST_EMAILS.editor
