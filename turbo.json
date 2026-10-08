@@ -75,7 +75,7 @@
       ]
     },
     "generate": {
-      "dependsOn": ["^generate"]
+      "dependsOn": ["^generate", "oxlint-plugin-isomer#build"]
     },
     "format": {
       "dependsOn": [
