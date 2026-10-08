@@ -1,5 +1,4 @@
 import { type BaseEditorProps } from "./baseEditorTypes"
-import { useBaseEditor } from "./useBaseEditor"
 import {
   IsomerTable,
   IsomerTableCell,
@@ -7,6 +6,7 @@ import {
   PROSE_EXTENSIONS,
   TableRow,
 } from "./constants"
+import { useBaseEditor } from "./useBaseEditor"
 
 export const useAccordionEditor = (props: BaseEditorProps) =>
   useBaseEditor({

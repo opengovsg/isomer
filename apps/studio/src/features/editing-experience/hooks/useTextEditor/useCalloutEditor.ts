@@ -1,6 +1,6 @@
 import { type BaseEditorProps } from "./baseEditorTypes"
-import { useBaseEditor } from "./useBaseEditor"
 import { PROSE_EXTENSIONS } from "./constants"
+import { useBaseEditor } from "./useBaseEditor"
 
 export const useCalloutEditor = (props: BaseEditorProps) =>
   useBaseEditor({
