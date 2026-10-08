@@ -9,7 +9,7 @@ import {
 // Shared with the Vitest GrowthBook singleton. Unpublish is on here, unlike
 // production, so test suites don't depend on the live flag. Tests that care
 // about the flag force it off themselves.
-export const testGrowthBookFeatures = new Map<string, unknown>([
+export const mockFeatureFlags = new Map<string, unknown>([
   [
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
@@ -25,6 +25,6 @@ export const createOfflineGrowthBook = (clientKey?: string): GrowthBook => {
     clientKey,
     features: {},
   })
-  gb.setForcedFeatures(new Map(testGrowthBookFeatures))
+  gb.setForcedFeatures(new Map(mockFeatureFlags))
   return gb
 }
