@@ -18,7 +18,7 @@ import {
   useContentEditTracker,
   useFireContentEditSurveyEvent,
   useLeftEditorSurveyTracker,
-} from "../hooks/contentEditSurvey"
+} from "../hooks/useContentEditSurvey"
 
 const trackEventMock = vi.hoisted(() => vi.fn())
 vi.mock("@intercom/messenger-js-sdk", () => ({ trackEvent: trackEventMock }))

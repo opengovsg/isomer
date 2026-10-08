@@ -8,8 +8,6 @@ import {
   TableRow,
 } from "./constants"
 
-export type { BaseEditorProps, BaseEditorType } from "./baseEditor"
-
 export const useTextEditor = (props: BaseEditorProps) =>
   useBaseEditor({
     ...props,

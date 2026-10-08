@@ -8,7 +8,7 @@ import { EditPagePreview } from "~/features/editing-experience/components/previe
 import {
   useContentEditTracker,
   useLeftEditorSurveyTracker,
-} from "~/features/editing-experience/hooks/contentEditSurvey"
+} from "~/features/editing-experience/hooks/useContentEditSurvey"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useResourceLocalViewHistory } from "~/hooks/useResourceLocalViewHistory"
