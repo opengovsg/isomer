@@ -30,11 +30,13 @@ import {
 import { parseRedirectCsv } from "~/lib/redirectCsv"
 import {
   isValidExternalDestination,
-  normalizeRedirectPath,
-  normalizeRedirectSource,
   redirectKind,
   redirectRowSchema,
 } from "~/schemas/redirect"
+import {
+  normalizeRedirectPath,
+  normalizeRedirectSource,
+} from "~/schemas/redirect/utils"
 import { getReferenceLink } from "~/utils/link"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -2077,14 +2079,45 @@ const getDescendantReferences = async (
   )
 }
 
-// Counts the live redirects whose destination points at the resource or any
-// descendant, so the delete-page modal can warn before deletion. Shares its
-// resolution with the cascade below, so the count matches what gets removed.
+// A container's published URL keys on its own id, not its IndexPage's, so a
+// subtree walk from the IndexPage misses a redirect stored against the container.
+const getContainerReferenceIfIndexPage = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<string | null> => {
+  const resource = await trx
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.id", "=", resourceId)
+    .select(["Resource.type", "Resource.parentId"])
+    .executeTakeFirst()
+  if (resource?.type !== ResourceType.IndexPage || resource.parentId === null) {
+    return null
+  }
+  return getReferenceLink({
+    siteId: String(siteId),
+    resourceId: resource.parentId,
+  })
+}
+
+// Counts live redirects pointing at the resource or any descendant.
+// includeContainerReference also counts the parent container's reference when
+// resourceId is an IndexPage: opt in for unpublish, but the delete count must
+// stay exact to what the cascade below removes.
 export const countRedirectsPointingToResource = async ({
   siteId,
   resourceId,
+  includeContainerReference,
 }: CountRedirectsByDestinationInput): Promise<number> => {
-  const references = await getDescendantReferences(db, { siteId, resourceId })
+  const [descendantReferences, containerReference] = await Promise.all([
+    getDescendantReferences(db, { siteId, resourceId }),
+    includeContainerReference
+      ? getContainerReferenceIfIndexPage(db, { siteId, resourceId })
+      : null,
+  ])
+  const references = containerReference
+    ? [...descendantReferences, containerReference]
+    : descendantReferences
   // An empty `in` list is invalid SQL, so guard like getWithFullPermalink.
   if (references.length === 0) {
     return 0

@@ -1,14 +1,11 @@
-import { GrowthBook } from "@growthbook/growthbook"
-import { env } from "~/env.mjs"
+import {
+  createOfflineGrowthBook,
+  mockFeatureFlags,
+} from "~/lib/growthbookOffline"
 
-import { mockFeatureFlags } from "./mockFeatureFlags"
+const mockGrowthBook = createOfflineGrowthBook()
 
-const mockGrowthBook = new GrowthBook({
-  apiHost: "https://cdn.growthbook.io",
-  clientKey: env.GROWTHBOOK_CLIENT_KEY,
-  debug: false,
-})
-
+// Store the shared map. Tests pass that same map to setForcedFeatures to restore this instance.
 mockGrowthBook.setForcedFeatures(mockFeatureFlags)
 
 export { mockGrowthBook }
