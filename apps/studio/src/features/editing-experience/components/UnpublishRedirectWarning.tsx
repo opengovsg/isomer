@@ -1,20 +1,18 @@
 import { Infobox } from "@opengovsg/design-system-react"
-import { useEffect } from "react"
+import { usePostHogOptionalStep } from "~/hooks/usePostHogOptionalStep"
 import { trpc } from "~/utils/trpc"
 
 // Warns when live redirects point to this page — unpublishing dead-ends them
-// (unlike delete, it only warns; the redirects stay). Reuses the delete modal's
-// reference-only count, opting in to container references too.
+// (unlike delete, it only warns; the redirects stay).
 export const UnpublishRedirectWarning = ({
   pageId,
   siteId,
-  onPendingChange,
 }: {
   pageId: number
   siteId: number
-  // Reports the check's loading state so the caller can gate confirmation.
-  onPendingChange?: (isPending: boolean) => void
 }) => {
+  // Reuses the delete modal's reference-only count, opting in to container
+  // references too. Both modals share this cache entry (same query key).
   const {
     data: redirectCount,
     isPending,
@@ -25,9 +23,15 @@ export const UnpublishRedirectWarning = ({
     includeContainerReference: true,
   })
 
-  useEffect(() => {
-    onPendingChange?.(isPending)
-  }, [isPending, onPendingChange])
+  // Funnel checkpoint: fires once the count resolves, tagged skipped when there
+  // were no redirects — so "warned about N and proceeded" is distinguishable
+  // from "nothing to warn about". An errored check stays un-fired (unknown).
+  usePostHogOptionalStep({
+    event: "unpublish_redirect_warning",
+    isReady: !isPending && !isError,
+    isBypassed: redirectCount === 0,
+    properties: { site_id: siteId, redirect_count: redirectCount ?? 0 },
+  })
 
   // A pending or failed check must not read as "no redirects" — show both.
   if (isPending) {

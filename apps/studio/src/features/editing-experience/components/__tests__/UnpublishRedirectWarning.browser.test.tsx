@@ -10,6 +10,10 @@ const queryResult = vi.hoisted(() => ({
   value: {} as Record<string, unknown>,
 }))
 
+// The redirect-warning funnel checkpoint captures via posthog on render; stub
+// it so these tests don't reach the real client.
+vi.mock("posthog-js", () => ({ default: { capture: vi.fn() } }))
+
 // The component only touches this one read; stub it so we can render each
 // branch without a backend.
 vi.mock("~/utils/trpc", () => ({
@@ -22,14 +26,10 @@ vi.mock("~/utils/trpc", () => ({
   },
 }))
 
-const renderWarning = (onPendingChange?: (isPending: boolean) => void) =>
+const renderWarning = () =>
   render(
     <ThemeProvider theme={theme}>
-      <UnpublishRedirectWarning
-        pageId={1}
-        siteId={1}
-        onPendingChange={onPendingChange}
-      />
+      <UnpublishRedirectWarning pageId={1} siteId={1} />
     </ThemeProvider>,
   )
 
@@ -69,16 +69,5 @@ describe("UnpublishRedirectWarning", () => {
     expect(
       screen.queryByText(/couldn't check whether redirects point to this page/),
     ).not.toBeNull()
-  })
-
-  it("reports its pending state so callers can block confirmation on it", () => {
-    queryResult.value = { data: undefined, isPending: true, isError: false }
-    const onPendingChange = vi.fn()
-    renderWarning(onPendingChange)
-    expect(onPendingChange).toHaveBeenCalledWith(true)
-
-    queryResult.value = { data: 0, isPending: false, isError: false }
-    renderWarning(onPendingChange)
-    expect(onPendingChange).toHaveBeenCalledWith(false)
   })
 })

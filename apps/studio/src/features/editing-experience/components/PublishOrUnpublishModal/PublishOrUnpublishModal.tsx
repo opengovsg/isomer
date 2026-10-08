@@ -18,7 +18,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { add, format, isSameDay } from "date-fns"
 import posthog from "posthog-js"
-import { useCallback, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { BiSolidInfoCircle } from "react-icons/bi"
 import {
@@ -90,14 +90,32 @@ export const PublishOrUnpublishModal = ({
     disableNow ? "later" : "now",
   )
   const lastScheduledAtRef = useRef<Date | null>(null)
-  // Only unpublish renders the redirect check, so only it has a pending window.
-  const [isRedirectCheckPending, setIsRedirectCheckPending] = useState(
-    action === "unpublish",
+  // Only unpublish renders the redirect check. The count is captured on the
+  // unpublish success events to measure how often users unpublish despite live
+  // redirects pointing at the page. null until resolved.
+  // Shares a cache entry with UnpublishRedirectWarning (same query key); opts
+  // into container references like the delete modal's count.
+  const {
+    data: redirectCountData,
+    isPending: isRedirectQueryPending,
+    isError: isRedirectCheckError,
+  } = trpc.redirect.countByDestinationResource.useQuery(
+    {
+      siteId,
+      resourceId: String(pageId),
+      includeContainerReference: true,
+    },
+    { enabled: action === "unpublish" },
   )
-  const handleRedirectCheckPendingChange = useCallback(
-    (pending: boolean) => setIsRedirectCheckPending(pending),
-    [],
-  )
+  // Guard on isError: React Query keeps the last successful data after a failed
+  // refetch, so tag the count as unknown (null) rather than send a stale one.
+  const redirectCount = isRedirectCheckError
+    ? null
+    : (redirectCountData ?? null)
+  // Gate on isPending, not isLoading, so an offline-paused first fetch still
+  // disables confirm. Scoped to unpublish: the query is disabled for publish.
+  const isRedirectCheckPending =
+    action === "unpublish" && isRedirectQueryPending
 
   const schema =
     action === "publish"
@@ -207,6 +225,11 @@ export const PublishOrUnpublishModal = ({
         onClose()
       },
       onSuccess: () => {
+        posthog.capture("page_unpublished", {
+          site_id: siteId,
+          redirect_count: redirectCount,
+          source: "more_actions",
+        })
         toast({
           status: "success",
           title: "Page unpublished successfully",
@@ -238,6 +261,11 @@ export const PublishOrUnpublishModal = ({
       onClose()
     },
     onSuccess: () => {
+      posthog.capture("page_unpublish_scheduled", {
+        site_id: siteId,
+        redirect_count: redirectCount,
+        source: "more_actions",
+      })
       const formattedDate = lastScheduledAtRef.current
         ? format(lastScheduledAtRef.current, "d MMM yyyy, h:mm a")
         : ""
@@ -346,11 +374,7 @@ export const PublishOrUnpublishModal = ({
                 <DraftChangesBanner mode={mode} scheduledAt={scheduledAt} />
               )}
               {action === "unpublish" && (
-                <UnpublishRedirectWarning
-                  pageId={pageId}
-                  siteId={siteId}
-                  onPendingChange={handleRedirectCheckPendingChange}
-                />
+                <UnpublishRedirectWarning pageId={pageId} siteId={siteId} />
               )}
             </VStack>
           </FormProvider>
