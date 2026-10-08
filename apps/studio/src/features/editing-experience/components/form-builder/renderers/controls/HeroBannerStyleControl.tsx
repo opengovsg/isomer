@@ -35,6 +35,14 @@ const heroBannerStyleBlockInteractionProps = {
   },
 }
 
+const heroBannerStyleAccentColorProps = {
+  color: "base.content.default",
+  transitionProperty: "common",
+  transitionDuration: "normal",
+  _groupHover: { color: "utility.feedback.info" },
+  _groupActive: { color: "utility.feedback.info" },
+}
+
 function HeroBannerStyleTrigger({
   label,
   onOpen,
@@ -46,6 +54,7 @@ function HeroBannerStyleTrigger({
     <Flex
       as="button"
       type="button"
+      role="group"
       w="100%"
       alignItems="center"
       textAlign="left"
@@ -67,19 +76,19 @@ function HeroBannerStyleTrigger({
         alignItems="flex-start"
         gap="0.25rem"
       >
-        <Text textStyle="subhead-1" color="utility.feedback.info">
+        <Text textStyle="subhead-1" {...heroBannerStyleAccentColorProps}>
           {label}
         </Text>
-        <Text textStyle="caption-2" color="base.content.medium">
+        <Text textStyle="caption-2" color="base.content.default">
           Click to explore different styles
         </Text>
       </Flex>
       <Icon
         as={BiChevronRight}
         boxSize="1.5rem"
-        color="utility.feedback.info"
         flexShrink={0}
         aria-hidden
+        {...heroBannerStyleAccentColorProps}
       />
     </Flex>
   )
@@ -125,6 +134,7 @@ function HeroBannerStyleDrawer({
               <Flex
                 key={option.value}
                 as="label"
+                role="group"
                 alignItems="center"
                 cursor="pointer"
                 py="1rem"
@@ -165,23 +175,27 @@ function HeroBannerStyleDrawer({
                   borderRadius="0.25rem"
                   boxShadow="0 0 20px 0 rgba(104, 104, 104, 0.30)"
                 />
-                <Text
-                  textStyle="subhead-1"
-                  color="utility.feedback.info"
-                  flex="1"
-                  minW={0}
-                >
-                  {option.label}
-                </Text>
-                {isSelected && (
-                  <Icon
-                    as={BiCheck}
-                    boxSize="1.25rem"
-                    color="utility.feedback.info"
-                    flexShrink={0}
-                    aria-hidden
-                  />
-                )}
+                <Flex flex="1" minW={0} alignItems="center" gap="0.5rem">
+                  <Text
+                    textStyle="subhead-1"
+                    flex="1"
+                    minW={0}
+                    {...(isSelected
+                      ? { color: "utility.feedback.info" }
+                      : heroBannerStyleAccentColorProps)}
+                  >
+                    {option.label}
+                  </Text>
+                  {isSelected && (
+                    <Icon
+                      as={BiCheck}
+                      boxSize="1.25rem"
+                      color="utility.feedback.info"
+                      flexShrink={0}
+                      aria-hidden
+                    />
+                  )}
+                </Flex>
               </Flex>
             )
           })}
