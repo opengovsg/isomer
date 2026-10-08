@@ -10,7 +10,7 @@ This folder is _not_ the design system. Reusable, framework-agnostic primitives 
 | --------------------------------------------- | ---------------------------------------------------------------------------------- |
 | `apps/studio/src/components/`                 | Studio-app UI shared across features (sidebar, navbar, error boundary, providers). |
 | `apps/studio/src/features/<area>/components/` | UI used by exactly one feature.                                                    |
-| `packages/components/src/`                    | UI rendered on the **published Isomer sites** — see that folder's AGENTS.md.       |
+| `packages/components/src/`                    | UI rendered on the **published Isomer sites** — see `packages/components/AGENTS.md`. |
 
 If you are not sure: start in the feature folder. Lift up only when a second feature needs it.
 
