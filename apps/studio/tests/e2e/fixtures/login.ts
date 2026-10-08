@@ -56,9 +56,12 @@ export class LoginPage {
   async mockpassLoginWith(uuid?: UUID) {
     // OTP success routes here. Match the linking path with an optional query
     // (`?error=true` is the failure redirect) and nothing after it, so a
-    // later `/sign-in/singpass/callback` does not count. Default navigation
-    // timeout — the button only exists once getUserProps has resolved.
-    await this.page.waitForURL(/\/sign-in\/singpass(?:\?|$)/)
+    // later `/sign-in/singpass/callback` does not count. `commit` suits Next.js
+    // client navigations better than default `load`.
+    await this.page.waitForURL(/\/sign-in\/singpass(?:\?|$)/, {
+      waitUntil: "commit",
+    })
+    await this.singpassButton.waitFor({ state: "visible" })
     await this.singpassButton.click()
     await this.singpassLoginButton.click()
     // NOTE: There are 2 login buttons on mockpass -
