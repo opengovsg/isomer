@@ -16,13 +16,14 @@
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint src",
     "prepare": "pnpm run build",
-    "test": "tsx src/rules/one-hook-per-file.test.ts",
-    "typecheck": "tsc --noEmit"
+    "test": "bash -c 'set -e; for f in $(find src -name \"*.test.ts\" | sort); do tsx \"$f\"; done'",
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@oxlint/plugins": "catalog:"
   },
   "devDependencies": {
+    "@typescript/native-preview": "catalog:",
     "oxlint": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:"
