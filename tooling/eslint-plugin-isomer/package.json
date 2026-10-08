@@ -5,12 +5,14 @@
   "description": "Isomer-specific ESLint rules (loaded via Oxlint jsPlugins)",
   "type": "module",
   "exports": {
-    ".": "./index.js"
+    ".": "./dist/index.js"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
-    "lint": "oxlint .",
+    "lint": "oxlint src",
+    "prepare": "pnpm run build",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "typecheck": "tsgo"
@@ -18,9 +20,9 @@
   "devDependencies": {
     "@isomer/tsconfig": "workspace:*",
     "@types/eslint": "catalog:",
-    "@typescript-eslint/parser": "catalog:",
+    "@types/estree": "catalog:",
     "@typescript/native-preview": "catalog:",
-    "eslint": "catalog:",
+    "oxlint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:vitest"
   }

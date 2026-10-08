@@ -1,20 +1,22 @@
-/** @typedef {import("eslint").Rule} Rule */
+import type { Rule } from "eslint"
+import type {
+  ExportDefaultDeclaration,
+  ExportNamedDeclaration,
+  Node,
+} from "estree"
 
 const HOOK_NAME_PATTERN = /^use[A-Z]/
 
-/**
- * @param {string | undefined | null} name
- */
-function isCustomHookName(name) {
+function isCustomHookName(name: string | undefined | null): boolean {
   return typeof name === "string" && HOOK_NAME_PATTERN.test(name)
 }
 
-/**
- * @param {import("estree").ExportNamedDeclaration} node
- * @returns {{ name: string, node: import("estree").Node }[]}
- */
-function hooksFromExportNamedDeclaration(node) {
-  const hooks = []
+type HookExport = { name: string; node: Node }
+
+function hooksFromExportNamedDeclaration(
+  node: ExportNamedDeclaration,
+): HookExport[] {
+  const hooks: HookExport[] = []
 
   if (node.declaration) {
     if (
@@ -43,9 +45,12 @@ function hooksFromExportNamedDeclaration(node) {
     const exportedName =
       specifier.exported.type === "Identifier"
         ? specifier.exported.name
-        : specifier.exported.value
+        : specifier.exported.type === "Literal" &&
+            typeof specifier.exported.value === "string"
+          ? specifier.exported.value
+          : null
 
-    if (isCustomHookName(exportedName)) {
+    if (exportedName !== null && isCustomHookName(exportedName)) {
       hooks.push({ name: exportedName, node: specifier })
     }
   }
@@ -53,11 +58,9 @@ function hooksFromExportNamedDeclaration(node) {
   return hooks
 }
 
-/**
- * @param {import("estree").ExportDefaultDeclaration} node
- * @returns {{ name: string, node: import("estree").Node }[]}
- */
-function hooksFromExportDefaultDeclaration(node) {
+function hooksFromExportDefaultDeclaration(
+  node: ExportDefaultDeclaration,
+): HookExport[] {
   if (
     node.declaration.type === "FunctionDeclaration" &&
     node.declaration.id &&
@@ -76,8 +79,7 @@ function hooksFromExportDefaultDeclaration(node) {
   return []
 }
 
-/** @type {Rule.RuleModule} */
-const rule = {
+const rule: Rule.RuleModule = {
   meta: {
     type: "suggestion",
     docs: {
@@ -90,16 +92,15 @@ const rule = {
     },
   },
   create(context) {
-    /** @type {Map<string, { name: string, node: import("estree").Node }>} */
-    const exportedHooks = new Map()
+    const exportedHooks = new Map<string, HookExport>()
 
     return {
-      ExportNamedDeclaration(node) {
+      ExportNamedDeclaration(node: ExportNamedDeclaration) {
         for (const hook of hooksFromExportNamedDeclaration(node)) {
           exportedHooks.set(hook.name, hook)
         }
       },
-      ExportDefaultDeclaration(node) {
+      ExportDefaultDeclaration(node: ExportDefaultDeclaration) {
         for (const hook of hooksFromExportDefaultDeclaration(node)) {
           exportedHooks.set(hook.name, hook)
         }
@@ -113,13 +114,13 @@ const rule = {
         const hookNamesText = hookNames.join(", ")
 
         for (const hookName of hookNames) {
-          const { node } = exportedHooks.get(hookName) ?? {}
-          if (!node) {
+          const hook = exportedHooks.get(hookName)
+          if (!hook) {
             continue
           }
 
           context.report({
-            node,
+            node: hook.node,
             messageId: "multipleHooks",
             data: {
               hookName,

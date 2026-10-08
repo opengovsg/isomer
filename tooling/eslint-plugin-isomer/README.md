@@ -1,6 +1,8 @@
 # eslint-plugin-isomer
 
-Custom ESLint rules for the Isomer monorepo. Rules are enforced through **Oxlint** via [JS plugins](https://oxc.rs/docs/guide/usage/linter/js-plugins.html) (`jsPlugins`), not a separate ESLint run.
+Custom lint rules for the Isomer monorepo, implemented as an **ESLint-compatible plugin** (the shape Oxlint’s [JS plugins](https://oxc.rs/docs/guide/usage/linter/js-plugins.html) expect). Source is **TypeScript** under `src/`; `pnpm build` emits plain JS to `dist/` for Oxlint’s JS plugin loader (Node does not load `.ts` from `node_modules` today). **ESLint is not installed** — only Oxlint runs in CI and locally; `@types/eslint` is only for rule typings.
+
+Tests invoke **Oxlint** against fixture files under `tests/fixtures/`, not ESLint’s `RuleTester`.
 
 ## Rules
 

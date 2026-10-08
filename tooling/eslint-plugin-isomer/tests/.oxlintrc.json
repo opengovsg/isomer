@@ -1,7 +1,7 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
-  "ignorePatterns": ["dist/**", "tests/fixtures/**"],
+  "jsPlugins": ["eslint-plugin-isomer"],
   "rules": {
-    "no-unused-vars": "error"
+    "isomer/one-hook-per-file": "error"
   }
 }
