@@ -1,9 +1,4 @@
-import type { Rule } from "eslint"
-import type {
-  ExportDefaultDeclaration,
-  ExportNamedDeclaration,
-  Node,
-} from "estree"
+import { defineRule } from "@oxlint/plugins"
 
 const HOOK_NAME_PATTERN = /^use[A-Z]/
 
@@ -11,11 +6,18 @@ function isCustomHookName(name: string | undefined | null): boolean {
   return typeof name === "string" && HOOK_NAME_PATTERN.test(name)
 }
 
-type HookExport = { name: string; node: Node }
+type HookExport = { name: string; node: object }
 
-function hooksFromExportNamedDeclaration(
-  node: ExportNamedDeclaration,
-): HookExport[] {
+function hooksFromExportNamedDeclaration(node: {
+  declaration?: {
+    type: string
+    id?: { name: string } | null
+    declarations?: { id: { type: string; name: string } }[]
+  } | null
+  specifiers: {
+    exported: { type: string; name?: string; value?: unknown }
+  }[]
+}): HookExport[] {
   const hooks: HookExport[] = []
 
   if (node.declaration) {
@@ -30,7 +32,7 @@ function hooksFromExportNamedDeclaration(
     }
 
     if (node.declaration.type === "VariableDeclaration") {
-      for (const declarator of node.declaration.declarations) {
+      for (const declarator of node.declaration.declarations ?? []) {
         if (declarator.id.type === "Identifier") {
           const { name } = declarator.id
           if (isCustomHookName(name)) {
@@ -51,16 +53,20 @@ function hooksFromExportNamedDeclaration(
           : null
 
     if (exportedName !== null && isCustomHookName(exportedName)) {
-      hooks.push({ name: exportedName, node: specifier })
+      hooks.push({ name: exportedName as string, node: specifier })
     }
   }
 
   return hooks
 }
 
-function hooksFromExportDefaultDeclaration(
-  node: ExportDefaultDeclaration,
-): HookExport[] {
+function hooksFromExportDefaultDeclaration(node: {
+  declaration: {
+    type: string
+    id?: { name: string } | null
+    name?: string
+  }
+}): HookExport[] {
   if (
     node.declaration.type === "FunctionDeclaration" &&
     node.declaration.id &&
@@ -69,17 +75,18 @@ function hooksFromExportDefaultDeclaration(
     return [{ name: node.declaration.id.name, node: node.declaration.id }]
   }
 
-  if (
-    node.declaration.type === "Identifier" &&
-    isCustomHookName(node.declaration.name)
-  ) {
-    return [{ name: node.declaration.name, node: node.declaration }]
+  if (node.declaration.type === "Identifier") {
+    const { name } = node.declaration
+    if (isCustomHookName(name)) {
+      return [{ name: name as string, node: node.declaration }]
+    }
   }
 
   return []
 }
 
-const rule: Rule.RuleModule = {
+/** Require at most one exported custom React hook per file. */
+export const oneHookPerFileRule = defineRule({
   meta: {
     type: "suggestion",
     docs: {
@@ -91,17 +98,21 @@ const rule: Rule.RuleModule = {
         "Export only one custom hook per file (found {{hookNames}}). Move `{{hookName}}` to its own file (for example `{{suggestedFile}}`).",
     },
   },
-  create(context) {
+  createOnce(context) {
     const exportedHooks = new Map<string, HookExport>()
 
     return {
-      ExportNamedDeclaration(node: ExportNamedDeclaration) {
-        for (const hook of hooksFromExportNamedDeclaration(node)) {
+      ExportNamedDeclaration(node) {
+        for (const hook of hooksFromExportNamedDeclaration(
+          node as Parameters<typeof hooksFromExportNamedDeclaration>[0],
+        )) {
           exportedHooks.set(hook.name, hook)
         }
       },
-      ExportDefaultDeclaration(node: ExportDefaultDeclaration) {
-        for (const hook of hooksFromExportDefaultDeclaration(node)) {
+      ExportDefaultDeclaration(node) {
+        for (const hook of hooksFromExportDefaultDeclaration(
+          node as Parameters<typeof hooksFromExportDefaultDeclaration>[0],
+        )) {
           exportedHooks.set(hook.name, hook)
         }
       },
@@ -120,7 +131,7 @@ const rule: Rule.RuleModule = {
           }
 
           context.report({
-            node: hook.node,
+            node: hook.node as never,
             messageId: "multipleHooks",
             data: {
               hookName,
@@ -132,6 +143,4 @@ const rule: Rule.RuleModule = {
       },
     }
   },
-}
-
-export default rule
+})

@@ -1,4 +1,0 @@
-{
-  "extends": "@isomer/tsconfig/base.json",
-  "include": ["src/**/*.ts", "tests/**/*.ts", "vitest.config.ts"]
-}

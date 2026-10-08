@@ -1,7 +1,0 @@
-{
-  "$schema": "../../node_modules/oxlint/configuration_schema.json",
-  "jsPlugins": ["eslint-plugin-isomer"],
-  "rules": {
-    "isomer/one-hook-per-file": "error"
-  }
-}

@@ -161,6 +161,7 @@ catalog:
   "@types/estree": ^1.0.8
   "@typescript-eslint/parser": ^8.57.2
   oxfmt: ^0.70.0
+  "@oxlint/plugins": 1.85.0
   oxlint: ^1.85.0
   oxlint-tsgolint: ^7.0.2002
   papaparse: ^5.7.0

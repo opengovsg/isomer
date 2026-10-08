@@ -1,8 +1,11 @@
 {
-  "name": "eslint-plugin-isomer",
+  "name": "oxlint-plugin-isomer",
   "version": "0.1.0",
   "private": true,
-  "description": "Isomer-specific ESLint rules (loaded via Oxlint jsPlugins)",
+  "description": "Isomer-specific Oxlint rules",
+  "files": [
+    "src"
+  ],
   "type": "module",
   "exports": {
     ".": "./dist/index.js"
@@ -13,17 +16,15 @@
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint src",
     "prepare": "pnpm run build",
-    "test": "vitest run",
-    "test:watch": "vitest watch",
-    "typecheck": "tsgo"
+    "test": "tsx src/rules/one-hook-per-file.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@oxlint/plugins": "catalog:"
   },
   "devDependencies": {
-    "@isomer/tsconfig": "workspace:*",
-    "@types/eslint": "catalog:",
-    "@types/estree": "catalog:",
-    "@typescript/native-preview": "catalog:",
     "oxlint": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:vitest"
+    "tsx": "catalog:",
+    "typescript": "catalog:"
   }
 }

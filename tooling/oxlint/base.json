@@ -218,7 +218,9 @@
         "**/*.stories.ts",
         "**/*.stories.tsx"
       ],
-      "jsPlugins": ["eslint-plugin-isomer"],
+      "jsPlugins": [
+        { "name": "isomer", "specifier": "oxlint-plugin-isomer" }
+      ],
       "rules": {
         "isomer/one-hook-per-file": "error"
       }
