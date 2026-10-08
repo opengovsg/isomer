@@ -9,31 +9,30 @@ import { expect, userEvent, within } from "storybook/test"
 
 import { FormBuilder } from "./formBuilder"
 
+type HeroStyleId = keyof typeof HERO_STYLE
+
+const HERO_BANNER_VARIANT_SCHEMA_OPTIONS = {
+  gradient: {},
+  block: {},
+  largeImage: {},
+  floating: {},
+  searchbar: { format: "hidden" },
+} satisfies Record<HeroStyleId, { format?: string }>
+
+const heroBannerStyleOneOf = (Object.keys(HERO_STYLE) as HeroStyleId[]).map(
+  (id) => {
+    const { key, title } = HERO_STYLE[id]
+    return Type.Object(
+      { variant: Type.Literal(key) },
+      { title, ...HERO_BANNER_VARIANT_SCHEMA_OPTIONS[id] },
+    )
+  },
+)
+
 const schema = Type.Unsafe({
   title: "Hero banner style",
   format: HERO_BANNER_STYLE_FORMAT,
-  oneOf: [
-    Type.Object(
-      { variant: Type.Literal(HERO_STYLE.gradient.key) },
-      { title: HERO_STYLE.gradient.title },
-    ),
-    Type.Object(
-      { variant: Type.Literal(HERO_STYLE.block.key) },
-      { title: HERO_STYLE.block.title },
-    ),
-    Type.Object(
-      { variant: Type.Literal(HERO_STYLE.largeImage.key) },
-      { title: HERO_STYLE.largeImage.title },
-    ),
-    Type.Object(
-      { variant: Type.Literal(HERO_STYLE.floating.key) },
-      { title: HERO_STYLE.floating.title },
-    ),
-    Type.Object(
-      { variant: Type.Literal(HERO_STYLE.searchbar.key) },
-      { title: HERO_STYLE.searchbar.title, format: "hidden" },
-    ),
-  ],
+  oneOf: heroBannerStyleOneOf,
 })
 
 function HeroBannerStyleFrame({ data }: { data: unknown }) {
