@@ -87,9 +87,15 @@ interface EditorProps {
   menubar: EditorMenuBar
   editor: TiptapEditor
   isNested?: boolean
+  elevateTableBubbleMenu?: boolean
 }
 
-export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
+export const Editor = ({
+  editor,
+  menubar,
+  isNested,
+  elevateTableBubbleMenu = false,
+}: EditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isDragReordering, setIsDragReordering] = useState(false)
   const isTableEditor = editor.extensionManager.extensions.some(
@@ -100,7 +106,11 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
     <EditorContainer isNested={isNested}>
       {menubar({ editor })}
       {isTableEditor && (
-        <TableBubbleMenu editor={editor} isDragReordering={isDragReordering} />
+        <TableBubbleMenu
+          editor={editor}
+          isDragReordering={isDragReordering}
+          elevate={elevateTableBubbleMenu}
+        />
       )}
       <EditorContentWrapper
         editor={editor}

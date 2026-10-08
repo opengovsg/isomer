@@ -1,4 +1,5 @@
 import type { Level } from "@tiptap/extension-heading"
+import type { TableOptions } from "@tiptap/extension-table"
 import type { Extensions } from "@tiptap/react"
 import type { Editor } from "@tiptap/react"
 import {
@@ -127,9 +128,25 @@ export const PROSE_EXTENSIONS: Extensions = [
   Subscript,
 ]
 
+declare module "@tiptap/extension-table" {
+  interface TableOptions {
+    // The focused table modal sets this so its node view does not offer
+    // another expand control.
+    focusEdit: boolean
+  }
+}
+
 export const IsomerTable = Table.extend({
   // Higher than TipTap's default keymap so Mod-a is handled here first.
   priority: 101,
+  addOptions() {
+    // parent?.() is optional, so the spread is not assignable to TableOptions
+    // without a cast even though extend() always provides the parent options.
+    return {
+      ...this.parent?.(),
+      focusEdit: false,
+    } as TableOptions
+  },
   addCommands() {
     const parent = this.parent?.()
     const parentToggleHeaderRow = parent?.toggleHeaderRow
