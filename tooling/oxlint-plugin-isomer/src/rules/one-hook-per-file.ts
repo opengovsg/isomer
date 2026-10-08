@@ -98,7 +98,8 @@ export const oneHookPerFileRule = defineRule({
         "Export only one custom hook per file (found {{hookNames}}). Move `{{hookName}}` to its own file (for example `{{suggestedFile}}`).",
     },
   },
-  createOnce(context) {
+  // Per-file state: `createOnce` would share the hook map across the whole lint run.
+  create(context) {
     const exportedHooks = new Map<string, HookExport>()
 
     return {
