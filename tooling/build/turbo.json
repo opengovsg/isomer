@@ -3,7 +3,12 @@
   "extends": ["//"],
   "tasks": {
     "lint": {
-      "dependsOn": ["generate", "^build", "@opengovsg/isomer-components#build"]
+      "dependsOn": [
+        "generate",
+        "^build",
+        "@opengovsg/isomer-components#build",
+        "oxlint-plugin-isomer#build"
+      ]
     }
   }
 }

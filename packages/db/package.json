@@ -12,7 +12,7 @@
     "db:push": "dotenv -e ../../apps/studio/.env -- prisma db push",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
-    "generate": "prisma generate && tsx prisma/generate.cts && oxlint --fix src/generated && oxfmt --write src/generated",
+    "generate": "pnpm --filter oxlint-plugin-isomer run build && prisma generate && tsx prisma/generate.cts && oxlint --fix src/generated && oxfmt --write src/generated",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
     "migrate": "dotenv -e ../../apps/studio/.env -- prisma migrate deploy",

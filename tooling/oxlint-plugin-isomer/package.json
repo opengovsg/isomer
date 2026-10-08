@@ -1,0 +1,31 @@
+{
+  "name": "oxlint-plugin-isomer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Isomer-specific Oxlint rules",
+  "files": [
+    "src"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "format": "oxfmt --check . --ignore-path ../../.gitignore",
+    "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
+    "lint": "oxlint src",
+    "prepare": "pnpm run build",
+    "test": "bash -c 'set -e; for f in $(find src -name \"*.test.ts\" | sort); do tsx \"$f\"; done'",
+    "typecheck": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "@oxlint/plugins": "catalog:"
+  },
+  "devDependencies": {
+    "@typescript/native-preview": "catalog:",
+    "oxlint": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

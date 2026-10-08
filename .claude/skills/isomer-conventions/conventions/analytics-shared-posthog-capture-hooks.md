@@ -55,4 +55,4 @@ usePostHogOptionalStep({
 Grep for `posthog.capture(` inside a `useEffect` or paired with a `useRef`
 fire-once flag in a component — reach for the shared hook instead. See
 `apps/studio/src/features/editing-experience/components/UnpublishRedirectWarning.tsx`.
-Each hook follows [one-hook-per-file](react-one-hook-per-file.md).
+Each hook lives in its own file under `apps/studio/src/hooks/` (enforced by Oxlint `isomer/one-hook-per-file`).

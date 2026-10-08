@@ -207,6 +207,23 @@
         "no-empty-function": "off"
       },
       "plugins": ["typescript"]
+    },
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "excludeFiles": [
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.stories.ts",
+        "**/*.stories.tsx"
+      ],
+      "jsPlugins": [
+        { "name": "isomer", "specifier": "oxlint-plugin-isomer" }
+      ],
+      "rules": {
+        "isomer/one-hook-per-file": "error"
+      }
     }
   ]
 }

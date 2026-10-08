@@ -4,6 +4,8 @@ Shared **Oxlint** configuration for Isomer. This package **depends on** `oxlint`
 
 Workspaces whose `.oxlintrc.json` uses **`jsPlugins`: `eslint-plugin-storybook`** (for `storybook/*` rules) should list **`eslint-plugin-storybook`** in their own `devDependencies`—Oxlint loads that package via [JS plugins](https://oxc.rs/docs/guide/usage/linter/js-plugins); **ESLint itself is not required**.
 
+Shared Isomer rules (for example `isomer/one-hook-per-file`) live in **`oxlint-plugin-isomer`**, which is a dependency of **`@isomer/oxlint-config`** and enabled from `base.json`.
+
 ## Use in this monorepo
 
 Add the config package to any workspace that runs lint:

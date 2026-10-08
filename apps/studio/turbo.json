@@ -27,7 +27,7 @@
       "dependsOn": ["generate"]
     },
     "lint": {
-      "dependsOn": ["generate"]
+      "dependsOn": ["generate", "oxlint-plugin-isomer#build"]
     },
     "typecheck": {
       "dependsOn": ["generate"]

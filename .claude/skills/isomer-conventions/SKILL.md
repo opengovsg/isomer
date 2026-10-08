@@ -52,7 +52,6 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 - [Prefer a new component over overloading props](conventions/react-new-component-over-prop-overload.md) — smell: flag soup / single-caller props bending one component into two jobs
 - [Build forms with useZodForm, not per-field useState](conventions/react-forms-usezodform-over-usestate.md) — best practice: forms use the zod-wired useForm wrapper, schema reused from ~/schemas
 - [Drive modals with useDisclosure, renamed on destructure](conventions/react-modal-usedisclosure-renamed.md) — best practice: modals use Chakra's useDisclosure (not custom useState), aliased to names like isDeleteModalOpen
-- [One custom hook per file](conventions/react-one-hook-per-file.md) — best practice: each hook in its own file named after it, one test file per hook; don't group hooks in a shared module
 
 ### Analytics
 
