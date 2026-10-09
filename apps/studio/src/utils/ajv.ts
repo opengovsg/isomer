@@ -14,11 +14,10 @@ export const ajv = new Ajv({
   // `unicodeRegExp` to true and compiles `pattern` with `u`, which silently
   // no-ops those checks. Keep this false so `pattern` keeps UTF-16 semantics.
   unicodeRegExp: false,
-  // `IsomerString` is an `allOf` `$ref` to one shared pattern schema. The
-  // default `inlineRefs: true` pastes that schema back into every string
-  // while generating code, which reintroduces the per-field lookahead.
+  // IsomerString $refs one shared pattern. inlineRefs true copies it onto
+  // every string at compile time and duplicates the lookahead.
   inlineRefs: false,
 })
 addErrors(ajv)
-// Lets the `$ref` in every `IsomerString` resolve, whichever schema is compiled.
+// So IsomerString $refs resolve when compiling footer, navbar, or page schema alone.
 ajv.addSchema(NoStylizedUnicodeStringSchema)

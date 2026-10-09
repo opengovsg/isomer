@@ -27,8 +27,7 @@ const errorMessages = (validate: { errors?: { message?: string }[] | null }) =>
 describe("no stylized unicode schema", () => {
   it("should allow valid links and reject stylized unicode and unsupported protocols", () => {
     // Arrange
-    // Alternation has to stay inside the caller's pattern. The unicode check
-    // is a separate schema, so it still applies to every branch.
+    // Caller pattern holds alternation; unicode is a separate schema on every branch.
     const validate = compileField(
       IsomerString({ pattern: "(^https://)|(^tel:)" }),
     )
