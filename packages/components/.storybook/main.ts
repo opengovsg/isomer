@@ -9,6 +9,7 @@ const config: StorybookConfig = {
     "@storybook/addon-a11y",
     "storybook-addon-pseudo-states",
     "@storybook/addon-docs",
+    "@storybook/addon-mcp",
   ],
 
   framework: {
@@ -16,7 +17,16 @@ const config: StorybookConfig = {
     options: {},
   },
 
+  features: {
+    componentsManifest: true,
+  },
+
   staticDirs: ["../public", "./assets"],
+
+  typescript: {
+    check: false,
+    reactDocgen: "react-docgen-typescript",
+  },
 }
 
 export default config

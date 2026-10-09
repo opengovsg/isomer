@@ -123,6 +123,27 @@ pnpm clean            # Clean build artifacts
 2. Get secrets from 1Password (search "Isomer Next")
 3. Run `pnpm run setup` from `apps/studio` to start services and seed DB
 
+## Storybook MCP (AI agents)
+
+Storybook exposes an MCP server when the dev server is running (`pnpm storybook` from the repo root starts Components on port **6006** and Studio on **6007**). HTTP endpoints are listed in the repo-root **`.mcp.json`** (project-scoped MCP config used by Claude Code and other agents).
+
+- **isomer-components-sb-mcp** — published-site components (`packages/components`)
+- **isomer-studio-sb-mcp** — Studio UI stories (`apps/studio`)
+
+Register those servers in your agent (after `pnpm storybook` is running). Examples: Claude Code reads `.mcp.json` directly; for other tools, copy the `mcpServers` entries into the path your agent expects, or run `npx mcp-add --type http --url "http://localhost:6006/mcp" --scope project` (repeat for port 6007) per [Storybook MCP setup](https://storybook.js.org/docs/ai/mcp/overview).
+
+Start Storybook before connecting an agent. Open `http://localhost:6006/mcp` or `http://localhost:6007/mcp` in a browser to confirm the MCP addon is up.
+
+When working on UI components or stories, use the Storybook MCP tools for the relevant workspace **before** implementing or answering:
+
+- **CRITICAL: Do not invent component props.** Before using any prop on a design-system or shared component, call `docs-list` and `docs-show` for that component and only use documented props or props shown in example stories.
+- Use `get-storybook-story-instructions` when creating or updating stories.
+- Validate with `test-run` when the testing toolset is available.
+
+Story conventions that improve MCP manifests: one concept per story, JSDoc on components and props, and `react-docgen-typescript` (already configured in Storybook). Exclude anti-pattern or deprecated demos from the manifest with Storybook’s `manifest` tag when needed.
+
+Docs: [Storybook MCP overview](https://storybook.js.org/docs/ai/mcp/overview), [setup](https://storybook.js.org/docs/ai/setup), [best practices](https://storybook.js.org/docs/ai/best-practices).
+
 ## Formatting Configuration
 
 The project uses Oxfmt with Tailwind CSS class sorting. VSCode is configured to format on save with Oxc extension.

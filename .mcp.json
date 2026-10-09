@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "isomer-components-sb-mcp": {
+      "type": "http",
+      "url": "http://localhost:6006/mcp"
+    },
+    "isomer-studio-sb-mcp": {
+      "type": "http",
+      "url": "http://localhost:6007/mcp"
+    }
+  }
+}
