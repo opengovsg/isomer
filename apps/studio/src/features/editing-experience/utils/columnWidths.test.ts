@@ -12,7 +12,11 @@ import {
   PROSE_EXTENSIONS,
 } from "~/features/editing-experience/hooks/useTextEditor/constants"
 
-import { moveColumnWidth, moveTableColumnWithWidths } from "./columnWidths"
+import {
+  moveColumnWidth,
+  moveTableColumnWithWidths,
+  setTableColumnWidths,
+} from "./columnWidths"
 
 const tableDoc = (columnWidths: number[] | null): JSONContent => ({
   type: "prose",
@@ -53,6 +57,18 @@ const createEditor = (columnWidths: number[] | null) =>
     content: tableDoc(columnWidths),
   })
 
+const tablePosIn = (editor: Editor): number => {
+  let tablePos = 0
+  editor.state.doc.descendants((node, pos) => {
+    if (node.type.name === "table") {
+      tablePos = pos
+      return false
+    }
+    return true
+  })
+  return tablePos
+}
+
 const columnWidthsOf = (editor: Editor): number[] | null => {
   let widths: number[] | null = null
   editor.state.doc.descendants((node) => {
@@ -76,6 +92,13 @@ const selectText = (editor: Editor, text: string) => {
   })
   editor.commands.setTextSelection(pos)
 }
+
+describe("moveColumnWidth", () => {
+  it("moves one width entry without changing the others order", () => {
+    // Arrange / Act / Assert
+    expect(moveColumnWidth([100, 200, 300], 2, 0)).toEqual([300, 100, 200])
+  })
+})
 
 describe("column width edits", () => {
   const editors: Editor[] = []
@@ -155,14 +178,7 @@ describe("column width edits", () => {
   it("moves a width with its column", () => {
     // Arrange
     const editor = mountEditor([100, 200])
-    let tablePos = 0
-    editor.state.doc.descendants((node, pos) => {
-      if (node.type.name === "table") {
-        tablePos = pos
-        return false
-      }
-      return true
-    })
+    const tablePos = tablePosIn(editor)
 
     // Act
     moveTableColumnWithWidths({
@@ -177,6 +193,33 @@ describe("column width edits", () => {
 
     // Assert
     expect(columnWidthsOf(editor)).toEqual([200, 100])
-    expect(moveColumnWidth([100, 200, 300], 2, 0)).toEqual([300, 100, 200])
+  })
+
+  it("clamps column widths when they are written to the document", () => {
+    // Arrange
+    const editor = mountEditor(null)
+    const tablePos = tablePosIn(editor)
+
+    // Act
+    const tr = editor.state.tr
+    setTableColumnWidths(tr, tablePos, [10, 900])
+    editor.view.dispatch(tr)
+
+    // Assert
+    expect(columnWidthsOf(editor)).toEqual([60, 400])
+  })
+
+  it("clears column widths for automatic layout", () => {
+    // Arrange
+    const editor = mountEditor([100, 200])
+    const tablePos = tablePosIn(editor)
+
+    // Act
+    const tr = editor.state.tr
+    setTableColumnWidths(tr, tablePos, null)
+    editor.view.dispatch(tr)
+
+    // Assert
+    expect(columnWidthsOf(editor)).toBeNull()
   })
 })
