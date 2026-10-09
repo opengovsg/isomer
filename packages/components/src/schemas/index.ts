@@ -3,4 +3,8 @@ export { schema } from "./main"
 export { getLayoutMetadataSchema } from "./meta"
 export { getLayoutPageSchema, LAYOUT_PAGE_MAP } from "./page"
 export { getScopedSchema } from "./scopedSchema"
+export {
+  attachIsomerSharedDefinitions,
+  isomerSharedSchemaDefinitions,
+} from "./sharedDefinitions"
 export { orderedListSchemaBuilder, unorderedListSchemaBuilder } from "./utils"

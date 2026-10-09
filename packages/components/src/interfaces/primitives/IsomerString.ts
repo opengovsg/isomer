@@ -5,9 +5,8 @@ import { NO_STYLIZED_UNICODE_REGEX } from "~/utils/validation"
 const NO_STYLIZED_UNICODE_ERROR_MESSAGE =
   "cannot contain stylised or decorative unicode characters"
 
-// One copy of the lookahead. Every `IsomerString` points at this `$id`.
-// The object has to be reachable from each document Ajv compiles on its own
-// (`componentSchemaDefinitions`) or registered with `ajv.addSchema`.
+// Shared stylized-unicode pattern. Each IsomerString field $refs this $id.
+// `isomerSharedSchemaDefinitions` is the only copy.
 export const NO_STYLIZED_UNICODE_STRING_ID = "isomer-string-no-stylized-unicode"
 
 export const NoStylizedUnicodeStringSchema = Type.String({

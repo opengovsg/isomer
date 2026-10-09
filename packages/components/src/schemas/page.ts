@@ -1,3 +1,4 @@
+import type { TSchema } from "@sinclair/typebox"
 import type { IsomerPageLayoutType } from "~/types"
 import {
   ArticlePagePageSchema,
@@ -11,6 +12,8 @@ import {
   SearchPagePageSchema,
 } from "~/types"
 
+import { attachIsomerSharedDefinitions } from "./sharedDefinitions"
+
 export const LAYOUT_PAGE_MAP = {
   article: ArticlePagePageSchema,
   content: ContentPagePageSchema,
@@ -23,6 +26,7 @@ export const LAYOUT_PAGE_MAP = {
   collection: CollectionPagePageSchema,
 } as const
 
-export const getLayoutPageSchema = (layout: IsomerPageLayoutType) => {
-  return LAYOUT_PAGE_MAP[layout]
+export const getLayoutPageSchema = (layout: IsomerPageLayoutType): TSchema => {
+  // A new object. The map entry stays nested in the page schema without a second `$id`.
+  return attachIsomerSharedDefinitions(LAYOUT_PAGE_MAP[layout])
 }

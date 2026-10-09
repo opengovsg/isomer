@@ -1,4 +1,4 @@
-import { NoStylizedUnicodeStringSchema } from "@opengovsg/isomer-components"
+import { attachIsomerSharedDefinitions } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import addErrors from "ajv-errors"
 
@@ -20,9 +20,12 @@ export const ajv = new Ajv({
   inlineRefs: false,
 })
 addErrors(ajv)
-// Fragments (footer, navbar, site name, layout page, metadata) are compiled
-// without the page schema's definitions. Registering the shared schema here
-// lets those compiles resolve the `$ref`. The same object is also embedded
-// in the published page schema, so a fresh Ajv compiling that document
-// resolves it without this call.
-ajv.addSchema(NoStylizedUnicodeStringSchema)
+
+// Footer, navbar, site config, and agency settings are compiled without
+// `componentSchemaDefinitions`. Attach the same definitions object here.
+const compileSchema = ajv.compile.bind(ajv)
+ajv.compile = ((schema: Parameters<typeof compileSchema>[0]) => {
+  if (typeof schema !== "object" || schema === null)
+    return compileSchema(schema)
+  return compileSchema(attachIsomerSharedDefinitions(schema))
+}) as typeof ajv.compile
