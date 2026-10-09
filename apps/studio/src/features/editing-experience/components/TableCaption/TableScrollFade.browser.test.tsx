@@ -90,7 +90,6 @@ describe("table scroll fade", () => {
     // Assert
     await waitFor(() => {
       expect(scrollport.scrollWidth).toBeGreaterThan(scrollport.clientWidth)
-      expect(scrollport).toHaveAttribute("data-table-scroll-fade", "end")
       expect(maskImageOf(scrollport)).toContain("linear-gradient")
     })
   })
@@ -112,7 +111,7 @@ describe("table scroll fade", () => {
 
     // Assert
     await waitFor(() => {
-      expect(scrollport).toHaveAttribute("data-table-scroll-fade", "both")
+      expect(maskImageOf(scrollport)).toContain("linear-gradient")
     })
   })
 
@@ -133,7 +132,6 @@ describe("table scroll fade", () => {
 
     // Assert
     await waitFor(() => {
-      expect(scrollport).toHaveAttribute("data-table-scroll-fade", "start")
       expect(maskImageOf(scrollport)).toContain("linear-gradient")
     })
   })
@@ -155,7 +153,6 @@ describe("table scroll fade", () => {
       expect(
         scrollport.scrollWidth - scrollport.clientWidth,
       ).toBeLessThanOrEqual(8)
-      expect(scrollport).not.toHaveAttribute("data-table-scroll-fade")
       expect(maskImageOf(scrollport)).toBe("none")
     })
   })

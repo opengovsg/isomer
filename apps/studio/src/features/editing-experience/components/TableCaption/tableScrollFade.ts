@@ -1,11 +1,9 @@
 export interface ScrollFadeEdges {
-  /** Hidden content sits before the visible area. */
   start: boolean
-  /** Hidden content sits after the visible area. */
   end: boolean
 }
 
-/** Ignore hairline overflow so a 1px rounding error does not paint a fade. */
+/** No fade when overflow is at most this many pixels (resize handles can add a few). */
 const OVERFLOW_THRESHOLD_PX = 8
 const EDGE_EPSILON_PX = 1
 
@@ -28,10 +26,7 @@ export const scrollFadeEdges = ({
   }
 }
 
-/**
- * Mask, not a painted gradient: transparent pixels show the editor surface,
- * so the fade reads as white on the light canvas and dark on a dark one.
- */
+/** CSS mask: #000 keeps the table visible; transparent lets the editor background show. */
 export const tableScrollFadeMask = ({
   start,
   end,
@@ -46,15 +41,5 @@ export const tableScrollFadeMask = ({
   if (start) {
     return `linear-gradient(to right, transparent, #000 ${fade})`
   }
-  return undefined
-}
-
-export const tableScrollFadeLabel = ({
-  start,
-  end,
-}: ScrollFadeEdges): "start" | "end" | "both" | undefined => {
-  if (start && end) return "both"
-  if (start) return "start"
-  if (end) return "end"
   return undefined
 }

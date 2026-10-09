@@ -3,6 +3,7 @@ import type { Command, EditorState, Transaction } from "@tiptap/pm/state"
 import {
   TABLE_COLUMN_DEFAULT_WIDTH_PX,
   clampTableColumnWidth,
+  parseTableColumnWidths,
 } from "@opengovsg/isomer-components"
 import {
   isInTable,
@@ -16,16 +17,8 @@ type ColumnRect = ReturnType<typeof selectedRect>
 export const storedColumnWidths = (
   table: ProseMirrorNode,
   columnCount: number,
-): number[] | null => {
-  const raw = table.attrs.columnWidths as unknown
-  if (!Array.isArray(raw) || raw.length !== columnCount) return null
-  const widths: number[] = []
-  for (const item of raw as unknown[]) {
-    if (typeof item !== "number" || !Number.isFinite(item)) return null
-    widths.push(item)
-  }
-  return widths
-}
+): number[] | null =>
+  parseTableColumnWidths(table.attrs.columnWidths, columnCount)
 
 export const insertColumnWidth = (
   widths: number[],
@@ -81,7 +74,14 @@ export const setTableColumnWidths = (
 ): void => {
   const table = tr.doc.nodeAt(tablePos)
   if (!table || table.type.name !== "table") return
-  tr.setNodeMarkup(tablePos, undefined, { ...table.attrs, columnWidths })
+  const parsed =
+    columnWidths === null
+      ? null
+      : parseTableColumnWidths(columnWidths, TableMap.get(table).width)
+  tr.setNodeMarkup(tablePos, undefined, {
+    ...table.attrs,
+    columnWidths: parsed,
+  })
 }
 
 export type WidthCommand = (props: {
@@ -149,7 +149,7 @@ export const moveTableColumnWithWidths = ({
   }
 }
 
-// ponytail: first row only; a colspan is split evenly. Per-column measure if merged headers look wrong.
+/** First row only. Colspan cells split their width evenly across spanned columns. */
 export const measureColumnWidths = (
   table: HTMLTableElement,
   columnCount: number,
@@ -172,5 +172,3 @@ export const measureColumnWidths = (
   }
   return widths.map((width) => (width > 0 ? width : fallback))
 }
-
-export { clampTableColumnWidth }

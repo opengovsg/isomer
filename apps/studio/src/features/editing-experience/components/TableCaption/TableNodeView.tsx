@@ -1,7 +1,11 @@
 import type { NodeViewProps } from "@tiptap/react"
 import type { PointerEvent as ReactPointerEvent } from "react"
 import { Box } from "@chakra-ui/react"
-import { clampTableColumnWidth } from "@opengovsg/isomer-components"
+import {
+  clampTableColumnWidth,
+  columnWidthsToPxStrings,
+  tableWidthPxFromColumnWidths,
+} from "@opengovsg/isomer-components"
 import { TableMap } from "@tiptap/pm/tables"
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
@@ -13,7 +17,7 @@ import {
 import { TABLE_GUTTER_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import { TableCaption } from "./TableCaption"
-import { tableScrollFadeLabel, tableScrollFadeMask } from "./tableScrollFade"
+import { tableScrollFadeMask } from "./tableScrollFade"
 import { useTableScrollFade } from "./useTableScrollFade"
 
 const applyColumnWidths = (
@@ -32,14 +36,14 @@ const applyColumnWidths = (
       ? existing
       : document.createElement("colgroup")
   group.replaceChildren(
-    ...widths.map((width) => {
+    ...columnWidthsToPxStrings(widths).map((width) => {
       const col = document.createElement("col")
-      col.style.width = `${width}px`
+      col.style.width = width
       return col
     }),
   )
   if (!existing) table.insertBefore(group, table.firstChild)
-  table.style.width = `${widths.reduce((sum, width) => sum + width, 0)}px`
+  table.style.width = tableWidthPxFromColumnWidths(widths)
 }
 
 const ColumnResizeHandles = ({
@@ -51,7 +55,7 @@ const ColumnResizeHandles = ({
   columnCount: number
   widths: number[] | null
   onDrag: (widths: number[] | null) => void
-  onCommit: (widths: number[] | null, recordHistory: boolean) => void
+  onCommit: (widths: number[] | null) => void
 }) => {
   const stopDrag = useRef<(() => void) | null>(null)
   const [hoverIndex, setHoverIndex] = useState<number | null>(null)
@@ -105,8 +109,7 @@ const ColumnResizeHandles = ({
         window.removeEventListener("blur", onBlur)
         stopDrag.current = null
       }
-      // Every exit uses this. Move only previews; a successful release is the
-      // one document write. Cancel, blur, lost capture, and unmount drop it.
+      // Pointermove updates preview state only. Pointerup dispatches once.
       const finishDrag = (mode: "commit" | "cancel", clientX: number) => {
         if (finished) return
         finished = true
@@ -125,7 +128,7 @@ const ColumnResizeHandles = ({
           onDrag(null)
           return
         }
-        onCommit(next, true)
+        onCommit(next)
       }
       const pointerFrom = (event: Event): PointerEvent | null =>
         event instanceof PointerEvent ? event : null
@@ -231,7 +234,6 @@ export const TableNodeView = ({
     scrollportRef,
     `${columnCount}:${sum ?? "auto"}`,
   )
-  const fadeLabel = tableScrollFadeLabel(fade)
   const fadeMask = tableScrollFadeMask(fade)
 
   useEffect(() => {
@@ -270,7 +272,6 @@ export const TableNodeView = ({
         <Box
           ref={scrollportRef}
           data-table-scrollport=""
-          {...(fadeLabel ? { "data-table-scroll-fade": fadeLabel } : {})}
           w="100%"
           minW={0}
           overflowX="auto"
@@ -295,13 +296,12 @@ export const TableNodeView = ({
                 columnCount={columnCount}
                 widths={widths}
                 onDrag={setPreview}
-                onCommit={(next, recordHistory) => {
+                onCommit={(next) => {
                   setPreview(next)
                   const pos = getPos()
                   if (typeof pos !== "number") return
                   const tr = editor.state.tr
                   setTableColumnWidths(tr, pos, next)
-                  if (!recordHistory) tr.setMeta("addToHistory", false)
                   if (tr.docChanged) editor.view.dispatch(tr)
                 }}
               />
