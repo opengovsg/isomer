@@ -7,7 +7,6 @@ import { DashboardPO } from "../fixtures/dashboard.po"
 import {
   seedCollectionWithLink,
   seedCollectionWithPage,
-  seedFolderWithChildPage,
   seedFolderWithPage,
   seedRootCollection,
   seedRootPage,
@@ -53,7 +52,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin can delete a folder and its child pages", async ({ page }) => {
     // Arrange
     const folderTitle = `Delete Folder ${crypto.randomUUID().slice(0, 8)}`
-    const { folder, childPage } = await seedFolderWithChildPage({
+    const { folder, page: childPage } = await seedFolderWithPage({
       siteId,
       folderTitle,
     })
@@ -182,7 +181,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   }) => {
     // Arrange
     const folderTitle = `Root Folder Delete Gate ${crypto.randomUUID().slice(0, 8)}`
-    const { folder } = await seedFolderWithChildPage({
+    const { folder } = await seedFolderWithPage({
       siteId,
       folderTitle,
       pageTitle: `Child ${crypto.randomUUID().slice(0, 8)}`,

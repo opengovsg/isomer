@@ -82,27 +82,6 @@ export const seedFolderWithPage = async ({
   return { folder, page }
 }
 
-export const seedFolderWithChildPage = async ({
-  siteId,
-  folderTitle = "E2E Seed Folder",
-  pageTitle = "E2E Child Page",
-}: {
-  siteId: number
-  folderTitle?: string
-  pageTitle?: string
-}) => {
-  const suffix = crypto.randomUUID().slice(0, 8)
-  const { folder } = await seedFolder({ siteId, folderTitle })
-  const { page } = await setupPageResource({
-    siteId,
-    resourceType: ResourceType.Page,
-    parentId: folder.id,
-    title: pageTitle,
-    permalink: `e2e-child-page-${suffix}`,
-  })
-  return { folder, childPage: page }
-}
-
 export const seedCollectionWithPage = async ({
   siteId,
   collectionTitle = "E2E Seed Collection",
