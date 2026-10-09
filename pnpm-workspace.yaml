@@ -243,9 +243,6 @@ catalogs:
     "@react-aria/utils": ^3.34.1
     "@react-stately/checkbox": ^3.8.1
     "@react-stately/toggle": ^3.10.1
-  # Pinned (not a caret range) so all Storybook packages stay on one release.
-  # Do not use 10.5.0–10.5.7: focus instrumentation broke @zag-js/focus-visible
-  # (Chakra Menu "Illegal invocation"). Fixed in 10.5.8+ and 10.6+ (storybookjs/storybook#35528).
   storybook:
     storybook: 10.6.1
     "@storybook/addon-mcp": 10.6.1
