@@ -71,6 +71,7 @@ const ContentSecurityPolicy = `
     'unsafe-inline'
     ;
   media-src
+    'self'
     https://js.intercomcdn.com
     https://downloads.intercomcdn.com
     https://downloads.intercomcdn.eu

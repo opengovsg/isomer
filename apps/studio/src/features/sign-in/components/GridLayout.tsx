@@ -7,7 +7,7 @@ import { AppGrid } from "~/templates/AppGrid"
 export const BaseGridLayout = (props: GridProps) => (
   <AppGrid
     px={{ base: "1.5rem", md: "1.75rem", lg: "2rem" }}
-    templateRows={{ base: "1fr auto", md: "auto 1fr auto", lg: "1fr auto" }}
+    templateRows={{ base: "1fr auto", lg: "1fr auto" }}
     {...props}
   />
 )
@@ -31,45 +31,30 @@ export const FooterGridArea: FC<PropsWithChildren> = ({ children }) => (
     gridColumn={{ base: "1 / 5", md: "2 / 12", lg: "8 / 12" }}
     py="4rem"
     display="flex"
-    justifyContent={{ base: "center", lg: "initial" }}
-  >
-    {children}
-  </GridItem>
-)
-
-// Grid area styling for the left side of footer area that only displays on tablet and desktop breakpoints.
-export const NonMobileFooterLeftGridArea: FC<PropsWithChildren> = ({
-  children,
-}) => (
-  <GridItem
-    ml={{ md: "-1.75rem", lg: "-2rem" }}
-    mr={{ md: "-1.75rem", lg: 0 }}
-    display={{ base: "none", md: "flex" }}
-    gridColumn={{ md: "1 / 13", lg: "1 / 7" }}
-    background="base.canvas.brand-subtle"
     flexDir="column"
-    alignItems="center"
-    justifyContent="center"
+    alignItems={{ base: "center", lg: "flex-start" }}
+    gap="1.5rem"
   >
     {children}
   </GridItem>
 )
 
-// Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
+// Spotlight column. Spans both rows so the block sits in the vertical middle.
 export const NonMobileSidebarGridArea: FC<PropsWithChildren> = ({
   children,
 }) => (
   <GridItem
-    display={{ base: "none", md: "flex" }}
-    gridColumn={{ md: "1 / 13", lg: "1 / 7" }}
-    h={{ md: "9.5rem", lg: "auto" }}
-    py="1rem"
+    display={{ base: "none", lg: "flex" }}
+    gridColumn={{ lg: "1 / 7" }}
+    gridRow={{ lg: "1 / 3" }}
+    alignSelf="stretch"
+    py="2.5rem"
+    px="2.5rem"
     flexDir="column"
     alignItems="center"
     justifyContent="center"
     bg="base.canvas.brand-subtle"
-    ml={{ md: "-1.75rem", lg: "-2rem" }}
-    mr={{ md: "-1.75rem", lg: 0 }}
+    ml="-2rem"
   >
     {children}
   </GridItem>
