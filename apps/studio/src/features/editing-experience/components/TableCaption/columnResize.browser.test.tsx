@@ -2,9 +2,13 @@ import type { Editor as TiptapEditor, JSONContent } from "@tiptap/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { EditorContent } from "@tiptap/react"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { describe, expect, it } from "vitest"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
+import {
+  bindColumnWidthPreviewRoot,
+  setColumnWidthPreviewTarget,
+} from "~/features/editing-experience/utils/previewColumnWidths"
 import { theme } from "~/theme"
 
 const content: JSONContent = {
@@ -33,6 +37,7 @@ const Harness = ({
   onEditorReady: (editor: TiptapEditor) => void
   onChange?: () => void
 }) => {
+  const previewRootRef = useRef<HTMLDivElement>(null)
   const [data, setData] = useState<JSONContent | undefined>(content)
   const editor = useTextEditor({
     data,
@@ -41,8 +46,41 @@ const Harness = ({
       setData(next)
     },
   })
+  useEffect(() => {
+    setColumnWidthPreviewTarget(
+      [{ type: "prose", content: [{ type: "table" }] }],
+      1,
+    )
+    bindColumnWidthPreviewRoot(previewRootRef.current)
+    return () => {
+      bindColumnWidthPreviewRoot(null)
+      setColumnWidthPreviewTarget([], 0)
+    }
+  }, [])
   if (editor) onEditorReady(editor)
-  return <EditorContent editor={editor} />
+  return (
+    <>
+      <div ref={previewRootRef}>
+        <table data-preview-decoy>
+          <tbody>
+            <tr>
+              <td>Earlier</td>
+              <td>Block</td>
+            </tr>
+          </tbody>
+        </table>
+        <table data-preview-table>
+          <tbody>
+            <tr>
+              <td>A</td>
+              <td>B</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <EditorContent editor={editor} />
+    </>
+  )
 }
 
 const widthsOf = (editor: TiptapEditor): number[] | null => {
@@ -77,6 +115,11 @@ const previewWidth = () => {
   return col instanceof HTMLElement ? Number.parseFloat(col.style.width) : 0
 }
 
+const paintedTable = (selector: string) => {
+  const table = document.querySelector(selector)
+  return table instanceof HTMLTableElement ? table : null
+}
+
 describe("column resize", () => {
   it("previews while dragging and commits one undoable width on release", async () => {
     // Arrange
@@ -109,7 +152,19 @@ describe("column resize", () => {
 
     await waitFor(() => {
       expect(previewWidth()).toBeGreaterThan(60)
+      expect(
+        Number.parseFloat(
+          paintedTable("[data-preview-table]")?.style.width ?? "",
+        ),
+      ).toBeGreaterThan(60)
     })
+    expect(paintedTable("[data-preview-table]")?.style.tableLayout).toBe(
+      "fixed",
+    )
+    expect(
+      paintedTable("[data-preview-table]")?.querySelector("td")?.style.maxWidth,
+    ).toBe("none")
+    expect(paintedTable("[data-preview-decoy]")?.style.width).toBe("")
     expect(editor && widthsOf(editor)).toBeNull()
     expect(changes).toBe(changesBefore)
 
@@ -163,6 +218,11 @@ describe("column resize", () => {
     })
     await waitFor(() => {
       expect(previewWidth()).toBeGreaterThan(60)
+      expect(
+        Number.parseFloat(
+          paintedTable("[data-preview-table]")?.style.width ?? "",
+        ),
+      ).toBeGreaterThan(60)
     })
     act(() => {
       pointer(handle, "pointerCancel", x + 120, y)
@@ -171,7 +231,16 @@ describe("column resize", () => {
     // Assert
     await waitFor(() => {
       expect(previewWidth()).toBe(0)
+      expect(paintedTable("[data-preview-table]")?.style.width).toBe("")
     })
+    expect(paintedTable("[data-preview-table]")?.style.tableLayout).toBe("")
+    expect(
+      paintedTable("[data-preview-table]")?.querySelector("colgroup"),
+    ).toBeNull()
+    expect(
+      paintedTable("[data-preview-table]")?.querySelector("td")?.style.maxWidth,
+    ).toBe("")
+    expect(paintedTable("[data-preview-decoy]")?.style.width).toBe("")
     expect(editor && widthsOf(editor)).toBeNull()
     expect(changes).toBe(changesBefore)
     act(() => {
