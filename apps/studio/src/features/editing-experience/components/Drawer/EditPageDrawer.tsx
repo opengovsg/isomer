@@ -1,7 +1,9 @@
 import type { IsomerComponent, ProseProps } from "@opengovsg/isomer-components"
 import { getComponentSchema } from "@opengovsg/isomer-components"
+import { useEffect } from "react"
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { setColumnWidthPreviewTarget } from "~/features/editing-experience/utils/previewColumnWidths"
 import { ajv } from "~/utils/ajv"
 
 import TipTapProseComponent from "../TipTapProseComponent"
@@ -24,6 +26,14 @@ export function EditPageDrawer(): JSX.Element {
     drawerState: currState,
     currActiveIdx,
   } = useEditorDrawerContext()
+
+  useEffect(() => {
+    // Page content is a schema union that type-aware lint cannot relate to unknown[].
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
+    setColumnWidthPreviewTarget(previewPageState.content, currActiveIdx)
+  }, [previewPageState.content, currActiveIdx])
+
+  useEffect(() => () => setColumnWidthPreviewTarget([], 0), [])
 
   const inferAsProse = (component?: IsomerComponent): ProseProps => {
     if (!component) {

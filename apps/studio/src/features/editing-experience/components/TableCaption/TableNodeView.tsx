@@ -1,3 +1,4 @@
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
 import type { NodeViewProps } from "@tiptap/react"
 import type { PointerEvent as ReactPointerEvent } from "react"
 import { Box } from "@chakra-ui/react"
@@ -10,6 +11,11 @@ import {
   setTableColumnWidths,
   storedColumnWidths,
 } from "~/features/editing-experience/utils/columnWidths"
+import {
+  beginPreviewColumnWidthPaint,
+  endPreviewColumnWidthPaint,
+  schedulePreviewColumnWidthPaint,
+} from "~/features/editing-experience/utils/previewColumnWidths"
 import { TABLE_GUTTER_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import { TableCaption } from "./TableCaption"
@@ -42,16 +48,28 @@ const applyColumnWidths = (
   table.style.width = `${widths.reduce((sum, width) => sum + width, 0)}px`
 }
 
+const tableIndexAt = (doc: ProseMirrorNode, pos: number): number => {
+  let index = 0
+  doc.nodesBetween(0, pos, (node) => {
+    if (node.type.name !== "table") return true
+    index += 1
+    return false
+  })
+  return index
+}
+
 const ColumnResizeHandles = ({
   columnCount,
   widths,
   onDrag,
   onCommit,
+  onResizeStart,
 }: {
   columnCount: number
   widths: number[] | null
   onDrag: (widths: number[] | null) => void
   onCommit: (widths: number[] | null, recordHistory: boolean) => void
+  onResizeStart: () => void
 }) => {
   const stopDrag = useRef<(() => void) | null>(null)
   const [hoverIndex, setHoverIndex] = useState<number | null>(null)
@@ -158,6 +176,7 @@ const ColumnResizeHandles = ({
       }
 
       stopDrag.current?.()
+      onResizeStart()
       stopDrag.current = () => finishDrag("cancel", startX)
       try {
         handle.setPointerCapture(pointerId)
@@ -294,8 +313,20 @@ export const TableNodeView = ({
               <ColumnResizeHandles
                 columnCount={columnCount}
                 widths={widths}
-                onDrag={setPreview}
+                onResizeStart={() => {
+                  const pos = getPos()
+                  if (typeof pos !== "number") return
+                  beginPreviewColumnWidthPaint(
+                    tableIndexAt(editor.state.doc, pos),
+                  )
+                }}
+                onDrag={(next) => {
+                  setPreview(next)
+                  if (next) schedulePreviewColumnWidthPaint(next)
+                  else endPreviewColumnWidthPaint("cancel")
+                }}
                 onCommit={(next, recordHistory) => {
+                  endPreviewColumnWidthPaint("commit")
                   setPreview(next)
                   const pos = getPos()
                   if (typeof pos !== "number") return
