@@ -5,10 +5,11 @@ import { Type } from "@sinclair/typebox"
 
 import { TextSchema } from "../native"
 import { SimpleProseSchema } from "../native/Prose"
+import { IsomerString } from "../primitives/IsomerString"
 
 export const NotificationSchema = Type.Object(
   {
-    title: Type.String({
+    title: IsomerString({
       title: "Notification title",
       maxLength: 150,
     }),

@@ -5,6 +5,8 @@ import { Type } from "@sinclair/typebox"
 import { COLLECTION_DROPDOWN_FORMAT } from "~/interfaces/format"
 import { REF_INTERNAL_HREF_PATTERN } from "~/utils/validation"
 
+import { IsomerString } from "../primitives/IsomerString"
+
 export const CollectionBlockSchema = Type.Object(
   {
     type: Type.Literal("collectionblock", {
@@ -19,12 +21,12 @@ export const CollectionBlockSchema = Type.Object(
     // TODO: Add the option to enable/disable the custom title and description as a whole
     // For now, we just assume that they will take effect if truthy
     customTitle: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Custom title",
       }),
     ),
     customDescription: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Custom description",
       }),
     ),
@@ -36,7 +38,7 @@ export const CollectionBlockSchema = Type.Object(
       title: "Display category of all pages",
       default: true,
     }),
-    buttonLabel: Type.String({
+    buttonLabel: IsomerString({
       title: "Button text",
       maxLength: 50,
       description:

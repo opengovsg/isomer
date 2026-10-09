@@ -5,6 +5,7 @@ import { InfoCardsImageFitSchema } from "~/schemas/internal"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
+import { IsomerString } from "../primitives/IsomerString"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 export const CARDS_WITHOUT_IMAGES = "cardsWithoutImages"
@@ -19,11 +20,11 @@ export const INFOCARD_VARIANT = {
 type InfoCardVariants = keyof typeof INFOCARD_VARIANT
 
 const SingleCardNoImageSchema = Type.Object({
-  title: Type.String({
+  title: IsomerString({
     title: "Title",
   }),
   description: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Description",
       description:
         "To make sure your description is readable, keep it under 150 characters.",
@@ -57,7 +58,7 @@ const InfoCardsBaseSchema = Type.Object({
       format: "hidden",
     }),
   ),
-  title: Type.String({
+  title: IsomerString({
     title: "Title",
     pattern: NON_EMPTY_STRING_REGEX,
     errorMessage: {
@@ -65,7 +66,7 @@ const InfoCardsBaseSchema = Type.Object({
     },
   }),
   subtitle: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Description",
     }),
   ),
@@ -87,7 +88,7 @@ const InfoCardsBaseSchema = Type.Object({
   // Context: This one is a stopgap measure in lieu of linking collections to the homepage
   // Will be hidden in Studio for now
   label: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Link text",
       maxLength: 50,
       description:
