@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest"
 import { getComponentSchema } from "~/schemas/components"
 import { schema } from "~/schemas/main"
+import { getLayoutMetadataSchema } from "~/schemas/meta"
+import { getLayoutPageSchema, LAYOUT_PAGE_MAP } from "~/schemas/page"
+import { attachIsomerSharedDefinitions } from "~/schemas/sharedDefinitions"
 import {
   NO_STYLIZED_UNICODE_REGEX,
   NON_EMPTY_STRING_REGEX,
@@ -67,5 +70,20 @@ describe("IsomerString", () => {
     expect(countInJson(schema, NO_STYLIZED_UNICODE_STRING_ID)).toBeGreaterThan(
       1,
     )
+  })
+
+  it("should attach the shared schema on a layout fragment without copying it into the page schema", () => {
+    // Arrange / Act
+    const contentPage = getLayoutPageSchema("content")
+    const contentMeta = getLayoutMetadataSchema("content")
+
+    // Assert
+    expect(countInJson(contentPage, NO_STYLIZED_UNICODE_REGEX)).toBe(1)
+    expect(countInJson(contentMeta, NO_STYLIZED_UNICODE_REGEX)).toBe(1)
+    expect(
+      countInJson(LAYOUT_PAGE_MAP.content, NO_STYLIZED_UNICODE_REGEX),
+    ).toBe(0)
+    expect(attachIsomerSharedDefinitions(schema)).toBe(schema)
+    expect(attachIsomerSharedDefinitions(contentPage)).toBe(contentPage)
   })
 })

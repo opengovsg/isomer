@@ -1,9 +1,11 @@
 import {
+  AgencySettingsSchema,
   IsomerString,
   NON_EMPTY_STRING_REGEX,
   NO_STYLIZED_UNICODE_REGEX,
   NO_STYLIZED_UNICODE_STRING_ID,
   schema,
+  SiteConfigSchema,
 } from "@opengovsg/isomer-components"
 import { describe, expect, it } from "vitest"
 import { ajv } from "~/utils/ajv"
@@ -18,7 +20,7 @@ const compileField = (field: ReturnType<typeof IsomerString>) =>
     required: ["value"],
   })
 
-const errorMessages = (validate: ReturnType<typeof compileField>) =>
+const errorMessages = (validate: { errors?: { message?: string }[] | null }) =>
   (validate.errors ?? []).map((error) => error.message)
 
 describe("no stylized unicode schema", () => {
@@ -79,5 +81,18 @@ describe("no stylized unicode schema", () => {
     expect(shared?.toString()).toContain("D835")
     expect(validatePage.toString()).not.toContain("D835")
     expect(NO_STYLIZED_UNICODE_REGEX).toContain("D835")
+  })
+
+  it("should resolve the shared schema for settings compiled without the page document", () => {
+    // Arrange
+    const validateAgency = ajv.compile(AgencySettingsSchema)
+    const validateSite = ajv.compile(SiteConfigSchema)
+
+    // Act / Assert
+    expect(validateAgency({ siteName: "Official" })).toBe(true)
+    expect(validateAgency({ siteName: "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥" })).toBe(false)
+    expect(errorMessages(validateAgency)).toContain(unicodeMessage)
+    expect(validateSite({ siteName: "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥" })).toBe(false)
+    expect(errorMessages(validateSite)).toContain(unicodeMessage)
   })
 })

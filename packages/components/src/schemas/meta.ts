@@ -11,6 +11,8 @@ import {
   SearchPageMetaSchema,
 } from "~/types"
 
+import { attachIsomerSharedDefinitions } from "./sharedDefinitions"
+
 const LAYOUT_METADATA_MAP = {
   article: ArticlePageMetaSchema,
   content: ContentPageMetaSchema,
@@ -26,5 +28,5 @@ const LAYOUT_METADATA_MAP = {
 export const getLayoutMetadataSchema = (
   layout: IsomerPageLayoutType,
 ): TSchema => {
-  return LAYOUT_METADATA_MAP[layout]
+  return attachIsomerSharedDefinitions(LAYOUT_METADATA_MAP[layout])
 }
