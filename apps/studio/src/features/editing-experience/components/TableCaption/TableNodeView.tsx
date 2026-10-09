@@ -127,24 +127,30 @@ const ColumnResizeHandles = ({
         }
         onCommit(next, true)
       }
-      const move = (pointer: PointerEvent) => {
-        if (!samePointer(pointer)) return
+      const pointerFrom = (event: Event): PointerEvent | null =>
+        event instanceof PointerEvent ? event : null
+      const move = (event: Event) => {
+        const pointer = pointerFrom(event)
+        if (!pointer || !samePointer(pointer)) return
         const next = widthsAt(pointer.clientX)
         const width = next[index] ?? startWidth
         if (width === lastWidth) return
         lastWidth = width
         onDrag(next)
       }
-      const up = (pointer: PointerEvent) => {
-        if (!samePointer(pointer)) return
+      const up = (event: Event) => {
+        const pointer = pointerFrom(event)
+        if (!pointer || !samePointer(pointer)) return
         finishDrag("commit", pointer.clientX)
       }
-      const cancel = (pointer: PointerEvent) => {
-        if (!samePointer(pointer)) return
+      const cancel = (event: Event) => {
+        const pointer = pointerFrom(event)
+        if (!pointer || !samePointer(pointer)) return
         finishDrag("cancel", pointer.clientX)
       }
-      const onLostCapture = (pointer: PointerEvent) => {
-        if (!samePointer(pointer)) return
+      const onLostCapture = (event: Event) => {
+        const pointer = pointerFrom(event)
+        if (!pointer || !samePointer(pointer)) return
         finishDrag("cancel", pointer.clientX)
       }
       const onBlur = () => {

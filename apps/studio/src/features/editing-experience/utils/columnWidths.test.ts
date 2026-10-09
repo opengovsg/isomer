@@ -40,8 +40,9 @@ const tableDoc = (columnWidths: number[] | null): JSONContent => ({
   ],
 })
 
-const createEditor = (columnWidths: number[] | null) =>
+const createEditor = (columnWidths: number[] | null, element: HTMLElement) =>
   new Editor({
+    element,
     extensions: [
       ...BASE_EXTENSIONS,
       ...PROSE_EXTENSIONS,
@@ -78,15 +79,26 @@ const selectText = (editor: Editor, text: string) => {
 }
 
 describe("column width edits", () => {
-  let editor: Editor
+  const mounts: { editor: Editor; root: HTMLElement }[] = []
 
   afterEach(() => {
-    editor.destroy()
+    for (const { editor, root } of mounts.splice(0)) {
+      editor.destroy()
+      root.remove()
+    }
   })
+
+  const mountEditor = (columnWidths: number[] | null) => {
+    const root = document.createElement("div")
+    document.body.append(root)
+    const editor = createEditor(columnWidths, root)
+    mounts.push({ editor, root })
+    return editor
+  }
 
   it("inserts the default width when a sized table gains a column", () => {
     // Arrange
-    editor = createEditor([100, 200])
+    const editor = mountEditor([100, 200])
     selectText(editor, "B")
 
     // Act
@@ -98,7 +110,7 @@ describe("column width edits", () => {
 
   it("leaves automatic layout alone when a column is added", () => {
     // Arrange
-    editor = createEditor(null)
+    const editor = mountEditor(null)
     selectText(editor, "A")
 
     // Act
@@ -110,7 +122,7 @@ describe("column width edits", () => {
 
   it("drops the width of a deleted column in one undo step", () => {
     // Arrange
-    editor = createEditor([100, 200])
+    const editor = mountEditor([100, 200])
     selectText(editor, "A")
 
     // Act
@@ -122,7 +134,7 @@ describe("column width edits", () => {
 
   it("copies the source width when a column is duplicated", () => {
     // Arrange
-    editor = createEditor([100, 200])
+    const editor = mountEditor([100, 200])
     let cellPos = 0
     editor.state.doc.descendants((node, pos) => {
       if (node.type.name === "tableHeader" && node.textContent === "B") {
@@ -146,7 +158,7 @@ describe("column width edits", () => {
 
   it("moves a width with its column", () => {
     // Arrange
-    editor = createEditor([100, 200])
+    const editor = mountEditor([100, 200])
     let tablePos = 0
     editor.state.doc.descendants((node, pos) => {
       if (node.type.name === "table") {
