@@ -251,6 +251,7 @@ catalogs:
   # Unpin once fixed upstream.
   storybook:
     storybook: 10.4.6
+    "@storybook/addon-mcp": 0.7.0
     "@storybook/addon-a11y": 10.4.6
     "@storybook/addon-docs": 10.4.6
     "@storybook/addon-links": 10.4.6

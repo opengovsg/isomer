@@ -184,6 +184,7 @@
     "@playwright/test": "catalog:playwright",
     "@storybook/addon-a11y": "catalog:storybook",
     "@storybook/addon-docs": "catalog:storybook",
+    "@storybook/addon-mcp": "catalog:storybook",
     "@storybook/addon-links": "catalog:storybook",
     "@storybook/addon-themes": "catalog:storybook",
     "@storybook/nextjs": "catalog:storybook",
