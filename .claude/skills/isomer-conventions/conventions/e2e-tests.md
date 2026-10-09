@@ -149,6 +149,7 @@ surface. Prefer them over raw Playwright calls when a locator will be reused.
 | `PageEditorPO` | `page-editor.po.ts` | Page edit + publish chrome |
 | `PageSettingsPO` | `page-settings.po.ts` | Page settings modal (from dashboard) |
 | `CollectionPO` | `collection.po.ts` | Collection link/page editor drawers |
+| `FolderSettingsPO` | `folder-settings.po.ts` | Folder settings modal |
 | `UsersPO` | `users.po.ts` | Users / collaborators page |
 
 Rules:
@@ -212,6 +213,11 @@ Rules:
   under the existing DB setup convention (`reset.ts`, `site.ts`, `session-mint.ts`
   for auth jars) — this only covers read queries used to verify an action's effect
 
+Persisted state written asynchronously after a UI mutation (delete, move,
+rename) is asserted by wrapping the `*.db.ts` getter in `expect.poll` in the
+test: `await expect.poll(() => getResourceParentId(id)).toBe(folder.id)`. The
+getter stays a plain query; the `expect` stays in the test.
+
 ## How to detect violations
 
 - Asserting "Sample Site", hardcoding a site ID, or calling `teardownE2ESite`/`getSeedSiteId()` (neither exists anymore) → use `provisionE2ESite` and assert on the returned site
@@ -220,3 +226,4 @@ Rules:
 - Raw `{ tag: "@role:admin" }` → use `roleTag("admin")` so unknown roles fail typecheck
 - Raw `page.getByRole("button", { name: "Create new..." })` repeated across files → use `DashboardPO`
 - Inline `db.selectFrom(...)` (or Prisma query) in a test file feeding an `expect()` → extract the query into `fixtures/<entity>.db.ts`
+- Raw `page.waitForURL(...)` for dashboard navigation → use `DashboardPO.expectOnFolder` / `expectOnCollection` / `expectOnPageEditor`

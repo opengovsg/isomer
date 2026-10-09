@@ -4,14 +4,14 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
-import { createPageViaWizard } from "../fixtures/helpers"
-import { PageEditorPO } from "../fixtures/page-editor.po"
+import { createCollectionViaWizard } from "../fixtures/helpers"
 import { seedFolder } from "../fixtures/page-seed"
-import { getResourceByTitle } from "../fixtures/resource.db"
+import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
-const UNIQUE_TITLE = () => `E2E Test Page ${crypto.randomUUID().slice(0, 8)}`
+const UNIQUE_TITLE = () =>
+  `E2E Test Collection ${crypto.randomUUID().slice(0, 8)}`
 
 let siteId: number
 
@@ -27,23 +27,21 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
-  test("admin can create a new page via the wizard", async ({ page }) => {
+  test("admin can create a new collection via the wizard", async ({ page }) => {
     // Arrange
     const title = UNIQUE_TITLE()
 
     // Act
-    await createPageViaWizard(page, {
+    const { collectionId } = await createCollectionViaWizard(page, {
       startUrl: `/sites/${siteId}`,
       title,
       siteId,
     })
-    await new PageEditorPO(page).expectLoaded()
 
     // Assert
-    const created = await getResourceByTitle({ siteId, title })
+    const created = await getResource(collectionId)
     expect(created).toBeTruthy()
-    expect(created?.state).toBe("Draft")
-    expect(created?.type).toBe("Page")
+    expect(created?.type).toBe("Collection")
     expect(created?.parentId).toBeNull()
   })
 })
@@ -83,7 +81,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
 })
 
 test.describe(
-  "admin — create page in a subfolder",
+  "admin — create collection in a subfolder",
   {
     tag: roleTag("admin"),
   },
@@ -96,28 +94,29 @@ test.describe(
         .folder.id
     })
 
-    test("admin can create a new page inside a folder", async ({ page }) => {
+    test("admin can create a new collection inside a folder", async ({
+      page,
+    }) => {
       // Arrange
       const title = UNIQUE_TITLE()
 
       // Act
-      await createPageViaWizard(page, {
+      const { collectionId } = await createCollectionViaWizard(page, {
         startUrl: `/sites/${siteId}/folders/${folderId}`,
         title,
         siteId,
       })
 
       // Assert
-      const created = await getResourceByTitle({ siteId, title })
+      const created = await getResource(collectionId)
       expect(created).toBeTruthy()
-      expect(created?.state).toBe("Draft")
       expect(created?.parentId).toBe(folderId)
     })
   },
 )
 
 test.describe(
-  "publisher — create page in a subfolder",
+  "publisher — create collection in a subfolder",
   {
     tag: roleTag("publisher"),
   },
@@ -130,30 +129,29 @@ test.describe(
         .folder.id
     })
 
-    test("publisher can create a new page inside a folder", async ({
+    test("publisher can create a new collection inside a folder", async ({
       page,
     }) => {
       // Arrange
       const title = UNIQUE_TITLE()
 
       // Act
-      await createPageViaWizard(page, {
+      const { collectionId } = await createCollectionViaWizard(page, {
         startUrl: `/sites/${siteId}/folders/${folderId}`,
         title,
         siteId,
       })
 
       // Assert
-      const created = await getResourceByTitle({ siteId, title })
+      const created = await getResource(collectionId)
       expect(created).toBeTruthy()
-      expect(created?.state).toBe("Draft")
       expect(created?.parentId).toBe(folderId)
     })
   },
 )
 
 test.describe(
-  "editor — create page in a subfolder",
+  "editor — create collection in a subfolder",
   {
     tag: roleTag("editor"),
   },
@@ -166,21 +164,22 @@ test.describe(
         .folder.id
     })
 
-    test("editor can create a new page inside a folder", async ({ page }) => {
+    test("editor can create a new collection inside a folder", async ({
+      page,
+    }) => {
       // Arrange
       const title = UNIQUE_TITLE()
 
       // Act
-      await createPageViaWizard(page, {
+      const { collectionId } = await createCollectionViaWizard(page, {
         startUrl: `/sites/${siteId}/folders/${folderId}`,
         title,
         siteId,
       })
 
       // Assert
-      const created = await getResourceByTitle({ siteId, title })
+      const created = await getResource(collectionId)
       expect(created).toBeTruthy()
-      expect(created?.state).toBe("Draft")
       expect(created?.parentId).toBe(folderId)
     })
   },
