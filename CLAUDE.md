@@ -125,10 +125,12 @@ pnpm clean            # Clean build artifacts
 
 ## Storybook MCP (AI agents)
 
-Storybook exposes an MCP server when the dev server is running (`pnpm storybook` from the repo root starts Components on port **6006** and Studio on **6007**). Cursor loads the servers from `.cursor/mcp.json`.
+Storybook exposes an MCP server when the dev server is running (`pnpm storybook` from the repo root starts Components on port **6006** and Studio on **6007**). HTTP endpoints are listed in the repo-root **`.mcp.json`** (project-scoped MCP config used by Claude Code and other agents).
 
 - **isomer-components-sb-mcp** — published-site components (`packages/components`)
 - **isomer-studio-sb-mcp** — Studio UI stories (`apps/studio`)
+
+Register those servers in your agent (after `pnpm storybook` is running). Examples: Claude Code reads `.mcp.json` directly; for other tools, copy the `mcpServers` entries into the path your agent expects, or run `npx mcp-add --type http --url "http://localhost:6006/mcp" --scope project` (repeat for port 6007) per [Storybook MCP setup](https://storybook.js.org/docs/ai/mcp/overview).
 
 Start Storybook before connecting an agent. Open `http://localhost:6006/mcp` or `http://localhost:6007/mcp` in a browser to confirm the MCP addon is up.
 
