@@ -1,5 +1,5 @@
 import type { NextApiRequest } from "next"
-import type { SessionData } from "~/lib/types/session"
+import type { SessionData, SessionVerificationToken } from "~/lib/types/session"
 import { TRPCError } from "@trpc/server"
 import { type Prisma, type PrismaClient } from "~prisma/generated/prisma/client"
 
@@ -57,7 +57,7 @@ export const verifyToken = async (
 interface RecordUserLoginParams {
   tx: Transaction<DB>
   userId: NonNullable<SessionData["userId"]>
-  verificationToken: VerificationToken
+  verificationToken: SessionVerificationToken | VerificationToken
 }
 
 export const recordUserLogin = async ({
@@ -88,6 +88,7 @@ export const recordUserLogin = async ({
     delta: {
       before: {
         ...verificationToken,
+        expires: new Date(verificationToken.expires),
         attempts: verificationToken.attempts + 1,
       },
       after: null,

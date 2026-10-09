@@ -145,12 +145,15 @@ const ContentSecurityPolicy = `
  */
 /** @type {import("next").NextConfig} */
 const config = {
-  // Next 16.3 skips next-server.js.nft.json when an adapter is present (Vercel
-  // injects one via NEXT_ADAPTER_PATH), but standalone still reads it unguarded
-  // (vercel/next.js#96646). Vercel ignores the standalone directory; keep it
-  // for Docker / start:standalone.
-  // oxlint-disable-next-line node/no-process-env
-  output: process.env.VERCEL ? undefined : "standalone",
+  // Standalone output is for Docker / start:standalone.
+  // Skip it on Vercel: Next 16.3 skips next-server.js.nft.json when an adapter
+  // is present (NEXT_ADAPTER_PATH), but standalone still reads it unguarded
+  // (vercel/next.js#96646). Vercel ignores the standalone directory.
+  // Also skip it for the e2e CI build (SKIP_STANDALONE_OUTPUT=true), which is
+  // served via plain `next start` and never reads `.next/standalone`.
+  output:
+    // oxlint-disable-next-line node/no-process-env -- Vercel sets VERCEL; it is not in the app env schema
+    env.SKIP_STANDALONE_OUTPUT || process.env.VERCEL ? undefined : "standalone",
   // Pin the tracing root so the standalone layout is always
   // `.next/standalone/apps/studio/server.js` (what the Dockerfile and start:standalone expect).
   // Without this, Next infers the workspace root from the outermost lockfile, which varies by
@@ -164,7 +167,10 @@ const config = {
   // Next resolves them the same from the app root as from the workspace package (pnpm); otherwise
   // Next may bundle jsdom and break __dirname (default-stylesheet.css ENOENT).
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
-  productionBrowserSourceMaps: true,
+  // Off only for the e2e CI build (SKIP_PRODUCTION_SOURCE_MAPS=true) — these
+  // maps exist for Datadog RUM error tracking on real deploys, which e2e
+  // gets no benefit from, and generating them is a meaningful chunk of build time.
+  productionBrowserSourceMaps: !env.SKIP_PRODUCTION_SOURCE_MAPS,
   /** We already do typechecking as separate tasks in CI */
   typescript: { ignoreBuildErrors: true },
   transpilePackages: [

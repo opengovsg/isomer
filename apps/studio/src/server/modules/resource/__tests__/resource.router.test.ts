@@ -2,8 +2,6 @@ import { TRPCError } from "@trpc/server"
 import { omit, pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
-import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
-import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
   applySession,
@@ -25,7 +23,6 @@ import {
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
-import { IS_UNPUBLISH_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
@@ -3971,48 +3968,6 @@ describe("resource.router", async () => {
         .where("id", "=", page.id)
         .executeTakeFirst()
       expect(actual).not.toBeUndefined()
-    })
-
-    describe("when IS_UNPUBLISH_ENABLED_FEATURE_KEY is off", () => {
-      afterEach(() => {
-        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
-      })
-
-      it("should allow deleting a still-published page, falling back to pre-unpublish behaviour", async () => {
-        // Arrange — with unpublish dark-launched off, a live page has no way
-        // to stop being live, so the unpublish-before-delete guard must not
-        // apply, or every currently-published page becomes permanently
-        // undeletable.
-        mockGrowthBook.setForcedFeatures(
-          new Map([
-            ...mockFeatureFlags,
-            [IS_UNPUBLISH_ENABLED_FEATURE_KEY, false],
-          ]),
-        )
-        const { page, site } = await setupPageResource({
-          resourceType: "Page",
-          state: ResourceState.Published,
-          userId: session.userId,
-        })
-        await setupAdminPermissions({
-          userId: session.userId,
-          siteId: site.id,
-        })
-
-        // Act
-        const result = await caller.delete({
-          resourceId: page.id,
-          siteId: site.id,
-        })
-
-        // Assert
-        expect(result).toBeDefined()
-        const actual = await db
-          .selectFrom("Resource")
-          .where("id", "=", page.id)
-          .executeTakeFirst()
-        expect(actual).toBeUndefined()
-      })
     })
 
     it("should block deleting a folder whose IndexPage is still published", async () => {

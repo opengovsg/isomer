@@ -1,6 +1,7 @@
 import type { RequestOptions, ResponseOptions } from "node-mocks-http"
 import type { Context } from "~/server/context"
 import type { User } from "~server/db"
+import { sealData } from "iron-session"
 import { nanoid } from "nanoid"
 import { type NextApiRequest, type NextApiResponse } from "next"
 import { createMocks } from "node-mocks-http"
@@ -15,44 +16,6 @@ import { createContextInner } from "~/server/context"
 
 import { auth } from "./auth"
 import { mockGrowthBook } from "./growthbook/mockInstance"
-
-class MockIronStore {
-  private static instance?: MockIronStore
-
-  private saved: Record<string, string | object | number>
-
-  private unsaved: Record<string, string | object | number>
-
-  private constructor() {
-    this.saved = {}
-    this.unsaved = {}
-  }
-
-  static getOrCreateStore(): MockIronStore {
-    MockIronStore.instance ??= new MockIronStore()
-    return MockIronStore.instance
-  }
-
-  get(key: string) {
-    return this.unsaved[key] || undefined
-  }
-
-  set(key: string, val: string | object | number) {
-    this.unsaved[key] = val
-  }
-
-  unset(key: string) {
-    delete this.unsaved[key]
-  }
-
-  seal() {
-    this.saved = { ...this.unsaved }
-  }
-
-  clear() {
-    this.unsaved = {}
-  }
-}
 
 export const createMockRequest = (
   session: Session,
@@ -80,25 +43,34 @@ export const createMockRequest = (
   }
 }
 
+// Mirrors iron-session v9: `destroy()` is terminal (saving data afterwards
+// throws) and `save()` runs the real seal, so non-JSON values like Date throw.
 export const applySession = () => {
-  const store = MockIronStore.getOrCreateStore()
-
-  const session = {
-    set: store.set.bind(store),
-    get: store.get.bind(store),
-    unset: store.unset,
-    // oxlint-disable-next-line @typescript-eslint/require-await
-    async save() {
-      store.seal()
+  const session = {} as Session
+  let destroyed = false
+  Object.defineProperties(session, {
+    save: {
+      value: async () => {
+        if (destroyed) {
+          if (Object.keys(session).length === 0) return
+          throw new Error("Cannot save a destroyed session")
+        }
+        await sealData({ ...session }, { password: "x".repeat(32) })
+      },
     },
-    destroy() {
-      store.clear()
+    destroy: {
+      value: () => {
+        destroyed = true
+        for (const key of Object.keys(session)) {
+          delete (session as Record<string, unknown>)[key]
+        }
+      },
     },
-    updateConfig() {
+    updateConfig: {
       // No-op in tests since we don't need to actually update config for tests
+      value: () => undefined,
     },
-  } as unknown as Session
-
+  })
   return session
 }
 
