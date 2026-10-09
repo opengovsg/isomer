@@ -5,6 +5,7 @@ import { getReferenceLink } from "~/utils/link"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { CollectionPO } from "../fixtures/collection.po"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import {
   seedFolder,
@@ -127,7 +128,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Act
     const dashboard = new DashboardPO(page)
-    await dashboard.gotoCollection(siteId, sourceCollection.id)
+    const collectionPo = new CollectionPO(page)
+    await collectionPo.gotoCollection(siteId, sourceCollection.id)
     await dashboard.openResourceMenu(collectionPage.title)
     await dashboard.clickMove()
     await dashboard.selectMoveDestination(destCollection.title)
@@ -137,7 +139,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expect
       .poll(() => getResourceParentId(collectionPage.id))
       .toBe(destCollection.id)
-    await dashboard.gotoCollection(siteId, destCollection.id)
+    await collectionPo.gotoCollection(siteId, destCollection.id)
     await dashboard.expectResourceLinkVisible(collectionPage.title)
   })
 

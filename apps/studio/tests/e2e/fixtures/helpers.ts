@@ -2,6 +2,7 @@ import { type Browser, type BrowserContext, type Page } from "@playwright/test"
 import { type RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, type Role } from "./auth"
+import { CollectionPO } from "./collection.po"
 import { DashboardPO } from "./dashboard.po"
 import { PageEditorPO } from "./page-editor.po"
 import { getCollectionByTitle, getFolderByTitle } from "./resource.db"
@@ -99,12 +100,7 @@ export const createPageViaWizard = async (
   await dashboard.clickCreatePage()
   await dashboard.fillPageWizard(title)
 
-  // Create-page wizard navigates to `/sites/:siteId/pages/:numericPageId`.
-  await page.waitForURL(new RegExp(`/sites/${siteId}/pages/\\d+$`))
-  const pageId = page.url().match(/\/pages\/(\d+)$/)?.[1]
-  if (!pageId) {
-    throw new Error(`Expected page editor URL after wizard, got ${page.url()}`)
-  }
+  const pageId = await dashboard.expectOnNewPageEditor(siteId)
   return { pageId }
 }
 
@@ -155,19 +151,16 @@ export const createCollectionItemViaWizard = async (
     title: string
   },
 ) => {
-  const dashboard = new DashboardPO(page)
-  await dashboard.gotoCollection(siteId, collectionId)
-  await dashboard.openAddCollectionItem()
-  await dashboard.selectCollectionItemType(type)
-  await dashboard.fillCollectionItemWizard(title)
+  const collection = new CollectionPO(page)
+  await collection.gotoCollection(siteId, collectionId)
+  await collection.openAddCollectionItem()
+  await collection.selectCollectionItemType(type)
+  await collection.fillCollectionItemWizard(title)
 
-  const subpath = type === "Page" ? "pages" : "links"
-  const pattern = new RegExp(`/sites/${siteId}/${subpath}/(\\d+)$`)
-  await page.waitForURL(pattern)
-  const itemId = page.url().match(pattern)?.[1]
-  if (!itemId) {
-    throw new Error(`Expected ${subpath} URL after wizard, got ${page.url()}`)
-  }
+  const itemId = await collection.expectOnCollectionItemEditor(
+    siteId,
+    type === "Page" ? "page" : "link",
+  )
   return { itemId }
 }
 

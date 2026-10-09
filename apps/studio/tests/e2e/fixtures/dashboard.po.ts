@@ -5,6 +5,7 @@ export class DashboardPO {
 
   async gotoSite(siteId: number) {
     await this.page.goto(`/sites/${siteId}`)
+    // Site home URL is exactly `/sites/:siteId` (no folder/collection suffix).
     await this.page.waitForURL(new RegExp(`/sites/${siteId}$`))
   }
 
@@ -91,27 +92,6 @@ export class DashboardPO {
     await expect(row.getByText("Scheduled to publish")).toBeVisible()
   }
 
-  async openAddCollectionItem() {
-    await this.page.getByRole("button", { name: "Add new item" }).click()
-  }
-
-  async selectCollectionItemType(type: "Page" | "Link or file") {
-    await this.page.getByText(type, { exact: true }).click()
-    await this.page.getByRole("button", { name: "Next: Page details" }).click()
-  }
-
-  async fillCollectionItemWizard(title: string) {
-    await this.page.getByLabel(/Page title|Item title/).fill(title)
-    await this.page.getByRole("button", { name: "Start editing" }).click()
-  }
-
-  async gotoCollection(siteId: number, collectionId: string) {
-    await this.page.goto(`/sites/${siteId}/collections/${collectionId}`)
-    await this.page.waitForURL(
-      new RegExp(`/sites/${siteId}/collections/${collectionId}$`),
-    )
-  }
-
   async clickDelete() {
     await this.page
       .getByRole("menuitem", { name: "Delete", exact: true })
@@ -119,9 +99,14 @@ export class DashboardPO {
   }
 
   private get moveMenuItem() {
-    return this.page
-      .getByRole("menuitem", { name: /Move resource to another location for/ })
-      .or(this.page.getByRole("menuitem", { name: "Move to..." }))
+    return (
+      this.page
+        // Accessible name includes the resource title: "Move resource to another location for …"
+        .getByRole("menuitem", {
+          name: /Move resource to another location for/,
+        })
+        .or(this.page.getByRole("menuitem", { name: "Move to..." }))
+    )
   }
 
   async clickMove() {
@@ -154,6 +139,19 @@ export class DashboardPO {
     await this.page.waitForURL(new RegExp(`/sites/${siteId}/pages/${pageId}`))
   }
 
+  /** After the create-page wizard, navigation lands on a new numeric page id. */
+  async expectOnNewPageEditor(siteId: number): Promise<string> {
+    const pattern = new RegExp(`/sites/${siteId}/pages/(\\d+)$`)
+    await this.page.waitForURL(pattern)
+    const pageId = this.page.url().match(pattern)?.[1]
+    if (!pageId) {
+      throw new Error(
+        `Expected page editor URL after wizard, got ${this.page.url()}`,
+      )
+    }
+    return pageId
+  }
+
   async expectOnFolder(siteId: number, folderId: string) {
     await this.page.waitForURL(
       new RegExp(`/sites/${siteId}/folders/${folderId}$`),
@@ -168,6 +166,7 @@ export class DashboardPO {
 
   async expectSearchResultVisible(title: string) {
     const dialog = this.page.getByRole("dialog")
+    // Search dialog summary line, e.g. "3 search results in title".
     await expect(dialog.getByText(/\d+ search result.*in title/i)).toBeVisible()
     await expect(dialog.getByRole("link", { name: title })).toBeVisible()
   }
@@ -188,10 +187,12 @@ export class DashboardPO {
     ).toBeVisible()
     await this.page
       .getByRole("dialog")
+      // Confirmation copy varies by resource kind: "Yes, delete this page permanently", etc.
       .getByText(new RegExp(`Yes, delete this ${label} permanently`))
       .click()
     await this.page.getByRole("button", { name: `Delete ${label}` }).click()
     await expect(
+      // Success toast is case-insensitive ("Page deleted!" / "page deleted!").
       this.page.getByText(new RegExp(`${label} deleted!`, "i")),
     ).toBeVisible()
   }
@@ -211,6 +212,7 @@ export class DashboardPO {
 
   async selectMoveDestination(title: string) {
     await expect(
+      // Move modal header quotes the resource being moved: Move "My page" to...
       this.page.getByRole("dialog").getByText(/Move ".+" to\.\.\./),
     ).toBeVisible()
     await this.page.getByRole("button").filter({ hasText: title }).click()
@@ -220,7 +222,7 @@ export class DashboardPO {
     // Chakra renders the native checkbox visually hidden behind its styled
     // label, which intercepts pointer events — click the label's own text
     // (as `confirmDeleteResource` does for its confirmation checkbox) rather
-    // than the checkbox role directly.
+    // than the checkbox role directly. Label continues with redirect wording.
     await this.page.getByText(/Check this box to.*redirect/i).click()
   }
 
@@ -242,6 +244,7 @@ export class DashboardPO {
     await this.page.getByRole("button", { name: "search-button" }).click()
     await expect(
       this.page.getByPlaceholder(
+        // Matches the search input placeholder on the site dashboard.
         /Search pages, collections, or folders by name/,
       ),
     ).toBeVisible()
