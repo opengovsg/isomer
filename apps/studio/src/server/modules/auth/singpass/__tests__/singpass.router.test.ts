@@ -80,11 +80,14 @@ describe("auth.singpass", () => {
 
       // Act
       const result = await caller.login({
-        landingUrl: "http://localhost",
+        landingUrl: "http://localhost:3000/sites/1?foo=bar",
       })
 
       // Assert
       expect(result).toHaveProperty("redirectUrl")
+      expect(session.singpass?.sessionState?.landingUrl).toBe(
+        "http://localhost:3000/sites/1?foo=bar",
+      )
     })
   })
 
@@ -321,6 +324,7 @@ describe("auth.singpass", () => {
           verificationToken: MOCK_SESSION_VERIFICATION_TOKEN,
           codeVerifier: "code-verifier",
           nonce: "nonce",
+          landingUrl: "http://localhost:3000/sites/1?foo=bar",
         },
       }
       await session.save()
@@ -330,12 +334,13 @@ describe("auth.singpass", () => {
       })
 
       // Act
-      await caller.callback({
+      const result = await caller.callback({
         state: JSON.stringify({ state: expect.any(String) }),
         code: "code",
       })
 
       // Assert
+      expect(result.redirectUrl).toBe("http://localhost:3000/sites/1?foo=bar")
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(1)
       expect(auditLogs).toEqual([
