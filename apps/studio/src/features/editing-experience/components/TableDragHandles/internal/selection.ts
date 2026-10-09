@@ -1,5 +1,9 @@
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import { CellSelection, selectedRect, TableMap } from "@tiptap/pm/tables"
+import {
+  isRowSlotClippedByVerticalSpan,
+  selectionForRowSlot,
+} from "~/features/editing-experience/utils/tableSlotSelection"
 
 import type { Axis } from "./axisView"
 import { AXIS_TABLE_OPS, getTableAt } from "./axisTableOps"
@@ -22,9 +26,12 @@ export const selectWholeSlot = (
   const map = TableMap.get(table)
   const cellPos =
     tablePos + 1 + AXIS_TABLE_OPS[axis].cellOffsetAt(map, table, index)
-  const selection = AXIS_TABLE_OPS[axis].cellSelection(
-    editor.state.doc.resolve(cellPos),
-  )
+  const $cell = editor.state.doc.resolve(cellPos)
+  const selection =
+    axis === "row"
+      ? (selectionForRowSlot(editor.state.doc, tablePos, index) ??
+        AXIS_TABLE_OPS.row.cellSelection($cell))
+      : AXIS_TABLE_OPS.column.cellSelection($cell)
   editor.view.dispatch(editor.state.tr.setSelection(selection))
   editor.view.focus()
 }
@@ -60,10 +67,14 @@ export const getSelectionHandleTarget = (
 
   const isRow = selection.isRowSelection()
   const isCol = selection.isColSelection()
-  if (isRow === isCol) return null
-
   const rect = selectedRect(editor.state)
   const tablePos = rect.tableStart - 1
+  if (isRow === isCol) {
+    if (!isRow && isRowSlotClippedByVerticalSpan(rect)) {
+      return { tablePos, rows: [rect.top], cols: [] }
+    }
+    return null
+  }
   if (isRow) {
     const rows: number[] = []
     for (let r = rect.top; r < rect.bottom; r++) rows.push(r)
