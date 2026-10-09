@@ -124,17 +124,6 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "algoliasearch"
         update-types: ["version-update:semver-major"]
-      # Storybook catalog is pinned in pnpm-workspace.yaml (currently 10.6.1).
-      # Avoid Dependabot opening partial minor bumps; upgrade Storybook intentionally.
-      ### Storybook
-      - dependency-name: "storybook"
-        update-types: ["version-update:semver-minor", "version-update:semver-major"]
-      - dependency-name: "@storybook/*"
-        update-types: ["version-update:semver-minor", "version-update:semver-major"]
-      - dependency-name: "eslint-plugin-storybook"
-        update-types: ["version-update:semver-minor", "version-update:semver-major"]
-      - dependency-name: "storybook-addon-pseudo-states"
-        update-types: ["version-update:semver-minor", "version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
