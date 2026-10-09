@@ -8,3 +8,30 @@ export const clampTableColumnWidth = (value: number): number =>
     TABLE_COLUMN_MAX_WIDTH_PX,
     Math.max(TABLE_COLUMN_MIN_WIDTH_PX, Math.round(value)),
   )
+
+/** Whole-pixel column widths in order, or null when the input is not usable. */
+export const parseTableColumnWidths = (
+  columnWidths: unknown,
+  columnCount: number,
+): number[] | null => {
+  if (
+    columnCount < 1 ||
+    !Array.isArray(columnWidths) ||
+    columnWidths.length !== columnCount
+  ) {
+    return null
+  }
+
+  const widths: number[] = []
+  for (const value of columnWidths) {
+    if (typeof value !== "number" || !Number.isFinite(value)) return null
+    widths.push(clampTableColumnWidth(value))
+  }
+  return widths
+}
+
+export const tableWidthPxFromColumnWidths = (widths: number[]): string =>
+  `${widths.reduce((sum, width) => sum + width, 0)}px`
+
+export const columnWidthsToPxStrings = (widths: number[]): string[] =>
+  widths.map((width) => `${width}px`)

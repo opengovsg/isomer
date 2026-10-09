@@ -75,8 +75,7 @@ const getBottomRightCell = (
 const clips = (overflow: string) =>
   overflow === "auto" || overflow === "scroll" || overflow === "hidden"
 
-// The pencil is portaled, so it keeps painting after its corner scrolls out
-// of the editor. Hide it until that corner is visible again.
+// Portaled menu: hide when the anchor cell corner is outside the editor scrollport.
 const isCornerOutsideEditor = (
   view: EditorView,
   cellEl: HTMLElement,
@@ -112,8 +111,7 @@ interface TriggerPlacement extends TableBubbleMenuPosition {
 
 // The pencil is centered on the selection's bottom-right corner. The actions
 // list is positioned from this rect, so viewport shifting never moves the pencil.
-// `false` means the corner is outside the editor, so hide the pencil.
-// `null` means the cell or trigger is not measurable yet.
+// false: anchor outside scrollport. null: not measurable yet.
 const measureTrigger = (
   view: EditorView,
   state: EditorState,

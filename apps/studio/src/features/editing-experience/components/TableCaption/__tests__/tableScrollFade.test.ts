@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import {
-  scrollFadeEdges,
-  tableScrollFadeLabel,
-  tableScrollFadeMask,
-} from "../tableScrollFade"
+import { scrollFadeEdges, tableScrollFadeMask } from "../tableScrollFade"
 
 describe("scrollFadeEdges", () => {
   it("fades only the trailing edge at the start of an overflowing table", () => {
@@ -17,7 +13,6 @@ describe("scrollFadeEdges", () => {
 
     // Assert
     expect(edges).toEqual({ start: false, end: true })
-    expect(tableScrollFadeLabel(edges)).toBe("end")
     expect(tableScrollFadeMask(edges)).toContain("linear-gradient")
   })
 
@@ -31,7 +26,7 @@ describe("scrollFadeEdges", () => {
 
     // Assert
     expect(edges).toEqual({ start: true, end: true })
-    expect(tableScrollFadeLabel(edges)).toBe("both")
+    expect(tableScrollFadeMask(edges)).toContain("linear-gradient")
   })
 
   it("fades only the leading edge when scrolled to the end", () => {
@@ -44,7 +39,7 @@ describe("scrollFadeEdges", () => {
 
     // Assert
     expect(edges).toEqual({ start: true, end: false })
-    expect(tableScrollFadeLabel(edges)).toBe("start")
+    expect(tableScrollFadeMask(edges)).toContain("linear-gradient")
   })
 
   it("shows no fade when the table fits", () => {
@@ -57,7 +52,6 @@ describe("scrollFadeEdges", () => {
 
     // Assert
     expect(edges).toEqual({ start: false, end: false })
-    expect(tableScrollFadeLabel(edges)).toBeUndefined()
     expect(tableScrollFadeMask(edges)).toBeUndefined()
   })
 
