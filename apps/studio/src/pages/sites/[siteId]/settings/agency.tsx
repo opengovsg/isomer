@@ -1,10 +1,7 @@
 import type { AgencySettings } from "@opengovsg/isomer-components"
 import type { NextPageWithLayout } from "~/lib/types"
 import { useToast } from "@opengovsg/design-system-react"
-import {
-  AgencySettingsSchema,
-  attachIsomerSharedDefinitions,
-} from "@opengovsg/isomer-components"
+import { AgencySettingsSchema } from "@opengovsg/isomer-components"
 import { isEqual } from "lodash-es"
 import { useState } from "react"
 import { BiWrench } from "react-icons/bi"
@@ -33,8 +30,7 @@ import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-const agencySettingsSchema = attachIsomerSharedDefinitions(AgencySettingsSchema)
-const validateFn = ajv.compile<AgencySettings>(agencySettingsSchema)
+const validateFn = ajv.compile<AgencySettings>(AgencySettingsSchema)
 
 const AgencySettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
@@ -113,7 +109,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
 
           <ErrorProvider>
             <FormBuilder<AgencySettings>
-              schema={agencySettingsSchema}
+              schema={AgencySettingsSchema}
               validateFn={validateFn}
               data={state}
               handleChange={(data) => {

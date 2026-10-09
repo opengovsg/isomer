@@ -1,3 +1,4 @@
+import { NoStylizedUnicodeStringSchema } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import addErrors from "ajv-errors"
 
@@ -19,3 +20,5 @@ export const ajv = new Ajv({
   inlineRefs: false,
 })
 addErrors(ajv)
+// Lets the `$ref` in every `IsomerString` resolve, whichever schema is compiled.
+ajv.addSchema(NoStylizedUnicodeStringSchema)
