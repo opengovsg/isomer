@@ -151,38 +151,61 @@ describe("resolveTableLayout", () => {
     })
   })
 
-  it("falls back when columnWidths is missing, the wrong length, or not finite", () => {
+  const twoColumnRows = (): TableRows => [
+    {
+      type: "tableRow" as const,
+      content: [
+        {
+          type: "tableCell" as const,
+          content: [
+            {
+              type: "paragraph" as const,
+              content: [{ type: "text" as const, text: "" }],
+            },
+          ],
+        },
+        {
+          type: "tableCell" as const,
+          content: [
+            {
+              type: "paragraph" as const,
+              content: [{ type: "text" as const, text: "" }],
+            },
+          ],
+        },
+      ],
+    },
+  ]
+
+  it("falls back to auto layout when columnWidths is omitted", () => {
     // Arrange
-    const rows = [
-      {
-        type: "tableRow" as const,
-        content: [
-          {
-            type: "tableCell" as const,
-            content: [
-              {
-                type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
-              },
-            ],
-          },
-          {
-            type: "tableCell" as const,
-            content: [
-              {
-                type: "paragraph" as const,
-                content: [{ type: "text" as const, text: "" }],
-              },
-            ],
-          },
-        ],
-      },
-    ]
+    const rows = twoColumnRows()
 
     // Act / Assert
     expect(resolveTableLayout(rows)).toEqual({ kind: "auto" })
+  })
+
+  it("falls back to auto layout when columnWidths is null", () => {
+    // Arrange
+    const rows = twoColumnRows()
+
+    // Act / Assert
     expect(resolveTableLayout(rows, null)).toEqual({ kind: "auto" })
+  })
+
+  it("falls back to auto layout when columnWidths length does not match", () => {
+    // Arrange
+    const rows = twoColumnRows()
+
+    // Act / Assert
     expect(resolveTableLayout(rows, [160])).toEqual({ kind: "auto" })
+  })
+
+  it("falls back to auto layout when a column width is not finite", () => {
+    // Arrange
+    const rows = twoColumnRows()
+
+    // Act / Assert
     expect(resolveTableLayout(rows, [160, Number.NaN])).toEqual({
       kind: "auto",
     })
