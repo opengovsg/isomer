@@ -2,10 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { Box, Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
-import {
-  getLayoutPageSchema,
-  type LAYOUT_PAGE_MAP,
-} from "@opengovsg/isomer-components"
+import { LAYOUT_PAGE_MAP } from "@opengovsg/isomer-components"
 import { isEmpty, isEqual } from "lodash-es"
 import { useMemo, useState } from "react"
 import { z } from "zod"
@@ -25,8 +22,8 @@ import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
 import FormBuilder from "../form-builder/FormBuilder"
 import { RawJsonEditor } from "../RawJsonEditor"
 
-const schema = getLayoutPageSchema("link")
-type IsomerLinkSchema = Static<(typeof LAYOUT_PAGE_MAP)["link"]>
+const schema = LAYOUT_PAGE_MAP.link
+type IsomerLinkSchema = Static<typeof schema>
 const validateFn = ajv.compile<IsomerLinkSchema>(schema)
 
 const editLinkSchema = z.object({

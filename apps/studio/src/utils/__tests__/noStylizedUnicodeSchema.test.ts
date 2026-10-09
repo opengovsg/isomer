@@ -1,10 +1,10 @@
 import {
   AgencySettingsSchema,
-  attachIsomerSharedDefinitions,
   IsomerString,
   NON_EMPTY_STRING_REGEX,
   NO_STYLIZED_UNICODE_REGEX,
   NO_STYLIZED_UNICODE_STRING_ID,
+  NotificationSettingsSchema,
   schema,
   SiteConfigSchema,
 } from "@opengovsg/isomer-components"
@@ -15,13 +15,11 @@ const unicodeMessage =
   "cannot contain stylised or decorative unicode characters"
 
 const compileField = (field: ReturnType<typeof IsomerString>) =>
-  ajv.compile(
-    attachIsomerSharedDefinitions({
-      type: "object",
-      properties: { value: field },
-      required: ["value"],
-    }),
-  )
+  ajv.compile({
+    type: "object",
+    properties: { value: field },
+    required: ["value"],
+  })
 
 const errorMessages = (validate: { errors?: { message?: string }[] | null }) =>
   (validate.errors ?? []).map((error) => error.message)
@@ -86,14 +84,11 @@ describe("no stylized unicode schema", () => {
     expect(NO_STYLIZED_UNICODE_REGEX).toContain("D835")
   })
 
-  it("should resolve the shared schema for settings compiled without the page document", () => {
+  it("should resolve the shared schema for settings compiled on their own", () => {
     // Arrange
-    const validateAgency = ajv.compile(
-      attachIsomerSharedDefinitions(AgencySettingsSchema),
-    )
-    const validateSite = ajv.compile(
-      attachIsomerSharedDefinitions(SiteConfigSchema),
-    )
+    const validateAgency = ajv.compile(AgencySettingsSchema)
+    const validateSite = ajv.compile(SiteConfigSchema)
+    const validateNotification = ajv.compile(NotificationSettingsSchema)
 
     // Act / Assert
     expect(validateAgency({ siteName: "Official" })).toBe(true)
@@ -101,5 +96,12 @@ describe("no stylized unicode schema", () => {
     expect(errorMessages(validateAgency)).toContain(unicodeMessage)
     expect(validateSite({ siteName: "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥" })).toBe(false)
     expect(errorMessages(validateSite)).toContain(unicodeMessage)
+    expect(validateNotification({ notification: { title: "Official" } })).toBe(
+      true,
+    )
+    expect(validateNotification({ notification: { title: "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥" } })).toBe(
+      false,
+    )
+    expect(errorMessages(validateNotification)).toContain(unicodeMessage)
   })
 })

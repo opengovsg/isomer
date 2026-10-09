@@ -18,7 +18,6 @@ import {
 } from "@chakra-ui/react"
 import { Button, Tab, Tabs } from "@opengovsg/design-system-react"
 import {
-  attachIsomerSharedDefinitions,
   NavbarAddonsSchema,
   NavbarItemsSchema,
 } from "@opengovsg/isomer-components"
@@ -35,12 +34,10 @@ import { ajv } from "~/utils/ajv"
 
 import { getUniqueErrorMessages } from "./utils"
 
-const navbarItemsSchema = attachIsomerSharedDefinitions(NavbarItemsSchema)
-const navbarAddonsSchema = attachIsomerSharedDefinitions(NavbarAddonsSchema)
 const validateItemsFn =
-  ajv.compile<Static<typeof NavbarItemsSchema>>(navbarItemsSchema)
+  ajv.compile<Static<typeof NavbarItemsSchema>>(NavbarItemsSchema)
 const validateAddonsFn =
-  ajv.compile<Static<typeof NavbarAddonsSchema>>(navbarAddonsSchema)
+  ajv.compile<Static<typeof NavbarAddonsSchema>>(NavbarAddonsSchema)
 
 interface NavbarEditorProps {
   savedNavbarState: NavbarSchemaType
@@ -162,7 +159,7 @@ export const NavbarEditor = ({
             <TabPanel>
               <Box px="1.5rem" mb="1rem" h="full">
                 <FormBuilder<Static<typeof NavbarItemsSchema>>
-                  schema={navbarItemsSchema}
+                  schema={NavbarItemsSchema}
                   validateFn={validateItemsFn}
                   data={previewNavbarState}
                   handleChange={handleItemsChange}
@@ -173,7 +170,7 @@ export const NavbarEditor = ({
             <TabPanel>
               <Box px="1.5rem" pt="1rem" mb="1rem" h="full">
                 <FormBuilder<Static<typeof NavbarAddonsSchema>>
-                  schema={navbarAddonsSchema}
+                  schema={NavbarAddonsSchema}
                   validateFn={validateAddonsFn}
                   data={previewNavbarState}
                   handleChange={handleAddonsChange}
