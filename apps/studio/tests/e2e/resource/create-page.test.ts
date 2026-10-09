@@ -53,7 +53,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.publisher)
   })
 
-  test("publisher does not see the Create new button on the site root", async ({
+  test("publisher sees a disabled Create new button on the site root", async ({
     page,
   }) => {
     // Arrange / Act
@@ -61,7 +61,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await dashboard.gotoSite(siteId)
 
     // Assert
-    await dashboard.expectCreateButtonHidden()
+    await dashboard.expectCreateButtonDisabledAtSiteRoot()
   })
 })
 
@@ -70,7 +70,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.editor)
   })
 
-  test("editor does not see the Create new button on the site root", async ({
+  test("editor sees a disabled Create new button on the site root", async ({
     page,
   }) => {
     // Arrange / Act
@@ -78,7 +78,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await dashboard.gotoSite(siteId)
 
     // Assert
-    await dashboard.expectCreateButtonHidden()
+    await dashboard.expectCreateButtonDisabledAtSiteRoot()
   })
 })
 

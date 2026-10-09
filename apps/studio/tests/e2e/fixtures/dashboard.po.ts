@@ -15,14 +15,31 @@ export class DashboardPO {
     )
   }
 
-  async openCreateMenu() {
-    await this.page.getByRole("button", { name: "Create new..." }).click()
+  private createNewButton() {
+    return this.page.getByRole("button", { name: "Create new..." })
   }
 
-  async expectCreateButtonHidden() {
+  async openCreateMenu() {
+    await this.createNewButton().click()
+  }
+
+  /** Site home dashboard — wait for content before asserting header actions. */
+  async expectSiteHomeLoaded() {
+    await expect(this.page.getByRole("heading", { name: "Home" })).toBeVisible()
+  }
+
+  async expectCreateButtonDisabledAtSiteRoot() {
+    await this.expectSiteHomeLoaded()
+    const createButton = this.createNewButton()
+    await expect(createButton).toBeVisible()
+    await expect(createButton).toBeDisabled()
+    // TouchableTooltip opens on mouseenter of the wrapper span around the button.
+    await createButton.locator("xpath=..").hover()
     await expect(
-      this.page.getByRole("button", { name: "Create new..." }),
-    ).not.toBeVisible()
+      this.page.getByText(
+        "You need to be an Admin to create items under Home.",
+      ),
+    ).toBeVisible()
   }
 
   async openResourceMenu(title: string) {

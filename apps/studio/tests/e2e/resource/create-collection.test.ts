@@ -51,13 +51,15 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.publisher)
   })
 
-  test("publisher does not see the Create new button", async ({ page }) => {
+  test("publisher sees a disabled Create new button on the site root", async ({
+    page,
+  }) => {
     // Arrange / Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
 
     // Assert
-    await dashboard.expectCreateButtonHidden()
+    await dashboard.expectCreateButtonDisabledAtSiteRoot()
   })
 })
 
@@ -66,13 +68,15 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.editor)
   })
 
-  test("editor does not see the Create new button", async ({ page }) => {
+  test("editor sees a disabled Create new button on the site root", async ({
+    page,
+  }) => {
     // Arrange / Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
 
     // Assert
-    await dashboard.expectCreateButtonHidden()
+    await dashboard.expectCreateButtonDisabledAtSiteRoot()
   })
 })
 
@@ -91,6 +95,76 @@ test.describe(
     })
 
     test("admin can create a new collection inside a folder", async ({
+      page,
+    }) => {
+      // Arrange
+      const title = UNIQUE_TITLE()
+
+      // Act
+      const { collectionId } = await createCollectionViaWizard(page, {
+        startUrl: `/sites/${siteId}/folders/${folderId}`,
+        title,
+        siteId,
+      })
+
+      // Assert
+      const created = await getResource(collectionId)
+      expect(created).toBeTruthy()
+      expect(created?.parentId).toBe(folderId)
+    })
+  },
+)
+
+test.describe(
+  "publisher — create collection in a subfolder",
+  {
+    tag: roleTag("publisher"),
+  },
+  () => {
+    let folderId: string
+
+    test.beforeEach(async () => {
+      await ensureUserOnboarded(TEST_EMAILS.publisher)
+      folderId = (await seedFolder({ siteId, folderTitle: "E2E Test Folder" }))
+        .folder.id
+    })
+
+    test("publisher can create a new collection inside a folder", async ({
+      page,
+    }) => {
+      // Arrange
+      const title = UNIQUE_TITLE()
+
+      // Act
+      const { collectionId } = await createCollectionViaWizard(page, {
+        startUrl: `/sites/${siteId}/folders/${folderId}`,
+        title,
+        siteId,
+      })
+
+      // Assert
+      const created = await getResource(collectionId)
+      expect(created).toBeTruthy()
+      expect(created?.parentId).toBe(folderId)
+    })
+  },
+)
+
+test.describe(
+  "editor — create collection in a subfolder",
+  {
+    tag: roleTag("editor"),
+  },
+  () => {
+    let folderId: string
+
+    test.beforeEach(async () => {
+      await ensureUserOnboarded(TEST_EMAILS.editor)
+      folderId = (await seedFolder({ siteId, folderTitle: "E2E Test Folder" }))
+        .folder.id
+    })
+
+    test("editor can create a new collection inside a folder", async ({
       page,
     }) => {
       // Arrange
