@@ -36,9 +36,9 @@ export class DashboardPO {
     // TouchableTooltip opens on mouseenter of the wrapper span around the button.
     await createButton.locator("xpath=..").hover()
     await expect(
-      this.page.getByText(
-        "You need to be an Admin to create items under Home.",
-      ),
+      this.page.getByRole("tooltip", {
+        name: "You need to be an Admin to create items under Home.",
+      }),
     ).toBeVisible()
   }
 
