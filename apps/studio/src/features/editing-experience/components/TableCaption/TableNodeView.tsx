@@ -80,12 +80,14 @@ const ColumnResizeHandles = ({
       const table = root?.querySelector("table")
       if (!(table instanceof HTMLTableElement)) return
 
+      const handle = event.currentTarget
+      const pointerId = event.pointerId
       const origin = widths ?? measureColumnWidths(table, columnCount)
-      const storedAtStart = widths
       const startX = event.clientX
       const startWidth = origin[index] ?? clampTableColumnWidth(0)
       let lastWidth = startWidth
-      let wrote = false
+      let finished = false
+      let listenTarget: EventTarget = document
       setActiveIndex(index)
 
       const widthsAt = (clientX: number) => {
@@ -93,38 +95,76 @@ const ColumnResizeHandles = ({
         next[index] = clampTableColumnWidth(startWidth + clientX - startX)
         return next
       }
+      const samePointer = (pointer: PointerEvent) =>
+        pointer.pointerId === pointerId
+      const detach = () => {
+        listenTarget.removeEventListener("pointermove", move)
+        listenTarget.removeEventListener("pointerup", up)
+        listenTarget.removeEventListener("pointercancel", cancel)
+        handle.removeEventListener("lostpointercapture", onLostCapture)
+        window.removeEventListener("blur", onBlur)
+        stopDrag.current = null
+      }
+      // Every exit uses this. Move only previews; a successful release is the
+      // one document write. Cancel, blur, lost capture, and unmount drop it.
+      const finishDrag = (mode: "commit" | "cancel", clientX: number) => {
+        if (finished) return
+        finished = true
+        detach()
+        if (handle.hasPointerCapture(pointerId)) {
+          handle.releasePointerCapture(pointerId)
+        }
+        setActiveIndex(null)
+        if (mode === "cancel") {
+          onDrag(null)
+          return
+        }
+        const next = widthsAt(clientX)
+        const changed = next.some((width, i) => width !== origin[i])
+        if (!changed) {
+          onDrag(null)
+          return
+        }
+        onCommit(next, true)
+      }
       const move = (pointer: PointerEvent) => {
+        if (!samePointer(pointer)) return
         const next = widthsAt(pointer.clientX)
         const width = next[index] ?? startWidth
         if (width === lastWidth) return
         lastWidth = width
-        wrote = true
-        onCommit(next, false)
+        onDrag(next)
       }
       const up = (pointer: PointerEvent) => {
-        stop()
-        setActiveIndex(null)
-        const next = widthsAt(pointer.clientX)
-        const changed = next.some((width, i) => width !== origin[i])
-        if (!changed) {
-          if (wrote) onCommit(storedAtStart, false)
-          else onDrag(null)
-          return
-        }
-        // Live writes stay out of history. Put the start width back, then
-        // record one step from there to the released width.
-        if (wrote) onCommit(storedAtStart, false)
-        onCommit(next, true)
+        if (!samePointer(pointer)) return
+        finishDrag("commit", pointer.clientX)
       }
-      const stop = () => {
-        document.removeEventListener("pointermove", move)
-        document.removeEventListener("pointerup", up)
-        stopDrag.current = null
+      const cancel = (pointer: PointerEvent) => {
+        if (!samePointer(pointer)) return
+        finishDrag("cancel", pointer.clientX)
       }
+      const onLostCapture = (pointer: PointerEvent) => {
+        if (!samePointer(pointer)) return
+        finishDrag("cancel", pointer.clientX)
+      }
+      const onBlur = () => {
+        finishDrag("cancel", startX)
+      }
+
       stopDrag.current?.()
-      stopDrag.current = stop
-      document.addEventListener("pointermove", move)
-      document.addEventListener("pointerup", up)
+      stopDrag.current = () => finishDrag("cancel", startX)
+      try {
+        handle.setPointerCapture(pointerId)
+      } catch {
+        // Synthetic pointers cannot be captured. Document listeners still
+        // receive the bubbled gesture.
+      }
+      listenTarget = handle.hasPointerCapture(pointerId) ? handle : document
+      listenTarget.addEventListener("pointermove", move)
+      listenTarget.addEventListener("pointerup", up)
+      listenTarget.addEventListener("pointercancel", cancel)
+      handle.addEventListener("lostpointercapture", onLostCapture)
+      window.addEventListener("blur", onBlur)
     }
 
   return (

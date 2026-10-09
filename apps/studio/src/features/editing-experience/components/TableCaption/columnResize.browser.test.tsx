@@ -28,11 +28,19 @@ const content: JSONContent = {
 
 const Harness = ({
   onEditorReady,
+  onChange,
 }: {
   onEditorReady: (editor: TiptapEditor) => void
+  onChange?: () => void
 }) => {
   const [data, setData] = useState<JSONContent | undefined>(content)
-  const editor = useTextEditor({ data, handleChange: setData })
+  const editor = useTextEditor({
+    data,
+    handleChange: (next) => {
+      onChange?.()
+      setData(next)
+    },
+  })
   if (editor) onEditorReady(editor)
   return <EditorContent editor={editor} />
 }
@@ -49,13 +57,37 @@ const widthsOf = (editor: TiptapEditor): number[] | null => {
   return widths
 }
 
+const pointer = (
+  handle: HTMLElement,
+  type: "pointerDown" | "pointerMove" | "pointerUp" | "pointerCancel",
+  clientX: number,
+  clientY: number,
+) => {
+  fireEvent[type](handle, {
+    clientX,
+    clientY,
+    button: 0,
+    pointerId: 1,
+    pointerType: "mouse",
+  })
+}
+
+const previewWidth = () => {
+  const col = document.querySelector("[data-column-resize-root] col")
+  return col instanceof HTMLElement ? Number.parseFloat(col.style.width) : 0
+}
+
 describe("column resize", () => {
-  it("commits one undoable width list when a boundary is dragged", async () => {
+  it("previews while dragging and commits one undoable width on release", async () => {
     // Arrange
     let editor: TiptapEditor | undefined
+    let changes = 0
     render(
       <ThemeProvider theme={theme}>
         <Harness
+          onChange={() => {
+            changes += 1
+          }}
           onEditorReady={(next) => {
             editor = next
           }}
@@ -66,33 +98,23 @@ describe("column resize", () => {
       name: "Resize column 1",
     })
     const { x, y } = handle.getBoundingClientRect()
+    const changesBefore = changes
 
     // Act
     act(() => {
-      fireEvent.pointerDown(handle, {
-        clientX: x,
-        clientY: y,
-        button: 0,
-        pointerType: "mouse",
-      })
-      fireEvent.pointerMove(handle, {
-        clientX: x + 120,
-        clientY: y,
-        pointerType: "mouse",
-      })
+      pointer(handle, "pointerDown", x, y)
+      pointer(handle, "pointerMove", x + 80, y)
+      pointer(handle, "pointerMove", x + 120, y)
     })
 
     await waitFor(() => {
-      const widths = editor ? widthsOf(editor) : null
-      expect(widths?.[0]).toBeGreaterThan(60)
+      expect(previewWidth()).toBeGreaterThan(60)
     })
+    expect(editor && widthsOf(editor)).toBeNull()
+    expect(changes).toBe(changesBefore)
 
     act(() => {
-      fireEvent.pointerUp(handle, {
-        clientX: x + 120,
-        clientY: y,
-        pointerType: "mouse",
-      })
+      pointer(handle, "pointerUp", x + 120, y)
     })
 
     // Assert
@@ -100,15 +122,61 @@ describe("column resize", () => {
       const widths = editor ? widthsOf(editor) : null
       expect(widths).toHaveLength(2)
       expect(widths?.[0]).toBeGreaterThan(60)
-      expect(widths?.[0]).toBeGreaterThanOrEqual(60)
       expect(widths?.[0]).toBeLessThanOrEqual(400)
       expect(widths?.[1]).toBeGreaterThanOrEqual(60)
       expect(widths?.[1]).toBeLessThanOrEqual(400)
     })
+    expect(changes).toBe(changesBefore + 1)
     act(() => {
       editor?.commands.undo()
     })
     expect(editor && widthsOf(editor)).toBeNull()
     expect(editor?.getText()).toContain("A")
+  })
+
+  it("drops a cancelled drag without writing column widths", async () => {
+    // Arrange
+    let editor: TiptapEditor | undefined
+    let changes = 0
+    render(
+      <ThemeProvider theme={theme}>
+        <Harness
+          onChange={() => {
+            changes += 1
+          }}
+          onEditorReady={(next) => {
+            editor = next
+          }}
+        />
+      </ThemeProvider>,
+    )
+    const handle = await screen.findByRole("separator", {
+      name: "Resize column 1",
+    })
+    const { x, y } = handle.getBoundingClientRect()
+    const changesBefore = changes
+
+    // Act
+    act(() => {
+      pointer(handle, "pointerDown", x, y)
+      pointer(handle, "pointerMove", x + 120, y)
+    })
+    await waitFor(() => {
+      expect(previewWidth()).toBeGreaterThan(60)
+    })
+    act(() => {
+      pointer(handle, "pointerCancel", x + 120, y)
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(previewWidth()).toBe(0)
+    })
+    expect(editor && widthsOf(editor)).toBeNull()
+    expect(changes).toBe(changesBefore)
+    act(() => {
+      pointer(handle, "pointerUp", x + 120, y)
+    })
+    expect(editor && widthsOf(editor)).toBeNull()
   })
 })
