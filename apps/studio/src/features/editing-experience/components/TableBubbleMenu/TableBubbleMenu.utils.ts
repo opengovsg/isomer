@@ -1,5 +1,5 @@
 import type { Node } from "@tiptap/pm/model"
-import type { Transaction } from "@tiptap/pm/state"
+import type { EditorState, Transaction } from "@tiptap/pm/state"
 import type { EditorView } from "@tiptap/pm/view"
 import type { Editor } from "@tiptap/react"
 import { CellSelection, selectedRect, TableMap } from "@tiptap/pm/tables"
@@ -266,6 +266,22 @@ const isMergedCell = (rect: ReturnType<typeof selectedRect>): boolean => {
   return (
     (node.attrs.colspan as number) > 1 || (node.attrs.rowspan as number) > 1
   )
+}
+
+// Menu and mergeCells both call these. A merged cell that fills a row, column,
+// or table is still one cell, so the axis menu must use the same checks.
+export const canMergeCells = (state: EditorState): boolean => {
+  const { selection } = state
+  if (!(selection instanceof CellSelection)) return false
+  if (isSingleCellSelection(selection)) return false
+  return canMergeCellSelection(selectedRect(state))
+}
+
+export const canSplitCell = (state: EditorState): boolean => {
+  const { selection } = state
+  if (!(selection instanceof CellSelection)) return false
+  if (!isSingleCellSelection(selection)) return false
+  return isMergedCell(selectedRect(state))
 }
 
 export const detectTableSelectionKind = (editor: Editor): SelectionKind => {

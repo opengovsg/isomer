@@ -101,7 +101,15 @@ export const Simple: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://www.asean.org/asean/asean-agreements-on-investment/'>EN download (3.2 MB)</a>",
+                    text: "EN download (3.2 MB)",
+                    marks: [
+                      {
+                        type: "link",
+                        attrs: {
+                          href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                        },
+                      },
+                    ],
                   },
                 ],
               },
@@ -124,7 +132,23 @@ export const Simple: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "The ASEAN IGA was terminated when <a href='https://www.asean.org/asean/asean-agreements-on-investment/'>ACIA</a> entered into force on 29 Mar 2012.",
+                    text: "The ASEAN IGA was terminated when ",
+                  },
+                  {
+                    type: "text",
+                    text: "ACIA",
+                    marks: [
+                      {
+                        type: "link",
+                        attrs: {
+                          href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    type: "text",
+                    text: " entered into force on 29 Mar 2012.",
                   },
                 ],
               },
@@ -148,7 +172,13 @@ export const Simple: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AANZFTA</a>",
+                            text: "AANZFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -162,7 +192,13 @@ export const Simple: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>ACFTA</a>",
+                            text: "ACFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -176,7 +212,13 @@ export const Simple: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AKFTA</a>",
+                            text: "AKFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -190,7 +232,13 @@ export const Simple: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AIFTA</a>",
+                            text: "AIFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -231,7 +279,10 @@ export const Simple: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                    text: "EN download (2.4 MB)",
+                    marks: [
+                      { type: "link", attrs: { href: "https://google.com/" } },
+                    ],
                   },
                 ],
               },
@@ -254,7 +305,23 @@ export const Simple: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "The ASEAN IGA was terminated when <a href='https://www.asean.org/asean/asean-agreements-on-investment/'>ACIA</a> entered into force on 29 Mar 2012.",
+                    text: "The ASEAN IGA was terminated when ",
+                  },
+                  {
+                    type: "text",
+                    text: "ACIA",
+                    marks: [
+                      {
+                        type: "link",
+                        attrs: {
+                          href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    type: "text",
+                    text: " entered into force on 29 Mar 2012.",
                   },
                 ],
               },
@@ -278,7 +345,13 @@ export const Simple: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AANZFTA</a>",
+                            text: "AANZFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -292,7 +365,13 @@ export const Simple: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>ACFTA</a>",
+                            text: "ACFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -306,7 +385,13 @@ export const Simple: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AKFTA</a>",
+                            text: "AKFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -320,7 +405,13 @@ export const Simple: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AIFTA</a>",
+                            text: "AIFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -361,7 +452,10 @@ export const Simple: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                    text: "EN download (2.4 MB)",
+                    marks: [
+                      { type: "link", attrs: { href: "https://google.com/" } },
+                    ],
                   },
                 ],
               },
@@ -416,7 +510,10 @@ export const Simple: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                    text: "EN download (2.4 MB)",
+                    marks: [
+                      { type: "link", attrs: { href: "https://google.com/" } },
+                    ],
                   },
                 ],
               },
@@ -468,7 +565,10 @@ export const Simple: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                    text: "EN download (2.4 MB)",
+                    marks: [
+                      { type: "link", attrs: { href: "https://google.com/" } },
+                    ],
                   },
                 ],
               },
@@ -608,7 +708,15 @@ export const Rowspan: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://www.asean.org/asean/asean-agreements-on-investment/'>EN download (3.2 MB)</a>",
+                    text: "EN download (3.2 MB)",
+                    marks: [
+                      {
+                        type: "link",
+                        attrs: {
+                          href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                        },
+                      },
+                    ],
                   },
                 ],
               },
@@ -631,7 +739,23 @@ export const Rowspan: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "The ASEAN IGA was terminated when <a href='https://www.asean.org/asean/asean-agreements-on-investment/'>ACIA</a> entered into force on 29 Mar 2012.",
+                    text: "The ASEAN IGA was terminated when ",
+                  },
+                  {
+                    type: "text",
+                    text: "ACIA",
+                    marks: [
+                      {
+                        type: "link",
+                        attrs: {
+                          href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    type: "text",
+                    text: " entered into force on 29 Mar 2012.",
                   },
                 ],
               },
@@ -655,7 +779,13 @@ export const Rowspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AANZFTA</a>",
+                            text: "AANZFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -669,7 +799,13 @@ export const Rowspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>ACFTA</a>",
+                            text: "ACFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -683,7 +819,13 @@ export const Rowspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AKFTA</a>",
+                            text: "AKFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -697,7 +839,13 @@ export const Rowspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AIFTA</a>",
+                            text: "AIFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -735,7 +883,10 @@ export const Rowspan: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                    text: "EN download (2.4 MB)",
+                    marks: [
+                      { type: "link", attrs: { href: "https://google.com/" } },
+                    ],
                   },
                 ],
               },
@@ -758,7 +909,23 @@ export const Rowspan: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "The ASEAN IGA was terminated when <a href='https://www.asean.org/asean/asean-agreements-on-investment/'>ACIA</a> entered into force on 29 Mar 2012.",
+                    text: "The ASEAN IGA was terminated when ",
+                  },
+                  {
+                    type: "text",
+                    text: "ACIA",
+                    marks: [
+                      {
+                        type: "link",
+                        attrs: {
+                          href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    type: "text",
+                    text: " entered into force on 29 Mar 2012.",
                   },
                 ],
               },
@@ -782,7 +949,13 @@ export const Rowspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AANZFTA</a>",
+                            text: "AANZFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -796,7 +969,13 @@ export const Rowspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>ACFTA</a>",
+                            text: "ACFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -810,7 +989,13 @@ export const Rowspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AKFTA</a>",
+                            text: "AKFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -824,7 +1009,13 @@ export const Rowspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AIFTA</a>",
+                            text: "AIFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -865,7 +1056,10 @@ export const Rowspan: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                    text: "EN download (2.4 MB)",
+                    marks: [
+                      { type: "link", attrs: { href: "https://google.com/" } },
+                    ],
                   },
                 ],
               },
@@ -917,7 +1111,10 @@ export const Rowspan: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                    text: "EN download (2.4 MB)",
+                    marks: [
+                      { type: "link", attrs: { href: "https://google.com/" } },
+                    ],
                   },
                 ],
               },
@@ -969,7 +1166,10 @@ export const Rowspan: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                    text: "EN download (2.4 MB)",
+                    marks: [
+                      { type: "link", attrs: { href: "https://google.com/" } },
+                    ],
                   },
                 ],
               },
@@ -1139,7 +1339,15 @@ export const Colspan: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://www.asean.org/asean/asean-agreements-on-investment/'>EN download (3.2 MB)</a>",
+                    text: "EN download (3.2 MB)",
+                    marks: [
+                      {
+                        type: "link",
+                        attrs: {
+                          href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                        },
+                      },
+                    ],
                   },
                 ],
               },
@@ -1162,7 +1370,23 @@ export const Colspan: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "The ASEAN IGA was terminated when <a href='https://www.asean.org/asean/asean-agreements-on-investment/'>ACIA</a> entered into force on 29 Mar 2012.",
+                    text: "The ASEAN IGA was terminated when ",
+                  },
+                  {
+                    type: "text",
+                    text: "ACIA",
+                    marks: [
+                      {
+                        type: "link",
+                        attrs: {
+                          href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    type: "text",
+                    text: " entered into force on 29 Mar 2012.",
                   },
                 ],
               },
@@ -1186,7 +1410,13 @@ export const Colspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AANZFTA</a>",
+                            text: "AANZFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -1200,7 +1430,13 @@ export const Colspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>ACFTA</a>",
+                            text: "ACFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -1214,7 +1450,13 @@ export const Colspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AKFTA</a>",
+                            text: "AKFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -1228,7 +1470,13 @@ export const Colspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AIFTA</a>",
+                            text: "AIFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -1269,7 +1517,10 @@ export const Colspan: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                    text: "EN download (2.4 MB)",
+                    marks: [
+                      { type: "link", attrs: { href: "https://google.com/" } },
+                    ],
                   },
                 ],
               },
@@ -1292,7 +1543,23 @@ export const Colspan: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "The ASEAN IGA was terminated when <a href='https://www.asean.org/asean/asean-agreements-on-investment/'>ACIA</a> entered into force on 29 Mar 2012.",
+                    text: "The ASEAN IGA was terminated when ",
+                  },
+                  {
+                    type: "text",
+                    text: "ACIA",
+                    marks: [
+                      {
+                        type: "link",
+                        attrs: {
+                          href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    type: "text",
+                    text: " entered into force on 29 Mar 2012.",
                   },
                 ],
               },
@@ -1316,7 +1583,13 @@ export const Colspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AANZFTA</a>",
+                            text: "AANZFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -1330,7 +1603,13 @@ export const Colspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>ACFTA</a>",
+                            text: "ACFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -1344,7 +1623,13 @@ export const Colspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AKFTA</a>",
+                            text: "AKFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -1358,7 +1643,13 @@ export const Colspan: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>AIFTA</a>",
+                            text: "AIFTA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -1399,7 +1690,10 @@ export const Colspan: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                    text: "EN download (2.4 MB)",
+                    marks: [
+                      { type: "link", attrs: { href: "https://google.com/" } },
+                    ],
                   },
                 ],
               },
@@ -1454,7 +1748,10 @@ export const Colspan: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                    text: "EN download (2.4 MB)",
+                    marks: [
+                      { type: "link", attrs: { href: "https://google.com/" } },
+                    ],
                   },
                 ],
               },
@@ -1506,7 +1803,10 @@ export const Colspan: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                    text: "EN download (2.4 MB)",
+                    marks: [
+                      { type: "link", attrs: { href: "https://google.com/" } },
+                    ],
                   },
                 ],
               },
@@ -2244,7 +2544,13 @@ export const ListInTable: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>A long file name that's available for download [PDF, 2MB]</a>",
+                            text: "A long file name that's available for download [PDF, 2MB]",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -2258,7 +2564,13 @@ export const ListInTable: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>An even longer file name that's available for download [PDF, 2MB]</a>",
+                            text: "An even longer file name that's available for download [PDF, 2MB]",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -2272,7 +2584,13 @@ export const ListInTable: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>A long file name that's available for download [PDF, 2MB]</a>",
+                            text: "A long file name that's available for download [PDF, 2MB]",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -2286,7 +2604,13 @@ export const ListInTable: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com'>A very very very long file name that's available for download [PDF, 2MB]</a>",
+                            text: "A very very very long file name that's available for download [PDF, 2MB]",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com" },
+                              },
+                            ],
                           },
                         ],
                       },

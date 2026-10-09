@@ -3,6 +3,8 @@ import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
+import { IsomerString } from "../primitives/IsomerString"
+
 const nonEmptyStringErrorMessage = {
   pattern: "cannot be empty or contain only spaces",
 }
@@ -10,13 +12,13 @@ const nonEmptyStringErrorMessage = {
 type StepsNumberStyle = "numeral" | "eyebrow" | "badge"
 
 const StepSchema = Type.Object({
-  title: Type.String({
+  title: IsomerString({
     title: "Step title",
     pattern: NON_EMPTY_STRING_REGEX,
     errorMessage: nonEmptyStringErrorMessage,
   }),
   description: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Description",
       description: "Keep to 1–2 sentences so steps stay scannable.",
       pattern: NON_EMPTY_STRING_REGEX,
@@ -24,7 +26,7 @@ const StepSchema = Type.Object({
     }),
   ),
   buttonLabel: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Link text",
       maxLength: 50,
       description:
@@ -51,13 +53,13 @@ export const StepsSchema = Type.Object(
         format: "hidden",
       }),
     ),
-    title: Type.String({
+    title: IsomerString({
       title: "Title",
       pattern: NON_EMPTY_STRING_REGEX,
       errorMessage: nonEmptyStringErrorMessage,
     }),
     subtitle: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Description",
         pattern: NON_EMPTY_STRING_REGEX,
         errorMessage: nonEmptyStringErrorMessage,

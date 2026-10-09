@@ -6,20 +6,32 @@ import { omit } from "lodash-es"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
-import { ARRAY_RADIO_FORMAT } from "../format"
+import { HERO_BANNER_STYLE_FORMAT } from "../format"
+import { IsomerString } from "../primitives/IsomerString"
 import { generateImageSrcSchema } from "./Image"
 
 export const HERO_STYLE = {
-  gradient: "gradient",
-  block: "block",
-  largeImage: "largeImage",
-  floating: "floating",
-  searchbar: "searchbar",
+  gradient: { key: "gradient", title: "Gradient (Default)" },
+  block: { key: "block", title: "Block" },
+  largeImage: { key: "largeImage", title: "Large image" },
+  floating: { key: "floating", title: "Floating" },
+  searchbar: { key: "searchbar", title: "Search bar" },
 } as const
+
+export type HeroStyleVariant =
+  (typeof HERO_STYLE)[keyof typeof HERO_STYLE]["key"]
+
+export function getHeroStyleVariantForBranchTitle(
+  branchTitle: string,
+): HeroStyleVariant | undefined {
+  return Object.values(HERO_STYLE).find(
+    (branch) => branch.title === branchTitle,
+  )?.key
+}
 
 const HeroBaseSchema = Type.Object({
   type: Type.Literal("hero", { default: "hero" }),
-  title: Type.String({
+  title: IsomerString({
     title: "Hero text",
     description: "The title of the hero banner",
     maxLength: 100,
@@ -29,7 +41,7 @@ const HeroBaseSchema = Type.Object({
     },
   }),
   subtitle: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Description",
       description: "The contents of the hero banner",
       format: "textarea",
@@ -40,7 +52,7 @@ const HeroBaseSchema = Type.Object({
 
 const CallToActionsSchema = Type.Object({
   buttonLabel: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Primary Call-to-Action text",
       description:
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
@@ -55,7 +67,7 @@ const CallToActionsSchema = Type.Object({
     }),
   ),
   secondaryButtonLabel: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Secondary Call-to-Action text",
       description:
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
@@ -99,8 +111,8 @@ const GROUPINGS = {
 const HeroGradientSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.gradient, {
-        default: HERO_STYLE.gradient,
+      variant: Type.Literal(HERO_STYLE.gradient.key, {
+        default: HERO_STYLE.gradient.key,
       }),
       backgroundUrl: BackgroundUrlSchema,
     }),
@@ -108,7 +120,7 @@ const HeroGradientSchema = Type.Composite(
     CallToActionsSchema,
   ],
   {
-    title: "Gradient (Default)",
+    title: HERO_STYLE.gradient.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -120,14 +132,16 @@ const HeroGradientSchema = Type.Composite(
 const HeroBlockSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.block, { default: HERO_STYLE.block }),
+      variant: Type.Literal(HERO_STYLE.block.key, {
+        default: HERO_STYLE.block.key,
+      }),
       backgroundUrl: BackgroundUrlSchema,
     }),
     HeroBaseSchema,
     CallToActionsSchema,
   ],
   {
-    title: "Block",
+    title: HERO_STYLE.block.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -139,8 +153,8 @@ const HeroBlockSchema = Type.Composite(
 const HeroLargeImageSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.largeImage, {
-        default: HERO_STYLE.largeImage,
+      variant: Type.Literal(HERO_STYLE.largeImage.key, {
+        default: HERO_STYLE.largeImage.key,
       }),
       backgroundUrl: BackgroundUrlSchema,
     }),
@@ -148,7 +162,7 @@ const HeroLargeImageSchema = Type.Composite(
     CallToActionsSchema,
   ],
   {
-    title: "Large image",
+    title: HERO_STYLE.largeImage.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -160,8 +174,8 @@ const HeroLargeImageSchema = Type.Composite(
 const HeroFloatingSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.floating, {
-        default: HERO_STYLE.floating,
+      variant: Type.Literal(HERO_STYLE.floating.key, {
+        default: HERO_STYLE.floating.key,
       }),
       backgroundUrl: BackgroundUrlSchema,
     }),
@@ -169,7 +183,7 @@ const HeroFloatingSchema = Type.Composite(
     CallToActionsSchema,
   ],
   {
-    title: "Floating",
+    title: HERO_STYLE.floating.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -181,15 +195,15 @@ const HeroFloatingSchema = Type.Composite(
 const HeroSearchbarSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.searchbar, {
-        default: HERO_STYLE.searchbar,
+      variant: Type.Literal(HERO_STYLE.searchbar.key, {
+        default: HERO_STYLE.searchbar.key,
       }),
       backgroundUrl: Type.Optional(BackgroundUrlSchema),
     }),
     HeroBaseSchema,
   ],
   {
-    title: "Search bar",
+    title: HERO_STYLE.searchbar.title,
     format: "hidden", // beta: we don't want to show this in the UI yet
     groups: [GROUPINGS.TEXT],
   },
@@ -207,7 +221,7 @@ export const HeroSchema = Type.Intersect(
       ],
       {
         title: "Hero banner style",
-        format: ARRAY_RADIO_FORMAT,
+        format: HERO_BANNER_STYLE_FORMAT,
       },
     ),
   ],

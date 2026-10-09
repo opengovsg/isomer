@@ -4,6 +4,7 @@ import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
+import { IsomerString } from "../primitives/IsomerString"
 
 export const BUTTON_ALIGNMENT = {
   left: "left",
@@ -26,7 +27,7 @@ export const ButtonSchema = Type.Object(
         format: ARRAY_RADIO_FORMAT,
       },
     ),
-    buttonLabel: Type.String({
+    buttonLabel: IsomerString({
       title: "Button text",
       description:
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
@@ -43,7 +44,7 @@ export const ButtonSchema = Type.Object(
       pattern: LINK_HREF_PATTERN,
     }),
     secondaryButtonLabel: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Secondary button text",
         description:
           "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",

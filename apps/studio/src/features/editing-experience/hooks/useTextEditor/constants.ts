@@ -29,7 +29,6 @@ import { TableRow } from "@tiptap/extension-table-row"
 import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
-import { CellSelection, selectedRect } from "@tiptap/pm/tables"
 import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
 import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
@@ -40,7 +39,7 @@ import {
   type WidthCommand,
 } from "~/features/editing-experience/utils/columnWidths"
 
-import { canMergeCellSelection } from "../../components/TableBubbleMenu/TableBubbleMenu.utils"
+import { canMergeCells } from "../../components/TableBubbleMenu/TableBubbleMenu.utils"
 import {
   focusTableBubbleMenuTrigger,
   runTableBubbleMenuFocusTrigger,
@@ -55,8 +54,6 @@ import {
 } from "./clearTableCellBackgroundOnKindChange"
 import { deleteEmptyTextblockBeforeTable } from "./deleteEmptyTextblockBeforeTable"
 import { selectTableCellContent } from "./selectTableCellContent"
-
-export { TableRow }
 
 export const HEADING_TYPE = "heading"
 export const PARAGRAPH_TYPE = "paragraph"
@@ -147,11 +144,7 @@ export const IsomerTable = Table.extend({
     return {
       ...parent,
       mergeCells: () => (props) => {
-        const { selection } = props.state
-        if (selection instanceof CellSelection) {
-          const rect = selectedRect(props.state)
-          if (!canMergeCellSelection(rect)) return false
-        }
+        if (!canMergeCells(props.state)) return false
         return parentMergeCells?.()(props) ?? false
       },
       focusTableBubbleMenuTrigger:
@@ -289,3 +282,12 @@ export const IsomerHeading = Heading.extend({
 }).configure({
   levels: HEADING_LEVELS,
 })
+
+export const TEXT_EDITOR_EXTRA_EXTENSIONS: Extensions = [
+  ...PROSE_EXTENSIONS,
+  TableRow,
+  IsomerTable,
+  IsomerTableCell,
+  IsomerTableHeader,
+  IsomerHeading,
+]
