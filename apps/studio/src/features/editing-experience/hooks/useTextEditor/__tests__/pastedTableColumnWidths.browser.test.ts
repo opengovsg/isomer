@@ -1,6 +1,7 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { JSONContent } from "@tiptap/react"
 import { schema } from "@opengovsg/isomer-components"
+import { TableRow } from "@tiptap/extension-table-row"
 import { Editor } from "@tiptap/react"
 import { afterEach, describe, expect, it } from "vitest"
 import { ajv } from "~/utils/ajv"
@@ -11,7 +12,6 @@ import {
   IsomerTableCell,
   IsomerTableHeader,
   PROSE_EXTENSIONS,
-  TableRow,
 } from "../constants"
 
 const pageSchemaValidator = ajv.compile<IsomerSchema>(schema)

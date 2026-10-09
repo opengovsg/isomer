@@ -1,4 +1,5 @@
 import type { JSONContent } from "@tiptap/react"
+import { TableRow } from "@tiptap/extension-table-row"
 import { CellSelection } from "@tiptap/pm/tables"
 import { Editor } from "@tiptap/react"
 import { afterEach, describe, expect, it } from "vitest"
@@ -9,7 +10,6 @@ import {
   IsomerTableCell,
   IsomerTableHeader,
   PROSE_EXTENSIONS,
-  TableRow,
 } from "~/features/editing-experience/hooks/useTextEditor/constants"
 
 import { moveColumnWidth, moveTableColumnWithWidths } from "./columnWidths"
@@ -40,9 +40,8 @@ const tableDoc = (columnWidths: number[] | null): JSONContent => ({
   ],
 })
 
-const createEditor = (columnWidths: number[] | null, element: HTMLElement) =>
+const createEditor = (columnWidths: number[] | null) =>
   new Editor({
-    element,
     extensions: [
       ...BASE_EXTENSIONS,
       ...PROSE_EXTENSIONS,
@@ -79,20 +78,17 @@ const selectText = (editor: Editor, text: string) => {
 }
 
 describe("column width edits", () => {
-  const mounts: { editor: Editor; root: HTMLElement }[] = []
+  const editors: Editor[] = []
 
   afterEach(() => {
-    for (const { editor, root } of mounts.splice(0)) {
+    for (const editor of editors.splice(0)) {
       editor.destroy()
-      root.remove()
     }
   })
 
   const mountEditor = (columnWidths: number[] | null) => {
-    const root = document.createElement("div")
-    document.body.append(root)
-    const editor = createEditor(columnWidths, root)
-    mounts.push({ editor, root })
+    const editor = createEditor(columnWidths)
+    editors.push(editor)
     return editor
   }
 
