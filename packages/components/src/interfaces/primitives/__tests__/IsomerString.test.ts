@@ -1,102 +1,71 @@
 import { describe, expect, it } from "vitest"
+import { getComponentSchema } from "~/schemas/components"
+import { schema } from "~/schemas/main"
 import {
-  LINK_HREF_PATTERN,
   NO_STYLIZED_UNICODE_REGEX,
   NON_EMPTY_STRING_REGEX,
 } from "~/utils/validation"
 
-import { IsomerString } from "../IsomerString"
+import {
+  IsomerString,
+  NO_STYLIZED_UNICODE_STRING_ID,
+  NoStylizedUnicodeStringSchema,
+} from "../IsomerString"
+
+const unicodeMessage =
+  "cannot contain stylised or decorative unicode characters"
+
+const countInJson = (value: unknown, needle: string) => {
+  const haystack = JSON.stringify(value)
+  const escaped = JSON.stringify(needle).slice(1, -1)
+  return haystack.split(escaped).length - 1
+}
 
 describe("IsomerString", () => {
-  it("should set NO_STYLIZED_UNICODE_REGEX as the pattern when no pattern is passed", () => {
+  it("should point at the shared unicode schema and keep field metadata on the node", () => {
     // Arrange / Act
-    const schema = IsomerString({ title: "Some field" })
+    const field = IsomerString({ title: "Some field", format: "textarea" })
 
     // Assert
-    expect(schema.pattern).toBe(NO_STYLIZED_UNICODE_REGEX)
-    expect(schema.title).toBe("Some field")
-  })
-
-  it("should still allow valid links when joined with LINK_HREF_PATTERN, without alternation leaking through", () => {
-    // Arrange
-    const schema = IsomerString({ pattern: LINK_HREF_PATTERN })
-    const combined = new RegExp(schema.pattern!)
-    const testCases = ["tel:12345678", "https://example.com"]
-
-    testCases.forEach((testCase) => {
-      // Act
-      const result = combined.test(testCase)
-
-      // Assert
-      expect(result).toBe(true)
+    expect(field.pattern).toBeUndefined()
+    expect(field.title).toBe("Some field")
+    expect(field.format).toBe("textarea")
+    expect(field.allOf).toEqual([{ $ref: NO_STYLIZED_UNICODE_STRING_ID }])
+    expect(field.errorMessage).toBeUndefined()
+    expect(NoStylizedUnicodeStringSchema.pattern).toBe(
+      NO_STYLIZED_UNICODE_REGEX,
+    )
+    expect(NoStylizedUnicodeStringSchema.errorMessage).toEqual({
+      pattern: unicodeMessage,
     })
   })
 
-  it("should reject stylized-unicode links and unsupported protocols when joined with LINK_HREF_PATTERN", () => {
-    // Arrange
-    const schema = IsomerString({ pattern: LINK_HREF_PATTERN })
-    const combined = new RegExp(schema.pattern!)
-    const testCases = [
-      "𝐭𝐞𝐥:12345678",
-      "𝐡𝐭𝐭𝐩𝐬://example.com",
-      "ftp://example.com",
-    ]
-
-    testCases.forEach((testCase) => {
-      // Act
-      const result = combined.test(testCase)
-
-      // Assert
-      expect(result).toBe(false)
-    })
-  })
-
-  it("should still allow non-empty text when joined with NON_EMPTY_STRING_REGEX", () => {
+  it("should keep a caller's pattern and error message instead of joining them", () => {
     // Arrange / Act
-    const schema = IsomerString({ pattern: NON_EMPTY_STRING_REGEX })
-    const combined = new RegExp(schema.pattern!)
-    const result = combined.test("hello")
-
-    // Assert
-    expect(result).toBe(true)
-  })
-
-  it("should reject empty string and stylized unicode when joined with NON_EMPTY_STRING_REGEX", () => {
-    // Arrange
-    const schema = IsomerString({ pattern: NON_EMPTY_STRING_REGEX })
-    const combined = new RegExp(schema.pattern!)
-    const testCases = ["", "𝐡𝐞𝐥𝐥𝐨"]
-
-    testCases.forEach((testCase) => {
-      // Act
-      const result = combined.test(testCase)
-
-      // Assert
-      expect(result).toBe(false)
-    })
-  })
-
-  it("should concatenate errorMessage.pattern when one already exists", () => {
-    // Arrange / Act
-    const schema = IsomerString({
+    const field = IsomerString({
       pattern: NON_EMPTY_STRING_REGEX,
       errorMessage: { pattern: "cannot be empty or contain only spaces" },
     })
 
     // Assert
-    expect(schema.errorMessage).toEqual({
-      pattern:
-        "cannot be empty or contain only spaces; cannot contain stylised or decorative unicode characters",
+    expect(field.pattern).toBe(NON_EMPTY_STRING_REGEX)
+    expect(field.errorMessage).toEqual({
+      pattern: "cannot be empty or contain only spaces",
     })
+    expect(field.allOf).toEqual([{ $ref: NO_STYLIZED_UNICODE_STRING_ID }])
   })
 
-  it("should default errorMessage.pattern when none exists", () => {
-    // Arrange / Act
-    const schema = IsomerString()
-
-    // Assert
-    expect(schema.errorMessage).toEqual({
-      pattern: "cannot contain stylised or decorative unicode characters",
-    })
+  it("should include the lookahead once on the published page schema and on a component fragment", () => {
+    // Arrange / Act / Assert
+    expect(countInJson(schema, NO_STYLIZED_UNICODE_REGEX)).toBe(1)
+    expect(
+      countInJson(
+        getComponentSchema({ component: "image" }),
+        NO_STYLIZED_UNICODE_REGEX,
+      ),
+    ).toBe(1)
+    expect(countInJson(schema, NO_STYLIZED_UNICODE_STRING_ID)).toBeGreaterThan(
+      1,
+    )
   })
 })

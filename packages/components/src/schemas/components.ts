@@ -38,6 +38,8 @@ import {
   VideoSchema,
 } from "~/interfaces"
 
+import { isomerSharedSchemaDefinitions } from "./sharedDefinitions"
+
 export const IsomerComplexComponentsMap = {
   accordion: AccordionSchema,
   blockquote: BlockquoteSchema,
@@ -82,6 +84,7 @@ export const componentSchemaDefinitions = {
     complex: IsomerComplexComponentsMap,
     native: IsomerNativeComponentsMap,
   },
+  ...isomerSharedSchemaDefinitions,
 }
 
 interface ComponentSchema {
