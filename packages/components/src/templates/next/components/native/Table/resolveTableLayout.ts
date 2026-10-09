@@ -34,7 +34,12 @@ const authorColumnWidths = (
   return widths
 }
 
-/** Author pixel widths, else fixed equal tracks when phantoms exist, else auto. */
+/**
+ * Author widths come first so a resized table keeps its columns even when a
+ * colspan would otherwise force equal tracks. Those equal tracks exist only
+ * for phantom columns, which collapse under automatic layout. Every other
+ * table stays automatic so its content sizes the columns.
+ */
 export const resolveTableLayout = (
   rows: TableRows,
   columnWidths?: unknown,

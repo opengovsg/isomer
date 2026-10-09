@@ -187,6 +187,9 @@ export const IsomerTable = Table.extend({
       },
       columnWidths: {
         default: null,
+        // Clipboard HTML stringifies the width list. Drop it on paste so the
+        // saved page stays schema-valid. Keeping the widths is an accepted miss.
+        parseHTML: () => null,
       },
     }
   },
