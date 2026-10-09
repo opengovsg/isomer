@@ -1,9 +1,6 @@
-import type { IframeCallbackFnProps } from "~/types/dom"
 import { Box } from "@chakra-ui/react"
 import { merge } from "lodash-es"
-import { useCallback, useEffect } from "react"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { bindColumnWidthPreviewRoot } from "~/features/editing-experience/utils/previewColumnWidths"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
@@ -36,14 +33,9 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     siteId,
     resourceId: pageId,
   })
-  const onPreviewFrame = useCallback((props: IframeCallbackFnProps) => {
-    bindColumnWidthPreviewRoot(props.document ?? null)
-  }, [])
-
-  useEffect(() => () => bindColumnWidthPreviewRoot(null), [])
 
   return (
-    <ViewportContainer siteId={siteId} callback={onPreviewFrame}>
+    <ViewportContainer siteId={siteId}>
       <PreviewWithCustomSitemap
         {...merge(previewPageState, { page: { title } })}
         siteId={siteId}

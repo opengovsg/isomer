@@ -2,7 +2,6 @@ import { useRouter } from "next/router"
 import { useEffect } from "react"
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { setColumnWidthPreviewTarget } from "~/features/editing-experience/utils/previewColumnWidths"
 
 import { inferAsProse } from "../../utils/inferAsProse"
 import TipTapProseComponent from "../TipTapProseComponent"
@@ -24,14 +23,6 @@ export function EditPageDrawer(): JSX.Element {
     setDrawerState,
   } = useEditorDrawerContext()
   const router = useRouter()
-
-  useEffect(() => {
-    // Page content is a schema union that type-aware lint cannot relate to unknown[].
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
-    setColumnWidthPreviewTarget(previewPageState.content, currActiveIdx)
-  }, [previewPageState.content, currActiveIdx])
-
-  useEffect(() => () => setColumnWidthPreviewTarget([], 0), [])
 
   // The navbar sits outside EditorDrawerProvider, so use a one-shot route
   // request to open history without moving or duplicating editor state.
