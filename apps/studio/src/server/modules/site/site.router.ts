@@ -42,6 +42,7 @@ import {
   getNotification,
   getSiteConfig,
   getSiteTheme,
+  listSitesWithExpiredAccess,
   normalizeAskgovConfig,
   resolveSearchConfig,
   setSiteNotification,
@@ -75,6 +76,11 @@ export const siteRouter = router({
       .select(["Site.id", "Site.config", "ResourcePermission.role"])
       .orderBy("Site.id", "asc")
       .execute()
+  }),
+  // Sites this user lost to inactivity, plus current site-admin emails so
+  // they can ask to be added back without a support ticket.
+  listExpired: protectedProcedure.query(async ({ ctx }) => {
+    return listSitesWithExpiredAccess(ctx.user.id)
   }),
   listAllSites: protectedProcedure.query(async ({ ctx }) => {
     await validateUserIsIsomerAdmin({
