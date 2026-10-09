@@ -332,7 +332,7 @@ jobs:
               service: isomer-studio
               api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Run Playwright tests
-        run: pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
+        run: pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose --log-order=stream
         env:
           PLAYWRIGHT_TEST_PATHS: ${{ matrix.paths }}
 
