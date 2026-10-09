@@ -8,7 +8,7 @@ import type {
 // `RootPage` will always have a hero banner as the first block
 export const getIsHeroFirstBlock = (
   pageLayout: (typeof ISOMER_PAGE_LAYOUTS)[keyof typeof ISOMER_PAGE_LAYOUTS],
-  pageContent: IsomerSchema,
+  pageContent: Pick<IsomerSchema, "content">,
 ) =>
   pageLayout === "homepage" &&
   pageContent.content.length > 0 &&

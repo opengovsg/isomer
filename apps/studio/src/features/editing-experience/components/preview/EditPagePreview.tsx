@@ -1,9 +1,11 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Box, useDisclosure } from "@chakra-ui/react"
+import { useToast } from "@opengovsg/design-system-react"
 import { isEqual, merge } from "lodash-es"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useBlockFlashHighlight } from "~/features/editing-experience/hooks/useBlockFlashHighlight"
 import { useBlockHighlight } from "~/features/editing-experience/hooks/useBlockHighlight"
@@ -11,6 +13,11 @@ import { usePreviewHoverDetection } from "~/features/editing-experience/hooks/us
 import { useSelectBlock } from "~/features/editing-experience/hooks/useSelectBlock"
 import { useShowPreviewBlockHighlight } from "~/features/editing-experience/hooks/useShowPreviewBlockHighlight"
 import { getDrawerStateForBlock } from "~/features/editing-experience/utils/getDrawerStateForBlock"
+import {
+  getPreviewBlockMove,
+  reorderBlocks,
+  shiftIndexAfterMove,
+} from "~/features/editing-experience/utils/getPreviewBlockMove"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
@@ -24,6 +31,15 @@ import { ViewportContainer } from "./ViewportContainer"
 interface PendingBlockSelection {
   block: IsomerSchema["content"][number]
   index: number
+}
+
+interface ReorderSnapshot {
+  preview: IsomerSchema
+  saved: IsomerSchema
+  hoveredBlockIndex: number | null
+  currActiveIdx: number
+  flashBlockIndex: number | null
+  addedBlockIndex: number | null
 }
 
 const LoadingState = (): JSX.Element => {
@@ -48,6 +64,7 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     previewPageState,
     setPreviewPageState,
     savedPageState,
+    setSavedPageState,
     currActiveIdx,
     pageId,
     updatedAt,
@@ -61,6 +78,9 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     iframeDocument,
     setIframeDocument,
     setPreviewViewport,
+    setCurrActiveIdx,
+    addedBlockIndex,
+    setAddedBlockIndex,
   } = useEditorDrawerContext()
 
   const {
@@ -76,6 +96,10 @@ const SuspendableEditPagePreview = (): JSX.Element => {
   const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
     siteId,
     resourceId: pageId,
+  })
+  const [{ scheduledAt }] = trpc.page.readPage.useSuspenseQuery({
+    pageId,
+    siteId,
   })
 
   const handleIframeMount = useCallback(
@@ -103,6 +127,126 @@ const SuspendableEditPagePreview = (): JSX.Element => {
   })
 
   const selectBlock = useSelectBlock()
+  const toast = useToast()
+  const utils = trpc.useUtils()
+  const reorderSnapshot = useRef<ReorderSnapshot | null>(null)
+  const isReorderingRef = useRef(false)
+
+  const { mutate: reorderBlock } = trpc.page.reorderBlock.useMutation({
+    onSuccess: async () => {
+      isReorderingRef.current = false
+      reorderSnapshot.current = null
+      await utils.page.readPage.invalidate({ pageId, siteId })
+    },
+    onError: (error) => {
+      isReorderingRef.current = false
+      const snapshot = reorderSnapshot.current
+      if (snapshot) {
+        setPreviewPageState(snapshot.preview)
+        setSavedPageState(snapshot.saved)
+        setHoveredBlockIndex(snapshot.hoveredBlockIndex)
+        setCurrActiveIdx(snapshot.currActiveIdx)
+        setFlashBlockIndex(snapshot.flashBlockIndex)
+        setAddedBlockIndex(snapshot.addedBlockIndex)
+        reorderSnapshot.current = null
+      }
+      toast({
+        title: "Failed to update blocks",
+        description: error.message,
+        status: "error",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
+  })
+
+  const blockMove =
+    hoveredBlockIndex === null
+      ? null
+      : getPreviewBlockMove({
+          page: previewPageState,
+          savedContent: savedPageState.content,
+          index: hoveredBlockIndex,
+          isReorderBlocked: addedBlockIndex !== null || !!scheduledAt,
+        })
+
+  const handleMoveBlock = useCallback(
+    (direction: "up" | "down") => {
+      if (hoveredBlockIndex === null || isReorderingRef.current) return
+
+      const move = getPreviewBlockMove({
+        page: previewPageState,
+        savedContent: savedPageState.content,
+        index: hoveredBlockIndex,
+        isReorderBlocked: addedBlockIndex !== null || !!scheduledAt,
+      })
+      const canMove = direction === "up" ? move.canMoveUp : move.canMoveDown
+      if (!canMove) return
+
+      const from = hoveredBlockIndex
+      const to = direction === "up" ? from - 1 : from + 1
+      // Saved content is what the server compares against. Preview content can
+      // still hold an in-progress edit, so both lists move by the same indices
+      // and that edit stays on its block.
+      const nextSavedContent = reorderBlocks(savedPageState.content, from, to)
+      const nextPreviewContent = reorderBlocks(
+        previewPageState.content,
+        from,
+        to,
+      )
+
+      reorderSnapshot.current = {
+        preview: previewPageState,
+        saved: savedPageState,
+        hoveredBlockIndex,
+        currActiveIdx,
+        flashBlockIndex,
+        addedBlockIndex,
+      }
+      isReorderingRef.current = true
+
+      if (currActiveIdx >= 0) {
+        setCurrActiveIdx(shiftIndexAfterMove(currActiveIdx, from, to))
+      }
+      setHoveredBlockIndex(to)
+      if (flashBlockIndex !== null) {
+        setFlashBlockIndex(shiftIndexAfterMove(flashBlockIndex, from, to))
+      }
+      if (addedBlockIndex !== null) {
+        setAddedBlockIndex(shiftIndexAfterMove(addedBlockIndex, from, to))
+      }
+      setSavedPageState({ ...savedPageState, content: nextSavedContent })
+      setPreviewPageState({
+        ...previewPageState,
+        content: nextPreviewContent,
+      })
+
+      reorderBlock({
+        pageId,
+        siteId,
+        from,
+        to,
+        blocks: savedPageState.content,
+      })
+    },
+    [
+      addedBlockIndex,
+      currActiveIdx,
+      flashBlockIndex,
+      hoveredBlockIndex,
+      pageId,
+      previewPageState,
+      reorderBlock,
+      savedPageState,
+      scheduledAt,
+      setAddedBlockIndex,
+      setCurrActiveIdx,
+      setFlashBlockIndex,
+      setHoveredBlockIndex,
+      setPreviewPageState,
+      setSavedPageState,
+      siteId,
+    ],
+  )
 
   const handleEditClick = useCallback(() => {
     if (hoveredBlockIndex === null) return
@@ -204,6 +348,18 @@ const SuspendableEditPagePreview = (): JSX.Element => {
               {...highlightRect}
               label={highlightLabel}
               onEditClick={handleEditClick}
+              onMoveUp={
+                blockMove?.showMoveControls
+                  ? () => handleMoveBlock("up")
+                  : undefined
+              }
+              onMoveDown={
+                blockMove?.showMoveControls
+                  ? () => handleMoveBlock("down")
+                  : undefined
+              }
+              canMoveUp={blockMove?.canMoveUp}
+              canMoveDown={blockMove?.canMoveDown}
             />,
             iframeDocument.body,
           )}
