@@ -127,6 +127,11 @@ const centreOf = (el: Element) => {
   return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
 }
 
+const nearTopLeft = (table: Element) => {
+  const rect = table.getBoundingClientRect()
+  return { x: rect.left + 8, y: rect.top + 8 }
+}
+
 const hoverAt = (x: number, y: number) => {
   act(() => {
     fireEvent.mouseMove(document, { clientX: x, clientY: y })
@@ -927,6 +932,176 @@ describe("TableDragHandles", () => {
           Math.abs(after.width - before.width),
       ).toBeGreaterThan(1)
     })
+  })
+
+  it("hides the select-table button until the pointer is over the table", async () => {
+    // Arrange / Act
+    const { queryByRole } = await renderHarness()
+
+    // Assert
+    expect(queryByRole("button", { name: "Select entire table" })).toBeNull()
+  })
+
+  it("pins the select-table button to the table's top-left corner while hovering there", async () => {
+    // Arrange
+    const { container, getByRole } = await renderHarness()
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const { x, y } = nearTopLeft(table)
+
+    // Act
+    const button = await hoverUntil(x, y, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+
+    // Assert
+    const buttonRect = button.getBoundingClientRect()
+    const tableRect = table.getBoundingClientRect()
+    expect(
+      Math.abs(buttonRect.left + buttonRect.width / 2 - tableRect.left),
+    ).toBeLessThan(2)
+    expect(
+      Math.abs(buttonRect.top + buttonRect.height / 2 - tableRect.top),
+    ).toBeLessThan(2)
+    expect(buttonRect.width).toBeGreaterThan(0)
+    expect(Math.abs(buttonRect.width - buttonRect.height)).toBeLessThan(1)
+    expect(
+      parseFloat(getComputedStyle(button).borderTopLeftRadius),
+    ).toBeGreaterThan(buttonRect.width / 2)
+    expect(getComputedStyle(button).backgroundColor).toBe("rgb(255, 255, 255)")
+    expect(button.getAttribute("data-emphasis")).toBe("ready")
+    expect(getComputedStyle(button).opacity).toBe("1")
+    const readyIcon = button.querySelector("svg")
+    expect(readyIcon && getComputedStyle(readyIcon).color).toBe(
+      "rgb(33, 100, 218)",
+    )
+  })
+
+  it("shows the select-table button in the gutter at the top-left corner", async () => {
+    // Arrange
+    const { container, getByRole } = await renderHarness()
+    await waitForHandle(container, "column", 0)
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const tableRect = table.getBoundingClientRect()
+
+    // Act
+    const button = await hoverUntil(tableRect.left - 4, tableRect.top - 4, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+
+    // Assert
+    expect(button).toBeTruthy()
+  })
+
+  it("shows a quiet select-table button while the pointer is over the rest of the table", async () => {
+    // Arrange
+    const { container, getByLabelText, getByRole } = await renderHarness()
+    const cell = findByCellText(container, "Row 2, B")
+    const { x, y } = centreOf(cell)
+
+    // Act
+    await hoverUntil(x, y, () => getByLabelText("Add row below"))
+    const button = getByRole("button", { name: "Select entire table" })
+
+    // Assert
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const buttonRect = button.getBoundingClientRect()
+    const tableRect = table.getBoundingClientRect()
+    expect(
+      Math.abs(buttonRect.left + buttonRect.width / 2 - tableRect.left),
+    ).toBeLessThan(2)
+    expect(
+      Math.abs(buttonRect.top + buttonRect.height / 2 - tableRect.top),
+    ).toBeLessThan(2)
+    expect(button.getAttribute("data-emphasis")).toBe("quiet")
+    expect(getComputedStyle(button).opacity).toBe("1")
+    expect(getComputedStyle(button).boxShadow).not.toBe("none")
+    const quietIcon = button.querySelector("svg")
+    expect(quietIcon && getComputedStyle(quietIcon).color).toBe(
+      "rgb(160, 164, 173)",
+    )
+  })
+
+  it("selects every cell and hides the button after it is clicked", async () => {
+    // Arrange
+    const { editor, container, getByRole, getByLabelText, queryByRole } =
+      await renderHarness()
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const { x, y } = nearTopLeft(table)
+    const button = await hoverUntil(x, y, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+    const buttonCentre = centreOf(button)
+    hoverAt(buttonCentre.x, buttonCentre.y)
+
+    // Act
+    act(() => {
+      fireEvent.click(button)
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(queryByRole("button", { name: "Select entire table" })).toBeNull()
+    })
+    expect(getByLabelText("Add row below")).toBeTruthy()
+    const cells = container.querySelectorAll("td, th")
+    expect(cells.length).toBe(12)
+    for (const selected of cells) {
+      expect(selected.classList.contains("selectedCell")).toBe(true)
+    }
+    expect(findByCellText(container, "Column A").className).toContain(
+      "selectedCell-border-top",
+    )
+    expect(findByCellText(container, "Column A").className).toContain(
+      "selectedCell-border-left",
+    )
+    expect(findByCellText(container, "Row 3, C").className).toContain(
+      "selectedCell-border-bottom",
+    )
+    expect(findByCellText(container, "Row 3, C").className).toContain(
+      "selectedCell-border-right",
+    )
+    const selection = editor.state.selection
+    expect(selection).toBeInstanceOf(CellSelection)
+    if (!(selection instanceof CellSelection)) {
+      throw new Error("expected a cell selection")
+    }
+    expect(selection.isRowSelection()).toBe(true)
+    expect(selection.isColSelection()).toBe(true)
+    expect(getCellText(editor)).toHaveLength(12)
+  })
+
+  it("shows the select-table button again after the pointer leaves and returns", async () => {
+    // Arrange
+    const { container, getByRole, queryByRole } = await renderHarness()
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const { x, y } = nearTopLeft(table)
+    const button = await hoverUntil(x, y, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+    act(() => {
+      fireEvent.click(button)
+    })
+    await waitFor(() => {
+      expect(queryByRole("button", { name: "Select entire table" })).toBeNull()
+    })
+    const tableRect = table.getBoundingClientRect()
+
+    // Act. Retry the move. useHoveredTable drops a mousemove while a frame is pending.
+    await waitFor(() => {
+      hoverAt(tableRect.left + tableRect.width / 2, tableRect.bottom + 80)
+      expect(queryByRole("button", { name: "Add row below" })).toBeNull()
+    })
+    const returned = await hoverUntil(x, y, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+
+    // Assert
+    expect(returned).toBeTruthy()
   })
 
   it("updates drop targets when the table resizes during a drag", async () => {

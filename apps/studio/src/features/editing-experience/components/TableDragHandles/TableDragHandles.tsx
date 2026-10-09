@@ -2,7 +2,7 @@ import type { Editor as TiptapEditor } from "@tiptap/react"
 import type { RefObject } from "react"
 import { Box } from "@chakra-ui/react"
 import { useEditorState } from "@tiptap/react"
-import { Fragment, useMemo } from "react"
+import { Fragment, useMemo, useState } from "react"
 import {
   TABLE_CHROME_GAP_PX,
   TABLE_CHROME_THICKNESS_PX,
@@ -17,13 +17,18 @@ import {
 } from "./internal/axisMath"
 import { AXES, AXIS_VIEW } from "./internal/axisView"
 import { ADD_PILL_MIN_LENGTH_PX } from "./internal/chrome"
-import { AddPillButton, AxisHandle } from "./internal/handles"
+import {
+  AddPillButton,
+  AxisHandle,
+  SelectTableButton,
+} from "./internal/handles"
 import {
   addSlotAfter,
   getSelectionHandleTarget,
   selectedIndexesFor,
   selectionTargetsEqual,
   selectWholeSlot,
+  selectWholeTable,
 } from "./internal/selection"
 import { useAxisDragGesture } from "./internal/useAxisDragGesture"
 import { useHoveredTable } from "./internal/useHoveredTable"
@@ -48,11 +53,19 @@ export const TableDragHandles = ({
   const geometries = useTableGeometries(editor, containerRef)
   const { drag, beginGesture, isGestureActive, consumeClickSuppression } =
     useAxisDragGesture({ editor, containerRef, geometries, onDragStateChange })
-  const hoverTablePos = useHoveredTable(
+  const { tablePos: hoverTablePos, cornerTablePos } = useHoveredTable(
     geometries,
     containerRef,
     isGestureActive,
   )
+  const [dismissedTablePos, setDismissedTablePos] = useState<number | null>(
+    null,
+  )
+  // Stay hidden after a click until the pointer leaves this table. Resetting
+  // while it is still over the table would show the button again immediately.
+  if (dismissedTablePos !== null && hoverTablePos !== dismissedTablePos) {
+    setDismissedTablePos(null)
+  }
 
   const selectionTarget = useEditorState({
     editor,
@@ -109,6 +122,30 @@ export const TableDragHandles = ({
     })
   }
 
+  const renderSelectTableButton = (geometry: TableGeometry) => {
+    const bounds = getTableBounds(geometry)
+    if (
+      !bounds ||
+      hoverTablePos !== geometry.pos ||
+      drag ||
+      dismissedTablePos === geometry.pos
+    ) {
+      return null
+    }
+    return (
+      <SelectTableButton
+        left={bounds.left}
+        top={bounds.top}
+        tablePos={geometry.pos}
+        isEmphasized={cornerTablePos === geometry.pos}
+        onClick={() => {
+          selectWholeTable(editor, geometry.pos)
+          setDismissedTablePos(geometry.pos)
+        }}
+      />
+    )
+  }
+
   const renderAddPills = (geometry: TableGeometry) => {
     const bounds = getTableBounds(geometry)
     if (!bounds || hoverTablePos !== geometry.pos || drag) return null
@@ -141,6 +178,7 @@ export const TableDragHandles = ({
       {geometries.map((geometry) => (
         <Fragment key={geometry.pos}>
           {AXES.map((axis) => renderAxisHandles(geometry, axis))}
+          {renderSelectTableButton(geometry)}
           {renderAddPills(geometry)}
         </Fragment>
       ))}
