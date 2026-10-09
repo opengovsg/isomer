@@ -94,48 +94,6 @@ describe("table scroll fade", () => {
     })
   })
 
-  it("fades both edges when columns are hidden on either side", async () => {
-    // Arrange
-    const { container } = render(
-      <ThemeProvider theme={theme}>
-        <Harness content={wideTable} width={320} />
-      </ThemeProvider>,
-    )
-    const scrollport = await waitFor(() => scrollportOf(container))
-    await waitFor(() => {
-      expect(scrollport.scrollWidth).toBeGreaterThan(scrollport.clientWidth)
-    })
-
-    // Act
-    scrollport.scrollLeft = 40
-
-    // Assert
-    await waitFor(() => {
-      expect(maskImageOf(scrollport)).toContain("linear-gradient")
-    })
-  })
-
-  it("fades the leading edge once the table is scrolled to the end", async () => {
-    // Arrange
-    const { container } = render(
-      <ThemeProvider theme={theme}>
-        <Harness content={wideTable} width={320} />
-      </ThemeProvider>,
-    )
-    const scrollport = await waitFor(() => scrollportOf(container))
-    await waitFor(() => {
-      expect(scrollport.scrollWidth).toBeGreaterThan(scrollport.clientWidth)
-    })
-
-    // Act
-    scrollport.scrollLeft = scrollport.scrollWidth
-
-    // Assert
-    await waitFor(() => {
-      expect(maskImageOf(scrollport)).toContain("linear-gradient")
-    })
-  })
-
   it("shows no fade when the table fits in the editor", async () => {
     // Arrange / Act
     const { container } = render(

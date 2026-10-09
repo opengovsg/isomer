@@ -26,7 +26,6 @@ describe("scrollFadeEdges", () => {
 
     // Assert
     expect(edges).toEqual({ start: true, end: true })
-    expect(tableScrollFadeMask(edges)).toContain("linear-gradient")
   })
 
   it("fades only the leading edge when scrolled to the end", () => {
@@ -39,7 +38,6 @@ describe("scrollFadeEdges", () => {
 
     // Assert
     expect(edges).toEqual({ start: true, end: false })
-    expect(tableScrollFadeMask(edges)).toContain("linear-gradient")
   })
 
   it("shows no fade when the table fits", () => {

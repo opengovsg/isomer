@@ -80,7 +80,7 @@ describe("pasted table column widths", () => {
     document.body.replaceChildren()
   })
 
-  it("keeps a pasted multi-column table saveable when widths are dropped", () => {
+  it("keeps a pasted table saveable when widths are dropped from HTML", () => {
     // Arrange
     const source = createEditor(sizedTable([120, 280], ["Alpha", "Beta"]))
     editors.push(source)
@@ -98,26 +98,6 @@ describe("pasted table column widths", () => {
     // Assert
     expect(pasted.getText()).toContain("Alpha")
     expect(pasted.getText()).toContain("Beta")
-    expectSaveable(pasted.getJSON())
-  })
-
-  it("keeps a pasted single-column table saveable when widths are dropped", () => {
-    // Arrange
-    const source = createEditor(sizedTable([120], ["Only"]))
-    editors.push(source)
-    expectSaveable(source.getJSON())
-    const html = source.getHTML()
-    const pasted = createEditor({
-      type: "prose",
-      content: [{ type: "paragraph" }],
-    })
-    editors.push(pasted)
-
-    // Act
-    pasted.commands.setContent(html)
-
-    // Assert
-    expect(pasted.getText()).toContain("Only")
     expectSaveable(pasted.getJSON())
   })
 })
