@@ -1,220 +1,18 @@
 import type { NodeViewProps } from "@tiptap/react"
-import type { PointerEvent as ReactPointerEvent } from "react"
 import { Box } from "@chakra-ui/react"
-import {
-  clampTableColumnWidth,
-  columnWidthsToPxStrings,
-  tableWidthPxFromColumnWidths,
-} from "@opengovsg/isomer-components"
 import { TableMap } from "@tiptap/pm/tables"
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import {
-  measureColumnWidths,
   setTableColumnWidths,
   storedColumnWidths,
 } from "~/features/editing-experience/utils/columnWidths"
 import { TABLE_GUTTER_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 
+import { applyTableColumnWidthsDom } from "./applyTableColumnWidthsDom"
+import { ColumnResizeHandles } from "./ColumnResizeHandles"
 import { TableCaption } from "./TableCaption"
-import { tableScrollFadeMask } from "./tableScrollFade"
-import { useTableScrollFade } from "./useTableScrollFade"
-
-const applyColumnWidths = (
-  table: HTMLTableElement,
-  widths: number[] | null,
-) => {
-  const existing = table.querySelector(":scope > colgroup")
-  if (!widths) {
-    existing?.remove()
-    table.style.width = ""
-    return
-  }
-
-  const group =
-    existing instanceof HTMLElement
-      ? existing
-      : document.createElement("colgroup")
-  group.replaceChildren(
-    ...columnWidthsToPxStrings(widths).map((width) => {
-      const col = document.createElement("col")
-      col.style.width = width
-      return col
-    }),
-  )
-  if (!existing) table.insertBefore(group, table.firstChild)
-  table.style.width = tableWidthPxFromColumnWidths(widths)
-}
-
-const ColumnResizeHandles = ({
-  columnCount,
-  widths,
-  onDrag,
-  onCommit,
-}: {
-  columnCount: number
-  widths: number[] | null
-  onDrag: (widths: number[] | null) => void
-  onCommit: (widths: number[] | null) => void
-}) => {
-  const stopDrag = useRef<(() => void) | null>(null)
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null)
-  const [activeIndex, setActiveIndex] = useState<number | null>(null)
-
-  useEffect(() => () => stopDrag.current?.(), [])
-
-  if (columnCount < 1) return null
-
-  const leftOf = (index: number) => {
-    if (!widths) return `${((index + 1) / columnCount) * 100}%`
-    const edge = widths
-      .slice(0, index + 1)
-      .reduce((sum, width) => sum + width, 0)
-    return `${edge}px`
-  }
-
-  const onPointerDown =
-    (index: number) => (event: ReactPointerEvent<HTMLDivElement>) => {
-      if (event.pointerType && event.pointerType !== "mouse") return
-      if (event.button !== 0) return
-      event.preventDefault()
-      event.stopPropagation()
-
-      const root = event.currentTarget.closest("[data-column-resize-root]")
-      const table = root?.querySelector("table")
-      if (!(table instanceof HTMLTableElement)) return
-
-      const handle = event.currentTarget
-      const pointerId = event.pointerId
-      const origin = widths ?? measureColumnWidths(table, columnCount)
-      const startX = event.clientX
-      const startWidth = origin[index] ?? clampTableColumnWidth(0)
-      let lastWidth = startWidth
-      let finished = false
-      let listenTarget: EventTarget = document
-      setActiveIndex(index)
-
-      const widthsAt = (clientX: number) => {
-        const next = origin.slice()
-        next[index] = clampTableColumnWidth(startWidth + clientX - startX)
-        return next
-      }
-      const samePointer = (pointer: PointerEvent) =>
-        pointer.pointerId === pointerId
-      const detach = () => {
-        listenTarget.removeEventListener("pointermove", move)
-        listenTarget.removeEventListener("pointerup", up)
-        listenTarget.removeEventListener("pointercancel", cancel)
-        handle.removeEventListener("lostpointercapture", onLostCapture)
-        window.removeEventListener("blur", onBlur)
-        stopDrag.current = null
-      }
-      // Pointermove updates preview state only. Pointerup dispatches once.
-      const finishDrag = (mode: "commit" | "cancel", clientX: number) => {
-        if (finished) return
-        finished = true
-        detach()
-        if (handle.hasPointerCapture(pointerId)) {
-          handle.releasePointerCapture(pointerId)
-        }
-        setActiveIndex(null)
-        if (mode === "cancel") {
-          onDrag(null)
-          return
-        }
-        const next = widthsAt(clientX)
-        const changed = next.some((width, i) => width !== origin[i])
-        if (!changed) {
-          onDrag(null)
-          return
-        }
-        onCommit(next)
-      }
-      const pointerFrom = (event: Event): PointerEvent | null =>
-        event instanceof PointerEvent ? event : null
-      const move = (event: Event) => {
-        const pointer = pointerFrom(event)
-        if (!pointer || !samePointer(pointer)) return
-        const next = widthsAt(pointer.clientX)
-        const width = next[index] ?? startWidth
-        if (width === lastWidth) return
-        lastWidth = width
-        onDrag(next)
-      }
-      const up = (event: Event) => {
-        const pointer = pointerFrom(event)
-        if (!pointer || !samePointer(pointer)) return
-        finishDrag("commit", pointer.clientX)
-      }
-      const cancel = (event: Event) => {
-        const pointer = pointerFrom(event)
-        if (!pointer || !samePointer(pointer)) return
-        finishDrag("cancel", pointer.clientX)
-      }
-      const onLostCapture = (event: Event) => {
-        const pointer = pointerFrom(event)
-        if (!pointer || !samePointer(pointer)) return
-        finishDrag("cancel", pointer.clientX)
-      }
-      const onBlur = () => {
-        finishDrag("cancel", startX)
-      }
-
-      stopDrag.current?.()
-      stopDrag.current = () => finishDrag("cancel", startX)
-      try {
-        handle.setPointerCapture(pointerId)
-      } catch {
-        // Synthetic pointers cannot be captured. Document listeners still
-        // receive the bubbled gesture.
-      }
-      listenTarget = handle.hasPointerCapture(pointerId) ? handle : document
-      listenTarget.addEventListener("pointermove", move)
-      listenTarget.addEventListener("pointerup", up)
-      listenTarget.addEventListener("pointercancel", cancel)
-      handle.addEventListener("lostpointercapture", onLostCapture)
-      window.addEventListener("blur", onBlur)
-    }
-
-  return (
-    <Box
-      position="absolute"
-      inset={0}
-      pointerEvents="none"
-      contentEditable={false}
-    >
-      {Array.from({ length: columnCount }, (_, index) => (
-        <Box
-          key={index}
-          role="separator"
-          aria-orientation="vertical"
-          aria-label={`Resize column ${index + 1}`}
-          position="absolute"
-          top={0}
-          bottom={0}
-          w="8px"
-          ml="-4px"
-          left={leftOf(index)}
-          zIndex={3}
-          pointerEvents="auto"
-          cursor="col-resize"
-          onPointerDown={onPointerDown(index)}
-          onMouseEnter={() => setHoverIndex(index)}
-          onMouseLeave={() => setHoverIndex(null)}
-        >
-          <Box
-            w="2px"
-            h="full"
-            mx="auto"
-            bg="interaction.main.default"
-            opacity={hoverIndex === index || activeIndex === index ? 1 : 0}
-            pointerEvents="none"
-          />
-        </Box>
-      ))}
-    </Box>
-  )
-}
+import { useTableScrollFadeMask } from "./tableScrollFade"
 
 export const TableNodeView = ({
   node,
@@ -230,27 +28,25 @@ export const TableNodeView = ({
   const rootRef = useRef<HTMLDivElement>(null)
   const scrollportRef = useRef<HTMLDivElement>(null)
   const sum = widths?.reduce((total, width) => total + width, 0)
-  const fade = useTableScrollFade(
+  const fadeMask = useTableScrollFadeMask(
     scrollportRef,
     `${columnCount}:${sum ?? "auto"}`,
   )
-  const fadeMask = tableScrollFadeMask(fade)
-
-  useEffect(() => {
-    if (!preview || !stored) return
-    if (
-      preview.length === stored.length &&
-      preview.every((width, index) => width === stored[index])
-    ) {
-      setPreview(null)
-    }
-  }, [preview, stored])
 
   useLayoutEffect(() => {
     const table = rootRef.current?.querySelector("table")
     if (!(table instanceof HTMLTableElement)) return
-    applyColumnWidths(table, widths)
+    applyTableColumnWidthsDom(table, widths)
   }, [widths, node])
+
+  const commitColumnWidths = (next: number[] | null) => {
+    const pos = getPos()
+    if (typeof pos !== "number") return
+    const tr = editor.state.tr
+    setTableColumnWidths(tr, pos, next)
+    if (tr.docChanged) editor.view.dispatch(tr)
+    setPreview(null)
+  }
 
   return (
     <Box
@@ -296,14 +92,7 @@ export const TableNodeView = ({
                 columnCount={columnCount}
                 widths={widths}
                 onDrag={setPreview}
-                onCommit={(next) => {
-                  setPreview(next)
-                  const pos = getPos()
-                  if (typeof pos !== "number") return
-                  const tr = editor.state.tr
-                  setTableColumnWidths(tr, pos, next)
-                  if (tr.docChanged) editor.view.dispatch(tr)
-                }}
+                onCommit={commitColumnWidths}
               />
             )}
           </Box>
