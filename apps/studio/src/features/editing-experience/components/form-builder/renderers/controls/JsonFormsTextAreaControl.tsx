@@ -15,7 +15,8 @@ import {
   TEXTAREA_MAX_ROWS,
 } from "~/constants/formBuilder"
 
-import { getCustomErrorMessage } from "./utils"
+import { useBuilderErrors } from "../../ErrorProvider"
+import { getBuilderFieldErrorMessage, getCustomErrorMessage } from "./utils"
 
 export const jsonFormsTextAreaControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextAreaControl,
@@ -43,6 +44,7 @@ function JsonFormsTextAreaControl({
   errors,
   schema,
 }: ControlProps) {
+  const { errors: builderErrors } = useBuilderErrors()
   const { maxLength } = schema
   const remainingCharacterCount = maxLength
     ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)
@@ -54,19 +56,24 @@ function JsonFormsTextAreaControl({
       )
     : TEXTAREA_DEFAULT_ROWS
 
+  const keepEmptyString = required
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = e.target
 
     if (value === "") {
-      handleChange(path, undefined)
+      handleChange(path, keepEmptyString ? "" : undefined)
     } else {
       handleChange(path, value)
     }
   }
 
+  const builderErrorMessage = getBuilderFieldErrorMessage(path, builderErrors)
+  const errorMessage = getCustomErrorMessage(errors || builderErrorMessage)
+  const isInvalid = Boolean(errors || builderErrorMessage)
+
   return (
     <Box>
-      <FormControl isRequired={required} isInvalid={!!errors}>
+      <FormControl isRequired={required} isInvalid={isInvalid}>
         <FormLabel description={description} mb={0}>
           {label}
         </FormLabel>
@@ -79,14 +86,14 @@ function JsonFormsTextAreaControl({
           maxAutosizeRows={numOfRows}
           my="0.5rem"
         />
-        {maxLength && !errors && (
+        {maxLength && !isInvalid && (
           <FormHelperText>
             {remainingCharacterCount}{" "}
             {remainingCharacterCount === 1 ? "character" : "characters"} left
           </FormHelperText>
         )}
         <FormErrorMessage>
-          {label} {getCustomErrorMessage(errors)}
+          {label} {errorMessage}
         </FormErrorMessage>
       </FormControl>
     </Box>

@@ -1,5 +1,9 @@
 import type { ReactNode } from "react"
-import { composePaths, type ArrayLayoutProps } from "@jsonforms/core"
+import {
+  composePaths,
+  type ArrayLayoutProps,
+  type UISchemaElement,
+} from "@jsonforms/core"
 
 import type { UseArrayReturn } from "../hooks/useArray"
 import { ComplexEditorNestedDrawer } from "./ComplexEditorNestedDrawer"
@@ -8,6 +12,7 @@ type NestedDrawerSwitchProps = ArrayLayoutProps &
   UseArrayReturn & {
     children: ReactNode
     banner?: ReactNode
+    mapChildUiSchema?: (uischema: UISchemaElement) => UISchemaElement
   }
 /**
  * Renders the nested item drawer when a row is selected, the list otherwise.
@@ -27,10 +32,15 @@ export const NestedDrawerSwitch = ({
   isRemoveItemDisabled,
   handleRemoveSelectedItem,
   data,
+  mapChildUiSchema,
 }: NestedDrawerSwitchProps) => {
   if (selectedIndex === undefined) {
     return children
   }
+
+  const nestedUiSchema = mapChildUiSchema
+    ? mapChildUiSchema(childUiSchema)
+    : childUiSchema
 
   return (
     <ComplexEditorNestedDrawer
@@ -38,7 +48,7 @@ export const NestedDrawerSwitch = ({
       cells={cells}
       visible={visible}
       schema={schema}
-      uischema={childUiSchema}
+      uischema={nestedUiSchema}
       path={composePaths(path, `${selectedIndex}`)}
       label={label}
       setSelectedIndex={setSelectedIndex}

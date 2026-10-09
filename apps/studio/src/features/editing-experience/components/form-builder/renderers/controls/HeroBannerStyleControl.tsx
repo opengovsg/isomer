@@ -7,17 +7,26 @@ import type {
 import { Box, Flex, FormControl, Icon, Text, VStack } from "@chakra-ui/react"
 import { JsonFormsDispatch } from "@jsonforms/react"
 import { Button, FormLabel } from "@opengovsg/design-system-react"
-import { getHeroStyleVariantForBranchTitle } from "@opengovsg/isomer-components"
+import {
+  getHeroStyleVariantForBranchTitle,
+  HERO_STYLE,
+  type HeroStyleVariant,
+} from "@opengovsg/isomer-components"
 import { useId, useState } from "react"
 import { BiCheck, BiChevronRight } from "react-icons/bi"
+import { NewFeatureBadge } from "~/features/editing-experience/components/shared/NewFeatureBadge"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 
 interface HeroBannerStyleOption {
   label: string
   value: string
-  key: string
+  key: HeroStyleVariant
 }
+
+const HERO_BANNER_STYLE_VARIANTS_WITH_NEW_BADGE = new Set<HeroStyleVariant>([
+  HERO_STYLE.gradient.key,
+] satisfies readonly HeroStyleVariant[])
 
 // Match Fixed blocks "Hero banner" row hover in BaseBlock.
 const heroBannerStyleBlockInteractionProps = {
@@ -76,9 +85,12 @@ function HeroBannerStyleTrigger({
         alignItems="flex-start"
         gap="0.25rem"
       >
-        <Text textStyle="subhead-1" {...heroBannerStyleAccentColorProps}>
-          {label}
-        </Text>
+        <Flex align="center" minW={0}>
+          <Text textStyle="subhead-1" {...heroBannerStyleAccentColorProps}>
+            {label}
+          </Text>
+          <NewFeatureBadge ml="0.5rem" aria-hidden />
+        </Flex>
         <Text textStyle="caption-2" color="base.content.default">
           Click to explore different styles
         </Text>
@@ -176,16 +188,19 @@ function HeroBannerStyleDrawer({
                   boxShadow="0 0 20px 0 rgba(104, 104, 104, 0.30)"
                 />
                 <Flex flex="1" minW={0} alignItems="center" gap="0.5rem">
-                  <Text
-                    textStyle="subhead-1"
-                    flex="1"
-                    minW={0}
-                    {...(isSelected
-                      ? { color: "utility.feedback.info" }
-                      : heroBannerStyleAccentColorProps)}
-                  >
-                    {option.label}
-                  </Text>
+                  <Flex flex="1" minW={0} align="center">
+                    <Text
+                      textStyle="subhead-1"
+                      {...(isSelected
+                        ? { color: "utility.feedback.info" }
+                        : heroBannerStyleAccentColorProps)}
+                    >
+                      {option.label}
+                    </Text>
+                    {HERO_BANNER_STYLE_VARIANTS_WITH_NEW_BADGE.has(
+                      option.key,
+                    ) && <NewFeatureBadge ml="0.5rem" aria-hidden />}
+                  </Flex>
                   {isSelected && (
                     <Icon
                       as={BiCheck}
@@ -265,9 +280,11 @@ export function HeroBannerStyleCombinator({
         return null
       }
 
+      const variantKey = getHeroStyleVariantForBranchTitle(option.value)
+
       return {
         ...option,
-        key: getHeroStyleVariantForBranchTitle(option.value) ?? option.value,
+        key: (variantKey ?? option.value) as HeroStyleVariant,
       }
     })
     .filter((option) => option !== null)
