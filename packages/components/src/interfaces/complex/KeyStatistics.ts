@@ -3,6 +3,8 @@ import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
+import { IsomerString } from "../primitives/IsomerString"
+
 export const KeyStatisticsSchema = Type.Object(
   {
     type: Type.Literal("keystatistics", { default: "keystatistics" }),
@@ -13,15 +15,15 @@ export const KeyStatisticsSchema = Type.Object(
         format: "hidden",
       }),
     ),
-    title: Type.String({
+    title: IsomerString({
       title: "Title",
     }),
     statistics: Type.Array(
       Type.Object({
-        label: Type.String({
+        label: IsomerString({
           title: "Description",
         }),
-        value: Type.String({
+        value: IsomerString({
           title: "Number",
           description: "Keep it succinct, e.g., 3.3%, 880,000, $12M",
         }),
@@ -33,7 +35,7 @@ export const KeyStatisticsSchema = Type.Object(
       },
     ),
     label: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Link text",
         maxLength: 50,
         description:

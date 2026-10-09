@@ -17,6 +17,7 @@ import {
   HERO_QUICK_ACTIONS_FORMAT,
   ICON_PICKER_FORMAT,
 } from "../format"
+import { IsomerString } from "../primitives/IsomerString"
 import { generateImageSrcSchema } from "./Image"
 
 export const HERO_STYLE = {
@@ -48,7 +49,7 @@ export function getHeroStyleVariantForBranchTitle(
 
 const HeroBaseSchema = Type.Object({
   type: Type.Literal("hero", { default: "hero" }),
-  title: Type.String({
+  title: IsomerString({
     title: "Hero text",
     description: "The title of the hero banner",
     maxLength: 100,
@@ -58,7 +59,7 @@ const HeroBaseSchema = Type.Object({
     },
   }),
   subtitle: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Description",
       description: "The contents of the hero banner",
       format: "textarea",
@@ -69,7 +70,7 @@ const HeroBaseSchema = Type.Object({
 
 const CallToActionsSchema = Type.Object({
   buttonLabel: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Primary Call-to-Action text",
       description:
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
@@ -84,7 +85,7 @@ const CallToActionsSchema = Type.Object({
     }),
   ),
   secondaryButtonLabel: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Secondary Call-to-Action text",
       description:
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
