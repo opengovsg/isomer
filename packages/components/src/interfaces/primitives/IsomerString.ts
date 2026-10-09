@@ -5,8 +5,7 @@ import { NO_STYLIZED_UNICODE_REGEX } from "~/utils/validation"
 const NO_STYLIZED_UNICODE_ERROR_MESSAGE =
   "cannot contain stylised or decorative unicode characters"
 
-// Shared stylized-unicode pattern. Each IsomerString field $refs this $id.
-// `isomerSharedSchemaDefinitions` is the only copy.
+// One stylized-unicode pattern; each IsomerString field $refs this $id.
 export const NO_STYLIZED_UNICODE_STRING_ID = "isomer-string-no-stylized-unicode"
 
 export const NoStylizedUnicodeStringSchema = Type.String({
@@ -17,10 +16,9 @@ export const NoStylizedUnicodeStringSchema = Type.String({
   },
 })
 
-// Drop-in replacement for `Type.String` that additionally rejects stylized
-// unicode lookalikes. The caller's `pattern`, `format`, `title`, and
-// `errorMessage` stay on this node. The unicode check is a separate `$ref`,
-// so a `|` inside the caller's pattern cannot skip it.
+// Type.String plus stylized-unicode rejection. Caller pattern, format, title,
+// and errorMessage stay on this node. Unicode validation is a separate $ref,
+// so alternation in the caller pattern cannot bypass it.
 export const IsomerString = (options: StringOptions = {}) => {
   const {
     pattern: existingPattern,

@@ -13,9 +13,8 @@ export const jsonFormsAllOfControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.AllOfControl,
   and(
     isAllOfControl,
-    // `IsomerString` puts the shared unicode check in `allOf`. That is a
-    // constraint on the string, not a combinator field. Object intersects
-    // (collection page settings) still use this control.
+    // IsomerString adds the unicode check with allOf on strings. Object allOf
+    // (e.g. collection page settings) still uses this control.
     schemaMatches((schema) => schema.type !== "string"),
   ),
 )
