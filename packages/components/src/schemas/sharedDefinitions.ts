@@ -6,8 +6,6 @@ export const isomerSharedSchemaDefinitions = {
   noStylizedUnicodeString: NoStylizedUnicodeStringSchema,
 }
 
-const attachedSchemas = new WeakMap<object, object>()
-
 export const attachIsomerSharedDefinitions = <T extends object>(schema: T) => {
   const record = schema as T & Record<string, unknown>
   const alreadyAttached = Object.entries(isomerSharedSchemaDefinitions).every(
@@ -15,13 +13,8 @@ export const attachIsomerSharedDefinitions = <T extends object>(schema: T) => {
   )
   if (alreadyAttached) return schema
 
-  const cached = attachedSchemas.get(schema)
-  if (cached) return cached as T & typeof isomerSharedSchemaDefinitions
-
-  const attached = {
+  return {
     ...schema,
     ...isomerSharedSchemaDefinitions,
   }
-  attachedSchemas.set(schema, attached)
-  return attached
 }

@@ -10,7 +10,10 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { FooterSchema } from "@opengovsg/isomer-components"
+import {
+  attachIsomerSharedDefinitions,
+  FooterSchema,
+} from "@opengovsg/isomer-components"
 import { isEmpty, isEqual } from "lodash-es"
 import { useCallback, useMemo } from "react"
 import { BiDirections } from "react-icons/bi"
@@ -22,6 +25,8 @@ import {
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { Can } from "~/features/permissions"
 import { ajv } from "~/utils/ajv"
+
+const footerSchema = attachIsomerSharedDefinitions(FooterSchema)
 
 interface FooterEditorProps {
   savedFooterState: FooterSchemaType
@@ -42,7 +47,7 @@ export const FooterEditor = ({
     return !isEqual(previewFooterState, savedFooterState)
   }, [previewFooterState, savedFooterState])
 
-  const validateFn = ajv.compile<FooterSchemaType>(FooterSchema)
+  const validateFn = ajv.compile<FooterSchemaType>(footerSchema)
 
   const handleChange = useCallback(
     (data: FooterSchemaType) => {
@@ -110,7 +115,7 @@ export const FooterEditor = ({
           <Box pt="1.5rem" w="full">
             <Box mb="1rem" h="full">
               <FormBuilder<FooterSchemaType>
-                schema={FooterSchema}
+                schema={footerSchema}
                 validateFn={validateFn}
                 data={previewFooterState}
                 handleChange={handleChange}

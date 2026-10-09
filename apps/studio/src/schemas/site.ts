@@ -1,6 +1,7 @@
 import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import {
+  attachIsomerSharedDefinitions,
   LogoSettingsSchema,
   NotificationSettingsSchema,
   SiteConfigSchema,
@@ -11,8 +12,11 @@ import { ajv } from "~/utils/ajv"
 
 export type Notification = Static<typeof NotificationSettingsSchema>
 
-export const notificationValidator = ajv.compile<Notification>(
+const notificationSettingsSchema = attachIsomerSharedDefinitions(
   NotificationSettingsSchema,
+)
+export const notificationValidator = ajv.compile<Notification>(
+  notificationSettingsSchema,
 )
 
 export type SiteTheme = Static<typeof SiteThemeSchema>
@@ -77,8 +81,9 @@ export const publishSiteSchema = z.object({
   siteId: z.number().min(1),
 })
 
+const siteConfigSchema = attachIsomerSharedDefinitions(SiteConfigSchema)
 const isomerSiteConfigValidator =
-  ajv.compile<IsomerSiteConfigProps>(SiteConfigSchema)
+  ajv.compile<IsomerSiteConfigProps>(siteConfigSchema)
 
 export const updateSiteConfigSchema = z
   .custom<IsomerSiteConfigProps>(isomerSiteConfigValidator)

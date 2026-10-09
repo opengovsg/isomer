@@ -13,20 +13,24 @@ import {
 
 import { attachIsomerSharedDefinitions } from "./sharedDefinitions"
 
-const LAYOUT_METADATA_MAP = {
-  article: ArticlePageMetaSchema,
-  content: ContentPageMetaSchema,
-  database: DatabasePageMetaSchema,
-  homepage: HomePageMetaSchema,
-  index: ContentPageMetaSchema,
-  notfound: NotFoundPageMetaSchema,
-  search: SearchPageMetaSchema,
-  link: LinkRefMetaSchema,
-  collection: CollectionPageMetaSchema,
-}
+const contentPageMetaSchema = attachIsomerSharedDefinitions(
+  ContentPageMetaSchema,
+)
+
+const LAYOUT_METADATA_SCHEMAS = {
+  article: attachIsomerSharedDefinitions(ArticlePageMetaSchema),
+  content: contentPageMetaSchema,
+  database: attachIsomerSharedDefinitions(DatabasePageMetaSchema),
+  homepage: attachIsomerSharedDefinitions(HomePageMetaSchema),
+  index: contentPageMetaSchema,
+  notfound: attachIsomerSharedDefinitions(NotFoundPageMetaSchema),
+  search: attachIsomerSharedDefinitions(SearchPageMetaSchema),
+  link: attachIsomerSharedDefinitions(LinkRefMetaSchema),
+  collection: attachIsomerSharedDefinitions(CollectionPageMetaSchema),
+} as const
 
 export const getLayoutMetadataSchema = (
   layout: IsomerPageLayoutType,
 ): TSchema => {
-  return attachIsomerSharedDefinitions(LAYOUT_METADATA_MAP[layout])
+  return LAYOUT_METADATA_SCHEMAS[layout]
 }

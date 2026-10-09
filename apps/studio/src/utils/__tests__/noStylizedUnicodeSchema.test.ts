@@ -1,5 +1,6 @@
 import {
   AgencySettingsSchema,
+  attachIsomerSharedDefinitions,
   IsomerString,
   NON_EMPTY_STRING_REGEX,
   NO_STYLIZED_UNICODE_REGEX,
@@ -14,11 +15,13 @@ const unicodeMessage =
   "cannot contain stylised or decorative unicode characters"
 
 const compileField = (field: ReturnType<typeof IsomerString>) =>
-  ajv.compile({
-    type: "object",
-    properties: { value: field },
-    required: ["value"],
-  })
+  ajv.compile(
+    attachIsomerSharedDefinitions({
+      type: "object",
+      properties: { value: field },
+      required: ["value"],
+    }),
+  )
 
 const errorMessages = (validate: { errors?: { message?: string }[] | null }) =>
   (validate.errors ?? []).map((error) => error.message)
@@ -85,8 +88,12 @@ describe("no stylized unicode schema", () => {
 
   it("should resolve the shared schema for settings compiled without the page document", () => {
     // Arrange
-    const validateAgency = ajv.compile(AgencySettingsSchema)
-    const validateSite = ajv.compile(SiteConfigSchema)
+    const validateAgency = ajv.compile(
+      attachIsomerSharedDefinitions(AgencySettingsSchema),
+    )
+    const validateSite = ajv.compile(
+      attachIsomerSharedDefinitions(SiteConfigSchema),
+    )
 
     // Act / Assert
     expect(validateAgency({ siteName: "Official" })).toBe(true)
