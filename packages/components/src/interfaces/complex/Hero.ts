@@ -12,19 +12,19 @@ import {
 } from "~/utils/validation"
 
 import {
-  ARRAY_RADIO_FORMAT,
   HERO_ACTION_LAYOUT_FORMAT,
+  HERO_BANNER_STYLE_FORMAT,
   HERO_QUICK_ACTIONS_FORMAT,
   ICON_PICKER_FORMAT,
 } from "../format"
 import { generateImageSrcSchema } from "./Image"
 
 export const HERO_STYLE = {
-  gradient: "gradient",
-  block: "block",
-  largeImage: "largeImage",
-  floating: "floating",
-  searchbar: "searchbar",
+  gradient: { key: "gradient", title: "Gradient (Default)" },
+  block: { key: "block", title: "Block" },
+  largeImage: { key: "largeImage", title: "Large image" },
+  floating: { key: "floating", title: "Floating" },
+  searchbar: { key: "searchbar", title: "Search bar" },
 } as const
 
 export const HERO_ACTION_LAYOUT = {
@@ -34,6 +34,17 @@ export const HERO_ACTION_LAYOUT = {
 
 export type HeroActionLayout =
   (typeof HERO_ACTION_LAYOUT)[keyof typeof HERO_ACTION_LAYOUT]
+
+export type HeroStyleVariant =
+  (typeof HERO_STYLE)[keyof typeof HERO_STYLE]["key"]
+
+export function getHeroStyleVariantForBranchTitle(
+  branchTitle: string,
+): HeroStyleVariant | undefined {
+  return Object.values(HERO_STYLE).find(
+    (branch) => branch.title === branchTitle,
+  )?.key
+}
 
 const HeroBaseSchema = Type.Object({
   type: Type.Literal("hero", { default: "hero" }),
@@ -162,8 +173,8 @@ const HeroActionLayoutQuickActionItemSchema = Type.Object({
 const HeroGradientSharedSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.gradient, {
-        default: HERO_STYLE.gradient,
+      variant: Type.Literal(HERO_STYLE.gradient.key, {
+        default: HERO_STYLE.gradient.key,
       }),
       backgroundUrl: BackgroundUrlSchema,
     }),
@@ -262,14 +273,16 @@ const HeroGradientSchema = Type.Intersect(
 const HeroBlockSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.block, { default: HERO_STYLE.block }),
+      variant: Type.Literal(HERO_STYLE.block.key, {
+        default: HERO_STYLE.block.key,
+      }),
       backgroundUrl: BackgroundUrlSchema,
     }),
     HeroBaseSchema,
     CallToActionsSchema,
   ],
   {
-    title: "Block",
+    title: HERO_STYLE.block.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -281,8 +294,8 @@ const HeroBlockSchema = Type.Composite(
 const HeroLargeImageSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.largeImage, {
-        default: HERO_STYLE.largeImage,
+      variant: Type.Literal(HERO_STYLE.largeImage.key, {
+        default: HERO_STYLE.largeImage.key,
       }),
       backgroundUrl: BackgroundUrlSchema,
     }),
@@ -290,7 +303,7 @@ const HeroLargeImageSchema = Type.Composite(
     CallToActionsSchema,
   ],
   {
-    title: "Large image",
+    title: HERO_STYLE.largeImage.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -302,8 +315,8 @@ const HeroLargeImageSchema = Type.Composite(
 const HeroFloatingSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.floating, {
-        default: HERO_STYLE.floating,
+      variant: Type.Literal(HERO_STYLE.floating.key, {
+        default: HERO_STYLE.floating.key,
       }),
       backgroundUrl: BackgroundUrlSchema,
     }),
@@ -311,7 +324,7 @@ const HeroFloatingSchema = Type.Composite(
     CallToActionsSchema,
   ],
   {
-    title: "Floating",
+    title: HERO_STYLE.floating.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
@@ -323,15 +336,15 @@ const HeroFloatingSchema = Type.Composite(
 const HeroSearchbarSchema = Type.Composite(
   [
     Type.Object({
-      variant: Type.Literal(HERO_STYLE.searchbar, {
-        default: HERO_STYLE.searchbar,
+      variant: Type.Literal(HERO_STYLE.searchbar.key, {
+        default: HERO_STYLE.searchbar.key,
       }),
       backgroundUrl: Type.Optional(BackgroundUrlSchema),
     }),
     HeroBaseSchema,
   ],
   {
-    title: "Search bar",
+    title: HERO_STYLE.searchbar.title,
     format: "hidden", // beta: we don't want to show this in the UI yet
     groups: [GROUPINGS.TEXT],
   },
@@ -349,7 +362,7 @@ export const HeroSchema = Type.Intersect(
       ],
       {
         title: "Hero banner style",
-        format: ARRAY_RADIO_FORMAT,
+        format: HERO_BANNER_STYLE_FORMAT,
       },
     ),
   ],

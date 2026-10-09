@@ -18,6 +18,7 @@ import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { DateFilterControls } from "./DateFilterControls"
 import { FilterDrawer } from "./FilterDrawer"
+import { getFilterPanelIdSuffix } from "./filterPanelIdSuffix"
 import { filterChevronStyles, filterPanelStyles } from "./filterStyles"
 
 const filterSectionLabelStyle = tv({
@@ -126,7 +127,7 @@ export const Filter = ({
             showStatusLabelsFilter,
             showDateRangeFilter,
           }) => {
-            const panelId = `filter-panel-${id}`
+            const panelId = `filter-panel-${getFilterPanelIdSuffix(id)}`
             const isOpen = showFilter[id] ?? false
 
             return (

@@ -37,6 +37,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import type { ActionMode, PublishOrUnpublishAction } from "./ActionOptionsInput"
 import { PUBLISHED_AFTER_EDITING_EVENT } from "../../constants"
 import { useFireContentEditSurveyEvent } from "../../hooks/useContentEditSurvey"
+import { UnpublishRedirectWarning } from "../UnpublishRedirectWarning"
 import { ActionOptionsInput } from "./ActionOptionsInput"
 import { ScheduleBanner, UNPUBLISH_WINDOW_MINUTES } from "./ScheduleBanner"
 import { ScheduleDateTimeFields } from "./ScheduleDateTimeFields"
@@ -84,12 +85,37 @@ export const PublishOrUnpublishModal = ({
   const utils = trpc.useUtils()
   const fireContentEditSurveyEvent = useFireContentEditSurveyEvent()
   // Skip straight to "later" when "now" isn't an option, since there's
-  // nothing else to pick. Otherwise default publish to "now" (unpublish
-  // keeps no default, per product call).
+  // nothing else to pick. Otherwise default both publish and unpublish to "now".
   const [mode, setMode] = useState<ActionMode | undefined>(
-    disableNow ? "later" : action === "publish" ? "now" : undefined,
+    disableNow ? "later" : "now",
   )
   const lastScheduledAtRef = useRef<Date | null>(null)
+  // Only unpublish renders the redirect check. The count is captured on the
+  // unpublish success events to measure how often users unpublish despite live
+  // redirects pointing at the page. null until resolved.
+  // Shares a cache entry with UnpublishRedirectWarning (same query key); opts
+  // into container references like the delete modal's count.
+  const {
+    data: redirectCountData,
+    isPending: isRedirectQueryPending,
+    isError: isRedirectCheckError,
+  } = trpc.redirect.countByDestinationResource.useQuery(
+    {
+      siteId,
+      resourceId: String(pageId),
+      includeContainerReference: true,
+    },
+    { enabled: action === "unpublish" },
+  )
+  // Guard on isError: React Query keeps the last successful data after a failed
+  // refetch, so tag the count as unknown (null) rather than send a stale one.
+  const redirectCount = isRedirectCheckError
+    ? null
+    : (redirectCountData ?? null)
+  // Gate on isPending, not isLoading, so an offline-paused first fetch still
+  // disables confirm. Scoped to unpublish: the query is disabled for publish.
+  const isRedirectCheckPending =
+    action === "unpublish" && isRedirectQueryPending
 
   const schema =
     action === "publish"
@@ -199,6 +225,11 @@ export const PublishOrUnpublishModal = ({
         onClose()
       },
       onSuccess: () => {
+        posthog.capture("page_unpublished", {
+          site_id: siteId,
+          redirect_count: redirectCount,
+          source: "more_actions",
+        })
         toast({
           status: "success",
           title: "Page unpublished successfully",
@@ -230,6 +261,11 @@ export const PublishOrUnpublishModal = ({
       onClose()
     },
     onSuccess: () => {
+      posthog.capture("page_unpublish_scheduled", {
+        site_id: siteId,
+        redirect_count: redirectCount,
+        source: "more_actions",
+      })
       const formattedDate = lastScheduledAtRef.current
         ? format(lastScheduledAtRef.current, "d MMM yyyy, h:mm a")
         : ""
@@ -337,6 +373,9 @@ export const PublishOrUnpublishModal = ({
               {action === "unpublish" && hasDraftChanges && (
                 <DraftChangesBanner mode={mode} scheduledAt={scheduledAt} />
               )}
+              {action === "unpublish" && (
+                <UnpublishRedirectWarning pageId={pageId} siteId={siteId} />
+              )}
             </VStack>
           </FormProvider>
         </ModalBody>
@@ -351,7 +390,7 @@ export const PublishOrUnpublishModal = ({
           </Button>
           <Button
             onClick={handleSubmitClick}
-            isDisabled={!mode}
+            isDisabled={!mode || isRedirectCheckPending}
             isLoading={isSubmitting}
           >
             {mode === "later"
