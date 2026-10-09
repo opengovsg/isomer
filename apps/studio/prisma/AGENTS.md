@@ -2,7 +2,7 @@
 
 This directory contains Studio-owned database support files. The Prisma schema,
 migrations, custom migrations, and generated database types live in
-`packages/db/`; see `packages/db/prisma/CLAUDE.md` before changing them.
+`packages/db/`; see `packages/db/prisma/AGENTS.md` before changing them.
 
 ## Layout
 

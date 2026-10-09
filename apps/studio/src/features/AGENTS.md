@@ -2,7 +2,7 @@
 
 Each top-level folder under `features/` is a vertical slice of one user-facing area: dashboard, editing-experience, gazettes, permissions, settings, sign-in, users, etc.
 
-A feature owns its own UI, hooks, atoms, schemas, and tests. Server logic for the same domain lives separately under `server/modules/<area>/` — see `apps/studio/src/server/CLAUDE.md`.
+A feature owns its own UI, hooks, atoms, schemas, and tests. Server logic for the same domain lives separately under `server/modules/<area>/` — see `apps/studio/src/server/AGENTS.md`.
 
 ## Layout
 

@@ -16,7 +16,7 @@ The output is a Linear comment a human can scan in 60 seconds and pick from.
 - The repo at HEAD of `main`.
 - `docs/ai-workflow.md` for ticket field validation.
 - `docs/oneshot-vs-plan-threshold.md` to confirm plan-first is correct.
-- `CLAUDE.md` files in directories the feature will touch.
+- `AGENTS.md` files in directories the feature will touch.
 
 ## Procedure
 
