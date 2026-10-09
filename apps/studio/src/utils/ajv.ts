@@ -1,4 +1,3 @@
-import { attachIsomerSharedDefinitions } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import addErrors from "ajv-errors"
 
@@ -20,12 +19,3 @@ export const ajv = new Ajv({
   inlineRefs: false,
 })
 addErrors(ajv)
-
-// Footer, navbar, site config, and agency settings are compiled without
-// `componentSchemaDefinitions`. Attach the same definitions object here.
-const compileSchema = ajv.compile.bind(ajv)
-ajv.compile = ((schema: Parameters<typeof compileSchema>[0]) => {
-  if (typeof schema !== "object" || schema === null)
-    return compileSchema(schema)
-  return compileSchema(attachIsomerSharedDefinitions(schema))
-}) as typeof ajv.compile
