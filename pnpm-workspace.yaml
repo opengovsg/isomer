@@ -86,7 +86,7 @@ catalog:
   isomorphic-dompurify: ^4.4.0
   mockdate: ^3.0.5
   msw: ^3.0.0
-  msw-storybook-addon: ^3.0.0
+  msw-storybook-addon: ^3.0.3
   msw-trpc: ^2.0.1
   node-mocks-http: ^1.18.1
   npm-run-all2: ^9.0.3
