@@ -57,7 +57,7 @@ jobs:
         if: steps.download.outcome == 'success'
         id: metadata
         run: |
-          echo "pr-number=$(cat /tmp/e2e-metadata/pr-number.txt)" >> $GITHUB_OUTPUT
+          echo "pr-number=$(cat /tmp/e2e-metadata/pr-number.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Find existing video-link comment
         if: steps.download.outcome == 'success'
@@ -80,10 +80,10 @@ jobs:
             echo "🎥 **E2E test videos**"
             echo ""
             # One artifact-url-<feature>.txt per feature job; sort so they list in order.
-            for f in $(ls /tmp/e2e-metadata/artifact-url-*.txt | sort); do
+            while IFS= read -r f; do
               feature=$(basename "$f" | sed -E 's/artifact-url-(.+)\.txt/\1/')
               echo "- $feature: [Download artifact]($(cat "$f"))"
-            done
+            done < <(find /tmp/e2e-metadata -maxdepth 1 -name 'artifact-url-*.txt' -print | sort)
             echo ""
             echo "Each test has its own directory under the zip; play \`video.webm\` to watch the run."
             echo "Workflow: [run #${{ github.event.workflow_run.id }}](${{ github.event.workflow_run.html_url }}) — artifacts expire in 7 days."

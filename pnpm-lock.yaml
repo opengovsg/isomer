@@ -187,6 +187,9 @@ catalogs:
     '@datadog/browser-rum':
       specifier: ^7.14.0
       version: 7.15.0
+    '@datadog/datadog-ci':
+      specifier: 5.17.0
+      version: 5.17.0
     '@floating-ui/dom':
       specifier: ^1.8.0
       version: 1.8.0
@@ -1797,7 +1800,7 @@ importers:
   tooling/datadog-ci:
     dependencies:
       '@datadog/datadog-ci':
-        specifier: 5.17.0
+        specifier: 'catalog:'
         version: 5.17.0
 
   tooling/export-import:
