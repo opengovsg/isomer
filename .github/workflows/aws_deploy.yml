@@ -302,7 +302,7 @@ jobs:
           pnpm install --frozen-lockfile --filter @isomer/datadog-ci
 
           # Upload sourcemaps (extracted earlier from installer stage)
-          pnpm --filter @isomer/datadog-ci exec datadog-ci sourcemaps upload .next-static \
+          pnpm --filter @isomer/datadog-ci exec datadog-ci sourcemaps upload "$GITHUB_WORKSPACE/.next-static" \
             --service=isomer-next \
             --release-version="$APP_VERSION" \
             --minified-path-prefix=/_next/static \

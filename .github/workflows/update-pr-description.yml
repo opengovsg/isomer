@@ -20,6 +20,7 @@ name: Update PR description
 # since the two workflows run in separate contexts and can't share
 # environment variables.
 on:
+  # Fork PR description updates; PR resolved from workflow_run head, not artifact.
   workflow_run: # jactionlint ignore=dangerous-triggers
     workflows: ["pr-breakdown"]
     types: [completed]
