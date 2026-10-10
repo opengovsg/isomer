@@ -15,13 +15,16 @@ name: Post PR comments
 # This job downloads a small metadata artifact written by ci.yml, since the
 # two workflows run in separate contexts and can't share environment variables.
 on:
-  workflow_run:
+  # Fork PR comments need base-repo token; metadata validated, not sourced from artifacts.
+  workflow_run: # jactionlint ignore=dangerous-triggers
     workflows: ["CI"]
     types: [completed]
 
-permissions:
-  actions: read # needed by actions/download-artifact to access a different run's artifacts
-  issues: write # GitHub routes PR comments through the issues API endpoint
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.id }}
+  cancel-in-progress: true
 
 jobs:
   post-e2e-comment:
@@ -29,6 +32,10 @@ jobs:
     # a PR to comment on.
     if: github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read # needed by actions/download-artifact to access a different run's artifacts
+      issues: write # GitHub routes PR comments through the issues API endpoint
     steps:
       - name: Download E2E comment metadata
         id: download
@@ -51,7 +58,7 @@ jobs:
         if: steps.download.outcome == 'success'
         id: metadata
         run: |
-          echo "pr-number=$(cat /tmp/e2e-metadata/pr-number.txt)" >> $GITHUB_OUTPUT
+          echo "pr-number=$(cat /tmp/e2e-metadata/pr-number.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Find existing video-link comment
         if: steps.download.outcome == 'success'
@@ -66,6 +73,7 @@ jobs:
       - name: Build comment body
         if: steps.download.outcome == 'success'
         id: body
+        shell: bash
         run: |
           {
             echo "body<<COMMENT_EOF"
@@ -73,10 +81,10 @@ jobs:
             echo "🎥 **E2E test videos**"
             echo ""
             # One artifact-url-<feature>.txt per feature job; sort so they list in order.
-            for f in $(ls /tmp/e2e-metadata/artifact-url-*.txt | sort); do
+            while IFS= read -r f; do
               feature=$(basename "$f" | sed -E 's/artifact-url-(.+)\.txt/\1/')
               echo "- $feature: [Download artifact]($(cat "$f"))"
-            done
+            done < <(find /tmp/e2e-metadata -maxdepth 1 -name 'artifact-url-*.txt' -print | sort)
             echo ""
             echo "Each test has its own directory under the zip; play \`video.webm\` to watch the run."
             echo "Workflow: [run #${{ github.event.workflow_run.id }}](${{ github.event.workflow_run.html_url }}) — artifacts expire in 7 days."

@@ -12,9 +12,17 @@ on:
 env:
   LOG_LEVEL: silent
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
 jobs:
   optimize_ci:
     runs-on: ubuntu-latest # or whichever runner you use for your CI
+    timeout-minutes: 30
     outputs:
       skip: ${{ steps.check_skip.outputs.skip }}
     steps:
@@ -26,11 +34,17 @@ jobs:
   # Detect which areas changed so dependent jobs can opt out when irrelevant.
   changes:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       template_or_components: ${{ steps.filter.outputs.template_or_components }}
       studio_e2e_relevant: ${{ steps.filter.outputs.studio_e2e_relevant }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
         id: filter
         with:
@@ -55,8 +69,11 @@ jobs:
               - '.github/actions/**'
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -65,8 +82,11 @@ jobs:
         run: pnpm run build
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -82,8 +102,11 @@ jobs:
 
   format:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -93,8 +116,11 @@ jobs:
 
   typecheck:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -106,6 +132,7 @@ jobs:
     name: Test Studio (${{ matrix.shard }}/${{ matrix.total_shards }})
     needs: optimize_ci
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: needs.optimize_ci.outputs.skip == 'false'
     strategy:
       fail-fast: false # so that we can run all shards and one shard can fail without failing the entire job
@@ -114,6 +141,8 @@ jobs:
         total_shards: [2]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup
         uses: ./.github/actions/setup
         with:
@@ -144,9 +173,12 @@ jobs:
     name: Test Components
     needs: optimize_ci
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: needs.optimize_ci.outputs.skip == 'false'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup
         uses: ./.github/actions/setup
       - parallel:
@@ -171,9 +203,12 @@ jobs:
     name: Test Template (Bundle Pruning)
     needs: [optimize_ci, changes]
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.template_or_components == 'true'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup
         uses: ./.github/actions/setup
       - name: Configure Datadog Test Visibility
@@ -193,9 +228,12 @@ jobs:
     name: Test Validators
     needs: optimize_ci
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: needs.optimize_ci.outputs.skip == 'false'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup
         uses: ./.github/actions/setup
       - name: Configure Datadog Test Visibility
@@ -214,9 +252,12 @@ jobs:
     name: Test pgboss
     needs: optimize_ci
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: needs.optimize_ci.outputs.skip == 'false'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup
         uses: ./.github/actions/setup
       - parallel:
@@ -238,9 +279,12 @@ jobs:
     name: Publishing script tests
     needs: optimize_ci
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: needs.optimize_ci.outputs.skip == 'false'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup
         uses: ./.github/actions/setup
       - name: Configure Datadog Test Visibility
@@ -267,6 +311,7 @@ jobs:
     name: E2E tests (${{ matrix.feature }})
     needs: [optimize_ci, changes]
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.studio_e2e_relevant == 'true'
     permissions:
       contents: read
@@ -293,6 +338,8 @@ jobs:
             paths: tests/e2e/smoke.test.ts tests/e2e/singpass.test.ts tests/e2e/login-flow.test.ts
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Setup
         uses: ./.github/actions/setup
       - name: Load .env file
@@ -393,6 +440,7 @@ jobs:
       - publishing-script-tests
       - e2e-tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Decide whether the needed jobs succeeded or failed
         uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # v1.2.2

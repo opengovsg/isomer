@@ -12,10 +12,17 @@ name: pr-breakdown
 on:
   pull_request:
     types: [opened, synchronize]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   optimize_ci:
     runs-on: ubuntu-latest # or whichever runner you use for your CI
+    timeout-minutes: 30
     outputs:
       skip: ${{ steps.check_skip.outputs.skip }}
     steps:
@@ -29,6 +36,7 @@ jobs:
     name: PR diff breakdown
     needs: optimize_ci
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: needs.optimize_ci.outputs.skip == 'false'
     permissions:
       contents: read
@@ -54,6 +62,7 @@ jobs:
       # revisiting if that ever becomes an actual bottleneck.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Classify changed files
@@ -84,7 +93,9 @@ jobs:
         run: |
           mkdir -p /tmp/pr-breakdown-metadata
           cp /tmp/pr-breakdown-body.md /tmp/pr-breakdown-metadata/body.md
-          echo "${{ github.event.pull_request.base.ref }}" > /tmp/pr-breakdown-metadata/base-ref.txt
+          echo "${PULL_REQUEST_BASE_REF}" > /tmp/pr-breakdown-metadata/base-ref.txt
+        env:
+          PULL_REQUEST_BASE_REF: ${{ github.event.pull_request.base.ref }}
 
       - name: Upload PR breakdown metadata
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

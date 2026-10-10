@@ -1,0 +1,8 @@
+{
+  "name": "@isomer/datadog-ci",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@datadog/datadog-ci": "catalog:"
+  }
+}

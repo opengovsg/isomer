@@ -21,7 +21,7 @@ on:
         type: string
       aws-region:
         description: "AWS region to use"
-        required: true
+        required: false
         default: "ap-southeast-1"
         type: string
       cicd-role:
@@ -127,15 +127,17 @@ on:
       DD_API_KEY:
         description: "Datadog API key for uploading sourcemaps"
 
-permissions:
-  id-token: write
-  contents: read
+permissions: {}
 
 jobs:
   build:
     name: Build and push image to ECR
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Notify start of deployment
         if: ${{ inputs.environment == 'production' }}
@@ -154,6 +156,7 @@ jobs:
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
         with:
           driver-opts: network=host
+          cache-binary: false
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
@@ -170,6 +173,8 @@ jobs:
 
       - name: Checkout source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Build installer stage for sourcemap extraction
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
@@ -193,8 +198,8 @@ jobs:
       - name: Extract sourcemaps from installer stage
         run: |
           CONTAINER_ID=$(docker create installer-stage:latest)
-          docker cp $CONTAINER_ID:/app/apps/studio/.next/static .next-static
-          docker rm $CONTAINER_ID
+          docker cp "$CONTAINER_ID:/app/apps/studio/.next/static" .next-static
+          docker rm "$CONTAINER_ID"
 
       - name: Build and load image to Docker
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
@@ -278,6 +283,12 @@ jobs:
         run: |
           docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+
       - name: Upload sourcemaps to Datadog
         env:
           DATADOG_API_KEY: ${{ secrets.DD_API_KEY }}
@@ -288,10 +299,10 @@ jobs:
             exit 0
           fi
 
-          npm install -g @datadog/datadog-ci@5.17.0
+          pnpm install --frozen-lockfile --filter @isomer/datadog-ci
 
           # Upload sourcemaps (extracted earlier from installer stage)
-          datadog-ci sourcemaps upload .next-static \
+          pnpm --filter @isomer/datadog-ci exec datadog-ci sourcemaps upload "$GITHUB_WORKSPACE/.next-static" \
             --service=isomer-next \
             --release-version="$APP_VERSION" \
             --minified-path-prefix=/_next/static \
@@ -300,8 +311,12 @@ jobs:
   deploy:
     name: Deploy image to ECS
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: build
     environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Set up QEMU
@@ -322,6 +337,8 @@ jobs:
 
       - name: Checkout source code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Replace variables in task definition file
         id: replace-variables

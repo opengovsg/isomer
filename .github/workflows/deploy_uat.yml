@@ -12,9 +12,14 @@ on:
     types:
       - released # we should deploy to `uat` on every release so that the environment will stay up to date
 
+permissions: {}
+
 jobs:
   deploy_uat:
     name: Deploy app to uat
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/aws_deploy.yml
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -49,6 +54,9 @@ jobs:
 
   build_components:
     name: Build and publish components
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/build-components.yml
     with:
       aws-region: "ap-southeast-1"
@@ -58,6 +66,9 @@ jobs:
   update_publisher:
     name: Update publisher script
     if: ${{ !cancelled() }}
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/update_publisher.yml
     with:
       aws-region: "ap-southeast-1"

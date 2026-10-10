@@ -26,14 +26,16 @@ on:
         required: true
         type: string
 
-permissions:
-  id-token: write
-  contents: read
+permissions: {}
 
 jobs:
   build-and-publish:
     name: Build and publish
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Resolve build ref
         id: resolve-ref
@@ -59,6 +61,7 @@ jobs:
         id: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           ref: ${{ steps.resolve-ref.outputs.ref }}
 
       - name: Configure AWS credentials
@@ -148,33 +151,33 @@ jobs:
           echo "Archiving pnpm store..."
           start_time=$(date +%s)
           tar --use-compress-program="zstd -6" -cf "$ARCHIVE_STAGING/$STORE_TGZ" .pnpm-store
-          calculate_duration $start_time
+          calculate_duration "$start_time"
 
           echo "Uploading pnpm store archive to S3..."
           start_time=$(date +%s)
-          aws s3 cp --only-show-errors "$ARCHIVE_STAGING/$STORE_TGZ" $STORE_CACHE_PATH
+          aws s3 cp --only-show-errors "$ARCHIVE_STAGING/$STORE_TGZ" "$STORE_CACHE_PATH"
           echo "Uploaded pnpm store archive"
-          calculate_duration $start_time
+          calculate_duration "$start_time"
 
           echo "Archiving isomer-components dist..."
           start_time=$(date +%s)
           tar --use-compress-program="zstd -6" -cf "$ARCHIVE_STAGING/$COMPONENTS_DIST_TGZ" -C packages/components dist
-          calculate_duration $start_time
+          calculate_duration "$start_time"
 
           echo "Uploading isomer-components dist archive to S3..."
           start_time=$(date +%s)
-          aws s3 cp --only-show-errors "$ARCHIVE_STAGING/$COMPONENTS_DIST_TGZ" $COMPONENTS_DIST_CACHE_PATH
+          aws s3 cp --only-show-errors "$ARCHIVE_STAGING/$COMPONENTS_DIST_TGZ" "$COMPONENTS_DIST_CACHE_PATH"
           echo "Uploaded isomer-components dist archive"
-          calculate_duration $start_time
+          calculate_duration "$start_time"
 
           echo "Archiving repository..."
           start_time=$(date +%s)
           tar --exclude=.git --exclude=node_modules --exclude=.pnpm-store -h --use-compress-program="zstd -6" -cf "$ARCHIVE_STAGING/$REPO_TGZ" -C "$ARCHIVE_STAGING" isomer
-          calculate_duration $start_time
+          calculate_duration "$start_time"
 
           echo "Uploading repository archive to S3..."
           start_time=$(date +%s)
-          aws s3 cp --only-show-errors "$ARCHIVE_STAGING/$REPO_TGZ" $REPO_CACHE_PATH
+          aws s3 cp --only-show-errors "$ARCHIVE_STAGING/$REPO_TGZ" "$REPO_CACHE_PATH"
           rm -rf "$ARCHIVE_STAGING"
           echo "Uploaded repository archive"
-          calculate_duration $start_time
+          calculate_duration "$start_time"

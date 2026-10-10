@@ -10,10 +10,19 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: read
+
 # List of jobs
 jobs:
   optimize_ci:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     outputs:
       skip: ${{ steps.check_skip.outputs.skip }}
     steps:
@@ -25,12 +34,15 @@ jobs:
   # JOB to run change detection
   changes:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     # Set job outputs to values from filter step
     outputs:
       ui: ${{ steps.filter.outputs.ui }}
       studio: ${{ steps.filter.outputs.studio }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       # For pull requests it's not necessary to checkout the code
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
         id: filter
@@ -48,11 +60,13 @@ jobs:
     if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.changes.outputs.ui == 'true' && needs.optimize_ci.outputs.skip == 'false'}}
     # Operating System
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: staging
     # Job steps
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0 # Required for v4
       - name: Setup
         uses: ./.github/actions/setup
@@ -73,11 +87,13 @@ jobs:
     if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.changes.outputs.studio == 'true' && needs.optimize_ci.outputs.skip == 'false' }}
     # Operating System
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: staging
     # Job steps
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0 # Required for v4
       - name: Setup
         uses: ./.github/actions/setup

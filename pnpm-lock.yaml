@@ -187,6 +187,9 @@ catalogs:
     '@datadog/browser-rum':
       specifier: ^7.14.0
       version: 7.15.0
+    '@datadog/datadog-ci':
+      specifier: 5.17.0
+      version: 5.17.0
     '@floating-ui/dom':
       specifier: ^1.8.0
       version: 1.8.0
@@ -1793,6 +1796,12 @@ importers:
       vitest:
         specifier: catalog:vitest
         version: 5.0.3(@opentelemetry/api@1.9.1)(@types/node@26.6.2)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(happy-dom@20.10.6)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.6.2)(typescript@6.0.3))(vite@8.3.3(@types/node@26.6.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
+
+  tooling/datadog-ci:
+    dependencies:
+      '@datadog/datadog-ci':
+        specifier: 'catalog:'
+        version: 5.17.0
 
   tooling/export-import:
     dependencies:
@@ -3942,6 +3951,11 @@ packages:
     peerDependenciesMeta:
       '@datadog/browser-logs':
         optional: true
+
+  '@datadog/datadog-ci@5.17.0':
+    resolution: {integrity: sha512-Orwju9h/kLQnuNr7VoHW/JABbKsK8/Lhh8zDacjR1CqwJBmgwejgmcL3ut9/Vbi6hC5KYlgXybeeMpsdJEWvQQ==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   '@datadog/js-core@0.0.16':
     resolution: {integrity: sha512-JHDE2CrVWz3kpS2SwZij4/NjFB1vvYtG4qtQTmnXVtVKabgQoane1XqRc4FiITYsZkrGdABfETTJJVEPW0xVpQ==}
@@ -15834,6 +15848,8 @@ snapshots:
       '@datadog/browser-core': 7.15.0
       '@datadog/browser-rum-core': 7.15.0
       '@datadog/js-core': 0.0.16
+
+  '@datadog/datadog-ci@5.17.0': {}
 
   '@datadog/js-core@0.0.16': {}
 
