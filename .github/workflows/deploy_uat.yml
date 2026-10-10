@@ -12,6 +12,10 @@ on:
     types:
       - released # we should deploy to `uat` on every release so that the environment will stay up to date
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   deploy_uat:
     name: Deploy app to uat
