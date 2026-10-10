@@ -283,6 +283,14 @@ jobs:
         run: |
           docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
       - name: Upload sourcemaps to Datadog
         env:
           DATADOG_API_KEY: ${{ secrets.DD_API_KEY }}
@@ -293,10 +301,10 @@ jobs:
             exit 0
           fi
 
-          npm ci --prefix .github/datadog-ci
+          pnpm install --frozen-lockfile --filter @isomer/datadog-ci
 
           # Upload sourcemaps (extracted earlier from installer stage)
-          .github/datadog-ci/node_modules/.bin/datadog-ci sourcemaps upload .next-static \
+          pnpm --filter @isomer/datadog-ci exec datadog-ci sourcemaps upload .next-static \
             --service=isomer-next \
             --release-version="$APP_VERSION" \
             --minified-path-prefix=/_next/static \
