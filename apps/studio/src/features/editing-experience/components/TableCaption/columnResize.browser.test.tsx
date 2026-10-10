@@ -78,7 +78,7 @@ const editorColumnWidth = () => {
 }
 
 describe("column resize", () => {
-  it("resizes the editor table while dragging and commits one undoable width on release", async () => {
+  it("writes widths every frame while dragging and undoes the whole drag in one step", async () => {
     // Arrange
     let editor: TiptapEditor | undefined
     let changes = 0
@@ -110,8 +110,10 @@ describe("column resize", () => {
     await waitFor(() => {
       expect(editorColumnWidth()).toBeGreaterThan(60)
     })
-    expect(editor && widthsOf(editor)).toBeNull()
-    expect(changes).toBe(changesBefore)
+    // Drag frames reach the doc so the page preview resizes live. Both moves
+    // land in one frame, so they coalesce into a single update.
+    expect(editor && widthsOf(editor)?.[0]).toBeGreaterThan(60)
+    expect(changes).toBe(changesBefore + 1)
 
     act(() => {
       pointer(handle, "pointerUp", x + 120, y)
@@ -126,7 +128,6 @@ describe("column resize", () => {
       expect(widths?.[1]).toBeGreaterThanOrEqual(60)
       expect(widths?.[1]).toBeLessThanOrEqual(400)
     })
-    expect(changes).toBe(changesBefore + 1)
     act(() => {
       editor?.commands.undo()
     })
@@ -134,7 +135,7 @@ describe("column resize", () => {
     expect(editor?.getText()).toContain("A")
   })
 
-  it("drops a cancelled drag without writing column widths", async () => {
+  it("restores the original widths when a drag is cancelled", async () => {
     // Arrange
     let editor: TiptapEditor | undefined
     let changes = 0
@@ -154,7 +155,6 @@ describe("column resize", () => {
       name: "Resize column 1",
     })
     const { x, y } = handle.getBoundingClientRect()
-    const changesBefore = changes
 
     // Act
     act(() => {
@@ -173,7 +173,6 @@ describe("column resize", () => {
       expect(editorColumnWidth()).toBe(0)
     })
     expect(editor && widthsOf(editor)).toBeNull()
-    expect(changes).toBe(changesBefore)
     act(() => {
       pointer(handle, "pointerUp", x + 120, y)
     })
