@@ -15,6 +15,7 @@ name: Post PR comments
 # This job downloads a small metadata artifact written by ci.yml, since the
 # two workflows run in separate contexts and can't share environment variables.
 on:
+  # Fork PR comments need base-repo token; metadata validated, not sourced from artifacts.
   workflow_run: # jactionlint ignore=dangerous-triggers
     workflows: ["CI"]
     types: [completed]

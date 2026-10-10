@@ -3,7 +3,7 @@ name: jactionlint
 
 on:
   pull_request:
-    branches: ['*']
+    branches: ['**']
     types: [opened, reopened, synchronize]
   push:
     branches: ['main']

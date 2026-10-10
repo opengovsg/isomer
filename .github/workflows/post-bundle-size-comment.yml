@@ -28,6 +28,7 @@ name: Post bundle size comment
 # artifact supplied. comment-template-bundle-size.sh instead comes from this
 # job's own checkout of the trusted base-repo ref.
 on:
+  # Fork PR comments need base-repo token; values.env validated, never sourced.
   workflow_run: # jactionlint ignore=dangerous-triggers
     workflows: ["bundle-size"]
     types: [completed]
