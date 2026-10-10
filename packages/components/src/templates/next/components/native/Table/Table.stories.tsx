@@ -2630,6 +2630,45 @@ export const ListInTable: Story = {
  * Staggered merges: row 1 spans cols 2-3, row 2 spans cols 1-2 (rowspan 2).
  * No cell sits alone in column 2. Auto layout collapses that track without colgroup.
  */
+export const ColumnWidths: Story = {
+  args: {
+    attrs: {
+      caption: "Author column widths",
+      columnWidths: [80, 240, 400],
+    },
+    content: [
+      {
+        type: "tableRow",
+        content: ["Narrow", "Medium", "Wide"].map((text) => ({
+          type: "tableHeader" as const,
+          content: [
+            {
+              type: "paragraph" as const,
+              content: [{ type: "text" as const, text }],
+            },
+          ],
+        })),
+      },
+      {
+        type: "tableRow",
+        content: [
+          "60–400px",
+          "The cell max-width cap does not apply.",
+          "This column is 400px.",
+        ].map((text) => ({
+          type: "tableCell" as const,
+          content: [
+            {
+              type: "paragraph" as const,
+              content: [{ type: "text" as const, text }],
+            },
+          ],
+        })),
+      },
+    ],
+  },
+}
+
 export const StaggeredMergesPhantomColumn: Story = {
   args: {
     attrs: {

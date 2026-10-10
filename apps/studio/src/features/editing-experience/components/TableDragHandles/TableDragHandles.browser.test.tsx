@@ -929,6 +929,39 @@ describe("TableDragHandles", () => {
     })
   })
 
+  it("moves the add-column pill in the same frame the table resizes", async () => {
+    // Arrange
+    const { container, getByLabelText } = await renderHarness()
+    const cell = findByCellText(container, "Row 1, C")
+    const { x, y } = centreOf(cell)
+    await hoverUntil(x, y, () => getByLabelText("Add column to the right"))
+    const table = container.querySelector("table")
+    const scrollport = container.querySelector("[data-table-scrollport]")
+    if (!table || !scrollport) throw new Error("table not found")
+    // Observers fire in creation order, so this one runs after the
+    // component's remeasure and before the browser paints.
+    const gaps: number[] = []
+    const observer = new ResizeObserver(() => {
+      const tableRight = Math.min(
+        table.getBoundingClientRect().right,
+        scrollport.getBoundingClientRect().right,
+      )
+      const pill = getByLabelText("Add column to the right")
+      gaps.push(pill.getBoundingClientRect().left - tableRight)
+    })
+    observer.observe(table)
+    await waitFor(() => expect(gaps).toHaveLength(1))
+    gaps.length = 0
+
+    // Act
+    table.style.width = `${table.getBoundingClientRect().width + 40}px`
+    await waitFor(() => expect(gaps).toHaveLength(1))
+    observer.disconnect()
+
+    // Assert
+    expect(gaps[0]).toBeCloseTo(TABLE_CHROME_GAP_PX, 0)
+  })
+
   it("updates drop targets when the table resizes during a drag", async () => {
     // Arrange
     const { editor, container } = await renderHarness()
