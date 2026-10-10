@@ -1,6 +1,7 @@
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import type { RefObject } from "react"
 import { useLayoutEffect, useState } from "react"
+import { flushSync } from "react-dom"
 
 import type { TableGeometry } from "./axisMath"
 import {
@@ -41,7 +42,9 @@ export const useTableGeometries = (
       setGeometries((previous) => reconcileGeometries(previous, next))
     }
 
-    const resizeObserver = new ResizeObserver(measure)
+    // Resize callbacks run after layout but before paint. Flushing here keeps
+    // handles and add pills in the same frame as a resizing table.
+    const resizeObserver = new ResizeObserver(() => flushSync(measure))
 
     const observeLayout = () => {
       resizeObserver.disconnect()

@@ -37,6 +37,8 @@ export const useTableColumnResizeGesture = ({
       const startX = event.clientX
       const startWidth = origin[index] ?? clampTableColumnWidth(0)
       let lastWidth = startWidth
+      let frame = 0
+      let pendingX = startX
       let finished = false
       let listenTarget: EventTarget = document
       setActiveIndex(index)
@@ -49,6 +51,7 @@ export const useTableColumnResizeGesture = ({
       const samePointer = (pointer: PointerEvent) =>
         pointer.pointerId === pointerId
       const detach = () => {
+        cancelAnimationFrame(frame)
         listenTarget.removeEventListener("pointermove", move)
         listenTarget.removeEventListener("pointerup", up)
         listenTarget.removeEventListener("pointercancel", cancel)
@@ -82,11 +85,17 @@ export const useTableColumnResizeGesture = ({
       const move = (event: Event) => {
         const pointer = pointerFrom(event)
         if (!pointer || !samePointer(pointer)) return
-        const next = widthsAt(pointer.clientX)
-        const width = next[index] ?? startWidth
-        if (width === lastWidth) return
-        lastWidth = width
-        onDrag(next)
+        // Coalesce pointermoves to one preview update per frame.
+        pendingX = pointer.clientX
+        if (frame) return
+        frame = requestAnimationFrame(() => {
+          frame = 0
+          const next = widthsAt(pendingX)
+          const width = next[index] ?? startWidth
+          if (width === lastWidth) return
+          lastWidth = width
+          onDrag(next)
+        })
       }
       const up = (event: Event) => {
         const pointer = pointerFrom(event)
