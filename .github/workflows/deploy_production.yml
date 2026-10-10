@@ -9,14 +9,15 @@ on:
     types:
       - released
 
-permissions:
-  contents: read
-  id-token: write
+permissions: {}
 
 # NOTE: This is actually using our federated isomer-production account
 jobs:
   deploy_production:
     name: Deploy app to production
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/aws_deploy.yml
     # NOTE: deploy in `production` env to set env specific secrets
     secrets:
@@ -55,6 +56,9 @@ jobs:
 
   build_components:
     name: Build and publish components
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/build-components.yml
     with:
       aws-region: "ap-southeast-1"
@@ -64,6 +68,9 @@ jobs:
   update_publisher:
     name: Update publisher script
     if: ${{ !cancelled() }}
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/update_publisher.yml
     with:
       aws-region: "ap-southeast-1"

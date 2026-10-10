@@ -15,13 +15,15 @@ name: Post PR comments
 # This job downloads a small metadata artifact written by ci.yml, since the
 # two workflows run in separate contexts and can't share environment variables.
 on:
-  workflow_run:
+  workflow_run: # jactionlint ignore=dangerous-triggers
     workflows: ["CI"]
     types: [completed]
 
-permissions:
-  actions: read # needed by actions/download-artifact to access a different run's artifacts
-  issues: write # GitHub routes PR comments through the issues API endpoint
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.id }}
+  cancel-in-progress: true
 
 jobs:
   post-e2e-comment:
@@ -29,6 +31,10 @@ jobs:
     # a PR to comment on.
     if: github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read # needed by actions/download-artifact to access a different run's artifacts
+      issues: write # GitHub routes PR comments through the issues API endpoint
     steps:
       - name: Download E2E comment metadata
         id: download
@@ -66,6 +72,7 @@ jobs:
       - name: Build comment body
         if: steps.download.outcome == 'success'
         id: body
+        shell: bash
         run: |
           {
             echo "body<<COMMENT_EOF"
