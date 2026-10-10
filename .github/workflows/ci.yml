@@ -93,7 +93,7 @@ jobs:
       - name: jactionlint
         uses: docker://ghcr.io/jdx/jactionlint:v2.0.2
         with:
-          args: --profile default --baseline --color
+          args: --color
 
   format:
     runs-on: ubuntu-latest
