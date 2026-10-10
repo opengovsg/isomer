@@ -12,10 +12,17 @@ name: bundle-size
 on:
   pull_request:
     types: [opened, synchronize]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   optimize_ci:
     runs-on: ubuntu-latest # or whichever runner you use for your CI
+    timeout-minutes: 30
     outputs:
       skip: ${{ steps.check_skip.outputs.skip }}
     steps:
@@ -28,10 +35,13 @@ jobs:
   # Detect which areas changed so components-bundle-size can opt out when irrelevant.
   changes:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     outputs:
       components: ${{ steps.filter.outputs.components }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
         id: filter
         with:
@@ -48,10 +58,13 @@ jobs:
     # or dependencies) — needs a `main` baseline to diff against.
     if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.components == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup
         uses: ./.github/actions/setup
