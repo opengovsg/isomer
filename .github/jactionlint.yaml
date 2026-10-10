@@ -1,0 +1,4 @@
+# Static analysis for GitHub Actions workflows. See https://github.com/jdx/jactionlint
+assume-default-permissions: permissive
+baseline: auto
+profile: default

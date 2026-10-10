@@ -9,6 +9,10 @@ on:
     types:
       - released
 
+permissions:
+  contents: read
+  id-token: write
+
 # NOTE: This is actually using our federated isomer-production account
 jobs:
   deploy_production:

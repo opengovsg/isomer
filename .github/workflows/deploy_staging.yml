@@ -9,6 +9,10 @@ on:
     branches:
       - staging
 
+permissions:
+  contents: read
+  id-token: write
+
 # NOTE: This is actually using our federated isomer-staging account
 jobs:
   deploy_staging:

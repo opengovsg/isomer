@@ -21,7 +21,7 @@ on:
         type: string
       aws-region:
         description: "AWS region to use"
-        required: true
+        required: false
         default: "ap-southeast-1"
         type: string
       cicd-role:
