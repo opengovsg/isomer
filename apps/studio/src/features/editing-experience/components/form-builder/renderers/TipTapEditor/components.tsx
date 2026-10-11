@@ -209,7 +209,7 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
         size="full"
         scrollBehavior="inside"
       >
-        <ModalOverlay />
+        <ModalOverlay zIndex={0} />
         <ModalContent
           ref={dialogRef}
           data-expanded-table-editor=""
