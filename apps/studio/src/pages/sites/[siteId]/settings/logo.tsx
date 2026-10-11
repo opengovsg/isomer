@@ -19,12 +19,11 @@ import {
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { EditSettingsPreview } from "~/features/editing-experience/components/preview/EditSettingsPreview"
-import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
-import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { useUnsavedSettingsNavigationGuard } from "~/hooks/useUnsavedSettingsNavigationGuard"
 import { logoSettingsValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
@@ -39,8 +38,6 @@ const LogoSettingsPage: NextPageWithLayout = () => {
     id: siteId,
   })
 
-  const [nextUrl, setNextUrl] = useState("")
-  const isOpen = !!nextUrl
   const existingLogoSettings = { favicon, logoUrl }
   const [logoSettings, setLogoSettings] =
     useState<LogoSettings>(existingLogoSettings)
@@ -63,8 +60,7 @@ const LogoSettingsPage: NextPageWithLayout = () => {
   })
 
   const isDirty = !isEqual(logoSettings, existingLogoSettings)
-
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+  const { unsavedSettingsModal } = useUnsavedSettingsNavigationGuard(isDirty)
 
   const onSubmit = () => {
     updateSiteConfigMutation.mutate({
@@ -76,11 +72,7 @@ const LogoSettingsPage: NextPageWithLayout = () => {
 
   return (
     <ErrorProvider>
-      <UnsavedSettingModal
-        isOpen={isOpen}
-        onClose={() => setNextUrl("")}
-        nextUrl={nextUrl}
-      />
+      {unsavedSettingsModal}
       <SettingsGrid>
         <SettingsEditorGridItem as={SettingsEditingLayout}>
           <SettingsHeader

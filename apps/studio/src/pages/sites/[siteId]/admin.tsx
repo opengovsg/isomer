@@ -15,13 +15,11 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { getIronSession } from "iron-session"
-import { useState } from "react"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
-import { useNavigationEffect } from "~/hooks/useNavigationEffect"
+import { useUnsavedSettingsNavigationGuard } from "~/hooks/useUnsavedSettingsNavigationGuard"
 import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
 import { type SessionData } from "~/lib/types/session"
@@ -162,10 +160,7 @@ const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
     },
   })
 
-  const [nextUrl, setNextUrl] = useState("")
-  const isOpen = !!nextUrl
-
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+  const { unsavedSettingsModal } = useUnsavedSettingsNavigationGuard(isDirty)
 
   const onClickUpdate = handleSubmit((input) => {
     mutate({
@@ -176,11 +171,7 @@ const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
 
   return (
     <>
-      <UnsavedSettingModal
-        isOpen={isOpen}
-        onClose={() => setNextUrl("")}
-        nextUrl={nextUrl}
-      />
+      {unsavedSettingsModal}
       <chakra.form
         onSubmit={onClickUpdate}
         overflow="auto"
