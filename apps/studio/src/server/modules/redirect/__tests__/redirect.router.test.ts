@@ -518,6 +518,34 @@ describe("redirect.router", async () => {
       expect(rows).toHaveLength(0)
     })
 
+    it("should throw 422 and create nothing if the redirect would loop when the existing destination has a trailing slash", async () => {
+      // Arrange
+      // Stored "/b -> /a/" must still loop with a new "/a -> /b" once the
+      // stored destination is normalised for comparison.
+      await db
+        .insertInto("Redirect")
+        .values({ siteId, source: "/b", destination: "/a/" })
+        .execute()
+
+      // Act
+      const result = caller.create({ siteId, source: "/a", destination: "/b" })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "UNPROCESSABLE_CONTENT",
+          message: "This will trap visitors in a never-ending loop.",
+        }),
+      )
+      const rows = await db
+        .selectFrom("Redirect")
+        .select("source")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/a")
+        .execute()
+      expect(rows).toHaveLength(0)
+    })
+
     it("should create a redirect that only closes a multi-hop cycle (loop check is one hop)", async () => {
       // Arrange — /b -> /c -> /a. Creating /a -> /b closes a 3-redirect cycle,
       // but the loop guard only looks one hop deep by design, so the create is
@@ -568,6 +596,52 @@ describe("redirect.router", async () => {
         .select("source")
         .where("siteId", "=", siteId)
         .where("source", "=", "/live-page")
+        .execute()
+      expect(rows).toHaveLength(0)
+    })
+
+    it("should throw 412 and create nothing if the source is a live folder's URL", async () => {
+      // Arrange — a folder whose index page is published is live at "/folder",
+      // so a redirect there would shadow it. Regression test: the source guard
+      // must resolve top-level containers (parentId = null), not only pages.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        source: "/folder",
+        destination: "/somewhere",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "A live page already uses this URL. The redirect would hide it. Move or unpublish that page first.",
+        }),
+      )
+      const rows = await db
+        .selectFrom("Redirect")
+        .select("source")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/folder")
         .execute()
       expect(rows).toHaveLength(0)
     })
