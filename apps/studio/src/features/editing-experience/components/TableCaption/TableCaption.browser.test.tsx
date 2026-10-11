@@ -105,16 +105,22 @@ const tableRanges = (editor: TiptapEditor) => {
   return ranges
 }
 
-const placeCaretOnText = (editor: TiptapEditor, text: string) => {
+const placeCaretOnText = (
+  editor: TiptapEditor,
+  text: string,
+  within?: { from: number; to: number },
+) => {
   let textPos: number | undefined
-  editor.state.doc.descendants((node, pos) => {
+  const visit = (node: { isText: boolean; text?: string }, pos: number) => {
     if (textPos !== undefined) return false
     if (node.isText && node.text === text) {
       textPos = pos
       return false
     }
     return true
-  })
+  }
+  if (within) editor.state.doc.nodesBetween(within.from, within.to, visit)
+  else editor.state.doc.descendants(visit)
   if (textPos === undefined) throw new Error(`expected text "${text}"`)
   editor.commands.setTextSelection(textPos)
 }
@@ -406,19 +412,21 @@ describe("TableCaption", () => {
     ).toBeTruthy()
   })
 
+  const twoTableContent = (firstCaption: string, secondCaption: string) => ({
+    type: "prose" as const,
+    content: [
+      tableContent(firstCaption),
+      {
+        type: "paragraph",
+        content: [{ type: "text", text: "between tables" }],
+      },
+      tableContent(secondCaption),
+    ],
+  })
+
   it("expands only the table that was opened", async () => {
     // Arrange
-    renderHarness({
-      type: "prose",
-      content: [
-        tableContent("First table"),
-        {
-          type: "paragraph",
-          content: [{ type: "text", text: "between tables" }],
-        },
-        tableContent("Second table"),
-      ],
-    })
+    renderHarness(twoTableContent("First table", "Second table"))
 
     // Act
     const editButtons = await screen.findAllByRole("button", {
@@ -437,9 +445,16 @@ describe("TableCaption", () => {
     expect(modal.getByText("First table")).toBeVisible()
     expect(modal.getByText("Second table")).not.toBeVisible()
     expect(modal.getByText("between tables")).not.toBeVisible()
+    expect(modal.getByRole("button", { name: "Bold" })).toBeInTheDocument()
     expect(
-      modal.getByRole("button", { name: "Page toolbar" }),
-    ).toBeInTheDocument()
+      modal.queryByRole("button", { name: "Page toolbar" }),
+    ).not.toBeInTheDocument()
+    expect(
+      modal.queryByRole("button", { name: "Divider" }),
+    ).not.toBeInTheDocument()
+    expect(
+      modal.queryByRole("button", { name: "Delete table" }),
+    ).not.toBeInTheDocument()
     expect(modal.getByRole("button", { name: "Done" })).toBeInTheDocument()
     expect(
       modal.queryByRole("button", { name: "Expand table" }),
@@ -451,6 +466,16 @@ describe("TableCaption", () => {
         screen.getAllByRole("button", { name: "Drag to reorder row" }),
       ).toHaveLength(2)
     })
+  })
+
+  it("keeps the expanded table open when Escape is pressed", async () => {
+    // Arrange
+    renderHarness(twoTableContent("First table", "Second table"))
+    const editButtons = await screen.findAllByRole("button", {
+      name: "Expand table",
+    })
+    await userEvent.click(editButtons[0]!)
+    await screen.findByRole("dialog", { name: "Expanded table" })
 
     // Act
     await userEvent.keyboard("{Escape}")
@@ -461,19 +486,9 @@ describe("TableCaption", () => {
     ).toBeInTheDocument()
   })
 
-  it("edits the table in place and closes without a separate save", async () => {
+  it("moves the caret into the table that was expanded", async () => {
     // Arrange
-    const { getEditor } = renderHarness({
-      type: "prose",
-      content: [
-        tableContent("Keep me"),
-        {
-          type: "paragraph",
-          content: [{ type: "text", text: "between tables" }],
-        },
-        tableContent("Leave me"),
-      ],
-    })
+    const { getEditor } = renderHarness(twoTableContent("Keep me", "Leave me"))
     await screen.findByText("Leave me")
     placeCaretOnText(getEditor()!, "between tables")
 
@@ -488,49 +503,78 @@ describe("TableCaption", () => {
       name: "Expanded table",
     })
     await waitFor(() => {
-      const { from } = getEditor()!.state.selection
+      const { from, to } = getEditor()!.state.selection
       const second = tableRanges(getEditor()!)[1]
       expect(from).toBeGreaterThanOrEqual(second!.from)
-      expect(from).toBeLessThan(second!.to)
+      expect(to).toBeLessThanOrEqual(second!.to)
     })
     const modal = within(dialog)
     expect(modal.getByText("Leave me")).toBeVisible()
     expect(modal.getByText("Keep me")).not.toBeVisible()
     expect(modal.getByText("between tables")).not.toBeVisible()
+  })
+
+  it("writes a cell edit into the page while the table is expanded", async () => {
+    // Arrange
+    const { getEditor } = renderHarness(twoTableContent("Keep me", "Leave me"))
+    const editButtons = await screen.findAllByRole("button", {
+      name: "Expand table",
+    })
+    await userEvent.click(editButtons[1]!)
+    const dialog = await screen.findByRole("dialog", { name: "Expanded table" })
+    await waitFor(() => {
+      const { from, to } = getEditor()!.state.selection
+      const second = tableRanges(getEditor()!)[1]
+      expect(from).toBeGreaterThanOrEqual(second!.from)
+      expect(to).toBeLessThanOrEqual(second!.to)
+    })
 
     // Act
-    const cell = modal
-      .getAllByText("Row 1, A")
-      .find((element) => element.checkVisibility())
-    if (!cell) throw new Error("expected the expanded table cell")
-    await userEvent.click(cell)
-    await userEvent.keyboard("X")
+    const second = tableRanges(getEditor()!)[1]
+    placeCaretOnText(getEditor()!, "Row 1, A", second)
+    getEditor()!.commands.insertContent("X")
 
-    const cellTexts = () => {
+    // Assert
+    await waitFor(() => {
       const texts: string[] = []
       getEditor()!.state.doc.descendants((node) => {
         if (node.type.name === "tableCell") texts.push(node.textContent)
       })
-      return texts
-    }
-
-    // Assert
-    // The expanded view is the page editor, so the edit is already saved.
-    await waitFor(() => {
-      const texts = cellTexts()
-      expect(texts[0]).toBe("Row 1, A")
-      expect(texts[1]).toBe("Row 1, B")
       expect(texts[2]).toContain("X")
-      expect(texts[3]).toBe("Row 1, B")
     })
-    expect(modal.getByText("Keep me")).not.toBeVisible()
-    expect(modal.getByText("between tables")).not.toBeVisible()
+    expect(within(dialog).getByText("Keep me")).not.toBeVisible()
+    expect(within(dialog).getByText("between tables")).not.toBeVisible()
+  })
 
+  it("closes the expanded table and keeps the edit", async () => {
     // Arrange
-    const edited = cellTexts()
+    const { getEditor } = renderHarness(twoTableContent("Keep me", "Leave me"))
+    const editButtons = await screen.findAllByRole("button", {
+      name: "Expand table",
+    })
+    await userEvent.click(editButtons[1]!)
+    const dialog = await screen.findByRole("dialog", {
+      name: "Expanded table",
+    })
+    await waitFor(() => {
+      const { from, to } = getEditor()!.state.selection
+      const second = tableRanges(getEditor()!)[1]
+      expect(from).toBeGreaterThanOrEqual(second!.from)
+      expect(to).toBeLessThanOrEqual(second!.to)
+    })
+    const second = tableRanges(getEditor()!)[1]
+    placeCaretOnText(getEditor()!, "Row 1, A", second)
+    getEditor()!.commands.insertContent("X")
+    await waitFor(() => {
+      const texts: string[] = []
+      getEditor()!.state.doc.descendants((node) => {
+        if (node.type.name === "tableCell") texts.push(node.textContent)
+      })
+      expect(texts[2]).toContain("X")
+    })
 
     // Act
-    await userEvent.click(modal.getByRole("button", { name: "Done" }))
+    within(dialog).getByRole("button", { name: "Done" }).click()
 
     // Assert
     await waitFor(() => {
@@ -539,9 +583,13 @@ describe("TableCaption", () => {
       ).not.toBeInTheDocument()
     })
     expect(getTableCaptions(getEditor()!)).toEqual(["Keep me", "Leave me"])
-    expect(cellTexts()).toEqual(edited)
     expect(screen.getByText("Keep me")).toBeVisible()
     expect(screen.getByText("between tables")).toBeVisible()
     expect(screen.getByText("Leave me")).toBeVisible()
+    const texts: string[] = []
+    getEditor()!.state.doc.descendants((node) => {
+      if (node.type.name === "tableCell") texts.push(node.textContent)
+    })
+    expect(texts[2]).toContain("X")
   })
 })
