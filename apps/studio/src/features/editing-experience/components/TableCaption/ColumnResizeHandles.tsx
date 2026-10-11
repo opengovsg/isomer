@@ -5,11 +5,13 @@ import { useTableColumnResizeGesture } from "./useTableColumnResizeGesture"
 export const ColumnResizeHandles = ({
   columnCount,
   widths,
+  edges,
   onDrag,
   onCommit,
 }: {
   columnCount: number
   widths: number[] | null
+  edges: string[] | null
   onDrag: (widths: number[] | null) => void
   onCommit: (widths: number[] | null) => void
 }) => {
@@ -19,7 +21,9 @@ export const ColumnResizeHandles = ({
   if (columnCount < 1) return null
 
   const leftOf = (index: number) => {
-    if (!widths) return `${((index + 1) / columnCount) * 100}%`
+    if (!widths) {
+      return edges?.[index] ?? `${((index + 1) / columnCount) * 100}%`
+    }
     const edge = widths
       .slice(0, index + 1)
       .reduce((sum, width) => sum + width, 0)

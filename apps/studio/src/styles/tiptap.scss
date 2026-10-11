@@ -177,6 +177,22 @@ $max-depth: 13;
     }
   }
 
+  // Unsized tables match packages/components Table. The attribute lives on the
+  // node-view wrapper so React does not strip it from the table element.
+  // Phantom columns stay on the default fixed layout with equal tracks.
+  [data-column-resize-root][data-table-layout="auto"] table {
+    table-layout: auto;
+  }
+
+  [data-column-resize-root][data-table-layout="auto"] table,
+  [data-column-resize-root][data-table-layout="even"] table {
+    td,
+    th {
+      max-width: 10rem;
+      overflow-wrap: break-word;
+    }
+  }
+
   a {
     color: var(--chakra-colors-interaction-links-default);
     text-decoration: underline;

@@ -149,6 +149,62 @@ export const moveTableColumnWithWidths = ({
   }
 }
 
+/**
+ * True when some logical column never has a colspan-1 cell, matching the
+ * preview's phantom-column check. Those tracks collapse under automatic layout.
+ */
+export const tableHasPhantomColumn = (table: ProseMirrorNode): boolean => {
+  if (table.type.name !== "table") return false
+  const map = TableMap.get(table)
+  if (map.width <= 1) return false
+
+  const exclusive = Array.from({ length: map.width }, () => false)
+  for (let row = 0; row < map.height; row += 1) {
+    for (let col = 0; col < map.width; col += 1) {
+      const index = row * map.width + col
+      const pos = map.map[index]
+      if (pos == null) continue
+      if (col > 0 && map.map[index - 1] === pos) continue
+      if (row > 0 && map.map[index - map.width] === pos) continue
+      const cell = table.nodeAt(pos)
+      const colspan = (cell?.attrs as { colspan?: unknown } | undefined)
+        ?.colspan
+      const span =
+        typeof colspan === "number" && Number.isFinite(colspan)
+          ? Math.floor(colspan)
+          : 1
+      if (span === 1) exclusive[col] = true
+    }
+  }
+  return exclusive.some((hasExclusive) => !hasExclusive)
+}
+
+/** Right edge of each column as a percentage of the table, from the first row. */
+export const measureColumnEdgePercents = (
+  table: HTMLTableElement,
+  columnCount: number,
+): string[] | null => {
+  const rect = table.getBoundingClientRect()
+  if (rect.width <= 0 || columnCount < 1) return null
+  const row = table.rows[0]
+  if (!row) return null
+
+  const edges: string[] = []
+  let col = 0
+  for (const cell of Array.from(row.cells)) {
+    const span = cell.colSpan || 1
+    const cellRect = cell.getBoundingClientRect()
+    const share = cellRect.width / span
+    for (let i = 0; i < span && col < columnCount; i += 1) {
+      const right = cellRect.left + share * (i + 1)
+      const percent = ((right - rect.left) / rect.width) * 100
+      edges[col] = `${percent.toFixed(2)}%`
+      col += 1
+    }
+  }
+  return col === columnCount ? edges : null
+}
+
 /** First row only. Colspan cells split their width evenly across spanned columns. */
 export const measureColumnWidths = (
   table: HTMLTableElement,

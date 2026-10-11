@@ -16,6 +16,7 @@ import {
   moveColumnWidth,
   moveTableColumnWithWidths,
   setTableColumnWidths,
+  tableHasPhantomColumn,
 } from "./columnWidths"
 
 const tableDoc = (columnWidths: number[] | null): JSONContent => ({
@@ -221,5 +222,92 @@ describe("column width edits", () => {
 
     // Assert
     expect(columnWidthsOf(editor)).toBeNull()
+  })
+})
+
+const cell = (
+  type: "tableHeader" | "tableCell",
+  text: string,
+  attrs?: { colspan?: number; rowspan?: number },
+): JSONContent => ({
+  type,
+  ...(attrs ? { attrs } : {}),
+  content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+})
+
+describe("tableHasPhantomColumn", () => {
+  const editors: Editor[] = []
+
+  afterEach(() => {
+    for (const editor of editors.splice(0)) {
+      editor.destroy()
+    }
+  })
+
+  const tableNode = (content: JSONContent[]) => {
+    const editor = new Editor({
+      extensions: [
+        ...BASE_EXTENSIONS,
+        ...PROSE_EXTENSIONS,
+        TableRow,
+        IsomerTable,
+        IsomerTableCell,
+        IsomerTableHeader,
+      ],
+      content: {
+        type: "prose",
+        content: [
+          {
+            type: "table",
+            attrs: { caption: "Merged", columnWidths: null },
+            content,
+          },
+        ],
+      },
+    })
+    editors.push(editor)
+    const table = editor.state.doc.nodeAt(tablePosIn(editor))
+    if (!table) throw new Error("missing table")
+    return table
+  }
+
+  it("is false for a rectangular table", () => {
+    // Arrange
+    const table = tableNode([
+      {
+        type: "tableRow",
+        content: [cell("tableHeader", "A"), cell("tableHeader", "B")],
+      },
+    ])
+
+    // Act / Assert
+    expect(tableHasPhantomColumn(table)).toBe(false)
+  })
+
+  it("is true when a logical column never has its own cell", () => {
+    // Arrange — same stagger as the preview phantom-column fixture.
+    const table = tableNode([
+      {
+        type: "tableRow",
+        content: [
+          cell("tableHeader", "A"),
+          cell("tableHeader", "BC", { colspan: 2 }),
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          cell("tableCell", "AB", { colspan: 2, rowspan: 2 }),
+          cell("tableCell", "C"),
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [cell("tableCell", "C2")],
+      },
+    ])
+
+    // Act / Assert
+    expect(tableHasPhantomColumn(table)).toBe(true)
   })
 })
