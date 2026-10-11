@@ -174,10 +174,9 @@ describe("expanded table editor", () => {
     const table = tableLocation(editor)
     setTableEditorExpanded(editor, table.pos)
     const text = editor.state.doc.textContent
-    const paragraph = editor.state.schema.nodes.paragraph.create(
-      null,
-      editor.state.schema.text("Z"),
-    )
+    const paragraphNode = editor.state.schema.nodes.paragraph
+    if (!paragraphNode) throw new Error("Invalid test schema")
+    const paragraph = paragraphNode.create(null, editor.state.schema.text("Z"))
 
     // Act
     editor.view.dispatch(editor.state.tr.insert(table.pos, paragraph))
