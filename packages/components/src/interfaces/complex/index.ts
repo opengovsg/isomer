@@ -8,7 +8,6 @@ export {
   type CalloutProps,
   type CalloutVariant,
 } from "./Callout"
-export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
 export {
