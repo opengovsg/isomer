@@ -191,8 +191,8 @@ const expectSameEditorControls = async (dialog: HTMLElement) => {
   await expect(modal.getByRole("button", { name: "Bold" })).toBeInTheDocument()
   await expect(modal.getByRole("button", { name: "Done" })).toBeInTheDocument()
   await expect(
-    modal.getByRole("button", { name: "Expand table" }),
-  ).toBeInTheDocument()
+    modal.queryByRole("button", { name: "Expand table" }),
+  ).not.toBeInTheDocument()
 }
 
 export const EditEmptyTable: Story = {

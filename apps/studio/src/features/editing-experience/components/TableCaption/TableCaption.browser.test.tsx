@@ -418,6 +418,9 @@ describe("TableCaption", () => {
       modal.getByRole("button", { name: "Page toolbar" }),
     ).toBeInTheDocument()
     expect(modal.getByRole("button", { name: "Done" })).toBeInTheDocument()
+    expect(
+      modal.queryByRole("button", { name: "Expand table" }),
+    ).not.toBeInTheDocument()
 
     await userEvent.keyboard("{Escape}")
     expect(
