@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
 import { Editor } from "~/features/editing-experience/components/form-builder/renderers/TipTapEditor/components"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
+import { EXPANDED_TABLE_ATTR } from "~/features/editing-experience/utils/expandTableEditor"
 import { theme } from "~/theme"
 
 import { DEFAULT_TABLE_CAPTION, LEGACY_DEFAULT_TABLE_CAPTION } from "./utils"
@@ -35,9 +36,11 @@ const tableContent = (caption: string, columnWidths?: number[]) => ({
 const Harness = ({
   initialContent,
   onEditorReady,
+  pageAction,
 }: {
   initialContent: JSONContent
   onEditorReady?: (editor: TiptapEditor) => void
+  pageAction?: string
 }) => {
   const [content, setContent] = useState<JSONContent | undefined>(
     initialContent,
@@ -49,14 +52,20 @@ const Harness = ({
   if (!editor) return null
 
   return (
-    <Editor
-      editor={editor}
-      menubar={() => <button type="button">Page toolbar</button>}
-    />
+    <>
+      {pageAction ? <button type="button">{pageAction}</button> : null}
+      <Editor
+        editor={editor}
+        menubar={() => <button type="button">Page toolbar</button>}
+      />
+    </>
   )
 }
 
-const renderHarness = (initialContent: JSONContent) => {
+const renderHarness = (
+  initialContent: JSONContent,
+  options?: { pageAction?: string },
+) => {
   let editor: TiptapEditor | undefined
   const utils = render(
     <ThemeProvider theme={theme}>
@@ -65,6 +74,7 @@ const renderHarness = (initialContent: JSONContent) => {
         onEditorReady={(e) => {
           editor = e
         }}
+        pageAction={options?.pageAction}
       />
     </ThemeProvider>,
   )
@@ -103,6 +113,39 @@ const tableRanges = (editor: TiptapEditor) => {
     return false
   })
   return ranges
+}
+
+const nthCellPos = (editor: TiptapEditor, index: number): number => {
+  let seen = 0
+  let found: number | null = null
+  editor.state.doc.descendants((node, pos) => {
+    if (found !== null) return false
+    if (node.type.name === "tableCell" || node.type.name === "tableHeader") {
+      if (seen === index) {
+        found = pos
+        return false
+      }
+      seen += 1
+    }
+    return true
+  })
+  if (found === null) throw new Error(`Could not find cell at index ${index}`)
+  return found
+}
+
+const selectCells = (
+  editor: TiptapEditor,
+  startIndex: number,
+  endIndex: number,
+) => {
+  editor
+    .chain()
+    .focus()
+    .setCellSelection({
+      anchorCell: nthCellPos(editor, startIndex),
+      headCell: nthCellPos(editor, endIndex),
+    })
+    .run()
 }
 
 const placeCaretOnText = (
@@ -591,5 +634,154 @@ describe("TableCaption", () => {
       if (node.type.name === "tableCell") texts.push(node.textContent)
     })
     expect(texts[2]).toContain("X")
+  })
+
+  it("bolds the selected cell text from the expanded toolbar", async () => {
+    // Arrange
+    const { getEditor } = renderHarness(twoTableContent("Keep me", "Leave me"))
+    const editButtons = await screen.findAllByRole("button", {
+      name: "Expand table",
+    })
+    await userEvent.click(editButtons[1]!)
+    const dialog = await screen.findByRole("dialog", { name: "Expanded table" })
+    const editor = getEditor()!
+    const second = tableRanges(editor)[1]
+    placeCaretOnText(editor, "Row 1, A", second)
+    const from = editor.state.selection.from
+    editor.commands.setTextSelection({ from, to: from + "Row 1, A".length })
+
+    // Act
+    await userEvent.click(within(dialog).getByRole("button", { name: "Bold" }))
+
+    // Assert
+    await waitFor(() => {
+      let bold = false
+      getEditor()!.state.doc.descendants((node) => {
+        if (node.isText && node.text?.includes("Row 1, A")) {
+          bold = node.marks.some((mark) => mark.type.name === "bold")
+        }
+      })
+      expect(bold).toBe(true)
+    })
+  })
+
+  it("shows table actions for a cell selection inside the expanded table", async () => {
+    // Arrange
+    const { getEditor } = renderHarness(
+      twoTableContent("First table", "Second table"),
+    )
+    const editButtons = await screen.findAllByRole("button", {
+      name: "Expand table",
+    })
+    await userEvent.click(editButtons[0]!)
+    const dialog = await screen.findByRole("dialog", { name: "Expanded table" })
+
+    // Act
+    selectCells(getEditor()!, 2, 3)
+
+    // Assert
+    const trigger = await within(dialog).findByRole("button", {
+      name: "Table actions",
+    })
+    await userEvent.click(trigger)
+    expect(
+      await within(dialog).findByRole("button", { name: "Add row below" }),
+    ).toBeInTheDocument()
+  })
+
+  it("hides table actions while another dialog is open over the expanded table", async () => {
+    // Arrange
+    const { getEditor } = renderHarness(
+      twoTableContent("First table", "Second table"),
+    )
+    const editButtons = await screen.findAllByRole("button", {
+      name: "Expand table",
+    })
+    await userEvent.click(editButtons[0]!)
+    const dialog = await screen.findByRole("dialog", { name: "Expanded table" })
+    selectCells(getEditor()!, 2, 3)
+    await within(dialog).findByRole("button", { name: "Table actions" })
+
+    // Act
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: "Edit table caption" }),
+    )
+    await screen.findByText("Table settings")
+
+    // Assert
+    await waitFor(() => {
+      expect(document.querySelector("[data-table-bubble-menu]")).toBeNull()
+    })
+  })
+
+  it("keeps the expanded table open when the overlay is clicked", async () => {
+    // Arrange
+    renderHarness(twoTableContent("First table", "Second table"))
+    const editButtons = await screen.findAllByRole("button", {
+      name: "Expand table",
+    })
+    await userEvent.click(editButtons[0]!)
+    await screen.findByRole("dialog", { name: "Expanded table" })
+    const overlay = document.querySelector(".chakra-modal__overlay")
+    if (!(overlay instanceof HTMLElement)) throw new Error("expected overlay")
+
+    // Act
+    await userEvent.click(overlay)
+
+    // Assert
+    expect(
+      screen.getByRole("dialog", { name: "Expanded table" }),
+    ).toBeInTheDocument()
+  })
+
+  it("keeps a page control outside the expanded table out of tab order", async () => {
+    // Arrange
+    renderHarness(twoTableContent("First table", "Second table"), {
+      pageAction: "Save page",
+    })
+    const editButtons = await screen.findAllByRole("button", {
+      name: "Expand table",
+    })
+    await userEvent.click(editButtons[0]!)
+    await screen.findByRole("dialog", { name: "Expanded table" })
+    const save = [...document.querySelectorAll("button")].find(
+      (button) => button.textContent === "Save page",
+    )
+    if (!save) throw new Error("expected Save page")
+
+    // Act
+    for (let tabs = 0; tabs < 12; tabs += 1) {
+      await userEvent.tab()
+    }
+
+    // Assert
+    expect(document.activeElement).not.toBe(save)
+  })
+
+  it("hides other content again after the expanded table marker is dropped", async () => {
+    // Arrange
+    const { getEditor } = renderHarness(
+      twoTableContent("First table", "Second table"),
+    )
+    const editButtons = await screen.findAllByRole("button", {
+      name: "Expand table",
+    })
+    await userEvent.click(editButtons[0]!)
+    const dialog = await screen.findByRole("dialog", { name: "Expanded table" })
+    const marked = getEditor()!.view.dom.querySelector(
+      `[${EXPANDED_TABLE_ATTR}]`,
+    )
+    if (!(marked instanceof HTMLElement)) throw new Error("expected marker")
+    marked.removeAttribute(EXPANDED_TABLE_ATTR)
+
+    // Act
+    placeCaretOnText(getEditor()!, "Row 1, A", tableRanges(getEditor()!)[0])
+    getEditor()!.commands.insertContent("Q")
+
+    // Assert
+    await waitFor(() => {
+      expect(within(dialog).getByText("Second table")).not.toBeVisible()
+      expect(within(dialog).getByText("between tables")).not.toBeVisible()
+    })
   })
 })

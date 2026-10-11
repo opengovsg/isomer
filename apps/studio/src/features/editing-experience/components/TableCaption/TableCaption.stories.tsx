@@ -156,20 +156,4 @@ export const EditCaptionViaModal: Story = {
 
 export const ExpandedTable: Story = {
   args: { initialContent: SINGLE_TABLE_WITH_CAPTION },
-  play: async ({ canvasElement }) => {
-    // Arrange
-    const canvas = within(canvasElement)
-    const body = within(canvasElement.ownerDocument.body)
-
-    // Act
-    await userEvent.click(
-      await canvas.findByRole("button", { name: "Expand table" }),
-    )
-
-    // Assert
-    const dialog = await body.findByRole("dialog", { name: "Expanded table" })
-    await expect(
-      within(dialog).getByRole("button", { name: "Bold" }),
-    ).toBeInTheDocument()
-  },
 }

@@ -17,24 +17,21 @@ import { Button } from "@opengovsg/design-system-react"
 import { EditorContent } from "@tiptap/react"
 import {
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   useSyncExternalStore,
 } from "react"
+import { ExpandedTableMenuBar } from "~/components/PageEditor/MenuBar/ExpandedTableMenuBar"
 import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
 import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles"
-
-import { ExpandedTableMenuBar } from "./ExpandedTableMenuBar"
 import {
   EXPANDED_TABLE_ATTR,
   ISOLATE_EXPANDED_TABLE_ATTR,
   getExpandedTablePos,
   setTableEditorExpanded,
   subscribeTableEditorExpanded,
-  syncExpandedTableDom,
-} from "./expandTableEditor"
+} from "~/features/editing-experience/utils/expandTableEditor"
 
 const EditorContainer = ({
   children,
@@ -142,9 +139,7 @@ interface EditorProps {
 export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const dialogRef = useRef<HTMLElement>(null)
-  const isClosingDialogRef = useRef(false)
   const [isDragReordering, setIsDragReordering] = useState(false)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const expandedTablePos = useSyncExternalStore(
     (listener) => subscribeTableEditorExpanded(editor, listener),
     () => getExpandedTablePos(editor),
@@ -155,41 +150,24 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
     (ext) => ext.name === "table",
   )
 
-  if (editorInDialog && !isDialogOpen && !isClosingDialogRef.current) {
-    setIsDialogOpen(true)
-  }
-  if (!editorInDialog && isDialogOpen && !isClosingDialogRef.current) {
-    setIsDialogOpen(false)
-  }
-
   useEffect(() => {
     return () => {
       setTableEditorExpanded(editor, null)
     }
   }, [editor])
 
-  useLayoutEffect(() => {
-    syncExpandedTableDom(editor, expandedTablePos)
-    return () => {
-      syncExpandedTableDom(editor, null)
-    }
-  }, [editor, expandedTablePos])
-
   useEffect(() => {
-    if (!editorInDialog || !isDialogOpen) return
+    if (!editorInDialog) return
     editor.commands.focus()
-  }, [editor, editorInDialog, isDialogOpen])
+  }, [editor, editorInDialog])
 
-  const requestClose = () => {
-    isClosingDialogRef.current = true
-    setIsDialogOpen(false)
-  }
-
-  const finishClose = () => {
-    if (!isClosingDialogRef.current) return
-    isClosingDialogRef.current = false
+  const closeExpandedTable = () => {
     setTableEditorExpanded(editor, null)
   }
+
+  // Render as an element. Calling `menubar()` here would run its hooks inside
+  // Editor, so swapping in the expanded toolbar would change Editor's hook count.
+  const ActiveMenuBar = editorInDialog ? ExpandedTableMenuBar : menubar
 
   const editorFrame = (
     <Box
@@ -200,11 +178,7 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
       flexDirection="column"
     >
       <EditorContainer isNested={isNested && !editorInDialog}>
-        {editorInDialog ? (
-          <ExpandedTableMenuBar editor={editor} />
-        ) : (
-          menubar({ editor })
-        )}
+        <ActiveMenuBar editor={editor} />
         {isTableEditor && (
           <TableBubbleMenu
             editor={editor}
@@ -226,19 +200,21 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
   return (
     <>
       <Modal
-        isOpen={isDialogOpen}
-        onClose={requestClose}
-        onCloseComplete={finishClose}
+        isOpen={editorInDialog}
+        onClose={closeExpandedTable}
         closeOnEsc={false}
         closeOnOverlayClick={false}
         autoFocus={false}
-        motionPreset="scale"
+        motionPreset="none"
         size="full"
         scrollBehavior="inside"
       >
         <ModalOverlay />
         <ModalContent
           ref={dialogRef}
+          data-expanded-table-editor=""
+          position="relative"
+          zIndex={1}
           containerProps={{
             // Above the navbar (docked, 10) and below the dropdown layer, so
             // the cell pencil paints on top of this dialog.
@@ -258,7 +234,7 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
                 <VisuallyHidden>Expanded table</VisuallyHidden>
               </ModalHeader>
               <Flex justify="flex-end" flexShrink={0} px="1rem" py="0.75rem">
-                <Button variant="solid" onClick={requestClose}>
+                <Button variant="solid" onClick={closeExpandedTable}>
                   Done
                 </Button>
               </Flex>

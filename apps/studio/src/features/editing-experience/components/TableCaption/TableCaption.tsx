@@ -3,12 +3,12 @@ import { Flex, Icon, Text, Tooltip, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
 import { useSyncExternalStore } from "react"
 import { BiExpand, BiPencil, BiRevision } from "react-icons/bi"
+import { TableSettingsModal } from "~/features/editing-experience/components/TableSettingsModal/TableSettingsModal"
 import {
   getExpandedTablePos,
   setTableEditorExpanded,
   subscribeTableEditorExpanded,
-} from "~/features/editing-experience/components/form-builder/renderers/TipTapEditor/expandTableEditor"
-import { TableSettingsModal } from "~/features/editing-experience/components/TableSettingsModal/TableSettingsModal"
+} from "~/features/editing-experience/utils/expandTableEditor"
 
 import { isPlaceholderTableCaption } from "./utils"
 

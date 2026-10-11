@@ -151,6 +151,44 @@ describe("expanded table editor", () => {
     expect(getExpandedTablePos(editor)).toBe(table.pos)
   })
 
+  it("rejects a replacement outside the expanded table", () => {
+    // Arrange
+    editor = createEditor()
+    const table = tableLocation(editor)
+    setTableEditorExpanded(editor, table.pos)
+    const after = textPos(editor, "after")
+    const text = editor.state.doc.textContent
+
+    // Act
+    editor.view.dispatch(
+      editor.state.tr.insertText("Z", after, after + "after".length),
+    )
+
+    // Assert
+    expect(editor.state.doc.textContent).toBe(text)
+  })
+
+  it("rejects an insert on either edge of the expanded table", () => {
+    // Arrange
+    editor = createEditor()
+    const table = tableLocation(editor)
+    setTableEditorExpanded(editor, table.pos)
+    const text = editor.state.doc.textContent
+    const paragraph = editor.state.schema.nodes.paragraph.create(
+      null,
+      editor.state.schema.text("Z"),
+    )
+
+    // Act
+    editor.view.dispatch(editor.state.tr.insert(table.pos, paragraph))
+    editor.view.dispatch(
+      editor.state.tr.insert(table.pos + table.size, paragraph),
+    )
+
+    // Assert
+    expect(editor.state.doc.textContent).toBe(text)
+  })
+
   it("closes expansion when the expanded table is deleted", () => {
     // Arrange
     editor = createEditor()
