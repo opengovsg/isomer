@@ -2,7 +2,17 @@ import type { BoxProps } from "@chakra-ui/react"
 import type { EditorContentProps, Editor as TiptapEditor } from "@tiptap/react"
 import type { PropsWithChildren, RefObject } from "react"
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
-import { Box, Flex, VStack } from "@chakra-ui/react"
+import {
+  Box,
+  Flex,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+  VisuallyHidden,
+  VStack,
+} from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { EditorContent } from "@tiptap/react"
 import {
@@ -16,11 +26,11 @@ import {
 import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
 import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles"
 
+import { ExpandedTableMenuBar } from "./ExpandedTableMenuBar"
 import {
   EXPANDED_TABLE_ATTR,
   ISOLATE_EXPANDED_TABLE_ATTR,
   getExpandedTablePos,
-  placeSelectionInExpandedTable,
   setTableEditorExpanded,
   subscribeTableEditorExpanded,
   syncExpandedTableDom,
@@ -131,16 +141,26 @@ interface EditorProps {
 
 export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
+  const dialogRef = useRef<HTMLElement>(null)
+  const isClosingDialogRef = useRef(false)
   const [isDragReordering, setIsDragReordering] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const expandedTablePos = useSyncExternalStore(
     (listener) => subscribeTableEditorExpanded(editor, listener),
     () => getExpandedTablePos(editor),
     () => null,
   )
-  const expanded = expandedTablePos !== null
+  const editorInDialog = expandedTablePos !== null
   const isTableEditor = editor.extensionManager.extensions.some(
     (ext) => ext.name === "table",
   )
+
+  if (editorInDialog && !isDialogOpen && !isClosingDialogRef.current) {
+    setIsDialogOpen(true)
+  }
+  if (!editorInDialog && isDialogOpen && !isClosingDialogRef.current) {
+    setIsDialogOpen(false)
+  }
 
   useEffect(() => {
     return () => {
@@ -150,60 +170,113 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
 
   useLayoutEffect(() => {
     syncExpandedTableDom(editor, expandedTablePos)
-    if (expandedTablePos !== null) {
-      placeSelectionInExpandedTable(editor, expandedTablePos)
-    }
     return () => {
       syncExpandedTableDom(editor, null)
     }
   }, [editor, expandedTablePos])
 
-  return (
+  useEffect(() => {
+    if (!editorInDialog || !isDialogOpen) return
+    editor.commands.focus()
+  }, [editor, editorInDialog, isDialogOpen])
+
+  const requestClose = () => {
+    isClosingDialogRef.current = true
+    setIsDialogOpen(false)
+  }
+
+  const finishClose = () => {
+    if (!isClosingDialogRef.current) return
+    isClosingDialogRef.current = false
+    setTableEditorExpanded(editor, null)
+  }
+
+  const editorFrame = (
     <Box
-      h={expanded ? "100vh" : "100%"}
-      display={expanded ? "flex" : undefined}
-      flexDirection={expanded ? "column" : undefined}
-      position={expanded ? "fixed" : undefined}
-      inset={expanded ? 0 : undefined}
-      // Above the navbar (docked, 10) and below Chakra's portal wrapper (40),
-      // so the portaled cell pencil paints on top of this layer.
-      zIndex={expanded ? 30 : undefined}
-      bg={expanded ? "base.canvas.default" : undefined}
-      role={expanded ? "dialog" : undefined}
-      aria-label={expanded ? "Expanded table" : undefined}
+      flex={editorInDialog ? "1" : undefined}
+      minH={editorInDialog ? 0 : undefined}
+      h="100%"
+      display="flex"
+      flexDirection="column"
     >
-      {expanded && (
-        <Flex justify="flex-end" flexShrink={0} px="1rem" py="0.75rem">
-          <Button
-            variant="solid"
-            onClick={() => setTableEditorExpanded(editor, null)}
-          >
-            Done
-          </Button>
-        </Flex>
-      )}
-      <Box
-        flex={expanded ? "1" : undefined}
-        minH={expanded ? 0 : undefined}
-        h={expanded ? undefined : "100%"}
-      >
-        <EditorContainer isNested={isNested && !expanded}>
-          {menubar({ editor })}
-          {isTableEditor && (
-            <TableBubbleMenu
-              editor={editor}
-              isDragReordering={isDragReordering}
-            />
-          )}
-          <EditorContentWrapper
+      <EditorContainer isNested={isNested && !editorInDialog}>
+        {editorInDialog ? (
+          <ExpandedTableMenuBar editor={editor} />
+        ) : (
+          menubar({ editor })
+        )}
+        {isTableEditor && (
+          <TableBubbleMenu
             editor={editor}
-            containerRef={containerRef}
-            showTableExtras={isTableEditor}
-            onDragStateChange={setIsDragReordering}
-            expandedTablePos={expandedTablePos}
+            isDragReordering={isDragReordering}
+            portalContainerRef={editorInDialog ? dialogRef : undefined}
           />
-        </EditorContainer>
-      </Box>
+        )}
+        <EditorContentWrapper
+          editor={editor}
+          containerRef={containerRef}
+          showTableExtras={isTableEditor}
+          onDragStateChange={setIsDragReordering}
+          expandedTablePos={expandedTablePos}
+        />
+      </EditorContainer>
     </Box>
+  )
+
+  return (
+    <>
+      <Modal
+        isOpen={isDialogOpen}
+        onClose={requestClose}
+        onCloseComplete={finishClose}
+        closeOnEsc={false}
+        closeOnOverlayClick={false}
+        autoFocus={false}
+        motionPreset="scale"
+        size="full"
+        scrollBehavior="inside"
+      >
+        <ModalOverlay />
+        <ModalContent
+          ref={dialogRef}
+          containerProps={{
+            // Above the navbar (docked, 10) and below the dropdown layer, so
+            // the cell pencil paints on top of this dialog.
+            zIndex: 30,
+          }}
+          m={0}
+          h="100vh"
+          maxH="100vh"
+          maxW="100vw"
+          borderRadius={0}
+          display="flex"
+          flexDirection="column"
+        >
+          {editorInDialog && (
+            <>
+              <ModalHeader p={0} m={0}>
+                <VisuallyHidden>Expanded table</VisuallyHidden>
+              </ModalHeader>
+              <Flex justify="flex-end" flexShrink={0} px="1rem" py="0.75rem">
+                <Button variant="solid" onClick={requestClose}>
+                  Done
+                </Button>
+              </Flex>
+              <ModalBody
+                p={0}
+                flex="1"
+                minH={0}
+                overflow="hidden"
+                display="flex"
+                flexDirection="column"
+              >
+                {editorFrame}
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+      {editorInDialog ? null : editorFrame}
+    </>
   )
 }

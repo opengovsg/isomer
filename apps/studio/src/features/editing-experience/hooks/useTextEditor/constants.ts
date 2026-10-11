@@ -30,6 +30,7 @@ import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
+import { expandedTablePlugin } from "~/features/editing-experience/components/form-builder/renderers/TipTapEditor/expandTableEditor"
 import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
 import {
@@ -217,7 +218,11 @@ export const IsomerTable = Table.extend({
     }
   },
   addProseMirrorPlugins() {
-    return [...(this.parent?.() ?? []), createTableSelectionBorderPlugin()]
+    return [
+      ...(this.parent?.() ?? []),
+      createTableSelectionBorderPlugin(),
+      expandedTablePlugin(),
+    ]
   },
 })
 
