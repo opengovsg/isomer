@@ -383,7 +383,7 @@ describe("TableCaption", () => {
     ).toBeTruthy()
   })
 
-  it("expands the same editor around that table", async () => {
+  it("expands only the table that was opened", async () => {
     // Arrange
     renderHarness({
       type: "prose",
@@ -411,9 +411,9 @@ describe("TableCaption", () => {
       expect(bounds.height).toBeGreaterThan(window.innerHeight * 0.98)
     })
     const modal = within(dialog)
-    expect(modal.getByText("First table")).toBeInTheDocument()
-    expect(modal.getByText("Second table")).toBeInTheDocument()
-    expect(modal.getByText("between tables")).toBeInTheDocument()
+    expect(modal.getByText("First table")).toBeVisible()
+    expect(modal.getByText("Second table")).not.toBeVisible()
+    expect(modal.getByText("between tables")).not.toBeVisible()
     expect(
       modal.getByRole("button", { name: "Page toolbar" }),
     ).toBeInTheDocument()
@@ -451,8 +451,14 @@ describe("TableCaption", () => {
     const dialog = await screen.findByRole("dialog", {
       name: "Expanded table",
     })
-    const cell = within(dialog).getAllByText("Row 1, A")[1]
-    if (!cell) throw new Error("expected the second table cell")
+    const modal = within(dialog)
+    expect(modal.getByText("Leave me")).toBeVisible()
+    expect(modal.getByText("Keep me")).not.toBeVisible()
+    expect(modal.getByText("between tables")).not.toBeVisible()
+    const cell = modal
+      .getAllByText("Row 1, A")
+      .find((element) => element.checkVisibility())
+    if (!cell) throw new Error("expected the expanded table cell")
     await userEvent.click(cell)
     await userEvent.keyboard("X")
 
@@ -474,7 +480,7 @@ describe("TableCaption", () => {
     })
 
     const edited = cellTexts()
-    await userEvent.click(within(dialog).getByRole("button", { name: "Done" }))
+    await userEvent.click(modal.getByRole("button", { name: "Done" }))
 
     // Assert
     await waitFor(() => {
@@ -484,5 +490,8 @@ describe("TableCaption", () => {
     })
     expect(getTableCaptions(getEditor()!)).toEqual(["Keep me", "Leave me"])
     expect(cellTexts()).toEqual(edited)
+    expect(screen.getByText("Keep me")).toBeVisible()
+    expect(screen.getByText("between tables")).toBeVisible()
+    expect(screen.getByText("Leave me")).toBeVisible()
   })
 })

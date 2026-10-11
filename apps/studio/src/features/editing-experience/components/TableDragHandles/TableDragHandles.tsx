@@ -2,7 +2,11 @@ import type { Editor as TiptapEditor } from "@tiptap/react"
 import type { RefObject } from "react"
 import { Box } from "@chakra-ui/react"
 import { useEditorState } from "@tiptap/react"
-import { Fragment, useMemo } from "react"
+import { Fragment, useMemo, useSyncExternalStore } from "react"
+import {
+  getExpandedTablePos,
+  subscribeTableEditorExpanded,
+} from "~/features/editing-experience/components/TableCaption/expandTableEditor"
 import {
   TABLE_CHROME_GAP_PX,
   TABLE_CHROME_THICKNESS_PX,
@@ -54,10 +58,28 @@ export const TableDragHandles = ({
   onDragStateChange,
 }: TableDragHandlesProps) => {
   const geometries = useTableGeometries(editor, containerRef)
+  const expandedTablePos = useSyncExternalStore(
+    (listener) =>
+      editor ? subscribeTableEditorExpanded(editor, listener) : () => undefined,
+    () => (editor ? getExpandedTablePos(editor) : null),
+    () => null,
+  )
+  const visibleGeometries = useMemo(
+    () =>
+      expandedTablePos === null
+        ? geometries
+        : geometries.filter((geometry) => geometry.pos === expandedTablePos),
+    [expandedTablePos, geometries],
+  )
   const { drag, beginGesture, isGestureActive, consumeClickSuppression } =
-    useAxisDragGesture({ editor, containerRef, geometries, onDragStateChange })
+    useAxisDragGesture({
+      editor,
+      containerRef,
+      geometries: visibleGeometries,
+      onDragStateChange,
+    })
   const hoverTablePos = useHoveredTable(
-    geometries,
+    visibleGeometries,
     containerRef,
     isGestureActive,
   )
@@ -71,7 +93,7 @@ export const TableDragHandles = ({
 
   const dropIndicator = useMemo(() => {
     if (!drag) return null
-    const geometry = geometryAt(geometries, drag.tablePos)
+    const geometry = geometryAt(visibleGeometries, drag.tablePos)
     const bounds = geometry ? getTableBounds(geometry) : null
     if (!bounds) return null
     const at =
@@ -80,7 +102,7 @@ export const TableDragHandles = ({
     return drag.axis === "row"
       ? { left: bounds.left, top: at, width: bounds.width, height: 2 }
       : { left: at, top: bounds.top, width: 2, height: bounds.height }
-  }, [drag, geometries])
+  }, [drag, visibleGeometries])
 
   if (!editor) return null
 
@@ -161,7 +183,7 @@ export const TableDragHandles = ({
 
   return (
     <>
-      {geometries.map((geometry) => (
+      {visibleGeometries.map((geometry) => (
         <Fragment key={geometry.pos}>
           {AXES.map((axis) => renderAxisHandles(geometry, axis))}
           {renderAddPills(geometry)}

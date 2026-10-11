@@ -17,6 +17,7 @@ export interface TableCaptionProps {
   onCaptionChange: (caption: string) => void
   onResetColumnWidths?: () => void
   editor: Editor
+  getPos: () => number | undefined
 }
 
 export const TableCaption = ({
@@ -24,6 +25,7 @@ export const TableCaption = ({
   onCaptionChange,
   onResetColumnWidths,
   editor,
+  getPos,
 }: TableCaptionProps) => {
   const {
     isOpen: isTableSettingsModalOpen,
@@ -102,7 +104,11 @@ export const TableCaption = ({
                   />
                 }
                 flexShrink={0}
-                onClick={() => expandTableEditor(editor)}
+                onClick={() => {
+                  const tablePos = getPos()
+                  if (typeof tablePos !== "number") return
+                  expandTableEditor(editor, tablePos)
+                }}
               />
             </Tooltip>
           )}
