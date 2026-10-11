@@ -13,11 +13,11 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
+import { UnsavedSettingsGuard } from "~/features/editing-experience/components/UnsavedSettingsGuard"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { EditFooterPreview } from "~/features/settings/EditFooterPreview"
 import { FooterEditor } from "~/features/settings/FooterEditor"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { useUnsavedSettingsNavigationGuard } from "~/hooks/useUnsavedSettingsNavigationGuard"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
@@ -54,7 +54,6 @@ const FooterSettingsPage: NextPageWithLayout = () => {
     FooterSchemaType | undefined
   >(content)
   const isDirty = !isEqual(previewFooterState, content)
-  const { unsavedSettingsModal } = useUnsavedSettingsNavigationGuard(isDirty)
 
   const handleSaveFooter = (data?: FooterSchemaType) => {
     if (!data) return
@@ -63,7 +62,7 @@ const FooterSettingsPage: NextPageWithLayout = () => {
 
   return (
     <>
-      {unsavedSettingsModal}
+      <UnsavedSettingsGuard isDirty={isDirty} />
 
       <SettingsGrid>
         <SettingsEditorGridItem>

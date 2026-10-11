@@ -18,12 +18,12 @@ import {
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { EditSettingsPreview } from "~/features/editing-experience/components/preview/EditSettingsPreview"
+import { UnsavedSettingsGuard } from "~/features/editing-experience/components/UnsavedSettingsGuard"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { normalizeSiteEntity } from "~/features/settings/AgencySettings/utils"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { useUnsavedSettingsNavigationGuard } from "~/hooks/useUnsavedSettingsNavigationGuard"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
@@ -75,8 +75,6 @@ const AgencySettingsPage: NextPageWithLayout = () => {
       siteEntity: normalizeSiteEntity(initialSettings.siteEntity),
     },
   )
-  const { unsavedSettingsModal } = useUnsavedSettingsNavigationGuard(isDirty)
-
   const onSubmit = () =>
     updateSiteConfigMutation.mutate({
       siteName: state.siteName,
@@ -88,7 +86,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
 
   return (
     <ErrorProvider>
-      {unsavedSettingsModal}
+      <UnsavedSettingsGuard isDirty={isDirty} />
       <SettingsGrid>
         <SettingsEditorGridItem as={SettingsEditingLayout}>
           <SettingsHeader

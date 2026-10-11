@@ -27,11 +27,11 @@ import { WidgetProvider } from "~/features/editing-experience/components/form-bu
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { EditSettingsPreview } from "~/features/editing-experience/components/preview/EditSettingsPreview"
+import { UnsavedSettingsGuard } from "~/features/editing-experience/components/UnsavedSettingsGuard"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { useUnsavedSettingsNavigationGuard } from "~/hooks/useUnsavedSettingsNavigationGuard"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
@@ -99,8 +99,6 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
       },
     })
 
-  const { unsavedSettingsModal } = useUnsavedSettingsNavigationGuard(isDirty)
-
   const onSubmit = () =>
     updateSiteIntegrationsMutation.mutate({
       siteId,
@@ -116,7 +114,7 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
 
   return (
     <ErrorProvider>
-      {unsavedSettingsModal}
+      <UnsavedSettingsGuard isDirty={isDirty} />
       <SettingsGrid>
         <SettingsEditorGridItem as={SettingsEditingLayout}>
           <SettingsHeader

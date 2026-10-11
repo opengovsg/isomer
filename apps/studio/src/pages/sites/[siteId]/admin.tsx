@@ -19,7 +19,7 @@ import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useUnsavedSettingsNavigationGuard } from "~/hooks/useUnsavedSettingsNavigationGuard"
+import { UnsavedSettingsGuard } from "~/features/editing-experience/components/UnsavedSettingsGuard"
 import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
 import { type SessionData } from "~/lib/types/session"
@@ -160,8 +160,6 @@ const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
     },
   })
 
-  const { unsavedSettingsModal } = useUnsavedSettingsNavigationGuard(isDirty)
-
   const onClickUpdate = handleSubmit((input) => {
     mutate({
       siteId,
@@ -171,7 +169,7 @@ const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
 
   return (
     <>
-      {unsavedSettingsModal}
+      <UnsavedSettingsGuard isDirty={isDirty} />
       <chakra.form
         onSubmit={onClickUpdate}
         overflow="auto"

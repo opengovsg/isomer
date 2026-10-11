@@ -14,11 +14,11 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
+import { UnsavedSettingsGuard } from "~/features/editing-experience/components/UnsavedSettingsGuard"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { EditNavbarPreview } from "~/features/settings/EditNavbarPreview"
 import { NavbarEditor } from "~/features/settings/NavbarEditor"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { useUnsavedSettingsNavigationGuard } from "~/hooks/useUnsavedSettingsNavigationGuard"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -53,7 +53,6 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
     NavbarSchemaType | undefined
   >(content)
   const isDirty = !isEqual(previewNavbarState, content)
-  const { unsavedSettingsModal } = useUnsavedSettingsNavigationGuard(isDirty)
 
   const handleSaveNavbar = (data: NavbarSchemaType | undefined) => {
     if (!data) return
@@ -62,7 +61,7 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
 
   return (
     <>
-      {unsavedSettingsModal}
+      <UnsavedSettingsGuard isDirty={isDirty} />
 
       <SettingsGrid>
         <SettingsEditorGridItem h="full">
