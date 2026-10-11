@@ -95,6 +95,30 @@ const getTableCaptions = (editor: TiptapEditor): string[] => {
   return captions
 }
 
+const tableRanges = (editor: TiptapEditor) => {
+  const ranges: { from: number; to: number }[] = []
+  editor.state.doc.descendants((node, pos) => {
+    if (node.type.name !== "table") return true
+    ranges.push({ from: pos, to: pos + node.nodeSize })
+    return false
+  })
+  return ranges
+}
+
+const placeCaretOnText = (editor: TiptapEditor, text: string) => {
+  let textPos: number | undefined
+  editor.state.doc.descendants((node, pos) => {
+    if (textPos !== undefined) return false
+    if (node.isText && node.text === text) {
+      textPos = pos
+      return false
+    }
+    return true
+  })
+  if (textPos === undefined) throw new Error(`expected text "${text}"`)
+  editor.commands.setTextSelection(textPos)
+}
+
 const getCaptionButton = async (name?: string | RegExp) =>
   screen.findByRole("button", {
     name: name ?? /add table caption|edit table caption/i,
@@ -376,7 +400,6 @@ describe("TableCaption", () => {
     })
 
     // Assert
-    expect(editTableButton).not.toHaveTextContent("Expand")
     expect(
       captionButton.compareDocumentPosition(editTableButton) &
         Node.DOCUMENT_POSITION_FOLLOWING,
@@ -421,8 +444,18 @@ describe("TableCaption", () => {
     expect(
       modal.queryByRole("button", { name: "Expand table" }),
     ).not.toBeInTheDocument()
+    // Two rows on the opened table. Handles sit outside the hidden siblings,
+    // so the other table's handles stay in the DOM unless they are filtered.
+    await waitFor(() => {
+      expect(
+        screen.getAllByRole("button", { name: "Drag to reorder row" }),
+      ).toHaveLength(2)
+    })
 
+    // Act
     await userEvent.keyboard("{Escape}")
+
+    // Assert
     expect(
       screen.getByRole("dialog", { name: "Expanded table" }),
     ).toBeInTheDocument()
@@ -442,19 +475,30 @@ describe("TableCaption", () => {
       ],
     })
     await screen.findByText("Leave me")
+    placeCaretOnText(getEditor()!, "between tables")
 
     // Act
     const editButtons = await screen.findAllByRole("button", {
       name: "Expand table",
     })
     await userEvent.click(editButtons[1]!)
+
+    // Assert
     const dialog = await screen.findByRole("dialog", {
       name: "Expanded table",
+    })
+    await waitFor(() => {
+      const { from } = getEditor()!.state.selection
+      const second = tableRanges(getEditor()!)[1]
+      expect(from).toBeGreaterThanOrEqual(second!.from)
+      expect(from).toBeLessThan(second!.to)
     })
     const modal = within(dialog)
     expect(modal.getByText("Leave me")).toBeVisible()
     expect(modal.getByText("Keep me")).not.toBeVisible()
     expect(modal.getByText("between tables")).not.toBeVisible()
+
+    // Act
     const cell = modal
       .getAllByText("Row 1, A")
       .find((element) => element.checkVisibility())
@@ -470,6 +514,7 @@ describe("TableCaption", () => {
       return texts
     }
 
+    // Assert
     // The expanded view is the page editor, so the edit is already saved.
     await waitFor(() => {
       const texts = cellTexts()
@@ -478,8 +523,13 @@ describe("TableCaption", () => {
       expect(texts[2]).toContain("X")
       expect(texts[3]).toBe("Row 1, B")
     })
+    expect(modal.getByText("Keep me")).not.toBeVisible()
+    expect(modal.getByText("between tables")).not.toBeVisible()
 
+    // Arrange
     const edited = cellTexts()
+
+    // Act
     await userEvent.click(modal.getByRole("button", { name: "Done" }))
 
     // Assert
