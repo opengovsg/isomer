@@ -119,7 +119,9 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
       flexDirection={expanded ? "column" : undefined}
       position={expanded ? "fixed" : undefined}
       inset={expanded ? 0 : undefined}
-      zIndex={expanded ? "modal" : undefined}
+      // Above the navbar (docked, 10) and below Chakra's portal wrapper (40),
+      // so the portaled cell pencil paints on top of this layer.
+      zIndex={expanded ? 30 : undefined}
       bg={expanded ? "base.canvas.default" : undefined}
       role={expanded ? "dialog" : undefined}
       aria-label={expanded ? "Expanded table" : undefined}
