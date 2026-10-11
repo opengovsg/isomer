@@ -5,11 +5,15 @@ import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 import { Box, Flex, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { EditorContent } from "@tiptap/react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
 import {
+  EXPANDED_TABLE_ATTR,
+  ISOLATE_EXPANDED_TABLE_ATTR,
+  placeSelectionInExpandedTable,
   registerTableExpand,
   setTableEditorExpanded,
+  syncExpandedTableDom,
 } from "~/features/editing-experience/components/TableCaption/expandTableEditor"
 import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles"
 
@@ -70,6 +74,12 @@ const EditorContentWrapper = ({
       flexDirection="column"
       overflowX="hidden"
       overflowY="auto"
+      sx={{
+        [`& .ProseMirror[${ISOLATE_EXPANDED_TABLE_ATTR}] > :not([${EXPANDED_TABLE_ATTR}])`]:
+          {
+            display: "none",
+          },
+      }}
     >
       <Box
         as={EditorContent}
@@ -110,20 +120,25 @@ interface EditorProps {
 export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isDragReordering, setIsDragReordering] = useState(false)
-  const [expanded, setExpanded] = useState(false)
+  const [expandedTablePos, setExpandedTablePos] = useState<number | null>(null)
+  const expanded = expandedTablePos !== null
   const isTableEditor = editor.extensionManager.extensions.some(
     (ext) => ext.name === "table",
   )
 
-  useEffect(
-    () => registerTableExpand(editor, () => setExpanded(true)),
-    [editor],
-  )
+  useEffect(() => registerTableExpand(editor, setExpandedTablePos), [editor])
 
-  useEffect(() => {
-    setTableEditorExpanded(editor, expanded)
-    return () => setTableEditorExpanded(editor, false)
-  }, [editor, expanded])
+  useLayoutEffect(() => {
+    setTableEditorExpanded(editor, expandedTablePos)
+    syncExpandedTableDom(editor, expandedTablePos)
+    if (expandedTablePos !== null) {
+      placeSelectionInExpandedTable(editor, expandedTablePos)
+    }
+    return () => {
+      setTableEditorExpanded(editor, null)
+      syncExpandedTableDom(editor, null)
+    }
+  }, [editor, expandedTablePos])
 
   return (
     <Box
@@ -141,7 +156,7 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
     >
       {expanded && (
         <Flex justify="flex-end" flexShrink={0} px="1rem" py="0.75rem">
-          <Button variant="solid" onClick={() => setExpanded(false)}>
+          <Button variant="solid" onClick={() => setExpandedTablePos(null)}>
             Done
           </Button>
         </Flex>
