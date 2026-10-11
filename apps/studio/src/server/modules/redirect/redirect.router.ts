@@ -21,7 +21,6 @@ import {
   getRedirectBySource,
   listRedirects,
   resolveRedirectReferences,
-  validateRedirect,
 } from "./redirect.service"
 
 export const redirectRouter = router({
@@ -47,22 +46,6 @@ export const redirectRouter = router({
       })
 
       return countRedirects(input)
-    }),
-
-  // Preflight a would-be redirect, returning blocking errors and non-blocking
-  // warnings so the form can surface them before the user commits. Read-only
-  // and gated on "read" like the other queries — it exposes only whether
-  // internal pages/redirects exist, which read access already covers.
-  validate: protectedProcedure
-    .input(createRedirectSchema)
-    .query(async ({ ctx, input }) => {
-      await validateUserPermissionsForSite({
-        siteId: input.siteId,
-        userId: ctx.user.id,
-        action: "read",
-      })
-
-      return validateRedirect(input)
     }),
 
   // Resolves stored [resource:...] destinations to display permalinks. A read
@@ -115,8 +98,7 @@ export const redirectRouter = router({
   // modal can show row errors or a ready-to-publish preview. A mutation (not a
   // query) purely so the CSV rides in the POST body — a query serialises its
   // input into the request URL, which the server/proxy rejects once the file
-  // nears the size cap (a connection reset). Still read-only and gated on "read"
-  // like the single-redirect `validate` preflight above.
+  // nears the size cap (a connection reset). Still read-only and gated on "read".
   bulkValidate: protectedProcedure
     .input(bulkRedirectsCsvSchema)
     .mutation(async ({ ctx, input }) => {

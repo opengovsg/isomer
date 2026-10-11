@@ -1,8 +1,4 @@
 import type {
-  RedirectValidationIssue,
-  RedirectValidationResult,
-} from "~/constants/redirect"
-import type {
   BulkRedirectsCsvInput,
   CountRedirectsByDestinationInput,
   CountRedirectsInput,
@@ -25,7 +21,6 @@ import {
   BULK_DUPLICATE_SOURCE_MESSAGE,
   BULK_MALFORMED_ROW_MESSAGE,
   REDIRECT_MESSAGES,
-  RedirectValidationCode,
 } from "~/constants/redirect"
 import { parseRedirectCsv } from "~/lib/redirectCsv"
 import {
@@ -524,47 +519,6 @@ const hasLivePageAtSource = async (
     .select("Resource.id")
     .executeTakeFirst()
   return published !== undefined
-}
-
-// Preflight for redirect.create: returns blocking errors without mutating.
-// Advisory only — create re-enforces every error. Destination-liveness is no
-// longer warned here; the table flags not-yet-published destinations instead.
-export const validateRedirect = async ({
-  siteId,
-  source,
-  destination,
-}: CreateRedirectInput): Promise<RedirectValidationResult> => {
-  const errors: RedirectValidationIssue[] = []
-
-  // Recreating a live redirect for the same source is not allowed — the user
-  // must delete the existing one first.
-  const existing = await getLiveRedirectBySource(db, { siteId, source })
-  if (existing) {
-    errors.push({
-      code: RedirectValidationCode.AlreadyExists,
-      message: REDIRECT_MESSAGES.alreadyExists,
-    })
-  }
-
-  // A redirect whose source would shadow a published page — either the exact
-  // page or, for a wildcard, anything at/under its prefix — is blocked.
-  if (await hasLivePageAtSource(siteId, source)) {
-    errors.push({
-      code: RedirectValidationCode.SourceIsExistingPage,
-      message: REDIRECT_MESSAGES.sourceIsExistingPage,
-    })
-  }
-
-  const chained = await getChainedRedirect(db, { siteId, source, destination })
-  if (chained?.isLoop) {
-    errors.push({
-      code: RedirectValidationCode.RedirectLoop,
-      message: REDIRECT_MESSAGES.loop,
-      description: `${chained.normalizedDestination} already redirects to ${source}. Visitors will get stuck in between pages. Delete existing redirects or direct to a different page.`,
-    })
-  }
-
-  return { errors }
 }
 
 export const listRedirects = async ({

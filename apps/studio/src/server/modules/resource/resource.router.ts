@@ -13,8 +13,6 @@ import {
   getChildrenOutputSchema,
   getChildrenSchema,
   getFullPermalinkSchema,
-  getIndexPageOutputSchema,
-  getIndexPageSchema,
   getMetadataSchema,
   getMoveLockInfoOutputSchema,
   getMoveLockInfoSchema,
@@ -1118,31 +1116,5 @@ export const resourceRouter = router({
         // Sort resources to match order of input resourceIds
         (a, b) => resourceIds.indexOf(a.id) - resourceIds.indexOf(b.id),
       )
-    }),
-
-  getIndexPage: protectedProcedure
-    .input(getIndexPageSchema)
-    .output(getIndexPageOutputSchema)
-    .query(async ({ ctx, input: { siteId, parentId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        action: "read",
-        resourceIds: [parentId],
-        userId: ctx.user.id,
-        siteId: Number(siteId),
-      })
-
-      const parent = await db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.parentId", "=", parentId)
-        .where("Resource.type", "=", ResourceType.IndexPage)
-        .select(["Resource.id"])
-        .executeTakeFirst()
-
-      if (!parent) {
-        throw new TRPCError({ code: "NOT_FOUND" })
-      }
-
-      return parent
     }),
 })

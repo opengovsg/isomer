@@ -271,14 +271,4 @@ export const protectedProcedure = baseProcedure.use(authMiddleware)
  * */
 export const webhookProcedure = baseProcedure.use(webhookMiddleware)
 
-/**
- * @see https://trpc.io/docs/v10/middlewares
- */
-export const { middleware } = t
-
-/**
- * @see https://trpc.io/docs/v10/merging-routers
- */
-export const { mergeRouters } = t
-
 export const { createCallerFactory } = t
