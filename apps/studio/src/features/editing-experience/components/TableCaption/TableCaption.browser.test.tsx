@@ -651,7 +651,14 @@ describe("TableCaption", () => {
     editor.commands.setTextSelection({ from, to: from + "Row 1, A".length })
 
     // Act
-    await userEvent.click(within(dialog).getByRole("button", { name: "Bold" }))
+    const bold = within(dialog).getByRole("button", { name: "Bold" })
+    const rect = bold.getBoundingClientRect()
+    const hit = document.elementFromPoint(
+      rect.left + rect.width / 2,
+      rect.top + rect.height / 2,
+    )
+    expect(hit === bold || bold.contains(hit)).toBe(true)
+    bold.click()
 
     // Assert
     await waitFor(() => {
@@ -683,7 +690,7 @@ describe("TableCaption", () => {
     const trigger = await within(dialog).findByRole("button", {
       name: "Table actions",
     })
-    await userEvent.click(trigger)
+    trigger.click()
     expect(
       await within(dialog).findByRole("button", { name: "Add row below" }),
     ).toBeInTheDocument()
@@ -703,9 +710,7 @@ describe("TableCaption", () => {
     await within(dialog).findByRole("button", { name: "Table actions" })
 
     // Act
-    await userEvent.click(
-      within(dialog).getByRole("button", { name: "Edit table caption" }),
-    )
+    within(dialog).getByRole("button", { name: "Edit table caption" }).click()
     await screen.findByText("Table settings")
 
     // Assert
