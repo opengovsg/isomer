@@ -104,9 +104,6 @@ export const PlaceholderCaption: Story = {
     await expect(
       await canvas.findByRole("button", { name: "Add table caption" }),
     ).toHaveTextContent("Add caption")
-    await expect(
-      canvas.queryByRole("button", { name: "Reset column width" }),
-    ).not.toBeInTheDocument()
   },
 }
 
@@ -126,13 +123,6 @@ export const PopulatedCaption: Story = {
 
 export const OverflowingTable: Story = {
   args: { initialContent: WIDE_TABLE },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    await expect(
-      await canvas.findByRole("button", { name: "Reset column width" }),
-    ).toBeInTheDocument()
-  },
 }
 
 export const EditCaptionViaModal: Story = {

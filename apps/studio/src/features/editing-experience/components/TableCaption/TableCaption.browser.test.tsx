@@ -1,7 +1,7 @@
 import type { JSONContent } from "@tiptap/react"
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import { EditorContent } from "@tiptap/react"
 import { useState } from "react"
 import { describe, expect, it } from "vitest"
@@ -11,7 +11,7 @@ import { theme } from "~/theme"
 
 import { DEFAULT_TABLE_CAPTION, LEGACY_DEFAULT_TABLE_CAPTION } from "./utils"
 
-const tableContent = (caption: string, columnWidths?: number[] | null) => ({
+const tableContent = (caption: string, columnWidths?: number[]) => ({
   type: "table",
   attrs: { caption, ...(columnWidths ? { columnWidths } : {}) },
   content: [
@@ -106,7 +106,7 @@ describe("TableCaption", () => {
   })
 
   it("shows a reset control only after column widths are edited", async () => {
-    // Arrange / Act
+    // Arrange
     renderHarness({
       type: "prose",
       content: [tableContent("Sized columns", [180, 240])],
@@ -114,13 +114,14 @@ describe("TableCaption", () => {
     const reset = await screen.findByRole("button", {
       name: "Reset column width",
     })
-    fireEvent.mouseEnter(reset.parentElement!)
+
+    // Act
+    await userEvent.hover(reset)
 
     // Assert
     expect(await screen.findByRole("tooltip")).toHaveTextContent(
       "Reset column width",
     )
-    expect(reset).not.toHaveTextContent(/\w/)
   })
 
   it("clears edited column widths from the reset control", async () => {

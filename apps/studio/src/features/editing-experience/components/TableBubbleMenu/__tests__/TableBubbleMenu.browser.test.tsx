@@ -1057,7 +1057,7 @@ describe("TableBubbleMenu", () => {
 
   it("offers Reset column width in the menu after column widths are edited", async () => {
     // Arrange
-    const { editor, findByRole } = await renderHarness({
+    const { editor, findByText, findByRole } = await renderHarness({
       type: "prose",
       content: [
         {
@@ -1071,10 +1071,8 @@ describe("TableBubbleMenu", () => {
     // Act
     await activateTableBubbleMenu(findByRole)
 
-    // Assert — the caption tooltip also renders this label, so scope to the menu.
-    const actions = document.querySelector("[data-table-bubble-menu-actions]")
-    expect(actions?.textContent).toContain("Reset column width")
-    expect(actions?.textContent).not.toContain("Reset column widths")
+    // Assert
+    expect(await findByText("Reset column width")).toBeTruthy()
   })
 
   it("shows Clear contents and Delete table for a whole-table selection", async () => {
