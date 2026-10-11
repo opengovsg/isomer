@@ -1,6 +1,5 @@
 import type { Editor } from "@tiptap/react"
 
-const expandHandlers = new WeakMap<Editor, (tablePos: number) => void>()
 const expandedTablePositions = new WeakMap<Editor, number>()
 const expandedListeners = new WeakMap<Editor, Set<() => void>>()
 
@@ -8,21 +7,6 @@ const expandedListeners = new WeakMap<Editor, Set<() => void>>()
 export const EXPANDED_TABLE_ATTR = "data-expanded-table"
 /** Set on `.ProseMirror` while one table is expanded, so siblings can be hidden. */
 export const ISOLATE_EXPANDED_TABLE_ATTR = "data-isolate-expanded-table"
-
-/** The editor surface registers this so Expand can enlarge that same editor. */
-export const registerTableExpand = (
-  editor: Editor,
-  expand: (tablePos: number) => void,
-) => {
-  expandHandlers.set(editor, expand)
-  return () => {
-    if (expandHandlers.get(editor) === expand) expandHandlers.delete(editor)
-  }
-}
-
-export const expandTableEditor = (editor: Editor, tablePos: number) => {
-  expandHandlers.get(editor)?.(tablePos)
-}
 
 const notifyExpandedListeners = (editor: Editor) => {
   expandedListeners.get(editor)?.forEach((listener) => listener())
@@ -51,9 +35,6 @@ export const subscribeTableEditorExpanded = (
 
 export const getExpandedTablePos = (editor: Editor): number | null =>
   expandedTablePositions.get(editor) ?? null
-
-export const isTableEditorExpanded = (editor: Editor) =>
-  expandedTablePositions.has(editor)
 
 /**
  * Marks the expanded table and turns on sibling hiding. The attribute has to

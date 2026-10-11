@@ -3,13 +3,13 @@ import { Flex, Icon, Text, Tooltip, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
 import { useSyncExternalStore } from "react"
 import { BiExpand, BiPencil, BiRevision } from "react-icons/bi"
+import {
+  getExpandedTablePos,
+  setTableEditorExpanded,
+  subscribeTableEditorExpanded,
+} from "~/features/editing-experience/components/form-builder/renderers/TipTapEditor/expandTableEditor"
 import { TableSettingsModal } from "~/features/editing-experience/components/TableSettingsModal/TableSettingsModal"
 
-import {
-  expandTableEditor,
-  isTableEditorExpanded,
-  subscribeTableEditorExpanded,
-} from "./expandTableEditor"
 import { isPlaceholderTableCaption } from "./utils"
 
 export interface TableCaptionProps {
@@ -36,7 +36,7 @@ export const TableCaption = ({
   const hasCaption = !isPlaceholderTableCaption(caption)
   const expanded = useSyncExternalStore(
     (listener) => subscribeTableEditorExpanded(editor, listener),
-    () => isTableEditorExpanded(editor),
+    () => getExpandedTablePos(editor) !== null,
     () => false,
   )
 
@@ -107,7 +107,7 @@ export const TableCaption = ({
                 onClick={() => {
                   const tablePos = getPos()
                   if (typeof tablePos !== "number") return
-                  expandTableEditor(editor, tablePos)
+                  setTableEditorExpanded(editor, tablePos)
                 }}
               />
             </Tooltip>

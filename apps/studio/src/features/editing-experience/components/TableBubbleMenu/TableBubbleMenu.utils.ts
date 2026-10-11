@@ -309,14 +309,6 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   })
 }
 
-// Hide the menu while a modal that does not contain this editor is open.
-// The focused table editor lives inside its own dialog, so its menu stays up.
-// Caption and link dialogs are outside the editor DOM and still hide it.
-export const isEditorModalOpen = (editorDom?: HTMLElement | null) => {
-  const dialogs = document.querySelectorAll(
-    '[role="dialog"][aria-modal="true"]',
-  )
-  return [...dialogs].some(
-    (dialog) => !editorDom || !dialog.contains(editorDom),
-  )
-}
+// Hide the menu while a Chakra modal dialog is open.
+export const isEditorModalOpen = () =>
+  document.querySelector('[role="dialog"][aria-modal="true"]') != null
