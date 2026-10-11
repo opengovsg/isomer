@@ -11,9 +11,9 @@ import { theme } from "~/theme"
 
 import { DEFAULT_TABLE_CAPTION, LEGACY_DEFAULT_TABLE_CAPTION } from "./utils"
 
-const tableContent = (caption: string) => ({
+const tableContent = (caption: string, columnWidths?: number[]) => ({
   type: "table",
-  attrs: { caption },
+  attrs: { caption, ...(columnWidths ? { columnWidths } : {}) },
   content: [
     {
       type: "tableRow",
@@ -64,6 +64,18 @@ const renderHarness = (initialContent: JSONContent) => {
   return { ...utils, getEditor: () => editor }
 }
 
+const getColumnWidths = (editor: TiptapEditor): unknown => {
+  let widths: unknown
+  editor.state.doc.descendants((node) => {
+    if (node.type.name === "table") {
+      widths = node.attrs.columnWidths
+      return false
+    }
+    return true
+  })
+  return widths
+}
+
 const getTableCaptions = (editor: TiptapEditor): string[] => {
   const captions: string[] = []
   editor.state.doc.descendants((node) => {
@@ -88,6 +100,50 @@ describe("TableCaption", () => {
     expect(await getCaptionButton("Add table caption")).toHaveTextContent(
       "Add caption",
     )
+    expect(
+      screen.queryByRole("button", { name: "Reset column width" }),
+    ).not.toBeInTheDocument()
+  })
+
+  it("shows a reset control only after column widths are edited", async () => {
+    // Arrange
+    renderHarness({
+      type: "prose",
+      content: [tableContent("Sized columns", [180, 240])],
+    })
+    const reset = await screen.findByRole("button", {
+      name: "Reset column width",
+    })
+
+    // Act
+    await userEvent.hover(reset)
+
+    // Assert
+    expect(await screen.findByRole("tooltip")).toHaveTextContent(
+      "Reset column width",
+    )
+  })
+
+  it("clears edited column widths from the reset control", async () => {
+    // Arrange
+    const { getEditor } = renderHarness({
+      type: "prose",
+      content: [tableContent("Sized columns", [180, 240])],
+    })
+    const reset = await screen.findByRole("button", {
+      name: "Reset column width",
+    })
+
+    // Act
+    await userEvent.click(reset)
+
+    // Assert
+    await waitFor(() => {
+      expect(getColumnWidths(getEditor()!)).toBeNull()
+    })
+    expect(
+      screen.queryByRole("button", { name: "Reset column width" }),
+    ).not.toBeInTheDocument()
   })
 
   it("renders Add caption for legacy and current default placeholder captions", async () => {

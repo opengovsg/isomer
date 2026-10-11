@@ -1055,6 +1055,26 @@ describe("TableBubbleMenu", () => {
     expect(rowTextsAt(editor, 2)).toEqual(["", "", "Row 2, C"])
   })
 
+  it("offers Reset column width in the menu after column widths are edited", async () => {
+    // Arrange
+    const { editor, findByText, findByRole } = await renderHarness({
+      type: "prose",
+      content: [
+        {
+          ...SEED_TABLE,
+          attrs: { caption: "Test table", columnWidths: [120, 160, 200] },
+        },
+      ],
+    })
+    selectCells(editor, 0, 0)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+
+    // Assert
+    expect(await findByText("Reset column width")).toBeTruthy()
+  })
+
   it("shows Clear contents and Delete table for a whole-table selection", async () => {
     const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
