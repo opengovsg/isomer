@@ -2,10 +2,10 @@ import type { JSONContent } from "@tiptap/react"
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { render, screen, waitFor, within } from "@testing-library/react"
-import { EditorContent } from "@tiptap/react"
 import { useState } from "react"
 import { describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
+import { Editor } from "~/features/editing-experience/components/form-builder/renderers/TipTapEditor/components"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { theme } from "~/theme"
 
@@ -46,7 +46,14 @@ const Harness = ({
 
   if (editor) onEditorReady?.(editor)
 
-  return <EditorContent editor={editor} />
+  if (!editor) return null
+
+  return (
+    <Editor
+      editor={editor}
+      menubar={() => <button type="button">Page toolbar</button>}
+    />
+  )
 }
 
 const renderHarness = (initialContent: JSONContent) => {
@@ -376,7 +383,7 @@ describe("TableCaption", () => {
     ).toBeTruthy()
   })
 
-  it("opens only that table with table formatting controls", async () => {
+  it("expands the same editor around that table", async () => {
     // Arrange
     renderHarness({
       type: "prose",
@@ -397,13 +404,7 @@ describe("TableCaption", () => {
     await userEvent.click(editButtons[0]!)
 
     // Assert
-    const dialog = await screen.findByRole(
-      "dialog",
-      { name: "Edit table" },
-      // The focused editor loads on demand. A cold chunk can exceed the
-      // default 1s query timeout on CI.
-      { timeout: 10_000 },
-    )
+    const dialog = await screen.findByRole("dialog", { name: "Expanded table" })
     await waitFor(() => {
       const bounds = dialog.getBoundingClientRect()
       expect(bounds.width).toBeGreaterThan(window.innerWidth * 0.98)
@@ -411,40 +412,20 @@ describe("TableCaption", () => {
     })
     const modal = within(dialog)
     expect(modal.getByText("First table")).toBeInTheDocument()
-    expect(modal.getByText("Column A")).toBeInTheDocument()
-    expect(modal.queryByText("Second table")).not.toBeInTheDocument()
-    expect(modal.queryByText("between tables")).not.toBeInTheDocument()
+    expect(modal.getByText("Second table")).toBeInTheDocument()
+    expect(modal.getByText("between tables")).toBeInTheDocument()
     expect(
-      modal.getByRole("button", { name: "Superscript" }),
+      modal.getByRole("button", { name: "Page toolbar" }),
     ).toBeInTheDocument()
-    expect(modal.getByRole("button", { name: "Subscript" })).toBeInTheDocument()
-    expect(
-      modal.queryByRole("button", { name: /^text styles$/i }),
-    ).not.toBeInTheDocument()
-    expect(
-      modal.queryByRole("button", { name: /^more options$/i }),
-    ).not.toBeInTheDocument()
-    expect(
-      modal.queryByRole("button", { name: /^table$/i }),
-    ).not.toBeInTheDocument()
-    expect(
-      modal.queryByRole("button", { name: /^divider$/i }),
-    ).not.toBeInTheDocument()
-    expect(
-      modal.queryByRole("button", { name: "Expand table" }),
-    ).not.toBeInTheDocument()
-    expect(
-      modal.queryByRole("button", { name: /^close$/i }),
-    ).not.toBeInTheDocument()
     expect(modal.getByRole("button", { name: "Done" })).toBeInTheDocument()
 
     await userEvent.keyboard("{Escape}")
     expect(
-      screen.getByRole("dialog", { name: "Edit table" }),
+      screen.getByRole("dialog", { name: "Expanded table" }),
     ).toBeInTheDocument()
-  }, 20_000)
+  })
 
-  it("writes cell edits from the modal back to that table", async () => {
+  it("edits the table in place and closes without a separate save", async () => {
     // Arrange
     const { getEditor } = renderHarness({
       type: "prose",
@@ -464,31 +445,41 @@ describe("TableCaption", () => {
       name: "Expand table",
     })
     await userEvent.click(editButtons[1]!)
-    const dialog = await screen.findByRole(
-      "dialog",
-      { name: "Edit table" },
-      { timeout: 10_000 },
-    )
-    await userEvent.click(within(dialog).getByText("Row 1, A"))
-    await userEvent.keyboard("{End} edited")
+    const dialog = await screen.findByRole("dialog", {
+      name: "Expanded table",
+    })
+    const cell = within(dialog).getAllByText("Row 1, A")[1]
+    if (!cell) throw new Error("expected the second table cell")
+    await userEvent.click(cell)
+    await userEvent.keyboard("X")
+
+    const cellTexts = () => {
+      const texts: string[] = []
+      getEditor()!.state.doc.descendants((node) => {
+        if (node.type.name === "tableCell") texts.push(node.textContent)
+      })
+      return texts
+    }
+
+    // The expanded view is the page editor, so the edit is already saved.
+    await waitFor(() => {
+      const texts = cellTexts()
+      expect(texts[0]).toBe("Row 1, A")
+      expect(texts[1]).toBe("Row 1, B")
+      expect(texts[2]).toContain("X")
+      expect(texts[3]).toBe("Row 1, B")
+    })
+
+    const edited = cellTexts()
     await userEvent.click(within(dialog).getByRole("button", { name: "Done" }))
 
     // Assert
     await waitFor(() => {
       expect(
-        screen.queryByRole("dialog", { name: "Edit table" }),
+        screen.queryByRole("dialog", { name: "Expanded table" }),
       ).not.toBeInTheDocument()
     })
     expect(getTableCaptions(getEditor()!)).toEqual(["Keep me", "Leave me"])
-    const cellTexts: string[] = []
-    getEditor()!.state.doc.descendants((node) => {
-      if (node.type.name === "tableCell") cellTexts.push(node.textContent)
-    })
-    expect(cellTexts).toEqual([
-      "Row 1, A",
-      "Row 1, B",
-      "Row 1, A edited",
-      "Row 1, B",
-    ])
-  }, 20_000)
+    expect(cellTexts()).toEqual(edited)
+  })
 })

@@ -1,7 +1,6 @@
 import type { ControlProps } from "@jsonforms/core"
 import type { EditorEvents, Extensions, JSONContent } from "@tiptap/react"
 import CharacterCount from "@tiptap/extension-character-count"
-import { Document } from "@tiptap/extension-document"
 import { TableRow } from "@tiptap/extension-table-row"
 import { useEditor } from "@tiptap/react"
 import TextDirection from "tiptap-text-direction"
@@ -26,30 +25,18 @@ export interface BaseEditorProps {
   onContentError?: (props: EditorEvents["contentError"]) => void
 }
 
-// One table and nothing else, so the focused modal cannot grow into a document.
-const TABLE_ONLY_DOCUMENT = Document.extend({
-  name: "prose",
-  content: "table",
-})
-
-const TABLE_FOCUS_BASE_EXTENSIONS: Extensions = [
-  TABLE_ONLY_DOCUMENT,
-  ...BASE_EXTENSIONS.filter((extension) => extension.name !== "prose"),
-]
-
 const useBaseEditor = ({
   data,
   handleChange,
   onContentError,
   extensions,
-  baseExtensions = BASE_EXTENSIONS,
-}: BaseEditorProps & { extensions: Extensions; baseExtensions?: Extensions }) =>
+}: BaseEditorProps & { extensions: Extensions }) =>
   useEditor({
     immediatelyRender: false,
     shouldRerenderOnTransaction: true,
     enableContentCheck: true,
     extensions: [
-      ...baseExtensions,
+      ...BASE_EXTENSIONS,
       ...extensions,
       TextDirection.configure({
         types: [HEADING_TYPE, PARAGRAPH_TYPE],
@@ -77,19 +64,6 @@ export const useTextEditor = (props: BaseEditorProps) =>
   useBaseEditor({
     ...props,
     extensions: TEXT_EDITOR_EXTRA_EXTENSIONS,
-  })
-
-export const useTableFocusEditor = (props: BaseEditorProps) =>
-  useBaseEditor({
-    ...props,
-    baseExtensions: TABLE_FOCUS_BASE_EXTENSIONS,
-    extensions: [
-      ...PROSE_EXTENSIONS,
-      TableRow,
-      IsomerTable.configure({ focusEdit: true }),
-      IsomerTableCell,
-      IsomerTableHeader,
-    ],
   })
 
 export const useCalloutEditor = (props: BaseEditorProps) =>

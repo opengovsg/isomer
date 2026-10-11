@@ -186,26 +186,13 @@ const EMPTY_TABLE: JSONContent = {
   ],
 }
 
-const expectTableEditingControls = async (dialog: HTMLElement) => {
+const expectSameEditorControls = async (dialog: HTMLElement) => {
   const modal = within(dialog)
+  await expect(modal.getByRole("button", { name: "Bold" })).toBeInTheDocument()
+  await expect(modal.getByRole("button", { name: "Done" })).toBeInTheDocument()
   await expect(
-    modal.getByRole("button", { name: /^superscript$/i }),
+    modal.getByRole("button", { name: "Expand table" }),
   ).toBeInTheDocument()
-  await expect(
-    modal.getByRole("button", { name: /^subscript$/i }),
-  ).toBeInTheDocument()
-  await expect(
-    modal.queryByRole("button", { name: /^text styles$/i }),
-  ).not.toBeInTheDocument()
-  await expect(
-    modal.queryByRole("button", { name: /^more options$/i }),
-  ).not.toBeInTheDocument()
-  await expect(
-    modal.queryByRole("button", { name: /^table$/i }),
-  ).not.toBeInTheDocument()
-  await expect(
-    modal.queryByRole("button", { name: "Expand table" }),
-  ).not.toBeInTheDocument()
 }
 
 export const EditEmptyTable: Story = {
@@ -218,8 +205,8 @@ export const EditEmptyTable: Story = {
       await canvas.findByRole("button", { name: "Expand table" }),
     )
 
-    const dialog = await body.findByRole("dialog", { name: "Edit table" })
-    await expectTableEditingControls(dialog)
+    const dialog = await body.findByRole("dialog", { name: "Expanded table" })
+    await expectSameEditorControls(dialog)
   },
 }
 
@@ -233,13 +220,13 @@ export const EditPopulatedTable: Story = {
       await canvas.findByRole("button", { name: "Expand table" }),
     )
 
-    const dialog = await body.findByRole("dialog", { name: "Edit table" })
+    const dialog = await body.findByRole("dialog", { name: "Expanded table" })
     await expect(
       await within(dialog).findByText(
         "Figure 1: Quarterly revenue by department",
       ),
     ).toBeInTheDocument()
     await expect(within(dialog).getByText("Column A")).toBeInTheDocument()
-    await expectTableEditingControls(dialog)
+    await expectSameEditorControls(dialog)
   },
 }

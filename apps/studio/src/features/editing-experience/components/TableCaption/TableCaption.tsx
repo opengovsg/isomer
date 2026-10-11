@@ -1,28 +1,17 @@
-import type { Editor, JSONContent } from "@tiptap/react"
+import type { Editor } from "@tiptap/react"
 import { Flex, Icon, Text, Tooltip, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
-import { lazy, Suspense, useState } from "react"
 import { BiExpand, BiPencil, BiRevision } from "react-icons/bi"
 import { TableSettingsModal } from "~/features/editing-experience/components/TableSettingsModal/TableSettingsModal"
 
+import { expandTableEditor } from "./expandTableEditor"
 import { isPlaceholderTableCaption } from "./utils"
-
-// Lazy so the node view does not statically import the editor hook. That hook
-// loads this node view and would cycle.
-const TableFocusEditorModal = lazy(() =>
-  import("./TableFocusEditorModal").then((module) => ({
-    default: module.TableFocusEditorModal,
-  })),
-)
 
 export interface TableCaptionProps {
   caption: string
   onCaptionChange: (caption: string) => void
   onResetColumnWidths?: () => void
   editor: Editor
-  getPos: () => number | undefined
-  table: JSONContent
-  showTableEditorButton?: boolean
 }
 
 export const TableCaption = ({
@@ -30,23 +19,12 @@ export const TableCaption = ({
   onCaptionChange,
   onResetColumnWidths,
   editor,
-  getPos,
-  table,
-  showTableEditorButton = true,
 }: TableCaptionProps) => {
   const {
     isOpen: isTableSettingsModalOpen,
     onOpen: onTableSettingsModalOpen,
     onClose: onTableSettingsModalClose,
   } = useDisclosure()
-  const {
-    isOpen: isTableEditorModalOpen,
-    onOpen: onTableEditorModalOpen,
-    onClose: onTableEditorModalClose,
-  } = useDisclosure()
-  // Stay mounted through the close transition. Unmounting with isOpen still
-  // true skips Chakra's exit animation.
-  const [isTableEditorPresent, setIsTableEditorPresent] = useState(false)
 
   const hasCaption = !isPlaceholderTableCaption(caption)
 
@@ -99,28 +77,23 @@ export const TableCaption = ({
               />
             </Tooltip>
           )}
-          {showTableEditorButton && (
-            <Tooltip label="Expand table" hasArrow openDelay={500}>
-              <IconButton
-                variant="clear"
-                size="xs"
-                aria-label="Expand table"
-                color="interaction.links.default"
-                icon={
-                  <Icon
-                    as={BiExpand}
-                    color="interaction.links.default"
-                    boxSize="1rem"
-                  />
-                }
-                flexShrink={0}
-                onClick={() => {
-                  setIsTableEditorPresent(true)
-                  onTableEditorModalOpen()
-                }}
-              />
-            </Tooltip>
-          )}
+          <Tooltip label="Expand table" hasArrow openDelay={500}>
+            <IconButton
+              variant="clear"
+              size="xs"
+              aria-label="Expand table"
+              color="interaction.links.default"
+              icon={
+                <Icon
+                  as={BiExpand}
+                  color="interaction.links.default"
+                  boxSize="1rem"
+                />
+              }
+              flexShrink={0}
+              onClick={() => expandTableEditor(editor)}
+            />
+          </Tooltip>
         </Flex>
       </Flex>
 
@@ -132,19 +105,6 @@ export const TableCaption = ({
           onClose={onTableSettingsModalClose}
           onSave={onCaptionChange}
         />
-      )}
-
-      {showTableEditorButton && isTableEditorPresent && (
-        <Suspense fallback={null}>
-          <TableFocusEditorModal
-            table={table}
-            parentEditor={editor}
-            getPos={getPos}
-            isOpen={isTableEditorModalOpen}
-            onClose={onTableEditorModalClose}
-            onExited={() => setIsTableEditorPresent(false)}
-          />
-        </Suspense>
       )}
     </>
   )
