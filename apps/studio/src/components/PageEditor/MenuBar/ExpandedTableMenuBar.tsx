@@ -1,6 +1,5 @@
 import type { Editor } from "@tiptap/react"
 import type { ComponentType } from "react"
-import type { PossibleMenubarItemProps } from "~/components/PageEditor/MenuBar/MenubarItem/types"
 import { useDisclosure } from "@chakra-ui/react"
 import { lazy, Suspense, useMemo } from "react"
 import {
@@ -13,7 +12,9 @@ import {
   BiUnderline,
 } from "react-icons/bi"
 import { MdSubscript, MdSuperscript } from "react-icons/md"
-import { MenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
+
+import type { PossibleMenubarItemProps } from "./MenubarItem/types"
+import { MenuBar } from "./MenuBar"
 
 interface LinkModalProps {
   editor: Editor
@@ -23,11 +24,9 @@ interface LinkModalProps {
 
 // Loaded on open. A static import pulls next/router, which browser tests cannot run.
 const TiptapLinkEditorModal = lazy(() =>
-  import("~/components/PageEditor/MenuBar/TiptapLinkEditorModal").then(
-    (module) => ({
-      default: module.TiptapLinkEditorModal as ComponentType<LinkModalProps>,
-    }),
-  ),
+  import("./TiptapLinkEditorModal").then((module) => ({
+    default: module.TiptapLinkEditorModal as ComponentType<LinkModalProps>,
+  })),
 )
 
 /** Formatting actions for the expanded table. Page inserts and table deletion stay out. */

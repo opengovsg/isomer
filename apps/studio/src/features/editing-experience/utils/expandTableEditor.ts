@@ -1,5 +1,6 @@
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
 import type { Transaction } from "@tiptap/pm/state"
+import type { EditorView } from "@tiptap/pm/view"
 import type { Editor } from "@tiptap/react"
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state"
 
@@ -73,6 +74,29 @@ const transactionStaysInsideTable = (
   return true
 }
 
+const clearExpandedTableDom = (root: HTMLElement) => {
+  root.querySelectorAll(`[${EXPANDED_TABLE_ATTR}]`).forEach((element) => {
+    element.removeAttribute(EXPANDED_TABLE_ATTR)
+  })
+  root.removeAttribute(ISOLATE_EXPANDED_TABLE_ATTR)
+}
+
+const markExpandedTable = (view: EditorView) => {
+  const root = view.dom
+  if (!(root instanceof HTMLElement)) return
+  clearExpandedTableDom(root)
+
+  const tablePos = expandedTablePluginKey.getState(view.state)
+  if (typeof tablePos !== "number") return
+
+  // nodeDOM is the direct child of `.ProseMirror`. The React tree inside it is not.
+  const tableDom = view.nodeDOM(tablePos)
+  if (tableDom instanceof HTMLElement) {
+    tableDom.setAttribute(EXPANDED_TABLE_ATTR, "")
+  }
+  root.setAttribute(ISOLATE_EXPANDED_TABLE_ATTR, "")
+}
+
 export const expandedTablePlugin = () =>
   new Plugin<number | null>({
     key: expandedTablePluginKey,
@@ -112,6 +136,17 @@ export const expandedTablePlugin = () =>
         TextSelection.create(newState.doc, textPos),
       )
     },
+    view(editorView) {
+      return {
+        update(view) {
+          markExpandedTable(view)
+        },
+        destroy() {
+          const root = editorView.dom
+          if (root instanceof HTMLElement) clearExpandedTableDom(root)
+        },
+      }
+    },
   })
 
 export const setTableEditorExpanded = (
@@ -139,33 +174,4 @@ export const subscribeTableEditorExpanded = (
 export const getExpandedTablePos = (editor: Editor): number | null => {
   const pos = expandedTablePluginKey.getState(editor.state)
   return typeof pos === "number" ? pos : null
-}
-
-/**
- * Marks the expanded table and turns on sibling hiding. The attribute has to
- * live on `nodeDOM`, which is the direct child of `.ProseMirror` — the React
- * wrapper inside it is not.
- */
-export const syncExpandedTableDom = (
-  editor: Editor,
-  tablePos: number | null,
-) => {
-  if (editor.isDestroyed) return
-  const root = editor.view.dom
-  if (!(root instanceof HTMLElement)) return
-
-  root.querySelectorAll(`[${EXPANDED_TABLE_ATTR}]`).forEach((element) => {
-    element.removeAttribute(EXPANDED_TABLE_ATTR)
-  })
-
-  if (tablePos === null) {
-    root.removeAttribute(ISOLATE_EXPANDED_TABLE_ATTR)
-    return
-  }
-
-  const tableDom = editor.view.nodeDOM(tablePos)
-  if (tableDom instanceof HTMLElement) {
-    tableDom.setAttribute(EXPANDED_TABLE_ATTR, "")
-  }
-  root.setAttribute(ISOLATE_EXPANDED_TABLE_ATTR, "")
 }
