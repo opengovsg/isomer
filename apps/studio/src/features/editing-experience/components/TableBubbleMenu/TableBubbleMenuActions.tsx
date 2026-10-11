@@ -25,7 +25,7 @@ import {
   BiCopy,
   BiDownArrowAlt,
   BiLeftArrowAlt,
-  BiReset,
+  BiRevision,
   BiRightArrowAlt,
   BiTrash,
   BiUpArrowAlt,
@@ -600,8 +600,8 @@ const ResetColumnWidths = ({ editor }: { editor: Editor }) => {
 
   return (
     <ActionButton
-      label="Reset column widths"
-      icon={<BiReset fontSize="1rem" />}
+      label="Reset column width"
+      icon={<BiRevision fontSize="1rem" />}
       onClick={() => {
         const tr = editor.state.tr
         setTableColumnWidths(tr, rect.tableStart - 1, null)

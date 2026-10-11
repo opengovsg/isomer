@@ -83,6 +83,11 @@ export const TableNodeView = ({
           onCaptionChange={(nextCaption) =>
             updateAttributes({ caption: nextCaption })
           }
+          onResetColumnWidths={
+            editor.isEditable && widths
+              ? () => commitColumnWidths(null)
+              : undefined
+          }
         />
       </Box>
       <Box p={`${TABLE_GUTTER_PX}px`} minW={0}>

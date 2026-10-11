@@ -1055,6 +1055,28 @@ describe("TableBubbleMenu", () => {
     expect(rowTextsAt(editor, 2)).toEqual(["", "", "Row 2, C"])
   })
 
+  it("offers Reset column width in the menu after column widths are edited", async () => {
+    // Arrange
+    const { editor, findByRole } = await renderHarness({
+      type: "prose",
+      content: [
+        {
+          ...SEED_TABLE,
+          attrs: { caption: "Test table", columnWidths: [120, 160, 200] },
+        },
+      ],
+    })
+    selectCells(editor, 0, 0)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+
+    // Assert — the caption tooltip also renders this label, so scope to the menu.
+    const actions = document.querySelector("[data-table-bubble-menu-actions]")
+    expect(actions?.textContent).toContain("Reset column width")
+    expect(actions?.textContent).not.toContain("Reset column widths")
+  })
+
   it("shows Clear contents and Delete table for a whole-table selection", async () => {
     const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
