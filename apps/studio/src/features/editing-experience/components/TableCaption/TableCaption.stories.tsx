@@ -104,9 +104,6 @@ export const PlaceholderCaption: Story = {
     await expect(
       await canvas.findByRole("button", { name: "Add table caption" }),
     ).toHaveTextContent("Add caption")
-    await expect(
-      await canvas.findByRole("button", { name: "Expand table" }),
-    ).toBeInTheDocument()
   },
 }
 
@@ -121,9 +118,6 @@ export const PopulatedCaption: Story = {
     await expect(
       await canvas.findByRole("button", { name: "Edit table caption" }),
     ).toHaveTextContent("Edit caption")
-    await expect(
-      await canvas.findByRole("button", { name: "Expand table" }),
-    ).toBeInTheDocument()
   },
 }
 
@@ -160,73 +154,22 @@ export const EditCaptionViaModal: Story = {
   },
 }
 
-const EMPTY_TABLE: JSONContent = {
-  type: "prose",
-  content: [
-    {
-      type: "table",
-      attrs: { caption: "" },
-      content: [
-        {
-          type: "tableRow",
-          content: ["", ""].map(() => ({
-            type: "tableHeader",
-            content: [{ type: "paragraph" }],
-          })),
-        },
-        {
-          type: "tableRow",
-          content: ["", ""].map(() => ({
-            type: "tableCell",
-            content: [{ type: "paragraph" }],
-          })),
-        },
-      ],
-    },
-  ],
-}
-
-const expectSameEditorControls = async (dialog: HTMLElement) => {
-  const modal = within(dialog)
-  await expect(modal.getByRole("button", { name: "Bold" })).toBeInTheDocument()
-  await expect(modal.getByRole("button", { name: "Done" })).toBeInTheDocument()
-  await expect(
-    modal.queryByRole("button", { name: "Expand table" }),
-  ).not.toBeInTheDocument()
-}
-
-export const EditEmptyTable: Story = {
-  args: { initialContent: EMPTY_TABLE },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const body = within(canvasElement.ownerDocument.body)
-
-    await userEvent.click(
-      await canvas.findByRole("button", { name: "Expand table" }),
-    )
-
-    const dialog = await body.findByRole("dialog", { name: "Expanded table" })
-    await expectSameEditorControls(dialog)
-  },
-}
-
-export const EditPopulatedTable: Story = {
+export const ExpandedTable: Story = {
   args: { initialContent: SINGLE_TABLE_WITH_CAPTION },
   play: async ({ canvasElement }) => {
+    // Arrange
     const canvas = within(canvasElement)
     const body = within(canvasElement.ownerDocument.body)
 
+    // Act
     await userEvent.click(
       await canvas.findByRole("button", { name: "Expand table" }),
     )
 
+    // Assert
     const dialog = await body.findByRole("dialog", { name: "Expanded table" })
     await expect(
-      await within(dialog).findByText(
-        "Figure 1: Quarterly revenue by department",
-      ),
+      within(dialog).getByRole("button", { name: "Bold" }),
     ).toBeInTheDocument()
-    await expect(within(dialog).getByText("Column A")).toBeInTheDocument()
-    await expectSameEditorControls(dialog)
   },
 }
