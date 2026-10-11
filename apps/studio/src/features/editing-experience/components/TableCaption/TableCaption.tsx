@@ -1,10 +1,15 @@
 import type { Editor } from "@tiptap/react"
 import { Flex, Icon, Text, Tooltip, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
+import { useSyncExternalStore } from "react"
 import { BiExpand, BiPencil, BiRevision } from "react-icons/bi"
 import { TableSettingsModal } from "~/features/editing-experience/components/TableSettingsModal/TableSettingsModal"
 
-import { expandTableEditor } from "./expandTableEditor"
+import {
+  expandTableEditor,
+  isTableEditorExpanded,
+  subscribeTableEditorExpanded,
+} from "./expandTableEditor"
 import { isPlaceholderTableCaption } from "./utils"
 
 export interface TableCaptionProps {
@@ -27,6 +32,11 @@ export const TableCaption = ({
   } = useDisclosure()
 
   const hasCaption = !isPlaceholderTableCaption(caption)
+  const expanded = useSyncExternalStore(
+    (listener) => subscribeTableEditorExpanded(editor, listener),
+    () => isTableEditorExpanded(editor),
+    () => false,
+  )
 
   return (
     <>
@@ -77,23 +87,25 @@ export const TableCaption = ({
               />
             </Tooltip>
           )}
-          <Tooltip label="Expand table" hasArrow openDelay={500}>
-            <IconButton
-              variant="clear"
-              size="xs"
-              aria-label="Expand table"
-              color="interaction.links.default"
-              icon={
-                <Icon
-                  as={BiExpand}
-                  color="interaction.links.default"
-                  boxSize="1rem"
-                />
-              }
-              flexShrink={0}
-              onClick={() => expandTableEditor(editor)}
-            />
-          </Tooltip>
+          {!expanded && (
+            <Tooltip label="Expand table" hasArrow openDelay={500}>
+              <IconButton
+                variant="clear"
+                size="xs"
+                aria-label="Expand table"
+                color="interaction.links.default"
+                icon={
+                  <Icon
+                    as={BiExpand}
+                    color="interaction.links.default"
+                    boxSize="1rem"
+                  />
+                }
+                flexShrink={0}
+                onClick={() => expandTableEditor(editor)}
+              />
+            </Tooltip>
+          )}
         </Flex>
       </Flex>
 

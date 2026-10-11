@@ -7,7 +7,10 @@ import { Button } from "@opengovsg/design-system-react"
 import { EditorContent } from "@tiptap/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
-import { registerTableExpand } from "~/features/editing-experience/components/TableCaption/expandTableEditor"
+import {
+  registerTableExpand,
+  setTableEditorExpanded,
+} from "~/features/editing-experience/components/TableCaption/expandTableEditor"
 import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles"
 
 const EditorContainer = ({
@@ -116,6 +119,11 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
     () => registerTableExpand(editor, () => setExpanded(true)),
     [editor],
   )
+
+  useEffect(() => {
+    setTableEditorExpanded(editor, expanded)
+    return () => setTableEditorExpanded(editor, false)
+  }, [editor, expanded])
 
   return (
     <Box
