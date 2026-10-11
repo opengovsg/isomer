@@ -38,10 +38,9 @@ const scaleOf = (
 })
 
 /**
- * The focused table editor opens in a modal that scales in from 95%. Handles
- * are positioned in layout pixels, so a measurement taken mid-animation has to
- * cancel that ancestor transform. Otherwise the add pills stay inset, overlapping
- * the table, until the next editor transaction.
+ * Ancestor CSS transforms are included in `getBoundingClientRect`. Handles are
+ * positioned in layout pixels, so a measurement taken under a transform has to
+ * cancel that scale. Otherwise the add pills stay inset, overlapping the table.
  */
 export const readAncestorLayoutScale = (
   element: HTMLElement,

@@ -2,10 +2,12 @@ import type { BoxProps } from "@chakra-ui/react"
 import type { EditorContentProps, Editor as TiptapEditor } from "@tiptap/react"
 import type { PropsWithChildren, RefObject } from "react"
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
-import { Box, VStack } from "@chakra-ui/react"
+import { Box, Flex, VStack } from "@chakra-ui/react"
+import { Button } from "@opengovsg/design-system-react"
 import { EditorContent } from "@tiptap/react"
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
+import { registerTableExpand } from "~/features/editing-experience/components/TableCaption/expandTableEditor"
 import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles"
 
 const EditorContainer = ({
@@ -100,37 +102,62 @@ interface EditorProps {
   menubar: EditorMenuBar
   editor: TiptapEditor
   isNested?: boolean
-  elevateTableBubbleMenu?: boolean
 }
 
-export const Editor = ({
-  editor,
-  menubar,
-  isNested,
-  elevateTableBubbleMenu = false,
-}: EditorProps) => {
+export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isDragReordering, setIsDragReordering] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   const isTableEditor = editor.extensionManager.extensions.some(
     (ext) => ext.name === "table",
   )
 
+  useEffect(
+    () => registerTableExpand(editor, () => setExpanded(true)),
+    [editor],
+  )
+
   return (
-    <EditorContainer isNested={isNested}>
-      {menubar({ editor })}
-      {isTableEditor && (
-        <TableBubbleMenu
-          editor={editor}
-          isDragReordering={isDragReordering}
-          elevate={elevateTableBubbleMenu}
-        />
+    <Box
+      h={expanded ? "100vh" : "100%"}
+      display={expanded ? "flex" : undefined}
+      flexDirection={expanded ? "column" : undefined}
+      position={expanded ? "fixed" : undefined}
+      inset={expanded ? 0 : undefined}
+      zIndex={expanded ? "modal" : undefined}
+      bg={expanded ? "base.canvas.default" : undefined}
+      role={expanded ? "dialog" : undefined}
+      aria-label={expanded ? "Expanded table" : undefined}
+    >
+      {expanded && (
+        <Flex justify="flex-end" flexShrink={0} px="1rem" py="0.75rem">
+          <Button variant="solid" onClick={() => setExpanded(false)}>
+            Done
+          </Button>
+        </Flex>
       )}
-      <EditorContentWrapper
-        editor={editor}
-        containerRef={containerRef}
-        showTableExtras={isTableEditor}
-        onDragStateChange={setIsDragReordering}
-      />
-    </EditorContainer>
+      <Box
+        flex={expanded ? "1" : undefined}
+        minH={expanded ? 0 : undefined}
+        h={expanded ? undefined : "100%"}
+      >
+        <EditorContainer isNested={isNested && !expanded}>
+          {menubar({ editor })}
+          {isTableEditor && (
+            <TableBubbleMenu
+              editor={editor}
+              isDragReordering={isDragReordering}
+              elevate={expanded}
+            />
+          )}
+          <EditorContentWrapper
+            editor={editor}
+            containerRef={containerRef}
+            showTableExtras={isTableEditor}
+            onDragStateChange={setIsDragReordering}
+          />
+        </EditorContainer>
+      </Box>
+    </Box>
   )
 }
