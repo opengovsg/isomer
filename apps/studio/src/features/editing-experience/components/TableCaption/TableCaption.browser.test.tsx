@@ -657,7 +657,9 @@ describe("TableCaption", () => {
       rect.left + rect.width / 2,
       rect.top + rect.height / 2,
     )
-    expect(hit === bold || bold.contains(hit)).toBe(true)
+    if (!(hit === bold || (hit && bold.contains(hit)))) {
+      throw new Error("Bold is covered, so the toolbar cannot be clicked")
+    }
     bold.click()
 
     // Assert
@@ -731,7 +733,7 @@ describe("TableCaption", () => {
     if (!(overlay instanceof HTMLElement)) throw new Error("expected overlay")
 
     // Act
-    await userEvent.click(overlay)
+    overlay.click()
 
     // Assert
     expect(

@@ -311,7 +311,20 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
 
 // Hide the menu while a Chakra modal is open, except the expanded-table
 // editor itself — that dialog is where the menu is supposed to stay usable.
+const BLOCKING_DIALOG =
+  '[role="dialog"][aria-modal="true"]:not([data-expanded-table-editor])'
+
 export const isEditorModalOpen = () =>
-  document.querySelector(
-    '[role="dialog"][aria-modal="true"]:not([data-expanded-table-editor])',
-  ) != null
+  document.querySelector(BLOCKING_DIALOG) != null
+
+export const subscribeEditorModal = (listener: () => void) => {
+  let open = isEditorModalOpen()
+  const observer = new MutationObserver(() => {
+    const next = isEditorModalOpen()
+    if (next === open) return
+    open = next
+    listener()
+  })
+  observer.observe(document.body, { childList: true, subtree: true })
+  return () => observer.disconnect()
+}
