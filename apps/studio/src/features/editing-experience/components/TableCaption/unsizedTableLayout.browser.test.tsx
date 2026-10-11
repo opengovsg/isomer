@@ -18,29 +18,9 @@ const row = (cells: JSONContent[]): JSONContent => ({
   content: cells,
 })
 
-const header = (text: string, colspan?: number): JSONContent => ({
+const header = (text: string): JSONContent => ({
   type: "tableHeader",
-  ...(colspan ? { attrs: { colspan } } : {}),
   content: [{ type: "paragraph", content: [{ type: "text", text }] }],
-})
-
-const body = (
-  text: string,
-  attrs?: { colspan?: number; rowspan?: number },
-): JSONContent => ({
-  type: "tableCell",
-  ...(attrs ? { attrs } : {}),
-  content: [{ type: "paragraph", content: [{ type: "text", text }] }],
-})
-
-const phantomTable: JSONContent = prose({
-  type: "table",
-  attrs: { caption: "Phantom" },
-  content: [
-    row([header("A"), header("BC", 2)]),
-    row([body("AB", { colspan: 2, rowspan: 2 }), body("C")]),
-    row([body("C2")]),
-  ],
 })
 
 const unsizedTable: JSONContent = prose({
@@ -110,28 +90,6 @@ describe("unsized editor table layout", () => {
     })
   })
 
-  it("keeps equal fixed tracks when an unsized table has a phantom column", async () => {
-    // Arrange / Act
-    render(
-      <ThemeProvider theme={theme}>
-        <Harness content={phantomTable} />
-      </ThemeProvider>,
-    )
-
-    // Assert
-    await waitFor(() => {
-      const table = editorTable()
-      const root = table.closest("[data-column-resize-root]")
-      const cols = table.querySelectorAll(":scope > colgroup > col")
-      expect(root?.getAttribute("data-table-layout")).toBe("even")
-      expect(getComputedStyle(table).tableLayout).toBe("fixed")
-      expect(cols).toHaveLength(3)
-      expect(
-        Number.parseFloat((cols[0] as HTMLElement).style.width),
-      ).toBeCloseTo(100 / 3, 4)
-    })
-  })
-
   it("keeps fixed pixel tracks when column widths are stored", async () => {
     // Arrange / Act
     render(
@@ -145,7 +103,11 @@ describe("unsized editor table layout", () => {
       const table = editorTable()
       const cell = table.rows[0]?.cells[0]
       expect(getComputedStyle(table).tableLayout).toBe("fixed")
-      expect(table.dataset.tableLayout).toBeUndefined()
+      expect(
+        table
+          .closest("[data-column-resize-root]")
+          ?.getAttribute("data-table-layout"),
+      ).toBeNull()
       expect(cell && getComputedStyle(cell).maxWidth).toBe("none")
     })
   })

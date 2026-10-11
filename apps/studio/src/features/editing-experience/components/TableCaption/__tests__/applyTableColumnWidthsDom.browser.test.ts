@@ -17,45 +17,18 @@ describe("applyTableColumnWidthsDom", () => {
     expect((cols[0] as HTMLElement).style.width).toBe("100px")
     expect((cols[1] as HTMLElement).style.width).toBe("200px")
     expect(table.style.width).toBe("300px")
-    expect(table.dataset.tableLayout).toBeUndefined()
   })
 
-  it("marks an unsized table for automatic layout and drops the colgroup", () => {
+  it("removes colgroup and clears width when widths are cleared", () => {
     // Arrange
     const table = document.createElement("table")
     applyTableColumnWidthsDom(table, [100, 200])
 
     // Act
-    applyTableColumnWidthsDom(table, null, {
-      hasPhantomColumns: false,
-      columnCount: 2,
-    })
+    applyTableColumnWidthsDom(table, null)
 
     // Assert
     expect(table.querySelector(":scope > colgroup")).toBeNull()
     expect(table.style.width).toBe("")
-    expect(table.dataset.tableLayout).toBe("auto")
-  })
-
-  it("uses equal percentage tracks when an unsized table has a phantom column", () => {
-    // Arrange
-    const table = document.createElement("table")
-    table.innerHTML = "<tbody><tr><td>A</td><td>B</td></tr></tbody>"
-
-    // Act
-    applyTableColumnWidthsDom(table, null, {
-      hasPhantomColumns: true,
-      columnCount: 3,
-    })
-
-    // Assert
-    const cols = table.querySelectorAll(":scope > colgroup > col")
-    expect(cols).toHaveLength(3)
-    expect(Number.parseFloat((cols[0] as HTMLElement).style.width)).toBeCloseTo(
-      100 / 3,
-      4,
-    )
-    expect(table.style.width).toBe("")
-    expect(table.dataset.tableLayout).toBe("even")
   })
 })

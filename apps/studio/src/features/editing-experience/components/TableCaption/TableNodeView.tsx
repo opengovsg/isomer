@@ -2,12 +2,10 @@ import type { NodeViewProps } from "@tiptap/react"
 import { Box } from "@chakra-ui/react"
 import { TableMap } from "@tiptap/pm/tables"
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
-import { useLayoutEffect, useRef, useState } from "react"
+import { useLayoutEffect, useRef } from "react"
 import {
-  measureColumnEdgePercents,
   setTableColumnWidths,
   storedColumnWidths,
-  tableHasPhantomColumn,
 } from "~/features/editing-experience/utils/columnWidths"
 import { TABLE_GUTTER_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 
@@ -25,12 +23,10 @@ export const TableNodeView = ({
   const caption = (node.attrs.caption as string | undefined) ?? ""
   const columnCount = TableMap.get(node).width
   const widths = storedColumnWidths(node, columnCount)
-  const phantom = !widths && tableHasPhantomColumn(node)
   // Widths before the current drag. undefined when no drag is in progress.
   const dragOrigin = useRef<number[] | null | undefined>(undefined)
   const rootRef = useRef<HTMLDivElement>(null)
   const scrollportRef = useRef<HTMLDivElement>(null)
-  const [edges, setEdges] = useState<string[] | null>(null)
   const sum = widths?.reduce((total, width) => total + width, 0)
   const fadeMask = useTableScrollFadeMask(
     scrollportRef,
@@ -40,23 +36,8 @@ export const TableNodeView = ({
   useLayoutEffect(() => {
     const table = rootRef.current?.querySelector("table")
     if (!(table instanceof HTMLTableElement)) return
-    applyTableColumnWidthsDom(
-      table,
-      widths,
-      widths
-        ? null
-        : {
-            hasPhantomColumns: phantom,
-            columnCount,
-          },
-    )
-    if (widths) {
-      setEdges((current) => (current === null ? current : null))
-      return
-    }
-    const next = measureColumnEdgePercents(table, columnCount)
-    setEdges((current) => (current?.join() === next?.join() ? current : next))
-  }, [widths, node, columnCount, phantom, edges])
+    applyTableColumnWidthsDom(table, widths)
+  }, [widths, node])
 
   const writeColumnWidths = (next: number[] | null, addToHistory: boolean) => {
     const pos = getPos()
@@ -125,7 +106,7 @@ export const TableNodeView = ({
           <Box
             ref={rootRef}
             data-column-resize-root=""
-            data-table-layout={phantom ? "even" : widths ? undefined : "auto"}
+            data-table-layout={widths ? undefined : "auto"}
             position="relative"
             w={sum ? `${sum}px` : "100%"}
           >
@@ -137,7 +118,7 @@ export const TableNodeView = ({
               <ColumnResizeHandles
                 columnCount={columnCount}
                 widths={widths}
-                edges={edges}
+                contentKey={node.textContent}
                 onDrag={dragColumnWidths}
                 onCommit={commitColumnWidths}
               />
