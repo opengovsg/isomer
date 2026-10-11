@@ -9,14 +9,11 @@ import { useTableBubbleMenu } from "./useTableBubbleMenu"
 export interface TableBubbleMenuProps {
   editor: Editor
   isDragReordering?: boolean
-  // Portaled to document.body, so a menu inside a modal must sit above it.
-  elevate?: boolean
 }
 
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
   isDragReordering = false,
-  elevate = false,
 }: TableBubbleMenuProps) {
   const {
     show,
@@ -55,7 +52,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
             left={actionsPosition ? `${actionsPosition.x}px` : 0}
             top={actionsPosition ? `${actionsPosition.y}px` : 0}
             visibility={actionsPosition ? "visible" : "hidden"}
-            zIndex={elevate ? "popover" : "dropdown"}
+            zIndex="dropdown"
             data-table-bubble-menu-actions
             bg="base.canvas.default"
             boxShadow="sm"
@@ -85,7 +82,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
           left={triggerPosition ? `${triggerPosition.x}px` : 0}
           top={triggerPosition ? `${triggerPosition.y}px` : 0}
           visibility={triggerPosition ? "visible" : "hidden"}
-          zIndex={elevate ? "popover" : "dropdown"}
+          zIndex="dropdown"
           p="0.5rem"
           borderRadius="full"
           cursor="pointer"

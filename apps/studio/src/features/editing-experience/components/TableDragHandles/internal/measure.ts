@@ -21,43 +21,6 @@ interface ContainerOffset {
   containerRect: Pick<DOMRect, "top" | "left">
   scrollTop: number
   scrollLeft: number
-  /**
-   * Uniform scale from CSS transforms on the container and its ancestors.
-   * `getBoundingClientRect` includes that scale; absolutely positioned handles
-   * do not. Defaults to 1.
-   */
-  scale?: { x: number; y: number }
-}
-
-// A zero scale would send every position to infinity. Treat it as unscaled.
-const scaleOf = (
-  scale: ContainerOffset["scale"],
-): { x: number; y: number } => ({
-  x: scale?.x || 1,
-  y: scale?.y || 1,
-})
-
-/**
- * Ancestor CSS transforms are included in `getBoundingClientRect`. Handles are
- * positioned in layout pixels, so a measurement taken under a transform has to
- * cancel that scale. Otherwise the add pills stay inset, overlapping the table.
- */
-export const readAncestorLayoutScale = (
-  element: HTMLElement,
-): { x: number; y: number } => {
-  let x = 1
-  let y = 1
-  let current: HTMLElement | null = element
-  while (current) {
-    const { transform } = getComputedStyle(current)
-    if (transform && transform !== "none") {
-      const matrix = new DOMMatrix(transform)
-      x *= matrix.a
-      y *= matrix.d
-    }
-    current = current.parentElement
-  }
-  return { x: x || 1, y: y || 1 }
 }
 
 const viewportRectToContainerRect = ({
@@ -65,16 +28,12 @@ const viewportRectToContainerRect = ({
   containerRect,
   scrollTop,
   scrollLeft,
-  scale,
-}: ContainerOffset & { rect: Rect }): Rect => {
-  const { x, y } = scaleOf(scale)
-  return {
-    top: (rect.top - containerRect.top) / y + scrollTop,
-    left: (rect.left - containerRect.left) / x + scrollLeft,
-    width: rect.width / x,
-    height: rect.height / y,
-  }
-}
+}: ContainerOffset & { rect: Rect }): Rect => ({
+  top: rect.top - containerRect.top + scrollTop,
+  left: rect.left - containerRect.left + scrollLeft,
+  width: rect.width,
+  height: rect.height,
+})
 
 export const viewportPointToContainerPoint = ({
   clientX,
@@ -82,17 +41,13 @@ export const viewportPointToContainerPoint = ({
   containerRect,
   scrollTop,
   scrollLeft,
-  scale,
 }: ContainerOffset & {
   clientX: number
   clientY: number
-}): { x: number; y: number } => {
-  const { x: scaleX, y: scaleY } = scaleOf(scale)
-  return {
-    x: (clientX - containerRect.left) / scaleX + scrollLeft,
-    y: (clientY - containerRect.top) / scaleY + scrollTop,
-  }
-}
+}): { x: number; y: number } => ({
+  x: clientX - containerRect.left + scrollLeft,
+  y: clientY - containerRect.top + scrollTop,
+})
 
 export const findAllTables = (editor: TiptapEditor): TableLocation[] => {
   const tables: TableLocation[] = []
@@ -145,7 +100,6 @@ export const measureTableGeometry = (
   table: TableLocation,
   container: HTMLElement,
   containerRect: DOMRect,
-  scale: { x: number; y: number },
 ): TableGeometry => {
   const map = TableMap.get(table.node)
   const tableElement = getTableElement(editor, table.pos)
@@ -156,7 +110,6 @@ export const measureTableGeometry = (
           containerRect,
           scrollTop: container.scrollTop,
           scrollLeft: container.scrollLeft,
-          scale,
         })
       : null
 

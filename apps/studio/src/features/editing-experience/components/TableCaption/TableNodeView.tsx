@@ -2,7 +2,11 @@ import type { NodeViewProps } from "@tiptap/react"
 import { Box } from "@chakra-ui/react"
 import { TableMap } from "@tiptap/pm/tables"
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
-import { useLayoutEffect, useRef, useSyncExternalStore } from "react"
+import { useLayoutEffect, useRef } from "react"
+import {
+  getExpandedTablePos,
+  syncExpandedTableDom,
+} from "~/features/editing-experience/components/form-builder/renderers/TipTapEditor/expandTableEditor"
 import {
   setTableColumnWidths,
   storedColumnWidths,
@@ -11,11 +15,6 @@ import { TABLE_GUTTER_PX } from "~/features/editing-experience/utils/tableEditor
 
 import { applyTableColumnWidthsDom } from "./applyTableColumnWidthsDom"
 import { ColumnResizeHandles } from "./ColumnResizeHandles"
-import {
-  getExpandedTablePos,
-  subscribeTableEditorExpanded,
-  syncExpandedTableDom,
-} from "./expandTableEditor"
 import { TableCaption } from "./TableCaption"
 import { useTableScrollFadeMask } from "./tableScrollFade"
 
@@ -37,19 +36,14 @@ export const TableNodeView = ({
     scrollportRef,
     `${columnCount}:${sum ?? "auto"}`,
   )
-  const expandedTablePos = useSyncExternalStore(
-    (listener) => subscribeTableEditorExpanded(editor, listener),
-    () => getExpandedTablePos(editor),
-    () => null,
-  )
-
   // Re-mark after the node view is recreated so sibling hiding still targets it.
   useLayoutEffect(() => {
+    const expandedTablePos = getExpandedTablePos(editor)
     if (expandedTablePos === null) return
     const pos = getPos()
     if (pos !== expandedTablePos) return
     syncExpandedTableDom(editor, expandedTablePos)
-  }, [editor, expandedTablePos, getPos, node])
+  }, [editor, getPos, node])
 
   useLayoutEffect(() => {
     const table = rootRef.current?.querySelector("table")

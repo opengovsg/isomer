@@ -7,7 +7,6 @@ import type { TableGeometry } from "./axisMath"
 import {
   findAllTables,
   measureTableGeometry,
-  readAncestorLayoutScale,
   reconcileGeometries,
 } from "./measure"
 
@@ -37,9 +36,8 @@ export const useTableGeometries = (
         return
       }
       const containerRect = container.getBoundingClientRect()
-      const scale = readAncestorLayoutScale(container)
       const next = findAllTables(editor).map((table) =>
-        measureTableGeometry(editor, table, container, containerRect, scale),
+        measureTableGeometry(editor, table, container, containerRect),
       )
       setGeometries((previous) => reconcileGeometries(previous, next))
     }

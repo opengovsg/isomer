@@ -2,11 +2,7 @@ import type { Editor as TiptapEditor } from "@tiptap/react"
 import type { RefObject } from "react"
 import { Box } from "@chakra-ui/react"
 import { useEditorState } from "@tiptap/react"
-import { Fragment, useMemo, useSyncExternalStore } from "react"
-import {
-  getExpandedTablePos,
-  subscribeTableEditorExpanded,
-} from "~/features/editing-experience/components/TableCaption/expandTableEditor"
+import { Fragment, useMemo } from "react"
 import {
   TABLE_CHROME_GAP_PX,
   TABLE_CHROME_THICKNESS_PX,
@@ -45,6 +41,7 @@ export interface TableDragHandlesProps {
   editor: TiptapEditor | null
   containerRef: RefObject<HTMLElement>
   onDragStateChange?: (isDragging: boolean) => void
+  expandedTablePos?: number | null
 }
 
 /**
@@ -56,14 +53,9 @@ export const TableDragHandles = ({
   editor,
   containerRef,
   onDragStateChange,
+  expandedTablePos = null,
 }: TableDragHandlesProps) => {
   const geometries = useTableGeometries(editor, containerRef)
-  const expandedTablePos = useSyncExternalStore(
-    (listener) =>
-      editor ? subscribeTableEditorExpanded(editor, listener) : () => undefined,
-    () => (editor ? getExpandedTablePos(editor) : null),
-    () => null,
-  )
   const visibleGeometries = useMemo(
     () =>
       expandedTablePos === null
