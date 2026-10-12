@@ -268,6 +268,18 @@ export class UsersPO {
       .click()
   }
 
+  /**
+   * Asserts visible table body rows match `emails` in order (server sorts by
+   * email ascending). Scoped to the active tab panel.
+   */
+  async expectUsersOnCurrentPage(emails: readonly string[]) {
+    const rows = this.activeTabPanel().locator("tbody").getByRole("row")
+    await expect(rows).toHaveCount(emails.length)
+    for (let i = 0; i < emails.length; i++) {
+      await expect(rows.nth(i)).toContainText(emails[i])
+    }
+  }
+
   async expectAddNewUserDisabledExplanation(explanation: string | RegExp) {
     await this.addNewUserButton().hover()
     await expect(this.page.getByText(explanation)).toBeVisible()

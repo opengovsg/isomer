@@ -9,17 +9,25 @@ import { UsersPO } from "../fixtures/users.po"
 // Plus the site's seeded admin, this puts the table one row past the
 // 25-row page size (UserTable.tsx), forcing a second page.
 const BULK_EDITOR_COUNT = 25
+const AGENCY_USERS_PAGE_SIZE = 25
 
 let siteId: number
+/** Agency users on the site, sorted by email (matches `user.list` order). */
+let agencyUsersSortedByEmail: string[]
+let agencyUsersPage1: string[]
+let agencyUsersPage2: string[]
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeAll(async () => {
     const site = await provisionE2ESite({ roles: [RoleType.Admin] })
     siteId = site.siteId
-    await seedManyEditorsOnSite({
+    const bulkEditorEmails = await seedManyEditorsOnSite({
       siteId,
       count: BULK_EDITOR_COUNT,
     })
+    agencyUsersSortedByEmail = [...bulkEditorEmails, TEST_EMAILS.admin].sort()
+    agencyUsersPage1 = agencyUsersSortedByEmail.slice(0, AGENCY_USERS_PAGE_SIZE)
+    agencyUsersPage2 = agencyUsersSortedByEmail.slice(AGENCY_USERS_PAGE_SIZE)
   })
 
   test.beforeEach(async () => {
@@ -70,6 +78,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Assert
     await users.expectCurrentPage(1)
     await users.expectPreviousPageDisabled()
+    await users.expectUsersOnCurrentPage(agencyUsersPage1)
   })
 
   test("Your users table advances to the last page", async ({ page }) => {
@@ -84,6 +93,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Assert
     await users.expectCurrentPage(2)
     await users.expectNextPageDisabled()
+    await users.expectUsersOnCurrentPage(agencyUsersPage2)
   })
 
   test("Your users table returns to page 1 from the last page", async ({
@@ -101,5 +111,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Assert
     await users.expectCurrentPage(1)
+    await users.expectUsersOnCurrentPage(agencyUsersPage1)
   })
 })
