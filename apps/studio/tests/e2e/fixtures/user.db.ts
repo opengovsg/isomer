@@ -1,5 +1,13 @@
 import { db } from "~/server/modules/database"
 
+export const getUserIdByEmail = (email: string) =>
+  db
+    .selectFrom("User")
+    .where("email", "=", email)
+    .select("id")
+    .executeTakeFirstOrThrow()
+    .then((user) => user.id)
+
 export const getGrantedRole = (opts: { siteId: number; email: string }) =>
   db
     .selectFrom("User as u")
