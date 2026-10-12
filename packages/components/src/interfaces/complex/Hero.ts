@@ -278,7 +278,6 @@ const HeroCarouselSchema = Type.Composite(
   ],
   {
     title: HERO_STYLE.carousel.title,
-    format: "hidden", // beta: hide in Studio until carousel editor ships
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
