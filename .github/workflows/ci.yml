@@ -129,12 +129,6 @@ jobs:
         uses: ./.github/actions/setup
         with:
           job-index: ${{ matrix.shard }}
-      - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
-        with:
-          languages: js
-          service: isomer-studio
-          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Install Playwright (Chromium)
         if: matrix.project == 'browser'
         run: pnpm --filter isomer-studio exec playwright install chromium
@@ -142,13 +136,11 @@ jobs:
         if: matrix.project == 'node'
         run: pnpm exec turbo test-ci:unit:node --filter=isomer-studio --env-mode=loose -- --shard=${{ matrix.shard }}/${{ matrix.total_shards }}
         env:
-          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
       - name: Test Studio (browser)
         if: matrix.project == 'browser'
         run: pnpm exec turbo test-ci:unit:browser --filter=isomer-studio --env-mode=loose
         env:
-          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
 
   test-components:
