@@ -235,7 +235,7 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
               </ModalHeader>
               <Flex justify="flex-end" flexShrink={0} px="1rem" py="0.75rem">
                 <Button variant="solid" onClick={closeExpandedTable}>
-                  Done
+                  Back to editing
                 </Button>
               </Flex>
               <ModalBody
