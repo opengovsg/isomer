@@ -117,6 +117,10 @@ function ensurePositioningContext(element: HTMLElement): void {
  * highlight class + badge at that node. Routes that don't resolve to an
  * actual node are silently skipped rather than thrown — one bad route
  * should never take down the rest of the diff view.
+ *
+ * Every route is resolved before any badge is inserted: routes index into
+ * the unmodified tree, and inserting a badge shifts the `childNodes`
+ * indices of everything after it within that element.
  */
 export function applyDiffHighlights(
   doc: Document,
@@ -124,9 +128,12 @@ export function applyDiffHighlights(
 ): void {
   ensureHighlightStylesInjected(doc)
 
-  for (const { route, kind } of highlights) {
-    const node = resolveRoute(doc.body, route)
-    const element = toHighlightableElement(node)
+  const targets = highlights.map(({ route, kind }) => ({
+    element: toHighlightableElement(resolveRoute(doc.body, route)),
+    kind,
+  }))
+
+  for (const { element, kind } of targets) {
     if (!element) continue
 
     clearPreviousHighlight(element)

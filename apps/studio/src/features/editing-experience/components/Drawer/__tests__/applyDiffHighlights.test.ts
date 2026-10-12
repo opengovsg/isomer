@@ -114,6 +114,22 @@ describe("applyDiffHighlights", () => {
     expect(p?.querySelector(".isomer-diff-badge--removed")).toBeNull()
   })
 
+  it("resolves every route against the original tree, unaffected by badges inserted for earlier routes", () => {
+    // div.childNodes: [0: p(first), 1: p(second)]
+    // Highlighting the div first inserts a badge as its first child; if
+    // routes were resolved lazily, [0, 1] would then point at p(first).
+    applyDiffHighlights(doc, [
+      { route: [0], kind: "modified" },
+      { route: [0, 1], kind: "added" },
+    ])
+
+    const [first, second] = doc.querySelectorAll("p")
+    expect(first?.classList.contains("isomer-diff-highlight")).toBe(false)
+    expect(second?.classList.contains("isomer-diff-highlight--added")).toBe(
+      true,
+    )
+  })
+
   it("marks the badge as aria-hidden so screen readers skip it", () => {
     applyDiffHighlights(doc, [{ route: [0, 0], kind: "added" }])
 
