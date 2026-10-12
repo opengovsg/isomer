@@ -11,6 +11,8 @@ import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { db, jsonb } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
+import { setResourceUpdatedAt } from "./db"
+
 /** Prose preview label in the default integration seed blob. */
 export const SEEDED_PROSE_BLOCK_LABEL = "Test block"
 
@@ -205,12 +207,7 @@ export const seedPageInFolder = async ({
     return { page }
   }
 
-  const updatedPage = await db
-    .updateTable("Resource")
-    .set({ updatedAt })
-    .where("id", "=", page.id)
-    .returningAll()
-    .executeTakeFirstOrThrow()
+  const updatedPage = await setResourceUpdatedAt(page.id, updatedAt)
 
   return { page: updatedPage }
 }

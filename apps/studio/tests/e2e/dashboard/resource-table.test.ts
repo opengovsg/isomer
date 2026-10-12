@@ -1,8 +1,10 @@
-import { test } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { DashboardPO } from "~e2e/fixtures/po"
 import {
+  getResource,
+  getResourceByTitle,
   seedFolder,
   seedPageInFolder,
   seedPagesInFolder,
@@ -41,13 +43,31 @@ const seedSortableFolder = async (folderTitle: string) => {
     pagePermalink: `bbb-alpha-${crypto.randomUUID().slice(0, 8)}`,
     updatedAt: new Date(baseUpdatedAt.getTime() + 1_000),
   })
+  const bravoUpdatedAt = new Date(baseUpdatedAt.getTime() + 2_000)
   await seedPageInFolder({
     siteId,
     folderId: folder.id,
     pageTitle: "E2E Sort Bravo",
     pagePermalink: `ccc-bravo-${crypto.randomUUID().slice(0, 8)}`,
-    updatedAt: new Date(baseUpdatedAt.getTime() + 2_000),
+    updatedAt: bravoUpdatedAt,
   })
+
+  const seededUpdatedAtByTitle: Record<string, Date> = {
+    "E2E Sort Charlie": baseUpdatedAt,
+    "E2E Sort Alpha": new Date(baseUpdatedAt.getTime() + 1_000),
+    "E2E Sort Bravo": bravoUpdatedAt,
+  }
+  for (const [title, expectedUpdatedAt] of Object.entries(
+    seededUpdatedAtByTitle,
+  )) {
+    const row = await getResourceByTitle({ siteId, title })
+    expect(row, `seeded resource missing: ${title}`).toBeTruthy()
+    const resource = await getResource(row!.id)
+    expect(resource?.updatedAt?.toISOString()).toBe(
+      expectedUpdatedAt.toISOString(),
+    )
+  }
+
   return { folder }
 }
 
