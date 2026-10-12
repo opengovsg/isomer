@@ -17,8 +17,13 @@ export const selectWholeTable = (editor: TiptapEditor, tablePos: number) => {
   if (!table) return
   const map = TableMap.get(table)
   const tableStart = tablePos + 1
-  const anchor = tableStart + map.positionAt(0, 0, table)
-  const head = tableStart + map.positionAt(map.height - 1, map.width - 1, table)
+  // Corner slots can be rowspan/colspan continuations; map.map always stores the
+  // owning cell offset for every grid position.
+  const firstCellOffset = map.map.at(0)
+  const lastCellOffset = map.map.at(-1)
+  if (firstCellOffset === undefined || lastCellOffset === undefined) return
+  const anchor = tableStart + firstCellOffset
+  const head = tableStart + lastCellOffset
   editor.view.dispatch(
     editor.state.tr.setSelection(
       CellSelection.create(editor.state.doc, anchor, head),

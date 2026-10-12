@@ -991,7 +991,7 @@ describe("TableDragHandles", () => {
     )
 
     // Assert
-    expect(button).toBeTruthy()
+    expect(button).toBeVisible()
   })
 
   it("shows a quiet select-table button while the pointer is over the rest of the table", async () => {
@@ -1046,7 +1046,7 @@ describe("TableDragHandles", () => {
     await waitFor(() => {
       expect(queryByRole("button", { name: "Select entire table" })).toBeNull()
     })
-    expect(getByLabelText("Add row below")).toBeTruthy()
+    expect(getByLabelText("Add row below")).toBeVisible()
     const cells = container.querySelectorAll("td, th")
     expect(cells.length).toBe(12)
     for (const selected of cells) {
@@ -1072,6 +1072,76 @@ describe("TableDragHandles", () => {
     expect(selection.isRowSelection()).toBe(true)
     expect(selection.isColSelection()).toBe(true)
     expect(getCellText(editor)).toHaveLength(12)
+  })
+
+  it("selects the whole table when the bottom-right cell is merged vertically", async () => {
+    // Arrange
+    const { editor, container, getByRole } = await renderHarness()
+    selectCells(editor, 8, 11)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const { x, y } = nearTopLeft(table)
+    const button = await hoverUntil(x, y, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+
+    // Act
+    act(() => {
+      fireEvent.click(button)
+    })
+
+    // Assert
+    const cells = container.querySelectorAll("td, th")
+    expect(cells.length).toBe(11)
+    for (const selected of cells) {
+      expect(selected.classList.contains("selectedCell")).toBe(true)
+    }
+    const selection = editor.state.selection
+    expect(selection).toBeInstanceOf(CellSelection)
+    if (!(selection instanceof CellSelection)) {
+      throw new Error("expected a cell selection")
+    }
+    expect(selection.isRowSelection()).toBe(true)
+    expect(selection.isColSelection()).toBe(true)
+    expect(getCellText(editor)).toHaveLength(11)
+  })
+
+  it("selects the whole table when the top-left cell is merged vertically", async () => {
+    // Arrange
+    const { editor, container, getByRole } = await renderHarness()
+    selectCells(editor, 0, 3)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const { x, y } = nearTopLeft(table)
+    const button = await hoverUntil(x, y, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+
+    // Act
+    act(() => {
+      fireEvent.click(button)
+    })
+
+    // Assert
+    const cells = container.querySelectorAll("td, th")
+    expect(cells.length).toBe(11)
+    for (const selected of cells) {
+      expect(selected.classList.contains("selectedCell")).toBe(true)
+    }
+    const selection = editor.state.selection
+    expect(selection).toBeInstanceOf(CellSelection)
+    if (!(selection instanceof CellSelection)) {
+      throw new Error("expected a cell selection")
+    }
+    expect(selection.isRowSelection()).toBe(true)
+    expect(selection.isColSelection()).toBe(true)
+    expect(getCellText(editor)).toHaveLength(11)
   })
 
   it("shows the select-table button again after the pointer leaves and returns", async () => {
@@ -1101,7 +1171,7 @@ describe("TableDragHandles", () => {
     )
 
     // Assert
-    expect(returned).toBeTruthy()
+    expect(returned).toBeVisible()
   })
 
   it("updates drop targets when the table resizes during a drag", async () => {
