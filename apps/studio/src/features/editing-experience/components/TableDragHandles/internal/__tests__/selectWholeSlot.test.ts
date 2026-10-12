@@ -258,6 +258,27 @@ describe("selectWholeSlot", () => {
     expect(getSelectionHandleTarget(editor)?.cols).toEqual([0])
   })
 
+  it("treats a merged cell that spans a full row as a row selection", () => {
+    const doc = tableDoc(
+      row(cell("hdr0"), cell("hdr1"), cell("hdr2")),
+      row(cell("merged", { colspan: 3 })),
+      row(cell("r2a"), cell("r2b"), cell("r2c")),
+    )
+    const table = doc.firstChild
+    if (!table) throw new Error("missing table")
+    const map = TableMap.get(table)
+    const mergedOffset = map.map[1 * map.width]
+    if (mergedOffset === undefined) throw new Error("missing merged cell")
+    const mergedPos = 1 + mergedOffset
+    const editor = editorFor(doc)
+
+    editor.view.dispatch(
+      editor.state.tr.setSelection(CellSelection.create(doc, mergedPos)),
+    )
+
+    expect(detectTableSelectionKind(editor)).toBe("row")
+  })
+
   it("does not treat a lone merged cell after horizontal merge as a row selection", () => {
     // Arrange
     const doc = tableDoc(

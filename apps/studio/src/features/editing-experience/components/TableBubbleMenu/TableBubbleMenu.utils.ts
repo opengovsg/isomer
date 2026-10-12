@@ -294,12 +294,13 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   const selectsSingleCellNode = isSingleCellSelection(selection)
   const clippedRowSlot =
     !selectsSingleCellNode && isRowSlotClippedByVerticalSpan(rect)
+  const spansFullWidth = rect.left === 0 && rect.right === rect.map.width
+  const spansFullHeight = rect.top === 0 && rect.bottom === rect.map.height
   return getTableSelectionKind({
-    spansEntireTableWidth:
-      !selectsSingleCellNode &&
-      ((rect.left === 0 && rect.right === rect.map.width) || clippedRowSlot),
-    spansEntireTableHeight:
-      rect.top === 0 && rect.bottom === rect.map.height && !clippedRowSlot,
+    // Merged cells that fill a row/column/table are still one node; axis checks
+    // use the selection rect, not anchor/head cell count.
+    spansEntireTableWidth: spansFullWidth || clippedRowSlot,
+    spansEntireTableHeight: spansFullHeight && !clippedRowSlot,
     allCellsAreHeaders: allHeader,
     isTopRow: selectionIsTopRow(rect),
     isLeftmostColumn: selectionIsLeftmostColumn(rect),
