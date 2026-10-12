@@ -11,8 +11,6 @@ import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { db, jsonb } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
-import { setResourceUpdatedAt } from "./db"
-
 /** Prose preview label in the default integration seed blob. */
 export const SEEDED_PROSE_BLOCK_LABEL = "Test block"
 
@@ -201,15 +199,10 @@ export const seedPageInFolder = async ({
     parentId: folderId,
     title: pageTitle,
     permalink: pagePermalink ?? `e2e-nested-page-${suffix}`,
+    ...(updatedAt !== undefined ? { updatedAt } : {}),
   })
 
-  if (!updatedAt) {
-    return { page }
-  }
-
-  const updatedPage = await setResourceUpdatedAt(page.id, updatedAt)
-
-  return { page: updatedPage }
+  return { page }
 }
 
 export const seedFolderWithChildPage = async ({

@@ -271,6 +271,8 @@ interface SetupPageResourceProps {
   title?: string
   scheduledAt?: Date | null
   scheduledBy?: string | null
+  /** Set on INSERT; moddatetime only runs on UPDATE. */
+  updatedAt?: Date
 }
 
 export const setupPageResource = async ({
@@ -284,6 +286,7 @@ export const setupPageResource = async ({
   title,
   scheduledAt = null,
   scheduledBy = null,
+  updatedAt,
 }: SetupPageResourceProps) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
   const blob = await setupBlob(blobIdProp)
@@ -301,6 +304,7 @@ export const setupPageResource = async ({
       draftBlobId: blob.id,
       type: resourceType,
       state,
+      ...(updatedAt !== undefined ? { updatedAt } : {}),
     })
     .returningAll()
     .executeTakeFirstOrThrow()

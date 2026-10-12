@@ -1,43 +1,5 @@
-import { db, sql } from "~/server/modules/database"
+import { db } from "~/server/modules/database"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-
-/** Matches migration 20240912052239 `update_timestamp` on Resource. */
-const RESOURCE_UPDATED_AT_TRIGGER = "update_timestamp"
-
-/**
- * Sets Resource.updatedAt without the moddatetime trigger overwriting it.
- * Disables the trigger for the duration of the update and always re-enables it.
- */
-export const setResourceUpdatedAt = async (
-  resourceId: string,
-  updatedAt: Date,
-) => {
-  const updatedPage = await db.transaction().execute(async (trx) => {
-    await sql`ALTER TABLE "Resource" DISABLE TRIGGER ${sql.id(RESOURCE_UPDATED_AT_TRIGGER)}`.execute(
-      trx,
-    )
-    try {
-      return await trx
-        .updateTable("Resource")
-        .set({ updatedAt })
-        .where("id", "=", resourceId)
-        .returningAll()
-        .executeTakeFirstOrThrow()
-    } finally {
-      await sql`ALTER TABLE "Resource" ENABLE TRIGGER ${sql.id(RESOURCE_UPDATED_AT_TRIGGER)}`.execute(
-        trx,
-      )
-    }
-  })
-
-  if (updatedPage.updatedAt.getTime() !== updatedAt.getTime()) {
-    throw new Error(
-      `Resource ${resourceId} updatedAt did not persist (expected ${updatedAt.toISOString()}, got ${updatedPage.updatedAt.toISOString()})`,
-    )
-  }
-
-  return updatedPage
-}
 
 export const getFolderByTitle = (opts: { siteId: number; title: string }) =>
   db
