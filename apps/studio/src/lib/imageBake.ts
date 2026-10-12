@@ -27,7 +27,8 @@ export interface PixelRect {
 // of truth for both the client gate (canBakeImage) and the server presign
 // schema's `ext`. Deliberately distinct from CONTENT_TYPE_TO_FORMAT (the infra
 // optimizer): avif/tiff are excluded because canvas.toBlob support is
-// unreliable, and animated WebP/APNG can't be told from MIME alone (TODO: sniff).
+// unreliable. Animated WebP/APNG share a MIME with their static form, so they
+// pass this gate and are caught separately by isAnimatedImageBlob.
 export const BAKEABLE_FORMAT_BY_MIME = {
   "image/jpeg": "jpeg",
   "image/png": "png",
@@ -48,6 +49,79 @@ export const BAKEABLE_EXTENSIONS = Object.values(BAKEABLE_FORMAT_BY_MIME) as [
  */
 export const canBakeImage = (mimeType: string): boolean =>
   Object.hasOwn(BAKEABLE_FORMAT_BY_MIME, mimeType)
+
+// --- Animation sniffing -----------------------------------------------------
+// Animated WebP and APNG share image/webp and image/png with their static
+// counterparts, so canBakeImage passes them. Baking rasterizes a single frame
+// and silently drops the animation, so we sniff the container bytes and reject.
+
+const matchesAscii = (
+  bytes: Uint8Array,
+  offset: number,
+  ascii: string,
+): boolean => {
+  for (let i = 0; i < ascii.length; i++) {
+    if (bytes[offset + i] !== ascii.charCodeAt(i)) return false
+  }
+  return true
+}
+
+const readUint32BE = (bytes: Uint8Array, offset: number): number =>
+  (bytes[offset] ?? 0) * 0x1000000 +
+  (((bytes[offset + 1] ?? 0) << 16) |
+    ((bytes[offset + 2] ?? 0) << 8) |
+    (bytes[offset + 3] ?? 0))
+
+/**
+ * Detect animated WebP via the VP8X extended-format animation flag.
+ * Layout: "RIFF"(0) size(4) "WEBP"(8) "VP8X"(12) size(16) flags(20),
+ * where flags bit 1 (0x02) marks animation. Non-extended WebP (VP8/VP8L)
+ * can't be animated.
+ */
+export const isAnimatedWebp = (bytes: Uint8Array): boolean => {
+  if (bytes.length < 21) return false
+  if (!matchesAscii(bytes, 0, "RIFF") || !matchesAscii(bytes, 8, "WEBP")) {
+    return false
+  }
+  if (!matchesAscii(bytes, 12, "VP8X")) return false
+  return ((bytes[20] ?? 0) & 0x02) !== 0
+}
+
+/**
+ * Detect APNG via the "acTL" animation-control chunk, which a valid APNG
+ * places before the first "IDAT". Walks the PNG chunk list until either.
+ */
+export const isAnimatedPng = (bytes: Uint8Array): boolean => {
+  const SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+  if (bytes.length < SIGNATURE.length) return false
+  if (SIGNATURE.some((b, i) => bytes[i] !== b)) return false
+
+  // Each chunk: 4-byte length, 4-byte type, length data bytes, 4-byte CRC.
+  let offset = SIGNATURE.length
+  while (offset + 8 <= bytes.length) {
+    if (matchesAscii(bytes, offset + 4, "acTL")) return true
+    if (matchesAscii(bytes, offset + 4, "IDAT")) return false
+    offset += 12 + readUint32BE(bytes, offset)
+  }
+  return false
+}
+
+/**
+ * Whether the given bytes are an animated image that baking would flatten.
+ * Only WebP and PNG need sniffing; JPEG (the other bakeable MIME) can't animate.
+ */
+export const isAnimatedImageBytes = (
+  mimeType: string,
+  bytes: Uint8Array,
+): boolean => {
+  if (mimeType === "image/webp") return isAnimatedWebp(bytes)
+  if (mimeType === "image/png") return isAnimatedPng(bytes)
+  return false
+}
+
+/** Blob wrapper around isAnimatedImageBytes. */
+export const isAnimatedImageBlob = async (blob: Blob): Promise<boolean> =>
+  isAnimatedImageBytes(blob.type, new Uint8Array(await blob.arrayBuffer()))
 
 /**
  * Convert a normalized crop rectangle to pixel coordinates.

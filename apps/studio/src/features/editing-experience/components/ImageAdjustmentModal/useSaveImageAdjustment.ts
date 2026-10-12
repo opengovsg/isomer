@@ -5,6 +5,7 @@ import {
   BAKEABLE_FORMAT_BY_MIME,
   bakeImage,
   canBakeImage,
+  isAnimatedImageBlob,
 } from "~/lib/imageBake"
 import { performUpload } from "~/lib/storage/client"
 import { trpc } from "~/utils/trpc"
@@ -24,13 +25,20 @@ export const resolveOriginalKey = (
 }
 
 /**
- * Choose the MIME type to use for baking.
- * If the original can be baked, preserve its format; otherwise default to JPEG.
+ * Choose the MIME type to use for baking, preserving the original format.
+ * Unsupported formats are rejected rather than silently flattened to JPEG,
+ * which would rasterize vectors (SVG) and drop animation frames (GIF/APNG).
  * @param originalType - The original image MIME type
  * @returns The MIME type to use for baking
+ * @throws If the original format cannot be baked (see BAKEABLE_FORMAT_BY_MIME)
  */
 export const chooseBakeMime = (originalType: string): string => {
-  return canBakeImage(originalType) ? originalType : "image/jpeg"
+  if (!canBakeImage(originalType)) {
+    throw new Error(
+      `This image can't be adjusted. Only JPEG, PNG, and WebP images are supported (got "${originalType}").`,
+    )
+  }
+  return originalType
 }
 
 interface UseSaveImageAdjustmentInput {
@@ -84,6 +92,14 @@ export const useSaveImageAdjustment = ({
 
       // Step 3: Choose the MIME type for baking
       const mime = chooseBakeMime(originalBlob.type)
+
+      // Reject animated WebP/APNG: they pass the MIME gate but baking would
+      // flatten them to a single frame and drop the animation.
+      if (await isAnimatedImageBlob(originalBlob)) {
+        throw new Error(
+          "This image can't be adjusted because it's animated. Adjusting would flatten it to a single frame.",
+        )
+      }
 
       // Step 4: Bake the image
       const bakedBlob = await bakeImage(originalBlob, draft, {

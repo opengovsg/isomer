@@ -9,7 +9,7 @@ import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { renderComponent } from "@opengovsg/isomer-components"
 import { useEffect, useRef, useState } from "react"
 import { PreviewIframe } from "~/features/editing-experience/components/preview/PreviewIframe"
-import { bakeImage, canBakeImage } from "~/lib/imageBake"
+import { bakeImage, canBakeImage, isAnimatedImageBlob } from "~/lib/imageBake"
 import { ASSETS_BASE_URL, generateAssetUrl } from "~/utils/generateAssetUrl"
 
 import type {
@@ -107,9 +107,12 @@ export const AdjustmentPreview = ({
 
     const runBake = async () => {
       try {
-        // Guard: only bake if we have a crop and the format is supported
-        if (!canBakeImage(originalBlob.type)) {
-          // Unsupported format: fall back to uncropped src
+        // Guard: only bake static, supported formats. Animated WebP/APNG pass
+        // canBakeImage but would be flattened, so fall back to uncropped src.
+        if (
+          !canBakeImage(originalBlob.type) ||
+          (await isAnimatedImageBlob(originalBlob))
+        ) {
           return
         }
 
