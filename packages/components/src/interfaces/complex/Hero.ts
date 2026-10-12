@@ -6,7 +6,7 @@ import { omit } from "lodash-es"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
-import { HERO_BANNER_STYLE_FORMAT } from "../format"
+import { ARRAY_RADIO_FORMAT, HERO_BANNER_STYLE_FORMAT } from "../format"
 import { IsomerString } from "../primitives/IsomerString"
 import { generateImageSrcSchema } from "./Image"
 
@@ -16,6 +16,12 @@ export const HERO_STYLE = {
   largeImage: { key: "largeImage", title: "Large image" },
   floating: { key: "floating", title: "Floating" },
   searchbar: { key: "searchbar", title: "Search bar" },
+  carousel: { key: "carousel", title: "Carousel" },
+} as const
+
+export const HERO_CAROUSEL_SLIDE_MODE = {
+  entire: "entire",
+  imageOnly: "imageOnly",
 } as const
 
 export type HeroStyleVariant =
@@ -209,6 +215,77 @@ const HeroSearchbarSchema = Type.Composite(
   },
 )
 
+const HeroCarouselSlideSchema = Type.Composite(
+  [
+    Type.Object({
+      backgroundUrl: BackgroundUrlSchema,
+      title: Type.Optional(
+        IsomerString({
+          title: "Hero text",
+          description: "The title of the hero banner",
+          maxLength: 100,
+          pattern: NON_EMPTY_STRING_REGEX,
+          errorMessage: {
+            pattern: "cannot be empty or contain only spaces",
+          },
+        }),
+      ),
+      subtitle: Type.Optional(
+        IsomerString({
+          title: "Description",
+          description: "The contents of the hero banner",
+          format: "textarea",
+          maxLength: 300,
+        }),
+      ),
+    }),
+    CallToActionsSchema,
+  ],
+  {
+    title: "Slide",
+  },
+)
+
+const HeroCarouselSchema = Type.Composite(
+  [
+    Type.Object({
+      variant: Type.Literal(HERO_STYLE.carousel.key, {
+        default: HERO_STYLE.carousel.key,
+      }),
+      slide: Type.Union(
+        [
+          Type.Literal(HERO_CAROUSEL_SLIDE_MODE.entire, {
+            title: "entire",
+          }),
+          Type.Literal(HERO_CAROUSEL_SLIDE_MODE.imageOnly, {
+            title: "image only",
+          }),
+        ],
+        {
+          title: "Slide",
+          default: HERO_CAROUSEL_SLIDE_MODE.entire,
+          format: ARRAY_RADIO_FORMAT,
+        },
+      ),
+      slides: Type.Array(HeroCarouselSlideSchema, {
+        title: "Slides",
+        minItems: 2,
+        maxItems: 3,
+      }),
+    }),
+    HeroBaseSchema,
+    CallToActionsSchema,
+  ],
+  {
+    title: HERO_STYLE.carousel.title,
+    groups: [
+      GROUPINGS.TEXT,
+      GROUPINGS.PRIMARY_CALL_TO_ACTION,
+      GROUPINGS.SECONDARY_CALL_TO_ACTION,
+    ],
+  },
+)
+
 export const HeroSchema = Type.Intersect(
   [
     Type.Union(
@@ -217,6 +294,7 @@ export const HeroSchema = Type.Intersect(
         HeroBlockSchema,
         HeroLargeImageSchema,
         HeroFloatingSchema,
+        HeroCarouselSchema,
         HeroSearchbarSchema,
       ],
       {
@@ -256,9 +334,14 @@ export type HeroSearchbarProps = Simplify<
   CommonProps & Static<typeof HeroSearchbarSchema>
 >
 
+export type HeroCarouselProps = Simplify<
+  CommonProps & Static<typeof HeroCarouselSchema>
+>
+
 export type HeroProps =
   | HeroGradientProps
   | HeroBlockProps
   | HeroLargeImageProps
   | HeroFloatingProps
   | HeroSearchbarProps
+  | HeroCarouselProps
