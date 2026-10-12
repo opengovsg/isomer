@@ -197,6 +197,14 @@ export interface BakeImageOptions {
   quality?: number
 }
 
+// Guards the OffscreenCanvas symbol: `canvas instanceof OffscreenCanvas` throws
+// ReferenceError in browsers that lack it. As a type predicate it also narrows
+// the HTMLCanvasElement branch, so neither convertToBlob branch needs a cast.
+const isOffscreenCanvas = (
+  canvas: OffscreenCanvas | HTMLCanvasElement,
+): canvas is OffscreenCanvas =>
+  typeof OffscreenCanvas !== "undefined" && canvas instanceof OffscreenCanvas
+
 /**
  * Bake an image by applying crop, rotate, and flip from an adjustment object.
  * The original blob is decoded with EXIF orientation normalization, ensuring
@@ -272,22 +280,23 @@ export const bakeImage = async (
   // Draw the cropped region onto the canvas
   ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, sw, sh)
 
-  // Convert to blob with the specified MIME type and quality
-  const convertToBlob =
-    canvas instanceof OffscreenCanvas
-      ? () =>
-          canvas.convertToBlob({ type: opts.mimeType, quality: opts.quality })
-      : () =>
-          new Promise<Blob>((resolve, reject) => {
-            canvas.toBlob(
-              (blob) => {
-                if (!blob) reject(new Error("Canvas toBlob returned null"))
-                else resolve(blob)
-              },
-              opts.mimeType,
-              opts.quality,
-            )
-          })
+  // Convert to blob with the specified MIME type and quality.
+  // Guard the OffscreenCanvas symbol via a type predicate: referencing it
+  // directly in `instanceof` throws ReferenceError in browsers that lack it,
+  // and the predicate still narrows the HTMLCanvasElement branch (no cast).
+  const convertToBlob = isOffscreenCanvas(canvas)
+    ? () => canvas.convertToBlob({ type: opts.mimeType, quality: opts.quality })
+    : () =>
+        new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) reject(new Error("Canvas toBlob returned null"))
+              else resolve(blob)
+            },
+            opts.mimeType,
+            opts.quality,
+          )
+        })
 
   return convertToBlob()
 }
