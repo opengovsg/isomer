@@ -29,6 +29,17 @@ export const IS_UNPUBLISH_ENABLED_FEATURE_KEY = "is-unpublish-enabled"
 export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY = "is-date-filters-enabled"
 export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
 
+// Gates the image-adjustment editor entry point (the "Adjust image" button and
+// modal in JsonFormsImageControl). Rollout-sensitive editor hot path, so it
+// canaries per agency via enabledSites; default is OFF everywhere (empty list),
+// widen the list to roll out. Use GrowthBook `email` targeting for individual
+// internal testers.
+export const IS_IMAGE_ADJUSTMENT_ENABLED_FEATURE_KEY =
+  "is-image-adjustment-enabled"
+export const IS_IMAGE_ADJUSTMENT_ENABLED_FEATURE_KEY_FALLBACK_VALUE: {
+  enabledSites: string[]
+} = { enabledSites: [] }
+
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
 interface GetIsSingpassEnabledProps {

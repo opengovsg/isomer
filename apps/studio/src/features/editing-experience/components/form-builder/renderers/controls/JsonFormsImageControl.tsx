@@ -17,6 +17,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { ImageAdjustmentModal } from "~/features/editing-experience/components/ImageAdjustmentModal"
 import { resolveAdjustmentConfig } from "~/features/editing-experience/components/ImageAdjustmentModal/adjustmentConfigRegistry"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
+import { useIsImageAdjustmentEnabled } from "~/hooks/useIsImageAdjustmentEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 
@@ -52,6 +53,13 @@ function JsonFormsImageControl({
     onOpen: onAdjustmentModalOpen,
     onClose: onAdjustmentModalClose,
   } = useDisclosure()
+  // Gate the adjustment entry point behind a per-agency GrowthBook flag
+  // (off everywhere by default) — this is a rollout-sensitive editor path.
+  const isImageAdjustmentEnabled = useIsImageAdjustmentEnabled(siteId)
+  // Only managed site-storage assets (relative "/{siteId}/..." paths) can be
+  // baked; external/absolute URLs have no derivable bake key, so hide Adjust
+  // for them rather than letting Save fail.
+  const isManagedAsset = !!data && data.startsWith("/")
 
   // Access JsonForms context to read the sibling imageAdjustment field.
   // JsonForms types `data` as `any`; keep it `unknown` and narrow on use.
@@ -101,8 +109,9 @@ function JsonFormsImageControl({
               if (currentAdjustment) handleChange(siblingPath, undefined)
             }}
           />
-          {/* Adjustment entry point — only for components with a config */}
-          {config && (
+          {/* Adjustment entry point — only for components with a config, and
+              only for managed (bakeable) assets */}
+          {isImageAdjustmentEnabled && isManagedAsset && config && (
             <>
               <HStack spacing="1rem" mt="1rem">
                 <Button
