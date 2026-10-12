@@ -84,7 +84,7 @@ export const AdjustmentPreview = ({
         setOriginalBlob(null)
       }
     }
-    fetchOriginal()
+    void fetchOriginal()
   }, [originalFetchUrl])
 
   // Debounced bake effect (~150ms) keyed on crop/rotate/flipH/flipV changes.
@@ -105,7 +105,7 @@ export const AdjustmentPreview = ({
       return
     }
 
-    bakeTimeoutRef.current = setTimeout(async () => {
+    const runBake = async () => {
       try {
         // Guard: only bake if we have a crop and the format is supported
         if (!canBakeImage(originalBlob.type)) {
@@ -128,7 +128,8 @@ export const AdjustmentPreview = ({
         console.debug("Failed to bake image", error)
         // Keep previewUrl as null, so we fall back to src in render
       }
-    }, 150)
+    }
+    bakeTimeoutRef.current = setTimeout(() => void runBake(), 150)
 
     return () => {
       if (bakeTimeoutRef.current) {

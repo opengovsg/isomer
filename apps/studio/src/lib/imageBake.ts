@@ -205,8 +205,7 @@ export const bakeImage = async (
           canvas.convertToBlob({ type: opts.mimeType, quality: opts.quality })
       : () =>
           new Promise<Blob>((resolve, reject) => {
-            const htmlCanvas = canvas as HTMLCanvasElement
-            htmlCanvas.toBlob(
+            canvas.toBlob(
               (blob) => {
                 if (!blob) reject(new Error("Canvas toBlob returned null"))
                 else resolve(blob)

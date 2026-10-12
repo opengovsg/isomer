@@ -50,8 +50,9 @@ function JsonFormsImageControl({
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   // Access JsonForms context to read the sibling imageAdjustment field.
+  // JsonForms types `data` as `any`; keep it `unknown` and narrow on use.
   const ctx = useJsonForms()
-  const rootData = ctx.core?.data
+  const rootData: unknown = ctx.core?.data
 
   // Extract path parts for sibling and block lookups.
   const pathParts = path.split(".")
@@ -66,7 +67,7 @@ function JsonFormsImageControl({
   // Per-block editor forms (e.g. HeroEditorDrawer) mount the form with the block
   // itself as the data root, so the image field is top-level and parentPath is
   // empty — in that case the block IS rootData.
-  const block = parentPath ? get(rootData, parentPath) : rootData
+  const block: unknown = parentPath ? get(rootData, parentPath) : rootData
   const config = resolveAdjustmentConfig({ block, fieldName })
 
   const handleAdjustmentSave = ({

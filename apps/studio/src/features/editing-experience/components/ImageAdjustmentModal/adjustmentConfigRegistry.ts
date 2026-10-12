@@ -2,9 +2,7 @@ import type { AdjustmentConfig } from "./AdjustmentConfig"
 
 // Narrow an unknown block to read its discriminators safely.
 const asBlock = (block: unknown): { type?: string; variant?: string } =>
-  typeof block === "object" && block !== null
-    ? (block as { type?: string; variant?: string })
-    : {}
+  typeof block === "object" && block !== null ? block : {}
 
 // Tier B — full-bleed responsive gradient hero. Focal anchors the subject as the
 // banner reshapes across breakpoints (proven in spike W0-S-F); crop is free

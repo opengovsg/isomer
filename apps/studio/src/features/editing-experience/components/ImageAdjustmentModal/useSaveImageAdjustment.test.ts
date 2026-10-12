@@ -25,10 +25,7 @@ describe("useSaveImageAdjustment pure helpers", () => {
         originalKey: undefined,
       }
 
-      const result = resolveOriginalKey(
-        currentSrc,
-        draft as { originalKey?: string },
-      )
+      const result = resolveOriginalKey(currentSrc, draft)
       expect(result).toBe("path/to/original.jpg")
     })
 
@@ -38,10 +35,7 @@ describe("useSaveImageAdjustment pure helpers", () => {
         originalKey: undefined,
       }
 
-      const result = resolveOriginalKey(
-        currentSrc,
-        draft as { originalKey?: string },
-      )
+      const result = resolveOriginalKey(currentSrc, draft)
       expect(result).toBe("path/to/original.jpg")
     })
   })
