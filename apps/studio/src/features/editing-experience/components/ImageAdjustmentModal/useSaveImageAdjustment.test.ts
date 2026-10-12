@@ -56,19 +56,20 @@ describe("useSaveImageAdjustment pure helpers", () => {
       expect(result).toBe("image/webp")
     })
 
-    it("falls back to image/jpeg for non-bakeable formats (GIF)", () => {
-      const result = chooseBakeMime("image/gif")
-      expect(result).toBe("image/jpeg")
+    it("throws for non-bakeable formats (GIF)", () => {
+      expect(() => chooseBakeMime("image/gif")).toThrow()
     })
 
-    it("falls back to image/jpeg for non-bakeable formats (AVIF)", () => {
-      const result = chooseBakeMime("image/avif")
-      expect(result).toBe("image/jpeg")
+    it("throws for non-bakeable formats (AVIF)", () => {
+      expect(() => chooseBakeMime("image/avif")).toThrow()
     })
 
-    it("falls back to image/jpeg for non-bakeable formats (TIFF)", () => {
-      const result = chooseBakeMime("image/tiff")
-      expect(result).toBe("image/jpeg")
+    it("throws for non-bakeable formats (TIFF)", () => {
+      expect(() => chooseBakeMime("image/tiff")).toThrow()
+    })
+
+    it("throws for vector formats (SVG)", () => {
+      expect(() => chooseBakeMime("image/svg+xml")).toThrow()
     })
   })
 })
