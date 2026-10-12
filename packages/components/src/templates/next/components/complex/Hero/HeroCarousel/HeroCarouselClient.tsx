@@ -48,41 +48,22 @@ const slideContentStyles = tv({
   },
 })
 
-type CarouselSlide = HeroCarouselProps["slides"][number]
-
-type SlideContent = Pick<
-  HeroCarouselProps,
-  | "title"
-  | "subtitle"
-  | "buttonLabel"
-  | "buttonUrl"
-  | "secondaryButtonLabel"
-  | "secondaryButtonUrl"
->
-
-const getSlideContent = ({
+const getDisplayedSlide = ({
   slideMode,
-  rootContent,
-  slide,
+  slides,
+  currentIndex,
 }: {
   slideMode: HeroCarouselProps["slide"]
-  rootContent: SlideContent
-  slide: CarouselSlide
-}): SlideContent => {
+  slides: HeroCarouselProps["slides"]
+  currentIndex: number
+}) => {
+  // imageOnly keeps one set of copy while the image changes. That copy lives
+  // on the first slide, with the other slides supplying images only.
   if (slideMode === HERO_CAROUSEL_SLIDE_MODE.imageOnly) {
-    return rootContent
+    return slides[0]
   }
 
-  return {
-    title: slide.title ?? rootContent.title,
-    subtitle: slide.subtitle ?? rootContent.subtitle,
-    buttonLabel: slide.buttonLabel ?? rootContent.buttonLabel,
-    buttonUrl: slide.buttonUrl ?? rootContent.buttonUrl,
-    secondaryButtonLabel:
-      slide.secondaryButtonLabel ?? rootContent.secondaryButtonLabel,
-    secondaryButtonUrl:
-      slide.secondaryButtonUrl ?? rootContent.secondaryButtonUrl,
-  }
+  return slides[currentIndex]
 }
 
 const CarouselArrowButton = ({
@@ -246,12 +227,6 @@ const CarouselControls = ({
 )
 
 export const HeroCarouselClient = ({
-  title,
-  subtitle,
-  buttonLabel,
-  buttonUrl,
-  secondaryButtonLabel,
-  secondaryButtonUrl,
   slides,
   slide: slideMode,
   site,
@@ -265,15 +240,6 @@ export const HeroCarouselClient = ({
   const heroTextColour = HERO_THEME_MAPPINGS.text[theme]
   const heroButton = HERO_THEME_MAPPINGS.button[theme]
   const Tag = getHeadingTag(headingLevel)
-
-  const rootContent: SlideContent = {
-    title,
-    subtitle,
-    buttonLabel,
-    buttonUrl,
-    secondaryButtonLabel,
-    secondaryButtonUrl,
-  }
 
   const navigateToIndex = useCallback((index: number) => {
     startTransition(() => {
@@ -297,19 +263,18 @@ export const HeroCarouselClient = ({
     return null
   }
 
-  const currentSlide = slides[currentIndex]
-  if (!currentSlide) {
+  const isEntireSlideMode = slideMode === HERO_CAROUSEL_SLIDE_MODE.entire
+  const displayedSlide = getDisplayedSlide({
+    slideMode,
+    slides,
+    currentIndex,
+  })
+  if (!displayedSlide) {
     return null
   }
 
-  const isEntireSlideMode = slideMode === HERO_CAROUSEL_SLIDE_MODE.entire
-  const activeContent = getSlideContent({
-    slideMode,
-    rootContent,
-    slide: currentSlide,
-  })
-  const primaryButtonUrl = activeContent.buttonUrl
-  const primaryButtonLabel = activeContent.buttonLabel
+  const primaryButtonUrl = displayedSlide.buttonUrl
+  const primaryButtonLabel = displayedSlide.buttonLabel
 
   const ctaButtons =
     primaryButtonLabel && primaryButtonUrl ? (
@@ -327,20 +292,20 @@ export const HeroCarouselClient = ({
         >
           {primaryButtonLabel}
         </LinkButton>
-        {activeContent.secondaryButtonLabel &&
-          activeContent.secondaryButtonUrl && (
+        {displayedSlide.secondaryButtonLabel &&
+          displayedSlide.secondaryButtonUrl && (
             <LinkButton
               colorScheme={heroButton}
               variant="outline"
               size="lg"
               href={getReferenceLinkHref(
-                activeContent.secondaryButtonUrl,
+                displayedSlide.secondaryButtonUrl,
                 site.siteMapArray,
                 site.assetsBaseUrl,
               )}
               isWithFocusVisibleHighlight
             >
-              {activeContent.secondaryButtonLabel}
+              {displayedSlide.secondaryButtonLabel}
             </LinkButton>
           )}
       </div>
@@ -361,11 +326,6 @@ export const HeroCarouselClient = ({
           <div className="relative">
             {isEntireSlideMode ? (
               slides.map((slide, index) => {
-                const content = getSlideContent({
-                  slideMode,
-                  rootContent,
-                  slide,
-                })
                 const isCurrent = index === currentIndex
 
                 return (
@@ -379,11 +339,11 @@ export const HeroCarouselClient = ({
                   >
                     <div className="flex flex-col gap-6">
                       <Tag className="wrap-break-word prose-display-xl text-balance">
-                        {content.title}
+                        {slide.title}
                       </Tag>
-                      {content.subtitle && (
+                      {slide.subtitle && (
                         <p className="prose-title-lg-regular">
-                          {content.subtitle}
+                          {slide.subtitle}
                         </p>
                       )}
                     </div>
@@ -393,10 +353,12 @@ export const HeroCarouselClient = ({
             ) : (
               <div className="flex flex-col gap-6">
                 <Tag className="wrap-break-word prose-display-xl text-balance">
-                  {title}
+                  {displayedSlide.title}
                 </Tag>
-                {subtitle && (
-                  <p className="prose-title-lg-regular">{subtitle}</p>
+                {displayedSlide.subtitle && (
+                  <p className="prose-title-lg-regular">
+                    {displayedSlide.subtitle}
+                  </p>
                 )}
               </div>
             )}
@@ -405,14 +367,9 @@ export const HeroCarouselClient = ({
           {isEntireSlideMode ? (
             <div className="relative min-h-[3rem]">
               {slides.map((slide, index) => {
-                const content = getSlideContent({
-                  slideMode,
-                  rootContent,
-                  slide,
-                })
                 const isCurrent = index === currentIndex
-                const slidePrimaryButtonUrl = content.buttonUrl
-                const slidePrimaryButtonLabel = content.buttonLabel
+                const slidePrimaryButtonUrl = slide.buttonUrl
+                const slidePrimaryButtonLabel = slide.buttonLabel
 
                 if (!slidePrimaryButtonLabel || !slidePrimaryButtonUrl) {
                   return null
@@ -441,20 +398,20 @@ export const HeroCarouselClient = ({
                       >
                         {slidePrimaryButtonLabel}
                       </LinkButton>
-                      {content.secondaryButtonLabel &&
-                        content.secondaryButtonUrl && (
+                      {slide.secondaryButtonLabel &&
+                        slide.secondaryButtonUrl && (
                           <LinkButton
                             colorScheme={heroButton}
                             variant="outline"
                             size="lg"
                             href={getReferenceLinkHref(
-                              content.secondaryButtonUrl,
+                              slide.secondaryButtonUrl,
                               site.siteMapArray,
                               site.assetsBaseUrl,
                             )}
                             isWithFocusVisibleHighlight
                           >
-                            {content.secondaryButtonLabel}
+                            {slide.secondaryButtonLabel}
                           </LinkButton>
                         )}
                     </div>

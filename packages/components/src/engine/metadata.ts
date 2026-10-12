@@ -180,11 +180,15 @@ const getMetaDescription = (props: GetPageJsonLdProps) => {
       return props.page.contentPageHeader.summary
     case ISOMER_PAGE_LAYOUTS.Collection:
       return props.page.subtitle
-    case ISOMER_PAGE_LAYOUTS.Homepage:
-      return (
-        props.content.find((item) => item.type === "hero")?.subtitle ||
-        props.site.siteName
-      )
+    case ISOMER_PAGE_LAYOUTS.Homepage: {
+      const hero = props.content.find((item) => item.type === "hero")
+      const heroSubtitle =
+        hero?.variant === HERO_STYLE.carousel.key
+          ? hero.slides[0]?.subtitle
+          : hero?.subtitle
+
+      return heroSubtitle || props.site.siteName
+    }
     case ISOMER_PAGE_LAYOUTS.Link:
     case ISOMER_PAGE_LAYOUTS.Search:
     case ISOMER_PAGE_LAYOUTS.NotFound:

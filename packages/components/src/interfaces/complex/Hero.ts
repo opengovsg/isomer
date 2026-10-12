@@ -219,74 +219,49 @@ const HeroCarouselSlideSchema = Type.Composite(
   [
     Type.Object({
       backgroundUrl: BackgroundUrlSchema,
-      title: Type.Optional(
-        IsomerString({
-          title: "Hero text",
-          description: "The title of the hero banner",
-          maxLength: 100,
-          pattern: NON_EMPTY_STRING_REGEX,
-          errorMessage: {
-            pattern: "cannot be empty or contain only spaces",
-          },
-        }),
-      ),
-      subtitle: Type.Optional(
-        IsomerString({
-          title: "Description",
-          description: "The contents of the hero banner",
-          format: "textarea",
-          maxLength: 300,
-        }),
-      ),
     }),
+    Type.Omit(HeroBaseSchema, ["type"]),
     CallToActionsSchema,
   ],
   {
     title: "Slide",
-  },
-)
-
-const HeroCarouselSchema = Type.Composite(
-  [
-    Type.Object({
-      variant: Type.Literal(HERO_STYLE.carousel.key, {
-        default: HERO_STYLE.carousel.key,
-      }),
-      slide: Type.Union(
-        [
-          Type.Literal(HERO_CAROUSEL_SLIDE_MODE.entire, {
-            title: "entire",
-          }),
-          Type.Literal(HERO_CAROUSEL_SLIDE_MODE.imageOnly, {
-            title: "image only",
-          }),
-        ],
-        {
-          title: "Slide",
-          default: HERO_CAROUSEL_SLIDE_MODE.entire,
-          format: ARRAY_RADIO_FORMAT,
-        },
-      ),
-    }),
-    HeroBaseSchema,
-    CallToActionsSchema,
-    // Property order is the Studio form order. Slides must follow the shared
-    // hero groups, otherwise those groups render under the slides list.
-    Type.Object({
-      slides: Type.Array(HeroCarouselSlideSchema, {
-        title: "Slides",
-        minItems: 2,
-        maxItems: 3,
-      }),
-    }),
-  ],
-  {
-    title: HERO_STYLE.carousel.title,
     groups: [
       GROUPINGS.TEXT,
       GROUPINGS.PRIMARY_CALL_TO_ACTION,
       GROUPINGS.SECONDARY_CALL_TO_ACTION,
     ],
+  },
+)
+
+const HeroCarouselSchema = Type.Object(
+  {
+    type: Type.Literal("hero", { default: "hero" }),
+    variant: Type.Literal(HERO_STYLE.carousel.key, {
+      default: HERO_STYLE.carousel.key,
+    }),
+    slide: Type.Union(
+      [
+        Type.Literal(HERO_CAROUSEL_SLIDE_MODE.entire, {
+          title: "entire",
+        }),
+        Type.Literal(HERO_CAROUSEL_SLIDE_MODE.imageOnly, {
+          title: "image only",
+        }),
+      ],
+      {
+        title: "Slide",
+        default: HERO_CAROUSEL_SLIDE_MODE.entire,
+        format: ARRAY_RADIO_FORMAT,
+      },
+    ),
+    slides: Type.Array(HeroCarouselSlideSchema, {
+      title: "Slides",
+      minItems: 2,
+      maxItems: 3,
+    }),
+  },
+  {
+    title: HERO_STYLE.carousel.title,
   },
 )
 
@@ -312,11 +287,13 @@ export const HeroSchema = Type.Intersect(
   },
 )
 
-type CommonProps = Static<typeof HeroBaseSchema> & {
+type HeroLayoutProps = {
   site: IsomerSiteProps
   theme?: "default" | "inverse"
   headingLevel: number
 }
+
+type CommonProps = Static<typeof HeroBaseSchema> & HeroLayoutProps
 
 export type HeroGradientProps = Simplify<
   CommonProps & Static<typeof HeroGradientSchema>
@@ -339,7 +316,7 @@ export type HeroSearchbarProps = Simplify<
 >
 
 export type HeroCarouselProps = Simplify<
-  CommonProps & Static<typeof HeroCarouselSchema>
+  HeroLayoutProps & Static<typeof HeroCarouselSchema>
 >
 
 export type HeroProps =

@@ -185,25 +185,29 @@ export const Searchbar: Story = {
   },
 }
 
+const carouselImageOnlyCopy = {
+  title: "Set up good government websites, fast",
+  subtitle:
+    "Isomer is a website builder made for government teams. Pick a template, add your content, and publish. No coding needed.",
+  buttonLabel: "Get started",
+  buttonUrl: "/",
+  secondaryButtonLabel: "Learn more",
+  secondaryButtonUrl: "/",
+}
+
 export const CarouselImageOnly: Story = {
   args: {
     headingLevel: 1,
     site: generateSiteConfig(),
-    title: "Set up good government websites, fast",
-    subtitle:
-      "Isomer is a website builder made for government teams. Pick a template, add your content, and publish. No coding needed.",
-    buttonLabel: "Get started",
-    buttonUrl: "/",
-    secondaryButtonLabel: "Learn more",
-    secondaryButtonUrl: "/",
     variant: "carousel",
     slide: HERO_CAROUSEL_SLIDE_MODE.imageOnly,
     slides: [
-      { backgroundUrl: carouselImageUrl },
-      { backgroundUrl: carouselImageUrlAlt },
+      { backgroundUrl: carouselImageUrl, ...carouselImageOnlyCopy },
+      { backgroundUrl: carouselImageUrlAlt, ...carouselImageOnlyCopy },
       {
         backgroundUrl:
           "https://images.unsplash.com/photo-1594318142972-1e2ea7487a3e?auto=format&fit=crop&q=80&w=1740",
+        ...carouselImageOnlyCopy,
       },
     ],
     theme: "default",
@@ -214,8 +218,6 @@ export const CarouselEntire: Story = {
   args: {
     headingLevel: 1,
     site: generateSiteConfig(),
-    title: "Set up good government websites, fast",
-    subtitle: "Fallback description for the hero carousel.",
     variant: "carousel",
     slide: HERO_CAROUSEL_SLIDE_MODE.entire,
     slides: [
