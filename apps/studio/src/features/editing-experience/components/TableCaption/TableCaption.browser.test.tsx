@@ -498,7 +498,9 @@ describe("TableCaption", () => {
     expect(
       modal.queryByRole("button", { name: "Delete table" }),
     ).not.toBeInTheDocument()
-    expect(modal.getByRole("button", { name: "Done" })).toBeInTheDocument()
+    expect(
+      modal.getByRole("button", { name: "Back to editing" }),
+    ).toBeInTheDocument()
     expect(
       modal.queryByRole("button", { name: "Expand table" }),
     ).not.toBeInTheDocument()
@@ -617,7 +619,7 @@ describe("TableCaption", () => {
     })
 
     // Act
-    within(dialog).getByRole("button", { name: "Done" }).click()
+    within(dialog).getByRole("button", { name: "Back to editing" }).click()
 
     // Assert
     await waitFor(() => {
