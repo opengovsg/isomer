@@ -92,11 +92,16 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin does not list the Search system page on the site dashboard", async ({
     page,
   }) => {
-    // Arrange / Act
+    // Arrange
+    const pageTitle = `Dashboard List ${crypto.randomUUID().slice(0, 8)}`
+    await seedRootPage({ siteId, pageTitle })
+
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
 
-    // Assert
+    // Assert — a seeded page proves the list loaded; Search must stay hidden
+    await dashboard.expectResourceLinkVisible(pageTitle)
     await dashboard.expectResourceLinkHidden(SEARCH_PAGE_TITLE)
   })
 })
