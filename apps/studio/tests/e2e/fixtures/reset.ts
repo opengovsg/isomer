@@ -1,0 +1,72 @@
+import { sql } from "kysely"
+import { db, jsonb } from "~/server/modules/database"
+
+export { ensureUserOnboarded } from "./user"
+
+const DEFAULT_AGENCY_SITE_NAME = "Isomer"
+
+/** Reset site name and config.siteName for agency settings tests. */
+export const resetSiteAgencySettings = async (
+  siteId: number,
+  siteName: string = DEFAULT_AGENCY_SITE_NAME,
+) =>
+  db
+    .updateTable("Site")
+    .set({
+      name: siteName,
+      config: sql`jsonb_set(config, '{siteName}', to_jsonb(${siteName}::text))`,
+    })
+    .where("id", "=", siteId)
+    .returning("id")
+    .executeTakeFirstOrThrow()
+
+/** Remove notification config so the banner toggle starts off. */
+export const resetSiteNotification = (siteId: number) =>
+  db
+    .updateTable("Site")
+    .set({ config: sql`config - 'notification'` })
+    .where("id", "=", siteId)
+    .execute()
+
+// Mirrors createSite() defaults in server/modules/site/site.service.ts so the
+// colours form validates and setTheme can update an existing theme row.
+const DEFAULT_SITE_THEME = {
+  colors: {
+    brand: {
+      canvas: {
+        alt: "#bfcfd7",
+        default: "#e6ecef",
+        inverse: "#00405f",
+        backdrop: "#80a0af",
+      },
+      interaction: {
+        hover: "#002e44",
+        default: "#00405f",
+        pressed: "#00283b",
+      },
+    },
+  },
+}
+
+/** Reset theme column to the provisioned-site default for colours settings tests. */
+export const resetSiteTheme = (siteId: number) =>
+  db
+    .updateTable("Site")
+    .set({ theme: jsonb(DEFAULT_SITE_THEME) })
+    .where("id", "=", siteId)
+    .execute()
+
+/** Delete a single resource row created during a test. */
+export const deleteResource = (resourceId: string) =>
+  db.deleteFrom("Resource").where("id", "=", resourceId).execute()
+
+/** Delete resources on a site whose title matches a SQL LIKE pattern. */
+export const deleteResourcesByTitleLike = (
+  siteId: number,
+  titlePattern: string,
+) =>
+  db
+    .deleteFrom("Resource")
+    .where("siteId", "=", siteId)
+    .where("title", "like", titlePattern)
+    .execute()

@@ -3,7 +3,6 @@ import { subDays, subMinutes } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
-import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
 import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
@@ -21,6 +20,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
 import * as mailService from "~/features/mail/service"
 import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
+import { mockFeatureFlags } from "~/lib/growthbookOffline"
 import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
 import {

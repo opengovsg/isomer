@@ -25,10 +25,7 @@ interface PublishSiteArgs {
 
 const REPO_ROOT = path.resolve(process.cwd(), "../..")
 const PUBLISHING_DIR = path.join(REPO_ROOT, "tooling/build/scripts/publishing")
-const LOCAL_PUBLISH_DIR = path.join(
-  REPO_ROOT,
-  "tooling/template/.local-publish",
-)
+const LOCAL_PUBLISH_DIR = path.join(REPO_ROOT, "apps/template/.local-publish")
 const LOCAL_PUBLISH_BACKUP_DIR = `${LOCAL_PUBLISH_DIR}-backup`
 const LOCAL_PUBLISH_TIMEOUT_MS = 120_000
 let localPublishQueue = Promise.resolve()

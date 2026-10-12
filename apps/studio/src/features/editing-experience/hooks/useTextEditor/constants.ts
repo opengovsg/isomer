@@ -25,6 +25,7 @@ import { Superscript } from "@tiptap/extension-superscript"
 import { Table } from "@tiptap/extension-table"
 import { TableCell } from "@tiptap/extension-table-cell"
 import { TableHeader } from "@tiptap/extension-table-header"
+import { TableRow } from "@tiptap/extension-table-row"
 import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
@@ -32,6 +33,7 @@ import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
 import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
 
+import { canMergeCells } from "../../components/TableBubbleMenu/TableBubbleMenu.utils"
 import {
   focusTableBubbleMenuTrigger,
   runTableBubbleMenuFocusTrigger,
@@ -46,8 +48,6 @@ import {
 } from "./clearTableCellBackgroundOnKindChange"
 import { deleteEmptyTextblockBeforeTable } from "./deleteEmptyTextblockBeforeTable"
 import { selectTableCellContent } from "./selectTableCellContent"
-
-export { TableRow } from "@tiptap/extension-table-row"
 
 export const HEADING_TYPE = "heading"
 export const PARAGRAPH_TYPE = "paragraph"
@@ -133,9 +133,14 @@ export const IsomerTable = Table.extend({
     const parent = this.parent?.()
     const parentToggleHeaderRow = parent?.toggleHeaderRow
     const parentToggleHeaderColumn = parent?.toggleHeaderColumn
+    const parentMergeCells = parent?.mergeCells
 
     return {
       ...parent,
+      mergeCells: () => (props) => {
+        if (!canMergeCells(props.state)) return false
+        return parentMergeCells?.()(props) ?? false
+      },
       focusTableBubbleMenuTrigger:
         () =>
         ({ editor }: { editor: Editor }) =>
@@ -251,3 +256,12 @@ export const IsomerHeading = Heading.extend({
 }).configure({
   levels: HEADING_LEVELS,
 })
+
+export const TEXT_EDITOR_EXTRA_EXTENSIONS: Extensions = [
+  ...PROSE_EXTENSIONS,
+  TableRow,
+  IsomerTable,
+  IsomerTableCell,
+  IsomerTableHeader,
+  IsomerHeading,
+]

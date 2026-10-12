@@ -1,5 +1,5 @@
 import type { Node } from "@tiptap/pm/model"
-import type { Transaction } from "@tiptap/pm/state"
+import type { EditorState, Transaction } from "@tiptap/pm/state"
 import type { EditorView } from "@tiptap/pm/view"
 import type { Editor } from "@tiptap/react"
 import { CellSelection, selectedRect, TableMap } from "@tiptap/pm/tables"
@@ -51,6 +51,81 @@ export const selectionIsLeftmostColumn = (rect: {
   left: number
   right: number
 }): boolean => rect.left === 0 && rect.right === 1
+
+interface MergeSelectionRect {
+  top: number
+  bottom: number
+  left: number
+  right: number
+  map: TableMap
+  table: Node
+}
+
+const cellRectIntersectsSelection = (
+  cell: { top: number; bottom: number; left: number; right: number },
+  selection: Pick<MergeSelectionRect, "top" | "bottom" | "left" | "right">,
+): boolean =>
+  cell.top < selection.bottom &&
+  cell.bottom > selection.top &&
+  cell.left < selection.right &&
+  cell.right > selection.left
+
+// Merging removes every selected cell except the anchor; rows below the anchor
+// lose all direct children when each child intersects the selection.
+const mergeWouldLeaveEmptyRow = (rect: MergeSelectionRect): boolean => {
+  const { table, map, top, bottom, left, right } = rect
+  if (top + 1 >= bottom) return false
+
+  const selection = { top, bottom, left, right }
+  const cellRectByOffset = new Map<number, ReturnType<TableMap["findCell"]>>()
+  for (const offset of new Set(map.map)) {
+    cellRectByOffset.set(offset, map.findCell(offset))
+  }
+
+  let rowOffset = 0
+  for (let r = 0; r < top + 1; r++) {
+    rowOffset += table.child(r).nodeSize
+  }
+
+  for (let row = top + 1; row < bottom; row++) {
+    const rowNode = table.child(row)
+    if (rowNode.childCount === 0) {
+      rowOffset += rowNode.nodeSize
+      continue
+    }
+
+    let allChildrenInSelection = true
+    let cellOffset = rowOffset + 1
+    for (let cellIndex = 0; cellIndex < rowNode.childCount; cellIndex++) {
+      const cellRect = cellRectByOffset.get(cellOffset)
+      if (!cellRect || !cellRectIntersectsSelection(cellRect, selection)) {
+        allChildrenInSelection = false
+        break
+      }
+      cellOffset += rowNode.child(cellIndex).nodeSize
+    }
+
+    if (allChildrenInSelection) return true
+    rowOffset += rowNode.nodeSize
+  }
+
+  return false
+}
+
+// TipTap can omit row `content` when a row has no cells, which breaks publish layout.
+export const canMergeCellSelection = (rect: MergeSelectionRect): boolean => {
+  const coversMultipleWholeRows =
+    rect.left === 0 &&
+    rect.right === rect.map.width &&
+    rect.bottom - rect.top > 1
+  const coversMultipleWholeColumns =
+    rect.top === 0 &&
+    rect.bottom === rect.map.height &&
+    rect.bottom - rect.top > 1 &&
+    rect.right - rect.left > 1
+  if (coversMultipleWholeRows || coversMultipleWholeColumns) return false
+  return !mergeWouldLeaveEmptyRow(rect)
+}
 
 export const getTableSelectionKind = ({
   spansEntireTableWidth,
@@ -191,6 +266,22 @@ const isMergedCell = (rect: ReturnType<typeof selectedRect>): boolean => {
   return (
     (node.attrs.colspan as number) > 1 || (node.attrs.rowspan as number) > 1
   )
+}
+
+// Menu and mergeCells both call these. A merged cell that fills a row, column,
+// or table is still one cell, so the axis menu must use the same checks.
+export const canMergeCells = (state: EditorState): boolean => {
+  const { selection } = state
+  if (!(selection instanceof CellSelection)) return false
+  if (isSingleCellSelection(selection)) return false
+  return canMergeCellSelection(selectedRect(state))
+}
+
+export const canSplitCell = (state: EditorState): boolean => {
+  const { selection } = state
+  if (!(selection instanceof CellSelection)) return false
+  if (!isSingleCellSelection(selection)) return false
+  return isMergedCell(selectedRect(state))
 }
 
 export const detectTableSelectionKind = (editor: Editor): SelectionKind => {

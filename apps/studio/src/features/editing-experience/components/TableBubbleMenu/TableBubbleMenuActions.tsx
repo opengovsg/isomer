@@ -56,6 +56,8 @@ import {
   duplicateSelectedRows,
 } from "./TableBubbleMenu.duplicate"
 import {
+  canMergeCells,
+  canSplitCell,
   getColumnMovePlan,
   getRowMovePlan,
   restoreMovedBlockSelection,
@@ -328,6 +330,14 @@ const MergeCellsButton = ({ editor }: { editor: Editor }) => (
   />
 )
 
+const SplitCellButton = ({ editor }: { editor: Editor }) => (
+  <ActionButton
+    label="Split cell"
+    icon={<IconSplitCell boxSize="1rem" />}
+    onClick={() => editor.chain().focus().splitCell().run()}
+  />
+)
+
 const HeaderToggle = ({
   label,
   isChecked,
@@ -413,7 +423,8 @@ const RowSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
-      <MergeCellsButton editor={editor} />
+      {canMergeCells(editor.state) && <MergeCellsButton editor={editor} />}
+      {canSplitCell(editor.state) && <SplitCellButton editor={editor} />}
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
@@ -487,7 +498,8 @@ const ColumnSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
-      <MergeCellsButton editor={editor} />
+      {canMergeCells(editor.state) && <MergeCellsButton editor={editor} />}
+      {canSplitCell(editor.state) && <SplitCellButton editor={editor} />}
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
@@ -533,6 +545,7 @@ const SelectionActions = ({
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
+          {canSplitCell(editor.state) && <SplitCellButton editor={editor} />}
           <ActionButton
             label="Delete table"
             icon={<BiTrash fontSize="1rem" />}
@@ -544,7 +557,7 @@ const SelectionActions = ({
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          <MergeCellsButton editor={editor} />
+          {canMergeCells(editor.state) && <MergeCellsButton editor={editor} />}
         </ActionGroup>
       )
     case "single-cell":
@@ -557,11 +570,7 @@ const SelectionActions = ({
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          <ActionButton
-            label="Split cell"
-            icon={<IconSplitCell boxSize="1rem" />}
-            onClick={() => editor.chain().focus().splitCell().run()}
-          />
+          {canSplitCell(editor.state) && <SplitCellButton editor={editor} />}
         </ActionGroup>
       )
     default:

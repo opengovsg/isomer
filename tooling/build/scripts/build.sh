@@ -17,25 +17,25 @@ ISOMER_REPO_DIRECTORY=$(pwd)
 cd ../
 
 cd isomer/packages/components
-mv opengovsg-isomer-components-0.0.13.tgz ../../tooling/template/
+mv opengovsg-isomer-components-0.0.13.tgz ../../apps/template/
 cd ../.. # back to root
 echo $(pwd)
 calculate_duration $start_time
 
 # Set up the schema folder
-rm -rf tooling/template/schema
-rm -rf tooling/template/data
-rm -rf tooling/template/public
-mv $ISOMER_REPO_DIRECTORY/schema/ tooling/template/
-mv $ISOMER_REPO_DIRECTORY/data/ tooling/template/
-mv $ISOMER_REPO_DIRECTORY/public/ tooling/template/
+rm -rf apps/template/schema
+rm -rf apps/template/data
+rm -rf apps/template/public
+mv $ISOMER_REPO_DIRECTORY/schema/ apps/template/
+mv $ISOMER_REPO_DIRECTORY/data/ apps/template/
+mv $ISOMER_REPO_DIRECTORY/public/ apps/template/
 
 # Generate sitemap.json
-cd tooling/template
+cd apps/template
 find . schema
 start_time=$(date +%s)
 mkdir -p scripts/
-cp ../build/scripts/generate-sitemap.js scripts/
+cp ../../tooling/build/scripts/generate-sitemap.js scripts/
 node scripts/generate-sitemap.js
 echo "Sitemap generated"
 calculate_duration $start_time
@@ -51,7 +51,7 @@ rm -rf scripts
 mv schema/index.json schema/_index.json
 
 # Create not-found.json by copying _index.json if it doesn't exist
-# Refer to tooling/template/app/not-found.tsx for more context
+# Refer to apps/template/app/not-found.tsx for more context
 if [ ! -f "schema/not-found.json" ]; then
   echo "Creating not-found.json..."
   cp schema/_index.json schema/not-found.json

@@ -164,6 +164,39 @@ const waitForHandle = async (
     return handle
   })
 
+const firstColumnCellTags = (container: HTMLElement): string[] => {
+  const table = container.querySelector("table")
+  if (!table) throw new Error("table not found")
+  return [...table.querySelectorAll("tr")].map(
+    (row) => row.cells[0]?.tagName.toLowerCase() ?? "",
+  )
+}
+
+const dragHandleTo = async ({
+  container,
+  axis,
+  index,
+  clientX,
+  clientY,
+}: {
+  container: HTMLElement
+  axis: "row" | "column"
+  index: number
+  clientX: number
+  clientY: number
+}) => {
+  const handle = await waitForHandle(container, axis, index)
+  const handleCentre = centreOf(handle)
+  act(() => {
+    fireEvent.mouseDown(handle, {
+      clientX: handleCentre.x,
+      clientY: handleCentre.y,
+    })
+    fireEvent.mouseMove(document, { clientX, clientY })
+    fireEvent.mouseUp(document, { clientX, clientY })
+  })
+}
+
 describe("TableDragHandles", () => {
   it("shows a handle for every row and column without hovering", async () => {
     // Arrange
@@ -630,6 +663,51 @@ describe("TableDragHandles", () => {
         "Column C",
         "Column A",
       ])
+    })
+  })
+
+  it("keeps header column cells as th after row and column drags", async () => {
+    // Arrange
+    const { editor, container } = await renderHarness()
+    selectCells(editor, 0, 9)
+    act(() => {
+      editor.chain().focus().toggleHeaderColumn().run()
+    })
+
+    // Act: drag the last body row above the row above it
+    const rowThreeCell = findByCellText(container, "Row 3, A")
+    const rowTwoCell = findByCellText(container, "Row 2, A")
+    const rowDropY =
+      centreOf(rowTwoCell).y - rowTwoCell.getBoundingClientRect().height / 2
+    await dragHandleTo({
+      container,
+      axis: "row",
+      index: 3,
+      clientX: centreOf(rowThreeCell).x,
+      clientY: rowDropY,
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(firstColumnCellTags(container)).toEqual(["th", "th", "th", "th"])
+    })
+
+    // Act: drag column C before column B
+    const columnCCell = findByCellText(container, "Column C")
+    const columnBCell = findByCellText(container, "Column B")
+    const columnDropX =
+      centreOf(columnBCell).x - columnBCell.getBoundingClientRect().width / 2
+    await dragHandleTo({
+      container,
+      axis: "column",
+      index: 2,
+      clientX: columnDropX,
+      clientY: centreOf(columnCCell).y,
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(firstColumnCellTags(container)).toEqual(["th", "th", "th", "th"])
     })
   })
 

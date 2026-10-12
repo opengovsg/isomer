@@ -65,4 +65,43 @@ export class CollectionPO {
   async expectManageFiltersDrawerOpen() {
     await expect(this.page.getByText("Manage filters")).toBeVisible()
   }
+
+  private linkSaveButton() {
+    return this.page.getByRole("button", { name: "Save", exact: true })
+  }
+
+  async expectLinkSaveDisabled() {
+    await expect(this.linkSaveButton()).toBeDisabled()
+  }
+
+  async expectLinkSaveEnabled() {
+    await expect(this.linkSaveButton()).toBeEnabled()
+  }
+
+  async clickLinkSave() {
+    await this.linkSaveButton().click()
+  }
+
+  async openArticlePageHeader() {
+    await this.page.getByRole("button", { name: "Article page header" }).click()
+  }
+
+  private pageSaveChangesButton() {
+    return this.page.getByRole("button", {
+      name: "Save changes",
+      exact: true,
+    })
+  }
+
+  async expectPageSaveChangesDisabled() {
+    await expect(this.pageSaveChangesButton()).toBeDisabled()
+  }
+
+  async expectPageSaveChangesEnabled() {
+    await expect(this.pageSaveChangesButton()).toBeEnabled()
+  }
+
+  async clickPageSaveChanges() {
+    await this.pageSaveChangesButton().click()
+  }
 }

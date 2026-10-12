@@ -3,7 +3,6 @@ import { jsonObjectFrom } from "kysely/helpers/postgres"
 import { get } from "lodash-es"
 import { USER_LINKABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { SEARCH_PAGE_PERMALINK } from "~/constants/sitemap"
-import { IS_UNPUBLISH_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -866,17 +865,21 @@ export const resourceRouter = router({
           })
         }
 
-        // Gated on the flag: with unpublish unreachable, a live resource
-        // could never become deletable, so skip the guard entirely rather
-        // than lock it out permanently.
-        if (ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
-          await assertResourceNotLive(tx, {
-            siteId: Number(siteId),
-            resourceId,
-            resourceType: before.type,
-            publishedVersionId: before.publishedVersionId,
+        // Prevent the root page from being deleted
+        if (before.type === ResourceType.RootPage) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "The root page cannot be deleted",
           })
         }
+
+        // A live resource must be unpublished before it can be deleted.
+        await assertResourceNotLive(tx, {
+          siteId: Number(siteId),
+          resourceId,
+          resourceType: before.type,
+          publishedVersionId: before.publishedVersionId,
+        })
 
         // Not gated on the flag: schedulePage (scheduling a publish) has no
         // flag check of its own, so a pending schedule can exist even with
@@ -922,13 +925,8 @@ export const resourceRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST" })
       }
 
-      // Skip the rebuild when the guard above ran: it already proved nothing
-      // live was just deleted, so there's nothing for a rebuild to remove.
-      // Without the flag, a live resource can still reach here, so keep
-      // rebuilding in that case.
-      if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
-        await publishResource(user.id, result, ctx.logger)
-      }
+      // No rebuild needed: assertResourceNotLive above proved nothing live
+      // was just deleted, so there's nothing for a rebuild to remove.
 
       // NOTE: We need to do this cast as the property is a `bigint`
       // and trpc cannot serialise it, which leads to errors

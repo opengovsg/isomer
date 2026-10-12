@@ -19,6 +19,7 @@ export {
   NON_EMPTY_STRING_REGEX,
   TRIMMED_NON_EMPTY_STRING_REGEX,
   TRIMMED_STRING_OR_EMPTY_REGEX,
+  NO_STYLIZED_UNICODE_REGEX,
   createChildrenPagesComparator,
   formatBytes,
   DGS_REQUEST_MAX_BYTES,
@@ -29,3 +30,4 @@ export * from "./schemas"
 export * from "./types"
 export * from "./interfaces"
 export * from "./constants"
+export * from "./common/icons"
