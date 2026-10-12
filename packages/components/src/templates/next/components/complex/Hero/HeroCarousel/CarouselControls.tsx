@@ -1,27 +1,4 @@
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi"
-import { tv } from "~/lib/tv"
-
-const carouselControlsStyles = tv({
-  base: "flex w-full items-center justify-between gap-4",
-  variants: {
-    isDesktopOnly: {
-      true: "hidden lg:flex",
-    },
-    hasTopMargin: {
-      true: "mt-8",
-    },
-  },
-})
-
-const carouselDotStyles = tv({
-  base: "h-2 shrink-0 rounded-full transition-[width,background-color] duration-150 ease-out motion-reduce:transition-none",
-  variants: {
-    isActive: {
-      true: "w-6 bg-white",
-      false: "w-2 bg-white/50 hover:bg-white/70 focus-visible:bg-white/70",
-    },
-  },
-})
 
 const CarouselArrowButton = ({
   direction,
@@ -53,11 +30,13 @@ const CarouselDots = ({
   currentIndex,
   onSelect,
   isClickable,
+  dotClassName,
 }: {
   count: number
   currentIndex: number
   onSelect: (index: number) => void
   isClickable: boolean
+  dotClassName: { active: string; inactive: string }
 }) => (
   <div
     className="flex items-center gap-2"
@@ -66,7 +45,7 @@ const CarouselDots = ({
   >
     {Array.from({ length: count }, (_, index) => {
       const isActive = index === currentIndex
-      const dotClassName = carouselDotStyles({ isActive })
+      const className = isActive ? dotClassName.active : dotClassName.inactive
 
       if (isClickable) {
         return (
@@ -76,13 +55,13 @@ const CarouselDots = ({
             role="tab"
             aria-selected={isActive}
             aria-label={`Go to slide ${index + 1} of ${count}`}
-            className={dotClassName}
+            className={className}
             onClick={() => onSelect(index)}
           />
         )
       }
 
-      return <span key={index} aria-hidden className={dotClassName} />
+      return <span key={index} aria-hidden className={className} />
     })}
   </div>
 )
@@ -95,8 +74,8 @@ export const CarouselControls = ({
   onNext,
   isDotsClickable,
   isPending,
-  isDesktopOnly,
-  hasTopMargin,
+  className,
+  dotClassName,
 }: {
   slideCount: number
   currentIndex: number
@@ -105,15 +84,16 @@ export const CarouselControls = ({
   onNext: () => void
   isDotsClickable: boolean
   isPending: boolean
-  isDesktopOnly?: boolean
-  hasTopMargin?: boolean
+  className: string
+  dotClassName: { active: string; inactive: string }
 }) => (
-  <div className={carouselControlsStyles({ isDesktopOnly, hasTopMargin })}>
+  <div className={className}>
     <CarouselDots
       count={slideCount}
       currentIndex={currentIndex}
       onSelect={onSelect}
       isClickable={isDotsClickable}
+      dotClassName={dotClassName}
     />
     <div className="flex items-center gap-2">
       <CarouselArrowButton

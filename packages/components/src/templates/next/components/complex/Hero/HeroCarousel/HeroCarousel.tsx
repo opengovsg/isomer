@@ -1,29 +1,42 @@
 import type { HeroCarouselProps } from "~/interfaces/complex/Hero"
-import { isExternalUrl } from "~/utils/isExternalUrl"
+import { HERO_CAROUSEL_STYLE } from "~/interfaces/complex/Hero"
+import { getHeadingTag } from "~/utils/getHeadingTag"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { HeroCarouselClient } from "./HeroCarouselClient"
 
-const resolveBackgroundUrl = (
-  backgroundUrl: string,
-  assetsBaseUrl: HeroCarouselProps["site"]["assetsBaseUrl"],
-) => {
-  if (isExternalUrl(backgroundUrl) || assetsBaseUrl === undefined) {
-    return backgroundUrl
+export const HeroCarousel = ({
+  site,
+  slides,
+  style = HERO_CAROUSEL_STYLE.block,
+  headingLevel,
+}: HeroCarouselProps) => {
+  if (slides.length < 2) {
+    return null
   }
 
-  return `${assetsBaseUrl}${backgroundUrl}`
-}
-
-export const HeroCarousel = (props: HeroCarouselProps) => {
-  const { site, slides, ...rest } = props
-
-  const processedSlides = slides.map((slide) => ({
-    ...slide,
-    backgroundUrl: resolveBackgroundUrl(
-      slide.backgroundUrl,
-      site.assetsBaseUrl,
-    ),
-  }))
-
-  return <HeroCarouselClient site={site} slides={processedSlides} {...rest} />
+  return (
+    <HeroCarouselClient
+      isBlock={style === HERO_CAROUSEL_STYLE.block}
+      headingTag={getHeadingTag(headingLevel)}
+      assetsBaseUrl={site.assetsBaseUrl}
+      slides={slides.map((slide) => ({
+        backgroundUrl: slide.backgroundUrl,
+        title: slide.title,
+        subtitle: slide.subtitle,
+        primaryLabel: slide.buttonLabel,
+        primaryHref: getReferenceLinkHref(
+          slide.buttonUrl,
+          site.siteMapArray,
+          site.assetsBaseUrl,
+        ),
+        secondaryLabel: slide.secondaryButtonLabel,
+        secondaryHref: getReferenceLinkHref(
+          slide.secondaryButtonUrl,
+          site.siteMapArray,
+          site.assetsBaseUrl,
+        ),
+      }))}
+    />
+  )
 }

@@ -1,98 +1,98 @@
 "use client"
 
-import type { HeroCarouselProps } from "~/interfaces/complex/Hero"
+import type { HeadingTag } from "~/utils/getHeadingTag"
 import { useCallback, useState, useTransition } from "react"
-import { HERO_CAROUSEL_STYLE } from "~/interfaces/complex/Hero"
 import { tv } from "~/lib/tv"
-import { getHeadingTag } from "~/utils/getHeadingTag"
-import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { ComponentContent } from "../../../internal/customCssClass"
 import { ImageClient } from "../../../internal/ImageClient"
 import { LinkButton } from "../../../internal/LinkButton/LinkButton"
 import { CarouselControls } from "./CarouselControls"
 
-const sectionStyles = tv({
-  base: "flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]",
+const createHeroCarouselStyles = tv({
+  slots: {
+    section: "flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]",
+    contentPanel: "flex flex-col",
+    contentInner: "flex w-full flex-col gap-9",
+    title: "prose-display-xl",
+    mobileControls:
+      "absolute inset-x-0 bottom-0 z-20 px-6 pb-10 pt-12 md:px-10 lg:hidden",
+    slideImage:
+      "absolute inset-0 z-0 h-full w-full opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
+    slideContent:
+      "flex flex-col gap-6 opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
+    controls: "flex w-full items-center justify-between gap-4",
+    desktopControls:
+      "flex hidden w-full items-center justify-between gap-4 lg:flex",
+    dot: "h-2 shrink-0 rounded-full transition-[width,background-color] duration-150 ease-out motion-reduce:transition-none",
+  },
   variants: {
     isBlock: {
-      true: "flex-col lg:flex-row",
-      false: "relative",
+      true: {
+        section: "flex-col lg:flex-row",
+        contentPanel:
+          "bg-brand-canvas-inverse px-6 pb-6 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pb-12 lg:pl-10 lg:pr-8",
+        contentInner:
+          "max-w-[548px] justify-center text-base-content-inverse lg:mx-0 lg:ml-auto",
+        title: "wrap-break-word text-balance",
+        desktopControls: "mt-8",
+      },
+      false: {
+        section: "relative",
+        contentPanel:
+          "relative z-10 w-full justify-end bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]",
+        contentInner: `${ComponentContent} py-16 text-start text-base-content-inverse`,
+        title: "break-words",
+        mobileControls: "bg-gradient-to-t from-black/50 to-transparent",
+      },
     },
-  },
-})
-
-const contentPanelStyles = tv({
-  variants: {
-    isBlock: {
-      true: "flex flex-col bg-brand-canvas-inverse px-6 pb-6 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pb-12 lg:pl-10 lg:pr-8",
-      false:
-        "relative z-10 flex w-full flex-col justify-end bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]",
-    },
-  },
-})
-
-const contentInnerStyles = tv({
-  base: "flex w-full flex-col gap-9",
-  variants: {
-    isBlock: {
-      true: "max-w-[548px] justify-center text-base-content-inverse lg:mx-0 lg:ml-auto",
-      false: `${ComponentContent} py-16 text-start text-base-content-inverse`,
-    },
-  },
-})
-
-const titleStyles = tv({
-  base: "prose-display-xl",
-  variants: {
-    isBlock: {
-      true: "wrap-break-word text-balance",
-      false: "break-words",
-    },
-  },
-})
-
-const mobileControlsStyles = tv({
-  base: "absolute inset-x-0 bottom-0 z-20 px-6 pb-10 pt-12 md:px-10 lg:hidden",
-  variants: {
-    isBlock: {
-      false: "bg-gradient-to-t from-black/50 to-transparent",
-    },
-  },
-})
-
-const slideImageStyles = tv({
-  base: "absolute inset-0 z-0 h-full w-full opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
-  variants: {
     isCurrent: {
-      true: "z-10 opacity-100",
-    },
-  },
-})
-
-const slideContentStyles = tv({
-  base: "flex flex-col gap-6 opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
-  variants: {
-    isCurrent: {
-      true: "relative z-10 opacity-100",
+      true: {
+        slideImage: "z-10 opacity-100",
+        slideContent: "relative z-10 opacity-100",
+      },
     },
     isHidden: {
-      true: "pointer-events-none absolute inset-0",
+      true: {
+        slideContent: "pointer-events-none absolute inset-0",
+      },
+    },
+    isActive: {
+      true: {
+        dot: "w-6 bg-white",
+      },
+      false: {
+        dot: "w-2 bg-white/50 hover:bg-white/70 focus-visible:bg-white/70",
+      },
     },
   },
 })
 
+const styles = createHeroCarouselStyles()
+
+interface HeroCarouselSlideView {
+  backgroundUrl: string
+  title: string
+  subtitle?: string
+  primaryLabel?: string
+  primaryHref?: string
+  secondaryLabel?: string
+  secondaryHref?: string
+}
+
 export const HeroCarouselClient = ({
+  isBlock,
+  headingTag: Tag,
+  assetsBaseUrl,
   slides,
-  style = HERO_CAROUSEL_STYLE.block,
-  site,
-  headingLevel,
-}: HeroCarouselProps) => {
+}: {
+  isBlock: boolean
+  headingTag: HeadingTag
+  assetsBaseUrl?: string
+  slides: HeroCarouselSlideView[]
+}) => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPending, startTransition] = useTransition()
-
-  const Tag = getHeadingTag(headingLevel)
-  const isBlock = style === HERO_CAROUSEL_STYLE.block
 
   const navigateToIndex = useCallback((index: number) => {
     startTransition(() => {
@@ -112,8 +112,9 @@ export const HeroCarouselClient = ({
     [slides.length],
   )
 
-  if (slides.length < 2) {
-    return null
+  const dotClassName = {
+    active: styles.dot({ isActive: true }),
+    inactive: styles.dot({ isActive: false }),
   }
 
   const images = slides.map((slide, index) => {
@@ -122,7 +123,7 @@ export const HeroCarouselClient = ({
     return (
       <div
         key={slide.backgroundUrl + index}
-        className={slideImageStyles({ isCurrent })}
+        className={styles.slideImage({ isCurrent })}
         aria-hidden={!isCurrent}
       >
         <ImageClient
@@ -130,7 +131,7 @@ export const HeroCarouselClient = ({
           alt=""
           width="100%"
           className="absolute inset-0 h-full w-full object-cover object-center"
-          assetsBaseUrl={site.assetsBaseUrl}
+          assetsBaseUrl={assetsBaseUrl}
           lazyLoading={index === 0 ? false : true}
         />
       </div>
@@ -138,7 +139,7 @@ export const HeroCarouselClient = ({
   })
 
   const mobileControls = (
-    <div className={mobileControlsStyles({ isBlock })}>
+    <div className={styles.mobileControls({ isBlock })}>
       <CarouselControls
         slideCount={slides.length}
         currentIndex={currentIndex}
@@ -147,13 +148,15 @@ export const HeroCarouselClient = ({
         onNext={() => navigateByDirection("next")}
         isDotsClickable={false}
         isPending={isPending}
+        className={styles.controls()}
+        dotClassName={dotClassName}
       />
     </div>
   )
 
   return (
     <section
-      className={sectionStyles({ isBlock })}
+      className={styles.section({ isBlock })}
       aria-roledescription="carousel"
       aria-label="Hero carousel"
     >
@@ -165,8 +168,8 @@ export const HeroCarouselClient = ({
           {images}
         </div>
       )}
-      <div className={contentPanelStyles({ isBlock })}>
-        <div className={contentInnerStyles({ isBlock })}>
+      <div className={styles.contentPanel({ isBlock })}>
+        <div className={styles.contentInner({ isBlock })}>
           <div className="relative">
             {slides.map((slide, index) => {
               const isCurrent = index === currentIndex
@@ -174,14 +177,14 @@ export const HeroCarouselClient = ({
               return (
                 <div
                   key={index}
-                  className={slideContentStyles({
+                  className={styles.slideContent({
                     isCurrent,
                     isHidden: !isCurrent,
                   })}
                   aria-hidden={!isCurrent}
                 >
                   <div className="flex flex-col gap-6">
-                    <Tag className={titleStyles({ isBlock })}>
+                    <Tag className={styles.title({ isBlock })}>
                       {slide.title}
                     </Tag>
                     {slide.subtitle && (
@@ -196,17 +199,15 @@ export const HeroCarouselClient = ({
           <div className="relative min-h-[3rem]">
             {slides.map((slide, index) => {
               const isCurrent = index === currentIndex
-              const slidePrimaryButtonUrl = slide.buttonUrl
-              const slidePrimaryButtonLabel = slide.buttonLabel
 
-              if (!slidePrimaryButtonLabel || !slidePrimaryButtonUrl) {
+              if (!slide.primaryLabel || !slide.primaryHref) {
                 return null
               }
 
               return (
                 <div
                   key={index}
-                  className={slideContentStyles({
+                  className={styles.slideContent({
                     isCurrent,
                     isHidden: !isCurrent,
                   })}
@@ -214,31 +215,23 @@ export const HeroCarouselClient = ({
                 >
                   <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
                     <LinkButton
-                      href={getReferenceLinkHref(
-                        slidePrimaryButtonUrl,
-                        site.siteMapArray,
-                        site.assetsBaseUrl,
-                      )}
+                      href={slide.primaryHref}
                       size="lg"
                       variant="solid"
                       colorScheme={isBlock ? "inverse" : undefined}
                       isWithFocusVisibleHighlight
                     >
-                      {slidePrimaryButtonLabel}
+                      {slide.primaryLabel}
                     </LinkButton>
-                    {slide.secondaryButtonLabel && slide.secondaryButtonUrl && (
+                    {slide.secondaryLabel && slide.secondaryHref && (
                       <LinkButton
                         colorScheme="inverse"
                         variant="outline"
                         size="lg"
-                        href={getReferenceLinkHref(
-                          slide.secondaryButtonUrl,
-                          site.siteMapArray,
-                          site.assetsBaseUrl,
-                        )}
+                        href={slide.secondaryHref}
                         isWithFocusVisibleHighlight
                       >
-                        {slide.secondaryButtonLabel}
+                        {slide.secondaryLabel}
                       </LinkButton>
                     )}
                   </div>
@@ -255,8 +248,8 @@ export const HeroCarouselClient = ({
             onNext={() => navigateByDirection("next")}
             isDotsClickable
             isPending={isPending}
-            isDesktopOnly
-            hasTopMargin={isBlock}
+            className={styles.desktopControls({ isBlock })}
+            dotClassName={dotClassName}
           />
         </div>
         {!isBlock && mobileControls}
