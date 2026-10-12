@@ -57,21 +57,33 @@ const EditorContentWrapper = ({
   return (
     <Box
       ref={containerRef}
-      className="tiptap-editor-scroll-container"
-      data-testid="tiptap-editor-scroll-container"
       position="relative"
       w="100%"
       flex="1 1 auto"
       minH={0}
+      display="flex"
+      flexDirection="column"
       overflowX="hidden"
       overflowY="auto"
     >
       <Box
         as={EditorContent}
         editor={editor}
-        className="tiptap-editor-content-host"
         w="100%"
+        flex="1 1 auto"
+        minH="100%"
+        display="flex"
+        flexDirection="column"
+        p="1rem"
+        backgroundColor="white"
         cursor="text"
+        sx={{
+          ".tiptap": {
+            boxSizing: "border-box",
+            flex: "1 1 auto",
+            minHeight: "100%",
+          },
+        }}
       />
       {showTableExtras && (
         <TableDragHandles
