@@ -74,14 +74,14 @@ const EditorContentWrapper = ({
         minH="100%"
         display="flex"
         flexDirection="column"
-        p="1rem"
-        backgroundColor="white"
         cursor="text"
         sx={{
           ".tiptap": {
             boxSizing: "border-box",
             flex: "1 1 auto",
             minHeight: "100%",
+            padding: "1rem",
+            backgroundColor: "white",
           },
         }}
       />
