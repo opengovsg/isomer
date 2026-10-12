@@ -91,6 +91,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
         title,
         siteId,
       })
+      createdCollectionId = collectionId
 
       // Assert
       const created = await getResource(collectionId)
