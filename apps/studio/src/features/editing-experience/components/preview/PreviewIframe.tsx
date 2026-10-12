@@ -21,7 +21,9 @@ interface PreviewIframeProps {
   // output box, not the iframe's own layout viewport).
   widthPx?: number
   heightPx?: number
-  callback?: (props: IframeCallbackFnProps) => void
+  // May return a cleanup fn (e.g. to disconnect an observer it set up); it runs
+  // when the iframe effect tears down, so callers don't leak past unmount.
+  callback?: (props: IframeCallbackFnProps) => void | (() => void)
 }
 
 export const PreviewIframe = ({
@@ -165,13 +167,15 @@ const IframeInnerComponent = ({
       childList: true,
     })
 
-    if (callback) {
-      callback({ document: iframeDocument, window: iframeWindow })
-    }
+    const callbackCleanup = callback?.({
+      document: iframeDocument,
+      window: iframeWindow,
+    })
 
     return () => {
       observer.disconnect()
       portalObserver.disconnect()
+      callbackCleanup?.()
     }
   }, [callback, iframeDocument, iframeDocument?.documentElement, iframeWindow])
 

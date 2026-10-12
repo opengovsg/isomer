@@ -1,4 +1,5 @@
 import type { HeroLargeImageProps } from "~/interfaces/complex/Hero"
+import { getFocalObjectPosition } from "~/utils/getFocalObjectPosition"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
@@ -18,10 +19,7 @@ export const HeroLargeImage = ({
   site,
   headingLevel,
 }: HeroLargeImageProps) => {
-  const objectPosition =
-    imageAdjustment?.focal != null
-      ? `${imageAdjustment.focal.x * 100}% ${imageAdjustment.focal.y * 100}%`
-      : undefined
+  const objectPosition = getFocalObjectPosition(imageAdjustment)
   const Tag = getHeadingTag(headingLevel)
   return (
     <section className="flex w-full flex-col">

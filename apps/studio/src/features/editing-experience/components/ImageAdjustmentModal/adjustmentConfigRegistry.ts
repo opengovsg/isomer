@@ -1,8 +1,42 @@
-import type { AdjustmentConfig } from "./AdjustmentConfig"
+import type {
+  AdjustmentConfig,
+  AdjustmentPreviewState,
+  AspectRatio,
+} from "./AdjustmentConfig"
 
 // Narrow an unknown block to read its discriminators safely.
 const asBlock = (block: unknown): { type?: string; variant?: string } =>
   typeof block === "object" && block !== null ? block : {}
+
+// Every Tier B config previews at the same three breakpoint viewport widths
+// (mobile 375 / tablet 768 / desktop 1280); only the aspect-ratio guess differs
+// per component, so declare just the ratios. The ratios are an initial guess —
+// PreviewFrame measures the real rendered height — so they only need to be in
+// the right ballpark for the pre-measure flash.
+const responsivePreviewStates = (ratios: {
+  mobile: AspectRatio
+  tablet: AspectRatio
+  desktop: AspectRatio
+}): AdjustmentPreviewState[] => [
+  {
+    id: "mobile",
+    label: "Mobile",
+    viewportWidth: 375,
+    aspectRatio: ratios.mobile,
+  },
+  {
+    id: "tablet",
+    label: "Tablet",
+    viewportWidth: 768,
+    aspectRatio: ratios.tablet,
+  },
+  {
+    id: "desktop",
+    label: "Desktop",
+    viewportWidth: 1280,
+    aspectRatio: ratios.desktop,
+  },
+]
 
 // Tier B — full-bleed responsive gradient hero. Focal anchors the subject as the
 // banner reshapes across breakpoints (proven in spike W0-S-F); crop is free
@@ -14,26 +48,11 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   componentType: "hero:gradient",
   cropMode: "custom",
   focalEnabled: true,
-  previewStates: [
-    {
-      id: "mobile",
-      label: "Mobile",
-      viewportWidth: 375,
-      aspectRatio: { width: 375, height: 240 },
-    },
-    {
-      id: "tablet",
-      label: "Tablet",
-      viewportWidth: 768,
-      aspectRatio: { width: 768, height: 360 },
-    },
-    {
-      id: "desktop",
-      label: "Desktop",
-      viewportWidth: 1280,
-      aspectRatio: { width: 1280, height: 500 },
-    },
-  ],
+  previewStates: responsivePreviewStates({
+    mobile: { width: 375, height: 240 },
+    tablet: { width: 768, height: 360 },
+    desktop: { width: 1280, height: 500 },
+  }),
   // Mirrors HeroGradient's left-to-right dark gradient so editors can judge
   // text contrast against the chosen crop/focal.
   scrim: {
@@ -55,26 +74,11 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   componentType: "hero:block",
   cropMode: "custom",
   focalEnabled: true,
-  previewStates: [
-    {
-      id: "mobile",
-      label: "Mobile",
-      viewportWidth: 375,
-      aspectRatio: { width: 375, height: 240 },
-    },
-    {
-      id: "tablet",
-      label: "Tablet",
-      viewportWidth: 768,
-      aspectRatio: { width: 768, height: 360 },
-    },
-    {
-      id: "desktop",
-      label: "Desktop",
-      viewportWidth: 1280,
-      aspectRatio: { width: 1280, height: 500 },
-    },
-  ],
+  previewStates: responsivePreviewStates({
+    mobile: { width: 375, height: 240 },
+    tablet: { width: 768, height: 360 },
+    desktop: { width: 1280, height: 500 },
+  }),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text.",
 }
@@ -110,26 +114,11 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
   componentType: "infopic",
   cropMode: "custom",
   focalEnabled: true,
-  previewStates: [
-    {
-      id: "mobile",
-      label: "Mobile",
-      viewportWidth: 375,
-      aspectRatio: { width: 375, height: 300 },
-    },
-    {
-      id: "tablet",
-      label: "Tablet",
-      viewportWidth: 768,
-      aspectRatio: { width: 768, height: 400 },
-    },
-    {
-      id: "desktop",
-      label: "Desktop",
-      viewportWidth: 1280,
-      aspectRatio: { width: 1280, height: 450 },
-    },
-  ],
+  previewStates: responsivePreviewStates({
+    mobile: { width: 375, height: 300 },
+    tablet: { width: 768, height: 400 },
+    desktop: { width: 1280, height: 450 },
+  }),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px). Place the key subject on the side matching where the image sits (left or right) rather than centering it.",
 }
@@ -143,26 +132,11 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   componentType: "hero:largeImage",
   cropMode: "custom",
   focalEnabled: true,
-  previewStates: [
-    {
-      id: "mobile",
-      label: "Mobile",
-      viewportWidth: 375,
-      aspectRatio: { width: 1, height: 1 },
-    },
-    {
-      id: "tablet",
-      label: "Tablet",
-      viewportWidth: 768,
-      aspectRatio: { width: 2, height: 1 },
-    },
-    {
-      id: "desktop",
-      label: "Desktop",
-      viewportWidth: 1280,
-      aspectRatio: { width: 2, height: 1 },
-    },
-  ],
+  previewStates: responsivePreviewStates({
+    mobile: { width: 1, height: 1 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 2, height: 1 },
+  }),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed.",
 }

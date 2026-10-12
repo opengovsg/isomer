@@ -41,5 +41,7 @@ export {
   NO_STYLIZED_UNICODE_REGEX,
 } from "./validation"
 
+export { getFocalObjectPosition } from "./getFocalObjectPosition"
+
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
 export { resolveCollectionSortOrder } from "../templates/next/layouts/Collection/utils/collectionSortOrder"

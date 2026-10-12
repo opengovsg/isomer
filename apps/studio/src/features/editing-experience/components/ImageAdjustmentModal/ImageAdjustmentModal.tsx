@@ -71,10 +71,11 @@ export const ImageAdjustmentModal = ({
 }: ImageAdjustmentModalProps): JSX.Element => {
   const [draft, setDraft] = useState<ImageAdjustment | undefined>(value)
   // The source image's true pixel aspect ratio, reported by CropFocalControl
-  // once its <img> loads — needed so "Reset image" can seed the same
+  // once its <img> loads — needed so "Reset crop & focal" can seed the same
   // ratio-correct crop the control itself would (see defaultCropRect).
-  // Defaults to 1 (square) until then, matching every call site's default.
-  const [imageAspect, setImageAspect] = useState(1)
+  // `undefined` until the image loads: for a locked ratio the reset is disabled
+  // until then, so a wrong (square-assumed) crop can never be baked.
+  const [imageAspect, setImageAspect] = useState<number | undefined>(undefined)
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
@@ -159,10 +160,16 @@ export const ImageAdjustmentModal = ({
   // the largest centered rect under a locked ratio; centered focal) — it
   // does NOT save or close, same as any other crop/focal edit, so the editor
   // can see the reset in the preview and still Save/Undo/Cancel from there.
+  // Disabled for a locked ratio until the real image aspect is known (see
+  // imageAspect) — without the true aspect, defaultCropRect would bake the
+  // wrong pixel ratio. A free (non-locked) crop ignores imageAspect, so it is
+  // always resettable.
+  const isResetDisabled = lockedRatio != null && imageAspect === undefined
+
   const handleReset = () => {
     setDraft((d) => ({
       ...ensureAdjustment(d),
-      crop: defaultCropRect(lockedRatio, imageAspect),
+      crop: defaultCropRect(lockedRatio, imageAspect ?? 1),
       focal: { x: 0.5, y: 0.5 },
     }))
   }
@@ -346,7 +353,7 @@ export const ImageAdjustmentModal = ({
                 variant="clear"
                 colorScheme="neutral"
                 onClick={handleReset}
-                isDisabled={isSaving}
+                isDisabled={isResetDisabled || isSaving}
               >
                 Reset crop & focal
               </Button>

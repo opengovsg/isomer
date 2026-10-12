@@ -5,13 +5,15 @@ import type {
   IsomerSiteProps,
   ImageAdjustment,
 } from "@opengovsg/isomer-components"
+import type { CSSProperties } from "react"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { renderComponent } from "@opengovsg/isomer-components"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 import Suspense from "~/components/Suspense"
 import { PreviewIframe } from "~/features/editing-experience/components/preview/PreviewIframe"
-import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
+import { useSiteThemeCssVars } from "~/hooks/useSiteThemeCssVars"
 import { bakeImage, canBakeImage, isAnimatedImageBlob } from "~/lib/imageBake"
 import { ASSETS_BASE_URL, generateAssetUrl } from "~/utils/generateAssetUrl"
 
@@ -256,14 +258,23 @@ export const AdjustmentPreview = ({
           const displayWidth =
             FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
           return (
-            <Suspense
+            // The theme fetch suspends AND can throw; without the ErrorBoundary
+            // a failed getTheme would tear down the whole modal instead of this
+            // one frame degrading to a theme-less (but still correct) preview.
+            <ErrorBoundary
               key={state.id}
-              fallback={<Skeleton w={`${displayWidth}px`} h="9rem" />}
+              fallbackRender={() => (
+                <PreviewFrame state={state}>{previewComponent}</PreviewFrame>
+              )}
             >
-              <PreviewFrame siteId={siteId} state={state}>
-                {previewComponent}
-              </PreviewFrame>
-            </Suspense>
+              <Suspense
+                fallback={<Skeleton w={`${displayWidth}px`} h="9rem" />}
+              >
+                <ThemedPreviewFrame siteId={siteId} state={state}>
+                  {previewComponent}
+                </ThemedPreviewFrame>
+              </Suspense>
+            </ErrorBoundary>
           )
         })}
       </Flex>
@@ -360,16 +371,19 @@ export const AdjustmentPreview = ({
 // tall any given component's content turns out to be, with nothing cropped
 // or hidden behind a scrollbar.
 //
-// Also pulls the site's brand theme CSS vars into the iframe — without them,
-// Tailwind classes like `bg-brand-canvas-inverse` resolve to nothing, which
-// previously caused white-on-white text in the HeroBlock preview.
+// The site's brand theme CSS vars are passed in (via ThemedPreviewFrame) and
+// applied to the iframe — without them, Tailwind classes like
+// `bg-brand-canvas-inverse` resolve to nothing, which previously caused
+// white-on-white text in the HeroBlock preview. They're a prop (not fetched
+// here) so this frame still renders if the theme fetch fails — see the
+// ErrorBoundary fallback above.
 const PreviewFrame = ({
-  siteId,
   state,
+  themeCssVars,
   children,
 }: {
-  siteId: number
   state: AdjustmentPreviewState
+  themeCssVars?: CSSProperties
   children: React.ReactNode
 }) => {
   const viewportWidth = state.viewportWidth ?? 1024
@@ -393,6 +407,9 @@ const PreviewFrame = ({
       // own window for its constructor.
       const observer = new ResizeObserver(update)
       observer.observe(iframeDocument.body)
+      // Disconnect on iframe teardown — PreviewIframe runs this when its effect
+      // cleans up, so we don't leak observers or setState after unmount.
+      return () => observer.disconnect()
     },
     [],
   )
@@ -400,7 +417,6 @@ const PreviewFrame = ({
   const displayWidth =
     FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
   const scale = displayWidth / viewportWidth
-  const themeCssVars = useSiteThemeCssVars({ siteId })
 
   return (
     <VStack align="stretch" spacing="0.5rem" flexShrink={0}>
@@ -444,5 +460,24 @@ const PreviewFrame = ({
         </Box>
       </Box>
     </VStack>
+  )
+}
+
+// Fetches the site theme (suspends, and throws on error — hence the Suspense +
+// ErrorBoundary around it) and hands the CSS vars to PreviewFrame as a prop.
+const ThemedPreviewFrame = ({
+  siteId,
+  state,
+  children,
+}: {
+  siteId: number
+  state: AdjustmentPreviewState
+  children: React.ReactNode
+}) => {
+  const themeCssVars = useSiteThemeCssVars({ siteId })
+  return (
+    <PreviewFrame state={state} themeCssVars={themeCssVars}>
+      {children}
+    </PreviewFrame>
   )
 }
