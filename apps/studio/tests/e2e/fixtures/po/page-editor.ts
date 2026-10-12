@@ -242,11 +242,9 @@ export class PageEditorPO {
     return this.page.frameLocator('[data-testid="preview-iframe"]')
   }
 
-  /** `exact` disambiguates default placeholder text that is a literal
-   * substring of other text already on the page (e.g. `callout`'s default
-   * "Callout content" vs. the integration seed's default callout block,
-   * whose text is "Test Callout content" — a non-exact match would resolve
-   * to both blocks' paragraphs and violate Playwright's strict mode). */
+  /** `exact` disambiguates text that is a literal substring of other text
+   * already on the page (a non-exact match can resolve to multiple paragraphs
+   * and violate Playwright's strict mode). */
   async expectPreviewContains(
     text: string,
     options?: { exact?: boolean; timeout?: number },

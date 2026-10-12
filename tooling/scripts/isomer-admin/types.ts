@@ -29,3 +29,5 @@ export type IsomerAdminScriptType =
   | "import-folder-jsons"
   | "publish-site-resources"
   | "rebuild-all-codebuild-projects"
+  | "remove-gazette-search-records"
+  | "repair-gazette-search-records"

@@ -6,7 +6,6 @@ import {
   CollectionPageSchema,
   ContentPageSchema,
   DatabasePageSchema,
-  FileRefSchema,
   HomePageSchema,
   IndexPageSchema,
   LinkRefSchema,
@@ -24,7 +23,6 @@ const LAYOUT_SCHEMA_MAP: Record<ScopedSchemaLayout, TSchema> = {
   index: IndexPageSchema,
   link: LinkRefSchema,
   collection: CollectionPageSchema,
-  file: FileRefSchema,
 } as const
 
 // Utility type to extract all possible dot-separated paths from an object type
@@ -62,7 +60,6 @@ interface ScopeLayoutMap {
   homepage: SchemaPathsFrom<typeof HomePageSchema>
   index: SchemaPathsFrom<typeof IndexPageSchema>
   link: SchemaPathsFrom<typeof LinkRefSchema>
-  file: SchemaPathsFrom<typeof FileRefSchema>
 }
 
 type FilterMode = "include" | "exclude"

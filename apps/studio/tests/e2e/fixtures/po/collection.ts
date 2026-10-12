@@ -518,7 +518,7 @@ export class CollectionPO {
     await this.articleHeaderSaveButton().click()
     await expect(
       this.page.getByText(
-        "Changes saved. Click 'Publish' when you're ready to go live.",
+        "Changes saved. Click 'Publish options' when you're ready to go live.",
       ),
     ).toBeVisible()
   }

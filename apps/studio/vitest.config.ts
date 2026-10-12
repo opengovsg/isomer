@@ -30,10 +30,12 @@ export default defineConfig({
             "src/**/*.test.{ts,tsx}",
             "prisma/scripts/**/*.test.ts",
             "scripts/**/*.test.ts",
+            "tests/e2e/fixtures/**/*.test.ts",
           ],
           exclude: [
             ...configDefaults.exclude,
-            "**/tests/e2e/**",
+            // Playwright specs under tests/e2e/ are not in include; only
+            // tests/e2e/fixtures/**/*.test.ts is allow-listed for Vitest.
             "tests/load/**",
             BROWSER_TEST_PATTERN,
           ],

@@ -1,16 +1,35 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
+import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 import type { BreadcrumbProps } from "./Breadcrumb"
 import type { CollectionCardProps } from "./CollectionCard"
+import type { DateFilterDisplayEntry } from "./DateFilter"
+import { IsomerString } from "../primitives/IsomerString"
 
 export const ArticlePageHeaderSchema = Type.Object({
-  summary: Type.String({
+  summary: IsomerString({
     title: "Article summary",
     description: "Help users understand what this page is about",
     format: "textarea",
     maxLength: 500,
   }),
+  buttonLabel: Type.Optional(
+    IsomerString({
+      title: "Button label",
+      description:
+        "A descriptive text. Avoid generic text like “Here”, “Click here”, or “Learn more”",
+    }),
+  ),
+  buttonUrl: Type.Optional(
+    Type.String({
+      title: "Button destination",
+      description: "When this is clicked, open:",
+      format: "link",
+      pattern: LINK_HREF_PATTERN,
+    }),
+  ),
 })
 
 export type ArticlePageHeaderProps = Static<typeof ArticlePageHeaderSchema> & {
@@ -19,4 +38,6 @@ export type ArticlePageHeaderProps = Static<typeof ArticlePageHeaderSchema> & {
   title: string
   plaintextTags?: CollectionCardProps["plaintextTags"]
   date?: string
+  site: IsomerSiteProps
+  dateFilterDisplayEntries?: DateFilterDisplayEntry[]
 }

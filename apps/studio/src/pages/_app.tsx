@@ -8,6 +8,7 @@ import { GrowthBook } from "@growthbook/growthbook"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { useRouter } from "next/router"
 import { ErrorBoundary } from "react-error-boundary"
 import { AppBanner } from "~/components/AppBanner"
 import { EnvProvider } from "~/components/AppProviders"
@@ -16,6 +17,7 @@ import Suspense from "~/components/Suspense"
 import { VersionWrapper } from "~/components/VersionWrapper"
 import { env } from "~/env.mjs"
 import { LoginStateProvider } from "~/features/auth"
+import { createOfflineGrowthBook } from "~/lib/growthbookOffline"
 import { type NextPageWithLayout } from "~/lib/types"
 import { DefaultLayout } from "~/templates/layouts/DefaultLayout"
 import { theme } from "~/theme"
@@ -51,25 +53,37 @@ datadogRum.init({
   ],
 })
 
-// Create a GrowthBook instance
-const gb = new GrowthBook({
-  apiHost: "https://cdn.growthbook.io",
-  clientKey: env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
-  enabled: true,
-})
+// Next inlines NEXT_PUBLIC_APP_ENV at build time. E2E builds with .env.test.
+const gb =
+  env.NEXT_PUBLIC_APP_ENV === "test"
+    ? createOfflineGrowthBook()
+    : new GrowthBook({
+        apiHost: "https://cdn.growthbook.io",
+        clientKey: env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
+        enabled: true,
+      })
 
-void gb.init({
-  // Optional, enable streaming updates
-  streaming: true,
-})
+if (env.NEXT_PUBLIC_APP_ENV !== "test") {
+  void gb.init({
+    // Optional, enable streaming updates
+    streaming: true,
+  })
+}
 
 const MyApp = ((props: AppPropsWithAuthAndLayout) => {
+  // ErrorBoundary keeps the fallback until resetKeys changes. asPath remounts
+  // children after the error-screen CTAs navigate away.
+  const { asPath } = useRouter()
+
   return (
     <EnvProvider env={env}>
       <LoginStateProvider>
         <ThemeProvider theme={theme}>
           <GrowthBookProvider growthbook={gb}>
-            <ErrorBoundary FallbackComponent={DefaultFallback}>
+            <ErrorBoundary
+              FallbackComponent={DefaultFallback}
+              resetKeys={[asPath]}
+            >
               <Suspense fallback={<Skeleton width="100%" height="$100vh" />}>
                 <Stack spacing={0} height="$100vh" flexDirection="column">
                   <AppBanner />

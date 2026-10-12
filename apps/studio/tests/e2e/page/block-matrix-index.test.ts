@@ -2,7 +2,10 @@ import type { PageEditorPO } from "~e2e/fixtures/po"
 import { test } from "@playwright/test"
 import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
-import { openSeededPageEditor } from "~e2e/fixtures/helpers"
+import {
+  DEFAULT_CALLOUT_PREVIEW_TEXT,
+  openSeededPageEditor,
+} from "~e2e/fixtures/helpers"
 import { seedFolderIndexPage, seedPageInFolder } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded, getE2EUserId } from "~e2e/fixtures/user"
@@ -56,7 +59,7 @@ const BLOCK_MATRIX_CASES: BlockMatrixCase[] = [
       await editor.saveComplexBlock()
     },
     expectRendered: async (editor) => {
-      await editor.expectPreviewContains("Callout content")
+      await editor.expectPreviewContains(DEFAULT_CALLOUT_PREVIEW_TEXT)
     },
   },
 ]

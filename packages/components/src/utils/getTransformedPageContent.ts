@@ -44,7 +44,8 @@ export const getTransformedPageContent = (
       block.type === "infocards" ||
       block.type === "infocols" ||
       block.type === "infopic" ||
-      block.type === "keystatistics"
+      block.type === "keystatistics" ||
+      block.type === "steps"
     ) {
       return {
         ...block,

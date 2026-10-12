@@ -1,5 +1,4 @@
 import type { CollectionCardProps } from "~/interfaces"
-import type { FileCardProps } from "~/interfaces/internal/CollectionCard"
 import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
 
 import type { IsomerPageLayoutType } from "./schema"
@@ -22,10 +21,11 @@ interface IsomerBaseSitemap {
   // `tagCategories` (see getPillAndPlaintextTags/getTagsFromTagged) to derive what's
   // actually rendered. The legacy resolved `tags` field is no longer supported.
   tagged?: ArticlePagePageProps["tagged"]
+  dateTagged?: ArticlePagePageProps["dateTagged"]
 }
 
 interface IsomerPageSitemap extends IsomerBaseSitemap {
-  layout: Exclude<IsomerPageLayoutType, "collection" | "file" | "link">
+  layout: Exclude<IsomerPageLayoutType, "collection" | "link">
 }
 
 export interface IsomerCollectionPageSitemap extends IsomerBaseSitemap {
@@ -40,11 +40,6 @@ export interface IsomerCollectionPageSitemap extends IsomerBaseSitemap {
   }
 }
 
-interface IsomerFileSitemap extends IsomerBaseSitemap {
-  layout: "file"
-  ref: string
-  fileDetails: FileCardProps["fileDetails"]
-}
 interface IsomerLinkSitemap extends IsomerBaseSitemap {
   layout: "link"
   ref: string
@@ -53,5 +48,4 @@ interface IsomerLinkSitemap extends IsomerBaseSitemap {
 export type IsomerSitemap =
   | IsomerPageSitemap
   | IsomerCollectionPageSitemap
-  | IsomerFileSitemap
   | IsomerLinkSitemap

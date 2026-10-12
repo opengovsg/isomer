@@ -1,5 +1,6 @@
 import { defineConfig, devices } from "@playwright/test"
-import { ROLES, storageStateFor } from "~e2e/fixtures/auth"
+
+import { ROLES, storageStateFor } from "./tests/e2e/fixtures/auth"
 
 const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000"
 
@@ -17,8 +18,12 @@ const baseUse = {
 }
 
 export default defineConfig({
-  reporter: process.env.CI ? "github" : "list",
+  // "github" alone only emits error annotations — pair it with "list" so CI
+  // logs also show each test's pass/fail line with its duration.
+  reporter: process.env.CI ? [["github"], ["list"]] : "list",
   testDir: "./tests/e2e",
+  // Vitest-only specs colocated under fixtures/ (e.g. session-mint.test.ts).
+  testIgnore: [/fixtures\/.*\.test\.ts$/],
   outputDir: "./tests/e2e/test-results", // CI uploads this path as the e2e-test-results artifact (.github/workflows/ci.yml)
   timeout: 35e3,
   fullyParallel: true, // run tests fully in parallel
@@ -28,12 +33,26 @@ export default defineConfig({
   projects: [
     {
       name: "unauthenticated",
-      testMatch: /(smoke|singpass)\.test\.ts/,
+      testMatch: /smoke\.test\.ts/,
+      use: { ...baseUse },
+    },
+    // singpass.test.ts stays skipped; isolated project so it never runs under role greps
+    {
+      name: "singpass",
+      testMatch: /singpass\.test\.ts/,
+      use: { ...baseUse },
+    },
+    {
+      name: "login-flow",
+      testMatch: /login-flow\.test\.ts/,
       use: { ...baseUse },
     },
     ...ROLES.map((role) => ({
       name: role,
-      grep: new RegExp(`@${role}\\b`),
+      // `@role:admin`, not a bare `@admin`, so a role filter cannot collide
+      // with some other `@…` tag. `\b` stops `@role:admin` matching a longer
+      // tag such as `@role:administrator`.
+      grep: new RegExp(`@role:${role}\\b`),
       use: { ...baseUse, storageState: storageStateFor(role) },
     })),
   ],

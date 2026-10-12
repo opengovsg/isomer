@@ -54,6 +54,7 @@ export const createGazetteItem = (
   updatedAt: MOCK_STORY_DATE,
   scheduledAt: MOCK_STORY_DATE,
   scheduledBy: null,
+  scheduledAction: null,
   publishedAt: MOCK_STORY_DATE,
   fileSize: 123456,
   content: createGazetteContent({
@@ -80,6 +81,7 @@ export const DEFAULT_GAZETTE_ITEMS: RouterOutput["gazette"]["list"] = [
     updatedAt: MOCK_STORY_DATE,
     scheduledAt: new Date("2024-09-13T09:00:00.000Z"),
     scheduledBy: "cljcnahpn0000xlwynuea40lv",
+    scheduledAction: "Publish",
     publishedAt: null,
     fileSize: 123456,
     content: createGazetteContent({
@@ -103,6 +105,7 @@ export const DEFAULT_GAZETTE_ITEMS: RouterOutput["gazette"]["list"] = [
     updatedAt: MOCK_STORY_DATE,
     scheduledAt: MOCK_STORY_DATE,
     scheduledBy: null,
+    scheduledAction: null,
     publishedAt: MOCK_STORY_DATE,
     fileSize: 654321,
     content: createGazetteContent({

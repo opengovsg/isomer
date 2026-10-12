@@ -28,7 +28,6 @@ export const renderLayout = (props: IsomerPageSchemaType) => {
     case "search":
       return <SearchLayout {...props} />
     // These are references that we should not render to the user
-    case "file":
     case "link":
       return <></>
     default:

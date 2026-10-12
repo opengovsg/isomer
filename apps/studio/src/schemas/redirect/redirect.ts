@@ -346,9 +346,12 @@ export type GetRedirectBySourceInput = z.infer<typeof getRedirectBySourceSchema>
 // of its descendants — so the delete-page modal can warn that deleting the page
 // will remove those redirects. Descendants are resolved server-side from the
 // resource being deleted.
+//
+// includeContainerReference is opt-in; see countRedirectsPointingToResource.
 export const countRedirectsByDestinationSchema = z.object({
   siteId: z.number().min(1, { message: "Site ID is required" }),
   resourceId: generateBigIntSchema("resource ID"),
+  includeContainerReference: z.boolean().optional(),
 })
 export type CountRedirectsByDestinationInput = z.infer<
   typeof countRedirectsByDestinationSchema

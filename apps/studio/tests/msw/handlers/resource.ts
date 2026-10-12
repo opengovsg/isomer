@@ -87,6 +87,22 @@ export const resourceHandlers = {
         }
       })
     },
+    collectionLink: () => {
+      return trpcMsw.resource.getParentOf.query(() => {
+        return {
+          type: "CollectionLink",
+          id: "1",
+          parentId: "1",
+          title: "yet another link",
+          parent: {
+            type: "Collection",
+            id: "1",
+            parentId: null,
+            title: "a collection",
+          },
+        }
+      })
+    },
   },
   getAncestryStack: {
     default: () => {
@@ -197,6 +213,18 @@ export const resourceHandlers = {
           title: "Index page",
           fullPermalink: "parent/_index",
         }
+      })
+    },
+  },
+  getMoveLockInfo: {
+    default: () => {
+      return trpcMsw.resource.getMoveLockInfo.query(() => {
+        return { isBlocked: false }
+      })
+    },
+    blocked: () => {
+      return trpcMsw.resource.getMoveLockInfo.query(() => {
+        return { isBlocked: true }
       })
     },
   },

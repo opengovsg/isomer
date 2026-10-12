@@ -8,10 +8,10 @@ import {
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
 import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
+import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
-import { getSingaporeDateYYYYMMDD } from "../../components/complex/DynamicDataBanner/utils"
 import { HomepageLayout } from "./Homepage"
 
 const meta: Meta<typeof HomepageLayout> = {
@@ -507,6 +507,38 @@ const generateArgs = ({
             buttonLabel: "Read article",
             buttonUrl: "https://google.com",
             icon: "bar-chart",
+          },
+        ],
+      },
+      {
+        type: "steps",
+        title: "How to apply",
+        subtitle:
+          "Applying takes about 15 minutes. Have your documents ready before you start.",
+        numberStyle: "numeral",
+        steps: [
+          {
+            title: "Check if you are eligible",
+            description:
+              "You must be a Singapore Citizen or Permanent Resident aged 21 and above.",
+          },
+          {
+            title: "Prepare your documents",
+            description:
+              "You will need your NRIC and proof of income for the past 3 months.",
+            buttonLabel: "See the full document checklist",
+            buttonUrl: "/faq",
+          },
+          {
+            title: "Submit your application",
+            description:
+              "Applications are submitted online and take about 15 minutes to complete.",
+            buttonLabel: "Start your application",
+            buttonUrl: "https://form.gov.sg",
+          },
+          {
+            title: "Wait for the outcome",
+            description: "We will email you the outcome within 4 weeks.",
           },
         ],
       },

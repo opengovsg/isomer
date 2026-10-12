@@ -2,7 +2,10 @@ import type { PageEditorPO } from "~e2e/fixtures/po"
 import { test } from "@playwright/test"
 import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
-import { openSeededPageEditor } from "~e2e/fixtures/helpers"
+import {
+  DEFAULT_CALLOUT_PREVIEW_TEXT,
+  openSeededPageEditor,
+} from "~e2e/fixtures/helpers"
 import { seedArticlePage } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
@@ -72,7 +75,8 @@ const DEFAULT_BLOCK_CASES: DefaultBlockCase[] = [
       await editor.expectSaveBlockButtonEnabled()
       await editor.saveComplexBlock()
     },
-    expectRendered: (editor) => editor.expectPreviewContains("Callout content"),
+    expectRendered: (editor) =>
+      editor.expectPreviewContains(DEFAULT_CALLOUT_PREVIEW_TEXT),
   },
   {
     label: "Quote",

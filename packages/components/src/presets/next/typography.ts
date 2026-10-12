@@ -112,6 +112,10 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
       fontWeight: theme("fontWeight.medium"),
       "@apply prose-label-md": {},
     },
+    ".prose-label-md-bold": {
+      fontWeight: theme("fontWeight.bold"),
+      "@apply prose-label-md": {},
+    },
     ".prose-label-md-regular": {
       fontWeight: theme("fontWeight.normal"),
       "@apply prose-label-md": {},

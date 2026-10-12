@@ -9,6 +9,11 @@ updates:
     cooldown:
       default-days: 7 # to mitigate supply chain attacks
     groups:
+      atlaskit-pragmatic-dnd:
+        applies-to: version-updates
+        patterns:
+          - "@atlaskit/pragmatic-drag-and-drop"
+          - "@atlaskit/pragmatic-drag-and-drop-hitbox"
       aws-sdk:
         applies-to: version-updates
         patterns:

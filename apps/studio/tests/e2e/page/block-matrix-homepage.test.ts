@@ -1,12 +1,7 @@
 import { expect, test, type Page } from "@playwright/test"
 import crypto from "crypto"
-import { IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { openSeededPageEditor } from "~e2e/fixtures/helpers"
-import {
-  enableGrowthBookFeature,
-  resetGrowthBookPage,
-} from "~e2e/fixtures/network"
 import { PageEditorPO } from "~e2e/fixtures/po"
 import {
   seedCollectionWithPage,
@@ -150,12 +145,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   /**
-   * `antiscambanner` only appears in the block picker behind the
-   * `IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY` GrowthBook feature —
-   * mirrors `fixtures/helpers.ts`'s `openCollectionIndexEditor` pattern
-   * (mock the feature on, reset the GrowthBook page cache, *then* navigate).
-   *
-   * It's also the one block type `ComplexEditorStateDrawer`'s Save button
+   * It's the one block type `ComplexEditorStateDrawer`'s Save button
    * treats as non-editable after the fact (`isNonEditableBlock`) — Save is
    * only enabled in the single window right after it's added (while
    * `addedBlockIndex === currActiveIdx`), so this asserts that immediately,
@@ -167,12 +157,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Arrange
     const site = await provisionE2ESite({ roles: [RoleType.Admin] })
     const { rootPageId } = await seedHomepageHero({ siteId: site.siteId })
-    await enableGrowthBookFeature(
-      page,
-      IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY,
-      true,
-    )
-    await resetGrowthBookPage(page)
     const editor = new PageEditorPO(page)
     await editor.gotoPage(site.siteId, rootPageId)
     await editor.expectLoaded()

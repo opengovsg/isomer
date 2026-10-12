@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Categorize and gzip-measure the static JS/CSS the Template emits
-# (tooling/template/out/_next/static after `next build --webpack` + output:export).
+# (apps/template/out/_next/static after `next build --webpack` + output:export).
 #
 # We split by category because most of the bundle is fixed Next/React overhead
 # that never moves with a components change; the "vendor + shared" chunks are

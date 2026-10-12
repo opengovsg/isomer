@@ -3,9 +3,17 @@ import { schema } from "@opengovsg/isomer-components"
 import { z } from "zod"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+import {
+  ResourceState,
+  ResourceType,
+  ScheduledAction,
+} from "~prisma/generated/generatedEnums"
 
-import { generateBasePermalinkSchema } from "./common"
+import {
+  generateBasePermalinkSchema,
+  NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
+  noStylizedUnicodeTitleRegex,
+} from "./common"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -27,6 +35,9 @@ const pageTitleSchema = z
   .min(1, { message: "Enter a title for this page" })
   .max(MAX_TITLE_LENGTH, {
     message: `Page title should be shorter than ${MAX_TITLE_LENGTH} characters.`,
+  })
+  .regex(noStylizedUnicodeTitleRegex, {
+    message: NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
   })
 
 const permalinkSchema = generateBasePermalinkSchema("page")
@@ -88,6 +99,11 @@ export const createPageSchema = z.object({
 export const publishPageSchema = z.object({
   pageId: z.number().min(1),
   siteId: z.number().min(1),
+})
+
+export const unpublishPageSchema = z.object({
+  pageId: z.number().min(1, { message: "Select a page to unpublish" }),
+  siteId: z.number().min(1, { message: "Select a site" }),
 })
 
 export const createCollectionPageFormSchema = z
@@ -164,6 +180,8 @@ export const readPageOutputSchema = z.object({
   type: z.nativeEnum(ResourceType),
   scheduledAt: z.date().nullable(),
   scheduledBy: z.string().nullable(),
+  scheduledAction: z.nativeEnum(ScheduledAction).nullable(),
+  lastPublishedAt: z.date().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

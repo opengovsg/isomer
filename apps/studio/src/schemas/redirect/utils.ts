@@ -18,7 +18,14 @@ export const normalizeRedirectPath = (value: string) =>
   `/${trimSlashes(value).replace(/\/{2,}/g, "/")}`
 
 // Sources are additionally lowercased — page permalinks are lowercase-only, so
-// a source must lowercase to compare against (and not shadow) a real page.
-// Exported so the server's source/loop guards compare in the same form.
-export const normalizeRedirectSource = (value: string) =>
-  normalizeRedirectPath(value).toLowerCase()
+// a source must lowercase to compare against (and not shadow) a real page. A
+// trailing "/*" wildcard is normalised on its path part and re-appended, so
+// "/News/Press/*" -> "/news/press/*". Exported so the server's source/loop
+// guards and the build's manifest key compare the same way.
+export const normalizeRedirectSource = (value: string): string => {
+  const isWildcard = value.endsWith("/*")
+  const path = normalizeRedirectPath(
+    isWildcard ? value.slice(0, -2) : value,
+  ).toLowerCase()
+  return isWildcard ? `${path}/*` : path
+}

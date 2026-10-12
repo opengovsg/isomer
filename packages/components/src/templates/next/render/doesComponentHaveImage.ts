@@ -15,6 +15,7 @@ export const doesComponentHaveImage = ({
     case "callout":
     case "infobar":
     case "infocols":
+    case "steps":
     case "prose":
     case "dynamicdatabanner":
     case "antiscambanner":

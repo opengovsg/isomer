@@ -15,6 +15,7 @@ import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { useCollectionTags } from "../../hooks/useCollectionTags"
+import { validateRequiredDateFilters } from "../../utils/validateRequiredDateFilters"
 import { validateRequiredTags } from "../../utils/validateRequiredTags"
 import { ActivateRawJsonEditorMode } from "../ActivateRawJsonEditorMode"
 import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
@@ -56,10 +57,15 @@ const InnerDrawer = ({
       resourceId: linkId,
       siteId,
     })
-  const { isValid: isTagsValid } = validateRequiredTags(
+  const { isValid: isTaggedValid } = validateRequiredTags(
     collectionTags,
     previewPageState.tagged,
   )
+  const { isValid: isDateTaggedValid } = validateRequiredDateFilters(
+    collectionTags,
+    previewPageState.dateTagged,
+  )
+  const isTagsValid = isTaggedValid && isDateTaggedValid
 
   return (
     <Flex flexDir="column" position="relative" h="100%" w="100%">
@@ -194,7 +200,7 @@ export const LinkEditorDrawer = ({
     trpc.collection.updateCollectionLink.useMutation({
       onSuccess: () => {
         void utils.collection.readCollectionLink.invalidate()
-        void utils.collection.countTagOptionsUsage.invalidate()
+        void utils.collection.countFilterUsage.invalidate()
         void utils.page.readPage.invalidate()
         toast({
           title: "Link updated!",

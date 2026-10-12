@@ -26,6 +26,8 @@ interface ResourceTableMenuProps {
   permalink: ResourceTableData["permalink"]
   resourceType: ResourceTableData["type"]
   parentId: ResourceTableData["parentId"]
+  liveStatus: ResourceTableData["liveStatus"]
+  scheduledAt: ResourceTableData["scheduledAt"]
 }
 
 export const ResourceTableMenu = ({
@@ -35,6 +37,8 @@ export const ResourceTableMenu = ({
   permalink,
   resourceType,
   parentId,
+  liveStatus,
+  scheduledAt,
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
   const handleMoveResourceClick = () =>
@@ -42,6 +46,20 @@ export const ResourceTableMenu = ({
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
+
+  // Live content must be unpublished before it can be deleted; a pending
+  // schedule also blocks deletion (the server always guards against that).
+  const isBlockedByLiveStatus = liveStatus !== "notLive"
+  const isBlockedBySchedule = scheduledAt !== null
+  const isDeleteBlocked = isBlockedByLiveStatus || isBlockedBySchedule
+  const isContainer =
+    resourceType === ResourceType.Folder ||
+    resourceType === ResourceType.Collection
+  const deleteBlockedReason = isBlockedBySchedule
+    ? `${isContainer ? "This folder or collection has" : "This page has"} a pending schedule — cancel it before deleting`
+    : isBlockedByLiveStatus
+      ? `${isContainer ? "This folder or collection has" : "This page has"} live content — unpublish before deleting`
+      : undefined
 
   return (
     <Menu isLazy size="sm">
@@ -122,11 +140,11 @@ export const ResourceTableMenu = ({
                   }}
                   colorScheme="critical"
                   icon={<BiTrash fontSize="1rem" />}
-                  isDisabled={!isAllowed}
+                  isDisabled={!isAllowed || isDeleteBlocked}
                   tooltip={
-                    isAllowed
-                      ? undefined
-                      : "You need to be an Admin to move or delete items under Home."
+                    !isAllowed
+                      ? "You need to be an Admin to move or delete items under Home."
+                      : deleteBlockedReason
                   }
                 >
                   Delete

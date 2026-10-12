@@ -10,7 +10,6 @@ import {
   schema,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import { format, isBefore } from "date-fns"
 import { get, isEmpty, isEqual, pick } from "lodash-es"
 import {
   INDEX_PAGE_PERMALINK,
@@ -18,7 +17,9 @@ import {
 } from "~/constants/sitemap"
 import {
   sendCancelSchedulePageEmail,
+  sendCancelScheduleUnpublishEmail,
   sendScheduledPageEmail,
+  sendScheduledUnpublishEmail,
 } from "~/features/mail/service"
 import {
   ENABLE_CODEBUILD_JOBS,
@@ -35,10 +36,14 @@ import {
   publishPageSchema,
   readPageOutputSchema,
   reorderBlobSchema,
+  unpublishPageSchema,
   updatePageBlobSchema,
   updatePageMetaSchema,
 } from "~/schemas/page"
-import { scheduledPublishServerSchema } from "~/schemas/schedule"
+import {
+  scheduledPublishServerSchema,
+  scheduledUnpublishServerSchema,
+} from "~/schemas/schedule"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
@@ -55,21 +60,31 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { applyPermalinkChangeRedirects } from "../redirect/redirect.service"
 import {
+  assertUnpublishableResourceType,
   createResourceWithBlob,
   getBlobOfResource,
   getFooter,
   getFullPageById,
+  getLastPublishedAt,
   getNavBar,
   getPageById,
   getResourceFullPermalink,
   getResourcePermalinkTree,
   publishPageResource,
   publishResource,
+  selectLastPublishedAt,
+  unpublishPageResource,
   updateBlobById,
-  updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { createDefaultPage, createFolderIndexPage } from "./page.service"
+import {
+  cancelSchedulePublish,
+  cancelScheduleUnpublish,
+  createDefaultPage,
+  createFolderIndexPage,
+  schedulePublish,
+  scheduleUnpublish,
+} from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -221,7 +236,11 @@ export const pageRouter = router({
         })
       }
 
-      return retrievedPage
+      const lastPublishedAt = await getLastPublishedAt(db, {
+        resourceId: pageId,
+      })
+
+      return { ...retrievedPage, lastPublishedAt }
     }),
 
   readPageAndBlob: protectedProcedure
@@ -378,62 +397,16 @@ export const pageRouter = router({
         action: "publish",
         userId: ctx.user.id,
       })
-
-      // check if the input.scheduledAt is after the current time
-      if (isBefore(scheduledAt, new Date())) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Scheduled time must be in the future",
-        })
-      }
-      const by = await db
-        .selectFrom("User")
-        .where("id", "=", ctx.user.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-
-      const updatedPage = await db.transaction().execute(async (tx) => {
-        // fetch the resource to be scheduled inside the transaction, to guard against concurrent update issues (race conditions)
-        const resource = await getPageById(tx, { resourceId: pageId, siteId })
-        if (!resource) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Resource not found",
-          })
-        }
-        if (resource.scheduledAt) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `Page is already scheduled to be published at ${format(
-              resource.scheduledAt,
-              "yyyy-MM-dd HH:mm",
-            )}`,
-          })
-        }
-        // update the resource's scheduled field
-        const updatedPage = await updatePageById(
-          { id: pageId, siteId, scheduledAt, scheduledBy: by.id },
-          tx,
-        )
-        // verify that the update was successful
-        if (!updatedPage) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to schedule page",
-          })
-        }
-        await logResourceEvent(tx, {
-          siteId,
-          by,
-          delta: { before: resource, after: updatedPage },
-          eventType: AuditLogEvent.SchedulePublish,
-        })
-        return updatedPage
+      const resource = await schedulePublish({
+        userId: ctx.user.id,
+        siteId,
+        pageId,
+        scheduledAt,
       })
       await sendScheduledPageEmail({
-        resource: updatedPage,
+        resource,
         scheduledAt,
-        recipientEmail: by.email,
+        recipientEmail: ctx.user.email,
       })
     }),
   cancelSchedulePage: protectedProcedure
@@ -444,49 +417,58 @@ export const pageRouter = router({
         action: "publish",
         userId: ctx.user.id,
       })
-      const by = await db
-        .selectFrom("User")
-        .where("id", "=", ctx.user.id)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      const updatedPage = await db.transaction().execute(async (tx) => {
-        const resource = await getPageById(tx, { resourceId: pageId, siteId })
-        if (!resource) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Resource not found",
-          })
-        }
-        if (!resource.scheduledAt) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message:
-              "Unable to cancel schedule for a page that is not scheduled",
-          })
-        }
-
-        // update the resource's scheduled field
-        const updatedPage = await updatePageById(
-          { id: pageId, siteId, scheduledAt: null, scheduledBy: null },
-          tx,
-        )
-        if (!updatedPage) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to cancel page schedule",
-          })
-        }
-        await logResourceEvent(tx, {
-          siteId,
-          by,
-          delta: { before: resource, after: updatedPage },
-          eventType: AuditLogEvent.CancelSchedulePublish,
-        })
-        return updatedPage
+      const resource = await cancelSchedulePublish({
+        userId: ctx.user.id,
+        siteId,
+        pageId,
       })
       await sendCancelSchedulePageEmail({
-        resource: updatedPage,
-        recipientEmail: by.email,
+        resource,
+        recipientEmail: ctx.user.email,
+      })
+    }),
+  scheduleUnpublish: protectedProcedure
+    .input(scheduledUnpublishServerSchema)
+    .mutation(async ({ ctx, input: { scheduledAt, siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "unpublish",
+        userId: ctx.user.id,
+      })
+      // Same check, same allow-list as unpublishPage — pageId may be a
+      // Folder/Collection id, which scheduleUnpublish resolves to its child
+      // IndexPage internally (mirroring unpublishPageResource), so the input
+      // contract matches unpublishPage's exactly.
+      await assertUnpublishableResourceType(db, { resourceId: pageId, siteId })
+      const resource = await scheduleUnpublish({
+        userId: ctx.user.id,
+        siteId,
+        pageId,
+        scheduledAt,
+      })
+      await sendScheduledUnpublishEmail({
+        resource,
+        scheduledAt,
+        recipientEmail: ctx.user.email,
+      })
+    }),
+  cancelScheduleUnpublish: protectedProcedure
+    .input(basePageSchema)
+    .mutation(async ({ ctx, input: { siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "unpublish",
+        userId: ctx.user.id,
+      })
+      await assertUnpublishableResourceType(db, { resourceId: pageId, siteId })
+      const resource = await cancelScheduleUnpublish({
+        userId: ctx.user.id,
+        siteId,
+        pageId,
+      })
+      await sendCancelScheduleUnpublishEmail({
+        resource,
+        recipientEmail: ctx.user.email,
       })
     }),
   updatePageBlob: validatedPageProcedure
@@ -630,7 +612,15 @@ export const pageRouter = router({
         // TODO: Only return sites that the user has access to
         .where("Resource.siteId", "=", siteId)
         .where("Resource.type", "=", ResourceType.RootPage)
-        .select(["id", "title", "draftBlobId"])
+        .select((eb) => [
+          "id",
+          "title",
+          "draftBlobId",
+          "publishedVersionId",
+          "scheduledAt",
+          "scheduledAction",
+          selectLastPublishedAt(eb),
+        ])
         .executeTakeFirst()
 
       if (!rootPage) {
@@ -642,6 +632,10 @@ export const pageRouter = router({
       return rootPage
     }),
 
+  // No resourceType guard here on purpose: a site must always be able to
+  // (re-)publish its homepage, even though unpublishPage below blocks the
+  // reverse for RootPage — see UNPUBLISHABLE_RESOURCE_TYPES in
+  // ~/constants/resources for why that asymmetry is intentional.
   publishPage: protectedProcedure
     .input(publishPageSchema)
     .mutation(
@@ -670,6 +664,37 @@ export const pageRouter = router({
             publisherEmail: user.email,
           })
         }
+      },
+    ),
+
+  // `pageId` isn't always the resource that ends up mutated: pass a
+  // Folder/Collection id and unpublishPageResource swaps in its child
+  // IndexPage's id first, since that's what's actually live at the
+  // container's URL.
+  unpublishPage: protectedProcedure
+    .input(unpublishPageSchema)
+    .mutation(
+      async ({ ctx: { user, gb, logger }, input: { siteId, pageId } }) => {
+        await bulkValidateUserPermissionsForResources({
+          siteId,
+          action: "unpublish",
+          userId: user.id,
+        })
+
+        await assertUnpublishableResourceType(db, {
+          resourceId: pageId,
+          siteId,
+        })
+
+        await unpublishPageResource({
+          logger,
+          siteId,
+          resourceId: String(pageId),
+          userId: user.id,
+          sitePublish: {
+            enableCodebuildJobs: gb.isOn(ENABLE_CODEBUILD_JOBS),
+          },
+        })
       },
     ),
 
@@ -795,7 +820,7 @@ export const pageRouter = router({
               }),
           )
 
-        return db.transaction().execute(async (tx) => {
+        const updatedResource = await db.transaction().execute(async (tx) => {
           const fullPage = await getFullPageById(tx, {
             resourceId: pageId,
             siteId,
@@ -892,21 +917,7 @@ export const pageRouter = router({
               })
             }
 
-            // We do an implicit publish so that we can make the changes to the
-            // page settings immediately visible on the end site. A page that
-            // has never been published has no live presence, so skip the site
-            // rebuild and Publish audit entry for it.
-            if (updatedResource.publishedVersionId !== null) {
-              await publishResource(ctx.user.id, updatedResource, ctx.logger)
-            }
-
-            return pick(updatedResource, [
-              "id",
-              "type",
-              "title",
-              "permalink",
-              "draftBlobId",
-            ])
+            return updatedResource
           } catch (err) {
             if (err instanceof TRPCError) {
               throw err
@@ -919,6 +930,22 @@ export const pageRouter = router({
             })
           }
         })
+
+        // We do an implicit publish so that we can make the changes to the
+        // page settings immediately visible on the end site. A page that
+        // has never been published has no live presence, so skip the site
+        // rebuild and Publish audit entry for it.
+        if (updatedResource.publishedVersionId !== null) {
+          await publishResource(ctx.user.id, updatedResource, ctx.logger)
+        }
+
+        return pick(updatedResource, [
+          "id",
+          "type",
+          "title",
+          "permalink",
+          "draftBlobId",
+        ])
       },
     ),
   getFullPermalink: protectedProcedure

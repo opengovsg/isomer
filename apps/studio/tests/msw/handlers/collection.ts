@@ -18,6 +18,9 @@ export const DEFAULT_COLLECTION_ITEMS = [
     createdAt: new Date("2024-09-12T07:00:30.000Z"),
     scheduledAt: null,
     scheduledBy: null,
+    scheduledAction: null,
+    lastPublishedAt: null,
+    liveStatus: "notLive" as const,
   },
   {
     id: "5",
@@ -33,6 +36,9 @@ export const DEFAULT_COLLECTION_ITEMS = [
     createdAt: new Date("2024-09-12T07:00:30.000Z"),
     scheduledAt: null,
     scheduledBy: null,
+    scheduledAction: null,
+    lastPublishedAt: null,
+    liveStatus: "notLive" as const,
   },
 ]
 export const collectionHandlers = {
@@ -55,6 +61,7 @@ export const collectionHandlers = {
         publishedVersionId: null,
         scheduledAt: null,
         scheduledBy: null,
+        scheduledAction: null,
         draftBlobId: "1",
       })),
   },
@@ -99,10 +106,9 @@ export const collectionHandlers = {
       }))
     },
   },
-  countTagOptionsUsage: {
+  countFilterUsage: {
     default: () =>
-      trpcMsw.collection.countTagOptionsUsage.query(() => ({ count: 3 })),
-    zero: () =>
-      trpcMsw.collection.countTagOptionsUsage.query(() => ({ count: 0 })),
+      trpcMsw.collection.countFilterUsage.query(() => ({ count: 3 })),
+    zero: () => trpcMsw.collection.countFilterUsage.query(() => ({ count: 0 })),
   },
 }

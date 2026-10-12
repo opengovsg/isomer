@@ -1,20 +1,17 @@
-import { Button, HStack, Icon, Text, useDisclosure } from "@chakra-ui/react"
-import { TouchableTooltip } from "@opengovsg/design-system-react"
-import { BiTimeFive } from "react-icons/bi"
-import { formatScheduledAtDate } from "~/lib/dates"
+import { Button, useDisclosure } from "@chakra-ui/react"
 
 import { CancelScheduleModal } from "."
 
 interface CancelSchedulePublishIndicatorProps {
   pageId: number
   siteId: number
-  scheduledAt: Date
+  isCurrentlyPublished: boolean
 }
 
 export const CancelSchedulePublishIndicator = ({
   pageId,
   siteId,
-  scheduledAt,
+  isCurrentlyPublished,
 }: CancelSchedulePublishIndicatorProps) => {
   const cancelScheduleDisclosure = useDisclosure()
   return (
@@ -22,26 +19,13 @@ export const CancelSchedulePublishIndicator = ({
       {cancelScheduleDisclosure.isOpen && (
         <CancelScheduleModal
           {...cancelScheduleDisclosure}
+          action="publish"
           siteId={siteId}
           pageId={pageId}
+          isCurrentlyPublished={isCurrentlyPublished}
         />
       )}
-      <HStack alignItems="center" spacing="1rem">
-        <TouchableTooltip label="This page is scheduled to publish. To make changes, cancel the schedule or wait until the page is published.">
-          <HStack spacing="0.25rem">
-            <Icon as={BiTimeFive} boxSize="1rem" />
-            <Text textStyle="caption-1">
-              {formatScheduledAtDate(scheduledAt)}
-            </Text>
-          </HStack>
-        </TouchableTooltip>
-        <Button
-          colorScheme="critical"
-          onClick={cancelScheduleDisclosure.onOpen}
-        >
-          Cancel schedule
-        </Button>
-      </HStack>
+      <Button onClick={cancelScheduleDisclosure.onOpen}>Cancel schedule</Button>
     </>
   )
 }

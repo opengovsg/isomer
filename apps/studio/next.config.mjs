@@ -145,12 +145,15 @@ const ContentSecurityPolicy = `
  */
 /** @type {import("next").NextConfig} */
 const config = {
-  // Off only for the e2e CI build (SKIP_STANDALONE_OUTPUT=true) — that build
-  // is served via plain `next start`, never `.next/standalone`, so the
-  // dependency trace + node_modules copy standalone output requires is
-  // wasted work there (and triggers Next's "next start doesn't work with
-  // output: standalone" warning).
-  output: env.SKIP_STANDALONE_OUTPUT ? undefined : "standalone",
+  // Standalone output is for Docker / start:standalone.
+  // Skip it on Vercel: Next 16.3 skips next-server.js.nft.json when an adapter
+  // is present (NEXT_ADAPTER_PATH), but standalone still reads it unguarded
+  // (vercel/next.js#96646). Vercel ignores the standalone directory.
+  // Also skip it for the e2e CI build (SKIP_STANDALONE_OUTPUT=true), which is
+  // served via plain `next start` and never reads `.next/standalone`.
+  output:
+    // oxlint-disable-next-line node/no-process-env -- Vercel sets VERCEL; it is not in the app env schema
+    env.SKIP_STANDALONE_OUTPUT || process.env.VERCEL ? undefined : "standalone",
   // Pin the tracing root so the standalone layout is always
   // `.next/standalone/apps/studio/server.js` (what the Dockerfile and start:standalone expect).
   // Without this, Next infers the workspace root from the outermost lockfile, which varies by

@@ -3,6 +3,8 @@ import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
+import { IsomerString } from "../primitives/IsomerString"
+
 const SocialMediaTypes = [
   "facebook",
   "twitter",
@@ -20,7 +22,7 @@ const SocialMediaTypes = [
 export type SocialMediaType = (typeof SocialMediaTypes)[number]
 
 const FooterItemSchema = Type.Object({
-  title: Type.String({
+  title: IsomerString({
     title: "Link label",
     maxLength: 50,
   }),

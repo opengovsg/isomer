@@ -28,7 +28,6 @@
     "NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN",
     "NEXT_PUBLIC_POSTHOG_HOST",
     "NEXT_PUBLIC_POSTHOG_ASSETS_HOST",
-    "NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS",
     "SKIP_PRODUCTION_SOURCE_MAPS",
     "SKIP_STANDALONE_OUTPUT"
   ],
@@ -74,7 +73,9 @@
         "storybook-static/**"
       ]
     },
-    "generate": {},
+    "generate": {
+      "dependsOn": ["^generate"]
+    },
     "format": {
       "dependsOn": [
         "^build"

@@ -1,9 +1,8 @@
 import { type Browser, type BrowserContext, type Page } from "@playwright/test"
-import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { type RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, type Role } from "./auth"
-import { enableGrowthBookFeature, resetGrowthBookPage } from "./network"
 import { CollectionPO } from "./po/collection"
 import { DashboardPO } from "./po/dashboard"
 import { PageEditorPO } from "./po/page-editor"
@@ -11,6 +10,16 @@ import { UsersPO } from "./po/users"
 import { getCollectionByTitle, getFolderByTitle } from "./resource/db"
 
 const SCHEDULE_PRESET_CLOCK_TIME = new Date("2099-01-01T00:01:00+08:00")
+
+/** Plain-text preview of a newly-added Callout (`DEFAULT_BLOCKS.callout`). */
+export const DEFAULT_CALLOUT_PREVIEW_TEXT = (() => {
+  const paragraph = DEFAULT_BLOCKS.callout.content.content[0]
+  const textNode = paragraph?.content?.[0]
+  if (textNode?.type !== "text" || !textNode.text) {
+    throw new Error("DEFAULT_BLOCKS.callout default prose text is missing")
+  }
+  return textNode.text
+})()
 
 export const openSeededPageEditor = async (
   page: Page,
@@ -97,15 +106,8 @@ export const openCollectionIndexEditor = async (
   page: Page,
   siteId: number,
   indexPageId: string,
-  opts?: { filtersEnabled?: boolean },
+  _opts?: { filtersEnabled?: boolean },
 ) => {
-  const filtersEnabled = opts?.filtersEnabled ?? true
-  await enableGrowthBookFeature(
-    page,
-    IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY,
-    filtersEnabled,
-  )
-  await resetGrowthBookPage(page)
   const collection = new CollectionPO(page)
   await collection.gotoIndex(siteId, indexPageId)
   return collection

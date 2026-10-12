@@ -73,6 +73,7 @@ describe("audit.router", async () => {
   beforeEach(async () => {
     await resetTables(
       "AuditLogExportRequest",
+      "AuditLogExportBatch",
       "AuditLog",
       "IsomerAdmin",
       "ResourcePermission",
@@ -428,6 +429,65 @@ describe("audit.router", async () => {
 
         // Assert
         await expect(result).rejects.toMatchObject({ code: "FORBIDDEN" })
+      })
+
+      it("persists ONE shared batchId across every freshly-inserted row through the real insert path", async () => {
+        // Verifies against real Postgres (not a mocked tx) that an allSites ask
+        // actually persists batch correlation: all its inserted rows carry the
+        // same non-null batchId, so the fulfilment worker can wait for them and
+        // send a single combined email.
+        const { site: siteA } = await setupSite()
+        const { site: siteB } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: siteA.id,
+        })
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: siteB.id,
+        })
+
+        const result = await caller.createExportRequest({
+          scope: "allSites",
+          month: VALID_MONTH,
+          reportType: "Activity",
+        })
+        expect(result).toHaveLength(2)
+
+        const [rowsA, rowsB] = await Promise.all([
+          getRequestRows({ siteId: siteA.id, userId: session.userId! }),
+          getRequestRows({ siteId: siteB.id, userId: session.userId! }),
+        ])
+        expect(rowsA).toHaveLength(1)
+        expect(rowsB).toHaveLength(1)
+
+        const batchIdA = rowsA[0]?.batchId
+        const batchIdB = rowsB[0]?.batchId
+        expect(batchIdA).toEqual(expect.any(String))
+        expect(batchIdA).toBeTruthy()
+        // Both freshly-inserted sibling rows share the one minted batchId.
+        expect(batchIdB).toBe(batchIdA)
+      })
+
+      it('persists a null batchId for a scope:"site" ask through the real insert path', async () => {
+        // The counterpart to the above: a single-site ask must NOT be batched,
+        // so its row keeps batchId null and its existing per-row email path.
+        const { site } = await setupSite()
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+        await caller.createExportRequest({
+          scope: "site",
+          siteId: site.id,
+          month: VALID_MONTH,
+          reportType: "Activity",
+        })
+
+        const rows = await getRequestRows({
+          siteId: site.id,
+          userId: session.userId!,
+        })
+        expect(rows).toHaveLength(1)
+        expect(rows[0]?.batchId).toBeNull()
       })
     })
   })

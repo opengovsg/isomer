@@ -132,19 +132,6 @@ describe("getScopedSchema", () => {
     })
   })
 
-  describe("file layout", () => {
-    it("should return schema for page", () => {
-      const schema = getScopedSchema({
-        layout: "file",
-        scope: "page",
-      })
-
-      expect(schema).toBeDefined()
-      expect(schema.type).toBe("object")
-      expect(schema.properties).toBeDefined()
-    })
-  })
-
   describe("exclude functionality", () => {
     it("should exclude specified fields from database page schema", () => {
       const schema = getScopedSchema({
