@@ -267,14 +267,18 @@ const HeroCarouselSchema = Type.Composite(
           format: ARRAY_RADIO_FORMAT,
         },
       ),
+    }),
+    HeroBaseSchema,
+    CallToActionsSchema,
+    // Property order is the Studio form order. Slides must follow the shared
+    // hero groups, otherwise those groups render under the slides list.
+    Type.Object({
       slides: Type.Array(HeroCarouselSlideSchema, {
         title: "Slides",
         minItems: 2,
         maxItems: 3,
       }),
     }),
-    HeroBaseSchema,
-    CallToActionsSchema,
   ],
   {
     title: HERO_STYLE.carousel.title,
