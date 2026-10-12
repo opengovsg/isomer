@@ -1174,6 +1174,60 @@ describe("TableDragHandles", () => {
     expect(returned).toBeVisible()
   })
 
+  it("clears select-table hover chrome when the container scrolls without a pointer move", async () => {
+    // Arrange
+    let editor: Editor | undefined
+    const ScrollHarness = () => {
+      const tipTap = useTextEditor({
+        data: SEED_CONTENT,
+        handleChange: () => null,
+      })
+      const containerRef = useRef<HTMLDivElement>(null)
+      if (tipTap) editor = tipTap
+      return (
+        <div
+          data-testid="scroll-root"
+          ref={containerRef}
+          style={{ position: "relative", height: 240, overflow: "auto" }}
+        >
+          <div style={{ height: 320 }} />
+          {tipTap && (
+            <TableDragHandles editor={tipTap} containerRef={containerRef} />
+          )}
+          {tipTap && <EditorContent editor={tipTap} />}
+        </div>
+      )
+    }
+    const { getByRole, getByTestId, queryByRole } = render(
+      <ThemeProvider theme={theme}>
+        <ScrollHarness />
+      </ThemeProvider>,
+    )
+    await waitFor(() => {
+      if (!editor) throw new Error("editor not ready")
+    })
+    const scrollRoot = getByTestId("scroll-root")
+    const table = scrollRoot.querySelector("table")
+    if (!table) throw new Error("table not found")
+    act(() => {
+      scrollRoot.scrollTop = table.offsetTop - 8
+    })
+    const { x, y } = nearTopLeft(table)
+    await hoverUntil(x, y, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+
+    // Act
+    act(() => {
+      scrollRoot.scrollTop += 200
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(queryByRole("button", { name: "Select entire table" })).toBeNull()
+    })
+  })
+
   it("updates drop targets when the table resizes during a drag", async () => {
     // Arrange
     const { editor, container } = await renderHarness()

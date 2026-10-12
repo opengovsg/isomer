@@ -1,5 +1,5 @@
 import type { RefObject } from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { TABLE_GUTTER_PX } from "~/features/editing-experience/utils/tableEditorChrome"
 
 import type { TableGeometry } from "./axisMath"
@@ -107,19 +107,24 @@ export const useHoveredTable = (
 ): { tablePos: number | null; cornerTablePos: number | null } => {
   const [hoverTablePos, setHoverTablePos] = useState<number | null>(null)
   const [cornerTablePos, setCornerTablePos] = useState<number | null>(null)
+  const lastPointerRef = useRef<{ clientX: number; clientY: number } | null>(
+    null,
+  )
 
   useEffect(() => {
     let frame: number | null = null
 
-    const hitTestTables = (clientX: number, clientY: number) => {
+    const hitTestTables = () => {
       if (isGestureActive()) return
+      const last = lastPointerRef.current
+      if (!last) return
       const container = containerRef.current
       if (!container) return
 
       const hit = {
         geometries,
-        clientX,
-        clientY,
+        clientX: last.clientX,
+        clientY: last.clientY,
         containerRect: container.getBoundingClientRect(),
         scrollTop: container.scrollTop,
         scrollLeft: container.scrollLeft,
@@ -128,18 +133,44 @@ export const useHoveredTable = (
       setCornerTablePos(findHoveredTableCornerPos(hit))
     }
 
-    const onMove = (event: MouseEvent) => {
-      if (frame !== null) return
-      const { clientX, clientY } = event
+    const scheduleHitTest = (
+      clientX: number,
+      clientY: number,
+      { force = false }: { force?: boolean } = {},
+    ) => {
+      lastPointerRef.current = { clientX, clientY }
+      if (frame !== null) {
+        if (!force) return
+        cancelAnimationFrame(frame)
+        frame = null
+      }
       frame = requestAnimationFrame(() => {
         frame = null
-        hitTestTables(clientX, clientY)
+        hitTestTables()
       })
     }
 
+    const onMove = (event: MouseEvent) => {
+      scheduleHitTest(event.clientX, event.clientY)
+    }
+
+    const onScroll = () => {
+      const last = lastPointerRef.current
+      if (!last) return
+      scheduleHitTest(last.clientX, last.clientY, { force: true })
+    }
+
     window.addEventListener("mousemove", onMove)
+    window.addEventListener("scroll", onScroll, { capture: true })
+
+    const last = lastPointerRef.current
+    if (last) {
+      scheduleHitTest(last.clientX, last.clientY, { force: true })
+    }
+
     return () => {
       window.removeEventListener("mousemove", onMove)
+      window.removeEventListener("scroll", onScroll, { capture: true })
       if (frame !== null) cancelAnimationFrame(frame)
     }
   }, [geometries, containerRef, isGestureActive])
