@@ -98,6 +98,7 @@ export const assetRouter = router({
 
   getPresignedPutUrlForBake: protectedProcedure
     .input(getPresignedPutUrlForBakeSchema)
+    .meta({ rateLimitOptions: { max: 10, windowMs: 60_000 } })
     .mutation(
       async ({ ctx, input: { siteId, resourceId, src, ext, fileSize } }) => {
         // Ownership of `src` is NOT re-verified against the resource's

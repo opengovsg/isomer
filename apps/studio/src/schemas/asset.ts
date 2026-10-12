@@ -178,7 +178,11 @@ export const getPresignedPutUrlForBakeSchema = z.object({
   ext: z.enum(BAKEABLE_EXTENSIONS, {
     message: "Unsupported image format. Use jpeg, png, or webp.",
   }),
-  fileSize: fileSizeSchema,
+  // Baked objects are always images (ext is a BAKEABLE_EXTENSIONS value), so the
+  // image size limit applies unconditionally here.
+  fileSize: fileSizeSchema.max(MAX_IMG_FILE_SIZE_BYTES, {
+    message: `File size must not exceed ${formatFileSizeLimit({ bytes: MAX_IMG_FILE_SIZE_BYTES })}`,
+  }),
 })
 
 export type GetPresignedPutUrlForBakeInput = z.infer<
