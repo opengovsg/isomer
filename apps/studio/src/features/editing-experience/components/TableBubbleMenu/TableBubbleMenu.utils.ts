@@ -8,7 +8,10 @@ import {
   hasHeaderRow,
   type MappedTable,
 } from "~/features/editing-experience/utils/tableHeaderAxis"
-import { isRowSlotClippedByVerticalSpan } from "~/features/editing-experience/utils/tableSlotSelection"
+import {
+  isRowSlotClippedByVerticalSpan,
+  mapSlotCellOffset,
+} from "~/features/editing-experience/utils/tableSlotSelection"
 
 import type {
   SelectionKind,
@@ -32,7 +35,12 @@ interface TableSelectionFacts {
   selectedCellIsMerged: boolean
 }
 
-type MovedBlockTableMap = Pick<TableMap, "width" | "height" | "positionAt">
+export interface MovedBlockSelectionBounds {
+  top: number
+  bottom: number
+  left: number
+  right: number
+}
 
 // Withhold delete/move when the selection overlaps a header axis so users unset the header first.
 export const selectionIncludesHeaderRow = (
@@ -217,21 +225,21 @@ export const getColumnMovePlan = (
 }
 
 export const getMovedBlockCellCorners = (
-  map: MovedBlockTableMap,
-  table: Node,
+  map: TableMap,
   plan: TableMovePlan,
   axis: TableMoveAxis,
+  bounds: MovedBlockSelectionBounds,
 ) => {
   const newEnd = plan.newStart + plan.span
   if (axis === "row") {
     return {
-      anchor: map.positionAt(plan.newStart, 0, table),
-      head: map.positionAt(newEnd - 1, map.width - 1, table),
+      anchor: mapSlotCellOffset(map, plan.newStart, bounds.left),
+      head: mapSlotCellOffset(map, newEnd - 1, bounds.right - 1),
     }
   }
   return {
-    anchor: map.positionAt(map.height - 1, plan.newStart, table),
-    head: map.positionAt(0, newEnd - 1, table),
+    anchor: mapSlotCellOffset(map, bounds.bottom - 1, plan.newStart),
+    head: mapSlotCellOffset(map, bounds.top, newEnd - 1),
   }
 }
 
@@ -241,6 +249,7 @@ export const restoreMovedBlockSelection = (
   tablePos: number,
   plan: TableMovePlan,
   axis: TableMoveAxis,
+  bounds: MovedBlockSelectionBounds,
 ) => {
   const table = tr.doc.nodeAt(tablePos)
   if (!table) {
@@ -249,7 +258,7 @@ export const restoreMovedBlockSelection = (
   }
   const map = TableMap.get(table)
   const tableStart = tablePos + 1
-  const { anchor, head } = getMovedBlockCellCorners(map, table, plan, axis)
+  const { anchor, head } = getMovedBlockCellCorners(map, plan, axis, bounds)
   tr.setSelection(
     CellSelection.create(tr.doc, tableStart + anchor, tableStart + head),
   )
@@ -283,10 +292,12 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   })
 
   const selectsSingleCellNode = isSingleCellSelection(selection)
-  const clippedRowSlot = isRowSlotClippedByVerticalSpan(rect)
+  const clippedRowSlot =
+    !selectsSingleCellNode && isRowSlotClippedByVerticalSpan(rect)
   return getTableSelectionKind({
     spansEntireTableWidth:
-      (rect.left === 0 && rect.right === rect.map.width) || clippedRowSlot,
+      !selectsSingleCellNode &&
+      ((rect.left === 0 && rect.right === rect.map.width) || clippedRowSlot),
     spansEntireTableHeight:
       rect.top === 0 && rect.bottom === rect.map.height && !clippedRowSlot,
     allCellsAreHeaders: allHeader,

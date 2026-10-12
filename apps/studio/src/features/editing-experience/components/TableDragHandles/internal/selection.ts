@@ -24,14 +24,17 @@ export const selectWholeSlot = (
   const table = getTableAt(editor.state.doc, tablePos)
   if (!table) return
   const map = TableMap.get(table)
-  const cellPos =
-    tablePos + 1 + AXIS_TABLE_OPS[axis].cellOffsetAt(map, table, index)
-  const $cell = editor.state.doc.resolve(cellPos)
-  const selection =
-    axis === "row"
-      ? (selectionForRowSlot(editor.state.doc, tablePos, index) ??
-        AXIS_TABLE_OPS.row.cellSelection($cell))
-      : AXIS_TABLE_OPS.column.cellSelection($cell)
+  let selection: CellSelection
+  if (axis === "row") {
+    const rowSelection = selectionForRowSlot(editor.state.doc, tablePos, index)
+    if (!rowSelection) return
+    selection = rowSelection
+  } else {
+    const cellPos =
+      tablePos + 1 + AXIS_TABLE_OPS[axis].cellOffsetAt(map, table, index)
+    const $cell = editor.state.doc.resolve(cellPos)
+    selection = AXIS_TABLE_OPS.column.cellSelection($cell)
+  }
   editor.view.dispatch(editor.state.tr.setSelection(selection))
   editor.view.focus()
 }
@@ -69,8 +72,9 @@ export const getSelectionHandleTarget = (
   const isCol = selection.isColSelection()
   const rect = selectedRect(editor.state)
   const tablePos = rect.tableStart - 1
+  const isSingleCell = selection.$anchorCell.pos === selection.$headCell.pos
   if (isRow === isCol) {
-    if (!isRow && isRowSlotClippedByVerticalSpan(rect)) {
+    if (!isRow && !isSingleCell && isRowSlotClippedByVerticalSpan(rect)) {
       return { tablePos, rows: [rect.top], cols: [] }
     }
     return null

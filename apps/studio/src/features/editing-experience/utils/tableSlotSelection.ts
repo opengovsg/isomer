@@ -45,6 +45,19 @@ export const selectionForRowSlot = (
   return CellSelection.create(doc, tablePos + 1 + anchor, tablePos + 1 + head)
 }
 
+/** Cell offset at a grid slot; works when `positionAt` would skip covered slots. */
+export const mapSlotCellOffset = (
+  map: TableMap,
+  row: number,
+  col: number,
+): number => {
+  const offset = map.map[row * map.width + col]
+  if (offset === undefined) {
+    throw new Error(`No cell at row ${row} column ${col}`)
+  }
+  return offset
+}
+
 /**
  * True when the rect is one row and every column it misses is covered by a
  * vertical span. Those spans cannot sit inside a one-row rectangle, so the

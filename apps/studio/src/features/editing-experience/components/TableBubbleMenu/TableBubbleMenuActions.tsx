@@ -76,13 +76,19 @@ const moveTableBlock = (
   const tablePos = rect.tableStart - 1
   const move = axis === "row" ? moveTableRow : moveTableColumn
 
+  const bounds = {
+    top: rect.top,
+    bottom: rect.bottom,
+    left: rect.left,
+    right: rect.right,
+  }
   move({
     from: plan.from,
     to: plan.to,
     select: false,
     pos: rect.tableStart,
   })(state, (tr) => {
-    restoreMovedBlockSelection(view, tr, tablePos, plan, axis)
+    restoreMovedBlockSelection(view, tr, tablePos, plan, axis, bounds)
   })
   editor.commands.focus()
 }

@@ -257,4 +257,48 @@ describe("selectWholeSlot", () => {
     expect(detectTableSelectionKind(editor)).toBe("column")
     expect(getSelectionHandleTarget(editor)?.cols).toEqual([0])
   })
+
+  it("does not treat a lone merged cell after horizontal merge as a row selection", () => {
+    // Arrange
+    const doc = tableDoc(
+      row(cell("span", { rowspan: 2 }), cell("r0b"), cell("r0c")),
+      row(cell("merged", { colspan: 2 })),
+      row(cell("r2a"), cell("r2b"), cell("r2c")),
+    )
+    const table = doc.firstChild
+    if (!table) throw new Error("missing table")
+    const map = TableMap.get(table)
+    const mergedOffset = map.map[1 * map.width + 1]
+    if (mergedOffset === undefined) throw new Error("missing merged cell")
+    const mergedPos = 1 + mergedOffset
+    const editor = editorFor(doc)
+
+    // Act
+    editor.view.dispatch(
+      editor.state.tr.setSelection(CellSelection.create(doc, mergedPos)),
+    )
+
+    // Assert
+    expect(detectTableSelectionKind(editor)).toBe("merged-cell")
+    expect(getSelectionHandleTarget(editor)).toBeNull()
+  })
+
+  it("does not select extra rows when staggered vertical merges block a row slot", () => {
+    // Arrange
+    const editor = editorFor(
+      tableDoc(
+        row(cell("r0a"), cell("r0b")),
+        row(cell("span0", { rowspan: 2 }), cell("span1", { rowspan: 2 })),
+        row(cell("r2a")),
+      ),
+    )
+    const beforeSelection = editor.state.selection
+
+    // Act
+    selectWholeSlot(editor, 0, "row", 1)
+
+    // Assert
+    expect(editor.state.selection.eq(beforeSelection)).toBe(true)
+    expect(getSelectionHandleTarget(editor)).toBeNull()
+  })
 })

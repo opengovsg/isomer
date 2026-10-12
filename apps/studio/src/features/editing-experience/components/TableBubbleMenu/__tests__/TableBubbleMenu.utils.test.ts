@@ -490,36 +490,29 @@ describe("getRowMovePlan", () => {
   })
 })
 
-const tableMap = ({
-  width,
-  height,
-}: {
-  width: number
-  height: number
-}): Pick<TableMap, "width" | "height" | "positionAt"> => ({
-  width,
-  height,
-  positionAt: (row, col) => row * width + col,
-})
-
-const emptyTable = {} as Node
-
 describe("getMovedBlockCellCorners", () => {
   const plan = { from: 0, to: 1, newStart: 1, span: 2 }
+  const fullTableBounds = { top: 0, bottom: 3, left: 0, right: 4 }
 
   it("selects top-left to bottom-right for a moved row block", () => {
-    const map = tableMap({ width: 4, height: 3 })
-    expect(getMovedBlockCellCorners(map, emptyTable, plan, "row")).toEqual({
-      anchor: 4,
-      head: 11,
-    })
+    const table = buildUniformTable(4, 3)
+    const map = TableMap.get(table)
+    expect(getMovedBlockCellCorners(map, plan, "row", fullTableBounds)).toEqual(
+      {
+        anchor: map.map[4],
+        head: map.map[11],
+      },
+    )
   })
 
   it("selects bottom-left to top-right for a moved column block", () => {
-    const map = tableMap({ width: 4, height: 3 })
-    expect(getMovedBlockCellCorners(map, emptyTable, plan, "column")).toEqual({
-      anchor: 9,
-      head: 2,
+    const table = buildUniformTable(4, 3)
+    const map = TableMap.get(table)
+    expect(
+      getMovedBlockCellCorners(map, plan, "column", fullTableBounds),
+    ).toEqual({
+      anchor: map.map[9],
+      head: map.map[2],
     })
   })
 })
