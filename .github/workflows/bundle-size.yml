@@ -15,7 +15,7 @@ on:
 
 jobs:
   optimize_ci:
-    runs-on: blacksmith-4vcpu-ubuntu-2404 # or whichever runner you use for your CI
+    runs-on: blacksmith-2vcpu-ubuntu-2404 # or whichever runner you use for your CI
     outputs:
       skip: ${{ steps.check_skip.outputs.skip }}
     steps:
@@ -27,7 +27,7 @@ jobs:
 
   # Detect which areas changed so components-bundle-size can opt out when irrelevant.
   changes:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     outputs:
       components: ${{ steps.filter.outputs.components }}
     steps:
@@ -47,7 +47,7 @@ jobs:
     # Only meaningful when the components package itself changed (source/assets
     # or dependencies) — needs a `main` baseline to diff against.
     if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.components == 'true'
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     permissions:
       contents: read
     steps:

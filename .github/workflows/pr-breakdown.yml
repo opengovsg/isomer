@@ -15,7 +15,7 @@ on:
 
 jobs:
   optimize_ci:
-    runs-on: blacksmith-4vcpu-ubuntu-2404 # or whichever runner you use for your CI
+    runs-on: blacksmith-2vcpu-ubuntu-2404 # or whichever runner you use for your CI
     outputs:
       skip: ${{ steps.check_skip.outputs.skip }}
     steps:
@@ -28,7 +28,7 @@ jobs:
   pr-breakdown:
     name: PR diff breakdown
     needs: optimize_ci
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     if: needs.optimize_ci.outputs.skip == 'false'
     permissions:
       contents: read
