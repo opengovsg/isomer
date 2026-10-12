@@ -30,6 +30,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
       await site.gotoSettingsSection(siteId, section)
 
       // Assert
+      await site.expectSettingsSectionLoaded(section)
       await expect(site.publishButton()).not.toBeVisible()
     })
   }
@@ -61,6 +62,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
       await site.gotoSettingsSection(siteId, section)
 
       // Assert
+      await site.expectSettingsSectionLoaded(section)
       await expect(site.publishButton()).not.toBeVisible()
     })
   }

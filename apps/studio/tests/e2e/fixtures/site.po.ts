@@ -1,4 +1,4 @@
-import type { Locator, Page } from "@playwright/test"
+import { expect, type Locator, type Page } from "@playwright/test"
 
 export type SettingsSection =
   | "agency"
@@ -84,6 +84,17 @@ export class SitePO {
     // merely contains "Publish" as a substring, e.g. a navbar item's
     // "Navbar item Fix errors before publishing" error button.
     return this.page.getByRole("button", { name: "Publish", exact: true })
+  }
+
+  settingsSectionHeading(section: SettingsSection) {
+    return this.page.getByRole("heading", {
+      name: SETTINGS_SECTION_PAGE_HEADINGS[section],
+      exact: true,
+    })
+  }
+
+  async expectSettingsSectionLoaded(section: SettingsSection) {
+    await expect(this.settingsSectionHeading(section)).toBeVisible()
   }
 
   siteNameField() {
@@ -716,6 +727,18 @@ const SETTINGS_SECTION_LABELS: Record<SettingsSection, string> = {
   logo: "Logos and favicon", // spec said "Logo" — actual label is "Logos and favicon"
   navbar: "Navigation bar", // spec said "Navbar" — actual label is "Navigation bar"
   notification: "Notification banner", // spec said "Notification" — actual label is "Notification banner"
+  redirects: "Redirects",
+}
+
+/** Page title rendered as a heading on each settings surface (h1 or h2). */
+const SETTINGS_SECTION_PAGE_HEADINGS: Record<SettingsSection, string> = {
+  agency: "Name and agency",
+  colours: "Colours",
+  footer: "Footer",
+  integrations: "Integrations",
+  logo: "Logo and favicon", // sidenav label differs — see SettingsHeader title in logo.tsx
+  navbar: "Navigation bar",
+  notification: "Notification banner",
   redirects: "Redirects",
 }
 
