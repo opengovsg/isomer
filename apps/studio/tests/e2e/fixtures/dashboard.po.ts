@@ -123,18 +123,19 @@ export class DashboardPO {
     await expect(this.moveMenuItem).toBeDisabled()
   }
 
-  private resourceTableRow(title: string) {
-    return this.page.getByRole("row").filter({ hasText: title })
+  private resourceOptionsButton(title: string) {
+    return this.page.getByRole("button", {
+      name: `Options for ${title}`,
+      exact: true,
+    })
   }
 
   async expectResourceLinkVisible(title: string) {
-    await expect(
-      this.resourceTableRow(title).getByRole("link", { name: title }),
-    ).toBeVisible()
+    await expect(this.resourceOptionsButton(title)).toBeVisible()
   }
 
   async expectResourceLinkHidden(title: string) {
-    await expect(this.resourceTableRow(title)).toHaveCount(0)
+    await expect(this.resourceOptionsButton(title)).toHaveCount(0)
   }
 
   async expectPageHeading(title: string) {
