@@ -33,7 +33,7 @@ permissions:
 jobs:
   build-and-publish:
     name: Build and publish
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Resolve build ref
         id: resolve-ref
@@ -57,7 +57,7 @@ jobs:
 
       - name: Checkout ${{ steps.resolve-ref.outputs.ref }}
         id: checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: useblacksmith/checkout@v1 # v7.0.1
         with:
           ref: ${{ steps.resolve-ref.outputs.ref }}
 
