@@ -11,8 +11,8 @@ const RESOURCE_UPDATED_AT_TRIGGER = "update_timestamp"
 export const setResourceUpdatedAt = async (
   resourceId: string,
   updatedAt: Date,
-) =>
-  db.transaction().execute(async (trx) => {
+) => {
+  const updatedPage = await db.transaction().execute(async (trx) => {
     await sql`ALTER TABLE "Resource" DISABLE TRIGGER ${sql.id(RESOURCE_UPDATED_AT_TRIGGER)}`.execute(
       trx,
     )
@@ -29,6 +29,15 @@ export const setResourceUpdatedAt = async (
       )
     }
   })
+
+  if (updatedPage.updatedAt.getTime() !== updatedAt.getTime()) {
+    throw new Error(
+      `Resource ${resourceId} updatedAt did not persist (expected ${updatedAt.toISOString()}, got ${updatedPage.updatedAt.toISOString()})`,
+    )
+  }
+
+  return updatedPage
+}
 
 export const getFolderByTitle = (opts: { siteId: number; title: string }) =>
   db
