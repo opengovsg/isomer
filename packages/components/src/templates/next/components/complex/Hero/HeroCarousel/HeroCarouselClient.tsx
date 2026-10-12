@@ -80,42 +80,13 @@ const CarouselArrowButton = ({
 }
 
 const carouselDotStyles = tv({
-  base: "shrink-0 transition-[width,background-color,opacity] duration-150 ease-out motion-reduce:transition-none",
+  base: "h-2 shrink-0 rounded-full transition-[width,background-color] duration-150 ease-out motion-reduce:transition-none",
   variants: {
-    layout: {
-      /** Dots on the dark content panel (desktop) */
-      content: "",
-      /** Dots overlaid on the hero image (tablet/mobile) */
-      overlay: "",
-    },
     isActive: {
-      true: "",
-      false: "",
+      true: "w-6 bg-white",
+      false: "w-2 bg-white/50 hover:bg-white/70 focus-visible:bg-white/70",
     },
   },
-  compoundVariants: [
-    {
-      layout: "content",
-      isActive: true,
-      class: "h-2.5 w-2.5 rounded-full bg-white",
-    },
-    {
-      layout: "content",
-      isActive: false,
-      class:
-        "h-1.5 w-1.5 rounded-full bg-white/40 hover:bg-white/60 focus-visible:bg-white/60",
-    },
-    {
-      layout: "overlay",
-      isActive: true,
-      class: "h-2 w-6 rounded-full bg-white",
-    },
-    {
-      layout: "overlay",
-      isActive: false,
-      class: "h-2 w-2 rounded-full bg-white/50",
-    },
-  ],
 })
 
 const CarouselDots = ({
@@ -131,8 +102,6 @@ const CarouselDots = ({
   isClickable: boolean
   className?: string
 }) => {
-  const layout = isClickable ? "content" : "overlay"
-
   return (
     <div
       className={twMerge("flex items-center gap-2", className)}
@@ -141,7 +110,7 @@ const CarouselDots = ({
     >
       {Array.from({ length: count }, (_, index) => {
         const isActive = index === currentIndex
-        const dotClassName = carouselDotStyles({ layout, isActive })
+        const dotClassName = carouselDotStyles({ isActive })
 
         if (isClickable) {
           return (
@@ -272,7 +241,12 @@ export const HeroCarouselClient = ({
   })
 
   const mobileControls = (
-    <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/50 to-transparent px-10 pb-10 pt-12 lg:hidden">
+    <div
+      className={twMerge(
+        "absolute inset-x-0 bottom-0 z-20 px-6 pb-10 pt-12 md:px-10 lg:hidden",
+        !isBlockStyle && "bg-gradient-to-t from-black/50 to-transparent",
+      )}
+    >
       <CarouselControls
         slideCount={slides.length}
         currentIndex={currentIndex}
@@ -410,7 +384,7 @@ export const HeroCarouselClient = ({
             onSelect={navigateToIndex}
             onPrev={() => navigateByDirection("prev")}
             onNext={() => navigateByDirection("next")}
-            isDotsClickable={isBlockStyle}
+            isDotsClickable
             isPending={isPending}
           />
         </div>
