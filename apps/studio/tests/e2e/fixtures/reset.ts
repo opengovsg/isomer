@@ -1,4 +1,5 @@
 import { sql } from "kysely"
+import { normalizeRedirectSource } from "~/schemas/redirect/utils"
 import { db, jsonb } from "~/server/modules/database"
 
 export { ensureUserOnboarded } from "./user"
@@ -69,4 +70,29 @@ export const deleteResourcesByTitleLike = (
     .deleteFrom("Resource")
     .where("siteId", "=", siteId)
     .where("title", "like", titlePattern)
+    .execute()
+
+/** Insert a live redirect row for publish-conflict E2E scenarios. */
+export const seedRedirect = (opts: {
+  siteId: number
+  source: string
+  destination: string
+}) =>
+  db
+    .insertInto("Redirect")
+    .values({
+      siteId: opts.siteId,
+      source: normalizeRedirectSource(opts.source),
+      destination: opts.destination,
+    })
+    .execute()
+
+export const deleteRedirectBySource = (opts: {
+  siteId: number
+  source: string
+}) =>
+  db
+    .deleteFrom("Redirect")
+    .where("siteId", "=", opts.siteId)
+    .where("source", "=", normalizeRedirectSource(opts.source))
     .execute()
