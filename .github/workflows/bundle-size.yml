@@ -31,7 +31,7 @@ jobs:
     outputs:
       components: ${{ steps.filter.outputs.components }}
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
         id: filter
         with:
@@ -51,7 +51,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
 
       - name: Setup
         uses: ./.github/actions/setup

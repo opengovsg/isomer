@@ -151,7 +151,7 @@ jobs:
         uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4
 
       - name: Setup Blacksmith Builder
-        uses: useblacksmith/setup-docker-builder@v1
+        uses: useblacksmith/setup-docker-builder@e4c1c000c95f9cc255f72940e9c56bcbd1239436 # v1.13.0
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
@@ -167,10 +167,10 @@ jobs:
           mask-password: "true"
 
       - name: Checkout source code
-        uses: useblacksmith/checkout@v1 # v7.0.1
+        uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
 
       - name: Build installer stage for sourcemap extraction
-        uses: useblacksmith/build-push-action@v2 # v7
+        uses: useblacksmith/build-push-action@9b0579bbec7a6cad2f171596c57e7ac1e7658850 # v2.3.0
         with:
           context: .
           file: "./apps/studio/Dockerfile"
@@ -195,7 +195,7 @@ jobs:
           docker rm $CONTAINER_ID
 
       - name: Build and load image to Docker
-        uses: useblacksmith/build-push-action@v2 # v7
+        uses: useblacksmith/build-push-action@9b0579bbec7a6cad2f171596c57e7ac1e7658850 # v2.3.0
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
@@ -319,7 +319,7 @@ jobs:
           mask-password: "true"
 
       - name: Checkout source code
-        uses: useblacksmith/checkout@v1 # v7.0.1
+        uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
 
       - name: Replace variables in task definition file
         id: replace-variables

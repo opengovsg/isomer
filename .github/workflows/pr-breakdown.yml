@@ -52,7 +52,7 @@ jobs:
       # a few seconds at most. This does mean the clone cost grows with the
       # repo's total lifetime history, not with this one PR's size — worth
       # revisiting if that ever becomes an actual bottleneck.
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
         with:
           fetch-depth: 0
 

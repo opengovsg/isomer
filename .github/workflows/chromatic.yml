@@ -30,7 +30,7 @@ jobs:
       ui: ${{ steps.filter.outputs.ui }}
       studio: ${{ steps.filter.outputs.studio }}
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
       # For pull requests it's not necessary to checkout the code
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
         id: filter
@@ -51,7 +51,7 @@ jobs:
     environment: staging
     # Job steps
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
         with:
           fetch-depth: 0 # Required for v4
       - name: Setup
@@ -76,7 +76,7 @@ jobs:
     environment: staging
     # Job steps
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
         with:
           fetch-depth: 0 # Required for v4
       - name: Setup

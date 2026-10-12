@@ -30,7 +30,7 @@ jobs:
       template_or_components: ${{ steps.filter.outputs.template_or_components }}
       studio_e2e_relevant: ${{ steps.filter.outputs.studio_e2e_relevant }}
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
         id: filter
         with:
@@ -56,7 +56,7 @@ jobs:
   build:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -66,7 +66,7 @@ jobs:
   lint:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -83,7 +83,7 @@ jobs:
   format:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -94,7 +94,7 @@ jobs:
   typecheck:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -113,7 +113,7 @@ jobs:
         shard: [1, 2] # extend this if we need to run more shards concurrently
         total_shards: [2]
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
       - name: Setup
         uses: ./.github/actions/setup
         with:
@@ -146,7 +146,7 @@ jobs:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     if: needs.optimize_ci.outputs.skip == 'false'
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
       - name: Setup
         uses: ./.github/actions/setup
       - parallel:
@@ -173,7 +173,7 @@ jobs:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.template_or_components == 'true'
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
       - name: Setup
         uses: ./.github/actions/setup
       - name: Configure Datadog Test Visibility
@@ -195,7 +195,7 @@ jobs:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     if: needs.optimize_ci.outputs.skip == 'false'
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
       - name: Setup
         uses: ./.github/actions/setup
       - name: Configure Datadog Test Visibility
@@ -216,7 +216,7 @@ jobs:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     if: needs.optimize_ci.outputs.skip == 'false'
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
       - name: Setup
         uses: ./.github/actions/setup
       - parallel:
@@ -240,7 +240,7 @@ jobs:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     if: needs.optimize_ci.outputs.skip == 'false'
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
       - name: Setup
         uses: ./.github/actions/setup
       - name: Configure Datadog Test Visibility
@@ -292,7 +292,7 @@ jobs:
           - feature: root
             paths: tests/e2e/smoke.test.ts tests/e2e/singpass.test.ts tests/e2e/login-flow.test.ts
     steps:
-      - uses: useblacksmith/checkout@v1 # v7.0.1
+      - uses: useblacksmith/checkout@25227e61ff9dafe400e22fa487b673eac4e4409a # v1.8.1
       - name: Setup
         uses: ./.github/actions/setup
       - name: Load .env file
