@@ -747,5 +747,4 @@ describe("asset.service", () => {
       )
     })
   })
-
 })
