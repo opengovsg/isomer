@@ -13,7 +13,7 @@ export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
 export {
   getHeroStyleVariantForBranchTitle,
-  HERO_CAROUSEL_SLIDE_MODE,
+  HERO_CAROUSEL_STYLE,
   HERO_STYLE,
   HeroSchema,
   type HeroProps,

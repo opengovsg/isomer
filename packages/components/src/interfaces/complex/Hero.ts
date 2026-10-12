@@ -19,9 +19,9 @@ export const HERO_STYLE = {
   carousel: { key: "carousel", title: "Carousel" },
 } as const
 
-export const HERO_CAROUSEL_SLIDE_MODE = {
-  entire: "entire",
-  imageOnly: "imageOnly",
+export const HERO_CAROUSEL_STYLE = {
+  block: "block",
+  gradient: "gradient",
 } as const
 
 export type HeroStyleVariant =
@@ -239,18 +239,18 @@ const HeroCarouselSchema = Type.Object(
     variant: Type.Literal(HERO_STYLE.carousel.key, {
       default: HERO_STYLE.carousel.key,
     }),
-    slide: Type.Union(
+    style: Type.Union(
       [
-        Type.Literal(HERO_CAROUSEL_SLIDE_MODE.entire, {
-          title: "entire",
+        Type.Literal(HERO_CAROUSEL_STYLE.block, {
+          title: "Block",
         }),
-        Type.Literal(HERO_CAROUSEL_SLIDE_MODE.imageOnly, {
-          title: "image only",
+        Type.Literal(HERO_CAROUSEL_STYLE.gradient, {
+          title: "Gradient",
         }),
       ],
       {
-        title: "Slide",
-        default: HERO_CAROUSEL_SLIDE_MODE.entire,
+        title: "Style",
+        default: HERO_CAROUSEL_STYLE.block,
         format: ARRAY_RADIO_FORMAT,
       },
     ),
@@ -287,7 +287,7 @@ export const HeroSchema = Type.Intersect(
   },
 )
 
-type HeroLayoutProps = {
+interface HeroLayoutProps {
   site: IsomerSiteProps
   theme?: "default" | "inverse"
   headingLevel: number

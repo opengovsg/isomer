@@ -3,12 +3,13 @@
 import type { HeroCarouselProps } from "~/interfaces/complex/Hero"
 import { useCallback, useState, useTransition } from "react"
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi"
-import { HERO_CAROUSEL_SLIDE_MODE } from "~/interfaces/complex/Hero"
+import { HERO_CAROUSEL_STYLE } from "~/interfaces/complex/Hero"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
+import { ComponentContent } from "../../../internal/customCssClass"
 import { ImageClient } from "../../../internal/ImageClient"
 import { LinkButton } from "../../../internal/LinkButton/LinkButton"
 
@@ -47,24 +48,6 @@ const slideContentStyles = tv({
     },
   },
 })
-
-const getDisplayedSlide = ({
-  slideMode,
-  slides,
-  currentIndex,
-}: {
-  slideMode: HeroCarouselProps["slide"]
-  slides: HeroCarouselProps["slides"]
-  currentIndex: number
-}) => {
-  // imageOnly keeps one set of copy while the image changes. That copy lives
-  // on the first slide, with the other slides supplying images only.
-  if (slideMode === HERO_CAROUSEL_SLIDE_MODE.imageOnly) {
-    return slides[0]
-  }
-
-  return slides[currentIndex]
-}
 
 const CarouselArrowButton = ({
   direction,
@@ -228,7 +211,7 @@ const CarouselControls = ({
 
 export const HeroCarouselClient = ({
   slides,
-  slide: slideMode,
+  style = HERO_CAROUSEL_STYLE.block,
   site,
   theme = "default",
   headingLevel,
@@ -263,216 +246,186 @@ export const HeroCarouselClient = ({
     return null
   }
 
-  const isEntireSlideMode = slideMode === HERO_CAROUSEL_SLIDE_MODE.entire
-  const displayedSlide = getDisplayedSlide({
-    slideMode,
-    slides,
-    currentIndex,
-  })
-  if (!displayedSlide) {
-    return null
-  }
+  const isBlockStyle = style === HERO_CAROUSEL_STYLE.block
+  const primaryButtonColorScheme = isBlockStyle ? heroButton : undefined
+  const secondaryButtonColorScheme = isBlockStyle ? heroButton : "inverse"
 
-  const primaryButtonUrl = displayedSlide.buttonUrl
-  const primaryButtonLabel = displayedSlide.buttonLabel
+  const images = slides.map((slide, index) => {
+    const isCurrent = index === currentIndex
 
-  const ctaButtons =
-    primaryButtonLabel && primaryButtonUrl ? (
-      <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
-        <LinkButton
-          href={getReferenceLinkHref(
-            primaryButtonUrl,
-            site.siteMapArray,
-            site.assetsBaseUrl,
-          )}
-          size="lg"
-          variant="solid"
-          colorScheme={heroButton}
-          isWithFocusVisibleHighlight
-        >
-          {primaryButtonLabel}
-        </LinkButton>
-        {displayedSlide.secondaryButtonLabel &&
-          displayedSlide.secondaryButtonUrl && (
-            <LinkButton
-              colorScheme={heroButton}
-              variant="outline"
-              size="lg"
-              href={getReferenceLinkHref(
-                displayedSlide.secondaryButtonUrl,
-                site.siteMapArray,
-                site.assetsBaseUrl,
-              )}
-              isWithFocusVisibleHighlight
-            >
-              {displayedSlide.secondaryButtonLabel}
-            </LinkButton>
-          )}
+    return (
+      <div
+        key={slide.backgroundUrl + index}
+        className={slideImageStyles({ isCurrent })}
+        aria-hidden={!isCurrent}
+      >
+        <ImageClient
+          src={slide.backgroundUrl}
+          alt=""
+          width="100%"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          assetsBaseUrl={site.assetsBaseUrl}
+          lazyLoading={index === 0 ? false : true}
+        />
       </div>
-    ) : null
+    )
+  })
+
+  const mobileControls = (
+    <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/50 to-transparent px-10 pb-10 pt-12 lg:hidden">
+      <CarouselControls
+        slideCount={slides.length}
+        currentIndex={currentIndex}
+        onSelect={navigateToIndex}
+        onPrev={() => navigateByDirection("prev")}
+        onNext={() => navigateByDirection("next")}
+        isDotsClickable={false}
+        isPending={isPending}
+      />
+    </div>
+  )
 
   return (
     <section
-      className="flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row"
+      className={
+        isBlockStyle
+          ? "flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row"
+          : "relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]"
+      }
       aria-roledescription="carousel"
       aria-label="Hero carousel"
     >
+      {!isBlockStyle && (
+        <div
+          className="absolute inset-0 overflow-hidden"
+          style={{ contain: "layout" }}
+        >
+          {images}
+        </div>
+      )}
       <div
-        className={`flex flex-col ${heroColour} px-6 pb-6 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pb-12 lg:pl-10 lg:pr-8`}
+        className={
+          isBlockStyle
+            ? `flex flex-col ${heroColour} px-6 pb-6 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pb-12 lg:pl-10 lg:pr-8`
+            : "relative z-10 flex w-full flex-col justify-end bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]"
+        }
       >
         <div
-          className={`flex w-full max-w-[548px] flex-col justify-center gap-9 lg:mx-0 lg:ml-auto ${heroTextColour}`}
+          className={
+            isBlockStyle
+              ? `flex w-full max-w-[548px] flex-col justify-center gap-9 lg:mx-0 lg:ml-auto ${heroTextColour}`
+              : `${ComponentContent} flex w-full flex-col gap-9 py-16 text-start text-base-content-inverse`
+          }
         >
           <div className="relative">
-            {isEntireSlideMode ? (
-              slides.map((slide, index) => {
-                const isCurrent = index === currentIndex
+            {slides.map((slide, index) => {
+              const isCurrent = index === currentIndex
 
-                return (
-                  <div
-                    key={index}
-                    className={slideContentStyles({
-                      isCurrent,
-                      isHidden: !isCurrent,
-                    })}
-                    aria-hidden={!isCurrent}
-                  >
-                    <div className="flex flex-col gap-6">
-                      <Tag className="wrap-break-word prose-display-xl text-balance">
-                        {slide.title}
-                      </Tag>
-                      {slide.subtitle && (
-                        <p className="prose-title-lg-regular">
-                          {slide.subtitle}
-                        </p>
-                      )}
-                    </div>
+              return (
+                <div
+                  key={index}
+                  className={slideContentStyles({
+                    isCurrent,
+                    isHidden: !isCurrent,
+                  })}
+                  aria-hidden={!isCurrent}
+                >
+                  <div className="flex flex-col gap-6">
+                    <Tag
+                      className={
+                        isBlockStyle
+                          ? "wrap-break-word prose-display-xl text-balance"
+                          : "prose-display-xl break-words"
+                      }
+                    >
+                      {slide.title}
+                    </Tag>
+                    {slide.subtitle && (
+                      <p className="prose-title-lg-regular">{slide.subtitle}</p>
+                    )}
                   </div>
-                )
-              })
-            ) : (
-              <div className="flex flex-col gap-6">
-                <Tag className="wrap-break-word prose-display-xl text-balance">
-                  {displayedSlide.title}
-                </Tag>
-                {displayedSlide.subtitle && (
-                  <p className="prose-title-lg-regular">
-                    {displayedSlide.subtitle}
-                  </p>
-                )}
-              </div>
-            )}
+                </div>
+              )
+            })}
           </div>
 
-          {isEntireSlideMode ? (
-            <div className="relative min-h-[3rem]">
-              {slides.map((slide, index) => {
-                const isCurrent = index === currentIndex
-                const slidePrimaryButtonUrl = slide.buttonUrl
-                const slidePrimaryButtonLabel = slide.buttonLabel
+          <div className="relative min-h-[3rem]">
+            {slides.map((slide, index) => {
+              const isCurrent = index === currentIndex
+              const slidePrimaryButtonUrl = slide.buttonUrl
+              const slidePrimaryButtonLabel = slide.buttonLabel
 
-                if (!slidePrimaryButtonLabel || !slidePrimaryButtonUrl) {
-                  return null
-                }
+              if (!slidePrimaryButtonLabel || !slidePrimaryButtonUrl) {
+                return null
+              }
 
-                return (
-                  <div
-                    key={index}
-                    className={slideContentStyles({
-                      isCurrent,
-                      isHidden: !isCurrent,
-                    })}
-                    aria-hidden={!isCurrent}
-                  >
-                    <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
+              return (
+                <div
+                  key={index}
+                  className={slideContentStyles({
+                    isCurrent,
+                    isHidden: !isCurrent,
+                  })}
+                  aria-hidden={!isCurrent}
+                >
+                  <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
+                    <LinkButton
+                      href={getReferenceLinkHref(
+                        slidePrimaryButtonUrl,
+                        site.siteMapArray,
+                        site.assetsBaseUrl,
+                      )}
+                      size="lg"
+                      variant="solid"
+                      colorScheme={primaryButtonColorScheme}
+                      isWithFocusVisibleHighlight
+                    >
+                      {slidePrimaryButtonLabel}
+                    </LinkButton>
+                    {slide.secondaryButtonLabel && slide.secondaryButtonUrl && (
                       <LinkButton
+                        colorScheme={secondaryButtonColorScheme}
+                        variant="outline"
+                        size="lg"
                         href={getReferenceLinkHref(
-                          slidePrimaryButtonUrl,
+                          slide.secondaryButtonUrl,
                           site.siteMapArray,
                           site.assetsBaseUrl,
                         )}
-                        size="lg"
-                        variant="solid"
-                        colorScheme={heroButton}
                         isWithFocusVisibleHighlight
                       >
-                        {slidePrimaryButtonLabel}
+                        {slide.secondaryButtonLabel}
                       </LinkButton>
-                      {slide.secondaryButtonLabel &&
-                        slide.secondaryButtonUrl && (
-                          <LinkButton
-                            colorScheme={heroButton}
-                            variant="outline"
-                            size="lg"
-                            href={getReferenceLinkHref(
-                              slide.secondaryButtonUrl,
-                              site.siteMapArray,
-                              site.assetsBaseUrl,
-                            )}
-                            isWithFocusVisibleHighlight
-                          >
-                            {slide.secondaryButtonLabel}
-                          </LinkButton>
-                        )}
-                    </div>
+                    )}
                   </div>
-                )
-              })}
-            </div>
-          ) : (
-            ctaButtons
-          )}
+                </div>
+              )
+            })}
+          </div>
 
           <CarouselControls
-            className="mt-8 hidden lg:flex"
+            className={isBlockStyle ? "mt-8 hidden lg:flex" : "hidden lg:flex"}
             slideCount={slides.length}
             currentIndex={currentIndex}
             onSelect={navigateToIndex}
             onPrev={() => navigateByDirection("prev")}
             onNext={() => navigateByDirection("next")}
-            isDotsClickable
+            isDotsClickable={isBlockStyle}
             isPending={isPending}
           />
         </div>
+        {!isBlockStyle && mobileControls}
       </div>
 
-      <div
-        className="relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2"
-        style={{ contain: "layout" }}
-      >
-        {slides.map((slide, index) => {
-          const isCurrent = index === currentIndex
-
-          return (
-            <div
-              key={slide.backgroundUrl + index}
-              className={slideImageStyles({ isCurrent })}
-              aria-hidden={!isCurrent}
-            >
-              <ImageClient
-                src={slide.backgroundUrl}
-                alt=""
-                width="100%"
-                className="absolute inset-0 h-full w-full object-cover object-center"
-                assetsBaseUrl={site.assetsBaseUrl}
-                lazyLoading={index === 0 ? false : true}
-              />
-            </div>
-          )
-        })}
-
-        <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/50 to-transparent px-10 pb-10 pt-12 lg:hidden">
-          <CarouselControls
-            slideCount={slides.length}
-            currentIndex={currentIndex}
-            onSelect={navigateToIndex}
-            onPrev={() => navigateByDirection("prev")}
-            onNext={() => navigateByDirection("next")}
-            isDotsClickable={false}
-            isPending={isPending}
-          />
+      {isBlockStyle && (
+        <div
+          className="relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2"
+          style={{ contain: "layout" }}
+        >
+          {images}
+          {mobileControls}
         </div>
-      </div>
+      )}
     </section>
   )
 }

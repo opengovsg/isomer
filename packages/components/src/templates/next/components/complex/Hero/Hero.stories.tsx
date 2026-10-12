@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { HERO_CAROUSEL_SLIDE_MODE } from "~/interfaces/complex/Hero"
+import { HERO_CAROUSEL_STYLE } from "~/interfaces/complex/Hero"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
@@ -185,41 +185,12 @@ export const Searchbar: Story = {
   },
 }
 
-const carouselImageOnlyCopy = {
-  title: "Set up good government websites, fast",
-  subtitle:
-    "Isomer is a website builder made for government teams. Pick a template, add your content, and publish. No coding needed.",
-  buttonLabel: "Get started",
-  buttonUrl: "/",
-  secondaryButtonLabel: "Learn more",
-  secondaryButtonUrl: "/",
-}
-
-export const CarouselImageOnly: Story = {
+export const CarouselBlock: Story = {
   args: {
     headingLevel: 1,
     site: generateSiteConfig(),
     variant: "carousel",
-    slide: HERO_CAROUSEL_SLIDE_MODE.imageOnly,
-    slides: [
-      { backgroundUrl: carouselImageUrl, ...carouselImageOnlyCopy },
-      { backgroundUrl: carouselImageUrlAlt, ...carouselImageOnlyCopy },
-      {
-        backgroundUrl:
-          "https://images.unsplash.com/photo-1594318142972-1e2ea7487a3e?auto=format&fit=crop&q=80&w=1740",
-        ...carouselImageOnlyCopy,
-      },
-    ],
-    theme: "default",
-  },
-}
-
-export const CarouselEntire: Story = {
-  args: {
-    headingLevel: 1,
-    site: generateSiteConfig(),
-    variant: "carousel",
-    slide: HERO_CAROUSEL_SLIDE_MODE.entire,
+    style: HERO_CAROUSEL_STYLE.block,
     slides: [
       {
         backgroundUrl: carouselImageUrl,
@@ -243,6 +214,13 @@ export const CarouselEntire: Story = {
       },
     ],
     theme: "default",
+  },
+}
+
+export const CarouselGradient: Story = {
+  args: {
+    ...CarouselBlock.args,
+    style: HERO_CAROUSEL_STYLE.gradient,
   },
 }
 
