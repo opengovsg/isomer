@@ -47,7 +47,11 @@ function JsonFormsImageControl({
   schema,
 }: JsonFormsImageControlProps) {
   const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const {
+    isOpen: isAdjustmentModalOpen,
+    onOpen: onAdjustmentModalOpen,
+    onClose: onAdjustmentModalClose,
+  } = useDisclosure()
 
   // Access JsonForms context to read the sibling imageAdjustment field.
   // JsonForms types `data` as `any`; keep it `unknown` and narrow on use.
@@ -105,7 +109,7 @@ function JsonFormsImageControl({
                   leftIcon={<BiPencil />}
                   variant="clear"
                   colorScheme="neutral"
-                  onClick={onOpen}
+                  onClick={onAdjustmentModalOpen}
                 >
                   Adjust image
                 </Button>
@@ -116,8 +120,8 @@ function JsonFormsImageControl({
 
               <ImageAdjustmentModal
                 key={data}
-                isOpen={isOpen}
-                onClose={onClose}
+                isOpen={isAdjustmentModalOpen}
+                onClose={onAdjustmentModalClose}
                 config={config}
                 src={data}
                 value={currentAdjustment}
