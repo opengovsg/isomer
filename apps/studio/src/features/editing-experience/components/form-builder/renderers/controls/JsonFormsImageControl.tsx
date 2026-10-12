@@ -147,7 +147,7 @@ function JsonFormsImageControl({
           {/* Pre-upload guidance — shown before a file is chosen, per the
               component's real frame behaviour (never a universal ratio for a
               responsive frame). */}
-          {config?.preUploadCopy && (
+          {isImageAdjustmentEnabled && config?.preUploadCopy && (
             <Box
               w="100%"
               mb="0.75rem"
