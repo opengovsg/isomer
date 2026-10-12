@@ -38,6 +38,19 @@ $max-depth: 13;
   }
 }
 
+.tiptap-editor-scroll-container {
+  display: flex;
+  flex-direction: column;
+
+  > .tiptap-editor-content-host {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 100%;
+    width: 100%;
+  }
+}
+
 .tiptap:focus {
   outline: none;
 }
@@ -48,7 +61,12 @@ $max-depth: 13;
 }
 
 .tiptap {
-  height: 100%;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 100%;
+  padding: 1rem;
+  background-color: #fff;
+  cursor: text;
 
   h1 {
     font-size: 3.375rem;

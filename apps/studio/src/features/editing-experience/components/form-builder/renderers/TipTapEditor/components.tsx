@@ -37,7 +37,7 @@ const EditorContainer = ({
       transitionDuration="normal"
       {...containerProps}
     >
-      <VStack h="100%" w="100%" gap="0">
+      <VStack h="100%" w="100%" gap="0" minH={0}>
         {children}
       </VStack>
     </Box>
@@ -57,19 +57,20 @@ const EditorContentWrapper = ({
   return (
     <Box
       ref={containerRef}
+      className="tiptap-editor-scroll-container"
+      data-testid="tiptap-editor-scroll-container"
       position="relative"
       w="100%"
       flex="1 1 auto"
+      minH={0}
       overflowX="hidden"
       overflowY="auto"
     >
       <Box
         as={EditorContent}
         editor={editor}
+        className="tiptap-editor-content-host"
         w="100%"
-        p="1rem"
-        backgroundColor="white"
-        onClick={() => editor?.chain().focus().run()}
         cursor="text"
       />
       {showTableExtras && (
