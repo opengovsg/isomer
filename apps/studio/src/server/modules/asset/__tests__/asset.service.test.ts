@@ -9,7 +9,6 @@ import {
   getContentDispositionForKey,
   getContentTypeFromKey,
   getFileKey,
-  isBakeKey,
   parseAssetUrlToKey,
   sanitizeSvg,
 } from "../asset.service"
@@ -749,25 +748,4 @@ describe("asset.service", () => {
     })
   })
 
-  describe("isBakeKey", () => {
-    it("should return true for a bake key with expected prefix", () => {
-      expect(isBakeKey("36/uuid/baked-something.jpeg")).toBe(true)
-      expect(isBakeKey("1/another-uuid/baked-12345.png")).toBe(true)
-      expect(isBakeKey("100/uuid/baked-.webp")).toBe(true)
-    })
-
-    it("should return false for a normal asset key", () => {
-      expect(isBakeKey("36/uuid/image.png")).toBe(false)
-      expect(isBakeKey("36/uuid/photo.jpeg")).toBe(false)
-      expect(isBakeKey("36/uuid/file.pdf")).toBe(false)
-    })
-
-    it("should return false for a key with baked in the middle", () => {
-      expect(isBakeKey("36/uuid/my-baked-image.png")).toBe(false)
-    })
-
-    it("should return false for an empty key", () => {
-      expect(isBakeKey("")).toBe(false)
-    })
-  })
 })

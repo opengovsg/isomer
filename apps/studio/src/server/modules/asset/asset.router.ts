@@ -19,7 +19,6 @@ import {
   getFileKey,
   getPresignedGetUrl,
   getPresignedPutUrl,
-  isBakeKey,
   markFileAsDeleted,
   putFileDirect,
   sanitizeSvg,
@@ -159,12 +158,8 @@ export const assetRouter = router({
         })
       }
 
-      // Bakes are swept with their folder by the asset lifecycle;
-      // the editor must never delete the object its src points at.
-      const deletableKeys = fileKeys.filter((k) => !isBakeKey(k))
-
       await Promise.allSettled(
-        deletableKeys.map((fileKey) => markFileAsDeleted({ key: fileKey })),
+        fileKeys.map((fileKey) => markFileAsDeleted({ key: fileKey })),
       ).then((results) => {
         const deleteFailedCounts = results.filter(
           (result) => result.status === "rejected",

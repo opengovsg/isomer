@@ -195,14 +195,6 @@ export const deriveBakeKey = ({
   return `${folder}/baked-${randomUUID()}.${ext}`
 }
 
-/**
- * Check if a key is a bake object (filename starts with "baked-").
- */
-export const isBakeKey = (key: string): boolean => {
-  const filename = getFilenameFromKey(key)
-  return filename.startsWith("baked-")
-}
-
 // Best-effort delete: the derived format may not exist for every asset
 // (e.g. it was never generated), so a missing key is not an error.
 const deleteFileIfExists = async ({ Key }: { Key: string }) => {
