@@ -1,6 +1,6 @@
 import { type Browser, type BrowserContext, type Page } from "@playwright/test"
 import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
-import { ResourceType, type RoleType } from "~prisma/generated/generatedEnums"
+import { type RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, type Role } from "./auth"
 import { enableGrowthBookFeature, resetGrowthBookPage } from "./network"
@@ -8,29 +8,9 @@ import { CollectionPO } from "./po/collection"
 import { DashboardPO } from "./po/dashboard"
 import { PageEditorPO } from "./po/page-editor"
 import { UsersPO } from "./po/users"
-import { deleteResourceById } from "./reset"
-import {
-  getCollectionByTitle,
-  getFolderByTitle,
-  getResourceByTitleAndType,
-} from "./resource/db"
+import { getCollectionByTitle, getFolderByTitle } from "./resource/db"
 
 const SCHEDULE_PRESET_CLOCK_TIME = new Date("2099-01-01T00:01:00+08:00")
-
-const deleteWizardResourceIfCreated = async ({
-  siteId,
-  title,
-  type,
-}: {
-  siteId: number
-  title: string
-  type: ResourceType
-}) => {
-  const created = await getResourceByTitleAndType({ siteId, title, type })
-  if (created) {
-    await deleteResourceById(created.id)
-  }
-}
 
 export const openSeededPageEditor = async (
   page: Page,
@@ -139,47 +119,29 @@ export const createPageViaWizard = async (
     siteId,
   }: { startUrl: string; title: string; siteId: number },
 ) => {
-  try {
-    await page.goto(startUrl)
+  await page.goto(startUrl)
 
-    const dashboard = new DashboardPO(page)
-    await dashboard.openCreateMenu()
-    await dashboard.clickCreatePage()
-    await dashboard.fillPageWizard(title)
+  const dashboard = new DashboardPO(page)
+  await dashboard.openCreateMenu()
+  await dashboard.clickCreatePage()
+  await dashboard.fillPageWizard(title)
 
-    const pageId = await dashboard.capturePageEditorIdFromUrl(siteId)
-    return { pageId }
-  } catch (error) {
-    await deleteWizardResourceIfCreated({
-      siteId,
-      title,
-      type: ResourceType.Page,
-    })
-    throw error
-  }
+  const pageId = await dashboard.capturePageEditorIdFromUrl(siteId)
+  return { pageId }
 }
 
 export const createFolderViaWizard = async (
   page: Page,
   { siteId, title }: { siteId: number; title: string },
 ) => {
-  try {
-    const dashboard = new DashboardPO(page)
-    await dashboard.gotoSite(siteId)
-    await dashboard.openCreateMenu()
-    await dashboard.clickCreateFolder()
-    await dashboard.fillFolderWizard(title)
+  const dashboard = new DashboardPO(page)
+  await dashboard.gotoSite(siteId)
+  await dashboard.openCreateMenu()
+  await dashboard.clickCreateFolder()
+  await dashboard.fillFolderWizard(title)
 
-    const folder = await getFolderByTitle({ siteId, title })
-    return { folderId: folder.id }
-  } catch (error) {
-    await deleteWizardResourceIfCreated({
-      siteId,
-      title,
-      type: ResourceType.Folder,
-    })
-    throw error
-  }
+  const folder = await getFolderByTitle({ siteId, title })
+  return { folderId: folder.id }
 }
 
 export const createCollectionViaWizard = async (
@@ -190,27 +152,18 @@ export const createCollectionViaWizard = async (
     siteId,
   }: { startUrl?: string; title: string; siteId: number },
 ) => {
-  try {
-    const dashboard = new DashboardPO(page)
-    if (startUrl) {
-      await page.goto(startUrl)
-    } else {
-      await dashboard.gotoSite(siteId)
-    }
-    await dashboard.openCreateMenu()
-    await dashboard.clickCreateCollection()
-    await dashboard.fillCollectionWizard(title)
-
-    const collection = await getCollectionByTitle({ siteId, title })
-    return { collectionId: collection.id }
-  } catch (error) {
-    await deleteWizardResourceIfCreated({
-      siteId,
-      title,
-      type: ResourceType.Collection,
-    })
-    throw error
+  const dashboard = new DashboardPO(page)
+  if (startUrl) {
+    await page.goto(startUrl)
+  } else {
+    await dashboard.gotoSite(siteId)
   }
+  await dashboard.openCreateMenu()
+  await dashboard.clickCreateCollection()
+  await dashboard.fillCollectionWizard(title)
+
+  const collection = await getCollectionByTitle({ siteId, title })
+  return { collectionId: collection.id }
 }
 
 export const createCollectionPageViaWizard = async (
