@@ -8,6 +8,12 @@
       "dependsOn": ["generate"]
     },
     "test-ci:unit": {},
+    "test-ci:unit:node": {
+      "dependsOn": ["generate"]
+    },
+    "test-ci:unit:browser": {
+      "dependsOn": ["generate"]
+    },
     "test-ci:e2e": {
       "outputs": ["e2e/test-results/**"]
     },

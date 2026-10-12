@@ -103,41 +103,52 @@ jobs:
         run: pnpm run typecheck
 
   test-studio:
-    name: Test Studio (${{ matrix.shard }}/${{ matrix.total_shards }})
+    name: Test Studio (${{ matrix.label }})
     needs: optimize_ci
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false'
     strategy:
       fail-fast: false # so that we can run all shards and one shard can fail without failing the entire job
       matrix:
-        shard: [1, 2] # extend this if we need to run more shards concurrently
-        total_shards: [2]
+        include:
+          - label: node 1/2
+            project: node
+            shard: 1
+            total_shards: 2
+          - label: node 2/2
+            project: node
+            shard: 2
+            total_shards: 2
+          - label: browser
+            project: browser
+            shard: 3
+            total_shards: 0
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup
         uses: ./.github/actions/setup
         with:
           job-index: ${{ matrix.shard }}
-      - parallel:
-          - name: Install Playwright (Chromium)
-            # Required by the vitest "browser" project (Vitest Browser Mode).
-            run: pnpm --filter isomer-studio exec playwright install chromium
-          - name: Install dependencies
-            # Not using test:unit dependency in Turbo because Datadog Test Visibility requires only the test suite to be run
-            run: pnpm exec turbo run generate --filter=isomer-studio
-          - name: Configure Datadog Test Visibility
-            uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
-            with:
-              languages: js
-              service: isomer-studio
-              api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
-      - name: Test Studio
-        # Loose env mode required for env vars to be passed to the run
-        run: pnpm exec turbo test-ci:unit --filter=isomer-studio --env-mode=loose -- --shard=${{ matrix.shard }}/${{ matrix.total_shards }}
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+        with:
+          languages: js
+          service: isomer-studio
+          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
+      - name: Install Playwright (Chromium)
+        if: matrix.project == 'browser'
+        run: pnpm --filter isomer-studio exec playwright install chromium
+      - name: Test Studio (node)
+        if: matrix.project == 'node'
+        run: pnpm exec turbo test-ci:unit:node --filter=isomer-studio --env-mode=loose -- --shard=${{ matrix.shard }}/${{ matrix.total_shards }}
         env:
-          # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
-          # Set timezone to Singapore to ensure that the tests are run in the correct timezone
+          TZ: Asia/Singapore
+      - name: Test Studio (browser)
+        if: matrix.project == 'browser'
+        run: pnpm exec turbo test-ci:unit:browser --filter=isomer-studio --env-mode=loose
+        env:
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
 
   test-components:

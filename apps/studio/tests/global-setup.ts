@@ -4,10 +4,7 @@ import type { ContainerInformation } from "./common"
 import { CONTAINER_CONFIGURATIONS, setup, teardown } from "./common"
 
 export default async () => {
-  const containers = await setup([
-    CONTAINER_CONFIGURATIONS.database,
-    CONTAINER_CONFIGURATIONS.mockpass,
-  ])
+  const containers = await setup([CONTAINER_CONFIGURATIONS.database])
 
   Object.defineProperty(process.env, "testcontainers", {
     value: stringify(

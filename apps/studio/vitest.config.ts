@@ -11,16 +11,6 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   test: {
-    coverage: {
-      provider: "istanbul",
-      include: ["src/**/*.{ts,tsx}"],
-      exclude: [
-        "**/__tests__/**",
-        "**/*.test.{ts,tsx}",
-        "**/*.stories.{ts,tsx}",
-        "**/*.d.ts",
-      ],
-    },
     projects: [
       {
         extends: true,
@@ -41,7 +31,7 @@ export default defineConfig({
           ],
           retry: 0,
           globals: true,
-          setupFiles: ["tests/mocks/db.ts", "tests/mocks/mockpass.ts"],
+          setupFiles: ["tests/mocks/db.ts"],
           globalSetup: ["tests/global-setup.ts"],
         },
       },
