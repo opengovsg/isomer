@@ -50,15 +50,10 @@ export function JsonFormsTextControl({
   const remainingCharacterCount = maxLength
     ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)
     : -1
-  const keepEmptyString = required
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target
 
-    if (value === "") {
-      handleChange(path, keepEmptyString ? "" : undefined)
-    } else {
-      handleChange(path, value)
-    }
+    handleChange(path, value === "" ? undefined : value)
   }
 
   const builderErrorMessage = getBuilderFieldErrorMessage(path, builderErrors)

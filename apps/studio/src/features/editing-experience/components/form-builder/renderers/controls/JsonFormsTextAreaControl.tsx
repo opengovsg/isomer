@@ -56,15 +56,10 @@ function JsonFormsTextAreaControl({
       )
     : TEXTAREA_DEFAULT_ROWS
 
-  const keepEmptyString = required
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = e.target
 
-    if (value === "") {
-      handleChange(path, keepEmptyString ? "" : undefined)
-    } else {
-      handleChange(path, value)
-    }
+    handleChange(path, value === "" ? undefined : value)
   }
 
   const builderErrorMessage = getBuilderFieldErrorMessage(path, builderErrors)

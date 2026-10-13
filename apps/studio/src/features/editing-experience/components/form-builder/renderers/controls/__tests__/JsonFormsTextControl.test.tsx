@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 
-import type { ComponentProps } from "react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { TRIMMED_NON_EMPTY_STRING_REGEX } from "@opengovsg/isomer-components"
 import { fireEvent, render, screen } from "@testing-library/react"
@@ -10,28 +9,37 @@ import { theme } from "~/theme"
 import { ErrorProvider } from "../../../ErrorProvider"
 import { JsonFormsTextControl } from "../JsonFormsTextControl"
 
-const renderControl = (
-  props: Partial<ComponentProps<typeof JsonFormsTextControl>> = {},
-) => {
+const renderControl = ({
+  data = "Get started",
+  required = false,
+}: {
+  data?: string
+  required?: boolean
+} = {}) => {
   const handleChange = vi.fn()
 
   render(
     <ThemeProvider theme={theme}>
       <ErrorProvider>
         <JsonFormsTextControl
-          data={props.data ?? "Get started"}
+          data={data}
           label="Title"
           handleChange={handleChange}
           path="quickActionsTitle"
-          description={undefined}
-          required={props.required ?? false}
           errors=""
           schema={{
             type: "string",
             pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
           }}
-          enabled={true}
-          {...props}
+          enabled
+          visible
+          id="quickActionsTitle"
+          rootSchema={{}}
+          uischema={{
+            type: "Control",
+            scope: "#/properties/quickActionsTitle",
+          }}
+          required={required}
         />
       </ErrorProvider>
     </ThemeProvider>,
@@ -51,13 +59,13 @@ describe("JsonFormsTextControl", () => {
     expect(handleChange).toHaveBeenCalledWith("quickActionsTitle", undefined)
   })
 
-  it("clears required fields with an empty string", () => {
+  it("clears required fields with undefined so the property is dropped", () => {
     const { handleChange } = renderControl({ required: true })
 
     fireEvent.change(screen.getByPlaceholderText("Title"), {
       target: { value: "" },
     })
 
-    expect(handleChange).toHaveBeenCalledWith("quickActionsTitle", "")
+    expect(handleChange).toHaveBeenCalledWith("quickActionsTitle", undefined)
   })
 })
