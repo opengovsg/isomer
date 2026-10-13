@@ -14,6 +14,28 @@ export interface SelectionHandleTarget {
   cols: number[]
 }
 
+/** Selects from the top-left cell to the bottom-right, so merged cells are included. */
+export const selectWholeTable = (editor: TiptapEditor, tablePos: number) => {
+  if (editor.isDestroyed) return
+  const table = getTableAt(editor.state.doc, tablePos)
+  if (!table) return
+  const map = TableMap.get(table)
+  const tableStart = tablePos + 1
+  // Corner slots can be rowspan/colspan continuations; map.map always stores the
+  // owning cell offset for every grid position.
+  const firstCellOffset = map.map.at(0)
+  const lastCellOffset = map.map.at(-1)
+  if (firstCellOffset === undefined || lastCellOffset === undefined) return
+  const anchor = tableStart + firstCellOffset
+  const head = tableStart + lastCellOffset
+  editor.view.dispatch(
+    editor.state.tr.setSelection(
+      CellSelection.create(editor.state.doc, anchor, head),
+    ),
+  )
+  editor.view.focus()
+}
+
 /** Selects the whole row or column at `index`, mirroring a handle click. */
 export const selectWholeSlot = (
   editor: TiptapEditor,

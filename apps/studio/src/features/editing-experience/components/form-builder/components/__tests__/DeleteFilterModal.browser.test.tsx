@@ -2,7 +2,7 @@ import { ThemeProvider } from "@opengovsg/design-system-react"
 import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { render } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "~/schemas/collection"
+import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "~/schemas/collection-limits"
 import { theme } from "~/theme"
 
 import {

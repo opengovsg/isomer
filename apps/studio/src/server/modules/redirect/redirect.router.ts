@@ -96,6 +96,9 @@ export const redirectRouter = router({
 
   // Counts the live redirects that point at a resource (or any descendant), so
   // the delete-page modal can warn they will be removed. Read-only.
+  // includeContainerReference additionally counts a redirect to the parent
+  // container when resourceId is an IndexPage — see
+  // countRedirectsPointingToResource for why that's opt-in.
   countByDestinationResource: protectedProcedure
     .input(countRedirectsByDestinationSchema)
     .query(async ({ ctx, input }) => {
