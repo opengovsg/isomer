@@ -5,7 +5,7 @@ import { NO_STYLIZED_UNICODE_REGEX } from "~/utils/validation"
 const NO_STYLIZED_UNICODE_ERROR_MESSAGE =
   "cannot contain stylised or decorative unicode characters"
 
-// One stylized-unicode pattern; each IsomerString field $refs this $id.
+// Shared so the lookahead is serialized once, not on every string field.
 export const NO_STYLIZED_UNICODE_STRING_ID = "isomer-string-no-stylized-unicode"
 
 export const NoStylizedUnicodeStringSchema = Type.String({

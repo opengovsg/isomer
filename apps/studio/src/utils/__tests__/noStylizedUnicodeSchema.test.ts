@@ -1,5 +1,6 @@
 import {
   AgencySettingsSchema,
+  getComponentSchema,
   IsomerString,
   NON_EMPTY_STRING_REGEX,
   NO_STYLIZED_UNICODE_REGEX,
@@ -8,6 +9,7 @@ import {
   schema,
   SiteConfigSchema,
 } from "@opengovsg/isomer-components"
+import Ajv from "ajv"
 import { describe, expect, it } from "vitest"
 import { ajv } from "~/utils/ajv"
 
@@ -81,6 +83,20 @@ describe("no stylized unicode schema", () => {
     expect(shared?.toString()).toContain("D835")
     expect(validatePage.toString()).not.toContain("D835")
     expect(NO_STYLIZED_UNICODE_REGEX).toContain("D835")
+  })
+
+  it("should compile the page schema and component fragments without Studio's registered schema", () => {
+    // Arrange
+    const freshAjv = new Ajv({ strict: false, unicodeRegExp: false })
+    const validateImage = freshAjv.compile(
+      getComponentSchema({ component: "image" }),
+    )
+    const image = { type: "image", src: "/image.png", alt: "A dog running" }
+
+    // Act / Assert
+    expect(() => freshAjv.compile(schema)).not.toThrow()
+    expect(validateImage(image)).toBe(true)
+    expect(validateImage({ ...image, caption: "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥" })).toBe(false)
   })
 
   it("should resolve the shared schema for settings compiled on their own", () => {
