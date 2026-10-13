@@ -130,6 +130,32 @@ interface GrowthBookFeaturesResponse {
   features: Record<string, { defaultValue?: unknown; rules?: unknown[] }>
 }
 
+/**
+ * Override one offline GrowthBook flag on the already-loaded page.
+ * E2E uses `createOfflineGrowthBook` and does not fetch the CDN, so
+ * `enableGrowthBookFeature` cannot change what the app reads.
+ */
+export const setOfflineGrowthBookFeature = async (
+  page: Page,
+  featureKey: string,
+  value: unknown,
+) => {
+  await page.evaluate(
+    ({ featureKey, value }) => {
+      const setFeature = (
+        window as Window & {
+          __e2eSetGrowthBookFeature?: (key: string, value: unknown) => void
+        }
+      ).__e2eSetGrowthBookFeature
+      if (!setFeature) {
+        throw new Error("E2E GrowthBook hook is missing")
+      }
+      setFeature(featureKey, value)
+    },
+    { featureKey, value },
+  )
+}
+
 /** Patch a GrowthBook feature into the CDN features response before navigation. */
 export const enableGrowthBookFeature = async (
   page: Page,

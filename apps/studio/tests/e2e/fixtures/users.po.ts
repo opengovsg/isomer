@@ -275,13 +275,15 @@ export class UsersPO {
   async expectUsersOnCurrentPage(emails: readonly string[]) {
     const rows = this.activeTabPanel().locator("tbody").getByRole("row")
     await expect(rows).toHaveCount(emails.length)
-    for (let i = 0; i < emails.length; i++) {
-      await expect(rows.nth(i)).toContainText(emails[i])
+    for (const [index, email] of emails.entries()) {
+      await expect(rows.nth(index)).toContainText(email)
     }
   }
 
   async expectAddNewUserDisabledExplanation(explanation: string | RegExp) {
-    await this.addNewUserButton().hover()
+    // The disabled button does not receive pointer events; the tooltip
+    // trigger is the span wrapped around it.
+    await this.addNewUserButton().locator("..").hover()
     await expect(this.page.getByText(explanation)).toBeVisible()
   }
 

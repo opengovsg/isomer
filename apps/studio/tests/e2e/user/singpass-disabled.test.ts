@@ -5,10 +5,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { inviteCollaborator } from "../fixtures/helpers"
-import {
-  enableGrowthBookFeature,
-  resetGrowthBookPage,
-} from "../fixtures/network"
+import { setOfflineGrowthBookFeature } from "../fixtures/network"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded, uniqueInviteeEmail } from "../fixtures/user"
 import { expectUserRoleOnSite } from "../fixtures/user-expect"
@@ -39,11 +36,14 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
     const users = new UsersPO(page)
+    await users.goto(siteId)
 
     // Act
-    await enableGrowthBookFeature(page, IS_SINGPASS_ENABLED_FEATURE_KEY, false)
-    await resetGrowthBookPage(page)
-    await users.goto(siteId)
+    await setOfflineGrowthBookFeature(
+      page,
+      IS_SINGPASS_ENABLED_FEATURE_KEY,
+      false,
+    )
 
     // Assert
     await users.expectCannotAddNewUser()
