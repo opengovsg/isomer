@@ -2,6 +2,7 @@ import { test } from "@playwright/test"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { inviteCollaborator, openInviteModal } from "~e2e/fixtures/helpers"
 import { UsersPO } from "~e2e/fixtures/po"
+import { deleteWhitelistedVendorEmails } from "~e2e/fixtures/reset"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import {
   deleteUsersByEmail,
@@ -10,10 +11,7 @@ import {
   uniqueInviteeEmail,
   uniqueVendorEmail,
 } from "~e2e/fixtures/user"
-import {
-  deleteWhitelistedVendorEmails,
-  whitelistVendorEmail,
-} from "~e2e/fixtures/whitelist"
+import { whitelistVendorEmail } from "~e2e/fixtures/whitelist"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
@@ -34,7 +32,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
   test.afterEach(async () => {
     await deleteUsersByEmail(inviteeEmail, vendorEmail)
-    await deleteWhitelistedVendorEmails(vendorEmail)
+    if (vendorEmail) {
+      await deleteWhitelistedVendorEmails(vendorEmail)
+    }
   })
 
   test("admin can invite a new collaborator as Editor", async ({ page }) => {

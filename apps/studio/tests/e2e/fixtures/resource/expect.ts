@@ -1,5 +1,5 @@
+import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { expect } from "@playwright/test"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import {
   getResource,
