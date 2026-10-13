@@ -4,6 +4,7 @@ import { BiMinus, BiPlus } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight } from "~/utils/tailwind"
 
+import { renderComponent } from "../../../render/renderComponent"
 import { Prose } from "../../native/Prose"
 
 const summaryStyle = tv({
@@ -29,7 +30,11 @@ interface AccordionProps
 export const Accordion = ({
   summary,
   details,
+  content,
+  layout,
   site,
+  permalink,
+  shouldLazyLoad,
   headingLevel,
 }: AccordionProps) => {
   return (
@@ -51,7 +56,23 @@ export const Accordion = ({
             never consumes `headingLevel` itself — the body stays at the same
             level rather than nesting one deeper, otherwise a heading inside it
             would skip a level with no parent heading in between. */}
-        <Prose {...details} site={site} headingLevel={headingLevel} />
+        {content !== undefined && content.length > 0
+          ? content.map((component, index) =>
+              renderComponent({
+                elementKey: index,
+                component,
+                layout,
+                site,
+                permalink,
+                shouldLazyLoad,
+                headingLevel,
+              }),
+            )
+          : details !== undefined && (
+              // Accordion items created before container blocks only carry a
+              // single prose body in `details`.
+              <Prose {...details} site={site} headingLevel={headingLevel} />
+            )}
       </div>
     </details>
   )

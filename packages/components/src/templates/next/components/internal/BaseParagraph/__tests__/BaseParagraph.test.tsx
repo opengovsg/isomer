@@ -83,6 +83,8 @@ const containers = (text: TextProps) => {
         type="accordion"
         summary="Title"
         details={{ type: "prose", content: [paragraph] }}
+        layout="content"
+        permalink="/"
         site={site}
         headingLevel={2}
       />,

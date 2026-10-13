@@ -1,5 +1,6 @@
 import type { OrderedListProps, ProseContent } from "~/interfaces"
 import type { IsomerSchema } from "~/types"
+import { COLUMN_LAYOUT_LABELS } from "~/interfaces/complex/Column"
 
 function getTextContentOfProse(content: ProseContent): string {
   const values: string[] = []
@@ -73,6 +74,8 @@ export function renderComponentPreviewText({
       return component.buttonLabel || "Button"
     case "callout":
       return getTextContentOfProse(component.content.content)
+    case "column":
+      return `${COLUMN_LAYOUT_LABELS[component.variant]} columns`
     case "formsg":
       return component.title || "FormSG form"
     case "hero":

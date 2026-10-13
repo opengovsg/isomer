@@ -2,6 +2,8 @@ import type { TSchema } from "@sinclair/typebox"
 import type { IsomerPageLayoutType, IsomerComponentTypes } from "~/types"
 import { Type } from "@sinclair/typebox"
 import {
+  AccordionContainerEditorSchema,
+  AccordionProseEditorSchema,
   AccordionSchema,
   AudioSchema,
   BlockquoteSchema,
@@ -9,6 +11,8 @@ import {
   CalloutSchema,
   ChildrenPagesSchema,
   CollectionBlockSchema,
+  ColumnDefaultSchema,
+  ColumnHomepageSchema,
   ContactInformationSchema,
   ContentpicSchema,
   DividerSchema,
@@ -43,6 +47,7 @@ export const IsomerComplexComponentsMap = {
   blockquote: BlockquoteSchema,
   button: ButtonSchema,
   callout: CalloutSchema,
+  column: ColumnHomepageSchema,
   formsg: FormSGSchema,
   hero: HeroSchema,
   iframe: IframeSchema,
@@ -87,9 +92,17 @@ export const componentSchemaDefinitions = {
 interface ComponentSchema {
   component: IsomerComponentTypes
   layout?: IsomerPageLayoutType
+  // Which editing form an Accordion gets: the legacy single prose body, or
+  // the container block holding a list of child blocks. Page validation
+  // always accepts both shapes.
+  accordionEditor?: "prose" | "container"
 }
 
-const generateComponentSchema = ({ component, layout }: ComponentSchema) => {
+const generateComponentSchema = ({
+  component,
+  layout,
+  accordionEditor = "prose",
+}: ComponentSchema) => {
   if (component === "prose") {
     return Type.Ref(IsomerNativeComponentsMap.prose)
   }
@@ -98,15 +111,26 @@ const generateComponentSchema = ({ component, layout }: ComponentSchema) => {
     return layout === "homepage" ? InfobarHomepageSchema : InfobarDefaultSchema
   }
 
+  if (component === "column") {
+    return layout === "homepage" ? ColumnHomepageSchema : ColumnDefaultSchema
+  }
+
+  if (component === "accordion") {
+    return accordionEditor === "container"
+      ? AccordionContainerEditorSchema
+      : AccordionProseEditorSchema
+  }
+
   return IsomerComplexComponentsMap[component]
 }
 
 export const getComponentSchema = ({
   component,
   layout,
+  accordionEditor,
 }: ComponentSchema): TSchema => {
   return {
-    ...generateComponentSchema({ component, layout }),
+    ...generateComponentSchema({ component, layout, accordionEditor }),
     ...componentSchemaDefinitions,
   }
 }

@@ -12,6 +12,7 @@ import { Button } from "../components/complex/Button"
 import { Callout } from "../components/complex/Callout"
 import { ChildrenPages } from "../components/complex/ChildrenPages"
 import { CollectionBlock } from "../components/complex/CollectionBlock"
+import { Column } from "../components/complex/Column"
 import { ContactInformation } from "../components/complex/ContactInformation"
 import { Contentpic } from "../components/complex/Contentpic"
 import { DynamicComponentList } from "../components/complex/DynamicComponentList"
@@ -62,6 +63,8 @@ export const renderComponent = ({
       return <Button key={elementKey} {...component} {...rest} />
     case "callout":
       return <Callout key={elementKey} {...component} {...rest} />
+    case "column":
+      return <Column key={elementKey} {...component} {...rest} />
     case "contentpic":
       return <Contentpic key={elementKey} {...component} {...rest} />
     case "formsg":
