@@ -4,46 +4,6 @@ import { expect } from "@playwright/test"
 export class CollectionPO {
   constructor(private readonly page: Page) {}
 
-  async gotoCollection(siteId: number, collectionId: string) {
-    await this.page.goto(`/sites/${siteId}/collections/${collectionId}`)
-    // Collection index is `/sites/:siteId/collections/:id` with no trailing segment.
-    await this.page.waitForURL(
-      new RegExp(`/sites/${siteId}/collections/${collectionId}$`),
-    )
-  }
-
-  async openAddCollectionItem() {
-    await this.page.getByRole("button", { name: "Add new item" }).click()
-  }
-
-  async selectCollectionItemType(type: "Page" | "Link or file") {
-    await this.page.getByText(type, { exact: true }).click()
-    await this.page.getByRole("button", { name: "Next: Page details" }).click()
-  }
-
-  async fillCollectionItemWizard(title: string) {
-    // Page items label the field "Page title"; link items use "Item title".
-    await this.page.getByLabel(/Page title|Item title/).fill(title)
-    await this.page.getByRole("button", { name: "Start editing" }).click()
-  }
-
-  async expectOnCollectionItemEditor(
-    siteId: number,
-    kind: "page" | "link",
-  ): Promise<string> {
-    // Item wizards navigate to the page or link editor for the new collection child.
-    const subpath = kind === "page" ? "pages" : "links"
-    const pattern = new RegExp(`/sites/${siteId}/${subpath}/(\\d+)$`)
-    await this.page.waitForURL(pattern)
-    const itemId = this.page.url().match(pattern)?.[1]
-    if (!itemId) {
-      throw new Error(
-        `Expected ${subpath} editor URL after wizard, got ${this.page.url()}`,
-      )
-    }
-    return itemId
-  }
-
   /**
    * Selects `optionLabel` in the tag-category multi-select labelled
    * `categoryLabel`. Both LinkEditorDrawer and MetadataEditorStateDrawer
@@ -106,26 +66,6 @@ export class CollectionPO {
     await expect(this.page.getByText("Manage filters")).toBeVisible()
   }
 
-  private linkSaveButton() {
-    return this.page.getByRole("button", { name: "Save", exact: true })
-  }
-
-  async expectLinkSaveDisabled() {
-    await expect(this.linkSaveButton()).toBeDisabled()
-  }
-
-  async expectLinkSaveEnabled() {
-    await expect(this.linkSaveButton()).toBeEnabled()
-  }
-
-  async clickLinkSave() {
-    await this.linkSaveButton().click()
-  }
-
-  async openArticlePageHeader() {
-    await this.page.getByRole("button", { name: "Article page header" }).click()
-  }
-
   private pageSaveChangesButton() {
     return this.page.getByRole("button", {
       name: "Save changes",
@@ -141,7 +81,425 @@ export class CollectionPO {
     await expect(this.pageSaveChangesButton()).toBeEnabled()
   }
 
-  async clickPageSaveChanges() {
-    await this.pageSaveChangesButton().click()
+  async gotoIndex(siteId: number, indexPageId: string) {
+    await this.page.goto(`/sites/${siteId}/pages/${indexPageId}`)
+    await this.page.waitForURL(
+      new RegExp(`/sites/${siteId}/pages/${indexPageId}`),
+    )
+  }
+
+  async expectIndexAccessDenied() {
+    await expect(
+      this.page.getByText("You don't have access to edit this page."),
+    ).toBeVisible()
+    await expect(
+      this.page.getByRole("button", { name: "Back to Site Content" }),
+    ).toBeVisible()
+  }
+
+  async reload() {
+    await this.page.reload()
+  }
+
+  async expectTagOptionVisible(optionLabel: string) {
+    await expect(
+      this.page.getByRole("option", { name: optionLabel }),
+    ).toBeVisible()
+  }
+
+  async expectTagOptionHidden(optionLabel: string) {
+    await expect(
+      this.page.getByRole("option", { name: optionLabel }),
+    ).toHaveCount(0)
+  }
+
+  async openTagCategory(categoryLabel: string) {
+    await this.page
+      .getByRole("group")
+      .filter({ hasText: categoryLabel })
+      .getByRole("combobox")
+      .click()
+  }
+
+  async openArticleHeader() {
+    await this.page
+      .getByRole("button", { name: "Article page header" })
+      .click({ force: true })
+  }
+
+  async openCollectionDisplay() {
+    await this.page.getByRole("button", { name: /Collection display/i }).click()
+    await expect(
+      this.page.getByText("Collection display").first(),
+    ).toBeVisible()
+  }
+
+  async addFilter() {
+    await this.page.getByRole("button", { name: /Add a filter/i }).click()
+    // Adding a filter opens the nested editor immediately.
+    await expect(this.page.getByText(/Edit Filters/i)).toBeVisible()
+  }
+
+  async openFilterNamed(name: string) {
+    await this.page.getByText(name, { exact: true }).first().click()
+    await expect(this.page.getByText(/Edit Filters/i)).toBeVisible()
+  }
+
+  async returnToFilters() {
+    await this.page.getByRole("button", { name: /Return to Filters/i }).click()
+    await this.expectManageFiltersDrawerOpen()
+  }
+
+  async fillFilterName(name: string) {
+    const input = this.page.getByPlaceholder(/Filter name/i)
+    await input.fill(name)
+  }
+
+  async setFilterRequired(required: boolean) {
+    const toggle = this.page.getByLabel("This filter is required")
+    const isChecked = await toggle.isChecked()
+    if (isChecked !== required) {
+      await toggle.click({ force: true })
+    }
+  }
+
+  async chooseFilterPresentation(presentation: "Pills" | "Plaintext") {
+    await this.page
+      .getByRole("radio", { name: presentation })
+      .click({ force: true })
+  }
+
+  async addOption() {
+    await this.page.getByRole("button", { name: /^Add option$/i }).click()
+  }
+
+  optionRow(index0Based: number) {
+    return this.page
+      .locator("[data-rfd-draggable-id], [data-rbd-draggable-id]")
+      .nth(index0Based)
+  }
+
+  async openOptionInlineEdit(index0Based: number) {
+    const optionName = `Option ${index0Based + 1}`
+    // EditableLabel is Chakra Text-as-button. The wrapping Body `as="button"`
+    // has no onClick and intercepts a click on the first button in the row.
+    await this.optionRow(index0Based)
+      .locator(".chakra-text")
+      .first()
+      .click({ force: true })
+    await this.page
+      .getByRole("textbox", { name: `${optionName} name` })
+      .waitFor()
+  }
+
+  async renameOptionAtIndex(index0Based: number, name: string) {
+    await this.openOptionInlineEdit(index0Based)
+    await this.fillOptionName(index0Based, name)
+    await this.page
+      .getByRole("textbox", { name: `Option ${index0Based + 1} name` })
+      .press("Enter")
+  }
+
+  async fillOptionName(index0Based: number, name: string) {
+    const nameInput = this.page.getByRole("textbox", {
+      name: `Option ${index0Based + 1} name`,
+    })
+    await nameInput.fill(name)
+  }
+
+  async expectOptionNameError(message: string | RegExp) {
+    await expect(this.page.getByText(message).first()).toBeVisible()
+  }
+
+  async expectFilterNameError(message: string | RegExp) {
+    await expect(this.page.getByText(message).first()).toBeVisible()
+  }
+
+  async expectFilterNamedVisible(name: string) {
+    await expect(this.page.getByText(name, { exact: true })).toBeVisible()
+  }
+
+  async expectOptionNamedVisible(name: string) {
+    await expect(this.page.getByText(name, { exact: true })).toBeVisible()
+  }
+
+  async expectOptionNamedHidden(name: string) {
+    await expect(this.page.getByText(name, { exact: true })).toHaveCount(0)
+  }
+
+  async expectFilterOrder(names: string[]) {
+    // Match filter/option labels exactly (anchored alternation) so list order
+    // assertions don't pick up partial text elsewhere in the drawer.
+    const list = this.page.getByText(
+      new RegExp(
+        `^(${names.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})$`,
+      ),
+    )
+    await expect(list).toHaveCount(names.length)
+    for (const [index, name] of names.entries()) {
+      await expect(list.nth(index)).toHaveText(name)
+    }
+  }
+
+  async reorderFirstFilterDown() {
+    await this.reorderDraggableDown(
+      this.page
+        .locator(
+          "[data-rfd-drag-handle-draggable-id], [data-rbd-drag-handle-draggable-id]",
+        )
+        .first(),
+    )
+  }
+
+  async reorderFirstOptionDown() {
+    const row = this.optionRow(0)
+    const draggableId =
+      (await row.getAttribute("data-rfd-draggable-id")) ??
+      (await row.getAttribute("data-rbd-draggable-id"))
+    if (!draggableId) {
+      throw new Error("Expected option row to expose a draggable id")
+    }
+    await this.reorderDraggableDown(
+      this.page.locator(
+        `[data-rfd-drag-handle-draggable-id="${draggableId}"], [data-rbd-drag-handle-draggable-id="${draggableId}"]`,
+      ),
+    )
+  }
+
+  async expectOptionOrder(names: string[]) {
+    await this.expectFilterOrder(names)
+  }
+
+  async reorderDraggableDown(handle: ReturnType<Page["locator"]>) {
+    await expect(handle).toBeVisible()
+    await handle.focus()
+    await this.page.keyboard.press("Space")
+    await this.page.keyboard.press("ArrowDown")
+    await this.page.keyboard.press("Space")
+  }
+
+  async openOptionActions(index1Based: number) {
+    await this.page
+      .getByRole("button", { name: `Option ${index1Based} actions` })
+      .click()
+  }
+
+  async openFilterActions(index1Based: number) {
+    await this.page
+      .getByRole("button", { name: `Filter ${index1Based} actions` })
+      .click()
+  }
+
+  async clickDeleteOptionMenuItem() {
+    await this.page.getByRole("menuitem", { name: /Delete option/i }).click()
+    await expect(
+      this.page.getByRole("dialog", { name: /Delete filter option/i }),
+    ).toBeVisible()
+  }
+
+  async clickDeleteFilterMenuItem() {
+    await this.page.getByRole("menuitem", { name: /Delete filter/i }).click()
+    await expect(
+      this.page.getByText(/You are deleting an entire filter\./i),
+    ).toBeVisible()
+  }
+
+  deleteOptionDialog() {
+    return this.page.getByRole("dialog")
+  }
+
+  async cancelDeleteOption() {
+    await this.deleteOptionDialog()
+      .getByRole("button", { name: /No, keep filter option/i })
+      .click()
+    await expect(this.deleteOptionDialog()).not.toBeVisible()
+  }
+
+  async confirmDeleteOption() {
+    const dialog = this.deleteOptionDialog()
+    await dialog
+      .getByText(/Yes, delete this filter option permanently/i)
+      .click()
+    await dialog
+      .getByRole("button", { name: /^Delete filter option$/i })
+      .click()
+    await expect(dialog).not.toBeVisible()
+  }
+
+  async confirmDeleteFilter() {
+    await this.page
+      .getByText(/Yes, delete the entire filter permanently/i)
+      .click()
+    await this.page.getByRole("button", { name: /^Delete filter$/i }).click()
+    await expect(
+      this.page.getByText(/You are deleting an entire filter\./i),
+    ).not.toBeVisible()
+  }
+
+  async expectUsedOptionWarning(count: number) {
+    const noun = count === 1 ? "1 item" : `${count} items`
+    await expect(
+      this.page.getByText(`This option is being used in ${noun}`),
+    ).toBeVisible()
+  }
+
+  async expectUsedFilterWarning(count: number) {
+    const noun = count === 1 ? "1 item" : `${count} items`
+    await expect(
+      this.page.getByText(`It’s being used on ${noun}`),
+    ).toBeVisible()
+  }
+
+  async expectLargeUsageWarning() {
+    await expect(
+      this.page.getByText(/a large number of results/i),
+    ).toBeVisible()
+  }
+
+  async expectUsageCountFallback() {
+    // ErrorBoundary copy when countTagOptionsUsage fails; matches the option
+    // delete warning, not the "recreate this filter" variant.
+    await expect(
+      this.page.getByText(
+        /To undo this change, you will need to create and re-assign this option/i,
+      ),
+    ).toBeVisible({ timeout: 20_000 })
+    await expect(
+      this.page.getByText(/This option is being used in|It’s being used on/),
+    ).toHaveCount(0)
+  }
+
+  drawerSaveButton() {
+    return this.page
+      .getByRole("button", { name: "Save changes" })
+      .filter({ hasText: "Save changes" })
+  }
+
+  async expectDrawerSaveDisabled() {
+    await expect(this.drawerSaveButton()).toBeDisabled()
+  }
+
+  async expectInlineOptionSaveDisabled() {
+    await expect(
+      this.page
+        .locator("[data-rfd-draggable-id], [data-rbd-draggable-id]")
+        .filter({ has: this.page.getByRole("textbox") })
+        .getByRole("button", { name: "Save changes" }),
+    ).toBeDisabled()
+  }
+
+  async saveFilters() {
+    const back = this.page.getByRole("button", { name: /Return to Filters/i })
+    if (await back.isVisible()) {
+      await back.click()
+      await this.expectManageFiltersDrawerOpen()
+    }
+    await this.drawerSaveButton().click()
+    await expect(
+      this.page.getByText(
+        /Filter saved\. Remember to publish the changes so that other users can use the new filter options\./,
+      ),
+    ).toBeVisible()
+  }
+
+  async saveCollectionDisplay() {
+    await this.drawerSaveButton().click()
+    await expect(
+      this.page.getByText(
+        /Collection display saved\. Remember to publish the changes so that other users can see your updates\./,
+      ),
+    ).toBeVisible()
+  }
+
+  async fillCollectionSummary(summary: string) {
+    await this.page.getByPlaceholder("Summary").fill(summary)
+  }
+
+  async expectCollectionSummary(summary: string) {
+    await expect(this.page.getByPlaceholder("Summary")).toHaveValue(summary)
+  }
+
+  async chooseLayout(layout: "1-column" | "2-column") {
+    await this.page.getByRole("radio", { name: layout }).click({ force: true })
+  }
+
+  async chooseSortOrder(label: string) {
+    // ODS SingleSelect is not labelled by the FormLabel (same as tagged
+    // MultiSelect — see selectTagOption). Scope via the FormControl group.
+    await this.page
+      .getByRole("group")
+      .filter({ hasText: "Sort items by" })
+      .getByRole("combobox")
+      .click()
+    await this.page.getByRole("option", { name: label }).click()
+  }
+
+  async setShowDate(show: boolean) {
+    const toggle = this.page.getByLabel("Show date on all items")
+    const isChecked = await toggle.isChecked()
+    if (isChecked !== show) {
+      await toggle.click({ force: true })
+    }
+  }
+
+  async enableThumbnails(fallback: "Use site logo" | "Use first image") {
+    // ODS Switch is unlabeled; the title sits in a sibling FormControl.
+    const thumbnailSwitch = this.page
+      .getByText("Display thumbnail on all items", { exact: true })
+      .locator("xpath=ancestor::div[.//input[@type='checkbox']][1]")
+      .locator("input[type='checkbox']")
+    if (!(await thumbnailSwitch.isChecked())) {
+      await thumbnailSwitch.click({ force: true })
+    }
+    await this.page.getByText(fallback, { exact: false }).click({ force: true })
+  }
+
+  async expectLayoutSelected(layout: "1-column" | "2-column") {
+    await expect(this.page.getByRole("radio", { name: layout })).toBeChecked()
+  }
+
+  async expectFilterPresentationSelected(presentation: "Pills" | "Plaintext") {
+    await expect(
+      this.page.getByRole("radio", { name: presentation }),
+    ).toBeChecked()
+  }
+
+  async expectRequiredChecked(required: boolean) {
+    const toggle = this.page.getByLabel("This filter is required")
+    if (required) {
+      await expect(toggle).toBeChecked()
+    } else {
+      await expect(toggle).not.toBeChecked()
+    }
+  }
+
+  itemSaveButton() {
+    return this.page.getByRole("button", { name: "Save", exact: true })
+  }
+
+  async expectItemSaveDisabled() {
+    await expect(this.itemSaveButton()).toBeDisabled()
+  }
+
+  async expectItemSaveEnabled() {
+    await expect(this.itemSaveButton()).toBeEnabled()
+  }
+
+  articleHeaderSaveButton() {
+    return this.page.getByRole("button", { name: "Save changes", exact: true })
+  }
+
+  async saveCollectionLink() {
+    await this.itemSaveButton().click()
+    await expect(this.page.getByText("Link updated!")).toBeVisible()
+  }
+
+  async saveArticleHeaderChanges() {
+    await this.articleHeaderSaveButton().click()
+    await expect(
+      this.page.getByText(
+        "Changes saved. Click 'Publish options' when you're ready to go live.",
+      ),
+    ).toBeVisible()
   }
 }

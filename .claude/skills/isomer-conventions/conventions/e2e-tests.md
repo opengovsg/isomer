@@ -10,7 +10,8 @@ introduces a **new reusable pattern** — not when merely adding test cases. See
 
 ## File layout
 
-- `tests/e2e/<module>/<screen>.test.ts` — name the file after the screen, not the assertion (`resource/collection.test.ts`, not `required-tags-validation.test.ts`). Several scenarios for that screen share the file. A second file is only for a distinct part of the same area (`resource/collection-filters.test.ts`), not one file per module.
+- `tests/e2e/<module>/<screen>.test.ts` — name the file after the screen, not the assertion (`collection/collection.test.ts`, not `required-tags-validation.test.ts`). Several scenarios for that screen share the file. A second file is only for a distinct part of the same area (`collection/collection-filters.test.ts`), not one file per module.
+- `tests/e2e/collection/` — collection wizard, items, filters, tags, display, and table. Its own CI shard, separate from `resource/` (pages, folders, delete/move/search).
 - `fixtures/` — shared infrastructure (auth, seed, helpers, page objects)
 - Import `test` / `expect` from `@playwright/test` directly (no `fixtures/test.ts` re-export)
 

@@ -3,7 +3,6 @@ import crypto from "crypto"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { CollectionPO } from "../fixtures/collection.po"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import {
   seedCollectionWithLink,
@@ -104,8 +103,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Act
     const dashboard = new DashboardPO(page)
-    const collectionPo = new CollectionPO(page)
-    await collectionPo.gotoCollection(siteId, collection.id)
+    await dashboard.gotoCollection(siteId, collection.id)
     await dashboard.openResourceMenu(pageTitle)
     await dashboard.clickDelete()
     await dashboard.confirmDeleteResource("page", { title: pageTitle })
@@ -126,8 +124,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Act
     const dashboard = new DashboardPO(page)
-    const collectionPo = new CollectionPO(page)
-    await collectionPo.gotoCollection(siteId, collection.id)
+    await dashboard.gotoCollection(siteId, collection.id)
     await dashboard.openResourceMenu(linkTitle)
     await dashboard.clickDelete()
     await dashboard.confirmDeleteResource("page", { title: linkTitle })
