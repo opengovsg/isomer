@@ -18,7 +18,7 @@ const carouselDotStyles = tv({
   variants: {
     isActive: {
       true: "w-6 bg-white",
-      false: "w-2 bg-white/50 hover:bg-white/70 focus-visible:bg-white/70",
+      false: "w-2 bg-white/50",
     },
   },
 })
@@ -51,65 +51,39 @@ const CarouselArrowButton = ({
 const CarouselDots = ({
   count,
   currentIndex,
-  onSelect,
-  isClickable,
 }: {
   count: number
   currentIndex: number
-  onSelect: (index: number) => void
-  isClickable: boolean
 }) => (
-  <div className="flex items-center gap-2">
-    {Array.from({ length: count }, (_, index) => {
-      const isActive = index === currentIndex
-      const className = carouselDotStyles({ isActive })
-
-      if (isClickable) {
-        return (
-          <button
-            key={index}
-            type="button"
-            aria-current={isActive ? "true" : undefined}
-            aria-label={`Go to slide ${index + 1} of ${count}`}
-            className={className}
-            onClick={() => onSelect(index)}
-          />
-        )
-      }
-
-      return <span key={index} aria-hidden className={className} />
-    })}
+  <div className="flex items-center gap-2" aria-hidden>
+    {Array.from({ length: count }, (_, index) => (
+      <span
+        key={index}
+        className={carouselDotStyles({ isActive: index === currentIndex })}
+      />
+    ))}
   </div>
 )
 
 export const CarouselControls = ({
   slideCount,
   currentIndex,
-  onSelect,
   onPrev,
   onNext,
-  isDotsClickable,
   isPending,
   isDesktopOnly,
   hasTopMargin,
 }: {
   slideCount: number
   currentIndex: number
-  onSelect: (index: number) => void
   onPrev: () => void
   onNext: () => void
-  isDotsClickable: boolean
   isPending: boolean
   isDesktopOnly?: boolean
   hasTopMargin?: boolean
 }) => (
   <div className={carouselControlsStyles({ isDesktopOnly, hasTopMargin })}>
-    <CarouselDots
-      count={slideCount}
-      currentIndex={currentIndex}
-      onSelect={onSelect}
-      isClickable={isDotsClickable}
-    />
+    <CarouselDots count={slideCount} currentIndex={currentIndex} />
     <div className="flex items-center gap-2">
       <CarouselArrowButton
         direction="prev"

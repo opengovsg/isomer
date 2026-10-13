@@ -81,12 +81,6 @@ export const HeroCarouselClient = ({
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPending, startTransition] = useTransition()
 
-  const navigateToIndex = useCallback((index: number) => {
-    startTransition(() => {
-      setCurrentIndex(index)
-    })
-  }, [])
-
   const navigateByDirection = useCallback(
     (direction: "prev" | "next") => {
       startTransition(() => {
@@ -127,10 +121,8 @@ export const HeroCarouselClient = ({
       <CarouselControls
         slideCount={slides.length}
         currentIndex={currentIndex}
-        onSelect={navigateToIndex}
         onPrev={() => navigateByDirection("prev")}
         onNext={() => navigateByDirection("next")}
-        isDotsClickable={false}
         isPending={isPending}
       />
     </div>
@@ -233,10 +225,8 @@ export const HeroCarouselClient = ({
           <CarouselControls
             slideCount={slides.length}
             currentIndex={currentIndex}
-            onSelect={navigateToIndex}
             onPrev={() => navigateByDirection("prev")}
             onNext={() => navigateByDirection("next")}
-            isDotsClickable
             isPending={isPending}
             isDesktopOnly
             hasTopMargin={isBlock}
