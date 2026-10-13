@@ -13,7 +13,7 @@ import { PageDiffModal } from "./PageDiffModal"
 
 const PAGE_SIZE = 20
 
-export default function HistoryStateDrawer(): JSX.Element {
+export const HistoryStateDrawer = (): JSX.Element => {
   const { setDrawerState, savedPageState } = useEditorDrawerContext()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const [selectedRow, setSelectedRow] = useState<PageDiffModalRow | null>(null)
