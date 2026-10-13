@@ -62,7 +62,10 @@ export const QuickActionsItem = ({
 }: QuickActionsItemProps) => {
   const { title, icon, description, buttonUrl, buttonLabel } = item
   const trimmedTitle = title?.trim()
+  const trimmedButtonLabel = buttonLabel?.trim()
+  const hasLink = Boolean(buttonUrl)
   const isExternalLink = isExternalUrl(buttonUrl)
+  const showTitleArrow = hasLink && !trimmedButtonLabel
   const TitleTag = getHeadingTag(headingLevel)
 
   return (
@@ -78,8 +81,16 @@ export const QuickActionsItem = ({
       {showIcon ? <ItemIcon icon={icon} /> : null}
 
       {trimmedTitle ? (
-        <TitleTag className={styles.title({ hasLink: true })}>
+        <TitleTag className={styles.title({ hasLink })}>
           {trimmedTitle}
+          {showTitleArrow ? (
+            <BiRightArrowAlt
+              aria-hidden
+              className={styles.buttonIcon({
+                isExternalLink,
+              })}
+            />
+          ) : null}
         </TitleTag>
       ) : null}
 
@@ -87,15 +98,17 @@ export const QuickActionsItem = ({
         <p className={styles.description()}>{description}</p>
       ) : null}
 
-      <div className={styles.button()}>
-        {buttonLabel}
-        <BiRightArrowAlt
-          aria-hidden
-          className={styles.buttonIcon({
-            isExternalLink,
-          })}
-        />
-      </div>
+      {hasLink && !showTitleArrow ? (
+        <div className={styles.button()}>
+          {trimmedButtonLabel}
+          <BiRightArrowAlt
+            aria-hidden
+            className={styles.buttonIcon({
+              isExternalLink,
+            })}
+          />
+        </div>
+      ) : null}
     </Link>
   )
 }

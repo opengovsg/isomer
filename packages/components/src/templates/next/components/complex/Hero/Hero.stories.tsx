@@ -285,6 +285,16 @@ export const GradientQuickActionsNoIcons: Story = {
   },
 }
 
+export const GradientQuickActionsTitleLinkOnly: Story = {
+  args: {
+    ...GradientQuickActions.args,
+    quickActionsItems: quickActionsItemsBase.slice(0, 2).map((item) => ({
+      ...item,
+      buttonLabel: undefined,
+    })),
+  },
+}
+
 export const SearchbarWithImage: Story = {
   decorators: [withSearchSgSetup()],
   args: {

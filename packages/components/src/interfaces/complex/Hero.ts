@@ -153,16 +153,14 @@ const HeroActionLayoutQuickActionItemSchema = Type.Object({
       pattern: "cannot be empty or contain only spaces",
     },
   }),
-  buttonLabel: Type.String({
-    title: "Call-to-action text",
-    maxLength: 50,
-    pattern: NON_EMPTY_STRING_REGEX,
-    description:
-      "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
-    errorMessage: {
-      pattern: "cannot be empty or contain only spaces",
-    },
-  }),
+  buttonLabel: Type.Optional(
+    IsomerString({
+      title: "Call-to-action text",
+      maxLength: 50,
+      description:
+        "A descriptive text. Avoid generic text such as “Click here” or “Learn more”. Leave empty to show a link icon beside the title.",
+    }),
+  ),
   buttonUrl: Type.String({
     title: "Call-to-action destination",
     description: "When this is clicked, open:",
