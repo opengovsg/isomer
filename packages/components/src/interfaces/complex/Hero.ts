@@ -233,12 +233,10 @@ const HeroCarouselSlideSchema = Type.Composite(
   },
 )
 
-const HERO_CAROUSEL_SLIDE_LIMITS = {
+export const HERO_CAROUSEL_SLIDE_LIMITS = {
   minItems: 2,
   maxItems: 3,
 } as const
-
-export const HERO_CAROUSEL_MIN_SLIDES = HERO_CAROUSEL_SLIDE_LIMITS.minItems
 
 const HeroCarouselSchema = Type.Object(
   {

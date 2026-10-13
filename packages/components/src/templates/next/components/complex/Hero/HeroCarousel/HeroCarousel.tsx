@@ -1,6 +1,6 @@
 import type { HeroCarouselProps } from "~/interfaces/complex/Hero"
 import {
-  HERO_CAROUSEL_MIN_SLIDES,
+  HERO_CAROUSEL_SLIDE_LIMITS,
   HERO_CAROUSEL_STYLE,
 } from "~/interfaces/complex/Hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
@@ -14,7 +14,7 @@ export const HeroCarousel = ({
   style = HERO_CAROUSEL_STYLE.block,
   headingLevel,
 }: HeroCarouselProps) => {
-  if (slides.length < HERO_CAROUSEL_MIN_SLIDES) {
+  if (slides.length < HERO_CAROUSEL_SLIDE_LIMITS.minItems) {
     return null
   }
 
