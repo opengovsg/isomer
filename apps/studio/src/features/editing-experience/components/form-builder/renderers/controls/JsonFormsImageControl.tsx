@@ -10,11 +10,11 @@ import {
 } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { get } from "lodash-es"
+import dynamic from "next/dynamic"
 import { BiPencil } from "react-icons/bi"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { ImageAdjustmentModal } from "~/features/editing-experience/components/ImageAdjustmentModal"
 import { resolveAdjustmentConfig } from "~/features/editing-experience/components/ImageAdjustmentModal/adjustmentConfigRegistry"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useIsImageAdjustmentEnabled } from "~/hooks/useIsImageAdjustmentEnabled"
@@ -22,6 +22,18 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 
 import { getCustomErrorMessage } from "./utils"
+
+// JsonFormsImageControl is registered as a renderer for every FormBuilder
+// instance (every settings page and content-block editor), regardless of
+// whether that schema even has an image field. ImageAdjustmentModal pulls in
+// canvas baking/crop/preview code that's only relevant behind a per-agency
+// GrowthBook flag (off by default) — load it lazily so it doesn't bloat every
+// FormBuilder page's shared bundle.
+const ImageAdjustmentModal = dynamic(() =>
+  import(
+    "~/features/editing-experience/components/ImageAdjustmentModal"
+  ).then((mod) => mod.ImageAdjustmentModal),
+)
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageControl,
