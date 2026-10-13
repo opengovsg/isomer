@@ -11,7 +11,7 @@ import { HeroCarouselClient } from "./HeroCarouselClient"
 export const HeroCarousel = ({
   site,
   slides,
-  style = HERO_CAROUSEL_STYLE.block,
+  style,
   headingLevel,
 }: HeroCarouselProps) => {
   if (slides.length < HERO_CAROUSEL_SLIDE_LIMITS.minItems) {
