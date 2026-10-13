@@ -1,14 +1,14 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
 import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
 import { DashboardPO } from "~e2e/fixtures/po"
 import {
+  expectResourceId,
   seedCollectionWithLink,
   seedCollectionWithPage,
   seedFolderWithPage,
   seedRootCollection,
   seedRootPage,
-  getResourceId,
 } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
@@ -44,7 +44,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.confirmDeleteResource("page", { title: pageTitle })
 
     // Assert
-    await expect.poll(() => getResourceId(seededPage.id)).toBeNull()
+    await expectResourceId(seededPage.id).toBeNull()
     await dashboard.expectResourceLinkHidden(pageTitle)
   })
 
@@ -64,8 +64,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.confirmDeleteResource("folder", { title: folderTitle })
 
     // Assert
-    await expect.poll(() => getResourceId(folder.id)).toBeNull()
-    await expect.poll(() => getResourceId(childPage.id)).toBeNull()
+    await expectResourceId(folder.id).toBeNull()
+    await expectResourceId(childPage.id).toBeNull()
     await dashboard.expectResourceLinkHidden(folderTitle)
   })
 
@@ -87,8 +87,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
 
     // Assert
-    await expect.poll(() => getResourceId(collection.id)).toBeNull()
-    await expect.poll(() => getResourceId(collectionPage.id)).toBeNull()
+    await expectResourceId(collection.id).toBeNull()
+    await expectResourceId(collectionPage.id).toBeNull()
     await dashboard.expectResourceLinkHidden(collectionTitle)
   })
 
@@ -108,8 +108,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.confirmDeleteResource("page", { title: pageTitle })
 
     // Assert
-    await expect.poll(() => getResourceId(collectionPage.id)).toBeNull()
-    await expect.poll(() => getResourceId(collection.id)).not.toBeNull()
+    await expectResourceId(collectionPage.id).toBeNull()
+    await expectResourceId(collection.id).not.toBeNull()
     await dashboard.expectResourceLinkHidden(pageTitle)
   })
 
@@ -129,8 +129,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.confirmDeleteResource("page", { title: linkTitle })
 
     // Assert
-    await expect.poll(() => getResourceId(collectionLink.id)).toBeNull()
-    await expect.poll(() => getResourceId(collection.id)).not.toBeNull()
+    await expectResourceId(collectionLink.id).toBeNull()
+    await expectResourceId(collection.id).not.toBeNull()
     await dashboard.expectResourceLinkHidden(linkTitle)
   })
 
@@ -149,7 +149,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.cancelDeleteResource("page", { title: pageTitle })
 
     // Assert
-    await expect.poll(() => getResourceId(seededPage.id)).not.toBeNull()
+    await expectResourceId(seededPage.id).not.toBeNull()
     await dashboard.expectResourceLinkVisible(pageTitle)
   })
 })
@@ -193,7 +193,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
 
     // Assert
     await dashboard.expectDeleteMenuDisabled()
-    await expect.poll(() => getResourceId(folder.id)).not.toBeNull()
+    await expectResourceId(folder.id).not.toBeNull()
   })
 
   test("editor cannot delete a root-level collection when the menu disables delete", async ({
@@ -213,6 +213,6 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
 
     // Assert
     await dashboard.expectDeleteMenuDisabled()
-    await expect.poll(() => getResourceId(collection.id)).not.toBeNull()
+    await expectResourceId(collection.id).not.toBeNull()
   })
 })

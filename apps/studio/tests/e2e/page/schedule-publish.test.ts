@@ -1,8 +1,13 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
 import { openSeededPageEditor } from "~e2e/fixtures/helpers"
 import { DashboardPO } from "~e2e/fixtures/po"
-import { seedFolderWithPage, getResource } from "~e2e/fixtures/resource"
+import {
+  expectResourceScheduledAt,
+  expectResourceScheduledBy,
+  getResourceScheduledAt,
+  seedFolderWithPage,
+} from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -46,12 +51,8 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.schedulePublishForToday()
     await editor.expectScheduledSuccessfully()
     await editor.expectCancelScheduleVisible()
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
-      .not.toBeNull()
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.scheduledBy)
-      .not.toBeNull()
+    await expectResourceScheduledAt(seededPage.id).not.toBeNull()
+    await expectResourceScheduledBy(seededPage.id).not.toBeNull()
 
     const dashboard = new DashboardPO(page)
     await dashboard.gotoFolder(siteId, folder.id)
@@ -62,12 +63,8 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.expectPublishButtonVisible()
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
-      .toBeNull()
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.scheduledBy)
-      .toBeNull()
+    await expectResourceScheduledAt(seededPage.id).toBeNull()
+    await expectResourceScheduledBy(seededPage.id).toBeNull()
   })
 
   test("publisher can reschedule a scheduled publish to a different time", async ({
@@ -83,10 +80,8 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.openScheduleModal()
     await editor.schedulePublishForToday("5:00 PM")
     await editor.expectScheduledSuccessfully("5:00 PM")
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
-      .not.toBeNull()
-    const scheduledAtFirst = (await getResource(seededPage.id))?.scheduledAt
+    await expectResourceScheduledAt(seededPage.id).not.toBeNull()
+    const scheduledAtFirst = await getResourceScheduledAt(seededPage.id)
 
     // Act: cancel and reschedule to a different (earlier) slot.
     // Wait for the cancel's DB write (and its readPage refetch) to fully
@@ -94,20 +89,14 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     // remount PublishButton's Suspense boundary and silently close the modal
     // this test just opened.
     await editor.cancelSchedule()
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
-      .toBeNull()
+    await expectResourceScheduledAt(seededPage.id).toBeNull()
     await editor.openScheduleModal()
     await editor.schedulePublishForToday("9:00 AM")
     await editor.expectScheduledSuccessfully("9:00 AM")
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
-      .not.toBeNull()
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
-      .not.toEqual(scheduledAtFirst)
+    await expectResourceScheduledAt(seededPage.id).not.toBeNull()
+    await expectResourceScheduledAt(seededPage.id).not.toEqual(scheduledAtFirst)
   })
 
   test("scheduled status survives reload and blocks further editing", async ({
@@ -127,9 +116,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     // Assert
     await editor.expectCancelScheduleVisible()
     await editor.expectScheduledEditingRestrictionBanner()
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
-      .not.toBeNull()
+    await expectResourceScheduledAt(seededPage.id).not.toBeNull()
   })
 })
 

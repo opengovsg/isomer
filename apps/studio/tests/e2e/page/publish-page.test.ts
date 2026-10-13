@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
 import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
 import {
@@ -6,9 +6,11 @@ import {
   withSeededPageEditorAsRole,
 } from "~e2e/fixtures/helpers"
 import {
+  expectResourceDraftBlobId,
+  expectResourceState,
+  getResourceDraftBlobId,
   SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
-  getResource,
 } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded, getE2EUserId } from "~e2e/fixtures/user"
@@ -38,12 +40,8 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.expectPublishedToast()
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.state)
-      .toBe(ResourceState.Published)
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
-      .toBeNull()
+    await expectResourceState(seededPage.id).toBe(ResourceState.Published)
+    await expectResourceDraftBlobId(seededPage.id).toBeNull()
   })
 
   test("cancelling the publish confirmation leaves the draft untouched", async ({
@@ -54,17 +52,13 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
 
     // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
-    const draftBlobIdBefore = (await getResource(seededPage.id))?.draftBlobId
+    const draftBlobIdBefore = await getResourceDraftBlobId(seededPage.id)
     await editor.cancelPublishConfirmation()
 
     // Assert
     await editor.expectPublishButtonEnabled()
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.state)
-      .toBe(ResourceState.Draft)
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
-      .toBe(draftBlobIdBefore)
+    await expectResourceState(seededPage.id).toBe(ResourceState.Draft)
+    await expectResourceDraftBlobId(seededPage.id).toBe(draftBlobIdBefore)
   })
 
   test("publisher cannot publish a published page with no pending edits", async ({
@@ -83,9 +77,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
 
     // Assert
     await editor.expectPublishButtonDisabled()
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
-      .toBeNull()
+    await expectResourceDraftBlobId(seededPage.id).toBeNull()
   })
 
   test("publisher can edit a published page and republish changes", async ({
@@ -103,20 +95,14 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
-      .not.toBeNull()
+    await expectResourceDraftBlobId(seededPage.id).not.toBeNull()
     await editor.expectPublishButtonEnabled()
     await editor.clickPublish()
     await editor.expectPublishedToast()
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.state)
-      .toBe(ResourceState.Published)
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
-      .toBeNull()
+    await expectResourceState(seededPage.id).toBe(ResourceState.Published)
+    await expectResourceDraftBlobId(seededPage.id).toBeNull()
     await editor.expectBlockPreview(editedText)
   })
 })
@@ -175,9 +161,7 @@ test.describe("separation of duties", { tag: roleTag("editor") }, () => {
     const editorPO = await openSeededPageEditor(page, siteId, seededPage.id)
     await editorPO.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
     await editorPO.expectPublishButtonDisabled()
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
-      .not.toBeNull()
+    await expectResourceDraftBlobId(seededPage.id).not.toBeNull()
 
     // Act — publisher publishes the editor's draft in a separate session
     await withSeededPageEditorAsRole(
@@ -192,12 +176,8 @@ test.describe("separation of duties", { tag: roleTag("editor") }, () => {
     )
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.state)
-      .toBe(ResourceState.Published)
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
-      .toBeNull()
+    await expectResourceState(seededPage.id).toBe(ResourceState.Published)
+    await expectResourceDraftBlobId(seededPage.id).toBeNull()
     await editorPO.reload()
     await editorPO.expectBlockPreview(editedText)
   })

@@ -5,12 +5,12 @@ import { getReferenceLink } from "~/utils/link"
 import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
 import { DashboardPO } from "~e2e/fixtures/po"
 import {
+  expectResourceParentId,
   seedFolder,
   seedFolderWithPage,
   seedRootCollection,
   seedRootPage,
   seedTwoCollections,
-  getResourceParentId,
 } from "~e2e/fixtures/resource"
 import { getRedirectDestination, provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded, getE2EUserId } from "~e2e/fixtures/user"
@@ -47,7 +47,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.confirmMove()
 
     // Assert
-    await expect.poll(() => getResourceParentId(seededPage.id)).toBe(folder.id)
+    await expectResourceParentId(seededPage.id).toBe(folder.id)
     await dashboard.gotoFolder(siteId, folder.id)
     await dashboard.expectResourceLinkVisible(pageTitle)
     await dashboard.gotoSite(siteId)
@@ -77,9 +77,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.confirmMove()
 
     // Assert
-    await expect
-      .poll(() => getResourceParentId(sourceFolder.id))
-      .toBe(destFolder.id)
+    await expectResourceParentId(sourceFolder.id).toBe(destFolder.id)
     await dashboard.gotoFolder(siteId, destFolder.id)
     await dashboard.expectResourceLinkVisible(sourceTitle)
   })
@@ -104,7 +102,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.confirmMove()
 
     // Assert
-    await expect.poll(() => getResourceParentId(collection.id)).toBe(folder.id)
+    await expectResourceParentId(collection.id).toBe(folder.id)
     await dashboard.gotoFolder(siteId, folder.id)
     await dashboard.expectResourceLinkVisible(collectionTitle)
     await dashboard.gotoSite(siteId)
@@ -132,9 +130,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.confirmMove()
 
     // Assert
-    await expect
-      .poll(() => getResourceParentId(collectionPage.id))
-      .toBe(destCollection.id)
+    await expectResourceParentId(collectionPage.id).toBe(destCollection.id)
     await dashboard.gotoCollection(siteId, destCollection.id)
     await dashboard.expectResourceLinkVisible(collectionPage.title)
   })
@@ -158,7 +154,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.cancelMove()
 
     // Assert
-    await expect.poll(() => getResourceParentId(seededPage.id)).toBeNull()
+    await expectResourceParentId(seededPage.id).toBeNull()
     await dashboard.expectResourceLinkVisible(pageTitle)
   })
 
@@ -192,9 +188,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.confirmMove()
 
     // Assert
-    await expect
-      .poll(() => getResourceParentId(seededPage.id))
-      .toBe(destFolder.id)
+    await expectResourceParentId(seededPage.id).toBe(destFolder.id)
     await expect
       .poll(() => getRedirectDestination(siteId, oldSource))
       .toBe(
@@ -233,9 +227,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.confirmMove()
 
     // Assert
-    await expect
-      .poll(() => getResourceParentId(seededPage.id))
-      .toBe(destFolder.id)
+    await expectResourceParentId(seededPage.id).toBe(destFolder.id)
     await expect
       .poll(() => getRedirectDestination(siteId, oldSource))
       .toBeNull()
@@ -277,7 +269,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
 
     // Assert
     await dashboard.expectMoveMenuDisabled()
-    await expect.poll(() => getResourceParentId(folder.id)).toBeNull()
+    await expectResourceParentId(folder.id).toBeNull()
   })
 
   test("editor cannot move a root-level collection when the menu disables move", async ({
@@ -297,6 +289,6 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
 
     // Assert
     await dashboard.expectMoveMenuDisabled()
-    await expect.poll(() => getResourceParentId(collection.id)).toBeNull()
+    await expectResourceParentId(collection.id).toBeNull()
   })
 })
