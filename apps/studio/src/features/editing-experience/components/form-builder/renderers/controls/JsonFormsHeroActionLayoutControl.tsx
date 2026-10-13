@@ -7,6 +7,7 @@ import {
   HERO_ACTION_LAYOUT,
   HERO_ACTION_LAYOUT_FORMAT,
 } from "@opengovsg/isomer-components"
+import { useRef } from "react"
 import {
   IconHeroActionLayoutButtons,
   IconHeroActionLayoutQuickActions,
@@ -70,11 +71,35 @@ const heroActionLayoutKeysToDrop = (
   return [...keys]
 }
 
+const pickLayoutBranchFields = (
+  data: Record<string, unknown>,
+  branch: JsonSchema,
+): Record<string, unknown> => {
+  const picked: Record<string, unknown> = {}
+
+  for (const key of layoutSpecificFieldKeys(branch)) {
+    if (key in data) {
+      picked[key] = data[key]
+    }
+  }
+
+  return picked
+}
+
+const defaultQuickActionsFields = () => ({
+  quickActionsTitle: HERO_QUICK_ACTIONS_DEFAULT_TITLE,
+  showIcon: true,
+  quickActionsItems: Array.from({ length: HERO_QUICK_ACTIONS_MIN_ITEMS }, () =>
+    createDefaultHeroActionLayoutQuickActionItem(),
+  ),
+})
+
 /** Keep shared hero fields. Drop the layout that was not selected. */
 export const nextHeroActionLayoutData = (
   current: unknown,
   layout: string,
   branches: JsonSchema[],
+  restoredBranch?: Record<string, unknown>,
 ) => {
   const kept = isRecord(current) ? { ...current } : {}
 
@@ -82,19 +107,14 @@ export const nextHeroActionLayoutData = (
     delete kept[key]
   }
 
+  const restored = restoredBranch ?? {}
+
   return {
     ...kept,
     actionLayout: layout,
     ...(layout === HERO_ACTION_LAYOUT.quickActions
-      ? {
-          quickActionsTitle: HERO_QUICK_ACTIONS_DEFAULT_TITLE,
-          showIcon: true,
-          quickActionsItems: Array.from(
-            { length: HERO_QUICK_ACTIONS_MIN_ITEMS },
-            () => createDefaultHeroActionLayoutQuickActionItem(),
-          ),
-        }
-      : {}),
+      ? { ...defaultQuickActionsFields(), ...restored }
+      : restored),
   }
 }
 
@@ -123,9 +143,36 @@ function JsonFormsHeroActionLayoutControl({
   const selectedBranch =
     branches.find((branch) => branchLayout(branch) === selectedLayout) ??
     branches[0]
+  // ponytail: session ref only; reload drops the inactive layout until we persist it
+  const stashRef = useRef<
+    Record<string, Partial<Record<string, Record<string, unknown>>>>
+  >({})
 
   const onChange = (layout: string) => {
-    handleChange(path, nextHeroActionLayoutData(data, layout, branches))
+    if (layout === selectedLayout) {
+      return
+    }
+
+    const fromBranch = branches.find(
+      (branch) => branchLayout(branch) === selectedLayout,
+    )
+    if (isRecord(data) && fromBranch) {
+      stashRef.current[path] ??= {}
+      stashRef.current[path][selectedLayout] = pickLayoutBranchFields(
+        data,
+        fromBranch,
+      )
+    }
+
+    handleChange(
+      path,
+      nextHeroActionLayoutData(
+        data,
+        layout,
+        branches,
+        stashRef.current[path]?.[layout],
+      ),
+    )
   }
 
   return (
