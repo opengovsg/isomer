@@ -11,6 +11,7 @@ import {
 } from "@opengovsg/isomer-components"
 import Ajv from "ajv"
 import { describe, expect, it } from "vitest"
+import contentLayoutPreview from "~/features/editing-experience/data/contentLayoutPreview.json"
 import { ajv } from "~/utils/ajv"
 
 const unicodeMessage =
@@ -87,15 +88,20 @@ describe("no stylized unicode schema", () => {
   it("should compile the page schema and component fragments without Studio's registered schema", () => {
     // Arrange
     const freshAjv = new Ajv({ strict: false, unicodeRegExp: false })
+    const validatePage = freshAjv.compile(schema)
     const validateImage = freshAjv.compile(
       getComponentSchema({ component: "image" }),
     )
     const image = { type: "image", src: "/image.png", alt: "A dog running" }
+    const stylizedImage = { ...image, caption: "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥" }
 
     // Act / Assert
-    expect(() => freshAjv.compile(schema)).not.toThrow()
+    expect(validatePage(contentLayoutPreview)).toBe(true)
+    expect(
+      validatePage({ ...contentLayoutPreview, content: [stylizedImage] }),
+    ).toBe(false)
     expect(validateImage(image)).toBe(true)
-    expect(validateImage({ ...image, caption: "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥" })).toBe(false)
+    expect(validateImage(stylizedImage)).toBe(false)
   })
 
   it("should resolve the shared schema for settings compiled on their own", () => {
