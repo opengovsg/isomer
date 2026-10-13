@@ -189,7 +189,7 @@ describe("version.router", async () => {
       expect(secondPage.nextOffset).toBeNull()
     })
 
-    it("excludes versions of other resources, including on other sites", async () => {
+    it("excludes versions of other resources", async () => {
       // Arrange
       const { page } = await setupPageResource({ resourceType: "Page" })
       const { page: otherPage } = await setupPageResource({
@@ -218,8 +218,23 @@ describe("version.router", async () => {
         cursor: 0,
         limit: 10,
       })
+
+      // Assert
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0]?.content).toEqual(makeContent("mine"))
+    })
+
+    it("throws NOT_FOUND if the page belongs to another site", async () => {
+      // Arrange
       // A caller with access to some other site must not reach this page's
       // versions by passing their own siteId.
+      const { page } = await setupPageResource({ resourceType: "Page" })
+      await addVersion({
+        resourceId: page.id,
+        versionNum: 1,
+        text: "mine",
+        publishedBy: user.id,
+      })
       const { page: foreignPage } = await setupPageResource({
         resourceType: "Page",
         permalink: "foreign",
@@ -228,7 +243,9 @@ describe("version.router", async () => {
         userId: user.id,
         siteId: foreignPage.siteId,
       })
-      const crossSite = await caller.listHistory({
+
+      // Act
+      const result = caller.listHistory({
         pageId: Number(page.id),
         siteId: foreignPage.siteId,
         cursor: 0,
@@ -236,9 +253,9 @@ describe("version.router", async () => {
       })
 
       // Assert
-      expect(result.items).toHaveLength(1)
-      expect(result.items[0]?.content).toEqual(makeContent("mine"))
-      expect(crossSite.items).toHaveLength(0)
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
+      )
     })
 
     it("throws FORBIDDEN if the user has no permission on the site", async () => {

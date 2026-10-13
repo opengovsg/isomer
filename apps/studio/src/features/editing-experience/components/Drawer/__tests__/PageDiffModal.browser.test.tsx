@@ -46,6 +46,8 @@ vi.mock("~/utils/trpc", () => ({
       },
       getConfig: {
         useSuspenseQuery: () => {
+          // Throwing the pending promise is how a component suspends.
+          // oxlint-disable-next-line typescript/only-throw-error
           if (siteConfigQuery.pending) throw siteConfigQuery.pending
           return [
             {
