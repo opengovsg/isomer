@@ -22,7 +22,16 @@ import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import type { User } from "../../database"
-import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
+import * as awsUtils from "../../aws/utils"
+import {
+  AuditLogEvent,
+  db,
+  jsonb,
+  ResourceState,
+  ResourceType,
+} from "../../database"
+import { getResourcePermission } from "../../permissions/permissions.service"
+import { FOOTER, NAVBAR_CONTENT } from "../constants"
 import { siteRouter } from "../site.router"
 
 // Mock env to set production environment for SearchSG tests
@@ -2374,6 +2383,68 @@ describe("site.router", async () => {
       ).toBe(true)
       expect(auditLogs.every((log) => log.userId === session.userId)).toBe(true)
     })
+
+    it("should persist and reload valid config, theme, navbar, and footer JSON", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
+      const newConfig = {
+        theme: "isomer-next",
+        siteName: "Updated by admin",
+        logoUrl: "https://example.com/logo.svg",
+        isGovernment: true,
+        url: "https://www.example.gov.sg",
+      }
+      const newTheme = {
+        colors: {
+          brand: {
+            canvas: {
+              default: "#111111",
+              alt: "#222222",
+              backdrop: "#333333",
+              inverse: "#444444",
+            },
+            interaction: {
+              default: "#555555",
+              hover: "#666666",
+              pressed: "#777777",
+            },
+          },
+        },
+      }
+      const newNavbar = { items: [{ name: "Admin nav", url: "/admin-nav" }] }
+      const newFooter = {
+        contactUsLink: "/contact-admin",
+        feedbackFormLink: "https://www.form.gov.sg",
+        privacyStatementLink: "/privacy",
+        termsOfUseLink: "/terms-of-use",
+        siteNavItems: [{ title: "Admin footer", url: "/admin-footer" }],
+      }
+
+      // Act
+      await caller.setSiteConfigByAdmin({
+        siteId: site.id,
+        config: JSON.stringify(newConfig),
+        theme: JSON.stringify(newTheme),
+        navbar: JSON.stringify(newNavbar),
+        footer: JSON.stringify(newFooter),
+      })
+
+      // Assert
+      await expect(caller.getConfig({ id: site.id })).resolves.toMatchObject(
+        newConfig,
+      )
+      await expect(caller.getTheme({ id: site.id })).resolves.toEqual(newTheme)
+      await expect(caller.getNavbar({ id: site.id })).resolves.toMatchObject({
+        content: newNavbar,
+      })
+      await expect(caller.getFooter({ id: site.id })).resolves.toMatchObject({
+        content: newFooter,
+      })
+    })
   })
 
   describe("create", () => {
@@ -2412,11 +2483,21 @@ describe("site.router", async () => {
       )
     })
 
-    it("should create a new site successfully if user is an Isomer Core Admin", async () => {
+    it("should create a new site with default config, pages, and implicit Isomer admin access", async () => {
       // Arrange
       await setupIsomerAdmin({
         userId: session.userId!,
         role: IsomerAdminRole.Core,
+      })
+      const otherCoreUser = await setupUser({
+        email: "other-core@mock.com",
+      })
+      await setupIsomerAdmin({
+        userId: otherCoreUser.id,
+        role: IsomerAdminRole.Core,
+      })
+      const regularUser = await setupUser({
+        email: "regular@mock.com",
       })
 
       // Act
@@ -2429,6 +2510,92 @@ describe("site.router", async () => {
         siteId: expect.any(Number),
         siteName: "foo",
       })
+
+      const site = await db
+        .selectFrom("Site")
+        .where("id", "=", result.siteId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(site.name).toBe("foo")
+      expect(site.config).toMatchObject({
+        theme: "isomer-next",
+        siteName: "foo",
+        url: "https://www.isomer.gov.sg",
+        logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+        isGovernment: true,
+      })
+      expect(site.theme).toMatchObject({
+        colors: {
+          brand: {
+            canvas: { inverse: "#00405f" },
+            interaction: { default: "#00405f" },
+          },
+        },
+      })
+
+      const navbar = await db
+        .selectFrom("Navbar")
+        .where("siteId", "=", result.siteId)
+        .select("content")
+        .executeTakeFirstOrThrow()
+      expect(navbar.content).toEqual(NAVBAR_CONTENT)
+
+      const footer = await db
+        .selectFrom("Footer")
+        .where("siteId", "=", result.siteId)
+        .select("content")
+        .executeTakeFirstOrThrow()
+      expect(footer.content).toEqual(FOOTER)
+
+      const home = await db
+        .selectFrom("Resource")
+        .where("siteId", "=", result.siteId)
+        .where("type", "=", ResourceType.RootPage)
+        .select(["title", "permalink", "state"])
+        .executeTakeFirstOrThrow()
+      expect(home).toMatchObject({
+        title: "Home",
+        permalink: "",
+        state: ResourceState.Published,
+      })
+
+      const search = await db
+        .selectFrom("Resource")
+        .where("siteId", "=", result.siteId)
+        .where("permalink", "=", "search")
+        .select(["title", "type", "state"])
+        .executeTakeFirstOrThrow()
+      expect(search).toMatchObject({
+        title: "Search",
+        type: ResourceType.Page,
+        state: ResourceState.Published,
+      })
+
+      const explicitPermissions = await db
+        .selectFrom("ResourcePermission")
+        .where("siteId", "=", result.siteId)
+        .selectAll()
+        .execute()
+      expect(explicitPermissions).toHaveLength(0)
+
+      await expect(
+        getResourcePermission({
+          userId: session.userId!,
+          siteId: result.siteId,
+        }),
+      ).resolves.toEqual([{ role: RoleType.Admin }])
+      await expect(
+        getResourcePermission({
+          userId: otherCoreUser.id,
+          siteId: result.siteId,
+        }),
+      ).resolves.toEqual([{ role: RoleType.Admin }])
+      await expect(
+        getResourcePermission({
+          userId: regularUser.id,
+          siteId: result.siteId,
+        }),
+      ).resolves.toEqual([])
     })
 
     it.each(["", " ", "\t", "\n", " \t\n "])(
@@ -2455,6 +2622,10 @@ describe("site.router", async () => {
   })
 
   describe("publish", () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
     it("should throw 401 if user is not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -2491,13 +2662,14 @@ describe("site.router", async () => {
       )
     })
 
-    it("should publish a site successfully if user is an Isomer Core Admin", async () => {
+    it("should no-op publish when the site has no CodeBuild ID", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupIsomerAdmin({
         userId: session.userId!,
         role: IsomerAdminRole.Core,
       })
+      const startProjectByIdSpy = vi.spyOn(awsUtils, "startProjectById")
 
       // Act
       const result = await caller.publish({
@@ -2505,7 +2677,43 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result).toBeUndefined() // does not return anything
+      expect(result).toBeUndefined()
+      expect(startProjectByIdSpy).not.toHaveBeenCalled()
+    })
+
+    it("should start a CodeBuild publish when the site has a CodeBuild ID", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({ codeBuildId: "test-codebuild-project-id" })
+        .where("id", "=", site.id)
+        .execute()
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
+      vi.spyOn(awsUtils, "computeBuildChanges").mockResolvedValue({
+        isNewBuildNeeded: true,
+      })
+      const startProjectByIdSpy = vi
+        .spyOn(awsUtils, "startProjectById")
+        .mockResolvedValue({
+          id: "test-build-id",
+          startTime: new Date("2024-01-01T00:00:00.000Z"),
+        })
+
+      // Act
+      const result = await caller.publish({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toBeUndefined()
+      expect(startProjectByIdSpy).toHaveBeenCalledWith(
+        expect.anything(),
+        "test-codebuild-project-id",
+      )
     })
   })
 })

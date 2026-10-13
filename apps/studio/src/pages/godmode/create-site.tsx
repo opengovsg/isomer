@@ -100,8 +100,8 @@ const GodModeCreateSitePage: NextPageWithLayout = () => {
             homepage, navbar and footer.
           </ListItem>
           <ListItem>
-            2. All Isomer team members will be added as site admins with full
-            access to manage the site.
+            2. All Isomer team members will have admin access to manage the
+            site.
           </ListItem>
         </List>
       </Box>
