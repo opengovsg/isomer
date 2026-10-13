@@ -139,14 +139,14 @@ const HeroActionLayoutQuickActionItemSchema = Type.Object({
       format: ICON_PICKER_FORMAT,
     },
   ),
-  title: Type.String({
+  title: IsomerString({
     title: "Title",
     pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
     errorMessage: {
       pattern: "cannot be empty or contain only spaces",
     },
   }),
-  description: Type.String({
+  description: IsomerString({
     title: "Description",
     pattern: NON_EMPTY_STRING_REGEX,
     errorMessage: {
@@ -186,7 +186,7 @@ const HeroGradientSharedSchema = Type.Composite(
 
 const HeroGradientQuickActionsFieldsSchema = Type.Object({
   quickActionsTitle: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Title",
       pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
       errorMessage: {
