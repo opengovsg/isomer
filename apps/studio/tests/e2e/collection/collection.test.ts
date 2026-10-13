@@ -7,9 +7,11 @@ import {
   createCollectionLink,
   createCollectionPage,
   createCollectionWithTagCategories,
-  getRootPageId,
 } from "../fixtures/collection"
+import { CollectionLinkPO } from "../fixtures/collection-link.po"
+import { getRootPageId } from "../fixtures/collection.db"
 import { CollectionPO } from "../fixtures/collection.po"
+import { PageEditorPO } from "../fixtures/page-editor.po"
 import { getResourceDraftTagged } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -65,16 +67,17 @@ test.describe(
     test("admin can save after filling the required tag category", async ({
       page,
     }) => {
-      // Arrange
       const collection = new CollectionPO(page)
-      await page.goto(`/sites/${siteId}/links/${linkId}`)
-      await collection.expectLinkSaveDisabled()
+      const linkEditor = new CollectionLinkPO(page)
+
+      // Arrange
+      await linkEditor.gotoLink(siteId, linkId)
+      await collection.expectItemSaveDisabled()
 
       // Act
       await collection.selectTagOption(TAG_CATEGORY_LABEL, TAG_OPTION_LABEL)
-      await collection.expectLinkSaveEnabled()
-      await collection.clickLinkSave()
-      await expect(page.getByText("Link updated!")).toBeVisible()
+      await collection.expectItemSaveEnabled()
+      await collection.saveCollectionLink()
 
       // Assert
       const tagged = await getResourceDraftTagged(linkId)
@@ -84,12 +87,14 @@ test.describe(
     test("save stays disabled while the required tag category is unfilled", async ({
       page,
     }) => {
-      // Arrange
       const collection = new CollectionPO(page)
-      await page.goto(`/sites/${siteId}/links/${linkId}`)
+      const linkEditor = new CollectionLinkPO(page)
+
+      // Arrange
+      await linkEditor.gotoLink(siteId, linkId)
 
       // Assert
-      await collection.expectLinkSaveDisabled()
+      await collection.expectItemSaveDisabled()
       await collection.expectRequiredTagError()
     })
   },
@@ -127,21 +132,18 @@ test.describe(
     test("admin can save after filling the required tag category", async ({
       page,
     }) => {
-      // Arrange
       const collection = new CollectionPO(page)
-      await page.goto(`/sites/${siteId}/pages/${pageId}`)
-      await collection.openArticlePageHeader()
+      const editor = new PageEditorPO(page)
+
+      // Arrange
+      await editor.gotoPage(siteId, pageId)
+      await collection.openArticleHeader()
       await collection.expectPageSaveChangesDisabled()
 
       // Act
       await collection.selectTagOption(TAG_CATEGORY_LABEL, TAG_OPTION_LABEL)
       await collection.expectPageSaveChangesEnabled()
-      await collection.clickPageSaveChanges()
-      await expect(
-        page.getByText(
-          "Changes saved. Click 'Publish options' when you're ready to go live.",
-        ),
-      ).toBeVisible()
+      await collection.saveArticleHeaderChanges()
 
       // Assert
       const tagged = await getResourceDraftTagged(pageId)
@@ -151,10 +153,12 @@ test.describe(
     test("save stays disabled while the required tag category is unfilled", async ({
       page,
     }) => {
-      // Arrange
       const collection = new CollectionPO(page)
-      await page.goto(`/sites/${siteId}/pages/${pageId}`)
-      await collection.openArticlePageHeader()
+      const editor = new PageEditorPO(page)
+
+      // Arrange
+      await editor.gotoPage(siteId, pageId)
+      await collection.openArticleHeader()
 
       // Assert
       await collection.expectPageSaveChangesDisabled()

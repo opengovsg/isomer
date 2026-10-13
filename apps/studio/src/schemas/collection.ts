@@ -4,6 +4,7 @@ import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { format, parse } from "date-fns"
 import { z } from "zod"
 
+import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "./collection-limits"
 import {
   generateBasePermalinkSchema,
   NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
@@ -122,10 +123,6 @@ export const readCollectionSchema = z
     orderBy: z.enum(resourceOrderByOptions).optional().default("updated-desc"),
   })
   .merge(offsetPaginationSchema)
-
-// Upper bound to limit request parsing and SQL cost (ANY(...) on text[]).
-// Arbitrary limit to prevent abuse; adjust if legitimate collections exceed this.
-export const MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT = 100
 
 const countFilterUsageBaseSchema = z.object({
   siteId: z.number().min(1),
