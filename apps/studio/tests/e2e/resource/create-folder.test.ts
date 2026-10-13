@@ -1,8 +1,8 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
 import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
 import { createFolderViaWizard } from "~e2e/fixtures/helpers"
-import { getResource } from "~e2e/fixtures/resource"
+import { expectResource } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -32,7 +32,6 @@ test.describe("create folder", { tag: roleTag("admin") }, () => {
 
     // Assert. A folder and its index page share this title, so look up the
     // folder the wizard returned instead of the first row with that title.
-    const created = await getResource(folderId)
-    expect(created?.type).toBe("Folder")
+    await expectResource(folderId).toMatchObject({ type: "Folder" })
   })
 })

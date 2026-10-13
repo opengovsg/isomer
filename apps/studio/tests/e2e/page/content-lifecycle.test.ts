@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import {
@@ -7,9 +7,9 @@ import {
   openSeededPageEditor,
 } from "~e2e/fixtures/helpers"
 import {
+  expectResourceByTitle,
   expectResourceDraftBlobContains,
   expectResourceState,
-  getResourceByTitle,
   SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
 } from "~e2e/fixtures/resource"
@@ -55,9 +55,10 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
 
     // Assert
-    const resource = await getResourceByTitle({ siteId, title: pageTitle })
-    expect(resource?.state).toBe(ResourceState.Draft)
-    expect(resource?.parentId).toBe(folderId)
+    await expectResourceByTitle({ siteId, title: pageTitle }).toMatchObject({
+      state: ResourceState.Draft,
+      parentId: folderId,
+    })
   })
 
   test("admin can add a new block to a page and publish it", async ({

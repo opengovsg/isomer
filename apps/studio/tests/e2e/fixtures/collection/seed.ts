@@ -3,6 +3,7 @@ import { db, jsonb } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS } from "../auth"
+import { getRootPageId } from "./db"
 
 export const uniqueSuffix = () => crypto.randomUUID().slice(0, 8)
 
@@ -109,17 +110,18 @@ export const deleteCollection = (collectionId: string) =>
 
 export const createCollectionLink = async ({
   collectionId,
-  ref,
+  ref: refProp,
   siteId,
   tagged = [],
   title = "E2E Tags Link",
 }: {
   collectionId: string
-  ref: string
+  ref?: string
   siteId: number
   tagged?: string[]
   title?: string
 }) => {
+  const ref = refProp ?? `[resource:${siteId}:${await getRootPageId(siteId)}]`
   const blob = await db
     .insertInto("Blob")
     .values({

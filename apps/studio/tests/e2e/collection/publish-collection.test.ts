@@ -1,10 +1,7 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
 import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
-import {
-  getCollectionItemTitles,
-  getIndexPageId,
-} from "~e2e/fixtures/collection"
+import { expectCollectionItemTitlesSorted } from "~e2e/fixtures/collection"
 import {
   createCollectionLinkViaWizard,
   createCollectionPageViaWizard,
@@ -42,10 +39,13 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const editor = new PageEditorPO(page)
 
     // Act
-    const { collectionId } = await createCollectionViaWizard(page, {
-      siteId,
-      title: collectionTitle,
-    })
+    const { collectionId, indexPageId } = await createCollectionViaWizard(
+      page,
+      {
+        siteId,
+        title: collectionTitle,
+      },
+    )
     const { pageId } = await createCollectionPageViaWizard(page, {
       siteId,
       collectionId,
@@ -67,7 +67,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await editor.clickPublish()
     await editor.expectPublishedToast()
 
-    const indexPageId = await getIndexPageId(collectionId)
     await editor.gotoPage(siteId, indexPageId)
     await editor.clickPublish()
     await editor.expectPublishedToast()
@@ -77,8 +76,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expectResourceState(linkId).toBe(ResourceState.Published)
     await expectResourceState(indexPageId).toBe(ResourceState.Published)
 
-    const items = await getCollectionItemTitles(collectionId)
-    expect(items.map((item) => item.title).sort()).toEqual(
+    await expectCollectionItemTitlesSorted(collectionId).toEqual(
       [linkTitle, pageTitle].sort(),
     )
 

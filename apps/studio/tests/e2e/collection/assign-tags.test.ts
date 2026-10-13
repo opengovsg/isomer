@@ -4,10 +4,9 @@ import {
   createCollectionLink,
   createCollectionPage,
   createCollectionWithTagCategories,
-  getRootPageId,
 } from "~e2e/fixtures/collection"
 import { CollectionLinkPO, PageEditorPO, CollectionPO } from "~e2e/fixtures/po"
-import { getResourceDraftTagged } from "~e2e/fixtures/resource"
+import { expectResourceDraftTagged } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -68,8 +67,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await collection.saveArticleHeaderChanges()
 
     // Assert
-    const tagged = await getResourceDraftTagged(collectionPage.id)
-    expect(tagged).toEqual(
+    await expectResourceDraftTagged(collectionPage.id).toEqual(
       expect.arrayContaining([REQUIRED_OPTION_ID, OPTIONAL_OPTION_ID]),
     )
   })
@@ -77,10 +75,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin can assign required and optional tags on a collection link", async ({
     page,
   }) => {
-    const rootPageId = await getRootPageId(siteId)
     const link = await createCollectionLink({
       collectionId,
-      ref: `[resource:${siteId}:${rootPageId}]`,
       siteId,
     })
     const collection = new CollectionPO(page)
@@ -99,8 +95,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await collection.saveCollectionLink()
 
     // Assert
-    const tagged = await getResourceDraftTagged(link.id)
-    expect(tagged).toEqual(
+    await expectResourceDraftTagged(link.id).toEqual(
       expect.arrayContaining([REQUIRED_OPTION_ID, OPTIONAL_OPTION_ID]),
     )
   })

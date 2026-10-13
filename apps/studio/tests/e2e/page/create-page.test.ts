@@ -1,9 +1,9 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
 import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
 import { createPageViaWizard } from "~e2e/fixtures/helpers"
 import { DashboardPO, PageEditorPO } from "~e2e/fixtures/po"
-import { seedFolder, getResourceByTitle } from "~e2e/fixtures/resource"
+import { expectResourceByTitle, seedFolder } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -37,11 +37,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await new PageEditorPO(page).expectLoaded()
 
     // Assert
-    const created = await getResourceByTitle({ siteId, title })
-    expect(created).toBeTruthy()
-    expect(created?.state).toBe("Draft")
-    expect(created?.type).toBe("Page")
-    expect(created?.parentId).toBeNull()
+    await expectResourceByTitle({ siteId, title }).toMatchObject({
+      state: "Draft",
+      type: "Page",
+      parentId: null,
+    })
   })
 })
 
@@ -105,10 +105,10 @@ test.describe(
       })
 
       // Assert
-      const created = await getResourceByTitle({ siteId, title })
-      expect(created).toBeTruthy()
-      expect(created?.state).toBe("Draft")
-      expect(created?.parentId).toBe(folderId)
+      await expectResourceByTitle({ siteId, title }).toMatchObject({
+        state: "Draft",
+        parentId: folderId,
+      })
     })
   },
 )
@@ -141,10 +141,10 @@ test.describe(
       })
 
       // Assert
-      const created = await getResourceByTitle({ siteId, title })
-      expect(created).toBeTruthy()
-      expect(created?.state).toBe("Draft")
-      expect(created?.parentId).toBe(folderId)
+      await expectResourceByTitle({ siteId, title }).toMatchObject({
+        state: "Draft",
+        parentId: folderId,
+      })
     })
   },
 )
@@ -175,10 +175,10 @@ test.describe(
       })
 
       // Assert
-      const created = await getResourceByTitle({ siteId, title })
-      expect(created).toBeTruthy()
-      expect(created?.state).toBe("Draft")
-      expect(created?.parentId).toBe(folderId)
+      await expectResourceByTitle({ siteId, title }).toMatchObject({
+        state: "Draft",
+        parentId: folderId,
+      })
     })
   },
 )

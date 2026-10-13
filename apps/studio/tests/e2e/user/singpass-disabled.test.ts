@@ -39,8 +39,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
     const users = new UsersPO(page)
     await users.goto(siteId)
-
-    // Act
     await setOfflineGrowthBookFeature(
       page,
       IS_SINGPASS_ENABLED_FEATURE_KEY,

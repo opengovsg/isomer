@@ -2,6 +2,7 @@ import { type Browser, type BrowserContext, type Page } from "@playwright/test"
 import { type RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, type Role } from "./auth"
+import { getIndexPageId } from "./collection/db"
 import { CollectionPO } from "./po/collection"
 import { DashboardPO } from "./po/dashboard"
 import { PageEditorPO } from "./po/page-editor"
@@ -126,7 +127,8 @@ export const createCollectionViaWizard = async (
   await dashboard.fillCollectionWizard(title)
 
   const collection = await getCollectionByTitle({ siteId, title })
-  return { collectionId: collection.id }
+  const indexPageId = await getIndexPageId(collection.id)
+  return { collectionId: collection.id, indexPageId }
 }
 
 export const createCollectionItemViaWizard = async (

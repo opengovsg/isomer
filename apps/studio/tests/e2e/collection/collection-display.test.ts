@@ -1,7 +1,7 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
 import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
-import { getDraftIndexPage } from "~e2e/fixtures/collection"
+import { expectDraftIndexPage } from "~e2e/fixtures/collection"
 import { openCollectionIndexEditor } from "~e2e/fixtures/helpers"
 import { seedCollection } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
@@ -51,11 +51,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Assert
     await collection.expectCollectionSummary(summary)
     await collection.expectLayoutSelected("2-column")
-    const draft = await getDraftIndexPage(indexPageId)
-    expect(draft?.subtitle).toBe(summary)
-    expect(draft?.variant).toBe("blog")
-    expect(draft?.sortOrder).toBe("title-asc")
-    expect(draft?.showDate).toBe(false)
-    expect(draft?.showThumbnail?.fallback).toBe("first-image")
+    await expectDraftIndexPage(indexPageId).toMatchObject({
+      subtitle: summary,
+      variant: "blog",
+      sortOrder: "title-asc",
+      showDate: false,
+      showThumbnail: { fallback: "first-image" },
+    })
   })
 })

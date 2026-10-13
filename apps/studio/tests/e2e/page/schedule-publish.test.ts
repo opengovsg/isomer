@@ -4,8 +4,8 @@ import { openSeededPageEditor } from "~e2e/fixtures/helpers"
 import { DashboardPO } from "~e2e/fixtures/po"
 import {
   expectResourceScheduledAt,
+  expectResourceScheduledAtChangesAfter,
   expectResourceScheduledBy,
-  getResourceScheduledAt,
   seedFolderWithPage,
 } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
@@ -81,22 +81,19 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.schedulePublishForToday("5:00 PM")
     await editor.expectScheduledSuccessfully("5:00 PM")
     await expectResourceScheduledAt(seededPage.id).not.toBeNull()
-    const scheduledAtFirst = await getResourceScheduledAt(seededPage.id)
 
     // Act: cancel and reschedule to a different (earlier) slot.
     // Wait for the cancel's DB write (and its readPage refetch) to fully
     // settle before reopening — otherwise a query invalidation mid-way can
     // remount PublishButton's Suspense boundary and silently close the modal
     // this test just opened.
-    await editor.cancelSchedule()
-    await expectResourceScheduledAt(seededPage.id).toBeNull()
-    await editor.openScheduleModal()
-    await editor.schedulePublishForToday("9:00 AM")
-    await editor.expectScheduledSuccessfully("9:00 AM")
-
-    // Assert
-    await expectResourceScheduledAt(seededPage.id).not.toBeNull()
-    await expectResourceScheduledAt(seededPage.id).not.toEqual(scheduledAtFirst)
+    await expectResourceScheduledAtChangesAfter(seededPage.id, async () => {
+      await editor.cancelSchedule()
+      await expectResourceScheduledAt(seededPage.id).toBeNull()
+      await editor.openScheduleModal()
+      await editor.schedulePublishForToday("9:00 AM")
+      await editor.expectScheduledSuccessfully("9:00 AM")
+    })
   })
 
   test("scheduled status survives reload and blocks further editing", async ({

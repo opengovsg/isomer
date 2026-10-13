@@ -28,7 +28,9 @@ Put code in the right layer — wrong layer is a smell.
 | **Helpers**       | `~e2e/fixtures/helpers`                         | Multi-step flows crossing pages or modals                 |
 | **Page objects**  | `~e2e/fixtures/po`                              | Locators + actions on one UI surface                      |
 | **DB fixtures**   | `~e2e/fixtures/<entity>`, `~e2e/fixtures/reset` | Arrange, read queries, poll assertions, site-scoped reset |
-| **Network mocks** | `~e2e/fixtures/network`                         | Route stubs (S3 upload, GrowthBook) in `beforeEach`       |
+| **Network mocks** | `~e2e/fixtures/network`                         | Route stubs (S3 upload, GrowthBook)                       |
+
+`~e2e/fixtures/reset` is for site-scoped reset helpers only — do not re-export other entities (e.g. import `ensureUserOnboarded` from `~e2e/fixtures/user`).
 
 Entity folders (`resource/`, `site/`, `user/`, `whitelist/`, `role/`, `collection/`, …):
 
@@ -40,13 +42,18 @@ Entity folders (`resource/`, `site/`, `user/`, `whitelist/`, `role/`, `collectio
 
 Exceptions (do not “complete the trio” blindly): `site/` uses `provision.ts` instead of `seed.ts`; `role/` has only `seed.ts` for global role seeding in `global-setup.ts`.
 
+### Network mocks
+
+- **`beforeEach`** — when every test in the `describe` needs the same stub for the whole file or role block.
+- **Arrange** — when only one test (or one scenario) needs a stub; do not hoist it to `beforeEach` if sibling tests must see the real network.
+
 ## Welcome modal
 
 Call `ensureUserOnboarded(TEST_EMAILS.<role>)` in `beforeEach` so the welcome modal does not block tests.
 
 ## Per-site isolation
 
-Every test file gets a dedicated site via `provisionE2ESite` in `beforeAll`. The e2e database is wiped once per run in `global-setup.ts` — no per-test site teardown.
+Role-tagged specs that exercise a **site dashboard, settings, resources, collections, or users** get a dedicated site via `provisionE2ESite` in `beforeAll`. The e2e database is wiped once per run in `global-setup.ts` — no per-test site teardown.
 
 ```ts
 let siteId: number
@@ -60,6 +67,16 @@ test.beforeAll(async () => {
 - `roles` maps to `TEST_EMAILS`; assert on returned `siteId` / `siteName`, not hardcoded seed site names or IDs
 - Use `resetSite*` from `~e2e/fixtures/reset` in `beforeEach` for idempotent settings state
 - `provisionE2ESite` creates root + search pages so the dashboard loads
+
+**Exceptions (no `provisionE2ESite` in the file):**
+
+| Case                                | Examples                                                  | Why                                                                     |
+| ----------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Unauthenticated / UI login          | `smoke.test.ts`, `singpass.test.ts`, `login-flow.test.ts` | No role storage state or full sign-in flow                              |
+| Godmode-only surfaces               | `godmode/access.test.ts`, `godmode/whitelist.test.ts`     | Assert hub routes, redirects, or whitelist UI — no site tree under test |
+| Godmode creates the site under test | `godmode/create-site.test.ts`                             | Site comes from the create-site mutation, not `provisionE2ESite`        |
+
+`godmode/publishing.test.ts` and other specs that need a publishable site **do** use `provisionE2ESite` (or a helper built on it).
 
 ## Settings publisher gate
 
@@ -104,23 +121,31 @@ rg 'page\.\w+\(' apps/studio/tests/e2e --glob '*.test.ts'
 
 ## DB assertions
 
-- **One-shot reads:** query in `fixtures/<entity>/db.ts`, `expect()` in the test
-- **Poll after mutations:** `expect.poll` helpers in `fixtures/<entity>/expect.ts` — not inline `db.selectFrom(...)` in tests
+**All** database assertions in `*.test.ts` go through `expect.poll` helpers in `fixtures/<entity>/expect.ts`. Tests do not call `get*` / `list*` from `db.ts` directly.
+
+| Do                                                                    | Don't                                                   |
+| --------------------------------------------------------------------- | ------------------------------------------------------- |
+| `await expectResourceTitle(id).toBe("…")`                             | `const row = await getResource(id); expect(row?.title)` |
+| `await expectResourceByTitle({ siteId, title }).toMatchObject({ … })` | `await getResourceByTitle(...)` in the test             |
+| Add a new `expect*` in `expect.ts` when you need a new polled field   | Inline `expect.poll(() => db…)` in `*.test.ts`          |
 
 Rules:
 
 - `*.db.ts` is read-only — no `expect()` inside
 - Setup/teardown mutations go in `seed.ts` or `~e2e/fixtures/reset`
 
-Examples: `expectResourceId`, `expectResourceTitle`, `expectSiteName`, `expectUserRoleOnSite`.
+Examples: `expectResource`, `expectResourceByTitle`, `expectResourceTitle`, `expectSiteName`, `expectUserRoleOnSite`.
 
 ## Violation smells
 
-| Smell                                   | Fix                                                 |
-| --------------------------------------- | --------------------------------------------------- |
-| Hardcoded site ID or seed site name     | `provisionE2ESite` + assert returned `siteId`       |
-| Duplicated wizard/invite flow in a test | `helpers.ts` or PO                                  |
-| `test.use({ storageState })`            | `{ tag: roleTag(...) }` on `describe`               |
-| Inline `db.selectFrom` in `*.test.ts`   | `fixtures/<entity>/db.ts` or `expect.ts`            |
-| `page.waitForURL` for dashboard nav     | `DashboardPO.expectOnFolder` / `expectOnPageEditor` |
-| Any other `page.*` in `*.test.ts`       | PO or helper for that surface                       |
+| Smell                                           | Fix                                                 |
+| ----------------------------------------------- | --------------------------------------------------- |
+| Hardcoded site ID or seed site name             | `provisionE2ESite` + assert returned `siteId`       |
+| Duplicated wizard/invite flow in a test         | `helpers.ts` or PO                                  |
+| `test.use({ storageState })`                    | `{ tag: roleTag(...) }` on `describe`               |
+| `get*` / `list*` from `db.ts` in `*.test.ts`    | Matching `expect*` in `fixtures/<entity>/expect.ts` |
+| Inline `db.selectFrom` in `*.test.ts`           | `fixtures/<entity>/db.ts` or `expect.ts`            |
+| Inline `expect.poll(() => get…)` in `*.test.ts` | `fixtures/<entity>/expect.ts` helper                |
+| `page.waitForURL` for dashboard nav             | `DashboardPO.expectOnFolder` / `expectOnPageEditor` |
+| Any other `page.*` in `*.test.ts`               | PO or helper for that surface                       |
+| `ensureUserOnboarded` from `reset`              | `~e2e/fixtures/user`                                |

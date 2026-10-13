@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
 import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
 import {
@@ -7,7 +7,7 @@ import {
   deleteCollection,
 } from "~e2e/fixtures/collection"
 import { PageEditorPO, CollectionPO } from "~e2e/fixtures/po"
-import { getResourceDraftTagged } from "~e2e/fixtures/resource"
+import { expectResourceDraftTagged } from "~e2e/fixtures/resource"
 import { provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -63,7 +63,6 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await collection.saveArticleHeaderChanges()
 
     // Assert
-    const tagged = await getResourceDraftTagged(collectionPage.id)
-    expect(tagged).toContain(TAG_OPTION_ID)
+    await expectResourceDraftTagged(collectionPage.id).toContain(TAG_OPTION_ID)
   })
 })

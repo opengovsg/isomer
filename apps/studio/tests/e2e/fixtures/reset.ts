@@ -2,7 +2,6 @@ import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import { sql } from "kysely"
 import { db, jsonb } from "~/server/modules/database"
 
-export { ensureUserOnboarded } from "./user/mutations"
 export { deleteRedirectBySource, seedRedirect } from "./site/db"
 
 const DEFAULT_AGENCY_SITE_NAME = "Isomer"

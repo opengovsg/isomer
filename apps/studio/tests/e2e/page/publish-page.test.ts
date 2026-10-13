@@ -8,7 +8,6 @@ import {
 import {
   expectResourceDraftBlobId,
   expectResourceState,
-  getResourceDraftBlobId,
   SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
 } from "~e2e/fixtures/resource"
@@ -49,10 +48,10 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   }) => {
     // Arrange
     const { page: seededPage } = await seedFolderWithPage({ siteId })
+    const draftBlobIdBefore = seededPage.draftBlobId
 
     // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
-    const draftBlobIdBefore = await getResourceDraftBlobId(seededPage.id)
     await editor.cancelPublishConfirmation()
 
     // Assert
