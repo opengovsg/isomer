@@ -1,4 +1,5 @@
 import type { HeadingProps } from "~/interfaces"
+import { unescape } from "lodash-es"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
@@ -14,11 +15,13 @@ export const Heading = ({
   headingLevel,
 }: Omit<HeadingProps, "type">) => {
   const Tag = getHeadingTag(headingLevel)
-  const textContent = getTextAsHtml({
-    site,
-    content,
-    shouldHideEmptyHardBreak: true,
-  })
+  const textContent = unescape(
+    getTextAsHtml({
+      site,
+      content,
+      shouldHideEmptyHardBreak: true,
+    }),
+  )
 
   if (level === 2) {
     return (

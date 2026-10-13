@@ -1,0 +1,81 @@
+import { Editor } from "@tiptap/react"
+import { describe, expect, it } from "vitest"
+
+import { normalizeProseContentForEditor } from "../../../utils/normalizeProseContentForEditor"
+import { BASE_EXTENSIONS, TEXT_EDITOR_EXTRA_EXTENSIONS } from "../constants"
+
+const proseEditorExtensions = [
+  ...BASE_EXTENSIONS,
+  ...TEXT_EDITOR_EXTRA_EXTENSIONS,
+]
+
+describe("TipTap enableContentCheck", () => {
+  it("should not emit contentError for stylized unicode", () => {
+    const content = {
+      type: "prose",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥" }],
+        },
+      ],
+    }
+    let contentError: Error | undefined
+
+    const editor = new Editor({
+      extensions: proseEditorExtensions,
+      content,
+      enableContentCheck: true,
+      onContentError: ({ error }) => {
+        contentError = error
+      },
+    })
+
+    expect(contentError).toBeUndefined()
+    editor.destroy()
+  })
+
+  it("should not emit contentError for empty prose content after normalization", () => {
+    const content = normalizeProseContentForEditor({
+      type: "prose",
+      content: [],
+    })
+    let contentError: Error | undefined
+
+    const editor = new Editor({
+      extensions: proseEditorExtensions,
+      content,
+      enableContentCheck: true,
+      onContentError: ({ error }) => {
+        contentError = error
+      },
+    })
+
+    expect(contentError).toBeUndefined()
+    editor.destroy()
+  })
+
+  it("should not emit contentError for stored empty text nodes after normalization", () => {
+    const content = normalizeProseContentForEditor({
+      type: "prose",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "" }] },
+        { type: "paragraph", content: [{ type: "text", text: "keep" }] },
+      ],
+    })
+    let contentError: Error | undefined
+
+    const editor = new Editor({
+      extensions: proseEditorExtensions,
+      content,
+      enableContentCheck: true,
+      onContentError: ({ error }) => {
+        contentError = error
+      },
+    })
+
+    expect(contentError).toBeUndefined()
+    expect(editor.getText()).toContain("keep")
+    editor.destroy()
+  })
+})

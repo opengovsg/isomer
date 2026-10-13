@@ -16,10 +16,10 @@ import {
   IconButton,
   TouchableTooltip,
 } from "@opengovsg/design-system-react"
+import posthog from "posthog-js"
 import { BiDotsHorizontalRounded, BiHide } from "react-icons/bi"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
-import { useIsUnpublishEnabled } from "~/hooks/useIsUnpublishEnabled"
 import { trpc } from "~/utils/trpc"
 import { ResourceType, ScheduledAction } from "~prisma/generated/generatedEnums"
 
@@ -35,7 +35,6 @@ const SuspendablePageMoreActionsButton = ({
   pageId,
   siteId,
 }: PageMoreActionsButtonProps): JSX.Element | null => {
-  const isUnpublishEnabled = useIsUnpublishEnabled()
   const unpublishModalDisclosure = useDisclosure()
   const cancelScheduleDisclosure = useDisclosure()
 
@@ -71,10 +70,9 @@ const SuspendablePageMoreActionsButton = ({
     isIndexPage && (isBlockInfoLoading || isBlockInfoError)
 
   // RootPage can't be unpublished — mirrors the backend's rejection and the
-  // dashboard's equivalent exclusion (see RootpageRow.tsx).
-  if (!isUnpublishEnabled || currPage.type === ResourceType.RootPage) {
-    return null
-  }
+  // dashboard's equivalent exclusion (see RootpageRow.tsx). Shown disabled
+  // with a reason rather than hidden, so the action is discoverable.
+  const isRootPage = currPage.type === ResourceType.RootPage
 
   // isIndexPage must gate both of these explicitly, not just the query's
   // `enabled`. Every child page in a folder shares the same query key as
@@ -100,18 +98,27 @@ const SuspendablePageMoreActionsButton = ({
     !!parentIndexPageInfo &&
     parentIndexPageInfo.unschedulableDescendantCount > 0
 
+  // Ordered by priority — first match wins, and drives both the popover
+  // title and (via disabledReason) whether the button is disabled.
   // isBlockedFromScheduling takes priority over !isLive: an IndexPage can
   // read "not live" on its own while its container-aware badge still shows
   // Live (because a descendant is), so leading with "isn't live" would
   // contradict what the user just saw. Live descendants are the actionable
   // blocker in that case.
-  const disabledReason = isBlockedFromScheduling
-    ? "There are child pages that are or will be live"
-    : !isLive
-      ? "This page isn't live"
-      : isScheduledToPublish
-        ? "This page has a scheduled publish. Cancel it before unpublishing."
-        : undefined
+  let title = "Unpublish page"
+  let disabledReason: string | undefined
+  if (isRootPage) {
+    title = "This page can't be unpublished"
+    disabledReason = "The homepage can't be unpublished."
+  } else if (isBlockedFromScheduling) {
+    title = "This page can't be unpublished"
+    disabledReason = "There are child pages that are or will be live"
+  } else if (!isLive) {
+    disabledReason = "This page isn't live"
+  } else if (isScheduledToPublish) {
+    disabledReason =
+      "This page has a scheduled publish. Cancel it before unpublishing."
+  }
 
   // "Cancel schedule" has no disabled condition of its own, so the trigger
   // reads as active whenever that's the action on offer. Otherwise it
@@ -145,7 +152,14 @@ const SuspendablePageMoreActionsButton = ({
                 {...cancelScheduleDisclosure}
               />
             )}
-            <Popover placement="bottom-end">
+            <Popover
+              placement="bottom-end"
+              onOpen={() =>
+                posthog.capture("unpublish_more_actions_opened", {
+                  site_id: siteId,
+                })
+              }
+            >
               {({ onClose }) => (
                 <>
                   <PopoverTrigger>
@@ -184,9 +198,7 @@ const SuspendablePageMoreActionsButton = ({
                             >
                               {isScheduledToUnpublish
                                 ? "Scheduled to unpublish"
-                                : isBlockedFromScheduling
-                                  ? "This page can't be unpublished"
-                                  : "Unpublish page"}
+                                : title}
                             </Text>
                             <Text
                               textStyle="body-2"
@@ -223,6 +235,9 @@ const SuspendablePageMoreActionsButton = ({
                               isLoading={isBlockInfoLoading}
                               leftIcon={<Icon as={BiHide} boxSize="1rem" />}
                               onClick={() => {
+                                posthog.capture("unpublish_modal_opened", {
+                                  site_id: siteId,
+                                })
                                 onClose()
                                 unpublishModalDisclosure.onOpen()
                               }}

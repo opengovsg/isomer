@@ -1,0 +1,381 @@
+import { expect, type Page } from "@playwright/test"
+
+export class DashboardPO {
+  constructor(private readonly page: Page) {}
+
+  async gotoSite(siteId: number) {
+    await this.page.goto(`/sites/${siteId}`)
+    // Site home URL is exactly `/sites/:siteId` (no folder/collection suffix).
+    await this.page.waitForURL(new RegExp(`/sites/${siteId}$`))
+  }
+
+  async gotoFolder(siteId: number, folderId: string) {
+    await this.page.goto(`/sites/${siteId}/folders/${folderId}`)
+    await this.page.waitForURL(
+      new RegExp(`/sites/${siteId}/folders/${folderId}$`),
+    )
+  }
+
+  private createNewButton() {
+    return this.page.getByRole("button", { name: "Create new..." })
+  }
+
+  async openCreateMenu() {
+    await this.createNewButton().click()
+  }
+
+  /** Site home dashboard — wait for content before asserting header actions. */
+  async expectSiteHomeLoaded() {
+    await expect(this.page.getByRole("heading", { name: "Home" })).toBeVisible()
+  }
+
+  async expectCreateButtonDisabledAtSiteRoot() {
+    await this.expectSiteHomeLoaded()
+    const createButton = this.createNewButton()
+    await expect(createButton).toBeVisible()
+    await expect(createButton).toBeDisabled()
+    // TouchableTooltip opens on mouseenter of the wrapper span around the button.
+    await createButton.locator("xpath=..").hover()
+    await expect(
+      this.page.getByRole("tooltip", {
+        name: "You need to be an Admin to create items under Home.",
+      }),
+    ).toBeVisible()
+  }
+
+  async openResourceMenu(title: string) {
+    await this.page
+      .getByRole("button", { name: `Options for ${title}`, exact: true })
+      .click()
+  }
+
+  async clickCreatePage() {
+    await this.page.getByRole("menuitem", { name: "Page" }).click()
+  }
+
+  async clickCreateFolder() {
+    await this.page.getByRole("menuitem", { name: "Folder" }).click()
+  }
+
+  async clickCreateCollection() {
+    await this.page.getByRole("menuitem", { name: "Collection" }).click()
+  }
+
+  async fillPageWizard(title: string) {
+    await this.page
+      .getByRole("button", { name: "Next: Page title and URL" })
+      .click()
+    await this.page.getByLabel("Page title").fill(title)
+    await this.page.getByRole("button", { name: "Start editing" }).click()
+  }
+
+  async fillFolderWizard(title: string) {
+    await this.page.getByLabel("Folder name").fill(title)
+    await this.page.getByRole("button", { name: "Create Folder" }).click()
+    await expect(this.page.getByText("Folder created!")).toBeVisible()
+  }
+
+  async fillCollectionWizard(title: string) {
+    await this.page.getByLabel("Collection name").fill(title)
+    await this.page.getByRole("button", { name: "Create collection" }).click()
+    await expect(this.page.getByText("Collection created!")).toBeVisible()
+  }
+
+  async openCreateCollectionModal() {
+    await this.openCreateMenu()
+    await this.clickCreateCollection()
+    await expect(this.page.getByText("Create a new collection")).toBeVisible()
+  }
+
+  async fillCreateCollectionModalTitle(title: string) {
+    await this.page.getByLabel("Collection name").fill(title)
+  }
+
+  async cancelCreateCollectionModal() {
+    // The modal has two "Close"-named buttons: the icon-only ModalCloseButton
+    // (aria-label only) and the footer action. Filter by visible text.
+    await this.page
+      .getByRole("button", { name: "Close" })
+      .filter({ hasText: "Close" })
+      .click()
+    await expect(
+      this.page.getByText("Create a new collection"),
+    ).not.toBeVisible()
+  }
+
+  async openCollectionItemWizard() {
+    await this.page.getByRole("button", { name: "Add new item" }).click()
+    await expect(
+      this.page.getByText("What kind of collection item are you creating?"),
+    ).toBeVisible()
+  }
+
+  async cancelCollectionItemWizard() {
+    await this.page.getByRole("button", { name: "Cancel" }).click()
+    await expect(
+      this.page.getByText("What kind of collection item are you creating?"),
+    ).not.toBeVisible()
+  }
+
+  async selectCollectionItemType(type: "Page" | "Link or file") {
+    await this.page.getByText(type, { exact: true }).click()
+    await this.page.getByRole("button", { name: "Next: Page details" }).click()
+  }
+
+  async fillCollectionItemWizard(title: string) {
+    // Page items label the field "Page title"; link items use "Item title".
+    await this.page.getByLabel(/Page title|Item title/).fill(title)
+    await this.page.getByRole("button", { name: "Start editing" }).click()
+  }
+
+  async expectOnCollectionItemEditor(
+    siteId: number,
+    kind: "page" | "link",
+  ): Promise<string> {
+    const subpath = kind === "page" ? "pages" : "links"
+    const pattern = new RegExp(`/sites/${siteId}/${subpath}/(\\d+)$`)
+    await this.page.waitForURL(pattern)
+    const itemId = this.page.url().match(pattern)?.[1]
+    if (!itemId) {
+      throw new Error(
+        `Expected ${subpath} editor URL after wizard, got ${this.page.url()}`,
+      )
+    }
+    return itemId
+  }
+
+  async gotoCollection(siteId: number, collectionId: string) {
+    await this.page.goto(`/sites/${siteId}/collections/${collectionId}`)
+    await this.page.waitForURL(
+      new RegExp(`/sites/${siteId}/collections/${collectionId}$`),
+    )
+  }
+
+  async expectCollectionAccessDenied() {
+    await expect(
+      this.page.getByText("You don't have access to edit this collection."),
+    ).toBeVisible()
+    await expect(
+      this.page.getByRole("button", { name: "Back to My Sites" }),
+    ).toBeVisible()
+  }
+
+  async openPageSettings(title: string) {
+    await expect(this.page.getByRole("link", { name: title })).toBeVisible()
+    await this.openResourceMenu(title)
+    await this.page.getByRole("menuitem", { name: "Edit settings" }).click()
+  }
+
+  async expectScheduledBadge(title: string) {
+    const row = this.page.getByRole("row").filter({ hasText: title })
+    await expect(row.getByText("Scheduled to publish")).toBeVisible()
+  }
+
+  async clickDelete() {
+    await this.page
+      .getByRole("menuitem", { name: "Delete", exact: true })
+      .click()
+  }
+
+  private get moveMenuItem() {
+    return (
+      this.page
+        // Accessible name includes the resource title: "Move resource to another location for …"
+        .getByRole("menuitem", {
+          name: /Move resource to another location for/,
+        })
+        .or(this.page.getByRole("menuitem", { name: "Move to..." }))
+    )
+  }
+
+  async clickMove() {
+    await this.moveMenuItem.click()
+  }
+
+  async expectDeleteMenuDisabled() {
+    await expect(
+      this.page.getByRole("menuitem", { name: "Delete", exact: true }),
+    ).toBeDisabled()
+  }
+
+  async expectMoveMenuDisabled() {
+    await expect(this.moveMenuItem).toBeDisabled()
+  }
+
+  private resourceOptionsButton(title: string) {
+    return this.page.getByRole("button", {
+      name: `Options for ${title}`,
+      exact: true,
+    })
+  }
+
+  async expectResourceLinkVisible(title: string) {
+    await expect(this.resourceOptionsButton(title)).toBeVisible()
+  }
+
+  async expectResourceLinkHidden(title: string) {
+    await expect(this.resourceOptionsButton(title)).toHaveCount(0)
+  }
+
+  async expectPageHeading(title: string) {
+    await expect(this.page.getByRole("heading", { name: title })).toBeVisible()
+  }
+
+  async expectOnPageEditor(siteId: number, pageId: string) {
+    await this.page.waitForURL(new RegExp(`/sites/${siteId}/pages/${pageId}`))
+  }
+
+  /** After the create-page wizard, navigation lands on a new numeric page id. */
+  async expectOnNewPageEditor(siteId: number): Promise<string> {
+    const pattern = new RegExp(`/sites/${siteId}/pages/(\\d+)$`)
+    await this.page.waitForURL(pattern)
+    const pageId = this.page.url().match(pattern)?.[1]
+    if (!pageId) {
+      throw new Error(
+        `Expected page editor URL after wizard, got ${this.page.url()}`,
+      )
+    }
+    return pageId
+  }
+
+  async expectOnFolder(siteId: number, folderId: string) {
+    await this.page.waitForURL(
+      new RegExp(`/sites/${siteId}/folders/${folderId}$`),
+    )
+  }
+
+  async expectOnCollection(siteId: number, collectionId: string) {
+    await this.page.waitForURL(
+      new RegExp(`/sites/${siteId}/collections/${collectionId}$`),
+    )
+  }
+
+  async expectSearchResultVisible(title: string) {
+    const dialog = this.page.getByRole("dialog")
+    // Search dialog summary line, e.g. "3 search results in title".
+    await expect(dialog.getByText(/\d+ search result.*in title/i)).toBeVisible()
+    await expect(dialog.getByRole("link", { name: title })).toBeVisible()
+  }
+
+  async openFolderSettings(title: string) {
+    await this.openResourceMenu(title)
+    await this.page
+      .getByRole("menuitem", { name: "Edit folder settings" })
+      .click()
+  }
+
+  async confirmDeleteResource(
+    label: "page" | "folder" | "collection",
+    { title }: { title: string },
+  ) {
+    await expect(
+      this.page.getByRole("dialog").getByText(`Delete ${title}?`),
+    ).toBeVisible()
+    await this.page
+      .getByRole("dialog")
+      // Confirmation copy varies by resource kind: "Yes, delete this page permanently", etc.
+      .getByText(new RegExp(`Yes, delete this ${label} permanently`))
+      .click()
+    await this.page.getByRole("button", { name: `Delete ${label}` }).click()
+    await expect(
+      // Success toast is case-insensitive ("Page deleted!" / "page deleted!").
+      this.page.getByText(new RegExp(`${label} deleted!`, "i")),
+    ).toBeVisible()
+  }
+
+  async cancelDeleteResource(
+    label: "page" | "folder" | "collection",
+    { title }: { title: string },
+  ) {
+    await expect(
+      this.page.getByRole("dialog").getByText(`Delete ${title}?`),
+    ).toBeVisible()
+    await this.page.getByRole("button", { name: `No, keep ${label}` }).click()
+    await expect(
+      this.page.getByRole("dialog").getByText(`Delete ${title}?`),
+    ).not.toBeVisible()
+  }
+
+  async selectMoveDestination(title: string) {
+    await expect(
+      // Move modal header quotes the resource being moved: Move "My page" to...
+      this.page.getByRole("dialog").getByText(/Move ".+" to\.\.\./),
+    ).toBeVisible()
+    await this.page.getByRole("button").filter({ hasText: title }).click()
+  }
+
+  async uncheckCreateRedirectOnMove() {
+    // Chakra renders the native checkbox visually hidden behind its styled
+    // label, which intercepts pointer events — click the label's own text
+    // (as `confirmDeleteResource` does for its confirmation checkbox) rather
+    // than the checkbox role directly. Label continues with redirect wording.
+    await this.page.getByText(/Check this box to.*redirect/i).click()
+  }
+
+  async confirmMove() {
+    const moveButton = this.page.getByRole("button", { name: "Move here" })
+    await expect(moveButton).toBeEnabled()
+    await moveButton.click()
+    await expect(this.page.getByText("Resource moved!")).toBeVisible()
+  }
+
+  async cancelMove() {
+    await this.page.getByRole("button", { name: "Cancel", exact: true }).click()
+    await expect(
+      this.page.getByRole("dialog").getByText(/Move ".+" to\.\.\./),
+    ).not.toBeVisible()
+  }
+
+  async openSearch() {
+    await this.page.getByRole("button", { name: "search-button" }).click()
+    await expect(
+      this.page.getByPlaceholder(
+        // Matches the search input placeholder on the site dashboard.
+        /Search pages, collections, or folders by name/,
+      ),
+    ).toBeVisible()
+  }
+
+  async searchFor(query: string) {
+    await this.openSearch()
+    await this.page
+      .getByPlaceholder(/Search pages, collections, or folders by name/)
+      .fill(query)
+  }
+
+  async clickSearchResult(title: string) {
+    const dialog = this.page.getByRole("dialog")
+    await expect(dialog.getByText(/\d+ search result.*in title/i)).toBeVisible()
+    const resultLink = dialog.getByRole("link", { name: title })
+    await expect(resultLink).toBeVisible()
+    await resultLink.click()
+  }
+
+  async sortCollectionBy(label: "Recently edited" | "Alphabetical" | "URL") {
+    await this.page
+      .getByRole("button", { name: /Recently edited|Alphabetical|URL/ })
+      .click()
+    await this.page.getByRole("menuitem", { name: label }).click()
+  }
+
+  async expectCollectionItemCount(count: number) {
+    const noun = count === 1 ? "item" : "items"
+    await expect(this.page.getByText(`${count} ${noun}`)).toBeVisible()
+  }
+
+  async expectCollectionRowVisible(title: string) {
+    await expect(this.page.getByRole("link", { name: title })).toBeVisible()
+  }
+
+  async expectCollectionRowHidden(title: string) {
+    await expect(this.page.getByRole("link", { name: title })).toHaveCount(0)
+  }
+
+  async goToCollectionTablePage(pageNumber: number) {
+    const nav = this.page.getByRole("navigation", { name: "Pagination" })
+    await expect(nav).toBeVisible()
+    await nav
+      .getByRole("button", { name: String(pageNumber), exact: true })
+      .click()
+  }
+}

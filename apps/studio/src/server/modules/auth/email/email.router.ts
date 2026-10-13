@@ -23,6 +23,7 @@ import { isEmailWhitelisted } from "../../whitelist/whitelist.service"
 import { VerificationError } from "../auth.error"
 import { recordUserLogin, verifyToken } from "../auth.service"
 import { createTokenHash, createVfnPrefix, createVfnToken } from "../auth.util"
+import { clearSessionData, toSessionVerificationToken } from "../session"
 import { upsertUser } from "./email.service"
 import { getOtpFingerPrint } from "./utils"
 
@@ -202,10 +203,10 @@ export const emailSessionRouter = router({
           email,
         })
 
-        ctx.session.destroy()
+        clearSessionData(ctx.session)
         set(ctx.session, "singpass.sessionState", {
           userId: user.id,
-          verificationToken: oldVerificationToken,
+          verificationToken: toSessionVerificationToken(oldVerificationToken),
         })
         await ctx.session.save()
         return pick(user, defaultUserSelect)

@@ -1,5 +1,6 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import {
+  Box,
   Button,
   Modal,
   ModalBody,
@@ -11,8 +12,11 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
+import posthog from "posthog-js"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { trpc } from "~/utils/trpc"
+
+import { UnpublishRedirectWarning } from "../UnpublishRedirectWarning"
 
 type PublishOrUnpublishNowAction = "publish" | "unpublish"
 
@@ -59,6 +63,31 @@ export const PublishOrUnpublishNowModal = ({
 }: PublishOrUnpublishNowModalProps): JSX.Element => {
   const { title, description, confirmLabel, successTitle, errorTitle } =
     COPY[action]
+  // Only unpublish renders the redirect check, so only it can be pending.
+  // Shares a cache entry with UnpublishRedirectWarning (same query key); opts
+  // into container references like the delete modal's count.
+  const {
+    data: redirectCountData,
+    isPending: isRedirectQueryPending,
+    isError: isRedirectCheckError,
+  } = trpc.redirect.countByDestinationResource.useQuery(
+    {
+      siteId,
+      resourceId: String(pageId),
+      includeContainerReference: true,
+    },
+    { enabled: action === "unpublish" },
+  )
+  // Gate on isPending, not isLoading, so an offline-paused first fetch still
+  // disables confirm. Scoped to unpublish: the query is disabled for publish.
+  const isRedirectCheckPending =
+    action === "unpublish" && isRedirectQueryPending
+  // Tagged on the unpublish success event, mirroring PublishOrUnpublishModal.
+  // Guard on isError: React Query keeps the last successful data after a failed
+  // refetch, so tag the count as unknown (null) rather than send a stale one.
+  const redirectCount = isRedirectCheckError
+    ? null
+    : (redirectCountData ?? null)
   const utils = trpc.useUtils()
   const toast = useToast()
   const invalidateAfterAction = () =>
@@ -99,6 +128,13 @@ export const PublishOrUnpublishNowModal = ({
         onClose()
       },
       onSuccess: () => {
+        // "scheduled_override" sets this apart from the more-actions flow: the
+        // user brought a scheduled unpublish forward, cancelling the schedule.
+        posthog.capture("page_unpublished", {
+          site_id: siteId,
+          redirect_count: redirectCount,
+          source: "scheduled_override",
+        })
         toast({
           status: "success",
           title: successTitle,
@@ -125,6 +161,11 @@ export const PublishOrUnpublishNowModal = ({
         <ModalCloseButton size="lg" />
         <ModalBody>
           <Text textStyle="body-2">{description}</Text>
+          {action === "unpublish" && (
+            <Box mt="1rem">
+              <UnpublishRedirectWarning pageId={pageId} siteId={siteId} />
+            </Box>
+          )}
         </ModalBody>
         <ModalFooter>
           <Button
@@ -135,7 +176,11 @@ export const PublishOrUnpublishNowModal = ({
           >
             No, keep scheduled
           </Button>
-          <Button onClick={handleConfirm} isLoading={isPending}>
+          <Button
+            onClick={handleConfirm}
+            isDisabled={isRedirectCheckPending}
+            isLoading={isPending}
+          >
             {confirmLabel}
           </Button>
         </ModalFooter>
