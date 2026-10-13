@@ -24,15 +24,6 @@ import { ensureUserOnboarded } from "../fixtures/user"
 let siteId: number
 let siteName: string
 
-const parseJsonField = async (
-  admin: SiteAdminPO,
-  field: "config" | "theme" | "navbar" | "footer",
-) =>
-  JSON.parse(await admin.jsonField(field).inputValue()) as Record<
-    string,
-    unknown
-  >
-
 test.beforeAll(async () => {
   const site = await provisionE2ESite({
     roles: [RoleType.Admin],
@@ -64,18 +55,16 @@ test.describe("core", { tag: roleTag("core") }, () => {
     await admin.goto(siteId)
     await expect(admin.saveButton()).toBeDisabled()
 
-    const config = (await parseJsonField(admin, "config")) as {
-      siteName?: string
-    }
-    const theme = (await parseJsonField(admin, "theme")) as {
+    const config = await admin.readJsonField<{ siteName?: string }>("config")
+    const theme = await admin.readJsonField<{
       colors?: { brand?: { canvas?: { inverse?: string } } }
-    }
-    const navbar = (await parseJsonField(admin, "navbar")) as {
+    }>("theme")
+    const navbar = await admin.readJsonField<{
       items?: { name?: string }[]
-    }
-    const footer = (await parseJsonField(admin, "footer")) as {
+    }>("navbar")
+    const footer = await admin.readJsonField<{
       siteNavItems?: { title?: string }[]
-    }
+    }>("footer")
 
     config.siteName = updatedSiteName
     if (theme.colors?.brand?.canvas) {
@@ -134,9 +123,9 @@ test.describe("core", { tag: roleTag("core") }, () => {
 
     // Arrange
     await admin.goto(siteId)
-    const navbar = (await parseJsonField(admin, "navbar")) as {
+    const navbar = await admin.readJsonField<{
       items?: { name?: string }[]
-    }
+    }>("navbar")
     if (navbar.items?.[0]) {
       navbar.items[0].name = navbarLabel
     }
@@ -158,9 +147,9 @@ test.describe("core", { tag: roleTag("core") }, () => {
 
     // Arrange
     await admin.goto(siteId)
-    const navbar = (await parseJsonField(admin, "navbar")) as {
+    const navbar = await admin.readJsonField<{
       items?: { name?: string }[]
-    }
+    }>("navbar")
     if (navbar.items?.[0]) {
       navbar.items[0].name = navbarLabel
     }
@@ -192,9 +181,9 @@ test.describe("core", { tag: roleTag("core") }, () => {
 
     // Arrange
     await admin.goto(siteId)
-    const navbar = (await parseJsonField(admin, "navbar")) as {
+    const navbar = await admin.readJsonField<{
       items?: { name?: string }[]
-    }
+    }>("navbar")
     if (navbar.items?.[0]) {
       navbar.items[0].name = savedLabel
     }

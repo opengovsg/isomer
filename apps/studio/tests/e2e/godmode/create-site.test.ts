@@ -42,13 +42,13 @@ test.describe("core", { tag: roleTag("core") }, () => {
     await expectNavbarContains(siteId, "Expandable nav item").toBe(true)
     await expectFooterContains(siteId, "About us").toBe(true)
 
-    const home = await getResourceByTitle({ siteId, title: "Home" })
-    expect(home?.type).toBe("RootPage")
-    expect(home?.state).toBe("Published")
+    await expect
+      .poll(() => getResourceByTitle({ siteId, title: "Home" }))
+      .toMatchObject({ type: "RootPage", state: "Published" })
 
-    const search = await getResourceByTitle({ siteId, title: "Search" })
-    expect(search?.type).toBe("Page")
-    expect(search?.state).toBe("Published")
+    await expect
+      .poll(() => getResourceByTitle({ siteId, title: "Search" }))
+      .toMatchObject({ type: "Page", state: "Published" })
 
     await dashboard.expectCreateButtonVisible()
     await dashboard.expectHomepageRowVisible()

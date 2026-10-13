@@ -2,13 +2,12 @@ import { expect, test } from "@playwright/test"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { GodmodePO } from "../fixtures/godmode.po"
+import { deleteWhitelistedVendorEmails } from "../fixtures/reset"
+import { ensureUserOnboarded, uniqueVendorEmail } from "../fixtures/user"
 import {
-  deleteWhitelistedVendorEmails,
-  ensureUserOnboarded,
-  uniqueVendorEmail,
-} from "../fixtures/user"
-import { expectWhitelistedVendorEmail } from "../fixtures/whitelist-expect"
-import { getWhitelistEntry } from "../fixtures/whitelist.db"
+  expectWhitelistedVendorEmail,
+  expectWhitelistEntryAbsent,
+} from "../fixtures/whitelist-expect"
 
 test.describe("migrator", { tag: roleTag("migrator") }, () => {
   test.beforeEach(async () => {
@@ -57,7 +56,7 @@ test.describe("migrator", { tag: roleTag("migrator") }, () => {
       await expect(godmode.vendorEmailsTextarea()).toHaveValue(
         pastedEmails.join("\n"),
       )
-      expect(await getWhitelistEntry(validEmail)).toBeUndefined()
+      await expectWhitelistEntryAbsent(validEmail).toBe(true)
     } finally {
       await deleteWhitelistedVendorEmails(validEmail)
     }

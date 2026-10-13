@@ -14,6 +14,7 @@
 | `fixtures/page-editor.po.ts` | Page editor / publish page object                              |
 | `fixtures/users.po.ts`       | Users / collaborators page object                              |
 | `fixtures/godmode.po.ts`     | God Mode admin surfaces (create site, publishing, whitelist)   |
+| `fixtures/site-admin.po.ts`  | Raw site admin JSON (`/sites/:id/admin`)                       |
 
 ## Structure
 

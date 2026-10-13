@@ -17,3 +17,10 @@ export const expectWhitelistedAdminEmail = (email: string) =>
     if (!row) return null
     return row.expiry === null
   })
+
+/** No whitelist row for the email (e.g. rejected bulk submit). */
+export const expectWhitelistEntryAbsent = (email: string) =>
+  expect.poll(async () => {
+    const row = await getWhitelistEntry(email)
+    return row === undefined
+  })

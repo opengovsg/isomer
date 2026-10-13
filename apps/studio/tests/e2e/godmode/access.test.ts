@@ -9,17 +9,20 @@ const RESTRICTED_GODMODE_PATHS = [
   "/godmode/create-site",
   "/godmode/publishing",
   "/godmode/whitelist",
+  "/godmode/delete-assets",
 ] as const
 
 const CORE_ONLY_GODMODE_PATHS = [
   "/godmode/create-site",
   "/godmode/publishing",
+  "/godmode/delete-assets",
 ] as const
 
 const FULL_ACCESS_GODMODE_PATHS = [
   "/godmode/create-site",
   "/godmode/publishing",
   "/godmode/whitelist",
+  "/godmode/delete-assets",
 ] as const
 
 /** Exhaustive over `Role` — adding a ROLES entry fails typecheck until classified. */
@@ -51,6 +54,7 @@ for (const role of ROLES) {
         await godmode.expectHubLinkVisible("Create a new site")
         await godmode.expectHubLinkVisible("Publishing")
         await godmode.expectHubLinkVisible("Whitelist")
+        await godmode.expectHubLinkVisible("Delete assets")
       })
 
       for (const path of FULL_ACCESS_GODMODE_PATHS) {
@@ -82,6 +86,7 @@ for (const role of ROLES) {
         await godmode.expectHubLinkVisible("Whitelist")
         await godmode.expectHubLinkHidden("Create a new site")
         await godmode.expectHubLinkHidden("Publishing")
+        await godmode.expectHubLinkHidden("Delete assets")
       })
 
       test("can access the whitelist route", async ({ page }) => {

@@ -25,6 +25,12 @@ export class SiteAdminPO {
     await this.jsonField(field).fill(value)
   }
 
+  async readJsonField<T extends Record<string, unknown>>(
+    field: SiteAdminJsonField,
+  ): Promise<T> {
+    return JSON.parse(await this.jsonField(field).inputValue()) as T
+  }
+
   async clickSave() {
     await this.saveButton().click()
   }

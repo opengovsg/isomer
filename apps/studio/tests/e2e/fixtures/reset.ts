@@ -257,3 +257,16 @@ export const resetSiteLogoSettings = async (siteId: number) => {
 /** Remove all redirects for a site (used between mutating redirect tests). */
 export const resetSiteRedirects = (siteId: number) =>
   db.deleteFrom("Redirect").where("siteId", "=", siteId).execute()
+
+/** Tear down vendor whitelist rows created during godmode E2E tests. */
+export const deleteWhitelistedVendorEmails = async (...emails: string[]) => {
+  if (emails.length === 0) return
+  await db
+    .deleteFrom("Whitelist")
+    .where(
+      "email",
+      "in",
+      emails.map((email) => email.toLowerCase()),
+    )
+    .execute()
+}

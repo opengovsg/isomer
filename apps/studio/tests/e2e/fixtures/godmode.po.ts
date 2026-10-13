@@ -4,6 +4,7 @@ type GodmodeRoute =
   | "/godmode/create-site"
   | "/godmode/publishing"
   | "/godmode/whitelist"
+  | "/godmode/delete-assets"
 
 export class GodmodePO {
   constructor(private readonly page: Page) {}
@@ -58,6 +59,9 @@ export class GodmodePO {
         break
       case "/godmode/whitelist":
         await this.gotoWhitelist()
+        break
+      case "/godmode/delete-assets":
+        await this.gotoDeleteAssets()
         break
     }
   }
@@ -165,8 +169,18 @@ export class GodmodePO {
     ).toBeVisible()
   }
 
+  async gotoDeleteAssets() {
+    await this.page.goto("/godmode/delete-assets")
+    await this.page.waitForURL(/\/godmode\/delete-assets$/)
+    await expect(
+      this.page.getByRole("heading", { name: "Delete assets" }),
+    ).toBeVisible()
+  }
+
   vendorEmailsTextarea() {
-    return this.page.locator("textarea").nth(1)
+    return this.page
+      .getByRole("heading", { name: "Vendors (90 day expiry)" })
+      .locator("xpath=following-sibling::textarea[1]")
   }
 
   async fillVendorEmails(emails: string[]) {
