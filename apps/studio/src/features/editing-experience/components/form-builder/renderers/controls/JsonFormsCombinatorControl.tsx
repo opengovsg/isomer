@@ -22,7 +22,7 @@ import {
 import { useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { withHeroCarouselSlides } from "../../heroCarouselDefaults"
+import { nextVariantData } from "../../heroCarouselDefaults"
 import { HeroBannerStyleCombinator } from "./HeroBannerStyleControl"
 
 export const jsonFormsOneOfControlTester: RankedTester = rankWith(
@@ -171,10 +171,7 @@ function JsonFormsCombinatorControl({
       if (newSchema.type === "string") {
         handleChange(path, newSchema.const || "")
       } else {
-        handleChange(path, {
-          ...data,
-          ...withHeroCarouselSlides(data, newData),
-        })
+        handleChange(path, nextVariantData(data, newData, newSchema))
       }
     }
   }

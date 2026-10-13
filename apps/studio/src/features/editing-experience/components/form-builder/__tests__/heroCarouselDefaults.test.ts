@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest"
 import {
   defaultHeroCarouselSlide,
   HERO_CAROUSEL_PLACEHOLDER_IMAGE,
-  HERO_CAROUSEL_PLACEHOLDER_TITLE,
   isHeroCarouselSlideSchema,
+  nextVariantData,
   withHeroCarouselSlides,
 } from "../heroCarouselDefaults"
 
@@ -28,7 +28,7 @@ describe("withHeroCarouselSlides", () => {
       slides: [
         {
           backgroundUrl: "/uploads/existing.png",
-          title: HERO_CAROUSEL_PLACEHOLDER_TITLE,
+          title: "Keep me",
         },
         defaultHeroCarouselSlide(),
       ],
@@ -49,7 +49,10 @@ describe("withHeroCarouselSlides", () => {
     expect(result).toEqual({
       variant: "carousel",
       style: "block",
-      slides: [defaultHeroCarouselSlide(), defaultHeroCarouselSlide()],
+      slides: [
+        { ...defaultHeroCarouselSlide(), title: "Hello" },
+        defaultHeroCarouselSlide(),
+      ],
     })
     expect(defaultHeroCarouselSlide().backgroundUrl).toBe(
       HERO_CAROUSEL_PLACEHOLDER_IMAGE,
@@ -68,6 +71,98 @@ describe("withHeroCarouselSlides", () => {
 
     // Assert
     expect(result).toBe(next)
+  })
+})
+
+const blockSchema = {
+  type: "object",
+  properties: {
+    type: {},
+    variant: {},
+    backgroundUrl: {},
+    title: {},
+    subtitle: {},
+  },
+}
+
+const carouselSchema = {
+  type: "object",
+  properties: {
+    type: {},
+    variant: {},
+    style: {},
+    slides: {},
+  },
+}
+
+describe("nextVariantData", () => {
+  it("drops slides and style when leaving carousel and keeps the first slide content", () => {
+    // Arrange
+    const previous = {
+      type: "hero",
+      variant: "carousel",
+      style: "gradient",
+      title: "Stale root title",
+      slides: [
+        {
+          backgroundUrl: "/uploads/existing.png",
+          title: "Edited",
+          subtitle: "From the slide",
+        },
+        defaultHeroCarouselSlide(),
+      ],
+    }
+
+    // Act
+    const result = nextVariantData(
+      previous,
+      { type: "hero", variant: "block" },
+      blockSchema,
+    )
+
+    // Assert
+    expect(result).toEqual({
+      type: "hero",
+      variant: "block",
+      backgroundUrl: "/uploads/existing.png",
+      title: "Edited",
+      subtitle: "From the slide",
+    })
+  })
+
+  it("drops root hero fields when entering carousel", () => {
+    // Arrange
+    const previous = {
+      type: "hero",
+      variant: "block",
+      backgroundUrl: "/uploads/existing.png",
+      title: "Hello",
+      subtitle: "More",
+      style: "gradient",
+      slides: [{ backgroundUrl: "/stale.png" }],
+    }
+
+    // Act
+    const result = nextVariantData(
+      previous,
+      { type: "hero", variant: "carousel", style: "block" },
+      carouselSchema,
+    )
+
+    // Assert
+    expect(result).toEqual({
+      type: "hero",
+      variant: "carousel",
+      style: "block",
+      slides: [
+        {
+          backgroundUrl: "/uploads/existing.png",
+          title: "Hello",
+          subtitle: "More",
+        },
+        defaultHeroCarouselSlide(),
+      ],
+    })
   })
 })
 
