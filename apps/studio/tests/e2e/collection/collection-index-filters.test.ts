@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "~/schemas/collection"
+import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "~/schemas/collection-limits"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
