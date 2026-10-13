@@ -81,7 +81,7 @@ Client-side UI code, utilities, docs, and tests — reversible, contained blast 
 
 - `**/*.md`, `**/*.mdx`
 - `docs/**`
-- `**/CLAUDE.md`
+- `**/AGENTS.md`
 - `**/*.stories.tsx`, `**/stories/**`
 - `**/__tests__/**`, `**/*.test.ts`, `**/*.test.tsx`, `**/*.spec.ts`
 - `package.json` for dependency-only diffs from Dependabot or Renovate (no script changes)

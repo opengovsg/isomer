@@ -28,7 +28,7 @@ If any condition fails, the agent must run `feature-plan` first.
 ## Plan-first triggers — any one is enough
 
 - The ticket is `risk:medium` or `risk:high`.
-- The change crosses Studio and `packages/components` (the contract boundary — see `packages/components/CLAUDE.md`).
+- The change crosses Studio and `packages/components` (the contract boundary — see `packages/components/AGENTS.md`).
 - The change introduces a new database table, column, or index.
 - The change introduces a new tRPC router or a new module under `server/modules/`.
 - The change introduces a new shared component in `apps/studio/src/components/` or `packages/components/src/`.
