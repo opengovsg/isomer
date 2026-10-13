@@ -233,6 +233,13 @@ const HeroCarouselSlideSchema = Type.Composite(
   },
 )
 
+const HERO_CAROUSEL_SLIDE_LIMITS = {
+  minItems: 2,
+  maxItems: 3,
+} as const
+
+export const HERO_CAROUSEL_MIN_SLIDES = HERO_CAROUSEL_SLIDE_LIMITS.minItems
+
 const HeroCarouselSchema = Type.Object(
   {
     type: Type.Literal("hero", { default: "hero" }),
@@ -256,8 +263,7 @@ const HeroCarouselSchema = Type.Object(
     ),
     slides: Type.Array(HeroCarouselSlideSchema, {
       title: "Slides",
-      minItems: 2,
-      maxItems: 3,
+      ...HERO_CAROUSEL_SLIDE_LIMITS,
     }),
   },
   {
