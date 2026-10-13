@@ -100,6 +100,11 @@ export const seedCollectionWithPage = async ({
     title: collectionTitle,
     permalink: `e2e-collection-${suffix}`,
   })
+  await seedCollectionIndexPage({
+    siteId,
+    collectionId: collection.id,
+    title: collectionTitle,
+  })
   const { page } = await setupCollectionPage({
     siteId,
     parentId: collection.id,
@@ -126,10 +131,20 @@ export const seedTwoCollections = async ({
     title: sourceCollectionTitle,
     permalink: `e2e-src-collection-${suffix}`,
   })
+  await seedCollectionIndexPage({
+    siteId,
+    collectionId: sourceCollection.id,
+    title: sourceCollectionTitle,
+  })
   const { collection: destCollection } = await setupCollection({
     siteId,
     title: destCollectionTitle,
     permalink: `e2e-dest-collection-${suffix}`,
+  })
+  await seedCollectionIndexPage({
+    siteId,
+    collectionId: destCollection.id,
+    title: destCollectionTitle,
   })
   const { page: collectionPage } = await setupCollectionPage({
     siteId,
@@ -154,6 +169,11 @@ export const seedCollectionWithLink = async ({
     siteId,
     title: collectionTitle,
     permalink: `e2e-collection-${suffix}`,
+  })
+  await seedCollectionIndexPage({
+    siteId,
+    collectionId: collection.id,
+    title: collectionTitle,
   })
   const { collectionLink } = await setupCollectionLink({
     siteId,

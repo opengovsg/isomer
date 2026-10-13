@@ -136,6 +136,8 @@ export class CollectionPO {
 
   async addFilter() {
     await this.page.getByRole("button", { name: /Add a filter/i }).click()
+    // Adding a filter opens the nested editor immediately.
+    await expect(this.page.getByText(/Edit Filters/i)).toBeVisible()
   }
 
   async openFilterNamed(name: string) {

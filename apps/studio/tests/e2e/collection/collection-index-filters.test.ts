@@ -49,7 +49,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Act
     await collection.addFilter()
-    await collection.openFilterNamed("New filter")
     await collection.fillFilterName("Topic")
     await collection.setFilterRequired(true)
     await collection.chooseFilterPresentation("Plaintext")
@@ -196,10 +195,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Arrange
     await collection.openFilters()
     await collection.addFilter()
+    await collection.returnToFilters()
     await collection.addFilter()
+    await collection.returnToFilters()
 
-    // Act / Assert — live caption; drawer Save stays enabled because duplicates
-    // are not AJV errors.
+    // Act / Assert — live caption on the list; drawer Save stays enabled
+    // because duplicates are not AJV errors.
     await collection.expectFilterNameError(
       "A filter with this name already exists.",
     )
@@ -216,7 +217,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Arrange
     await collection.openFilters()
     await collection.addFilter()
-    await collection.openFilterNamed("New filter")
 
     // Act
     await collection.fillFilterName("")
@@ -236,7 +236,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Arrange
     await collection.openFilters()
     await collection.addFilter()
-    await collection.openFilterNamed("New filter")
     await collection.fillFilterName("Topic")
     await collection.addOption()
     await collection.addOption()
@@ -264,7 +263,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Arrange
     await collection.openFilters()
     await collection.addFilter()
-    await collection.openFilterNamed("New filter")
     await collection.fillFilterName("Topic")
     await collection.addOption()
     await collection.openOptionInlineEdit(0)
