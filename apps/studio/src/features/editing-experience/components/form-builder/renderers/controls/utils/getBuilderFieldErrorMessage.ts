@@ -19,15 +19,15 @@ export const getBuilderFieldErrorMessage = (
 
   if (fieldName) {
     const parentPath = instancePath.replace(/\/[^/]+$/, "")
-    for (const error of errors[parentPath] ?? []) {
-      if (
+    const missing = (errors[parentPath] ?? []).some(
+      (error) =>
         error.keyword === "required" &&
-        error.params?.missingProperty === fieldName
-      ) {
-        messages.push("cannot be empty")
-      }
+        error.params?.missingProperty === fieldName,
+    )
+    if (missing) {
+      messages.push("cannot be empty")
     }
   }
 
-  return messages.length > 0 ? messages.join("\n") : undefined
+  return messages.length > 0 ? [...new Set(messages)].join("\n") : undefined
 }

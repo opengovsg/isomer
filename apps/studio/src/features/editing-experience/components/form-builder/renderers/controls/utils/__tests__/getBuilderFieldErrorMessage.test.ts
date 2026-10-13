@@ -48,4 +48,24 @@ describe("getBuilderFieldErrorMessage", () => {
     // Assert
     expect(actual).toBe("cannot be empty")
   })
+
+  it("reports one required message when every union branch is missing the field", () => {
+    // Arrange
+    const requiredError = {
+      instancePath: "",
+      keyword: "required",
+      message: "must have required property 'title'",
+      schemaPath: "",
+      params: { missingProperty: "title" },
+    }
+    const errors = {
+      "": Array.from({ length: 5 }, () => requiredError),
+    }
+
+    // Act
+    const actual = getBuilderFieldErrorMessage("title", errors)
+
+    // Assert
+    expect(actual).toBe("cannot be empty")
+  })
 })
