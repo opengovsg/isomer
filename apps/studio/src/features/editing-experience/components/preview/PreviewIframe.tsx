@@ -175,7 +175,12 @@ const IframeInnerComponent = ({
     return () => {
       observer.disconnect()
       portalObserver.disconnect()
-      callbackCleanup?.()
+      // Only invoke the return value if the callback actually gave us a cleanup
+      // function. Pre-existing callers pass ASYNC callbacks (returning a
+      // Promise), and `?.()` would happily try to call that Promise — throwing
+      // "callbackCleanup is not a function" on every teardown and destabilizing
+      // the preview (e.g. the navbar/footer settings previews remount-loop).
+      if (typeof callbackCleanup === "function") callbackCleanup()
     }
   }, [callback, iframeDocument, iframeDocument?.documentElement, iframeWindow])
 
