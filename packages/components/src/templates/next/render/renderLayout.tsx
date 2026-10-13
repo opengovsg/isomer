@@ -1,4 +1,5 @@
 import type { IsomerPageSchemaType } from "~/types"
+import { getThemeOverrides } from "~/themes/overrides"
 
 import { ArticleLayout } from "../layouts/Article"
 import { CollectionLayout } from "../layouts/Collection"
@@ -9,24 +10,39 @@ import { IndexPageLayout } from "../layouts/IndexPage"
 import { NotFoundLayout } from "../layouts/NotFound"
 import { SearchLayout } from "../layouts/Search"
 
+export const defaultLayouts = {
+  ArticleLayout,
+  CollectionLayout,
+  ContentLayout,
+  DatabaseLayout,
+  HomepageLayout,
+  IndexPageLayout,
+  NotFoundLayout,
+  SearchLayout,
+}
+
 export const renderLayout = (props: IsomerPageSchemaType) => {
+  const layouts = {
+    ...defaultLayouts,
+    ...getThemeOverrides(props.site.theme).layouts,
+  }
   switch (props.layout) {
     case "article":
-      return <ArticleLayout {...props} />
+      return <layouts.ArticleLayout {...props} />
     case "collection":
-      return <CollectionLayout {...props} />
+      return <layouts.CollectionLayout {...props} />
     case "content":
-      return <ContentLayout {...props} />
+      return <layouts.ContentLayout {...props} />
     case "database":
-      return <DatabaseLayout {...props} />
+      return <layouts.DatabaseLayout {...props} />
     case "homepage":
-      return <HomepageLayout {...props} />
+      return <layouts.HomepageLayout {...props} />
     case "index":
-      return <IndexPageLayout {...props} />
+      return <layouts.IndexPageLayout {...props} />
     case "notfound":
-      return <NotFoundLayout {...props} />
+      return <layouts.NotFoundLayout {...props} />
     case "search":
-      return <SearchLayout {...props} />
+      return <layouts.SearchLayout {...props} />
     // These are references that we should not render to the user
     case "link":
       return <></>

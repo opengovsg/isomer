@@ -1,6 +1,6 @@
 import plugin from "tailwindcss/plugin"
 
-import { NextPreset } from "./src/presets/next"
+import { createThemePreset } from "./src/presets/theme"
 
 /**
  * This file is only used for Storybook. Published sites use the Tailwind config
@@ -15,7 +15,7 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
     "./.storybook/**/*.{js,ts,jsx,tsx}",
   ],
-  presets: [NextPreset],
+  presets: [createThemePreset("isomer-next")],
   theme: {
     extend: {
       colors: {

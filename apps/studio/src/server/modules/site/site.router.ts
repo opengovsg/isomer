@@ -151,7 +151,11 @@ export const siteRouter = router({
           .updateTable("Site")
           .set({
             name: siteName,
-            config: jsonb({ ...normalizedConfig, search: searchConfig }),
+            config: jsonb({
+              ...normalizedConfig,
+              theme: config.theme,
+              search: searchConfig,
+            }),
           })
           .where("id", "=", siteId)
           .returningAll()
@@ -234,7 +238,13 @@ export const siteRouter = router({
 
         const updatedSite = await tx
           .updateTable("Site")
-          .set({ config: jsonb({ ...normalizedData, search }) })
+          .set({
+            config: jsonb({
+              ...normalizedData,
+              theme: site.config.theme,
+              search,
+            }),
+          })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirstOrThrow()

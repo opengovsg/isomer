@@ -1,14 +1,20 @@
 // Replace your-framework with the framework you are using (e.g., react, vue3)
 import type { Decorator, Preview } from "@storybook/react-vite"
-import { withThemeByDataAttribute } from "@storybook/addon-themes"
+import {
+  DecoratorHelpers,
+  withThemeByDataAttribute,
+} from "@storybook/addon-themes"
 import mockdate from "mockdate"
 import { mswLoader } from "msw-storybook-addon/csf3"
 import { setupWorker } from "msw/browser"
 import { MINIMAL_VIEWPORTS } from "storybook/viewport"
 import "bootstrap-icons/font/bootstrap-icons.css"
 
-import "../src/index.css"
 import { viewport } from "@isomer/storybook-config"
+
+import nextStyles from "../src/index.css?inline"
+import { ISOMER_THEMES, getTheme, type IsomerTheme } from "../src/themes"
+import classicStyles from "./classic.css?inline"
 
 const CUSTOM_GENERAL_VIEWPORTS = {
   smallDesktop: {
@@ -113,6 +119,8 @@ const preview: Preview = {
   ],
 
   parameters: {
+    // Each document owns one theme stylesheet, including stories embedded in Docs.
+    docs: { story: { inline: false } },
     viewport: {
       options: {
         ...viewport.viewports,
@@ -140,11 +148,32 @@ const preview: Preview = {
   tags: ["autodocs"],
 }
 
-const LayoutDecorator: Decorator = (Story) => (
-  <div className="antialiased">
-    <Story />
-  </div>
-)
+const themeStyles: Record<IsomerTheme, string> = {
+  "isomer-next": nextStyles,
+  "isomer-classic": classicStyles,
+}
+
+const LayoutDecorator: Decorator = (Story, context) => {
+  const label =
+    DecoratorHelpers.useThemeParameters(context)?.themeOverride ||
+    DecoratorHelpers.pluckThemeFromContext(context) ||
+    "Isomer Next"
+  const theme = getTheme(
+    Object.entries(ISOMER_THEMES).find(
+      ([, value]) => value.label === label,
+    )?.[0],
+  )
+  const fontStylesheet = ISOMER_THEMES[theme].fontStylesheet
+  return (
+    <>
+      <style>{themeStyles[theme]}</style>
+      {fontStylesheet && <link rel="stylesheet" href={fontStylesheet} />}
+      <div className="antialiased">
+        <Story />
+      </div>
+    </>
+  )
+}
 
 const MockDateDecorator: Decorator = (Story) => {
   mockdate.reset()
@@ -156,9 +185,9 @@ const MockDateDecorator: Decorator = (Story) => {
 
 export const decorators: Decorator[] = [
   withThemeByDataAttribute({
-    themes: {
-      "Isomer Next": "isomer-next",
-    },
+    themes: Object.fromEntries(
+      Object.entries(ISOMER_THEMES).map(([id, theme]) => [theme.label, id]),
+    ),
     defaultTheme: "Isomer Next",
   }),
   LayoutDecorator,

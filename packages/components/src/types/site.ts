@@ -16,6 +16,7 @@ import { NotificationSettingsSchema } from "~/interfaces/internal/Notification"
 import { GTM_ID_STRING_REGEX, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import type { IsomerSitemap } from "./sitemap"
+import { ISOMER_THEMES, type IsomerTheme } from "../themes"
 
 export const SITE_ENTITY_TYPES = [
   "Organization",
@@ -203,7 +204,9 @@ export const SiteConfigSchema = Type.Intersect([
       description: "The base URL of the site.",
       format: "hidden",
     }),
-    theme: Type.Literal("isomer-next", {
+    theme: Type.Unsafe<IsomerTheme>({
+      type: "string",
+      enum: Object.keys(ISOMER_THEMES),
       default: "isomer-next",
       format: "hidden",
     }),

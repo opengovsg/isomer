@@ -28,6 +28,14 @@
     "./build-utils": {
       "import": "./dist/esm/build-utils/index.js",
       "default": "./dist/esm/build-utils/index.js"
+    },
+    "./themes": {
+      "import": "./dist/esm/themes/index.js",
+      "default": "./dist/esm/themes/index.js"
+    },
+    "./presets": {
+      "import": "./dist/esm/presets/index.js",
+      "default": "./dist/esm/presets/index.js"
     }
   },
   "publishConfig": {

@@ -1,6 +1,10 @@
 // @ts-nocheck
 /** @type {import('tailwindcss').Config} */
-import { createNextPreset, isomerSiteTheme } from "@opengovsg/isomer-components"
+import {
+  createThemePreset,
+  isomerSiteTheme,
+} from "@opengovsg/isomer-components/presets"
+import { getPublishableTheme } from "@opengovsg/isomer-components/themes"
 import plugin from "tailwindcss/plugin"
 
 import siteConfig from "./data/config.json"
@@ -17,8 +21,12 @@ const config = {
   // test fixture string in isExternalUrl.test.ts as an arbitrary-property utility.
   // It's valid CSS but stray noise with no styling purpose.
   blocklist: ["[resource:some-resource]"],
-  // Use createNextPreset with includeFonts: false since we load Inter via next/font/google in layout.tsx
-  presets: [createNextPreset({ includeFonts: false })],
+  // Select the same theme for CSS and rendering; Next loads Inter via next/font.
+  presets: [
+    createThemePreset(getPublishableTheme(siteConfig.site.theme), {
+      includeFonts: false,
+    }),
+  ],
   plugins: [
     isomerSiteTheme({
       colors: siteConfig.colors.brand,

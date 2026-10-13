@@ -84,6 +84,7 @@ const SuspendableLayoutPreview = () => {
   }, [currentLayout])
   return (
     <PreviewIframe
+      siteId={siteId}
       preventPointerEvents
       keyForRerender={currentLayout}
       style={themeCssVars}
