@@ -11,6 +11,7 @@ export const versionRouter = router({
       await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
+        resourceIds: [String(pageId)],
         userId: ctx.user.id,
       })
 
