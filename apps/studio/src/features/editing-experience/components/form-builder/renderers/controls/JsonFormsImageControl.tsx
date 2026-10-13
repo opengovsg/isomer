@@ -30,9 +30,9 @@ import { getCustomErrorMessage } from "./utils"
 // GrowthBook flag (off by default) — load it lazily so it doesn't bloat every
 // FormBuilder page's shared bundle.
 const ImageAdjustmentModal = dynamic(() =>
-  import(
-    "~/features/editing-experience/components/ImageAdjustmentModal"
-  ).then((mod) => mod.ImageAdjustmentModal),
+  import("~/features/editing-experience/components/ImageAdjustmentModal").then(
+    (mod) => mod.ImageAdjustmentModal,
+  ),
 )
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
