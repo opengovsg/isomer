@@ -121,12 +121,6 @@ export class PageEditorPO {
     await expect(this.publishOptionsButton()).toBeDisabled()
   }
 
-  async openMetaSettingsTab() {
-    await this.page.getByRole("link", { name: "Meta Settings" }).click()
-    // In-editor settings tab always ends at `/pages/<id>/settings`.
-    await this.page.waitForURL(/\/pages\/\d+\/settings$/)
-  }
-
   async openScheduleModal() {
     const publish = this.publishOptionsButton()
     await expect(publish).toBeVisible()

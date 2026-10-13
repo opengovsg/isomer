@@ -194,15 +194,6 @@ export const createCollectionPage = async ({
     .executeTakeFirstOrThrow()
 }
 
-export const readBlobContent = async (blobId: string) => {
-  const blob = await db
-    .selectFrom("Blob")
-    .where("id", "=", blobId)
-    .select("content")
-    .executeTakeFirstOrThrow()
-  return blob.content as unknown as { page: { tagged?: string[] } }
-}
-
 export const seedCollectionPages = async ({
   siteId,
   collectionId,

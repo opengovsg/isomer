@@ -10,14 +10,6 @@ export const expectWhitelistedVendorEmail = (email: string) =>
     return expiry > new Date()
   })
 
-/** Admin whitelist row with no expiry. */
-export const expectWhitelistedAdminEmail = (email: string) =>
-  expect.poll(async () => {
-    const row = await getWhitelistEntry(email)
-    if (!row) return null
-    return row.expiry === null
-  })
-
 /** No whitelist row for the email (e.g. rejected bulk submit). */
 export const expectWhitelistEntryAbsent = (email: string) =>
   expect.poll(async () => {

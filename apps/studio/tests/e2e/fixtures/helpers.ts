@@ -35,27 +35,6 @@ export const openSeededPageEditorAsRole = async (
 }
 
 /**
- * Secondary browser context for a different role. The context is always closed
- * in `finally` — prefer this over `openSeededPageEditorAsRole` when you only
- * need a short-lived second session.
- */
-export const withRoleSession = async <T>(
-  browser: Browser,
-  role: Role,
-  fn: (session: { context: BrowserContext; page: Page }) => Promise<T>,
-): Promise<T> => {
-  const context = await browser.newContext({
-    storageState: storageStateFor(role),
-  })
-  const page = await context.newPage()
-  try {
-    return await fn({ context, page })
-  } finally {
-    await context.close()
-  }
-}
-
-/**
  * Cross-role page-editor flows. Opens the editor under `role`'s session, runs
  * `fn`, then closes the context — use for editor-then-publisher handoffs.
  */
