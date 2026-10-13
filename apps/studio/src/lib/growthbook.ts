@@ -21,6 +21,13 @@ export const ENABLE_SEARCHSG_GAZETTE_INGESTION =
 export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY = "is-date-filters-enabled"
 export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
 
+// Gates container blocks in the page editor: the Column block in the block
+// picker, and editing an Accordion as a list of child blocks instead of a
+// single prose body. OFF by default; published pages render both shapes.
+export const IS_CONTAINER_BLOCKS_ENABLED_FEATURE_KEY =
+  "is-container-blocks-enabled"
+export const IS_CONTAINER_BLOCKS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
+
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
 interface GetIsSingpassEnabledProps {

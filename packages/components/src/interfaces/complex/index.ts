@@ -14,6 +14,7 @@ export {
   DEFAULT_COLUMN_LAYOUT,
   type ColumnLayout,
   type ColumnProps,
+  type ContainerContentBlock,
 } from "./Column"
 export { ButtonSchema, type ButtonProps } from "./Button"
 export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"

@@ -5,10 +5,11 @@ import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { cloneDeep, isEmpty, isEqual } from "lodash-es"
 import posthog from "posthog-js"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { BiTrash } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useContainerBlocksEnabled } from "~/hooks/useContainerBlocksEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { ajv } from "~/utils/ajv"
@@ -16,6 +17,7 @@ import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
+import { isLegacyAccordion, normaliseLegacyAccordion } from "../../utils"
 import {
   CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
   PLACEHOLDER_IMAGE_FILENAME,
@@ -52,6 +54,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     setModifiedAssets,
   } = useEditorDrawerContext()
   const toast = useToast()
+  const isContainerBlocksEnabled = useContainerBlocksEnabled()
 
   const { pageId, siteId } = useQueryParse(pageSchema)
   const utils = trpc.useUtils()
@@ -271,6 +274,40 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   const component = previewPageState.content[currActiveIdx]
   const componentType = component?.type
   const pageLayout = previewPageState.layout
+
+  // With container blocks on, an accordion is edited as a list of child
+  // blocks. A legacy accordion still carries its body in `details`, so it is
+  // moved into `content` on open. Nothing is persisted until the user saves,
+  // and the conversion is lossless, so the in-memory saved state is updated
+  // too so that an untouched block does not count as a change.
+  useEffect(() => {
+    if (
+      !isContainerBlocksEnabled ||
+      component?.type !== "accordion" ||
+      !isLegacyAccordion(component)
+    ) {
+      return
+    }
+
+    const replaceBlock = (pageState: typeof previewPageState) => {
+      const block = pageState.content[currActiveIdx]
+      if (block?.type !== "accordion" || !isLegacyAccordion(block)) {
+        return pageState
+      }
+      const updatedBlocks = Array.from(pageState.content)
+      updatedBlocks[currActiveIdx] = normaliseLegacyAccordion(block)
+      return { ...pageState, content: updatedBlocks }
+    }
+
+    setSavedPageState(replaceBlock)
+    setPreviewPageState(replaceBlock)
+  }, [
+    component,
+    currActiveIdx,
+    isContainerBlocksEnabled,
+    setPreviewPageState,
+    setSavedPageState,
+  ])
   // NOTE: Memoised so the schema identity is stable across renders.
   // getComponentSchema returns a fresh object per call; passing a new schema
   // to JsonForms on every render makes its internal resync effect fire on each
@@ -282,12 +319,13 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     const schema = getComponentSchema({
       component: componentType,
       layout: pageLayout,
+      accordionEditor: isContainerBlocksEnabled ? "container" : "prose",
     })
     return {
       subSchema: schema,
       validateFn: ajv.compile<IsomerComponent>(schema),
     }
-  }, [componentType, pageLayout])
+  }, [componentType, pageLayout, isContainerBlocksEnabled])
 
   if (currActiveIdx === -1 || currActiveIdx > previewPageState.content.length) {
     return <></>

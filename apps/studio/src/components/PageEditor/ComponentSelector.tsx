@@ -5,9 +5,11 @@ import { Button, TouchableTooltip } from "@opengovsg/design-system-react"
 import { useMemo } from "react"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
+import { useContainerBlocksEnabled } from "~/hooks/useContainerBlocksEnabled"
 import { type DrawerState } from "~/types/editorDrawer"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+import type { AllowedBlockSections } from "./constants"
 import type { UsageTooltipProps } from "./UsageTooltip"
 import {
   ARTICLE_ALLOWED_BLOCKS,
@@ -15,6 +17,7 @@ import {
   CONTENT_ALLOWED_BLOCKS,
   DATABASE_ALLOWED_BLOCKS,
   DEFAULT_BLOCKS,
+  DEFAULT_CONTAINER_ACCORDION_BLOCK,
   HOMEPAGE_ALLOWED_BLOCKS,
   INDEX_ALLOWED_BLOCKS,
 } from "./constants"
@@ -122,6 +125,7 @@ function ComponentSelector() {
     setAddedBlockIndex,
     type,
   } = useEditorDrawerContext()
+  const isContainerBlocksEnabled = useContainerBlocksEnabled()
 
   const onProceed = (sectionType: SectionType) => {
     if (
@@ -156,9 +160,10 @@ function ComponentSelector() {
     // the rest should use json forms
     const nextState: DrawerState["state"] =
       sectionType === "prose" ? "nativeEditor" : "complexEditor"
-    const newComponent = DEFAULT_BLOCKS[sectionType] as
-      | IsomerComponent
-      | undefined
+    const newComponent =
+      sectionType === "accordion" && isContainerBlocksEnabled
+        ? DEFAULT_CONTAINER_ACCORDION_BLOCK
+        : (DEFAULT_BLOCKS[sectionType] as IsomerComponent | undefined)
 
     const updatedBlocks = newComponent
       ? [...savedPageState.content, newComponent]
@@ -175,34 +180,46 @@ function ComponentSelector() {
   }
 
   const availableBlocks = useMemo(() => {
-    switch (type) {
-      case ResourceType.RootPage:
-        return HOMEPAGE_ALLOWED_BLOCKS
-      case ResourceType.Page:
-        if (savedPageState.layout === "content") {
-          return CONTENT_ALLOWED_BLOCKS
-        } else if (savedPageState.layout === "article") {
+    const getAllowedBlocks = (): AllowedBlockSections => {
+      switch (type) {
+        case ResourceType.RootPage:
+          return HOMEPAGE_ALLOWED_BLOCKS
+        case ResourceType.Page:
+          if (savedPageState.layout === "content") {
+            return CONTENT_ALLOWED_BLOCKS
+          } else if (savedPageState.layout === "article") {
+            return ARTICLE_ALLOWED_BLOCKS
+          } else if (savedPageState.layout === "database") {
+            return DATABASE_ALLOWED_BLOCKS
+          }
+          throw new Error(`Unsupported page layout: ${savedPageState.layout}`)
+        case ResourceType.CollectionPage:
           return ARTICLE_ALLOWED_BLOCKS
-        } else if (savedPageState.layout === "database") {
-          return DATABASE_ALLOWED_BLOCKS
-        }
-        throw new Error(`Unsupported page layout: ${savedPageState.layout}`)
-      case ResourceType.CollectionPage:
-        return ARTICLE_ALLOWED_BLOCKS
-      case ResourceType.Collection:
-      case ResourceType.CollectionLink:
-        return []
-      case ResourceType.IndexPage:
-        return INDEX_ALLOWED_BLOCKS
-      case ResourceType.Folder:
-      case ResourceType.FolderMeta:
-      case ResourceType.CollectionMeta:
-        throw new Error(`Unsupported resource type: ${type}`)
-      default:
-        const exhaustiveCheck: never = type
-        return exhaustiveCheck
+        case ResourceType.Collection:
+        case ResourceType.CollectionLink:
+          return []
+        case ResourceType.IndexPage:
+          return INDEX_ALLOWED_BLOCKS
+        case ResourceType.Folder:
+        case ResourceType.FolderMeta:
+        case ResourceType.CollectionMeta:
+          throw new Error(`Unsupported resource type: ${type}`)
+        default:
+          const exhaustiveCheck: never = type
+          return exhaustiveCheck
+      }
     }
-  }, [savedPageState.layout, type])
+
+    const blocks = getAllowedBlocks()
+    if (isContainerBlocksEnabled) {
+      return blocks
+    }
+    // Column is the only block that is gated; everything else stays as is.
+    return blocks.map((section) => ({
+      ...section,
+      types: section.types.filter((blockType) => blockType !== "column"),
+    }))
+  }, [savedPageState.layout, type, isContainerBlocksEnabled])
 
   return (
     <VStack w="full" h="full" gap="0">

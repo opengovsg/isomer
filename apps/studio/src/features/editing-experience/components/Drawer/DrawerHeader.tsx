@@ -1,9 +1,11 @@
 import type { TextProps } from "@chakra-ui/react"
-import { Flex, IconButton, Text } from "@chakra-ui/react"
+import { Flex, IconButton, Stack, Text } from "@chakra-ui/react"
 import { BiChevronLeft } from "react-icons/bi"
 
 interface DrawerHeaderProps extends TextProps {
   label: string
+  // Shown under the label, e.g. where a nested block sits in its parent.
+  description?: string
   onBackClick: () => void
   isDisabled?: boolean
   backAriaLabel?: string
@@ -12,6 +14,7 @@ interface DrawerHeaderProps extends TextProps {
 export const DrawerHeader = ({
   onBackClick,
   label,
+  description,
   isDisabled,
   backAriaLabel,
   ...textProps
@@ -36,9 +39,16 @@ export const DrawerHeader = ({
         isDisabled={isDisabled}
         onClick={onBackClick}
       />
-      <Text textStyle="h6" {...textProps}>
-        {label}
-      </Text>
+      <Stack gap={0}>
+        <Text textStyle="h6" {...textProps}>
+          {label}
+        </Text>
+        {description && (
+          <Text textStyle="caption-2" color="base.content.medium">
+            {description}
+          </Text>
+        )}
+      </Stack>
     </Flex>
   )
 }

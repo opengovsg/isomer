@@ -44,6 +44,15 @@ export const DraggableBlock = ({
     component: block,
   })
 
+  const blockDescription = useMemo(() => {
+    if (block.type !== "accordion" || block.content === undefined) {
+      return blockComponentName
+    }
+    const count = block.content.length
+    const blocksLabel = count === 1 ? "content block" : "content blocks"
+    return `${blockComponentName} · ${count === 0 ? "No" : count} ${blocksLabel}`
+  }, [block, blockComponentName])
+
   return (
     <Draggable
       disableInteractiveElementBlocking
@@ -75,7 +84,7 @@ export const DraggableBlock = ({
                   ? `Empty ${blockComponentName.toLowerCase()}`
                   : previewText
               }
-              description={blockComponentName}
+              description={blockDescription}
               icon={icon}
               invalidProps={invalidProps}
             />
