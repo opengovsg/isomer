@@ -191,6 +191,79 @@ export const getRowMovePlan = (
   }
 }
 
+const cellWithPayloadFrom = (structure: Node, payload: Node): Node =>
+  structure.type.create(
+    {
+      ...structure.attrs,
+      backgroundColor: payload.attrs.backgroundColor as unknown,
+    },
+    payload.content,
+    payload.marks,
+  )
+
+// moveTableRow returns false when the two rows share a rowspan. Swap the
+// cells that actually belong to each row and leave that span where it is.
+export const reorderRowBesideVerticalSpan = (
+  table: Node,
+  rowA: number,
+  rowB: number,
+): Node | null => {
+  if (Math.abs(rowA - rowB) !== 1) return null
+  const map = TableMap.get(table)
+  if (rowA < 0 || rowB < 0 || rowA >= map.height || rowB >= map.height) {
+    return null
+  }
+
+  const replacementAt = new Map<number, Node>()
+  for (let col = 0; col < map.width; col++) {
+    const aOffset = map.map[rowA * map.width + col]
+    const bOffset = map.map[rowB * map.width + col]
+    if (
+      aOffset === undefined ||
+      bOffset === undefined ||
+      aOffset === bOffset ||
+      replacementAt.has(aOffset) ||
+      replacementAt.has(bOffset)
+    ) {
+      continue
+    }
+    const aRect = map.findCell(aOffset)
+    const bRect = map.findCell(bOffset)
+    if (
+      aRect.top !== rowA ||
+      aRect.bottom !== rowA + 1 ||
+      bRect.top !== rowB ||
+      bRect.bottom !== rowB + 1 ||
+      aRect.left !== bRect.left ||
+      aRect.right !== bRect.right
+    ) {
+      continue
+    }
+    const aNode = table.nodeAt(aOffset)
+    const bNode = table.nodeAt(bOffset)
+    if (!aNode || !bNode) continue
+    replacementAt.set(aOffset, cellWithPayloadFrom(aNode, bNode))
+    replacementAt.set(bOffset, cellWithPayloadFrom(bNode, aNode))
+  }
+  if (replacementAt.size === 0) return null
+
+  let offset = 0
+  const rows: Node[] = []
+  for (let rowIndex = 0; rowIndex < table.childCount; rowIndex++) {
+    const row = table.child(rowIndex)
+    offset += 1
+    const cells: Node[] = []
+    for (let cellIndex = 0; cellIndex < row.childCount; cellIndex++) {
+      const cell = row.child(cellIndex)
+      cells.push(replacementAt.get(offset) ?? cell)
+      offset += cell.nodeSize
+    }
+    offset += 1
+    rows.push(row.type.create(row.attrs, cells, row.marks))
+  }
+  return table.type.create(table.attrs, rows, table.marks)
+}
+
 export const getColumnMovePlan = (
   {
     left,
@@ -292,8 +365,11 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   })
 
   const selectsSingleCellNode = isSingleCellSelection(selection)
+  // A lone merged cell (horizontal merge beside a vertical span) stays a cell
+  // so Split cell remains available. A lone plain cell in that row is the row.
   const clippedRowSlot =
-    !selectsSingleCellNode && isRowSlotClippedByVerticalSpan(rect)
+    isRowSlotClippedByVerticalSpan(rect) &&
+    !(selectsSingleCellNode && isMergedCell(rect))
   const spansFullWidth = rect.left === 0 && rect.right === rect.map.width
   const spansFullHeight = rect.top === 0 && rect.bottom === rect.map.height
   return getTableSelectionKind({

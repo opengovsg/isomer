@@ -201,6 +201,24 @@ describe("selectWholeSlot", () => {
     expect(getSelectionHandleTarget(editor)?.rows).toEqual([1])
   })
 
+  it("treats the only plain cell beside a merged column as that row", () => {
+    // Arrange
+    const doc = tableDoc(
+      row(cell("span", { rowspan: 3 }), cell("r0b")),
+      row(cell("r1b")),
+      row(cell("r2b")),
+    )
+    const editor = editorFor(doc)
+
+    // Act
+    selectWholeSlot(editor, 0, "row", 1)
+
+    // Assert
+    expect(selectedTexts(editor)).toEqual(["r1b"])
+    expect(detectTableSelectionKind(editor)).toBe("row")
+    expect(getSelectionHandleTarget(editor)?.rows).toEqual([1])
+  })
+
   it("does not treat one cell of an unmerged row as that row", () => {
     // Arrange
     const doc = tableDoc(

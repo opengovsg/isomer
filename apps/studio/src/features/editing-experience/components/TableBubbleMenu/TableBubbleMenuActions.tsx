@@ -59,6 +59,7 @@ import {
   canMergeCellSelection,
   getColumnMovePlan,
   getRowMovePlan,
+  reorderRowBesideVerticalSpan,
   restoreMovedBlockSelection,
   selectionIncludesHeaderColumn,
   selectionIncludesHeaderRow,
@@ -82,7 +83,7 @@ const moveTableBlock = (
     left: rect.left,
     right: rect.right,
   }
-  move({
+  const moved = move({
     from: plan.from,
     to: plan.to,
     select: false,
@@ -90,6 +91,19 @@ const moveTableBlock = (
   })(state, (tr) => {
     restoreMovedBlockSelection(view, tr, tablePos, plan, axis, bounds)
   })
+  if (!moved && axis === "row" && plan.span === 1) {
+    const table = state.doc.nodeAt(tablePos)
+    const reordered =
+      table && reorderRowBesideVerticalSpan(table, plan.from, plan.to)
+    if (table && reordered) {
+      const tr = state.tr.replaceWith(
+        tablePos,
+        tablePos + table.nodeSize,
+        reordered,
+      )
+      restoreMovedBlockSelection(view, tr, tablePos, plan, axis, bounds)
+    }
+  }
   editor.commands.focus()
 }
 
