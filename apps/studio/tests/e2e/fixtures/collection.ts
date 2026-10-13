@@ -203,16 +203,6 @@ export const readBlobContent = async (blobId: string) => {
   return blob.content as unknown as { page: { tagged?: string[] } }
 }
 
-export const getRootPageId = async (siteId: number) => {
-  const rootPage = await db
-    .selectFrom("Resource")
-    .where("siteId", "=", siteId)
-    .where("type", "=", ResourceType.RootPage)
-    .select("id")
-    .executeTakeFirstOrThrow()
-  return rootPage.id
-}
-
 export const seedCollectionPages = async ({
   siteId,
   collectionId,

@@ -41,7 +41,10 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const pageTitle = UNIQUE("Published Collection Page")
     const linkTitle = UNIQUE("Published Collection Link")
 
-    // Arrange / Act
+    // Arrange
+    const editor = new PageEditorPO(page)
+
+    // Act
     const { collectionId } = await createCollectionViaWizard(page, {
       siteId,
       title: collectionTitle,
@@ -51,7 +54,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       collectionId,
       title: pageTitle,
     })
-    const editor = new PageEditorPO(page)
     await editor.clickPublish()
     await editor.expectPublishedToast()
 

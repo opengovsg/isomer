@@ -164,13 +164,13 @@ export const createCollectionItemViaWizard = async (
     title: string
   },
 ) => {
-  const collection = new CollectionPO(page)
-  await collection.gotoCollection(siteId, collectionId)
-  await collection.openAddCollectionItem()
-  await collection.selectCollectionItemType(type)
-  await collection.fillCollectionItemWizard(title)
+  const dashboard = new DashboardPO(page)
+  await dashboard.gotoCollection(siteId, collectionId)
+  await dashboard.openCollectionItemWizard()
+  await dashboard.selectCollectionItemType(type)
+  await dashboard.fillCollectionItemWizard(title)
 
-  const itemId = await collection.expectOnCollectionItemEditor(
+  const itemId = await dashboard.expectOnCollectionItemEditor(
     siteId,
     type === "Page" ? "page" : "link",
   )

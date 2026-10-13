@@ -6,9 +6,9 @@ import {
   createCollectionLink,
   createCollectionPage,
   createCollectionWithTagCategories,
-  getRootPageId,
 } from "../fixtures/collection"
 import { CollectionLinkPO } from "../fixtures/collection-link.po"
+import { getRootPageId } from "../fixtures/collection.db"
 import { CollectionPO } from "../fixtures/collection.po"
 import { PageEditorPO } from "../fixtures/page-editor.po"
 import { getResourceDraftTagged } from "../fixtures/resource.db"

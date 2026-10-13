@@ -12,6 +12,16 @@ interface CollectionIndexPage {
   showThumbnail?: { fallback?: string }
 }
 
+export const getRootPageId = async (siteId: number) => {
+  const rootPage = await db
+    .selectFrom("Resource")
+    .where("siteId", "=", siteId)
+    .where("type", "=", ResourceType.RootPage)
+    .select("id")
+    .executeTakeFirstOrThrow()
+  return rootPage.id
+}
+
 export const getIndexPageId = async (collectionId: string) => {
   const indexPage = await db
     .selectFrom("Resource")

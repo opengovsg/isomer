@@ -117,6 +117,33 @@ export class DashboardPO {
     ).not.toBeVisible()
   }
 
+  async selectCollectionItemType(type: "Page" | "Link or file") {
+    await this.page.getByText(type, { exact: true }).click()
+    await this.page.getByRole("button", { name: "Next: Page details" }).click()
+  }
+
+  async fillCollectionItemWizard(title: string) {
+    // Page items label the field "Page title"; link items use "Item title".
+    await this.page.getByLabel(/Page title|Item title/).fill(title)
+    await this.page.getByRole("button", { name: "Start editing" }).click()
+  }
+
+  async expectOnCollectionItemEditor(
+    siteId: number,
+    kind: "page" | "link",
+  ): Promise<string> {
+    const subpath = kind === "page" ? "pages" : "links"
+    const pattern = new RegExp(`/sites/${siteId}/${subpath}/(\\d+)$`)
+    await this.page.waitForURL(pattern)
+    const itemId = this.page.url().match(pattern)?.[1]
+    if (!itemId) {
+      throw new Error(
+        `Expected ${subpath} editor URL after wizard, got ${this.page.url()}`,
+      )
+    }
+    return itemId
+  }
+
   async gotoCollection(siteId: number, collectionId: string) {
     await this.page.goto(`/sites/${siteId}/collections/${collectionId}`)
     await this.page.waitForURL(

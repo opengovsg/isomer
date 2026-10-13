@@ -36,14 +36,13 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin can add a required filter with options, save, and reload", async ({
     page,
   }) => {
+    // Arrange
     const { indexPage } = await seedCollection({ siteId })
     const collection = await openCollectionIndexEditor(
       page,
       siteId,
       indexPage.id,
     )
-
-    // Arrange
     await collection.expectManageCollectionVisible()
     await collection.openFilters()
     await collection.expectManageFiltersDrawerOpen()
