@@ -8,13 +8,6 @@ import {
   type Client,
 } from "openid-client"
 
-import {
-  SINGPASS_AUTHENTICATION_CONTEXT_MESSAGE,
-  SINGPASS_AUTHENTICATION_CONTEXT_TYPE,
-  SINGPASS_SCOPES,
-} from "./singpass.constants"
-import { SingpassRequestError } from "./singpass.error"
-
 // The FAPI client is cached and shared. A module-level header would leak one
 // user's DPoP proof into another in-flight login, so the proof travels in
 // async context and the client's HTTP hook copies it onto that request only.
@@ -58,65 +51,30 @@ export const createEphemeralDpopKey = async (): Promise<{
   return { privateKey, privateJwk: JSON.stringify(jwk) }
 }
 
-const isKeyObject = (key: unknown): key is KeyObject =>
-  key instanceof crypto.KeyObject
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null
-
 export const importDpopPrivateKey = async (
   privateJwk: string,
 ): Promise<KeyObject> => {
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(privateJwk)
-  } catch {
-    throw new SingpassRequestError("Invalid DPoP key")
-  }
-  if (!isRecord(parsed)) {
-    throw new SingpassRequestError("Invalid DPoP key")
-  }
-  const record = parsed
-  if (
-    record.kty !== "EC" ||
-    typeof record.crv !== "string" ||
-    typeof record.x !== "string" ||
-    typeof record.y !== "string" ||
-    typeof record.d !== "string"
-  ) {
-    throw new SingpassRequestError("Invalid DPoP key")
-  }
-
-  const key = await importJWK(
-    {
-      kty: "EC",
-      crv: record.crv,
-      x: record.x,
-      y: record.y,
-      d: record.d,
-    },
-    "ES256",
-  )
-  if (!isKeyObject(key)) {
-    throw new SingpassRequestError("Invalid DPoP key")
+  const key = await importJWK(JSON.parse(privateJwk), "ES256")
+  if (!(key instanceof crypto.KeyObject)) {
+    throw new Error("Invalid DPoP key")
   }
   return key
 }
 
 const endpointUrl = (value: unknown, name: string): string => {
   if (typeof value !== "string" || value.length === 0) {
-    throw new SingpassRequestError(`Singpass discovery is missing ${name}`)
+    throw new Error(`Singpass discovery is missing ${name}`)
   }
   return value
 }
 
 // DPoP `htu` is the scheme, host, and path. Query and fragment are excluded.
-export const dpopHtu = (endpoint: string): string => {
+const dpopHtu = (endpoint: string): string => {
   const url = new URL(endpoint)
   return `${url.origin}${url.pathname}`
 }
 
-export const createDpopProof = async ({
+const createDpopProof = async ({
   privateKey,
   htm,
   htu,
@@ -147,7 +105,7 @@ export const createDpopProof = async ({
     .sign(privateKey)
 }
 
-export const buildFapiRedirectUrl = (
+const buildFapiRedirectUrl = (
   authorizationEndpoint: string,
   clientId: string,
   requestUri: string,
@@ -174,28 +132,6 @@ const readDpopNonce = (error: unknown): string | undefined => {
   const value = headers?.["dpop-nonce"]
   return typeof value === "string" && value.length > 0 ? value : undefined
 }
-
-export const fapiAuthorizationParameters = ({
-  redirectUri,
-  codeChallenge,
-  nonce,
-  state,
-}: {
-  redirectUri: string
-  codeChallenge: string
-  nonce: string
-  state: string
-}): AuthorizationParameters => ({
-  redirect_uri: redirectUri,
-  response_type: "code",
-  scope: SINGPASS_SCOPES.join(" "),
-  code_challenge_method: "S256",
-  code_challenge: codeChallenge,
-  nonce,
-  state,
-  authentication_context_type: SINGPASS_AUTHENTICATION_CONTEXT_TYPE,
-  authentication_context_message: SINGPASS_AUTHENTICATION_CONTEXT_MESSAGE,
-})
 
 export const pushFapiAuthorizationRequest = async ({
   client,
@@ -257,8 +193,5 @@ export const pushFapiAuthorizationRequest = async ({
     }
   }
 
-  throw new SingpassRequestError("Singpass authorization request failed")
+  throw new Error("Singpass authorization request failed")
 }
-
-export const dpopProofHeaderForTests = <T>(proof: string, fn: () => T): T =>
-  dpopProofHeader.run(proof, fn)

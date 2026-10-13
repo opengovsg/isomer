@@ -12,7 +12,6 @@ export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
 // legacy flow. Target pilot users with the `email` attribute in GrowthBook;
 // do not allowlist emails in application code.
 export const IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY = "is-singpass-fapi2-enabled"
-export const IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
 export const EGAZETTE_INFO_FEATURE_KEY = "egazette-info"
 // Gates the audit-log export surface (settings sidenav entry + page). OFF by
 // default so the feature can ship dark and be enabled per-environment.
@@ -51,10 +50,7 @@ export const getIsSingpassEnabled = ({
 export const getIsSingpassFapi2Enabled = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
-  return gb.getFeatureValue(
-    IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY,
-    IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
-  )
+  return gb.getFeatureValue(IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY, false)
 }
 
 // Whether singpass-off side effects (e.g. login alert email) should activate.

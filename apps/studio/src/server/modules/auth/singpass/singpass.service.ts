@@ -1,17 +1,14 @@
-import { errors, generators, Issuer, type Client } from "openid-client"
+import { generators, Issuer, type Client } from "openid-client"
 import { env } from "~/env.mjs"
 
 import {
   SINGPASS_ENCRYPTION_JWK,
-  SINGPASS_ID_TOKEN_CONTENT_ENCRYPTION,
   SINGPASS_REDIRECT_URI,
   SINGPASS_SCOPES,
   SINGPASS_SIGNING_JWK,
 } from "./singpass.constants"
-import { SingpassRequestError } from "./singpass.error"
 import {
   createEphemeralDpopKey,
-  fapiAuthorizationParameters,
   importDpopPrivateKey,
   installDpopHeader,
   pushFapiAuthorizationRequest,
@@ -31,7 +28,7 @@ const assertSingpassEnabled = () => {
   // DNS lookup against the placeholder SINGPASS_ISSUER_ENDPOINT value set in
   // preview.
   if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) {
-    throw new SingpassRequestError("SingPass is disabled in this environment")
+    throw new Error("SingPass is disabled in this environment")
   }
 }
 
@@ -60,9 +57,7 @@ const getFapiClient = async (): Promise<Client> => {
   assertSingpassEnabled()
   const issuer = env.SINGPASS_FAPI_ISSUER_ENDPOINT
   if (!issuer) {
-    throw new SingpassRequestError(
-      "SINGPASS_FAPI_ISSUER_ENDPOINT is not configured",
-    )
+    throw new Error("SINGPASS_FAPI_ISSUER_ENDPOINT is not configured")
   }
 
   if (!fapiClient) {
@@ -74,7 +69,8 @@ const getFapiClient = async (): Promise<Client> => {
         token_endpoint_auth_method: "private_key_jwt",
         id_token_signed_response_alg: "ES256",
         id_token_encrypted_response_alg: env.SINGPASS_ENCRYPTION_KEY_ALG,
-        id_token_encrypted_response_enc: SINGPASS_ID_TOKEN_CONTENT_ENCRYPTION,
+        // Singpass documents the content encryption as AES256GCM.
+        id_token_encrypted_response_enc: "A256GCM",
         dpop_bound_access_tokens: true,
       },
       clientKeys,
@@ -85,27 +81,7 @@ const getFapiClient = async (): Promise<Client> => {
   return fapiClient
 }
 
-export const resetSingpassClientsForTests = () => {
-  legacyClient = null
-  fapiClient = null
-}
-
-const singpassErrorCode = (error: unknown): string | undefined => {
-  if (error instanceof errors.OPError && typeof error.error === "string") {
-    return error.error
-  }
-  return undefined
-}
-
-const toSingpassRequestError = (error: unknown): SingpassRequestError => {
-  if (error instanceof SingpassRequestError) return error
-  return new SingpassRequestError("Singpass request failed", {
-    cause: error,
-    singpassError: singpassErrorCode(error),
-  })
-}
-
-export interface SingpassAuthSession {
+interface SingpassAuthSession {
   codeVerifier: string
   nonce: string
   state: string
@@ -129,38 +105,39 @@ export const getAuthorizationUrl = async ({
     useFapi,
   }
 
-  try {
-    if (!useFapi) {
-      const client = await getLegacyClient()
-      const authorizationUrl = client.authorizationUrl({
-        redirect_uri: SINGPASS_REDIRECT_URI,
-        code_challenge_method: "S256",
-        code_challenge: codeChallenge,
-        nonce,
-        state,
-        scope: SINGPASS_SCOPES.join(" "),
-      })
-      return { authorizationUrl, session }
-    }
-
-    const { privateKey, privateJwk } = await createEphemeralDpopKey()
-    session.dpopPrivateJwk = privateJwk
-    const client = await getFapiClient()
-    const authorizationUrl = await pushFapiAuthorizationRequest({
-      client,
-      clientId: env.SINGPASS_CLIENT_ID,
-      privateKey,
-      parameters: fapiAuthorizationParameters({
-        redirectUri: SINGPASS_REDIRECT_URI,
-        codeChallenge,
-        nonce,
-        state,
-      }),
+  if (!useFapi) {
+    const client = await getLegacyClient()
+    const authorizationUrl = client.authorizationUrl({
+      redirect_uri: SINGPASS_REDIRECT_URI,
+      code_challenge_method: "S256",
+      code_challenge: codeChallenge,
+      nonce,
+      state,
+      scope: SINGPASS_SCOPES.join(" "),
     })
     return { authorizationUrl, session }
-  } catch (error) {
-    throw toSingpassRequestError(error)
   }
+
+  const { privateKey, privateJwk } = await createEphemeralDpopKey()
+  session.dpopPrivateJwk = privateJwk
+  const client = await getFapiClient()
+  const authorizationUrl = await pushFapiAuthorizationRequest({
+    client,
+    clientId: env.SINGPASS_CLIENT_ID,
+    privateKey,
+    parameters: {
+      redirect_uri: SINGPASS_REDIRECT_URI,
+      response_type: "code",
+      scope: SINGPASS_SCOPES.join(" "),
+      code_challenge_method: "S256",
+      code_challenge: codeChallenge,
+      nonce,
+      state,
+      authentication_context_type: "APP_AUTHENTICATION_DEFAULT",
+      authentication_context_message: "Sign in to Isomer Studio",
+    },
+  })
+  return { authorizationUrl, session }
 }
 
 interface LoginParams {
@@ -182,31 +159,25 @@ export const login = async ({
   dpopPrivateJwk,
   iss,
 }: LoginParams) => {
-  try {
-    const client = useFapi ? await getFapiClient() : await getLegacyClient()
-    if (useFapi && !dpopPrivateJwk) {
-      throw new SingpassRequestError(
-        "Missing DPoP key for Singpass token exchange",
-      )
-    }
-    const tokens = await client.callback(
-      SINGPASS_REDIRECT_URI,
-      {
-        code,
-        state,
-        ...(iss ? { iss } : {}),
-      },
-      {
-        state,
-        code_verifier: codeVerifier,
-        nonce,
-      },
-      useFapi && dpopPrivateJwk
-        ? { DPoP: await importDpopPrivateKey(dpopPrivateJwk) }
-        : undefined,
-    )
-    return { uuid: extractUuid(tokens) }
-  } catch (error) {
-    throw toSingpassRequestError(error)
+  const client = useFapi ? await getFapiClient() : await getLegacyClient()
+  if (useFapi && !dpopPrivateJwk) {
+    throw new Error("Missing DPoP key for Singpass token exchange")
   }
+  const tokens = await client.callback(
+    SINGPASS_REDIRECT_URI,
+    {
+      code,
+      state,
+      ...(iss ? { iss } : {}),
+    },
+    {
+      state,
+      code_verifier: codeVerifier,
+      nonce,
+    },
+    useFapi && dpopPrivateJwk
+      ? { DPoP: await importDpopPrivateKey(dpopPrivateJwk) }
+      : undefined,
+  )
+  return { uuid: extractUuid(tokens) }
 }

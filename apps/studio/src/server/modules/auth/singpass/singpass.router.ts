@@ -1,6 +1,7 @@
 import type { SessionData } from "~/lib/types/session"
 import { TRPCError } from "@trpc/server"
 import { set } from "lodash-es"
+import { errors } from "openid-client"
 import { getIsSingpassFapi2Enabled } from "~/lib/growthbook"
 import { DASHBOARD } from "~/lib/routes"
 import {
@@ -13,9 +14,12 @@ import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { logUserEvent } from "../../audit/audit.service"
 import { recordUserLogin } from "../auth.service"
 import { generateSessionOptions } from "../session"
-import { SingpassRequestError } from "./singpass.error"
 import { getAuthorizationUrl, login } from "./singpass.service"
-import { singpassLogFields } from "./singpass.utils"
+
+const singpassErrorCode = (error: unknown) =>
+  error instanceof errors.OPError && typeof error.error === "string"
+    ? error.error
+    : undefined
 
 export const singpassRouter = router({
   login: publicProcedure
@@ -52,13 +56,6 @@ export const singpassRouter = router({
           () => new TRPCError({ code: "NOT_FOUND", message: "User not found" }),
         )
 
-      if (!user.email) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Invalid login flow",
-        })
-      }
-
       await ctx.gb.setAttributes({ email: user.email })
       const useFapi = getIsSingpassFapi2Enabled({ gb: ctx.gb })
 
@@ -71,13 +68,12 @@ export const singpassRouter = router({
       } catch (error) {
         if (error instanceof TRPCError) throw error
         ctx.logger.error(
-          singpassLogFields(error),
+          { singpassError: singpassErrorCode(error) },
           "Singpass authorization request failed",
         )
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Singpass login failed",
-          cause: error instanceof SingpassRequestError ? error : undefined,
         })
       }
 
@@ -192,13 +188,12 @@ export const singpassRouter = router({
       } catch (error) {
         if (error instanceof TRPCError) throw error
         ctx.logger.error(
-          singpassLogFields(error),
+          { singpassError: singpassErrorCode(error) },
           "Failed to login to Singpass",
         )
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Singpass login failed",
-          cause: error instanceof SingpassRequestError ? error : undefined,
         })
       }
 

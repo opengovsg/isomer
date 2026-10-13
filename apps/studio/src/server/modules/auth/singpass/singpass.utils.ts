@@ -1,7 +1,4 @@
 import type { TokenSet } from "openid-client"
-import { errors } from "openid-client"
-
-import { SingpassRequestError } from "./singpass.error"
 
 // FAPI 2.0 ID tokens put the user UUID in `sub` directly. Legacy tokens use
 // `u=<uuid>` inside a comma-separated list (`s=<nric>,u=<uuid>` or `u=<uuid>`).
@@ -29,19 +26,4 @@ export const extractUuid = (tokens: TokenSet) => {
   }
 
   return uuidPart.slice(2)
-}
-
-export const singpassLogFields = (error: unknown) => {
-  const cause = error instanceof SingpassRequestError ? error.cause : error
-  const singpassError =
-    error instanceof SingpassRequestError
-      ? error.singpassError
-      : error instanceof errors.OPError && typeof error.error === "string"
-        ? error.error
-        : undefined
-
-  return {
-    message: cause instanceof Error ? cause.message : "unknown",
-    singpassError,
-  }
 }
