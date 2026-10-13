@@ -59,11 +59,7 @@ const CarouselDots = ({
   onSelect: (index: number) => void
   isClickable: boolean
 }) => (
-  <div
-    className="flex items-center gap-2"
-    role={isClickable ? "tablist" : undefined}
-    aria-label={isClickable ? "Carousel slides" : undefined}
-  >
+  <div className="flex items-center gap-2">
     {Array.from({ length: count }, (_, index) => {
       const isActive = index === currentIndex
       const className = carouselDotStyles({ isActive })
@@ -73,8 +69,7 @@ const CarouselDots = ({
           <button
             key={index}
             type="button"
-            role="tab"
-            aria-selected={isActive}
+            aria-current={isActive ? "true" : undefined}
             aria-label={`Go to slide ${index + 1} of ${count}`}
             className={className}
             onClick={() => onSelect(index)}

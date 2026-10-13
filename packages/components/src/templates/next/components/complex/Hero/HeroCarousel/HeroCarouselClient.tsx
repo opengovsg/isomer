@@ -99,6 +99,8 @@ export const HeroCarouselClient = ({
     [slides.length],
   )
 
+  const currentSlide = slides[currentIndex]
+
   const images = slides.map((slide, index) => {
     const isCurrent = index === currentIndex
 
@@ -140,6 +142,11 @@ export const HeroCarouselClient = ({
       aria-roledescription="carousel"
       aria-label="Hero carousel"
     >
+      <p className="sr-only" aria-live="polite" aria-atomic="true">
+        {currentSlide
+          ? `Slide ${currentIndex + 1} of ${slides.length}: ${currentSlide.title}`
+          : ""}
+      </p>
       {!isBlock && (
         <div
           className="absolute inset-0 overflow-hidden"
@@ -161,7 +168,10 @@ export const HeroCarouselClient = ({
                     isCurrent,
                     isHidden: !isCurrent,
                   })}
-                  aria-hidden={!isCurrent}
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`${index + 1} of ${slides.length}`}
+                  {...(isCurrent ? {} : { inert: "" })}
                 >
                   <div className="flex flex-col gap-6">
                     <Tag className={styles.title({ isBlock })}>
@@ -191,7 +201,7 @@ export const HeroCarouselClient = ({
                     isCurrent,
                     isHidden: !isCurrent,
                   })}
-                  aria-hidden={!isCurrent}
+                  {...(isCurrent ? {} : { inert: "" })}
                 >
                   <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
                     <LinkButton
