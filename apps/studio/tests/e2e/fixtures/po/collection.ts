@@ -136,7 +136,10 @@ export class CollectionPO {
 
   async addFilter() {
     await this.page.getByRole("button", { name: /Add a filter/i }).click()
-    // Adding a filter opens the nested editor immediately.
+    // Type-choice modal defaults to "Text filter"; confirming opens the nested editor.
+    await this.page
+      .getByRole("button", { name: "Add filter", exact: true })
+      .click()
     await expect(this.page.getByText(/Edit Filters/i)).toBeVisible()
   }
 
