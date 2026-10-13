@@ -719,7 +719,6 @@ export default function HistoryStateDrawer(): JSX.Element {
                 size="xs"
                 variant="outline"
                 onClick={() => {
-                  // TODO(phase 2): wire this to the diffDOM visual diff view.
                 }}
               >
                 View changes
