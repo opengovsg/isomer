@@ -1,6 +1,6 @@
+import type { defaultComponents } from "../engine/renderComponent"
+import type { defaultLayouts } from "../engine/renderLayout"
 import type { defaultShell } from "../templates/next/layouts/Skeleton/Skeleton"
-import type { defaultComponents } from "../templates/next/render/renderComponent"
-import type { defaultLayouts } from "../templates/next/render/renderLayout"
 import { ClassicInfopic } from "../templates/classic/components/Infopic"
 import { getTheme, type IsomerTheme } from "./index"
 

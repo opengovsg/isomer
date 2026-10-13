@@ -3,9 +3,9 @@ import type {
   IsomerPageLayoutType,
   IsomerSiteProps,
 } from "~/types"
+import { renderComponent } from "~/engine/renderComponent"
 
 import { doesComponentHaveImage } from "./doesComponentHaveImage"
-import { renderComponent } from "./renderComponent"
 
 interface RenderPageContentParams {
   content: IsomerComponent[]

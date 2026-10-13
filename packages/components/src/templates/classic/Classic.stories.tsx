@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { InfopicProps } from "~/interfaces/complex/Infopic"
+import { renderComponent } from "~/engine/renderComponent"
 import { generateSiteConfig } from "~/stories/helpers"
-
-import { renderComponent } from "../next/render/renderComponent"
 
 const ThemedInfopic = (props: InfopicProps) =>
   renderComponent({

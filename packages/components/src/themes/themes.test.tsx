@@ -3,12 +3,12 @@ import { renderToStaticMarkup } from "react-dom/server"
 import tailwindcss from "tailwindcss"
 import { describe, expect, it } from "vitest"
 
+import { renderComponent } from "../engine/renderComponent"
+import { renderLayout } from "../engine/renderLayout"
 import { createNextPreset } from "../presets/next"
 import { isomerSiteTheme } from "../presets/next/site-theme"
 import { createThemePreset } from "../presets/theme"
 import { generateSiteConfig } from "../stories/helpers/generateSiteConfig"
-import { renderComponent } from "../templates/next/render/renderComponent"
-import { renderLayout } from "../templates/next/render/renderLayout"
 import { getTheme, getPublishableTheme, type IsomerTheme } from "./index"
 
 const infopic = {

@@ -1,14 +1,13 @@
 import type { IsomerPageSchemaType } from "~/types"
+import { ArticleLayout } from "~/templates/next/layouts/Article"
+import { CollectionLayout } from "~/templates/next/layouts/Collection"
+import { ContentLayout } from "~/templates/next/layouts/Content"
+import { DatabaseLayout } from "~/templates/next/layouts/Database"
+import { HomepageLayout } from "~/templates/next/layouts/Homepage"
+import { IndexPageLayout } from "~/templates/next/layouts/IndexPage"
+import { NotFoundLayout } from "~/templates/next/layouts/NotFound"
+import { SearchLayout } from "~/templates/next/layouts/Search"
 import { getThemeOverrides } from "~/themes/overrides"
-
-import { ArticleLayout } from "../layouts/Article"
-import { CollectionLayout } from "../layouts/Collection"
-import { ContentLayout } from "../layouts/Content"
-import { DatabaseLayout } from "../layouts/Database"
-import { HomepageLayout } from "../layouts/Homepage"
-import { IndexPageLayout } from "../layouts/IndexPage"
-import { NotFoundLayout } from "../layouts/NotFound"
-import { SearchLayout } from "../layouts/Search"
 
 export const defaultLayouts = {
   ArticleLayout,
