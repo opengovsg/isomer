@@ -29,6 +29,7 @@ import {
   KeyStatisticsSchema,
   LogoCloudSchema,
   MapSchema,
+  NoStylizedUnicodeStringSchema,
   OrderedListSchema,
   ParagraphSchema,
   ProseSchema,
@@ -37,8 +38,6 @@ import {
   UnorderedListSchema,
   VideoSchema,
 } from "~/interfaces"
-
-import { isomerSharedSchemaDefinitions } from "./sharedDefinitions"
 
 export const IsomerComplexComponentsMap = {
   accordion: AccordionSchema,
@@ -84,7 +83,7 @@ export const componentSchemaDefinitions = {
     complex: IsomerComplexComponentsMap,
     native: IsomerNativeComponentsMap,
   },
-  ...isomerSharedSchemaDefinitions,
+  noStylizedUnicodeString: NoStylizedUnicodeStringSchema,
 }
 
 interface ComponentSchema {

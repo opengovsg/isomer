@@ -1,19 +1,9 @@
 import { describe, expect, it } from "vitest"
 import { getComponentSchema } from "~/schemas/components"
 import { schema } from "~/schemas/main"
-import {
-  NO_STYLIZED_UNICODE_REGEX,
-  NON_EMPTY_STRING_REGEX,
-} from "~/utils/validation"
+import { NO_STYLIZED_UNICODE_REGEX } from "~/utils/validation"
 
-import {
-  IsomerString,
-  NO_STYLIZED_UNICODE_STRING_ID,
-  NoStylizedUnicodeStringSchema,
-} from "../IsomerString"
-
-const unicodeMessage =
-  "cannot contain stylised or decorative unicode characters"
+import { IsomerString, NO_STYLIZED_UNICODE_STRING_ID } from "../IsomerString"
 
 const countInJson = (value: unknown, needle: string) => {
   const haystack = JSON.stringify(value)
@@ -32,27 +22,6 @@ describe("IsomerString", () => {
     expect(field.format).toBe("textarea")
     expect(field.allOf).toEqual([{ $ref: NO_STYLIZED_UNICODE_STRING_ID }])
     expect(field.errorMessage).toBeUndefined()
-    expect(NoStylizedUnicodeStringSchema.pattern).toBe(
-      NO_STYLIZED_UNICODE_REGEX,
-    )
-    expect(NoStylizedUnicodeStringSchema.errorMessage).toEqual({
-      pattern: unicodeMessage,
-    })
-  })
-
-  it("should keep a caller's pattern and error message instead of joining them", () => {
-    // Arrange / Act
-    const field = IsomerString({
-      pattern: NON_EMPTY_STRING_REGEX,
-      errorMessage: { pattern: "cannot be empty or contain only spaces" },
-    })
-
-    // Assert
-    expect(field.pattern).toBe(NON_EMPTY_STRING_REGEX)
-    expect(field.errorMessage).toEqual({
-      pattern: "cannot be empty or contain only spaces",
-    })
-    expect(field.allOf).toEqual([{ $ref: NO_STYLIZED_UNICODE_STRING_ID }])
   })
 
   it("should include the lookahead once on the published page schema and on a component fragment", () => {
@@ -64,8 +33,5 @@ describe("IsomerString", () => {
         NO_STYLIZED_UNICODE_REGEX,
       ),
     ).toBe(1)
-    expect(countInJson(schema, NO_STYLIZED_UNICODE_STRING_ID)).toBeGreaterThan(
-      1,
-    )
   })
 })

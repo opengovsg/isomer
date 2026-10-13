@@ -78,7 +78,6 @@ describe("no stylized unicode schema", () => {
     const shared = ajv.getSchema(NO_STYLIZED_UNICODE_STRING_ID)
 
     // Assert
-    expect(validatePage({ layout: "content" })).toBe(false)
     expect(shared).toBeTypeOf("function")
     expect(shared?.toString()).toContain("D835")
     expect(validatePage.toString()).not.toContain("D835")

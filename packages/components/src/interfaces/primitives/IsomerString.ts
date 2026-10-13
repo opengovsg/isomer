@@ -19,19 +19,8 @@ export const NoStylizedUnicodeStringSchema = Type.String({
 // Type.String plus stylized-unicode rejection. Caller pattern, format, title,
 // and errorMessage stay on this node. Unicode validation is a separate $ref,
 // so alternation in the caller pattern cannot bypass it.
-export const IsomerString = (options: StringOptions = {}) => {
-  const {
-    pattern: existingPattern,
-    errorMessage,
-    ...rest
-  } = options as StringOptions & {
-    errorMessage?: { pattern?: string; [key: string]: unknown }
-  }
-
-  return Type.String({
-    ...rest,
-    ...(existingPattern ? { pattern: existingPattern } : {}),
-    ...(errorMessage ? { errorMessage } : {}),
+export const IsomerString = (options: StringOptions = {}) =>
+  Type.String({
+    ...options,
     allOf: [{ $ref: NO_STYLIZED_UNICODE_STRING_ID }],
   })
-}
