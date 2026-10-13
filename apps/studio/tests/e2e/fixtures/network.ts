@@ -108,32 +108,9 @@ export const mockFailedAssetUpload = async (page: Page) => {
 }
 
 /**
- * Drop the in-memory GrowthBook singleton before the next app navigation, and
- * clear its localStorage feature cache ("gbFeaturesCache"). The GrowthBook JS
- * SDK reuses that cache instead of re-fetching when it isn't stale — and
- * Playwright's auth storage state bakes in whatever was cached during the
- * login flow in global-setup, so without this every test would silently see
- * the real (unpatched) feature set instead of a route-mocked one.
- */
-export const resetGrowthBookPage = async (page: Page) => {
-  await page.addInitScript(() => {
-    try {
-      window.localStorage.removeItem("gbFeaturesCache")
-    } catch {
-      // localStorage may be unavailable (e.g. on about:blank); ignore.
-    }
-  })
-  await page.goto("about:blank")
-}
-
-interface GrowthBookFeaturesResponse {
-  features: Record<string, { defaultValue?: unknown; rules?: unknown[] }>
-}
-
-/**
  * Override one offline GrowthBook flag on the already-loaded page.
- * E2E uses `createOfflineGrowthBook` and does not fetch the CDN, so
- * `enableGrowthBookFeature` cannot change what the app reads.
+ * The test build's client is created by `createOfflineGrowthBook` and does
+ * not fetch the CDN.
  */
 export const setOfflineGrowthBookFeature = async (
   page: Page,
@@ -154,34 +131,4 @@ export const setOfflineGrowthBookFeature = async (
     },
     { featureKey, value },
   )
-}
-
-/** Patch a GrowthBook feature into the CDN features response before navigation. */
-export const enableGrowthBookFeature = async (
-  page: Page,
-  featureKey: string,
-  value: unknown,
-) => {
-  await page.route("https://cdn.growthbook.io/**", async (route) => {
-    const url = route.request().url()
-    if (!url.includes("/api/features/")) {
-      await route.continue()
-      return
-    }
-
-    let body: GrowthBookFeaturesResponse
-    try {
-      const response = await route.fetch()
-      body = (await response.json()) as GrowthBookFeaturesResponse
-    } catch {
-      body = { features: {} }
-    }
-
-    body.features[featureKey] = { defaultValue: value }
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(body),
-    })
-  })
 }
