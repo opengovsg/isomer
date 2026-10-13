@@ -3,7 +3,6 @@ import type { IsomerPageLayoutType, IsomerComponentTypes } from "~/types"
 import { Type } from "@sinclair/typebox"
 import {
   AccordionContainerEditorSchema,
-  AccordionProseEditorSchema,
   AccordionSchema,
   AudioSchema,
   BlockquoteSchema,
@@ -92,17 +91,9 @@ export const componentSchemaDefinitions = {
 interface ComponentSchema {
   component: IsomerComponentTypes
   layout?: IsomerPageLayoutType
-  // Which editing form an Accordion gets: the legacy single prose body, or
-  // the container block holding a list of child blocks. Page validation
-  // always accepts both shapes.
-  accordionEditor?: "prose" | "container"
 }
 
-const generateComponentSchema = ({
-  component,
-  layout,
-  accordionEditor = "prose",
-}: ComponentSchema) => {
+const generateComponentSchema = ({ component, layout }: ComponentSchema) => {
   if (component === "prose") {
     return Type.Ref(IsomerNativeComponentsMap.prose)
   }
@@ -115,10 +106,10 @@ const generateComponentSchema = ({
     return layout === "homepage" ? ColumnHomepageSchema : ColumnDefaultSchema
   }
 
+  // An accordion is edited as a container of child blocks; page validation
+  // still accepts the legacy prose-only shape via AccordionSchema.
   if (component === "accordion") {
-    return accordionEditor === "container"
-      ? AccordionContainerEditorSchema
-      : AccordionProseEditorSchema
+    return AccordionContainerEditorSchema
   }
 
   return IsomerComplexComponentsMap[component]
@@ -127,10 +118,9 @@ const generateComponentSchema = ({
 export const getComponentSchema = ({
   component,
   layout,
-  accordionEditor,
 }: ComponentSchema): TSchema => {
   return {
-    ...generateComponentSchema({ component, layout, accordionEditor }),
+    ...generateComponentSchema({ component, layout }),
     ...componentSchemaDefinitions,
   }
 }

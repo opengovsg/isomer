@@ -170,10 +170,7 @@ describe("container blocks", () => {
 
     it("hides the legacy prose body in the container accordion editor", () => {
       // Act
-      const schema = getComponentSchema({
-        component: "accordion",
-        accordionEditor: "container",
-      })
+      const schema = getComponentSchema({ component: "accordion" })
 
       // Assert
       const { details } = schema.properties as { details: { format: string } }

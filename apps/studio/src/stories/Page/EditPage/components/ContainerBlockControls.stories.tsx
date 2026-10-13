@@ -6,10 +6,7 @@ import { ErrorProvider } from "~/features/editing-experience/components/form-bui
 
 import { FormBuilder } from "./formBuilder"
 
-const accordionSchema = getComponentSchema({
-  component: "accordion",
-  accordionEditor: "container",
-})
+const accordionSchema = getComponentSchema({ component: "accordion" })
 
 const homepageColumnSchema = getComponentSchema({
   component: "column",

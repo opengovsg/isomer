@@ -1,7 +1,6 @@
 export {
   AccordionSchema,
   AccordionContainerEditorSchema,
-  AccordionProseEditorSchema,
   type AccordionProps,
 } from "./Accordion"
 export { BlockquoteSchema, type BlockquoteProps } from "./Blockquote"

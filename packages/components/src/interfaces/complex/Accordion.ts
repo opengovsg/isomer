@@ -52,16 +52,6 @@ export const AccordionSchema = Type.Object(
   { title: "Accordion" },
 )
 
-// Editing schema for the legacy prose-only accordion.
-export const AccordionProseEditorSchema = Type.Object(
-  {
-    type: Type.Literal("accordion", { default: "accordion" }),
-    summary: AccordionSummarySchema,
-    details: AccordionProseSchema,
-  },
-  { title: "Accordion" },
-)
-
 // Editing schema for the accordion as a container block. `details` is kept
 // hidden so that an un-migrated item still round-trips through the form.
 export const AccordionContainerEditorSchema: TSchema = Type.Object(

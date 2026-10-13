@@ -1,14 +1,6 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { DEFAULT_CHILDREN_PAGES_BLOCK } from "@opengovsg/isomer-components"
 
-// Used instead of DEFAULT_BLOCKS.accordion when container blocks are enabled:
-// the accordion then holds a list of child blocks rather than a prose body.
-export const DEFAULT_CONTAINER_ACCORDION_BLOCK = {
-  type: "accordion",
-  summary: "Title for the accordion item",
-  content: [],
-} satisfies IsomerComponent
-
 // TODO: add in default blocks for remaining
 export const DEFAULT_BLOCKS = {
   prose: {
@@ -29,10 +21,7 @@ export const DEFAULT_BLOCKS = {
   accordion: {
     type: "accordion",
     summary: "Title for the accordion item",
-    details: {
-      type: "prose",
-      content: [],
-    },
+    content: [],
   },
   column: {
     type: "column",
@@ -515,7 +504,7 @@ export const BLOCK_TO_META: Record<
   },
 } as const
 
-export type AllowedBlockSections = {
+type AllowedBlockSections = {
   label: string
   types: IsomerComponent["type"][]
 }[]
