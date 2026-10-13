@@ -17,6 +17,10 @@ import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { EmptyArray } from "../../components/EmptyArray"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
 import { useBuilderErrors } from "../../ErrorProvider"
+import {
+  defaultHeroCarouselSlide,
+  isHeroCarouselSlideSchema,
+} from "../../heroCarouselDefaults"
 import { useArray } from "../../hooks/useArray"
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
@@ -72,7 +76,12 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
             </Text>
             <AddItemButton
               onClick={() => {
-                addItem(path, createDefaultValue(schema, rootSchema))()
+                addItem(
+                  path,
+                  isHeroCarouselSlideSchema(schema)
+                    ? defaultHeroCarouselSlide()
+                    : createDefaultValue(schema, rootSchema),
+                )()
                 setSelectedIndex(data)
               }}
               isDisabled={isAddItemDisabled}
