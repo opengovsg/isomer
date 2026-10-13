@@ -7,6 +7,15 @@ pnpm test:e2e                              # all projects
 pnpm exec playwright test --project=admin  # one role
 ```
 
+## What goes where
+
+| Doc                                                                                       | Purpose                                                                                       |
+| ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **This README**                                                                           | Run commands, import paths, directory layout, Playwright projects, where POs live             |
+| [E2E conventions](../../../../.claude/skills/isomer-conventions/conventions/e2e-tests.md) | Rules and violation smells for reviews and agents (layers, `page.*` ban, DB polls, role tags) |
+
+When you add a PO or fixture file, update code and `fixtures/po/index.ts` (or the entity barrel). You do **not** need to extend the conventions doc unless you introduce a new **rule** the suite should enforce.
+
 ## Fixtures
 
 Import via the `~e2e/*` path alias (`apps/studio/tsconfig.json`). Use **subpath barrels** — there is no root `fixtures/index.ts`.
@@ -19,7 +28,8 @@ Import via the `~e2e/*` path alias (`apps/studio/tsconfig.json`). Use **subpath 
 | `~e2e/fixtures/session-mint` | Mint role `storageState` in global setup      |
 | `~e2e/fixtures/network`      | Route stubs (S3 upload, GrowthBook)           |
 | `~e2e/fixtures/reset`        | Site-scoped DB reset / cleanup helpers        |
-| `~e2e/fixtures/po`           | Page objects (`DashboardPO`, `SitePO`, …)     |
+| `~e2e/fixtures/po`           | Page objects (see below)                      |
+| `~e2e/fixtures/collection`   | Collection seed / db helpers                  |
 | `~e2e/fixtures/resource`     | Resource seed / db / expect                   |
 | `~e2e/fixtures/site`         | Site provision, db queries, expect polls      |
 | `~e2e/fixtures/user`         | User seed / db / expect / mutations           |
@@ -37,21 +47,13 @@ import { ensureUserOnboarded } from "~e2e/fixtures/user"
 
 - `fixtures/` — entity folders (`resource/`, `site/`, `user/`, …), `po/`, and cross-cutting files (`auth.ts`, `helpers.ts`, …).
 - `storage-state/` — gitignored; `global-setup.ts` mints one session cookie jar per role the shard needs.
-- `<module>/` — one directory per backend router module (`site/`, `page/`, `resource/`, …). Each file covers a single UI surface (e.g. `site/settings-agency.test.ts`).
-
-Enforceable conventions (PO rules, DB layers, smells) live in `.claude/skills/isomer-conventions/conventions/e2e-tests.md`.
-
-## Adding tests for a new module
-
-1. Identify the router's `__tests__/<module>.router.test.ts` file.
-2. For each `describe` block, identify the user-facing UI surface (settings page, dashboard view, modal, …).
-3. Add e2e coverage for user-visible flows on that surface (UI actions, toasts, persisted state).
-4. Add permission tests where the UI shows a signal (hidden control, redirect, disabled action) — not every surface needs a dedicated gate test if another file already covers that boundary.
-5. Do **not** translate validation-error or audit-log scenarios — those stay in integration tests.
+- `<module>/` — one directory per product area / CI shard (`site/`, `page/`, `resource/`, `collection/`, …). Each file covers a single UI surface (e.g. `site/settings-agency.test.ts`).
 
 ## Page objects
 
-All Playwright `page.*` calls live in `fixtures/po/` or `fixtures/helpers.ts` — not in `*.test.ts`. Test files construct POs and assert outcomes. See conventions doc for the allowlist and detection command.
+- Import: `~e2e/fixtures/po`
+- Source: one class per file under `fixtures/po/`. **Canonical list:** `fixtures/po/index.ts` (add new POs there when you add a file).
+- Tests construct POs and assert outcomes; they do not call Playwright `page.*` except as allowed in the [conventions doc](../../../../.claude/skills/isomer-conventions/conventions/e2e-tests.md).
 
 ## Role projects
 
@@ -67,7 +69,16 @@ Auth uses Playwright **projects**, not per-file `test.use({ storageState })`.
 
 `singpass.test.ts` is matched by `unauthenticated`. Every test in that file is `test.skip` — remove `.skip` locally to run against Mockpass.
 
-Tag each role `describe` with `roleTag(...)` from `~e2e/fixtures/auth` (typed from `ROLES`). Do not use `test.use({ storageState })` or raw `"@role:admin"` strings.
+Tag each role `describe` with `roleTag(...)` from `~e2e/fixtures/auth` (typed from `ROLES`). Do not use `test.use({ storageState })` or raw `"@role:admin"` strings — see conventions doc.
+
+## Adding tests for a new module
+
+1. Identify the router's `__tests__/<module>.router.test.ts` file.
+2. For each `describe` block, identify the user-facing UI surface (settings page, dashboard view, modal, …).
+3. Add e2e coverage for user-visible flows on that surface (UI actions, toasts, persisted state).
+4. Add permission tests where the UI shows a signal (hidden control, redirect, disabled action) — not every surface needs a dedicated gate test if another file already covers that boundary.
+5. Do **not** translate validation-error or audit-log scenarios — those stay in integration tests.
+6. If you add a new `tests/e2e/<feature>/` directory, add a matching `paths:` entry in the e2e-tests CI matrix (see `scripts/e2eCiCoverage.test.ts`).
 
 ## Why storage-state, not per-test login
 

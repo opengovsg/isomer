@@ -59,14 +59,17 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 - [Capture PostHog events through the shared hooks](conventions/analytics-shared-posthog-capture-hooks.md) — best practice: use usePostHogCaptureOnceReady / OncePerKey / OptionalStep for render-driven captures, not a hand-rolled useEffect + useRef guard
 
 ### Audit logging
+
 - [Audit deltas must log real DB rows, not hand-built objects](conventions/audit-log-real-db-rows.md) — best practice: log before/after as rows re-read from the DB inside the same tx, so deltas are accurate
 
 ### Readability
+
 - [Document every regex, and keep the comment correct](conventions/document-regex-with-verified-comments.md) — best practice: comment what + why a regex matches, and verify the comment is accurate
 
 ### Testing
+
 - [Structure tests as Arrange / Act / Assert](conventions/tests-arrange-act-assert.md) — best practice: mark AAA phases (collapse adjacent markers when trivial), one Act per test
-- [E2E test conventions (Studio Playwright suite)](conventions/e2e-tests.md) — best practice: living reference for the Studio Playwright E2E suite
+- [E2E test conventions (Studio Playwright suite)](conventions/e2e-tests.md) — best practice: enforceable rules and violation smells for Studio Playwright e2e (onboarding: `apps/studio/tests/e2e/README.md`)
 
 ### Feature flags
 

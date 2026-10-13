@@ -4,10 +4,14 @@ category: Testing
 type: best-practice
 ---
 
-Living reference for `apps/studio/tests/e2e/`. Update when the stack introduces a
-**new reusable pattern** — not when merely adding test cases.
+Rules and **violation smells** for `apps/studio/tests/e2e/`. Use when writing or
+reviewing e2e tests to catch deviations — not as a file catalog.
 
-Fixture import paths and onboarding: `apps/studio/tests/e2e/README.md`.
+**Onboarding** (how to run tests, import paths, project layout, PO exports):
+`apps/studio/tests/e2e/README.md`.
+
+Update this file when the suite gains a **new enforceable pattern** (a rule or
+smell), not when adding test cases or POs.
 
 ## File layout
 
@@ -17,6 +21,8 @@ Fixture import paths and onboarding: `apps/studio/tests/e2e/README.md`.
 
 ## Fixture layers
 
+Put code in the right layer — wrong layer is a smell.
+
 | Layer             | Import from                                     | Use for                                                   |
 | ----------------- | ----------------------------------------------- | --------------------------------------------------------- |
 | **Helpers**       | `~e2e/fixtures/helpers`                         | Multi-step flows crossing pages or modals                 |
@@ -24,7 +30,7 @@ Fixture import paths and onboarding: `apps/studio/tests/e2e/README.md`.
 | **DB fixtures**   | `~e2e/fixtures/<entity>`, `~e2e/fixtures/reset` | Arrange, read queries, poll assertions, site-scoped reset |
 | **Network mocks** | `~e2e/fixtures/network`                         | Route stubs (S3 upload, GrowthBook) in `beforeEach`       |
 
-Entity folders (e.g. `resource/`, `site/`, `user/`, `whitelist/`, `role/`) typically use:
+Entity folders (`resource/`, `site/`, `user/`, `whitelist/`, `role/`, `collection/`, …):
 
 | File        | Purpose                         |
 | ----------- | ------------------------------- |
@@ -32,9 +38,7 @@ Entity folders (e.g. `resource/`, `site/`, `user/`, `whitelist/`, `role/`) typic
 | `db.ts`     | Read queries, no `expect()`     |
 | `expect.ts` | `expect.poll` assertion helpers |
 
-Not every folder needs all three — only add a file when there's a real use for it. `site/` uses `provision.ts` (`provisionE2ESite`) instead of `seed.ts`, since it provisions a whole site rather than seeding rows into one; `role/` has no `db.ts`/`expect.ts` since role seeding has nothing to read back or poll.
-
-`role/seed.ts` runs global role seeding (`seedRolesForE2E`) from `global-setup.ts`.
+Exceptions (do not “complete the trio” blindly): `site/` uses `provision.ts` instead of `seed.ts`; `role/` has only `seed.ts` for global role seeding in `global-setup.ts`.
 
 ## Welcome modal
 
@@ -76,18 +80,9 @@ Global setup mints `storage-state/<role>.json` via `~e2e/fixtures/session-mint` 
 
 ## Page objects
 
-POs live in `fixtures/po/` (`import from "~e2e/fixtures/po"`). One PO per UI surface; multi-surface flows stay in `helpers.ts`.
-
-| PO                 | File (`fixtures/po/`) | Surface                    |
-| ------------------ | --------------------- | -------------------------- |
-| `SitePO`           | `site-settings.ts`    | Site settings              |
-| `DashboardPO`      | `dashboard.ts`        | Site dashboard / resources |
-| `PageEditorPO`     | `page-editor.ts`      | Page edit + publish        |
-| `PageSettingsPO`   | `page-settings.ts`    | Page settings modal        |
-| `FolderSettingsPO` | `folder-settings.ts`  | Folder settings modal      |
-| `UsersPO`          | `users.ts`            | Collaborators page         |
-
-Constructor takes `Page`. No DB setup in POs.
+- POs live in `fixtures/po/` (`import from "~e2e/fixtures/po"`). **One PO per UI surface**; multi-surface flows stay in `helpers.ts`.
+- Constructor takes `Page`. **No DB setup in POs.**
+- Class name vs file name can differ — e.g. `SitePO` is defined in `site-settings.ts` (not `site.ts`). New POs: add `fixtures/po/<name>.ts` and export from `fixtures/po/index.ts` (see README).
 
 ### `page.*` in test files
 
