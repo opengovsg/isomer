@@ -50,12 +50,19 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 5, height: 6 }],
+  // Contentpic stacks (image above text) as a column below Tailwind `sm` (640px)
+  // and switches to its real side-by-side row layout — image fixed at 200×240 —
+  // at `sm` and up (`sm:flex-row`). Preview at exactly 640px so the frame shows
+  // that true desktop row layout rather than the narrow mobile column a <640px
+  // viewport would render; it's also the smallest faithful desktop width, which
+  // keeps the image as large as possible once the frame is scaled down.
   previewStates: [
     {
       id: "desktop",
       label: "Desktop",
-      viewportWidth: 200,
-      aspectRatio: { width: 5, height: 6 },
+      viewportWidth: 640,
+      // Rough landscape estimate for the pre-measure flash only.
+      aspectRatio: { width: 640, height: 300 },
     },
   ],
 }

@@ -60,6 +60,10 @@ export const AdjustmentPreview = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const bakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevPreviewUrlRef = useRef<string | null>(null)
+  // Monotonic token for the latest bake request. Each effect run bumps it so an
+  // older, still-running bake can detect it has been superseded and drop its
+  // result instead of overwriting the preview of a newer draft.
+  const bakeRequestIdRef = useRef(0)
 
   // src arrives as the raw stored path (e.g. "/1/uuid/file.png"); resolve it to
   // the asset domain for DISPLAY (the fallback shown before any bake exists),
@@ -94,6 +98,12 @@ export const AdjustmentPreview = ({
       clearTimeout(bakeTimeoutRef.current)
     }
 
+    // Supersede any in-flight bake from a prior adjustment: debouncing only
+    // cancels a bake that hasn't started yet, so a bake already awaiting
+    // bakeImage could otherwise finish last and overwrite this newer draft.
+    const requestId = ++bakeRequestIdRef.current
+    const isStale = () => requestId !== bakeRequestIdRef.current
+
     // If no blob or no adjustment with crop, nothing to bake
     if (!originalBlob || !adjustment?.crop) {
       // Revoke previous URL if clearing the preview
@@ -119,6 +129,11 @@ export const AdjustmentPreview = ({
         const bakedBlob = await bakeImage(originalBlob, adjustment, {
           mimeType: originalBlob.type,
         })
+        // A newer adjustment started while this bake ran — discard this result
+        // so the older crop can't replace the newer preview.
+        if (isStale()) {
+          return
+        }
         const bakeUrl = URL.createObjectURL(bakedBlob)
         // Revoke previous URL before setting new one
         if (prevPreviewUrlRef.current) {
@@ -127,9 +142,19 @@ export const AdjustmentPreview = ({
         prevPreviewUrlRef.current = bakeUrl
         setPreviewUrl(bakeUrl)
       } catch (error) {
-        // On any failure (CORS taint, canvas issue, etc.): fall back to uncropped src
+        // On any failure (CORS taint, canvas issue, etc.): fall back to the
+        // uncropped src. Clear the previous preview so a stale crop from an
+        // earlier successful bake isn't left showing for this draft — unless a
+        // newer bake has already superseded this one.
         console.debug("Failed to bake image", error)
-        // Keep previewUrl as null, so we fall back to src in render
+        if (isStale()) {
+          return
+        }
+        if (prevPreviewUrlRef.current) {
+          URL.revokeObjectURL(prevPreviewUrlRef.current)
+          prevPreviewUrlRef.current = null
+        }
+        setPreviewUrl(null)
       }
     }
     bakeTimeoutRef.current = setTimeout(() => void runBake(), 150)

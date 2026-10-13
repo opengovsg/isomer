@@ -32,6 +32,11 @@ import {
   useSaveImageAdjustment,
 } from "./useSaveImageAdjustment"
 
+// Upper bound on how long we wait for a save (bake → presign → upload) before
+// surfacing an error and unlocking the modal, so a hung network request can't
+// trap the editor in a permanently disabled modal.
+const SAVE_TIMEOUT_MS = 30_000
+
 interface ImageAdjustmentModalProps {
   isOpen: boolean
   onClose: () => void
@@ -70,10 +75,13 @@ export const ImageAdjustmentModal = ({
     onClose: onDiscardChangesModalClose,
   } = useDisclosure()
   const toast = useToast()
-  const { save, isSaving } = useSaveImageAdjustment({
+  const { save } = useSaveImageAdjustment({
     siteId,
     resourceId,
   })
+  // Drives UI locking during a save. Local (not the hook's isSaving) so the
+  // save timeout below can unlock the modal even if the underlying upload hangs.
+  const [isSaving, setIsSaving] = useState(false)
 
   // Check if draft differs from original value.
   const isModified = JSON.stringify(draft) !== JSON.stringify(value)
@@ -86,6 +94,10 @@ export const ImageAdjustmentModal = ({
   const originalSrc = `/${resolveOriginalKey(src, draft ?? {})}`
 
   const handleClose = () => {
+    // Block dismissal while a save is in flight — otherwise the editor could
+    // discard, then the completing upload writes the discarded edit back via
+    // onSave. The save timeout guarantees this lock is released.
+    if (isSaving) return
     if (isModified) {
       onDiscardChangesModalOpen()
     } else {
@@ -99,14 +111,25 @@ export const ImageAdjustmentModal = ({
   }
 
   const handleSave = async () => {
-    if (!draft) {
-      // Nothing adjusted, just close
+    // Nothing to persist (untouched, or reverted back to the original) — just
+    // close without re-baking/uploading.
+    if (!isModified || !draft) {
       onClose()
       return
     }
 
+    setIsSaving(true)
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
     try {
-      const result = await save(src, draft)
+      const result = await Promise.race([
+        save(src, draft),
+        new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(
+            () => reject(new Error("Saving took too long. Please try again.")),
+            SAVE_TIMEOUT_MS,
+          )
+        }),
+      ])
       onSave(result)
       onClose()
     } catch (err) {
@@ -117,6 +140,9 @@ export const ImageAdjustmentModal = ({
         duration: 5000,
         isClosable: true,
       })
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId)
+      setIsSaving(false)
     }
   }
 
@@ -150,6 +176,8 @@ export const ImageAdjustmentModal = ({
         size={{ base: "full", md: "6xl" }}
         isOpen={isOpen}
         onClose={handleClose}
+        closeOnOverlayClick={!isSaving}
+        closeOnEsc={!isSaving}
       >
         <ModalOverlay />
         <ModalContent overflow="hidden">
@@ -161,7 +189,11 @@ export const ImageAdjustmentModal = ({
             </HStack>
           </ModalHeader>
 
-          <ModalCloseButton size="lg" onClick={handleClose} />
+          <ModalCloseButton
+            size="lg"
+            onClick={handleClose}
+            isDisabled={isSaving}
+          />
 
           <ModalBody overflow="auto" p="2rem">
             <Grid
@@ -306,6 +338,7 @@ export const ImageAdjustmentModal = ({
                 variant="clear"
                 colorScheme="neutral"
                 onClick={handleReset}
+                isDisabled={isSaving}
               >
                 Reset image
               </Button>
@@ -313,7 +346,7 @@ export const ImageAdjustmentModal = ({
                 variant="clear"
                 colorScheme="neutral"
                 onClick={handleUndo}
-                isDisabled={!isModified}
+                isDisabled={!isModified || isSaving}
               >
                 Undo changes
               </Button>
@@ -322,6 +355,7 @@ export const ImageAdjustmentModal = ({
                 variant="clear"
                 colorScheme="neutral"
                 onClick={handleClose}
+                isDisabled={isSaving}
               >
                 Cancel
               </Button>

@@ -2,7 +2,7 @@
 
 import type { CSSProperties } from "react"
 import { Box, Text, VStack } from "@chakra-ui/react"
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 
 import type { CropRectNormalized, HandlePosition } from "./cropGeometry"
@@ -72,15 +72,12 @@ export const CropFocalControl = ({
   const currentCrop = crop ?? defaultCropRect(lockedRatio)
   const currentFocal = focal ?? { x: 0.5, y: 0.5 }
 
-  // Seed a ratio-correct crop default on mount. The generic full-image
-  // default would violate a locked ratio, so a fixed-ratio component must
-  // start from a ratio-correct centered rect, not {0,0,1,1}.
-  useEffect(() => {
-    if (showCrop && crop === undefined) {
-      onCropChange(defaultCropRect(lockedRatio))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // NB: the default crop is NOT written to the draft on mount. Merely opening
+  // the modal must not dirty the draft (otherwise Cancel prompts to discard and
+  // Save bakes a full-frame image for an untouched picture). The default stays
+  // local — shown via `currentCrop` and committed only on the first real edit
+  // (crop drag commits the dragged rect; focal drag commits the default crop,
+  // see handleFocalPointerDown).
 
   const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
     const img = event.currentTarget
@@ -153,6 +150,13 @@ export const CropFocalControl = ({
     event: React.PointerEvent<HTMLDivElement>,
   ) => {
     event.stopPropagation()
+    // Commit the (until-now local) default crop on the first focal edit, so a
+    // focal-only adjustment still bakes within the correct frame. Focal values
+    // are stored relative to the crop, so the crop the focal is measured against
+    // must be persisted alongside it.
+    if (showCrop && crop === undefined) {
+      onCropChange(currentCrop)
+    }
     setDragTarget("focal")
     event.currentTarget.setPointerCapture(event.pointerId)
   }
