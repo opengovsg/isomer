@@ -1,4 +1,27 @@
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi"
+import { tv } from "~/lib/tv"
+
+const carouselControlsStyles = tv({
+  base: "flex w-full items-center justify-between gap-4",
+  variants: {
+    isDesktopOnly: {
+      true: "hidden lg:flex",
+    },
+    hasTopMargin: {
+      true: "mt-8",
+    },
+  },
+})
+
+const carouselDotStyles = tv({
+  base: "h-2 shrink-0 rounded-full transition-[width,background-color] duration-150 ease-out motion-reduce:transition-none",
+  variants: {
+    isActive: {
+      true: "w-6 bg-white",
+      false: "w-2 bg-white/50 hover:bg-white/70 focus-visible:bg-white/70",
+    },
+  },
+})
 
 const CarouselArrowButton = ({
   direction,
@@ -30,13 +53,11 @@ const CarouselDots = ({
   currentIndex,
   onSelect,
   isClickable,
-  dotClassName,
 }: {
   count: number
   currentIndex: number
   onSelect: (index: number) => void
   isClickable: boolean
-  dotClassName: { active: string; inactive: string }
 }) => (
   <div
     className="flex items-center gap-2"
@@ -45,7 +66,7 @@ const CarouselDots = ({
   >
     {Array.from({ length: count }, (_, index) => {
       const isActive = index === currentIndex
-      const className = isActive ? dotClassName.active : dotClassName.inactive
+      const className = carouselDotStyles({ isActive })
 
       if (isClickable) {
         return (
@@ -74,8 +95,8 @@ export const CarouselControls = ({
   onNext,
   isDotsClickable,
   isPending,
-  className,
-  dotClassName,
+  isDesktopOnly,
+  hasTopMargin,
 }: {
   slideCount: number
   currentIndex: number
@@ -84,16 +105,15 @@ export const CarouselControls = ({
   onNext: () => void
   isDotsClickable: boolean
   isPending: boolean
-  className: string
-  dotClassName: { active: string; inactive: string }
+  isDesktopOnly?: boolean
+  hasTopMargin?: boolean
 }) => (
-  <div className={className}>
+  <div className={carouselControlsStyles({ isDesktopOnly, hasTopMargin })}>
     <CarouselDots
       count={slideCount}
       currentIndex={currentIndex}
       onSelect={onSelect}
       isClickable={isDotsClickable}
-      dotClassName={dotClassName}
     />
     <div className="flex items-center gap-2">
       <CarouselArrowButton

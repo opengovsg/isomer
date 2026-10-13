@@ -21,10 +21,6 @@ const createHeroCarouselStyles = tv({
       "absolute inset-0 z-0 h-full w-full opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
     slideContent:
       "flex flex-col gap-6 opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
-    controls: "flex w-full items-center justify-between gap-4",
-    desktopControls:
-      "flex hidden w-full items-center justify-between gap-4 lg:flex",
-    dot: "h-2 shrink-0 rounded-full transition-[width,background-color] duration-150 ease-out motion-reduce:transition-none",
   },
   variants: {
     isBlock: {
@@ -35,7 +31,6 @@ const createHeroCarouselStyles = tv({
         contentInner:
           "max-w-[548px] justify-center text-base-content-inverse lg:mx-0 lg:ml-auto",
         title: "wrap-break-word text-balance",
-        desktopControls: "mt-8",
       },
       false: {
         section: "relative",
@@ -55,14 +50,6 @@ const createHeroCarouselStyles = tv({
     isHidden: {
       true: {
         slideContent: "pointer-events-none absolute inset-0",
-      },
-    },
-    isActive: {
-      true: {
-        dot: "w-6 bg-white",
-      },
-      false: {
-        dot: "w-2 bg-white/50 hover:bg-white/70 focus-visible:bg-white/70",
       },
     },
   },
@@ -112,11 +99,6 @@ export const HeroCarouselClient = ({
     [slides.length],
   )
 
-  const dotClassName = {
-    active: styles.dot({ isActive: true }),
-    inactive: styles.dot({ isActive: false }),
-  }
-
   const images = slides.map((slide, index) => {
     const isCurrent = index === currentIndex
 
@@ -148,8 +130,6 @@ export const HeroCarouselClient = ({
         onNext={() => navigateByDirection("next")}
         isDotsClickable={false}
         isPending={isPending}
-        className={styles.controls()}
-        dotClassName={dotClassName}
       />
     </div>
   )
@@ -248,8 +228,8 @@ export const HeroCarouselClient = ({
             onNext={() => navigateByDirection("next")}
             isDotsClickable
             isPending={isPending}
-            className={styles.desktopControls({ isBlock })}
-            dotClassName={dotClassName}
+            isDesktopOnly
+            hasTopMargin={isBlock}
           />
         </div>
         {!isBlock && mobileControls}
