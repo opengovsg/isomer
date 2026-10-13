@@ -14,8 +14,6 @@ import { MAX_FOLDER_PERMALINK_LENGTH, MAX_FOLDER_TITLE_LENGTH } from "./folder"
 import { offsetPaginationSchema } from "./pagination"
 import { resourceOrderByOptions } from "./resource"
 
-export { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "./collection-limits"
-
 export type CollectionLinkProps = Static<typeof LinkRefPageSchema>
 
 // NOTE: zod's internal date schema uses `YYYY-MM-DD` but our format is
