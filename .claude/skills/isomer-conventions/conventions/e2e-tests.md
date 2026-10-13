@@ -21,7 +21,7 @@ introduces a **new reusable pattern** — not when merely adding test cases. See
 | **Helpers** | `fixtures/helpers.ts` | Flows that **cross surfaces** (e.g. create page: dashboard wizard → page editor) |
 | **Page objects** | `fixtures/*.po.ts` | Locators + actions on **one** UI surface, including multi-step modals/forms on that surface (`fillPageWizard`, `fillInviteForm`, …) |
 | **DB setup** | `fixtures/reset.ts`, `fixtures/site.ts`, `fixtures/session-mint.ts` | Non-UI reset, site lifecycle, auth storage-state mint (`setSingpassUuidFor`, `mintStorageStateForRole`) |
-| **DB assertions** | `fixtures/*.db.ts`, `fixtures/site-expect.ts`, `fixtures/page-seed.ts` | Query/poll helpers that fetch or wait on persisted state for a test to assert on |
+| **DB assertions** | `fixtures/*.db.ts`, `fixtures/site-expect.ts`, `fixtures/page-seed.ts`, `fixtures/user-expect.ts` | Query/poll helpers that fetch or wait on persisted state for a test to assert on |
 | **Network mocks** | `fixtures/network.ts` | Route stubs (S3 upload, GrowthBook flags) used in `beforeEach` |
 
 **Wizards** here means multi-step modals on a single surface (e.g. Create Page:
@@ -259,7 +259,7 @@ test file only constructs the PO and asserts outcomes.
 |------|-----|
 | `async ({ page })` fixture destructuring | Playwright test signature |
 | `new SomePO(page)` | PO construction |
-| Documented infra exceptions in this file | e.g. `resetGrowthBookPage(page)` in `fixtures/network.ts` before GrowthBook-gated navigation |
+| Documented infra exceptions in this file | e.g. `setOfflineGrowthBookFeature(page, key, value)` in `fixtures/network.ts` after the page has loaded |
 
 Everything else — `page.goto`, `page.getByRole`, `page.getByLabel`, `page.locator`,
 `page.click`, `page.fill`, `page.waitForURL`, etc. — belongs in the relevant
@@ -282,8 +282,7 @@ crosses surfaces/modals).
 - `clickPublish({ force: true })` — header Publish; `force` when FormBuilder
   inline editors overlay the button (navbar/footer rows)
 - `logoUploadInput()` — scopes past the separate favicon control
-- GrowthBook-gated UI: `enableGrowthBookFeature` in `beforeEach`, then
-  `resetGrowthBookPage(page)` from `fixtures/network.ts` before the first app navigation
+- GrowthBook-gated UI: load the page, then `setOfflineGrowthBookFeature(page, key, value)` from `fixtures/network.ts`. The test build's GrowthBook client is offline, so a CDN route stub does not change the flag.
 
 ## How to detect violations
 
