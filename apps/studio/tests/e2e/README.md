@@ -18,8 +18,9 @@
 
 - `fixtures/` — reusable test infrastructure (login flow, page objects, role storage state).
 - `storage-state/` — gitignored; populated by `global-setup.ts` with one signed-in cookie jar per role.
-- `<module>/` — one directory per backend router module (`site/`, `resource/`, `user/`, …).
-- Name each file after the screen it drives, not the assertion (`resource/collection.test.ts`, not `required-tags-validation.test.ts`). Several scenarios for that screen live in the same file under `test.describe`. Add a second file only for a distinct part of the same area (`resource/collection-filters.test.ts`), not one file for the whole module.
+- `<module>/` — one directory per product area / CI shard (`site/`, `resource/`, `collection/`, `user/`, …).
+- Name each file after the screen it drives, not the assertion (`collection/collection.test.ts`, not `required-tags-validation.test.ts`). Several scenarios for that screen live in the same file under `test.describe`. Add a second file only for a distinct part of the same area (`collection/collection-filters.test.ts`), not one file for the whole module.
+- `resource/` is the site tree (pages, folders, delete/move/search). `collection/` is the collection wizard, items, filters, tags, display, and table.
 
 ## Adding tests for a new module
 

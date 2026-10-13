@@ -85,6 +85,16 @@ export interface RoleBrowserSession {
   editor: PageEditorPO
 }
 
+export const openCollectionIndexEditor = async (
+  page: Page,
+  siteId: number,
+  indexPageId: string,
+) => {
+  const collection = new CollectionPO(page)
+  await collection.gotoIndex(siteId, indexPageId)
+  return collection
+}
+
 export const createPageViaWizard = async (
   page: Page,
   {
@@ -124,11 +134,14 @@ export const createCollectionViaWizard = async (
     startUrl,
     title,
     siteId,
-  }: { startUrl: string; title: string; siteId: number },
+  }: { startUrl?: string; title: string; siteId: number },
 ) => {
-  await page.goto(startUrl)
-
   const dashboard = new DashboardPO(page)
+  if (startUrl) {
+    await page.goto(startUrl)
+  } else {
+    await dashboard.gotoSite(siteId)
+  }
   await dashboard.openCreateMenu()
   await dashboard.clickCreateCollection()
   await dashboard.fillCollectionWizard(title)
@@ -162,6 +175,40 @@ export const createCollectionItemViaWizard = async (
     type === "Page" ? "page" : "link",
   )
   return { itemId }
+}
+
+export const createCollectionPageViaWizard = async (
+  page: Page,
+  {
+    siteId,
+    collectionId,
+    title,
+  }: { siteId: number; collectionId: string; title: string },
+) => {
+  const { itemId } = await createCollectionItemViaWizard(page, {
+    siteId,
+    collectionId,
+    type: "Page",
+    title,
+  })
+  return { pageId: itemId }
+}
+
+export const createCollectionLinkViaWizard = async (
+  page: Page,
+  {
+    siteId,
+    collectionId,
+    title,
+  }: { siteId: number; collectionId: string; title: string },
+) => {
+  const { itemId } = await createCollectionItemViaWizard(page, {
+    siteId,
+    collectionId,
+    type: "Link or file",
+    title,
+  })
+  return { linkId: itemId }
 }
 
 export const openInviteModal = async (page: Page, siteId: number) => {

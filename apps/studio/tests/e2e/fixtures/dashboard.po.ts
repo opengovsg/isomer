@@ -81,6 +81,58 @@ export class DashboardPO {
     await expect(this.page.getByText("Collection created!")).toBeVisible()
   }
 
+  async openCreateCollectionModal() {
+    await this.openCreateMenu()
+    await this.clickCreateCollection()
+    await expect(this.page.getByText("Create a new collection")).toBeVisible()
+  }
+
+  async fillCreateCollectionModalTitle(title: string) {
+    await this.page.getByLabel("Collection name").fill(title)
+  }
+
+  async cancelCreateCollectionModal() {
+    // The modal has two "Close"-named buttons: the icon-only ModalCloseButton
+    // (aria-label only) and the footer action. Filter by visible text.
+    await this.page
+      .getByRole("button", { name: "Close" })
+      .filter({ hasText: "Close" })
+      .click()
+    await expect(
+      this.page.getByText("Create a new collection"),
+    ).not.toBeVisible()
+  }
+
+  async openCollectionItemWizard() {
+    await this.page.getByRole("button", { name: "Add new item" }).click()
+    await expect(
+      this.page.getByText("What kind of collection item are you creating?"),
+    ).toBeVisible()
+  }
+
+  async cancelCollectionItemWizard() {
+    await this.page.getByRole("button", { name: "Cancel" }).click()
+    await expect(
+      this.page.getByText("What kind of collection item are you creating?"),
+    ).not.toBeVisible()
+  }
+
+  async gotoCollection(siteId: number, collectionId: string) {
+    await this.page.goto(`/sites/${siteId}/collections/${collectionId}`)
+    await this.page.waitForURL(
+      new RegExp(`/sites/${siteId}/collections/${collectionId}$`),
+    )
+  }
+
+  async expectCollectionAccessDenied() {
+    await expect(
+      this.page.getByText("You don't have access to edit this collection."),
+    ).toBeVisible()
+    await expect(
+      this.page.getByRole("button", { name: "Back to My Sites" }),
+    ).toBeVisible()
+  }
+
   async openPageSettings(title: string) {
     await expect(this.page.getByRole("link", { name: title })).toBeVisible()
     await this.openResourceMenu(title)
@@ -270,5 +322,33 @@ export class DashboardPO {
     const resultLink = dialog.getByRole("link", { name: title })
     await expect(resultLink).toBeVisible()
     await resultLink.click()
+  }
+
+  async sortCollectionBy(label: "Recently edited" | "Alphabetical" | "URL") {
+    await this.page
+      .getByRole("button", { name: /Recently edited|Alphabetical|URL/ })
+      .click()
+    await this.page.getByRole("menuitem", { name: label }).click()
+  }
+
+  async expectCollectionItemCount(count: number) {
+    const noun = count === 1 ? "item" : "items"
+    await expect(this.page.getByText(`${count} ${noun}`)).toBeVisible()
+  }
+
+  async expectCollectionRowVisible(title: string) {
+    await expect(this.page.getByRole("link", { name: title })).toBeVisible()
+  }
+
+  async expectCollectionRowHidden(title: string) {
+    await expect(this.page.getByRole("link", { name: title })).toHaveCount(0)
+  }
+
+  async goToCollectionTablePage(pageNumber: number) {
+    const nav = this.page.getByRole("navigation", { name: "Pagination" })
+    await expect(nav).toBeVisible()
+    await nav
+      .getByRole("button", { name: String(pageNumber), exact: true })
+      .click()
   }
 }
