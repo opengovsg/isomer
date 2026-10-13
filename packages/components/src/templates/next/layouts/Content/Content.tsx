@@ -59,7 +59,7 @@ export const ContentLayout = ({
           {tableOfContents.length > 1 && (
             <TableOfContents items={tableOfContents} />
           )}
-          <div data-isomer-content-blocks>
+          <div>
             {renderPageContent({
               content: transformedContent,
               layout,

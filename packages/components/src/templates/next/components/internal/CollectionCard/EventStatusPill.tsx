@@ -1,0 +1,30 @@
+import type { DateFilterStatusId } from "~/types/constants"
+import { tv } from "~/lib/tv"
+import { DATE_FILTER_STATUS } from "~/types/constants"
+
+// Deliberate one-off design colours — not theme tokens.
+const STATUS_STYLES = {
+  [DATE_FILTER_STATUS.Upcoming.id]: "bg-[#358257] text-white",
+  [DATE_FILTER_STATUS.Ongoing.id]: "bg-[#9D6101] text-white",
+  [DATE_FILTER_STATUS.Ended.id]: "bg-[#E6E6E6] text-base-content",
+} as const satisfies Record<DateFilterStatusId, string>
+
+const eventStatusPillStyle = tv({
+  base: "inline-flex items-center justify-center gap-2 rounded px-2 py-1",
+  variants: {
+    status: STATUS_STYLES,
+  },
+})
+
+interface EventStatusPillProps {
+  status: DateFilterStatusId
+  label: string
+}
+
+export const EventStatusPill = ({ status, label }: EventStatusPillProps) => {
+  return (
+    <div className={eventStatusPillStyle({ status })}>
+      <p className="prose-label-sm-medium line-clamp-1">{label}</p>
+    </div>
+  )
+}

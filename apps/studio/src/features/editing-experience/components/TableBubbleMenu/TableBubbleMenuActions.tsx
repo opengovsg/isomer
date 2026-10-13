@@ -60,6 +60,8 @@ import {
   splitFullyMergedRow,
 } from "./TableBubbleMenu.split"
 import {
+  canMergeCells,
+  canSplitCell,
   getColumnMovePlan,
   getRowMovePlan,
   restoreMovedBlockSelection,
@@ -434,8 +436,6 @@ const RowSelectionActions = ({
     { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
     "down",
   )
-  const isFullyMergedRow = selectionIsFullyMergedRow(rect)
-
   return (
     <ActionGroup>
       {selectionIsTopRow(rect) && (
@@ -465,12 +465,8 @@ const RowSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
-      {isFullyMergedRow ? (
-        <SplitCellButton editor={editor} />
-      ) : (
-        <MergeCellsButton editor={editor} />
-      )}
-
+      {canMergeCells(editor.state) && <MergeCellsButton editor={editor} />}
+      {canSplitCell(editor.state) && <SplitCellButton editor={editor} />}
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
@@ -514,8 +510,6 @@ const ColumnSelectionActions = ({
     { left: rect.left, right: rect.right, tableWidth: rect.map.width },
     "right",
   )
-  const isFullyMergedColumn = selectionIsFullyMergedColumn(rect)
-
   return (
     <ActionGroup>
       {selectionIsLeftmostColumn(rect) && (
@@ -545,12 +539,8 @@ const ColumnSelectionActions = ({
         />
       )}
       <ClearContentsButton editor={editor} />
-      {isFullyMergedColumn ? (
-        <SplitCellButton editor={editor} />
-      ) : (
-        <MergeCellsButton editor={editor} />
-      )}
-
+      {canMergeCells(editor.state) && <MergeCellsButton editor={editor} />}
+      {canSplitCell(editor.state) && <SplitCellButton editor={editor} />}
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
@@ -592,32 +582,24 @@ const SelectionActions = ({
     case "column":
     case "header-column":
       return <ColumnSelectionActions editor={editor} rect={rect} />
-    case "table": {
-      const isFullyMergedRow = selectionIsFullyMergedRow(rect)
-      const isFullyMergedColumn = selectionIsFullyMergedColumn(rect)
-      const showSplit = isFullyMergedRow || isFullyMergedColumn
-
+    case "table":
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          {showSplit ? (
-            <SplitCellButton editor={editor} />
-          ) : (
-            <ActionButton
-              label="Delete table"
-              icon={<BiTrash fontSize="1rem" />}
-              onClick={() => editor.chain().focus().deleteTable().run()}
-            />
-          )}
+          {canSplitCell(editor.state) && <SplitCellButton editor={editor} />}
+          <ActionButton
+            label="Delete table"
+            icon={<BiTrash fontSize="1rem" />}
+            onClick={() => editor.chain().focus().deleteTable().run()}
+          />
         </ActionGroup>
       )
-    }
 
     case "multi-cell":
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          <MergeCellsButton editor={editor} />
+          {canMergeCells(editor.state) && <MergeCellsButton editor={editor} />}
         </ActionGroup>
       )
     case "single-cell":
@@ -630,7 +612,7 @@ const SelectionActions = ({
       return (
         <ActionGroup>
           <ClearContentsButton editor={editor} />
-          <SplitCellButton editor={editor} />
+          {canSplitCell(editor.state) && <SplitCellButton editor={editor} />}
         </ActionGroup>
       )
     default:

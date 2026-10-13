@@ -1,3 +1,5 @@
+import { COLLECTION_SORT_ORDER } from "~/types/constants"
+
 const ALLOWED_URL_REGEXES = {
   external: "^https:\\/\\/",
   phone: "^tel:",
@@ -223,6 +225,13 @@ export const NON_EMPTY_STRING_REGEX = "^(?=.*\\S)"
 // ❌ " a " (surrounded by spaces)
 export const TRIMMED_NON_EMPTY_STRING_REGEX = "^\\S(.*\\S)?$"
 
+// ✅ "" (empty string — used when a label should be hidden)
+// ✅ "ab cd" (internal whitespace allowed)
+// ❌ " " (only whitespace)
+// ❌ " hello" (leading whitespace)
+// ❌ "hello " (trailing whitespace)
+export const TRIMMED_STRING_OR_EMPTY_REGEX = "^$|^\\S(.*\\S)?$"
+
 // ✅ "d_a" (minimum 3 characters, starts with "d_")
 // ✅ "d_abc" (more than 3 characters, starts with "d_")
 // ❌ "d_" (only 2 characters)
@@ -286,3 +295,52 @@ export const ASKGOV_ID_OR_URL_REGEX = `^\\s*(?:${ASKGOV_AGENCY_ID_REGEX}|${ASKGO
 // NOTE: Official documentation does not specify allowed length,
 // so we use ^GTM-[A-Z0-9]+$ (one or more chars) for future proofing.
 export const GTM_ID_STRING_REGEX = "^(GTM|G|GT)-[A-Z0-9]+$"
+
+// Collection page `sortOrder`: one of the four `COLLECTION_SORT_ORDER`
+// literals, or `date-filter-{uuid}-asc|desc` for a collection date filter
+// (tag category of type date).
+// ✅ COLLECTION_SORT_ORDER.DateDesc ("date-desc")
+// ✅ "date-filter-550e8400-e29b-41d4-a716-446655440000-asc"
+// ❌ "totally-made-up"
+// ❌ "date-filter-not-a-uuid-desc"
+const DATE_FILTER_SORT_ORDER_UUID =
+  "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
+const DATE_FILTER_SORT_ORDER_PATTERN = `date-filter-${DATE_FILTER_SORT_ORDER_UUID}-(?:asc|desc)`
+
+export const DATE_FILTER_SORT_ORDER_REGEX = new RegExp(
+  `^date-filter-(${DATE_FILTER_SORT_ORDER_UUID})-(asc|desc)$`,
+)
+
+export const COLLECTION_SORT_ORDER_PATTERN = `^(${COLLECTION_SORT_ORDER.DateDesc}|${COLLECTION_SORT_ORDER.DateAsc}|${COLLECTION_SORT_ORDER.TitleAsc}|${COLLECTION_SORT_ORDER.TitleDesc}|${DATE_FILTER_SORT_ORDER_PATTERN})$`
+
+// Blocks "fancy text generator" lookalike characters (e.g. "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥") while
+// leaving all other languages, emoji, and punctuation untouched. Ranges are
+// expressed as UTF-16 (surrogate pairs for the two astral-plane blocks) so
+// this works as a plain `new RegExp(...)` without needing the `u` flag.
+// Blocked:
+//   - Mathematical Alphanumeric Symbols (bold/italic/script/fraktur/double-struck/
+//     sans-serif/monospace letters & digits), e.g. 𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥, 𝓕𝓪𝓷𝓬𝔂
+//   - Enclosed Alphanumerics (circled/parenthesized), e.g. ⓐⓑⓒ, ①②③, Ⓒ
+//   - Enclosed Alphanumeric Supplement letters (squared/negative-circled),
+//     e.g. 🄰🄱🄲, 🅐🅑🅒 — deliberately stops short of Regional Indicator
+//     Symbols (U+1F1E6-U+1F1FF), which are what flag emoji (e.g. 🇸🇬) are built from
+//   - Fullwidth Latin letters/digits only, e.g. Ａｂｃ１２３ — NOT the rest of the
+//     Halfwidth/Fullwidth Forms block, which also contains fullwidth CJK
+//     punctuation (，。！？) used legitimately in Chinese/Japanese text
+//   - Letterlike Symbols that are script/black-letter/double-struck stand-ins
+//     for Latin letters (the pre-Unicode-3.2 letters that predate the
+//     Mathematical Alphanumeric Symbols block above), e.g. ℂℍℕℝℤ, ℬℰℱℋℐℒℳℛℯℊℴ —
+//     deliberately excludes the rest of the Letterlike Symbols block (U+2100-U+214F),
+//     which is legitimate symbols like ℃℉№℠℡™Åℓ℮Ωℹ, not letter substitutes
+// ✅ "Official Unveiling"
+// ✅ "海报" / "Selamat datang" / "வணக்கம்" / "🇸🇬🎉"
+// ✅ "© 2026 Government of Singapore ® ™" / "25℃" / "No. 1 → №1"
+// ❌ "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥 𝐔𝐧𝐯𝐞𝐢𝐥𝐢𝐧𝐠"
+// ❌ "Ⓒⓞⓟⓨ" / "🅁🄴🅂🄴🅁🅅🄴🄳" / "Ａｄｍｉｎ" / "ℂℍℕℝℤ"
+// Consumed by `IsomerString` (src/interfaces/IsomerString.ts). Kept here as a
+// plain string, with no `@sinclair/typebox` dependency, so client-rendered
+// template components that only need runtime validators from this file
+// (e.g. `isValidVideoUrl`) don't transitively pull in typebox for treeshaking.
+export const NO_STYLIZED_UNICODE_REGEX =
+  "^(?![\\s\\S]*(?:\\uD835[\\uDC00-\\uDFFF]|[\\u2460-\\u24FF]|\\uD83C[\\uDD10-\\uDD89]|[\\uFF10-\\uFF19\\uFF21-\\uFF3A\\uFF41-\\uFF5A]|[\\u2102\\u210A-\\u210E\\u2110-\\u2112\\u2115\\u2119-\\u211D\\u2124\\u2128\\u212C\\u212D\\u212F-\\u2134\\u2141-\\u2144\\u2145-\\u2149\\u214E]))"

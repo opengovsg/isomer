@@ -8,8 +8,8 @@ import { Step } from "./Step"
 
 const createStepsStyles = tv({
   slots: {
-    section: "bg-white",
-    outerContainer: `${ComponentContent}`,
+    outerContainer: "bg-white",
+    contentContainer: `${ComponentContent}`,
     innerContainer: "flex flex-col gap-12",
     header: "flex w-full max-w-[47.5rem] flex-col items-start text-left",
     headerTitle: "prose-display-sm break-words text-base-content-strong",
@@ -57,8 +57,11 @@ export const Steps = ({
   const hasTwo = steps.length === 2
 
   return (
-    <section id={id} className={styles.section()}>
-      <div className={styles.outerContainer({ layout: simplifiedLayout })}>
+    <section
+      id={id}
+      className={styles.outerContainer({ layout: simplifiedLayout })}
+    >
+      <div className={styles.contentContainer()}>
         <div className={styles.innerContainer()}>
           <div className={styles.header({ layout: simplifiedLayout })}>
             <TitleTag className={styles.headerTitle()}>{title}</TitleTag>

@@ -1,24 +1,50 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
-import { isEmpty } from "lodash-es"
-import { useCallback, useMemo } from "react"
+import type { CollectionPagePageProps } from "~/types"
+import { isEmpty, isEqual } from "lodash-es"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useQueryParams } from "~/hooks/useQueryParams"
 
-import type { AppliedFilter } from "../../types/Filter"
+import type { AppliedFilter, Filter } from "../../types/Filter"
 import { isAppliedFilters } from "../../types/Filter"
 import {
   getFilteredItems,
   getPaginatedItems,
-  updateAppliedFilters,
+  sanitizeAppliedFiltersForVisibility,
+  toggleAppliedFilterItem,
 } from "./utils"
+import { refreshDateFilterCounts } from "./utils/refreshDateFilterCounts"
+
+const EMPTY_FILTERS: Filter[] = []
 
 export const ITEMS_PER_PAGE = 10
 
 export const useCollection = ({
   items,
+  tagCategories,
+  filters = EMPTY_FILTERS,
 }: {
   items: ProcessedCollectionCardProps[]
+  tagCategories?: CollectionPagePageProps["tagCategories"]
+  // Precomputed sidebar. Date-bucket counts in it are from publish time.
+  filters?: Filter[]
 }) => {
   const [queryParams, updateQueryParams] = useQueryParams()
+
+  const [availableFilters, setAvailableFilters] = useState(filters)
+
+  // Once on load (and if this page's items or filters change). Not on a timer:
+  // tag and year filters stay precomputed; only date-bucket counts are refreshed.
+  //
+  // Bails out via isEqual when the recomputed value matches the previous one:
+  // callers that pass a fresh `items`/`tagCategories` reference each render
+  // (e.g. an inline array literal) would otherwise re-trigger this effect on
+  // every render, causing an infinite render loop.
+  useEffect(() => {
+    setAvailableFilters((prev) => {
+      const next = refreshDateFilterCounts({ filters, items, tagCategories })
+      return isEqual(next, prev) ? prev : next
+    })
+  }, [filters, items, tagCategories])
 
   const currPage = useMemo(
     () => parseInt(queryParams.page || "1", 10),
@@ -40,12 +66,15 @@ export const useCollection = ({
     }
     try {
       const parsed: unknown = JSON.parse(filters || "[]")
-      return isAppliedFilters(parsed) ? parsed : []
+      if (!isAppliedFilters(parsed)) {
+        return []
+      }
+      return sanitizeAppliedFiltersForVisibility(parsed, tagCategories)
     } catch {
       // Malformed URL param (e.g. ?filters=hello) — treat as no filters rather than crashing.
       return []
     }
-  }, [queryParams.filters])
+  }, [queryParams.filters, tagCategories])
   const setAppliedFilters = useCallback(
     (filters: AppliedFilter[]) => {
       updateQueryParams({
@@ -70,12 +99,20 @@ export const useCollection = ({
 
   const handleFilterToggle = useCallback(
     (id: string, itemId: string) => {
-      return updateAppliedFilters(appliedFilters, setAppliedFilters, id, itemId)
+      return toggleAppliedFilterItem({
+        appliedFilters,
+        setAppliedFilters,
+        filterId: id,
+        itemId,
+      })
     },
     [appliedFilters, setAppliedFilters],
   )
 
-  const filteredItems = getFilteredItems(items, appliedFilters, searchValue)
+  const filteredItems = useMemo(
+    () => getFilteredItems(items, appliedFilters, searchValue, tagCategories),
+    [items, appliedFilters, searchValue, tagCategories],
+  )
   const paginatedItems = useMemo(
     () => getPaginatedItems(filteredItems, ITEMS_PER_PAGE, currPage),
     [currPage, filteredItems],
@@ -94,6 +131,7 @@ export const useCollection = ({
     searchValue,
     handleSearchValueChange,
     handleClearFilter,
+    availableFilters,
     appliedFilters,
     handleFilterToggle,
     setAppliedFilters,

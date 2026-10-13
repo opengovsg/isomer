@@ -32,3 +32,54 @@ export const DEFAULT_TAG_CATEGORY_DISPLAY = TAG_CATEGORY_DISPLAY_OPTIONS.Pills
 export const resolveTagCategoryDisplay = (
   display?: TagCategoryDisplay,
 ): TagCategoryDisplay => display ?? DEFAULT_TAG_CATEGORY_DISPLAY
+
+// tagCategories entry is "text" (option list) or "date" (status buckets).
+export const TAG_CATEGORY_TYPE = {
+  Text: "text",
+  Date: "date",
+} as const
+
+export type TagCategoryType =
+  (typeof TAG_CATEGORY_TYPE)[keyof typeof TAG_CATEGORY_TYPE]
+export type TagCategoryDateType = (typeof TAG_CATEGORY_TYPE)["Date"]
+
+export const DATE_FILTER_STATUS = {
+  Ongoing: {
+    id: "ONGOING",
+    defaultLabel: "Ongoing",
+  },
+  Upcoming: {
+    id: "UPCOMING",
+    defaultLabel: "Upcoming",
+  },
+  Ended: {
+    id: "ENDED",
+    defaultLabel: "Event ended",
+  },
+} as const
+
+export type DateFilterStatusId =
+  (typeof DATE_FILTER_STATUS)[keyof typeof DATE_FILTER_STATUS]["id"]
+
+export const DEFAULT_DATE_FILTER_STATUS_LABELS = {
+  [DATE_FILTER_STATUS.Ongoing.id]: DATE_FILTER_STATUS.Ongoing.defaultLabel,
+  [DATE_FILTER_STATUS.Upcoming.id]: DATE_FILTER_STATUS.Upcoming.defaultLabel,
+  [DATE_FILTER_STATUS.Ended.id]: DATE_FILTER_STATUS.Ended.defaultLabel,
+} as const satisfies Record<DateFilterStatusId, string>
+
+export const DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY = {
+  showStatusLabelsFilter: true,
+  showDateRangeFilter: true,
+} as const
+
+export const COLLECTION_SORT_ORDER = {
+  DateDesc: "date-desc",
+  DateAsc: "date-asc",
+  TitleAsc: "title-asc",
+  TitleDesc: "title-desc",
+} as const
+
+export type CollectionSortOrder =
+  (typeof COLLECTION_SORT_ORDER)[keyof typeof COLLECTION_SORT_ORDER]
+
+export const DEFAULT_COLLECTION_SORT_ORDER = COLLECTION_SORT_ORDER.DateDesc

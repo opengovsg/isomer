@@ -1,6 +1,20 @@
 import type { LinkTypes, LinkTypesWithHrefFormat } from "./constants"
 import { LINK_TYPES } from "./constants"
 
+const HTTPS_PREFIX = "https://"
+const HTTP_PREFIX = "http://"
+
+/** Value shown in the External link text field (addon is always `https://`). */
+export const getExternalLinkInputDisplayValue = (href: string): string => {
+  if (href.startsWith(HTTPS_PREFIX)) {
+    return href.slice(HTTPS_PREFIX.length)
+  }
+  if (href.startsWith(HTTP_PREFIX)) {
+    return href.slice(HTTP_PREFIX.length)
+  }
+  return ""
+}
+
 export const parseHref = (href: string, pageType: LinkTypesWithHrefFormat) => {
   switch (pageType) {
     case LINK_TYPES.File:

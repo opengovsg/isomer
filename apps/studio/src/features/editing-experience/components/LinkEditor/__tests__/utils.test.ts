@@ -1,5 +1,23 @@
 import { LINK_TYPES } from "../constants"
-import { getLinkHrefType } from "../utils"
+import { getExternalLinkInputDisplayValue, getLinkHrefType } from "../utils"
+
+describe("getExternalLinkInputDisplayValue", () => {
+  it.each([
+    ["https://www.isomer.gov.sg/about", "www.isomer.gov.sg/about"],
+    [
+      "http://malicious-site.com/path/456/01234567-89ab-cdef-0123-456789abcdef/phishing.html",
+      "malicious-site.com/path/456/01234567-89ab-cdef-0123-456789abcdef/phishing.html",
+    ],
+    ["mailto:user@example.com", ""],
+    ["[resource:1:42]", ""],
+  ])("strips scheme for display: %s", (href, expected) => {
+    // Act
+    const displayValue = getExternalLinkInputDisplayValue(href)
+
+    // Assert
+    expect(displayValue).toBe(expected)
+  })
+})
 
 describe("getLinkHrefType", () => {
   it("returns Page for empty or undefined href", () => {

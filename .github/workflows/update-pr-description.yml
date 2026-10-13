@@ -14,7 +14,7 @@ name: Update PR description
 #
 # Listening to "pr-breakdown" specifically (rather than the full "CI"
 # workflow) means this fires as soon as that fast job completes, instead of
-# waiting on ci.yml's slower jobs (end-to-end-tests, test-studio, etc).
+# waiting on ci.yml's slower jobs (e2e-tests, test-studio, etc).
 #
 # This job downloads a small metadata artifact written by pr-breakdown.yml,
 # since the two workflows run in separate contexts and can't share

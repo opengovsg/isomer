@@ -2,12 +2,13 @@ import type { Static } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
+import { IsomerString } from "../primitives/IsomerString"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
 const SingleImageSchema = Type.Object({
   src: ImageSrcSchema,
   alt: AltTextSchema,
-  caption: Type.Optional(Type.String()),
+  caption: Type.Optional(IsomerString()),
 })
 
 export const ImageGallerySchema = Type.Object(

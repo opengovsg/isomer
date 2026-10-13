@@ -9,7 +9,6 @@ import {
 } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import { moveResourceAtom } from "~/features/editing-experience/atoms"
-import { useIsUnpublishEnabled } from "~/hooks/useIsUnpublishEnabled"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { CollectionTableData } from "./types"
@@ -37,7 +36,6 @@ export const CollectionTableMenu = ({
   const setValue = useSetAtom(deleteResourceModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
   const setMoveResource = useSetAtom(moveResourceAtom)
-  const isUnpublishEnabled = useIsUnpublishEnabled()
   const handleMoveResourceClick = () => {
     setMoveResource({
       id: resourceId,
@@ -48,10 +46,9 @@ export const CollectionTableMenu = ({
     })
   }
 
-  // With unpublishing disabled, the server treats deletion as the only way
-  // to remove live content, so live status alone must not block it here —
-  // only a pending schedule does (the server always guards against that).
-  const isBlockedByLiveStatus = isUnpublishEnabled && liveStatus !== "notLive"
+  // Live content must be unpublished before it can be deleted; a pending
+  // schedule also blocks deletion (the server always guards against that).
+  const isBlockedByLiveStatus = liveStatus !== "notLive"
   const isBlockedBySchedule = scheduledAt !== null
   const isDeleteBlocked = isBlockedByLiveStatus || isBlockedBySchedule
   const deleteBlockedReason = isBlockedBySchedule

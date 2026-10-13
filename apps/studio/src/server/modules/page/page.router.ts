@@ -24,7 +24,6 @@ import {
 import {
   ENABLE_CODEBUILD_JOBS,
   getIsSingpassDisabledInNonPreview,
-  IS_UNPUBLISH_ENABLED_FEATURE_KEY,
 } from "~/lib/growthbook"
 import {
   basePageSchema,
@@ -74,7 +73,6 @@ import {
   publishPageResource,
   publishResource,
   selectLastPublishedAt,
-  UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
   unpublishPageResource,
   updateBlobById,
 } from "../resource/resource.service"
@@ -437,14 +435,6 @@ export const pageRouter = router({
         action: "unpublish",
         userId: ctx.user.id,
       })
-      // Dark-launched, same flag as unpublishPage — scheduling an unpublish
-      // presupposes the unpublish feature itself is enabled.
-      if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
-        })
-      }
       // Same check, same allow-list as unpublishPage — pageId may be a
       // Folder/Collection id, which scheduleUnpublish resolves to its child
       // IndexPage internally (mirroring unpublishPageResource), so the input
@@ -470,12 +460,6 @@ export const pageRouter = router({
         action: "unpublish",
         userId: ctx.user.id,
       })
-      if (!ctx.gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
-        })
-      }
       await assertUnpublishableResourceType(db, { resourceId: pageId, siteId })
       const resource = await cancelScheduleUnpublish({
         userId: ctx.user.id,
@@ -697,16 +681,6 @@ export const pageRouter = router({
           userId: user.id,
         })
 
-        // Dark-launched: same NOT_FOUND as the type-guard below, so a caller
-        // can't distinguish "flag off" from "wrong resource type" and infer
-        // the feature exists before it's rolled out.
-        if (!gb.isOn(IS_UNPUBLISH_ENABLED_FEATURE_KEY)) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
-          })
-        }
-
         await assertUnpublishableResourceType(db, {
           resourceId: pageId,
           siteId,
@@ -846,7 +820,7 @@ export const pageRouter = router({
               }),
           )
 
-        return db.transaction().execute(async (tx) => {
+        const updatedResource = await db.transaction().execute(async (tx) => {
           const fullPage = await getFullPageById(tx, {
             resourceId: pageId,
             siteId,
@@ -943,21 +917,7 @@ export const pageRouter = router({
               })
             }
 
-            // We do an implicit publish so that we can make the changes to the
-            // page settings immediately visible on the end site. A page that
-            // has never been published has no live presence, so skip the site
-            // rebuild and Publish audit entry for it.
-            if (updatedResource.publishedVersionId !== null) {
-              await publishResource(ctx.user.id, updatedResource, ctx.logger)
-            }
-
-            return pick(updatedResource, [
-              "id",
-              "type",
-              "title",
-              "permalink",
-              "draftBlobId",
-            ])
+            return updatedResource
           } catch (err) {
             if (err instanceof TRPCError) {
               throw err
@@ -970,6 +930,22 @@ export const pageRouter = router({
             })
           }
         })
+
+        // We do an implicit publish so that we can make the changes to the
+        // page settings immediately visible on the end site. A page that
+        // has never been published has no live presence, so skip the site
+        // rebuild and Publish audit entry for it.
+        if (updatedResource.publishedVersionId !== null) {
+          await publishResource(ctx.user.id, updatedResource, ctx.logger)
+        }
+
+        return pick(updatedResource, [
+          "id",
+          "type",
+          "title",
+          "permalink",
+          "draftBlobId",
+        ])
       },
     ),
   getFullPermalink: protectedProcedure

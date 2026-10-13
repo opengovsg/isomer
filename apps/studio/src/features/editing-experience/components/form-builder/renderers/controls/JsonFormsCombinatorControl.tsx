@@ -1,4 +1,5 @@
 import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
+import type { ReactNode } from "react"
 import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
@@ -13,9 +14,15 @@ import {
   withJsonFormsOneOfProps,
 } from "@jsonforms/react"
 import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
-import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
-import { useEffect, useState } from "react"
+import {
+  ARRAY_RADIO_FORMAT,
+  HERO_BANNER_STYLE_FORMAT,
+  TAG_CATEGORY_ITEM_FORMAT,
+} from "@opengovsg/isomer-components"
+import { useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
+import { HeroBannerStyleCombinator } from "./HeroBannerStyleControl"
 
 export const jsonFormsOneOfControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.OneOfControl,
@@ -29,6 +36,74 @@ export const jsonFormsAnyOfControlTester: RankedTester = rankWith(
 
 interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
   combinatorType: "oneOf" | "anyOf"
+}
+
+type CombinatorRenderInfo = ReturnType<
+  typeof createCombinatorRenderInfos
+>[number]
+
+function combinatorOptionFromRenderInfo(renderInfo: CombinatorRenderInfo) {
+  const option = String(renderInfo.label || renderInfo.schema.const)
+
+  return {
+    label: option.charAt(0).toUpperCase() + option.slice(1),
+    value: option,
+  }
+}
+
+interface CombinatorFormatContext {
+  label: string | undefined
+  description: string | undefined
+  renderInfos: CombinatorRenderInfo[]
+  variant: string
+  onChange: (value: string) => void
+  activeRenderInfo: CombinatorRenderInfo | undefined
+  path: string
+  renderers: JsonFormsCombinatorControlProps["renderers"]
+  cells: JsonFormsCombinatorControlProps["cells"]
+}
+
+function CombinatorActiveBranch({
+  activeRenderInfo,
+  path,
+  renderers,
+  cells,
+}: Pick<
+  CombinatorFormatContext,
+  "activeRenderInfo" | "path" | "renderers" | "cells"
+>) {
+  if (!activeRenderInfo) {
+    return null
+  }
+
+  return (
+    <JsonFormsDispatch
+      key={activeRenderInfo.label}
+      uischema={activeRenderInfo.uischema}
+      schema={activeRenderInfo.schema}
+      path={path}
+      renderers={renderers}
+      cells={cells}
+    />
+  )
+}
+
+// Format-specific combinators replace the default variant picker.
+// Unlisted formats fall through to radio or select.
+const combinatorFormatHandlers: Partial<
+  Record<string, (context: CombinatorFormatContext) => ReactNode>
+> = {
+  [HERO_BANNER_STYLE_FORMAT]: (context) => (
+    <HeroBannerStyleCombinator {...context} />
+  ),
+  [TAG_CATEGORY_ITEM_FORMAT]: (context) => (
+    <CombinatorActiveBranch
+      activeRenderInfo={context.activeRenderInfo}
+      path={context.path}
+      renderers={context.renderers}
+      cells={context.cells}
+    />
+  ),
 }
 
 function JsonFormsCombinatorControl({
@@ -46,7 +121,6 @@ function JsonFormsCombinatorControl({
   data,
   combinatorType,
 }: JsonFormsCombinatorControlProps) {
-  const [variant, setVariant] = useState("")
   const combinatorSchemas = schema[combinatorType] ?? []
   const renderInfos = createCombinatorRenderInfos(
     combinatorSchemas,
@@ -63,20 +137,30 @@ function JsonFormsCombinatorControl({
         return null
       }
 
-      const option = String(renderInfo.label || renderInfo.schema.const)
-
-      return {
-        label: option.charAt(0).toUpperCase() + option.slice(1),
-        value: option,
-      }
+      return combinatorOptionFromRenderInfo(renderInfo)
     })
     .filter((option) => option !== null)
+
+  // Snapshot the fitting branch once. Re-reading indexOfFittingSchema on every
+  // change would jump to the first branch whenever a required field is cleared.
+  const [variant, setVariant] = useState(() => {
+    const fittingInfo =
+      indexOfFittingSchema >= 0 ? renderInfos[indexOfFittingSchema] : undefined
+
+    if (fittingInfo) {
+      return combinatorOptionFromRenderInfo(fittingInfo).label
+    }
+
+    return options[0]?.label ?? ""
+  })
 
   const onChange = (value: string) => {
     setVariant(value)
 
-    const newSchema =
-      renderInfos[options.findIndex((option) => option.value === value)]?.schema
+    const newSchema = renderInfos.find((renderInfo) => {
+      const option = String(renderInfo.label || renderInfo.schema.const)
+      return option === value
+    })?.schema
     if (!newSchema) {
       handleChange(path, {})
     } else {
@@ -94,23 +178,28 @@ function JsonFormsCombinatorControl({
     }
   }
 
-  useEffect(() => {
-    // Do nothing if there are no options
-    if (options.length === 0) {
-      return
-    }
+  const activeRenderInfo = renderInfos.find(
+    (renderInfo) => variant === renderInfo.label,
+  )
 
-    if (indexOfFittingSchema >= 0 && options[indexOfFittingSchema]) {
-      setVariant(options[indexOfFittingSchema].label)
-      return
-    }
+  const formatContext: CombinatorFormatContext = {
+    label,
+    description,
+    renderInfos,
+    variant,
+    onChange,
+    activeRenderInfo,
+    path,
+    renderers,
+    cells,
+  }
+  const formatHandler = schema.format
+    ? combinatorFormatHandlers[schema.format]
+    : undefined
 
-    // Fallback to first option
-    if (options[0]) {
-      setVariant(options[0].label)
-    }
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  if (formatHandler) {
+    return formatHandler(formatContext)
+  }
 
   return (
     <>
@@ -144,20 +233,12 @@ function JsonFormsCombinatorControl({
           )}
         </FormControl>
       </Box>
-
-      {renderInfos.map(
-        (renderInfo) =>
-          variant === renderInfo.label && (
-            <JsonFormsDispatch
-              key={renderInfo.label}
-              uischema={renderInfo.uischema}
-              schema={renderInfo.schema}
-              path={path}
-              renderers={renderers}
-              cells={cells}
-            />
-          ),
-      )}
+      <CombinatorActiveBranch
+        activeRenderInfo={activeRenderInfo}
+        path={path}
+        renderers={renderers}
+        cells={cells}
+      />
     </>
   )
 }

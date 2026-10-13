@@ -50,7 +50,7 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME/bin:$PATH"
 RUN corepack enable && corepack install -g pnpm@12.0.0
 # Pin turbo to the resolved catalog version to prevent supply chain attacks
-RUN pnpm add -g turbo@2.10.13
+RUN pnpm add -g turbo@2.11.2
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.
