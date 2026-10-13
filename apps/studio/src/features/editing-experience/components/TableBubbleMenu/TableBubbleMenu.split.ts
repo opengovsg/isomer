@@ -33,12 +33,16 @@ const rowPosInDoc = (
   return pos
 }
 
-const splitCellAttrs = (cell: Node) => ({
-  ...cell.attrs,
-  colspan: 1,
-  rowspan: 1,
-  colwidth: null,
-})
+const splitCellAttrs = (cell: Node, colwidthIndex = 0) => {
+  const colwidth = cell.attrs.colwidth as number[] | null
+  const width = colwidth?.[colwidthIndex]
+  return {
+    ...cell.attrs,
+    colspan: 1,
+    rowspan: 1,
+    colwidth: width ? [width] : null,
+  }
+}
 
 const resolveCellAt = ({
   table,
@@ -155,7 +159,7 @@ export const splitFullyMergedRow = (
   for (let col = 0; col < rect.map.width; col++) {
     newCells.push(
       cellType.create(
-        splitCellAttrs(sourceCell),
+        splitCellAttrs(sourceCell, col),
         contentForSplitSlot({
           blocks,
           slotIndex: col,
@@ -276,46 +280,55 @@ export const splitFullyMergedColumn = (
 ): boolean => {
   if (!selectionIsFullyMergedColumn(rect)) return false
 
-  const mapIndex = rect.top * rect.map.width + rect.left
-  const cellOffset = rect.map.map[mapIndex]
-  if (cellOffset === undefined) return false
-
-  const sourceCell = rect.table.nodeAt(cellOffset)
-  if (!sourceCell) return false
-
   const { state, view } = editor
   const tablePos = rect.tableStart - 1
   const table = state.doc.nodeAt(tablePos)
   if (!table) return false
 
+  // Plan every row from the original map. Re-reading TableMap after inserting
+  // a cell into a row the source cell still spans widens the table and the
+  // later replace is rejected.
+  const map = TableMap.get(table)
+  const cellOffset = map.map[rect.top * map.width + rect.left]
+  if (cellOffset === undefined) return false
+
+  const sourceCell = table.nodeAt(cellOffset)
+  if (!sourceCell) return false
+
   const blocks = cellBlocks(sourceCell)
   const { paragraph, tableCell, tableHeader } = state.schema.nodes
   if (!paragraph || !tableCell || !tableHeader) return false
+
+  const plannedRows: Node[] = []
+  for (let rowIndex = rect.top; rowIndex < rect.bottom; rowIndex++) {
+    const rowNode = table.child(rowIndex)
+    plannedRows.push(
+      rowNode.type.create(
+        rowNode.attrs,
+        buildRowCellsAfterColumnSplit({
+          table,
+          map,
+          rowIndex,
+          splitLeft: rect.left,
+          splitTop: rect.top,
+          splitBottom: rect.bottom,
+          blocks,
+          sourceCell,
+          sourceCellOffset: cellOffset,
+          tableCell,
+          tableHeader,
+          paragraph,
+        }),
+      ),
+    )
+  }
+
   let tr = state.tr
-
   for (let rowIndex = rect.bottom - 1; rowIndex >= rect.top; rowIndex--) {
-    const tableNode = tr.doc.nodeAt(tablePos)
-    if (!tableNode) return false
-
-    const map = TableMap.get(tableNode)
-    const rowNode = tableNode.child(rowIndex)
-    const rowPos = rowPosInDoc(tablePos, tableNode, rowIndex)
-    const newCells = buildRowCellsAfterColumnSplit({
-      table: tableNode,
-      map,
-      rowIndex,
-      splitLeft: rect.left,
-      splitTop: rect.top,
-      splitBottom: rect.bottom,
-      blocks,
-      sourceCell,
-      sourceCellOffset: cellOffset,
-      tableCell,
-      tableHeader,
-      paragraph,
-    })
-
-    const newRow = rowNode.type.create(rowNode.attrs, newCells)
+    const rowNode = table.child(rowIndex)
+    const rowPos = rowPosInDoc(tablePos, table, rowIndex)
+    const newRow = plannedRows[rowIndex - rect.top]
+    if (!newRow) return false
     tr = tr.replaceWith(rowPos, rowPos + rowNode.nodeSize, newRow)
   }
 

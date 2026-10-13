@@ -352,6 +352,54 @@ const rowCellCount = (editor: Editor, rowIndex: number): number => {
   return count
 }
 
+const rowColwidthsAt = (
+  editor: Editor,
+  rowIndex: number,
+): (number[] | null)[] => {
+  const widths: (number[] | null)[] = []
+  let foundTable = false
+  editor.state.doc.descendants((node) => {
+    if (foundTable) return false
+    if (node.type.name !== "table") return true
+    foundTable = true
+    node.child(rowIndex).forEach((cell) => {
+      widths.push((cell.attrs.colwidth as number[] | null) ?? null)
+    })
+    return false
+  })
+  return widths
+}
+
+const setMergedCellColwidth = (editor: Editor, colwidth: number[]) => {
+  let cellPos: number | null = null
+  editor.state.doc.descendants((node, pos) => {
+    if (cellPos !== null) return false
+    if (node.type.name !== "tableCell" && node.type.name !== "tableHeader") {
+      return true
+    }
+    if (
+      (node.attrs.colspan as number) > 1 ||
+      (node.attrs.rowspan as number) > 1
+    ) {
+      cellPos = pos
+      return false
+    }
+    return true
+  })
+  if (cellPos === null) throw new Error("merged cell not found")
+  const pos = cellPos
+  const node = editor.state.doc.nodeAt(pos)
+  if (!node) throw new Error("merged cell not found")
+  act(() => {
+    editor.view.dispatch(
+      editor.state.tr.setNodeMarkup(pos, undefined, {
+        ...node.attrs,
+        colwidth,
+      }),
+    )
+  })
+}
+
 const columnCellTypesAt = (editor: Editor, colIndex: number): string[] => {
   const types: string[] = []
   let foundTable = false
@@ -1090,6 +1138,98 @@ describe("TableBubbleMenu", () => {
         "Row 1, B",
         "Row 1, C",
       ])
+    })
+  })
+
+  it("splits a fully merged column back into separate cells from the column menu", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    // Arrange
+    selectCells(editor, 1, 7)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    selectColumnAtCell(editor, 1)
+    await activateTableBubbleMenu(findByRole)
+    const splitCell = await findByText("Split cell")
+
+    // Act
+    act(() => {
+      splitCell.click()
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(rowTextsAt(editor, 0)).toEqual([
+        "Column A",
+        "Column B",
+        "Column C",
+      ])
+      expect(rowTextsAt(editor, 1)).toEqual([
+        "Row 1, A",
+        "Row 1, B",
+        "Row 1, C",
+      ])
+      expect(rowTextsAt(editor, 2)).toEqual([
+        "Row 2, A",
+        "Row 2, B",
+        "Row 2, C",
+      ])
+      expect(columnCellTypesAt(editor, 1)).toEqual([
+        "tableHeader",
+        "tableCell",
+        "tableCell",
+      ])
+    })
+  })
+
+  it("keeps stored column widths when splitting a fully merged row", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    // Arrange
+    selectCells(editor, 3, 5)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    setMergedCellColwidth(editor, [100, 40, 80])
+    selectRowAtCell(editor, 3)
+    await activateTableBubbleMenu(findByRole)
+    const splitCell = await findByText("Split cell")
+
+    // Act
+    act(() => {
+      splitCell.click()
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(rowColwidthsAt(editor, 1)).toEqual([[100], [40], [80]])
+    })
+  })
+
+  it("keeps the column width when splitting a fully merged column", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    // Arrange
+    selectCells(editor, 1, 7)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    setMergedCellColwidth(editor, [50])
+    selectColumnAtCell(editor, 1)
+    await activateTableBubbleMenu(findByRole)
+    const splitCell = await findByText("Split cell")
+
+    // Act
+    act(() => {
+      splitCell.click()
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(rowColwidthsAt(editor, 0)[1]).toEqual([50])
+      expect(rowColwidthsAt(editor, 1)[1]).toEqual([50])
+      expect(rowColwidthsAt(editor, 2)[1]).toEqual([50])
     })
   })
 
