@@ -2,11 +2,11 @@ import { type Browser, type BrowserContext, type Page } from "@playwright/test"
 import { type RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, type Role } from "./auth"
-import { CollectionPO } from "./collection.po"
-import { DashboardPO } from "./dashboard.po"
-import { PageEditorPO } from "./page-editor.po"
-import { getCollectionByTitle, getFolderByTitle } from "./resource.db"
-import { UsersPO } from "./users.po"
+import { CollectionPO } from "./po/collection"
+import { DashboardPO } from "./po/dashboard"
+import { PageEditorPO } from "./po/page-editor"
+import { UsersPO } from "./po/users"
+import { getCollectionByTitle, getFolderByTitle } from "./resource/db"
 
 export const openSeededPageEditor = async (
   page: Page,

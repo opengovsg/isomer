@@ -1,8 +1,7 @@
 import { test } from "@playwright/test"
-
-import { ROLES, roleTag, TEST_EMAILS, type Role } from "../fixtures/auth"
-import { GodmodePO } from "../fixtures/godmode.po"
-import { ensureUserOnboarded } from "../fixtures/user"
+import { ROLES, roleTag, TEST_EMAILS, type Role } from "~e2e/fixtures/auth"
+import { GodmodePO } from "~e2e/fixtures/po"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 
 const RESTRICTED_GODMODE_PATHS = [
   "/godmode",

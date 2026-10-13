@@ -1,15 +1,13 @@
 import { expect, test } from "@playwright/test"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { SitePO } from "~e2e/fixtures/po"
 import {
   resetSiteFooter,
   resetSiteFooterColumn1AtMaxItems,
-} from "../fixtures/reset"
-import { provisionE2ESite } from "../fixtures/site"
-import { expectFooterContains } from "../fixtures/site-expect"
-import { SitePO } from "../fixtures/site.po"
-import { ensureUserOnboarded } from "../fixtures/user"
+} from "~e2e/fixtures/reset"
+import { expectFooterContains, provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 
@@ -24,24 +22,22 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await resetSiteFooter(siteId)
   })
 
-  test("admin can edit a footer link in column 1 and publish", async ({
-    page,
-  }) => {
+  test("admin can edit a footer link label", async ({ page }) => {
     const site = new SitePO(page)
-    const column1UpdatedLabel = "About E2E"
+    const updatedLabel = "About E2E"
 
     // Arrange
     await site.gotoSettingsSection(siteId, "footer")
 
     // Act
-    await site.editFooterLinkLabel("About us", column1UpdatedLabel)
+    await site.editFooterLinkLabel("About us", updatedLabel)
     await site.clickPublish()
     await site.expectChangesPublishedToast()
 
     // Assert
-    await expectFooterContains(siteId, column1UpdatedLabel).toBe(true)
+    await expectFooterContains(siteId, updatedLabel).toBe(true)
     await site.reloadSettingsSection("footer")
-    await expect(site.footerLinkButton(column1UpdatedLabel)).toBeVisible()
+    await expect(site.footerLinkButton(updatedLabel)).toBeVisible()
   })
 
   test("admin can add a footer link to column 2 and publish", async ({

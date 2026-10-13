@@ -1,25 +1,23 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
-import { mockTrpcMutationError } from "../fixtures/network"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
+import { mockTrpcMutationError } from "~e2e/fixtures/network"
+import { DashboardPO, SiteAdminPO } from "~e2e/fixtures/po"
 import {
   resetSiteAgencySettings,
   resetSiteFooter,
   resetSiteNavbar,
   resetSiteTheme,
-} from "../fixtures/reset"
-import { provisionE2ESite } from "../fixtures/site"
-import { SiteAdminPO } from "../fixtures/site-admin.po"
+} from "~e2e/fixtures/reset"
 import {
+  provisionE2ESite,
   expectFooterContains,
   expectNavbarContains,
   expectSiteConfigSiteName,
   expectSiteThemeBrandColour,
-} from "../fixtures/site-expect"
-import { ensureUserOnboarded } from "../fixtures/user"
+} from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 let siteName: string

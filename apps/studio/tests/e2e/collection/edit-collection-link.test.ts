@@ -1,12 +1,15 @@
 import { test } from "@playwright/test"
 import crypto from "crypto"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { CollectionLinkPO } from "~e2e/fixtures/po"
+import {
+  expectResourceDraftBlobContains,
+  seedCollection,
+  seedCollectionLink,
+} from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { CollectionLinkPO } from "../fixtures/collection-link.po"
-import { seedCollection, seedCollectionLink } from "../fixtures/page-seed"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number
 let collectionId: string
@@ -44,6 +47,8 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await linkEditor.save()
 
     // Assert
+    await expectResourceDraftBlobContains(collectionLink.id, summary)
+    await expectResourceDraftBlobContains(collectionLink.id, linkHref)
     await linkEditor.reload()
     await linkEditor.expectLoaded()
     await linkEditor.expectSummary(summary)

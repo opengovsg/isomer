@@ -2,8 +2,9 @@ import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import { sql } from "kysely"
 import { normalizeRedirectSource } from "~/schemas/redirect/utils"
 import { db, jsonb } from "~/server/modules/database"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
-export { ensureUserOnboarded } from "./user"
+export { ensureUserOnboarded } from "./user/mutations"
 
 const DEFAULT_AGENCY_SITE_NAME = "Isomer"
 
@@ -164,7 +165,7 @@ export const resetSiteNavbar = (siteId: number) =>
     .where("siteId", "=", siteId)
     .execute()
 
-/** Seed 8 top-level navbar items (the schema's maxItems) for max-limit tests. */
+/** Seed the navbar with 8 top-level links (the schema's maxItems) for max-limit tests. */
 export const resetSiteNavbarAtMaxItems = (siteId: number) =>
   db
     .updateTable("Navbar")
@@ -270,3 +271,37 @@ export const deleteWhitelistedVendorEmails = async (...emails: string[]) => {
     )
     .execute()
 }
+
+/** Delete Resource rows whose title starts with the given prefix. */
+export const deleteResourcesByTitlePrefix = (
+  siteId: number,
+  titlePrefix: string,
+) =>
+  db
+    .deleteFrom("Resource")
+    .where("siteId", "=", siteId)
+    .where("title", "like", `${titlePrefix}%`)
+    .execute()
+
+/** Delete Collection resources (and their children) whose title starts with the given prefix. */
+export const deleteCollectionsByTitlePrefix = async (
+  siteId: number,
+  titlePrefix: string,
+) => {
+  const collections = await db
+    .selectFrom("Resource")
+    .where("siteId", "=", siteId)
+    .where("title", "like", `${titlePrefix}%`)
+    .where("type", "=", ResourceType.Collection)
+    .select("id")
+    .execute()
+
+  for (const { id } of collections) {
+    await db.deleteFrom("Resource").where("parentId", "=", id).execute()
+    await db.deleteFrom("Resource").where("id", "=", id).execute()
+  }
+}
+
+/** Delete a single Resource row by id. */
+export const deleteResourceById = (resourceId: string) =>
+  db.deleteFrom("Resource").where("id", "=", resourceId).execute()

@@ -1,12 +1,11 @@
 import { test } from "@playwright/test"
 import crypto from "crypto"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
+import { createCollectionWithTagCategories } from "~e2e/fixtures/collection"
+import { CollectionPO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { createCollectionWithTagCategories } from "../fixtures/collection"
-import { CollectionPO } from "../fixtures/collection.po"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number
 

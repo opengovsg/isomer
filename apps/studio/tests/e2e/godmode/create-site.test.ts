@@ -1,18 +1,16 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
-import { GodmodePO } from "../fixtures/godmode.po"
-import { mockTrpcMutationError } from "../fixtures/network"
-import { getResourceByTitle } from "../fixtures/resource.db"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { mockTrpcMutationError } from "~e2e/fixtures/network"
+import { DashboardPO, GodmodePO } from "~e2e/fixtures/po"
+import { getResourceByTitle } from "~e2e/fixtures/resource/db"
 import {
   expectFooterContains,
   expectNavbarContains,
   expectSiteName,
   expectSiteThemeBrandColour,
-} from "../fixtures/site-expect"
-import { ensureUserOnboarded } from "../fixtures/user"
+} from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 
 const DEFAULT_THEME_BRAND = "#00405f"
 

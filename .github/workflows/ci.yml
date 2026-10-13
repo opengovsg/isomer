@@ -285,6 +285,10 @@ jobs:
             paths: tests/e2e/site
           - feature: resource
             paths: tests/e2e/resource
+          - feature: page
+            paths: tests/e2e/page
+          - feature: folder
+            paths: tests/e2e/folder
           - feature: collection
             paths: tests/e2e/collection
           - feature: user

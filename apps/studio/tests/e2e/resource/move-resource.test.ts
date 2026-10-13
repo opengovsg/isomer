@@ -2,21 +2,19 @@ import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { normalizeRedirectSource } from "~/schemas/redirect/utils"
 import { getReferenceLink } from "~/utils/link"
-import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
+import { DashboardPO } from "~e2e/fixtures/po"
 import {
   seedFolder,
   seedFolderWithPage,
   seedRootCollection,
   seedRootPage,
   seedTwoCollections,
-} from "../fixtures/page-seed"
-import { getRedirectDestination } from "../fixtures/redirect.db"
-import { getResourceParentId } from "../fixtures/resource.db"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
+  getResourceParentId,
+} from "~e2e/fixtures/resource"
+import { getRedirectDestination, provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded, getE2EUserId } from "~e2e/fixtures/user"
+import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 
@@ -198,7 +196,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       .poll(() => getResourceParentId(seededPage.id))
       .toBe(destFolder.id)
     await expect
-      .poll(() => getRedirectDestination({ siteId, source: oldSource }))
+      .poll(() => getRedirectDestination(siteId, oldSource))
       .toBe(
         getReferenceLink({ siteId: String(siteId), resourceId: seededPage.id }),
       )
@@ -239,7 +237,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       .poll(() => getResourceParentId(seededPage.id))
       .toBe(destFolder.id)
     await expect
-      .poll(() => getRedirectDestination({ siteId, source: oldSource }))
+      .poll(() => getRedirectDestination(siteId, oldSource))
       .toBeNull()
   })
 })
