@@ -191,6 +191,58 @@ export const getRowMovePlan = (
   }
 }
 
+// prosemirror-tables refuses a row move whose neighbor sits inside the same
+// rowspan (`indexesOriginRow.includes(targetIndex)`). Plan against that whole
+// span, then restore the row the user actually selected.
+const rowBoundsCoveringVerticalSpans = (
+  map: TableMap,
+  top: number,
+  bottom: number,
+): { top: number; bottom: number } => {
+  let coveredTop = top
+  let coveredBottom = bottom
+  for (let row = top; row < bottom; row++) {
+    for (let col = 0; col < map.width; col++) {
+      const offset = map.map[row * map.width + col]
+      if (offset === undefined) continue
+      const cell = map.findCell(offset)
+      if (cell.top < coveredTop) coveredTop = cell.top
+      if (cell.bottom > coveredBottom) coveredBottom = cell.bottom
+    }
+  }
+  if (coveredTop === top && coveredBottom === bottom) {
+    return { top, bottom }
+  }
+  return rowBoundsCoveringVerticalSpans(map, coveredTop, coveredBottom)
+}
+
+export const getRowMovePlanForSelection = (
+  rect: {
+    top: number
+    bottom: number
+    map: TableMap
+  },
+  direction: "up" | "down",
+): TableMovePlan | null => {
+  const group = rowBoundsCoveringVerticalSpans(rect.map, rect.top, rect.bottom)
+  const plan = getRowMovePlan(
+    {
+      top: group.top,
+      bottom: group.bottom,
+      tableHeight: rect.map.height,
+    },
+    direction,
+  )
+  if (!plan || (group.top === rect.top && group.bottom === rect.bottom)) {
+    return plan
+  }
+  return {
+    ...plan,
+    newStart: plan.newStart + (rect.top - group.top),
+    span: rect.bottom - rect.top,
+  }
+}
+
 export const getColumnMovePlan = (
   {
     left,
@@ -292,8 +344,11 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   })
 
   const selectsSingleCellNode = isSingleCellSelection(selection)
+  // A lone merged cell (horizontal merge beside a vertical span) stays a cell
+  // so Split cell remains available. A lone plain cell in that row is the row.
   const clippedRowSlot =
-    !selectsSingleCellNode && isRowSlotClippedByVerticalSpan(rect)
+    isRowSlotClippedByVerticalSpan(rect) &&
+    !(selectsSingleCellNode && isMergedCell(rect))
   const spansFullWidth = rect.left === 0 && rect.right === rect.map.width
   const spansFullHeight = rect.top === 0 && rect.bottom === rect.map.height
   return getTableSelectionKind({

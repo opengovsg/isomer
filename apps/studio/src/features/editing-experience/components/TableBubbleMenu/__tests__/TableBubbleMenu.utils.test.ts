@@ -1,13 +1,16 @@
 import type { Node, NodeSpec } from "@tiptap/pm/model"
 import { Schema } from "@tiptap/pm/model"
-import { TableMap } from "@tiptap/pm/tables"
+import { EditorState } from "@tiptap/pm/state"
+import { moveTableRow, selectedRect, TableMap } from "@tiptap/pm/tables"
 import { describe, expect, it } from "vitest"
+import { selectionForRowSlot } from "~/features/editing-experience/utils/tableSlotSelection"
 
 import {
   canMergeCellSelection,
   getColumnMovePlan,
   getMovedBlockCellCorners,
   getRowMovePlan,
+  getRowMovePlanForSelection,
   getTableSelectionKind,
   selectionIncludesHeaderColumn,
   selectionIncludesHeaderRow,
@@ -487,6 +490,57 @@ describe("getRowMovePlan", () => {
     expect(
       getRowMovePlan({ top: 2, bottom: 4, tableHeight: 4 }, "down"),
     ).toBeNull()
+  })
+})
+
+describe("getRowMovePlanForSelection", () => {
+  const textCell = (text: string, rowspan = 1) =>
+    tableSchema.nodes.tableCell.create(
+      { colspan: 1, rowspan, colwidth: null, backgroundColor: null },
+      tableSchema.nodes.paragraph.create(null, tableSchema.text(text)),
+    )
+  const textRow = (...cells: Node[]) =>
+    tableSchema.nodes.tableRow.create(null, cells)
+
+  it("keeps the unmerged row plan", () => {
+    // Arrange
+    const table = buildUniformTable(3, 4)
+    const map = TableMap.get(table)
+
+    // Act / Assert
+    expect(
+      getRowMovePlanForSelection({ top: 1, bottom: 2, map }, "down"),
+    ).toEqual(getRowMovePlan({ top: 1, bottom: 2, tableHeight: 4 }, "down"))
+  })
+
+  it("moves a clipped row whose first column is merged", () => {
+    // Arrange
+    const table = tableSchema.nodes.table.create(null, [
+      textRow(textCell("span", 2), textCell("A"), textCell("B")),
+      textRow(textCell("C"), textCell("D")),
+      textRow(textCell("E"), textCell("F"), textCell("G")),
+    ])
+    const doc = tableSchema.nodes.doc.create(null, table)
+    const selection = selectionForRowSlot(doc, 0, 0)
+    if (!selection) throw new Error("missing row selection")
+    let state = EditorState.create({ doc, schema: tableSchema })
+    state = state.apply(state.tr.setSelection(selection))
+    const rect = selectedRect(state)
+
+    // Act
+    const plan = getRowMovePlanForSelection(rect, "down")
+    const moved = plan
+      ? moveTableRow({
+          from: plan.from,
+          to: plan.to,
+          select: false,
+          pos: rect.tableStart,
+        })(state, () => true)
+      : false
+
+    // Assert
+    expect(plan).toEqual({ from: 2, to: 0, newStart: 1, span: 1 })
+    expect(moved).toBe(true)
   })
 })
 

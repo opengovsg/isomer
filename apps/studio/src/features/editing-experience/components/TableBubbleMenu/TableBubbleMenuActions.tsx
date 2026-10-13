@@ -58,7 +58,7 @@ import {
 import {
   canMergeCellSelection,
   getColumnMovePlan,
-  getRowMovePlan,
+  getRowMovePlanForSelection,
   restoreMovedBlockSelection,
   selectionIncludesHeaderColumn,
   selectionIncludesHeaderRow,
@@ -382,14 +382,8 @@ const RowSelectionActions = ({
   rect: SelectionRect
 }) => {
   const includesHeader = selectionIncludesHeaderRow(rect)
-  const rowMoveUpPlan = getRowMovePlan(
-    { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
-    "up",
-  )
-  const rowMoveDownPlan = getRowMovePlan(
-    { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
-    "down",
-  )
+  const rowMoveUpPlan = getRowMovePlanForSelection(rect, "up")
+  const rowMoveDownPlan = getRowMovePlanForSelection(rect, "down")
 
   return (
     <ActionGroup>

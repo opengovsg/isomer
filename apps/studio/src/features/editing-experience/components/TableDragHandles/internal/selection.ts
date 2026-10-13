@@ -73,8 +73,13 @@ export const getSelectionHandleTarget = (
   const rect = selectedRect(editor.state)
   const tablePos = rect.tableStart - 1
   const isSingleCell = selection.$anchorCell.pos === selection.$headCell.pos
+  const singleCell = isSingleCell ? selection.$anchorCell.nodeAfter : null
+  const singleCellIsMerged =
+    !!singleCell &&
+    ((singleCell.attrs.colspan as number) > 1 ||
+      (singleCell.attrs.rowspan as number) > 1)
   if (isRow === isCol) {
-    if (!isRow && !isSingleCell && isRowSlotClippedByVerticalSpan(rect)) {
+    if (!isRow && isRowSlotClippedByVerticalSpan(rect) && !singleCellIsMerged) {
       return { tablePos, rows: [rect.top], cols: [] }
     }
     return null
