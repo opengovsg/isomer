@@ -17,6 +17,7 @@ import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
 import {
   ARRAY_RADIO_FORMAT,
   HERO_BANNER_STYLE_FORMAT,
+  HERO_STYLE,
   TAG_CATEGORY_ITEM_FORMAT,
 } from "@opengovsg/isomer-components"
 import { useState } from "react"
@@ -41,6 +42,40 @@ interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
 type CombinatorRenderInfo = ReturnType<
   typeof createCombinatorRenderInfos
 >[number]
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+// Schema defaults seed placeholder slides. The previous hero image lives on
+// `backgroundUrl` at the root, which carousel does not read, so copy it onto
+// the first slide when that value exists.
+export function withPreviousHeroImageOnFirstCarouselSlide<T>(
+  previous: unknown,
+  next: T,
+): T {
+  if (!isRecord(next) || next.variant !== HERO_STYLE.carousel.key) {
+    return next
+  }
+  if (
+    !isRecord(previous) ||
+    typeof previous.backgroundUrl !== "string" ||
+    previous.backgroundUrl.length === 0
+  ) {
+    return next
+  }
+  if (!Array.isArray(next.slides) || !isRecord(next.slides[0])) {
+    return next
+  }
+
+  const slides = next.slides.slice()
+  slides[0] = {
+    ...next.slides[0],
+    backgroundUrl: previous.backgroundUrl,
+  }
+
+  return { ...next, slides }
+}
 
 function combinatorOptionFromRenderInfo(renderInfo: CombinatorRenderInfo) {
   const option = String(renderInfo.label || renderInfo.schema.const)
@@ -172,7 +207,7 @@ function JsonFormsCombinatorControl({
       } else {
         handleChange(path, {
           ...data,
-          ...newData,
+          ...withPreviousHeroImageOnFirstCarouselSlide(data, newData),
         })
       }
     }

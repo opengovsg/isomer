@@ -11,11 +11,13 @@ export const generateImageSrcSchema = ({
   description,
   allowedMimeTypeMappings = IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
   maxSizeInBytes,
+  default: defaultSrc,
 }: {
   title?: string
   description?: string
   allowedMimeTypeMappings?: Record<string, string>
   maxSizeInBytes?: number
+  default?: string
 }) => {
   return Type.String({
     title,
@@ -23,6 +25,7 @@ export const generateImageSrcSchema = ({
     description,
     allowedMimeTypeMappings,
     maxSizeInBytes,
+    ...(defaultSrc !== undefined ? { default: defaultSrc } : {}),
   })
 }
 

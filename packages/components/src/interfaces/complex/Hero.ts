@@ -215,10 +215,23 @@ const HeroSearchbarSchema = Type.Composite(
   },
 )
 
+const HERO_CAROUSEL_PLACEHOLDER_IMAGE = "/placeholder_no_image.png"
+const HERO_CAROUSEL_PLACEHOLDER_TITLE = "Enter a title."
+
+const heroCarouselSlideDefault = {
+  backgroundUrl: HERO_CAROUSEL_PLACEHOLDER_IMAGE,
+  title: HERO_CAROUSEL_PLACEHOLDER_TITLE,
+}
+
 const HeroCarouselSlideSchema = Type.Composite(
   [
     Type.Object({
-      backgroundUrl: BackgroundUrlSchema,
+      backgroundUrl: generateImageSrcSchema({
+        title: "Hero image",
+        allowedMimeTypeMappings:
+          BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+        default: HERO_CAROUSEL_PLACEHOLDER_IMAGE,
+      }),
     }),
     Type.Omit(HeroBaseSchema, ["type"]),
     CallToActionsSchema,
@@ -232,6 +245,11 @@ const HeroCarouselSlideSchema = Type.Composite(
     ],
   },
 )
+
+// Composite copies the shared hero title schema. Set the default on this copy
+// so other hero variants do not pick it up when switching styles.
+HeroCarouselSlideSchema.properties.title.default =
+  HERO_CAROUSEL_PLACEHOLDER_TITLE
 
 export const HERO_CAROUSEL_SLIDE_LIMITS = {
   minItems: 2,
@@ -262,6 +280,7 @@ const HeroCarouselSchema = Type.Object(
     slides: Type.Array(HeroCarouselSlideSchema, {
       title: "Slides",
       ...HERO_CAROUSEL_SLIDE_LIMITS,
+      default: [heroCarouselSlideDefault, { ...heroCarouselSlideDefault }],
     }),
   },
   {
