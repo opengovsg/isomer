@@ -15,6 +15,7 @@ const baseUse = {
   baseURL: baseUrl,
   headless: opts.headless,
   video: "retain-on-failure" as const,
+  trace: "retain-on-failure" as const,
 }
 
 export default defineConfig({

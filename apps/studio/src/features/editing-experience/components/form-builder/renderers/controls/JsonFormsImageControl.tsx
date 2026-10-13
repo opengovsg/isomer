@@ -2,25 +2,24 @@ import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
 import { Box, FormControl, HStack, Text, useDisclosure } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
-import { withJsonFormsControlProps, useJsonForms } from "@jsonforms/react"
+import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
   Button,
   FormErrorMessage,
   FormLabel,
 } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
-import { get } from "lodash-es"
 import dynamic from "next/dynamic"
 import { BiPencil } from "react-icons/bi"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { resolveAdjustmentConfig } from "~/features/editing-experience/components/ImageAdjustmentModal/adjustmentConfigRegistry"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useIsImageAdjustmentEnabled } from "~/hooks/useIsImageAdjustmentEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 
+import { useAdjustmentConfigForField } from "../../hooks/useAdjustmentConfigForField"
 import { getCustomErrorMessage } from "./utils"
 
 // JsonFormsImageControl is registered as a renderer for every FormBuilder
@@ -73,26 +72,12 @@ function JsonFormsImageControl({
   // for them rather than letting Save fail.
   const isManagedAsset = !!data && data.startsWith("/")
 
-  // Access JsonForms context to read the sibling imageAdjustment field.
-  // JsonForms types `data` as `any`; keep it `unknown` and narrow on use.
-  const ctx = useJsonForms()
-  const rootData: unknown = ctx.core?.data
-
-  // Extract path parts for sibling and block lookups.
-  const pathParts = path.split(".")
-  const fieldName = pathParts.pop() ?? ""
-  const parentPath = pathParts.join(".")
-
-  // Compute sibling path for imageAdjustment (e.g. "content.3.backgroundUrl" -> "content.3.imageAdjustment").
-  const siblingPath = [parentPath, "imageAdjustment"].filter(Boolean).join(".")
-  const currentAdjustment = get(rootData, siblingPath) as
-    | ImageAdjustment
-    | undefined
-  // Per-block editor forms (e.g. HeroEditorDrawer) mount the form with the block
-  // itself as the data root, so the image field is top-level and parentPath is
-  // empty — in that case the block IS rootData.
-  const block: unknown = parentPath ? get(rootData, parentPath) : rootData
-  const config = resolveAdjustmentConfig({ block, fieldName })
+  // Reads the sibling imageAdjustment field and containing block via
+  // JsonForms' core data (the only way to reach data outside this control's
+  // own path) and memoizes the derived config -- see the hook's own comment
+  // for why that matters.
+  const { block, fieldName, siblingPath, currentAdjustment, config } =
+    useAdjustmentConfigForField(path)
 
   const handleAdjustmentSave = ({
     src,
