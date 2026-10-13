@@ -141,26 +141,27 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
     "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed.",
 }
 
-// Tier A — fixed 3:2 crop (aspect-[3/2]), no focal; same shape at every
-// breakpoint (only the frame's width changes at lg, never the ratio). Like
-// Contentpic, the crop is baked into the src so the renderer needs nothing at
-// runtime. Risk-first per the orchestration plan: the floating text card
-// overlaps the bottom of the image, so the real-component preview (which
-// renders the actual overlapping card) is what lets an editor catch a subject
-// hidden behind it — nothing extra is needed here for that to work.
+// Tier A — fixed 3:2 crop (aspect-[3/2]), no focal; the image crop is the same
+// shape at every breakpoint. Like Contentpic, the crop is baked into the src so
+// the renderer needs nothing at runtime. Risk-first per the orchestration plan:
+// the floating text card overlaps the bottom of the image, so the real-component
+// preview (which renders the actual overlapping card) is what lets an editor
+// catch a subject hidden behind it. That overlap is breakpoint-specific — the
+// card sits -1.5rem into a full-width image below md, -10rem at md, then
+// -17.85rem over a 66.67%-wide image at lg — so preview all three regimes; a
+// single desktop state would hide how much the card covers on mobile/tablet.
+// The 3:2 aspectRatio is only the pre-measure flash guess (PreviewFrame measures
+// the real height, which includes the overlapping card).
 const HERO_FLOATING_CONFIG: AdjustmentConfig = {
   componentType: "hero:floating",
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 3, height: 2 }],
-  previewStates: [
-    {
-      id: "desktop",
-      label: "Desktop",
-      viewportWidth: 1280,
-      aspectRatio: { width: 3, height: 2 },
-    },
-  ],
+  previewStates: responsivePreviewStates({
+    mobile: { width: 3, height: 2 },
+    tablet: { width: 3, height: 2 },
+    desktop: { width: 3, height: 2 },
+  }),
   preUploadCopy:
     "Use a high-resolution image (at least 1500×1000px) with a 3:2 aspect ratio. Keep key subjects out of the bottom third — the text card floats over it.",
 }
