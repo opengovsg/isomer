@@ -229,6 +229,7 @@ export const ImageAdjustmentModal = ({
                   scrim={config.scrim}
                   block={block}
                   imageFieldName={imageFieldName}
+                  skipRealComponentPreview={config.skipRealComponentPreview}
                   siteId={siteId}
                 />
               </GridItem>

@@ -56,8 +56,16 @@ export interface AdjustmentConfig {
   // Guidance copy shown before/around upload (resolution hints etc.).
   preUploadCopy?: string
   // Tier C conditional enablement: adjustment is offered only when this returns
-  // true for the current block value (e.g. InfoCards only under Fill). When it
-  // returns false, the entry-point shows disabledReason instead of opening.
-  isAdjustable?: (blockValue: unknown) => boolean
+  // true for the field's immediate host object — the block itself, or for an
+  // array-nested image field (e.g. an InfoCards card) the card object. When it
+  // returns false, the entry-point disables "Adjust image" and shows
+  // disabledReason instead (e.g. InfoCards: only under imageFit "cover").
+  isAdjustable?: (fieldHost: unknown) => boolean
   disabledReason?: string
+  // Opt out of the real-component preview (W0-I) in favour of the framed-image
+  // approximation. Needed for array-nested image fields (InfoCards) where the
+  // real component renders the whole block/all cards, not the single card being
+  // edited — the approximation (one framed image + scrim per state) is both
+  // simpler and a better single-card preview.
+  skipRealComponentPreview?: boolean
 }

@@ -50,6 +50,11 @@ interface AdjustmentPreviewProps {
   // when absent or when rendering the real component fails for any reason.
   block?: unknown
   imageFieldName?: string
+  // Opt out of the real-component render and always use the framed-image
+  // approximation below. Set for array-nested image fields (InfoCards), where
+  // the real component would render the whole block/all cards instead of the
+  // single card being edited.
+  skipRealComponentPreview?: boolean
   // Needed to pull the site's brand theme CSS vars into the preview iframe —
   // without them, classes like `bg-brand-canvas-inverse` resolve to nothing.
   siteId: number
@@ -78,6 +83,7 @@ export const AdjustmentPreview = ({
   scrim,
   block,
   imageFieldName,
+  skipRealComponentPreview,
   siteId,
 }: AdjustmentPreviewProps): JSX.Element => {
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
@@ -270,7 +276,9 @@ export const AdjustmentPreview = ({
   // failed. A state requesting a non-default `layout` re-renders on its own
   // and, in the rarer case that only its specific layout throws, is simply
   // skipped (its sibling states still render for real).
-  const defaultRender = renderPreviewComponent(undefined)
+  const defaultRender = skipRealComponentPreview
+    ? null
+    : renderPreviewComponent(undefined)
 
   if (defaultRender) {
     return (

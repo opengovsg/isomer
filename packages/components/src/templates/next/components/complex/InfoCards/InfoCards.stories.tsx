@@ -28,6 +28,7 @@ const generateArgs = ({
   hasCTA = false,
   variant = "cardsWithImages",
   numCards = 6,
+  focal,
 }: {
   layout?: IsomerPageLayoutType
   maxColumns: "1" | "2" | "3"
@@ -35,6 +36,9 @@ const generateArgs = ({
   hasCTA?: boolean
   variant?: InfoCardsProps["variant"]
   numCards?: number
+  // When set, applies an imageAdjustment focal point (cover fit) to every card,
+  // exercising the object-position render path used by the image editor.
+  focal?: { x: number; y: number }
 }): InfoCardsProps => {
   const cards = [
     {
@@ -114,6 +118,13 @@ const generateArgs = ({
     })
   }
 
+  if (focal) {
+    cards.forEach((card) => {
+      ;(card as any).imageFit = "cover"
+      ;(card as any).imageAdjustment = { focal }
+    })
+  }
+
   return {
     layout: layout,
     title: "Section title ministry highlights",
@@ -159,6 +170,23 @@ export const WithImage1ColumnsHomepage: Story = {
 
 export const NoImage: Story = {
   args: generateArgs({ maxColumns: "3", variant: "cardsWithoutImages" }),
+}
+
+// Image-adjustment focal point (object-position) applied to cover-fit cards.
+// The subject is pulled towards the top-left, visibly off-centre vs the default
+// object-center crop — the render path the editor's focal control drives.
+export const WithImageFocalPoint: Story = {
+  name: "With Image + focal point",
+  args: generateArgs({ maxColumns: "3", focal: { x: 0.2, y: 0.2 } }),
+}
+
+export const FullImageFocalPoint: Story = {
+  name: "Full Image + focal point",
+  args: generateArgs({
+    maxColumns: "3",
+    variant: "cardsWithFullImages",
+    focal: { x: 0.2, y: 0.2 },
+  }),
 }
 
 export const WithContainImageFit: Story = {

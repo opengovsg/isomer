@@ -8,6 +8,17 @@ import type {
 const asBlock = (block: unknown): { type?: string; variant?: string } =>
   typeof block === "object" && block !== null ? block : {}
 
+// InfoCards is Tier C: a card is adjustable only when its image is set to
+// "cover" (imageFit "Default (recommended)"). Under "contain" ("Resize image
+// to fit") the whole source is shown letterboxed, so there is nothing to crop
+// or anchor. imageFit is optional and defaults to "cover", so an unset value
+// is adjustable. The fieldHost here is the individual card object.
+const isInfoCardImageAdjustable = (fieldHost: unknown): boolean =>
+  (fieldHost as { imageFit?: string } | null)?.imageFit !== "contain"
+
+const INFOCARDS_DISABLED_REASON =
+  'Image fit is set to "Resize image to fit", so there is nothing to crop. Switch it to "Default" to crop or set a focal point.'
+
 // Every Tier B config previews at the same three breakpoint viewport widths
 // (mobile 375 / tablet 768 / desktop 1280); only the aspect-ratio guess differs
 // per component, so declare just the ratios. The ratios are an initial guess —
@@ -198,6 +209,75 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
     "Use a square (1:1) image, at least 240×240px. The subject should sit centered — this image is masked into a circle on most pages.",
 }
 
+// Tier C — InfoCards "cards with images". Per-card image cover-fit into a card
+// whose aspect ratio swings across breakpoints (3:2 on mobile → 1:1 at lg for
+// the default 3-column content layout, or 2:1 for a 2-column homepage), so this
+// is the Tier-B cover+focal pattern (free crop baked in, focal anchors the
+// subject across the swing) — but offered CONDITIONALLY, only under imageFit
+// "cover". The preview uses the framed-image approximation, not the real block
+// (which would render every card), with the three ratio states showing the
+// swing the focal has to survive.
+const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
+  componentType: "infocards:cardsWithImages",
+  cropMode: "custom",
+  focalEnabled: true,
+  isAdjustable: isInfoCardImageAdjustable,
+  disabledReason: INFOCARDS_DISABLED_REASON,
+  skipRealComponentPreview: true,
+  previewStates: [
+    {
+      id: "mobile",
+      label: "Mobile",
+      viewportWidth: 375,
+      aspectRatio: { width: 3, height: 2 },
+    },
+    {
+      id: "desktop",
+      label: "Desktop (3 columns)",
+      aspectRatio: { width: 1, height: 1 },
+    },
+    {
+      id: "wide",
+      label: "Desktop (2 columns)",
+      aspectRatio: { width: 2, height: 1 },
+    },
+  ],
+  preUploadCopy:
+    "The card crops this image to fill its frame, and the frame's shape changes across screen sizes. Set a focal point so your key subject stays in view.",
+}
+
+// Tier C — InfoCards "cards with full images". Same conditional cover+focal as
+// the default variant, but the image fills the whole card (square on mobile →
+// 2:3 portrait at lg) with a dark bottom gradient the title sits over. That
+// overlay is mirrored as a scrim so editors can judge whether the focal keeps
+// the subject clear of the text.
+const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
+  componentType: "infocards:cardsWithFullImages",
+  cropMode: "custom",
+  focalEnabled: true,
+  isAdjustable: isInfoCardImageAdjustable,
+  disabledReason: INFOCARDS_DISABLED_REASON,
+  skipRealComponentPreview: true,
+  previewStates: [
+    {
+      id: "mobile",
+      label: "Mobile",
+      viewportWidth: 375,
+      aspectRatio: { width: 1, height: 1 },
+    },
+    { id: "desktop", label: "Desktop", aspectRatio: { width: 2, height: 3 } },
+  ],
+  // Approximates the real card's bottom-half dark gradient (the title overlay):
+  // opaque at the bottom edge, fading out by the vertical midpoint.
+  scrim: {
+    id: "infocards-full-image-overlay",
+    className:
+      "bg-gradient-to-t from-[rgba(38,38,38,0.9)] via-[rgba(38,38,38,0)] via-[50%] to-transparent",
+  },
+  preUploadCopy:
+    "The card crops this image to fill its frame and overlays the title on a dark gradient at the bottom. Keep your key subject in the upper half and set a focal point to anchor it.",
+}
+
 /**
  * Resolves the adjustment config for an image field, by the containing block's
  * discriminators. Returns undefined for components not yet wired — the entry
@@ -216,5 +296,9 @@ export function resolveAdjustmentConfig(args: {
   if (type === "contentpic") return CONTENTPIC_CONFIG
   if (type === "infopic") return INFOPIC_CONFIG
   if (type === "blockquote") return BLOCKQUOTE_CONFIG
+  if (type === "infocards" && variant === "cardsWithImages")
+    return INFOCARDS_WITH_IMAGES_CONFIG
+  if (type === "infocards" && variant === "cardsWithFullImages")
+    return INFOCARDS_WITH_FULL_IMAGE_CONFIG
   return undefined
 }

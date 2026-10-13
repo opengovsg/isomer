@@ -29,4 +29,50 @@ describe("resolveAdjustmentConfig", () => {
       ])
     })
   })
+
+  describe("infocards (Tier C — conditional Fit/Fill)", () => {
+    const withImages = resolveAdjustmentConfig({
+      block: { type: "infocards", variant: "cardsWithImages" },
+      fieldName: "imageUrl",
+    })
+    const fullImage = resolveAdjustmentConfig({
+      block: { type: "infocards", variant: "cardsWithFullImages" },
+      fieldName: "imageUrl",
+    })
+
+    it("resolves a cover+focal config for both image variants", () => {
+      for (const config of [withImages, fullImage]) {
+        expect(config).toBeDefined()
+        expect(config?.cropMode).toBe("custom")
+        expect(config?.focalEnabled).toBe(true)
+        // Array-nested field: preview the single card, not the whole block.
+        expect(config?.skipRealComponentPreview).toBe(true)
+        expect(config?.disabledReason).toBeTruthy()
+      }
+    })
+
+    it("does not resolve for the no-image variant", () => {
+      expect(
+        resolveAdjustmentConfig({
+          block: { type: "infocards", variant: "cardsWithoutImages" },
+          fieldName: "imageUrl",
+        }),
+      ).toBeUndefined()
+    })
+
+    it("is adjustable only when the card's imageFit is cover (or unset)", () => {
+      const isAdjustable = withImages?.isAdjustable
+      expect(isAdjustable).toBeDefined()
+      // Unset defaults to cover.
+      expect(isAdjustable?.({})).toBe(true)
+      expect(isAdjustable?.({ imageFit: "cover" })).toBe(true)
+      // "contain" (Resize image to fit) has nothing to crop.
+      expect(isAdjustable?.({ imageFit: "contain" })).toBe(false)
+    })
+
+    it("mirrors the full-image card's bottom gradient overlay as a scrim", () => {
+      expect(withImages?.scrim).toBeUndefined()
+      expect(fullImage?.scrim?.className).toContain("bg-gradient-to-t")
+    })
+  })
 })
