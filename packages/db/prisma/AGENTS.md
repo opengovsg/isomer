@@ -20,7 +20,7 @@ packages/db/
 ```
 
 Studio's precise JSON-column types, development seed, and one-off data scripts
-remain under `apps/studio/prisma/`; see that directory's `CLAUDE.md` when they
+remain under `apps/studio/prisma/`; see that directory's `AGENTS.md` when they
 are part of the change.
 
 ## Generated outputs

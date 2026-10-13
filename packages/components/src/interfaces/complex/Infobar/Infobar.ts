@@ -4,6 +4,7 @@ import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 import { ARRAY_RADIO_FORMAT } from "../../format"
+import { IsomerString } from "../../primitives/IsomerString"
 import { DEFAULT_INFOBAR_VARIANT, INFOBAR_VARIANT } from "./constants"
 
 const generateInfobarSchema = ({
@@ -14,11 +15,11 @@ const generateInfobarSchema = ({
   return Type.Object(
     {
       type: Type.Literal("infobar", { default: "infobar" }),
-      title: Type.String({
+      title: IsomerString({
         title: "Title",
       }),
       description: Type.Optional(
-        Type.String({
+        IsomerString({
           title: "Description",
         }),
       ),
@@ -45,7 +46,7 @@ const generateInfobarSchema = ({
         ),
       ),
       buttonLabel: Type.Optional(
-        Type.String({
+        IsomerString({
           title: "Button text",
           description:
             "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
@@ -61,7 +62,7 @@ const generateInfobarSchema = ({
         }),
       ),
       secondaryButtonLabel: Type.Optional(
-        Type.String({
+        IsomerString({
           title: "Secondary button text",
           maxLength: 50,
           description:

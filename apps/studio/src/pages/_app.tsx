@@ -17,7 +17,10 @@ import Suspense from "~/components/Suspense"
 import { VersionWrapper } from "~/components/VersionWrapper"
 import { env } from "~/env.mjs"
 import { LoginStateProvider } from "~/features/auth"
-import { createOfflineGrowthBook } from "~/lib/growthbookOffline"
+import {
+  applyGrowthBookOverride,
+  createOfflineGrowthBook,
+} from "~/lib/growthbookOffline"
 import { type NextPageWithLayout } from "~/lib/types"
 import { DefaultLayout } from "~/templates/layouts/DefaultLayout"
 import { theme } from "~/theme"
@@ -68,6 +71,16 @@ if (env.NEXT_PUBLIC_APP_ENV !== "test") {
     // Optional, enable streaming updates
     streaming: true,
   })
+} else if (typeof window !== "undefined") {
+  // E2E uses the offline client, so CDN route stubs never reach feature
+  // reads. Tests call this after load; setForcedFeatures re-renders subscribers.
+  ;(
+    window as Window & {
+      __e2eSetGrowthBookFeature?: (key: string, value: unknown) => void
+    }
+  ).__e2eSetGrowthBookFeature = (key, value) => {
+    applyGrowthBookOverride(gb, key, value)
+  }
 }
 
 const MyApp = ((props: AppPropsWithAuthAndLayout) => {

@@ -37,7 +37,7 @@ const EditorContainer = ({
       transitionDuration="normal"
       {...containerProps}
     >
-      <VStack h="100%" w="100%" gap="0">
+      <VStack h="100%" w="100%" gap="0" minH={0}>
         {children}
       </VStack>
     </Box>
@@ -60,6 +60,9 @@ const EditorContentWrapper = ({
       position="relative"
       w="100%"
       flex="1 1 auto"
+      minH={0}
+      display="flex"
+      flexDirection="column"
       overflowX="hidden"
       overflowY="auto"
     >
@@ -67,10 +70,20 @@ const EditorContentWrapper = ({
         as={EditorContent}
         editor={editor}
         w="100%"
-        p="1rem"
-        backgroundColor="white"
-        onClick={() => editor?.chain().focus().run()}
+        flex="1 1 auto"
+        minH="100%"
+        display="flex"
+        flexDirection="column"
         cursor="text"
+        sx={{
+          ".tiptap": {
+            boxSizing: "border-box",
+            flex: "1 1 auto",
+            minHeight: "100%",
+            padding: "1rem",
+            backgroundColor: "white",
+          },
+        }}
       />
       {showTableExtras && (
         <TableDragHandles

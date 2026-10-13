@@ -2,9 +2,10 @@ import { type Browser, type BrowserContext, type Page } from "@playwright/test"
 import { type RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, type Role } from "./auth"
+import { CollectionPO } from "./collection.po"
 import { DashboardPO } from "./dashboard.po"
 import { PageEditorPO } from "./page-editor.po"
-import { getFolderByTitle } from "./resource.db"
+import { getCollectionByTitle, getFolderByTitle } from "./resource.db"
 import { UsersPO } from "./users.po"
 
 export const openSeededPageEditor = async (
@@ -84,6 +85,16 @@ export interface RoleBrowserSession {
   editor: PageEditorPO
 }
 
+export const openCollectionIndexEditor = async (
+  page: Page,
+  siteId: number,
+  indexPageId: string,
+) => {
+  const collection = new CollectionPO(page)
+  await collection.gotoIndex(siteId, indexPageId)
+  return collection
+}
+
 export const createPageViaWizard = async (
   page: Page,
   {
@@ -99,12 +110,7 @@ export const createPageViaWizard = async (
   await dashboard.clickCreatePage()
   await dashboard.fillPageWizard(title)
 
-  // Create-page wizard navigates to `/sites/:siteId/pages/:numericPageId`.
-  await page.waitForURL(new RegExp(`/sites/${siteId}/pages/\\d+$`))
-  const pageId = page.url().match(/\/pages\/(\d+)$/)?.[1]
-  if (!pageId) {
-    throw new Error(`Expected page editor URL after wizard, got ${page.url()}`)
-  }
+  const pageId = await dashboard.expectOnNewPageEditor(siteId)
   return { pageId }
 }
 
@@ -120,6 +126,89 @@ export const createFolderViaWizard = async (
 
   const folder = await getFolderByTitle({ siteId, title })
   return { folderId: folder.id }
+}
+
+export const createCollectionViaWizard = async (
+  page: Page,
+  {
+    startUrl,
+    title,
+    siteId,
+  }: { startUrl?: string; title: string; siteId: number },
+) => {
+  const dashboard = new DashboardPO(page)
+  if (startUrl) {
+    await page.goto(startUrl)
+  } else {
+    await dashboard.gotoSite(siteId)
+  }
+  await dashboard.openCreateMenu()
+  await dashboard.clickCreateCollection()
+  await dashboard.fillCollectionWizard(title)
+
+  const collection = await getCollectionByTitle({ siteId, title })
+  return { collectionId: collection.id }
+}
+
+export const createCollectionItemViaWizard = async (
+  page: Page,
+  {
+    siteId,
+    collectionId,
+    type,
+    title,
+  }: {
+    siteId: number
+    collectionId: string
+    type: "Page" | "Link or file"
+    title: string
+  },
+) => {
+  const dashboard = new DashboardPO(page)
+  await dashboard.gotoCollection(siteId, collectionId)
+  await dashboard.openCollectionItemWizard()
+  await dashboard.selectCollectionItemType(type)
+  await dashboard.fillCollectionItemWizard(title)
+
+  const itemId = await dashboard.expectOnCollectionItemEditor(
+    siteId,
+    type === "Page" ? "page" : "link",
+  )
+  return { itemId }
+}
+
+export const createCollectionPageViaWizard = async (
+  page: Page,
+  {
+    siteId,
+    collectionId,
+    title,
+  }: { siteId: number; collectionId: string; title: string },
+) => {
+  const { itemId } = await createCollectionItemViaWizard(page, {
+    siteId,
+    collectionId,
+    type: "Page",
+    title,
+  })
+  return { pageId: itemId }
+}
+
+export const createCollectionLinkViaWizard = async (
+  page: Page,
+  {
+    siteId,
+    collectionId,
+    title,
+  }: { siteId: number; collectionId: string; title: string },
+) => {
+  const { itemId } = await createCollectionItemViaWizard(page, {
+    siteId,
+    collectionId,
+    type: "Link or file",
+    title,
+  })
+  return { linkId: itemId }
 }
 
 export const openInviteModal = async (page: Page, siteId: number) => {

@@ -84,7 +84,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.openScheduleModal()
     await editor.schedulePublishForToday("5:00 PM")
-    await editor.expectScheduledSuccessfully()
+    await editor.expectScheduledSuccessfully("5:00 PM")
     await expect
       .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
       .not.toBeNull()
@@ -101,7 +101,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
       .toBeNull()
     await editor.openScheduleModal()
     await editor.schedulePublishForToday("9:00 AM")
-    await editor.expectScheduledSuccessfully()
+    await editor.expectScheduledSuccessfully("9:00 AM")
 
     // Assert
     await expect
