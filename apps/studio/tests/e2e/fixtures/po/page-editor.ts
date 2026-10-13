@@ -91,10 +91,23 @@ export class PageEditorPO {
     await this.page.getByRole("button", { name: "Publish now" }).click()
   }
 
+  async expectPublishConfirmationHidden() {
+    await expect(this.page.getByText("Publish this page?")).not.toBeVisible()
+  }
+
+  async expectPublishConflictAtPermalink(fullPermalink: string) {
+    await expect(
+      this.page.getByText(
+        `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
+      ),
+    ).toBeVisible()
+    await this.expectPublishConfirmationHidden()
+  }
+
   async cancelPublishConfirmation() {
     await this.publishOptionsButton().click()
     await this.page.getByRole("button", { name: "No, don't publish" }).click()
-    await expect(this.page.getByText("Publish this page?")).not.toBeVisible()
+    await this.expectPublishConfirmationHidden()
   }
 
   async expectPublishedToast() {

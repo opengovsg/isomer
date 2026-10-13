@@ -7,9 +7,9 @@ import {
   openSeededPageEditor,
 } from "~e2e/fixtures/helpers"
 import {
+  expectResourceDraftBlobContains,
   expectResourceState,
   getResourceByTitle,
-  getResourceDraftBlobContent,
   SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
 } from "~e2e/fixtures/resource"
@@ -86,9 +86,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
-    await expect
-      .poll(() => getResourceDraftBlobContent(seededPage.id))
-      .toContain(editedText)
+    await expectResourceDraftBlobContains(seededPage.id, editedText)
     await editor.clickPublish()
     await editor.expectPublishedToast()
 

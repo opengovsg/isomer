@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { openSeededPageEditor } from "~e2e/fixtures/helpers"
 import { deleteRedirectBySource, seedRedirect } from "~e2e/fixtures/reset"
@@ -42,12 +42,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     // toast is the only remaining signal.
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.clickPublish()
-    await expect(
-      page.getByText(
-        `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
-      ),
-    ).toBeVisible()
-    await expect(page.getByText("Publish this page?")).not.toBeVisible()
+    await editor.expectPublishConflictAtPermalink(fullPermalink)
 
     // Assert: the draft is untouched by the failed attempt
     await editor.expectPublishButtonEnabled()
@@ -68,12 +63,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     })
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.clickPublish()
-    await expect(
-      page.getByText(
-        `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
-      ),
-    ).toBeVisible()
-    await expect(page.getByText("Publish this page?")).not.toBeVisible()
+    await editor.expectPublishConflictAtPermalink(fullPermalink)
     await deleteRedirectBySource({ siteId, source: fullPermalink })
 
     // Act

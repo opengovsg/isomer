@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
 import { normalizeRedirectSource } from "~/schemas/redirect/utils"
 import { getReferenceLink } from "~/utils/link"
@@ -12,7 +12,7 @@ import {
   seedRootPage,
   seedTwoCollections,
 } from "~e2e/fixtures/resource"
-import { getRedirectDestination, provisionE2ESite } from "~e2e/fixtures/site"
+import { expectRedirectDestination, provisionE2ESite } from "~e2e/fixtures/site"
 import { ensureUserOnboarded, getE2EUserId } from "~e2e/fixtures/user"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
@@ -189,11 +189,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Assert
     await expectResourceParentId(seededPage.id).toBe(destFolder.id)
-    await expect
-      .poll(() => getRedirectDestination(siteId, oldSource))
-      .toBe(
-        getReferenceLink({ siteId: String(siteId), resourceId: seededPage.id }),
-      )
+    await expectRedirectDestination(siteId, oldSource).toBe(
+      getReferenceLink({ siteId: String(siteId), resourceId: seededPage.id }),
+    )
   })
 
   test("admin can move a published page without creating a redirect", async ({
@@ -228,9 +226,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Assert
     await expectResourceParentId(seededPage.id).toBe(destFolder.id)
-    await expect
-      .poll(() => getRedirectDestination(siteId, oldSource))
-      .toBeNull()
+    await expectRedirectDestination(siteId, oldSource).toBeNull()
   })
 })
 

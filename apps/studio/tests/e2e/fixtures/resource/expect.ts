@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test"
 
 import {
+  getResourceByTitle,
   getResourceDraftBlobContent,
   getResourceDraftBlobId,
   getResourceId,
@@ -11,6 +12,11 @@ import {
   getResourceState,
   getResourceTitle,
 } from "./db"
+
+export const expectResourceByTitle = (opts: {
+  siteId: number
+  title: string
+}) => expect.poll(() => getResourceByTitle(opts))
 
 export const expectResourceId = (resourceId: string) =>
   expect.poll(() => getResourceId(resourceId))

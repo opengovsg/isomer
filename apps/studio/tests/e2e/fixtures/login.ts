@@ -133,4 +133,18 @@ export class LoginPage {
     }
     await this.page.waitForURL(appUrl)
   }
+
+  async clickSignInAfterOtp() {
+    await this.signInButton().click()
+  }
+
+  async expectOnSingpassLinkingStep() {
+    await expect(this.page).toHaveURL(/\/sign-in\/singpass(?:\?|$)/)
+    await expect(this.singpassButton).toBeVisible()
+  }
+
+  /** Post-callback redirect lands on app root (`/`), not `/sign-in`. */
+  async expectAppRootUrl() {
+    await expect(this.page).toHaveURL(/\/$/)
+  }
 }

@@ -1,9 +1,9 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { openSeededPageEditor } from "~e2e/fixtures/helpers"
 import {
-  getResourceDraftBlobContent,
+  expectResourceDraftBlobContains,
   SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
 } from "~e2e/fixtures/resource"
@@ -35,9 +35,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
-    await expect
-      .poll(() => getResourceDraftBlobContent(seededPage.id))
-      .toContain(editedText)
+    await expectResourceDraftBlobContains(seededPage.id, editedText)
     await editor.reload()
 
     // Assert
@@ -61,9 +59,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
-    await expect
-      .poll(() => getResourceDraftBlobContent(seededPage.id))
-      .toContain(editedText)
+    await expectResourceDraftBlobContains(seededPage.id, editedText)
     await editor.reload()
 
     // Assert

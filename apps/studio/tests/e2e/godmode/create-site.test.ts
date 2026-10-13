@@ -3,7 +3,7 @@ import crypto from "crypto"
 import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { mockTrpcMutationError } from "~e2e/fixtures/network"
 import { DashboardPO, GodmodePO } from "~e2e/fixtures/po"
-import { getResourceByTitle } from "~e2e/fixtures/resource/db"
+import { expectResourceByTitle } from "~e2e/fixtures/resource"
 import {
   expectFooterContains,
   expectNavbarContains,
@@ -40,13 +40,15 @@ test.describe("core", { tag: roleTag("core") }, () => {
     await expectNavbarContains(siteId, "Expandable nav item").toBe(true)
     await expectFooterContains(siteId, "About us").toBe(true)
 
-    await expect
-      .poll(() => getResourceByTitle({ siteId, title: "Home" }))
-      .toMatchObject({ type: "RootPage", state: "Published" })
+    await expectResourceByTitle({ siteId, title: "Home" }).toMatchObject({
+      type: "RootPage",
+      state: "Published",
+    })
 
-    await expect
-      .poll(() => getResourceByTitle({ siteId, title: "Search" }))
-      .toMatchObject({ type: "Page", state: "Published" })
+    await expectResourceByTitle({ siteId, title: "Search" }).toMatchObject({
+      type: "Page",
+      state: "Published",
+    })
 
     await dashboard.expectCreateButtonVisible()
     await dashboard.expectHomepageRowVisible()

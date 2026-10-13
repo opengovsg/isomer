@@ -1,9 +1,8 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
-
-import { TEST_EMAILS } from "./fixtures/auth"
-import { LoginPage } from "./fixtures/login"
-import { setSingpassUuidFor } from "./fixtures/session-mint"
+import { TEST_EMAILS } from "~e2e/fixtures/auth"
+import { LoginPage } from "~e2e/fixtures/login"
+import { setSingpassUuidFor } from "~e2e/fixtures/session-mint"
 
 test("email OTP + Singpass + Mockpass signs in editor", async ({ page }) => {
   // Arrange
@@ -13,17 +12,15 @@ test("email OTP + Singpass + Mockpass signs in editor", async ({ page }) => {
   const loginPage = new LoginPage(page)
 
   // Act
-  await page.goto("/sign-in")
+  await loginPage.gotoSignIn()
   await loginPage.fillEmail(email)
-  await expect(page.getByText("Enter OTP")).toBeVisible()
+  await loginPage.expectOtpVisible()
   await loginPage.fillToken(email)
-  await page.getByRole("button", { name: "Sign in" }).click()
-  await expect(page).toHaveURL(/\/sign-in\/singpass(?:\?|$)/)
-  await expect(loginPage.singpassButton).toBeVisible()
+  await loginPage.clickSignInAfterOtp()
+  await loginPage.expectOnSingpassLinkingStep()
   await loginPage.mockpassLoginWith(uuid)
 
   // Assert
-  // Post-callback redirect lands on app root (`/`), not `/sign-in` or a trailing path.
-  await expect(page).toHaveURL(/\/$/)
-  await expect(page.getByRole("heading", { name: "Your sites" })).toBeVisible()
+  await loginPage.expectAppRootUrl()
+  await loginPage.expectSitesHeadingVisible()
 })
