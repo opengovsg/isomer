@@ -6,10 +6,10 @@ import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { theme } from "~/theme"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-import HistoryStateDrawer from "../HistoryStateDrawer"
+import { HistoryStateDrawer } from "../HistoryStateDrawer"
 
 vi.mock("next/router", () => ({
-  useRouter: () => ({ query: { pageId: "1", siteId: "1" } }),
+  useRouter: () => ({ query: { pageId: "1", siteId: "1" }, isReady: true }),
 }))
 
 const noop = vi.hoisted(() => vi.fn())
@@ -24,16 +24,34 @@ vi.mock("~/utils/trpc", () => ({
     },
     site: {
       getLocalisedSitemap: {
-        useSuspenseQuery: () => [{ id: "root", children: [] }],
+        useSuspenseQuery: () => [
+          {
+            id: "root",
+            title: "Home",
+            permalink: "/",
+            lastModified: "",
+            layout: "homepage",
+            summary: "",
+            children: [],
+          },
+        ],
       },
       getConfig: {
-        useSuspenseQuery: () => [{}],
+        useSuspenseQuery: () => [
+          {
+            siteName: "Isomer",
+            theme: "isomer-next",
+            isGovernment: true,
+            url: "https://www.isomer.gov.sg",
+            logoUrl: "/isomer-logo.svg",
+          },
+        ],
       },
       getFooter: {
-        useSuspenseQuery: () => [{ content: {} }],
+        useSuspenseQuery: () => [{ content: { siteNavItems: [] } }],
       },
       getNavbar: {
-        useSuspenseQuery: () => [{ content: {} }],
+        useSuspenseQuery: () => [{ content: { items: [] } }],
       },
     },
   },

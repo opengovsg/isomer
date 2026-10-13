@@ -57,13 +57,12 @@ export function useDomDiff({
 
   // This effect only recomputes when the `beforeDocument`/`afterDocument`
   // object *references* change (per the dependency array below) — it does
-  // NOT observe in-place mutations of a document's content. That's fine
-  // today because every caller (via `PreviewIframe`'s mount callback) hands
-  // over fully-resolved static content synchronously, before the Document
-  // reference is exposed to this hook. If a future caller instead streamed
-  // or incrementally updated content into an already-mounted iframe, this
-  // hook would silently diff against stale content, since no new Document
-  // reference would arrive to re-trigger the effect.
+  // NOT observe in-place mutations of a document's content. Callers must
+  // only pass a document once its final content has rendered: anything
+  // rendered into it afterwards (e.g. a Suspense boundary resolving inside
+  // the iframe) is never diffed, since no new Document reference arrives to
+  // re-trigger the effect. `PageDiffModal` waits for each preview's
+  // `onRendered` before passing its document.
   useEffect(() => {
     if (!beforeDocument?.body || !afterDocument?.body) return
 

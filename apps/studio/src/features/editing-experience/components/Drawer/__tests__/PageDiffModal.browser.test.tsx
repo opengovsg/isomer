@@ -1,7 +1,8 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { render, screen, waitFor } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { act, render, screen, waitFor } from "@testing-library/react"
+import { Suspense } from "react"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { theme } from "~/theme"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -9,6 +10,12 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import { PageDiffModal } from "../PageDiffModal"
 
 const noop = vi.hoisted(() => vi.fn())
+
+// Lets a test hold the site config query in a suspended state, simulating a
+// cold React Query cache when the modal opens.
+const siteConfigQuery = vi.hoisted(() => ({
+  pending: null as Promise<void> | null,
+}))
 
 // Pulled in transitively (via the preview render chain) even though this
 // test never calls `useRouter` directly — mocked for the same reason as in
@@ -18,23 +25,44 @@ const noop = vi.hoisted(() => vi.fn())
 // defined") since it isn't Next's own webpack build performing the usual
 // `process.env.*` inlining.
 vi.mock("next/router", () => ({
-  useRouter: () => ({ query: {} }),
+  useRouter: () => ({ query: {}, isReady: true }),
 }))
 
 vi.mock("~/utils/trpc", () => ({
   trpc: {
     site: {
       getLocalisedSitemap: {
-        useSuspenseQuery: () => [{ id: "root", children: [] }],
+        useSuspenseQuery: () => [
+          {
+            id: "root",
+            title: "Home",
+            permalink: "/",
+            lastModified: "",
+            layout: "homepage",
+            summary: "",
+            children: [],
+          },
+        ],
       },
       getConfig: {
-        useSuspenseQuery: () => [{}],
+        useSuspenseQuery: () => {
+          if (siteConfigQuery.pending) throw siteConfigQuery.pending
+          return [
+            {
+              siteName: "Isomer",
+              theme: "isomer-next",
+              isGovernment: true,
+              url: "https://www.isomer.gov.sg",
+              logoUrl: "/isomer-logo.svg",
+            },
+          ]
+        },
       },
       getFooter: {
-        useSuspenseQuery: () => [{ content: {} }],
+        useSuspenseQuery: () => [{ content: { siteNavItems: [] } }],
       },
       getNavbar: {
-        useSuspenseQuery: () => [{ content: {} }],
+        useSuspenseQuery: () => [{ content: { items: [] } }],
       },
     },
   },
@@ -88,30 +116,32 @@ const AFTER_PAGE: IsomerSchema = {
 
 const renderModal = (isOpen: boolean) =>
   render(
-    <ThemeProvider theme={theme}>
-      <EditorDrawerProvider
-        initialPageState={PAGE}
-        type={ResourceType.Page}
-        permalink="about-us"
-        siteId={1}
-        pageId={1}
-        updatedAt={new Date()}
-        title="About us"
-      >
-        <PageDiffModal
-          isOpen={isOpen}
-          onClose={noop}
-          row={{
-            id: "version-1",
-            versionNum: 2,
-            publishedAt: new Date("2026-01-01T00:00:00Z"),
-            publisher: { name: "Alice" },
-            beforeContent: BEFORE_PAGE,
-            afterContent: AFTER_PAGE,
-          }}
-        />
-      </EditorDrawerProvider>
-    </ThemeProvider>,
+    <Suspense fallback={null}>
+      <ThemeProvider theme={theme}>
+        <EditorDrawerProvider
+          initialPageState={PAGE}
+          type={ResourceType.Page}
+          permalink="about-us"
+          siteId={1}
+          pageId={1}
+          updatedAt={new Date()}
+          title="About us"
+        >
+          <PageDiffModal
+            isOpen={isOpen}
+            onClose={noop}
+            row={{
+              id: "version-1",
+              versionNum: 2,
+              publishedAt: new Date("2026-01-01T00:00:00Z"),
+              publisher: { name: "Alice" },
+              beforeContent: BEFORE_PAGE,
+              afterContent: AFTER_PAGE,
+            }}
+          />
+        </EditorDrawerProvider>
+      </ThemeProvider>
+    </Suspense>,
   )
 
 // Note: queried by role "checkbox", not "switch" — the underlying
@@ -121,6 +151,10 @@ const renderModal = (isOpen: boolean) =>
 // `<Switch>` lands on the wrapping `<label>` instead of the input itself.
 // "checkbox" reflects its real accessible role.
 describe("PageDiffModal", () => {
+  afterEach(() => {
+    siteConfigQuery.pending = null
+  })
+
   it("does not render modal content when closed", () => {
     renderModal(false)
     expect(screen.queryByText("Changes in version 2")).toBeNull()
@@ -173,6 +207,39 @@ describe("PageDiffModal", () => {
     await waitFor(() => {
       expect(
         getBodies().every((b) => b?.classList.contains("isomer-diff-hidden")),
+      ).toBe(true)
+    })
+  })
+
+  it("highlights changes when the site queries resolve after opening", async () => {
+    let resolveSiteConfig = () => {}
+    siteConfigQuery.pending = new Promise<void>((resolve) => {
+      resolveSiteConfig = () => {
+        siteConfigQuery.pending = null
+        resolve()
+      }
+    })
+
+    renderModal(true)
+
+    // Keep the queries pending long enough for any already-mounted iframe to
+    // load and hand its document to `useDomDiff`.
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    await act(async () => {
+      resolveSiteConfig()
+      await siteConfigQuery.pending
+    })
+
+    // The diff must run against the rendered pages, not a loading skeleton
+    // that was in the iframes before the queries resolved.
+    await waitFor(() => {
+      const frames = Array.from(document.querySelectorAll("iframe"))
+      expect(frames).toHaveLength(2)
+      expect(
+        frames.every((f) =>
+          f.contentDocument?.querySelector(".isomer-diff-highlight"),
+        ),
       ).toBe(true)
     })
   })
