@@ -191,56 +191,77 @@ export const getRowMovePlan = (
   }
 }
 
-// prosemirror-tables refuses a row move whose neighbor sits inside the same
-// rowspan (`indexesOriginRow.includes(targetIndex)`). Plan against that whole
-// span, then restore the row the user actually selected.
-const rowBoundsCoveringVerticalSpans = (
-  map: TableMap,
-  top: number,
-  bottom: number,
-): { top: number; bottom: number } => {
-  let coveredTop = top
-  let coveredBottom = bottom
-  for (let row = top; row < bottom; row++) {
-    for (let col = 0; col < map.width; col++) {
-      const offset = map.map[row * map.width + col]
-      if (offset === undefined) continue
-      const cell = map.findCell(offset)
-      if (cell.top < coveredTop) coveredTop = cell.top
-      if (cell.bottom > coveredBottom) coveredBottom = cell.bottom
-    }
-  }
-  if (coveredTop === top && coveredBottom === bottom) {
-    return { top, bottom }
-  }
-  return rowBoundsCoveringVerticalSpans(map, coveredTop, coveredBottom)
-}
-
-export const getRowMovePlanForSelection = (
-  rect: {
-    top: number
-    bottom: number
-    map: TableMap
-  },
-  direction: "up" | "down",
-): TableMovePlan | null => {
-  const group = rowBoundsCoveringVerticalSpans(rect.map, rect.top, rect.bottom)
-  const plan = getRowMovePlan(
+const cellWithPayloadFrom = (structure: Node, payload: Node): Node =>
+  structure.type.create(
     {
-      top: group.top,
-      bottom: group.bottom,
-      tableHeight: rect.map.height,
+      ...structure.attrs,
+      backgroundColor: payload.attrs.backgroundColor as unknown,
     },
-    direction,
+    payload.content,
+    payload.marks,
   )
-  if (!plan || (group.top === rect.top && group.bottom === rect.bottom)) {
-    return plan
+
+// moveTableRow returns false when the two rows share a rowspan. Swap the
+// cells that actually belong to each row and leave that span where it is.
+export const reorderRowBesideVerticalSpan = (
+  table: Node,
+  rowA: number,
+  rowB: number,
+): Node | null => {
+  if (Math.abs(rowA - rowB) !== 1) return null
+  const map = TableMap.get(table)
+  if (rowA < 0 || rowB < 0 || rowA >= map.height || rowB >= map.height) {
+    return null
   }
-  return {
-    ...plan,
-    newStart: plan.newStart + (rect.top - group.top),
-    span: rect.bottom - rect.top,
+
+  const replacementAt = new Map<number, Node>()
+  for (let col = 0; col < map.width; col++) {
+    const aOffset = map.map[rowA * map.width + col]
+    const bOffset = map.map[rowB * map.width + col]
+    if (
+      aOffset === undefined ||
+      bOffset === undefined ||
+      aOffset === bOffset ||
+      replacementAt.has(aOffset) ||
+      replacementAt.has(bOffset)
+    ) {
+      continue
+    }
+    const aRect = map.findCell(aOffset)
+    const bRect = map.findCell(bOffset)
+    if (
+      aRect.top !== rowA ||
+      aRect.bottom !== rowA + 1 ||
+      bRect.top !== rowB ||
+      bRect.bottom !== rowB + 1 ||
+      aRect.left !== bRect.left ||
+      aRect.right !== bRect.right
+    ) {
+      continue
+    }
+    const aNode = table.nodeAt(aOffset)
+    const bNode = table.nodeAt(bOffset)
+    if (!aNode || !bNode) continue
+    replacementAt.set(aOffset, cellWithPayloadFrom(aNode, bNode))
+    replacementAt.set(bOffset, cellWithPayloadFrom(bNode, aNode))
   }
+  if (replacementAt.size === 0) return null
+
+  let offset = 0
+  const rows: Node[] = []
+  for (let rowIndex = 0; rowIndex < table.childCount; rowIndex++) {
+    const row = table.child(rowIndex)
+    offset += 1
+    const cells: Node[] = []
+    for (let cellIndex = 0; cellIndex < row.childCount; cellIndex++) {
+      const cell = row.child(cellIndex)
+      cells.push(replacementAt.get(offset) ?? cell)
+      offset += cell.nodeSize
+    }
+    offset += 1
+    rows.push(row.type.create(row.attrs, cells, row.marks))
+  }
+  return table.type.create(table.attrs, rows, table.marks)
 }
 
 export const getColumnMovePlan = (

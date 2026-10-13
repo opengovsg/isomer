@@ -10,8 +10,8 @@ import {
   getColumnMovePlan,
   getMovedBlockCellCorners,
   getRowMovePlan,
-  getRowMovePlanForSelection,
   getTableSelectionKind,
+  reorderRowBesideVerticalSpan,
   selectionIncludesHeaderColumn,
   selectionIncludesHeaderRow,
   type TableHeaderOverlapRect,
@@ -493,30 +493,42 @@ describe("getRowMovePlan", () => {
   })
 })
 
-describe("getRowMovePlanForSelection", () => {
-  const textCell = (text: string, rowspan = 1) =>
+describe("reorderRowBesideVerticalSpan", () => {
+  const textCell = (
+    text: string,
+    attrs?: { rowspan?: number; backgroundColor?: string },
+  ) =>
     tableSchema.nodes.tableCell.create(
-      { colspan: 1, rowspan, colwidth: null, backgroundColor: null },
+      {
+        colspan: 1,
+        rowspan: attrs?.rowspan ?? 1,
+        colwidth: null,
+        backgroundColor: attrs?.backgroundColor ?? null,
+      },
       tableSchema.nodes.paragraph.create(null, tableSchema.text(text)),
     )
   const textRow = (...cells: Node[]) =>
     tableSchema.nodes.tableRow.create(null, cells)
+  const rowTexts = (table: Node) => {
+    const texts: string[][] = []
+    table.forEach((row) => {
+      const cells: string[] = []
+      row.forEach((cell) => {
+        cells.push(cell.textContent)
+      })
+      texts.push(cells)
+    })
+    return texts
+  }
 
-  it("keeps the unmerged row plan", () => {
-    // Arrange
-    const table = buildUniformTable(3, 4)
-    const map = TableMap.get(table)
-
-    // Act / Assert
-    expect(
-      getRowMovePlanForSelection({ top: 1, bottom: 2, map }, "down"),
-    ).toEqual(getRowMovePlan({ top: 1, bottom: 2, tableHeight: 4 }, "down"))
-  })
-
-  it("moves a clipped row whose first column is merged", () => {
+  it("swaps the cells beside a merged first column when prosemirror refuses the move", () => {
     // Arrange
     const table = tableSchema.nodes.table.create(null, [
-      textRow(textCell("span", 2), textCell("A"), textCell("B")),
+      textRow(
+        textCell("span", { rowspan: 2 }),
+        textCell("A", { backgroundColor: "pink" }),
+        textCell("B"),
+      ),
       textRow(textCell("C"), textCell("D")),
       textRow(textCell("E"), textCell("F"), textCell("G")),
     ])
@@ -526,21 +538,32 @@ describe("getRowMovePlanForSelection", () => {
     let state = EditorState.create({ doc, schema: tableSchema })
     state = state.apply(state.tr.setSelection(selection))
     const rect = selectedRect(state)
+    const plan = getRowMovePlan(
+      { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
+      "down",
+    )
+    if (!plan) throw new Error("missing move plan")
 
     // Act
-    const plan = getRowMovePlanForSelection(rect, "down")
-    const moved = plan
-      ? moveTableRow({
-          from: plan.from,
-          to: plan.to,
-          select: false,
-          pos: rect.tableStart,
-        })(state, () => true)
-      : false
+    const moved = moveTableRow({
+      from: plan.from,
+      to: plan.to,
+      select: false,
+      pos: rect.tableStart,
+    })(state, () => true)
+    const reordered = reorderRowBesideVerticalSpan(table, plan.from, plan.to)
 
     // Assert
-    expect(plan).toEqual({ from: 2, to: 0, newStart: 1, span: 1 })
-    expect(moved).toBe(true)
+    expect(moved).toBe(false)
+    expect(reordered).not.toBeNull()
+    expect(rowTexts(reordered!)).toEqual([
+      ["span", "C", "D"],
+      ["A", "B"],
+      ["E", "F", "G"],
+    ])
+    expect(reordered?.child(0).child(1).attrs.backgroundColor).toBeNull()
+    expect(reordered?.child(1).child(0).attrs.backgroundColor).toBe("pink")
+    expect(reordered?.child(0).child(0).attrs.rowspan).toBe(2)
   })
 })
 
