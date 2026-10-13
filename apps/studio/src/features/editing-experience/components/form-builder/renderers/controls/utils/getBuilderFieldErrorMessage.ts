@@ -22,10 +22,9 @@ export const getBuilderFieldErrorMessage = (
     for (const error of errors[parentPath] ?? []) {
       if (
         error.keyword === "required" &&
-        error.params?.missingProperty === fieldName &&
-        error.message
+        error.params?.missingProperty === fieldName
       ) {
-        messages.push(error.message)
+        messages.push("cannot be empty")
       }
     }
   }

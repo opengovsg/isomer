@@ -46,6 +46,6 @@ describe("getBuilderFieldErrorMessage", () => {
     )
 
     // Assert
-    expect(actual).toBe("must have required property 'title'")
+    expect(actual).toBe("cannot be empty")
   })
 })
