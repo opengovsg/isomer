@@ -12,7 +12,10 @@ const createColumnStyles = tv({
     // Columns stack in order on narrow screens and sit side by side from the
     // tablet breakpoint up.
     container: "grid grid-cols-1 gap-7 md:gap-10",
-    column: "min-w-0 break-words",
+    // Boxed blocks (Call-to-Action, Quote) render a <section> with their own
+    // background, so they stretch to the row height to line up with the
+    // block beside them; text and images keep their natural height.
+    column: "flex min-w-0 flex-col break-words [&>section]:flex-1",
   },
   variants: {
     layout: {
@@ -44,6 +47,11 @@ const createColumnStyles = tv({
   },
 })
 
+// Blocks inside a column always use their compact (non-homepage) styling:
+// the homepage variants of Call-to-Action and Quote are full-width sections
+// that do not fit in a column.
+const COLUMN_CHILD_LAYOUT: ColumnProps["layout"] = "content"
+
 export const Column = ({
   variant,
   columns,
@@ -70,7 +78,7 @@ export const Column = ({
               renderComponent({
                 elementKey: index,
                 component,
-                layout,
+                layout: COLUMN_CHILD_LAYOUT,
                 site,
                 permalink,
                 shouldLazyLoad,

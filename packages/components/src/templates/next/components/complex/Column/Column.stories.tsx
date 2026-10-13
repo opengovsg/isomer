@@ -103,3 +103,25 @@ export const EmptyColumn: Story = {
     columns: [[text], []],
   },
 }
+
+export const CallToActionBesideText: Story = {
+  args: {
+    variant: "twoThirdsOneThird",
+    columns: [[text], [callToAction]],
+  },
+}
+
+export const CallToActionOnHomepage: Story = {
+  args: {
+    layout: "homepage",
+    variant: "twoEqual",
+    columns: [[image], [callToAction]],
+  },
+}
+
+export const QuoteAndCallToAction: Story = {
+  args: {
+    variant: "twoEqual",
+    columns: [[quote], [callToAction]],
+  },
+}
