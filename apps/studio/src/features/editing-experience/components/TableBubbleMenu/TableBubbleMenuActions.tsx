@@ -67,8 +67,6 @@ import {
   restoreMovedBlockSelection,
   selectionIncludesHeaderColumn,
   selectionIncludesHeaderRow,
-  selectionIsFullyMergedColumn,
-  selectionIsFullyMergedRow,
   selectionIsLeftmostColumn,
   selectionIsTopRow,
 } from "./TableBubbleMenu.utils"
@@ -337,12 +335,8 @@ const splitSelectedMergedCell = (editor: Editor) => {
 
   if (selection instanceof CellSelection) {
     const rect = selectedRect(state)
-    if (selectionIsFullyMergedRow(rect)) {
-      if (splitFullyMergedRow(editor, rect)) return
-    }
-    if (selectionIsFullyMergedColumn(rect)) {
-      if (splitFullyMergedColumn(editor, rect)) return
-    }
+    if (splitFullyMergedRow(editor, rect)) return
+    if (splitFullyMergedColumn(editor, rect)) return
 
     if (selection.$anchorCell.pos !== selection.$headCell.pos) {
       const mapIndex = rect.top * rect.map.width + rect.left

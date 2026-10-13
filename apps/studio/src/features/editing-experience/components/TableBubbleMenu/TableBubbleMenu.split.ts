@@ -6,14 +6,11 @@ import {
   hasHeaderRow,
 } from "~/features/editing-experience/utils/tableHeaderAxis"
 
-import {
-  selectionIsFullyMergedColumn,
-  selectionIsFullyMergedRow,
-  type TableSelectionRect,
-} from "./TableBubbleMenu.utils"
+import { type TableSelectionRect } from "./TableBubbleMenu.utils"
 
-// TipTap's splitCell() only inserts empty sibling cells; these helpers rebuild
-// fully merged row/column selections and preserve block content instead.
+// TipTap's splitCell() keeps every block in the first cell. A merge that spans
+// only columns, or only rows, is rebuilt so each block goes to one cell along
+// that span. A rectangle stays on splitCell.
 
 const cellBlocks = (cell: Node): Node[] => {
   const blocks: Node[] = []
@@ -129,48 +126,128 @@ const splitCellTypeForSlot = ({
   return tableCell
 }
 
+const buildRowCellsAfterHorizontalSplit = ({
+  table,
+  map,
+  rowIndex,
+  splitLeft,
+  splitRight,
+  blocks,
+  sourceCell,
+  tableCell,
+  tableHeader,
+  paragraph,
+}: {
+  table: Node
+  map: TableMap
+  rowIndex: number
+  splitLeft: number
+  splitRight: number
+  blocks: Node[]
+  sourceCell: Node
+  tableCell: NodeType
+  tableHeader: NodeType
+  paragraph: NodeType
+}): Node[] => {
+  const cells: Node[] = []
+  const slotCount = splitRight - splitLeft
+  const cellType =
+    sourceCell.type.name === "tableHeader" ? tableHeader : tableCell
+
+  for (let col = 0; col < map.width;) {
+    if (col >= splitLeft && col < splitRight) {
+      const slotIndex = col - splitLeft
+      cells.push(
+        cellType.create(
+          splitCellAttrs(sourceCell, slotIndex),
+          contentForSplitSlot({
+            blocks,
+            slotIndex,
+            slotCount,
+            paragraph,
+          }),
+        ),
+      )
+      col += 1
+      continue
+    }
+
+    if (isSlotCoveredFromRowAbove({ map, rowIndex, col })) {
+      const covered = resolveCellAt({
+        table,
+        map,
+        index: rowIndex * map.width + col,
+      })
+      if (covered) {
+        col += covered.node.attrs.colspan as number
+        continue
+      }
+    }
+
+    const resolved = resolveCellAt({
+      table,
+      map,
+      index: rowIndex * map.width + col,
+    })
+    if (
+      !resolved ||
+      !isRowOwnedCell({ map, cellPos: resolved.pos, rowIndex })
+    ) {
+      col += resolved ? (resolved.node.attrs.colspan as number) : 1
+      continue
+    }
+
+    cells.push(resolved.node)
+    col += resolved.node.attrs.colspan as number
+  }
+
+  return cells
+}
+
 export const splitFullyMergedRow = (
   editor: Editor,
   rect: TableSelectionRect,
 ): boolean => {
-  if (!selectionIsFullyMergedRow(rect)) return false
-
-  const mapIndex = rect.top * rect.map.width + rect.left
-  const cellOffset = rect.map.map[mapIndex]
-  if (cellOffset === undefined) return false
-
-  const sourceCell = rect.table.nodeAt(cellOffset)
-  if (!sourceCell) return false
+  if (rect.bottom - rect.top !== 1) return false
 
   const { state, view } = editor
   const tablePos = rect.tableStart - 1
   const table = state.doc.nodeAt(tablePos)
   if (!table) return false
 
-  const rowNode = table.child(rect.top)
-  const rowPos = rowPosInDoc(tablePos, table, rect.top)
+  const map = TableMap.get(table)
+  const cellOffset = map.map[rect.top * map.width + rect.left]
+  if (cellOffset === undefined) return false
+
+  const sourceCell = table.nodeAt(cellOffset)
+  if (!sourceCell) return false
+  const colspan = sourceCell.attrs.colspan as number
+  const rowspan = sourceCell.attrs.rowspan as number
+  if (rowspan !== 1 || colspan <= 1 || rect.right - rect.left !== colspan) {
+    return false
+  }
+
   const blocks = cellBlocks(sourceCell)
   const { paragraph, tableCell, tableHeader } = state.schema.nodes
   if (!paragraph || !tableCell || !tableHeader) return false
-  const cellType =
-    sourceCell.type.name === "tableHeader" ? tableHeader : tableCell
 
-  const newCells: Node[] = []
-  for (let col = 0; col < rect.map.width; col++) {
-    newCells.push(
-      cellType.create(
-        splitCellAttrs(sourceCell, col),
-        contentForSplitSlot({
-          blocks,
-          slotIndex: col,
-          slotCount: rect.map.width,
-          paragraph,
-        }),
-      ),
-    )
-  }
-
-  const newRow = rowNode.type.create(rowNode.attrs, newCells)
+  const rowNode = table.child(rect.top)
+  const newRow = rowNode.type.create(
+    rowNode.attrs,
+    buildRowCellsAfterHorizontalSplit({
+      table,
+      map,
+      rowIndex: rect.top,
+      splitLeft: rect.left,
+      splitRight: rect.right,
+      blocks,
+      sourceCell,
+      tableCell,
+      tableHeader,
+      paragraph,
+    }),
+  )
+  const rowPos = rowPosInDoc(tablePos, table, rect.top)
   view.dispatch(state.tr.replaceWith(rowPos, rowPos + rowNode.nodeSize, newRow))
   editor.commands.focus()
   return true
@@ -278,7 +355,7 @@ export const splitFullyMergedColumn = (
   editor: Editor,
   rect: TableSelectionRect,
 ): boolean => {
-  if (!selectionIsFullyMergedColumn(rect)) return false
+  if (rect.right - rect.left !== 1) return false
 
   const { state, view } = editor
   const tablePos = rect.tableStart - 1
@@ -294,6 +371,11 @@ export const splitFullyMergedColumn = (
 
   const sourceCell = table.nodeAt(cellOffset)
   if (!sourceCell) return false
+  const colspan = sourceCell.attrs.colspan as number
+  const rowspan = sourceCell.attrs.rowspan as number
+  if (colspan !== 1 || rowspan <= 1 || rect.bottom - rect.top !== rowspan) {
+    return false
+  }
 
   const blocks = cellBlocks(sourceCell)
   const { paragraph, tableCell, tableHeader } = state.schema.nodes

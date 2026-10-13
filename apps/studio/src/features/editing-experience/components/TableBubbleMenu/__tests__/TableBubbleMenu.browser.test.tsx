@@ -1253,6 +1253,169 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Merge cells")).toBeNull()
   })
 
+  it("splits paragraphs down a partial vertical merge", async () => {
+    const { editor, findByText, findByRole } = await renderHarness({
+      type: "prose",
+      content: [
+        {
+          type: "table",
+          attrs: { caption: "Vertical" },
+          content: [
+            ["H1", "H2", "H3"],
+            ["A1", "A2", "A3"],
+            ["B1", "B2", "B3"],
+            ["C1", "C2", "C3"],
+          ].map((row, rowIndex) => ({
+            type: "tableRow",
+            content: row.map((text) => ({
+              type: rowIndex === 0 ? "tableHeader" : "tableCell",
+              content: [
+                { type: "paragraph", content: [{ type: "text", text }] },
+              ],
+            })),
+          })),
+        },
+      ],
+    })
+
+    // Arrange: body cells in column B, not the header
+    selectCells(editor, 4, 10)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    selectCells(editor, 4, 4)
+    await activateTableBubbleMenu(findByRole)
+    const splitCell = await findByText("Split cell")
+
+    // Act
+    act(() => {
+      splitCell.click()
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(rowTextsAt(editor, 0)).toEqual(["H1", "H2", "H3"])
+      expect(rowTextsAt(editor, 1)).toEqual(["A1", "A2", "A3"])
+      expect(rowTextsAt(editor, 2)).toEqual(["B1", "B2", "B3"])
+      expect(rowTextsAt(editor, 3)).toEqual(["C1", "C2", "C3"])
+    })
+  })
+
+  it("splits paragraphs across a partial horizontal merge and keeps the rest of the row", async () => {
+    const { editor, findByText, findByRole } = await renderHarness({
+      type: "prose",
+      content: [
+        {
+          type: "table",
+          attrs: { caption: "Horizontal" },
+          content: [
+            ["H1", "H2", "H3", "H4"],
+            ["A", "B", "C", "D"],
+          ].map((row, rowIndex) => ({
+            type: "tableRow",
+            content: row.map((text) => ({
+              type: rowIndex === 0 ? "tableHeader" : "tableCell",
+              content: [
+                { type: "paragraph", content: [{ type: "text", text }] },
+              ],
+            })),
+          })),
+        },
+      ],
+    })
+
+    // Arrange
+    selectCells(editor, 4, 6)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    selectCells(editor, 4, 4)
+    await activateTableBubbleMenu(findByRole)
+    const splitCell = await findByText("Split cell")
+
+    // Act
+    act(() => {
+      splitCell.click()
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(rowTextsAt(editor, 0)).toEqual(["H1", "H2", "H3", "H4"])
+      expect(rowTextsAt(editor, 1)).toEqual(["A", "B", "C", "D"])
+    })
+  })
+
+  it("keeps extra paragraphs in the last cell when a horizontal merge is split", async () => {
+    const { editor, findByText, findByRole } = await renderHarness({
+      type: "prose",
+      content: [
+        {
+          type: "table",
+          attrs: { caption: "Tail" },
+          content: [
+            {
+              type: "tableRow",
+              content: ["A", "B", "C", "D"].map((text) => ({
+                type: "tableCell",
+                content: [
+                  { type: "paragraph", content: [{ type: "text", text }] },
+                ],
+              })),
+            },
+          ],
+        },
+      ],
+    })
+
+    // Arrange
+    selectCells(editor, 0, 2)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    insertParagraphInCell(editor, 0, "Extra")
+    selectCells(editor, 0, 0)
+    await activateTableBubbleMenu(findByRole)
+    const splitCell = await findByText("Split cell")
+
+    // Act
+    act(() => {
+      splitCell.click()
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(rowTextsAt(editor, 0)).toEqual(["A", "B", "CExtra", "D"])
+    })
+  })
+
+  it("keeps every paragraph in the top-left cell when a rectangular merge is split", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    // Arrange
+    selectCells(editor, 3, 7)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    selectCells(editor, 3, 3)
+    await activateTableBubbleMenu(findByRole)
+    const splitCell = await findByText("Split cell")
+
+    // Act
+    act(() => {
+      splitCell.click()
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(rowTextsAt(editor, 1)).toEqual([
+        "Row 1, ARow 1, BRow 2, ARow 2, B",
+        "",
+        "Row 1, C",
+      ])
+      expect(rowTextsAt(editor, 2)).toEqual(["", "", "Row 2, C"])
+    })
+  })
+
   it("does not show Split cell for a full row that only partially merged", async () => {
     const { editor, findByRole, findByText, queryByText } =
       await renderHarness()
