@@ -20,3 +20,14 @@ export const createOfflineGrowthBook = (): GrowthBook => {
   gb.setForcedFeatures(new Map(mockFeatureFlags))
   return gb
 }
+
+/** Replace one forced flag and notify GrowthBook React subscribers. */
+export const applyGrowthBookOverride = (
+  gb: GrowthBook,
+  key: string,
+  value: unknown,
+) => {
+  const next = new Map(gb.getForcedFeatures())
+  next.set(key, value)
+  gb.setForcedFeatures(next)
+}

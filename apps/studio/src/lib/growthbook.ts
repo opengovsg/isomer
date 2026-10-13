@@ -17,10 +17,6 @@ export const IS_AUDIT_LOG_ENABLED_FEATURE_KEY = "is-audit-log-enabled"
 export const ENABLE_SEARCHSG_GAZETTE_INGESTION =
   "enable-searchsg-gazette-ingestion"
 
-// Gates the "Date filter" option when adding a new collection tag filter.
-export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY = "is-date-filters-enabled"
-export const IS_DATE_FILTERS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
-
 // Gates the image-adjustment editor entry point (the "Adjust image" button and
 // modal in JsonFormsImageControl). Rollout-sensitive editor hot path, so it
 // canaries per agency via enabledSites; default is OFF everywhere (empty list),

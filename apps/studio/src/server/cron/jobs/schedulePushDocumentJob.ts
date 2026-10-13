@@ -39,7 +39,10 @@ const collectionIndexPageContentSchema = z.object({
   page: z.object({
     tagCategories: z.array(
       z.object({
-        options: z.array(z.object({ id: z.string(), label: z.string() })),
+        // Date filters have no options
+        options: z
+          .array(z.object({ id: z.string(), label: z.string() }))
+          .optional(),
       }),
     ),
   }),
@@ -131,7 +134,7 @@ const extractResourceData = async ({
   const { tagCategories } = indexParsed.data.page
   // reduce the tag category options into a single array then we find
   const options =
-    tagCategories?.map((category) => category.options).flat() ?? []
+    tagCategories?.flatMap((category) => category.options ?? []) ?? []
   const subcategory = options.find(
     (option) => option.id === parsed.data.page.tagged[0],
   )
