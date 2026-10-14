@@ -297,13 +297,14 @@ describe("auth.singpass", () => {
         uuid: undefined,
       })
 
+      // Act
+      const result = caller.callback({
+        state: CALLBACK_STATE,
+        code: "code",
+      })
+
       // Assert
-      await expect(
-        caller.callback({
-          state: CALLBACK_STATE,
-          code: "code",
-        }),
-      ).rejects.toThrow(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Singpass login failed",
@@ -336,13 +337,14 @@ describe("auth.singpass", () => {
         uuid: MOCK_SINGPASS_UUID,
       })
 
+      // Act
+      const result = caller.callback({
+        state: CALLBACK_STATE,
+        code: "code",
+      })
+
       // Assert
-      await expect(
-        caller.callback({
-          state: CALLBACK_STATE,
-          code: "code",
-        }),
-      ).rejects.toThrow(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Singpass profile does not match user",

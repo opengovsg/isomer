@@ -7,33 +7,46 @@ import {
 
 describe("singpassCallbackFailurePath", () => {
   it("asks the user to retry when Singpass reports a server error", () => {
-    expect(singpassCallbackFailurePath("server_error")).toBe(
-      "/sign-in/singpass?error=retry",
-    )
+    // Act
+    const path = singpassCallbackFailurePath("server_error")
+
+    // Assert
+    expect(path).toBe("/sign-in/singpass?error=retry")
   })
 
   it("asks the user to wait when Singpass is unavailable", () => {
-    expect(singpassCallbackFailurePath("temporarily_unavailable")).toBe(
-      "/sign-in/singpass?error=unavailable",
-    )
+    // Act
+    const path = singpassCallbackFailurePath("temporarily_unavailable")
+
+    // Assert
+    expect(path).toBe("/sign-in/singpass?error=unavailable")
   })
 
   it("uses a generic error for any other Singpass error", () => {
-    expect(singpassCallbackFailurePath("invalid_request_uri")).toBe(
-      "/sign-in/singpass?error=true",
-    )
-    expect(singpassCallbackFailurePath(undefined)).toBe(
-      "/sign-in/singpass?error=true",
-    )
+    // Act
+    const unknown = singpassCallbackFailurePath("invalid_request_uri")
+    const missing = singpassCallbackFailurePath(undefined)
+
+    // Assert
+    expect(unknown).toBe("/sign-in/singpass?error=true")
+    expect(missing).toBe("/sign-in/singpass?error=true")
   })
 })
 
 describe("singpassSignInError", () => {
   it("only treats our own error values as specific cases", () => {
-    expect(singpassSignInError("retry")).toBe("retry")
-    expect(singpassSignInError("unavailable")).toBe("unavailable")
-    expect(singpassSignInError("server_error")).toBe("generic")
-    expect(singpassSignInError("true")).toBe("generic")
-    expect(singpassSignInError(undefined)).toBeNull()
+    // Act
+    const retry = singpassSignInError("retry")
+    const unavailable = singpassSignInError("unavailable")
+    const singpassCode = singpassSignInError("server_error")
+    const genericFlag = singpassSignInError("true")
+    const missing = singpassSignInError(undefined)
+
+    // Assert
+    expect(retry).toBe("retry")
+    expect(unavailable).toBe("unavailable")
+    expect(singpassCode).toBe("generic")
+    expect(genericFlag).toBe("generic")
+    expect(missing).toBeNull()
   })
 })
