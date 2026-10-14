@@ -7,33 +7,23 @@ import {
   BiRotateRight,
 } from "react-icons/bi"
 
-type Rotation = 0 | 90 | 180 | 270
-
 interface TransformControlProps {
-  rotate: Rotation
   flipH: boolean
   flipV: boolean
-  onRotateChange: (rotate: Rotation) => void
-  onFlipHChange: (flipH: boolean) => void
-  onFlipVChange: (flipV: boolean) => void
+  onRotate: (direction: "cw" | "ccw") => void
+  onFlip: (axis: "h" | "v") => void
 }
 
-// Normalize any multiple of 90 back into the 0|90|180|270 domain, including the
-// negative values produced by rotating left (e.g. 0 − 90 = −90 → 270).
-export const normalizeRotation = (deg: number): Rotation =>
-  (((deg % 360) + 360) % 360) as Rotation
-
 // Rotate (in 90° steps) and flip controls. The baking for all of these already
-// exists (imageBake applies crop → rotate → flip); this is purely the UI that
-// writes draft.rotate/flipH/flipV. Flip buttons are toggles — their pressed
-// state mirrors the current draft value.
+// exists (imageBake rotates/flips then crops); this is purely the UI. It emits
+// intents ("cw"/"ccw", "h"/"v") rather than absolute values so the modal can
+// move the crop + focal with the image content in the same step. Flip buttons
+// are toggles — their pressed state mirrors the current draft value.
 export const TransformControl = ({
-  rotate,
   flipH,
   flipV,
-  onRotateChange,
-  onFlipHChange,
-  onFlipVChange,
+  onRotate,
+  onFlip,
 }: TransformControlProps): JSX.Element => {
   return (
     <VStack align="start" spacing="0.5rem" w="100%">
@@ -47,7 +37,7 @@ export const TransformControl = ({
             colorScheme="neutral"
             aria-label="Rotate left"
             icon={<BiRotateLeft />}
-            onClick={() => onRotateChange(normalizeRotation(rotate - 90))}
+            onClick={() => onRotate("ccw")}
           />
         </Tooltip>
         <Tooltip label="Rotate right">
@@ -56,7 +46,7 @@ export const TransformControl = ({
             colorScheme="neutral"
             aria-label="Rotate right"
             icon={<BiRotateRight />}
-            onClick={() => onRotateChange(normalizeRotation(rotate + 90))}
+            onClick={() => onRotate("cw")}
           />
         </Tooltip>
         <Tooltip label="Flip horizontal">
@@ -67,7 +57,7 @@ export const TransformControl = ({
             aria-pressed={flipH}
             isActive={flipH}
             icon={<BiReflectVertical />}
-            onClick={() => onFlipHChange(!flipH)}
+            onClick={() => onFlip("h")}
           />
         </Tooltip>
         <Tooltip label="Flip vertical">
@@ -78,7 +68,7 @@ export const TransformControl = ({
             aria-pressed={flipV}
             isActive={flipV}
             icon={<BiReflectHorizontal />}
-            onClick={() => onFlipVChange(!flipV)}
+            onClick={() => onFlip("v")}
           />
         </Tooltip>
       </HStack>

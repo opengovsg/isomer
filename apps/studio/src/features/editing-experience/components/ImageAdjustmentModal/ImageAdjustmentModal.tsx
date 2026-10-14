@@ -29,6 +29,17 @@ import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
 import { CropFocalControl } from "./controls/CropFocalControl"
 import { defaultCropRect } from "./controls/cropGeometry"
+import {
+  flipPointH,
+  flipPointV,
+  flipRectH,
+  flipRectV,
+  normalizeRotation,
+  rotatePointCcw,
+  rotatePointCw,
+  rotateRectCcw,
+  rotateRectCw,
+} from "./controls/displayTransform"
 import { TransformControl } from "./controls/TransformControl"
 import { computeLowResWarning } from "./resolutionWarning"
 import {
@@ -217,6 +228,64 @@ export const ImageAdjustmentModal = ({
     }))
   }
 
+  // Rotating/flipping moves the crop + focal with the image content so they
+  // keep framing the same subject. A quarter turn inverts the aspect, which
+  // would break a locked ratio's fixed output shape — so for locked-ratio
+  // components re-fit the crop to a valid centered rect in the new orientation
+  // instead of rotating it geometrically. Flips and free crops transform
+  // geometrically (aspect is preserved, so the lock stays valid).
+  const handleRotate = (direction: "cw" | "ccw") => {
+    setDraft((d) => {
+      const base = ensureAdjustment(d)
+      const rotate = normalizeRotation(
+        base.rotate + (direction === "cw" ? 90 : -90),
+      )
+      if (lockedRatio) {
+        const quarter = rotate === 90 || rotate === 270
+        const displayAspect = quarter
+          ? 1 / (imageAspect ?? 1)
+          : (imageAspect ?? 1)
+        return {
+          ...base,
+          rotate,
+          crop: defaultCropRect(lockedRatio, displayAspect),
+          focal: { x: 0.5, y: 0.5 },
+        }
+      }
+      return {
+        ...base,
+        rotate,
+        crop:
+          direction === "cw"
+            ? rotateRectCw(base.crop)
+            : rotateRectCcw(base.crop),
+        focal:
+          direction === "cw"
+            ? rotatePointCw(base.focal)
+            : rotatePointCcw(base.focal),
+      }
+    })
+  }
+
+  const handleFlip = (axis: "h" | "v") => {
+    setDraft((d) => {
+      const base = ensureAdjustment(d)
+      return axis === "h"
+        ? {
+            ...base,
+            flipH: !base.flipH,
+            crop: flipRectH(base.crop),
+            focal: flipPointH(base.focal),
+          }
+        : {
+            ...base,
+            flipV: !base.flipV,
+            crop: flipRectV(base.crop),
+            focal: flipPointV(base.focal),
+          }
+    })
+  }
+
   const handleUndo = () => {
     setDraft(value)
   }
@@ -292,6 +361,9 @@ export const ImageAdjustmentModal = ({
                       cropMode={config.cropMode}
                       lockedRatio={lockedRatio}
                       focalEnabled={focalEnabled}
+                      rotate={draft?.rotate ?? 0}
+                      flipH={draft?.flipH ?? false}
+                      flipV={draft?.flipV ?? false}
                       onCropChange={(crop) =>
                         setDraft((d) => ({ ...ensureAdjustment(d), crop }))
                       }
@@ -305,18 +377,10 @@ export const ImageAdjustmentModal = ({
 
                   {/* Rotate & flip — applies to every adjustable component. */}
                   <TransformControl
-                    rotate={draft?.rotate ?? 0}
                     flipH={draft?.flipH ?? false}
                     flipV={draft?.flipV ?? false}
-                    onRotateChange={(rotate) =>
-                      setDraft((d) => ({ ...ensureAdjustment(d), rotate }))
-                    }
-                    onFlipHChange={(flipH) =>
-                      setDraft((d) => ({ ...ensureAdjustment(d), flipH }))
-                    }
-                    onFlipVChange={(flipV) =>
-                      setDraft((d) => ({ ...ensureAdjustment(d), flipV }))
-                    }
+                    onRotate={handleRotate}
+                    onFlip={handleFlip}
                   />
 
                   {/* Low-resolution warning — the kept crop can't fill this

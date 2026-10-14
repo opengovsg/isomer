@@ -1,4 +1,4 @@
-import { cropRectToPixels, outputDimensions } from "~/lib/imageBake"
+import { cropRectToPixels } from "~/lib/imageBake"
 
 import type { AspectRatio } from "./AdjustmentConfig"
 import type { CropRectNormalized } from "./controls/cropGeometry"
@@ -13,12 +13,14 @@ export interface LowResWarning {
 
 /**
  * Decide whether to warn that the cropped region is too low-resolution for the
- * component's largest rendered frame. Mirrors the bake's own crop → pixels →
- * rotate math (cropRectToPixels + outputDimensions) so the reported width
- * matches what actually ships, and uses the same default crop the control shows
- * until the editor makes a real edit. Returns undefined when there's nothing to
- * warn about (no image loaded yet, no frame width configured, or the crop can
- * fill the frame at 1x).
+ * component's largest rendered frame. The crop is normalized to the rotated/
+ * flipped ("display") image the editor cropped against, so a 90/270 rotation
+ * swaps the source's natural dimensions before the crop is applied — the crop
+ * width is then the effective output width directly. `naturalSize` is the
+ * source image's un-rotated natural size (what the <img> reports). Uses the
+ * same default crop the control shows until the editor makes a real edit.
+ * Returns undefined when there's nothing to warn about (no image loaded yet, no
+ * frame width configured, or the crop can fill the frame at 1x).
  */
 export const computeLowResWarning = ({
   naturalSize,
@@ -34,14 +36,16 @@ export const computeLowResWarning = ({
   maxRenderedWidthPx?: number
 }): LowResWarning | undefined => {
   if (!naturalSize || maxRenderedWidthPx == null) return undefined
+  const rotatedQuarter = rotate === 90 || rotate === 270
+  const displayWidth = rotatedQuarter ? naturalSize.height : naturalSize.width
+  const displayHeight = rotatedQuarter ? naturalSize.width : naturalSize.height
   const effectiveCrop =
-    crop ?? defaultCropRect(lockedRatio, naturalSize.width / naturalSize.height)
-  const { sw, sh } = cropRectToPixels(
+    crop ?? defaultCropRect(lockedRatio, displayWidth / displayHeight)
+  const { sw: effectiveWidth } = cropRectToPixels(
     effectiveCrop,
-    naturalSize.width,
-    naturalSize.height,
+    displayWidth,
+    displayHeight,
   )
-  const { width: effectiveWidth } = outputDimensions(sw, sh, rotate ?? 0)
   if (effectiveWidth >= maxRenderedWidthPx) return undefined
   return { effectiveWidth, targetWidth: maxRenderedWidthPx }
 }

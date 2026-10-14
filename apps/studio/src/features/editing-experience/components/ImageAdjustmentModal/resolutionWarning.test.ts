@@ -72,6 +72,31 @@ describe("computeLowResWarning", () => {
     ).toEqual({ effectiveWidth: 400, targetWidth: 1280 })
   })
 
+  it("measures crop.width against the rotated display frame (not crop.height)", () => {
+    // Square 2000×2000, rotated 90°. The crop is display-space: its WIDTH maps
+    // to the (swapped) display width. A full-width / half-height crop ships at
+    // 1×2000 = 2000px (sharp) and must NOT warn; the mirrored half-width /
+    // full-height crop ships at 1000px and MUST warn. A naive implementation
+    // that cropped the un-rotated frame then rotated would swap these.
+    const size = { width: 2000, height: 2000 }
+    expect(
+      computeLowResWarning({
+        naturalSize: size,
+        crop: { x: 0, y: 0, width: 1, height: 0.5 },
+        rotate: 90,
+        maxRenderedWidthPx: 1280,
+      }),
+    ).toBeUndefined()
+    expect(
+      computeLowResWarning({
+        naturalSize: size,
+        crop: { x: 0, y: 0, width: 0.5, height: 1 },
+        rotate: 90,
+        maxRenderedWidthPx: 1280,
+      }),
+    ).toEqual({ effectiveWidth: 1000, targetWidth: 1280 })
+  })
+
   it("falls back to the full-image default crop when none is set yet", () => {
     // No crop and no locked ratio → the default is the whole image.
     expect(
