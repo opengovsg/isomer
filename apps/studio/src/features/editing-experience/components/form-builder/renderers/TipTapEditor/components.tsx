@@ -5,6 +5,7 @@ import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 import { Box, Flex, FocusLock, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { EditorContent } from "@tiptap/react"
+import { hideOthers } from "aria-hidden"
 import {
   useEffect,
   useLayoutEffect,
@@ -142,6 +143,59 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
   const closeExpandedTable = () => {
     setTableEditorExpanded(editor, null)
   }
+
+  useEffect(() => {
+    if (!editorInDialog) return
+    const node = dialogRef.current
+    if (!node) return
+    return hideOthers(node)
+  }, [editorInDialog])
+
+  useEffect(() => {
+    if (!editorInDialog) return
+    const lock = dialogRef.current
+    if (!lock) return
+
+    // Cancel a wheel the expanded editor cannot scroll, so it does not chain
+    // to the page behind. A dialog opened on top still scrolls itself.
+    const onWheel = (event: WheelEvent) => {
+      if (!event.cancelable) return
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (target instanceof Element) {
+        const otherDialog = target.closest(
+          '[role="dialog"][aria-modal="true"]:not([data-expanded-table-editor])',
+        )
+        if (otherDialog) return
+      }
+      if (!lock.contains(target)) {
+        event.preventDefault()
+        return
+      }
+      let element: Element | null =
+        target instanceof Element ? target : target.parentElement
+      while (element && lock.contains(element)) {
+        const { overflowY } = getComputedStyle(element)
+        if (overflowY === "auto" || overflowY === "scroll") {
+          const atTop = element.scrollTop <= 0
+          const atBottom =
+            element.scrollTop + element.clientHeight >= element.scrollHeight - 1
+          if ((event.deltaY < 0 && !atTop) || (event.deltaY > 0 && !atBottom)) {
+            return
+          }
+        }
+        element = element.parentElement
+      }
+      event.preventDefault()
+    }
+
+    document.addEventListener("wheel", onWheel, {
+      capture: true,
+      passive: false,
+    })
+    return () =>
+      document.removeEventListener("wheel", onWheel, { capture: true })
+  }, [editorInDialog])
 
   // Render as an element. Calling `menubar()` here would run its hooks inside
   // Editor, so swapping in the expanded toolbar would change Editor's hook count.
