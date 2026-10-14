@@ -43,15 +43,3 @@ export const Unsupported: Story = {
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.3",
   },
 }
-
-export const UnsupportedDismissed: Story = {
-  ...Unsupported,
-  loaders: [
-    () => {
-      sessionStorage.setItem("unsupported-browser-banner-dismissed", "true")
-      return () => {
-        sessionStorage.removeItem("unsupported-browser-banner-dismissed")
-      }
-    },
-  ],
-}
