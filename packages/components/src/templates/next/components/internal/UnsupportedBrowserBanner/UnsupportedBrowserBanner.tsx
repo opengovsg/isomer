@@ -40,10 +40,6 @@ export const UnsupportedBrowserBanner = ({
     return <></>
   }
 
-  const onDismiss = () => {
-    setIsDismissed(true)
-  }
-
   return (
     <div className="bg-[#FFCC15]">
       <div className="relative mx-auto flex max-w-screen-xl flex-row gap-4 px-6 py-4 text-base-content md:px-10 md:py-4">
@@ -69,7 +65,7 @@ export const UnsupportedBrowserBanner = ({
         </div>
         <div aria-hidden className="flex h-6 w-6 shrink-0" />
         <IconButton
-          onPress={onDismiss}
+          onPress={() => setIsDismissed(true)}
           icon={BiX}
           className="absolute right-3 top-1 md:right-7"
           aria-label="Dismiss unsupported browser banner temporarily"
