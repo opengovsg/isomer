@@ -68,10 +68,10 @@ function JsonFormsImageControl({
   // Gate the adjustment entry point behind a GrowthBook flag (off by default,
   // rolled out per-user) — this is a rollout-sensitive editor path.
   const isImageAdjustmentEnabled = useIsImageAdjustmentEnabled()
-  // Only managed site-storage assets ("/{siteId}/..." paths) can be baked;
+  // Only managed site-storage assets (relative "/..." paths) can be baked;
   // external/absolute URLs and the built-in placeholder have no derivable bake
   // key, so hide Adjust for them rather than letting Save fail.
-  const isManagedAsset = isManagedSiteAsset(data, siteId)
+  const isManagedAsset = isManagedSiteAsset(data)
 
   // Reads the sibling imageAdjustment field and containing block via
   // JsonForms' core data (the only way to reach data outside this control's

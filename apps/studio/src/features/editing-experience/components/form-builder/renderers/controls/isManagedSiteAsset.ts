@@ -1,13 +1,14 @@
-// An image src is adjustable only if it's a managed site-storage asset for this
-// site — a "/{siteId}/..." path. Uploads are stored that way (see getFileKey /
-// useUploadAssetMutation: "/${siteId}/folder/file"), and only that path has a
-// derivable bake key. This deliberately excludes:
-//   - external/absolute URLs (no leading "/{siteId}/"), and
-//   - the built-in placeholder "/placeholder_no_image.png" (starts with "/" but
-//     is not a site asset) — a freshly-added block carries this until an image
-//     is uploaded, and it must not offer "Adjust image".
-// so the entry point stays hidden rather than letting a later Save/bake fail.
-export const isManagedSiteAsset = (
-  src: string | undefined,
-  siteId: number,
-): boolean => !!src && src.startsWith(`/${siteId}/`)
+import { PLACEHOLDER_IMAGE_FILENAME } from "~/features/editing-experience/components/constants"
+
+// The built-in placeholder src a freshly-added image-bearing block carries until
+// a real image is uploaded. It starts with "/" like a real asset but has no
+// site-storage key, so it must not offer "Adjust image".
+const PLACEHOLDER_IMAGE_SRC = `/${PLACEHOLDER_IMAGE_FILENAME}`
+
+// An image src is adjustable only if it's a managed site-storage asset: a
+// relative "/..." path (uploads are stored this way — see performUpload), which
+// excludes external/absolute URLs. The placeholder is the one relative path that
+// is NOT a real asset, so exclude it explicitly. Baking needs the stored key,
+// which only real managed assets have.
+export const isManagedSiteAsset = (src: string | undefined): boolean =>
+  !!src && src.startsWith("/") && src !== PLACEHOLDER_IMAGE_SRC
