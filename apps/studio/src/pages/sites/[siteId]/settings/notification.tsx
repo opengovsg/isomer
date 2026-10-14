@@ -33,18 +33,15 @@ import { siteSchema } from "~/features/editing-experience/schema"
 import {
   canPublishNotificationSettings,
   normalizeSiteNotification,
+  siteNotificationBodyValidator,
 } from "~/features/settings/notification/notificationSettings.utils"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
-import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
-
-const notificationBodyValidator =
-  ajv.compile<SiteNotification>(NotificationSchema)
 
 interface NotificationSettingsEditorProps {
   siteId: number
@@ -160,7 +157,7 @@ const NotificationSettingsEditor = ({
               <Box mt="1.25rem">
                 <FormBuilder<SiteNotification>
                   schema={NotificationSchema}
-                  validateFn={notificationBodyValidator}
+                  validateFn={siteNotificationBodyValidator}
                   data={state.notification}
                   handleChange={(notification) => {
                     setState({

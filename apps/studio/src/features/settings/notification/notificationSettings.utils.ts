@@ -1,7 +1,14 @@
 import type { Notification } from "~/schemas/site"
-import { isSiteNotificationActive } from "@opengovsg/isomer-components"
+import {
+  isSiteNotificationActive,
+  NotificationSchema,
+} from "@opengovsg/isomer-components"
+import { ajv } from "~/utils/ajv"
 
 export type SiteNotification = NonNullable<Notification["notification"]>
+
+export const siteNotificationBodyValidator =
+  ajv.compile<SiteNotification>(NotificationSchema)
 
 export const normalizeSiteNotification = (
   notification: SiteNotification,
