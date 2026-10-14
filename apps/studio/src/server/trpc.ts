@@ -11,7 +11,6 @@
 import { initTRPC, TRPCError } from "@trpc/server"
 import { timingSafeEqual } from "node:crypto"
 import superjson from "superjson"
-import { z, ZodError } from "zod"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
@@ -23,6 +22,7 @@ import { db } from "./modules/database"
 import { defaultUserSelect } from "./modules/me/me.select"
 import { checkRateLimit } from "./modules/rate-limit/rate-limit.service"
 import { isEmailWhitelisted } from "./modules/whitelist/whitelist.service"
+import { flattenZodErrorForTrpcClient } from "./trpcZodError"
 
 interface Meta {
   rateLimitOptions?: RateLimitMetaOptions
@@ -44,10 +44,7 @@ const t = initTRPC
         ...shape,
         data: {
           ...shape.data,
-          zodError:
-            error.code === "BAD_REQUEST" && error.cause instanceof ZodError
-              ? z.flattenError(error.cause)
-              : null,
+          zodError: flattenZodErrorForTrpcClient(error.code, error.cause),
         },
       }
     },
