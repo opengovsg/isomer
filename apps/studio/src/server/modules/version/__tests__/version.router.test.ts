@@ -80,7 +80,7 @@ describe("version.router", async () => {
   })
 
   describe("listHistory", () => {
-    it("returns versions newest first, each carrying its own content", async () => {
+    it("returns versions newest first, each with its own content", async () => {
       // Arrange
       const { page } = await setupPageResource({ resourceType: "Page" })
       await setupAdminPermissions({ userId: user.id, siteId: page.siteId })
@@ -113,9 +113,11 @@ describe("version.router", async () => {
 
       // Assert
       expect(result.items.map((item) => item.versionNum)).toEqual([3, 2, 1])
-      expect(result.items[0]?.content).toEqual(makeContent("three"))
-      expect(result.items[1]?.content).toEqual(makeContent("two"))
-      expect(result.items[2]?.content).toEqual(makeContent("one"))
+      expect(result.items.map((item) => item.content)).toEqual([
+        makeContent("three"),
+        makeContent("two"),
+        makeContent("one"),
+      ])
       expect(result.items[0]?.publisher).toMatchObject({
         id: user.id,
         name: "Alice",
@@ -124,7 +126,7 @@ describe("version.router", async () => {
       expect(result.nextOffset).toBeNull()
     })
 
-    it("returns its own content for a resource's only version", async () => {
+    it("returns the content of a resource's only version", async () => {
       // Arrange
       const { page } = await setupPageResource({ resourceType: "Page" })
       await setupAdminPermissions({ userId: user.id, siteId: page.siteId })
@@ -148,7 +150,7 @@ describe("version.router", async () => {
       expect(result.items[0]?.content).toEqual(makeContent("one"))
     })
 
-    it("paginates newest first, carrying content on every page", async () => {
+    it("paginates, returning each version's content on its own page", async () => {
       // Arrange
       const { page } = await setupPageResource({ resourceType: "Page" })
       await setupAdminPermissions({ userId: user.id, siteId: page.siteId })
@@ -181,8 +183,10 @@ describe("version.router", async () => {
 
       // Assert
       expect(firstPage.items.map((item) => item.versionNum)).toEqual([3, 2])
-      expect(firstPage.items[0]?.content).toEqual(makeContent("three"))
-      expect(firstPage.items[1]?.content).toEqual(makeContent("two"))
+      expect(firstPage.items.map((item) => item.content)).toEqual([
+        makeContent("three"),
+        makeContent("two"),
+      ])
       expect(firstPage.nextOffset).toBe(2)
       expect(secondPage.items.map((item) => item.versionNum)).toEqual([1])
       expect(secondPage.items[0]?.content).toEqual(makeContent("one"))
