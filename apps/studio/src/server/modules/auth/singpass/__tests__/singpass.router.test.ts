@@ -1,7 +1,6 @@
 import type { SessionData, SessionVerificationToken } from "~/lib/types/session"
 import { TRPCError } from "@trpc/server"
 import { resetTables } from "tests/integration/helpers/db"
-import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
 import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applySession,
@@ -11,6 +10,7 @@ import { setupUser, setUpWhitelist } from "tests/integration/helpers/seed"
 import { expect, vi } from "vitest"
 import { env } from "~/env.mjs"
 import { IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import { mockFeatureFlags } from "~/lib/growthbookOffline"
 import { AuditLogEvent, db } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
 
@@ -130,7 +130,7 @@ describe("auth.singpass", () => {
           userId: user.id as NonNullable<
             NonNullable<SessionData["singpass"]>["sessionState"]
           >["userId"],
-          verificationToken,
+          verificationToken: toSessionVerificationToken(verificationToken),
           codeVerifier: "code-verifier",
           nonce: "nonce",
         },
@@ -154,7 +154,9 @@ describe("auth.singpass", () => {
       const result = await caller.login({ landingUrl: "http://localhost" })
 
       // Assert
-      expect(getAuthorizationUrl).toHaveBeenCalledWith({ useFapi: true })
+      expect(getAuthorizationUrl).toHaveBeenCalledWith(
+        expect.objectContaining({ useFapi: true }),
+      )
       expect(result.redirectUrl).toContain("request_uri=")
       expect(session.singpass?.sessionState?.useFapi).toBe(true)
       expect(session.singpass?.sessionState?.dpopPrivateJwk).toBe(
