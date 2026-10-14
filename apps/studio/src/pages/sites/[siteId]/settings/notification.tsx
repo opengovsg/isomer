@@ -1,3 +1,4 @@
+import type { SiteNotification } from "~/features/settings/notification/notificationSettings.utils"
 import type { NextPageWithLayout } from "~/lib/types"
 import type { Notification } from "~/schemas/site"
 import { Box, FormControl, HStack, Text, VStack } from "@chakra-ui/react"
@@ -21,11 +22,19 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
-import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
+import {
+  ErrorProvider,
+  useBuilderErrors,
+} from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { EditSettingsPreview } from "~/features/editing-experience/components/preview/EditSettingsPreview"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
+import {
+  canPublishNotificationSettings,
+  normalizeSiteNotification,
+  shouldClearFormBuilderErrorsOnBannerDisable,
+} from "~/features/settings/notification/notificationSettings.utils"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
@@ -35,20 +44,23 @@ import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-type SiteNotification = NonNullable<Notification["notification"]>
-
 const notificationBodyValidator =
   ajv.compile<SiteNotification>(NotificationSchema)
 
-const NotificationSettingsPage: NextPageWithLayout = () => {
-  const { siteId: rawSiteId } = useQueryParse(siteSchema)
-  const siteId = Number(rawSiteId)
+interface NotificationSettingsEditorProps {
+  siteId: number
+  siteName: string
+  previousNotification: Notification
+}
+
+const NotificationSettingsEditor = ({
+  siteId,
+  siteName,
+  previousNotification,
+}: NotificationSettingsEditorProps) => {
   const trpcUtils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
-  const [{ name }] = trpc.site.getSiteName.useSuspenseQuery({
-    siteId,
-  })
-
+  const { setErrors } = useBuilderErrors()
   const [, setIsDismissed] = useIsNotificationDismissed()
 
   const notificationMutation = trpc.site.setNotification.useMutation({
@@ -68,10 +80,6 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
     },
   })
 
-  const [previousNotification] = trpc.site.getNotification.useSuspenseQuery({
-    siteId,
-  })
-
   const [state, setState] = useState<Notification>(
     isSiteNotificationActive(previousNotification.notification)
       ? previousNotification
@@ -83,6 +91,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   const isOpen = !!nextUrl
 
   const isDirty = !isEqual(state, previousNotification)
+  const canPublish = canPublishNotificationSettings(isDirty, state.notification)
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
@@ -92,6 +101,9 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
     if (bannerOn) {
       setSnapshot(state.notification)
       setState({})
+      if (shouldClearFormBuilderErrorsOnBannerDisable(true)) {
+        setErrors({})
+      }
       // Show the banner again the next time it is turned on.
       setIsDismissed(false)
       return
@@ -107,7 +119,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
     })
 
   return (
-    <ErrorProvider>
+    <>
       <UnsavedSettingModal
         isOpen={isOpen}
         onClose={() => setNextUrl("")}
@@ -120,7 +132,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
             title="Notification banner"
             icon={BiWrench}
             isLoading={notificationMutation.isPending}
-            isDisabled={!isDirty}
+            isDisabled={!canPublish}
           />
           <Box w="100%">
             <HStack
@@ -140,7 +152,12 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
                   </Text>
                 </VStack>
               </FormControl>
-              <Switch size="md" isChecked={bannerOn} onChange={toggleBanner} />
+              <Switch
+                size="md"
+                isChecked={bannerOn}
+                onChange={toggleBanner}
+                aria-label="Display a banner"
+              />
             </HStack>
             {bannerOn && (
               <Box mt="1.25rem">
@@ -149,7 +166,9 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
                   validateFn={notificationBodyValidator}
                   data={state.notification}
                   handleChange={(notification) => {
-                    setState({ notification })
+                    setState({
+                      notification: normalizeSiteNotification(notification),
+                    })
                   }}
                 />
               </Box>
@@ -158,11 +177,33 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
         </SettingsEditorGridItem>
         <SettingsPreviewGridItem>
           <EditSettingsPreview
-            siteName={name}
+            siteName={siteName}
             notification={state.notification}
           />
         </SettingsPreviewGridItem>
       </SettingsGrid>
+    </>
+  )
+}
+
+const NotificationSettingsPage: NextPageWithLayout = () => {
+  const { siteId: rawSiteId } = useQueryParse(siteSchema)
+  const siteId = Number(rawSiteId)
+  const [{ name }] = trpc.site.getSiteName.useSuspenseQuery({
+    siteId,
+  })
+
+  const [previousNotification] = trpc.site.getNotification.useSuspenseQuery({
+    siteId,
+  })
+
+  return (
+    <ErrorProvider>
+      <NotificationSettingsEditor
+        siteId={siteId}
+        siteName={name}
+        previousNotification={previousNotification}
+      />
     </ErrorProvider>
   )
 }

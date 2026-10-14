@@ -17,8 +17,10 @@ export const isSiteNotificationActive = (
       return !!notification.title
     case "antiscam":
       return true
-    default:
+    default: {
       const _exhaustiveCheck: never = notification.type
-      return _exhaustiveCheck
+      void _exhaustiveCheck
+      return false
+    }
   }
 }
