@@ -118,7 +118,7 @@ on:
         required: false
         type: string
       singpass-fapi-issuer-endpoint:
-        description: "Public Singpass FAPI 2.0 issuer URL. Not a secret. Required on every deploy; the GrowthBook flag decides who uses it."
+        description: "Public Singpass FAPI 2.0 issuer URL."
         required: true
         type: string
     secrets:
