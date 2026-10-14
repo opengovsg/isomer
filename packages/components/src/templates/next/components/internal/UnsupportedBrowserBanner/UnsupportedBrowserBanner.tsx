@@ -7,6 +7,7 @@ import { useSessionStorage } from "usehooks-ts"
 import { isSupportedBrowser } from "~/utils/isSupportedBrowser"
 
 import { IconButton } from "../IconButton"
+import { Link } from "../Link"
 
 // TODO: move this to a official isomer.gov.sg once we migrate that to Isomer Next
 const supportedBrowserDocumentLink =
@@ -56,14 +57,13 @@ export const UnsupportedBrowserBanner = ({
             <div className="prose-body-base [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0">
               Your experience on this site might not be ideal. Please update to
               the latest version or use a modern browser to access this site.{" "}
-              <a
+              <Link
                 href={supportedBrowserDocumentLink}
-                target="_blank"
-                rel="noopener noreferrer"
+                isExternal
                 className="underline"
               >
                 View our supported browsers
-              </a>
+              </Link>
               .
             </div>
           </div>
