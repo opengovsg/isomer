@@ -118,9 +118,8 @@ on:
         required: false
         type: string
       singpass-fapi-issuer-endpoint:
-        description: "Public Singpass FAPI 2.0 issuer URL. Not a secret."
-        required: false
-        default: ""
+        description: "Public Singpass FAPI 2.0 issuer URL. Not a secret. Required on every deploy; the GrowthBook flag decides who uses it."
+        required: true
         type: string
     secrets:
       SLACK_BOT_TOKEN:
