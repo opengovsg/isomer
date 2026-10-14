@@ -1,13 +1,13 @@
 import type { NextPageWithLayout } from "~/lib/types"
 import type { Notification } from "~/schemas/site"
-import { Box } from "@chakra-ui/react"
-import { useToast } from "@opengovsg/design-system-react"
+import { Box, FormControl, HStack, Text, VStack } from "@chakra-ui/react"
+import { Switch, useToast } from "@opengovsg/design-system-react"
 import {
   isSiteNotificationActive,
-  NotificationSettingsSchema,
+  NotificationSchema,
   useIsNotificationDismissed,
 } from "@opengovsg/isomer-components"
-import { isEmpty, isEqual } from "lodash-es"
+import { isEqual } from "lodash-es"
 import { useState } from "react"
 import { BiWrench } from "react-icons/bi"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -30,12 +30,19 @@ import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { notificationValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
+import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-const validateFn = notificationValidator
+const BANNER_LABEL = "Display a banner"
+const BANNER_DESCRIPTION =
+  "The site notification will always be visible on the site until it is dismissed by the user."
+
+type SiteNotification = NonNullable<Notification["notification"]>
+
+const notificationBodyValidator =
+  ajv.compile<SiteNotification>(NotificationSchema)
 
 const NotificationSettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
@@ -74,6 +81,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
       ? previousNotification
       : {},
   )
+  const [snapshot, setSnapshot] = useState(state.notification)
 
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
@@ -81,6 +89,20 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   const isDirty = !isEqual(state, previousNotification)
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+
+  const bannerOn = state.notification !== undefined
+
+  const toggleBanner = () => {
+    if (bannerOn) {
+      setSnapshot(state.notification)
+      setState({})
+      // Show the banner again the next time it is turned on.
+      setIsDismissed(false)
+      return
+    }
+
+    setState({ notification: snapshot ?? { title: "" } })
+  }
 
   const onSubmit = () =>
     notificationMutation.mutate({
@@ -105,19 +127,36 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
             isDisabled={!isDirty}
           />
           <Box w="100%">
-            <Box mb="-0.5rem" />
-            <FormBuilder<Notification>
-              schema={NotificationSettingsSchema}
-              validateFn={validateFn}
-              data={state}
-              handleChange={(data) => {
-                setState(data)
-                // NOTE: We have to set `isDismissed` here because
-                // we need to show the notification banner again when
-                // the user toggles it on
-                if (isEmpty(data)) setIsDismissed(false)
-              }}
-            />
+            <HStack
+              alignItems="space-between"
+              w="full"
+              spacing="1rem"
+              pt="0.5rem"
+            >
+              <FormControl display="flex" alignItems="center">
+                <VStack gap="0.25rem" alignItems="start">
+                  <Text textStyle="subhead-1" textColor="base.content.strong">
+                    {BANNER_LABEL}
+                  </Text>
+                  <Text textStyle="body-2" textColor="base.content.medium">
+                    {BANNER_DESCRIPTION}
+                  </Text>
+                </VStack>
+              </FormControl>
+              <Switch size="md" isChecked={bannerOn} onChange={toggleBanner} />
+            </HStack>
+            {bannerOn && (
+              <Box mt="1.25rem">
+                <FormBuilder<SiteNotification>
+                  schema={NotificationSchema}
+                  validateFn={notificationBodyValidator}
+                  data={state.notification}
+                  handleChange={(notification) => {
+                    setState({ notification })
+                  }}
+                />
+              </Box>
+            )}
           </Box>
         </SettingsEditorGridItem>
         <SettingsPreviewGridItem>

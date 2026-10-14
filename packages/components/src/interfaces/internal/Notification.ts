@@ -1,6 +1,6 @@
 import type { Static } from "@sinclair/typebox"
 import type { PropsWithChildren } from "react"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
@@ -52,13 +52,7 @@ export const NotificationSchema = Type.Union(
 
 export type SiteNotificationConfig = Static<typeof NotificationSchema>
 
-export type NotificationTitleContentConfig = Pick<
-  Static<typeof NotificationCustomSchema>,
-  "title" | "content"
->
-
 export type NotificationProps = SiteNotificationConfig & {
-  LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }
 
@@ -66,13 +60,6 @@ export type NotificationClientProps = PropsWithChildren<
   Pick<Static<typeof NotificationCustomSchema>, "title">
 >
 
-export const NotificationSettingsSchema = Type.Object(
-  {
-    notification: Type.Optional(NotificationSchema),
-  },
-  {
-    title: "Display a banner",
-    description:
-      "The site notification will always be visible on the site until it is dismissed by the user.",
-  },
-)
+export const NotificationSettingsSchema = Type.Object({
+  notification: Type.Optional(NotificationSchema),
+})

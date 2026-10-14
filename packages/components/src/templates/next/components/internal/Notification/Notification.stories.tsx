@@ -11,11 +11,9 @@ const meta: Meta<NotificationProps> = {
   component: Notification,
   argTypes: {},
   parameters: {
-    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
-    chromatic: withChromaticModes(["desktop", "tablet", "mobile"]),
   },
   args: {
     site: generateSiteConfig(),
@@ -135,5 +133,9 @@ export const LongContent: Story = {
 export const Antiscam: Story = {
   args: {
     type: "antiscam",
+  },
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["desktop", "tablet", "mobile"]),
   },
 }

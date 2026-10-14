@@ -1,5 +1,12 @@
 import { BiError } from "react-icons/bi"
 
+import {
+  ANTI_SCAM_DISCLAIMER_AFTER,
+  ANTI_SCAM_DISCLAIMER_BEFORE,
+  ANTI_SCAM_DISCLAIMER_LINK_HREF,
+  ANTI_SCAM_DISCLAIMER_LINK_LABEL,
+  ANTI_SCAM_DISCLAIMER_TITLE,
+} from "../../antiScamDisclaimerCopy"
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 
@@ -19,21 +26,20 @@ export const AntiScamDisclaimerBanner = () => {
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <p className="prose-headline-lg-medium m-0 text-base-content-strong">
-            Government officials will never ask you to transfer money over a
-            phone call.
+            {ANTI_SCAM_DISCLAIMER_TITLE}
           </p>
           <p className="prose-headline-lg-regular m-0 text-base-content-medium">
-            If you're unsure if something is a scam, call{" "}
+            {ANTI_SCAM_DISCLAIMER_BEFORE}
             <Link
-              href="https://www.scamshield.gov.sg"
+              href={ANTI_SCAM_DISCLAIMER_LINK_HREF}
               isExternal
               showExternalIcon
               isWithFocusVisibleHighlight
               className="text-link underline underline-offset-4 visited:text-link-visited hover:text-link-hover"
             >
-              ScamShield
-            </Link>{" "}
-            at 1799.
+              {ANTI_SCAM_DISCLAIMER_LINK_LABEL}
+            </Link>
+            {ANTI_SCAM_DISCLAIMER_AFTER}
           </p>
         </div>
       </div>

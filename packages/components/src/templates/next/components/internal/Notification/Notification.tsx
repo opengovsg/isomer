@@ -1,23 +1,50 @@
-import type {
-  NotificationProps,
-  NotificationTitleContentConfig,
-} from "~/interfaces/internal/Notification"
+import type { NotificationProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
+import {
+  ANTI_SCAM_DISCLAIMER_AFTER,
+  ANTI_SCAM_DISCLAIMER_BEFORE,
+  ANTI_SCAM_DISCLAIMER_LINK_HREF,
+  ANTI_SCAM_DISCLAIMER_LINK_LABEL,
+  ANTI_SCAM_DISCLAIMER_TITLE,
+} from "../../antiScamDisclaimerCopy"
 import { Prose } from "../../native/Prose"
 import { hasContent } from "../../native/Prose/utils"
 import { BaseParagraph } from "../BaseParagraph"
-import { antiScamSiteNotification } from "./antiScamSiteNotification"
 import { NotificationClient } from "./NotificationClient"
 
-export const Notification = ({ type, site, ...props }: NotificationProps) => {
-  if (type === "antiscam") {
+const antiScamContent = [
+  {
+    type: "text" as const,
+    text: ANTI_SCAM_DISCLAIMER_BEFORE,
+  },
+  {
+    type: "text" as const,
+    text: ANTI_SCAM_DISCLAIMER_LINK_LABEL,
+    marks: [
+      {
+        type: "link" as const,
+        attrs: {
+          href: ANTI_SCAM_DISCLAIMER_LINK_HREF,
+          target: "_blank" as const,
+        },
+      },
+    ],
+  },
+  {
+    type: "text" as const,
+    text: ANTI_SCAM_DISCLAIMER_AFTER,
+  },
+]
+
+export const Notification = ({ site, ...notification }: NotificationProps) => {
+  if (notification.type === "antiscam") {
     return (
-      <NotificationClient title={antiScamSiteNotification.title}>
+      <NotificationClient title={ANTI_SCAM_DISCLAIMER_TITLE}>
         <BaseParagraph
           content={getTextAsHtml({
             site,
-            content: antiScamSiteNotification.content,
+            content: antiScamContent,
           })}
           className="prose-body-base"
         />
@@ -25,7 +52,7 @@ export const Notification = ({ type, site, ...props }: NotificationProps) => {
     )
   }
 
-  const { title, content } = props as NotificationTitleContentConfig
+  const { title, content } = notification
   const body =
     content instanceof Array ? (
       <BaseParagraph
