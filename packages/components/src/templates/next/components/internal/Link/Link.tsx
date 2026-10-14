@@ -54,11 +54,12 @@ export const Link = ({
     >
       {children}
       {/* SVG, not "↗": Windows falls back to Segoe UI Emoji and renders a blue emoji tile.
-          Rotated BiRightArrowAlt so the stroke matches the navbar's right arrow. */}
+          Rotated BiRightArrowAlt so the stroke matches the navbar's right arrow;
+          negative margin trims viewBox padding to keep the old glyph's spacing. */}
       {showExternalIcon && (
         <BiRightArrowAlt
           aria-hidden="true"
-          className="ml-1 inline -rotate-45 align-[-0.3em] text-[1.4em]"
+          className="-mr-[0.2em] inline -rotate-45 align-[-0.25em] text-[1.4em]"
         />
       )}
       {isExternal && !label && (
