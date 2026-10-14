@@ -21,10 +21,12 @@ export const DEFAULT_BLOCKS = {
   accordion: {
     type: "accordion",
     summary: "Title for the accordion item",
-    details: {
-      type: "prose",
-      content: [],
-    },
+    content: [],
+  },
+  column: {
+    type: "column",
+    variant: "twoEqual",
+    columns: [[], []],
   },
   blockquote: {
     type: "blockquote",
@@ -391,6 +393,10 @@ export const BLOCK_TO_META: Record<
     description: "Place an image with a text and Call-to-Action.",
     imageSrc: "/assets/block-images/Infopic.png",
   },
+  column: {
+    label: "Column",
+    description: "Place blocks side by side in 2 or 3 columns.",
+  },
   accordion: {
     label: "Accordion",
     description: "Hide content in expandable accordions.",
@@ -510,6 +516,7 @@ export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "prose",
       "image",
       "accordion",
+      "column",
       "callout",
       "blockquote",
       "imagegallery",
@@ -526,6 +533,7 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
       "prose",
       "image",
       "accordion",
+      "column",
       "callout",
       "blockquote",
       "contentpic",
@@ -564,6 +572,22 @@ export const HOMEPAGE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "collectionblock",
       "logocloud",
       "antiscambanner",
+      "column",
     ],
   },
+]
+
+// Blocks that can be placed inside a Column, whether the Column sits on the
+// page or inside an Accordion.
+export const COLUMN_ALLOWED_BLOCKS: IsomerComponent["type"][] = [
+  "prose",
+  "image",
+  "infobar",
+  "blockquote",
+]
+
+// Blocks that can be placed directly inside an Accordion.
+export const ACCORDION_ALLOWED_BLOCKS: IsomerComponent["type"][] = [
+  ...COLUMN_ALLOWED_BLOCKS,
+  "column",
 ]

@@ -15,8 +15,14 @@ import {
   jsonFormsAnyOfControlTester,
   JsonFormsArrayControl,
   jsonFormsArrayControlTester,
+  JsonFormsBlockListControl,
+  jsonFormsBlockListControlTester,
   JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
+  JsonFormsColumnLayoutControl,
+  jsonFormsColumnLayoutControlTester,
+  JsonFormsColumnSlotsControl,
+  jsonFormsColumnSlotsControlTester,
   JsonFormsChildrenPagesLayoutControl,
   jsonFormsChildrenPagesLayoutControlTester,
   JsonFormsChildrenPagesOrderingControl,
@@ -157,6 +163,18 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsDateControlTester, renderer: JsonFormsDateControl },
   { tester: jsonFormsObjectControlTester, renderer: JsonFormsObjectControl },
   { tester: jsonFormsArrayControlTester, renderer: JsonFormsArrayControl },
+  {
+    tester: jsonFormsBlockListControlTester,
+    renderer: JsonFormsBlockListControl,
+  },
+  {
+    tester: jsonFormsColumnLayoutControlTester,
+    renderer: JsonFormsColumnLayoutControl,
+  },
+  {
+    tester: jsonFormsColumnSlotsControlTester,
+    renderer: JsonFormsColumnSlotsControl,
+  },
   { tester: jsonFormsBooleanControlTester, renderer: JsonFormsBooleanControl },
   { tester: jsonFormsConstControlTester, renderer: JsonFormsConstControl },
   {

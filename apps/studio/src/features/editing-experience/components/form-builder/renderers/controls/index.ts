@@ -3,9 +3,21 @@ export {
   jsonFormsArrayControlTester,
 } from "./JsonFormsArrayControl"
 export {
+  default as JsonFormsBlockListControl,
+  jsonFormsBlockListControlTester,
+} from "./JsonFormsBlockListControl"
+export {
   default as JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
 } from "./JsonFormsBooleanControl"
+export {
+  default as JsonFormsColumnLayoutControl,
+  jsonFormsColumnLayoutControlTester,
+} from "./JsonFormsColumnLayoutControl"
+export {
+  default as JsonFormsColumnSlotsControl,
+  jsonFormsColumnSlotsControlTester,
+} from "./JsonFormsColumnSlotsControl"
 export {
   default as JsonFormsConstControl,
   jsonFormsConstControlTester,

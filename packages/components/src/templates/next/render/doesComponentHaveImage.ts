@@ -10,6 +10,13 @@ export const doesComponentHaveImage = ({
   // TODO: Do separate optimization for them to improve lighthouse SEO score
   switch (component.type) {
     case "accordion":
+      return (component.content ?? []).some((child) =>
+        doesComponentHaveImage({ component: child }),
+      )
+    case "column":
+      return component.columns.some((column) =>
+        column.some((child) => doesComponentHaveImage({ component: child })),
+      )
     case "button":
     case "keystatistics":
     case "callout":

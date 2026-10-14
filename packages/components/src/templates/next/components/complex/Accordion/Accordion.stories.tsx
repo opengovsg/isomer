@@ -28,6 +28,8 @@ const meta: Meta<typeof Accordion> = {
   },
   args: {
     site: generateSiteConfig(),
+    layout: "content",
+    permalink: "/",
     headingLevel: 2,
   },
 }
@@ -355,5 +357,69 @@ export const ListInMiddle: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByText(`${ListInMiddle.args?.summary}1`))
+  },
+}
+
+export const WithContentBlocks: Story = {
+  args: {
+    summary: "Who is eligible to apply?",
+    content: [
+      {
+        type: "prose",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "Singapore-registered companies, societies and charities can apply. Sole proprietors should apply under the individual track.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "column",
+        variant: "oneThirdTwoThirds",
+        columns: [
+          [
+            {
+              type: "image",
+              src: "https://placehold.co/400x300",
+              alt: "Flowchart of the eligibility criteria",
+            },
+          ],
+          [
+            {
+              type: "prose",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Follow the chart to check which scheme applies to you before you start your application.",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        ],
+      },
+      {
+        type: "infobar",
+        title: "Ready to apply?",
+        description: "Applications close on 31 December.",
+        buttonLabel: "Start your application",
+        buttonUrl: "/",
+      },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByText(`${WithContentBlocks.args?.summary}1`),
+    )
   },
 }

@@ -1,5 +1,20 @@
-export { AccordionSchema, type AccordionProps } from "./Accordion"
+export {
+  AccordionSchema,
+  AccordionContainerEditorSchema,
+  type AccordionProps,
+} from "./Accordion"
 export { BlockquoteSchema, type BlockquoteProps } from "./Blockquote"
+export {
+  COLUMN_LAYOUT,
+  COLUMN_LAYOUT_COLUMN_COUNT,
+  COLUMN_LAYOUT_LABELS,
+  ColumnDefaultSchema,
+  ColumnHomepageSchema,
+  DEFAULT_COLUMN_LAYOUT,
+  type ColumnLayout,
+  type ColumnProps,
+  type ContainerContentBlock,
+} from "./Column"
 export { ButtonSchema, type ButtonProps } from "./Button"
 export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
 export {

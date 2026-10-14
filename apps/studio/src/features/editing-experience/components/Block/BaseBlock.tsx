@@ -6,6 +6,9 @@ import { BiGridVertical, BiSolidErrorCircle } from "react-icons/bi"
 
 export type BaseBlockProps = {
   dragHandle?: React.ReactNode
+  // Rendered at the end of the row, e.g. a chevron for rows that open
+  // something else.
+  trailing?: React.ReactNode
   label: string
   description?: string
   variant?: "horizontal" | "vertical"
@@ -28,6 +31,7 @@ export type BaseBlockProps = {
 export const BaseBlock = ({
   icon,
   dragHandle,
+  trailing,
   label,
   description,
   variant = "horizontal",
@@ -148,12 +152,13 @@ export const BaseBlock = ({
               <Icon as={icon} fontSize="0.75rem" color="base.content.default" />
             </Flex>
           )}
-          <Stack align="start" gap="0.25rem" overflow="auto">
+          <Stack align="start" gap="0.25rem" overflow="auto" flex={1} minW={0}>
             <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
               {label}
             </Text>
             <Description />
           </Stack>
+          {trailing}
         </>
       )}
     </HStack>

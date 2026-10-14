@@ -2,6 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { IconType } from "react-icons"
 import {
   BiChevronDown,
+  BiColumns,
   BiCloud,
   BiCrown,
   BiData,
@@ -46,6 +47,7 @@ export const TYPE_TO_ICON: Record<
   infobar: BiPointer,
   infocols: InfocolsIcon,
   accordion: BiChevronDown,
+  column: BiColumns,
   formsg: FormSGIcon,
   hero: BiCrown,
   iframe: FaYoutube,

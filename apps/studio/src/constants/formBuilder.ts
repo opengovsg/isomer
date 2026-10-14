@@ -40,6 +40,11 @@ export const JSON_FORMS_RANKING = {
   NavbarControl: 5,
   // NOTE: needs to have higher priority than array
   LinkArrayControl: 5,
+  // NOTE: container blocks — both need to have higher priority than array,
+  // and the layout picker needs to be above anyof
+  BlockListControl: 5,
+  ColumnSlotsControl: 5,
+  ColumnLayoutControl: 5,
   // NOTE: needs to have higher priority than array
   SocialMediaControl: 5,
   AllOfControl: 3,

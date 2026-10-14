@@ -2,6 +2,7 @@ import type { TSchema } from "@sinclair/typebox"
 import type { IsomerPageLayoutType, IsomerComponentTypes } from "~/types"
 import { Type } from "@sinclair/typebox"
 import {
+  AccordionContainerEditorSchema,
   AccordionSchema,
   AudioSchema,
   BlockquoteSchema,
@@ -9,6 +10,8 @@ import {
   CalloutSchema,
   ChildrenPagesSchema,
   CollectionBlockSchema,
+  ColumnDefaultSchema,
+  ColumnHomepageSchema,
   ContactInformationSchema,
   ContentpicSchema,
   DividerSchema,
@@ -43,6 +46,7 @@ export const IsomerComplexComponentsMap = {
   blockquote: BlockquoteSchema,
   button: ButtonSchema,
   callout: CalloutSchema,
+  column: ColumnHomepageSchema,
   formsg: FormSGSchema,
   hero: HeroSchema,
   iframe: IframeSchema,
@@ -96,6 +100,16 @@ const generateComponentSchema = ({ component, layout }: ComponentSchema) => {
 
   if (component === "infobar") {
     return layout === "homepage" ? InfobarHomepageSchema : InfobarDefaultSchema
+  }
+
+  if (component === "column") {
+    return layout === "homepage" ? ColumnHomepageSchema : ColumnDefaultSchema
+  }
+
+  // An accordion is edited as a container of child blocks; page validation
+  // still accepts the legacy prose-only shape via AccordionSchema.
+  if (component === "accordion") {
+    return AccordionContainerEditorSchema
   }
 
   return IsomerComplexComponentsMap[component]
