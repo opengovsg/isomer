@@ -25,14 +25,14 @@ export const codeBuildWebhookSchema = z
   .object({
     projectName: z.string(),
     arn: z.string(),
-    status: z.nativeEnum(BuildStatusType),
+    status: z.enum(BuildStatusType),
   })
   .transform(({ arn, ...rest }, ctx) => {
     const extractedBuildId = buildIdFromArn(arn)
     if (!extractedBuildId) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `Invalid buildId format: ${arn}`,
+        error: `Invalid buildId format: ${arn}`,
       })
       return z.NEVER
     }

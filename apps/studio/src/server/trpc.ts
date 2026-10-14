@@ -11,7 +11,7 @@
 import { initTRPC, TRPCError } from "@trpc/server"
 import { timingSafeEqual } from "node:crypto"
 import superjson from "superjson"
-import { ZodError } from "zod"
+import { z, ZodError } from "zod"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
@@ -46,7 +46,7 @@ const t = initTRPC
           ...shape.data,
           zodError:
             error.code === "BAD_REQUEST" && error.cause instanceof ZodError
-              ? error.cause.flatten()
+              ? z.flattenError(error.cause)
               : null,
         },
       }

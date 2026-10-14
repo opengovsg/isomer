@@ -99,7 +99,7 @@ const DgsDatasetIdModal = ({
         .string()
         .min(1, "Dataset URL is required")
         .refine((value) => getDgsIdFromString({ string: value }) !== null, {
-          message:
+          error:
             "This doesn't look like a valid link from data.gov.sg. Check that you have the correct link and try again.",
         }),
     }),
