@@ -21,7 +21,7 @@ import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   normalizeRedirectPath,
   normalizeRedirectSource,
-} from "~/schemas/redirect"
+} from "~/schemas/redirect/utils"
 import {
   type FirstImage,
   getSitemapTree,

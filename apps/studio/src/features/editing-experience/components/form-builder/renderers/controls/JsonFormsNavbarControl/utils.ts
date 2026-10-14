@@ -31,6 +31,13 @@ export const isFirstLevelLinksOverLimit = (
   maxItems?: number,
 ): boolean => !!(maxItems && itemCount > maxItems)
 
+// At-limit: block drag-and-drop moves that would add another first-level item
+// (e.g. promoting a sub-item). Add stays enabled so users can still nest links.
+export const isFirstLevelLinksAtLimit = (
+  itemCount: number,
+  maxItems?: number,
+): boolean => !!(maxItems && itemCount >= maxItems)
+
 export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) => {
   return `/${path.replace(/\./g, "/")}`
 }

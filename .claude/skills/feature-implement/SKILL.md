@@ -1,6 +1,6 @@
 ---
 name: feature-implement
-description: Implement a feature ticket. Hard guardrails — Storybook (FE) or tRPC test (BE) required, area conventions enforced via CLAUDE.md, stacked PRs via Graphite. Picks up from `feature-plan` or one-shot when eligible.
+description: Implement a feature ticket. Hard guardrails — Storybook (FE) or tRPC test (BE) required, area conventions enforced via AGENTS.md, stacked PRs via Graphite. Picks up from `feature-plan` or one-shot when eligible.
 ---
 
 # Instructions
@@ -17,7 +17,7 @@ If you find yourself in this skill without one of those preconditions, abort and
 - The Linear ticket and (if applicable) the picked approach.
 - The Figma frame URL when relevant.
 - `docs/ai-workflow.md`, `docs/risk-taxonomy.md`, `docs/oneshot-vs-plan-threshold.md`.
-- All `CLAUDE.md` files in directories the change will touch — **read these before editing**.
+- All `AGENTS.md` files in directories the change will touch — **read these before editing**.
 
 ## Procedure
 
@@ -29,15 +29,15 @@ If you find yourself in this skill without one of those preconditions, abort and
 
 ### 2. Read the area conventions
 
-For every directory you intend to edit, read its `CLAUDE.md`. Quote the relevant rules in your internal scratchpad. Plan the implementation against those rules — do not edit first and reconcile after.
+For every directory you intend to edit, read its `AGENTS.md`. Quote the relevant rules in your internal scratchpad. Plan the implementation against those rules — do not edit first and reconcile after.
 
 Particular files to re-read every time:
 
-- `apps/studio/src/server/CLAUDE.md` if touching the server
-- `apps/studio/src/features/CLAUDE.md` if touching a feature
-- `packages/components/CLAUDE.md` if touching the published-site renderer
-- `packages/db/prisma/CLAUDE.md` if touching the schema or migrations
-- `apps/studio/prisma/CLAUDE.md` if touching Studio seed data, JSON-column types, or one-off data scripts
+- `apps/studio/src/server/AGENTS.md` if touching the server
+- `apps/studio/src/features/AGENTS.md` if touching a feature
+- `packages/components/AGENTS.md` if touching the published-site renderer
+- `packages/db/prisma/AGENTS.md` if touching the schema or migrations
+- `apps/studio/prisma/AGENTS.md` if touching Studio seed data, JSON-column types, or one-off data scripts
 
 ### 3. Stack the work
 
@@ -63,7 +63,7 @@ While writing:
 - Reuse existing helpers and primitives. Adding a new abstraction needs a justification one of: existing approach is fundamentally broken, three callers already exist, the convention doc calls for it.
 - No new dependencies without explicit ticket approval.
 - No new feature flags without explicit ticket approval.
-- Follow the area `CLAUDE.md` literally. If a rule there is wrong, the right move is to update that file in a separate PR, not to silently violate it.
+- Follow the area `AGENTS.md` literally. If a rule there is wrong, the right move is to update that file in a separate PR, not to silently violate it.
 - Add no comments except where the *why* of the code is non-obvious. Don't narrate the code.
 
 ### 5. Required artefacts per area
@@ -165,7 +165,7 @@ If this is a `design-iteration` and Chromatic is wired up, attach the preview li
 
 - **Required artefacts are not optional.** No PR without the corresponding test / story.
 - **Stack, don't bundle.** A feature touching three layers ships as three PRs.
-- **Read every relevant `CLAUDE.md` before editing.** Don't reconstruct conventions from memory.
+- **Read every relevant `AGENTS.md` before editing.** Don't reconstruct conventions from memory.
 - **No new dependencies, no new feature flags** without explicit ticket approval.
 - **Never amend or force-push the bottom of the stack** after later PRs land in review.
 - **Stop and re-plan** if the diff balloons past the planned LOC estimate by 2×.
@@ -176,5 +176,5 @@ If this is a `design-iteration` and Chromatic is wired up, attach the preview li
 - Skipping the Storybook story because "the change is obvious".
 - Mocking the database in BE integration tests.
 - Adding `// TODO` markers without an attached follow-up ticket.
-- Editing `CLAUDE.md` to make a rule fit your implementation choice.
+- Editing `AGENTS.md` to make a rule fit your implementation choice.
 - Squashing the stack into one branch before submitting.

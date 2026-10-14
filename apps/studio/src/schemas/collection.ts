@@ -4,7 +4,12 @@ import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { format, parse } from "date-fns"
 import { z } from "zod"
 
-import { generateBasePermalinkSchema } from "./common"
+import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "./collection-limits"
+import {
+  generateBasePermalinkSchema,
+  NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
+  noStylizedUnicodeTitleRegex,
+} from "./common"
 import { MAX_FOLDER_PERMALINK_LENGTH, MAX_FOLDER_TITLE_LENGTH } from "./folder"
 import { offsetPaginationSchema } from "./pagination"
 import { resourceOrderByOptions } from "./resource"
@@ -84,6 +89,9 @@ export const createCollectionSchema = z.object({
     .min(1, { message: "Enter a title for this folder" })
     .max(MAX_FOLDER_TITLE_LENGTH, {
       message: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
+    })
+    .regex(noStylizedUnicodeTitleRegex, {
+      message: NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
     }),
   permalink: permalinkSchema,
   siteId: z.number().min(1),
@@ -115,10 +123,6 @@ export const readCollectionSchema = z
     orderBy: z.enum(resourceOrderByOptions).optional().default("updated-desc"),
   })
   .merge(offsetPaginationSchema)
-
-// Upper bound to limit request parsing and SQL cost (ANY(...) on text[]).
-// Arbitrary limit to prevent abuse; adjust if legitimate collections exceed this.
-export const MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT = 100
 
 const countFilterUsageBaseSchema = z.object({
   siteId: z.number().min(1),

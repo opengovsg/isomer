@@ -49,6 +49,10 @@ export {
   jsonFormsImageRadioControlTester,
 } from "./JsonFormsImageRadioControl"
 export {
+  default as JsonFormsIconPickerControl,
+  jsonFormsIconPickerControlTester,
+} from "./JsonFormsIconPickerControl"
+export {
   default as JsonFormsProseControl,
   jsonFormsProseControlTester,
 } from "./JsonFormsProseControl"

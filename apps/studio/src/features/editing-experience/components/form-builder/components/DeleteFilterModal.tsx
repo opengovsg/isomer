@@ -19,7 +19,7 @@ import {
 import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { Suspense, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "~/schemas/collection"
+import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "~/schemas/collection-limits"
 import { trpc } from "~/utils/trpc"
 
 export type DeleteFilterModalTarget =
