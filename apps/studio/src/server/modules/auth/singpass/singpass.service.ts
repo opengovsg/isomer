@@ -147,6 +147,7 @@ export const getAuthorizationUrl = async ({
             outcome: "failure",
           }),
           singpassError: singpassErrorCode(error),
+          err: error,
         },
         singpassLogMessage({
           useFapi: false,
@@ -198,6 +199,7 @@ export const getAuthorizationUrl = async ({
           outcome: "failure",
         }),
         singpassError: singpassErrorCode(error),
+        err: error,
       },
       singpassLogMessage({
         useFapi: true,
@@ -298,6 +300,7 @@ export const login = async ({
           outcome: "failure",
         }),
         singpassError: singpassErrorCode(error),
+        err: error,
       },
       singpassLogMessage({
         useFapi,

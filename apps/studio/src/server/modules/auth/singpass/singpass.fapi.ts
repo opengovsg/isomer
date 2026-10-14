@@ -1,3 +1,4 @@
+import { backOff } from "exponential-backoff"
 import { exportJWK, SignJWT } from "jose"
 import { AsyncLocalStorage } from "node:async_hooks"
 import crypto, { type KeyObject } from "node:crypto"
@@ -120,6 +121,30 @@ const readDpopNonce = (error: unknown): string | undefined => {
   return typeof value === "string" && value.length > 0 ? value : undefined
 }
 
+// Singpass PAR error table: retry server_error, upstream_dependency_error, and
+// temporarily_unavailable up to 3 times with exponential backoff.
+// https://docs.developer.singpass.gov.sg/docs/technical-specifications/integration-guide/1.-authorization-request
+// Four attempts is the first request plus those 3 retries (1s, then 2s, then 4s).
+// use_dpop_nonce is not in that table; the next proof must carry the nonce immediately.
+const TRANSIENT_PAR_ERRORS = new Set([
+  "server_error",
+  "upstream_dependency_error",
+  "temporarily_unavailable",
+])
+const MAX_PAR_ATTEMPTS = 4
+const PAR_BACKOFF_STARTING_DELAY_MS = 1000
+const PAR_BACKOFF_MAX_DELAY_MS = 4000
+
+const nextParNonce = (error: unknown): string | undefined => {
+  if (singpassErrorCode(error) !== "use_dpop_nonce") return undefined
+  return readDpopNonce(error)
+}
+
+const isTransientParError = (error: unknown): boolean => {
+  const errorCode = singpassErrorCode(error)
+  return errorCode !== undefined && TRANSIENT_PAR_ERRORS.has(errorCode)
+}
+
 export const pushFapiAuthorizationRequest = async ({
   client,
   clientId,
@@ -165,17 +190,76 @@ export const pushFapiAuthorizationRequest = async ({
     singpassLogMessage({ useFapi: true, message: "PAR starting" }),
   )
 
+  let nonce: string | undefined
+  let attempt = 0
+  let dpopNonceRetry = false
+
   try {
-    const pushed = await push()
+    const pushed = await backOff(
+      async () => {
+        attempt += 1
+        try {
+          return await push(nonce)
+        } catch (error) {
+          const retryNonce = nextParNonce(error)
+          if (!retryNonce) throw error
+          // Keep a nonce the server already issued. A later transient retry
+          // still sends it. Only use_dpop_nonce replaces it.
+          nonce = retryNonce
+          dpopNonceRetry = true
+          logger?.warn(
+            singpassLoginLogFields({
+              useFapi: true,
+              stage: "par",
+              parPhase: "dpop_nonce_retry",
+              parAttempt: attempt,
+              singpassError: singpassErrorCode(error),
+            }),
+            singpassLogMessage({
+              useFapi: true,
+              message: "PAR retrying with DPoP nonce",
+            }),
+          )
+          return await push(retryNonce)
+        }
+      },
+      {
+        numOfAttempts: MAX_PAR_ATTEMPTS,
+        startingDelay: PAR_BACKOFF_STARTING_DELAY_MS,
+        maxDelay: PAR_BACKOFF_MAX_DELAY_MS,
+        retry: (error, failedAttempt) => {
+          if (!isTransientParError(error)) return false
+          logger?.warn(
+            singpassLoginLogFields({
+              useFapi: true,
+              stage: "par",
+              parPhase: "transient_retry",
+              parAttempt: failedAttempt,
+              singpassError: singpassErrorCode(error),
+            }),
+            singpassLogMessage({
+              useFapi: true,
+              message: "PAR retrying after transient error",
+            }),
+          )
+          return true
+        },
+      },
+    )
     logger?.info(
       singpassLoginLogFields({
         useFapi: true,
         stage: "par",
         outcome: "success",
-        parAttempt: 1,
-        dpopNonceRetry: false,
+        parAttempt: attempt,
+        dpopNonceRetry,
       }),
-      singpassLogMessage({ useFapi: true, message: "PAR succeeded" }),
+      singpassLogMessage({
+        useFapi: true,
+        message: dpopNonceRetry
+          ? "PAR succeeded after DPoP nonce retry"
+          : "PAR succeeded",
+      }),
     )
     return buildFapiRedirectUrl(
       authorizationEndpoint,
@@ -183,75 +267,20 @@ export const pushFapiAuthorizationRequest = async ({
       pushed.request_uri,
     )
   } catch (error) {
-    const nonce = readDpopNonce(error)
-    const errorCode = singpassErrorCode(error)
-    if (errorCode !== "use_dpop_nonce" || !nonce) {
-      logger?.error(
-        {
-          ...singpassLoginLogFields({
-            useFapi: true,
-            stage: "par",
-            outcome: "failure",
-            parAttempt: 1,
-            dpopNonceRetry: false,
-          }),
-          singpassError: errorCode,
-        },
-        singpassLogMessage({ useFapi: true, message: "PAR failed" }),
-      )
-      throw error
-    }
-    logger?.warn(
-      singpassLoginLogFields({
-        useFapi: true,
-        stage: "par",
-        parPhase: "dpop_nonce_retry",
-        parAttempt: 1,
-        singpassError: errorCode,
-      }),
-      singpassLogMessage({
-        useFapi: true,
-        message: "PAR retrying with DPoP nonce",
-      }),
-    )
-    try {
-      const pushed = await push(nonce)
-      logger?.info(
-        singpassLoginLogFields({
+    logger?.error(
+      {
+        ...singpassLoginLogFields({
           useFapi: true,
           stage: "par",
-          outcome: "success",
-          parAttempt: 2,
-          dpopNonceRetry: true,
+          outcome: "failure",
+          parAttempt: attempt,
+          dpopNonceRetry,
         }),
-        singpassLogMessage({
-          useFapi: true,
-          message: "PAR succeeded after DPoP nonce retry",
-        }),
-      )
-      return buildFapiRedirectUrl(
-        authorizationEndpoint,
-        clientId,
-        pushed.request_uri,
-      )
-    } catch (retryError) {
-      logger?.error(
-        {
-          ...singpassLoginLogFields({
-            useFapi: true,
-            stage: "par",
-            outcome: "failure",
-            parAttempt: 2,
-            dpopNonceRetry: true,
-          }),
-          singpassError: singpassErrorCode(retryError),
-        },
-        singpassLogMessage({
-          useFapi: true,
-          message: "PAR failed after DPoP nonce retry",
-        }),
-      )
-      throw retryError
-    }
+        singpassError: singpassErrorCode(error),
+        err: error,
+      },
+      singpassLogMessage({ useFapi: true, message: "PAR failed" }),
+    )
+    throw error
   }
 }

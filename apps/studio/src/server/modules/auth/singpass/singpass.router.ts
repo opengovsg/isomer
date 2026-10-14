@@ -27,6 +27,8 @@ import { getAuthorizationUrl, login } from "./singpass.service"
 export const singpassRouter = router({
   login: publicProcedure
     .input(singpassLoginSchema)
+    // User-triggered PAR / discovery. 10 per minute per fingerprint.
+    .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { landingUrl } }) => {
       // NOTE: The Singpass login flow is not the first login mechanism that the
       // user encounters, as they should have completed the email OTP
@@ -99,6 +101,7 @@ export const singpassRouter = router({
               outcome: "failure",
             }),
             singpassError: singpassErrorCode(error),
+            err: error,
           },
           singpassLogMessage({
             useFapi,
@@ -108,6 +111,7 @@ export const singpassRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Singpass login failed",
+          cause: error,
         })
       }
 
@@ -155,6 +159,8 @@ export const singpassRouter = router({
 
   callback: publicProcedure
     .input(singpassCallbackSchema)
+    // User-triggered token exchange. 10 per minute per fingerprint.
+    .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .query(async ({ ctx, input: { state, code, iss } }) => {
       if (!ctx.session.singpass?.sessionState) {
         ctx.logger.warn("No Singpass session state found")
@@ -237,6 +243,7 @@ export const singpassRouter = router({
               reason: "token_exchange",
             }),
             singpassError: singpassErrorCode(error),
+            err: error,
           },
           singpassLogMessage({
             useFapi: useFapi === true,
@@ -246,6 +253,7 @@ export const singpassRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Singpass login failed",
+          cause: error,
         })
       }
 
