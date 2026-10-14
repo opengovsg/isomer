@@ -64,9 +64,9 @@ function JsonFormsImageControl({
     onOpen: onAdjustmentModalOpen,
     onClose: onAdjustmentModalClose,
   } = useDisclosure()
-  // Gate the adjustment entry point behind a per-agency GrowthBook flag
-  // (off everywhere by default) — this is a rollout-sensitive editor path.
-  const isImageAdjustmentEnabled = useIsImageAdjustmentEnabled(siteId)
+  // Gate the adjustment entry point behind a GrowthBook flag (off by default,
+  // rolled out per-user) — this is a rollout-sensitive editor path.
+  const isImageAdjustmentEnabled = useIsImageAdjustmentEnabled()
   // Only managed site-storage assets (relative "/{siteId}/..." paths) can be
   // baked; external/absolute URLs have no derivable bake key, so hide Adjust
   // for them rather than letting Save fail.

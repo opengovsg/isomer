@@ -18,15 +18,12 @@ export const ENABLE_SEARCHSG_GAZETTE_INGESTION =
   "enable-searchsg-gazette-ingestion"
 
 // Gates the image-adjustment editor entry point (the "Adjust image" button and
-// modal in JsonFormsImageControl). Rollout-sensitive editor hot path, so it
-// canaries per agency via enabledSites; default is OFF everywhere (empty list),
-// widen the list to roll out. Use GrowthBook `email` targeting for individual
-// internal testers.
+// modal in JsonFormsImageControl). A boolean On/Off flag, OFF by default; roll
+// out by user via GrowthBook targeting rules (e.g. `email`), same pattern as
+// is-audit-log-enabled / is-singpass-enabled.
 export const IS_IMAGE_ADJUSTMENT_ENABLED_FEATURE_KEY =
   "is-image-adjustment-enabled"
-export const IS_IMAGE_ADJUSTMENT_ENABLED_FEATURE_KEY_FALLBACK_VALUE: {
-  enabledSites: string[]
-} = { enabledSites: [] }
+export const IS_IMAGE_ADJUSTMENT_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
 
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
