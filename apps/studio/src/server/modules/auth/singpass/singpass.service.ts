@@ -1,6 +1,8 @@
 import { generators, Issuer, type Client } from "openid-client"
 import { env } from "~/env.mjs"
 
+import type { Logger } from "@isomer/logging"
+
 import {
   SINGPASS_ENCRYPTION_JWK,
   SINGPASS_REDIRECT_URI,
@@ -13,7 +15,13 @@ import {
   installDpopHeader,
   pushFapiAuthorizationRequest,
 } from "./singpass.fapi"
+import {
+  singpassErrorCode,
+  singpassLoginLogFields,
+} from "./singpass.observability"
 import { extractUuid } from "./singpass.utils"
+
+type SingpassAuthLogger = Pick<Logger, "info" | "error" | "warn">
 
 let legacyClient: Client | null = null
 let fapiClient: Client | null = null
@@ -55,13 +63,11 @@ const getLegacyClient = async (): Promise<Client> => {
 
 const getFapiClient = async (): Promise<Client> => {
   assertSingpassEnabled()
-  const issuer = env.SINGPASS_FAPI_ISSUER_ENDPOINT
-  if (!issuer) {
-    throw new Error("SINGPASS_FAPI_ISSUER_ENDPOINT is not configured")
-  }
 
   if (!fapiClient) {
-    const singpassIssuer = await Issuer.discover(issuer)
+    const singpassIssuer = await Issuer.discover(
+      env.SINGPASS_FAPI_ISSUER_ENDPOINT,
+    )
     const client = new singpassIssuer.FAPI2Client(
       {
         client_id: env.SINGPASS_CLIENT_ID,
@@ -91,8 +97,10 @@ interface SingpassAuthSession {
 
 export const getAuthorizationUrl = async ({
   useFapi,
+  logger,
 }: {
   useFapi: boolean
+  logger?: SingpassAuthLogger
 }) => {
   const codeVerifier = generators.codeVerifier()
   const codeChallenge = generators.codeChallenge(codeVerifier)
@@ -106,37 +114,84 @@ export const getAuthorizationUrl = async ({
   }
 
   if (!useFapi) {
-    const client = await getLegacyClient()
-    const authorizationUrl = client.authorizationUrl({
-      redirect_uri: SINGPASS_REDIRECT_URI,
-      code_challenge_method: "S256",
-      code_challenge: codeChallenge,
-      nonce,
-      state,
-      scope: SINGPASS_SCOPES.join(" "),
-    })
-    return { authorizationUrl, session }
+    try {
+      const client = await getLegacyClient()
+      const authorizationUrl = client.authorizationUrl({
+        redirect_uri: SINGPASS_REDIRECT_URI,
+        code_challenge_method: "S256",
+        code_challenge: codeChallenge,
+        nonce,
+        state,
+        scope: SINGPASS_SCOPES.join(" "),
+      })
+      logger?.info(
+        singpassLoginLogFields({
+          useFapi: false,
+          stage: "authorization",
+          outcome: "success",
+        }),
+        "Singpass legacy authorization URL built",
+      )
+      return { authorizationUrl, session }
+    } catch (error) {
+      logger?.error(
+        {
+          ...singpassLoginLogFields({
+            useFapi: false,
+            stage: "authorization",
+            outcome: "failure",
+          }),
+          singpassError: singpassErrorCode(error),
+        },
+        "Singpass legacy authorization request failed",
+      )
+      throw error
+    }
   }
 
   const { privateKey, privateJwk } = await createEphemeralDpopKey()
   session.dpopPrivateJwk = privateJwk
   const client = await getFapiClient()
-  const authorizationUrl = await pushFapiAuthorizationRequest({
-    client,
-    clientId: env.SINGPASS_CLIENT_ID,
-    privateKey,
-    parameters: {
-      redirect_uri: SINGPASS_REDIRECT_URI,
-      response_type: "code",
-      scope: SINGPASS_SCOPES.join(" "),
-      code_challenge_method: "S256",
-      code_challenge: codeChallenge,
-      nonce,
-      state,
-      authentication_context_type: "APP_AUTHENTICATION_DEFAULT",
-    },
-  })
-  return { authorizationUrl, session }
+  try {
+    const authorizationUrl = await pushFapiAuthorizationRequest({
+      client,
+      clientId: env.SINGPASS_CLIENT_ID,
+      privateKey,
+      logger,
+      parameters: {
+        redirect_uri: SINGPASS_REDIRECT_URI,
+        response_type: "code",
+        scope: SINGPASS_SCOPES.join(" "),
+        code_challenge_method: "S256",
+        code_challenge: codeChallenge,
+        nonce,
+        state,
+        authentication_context_type: "APP_AUTHENTICATION_DEFAULT",
+      },
+    })
+    logger?.info(
+      singpassLoginLogFields({
+        useFapi: true,
+        stage: "authorization",
+        outcome: "success",
+      }),
+      "Singpass FAPI authorization URL built",
+    )
+    return { authorizationUrl, session }
+  } catch (error) {
+    logger?.error(
+      {
+        ...singpassLoginLogFields({
+          useFapi: true,
+          stage: "authorization",
+          outcome: "failure",
+        }),
+        singpassError: singpassErrorCode(error),
+      },
+      "Singpass FAPI authorization request failed",
+    )
+    throw error
+  }
 }
 
 interface LoginParams {
@@ -155,25 +210,71 @@ export const login = async ({
   state,
   useFapi,
   dpopPrivateJwk,
-}: LoginParams) => {
+  logger,
+}: LoginParams & { logger?: SingpassAuthLogger }) => {
   const client = useFapi ? await getFapiClient() : await getLegacyClient()
   if (useFapi && !dpopPrivateJwk) {
+    logger?.error(
+      singpassLoginLogFields({
+        useFapi: true,
+        stage: "token_exchange",
+        outcome: "failure",
+        reason: "missing_dpop_key",
+      }),
+      "Singpass FAPI token exchange aborted",
+    )
     throw new Error("Missing DPoP key for Singpass token exchange")
   }
-  const tokens = await client.callback(
-    SINGPASS_REDIRECT_URI,
-    {
-      code,
-      state,
-    },
-    {
-      state,
-      code_verifier: codeVerifier,
-      nonce,
-    },
-    useFapi && dpopPrivateJwk
-      ? { DPoP: await importDpopPrivateKey(dpopPrivateJwk) }
-      : undefined,
-  )
-  return { uuid: extractUuid(tokens) }
+  try {
+    const tokens = await client.callback(
+      SINGPASS_REDIRECT_URI,
+      {
+        code,
+        state,
+      },
+      {
+        state,
+        code_verifier: codeVerifier,
+        nonce,
+      },
+      useFapi && dpopPrivateJwk
+        ? { DPoP: await importDpopPrivateKey(dpopPrivateJwk) }
+        : undefined,
+    )
+    const uuid = extractUuid(tokens)
+    if (!uuid) {
+      logger?.error(
+        singpassLoginLogFields({
+          useFapi,
+          stage: "token_exchange",
+          outcome: "failure",
+          reason: "missing_uuid_in_id_token",
+        }),
+        "Singpass token exchange returned no user UUID",
+      )
+    } else {
+      logger?.info(
+        singpassLoginLogFields({
+          useFapi,
+          stage: "token_exchange",
+          outcome: "success",
+        }),
+        "Singpass token exchange succeeded",
+      )
+    }
+    return { uuid }
+  } catch (error) {
+    logger?.error(
+      {
+        ...singpassLoginLogFields({
+          useFapi,
+          stage: "token_exchange",
+          outcome: "failure",
+        }),
+        singpassError: singpassErrorCode(error),
+      },
+      "Singpass token exchange failed",
+    )
+    throw error
+  }
 }

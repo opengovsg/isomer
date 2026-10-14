@@ -8,6 +8,15 @@ import {
   type Client,
 } from "openid-client"
 
+import type { Logger } from "@isomer/logging"
+
+import {
+  singpassErrorCode,
+  singpassLoginLogFields,
+} from "./singpass.observability"
+
+type SingpassFapiLogger = Pick<Logger, "info" | "error" | "warn">
+
 // The FAPI client is cached and shared. A module-level header would leak one
 // user's DPoP proof into another in-flight login, so the proof travels in
 // async context and the client's HTTP hook copies it onto that request only.
@@ -103,13 +112,6 @@ const buildFapiRedirectUrl = (
   return url.href
 }
 
-const singpassErrorCode = (error: unknown): string | undefined => {
-  if (error instanceof errors.OPError && typeof error.error === "string") {
-    return error.error
-  }
-  return undefined
-}
-
 const readDpopNonce = (error: unknown): string | undefined => {
   if (!(error instanceof errors.OPError) || !error.response) return undefined
   const headers = error.response.headers as
@@ -124,11 +126,13 @@ export const pushFapiAuthorizationRequest = async ({
   clientId,
   privateKey,
   parameters,
+  logger,
 }: {
   client: Client
   clientId: string
   privateKey: KeyObject
   parameters: AuthorizationParameters
+  logger?: SingpassFapiLogger
 }): Promise<string> => {
   const parEndpoint = endpointUrl(
     client.issuer.metadata.pushed_authorization_request_endpoint,
@@ -152,8 +156,28 @@ export const pushFapiAuthorizationRequest = async ({
     )
   }
 
+  logger?.info(
+    singpassLoginLogFields({
+      useFapi: true,
+      stage: "par",
+      parPhase: "start",
+      parAttempt: 1,
+    }),
+    "Singpass FAPI PAR starting",
+  )
+
   try {
     const pushed = await push()
+    logger?.info(
+      singpassLoginLogFields({
+        useFapi: true,
+        stage: "par",
+        outcome: "success",
+        parAttempt: 1,
+        dpopNonceRetry: false,
+      }),
+      "Singpass FAPI PAR succeeded",
+    )
     return buildFapiRedirectUrl(
       authorizationEndpoint,
       clientId,
@@ -161,14 +185,65 @@ export const pushFapiAuthorizationRequest = async ({
     )
   } catch (error) {
     const nonce = readDpopNonce(error)
-    if (singpassErrorCode(error) !== "use_dpop_nonce" || !nonce) {
+    const errorCode = singpassErrorCode(error)
+    if (errorCode !== "use_dpop_nonce" || !nonce) {
+      logger?.error(
+        {
+          ...singpassLoginLogFields({
+            useFapi: true,
+            stage: "par",
+            outcome: "failure",
+            parAttempt: 1,
+            dpopNonceRetry: false,
+          }),
+          singpassError: errorCode,
+        },
+        "Singpass FAPI PAR failed",
+      )
       throw error
     }
-    const pushed = await push(nonce)
-    return buildFapiRedirectUrl(
-      authorizationEndpoint,
-      clientId,
-      pushed.request_uri,
+    logger?.warn(
+      singpassLoginLogFields({
+        useFapi: true,
+        stage: "par",
+        parPhase: "dpop_nonce_retry",
+        parAttempt: 1,
+        singpassError: errorCode,
+      }),
+      "Singpass FAPI PAR retrying with DPoP nonce",
     )
+    try {
+      const pushed = await push(nonce)
+      logger?.info(
+        singpassLoginLogFields({
+          useFapi: true,
+          stage: "par",
+          outcome: "success",
+          parAttempt: 2,
+          dpopNonceRetry: true,
+        }),
+        "Singpass FAPI PAR succeeded after DPoP nonce retry",
+      )
+      return buildFapiRedirectUrl(
+        authorizationEndpoint,
+        clientId,
+        pushed.request_uri,
+      )
+    } catch (retryError) {
+      logger?.error(
+        {
+          ...singpassLoginLogFields({
+            useFapi: true,
+            stage: "par",
+            outcome: "failure",
+            parAttempt: 2,
+            dpopNonceRetry: true,
+          }),
+          singpassError: singpassErrorCode(retryError),
+        },
+        "Singpass FAPI PAR failed after DPoP nonce retry",
+      )
+      throw retryError
+    }
   }
 }
