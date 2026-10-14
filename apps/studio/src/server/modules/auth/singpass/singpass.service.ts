@@ -75,8 +75,9 @@ const getFapiClient = async (): Promise<Client> => {
         token_endpoint_auth_method: "private_key_jwt",
         id_token_signed_response_alg: "ES256",
         id_token_encrypted_response_alg: env.SINGPASS_ENCRYPTION_KEY_ALG,
-        // Singpass documents the content encryption as AES256GCM.
-        id_token_encrypted_response_enc: "A256GCM",
+        // FAPI discovery only advertises A256CBC-HS512 for ID tokens
+        // (A256GCM is the userinfo encryption).
+        id_token_encrypted_response_enc: "A256CBC-HS512",
         dpop_bound_access_tokens: true,
       },
       clientKeys,
@@ -199,6 +200,7 @@ interface LoginParams {
   codeVerifier: string
   nonce: string
   state: string
+  iss?: string
   useFapi: boolean
   dpopPrivateJwk?: string
 }
@@ -208,6 +210,7 @@ export const login = async ({
   codeVerifier,
   nonce,
   state,
+  iss,
   useFapi,
   dpopPrivateJwk,
   logger,
@@ -231,6 +234,7 @@ export const login = async ({
       {
         code,
         state,
+        ...(iss ? { iss } : {}),
       },
       {
         state,
@@ -238,7 +242,7 @@ export const login = async ({
         nonce,
       },
       useFapi && dpopPrivateJwk
-        ? { DPoP: await importDpopPrivateKey(dpopPrivateJwk) }
+        ? { DPoP: importDpopPrivateKey(dpopPrivateJwk) }
         : undefined,
     )
     const uuid = extractUuid(tokens)

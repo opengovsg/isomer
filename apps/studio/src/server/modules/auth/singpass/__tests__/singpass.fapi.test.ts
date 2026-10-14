@@ -1,8 +1,10 @@
+import crypto from "node:crypto"
 import { errors, type Client } from "openid-client"
 import { env } from "~/env.mjs"
 
 import {
   createEphemeralDpopKey,
+  importDpopPrivateKey,
   pushFapiAuthorizationRequest,
 } from "../singpass.fapi"
 
@@ -30,6 +32,21 @@ const clientWith = (pushedAuthorizationRequest: ReturnType<typeof vi.fn>) =>
     },
     pushedAuthorizationRequest,
   }) as unknown as Client
+
+describe("importDpopPrivateKey", () => {
+  it("returns a Node private key for the stored DPoP JWK", async () => {
+    // Arrange
+    const { privateJwk } = await createEphemeralDpopKey()
+
+    // Act
+    const key = importDpopPrivateKey(privateJwk)
+
+    // Assert
+    expect(key).toBeInstanceOf(crypto.KeyObject)
+    expect(key.type).toBe("private")
+    expect(key.asymmetricKeyType).toBe("ec")
+  })
+})
 
 describe("pushFapiAuthorizationRequest", () => {
   it("pushes the authorization parameters and redirects with only client_id and request_uri", async () => {

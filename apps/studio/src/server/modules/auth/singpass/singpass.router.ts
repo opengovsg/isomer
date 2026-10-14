@@ -140,7 +140,7 @@ export const singpassRouter = router({
 
   callback: publicProcedure
     .input(singpassCallbackSchema)
-    .query(async ({ ctx, input: { state, code } }) => {
+    .query(async ({ ctx, input: { state, code, iss } }) => {
       if (!ctx.session.singpass?.sessionState) {
         ctx.logger.warn("No Singpass session state found")
 
@@ -203,6 +203,7 @@ export const singpassRouter = router({
           codeVerifier,
           nonce,
           state: expectedState,
+          iss,
           useFapi: useFapi === true,
           dpopPrivateJwk,
           logger: ctx.logger,

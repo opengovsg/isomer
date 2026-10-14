@@ -35,9 +35,11 @@ const RedirectToSingpassSignIn = ({
 const CompleteSingpassLogin = ({
   code,
   state,
+  iss,
 }: {
   code: string
   state: string
+  iss?: string
 }): JSX.Element => {
   const { setHasLoginStateFlag } = useLoginState()
 
@@ -48,6 +50,7 @@ const CompleteSingpassLogin = ({
     {
       code,
       state,
+      iss,
     },
     {
       staleTime: Infinity,
@@ -149,6 +152,7 @@ export const SingpassCallback = (): JSX.Element => {
 
   const code = queryValue(router.query.code)
   const state = queryValue(router.query.state)
+  const iss = queryValue(router.query.iss)
   const singpassError = queryValue(router.query.error)
 
   // A failed Singpass redirect has `error` and no authorization code. Do not
@@ -157,5 +161,5 @@ export const SingpassCallback = (): JSX.Element => {
     return <RedirectToSingpassSignIn singpassError={singpassError} />
   }
 
-  return <CompleteSingpassLogin code={code} state={state} />
+  return <CompleteSingpassLogin code={code} state={state} iss={iss} />
 }

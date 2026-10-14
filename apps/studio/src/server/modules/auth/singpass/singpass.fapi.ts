@@ -1,4 +1,4 @@
-import { exportJWK, importJWK, SignJWT } from "jose"
+import { exportJWK, SignJWT } from "jose"
 import { AsyncLocalStorage } from "node:async_hooks"
 import crypto, { type KeyObject } from "node:crypto"
 import {
@@ -46,15 +46,13 @@ export const createEphemeralDpopKey = async (): Promise<{
   return { privateKey, privateJwk: JSON.stringify(jwk) }
 }
 
-export const importDpopPrivateKey = async (
-  privateJwk: string,
-): Promise<KeyObject> => {
-  const key = await importJWK(JSON.parse(privateJwk), "ES256")
-  if (!(key instanceof crypto.KeyObject)) {
-    throw new Error("Invalid DPoP key")
-  }
-  return key
-}
+export const importDpopPrivateKey = (privateJwk: string): KeyObject =>
+  // JSON.parse is `any`. createPrivateKey wants crypto.webcrypto.JsonWebKey,
+  // which is a different type from the global JsonWebKey.
+  crypto.createPrivateKey({
+    key: JSON.parse(privateJwk) as crypto.webcrypto.JsonWebKey,
+    format: "jwk",
+  })
 
 const endpointUrl = (value: unknown, name: string): string => {
   if (typeof value !== "string" || value.length === 0) {

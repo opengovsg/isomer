@@ -426,6 +426,45 @@ describe("auth.singpass", () => {
       ])
     })
 
+    it("forwards the Singpass issuer into token exchange", async () => {
+      // Arrange
+      const user = await db
+        .updateTable("User")
+        .set({ singpassUuid: MOCK_SINGPASS_UUID })
+        .where("email", "=", TEST_VALID_EMAIL)
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      session.singpass = {
+        sessionState: {
+          userId: user.id as NonNullable<
+            NonNullable<SessionData["singpass"]>["sessionState"]
+          >["userId"],
+          verificationToken: MOCK_SESSION_VERIFICATION_TOKEN,
+          codeVerifier: "code-verifier",
+          nonce: "nonce",
+          state: CALLBACK_STATE,
+        },
+      }
+      await session.save()
+      const login = vi.spyOn(SingpassService, "login").mockResolvedValue({
+        uuid: MOCK_SINGPASS_UUID,
+      })
+
+      // Act
+      await caller.callback({
+        state: CALLBACK_STATE,
+        code: "code",
+        iss: "https://stg-id.singpass.gov.sg/fapi",
+      })
+
+      // Assert
+      expect(login).toHaveBeenCalledWith(
+        expect.objectContaining({
+          iss: "https://stg-id.singpass.gov.sg/fapi",
+        }),
+      )
+    })
+
     it("should record the user's login audit log upon successful authentication", async () => {
       // Arrange
       const user = await db
