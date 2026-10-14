@@ -33,7 +33,6 @@ import { siteSchema } from "~/features/editing-experience/schema"
 import {
   canPublishNotificationSettings,
   normalizeSiteNotification,
-  shouldClearFormBuilderErrorsOnBannerDisable,
 } from "~/features/settings/notification/notificationSettings.utils"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
@@ -101,9 +100,7 @@ const NotificationSettingsEditor = ({
     if (bannerOn) {
       setSnapshot(state.notification)
       setState({})
-      if (shouldClearFormBuilderErrorsOnBannerDisable(true)) {
-        setErrors({})
-      }
+      setErrors({})
       // Show the banner again the next time it is turned on.
       setIsDismissed(false)
       return

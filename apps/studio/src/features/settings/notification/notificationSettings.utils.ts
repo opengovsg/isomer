@@ -27,7 +27,3 @@ export const canPublishNotificationSettings = (
 
   return isSiteNotificationActive(notification)
 }
-
-export const shouldClearFormBuilderErrorsOnBannerDisable = (
-  wasBannerOn: boolean,
-): boolean => wasBannerOn

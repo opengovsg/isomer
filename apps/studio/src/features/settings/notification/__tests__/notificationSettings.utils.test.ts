@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest"
 import {
   canPublishNotificationSettings,
   normalizeSiteNotification,
-  shouldClearFormBuilderErrorsOnBannerDisable,
 } from "../notificationSettings.utils"
 
 describe("normalizeSiteNotification", () => {
@@ -39,34 +38,62 @@ describe("normalizeSiteNotification", () => {
 
 describe("canPublishNotificationSettings", () => {
   it("returns false when there are no unsaved changes", () => {
-    expect(canPublishNotificationSettings(false, { title: "Hi" })).toBe(false)
+    // Arrange
+    const isDirty = false
+    const notification = { title: "Hi" }
+
+    // Act
+    const result = canPublishNotificationSettings(isDirty, notification)
+
+    // Assert
+    expect(result).toBe(false)
   })
 
   it("allows publishing when the banner is turned off", () => {
-    expect(canPublishNotificationSettings(true, undefined)).toBe(true)
+    // Arrange
+    const isDirty = true
+    const notification = undefined
+
+    // Act
+    const result = canPublishNotificationSettings(isDirty, notification)
+
+    // Assert
+    expect(result).toBe(true)
   })
 
   it("blocks publishing an active banner without a custom title", () => {
-    expect(canPublishNotificationSettings(true, { title: "" })).toBe(false)
+    // Arrange
+    const isDirty = true
+    const notification = { title: "" }
+
+    // Act
+    const result = canPublishNotificationSettings(isDirty, notification)
+
+    // Assert
+    expect(result).toBe(false)
   })
 
   it("allows publishing a valid custom notification", () => {
-    expect(canPublishNotificationSettings(true, { title: "Notice" })).toBe(true)
+    // Arrange
+    const isDirty = true
+    const notification = { title: "Notice" }
+
+    // Act
+    const result = canPublishNotificationSettings(isDirty, notification)
+
+    // Assert
+    expect(result).toBe(true)
   })
 
   it("allows publishing an anti-scam notification", () => {
-    expect(canPublishNotificationSettings(true, { type: "antiscam" })).toBe(
-      true,
-    )
-  })
-})
+    // Arrange
+    const isDirty = true
+    const notification = { type: "antiscam" as const }
 
-describe("shouldClearFormBuilderErrorsOnBannerDisable", () => {
-  it("returns true when disabling an enabled banner", () => {
-    expect(shouldClearFormBuilderErrorsOnBannerDisable(true)).toBe(true)
-  })
+    // Act
+    const result = canPublishNotificationSettings(isDirty, notification)
 
-  it("returns false when enabling the banner", () => {
-    expect(shouldClearFormBuilderErrorsOnBannerDisable(false)).toBe(false)
+    // Assert
+    expect(result).toBe(true)
   })
 })
