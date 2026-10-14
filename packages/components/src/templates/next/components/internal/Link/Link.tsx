@@ -1,6 +1,7 @@
 "use client"
 
 import type { LinkProps } from "~/interfaces/internal/Link"
+import { BiRightArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { useLinkComponent } from "~/templates/next/context/LinkComponentContext"
@@ -52,7 +53,14 @@ export const Link = ({
       disabled={isDisabled}
     >
       {children}
-      {showExternalIcon && <span aria-hidden="true"> ↗</span>}
+      {/* SVG, not "↗": Windows falls back to Segoe UI Emoji and renders a blue emoji tile.
+          Rotated BiRightArrowAlt so the stroke matches the navbar's right arrow. */}
+      {showExternalIcon && (
+        <BiRightArrowAlt
+          aria-hidden="true"
+          className="ml-1 inline -rotate-45 align-[-0.3em] text-[1.4em]"
+        />
+      )}
       {isExternal && !label && (
         <span className="sr-only"> (opens in new tab)</span>
       )}
