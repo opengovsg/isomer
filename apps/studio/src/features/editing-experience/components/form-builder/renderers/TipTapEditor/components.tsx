@@ -2,21 +2,12 @@ import type { BoxProps } from "@chakra-ui/react"
 import type { EditorContentProps, Editor as TiptapEditor } from "@tiptap/react"
 import type { PropsWithChildren, RefObject } from "react"
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
-import {
-  Box,
-  Flex,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  VisuallyHidden,
-  VStack,
-} from "@chakra-ui/react"
+import { Box, Flex, FocusLock, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { EditorContent } from "@tiptap/react"
 import {
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -125,7 +116,7 @@ interface EditorProps {
 
 export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
-  const dialogRef = useRef<HTMLElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
   const [isDragReordering, setIsDragReordering] = useState(false)
   const expandedTablePos = useSyncExternalStore(
     (listener) => subscribeTableEditorExpanded(editor, listener),
@@ -184,62 +175,63 @@ export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
     </Box>
   )
 
+  // FocusLock's wrapper must not become a layout box. The editor stays in this
+  // one tree: moving it into a modal and back detaches ProseMirror before the
+  // drag handles can measure, so the handles never return.
+  useLayoutEffect(() => {
+    const parent = dialogRef.current?.parentElement
+    if (parent) parent.style.display = "contents"
+  }, [editorInDialog])
+
   return (
     <>
-      <Modal
-        isOpen={editorInDialog}
-        onClose={closeExpandedTable}
-        closeOnEsc={false}
-        closeOnOverlayClick={false}
+      {editorInDialog && (
+        <Box
+          className="chakra-modal__overlay"
+          position="fixed"
+          inset={0}
+          bg="blackAlpha.600"
+          zIndex={30}
+        />
+      )}
+      <FocusLock
+        isDisabled={!editorInDialog}
         autoFocus={false}
-        motionPreset="none"
-        size="full"
-        scrollBehavior="inside"
+        restoreFocus
+        lockFocusAcrossFrames
       >
-        <ModalOverlay zIndex={0} />
-        <ModalContent
+        <Box
           ref={dialogRef}
-          data-expanded-table-editor=""
-          position="relative"
-          zIndex={1}
-          containerProps={{
-            // Above the navbar (docked, 10) and below the dropdown layer, so
-            // the cell pencil paints on top of this dialog.
-            zIndex: 30,
-          }}
+          role={editorInDialog ? "dialog" : undefined}
+          aria-modal={editorInDialog || undefined}
+          aria-label={editorInDialog ? "Expanded table" : undefined}
+          data-expanded-table-editor={editorInDialog ? "" : undefined}
+          position={editorInDialog ? "fixed" : undefined}
+          inset={editorInDialog ? 0 : undefined}
+          // Above the navbar (docked, 10) and the overlay, below the dropdown
+          // layer, so the cell pencil paints on top of this dialog.
+          zIndex={editorInDialog ? 31 : undefined}
           m={0}
-          h="100vh"
-          maxH="100vh"
-          maxW="100vw"
-          borderRadius={0}
+          h={editorInDialog ? "100vh" : "100%"}
+          maxH={editorInDialog ? "100vh" : undefined}
+          w={editorInDialog ? "100vw" : undefined}
+          maxW={editorInDialog ? "100vw" : undefined}
+          bg={editorInDialog ? "white" : undefined}
+          borderRadius={editorInDialog ? 0 : undefined}
           display="flex"
           flexDirection="column"
+          overflow={editorInDialog ? "hidden" : undefined}
         >
           {editorInDialog && (
-            <>
-              <ModalHeader p={0} m={0}>
-                <VisuallyHidden>Expanded table</VisuallyHidden>
-              </ModalHeader>
-              <Flex justify="flex-end" flexShrink={0} px="1rem" py="0.75rem">
-                <Button variant="solid" onClick={closeExpandedTable}>
-                  Back to editing
-                </Button>
-              </Flex>
-              <ModalBody
-                p={0}
-                flex="1"
-                minH={0}
-                overflow="hidden"
-                display="flex"
-                flexDirection="column"
-              >
-                {editorFrame}
-              </ModalBody>
-            </>
+            <Flex justify="flex-end" flexShrink={0} px="1rem" py="0.75rem">
+              <Button variant="solid" onClick={closeExpandedTable}>
+                Back to editing
+              </Button>
+            </Flex>
           )}
-        </ModalContent>
-      </Modal>
-      {editorInDialog ? null : editorFrame}
+          {editorFrame}
+        </Box>
+      </FocusLock>
     </>
   )
 }
