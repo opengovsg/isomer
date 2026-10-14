@@ -1,13 +1,6 @@
 import type { NotificationProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
-import {
-  ANTI_SCAM_DISCLAIMER_AFTER,
-  ANTI_SCAM_DISCLAIMER_BEFORE,
-  ANTI_SCAM_DISCLAIMER_LINK_HREF,
-  ANTI_SCAM_DISCLAIMER_LINK_LABEL,
-  ANTI_SCAM_DISCLAIMER_TITLE,
-} from "../../antiScamDisclaimerCopy"
 import { Prose } from "../../native/Prose"
 import { hasContent } from "../../native/Prose/utils"
 import { BaseParagraph } from "../BaseParagraph"
@@ -16,16 +9,16 @@ import { NotificationClient } from "./NotificationClient"
 const antiScamContent = [
   {
     type: "text" as const,
-    text: ANTI_SCAM_DISCLAIMER_BEFORE,
+    text: "If you're unsure if something is a scam, call ",
   },
   {
     type: "text" as const,
-    text: ANTI_SCAM_DISCLAIMER_LINK_LABEL,
+    text: "ScamShield",
     marks: [
       {
         type: "link" as const,
         attrs: {
-          href: ANTI_SCAM_DISCLAIMER_LINK_HREF,
+          href: "https://www.scamshield.gov.sg",
           target: "_blank" as const,
         },
       },
@@ -33,14 +26,14 @@ const antiScamContent = [
   },
   {
     type: "text" as const,
-    text: ANTI_SCAM_DISCLAIMER_AFTER,
+    text: " at 1799.",
   },
 ]
 
 export const Notification = ({ site, ...notification }: NotificationProps) => {
   if (notification.type === "antiscam") {
     return (
-      <NotificationClient title={ANTI_SCAM_DISCLAIMER_TITLE}>
+      <NotificationClient title="Government officials will never ask you to transfer money over a phone call.">
         <BaseParagraph
           content={getTextAsHtml({
             site,

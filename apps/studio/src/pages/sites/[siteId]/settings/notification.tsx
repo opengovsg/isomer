@@ -35,10 +35,6 @@ import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-const BANNER_LABEL = "Display a banner"
-const BANNER_DESCRIPTION =
-  "The site notification will always be visible on the site until it is dismissed by the user."
-
 type SiteNotification = NonNullable<Notification["notification"]>
 
 const notificationBodyValidator =
@@ -136,10 +132,11 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
               <FormControl display="flex" alignItems="center">
                 <VStack gap="0.25rem" alignItems="start">
                   <Text textStyle="subhead-1" textColor="base.content.strong">
-                    {BANNER_LABEL}
+                    Display a banner
                   </Text>
                   <Text textStyle="body-2" textColor="base.content.medium">
-                    {BANNER_DESCRIPTION}
+                    The site notification will always be visible on the site
+                    until it is dismissed by the user.
                   </Text>
                 </VStack>
               </FormControl>
