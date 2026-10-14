@@ -385,6 +385,13 @@ export class SitePO {
     return this.page.getByText(/\d+\/8 first-level links added/)
   }
 
+  /** Warning Infobox when more than 8 first-level navbar links exist (JsonFormsNavbarControl). */
+  navbarFirstLevelOverLimitWarning() {
+    return this.page.getByText(
+      "You can only have up to 8 first-level links. Move the extra links under an existing first-level link, or remove them, before publishing.",
+    )
+  }
+
   navbarCustomiseTab() {
     return this.page.getByRole("tab", { name: "Customise" })
   }
