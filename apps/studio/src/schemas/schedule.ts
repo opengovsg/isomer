@@ -34,7 +34,7 @@ const refineScheduleLeadTime =
       ctx.addIssue({
         path: [isDateBeforeToday ? dateField : timeField],
         code: z.ZodIssueCode.custom,
-        error: "Date can't be in the past",
+        message: "Date can't be in the past",
       })
     }
   }

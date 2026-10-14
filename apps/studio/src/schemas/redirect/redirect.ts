@@ -201,7 +201,7 @@ export const refineSourceDestinationDiffer = (
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["destination"],
-      error: "You can't redirect a URL to itself.",
+      message: "You can't redirect a URL to itself.",
     })
   }
 }

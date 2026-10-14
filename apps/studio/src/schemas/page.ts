@@ -73,7 +73,7 @@ export const updatePageBlobSchema = basePageSchema.extend({
     }
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      error: "Invalid page content",
+      message: "Invalid page content",
     })
     return z.NEVER
   }),

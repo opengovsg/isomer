@@ -69,7 +69,7 @@ export const editFolderSchema = baseEditFolderSchema.superRefine(
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["permalink", "title"],
-        error: "Either permalink or title must be provided.",
+        message: "Either permalink or title must be provided.",
       })
     }
   },

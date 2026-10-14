@@ -68,9 +68,9 @@ const fileSizeRefine = (
   if (fileSize <= maxFileSize) return
 
   ctx.addIssue({
-    code: "custom",
+    code: z.ZodIssueCode.custom,
     path: ["fileSize"],
-    error: `File size must not exceed ${formatFileSizeLimit({ bytes: maxFileSize })}`,
+    message: `File size must not exceed ${formatFileSizeLimit({ bytes: maxFileSize })}`,
   })
 }
 

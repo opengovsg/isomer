@@ -32,7 +32,7 @@ export const codeBuildWebhookSchema = z
     if (!extractedBuildId) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        error: `Invalid buildId format: ${arn}`,
+        message: `Invalid buildId format: ${arn}`,
       })
       return z.NEVER
     }

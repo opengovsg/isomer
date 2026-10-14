@@ -39,9 +39,7 @@ describe("auth.email", () => {
       const result = caller.login({ email: "" })
 
       // Assert
-      await expect(result).rejects.toThrow(
-        "Please sign in with a valid email address.",
-      )
+      await expect(result).rejects.toThrow("Please enter an email address.")
     })
 
     it("should throw 400 if email is invalid", async () => {

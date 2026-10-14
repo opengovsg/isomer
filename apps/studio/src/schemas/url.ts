@@ -23,7 +23,7 @@ export const callbackUrlSchema = z
     } catch (error) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        error: (error as Error).message,
+        message: (error as Error).message,
       })
       return z.NEVER
     }
