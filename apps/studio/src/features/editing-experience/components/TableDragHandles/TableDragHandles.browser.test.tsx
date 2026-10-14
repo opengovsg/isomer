@@ -16,6 +16,7 @@ import {
 import { theme } from "~/theme"
 
 import { ADD_PILL_ICON_SIZE_PX, ADD_PILL_RADIUS_PX } from "./internal/chrome"
+import { scrollTargetAffectsContainer } from "./internal/useTableGeometries"
 import { TableDragHandles } from "./TableDragHandles"
 
 const SEED_CONTENT: JSONContent = {
@@ -86,6 +87,87 @@ const renderHarness = async () => {
     if (!editor) throw new Error("editor not ready")
   })
   return { ...utils, editor: editor! }
+}
+
+const TALL_CONTENT: JSONContent = {
+  type: "prose",
+  content: [
+    ...Array.from({ length: 12 }, (_, index) => ({
+      type: "paragraph",
+      content: [{ type: "text", text: `Spacer ${index}` }],
+    })),
+    ...(SEED_CONTENT.content ?? []),
+  ],
+}
+
+// 400px columns are wider than the 280px harness so the scrollport overflows.
+const WIDE_CONTENT: JSONContent = {
+  type: "prose",
+  content: [
+    {
+      ...SEED_CONTENT.content![0]!,
+      attrs: { caption: "Wide table", columnWidths: [400, 400, 400] },
+    },
+  ],
+}
+
+const ScrollHarness = ({
+  onReady,
+  content,
+  height,
+  width,
+}: {
+  onReady: (editor: Editor) => void
+  content: JSONContent
+  height?: number
+  width?: number
+}) => {
+  const editor = useTextEditor({ data: content, handleChange: () => null })
+  const containerRef = useRef<HTMLDivElement>(null)
+  if (editor) onReady(editor)
+  return (
+    <div
+      ref={containerRef}
+      data-testid="editor-scroll"
+      style={{
+        position: "relative",
+        height,
+        width,
+        overflowX: "hidden",
+        overflowY: height === undefined ? undefined : "auto",
+      }}
+    >
+      {editor && (
+        <TableDragHandles editor={editor} containerRef={containerRef} />
+      )}
+      {editor && <EditorContent editor={editor} />}
+    </div>
+  )
+}
+
+const renderScrollHarness = async (
+  props: Omit<Parameters<typeof ScrollHarness>[0], "onReady">,
+) => {
+  let editor: Editor | undefined
+  const utils = render(
+    <ThemeProvider theme={theme}>
+      <ScrollHarness {...props} onReady={(next) => (editor = next)} />
+    </ThemeProvider>,
+  )
+  await waitFor(() => {
+    if (!editor) throw new Error("editor not ready")
+  })
+  return { ...utils, editor: editor! }
+}
+
+const midY = (element: Element) => {
+  const rect = element.getBoundingClientRect()
+  return rect.top + rect.height / 2
+}
+
+const midX = (element: Element) => {
+  const rect = element.getBoundingClientRect()
+  return rect.left + rect.width / 2
 }
 
 const findByCellText = (container: HTMLElement, text: string): HTMLElement => {
@@ -201,6 +283,34 @@ const dragHandleTo = async ({
     fireEvent.mouseUp(document, { clientX, clientY })
   })
 }
+
+describe("scrollTargetAffectsContainer", () => {
+  it("includes the editor, a descendant, and an ancestor", () => {
+    // Arrange
+    const ancestor = document.createElement("div")
+    const container = document.createElement("div")
+    const child = document.createElement("div")
+    ancestor.append(container)
+    container.append(child)
+
+    // Act / Assert
+    expect(scrollTargetAffectsContainer(container, container)).toBe(true)
+    expect(scrollTargetAffectsContainer(child, container)).toBe(true)
+    expect(scrollTargetAffectsContainer(ancestor, container)).toBe(true)
+  })
+
+  it("ignores a scroller outside the editor", () => {
+    // Arrange
+    const parent = document.createElement("div")
+    const container = document.createElement("div")
+    const sibling = document.createElement("div")
+    parent.append(container, sibling)
+
+    // Act / Assert
+    expect(scrollTargetAffectsContainer(sibling, container)).toBe(false)
+    expect(scrollTargetAffectsContainer(null, container)).toBe(false)
+  })
+})
 
 describe("TableDragHandles", () => {
   it("shows a handle for every row and column without hovering", async () => {
@@ -908,6 +1018,65 @@ describe("TableDragHandles", () => {
       )
       const icon = selected?.querySelector("svg")
       expect(icon && getComputedStyle(icon).color).toBe("rgb(255, 255, 255)")
+    })
+  })
+
+  it("keeps row handles on their rows when the editor scrolls", async () => {
+    // Arrange
+    const { container } = await renderScrollHarness({
+      content: TALL_CONTENT,
+      height: 180,
+    })
+    const row = findByCellText(container, "Row 1, A").closest("tr")
+    const handle = await waitForHandle(container, "row", 1)
+    const scroller = container.querySelector("[data-testid=editor-scroll]")
+    if (!row || !(scroller instanceof HTMLElement)) {
+      throw new Error("scroll fixture not found")
+    }
+    await waitFor(() => {
+      expect(Math.abs(midY(handle) - midY(row))).toBeLessThanOrEqual(1)
+    })
+
+    // Act
+    act(() => {
+      scroller.scrollTop = 80
+    })
+
+    // Assert
+    expect(scroller.scrollTop).toBe(80)
+    await waitFor(() => {
+      expect(Math.abs(midY(handle) - midY(row))).toBeLessThanOrEqual(1)
+    })
+  })
+
+  it("keeps column handles on their columns when the table scrolls sideways", async () => {
+    // Arrange
+    const { container } = await renderScrollHarness({
+      content: WIDE_CONTENT,
+      width: 280,
+    })
+    const header = findByCellText(container, "Column A")
+    const handle = await waitForHandle(container, "column", 0)
+    const scrollport = container.querySelector("[data-table-scrollport]")
+    if (!(scrollport instanceof HTMLElement)) {
+      throw new Error("table scrollport not found")
+    }
+    await waitFor(() => {
+      expect(scrollport.scrollWidth).toBeGreaterThan(scrollport.clientWidth)
+      expect(Math.abs(midX(handle) - midX(header))).toBeLessThanOrEqual(1)
+    })
+    const headerLeft = header.getBoundingClientRect().left
+
+    // Act
+    act(() => {
+      scrollport.scrollLeft = 80
+    })
+
+    // Assert
+    expect(scrollport.scrollLeft).toBeGreaterThan(0)
+    expect(header.getBoundingClientRect().left).toBeLessThan(headerLeft - 40)
+    await waitFor(() => {
+      expect(Math.abs(midX(handle) - midX(header))).toBeLessThanOrEqual(1)
     })
   })
 

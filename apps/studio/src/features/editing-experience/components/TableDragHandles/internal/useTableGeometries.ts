@@ -12,6 +12,14 @@ import {
 
 const EMPTY_GEOMETRIES: TableGeometry[] = []
 
+/** Scrolls that can move this editor's cells relative to its drag handles. */
+export const scrollTargetAffectsContainer = (
+  target: EventTarget | null,
+  container: Node,
+): boolean =>
+  target instanceof Node &&
+  (container.contains(target) || target.contains(container))
+
 /**
  * Row and column rects for every table in the document, in container
  * coordinates, kept in step with editing, scrolling and layout changes.
@@ -67,14 +75,34 @@ export const useTableGeometries = (
     // `transaction` covers document updates too, so one listener is enough.
     editor.on("transaction", onEditorChange)
     window.addEventListener("resize", measure)
-    const container = containerRef.current
-    container?.addEventListener("scroll", measure, true)
+    // The table scrollport sits inside the editor, so a scroll there moves
+    // cells and leaves the absolutely positioned handles behind. Capture on
+    // window also sees ancestors. Unrelated scrollers (another editor, the
+    // preview pane) are ignored. Measure on the next frame, once layout has
+    // settled, and flush the paint in that same frame.
+    let scrollFrame = 0
+    const onScroll = (event: Event) => {
+      const container = containerRef.current
+      if (
+        !container ||
+        !scrollTargetAffectsContainer(event.target, container)
+      ) {
+        return
+      }
+      if (scrollFrame) return
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = 0
+        flushSync(measure)
+      })
+    }
+    window.addEventListener("scroll", onScroll, true)
 
     return () => {
       cancelAnimationFrame(raf)
+      cancelAnimationFrame(scrollFrame)
       editor.off("transaction", onEditorChange)
       window.removeEventListener("resize", measure)
-      container?.removeEventListener("scroll", measure, true)
+      window.removeEventListener("scroll", onScroll, true)
       resizeObserver.disconnect()
     }
   }, [editor, containerRef])
