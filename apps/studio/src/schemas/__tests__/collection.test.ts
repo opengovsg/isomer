@@ -7,6 +7,7 @@ const VALID_RFC4122_UUID = "550e8400-e29b-41d4-a716-446655440000"
 
 describe("countFilterUsageSchema", () => {
   it("accepts RFC 4122 UUIDs for text tag option ids", () => {
+    // Arrange / Act
     const result = countFilterUsageSchema.safeParse({
       siteId: 1,
       pageId: 2,
@@ -14,10 +15,12 @@ describe("countFilterUsageSchema", () => {
       tagOptionIds: [VALID_RFC4122_UUID],
     })
 
+    // Assert
     expect(result.success).toBe(true)
   })
 
   it("accepts RFC 4122 UUID for date filter id", () => {
+    // Arrange / Act
     const result = countFilterUsageSchema.safeParse({
       siteId: 1,
       pageId: 2,
@@ -25,10 +28,12 @@ describe("countFilterUsageSchema", () => {
       dateFilterId: VALID_RFC4122_UUID,
     })
 
+    // Assert
     expect(result.success).toBe(true)
   })
 
   it("rejects non-UUID tag option ids", () => {
+    // Arrange / Act
     const result = countFilterUsageSchema.safeParse({
       siteId: 1,
       pageId: 2,
@@ -36,10 +41,12 @@ describe("countFilterUsageSchema", () => {
       tagOptionIds: ["not-a-uuid"],
     })
 
+    // Assert
     expect(result.success).toBe(false)
   })
 
   it("rejects non-UUID date filter ids", () => {
+    // Arrange / Act
     const result = countFilterUsageSchema.safeParse({
       siteId: 1,
       pageId: 2,
@@ -47,6 +54,7 @@ describe("countFilterUsageSchema", () => {
       dateFilterId: "not-a-uuid",
     })
 
+    // Assert
     expect(result.success).toBe(false)
   })
 })

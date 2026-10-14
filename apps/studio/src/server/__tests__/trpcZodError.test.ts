@@ -5,6 +5,7 @@ import { flattenZodErrorForTrpcClient } from "../trpcZodError"
 
 describe("flattenZodErrorForTrpcClient", () => {
   it("returns flattened field errors for BAD_REQUEST Zod failures", () => {
+    // Arrange
     const schema = z.object({
       siteId: z.number().int().positive(),
     })
@@ -14,11 +15,13 @@ describe("flattenZodErrorForTrpcClient", () => {
       throw new Error("expected validation failure")
     }
 
+    // Act
     const flattened = flattenZodErrorForTrpcClient(
       "BAD_REQUEST",
       parseResult.error,
     )
 
+    // Assert
     expect(flattened).toEqual({
       formErrors: [],
       fieldErrors: {
@@ -28,12 +31,18 @@ describe("flattenZodErrorForTrpcClient", () => {
   })
 
   it("returns null for non-Zod causes", () => {
-    expect(
-      flattenZodErrorForTrpcClient("BAD_REQUEST", new Error("other")),
-    ).toBeNull()
+    // Arrange / Act
+    const result = flattenZodErrorForTrpcClient(
+      "BAD_REQUEST",
+      new Error("other"),
+    )
+
+    // Assert
+    expect(result).toBeNull()
   })
 
   it("returns null when the procedure error code is not BAD_REQUEST", () => {
+    // Arrange
     const schema = z.object({ x: z.string() })
     const parseResult = schema.safeParse({})
     expect(parseResult.success).toBe(false)
@@ -41,8 +50,13 @@ describe("flattenZodErrorForTrpcClient", () => {
       throw new Error("expected validation failure")
     }
 
-    expect(
-      flattenZodErrorForTrpcClient("INTERNAL_SERVER_ERROR", parseResult.error),
-    ).toBeNull()
+    // Act
+    const result = flattenZodErrorForTrpcClient(
+      "INTERNAL_SERVER_ERROR",
+      parseResult.error,
+    )
+
+    // Assert
+    expect(result).toBeNull()
   })
 })
