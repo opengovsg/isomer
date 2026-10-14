@@ -35,3 +35,12 @@ export const singpassLoginLogFields = ({
   ...(outcome === undefined ? {} : { singpassOutcome: outcome }),
   ...extra,
 })
+
+/** Human-readable `msg` prefix so @message grep matches `Singpass FAPI:` / `Singpass legacy:`. */
+export const singpassLogMessage = ({
+  useFapi,
+  message,
+}: {
+  useFapi: boolean
+  message: string
+}): string => `Singpass ${useFapi ? "FAPI" : "legacy"}: ${message}`

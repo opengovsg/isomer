@@ -20,6 +20,7 @@ import {
 import {
   singpassErrorCode,
   singpassLoginLogFields,
+  singpassLogMessage,
 } from "./singpass.observability"
 import { getAuthorizationUrl, login } from "./singpass.service"
 
@@ -40,11 +41,6 @@ export const singpassRouter = router({
 
       const { userId, verificationToken } = ctx.session.singpass.sessionState
 
-      ctx.logger.info(
-        { landingUrl },
-        `Starting Singpass login flow: ${landingUrl.toString()}`,
-      )
-
       // GrowthBook is created per request. The email attribute set during OTP
       // verification does not carry over, so reload it from the user row
       // before evaluating the FAPI flag. Targeting lives in the GrowthBook
@@ -64,9 +60,25 @@ export const singpassRouter = router({
         singpassLoginLogFields({
           useFapi,
           stage: "authorization",
+          authorizationPhase: "start",
+          landingUrl,
+        }),
+        singpassLogMessage({
+          useFapi,
+          message: `login flow starting: ${landingUrl.toString()}`,
+        }),
+      )
+
+      ctx.logger.info(
+        singpassLoginLogFields({
+          useFapi,
+          stage: "authorization",
           authorizationPhase: "routed",
         }),
-        "Singpass login routed to authorization flow",
+        singpassLogMessage({
+          useFapi,
+          message: "login routed to authorization flow",
+        }),
       )
 
       let authorizationUrl: string
@@ -88,7 +100,10 @@ export const singpassRouter = router({
             }),
             singpassError: singpassErrorCode(error),
           },
-          "Singpass authorization request failed",
+          singpassLogMessage({
+            useFapi,
+            message: "authorization request failed",
+          }),
         )
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -187,7 +202,10 @@ export const singpassRouter = router({
             hasDpopKey: !!dpopPrivateJwk,
             userId,
           },
-          "Invalid Singpass session state",
+          singpassLogMessage({
+            useFapi: useFapi === true,
+            message: "invalid session state",
+          }),
         )
 
         throw new TRPCError({
@@ -220,7 +238,10 @@ export const singpassRouter = router({
             }),
             singpassError: singpassErrorCode(error),
           },
-          "Failed to login to Singpass",
+          singpassLogMessage({
+            useFapi: useFapi === true,
+            message: "login failed",
+          }),
         )
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -243,7 +264,10 @@ export const singpassRouter = router({
             hasNonce: !!nonce,
             state,
           },
-          "Failed to login to Singpass",
+          singpassLogMessage({
+            useFapi: useFapi === true,
+            message: "login failed",
+          }),
         )
 
         throw new TRPCError({
@@ -294,7 +318,10 @@ export const singpassRouter = router({
             reason: "profile_mismatch",
             userId,
           }),
-          "Singpass profile does not match user",
+          singpassLogMessage({
+            useFapi: useFapi === true,
+            message: "profile does not match user",
+          }),
         )
         throw new TRPCError({
           // NOTE: We use NOT_FOUND here as UNAUTHORIZED would cause the session
@@ -333,7 +360,10 @@ export const singpassRouter = router({
           isNewUser: !possibleUser.singpassUuid,
           userId,
         }),
-        "Singpass login completed",
+        singpassLogMessage({
+          useFapi: useFapi === true,
+          message: "login completed",
+        }),
       )
 
       return {

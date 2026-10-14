@@ -18,6 +18,7 @@ import {
 import {
   singpassErrorCode,
   singpassLoginLogFields,
+  singpassLogMessage,
 } from "./singpass.observability"
 import { extractUuid } from "./singpass.utils"
 
@@ -131,7 +132,10 @@ export const getAuthorizationUrl = async ({
           stage: "authorization",
           outcome: "success",
         }),
-        "Singpass legacy authorization URL built",
+        singpassLogMessage({
+          useFapi: false,
+          message: "authorization URL built",
+        }),
       )
       return { authorizationUrl, session }
     } catch (error) {
@@ -144,7 +148,10 @@ export const getAuthorizationUrl = async ({
           }),
           singpassError: singpassErrorCode(error),
         },
-        "Singpass legacy authorization request failed",
+        singpassLogMessage({
+          useFapi: false,
+          message: "authorization request failed",
+        }),
       )
       throw error
     }
@@ -176,7 +183,10 @@ export const getAuthorizationUrl = async ({
         stage: "authorization",
         outcome: "success",
       }),
-      "Singpass FAPI authorization URL built",
+      singpassLogMessage({
+        useFapi: true,
+        message: "authorization URL built",
+      }),
     )
     return { authorizationUrl, session }
   } catch (error) {
@@ -189,7 +199,10 @@ export const getAuthorizationUrl = async ({
         }),
         singpassError: singpassErrorCode(error),
       },
-      "Singpass FAPI authorization request failed",
+      singpassLogMessage({
+        useFapi: true,
+        message: "authorization request failed",
+      }),
     )
     throw error
   }
@@ -224,7 +237,10 @@ export const login = async ({
         outcome: "failure",
         reason: "missing_dpop_key",
       }),
-      "Singpass FAPI token exchange aborted",
+      singpassLogMessage({
+        useFapi: true,
+        message: "token exchange aborted",
+      }),
     )
     throw new Error("Missing DPoP key for Singpass token exchange")
   }
@@ -254,7 +270,10 @@ export const login = async ({
           outcome: "failure",
           reason: "missing_uuid_in_id_token",
         }),
-        "Singpass token exchange returned no user UUID",
+        singpassLogMessage({
+          useFapi,
+          message: "token exchange returned no user UUID",
+        }),
       )
     } else {
       logger?.info(
@@ -263,7 +282,10 @@ export const login = async ({
           stage: "token_exchange",
           outcome: "success",
         }),
-        "Singpass token exchange succeeded",
+        singpassLogMessage({
+          useFapi,
+          message: "token exchange succeeded",
+        }),
       )
     }
     return { uuid }
@@ -277,7 +299,10 @@ export const login = async ({
         }),
         singpassError: singpassErrorCode(error),
       },
-      "Singpass token exchange failed",
+      singpassLogMessage({
+        useFapi,
+        message: "token exchange failed",
+      }),
     )
     throw error
   }

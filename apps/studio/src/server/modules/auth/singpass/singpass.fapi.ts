@@ -13,6 +13,7 @@ import type { Logger } from "@isomer/logging"
 import {
   singpassErrorCode,
   singpassLoginLogFields,
+  singpassLogMessage,
 } from "./singpass.observability"
 
 type SingpassFapiLogger = Pick<Logger, "info" | "error" | "warn">
@@ -161,7 +162,7 @@ export const pushFapiAuthorizationRequest = async ({
       parPhase: "start",
       parAttempt: 1,
     }),
-    "Singpass FAPI PAR starting",
+    singpassLogMessage({ useFapi: true, message: "PAR starting" }),
   )
 
   try {
@@ -174,7 +175,7 @@ export const pushFapiAuthorizationRequest = async ({
         parAttempt: 1,
         dpopNonceRetry: false,
       }),
-      "Singpass FAPI PAR succeeded",
+      singpassLogMessage({ useFapi: true, message: "PAR succeeded" }),
     )
     return buildFapiRedirectUrl(
       authorizationEndpoint,
@@ -196,7 +197,7 @@ export const pushFapiAuthorizationRequest = async ({
           }),
           singpassError: errorCode,
         },
-        "Singpass FAPI PAR failed",
+        singpassLogMessage({ useFapi: true, message: "PAR failed" }),
       )
       throw error
     }
@@ -208,7 +209,10 @@ export const pushFapiAuthorizationRequest = async ({
         parAttempt: 1,
         singpassError: errorCode,
       }),
-      "Singpass FAPI PAR retrying with DPoP nonce",
+      singpassLogMessage({
+        useFapi: true,
+        message: "PAR retrying with DPoP nonce",
+      }),
     )
     try {
       const pushed = await push(nonce)
@@ -220,7 +224,10 @@ export const pushFapiAuthorizationRequest = async ({
           parAttempt: 2,
           dpopNonceRetry: true,
         }),
-        "Singpass FAPI PAR succeeded after DPoP nonce retry",
+        singpassLogMessage({
+          useFapi: true,
+          message: "PAR succeeded after DPoP nonce retry",
+        }),
       )
       return buildFapiRedirectUrl(
         authorizationEndpoint,
@@ -239,7 +246,10 @@ export const pushFapiAuthorizationRequest = async ({
           }),
           singpassError: singpassErrorCode(retryError),
         },
-        "Singpass FAPI PAR failed after DPoP nonce retry",
+        singpassLogMessage({
+          useFapi: true,
+          message: "PAR failed after DPoP nonce retry",
+        }),
       )
       throw retryError
     }
