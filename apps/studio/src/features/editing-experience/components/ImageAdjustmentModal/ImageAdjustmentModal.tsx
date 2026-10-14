@@ -34,7 +34,7 @@ import {
   flipPointV,
   flipRectH,
   flipRectV,
-  normalizeRotation,
+  nextRotation,
   rotatePointCcw,
   rotatePointCw,
   rotateRectCcw,
@@ -208,14 +208,17 @@ export const ImageAdjustmentModal = ({
     }
   }
 
-  // Resets all adjustments back to defaults (full-image crop or the largest
-  // centered rect under a locked ratio; centered focal; no rotation/flip) — it
-  // does NOT save or close, same as any other edit, so the editor can see the
-  // reset in the preview and still Save/Undo/Cancel from there. Disabled for a
-  // locked ratio until the real image aspect is known (see imageAspect) —
-  // without the true aspect, defaultCropRect would bake the wrong pixel ratio. A
-  // free (non-locked) crop ignores imageAspect, so it is always resettable.
-  const isResetDisabled = lockedRatio != null && imageAspect === undefined
+  // A locked-ratio crop can only be (re)computed once the real image aspect is
+  // known — without it, defaultCropRect would bake the wrong pixel ratio. Both
+  // Reset and Rotate re-derive the locked crop, so both are blocked until the
+  // image loads (a free crop ignores imageAspect, and flips just mirror the
+  // existing rect, so neither needs this guard).
+  const isLockedRatioAspectPending =
+    lockedRatio != null && imageAspect === undefined
+
+  // Reset does NOT save or close, same as any other edit, so the editor can see
+  // the reset in the preview and still Save/Undo/Cancel from there.
+  const isResetDisabled = isLockedRatioAspectPending
 
   const handleReset = () => {
     setDraft((d) => ({
@@ -229,17 +232,18 @@ export const ImageAdjustmentModal = ({
   }
 
   // Rotating/flipping moves the crop + focal with the image content so they
-  // keep framing the same subject. A quarter turn inverts the aspect, which
-  // would break a locked ratio's fixed output shape — so for locked-ratio
-  // components re-fit the crop to a valid centered rect in the new orientation
-  // instead of rotating it geometrically. Flips and free crops transform
-  // geometrically (aspect is preserved, so the lock stays valid).
+  // keep framing the same subject. The stored rotate value is resolved via
+  // nextRotation (a single flip reverses the displayed rotation sense); the
+  // crop/focal always move in the COMMANDED display direction. A quarter turn
+  // inverts the aspect, which would break a locked ratio's fixed output shape —
+  // so for locked-ratio components re-fit the crop to a valid centered rect in
+  // the new orientation instead of rotating it geometrically. (Disabled until
+  // imageAspect loads for locked ratios — see isLockedRatioAspectPending — so a
+  // square-assumed crop can never be baked.)
   const handleRotate = (direction: "cw" | "ccw") => {
     setDraft((d) => {
       const base = ensureAdjustment(d)
-      const rotate = normalizeRotation(
-        base.rotate + (direction === "cw" ? 90 : -90),
-      )
+      const rotate = nextRotation(base, direction)
       if (lockedRatio) {
         const quarter = rotate === 90 || rotate === 270
         const displayAspect = quarter
@@ -379,6 +383,7 @@ export const ImageAdjustmentModal = ({
                   <TransformControl
                     flipH={draft?.flipH ?? false}
                     flipV={draft?.flipV ?? false}
+                    rotateDisabled={isLockedRatioAspectPending}
                     onRotate={handleRotate}
                     onFlip={handleFlip}
                   />

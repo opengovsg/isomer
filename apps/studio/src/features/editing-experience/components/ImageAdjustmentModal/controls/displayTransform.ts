@@ -7,6 +7,24 @@ export type Rotation = 0 | 90 | 180 | 270
 export const normalizeRotation = (deg: number): Rotation =>
   (((deg % 360) + 360) % 360) as Rotation
 
+// The new rotate value for a "rotate right/left" command given the current
+// flip state. The displayed image is `flip ∘ rotate`, and a single reflection
+// reverses rotational sense (conjugating a rotation by a reflection negates
+// it) — so when exactly one flip is active, the stored rotate delta must be
+// inverted to keep "rotate right" turning the DISPLAYED image right. With zero
+// or both flips the sense is preserved. The crop/focal, by contrast, always
+// move in the commanded display direction (they follow what the editor sees),
+// so the caller rotates them by the command direction regardless of this.
+export const nextRotation = (
+  current: { rotate: Rotation; flipH: boolean; flipV: boolean },
+  direction: "cw" | "ccw",
+): Rotation => {
+  const commandCw = direction === "cw"
+  const singleFlip = current.flipH !== current.flipV
+  const valueCw = singleFlip ? !commandCw : commandCw
+  return normalizeRotation(current.rotate + (valueCw ? 90 : -90))
+}
+
 // Crop and focal are stored in "display" space (the rotated/flipped image the
 // editor cropped against). When the editor rotates/flips again, the existing
 // crop + focal must move with the image content so they keep framing the same

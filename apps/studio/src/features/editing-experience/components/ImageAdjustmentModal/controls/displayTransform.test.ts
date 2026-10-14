@@ -6,6 +6,7 @@ import {
   flipPointV,
   flipRectH,
   flipRectV,
+  nextRotation,
   normalizeRotation,
   rotatePointCcw,
   rotatePointCw,
@@ -32,6 +33,38 @@ describe("normalizeRotation", () => {
   it("rotates left into the 0|90|180|270 domain (negative input)", () => {
     expect(normalizeRotation(0 - 90)).toBe(270)
     expect(normalizeRotation(180 - 90)).toBe(90)
+  })
+})
+
+describe("nextRotation (flip-aware rotate command)", () => {
+  const at = (rotate: 0 | 90 | 180 | 270, flipH = false, flipV = false) => ({
+    rotate,
+    flipH,
+    flipV,
+  })
+
+  it("rotates in the commanded direction with no flip", () => {
+    expect(nextRotation(at(0), "cw")).toBe(90)
+    expect(nextRotation(at(0), "ccw")).toBe(270)
+    expect(nextRotation(at(90), "cw")).toBe(180)
+  })
+
+  it("rotates in the commanded direction with BOTH flips (sense preserved)", () => {
+    expect(nextRotation(at(0, true, true), "cw")).toBe(90)
+    expect(nextRotation(at(0, true, true), "ccw")).toBe(270)
+  })
+
+  it("reverses the stored rotate delta when only horizontal flip is active", () => {
+    // display = flipH ∘ rotate, so "rotate right" must DECREMENT the value for
+    // the displayed image to actually turn right.
+    expect(nextRotation(at(0, true, false), "cw")).toBe(270)
+    expect(nextRotation(at(0, true, false), "ccw")).toBe(90)
+    expect(nextRotation(at(90, true, false), "cw")).toBe(0)
+  })
+
+  it("reverses the stored rotate delta when only vertical flip is active", () => {
+    expect(nextRotation(at(0, false, true), "cw")).toBe(270)
+    expect(nextRotation(at(0, false, true), "ccw")).toBe(90)
   })
 })
 

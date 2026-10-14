@@ -10,6 +10,10 @@ import {
 interface TransformControlProps {
   flipH: boolean
   flipV: boolean
+  // Rotation re-derives a locked-ratio crop, which needs the real image aspect;
+  // disable it until the image has loaded so a square-assumed crop can't be
+  // baked. Flips never need it (they just mirror the existing rect).
+  rotateDisabled?: boolean
   onRotate: (direction: "cw" | "ccw") => void
   onFlip: (axis: "h" | "v") => void
 }
@@ -22,6 +26,7 @@ interface TransformControlProps {
 export const TransformControl = ({
   flipH,
   flipV,
+  rotateDisabled = false,
   onRotate,
   onFlip,
 }: TransformControlProps): JSX.Element => {
@@ -37,6 +42,7 @@ export const TransformControl = ({
             colorScheme="neutral"
             aria-label="Rotate left"
             icon={<BiRotateLeft />}
+            isDisabled={rotateDisabled}
             onClick={() => onRotate("ccw")}
           />
         </Tooltip>
@@ -46,6 +52,7 @@ export const TransformControl = ({
             colorScheme="neutral"
             aria-label="Rotate right"
             icon={<BiRotateRight />}
+            isDisabled={rotateDisabled}
             onClick={() => onRotate("cw")}
           />
         </Tooltip>
