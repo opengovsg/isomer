@@ -157,11 +157,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expect(site.navbarLinksCountText()).toHaveText(
       "9/8 first-level links added",
     )
-    await expect(
-      page.getByText(
-        "You can only have up to 8 first-level links. Move the extra links under an existing first-level link, or remove them, before publishing.",
-      ),
-    ).toBeVisible()
+    await expect(site.navbarFirstLevelOverLimitWarning()).toBeVisible()
     await expect(site.publishButton()).toBeDisabled()
   })
 
