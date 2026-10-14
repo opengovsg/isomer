@@ -313,6 +313,33 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
     "The card crops this image to fill its frame and overlays the title on a dark gradient at the bottom. Keep your key subject in the upper half and set a focal point to anchor it.",
 }
 
+// Native Image block (P2a) — free-form crop. Unlike every framed component, the
+// native image renders at its own (now cropped) aspect ratio with no fixed
+// frame, so the crop is unconstrained (custom) and there's no focal point to
+// set — nothing cover-fits, so an anchor would have nothing to anchor against.
+// The crop is baked into src; the real-component preview renders the actual
+// Image block, so no skipRealComponentPreview. One preview state is enough since
+// the image is the same shape at every breakpoint (it just scales down).
+const IMAGE_CONFIG: AdjustmentConfig = {
+  componentType: "image",
+  cropMode: "custom",
+  focalEnabled: false,
+  // Fills the ~744px content column at "default" size on desktop; round up to a
+  // conservative floor so a sharp image near that width doesn't false-warn.
+  maxRenderedWidthPx: 768,
+  previewStates: [
+    {
+      id: "default",
+      label: "Default",
+      viewportWidth: 1280,
+      // Pre-measure flash guess only — the real render measures the true height.
+      aspectRatio: { width: 3, height: 2 },
+    },
+  ],
+  preUploadCopy:
+    "You can crop this image to any shape. Use a high-resolution image so the area you keep stays sharp at the size it displays on your page.",
+}
+
 /**
  * Resolves the adjustment config for an image field, by the containing block's
  * discriminators. Returns undefined for components not yet wired — the entry
@@ -323,6 +350,7 @@ export function resolveAdjustmentConfig(args: {
   fieldName: string
 }): AdjustmentConfig | undefined {
   const { type, variant } = asBlock(args.block)
+  if (type === "image") return IMAGE_CONFIG
   if (type === "hero" && variant === "gradient") return HERO_GRADIENT_CONFIG
   if (type === "hero" && variant === "largeImage")
     return HERO_LARGE_IMAGE_CONFIG

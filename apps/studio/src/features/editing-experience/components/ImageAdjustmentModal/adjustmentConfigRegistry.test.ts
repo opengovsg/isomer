@@ -19,7 +19,6 @@ describe("resolveAdjustmentConfig", () => {
   // registry entry can't silently light the modal up on one of them.
   describe("Tier D (preserve-only) blocks resolve no config", () => {
     const tierDBlocks = [
-      { type: "image" },
       { type: "imagegallery" },
       { type: "logocloud" },
       { type: "video" },
@@ -32,6 +31,26 @@ describe("resolveAdjustmentConfig", () => {
         ).toBeUndefined()
       })
     }
+  })
+
+  // Native Image block (P2a): the one block that offers a free-form crop with no
+  // focal point — it renders at its own cropped aspect ratio, so nothing
+  // cover-fits and an anchor would have nothing to anchor. Lock in custom/no-focal
+  // and that it previews the real component (not the framed approximation).
+  describe("image (P2a — free-form crop)", () => {
+    const config = resolveAdjustmentConfig({
+      block: { type: "image" },
+      fieldName: "src",
+    })
+
+    it("resolves a custom-crop, no-focal config", () => {
+      expect(config).toBeDefined()
+      expect(config?.cropMode).toBe("custom")
+      expect(config?.focalEnabled).toBe(false)
+      expect(config?.lockedRatios).toBeUndefined()
+      expect(config?.skipRealComponentPreview).toBeFalsy()
+      expect(config?.previewStates.length).toBeGreaterThan(0)
+    })
   })
 
   describe("hero:floating", () => {
