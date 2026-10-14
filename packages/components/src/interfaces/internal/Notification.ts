@@ -2,7 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import type { PropsWithChildren } from "react"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
-import { TRIMMED_NON_EMPTY_STRING_REGEX } from "~/utils/validation"
+import { NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { TextSchema } from "../native"
@@ -19,9 +19,9 @@ const NotificationCustomSchema = Type.Object(
     title: IsomerString({
       title: "Notification title",
       maxLength: 150,
-      pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+      pattern: NON_EMPTY_STRING_REGEX,
       errorMessage: {
-        pattern: "cannot be empty or have leading/trailing spaces",
+        pattern: "cannot be empty",
       },
     }),
     content: Type.Optional(
