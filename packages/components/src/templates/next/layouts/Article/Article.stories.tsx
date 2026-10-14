@@ -1,6 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { generateSiteConfig } from "~/stories/helpers"
 import { type ArticlePageSchemaType } from "~/types"
+import {
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+  TAG_CATEGORY_TYPE,
+} from "~/types/constants"
 
 import { ArticleLayout } from "./Article"
 
@@ -626,6 +631,235 @@ export const TaggedArticle: Story = {
               },
             ],
           },
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "This is a Chat-GPT4 generated article for visual testing purposes.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+
+const TAGGED_PILLS_OPTION_ID = "tagged-pills-option"
+const TAGGED_CATEGORY_OPTION_ID = "tagged-category-option"
+const TAGGED_REGION_OPTION_ID = "tagged-region-option"
+
+// Exercises Article.tsx's own derivation of pillTags/plaintextTags from
+// `page.tagged` + the parent collection's `tagCategories`, rather than
+// hand-feeding ArticlePageHeader with pre-computed props.
+export const TaggedArticleWithTagCategories: Story = {
+  name: "TaggedArticleWithTagCategories",
+  args: {
+    layout: "article",
+    site: generateSiteConfig({
+      siteMap: {
+        id: "1",
+        title: "Home",
+        permalink: "/",
+        lastModified: "",
+        layout: "homepage",
+        summary: "",
+        children: [
+          {
+            id: "2",
+            title: "Newsroom",
+            permalink: "/newsroom",
+            lastModified: "",
+            layout: "content",
+            summary: "",
+            children: [
+              {
+                id: "3",
+                title: "News",
+                permalink: "/newsroom/news",
+                lastModified: "",
+                layout: "collection",
+                summary: "",
+                collectionPagePageProps: {
+                  tagCategories: [
+                    {
+                      label: "Tags",
+                      id: "tags-group",
+                      display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+                      options: [
+                        {
+                          label: "NParks Happenings",
+                          id: TAGGED_PILLS_OPTION_ID,
+                        },
+                      ],
+                    },
+                    {
+                      label: "Category",
+                      id: "category-group",
+                      display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+                      options: [
+                        {
+                          label: "Citizen Engagement",
+                          id: TAGGED_CATEGORY_OPTION_ID,
+                        },
+                      ],
+                    },
+                    {
+                      label: "Region",
+                      id: "region-group",
+                      display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+                      options: [
+                        { label: "Wildlife", id: TAGGED_REGION_OPTION_ID },
+                      ],
+                    },
+                  ],
+                },
+                children: [
+                  {
+                    id: "4",
+                    title:
+                      "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
+                    permalink:
+                      "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
+                    lastModified: "",
+                    layout: "article",
+                    summary: "",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }),
+    page: {
+      title:
+        "Singapore's Spectacular Citizens' Festival: a Celebration of Unity and Diversity",
+      permalink:
+        "/newsroom/news/man-sentenced-to-24-months-imprisonment-for-smuggling-34-7-kg-of-rhinoceros-horns",
+      lastModified: "2024-05-02T14:12:57.160Z",
+      // NOTE: required by the schema, but ignored at render time since
+      // `tagged` + the parent's `tagCategories` take precedence
+      category: "Citizen Engagement",
+      tagged: [
+        TAGGED_PILLS_OPTION_ID,
+        TAGGED_CATEGORY_OPTION_ID,
+        TAGGED_REGION_OPTION_ID,
+      ],
+      date: "1 May 2024",
+      articlePageHeader: {
+        summary:
+          "Singapore is preparing to host its inaugural Citizens' Festival in Marina Boulevard. The festival aims to unite Singaporeans of all backgrounds through cultural showcases, food markets, live music, and wellness activities.",
+      },
+    },
+    content: [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1570441262582-a2d4b9a916a5?q=80&w=2948&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        alt: "A man is serving food out of a blue food",
+      },
+      {
+        type: "prose",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "This is a Chat-GPT4 generated article for visual testing purposes.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+
+const DATE_FILTER_ID = "event-date-filter"
+
+// Exercises Article.tsx's own derivation of `dateFilterCards` from
+// `page.dateTagged` + the parent collection's date-type `tagCategories`,
+// mirroring TaggedArticleWithTagCategories for the date-filter equivalent.
+// Uses a far-future date range so the computed status (Ended/Ongoing/
+// Upcoming) stays "Upcoming" regardless of when this story is viewed.
+export const WithDateFilter: Story = {
+  name: "WithDateFilter",
+  args: {
+    layout: "article",
+    site: generateSiteConfig({
+      siteMap: {
+        id: "1",
+        title: "Home",
+        permalink: "/",
+        lastModified: "",
+        layout: "homepage",
+        summary: "",
+        children: [
+          {
+            id: "2",
+            title: "Newsroom",
+            permalink: "/newsroom",
+            lastModified: "",
+            layout: "content",
+            summary: "",
+            children: [
+              {
+                id: "3",
+                title: "News",
+                permalink: "/newsroom/news",
+                lastModified: "",
+                layout: "collection",
+                summary: "",
+                collectionPagePageProps: {
+                  tagCategories: [
+                    {
+                      label: "Event Date",
+                      id: DATE_FILTER_ID,
+                      type: TAG_CATEGORY_TYPE.Date,
+                      statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
+                    },
+                  ],
+                },
+                children: [
+                  {
+                    id: "4",
+                    title: "Annual Community Charity Run 2026",
+                    permalink:
+                      "/newsroom/news/annual-community-charity-run-2026",
+                    lastModified: "",
+                    layout: "article",
+                    summary: "",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }),
+    page: {
+      title: "Annual Community Charity Run 2026",
+      permalink: "/newsroom/news/annual-community-charity-run-2026",
+      lastModified: "2024-05-02T14:12:57.160Z",
+      category: "Citizen Engagement",
+      dateTagged: [
+        {
+          id: DATE_FILTER_ID,
+          date: "2099-09-27",
+          endDate: "2099-09-29",
+        },
+      ],
+      articlePageHeader: {
+        summary:
+          "Join us for a day of community, fitness, and fundraising for a good cause.",
+      },
+    },
+    content: [
+      {
+        type: "prose",
+        content: [
           {
             type: "paragraph",
             content: [

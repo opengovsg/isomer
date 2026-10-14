@@ -1,6 +1,11 @@
 import type { DelayMode } from "msw"
 import type { getPageById } from "~/server/modules/resource/resource.service"
 import type { RouterOutput } from "~/utils/trpc"
+import {
+  DEFAULT_DATE_FILTER_STATUS_LABELS,
+  DEFAULT_TAG_CATEGORY_DISPLAY,
+  TAG_CATEGORY_TYPE,
+} from "@opengovsg/isomer-components"
 import { delay } from "msw"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -11,62 +16,83 @@ const getRootPageQuery = (wait?: DelayMode | number) => {
     if (wait !== undefined) {
       await delay(wait)
     }
-    return { title: "A mock page", id: "1", draftBlobId: "1" }
+    return {
+      title: "A mock page",
+      id: "1",
+      draftBlobId: "1",
+      publishedVersionId: null,
+      scheduledAt: null,
+      scheduledAction: null,
+      lastPublishedAt: null,
+    }
   })
 }
-export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"] = [
-  {
-    id: "1",
-    permalink: "newsroom",
-    title: "Press Releases",
-    publishedVersionId: null,
-    draftBlobId: null,
-    type: "Collection",
-    parentId: null,
-    updatedAt: new Date("2024-09-12T07:00:00.000Z"),
-    scheduledAt: null,
-  },
-  {
-    id: "4",
-    permalink: "test-page-1",
-    title: "Test page 1",
-    publishedVersionId: null,
-    draftBlobId: "3",
-    type: "Page",
-    parentId: null,
-    updatedAt: new Date("2024-09-12T07:00:10.000Z"),
-    scheduledAt: null,
-  },
-  {
-    id: "5",
-    permalink: "test-page-2",
-    title: "Test page 2",
-    publishedVersionId: null,
-    draftBlobId: "4",
-    type: "Page",
-    parentId: null,
-    updatedAt: new Date("2024-09-12T07:00:20.000Z"),
-    scheduledAt: null,
-  },
-  {
-    id: "6",
-    permalink: "folder",
-    title: "Test folder 1",
-    publishedVersionId: null,
-    draftBlobId: null,
-    type: "Folder",
-    parentId: null,
-    updatedAt: new Date("2024-09-12T07:00:30.000Z"),
-    scheduledAt: null,
-  },
-]
+export const DEFAULT_PAGE_ITEMS: RouterOutput["resource"]["listWithoutRoot"]["items"] =
+  [
+    {
+      id: "1",
+      permalink: "newsroom",
+      title: "Press Releases",
+      publishedVersionId: null,
+      draftBlobId: null,
+      type: "Collection",
+      parentId: null,
+      updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+      scheduledAt: null,
+      scheduledAction: null,
+      lastPublishedAt: null,
+      liveStatus: "notLive",
+    },
+    {
+      id: "4",
+      permalink: "test-page-1",
+      title: "Test page 1",
+      publishedVersionId: null,
+      draftBlobId: "3",
+      type: "Page",
+      parentId: null,
+      updatedAt: new Date("2024-09-12T07:00:10.000Z"),
+      scheduledAt: null,
+      scheduledAction: null,
+      lastPublishedAt: null,
+      liveStatus: "notLive",
+    },
+    {
+      id: "5",
+      permalink: "test-page-2",
+      title: "Test page 2",
+      publishedVersionId: null,
+      draftBlobId: "4",
+      type: "Page",
+      parentId: null,
+      updatedAt: new Date("2024-09-12T07:00:20.000Z"),
+      scheduledAt: null,
+      scheduledAction: null,
+      lastPublishedAt: null,
+      liveStatus: "notLive",
+    },
+    {
+      id: "6",
+      permalink: "folder",
+      title: "Test folder 1",
+      publishedVersionId: null,
+      draftBlobId: null,
+      type: "Folder",
+      parentId: null,
+      updatedAt: new Date("2024-09-12T07:00:30.000Z"),
+      scheduledAt: null,
+      scheduledAction: null,
+      lastPublishedAt: null,
+      liveStatus: "notLive",
+    },
+  ]
 
 const pageListQuery = (wait?: DelayMode | number) => {
   return trpcMsw.resource.listWithoutRoot.query(async () => {
     if (wait !== undefined) {
       await delay(wait)
     }
-    return DEFAULT_PAGE_ITEMS
+    return { items: DEFAULT_PAGE_ITEMS, totalCount: DEFAULT_PAGE_ITEMS.length }
   })
 }
 
@@ -80,28 +106,6 @@ export const pageHandlers = {
       })
     },
   },
-  getCategoryOptions: {
-    default: () => {
-      return trpcMsw.page.getCategoryOptions.query(() => {
-        return {
-          categoryOptions: [
-            {
-              id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
-              label: "Category 1",
-            },
-            {
-              id: "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
-              label: "Category 2",
-            },
-            {
-              id: "6ba7b812-9dad-11d1-80b4-00c04fd430c8",
-              label: "Category 3",
-            },
-          ],
-        }
-      })
-    },
-  },
   getCollectionTags: {
     default: () => {
       return trpcMsw.collection.getCollectionTags.query(() => {
@@ -109,6 +113,7 @@ export const pageHandlers = {
           {
             label: "Topic",
             id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+            display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [
               {
                 label: "Technology",
@@ -121,11 +126,13 @@ export const pageHandlers = {
           {
             label: "Empty Category",
             id: "123e4567-e89b-12d3-a456-426614174000",
+            display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [],
           },
           {
             label: "Industries",
             id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+            display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [
               {
                 label: "Agriculture & Food",
@@ -239,6 +246,7 @@ export const pageHandlers = {
             label: "Topic",
             id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
             isRequired: true,
+            display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [
               {
                 label: "Technology",
@@ -251,6 +259,7 @@ export const pageHandlers = {
             label: "Industry",
             id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
             isRequired: false,
+            display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [
               {
                 label: "Agriculture & Food",
@@ -265,10 +274,23 @@ export const pageHandlers = {
         ]
       })
     },
+    withDateFilter: () => {
+      return trpcMsw.collection.getCollectionTags.query(() => {
+        return [
+          {
+            label: "Event date",
+            id: "f47ac10b-58cc-4372-a567-0e02b2c3d480",
+            type: TAG_CATEGORY_TYPE.Date,
+            isRequired: true,
+            statusLabels: DEFAULT_DATE_FILTER_STATUS_LABELS,
+          },
+        ]
+      })
+    },
   },
   updateSettings: {
     collection: () => {
-      trpcMsw.page.updateSettings.mutation(() => {
+      return trpcMsw.page.updateSettings.mutation(() => {
         return {
           id: "1",
           title: "Press Releases",
@@ -1142,6 +1164,56 @@ export const pageHandlers = {
         }
       })
     },
+    collectionWithManyFilterOptions: () => {
+      // @ts-expect-error incomplete types
+      return trpcMsw.page.readPageAndBlob.query(() => {
+        return {
+          title: "Index page",
+          updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+          permalink: "_index",
+          navbar: { id: 1, siteId: 1, content: [] },
+          footer: {
+            id: 1,
+            siteId: 1,
+            content: {
+              siteNavItems: [],
+              contactUsLink: "/contact-us",
+              termsOfUseLink: "/terms-of-use",
+              feedbackFormLink: "https://www.form.gov.sg",
+              privacyStatementLink: "/privacy",
+            },
+          },
+          content: {
+            page: {
+              date: "11-09-2024",
+              title: "article layout",
+              category: "Feature Articles",
+              subtitle: "This is a subtitle for the collection page",
+              tagCategories: [
+                {
+                  id: "a1b2c3d4-0000-4000-8000-000000000001",
+                  label: "Test filter",
+                  isRequired: false,
+                  options: Array.from({ length: 101 }, (_, i) => ({
+                    id: `a1b2c3d4-0001-4000-8000-${String(i + 1).padStart(12, "0")}`,
+                    label: `Option ${i + 1}`,
+                  })),
+                },
+              ],
+            },
+            layout: "collection",
+            content: [],
+            version: "0.1.0",
+          },
+          type: "IndexPage",
+          theme: "isomer-next",
+          url: "https://www.isomer.gov.sg",
+          logoUrl: "",
+          siteName: "MTI",
+          isGovernment: true,
+        }
+      })
+    },
     customIndex: () => {
       // @ts-expect-error incomplete types
       return trpcMsw.page.readPageAndBlob.query(() => {
@@ -1472,6 +1544,8 @@ export const pageHandlers = {
           state: "Draft",
           scheduledAt: null,
           scheduledBy: null,
+          scheduledAction: null,
+          lastPublishedAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -1494,6 +1568,8 @@ export const pageHandlers = {
           state: "Draft",
           scheduledAt: null,
           scheduledBy: null,
+          scheduledAction: null,
+          lastPublishedAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -1516,6 +1592,8 @@ export const pageHandlers = {
           state: "Draft",
           scheduledAt: null,
           scheduledBy: null,
+          scheduledAction: null,
+          lastPublishedAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -1538,6 +1616,8 @@ export const pageHandlers = {
           state: "Draft",
           scheduledAt: null,
           scheduledBy: null,
+          scheduledAction: null,
+          lastPublishedAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -1560,6 +1640,8 @@ export const pageHandlers = {
           state: "Draft",
           scheduledAt: null,
           scheduledBy: null,
+          scheduledAction: null,
+          lastPublishedAt: null,
           createdAt: new Date("2024-09-12T07:00:00.000Z"),
           updatedAt: new Date("2024-09-12T07:00:00.000Z"),
           ...overrides,
@@ -1583,6 +1665,10 @@ export const pageHandlers = {
     collection: () =>
       trpcMsw.page.getFullPermalink.query(() => {
         return "/collection"
+      }),
+    nestedCollectionLink: () =>
+      trpcMsw.page.getFullPermalink.query(() => {
+        return "/resources/circulars/my-link"
       }),
     index: () =>
       trpcMsw.page.getFullPermalink.query(() => {
@@ -1618,5 +1704,36 @@ export const pageHandlers = {
       trpcMsw.page.getPermalinkTree.query(() => {
         return ["newsroom", "collection-page", "sub-collection-page"]
       }),
+  },
+  unpublishPage: {
+    default: () => {
+      return trpcMsw.page.unpublishPage.mutation(() => {
+        return undefined
+      })
+    },
+    loading: () => {
+      return trpcMsw.page.unpublishPage.mutation(() => {
+        return new Promise(() => {
+          // Never resolve to simulate infinite loading
+        })
+      })
+    },
+    error: () => {
+      return trpcMsw.page.unpublishPage.mutation(() => {
+        throw new Error("Failed to unpublish page")
+      })
+    },
+  },
+  scheduleUnpublish: {
+    default: () => {
+      return trpcMsw.page.scheduleUnpublish.mutation(() => {
+        return undefined
+      })
+    },
+    error: () => {
+      return trpcMsw.page.scheduleUnpublish.mutation(() => {
+        throw new Error("Failed to schedule unpublish")
+      })
+    },
   },
 }

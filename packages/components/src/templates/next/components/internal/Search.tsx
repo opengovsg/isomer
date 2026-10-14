@@ -13,7 +13,7 @@ import { twMerge } from "~/lib/twMerge"
 import { IconButton } from "./IconButton"
 
 const inputStyles = tv({
-  base: "prose-body-base min-w-0 flex-1 bg-white text-base-content outline outline-0 placeholder:text-interaction-support-placeholder disabled:text-interaction-support-placeholder",
+  base: "prose-body-base min-w-0 flex-1 bg-white text-base-content outline-none placeholder:text-interaction-support-placeholder disabled:text-interaction-support-placeholder",
 })
 
 const fieldGroupStyles = tv({

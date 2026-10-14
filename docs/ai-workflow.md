@@ -12,7 +12,7 @@ Every ticket that an agent may pick up **must** carry the following:
 | ----------------- | --------------------------- | ---------------------------------------------------------------- |
 | `Title`           | all                         | Imperative, scoped. No "investigate X" titles for bugs.          |
 | `Description`     | all                         | Markdown. Sections below.                                        |
-| `Area` label      | all                         | One of: `area:studio`, `area:components`, `area:infra`, `area:db`. Drives which `CLAUDE.md` files the agent loads. |
+| `Area` label      | all                         | One of: `area:studio`, `area:components`, `area:infra`, `area:db`. Drives which `AGENTS.md` files the agent loads. |
 | `Type` label      | all                         | One of: `bug`, `feature`, `chore`, `design-iteration`.           |
 | `Risk` label      | feature, chore              | One of: `risk:low`, `risk:medium`, `risk:high`. Bugs are graded by the agent. |
 | `Trigger` label   | agent-eligible tickets only | `ai:triage` (let agent triage), `ai:implement` (let agent ship a PR). Absence = agent must not act. |
@@ -83,11 +83,11 @@ For an agent to read a frame reliably:
 
 ## PR review
 
-There is no automated review bot. Risk tiering and review grading are done via the `pr-review` skill, which reads `docs/risk-taxonomy.md` (file-glob rules, reversibility modifiers, hot paths) and diffs the current branch against `main`. It posts a single informational comment — it never approves, requests changes, or merges.
+Automated review has two separate roles. GitHub Copilot code review can leave code findings on pull requests, guided by the repository-wide `.github/copilot-instructions.md` and scoped rules under `.github/instructions/`. The `pr-review` skill handles repository-specific risk tiering and review grading: it reads `docs/risk-taxonomy.md` (file-glob rules, reversibility modifiers, hot paths), diffs the current branch against `main`, and posts a single informational comment. It never approves, requests changes, or merges.
 
 For a full human-authority review (the typical "review this PR" ask), use the `review-pr` skill instead; `pr-review` is for automation-style grading only.
 
-All PRs require human approval before merge, regardless of risk tier.
+All PRs require human approval before merge, regardless of automated findings or risk tier.
 
 ## GitHub PR conventions
 
@@ -109,7 +109,7 @@ When the agent opens a PR, it must:
 
 - A required field above is missing or malformed.
 - The ticket is labelled `risk:high` but the agent only has `ai:triage` permission (it can investigate but not open an implementing PR).
-- The area label points to a directory without a `CLAUDE.md` covering its conventions.
+- The area label points to a directory without an `AGENTS.md` covering its conventions.
 - The Figma frame references a component not present in `packages/components/src/`.
 
 Stopping looks like: post a Linear comment listing what's missing, mark the ticket back to the human in the triage column. Never guess.

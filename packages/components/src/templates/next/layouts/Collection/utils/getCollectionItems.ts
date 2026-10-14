@@ -1,13 +1,12 @@
 import type { AllCardProps } from "~/interfaces"
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
-import type {
-  CollectionPageCategoryOption,
-  CollectionPagePageProps,
-} from "~/types/page"
+import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
-import { resolveCategoryLabel } from "~/utils/resolveCategoryLabel"
 
+import { resolveCollectionSortOrder } from "./collectionSortOrder"
+import { getDateFilterDisplayEntries } from "./getDateFilterDisplayEntries"
+import { getPillAndPlaintextTags } from "./getPillAndPlaintextTags"
 import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
 
@@ -72,7 +71,6 @@ export type GetCollectionItemsProps = Pick<
   permalink: string
   sortBy?: CollectionPagePageProps["defaultSortBy"]
   sortDirection?: CollectionPagePageProps["defaultSortDirection"]
-  categoryOptions?: CollectionPageCategoryOption[]
 }
 
 export const getCollectionItems = ({
@@ -84,7 +82,6 @@ export const getCollectionItems = ({
   showDate,
   showThumbnail,
   tagCategories,
-  categoryOptions,
 }: GetCollectionItemsProps): AllCardProps[] => {
   let currSitemap: IsomerSitemap = site.siteMap
   const permalinkParts = permalink.split("/")
@@ -113,12 +110,7 @@ export const getCollectionItems = ({
 
   const items = currSitemap.children
     .flatMap((child) => getSitemapAsArray(child))
-    .filter(
-      (item) =>
-        item.layout === "file" ||
-        item.layout === "link" ||
-        item.layout === "article",
-    )
+    .filter((item) => item.layout === "link" || item.layout === "article")
 
   const transformedItems = items.map((item) => {
     const date =
@@ -126,36 +118,38 @@ export const getCollectionItems = ({
         ? getParsedDate(item.date)
         : undefined
     const image = getItemImage({ showThumbnail, item, site })
+    const { pillTags, plaintextTags } = getPillAndPlaintextTags(
+      item.tagged,
+      tagCategories,
+    )
+    const { dateFilterDisplayEntries } = getDateFilterDisplayEntries(
+      item.dateTagged,
+      tagCategories,
+    )
 
     const baseItem = {
       type: "collectionCard" as const,
       id: item.permalink,
       date,
       lastModified: item.lastModified,
-      category: resolveCategoryLabel({
-        categoryId: item.categoryId,
-        category: item.category,
-        categoryOptions,
-      }),
+      plaintextTags,
       title: item.title,
       description: item.summary,
       image,
       isContainNeeded: image?.isContainNeeded || false,
       site,
+      // NOTE: `tags` no longer falls back to the legacy `item.tags` field — Collection
+      // Items are expected to carry `tagged` + the parent's `tagCategories` going forward.
       tags:
         tagCategories && item.tagged
           ? getTagsFromTagged(item.tagged, tagCategories)
-          : item.tags,
+          : undefined,
+      pillTags,
+      dateTagged: item.dateTagged,
+      dateFilterDisplayEntries,
     }
 
-    if (item.layout === "file") {
-      return {
-        ...baseItem,
-        variant: "file",
-        url: item.ref,
-        fileDetails: item.fileDetails,
-      }
-    } else if (item.layout === "link") {
+    if (item.layout === "link") {
       return {
         ...baseItem,
         variant: "link",
@@ -172,7 +166,9 @@ export const getCollectionItems = ({
 
   return sortCollectionItems({
     items: transformedItems,
-    sortOrder,
+    sortOrder: sortOrder
+      ? resolveCollectionSortOrder(sortOrder, tagCategories)
+      : undefined,
     sortBy,
     sortDirection,
   })

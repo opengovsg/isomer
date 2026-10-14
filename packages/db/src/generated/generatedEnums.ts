@@ -3,6 +3,12 @@ export const ResourceState = {
   Published: "Published",
 } as const
 export type ResourceState = (typeof ResourceState)[keyof typeof ResourceState]
+export const ScheduledAction = {
+  Publish: "Publish",
+  Unpublish: "Unpublish",
+} as const
+export type ScheduledAction =
+  (typeof ScheduledAction)[keyof typeof ScheduledAction]
 export const ResourceType = {
   RootPage: "RootPage",
   Page: "Page",
@@ -33,10 +39,13 @@ export const AuditLogEvent = {
   ResourceDelete: "ResourceDelete",
   SchedulePublish: "SchedulePublish",
   CancelSchedulePublish: "CancelSchedulePublish",
+  ScheduleUnpublish: "ScheduleUnpublish",
+  CancelScheduleUnpublish: "CancelScheduleUnpublish",
   UserCreate: "UserCreate",
   UserUpdate: "UserUpdate",
   UserDelete: "UserDelete",
   Publish: "Publish",
+  Unpublish: "Unpublish",
   Login: "Login",
   Logout: "Logout",
   PermissionCreate: "PermissionCreate",
@@ -47,6 +56,7 @@ export const AuditLogEvent = {
   NavbarUpdate: "NavbarUpdate",
   RedirectCreate: "RedirectCreate",
   RedirectDelete: "RedirectDelete",
+  AuditLogExportCreate: "AuditLogExportCreate",
 } as const
 export type AuditLogEvent = (typeof AuditLogEvent)[keyof typeof AuditLogEvent]
 export const BuildStatusType = {
@@ -57,3 +67,17 @@ export const BuildStatusType = {
 } as const
 export type BuildStatusType =
   (typeof BuildStatusType)[keyof typeof BuildStatusType]
+export const AuditLogExportReportType = {
+  Access: "Access",
+  Activity: "Activity",
+} as const
+export type AuditLogExportReportType =
+  (typeof AuditLogExportReportType)[keyof typeof AuditLogExportReportType]
+export const AuditLogExportStatus = {
+  Pending: "Pending",
+  Processing: "Processing",
+  Done: "Done",
+  Failed: "Failed",
+} as const
+export type AuditLogExportStatus =
+  (typeof AuditLogExportStatus)[keyof typeof AuditLogExportStatus]

@@ -9,6 +9,7 @@ export const InfoCardNoImage = ({
   description,
   url,
   site,
+  headingLevel,
 }: SingleCardNoImageProps): JSX.Element => {
   const isExternalLink = isExternalUrl(url)
   return (
@@ -18,6 +19,7 @@ export const InfoCardNoImage = ({
         description={description}
         url={url}
         isExternalLink={isExternalLink}
+        headingLevel={headingLevel}
       />
     </InfoCardContainer>
   )

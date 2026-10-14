@@ -1,4 +1,5 @@
 import type { RouterOutput } from "~/utils/trpc"
+import { DEFAULT_TAG_CATEGORY_DISPLAY } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import {
   GAZETTE_SUBCATEGORY_LABEL,
@@ -53,6 +54,7 @@ export const createGazetteItem = (
   updatedAt: MOCK_STORY_DATE,
   scheduledAt: MOCK_STORY_DATE,
   scheduledBy: null,
+  scheduledAction: null,
   publishedAt: MOCK_STORY_DATE,
   fileSize: 123456,
   content: createGazetteContent({
@@ -79,6 +81,7 @@ export const DEFAULT_GAZETTE_ITEMS: RouterOutput["gazette"]["list"] = [
     updatedAt: MOCK_STORY_DATE,
     scheduledAt: new Date("2024-09-13T09:00:00.000Z"),
     scheduledBy: "cljcnahpn0000xlwynuea40lv",
+    scheduledAction: "Publish",
     publishedAt: null,
     fileSize: 123456,
     content: createGazetteContent({
@@ -102,6 +105,7 @@ export const DEFAULT_GAZETTE_ITEMS: RouterOutput["gazette"]["list"] = [
     updatedAt: MOCK_STORY_DATE,
     scheduledAt: MOCK_STORY_DATE,
     scheduledBy: null,
+    scheduledAction: null,
     publishedAt: MOCK_STORY_DATE,
     fileSize: 654321,
     content: createGazetteContent({
@@ -117,6 +121,7 @@ const GAZETTE_TAG_CATEGORIES = [
   {
     label: GAZETTE_SUBCATEGORY_LABEL,
     id: "0e02b2c3-58cc-4372-a567-f47ac10b3d47",
+    display: DEFAULT_TAG_CATEGORY_DISPLAY,
     options: Object.values(governmentGazetteSubcategories).map(
       (label, index) => ({
         label,

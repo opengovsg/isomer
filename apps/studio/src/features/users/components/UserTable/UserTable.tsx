@@ -1,18 +1,20 @@
+import type { StockFeatures } from "@tanstack/react-table"
 import type { AdminType } from "~/schemas/user"
 import { Text, VStack } from "@chakra-ui/react"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
-  getCoreRowModel,
-  getPaginationRowModel,
-  useReactTable,
+  stockFeatures,
+  useTable,
 } from "@tanstack/react-table"
 import { useContext, useMemo } from "react"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { UserManagementContext } from "~/features/users"
+import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import type { UserTableData } from "./types"
 import { LastLoginCell } from "./LastLoginCell"
@@ -24,12 +26,16 @@ export interface UserTableProps {
   adminType: AdminType
 }
 
-const columnsHelper = createColumnHelper<UserTableData>()
+const columnsHelper = createColumnHelper<StockFeatures, UserTableData>()
 
 const getColumns = ({
   siteId,
   shouldShowActions,
-}: Pick<UserTableProps, "siteId"> & { shouldShowActions: boolean }) => {
+  shouldShowPhone,
+}: Pick<UserTableProps, "siteId"> & {
+  shouldShowActions: boolean
+  shouldShowPhone: boolean
+}) => {
   const baseColumns = [
     columnsHelper.display({
       id: "user_info",
@@ -45,6 +51,18 @@ const getColumns = ({
         </VStack>
       ),
     }),
+    ...(shouldShowPhone
+      ? [
+          columnsHelper.display({
+            id: "user_phone",
+            header: () => <TableHeader>Phone</TableHeader>,
+            cell: ({ row }) => (
+              <Text textStyle="caption-2">{row.original.phone || "-"}</Text>
+            ),
+            size: 80,
+          }),
+        ]
+      : []),
     columnsHelper.display({
       id: "user_role",
       header: () => <TableHeader>Role</TableHeader>,
@@ -91,6 +109,10 @@ const getColumns = ({
 
 export const UserTable = ({ siteId, adminType }: UserTableProps) => {
   const ability = useContext(UserManagementContext)
+  // The server only returns phone numbers to core Isomer admins
+  const { isAdmin: isCoreIsomerAdmin } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core],
+  })
 
   const columns = useMemo(
     () =>
@@ -100,8 +122,9 @@ export const UserTable = ({ siteId, adminType }: UserTableProps) => {
         // because we should not let agencies manage isomer admins
         shouldShowActions:
           ability.can("manage", "UserManagement") && adminType === "agency",
+        shouldShowPhone: isCoreIsomerAdmin,
       }),
-    [siteId, ability, adminType],
+    [siteId, ability, adminType, isCoreIsomerAdmin],
   )
 
   const { data: totalRowCount = 0, isLoading: isCountLoading } =
@@ -129,14 +152,13 @@ export const UserTable = ({ siteId, adminType }: UserTableProps) => {
     },
   )
 
-  const tableInstance = useReactTable<UserTableData>({
+  const tableInstance = useTable({
+    features: stockFeatures,
     columns,
     data: users ?? [],
-    getCoreRowModel: getCoreRowModel(),
     manualFiltering: true,
     manualPagination: true,
     autoResetPageIndex: false,
-    getPaginationRowModel: getPaginationRowModel(),
     onPaginationChange,
     state: {
       pagination,
@@ -158,6 +180,7 @@ export const UserTable = ({ siteId, adminType }: UserTableProps) => {
         <UserTableEmptyState
           siteId={siteId}
           promptAddUser={adminType === "agency"}
+          colSpan={columns.length}
         />
       }
     />

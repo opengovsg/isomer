@@ -1,9 +1,27 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionCardProps } from "~/interfaces"
+import { expect, within } from "storybook/test"
+import { buildDateFilterStatusLabels } from "~/templates/next/layouts/Collection/utils/buildDateFilterStatusLabels"
+import { DATE_FILTER_STATUS } from "~/types/constants"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import { CollectionCard } from "./CollectionCard"
+
+const EVENT_DATE_STATUS_LABELS = buildDateFilterStatusLabels()
+
+const REGISTRATION_DEADLINE_STATUS_LABELS = buildDateFilterStatusLabels({
+  [DATE_FILTER_STATUS.Ended.id]: "Registration closed",
+  [DATE_FILTER_STATUS.Ongoing.id]: "Registration open",
+  [DATE_FILTER_STATUS.Upcoming.id]: "Registration upcoming",
+})
+
+const pad = (n: number): string => n.toString().padStart(2, "0")
+const daysFromNow = (days: number) => {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
 
 const meta: Meta<typeof CollectionCard> = {
   title: "Next/Internal Components/CollectionCard",
@@ -32,7 +50,7 @@ const generateArgs = ({
 } => {
   return {
     date: new Date("2023-12-02"),
-    category: "Research",
+    plaintextTags: [{ category: "Category", selected: ["Research"] }],
     title:
       "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
     description:
@@ -46,7 +64,7 @@ const generateArgs = ({
     itemTitle:
       "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
     shouldShowDate,
-    tags: [],
+    pillTags: [],
     ...overrides,
   }
 }
@@ -92,6 +110,10 @@ export const CardWithoutImage: Story = {
   args: generateArgs({ image: undefined }),
 }
 
+export const CardWithoutPlaintextTags: Story = {
+  args: generateArgs({ plaintextTags: [] }),
+}
+
 export const ShortDescription: Story = {
   args: generateArgs({
     title: "Short title",
@@ -110,7 +132,7 @@ export const TagsWithImage: Story = {
   args: generateArgs({
     title: "Collection card with tags",
     description: "This is a random description that will be on the card",
-    tags: [
+    pillTags: [
       {
         category: "long",
         selected: [
@@ -126,7 +148,7 @@ export const TagsWithoutImage: Story = {
     title: "Collection card without tags",
     image: undefined,
     description: "This is a random description that will be on the card",
-    tags: [
+    pillTags: [
       {
         category: "very long",
         selected: [
@@ -135,4 +157,119 @@ export const TagsWithoutImage: Story = {
       },
     ],
   }),
+}
+
+export const MultiplePlaintextTags: Story = {
+  args: generateArgs({
+    title: "Multiple plaintext-display groups are joined with a dot",
+    description:
+      "Each `plaintextTags` entry (e.g. Research, Guides) is rendered as plain text under the title, separated by a dot, and `pillTags` should never contain an entry for those same groups.",
+    plaintextTags: [
+      { category: "Category", selected: ["Research"] },
+      { category: "Region", selected: ["Guides"] },
+    ],
+    pillTags: [
+      {
+        category: "Topic",
+        selected: ["Health"],
+      },
+    ],
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+
+    // Each plaintext group is rendered once as plain text
+    await expect(screen.getByText("Research")).toBeInTheDocument()
+    await expect(screen.getByText("Guides")).toBeInTheDocument()
+
+    // pillTags renders the non-plaintext group as a pill
+    await expect(screen.getByText("Health")).toBeInTheDocument()
+
+    // The plaintext groups' own labels must not appear as pill headings
+    await expect(screen.queryByText("Category")).not.toBeInTheDocument()
+  },
+}
+
+export const WithDateFilter: Story = {
+  args: {
+    ...generateArgs({
+      title: "Annual Community Charity Run 2026",
+    }),
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+    ],
+  },
+}
+
+export const WithMultipleDateFilters: Story = {
+  args: {
+    ...generateArgs({
+      title: "Item with two date filters",
+    }),
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(30),
+        endDate: daysFromNow(40),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+      {
+        id: "registration-deadline",
+        label: "Registration Deadline",
+        dateText: "1 Jan - 10 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: REGISTRATION_DEADLINE_STATUS_LABELS,
+      },
+    ],
+  },
+}
+
+export const WithEverything: Story = {
+  args: {
+    ...generateArgs({
+      title: "Item with two date filters",
+    }),
+    plaintextTags: [
+      { category: "Category", selected: ["Research"] },
+      { category: "Region", selected: ["Guides"] },
+    ],
+    pillTags: [
+      {
+        category: "Tags",
+        selected: ["NParks Happenings", "Wild dinosaur"],
+      },
+      {
+        category: "Topic",
+        selected: ["Health", "Community"],
+      },
+    ],
+    dateFilterDisplayEntries: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        dateText: "27 Sep - 29 Sep 2026",
+        date: daysFromNow(30),
+        endDate: daysFromNow(40),
+        statusLabels: EVENT_DATE_STATUS_LABELS,
+      },
+      {
+        id: "registration-deadline",
+        label: "Registration Deadline",
+        dateText: "1 Jan - 10 Sep 2026",
+        date: daysFromNow(-5),
+        endDate: daysFromNow(5),
+        statusLabels: REGISTRATION_DEADLINE_STATUS_LABELS,
+      },
+    ],
+  },
 }

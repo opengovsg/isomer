@@ -99,6 +99,91 @@ export function normalizeSource(source: string): string | null {
   return trimmed
 }
 
+// A reference destination has already been resolved to a path by GET_REDIRECTS
+// before this script runs. Compare the paths as CloudFront will see them:
+// percent-decoded, slash-normalised and without a query/fragment (neither is
+// part of the S3 object key). For a wildcard, compare its prefix because the
+// edge resolver appends the matched remainder to the destination; e.g.
+// "/students/*" -> "/students" also redirects every request back to itself.
+// Exported for focused regression coverage of this final upload boundary.
+export function isSelfReferentialRedirect({
+  source,
+  destination,
+}: Redirect): boolean {
+  if (!destination.startsWith("/")) return false
+
+  const sourcePath = source.endsWith("/*") ? source.slice(0, -2) : source
+  const destinationPath = destination.split(/[?#]/, 1)[0]
+  const normalizedSource = normalizeSource(sourcePath)
+  const normalizedDestination = destinationPath
+    ? normalizeSource(destinationPath)
+    : null
+
+  return normalizedSource !== null && normalizedSource === normalizedDestination
+}
+
+export const MANIFEST_KEY_SUFFIX = "_redirects/manifest.json"
+
+// A stored source is a wildcard ("…/*") — those go in the manifest for the edge
+// resolver to prefix-match. Everything else is an exact redirect and stays a
+// 0-byte S3 object served directly by CloudFront.
+const isManifestKind = (source: string): boolean => source.endsWith("/*")
+
+export function partitionRedirects(rows: Redirect[]): {
+  exact: Redirect[]
+  manifestEntries: Redirect[]
+} {
+  const exact: Redirect[] = []
+  const manifestEntries: Redirect[] = []
+  for (const r of rows) {
+    ;(isManifestKind(r.source) ? manifestEntries : exact).push(r)
+  }
+  return { exact, manifestEntries }
+}
+
+// `version` is the manifest schema version: the edge resolver reads it to know
+// how to interpret the file, so an incompatible future format can bump it and
+// let the resolver branch on / reject an unexpected version rather than
+// mis-parsing. Bump it only on a breaking shape change.
+export const MANIFEST_VERSION = 1
+
+export function buildManifest(entries: Redirect[]): {
+  version: number
+  redirects: Record<string, string>
+} {
+  const redirects: Record<string, string> = {}
+  for (const { source, destination } of entries) {
+    // Keep the first destination and warn on a repeat, mirroring the exact-path
+    // dedup above — silently overwriting would let a later row change a wildcard's
+    // target with no signal in the build log.
+    if (Object.prototype.hasOwnProperty.call(redirects, source)) {
+      console.warn(
+        `Skipping duplicate wildcard source in manifest: ${source} (keeping first destination "${redirects[source]}")`,
+      )
+      continue
+    }
+    redirects[source] = destination
+  }
+  return { version: MANIFEST_VERSION, redirects }
+}
+
+async function uploadManifest(
+  client: S3Client,
+  config: UploadConfig,
+  entries: Redirect[],
+): Promise<void> {
+  const body = JSON.stringify(buildManifest(entries))
+  await client.send(
+    new PutObjectCommand({
+      Bucket: config.s3BucketName,
+      Key: `${config.siteName}/${config.buildNumber}/latest/${MANIFEST_KEY_SUFFIX}`,
+      Body: body,
+      ContentType: "application/json",
+      CacheControl: "max-age=600",
+    }),
+  )
+}
+
 async function uploadOne(
   client: S3Client,
   config: UploadConfig,
@@ -170,9 +255,25 @@ async function main(): Promise<void> {
     `Loaded ${raw.length} redirect row(s) from ${config.redirectsJson}`,
   )
 
+  // Partition BEFORE per-kind normalisation: wildcard sources must not go
+  // through normalizeSource (it strips the leading slash and would mangle the
+  // "/*"). Their stored sources are already canonical (written by the schema).
+  // GET_REDIRECTS drops self-references too, but enforce the invariant again at
+  // the final upload boundary. This also protects custom/stale redirects.json
+  // inputs and catches percent-encoded sources after CloudFront normalisation.
+  const publishable = raw.filter((redirect) => {
+    if (!isSelfReferentialRedirect(redirect)) return true
+    console.warn(
+      `Skipping self-referential redirect: ${redirect.source} -> ${redirect.destination}`,
+    )
+    return false
+  })
+  const { exact: rawExact, manifestEntries } = partitionRedirects(publishable)
+
+  // Exact: normalise the S3 key (decode %-encoding, strip slashes, safety checks).
   const seen = new Set<string>()
-  const valid: Redirect[] = []
-  for (const r of raw) {
+  const validExact: Redirect[] = []
+  for (const r of rawExact) {
     const source = normalizeSource(r.source)
     if (!source) {
       console.warn(
@@ -190,29 +291,42 @@ async function main(): Promise<void> {
       )
     }
     seen.add(source)
-    valid.push({ source, destination: r.destination })
-  }
-
-  if (valid.length === 0) {
-    console.log("No valid redirects to upload.")
-    return
+    validExact.push({ source, destination: r.destination })
   }
 
   // Region/credentials come from the environment (CodeBuild IAM role +
   // AWS_REGION), same as `aws s3 cp` previously.
   const client = new S3Client({})
+  let totalFailed = 0
 
-  console.log(
-    `Uploading ${valid.length} redirect(s) with concurrency ${config.concurrency}...`,
-  )
-  const { failed } = await runWithConcurrency(
-    client,
-    config,
-    valid,
-    config.concurrency,
-  )
-  console.log(`Uploaded ${valid.length - failed}/${valid.length} redirects.`)
-  if (failed > 0) process.exit(1)
+  if (validExact.length > 0) {
+    console.log(
+      `Uploading ${validExact.length} exact redirect(s) with concurrency ${config.concurrency}...`,
+    )
+    const { failed } = await runWithConcurrency(
+      client,
+      config,
+      validExact,
+      config.concurrency,
+    )
+    console.log(
+      `Uploaded ${validExact.length - failed}/${validExact.length} exact redirects.`,
+    )
+    totalFailed += failed
+  }
+
+  // Wildcard sources go to a single manifest the edge resolver reads.
+  if (manifestEntries.length > 0) {
+    await uploadManifest(client, config, manifestEntries)
+    console.log(`Uploaded manifest with ${manifestEntries.length} rule(s).`)
+  }
+
+  if (validExact.length === 0 && manifestEntries.length === 0) {
+    console.log("No valid redirects to upload.")
+    return
+  }
+
+  if (totalFailed > 0) process.exit(1)
 }
 
 // Run only when executed directly (`tsx uploadRedirects.ts`), not when the file

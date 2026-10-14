@@ -1,5 +1,6 @@
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import { describe, expect, it } from "vitest"
+import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getCollectionPages } from "../getCollectionPages"
 
@@ -52,7 +53,7 @@ describe("getCollectionPages", () => {
     image,
     firstImage,
     category,
-    categoryId,
+    tagged,
   }: {
     id: string
     permalink: string
@@ -60,7 +61,7 @@ describe("getCollectionPages", () => {
     image?: { src: string; alt: string }
     firstImage?: { src: string; alt: string }
     category?: string
-    categoryId?: string
+    tagged?: string[]
   }): IsomerSitemap => ({
     id,
     title: `${id} title`,
@@ -70,7 +71,7 @@ describe("getCollectionPages", () => {
     layout: "article",
     date,
     category,
-    categoryId,
+    tagged,
     image,
     firstImage,
   })
@@ -329,46 +330,6 @@ describe("getCollectionPages", () => {
     })
   })
 
-  it("should resolve categoryId to the matching label from categoryOptions", () => {
-    // Arrange
-    const collectionParent: IsomerSitemap = {
-      id: collectionId,
-      title: "Collection 1",
-      permalink: collectionPermalink,
-      layout: "collection",
-      summary: "Collection 1 summary",
-      lastModified: new Date("2021-01-01").toISOString(),
-      collectionPagePageProps: {
-        categoryOptions: [
-          { id: "cat-uuid-1", label: "Policy" },
-          { id: "cat-uuid-2", label: "Research" },
-        ],
-      },
-      children: [
-        createMockCollectionItem({
-          id: `${collectionId}1`,
-          permalink: `${collectionPermalink}/1`,
-          categoryId: "cat-uuid-2",
-          category: "legacy",
-        }),
-      ],
-    }
-    site = {
-      ...site,
-      siteMap: {
-        ...site.siteMap,
-        children: [collectionParent],
-      },
-    }
-
-    // Act
-    const result = getCollectionPages({ site, collectionParent })
-
-    // Assert
-    expect(result).toHaveLength(1)
-    expect(result[0]?.category).toBe("Research")
-  })
-
   it("should use default sort values (date desc) when collectionPagePageProps sort values are absent", () => {
     // Arrange
     const collectionParent: IsomerSitemap = {
@@ -405,5 +366,83 @@ describe("getCollectionPages", () => {
     // Assert
     expect(result[0]?.itemTitle).toEqual(`${collectionId}2 title`)
     expect(result[1]?.itemTitle).toEqual(`${collectionId}1 title`)
+  })
+
+  describe("plaintextTags resolution", () => {
+    it("threads the referenced Collection's tagCategories through to derive each card's plaintextTags from its tagged options", () => {
+      // Arrange
+      const collectionParent: IsomerSitemap = {
+        id: collectionId,
+        title: "Collection 1",
+        permalink: collectionPermalink,
+        layout: "collection",
+        summary: "Collection 1 summary",
+        lastModified: new Date("2021-01-01").toISOString(),
+        children: [
+          createMockCollectionItem({
+            id: `${collectionId}1`,
+            permalink: `${collectionPermalink}/1`,
+            tagged: ["cat-opt-1"],
+          }),
+        ],
+        collectionPagePageProps: {
+          tagCategories: [
+            {
+              label: "Category",
+              id: "cat-1",
+              display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+              options: [{ label: "Guides", id: "cat-opt-1" }],
+            },
+          ],
+        },
+      }
+      site = {
+        ...site,
+        siteMap: {
+          ...site.siteMap,
+          children: [collectionParent],
+        },
+      }
+
+      // Act
+      const result = getCollectionPages({ site, collectionParent })
+
+      // Assert
+      expect(result[0]?.plaintextTags).toEqual([
+        { id: "cat-1", category: "Category", selected: ["Guides"] },
+      ])
+    })
+
+    it("resolves plaintextTags to undefined when the referenced Collection has no tagCategories", () => {
+      // Arrange
+      const collectionParent: IsomerSitemap = {
+        id: collectionId,
+        title: "Collection 1",
+        permalink: collectionPermalink,
+        layout: "collection",
+        summary: "Collection 1 summary",
+        lastModified: new Date("2021-01-01").toISOString(),
+        children: [
+          createMockCollectionItem({
+            id: `${collectionId}1`,
+            permalink: `${collectionPermalink}/1`,
+            tagged: ["cat-opt-1"],
+          }),
+        ],
+      }
+      site = {
+        ...site,
+        siteMap: {
+          ...site.siteMap,
+          children: [collectionParent],
+        },
+      }
+
+      // Act
+      const result = getCollectionPages({ site, collectionParent })
+
+      // Assert
+      expect(result[0]?.plaintextTags).toBeUndefined()
+    })
   })
 })

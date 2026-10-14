@@ -1,5 +1,6 @@
 import type {
   AuditLogEvent,
+  AuditLogExportReportType,
   Blob,
   DB,
   Footer,
@@ -19,7 +20,7 @@ type WithoutMeta<T> = Omit<T, "createdAt" | "updatedAt">
 
 // NOTE: Either a folder/collection that doesn't have a blob
 // or a page w/ blob
-type FullResource =
+export type FullResource =
   | WithoutMeta<Resource>
   | {
       blob: WithoutMeta<Blob>
@@ -56,6 +57,14 @@ interface ResourceEventDeltaMap {
         before: WithoutMeta<PushDocumentJob>
         after: null
       }
+  ScheduleUnpublish: {
+    before: FullResource
+    after: FullResource
+  }
+  CancelScheduleUnpublish: {
+    before: FullResource
+    after: FullResource
+  }
 }
 
 interface BaseResourceEventLogProps {
@@ -232,6 +241,7 @@ export const logAuthEvent: AuditLogger<AuthEventLogProps> = async (
 
 interface VersionPointer {
   versionId: Version["id"]
+  versionNum: Version["versionNum"]
 }
 
 type BlobPublishEvent = Resource & Blob
@@ -252,7 +262,7 @@ interface PublishEventLogProps<
     before: Before extends null ? null : WithoutMeta<Before>
     after: After extends null ? null : WithoutMeta<After>
   }
-  eventType: Extract<AuditLogEvent, "Publish">
+  eventType: Extract<AuditLogEvent, "Publish" | "Unpublish">
   ip?: string
   metadata: Meta
   siteId: Site["id"]
@@ -263,6 +273,14 @@ interface PublishEventLogProps<
 type BlobPublishEventLogProps = PublishEventLogProps<
   null | VersionPointer,
   VersionPointer,
+  BlobPublishEvent
+>
+
+// NOTE: Unpublish clears Resource.publishedVersionId while leaving Version
+// history and any draft untouched, so there is no new version to point to.
+type BlobUnpublishEventLogProps = PublishEventLogProps<
+  VersionPointer,
+  null,
   BlobPublishEvent
 >
 
@@ -283,6 +301,7 @@ type RepublishEventLogProps = PublishEventLogProps<
 
 export const logPublishEvent: AuditLogger<
   | BlobPublishEventLogProps
+  | BlobUnpublishEventLogProps
   | ResourcePublishEventLogProps
   | ConfigPublishEventLogProps
   | RepublishEventLogProps
@@ -384,5 +403,47 @@ export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
       siteId,
       metadata,
     })
+    .execute()
+}
+
+interface AuditLogExportCreateDelta {
+  before: null
+  after: {
+    auditLogDateRange: string
+    reportType: AuditLogExportReportType
+  }
+}
+
+interface AuditLogExportEventLogProps {
+  eventType: Extract<AuditLogEvent, "AuditLogExportCreate">
+  delta: AuditLogExportCreateDelta
+  by: User
+  ip?: string
+  siteId: Site["id"]
+}
+
+// Batched: an "allSites" ask (see auditLogExport.service.ts) can cover every
+// site the caller Admins, and each site's request gets its own event —
+// inserting all of them in one multi-row statement avoids holding that ask's
+// transaction open for one extra round trip per site.
+export const logAuditLogExportEvents: AuditLogger<
+  AuditLogExportEventLogProps[]
+> = async (tx, events) => {
+  if (events.length === 0) {
+    return
+  }
+
+  await tx
+    .insertInto("AuditLog")
+    .values(
+      events.map(({ eventType, delta, by, ip, siteId }) => ({
+        siteId,
+        eventType,
+        delta,
+        userId: by.id,
+        ipAddress: ip,
+        metadata: {},
+      })),
+    )
     .execute()
 }

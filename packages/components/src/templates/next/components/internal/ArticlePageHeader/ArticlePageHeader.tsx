@@ -1,53 +1,89 @@
 import type { ArticlePageHeaderProps } from "~/interfaces"
 import { getFormattedDate } from "~/utils/getFormattedDate"
+import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { Breadcrumb } from "../Breadcrumb"
-import { Tag } from "../Tag"
+import { DateFilterDates } from "../CollectionCard/DateFilterDates"
+import { DateFilterStatusClient } from "../CollectionCard/DateFilterStatusClient"
+import { LabeledDate } from "../CollectionCard/LabeledDate"
+import { LinkButton } from "../LinkButton"
+import { PillTags, PlaintextTags } from "../Tags"
 
 export const ArticlePageHeader = ({
   breadcrumb,
-  category,
+  plaintextTags,
   title,
   date,
   summary,
-  tags = [],
+  pillTags,
+  buttonLabel,
+  buttonUrl,
+  site,
+  dateFilterDisplayEntries,
 }: ArticlePageHeaderProps) => {
+  const hasDateFilters = (dateFilterDisplayEntries?.length ?? 0) > 0
+
   return (
     <div className="mx-auto w-full">
       <div className="my-16">
         <Breadcrumb links={breadcrumb.links} />
       </div>
 
-      <div className="prose-body-base mb-3 text-base-content">{category}</div>
-
       <div className="flex flex-col gap-5">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
+          {hasDateFilters && (
+            <DateFilterStatusClient entries={dateFilterDisplayEntries} />
+          )}
+
+          <PlaintextTags
+            tags={plaintextTags}
+            className="prose-body-base text-base-content"
+          />
+
           <h1 className="prose-display-md break-words text-base-content-strong">
             {title}
           </h1>
-          {tags.length > 0 &&
-            tags.flatMap(({ category, selected: labels }) => {
-              return (
-                <div className="prose-label-sm flex flex-wrap items-center gap-2">
-                  {category}
-                  {labels.map((label) => {
-                    return <Tag key={label}>{label}</Tag>
-                  })}
-                </div>
-              )
-            })}
         </div>
 
-        {date && (
-          <p className="prose-label-sm-medium text-base-content">
-            {getFormattedDate(date)}
-          </p>
-        )}
+        <DateFilterDates entries={dateFilterDisplayEntries} />
+
+        {date &&
+          (hasDateFilters ? (
+            <LabeledDate
+              label="Page published"
+              dateText={getFormattedDate(date)}
+            />
+          ) : (
+            <p className="prose-label-sm-medium text-base-content">
+              {getFormattedDate(date)}
+            </p>
+          ))}
+
+        <PillTags
+          tags={pillTags}
+          className="flex flex-wrap items-center gap-2"
+          containerClassName="flex flex-col gap-4"
+        />
 
         {summary && (
           <p className="prose-title-lg whitespace-pre-wrap text-base-content-light">
             {summary}
           </p>
+        )}
+
+        {buttonLabel && buttonUrl && (
+          <div className="mt-4">
+            <LinkButton
+              href={getReferenceLinkHref(
+                buttonUrl,
+                site.siteMapArray,
+                site.assetsBaseUrl,
+              )}
+              isWithFocusVisibleHighlight
+            >
+              {buttonLabel}
+            </LinkButton>
+          </div>
         )}
       </div>
     </div>

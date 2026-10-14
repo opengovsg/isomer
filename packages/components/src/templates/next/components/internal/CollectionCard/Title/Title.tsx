@@ -6,12 +6,13 @@ import { InternalLinkTitle } from "./InternalLinkTitle"
 interface TitleProps {
   title: CollectionCardProps["itemTitle"]
   isExternalLink: boolean
+  headingLevel: number
 }
 
-export const Title = ({ title, isExternalLink }: TitleProps) => {
+export const Title = ({ title, isExternalLink, headingLevel }: TitleProps) => {
   return isExternalLink ? (
-    <ExternalLinkTitle title={title} />
+    <ExternalLinkTitle title={title} headingLevel={headingLevel} />
   ) : (
-    <InternalLinkTitle title={title} />
+    <InternalLinkTitle title={title} headingLevel={headingLevel} />
   )
 }

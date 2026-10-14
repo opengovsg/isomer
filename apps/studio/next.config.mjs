@@ -38,6 +38,7 @@ const ContentSecurityPolicy = `
     https://www.googletagmanager.com
     https://td.doubleclick.net
     https://www.onemap.gov.sg
+    https://mobile.onemap.gov.sg
     https://www.youtube-nocookie.com
     https://player.vimeo.com
     https://m.facebook.com
@@ -60,6 +61,8 @@ const ContentSecurityPolicy = `
     https://embed-cdn.spotifycdn.com
     https://open.spotify.com
     https://js-cdn.music.apple.com
+    ${env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST ?? ""}
+    ${env.NEXT_PUBLIC_POSTHOG_HOST ?? ""}
     ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://vercel.live" : ""}
     ;
   style-src
@@ -77,6 +80,8 @@ const ContentSecurityPolicy = `
     ;
   connect-src
     'self'
+    ${env.NEXT_PUBLIC_POSTHOG_HOST ?? ""}
+    ${env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST ?? ""}
     https://browser-intake-datadoghq.com
     https://*.browser-intake-datadoghq.com
     https://vitals.vercel-insights.com
@@ -140,7 +145,15 @@ const ContentSecurityPolicy = `
  */
 /** @type {import("next").NextConfig} */
 const config = {
-  output: "standalone",
+  // Standalone output is for Docker / start:standalone.
+  // Skip it on Vercel: Next 16.3 skips next-server.js.nft.json when an adapter
+  // is present (NEXT_ADAPTER_PATH), but standalone still reads it unguarded
+  // (vercel/next.js#96646). Vercel ignores the standalone directory.
+  // Also skip it for the e2e CI build (SKIP_STANDALONE_OUTPUT=true), which is
+  // served via plain `next start` and never reads `.next/standalone`.
+  output:
+    // oxlint-disable-next-line node/no-process-env -- Vercel sets VERCEL; it is not in the app env schema
+    env.SKIP_STANDALONE_OUTPUT || process.env.VERCEL ? undefined : "standalone",
   // Pin the tracing root so the standalone layout is always
   // `.next/standalone/apps/studio/server.js` (what the Dockerfile and start:standalone expect).
   // Without this, Next infers the workspace root from the outermost lockfile, which varies by
@@ -154,7 +167,10 @@ const config = {
   // Next resolves them the same from the app root as from the workspace package (pnpm); otherwise
   // Next may bundle jsdom and break __dirname (default-stylesheet.css ENOENT).
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
-  productionBrowserSourceMaps: true,
+  // Off only for the e2e CI build (SKIP_PRODUCTION_SOURCE_MAPS=true) — these
+  // maps exist for Datadog RUM error tracking on real deploys, which e2e
+  // gets no benefit from, and generating them is a meaningful chunk of build time.
+  productionBrowserSourceMaps: !env.SKIP_PRODUCTION_SOURCE_MAPS,
   /** We already do typechecking as separate tasks in CI */
   typescript: { ignoreBuildErrors: true },
   transpilePackages: [
@@ -162,7 +178,7 @@ const config = {
     "@isomer/logging",
     "@isomer/pgboss",
     "@sinclair/typebox",
-    "@opengovsg/starter-kitty-validators",
+    "@opengovsg/validators",
   ],
   images: {
     remotePatterns: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME

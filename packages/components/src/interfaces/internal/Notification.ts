@@ -6,6 +6,7 @@ import { Type } from "@sinclair/typebox"
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { TextSchema } from "../native"
 import { SimpleProseSchema } from "../native/Prose"
+import { IsomerString } from "../primitives/IsomerString"
 
 const NotificationCustomSchema = Type.Object(
   {
@@ -14,7 +15,7 @@ const NotificationCustomSchema = Type.Object(
         default: "custom",
       }),
     ),
-    title: Type.String({
+    title: IsomerString({
       title: "Notification title",
       maxLength: 150,
     }),

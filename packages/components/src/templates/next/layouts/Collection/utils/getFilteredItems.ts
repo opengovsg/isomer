@@ -1,44 +1,81 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
+import type { CollectionPagePageProps } from "~/types"
+import { isDateFilter, isTextFilter } from "~/types/page"
 
 import type { AppliedFilter } from "../../../types/Filter"
-import {
-  FILTER_ID_CATEGORY,
-  FILTER_ID_YEAR,
-  NO_SPECIFIED_YEAR_FILTER_ID,
-} from "./constants"
+import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
+import { getDateFilterStatus } from "./getDateFilterStatus"
+import { normalizeCollectionSearchText } from "./normalizeCollectionSearchText"
+import { sanitizeAppliedFiltersForVisibility } from "./sanitizeAppliedFiltersForVisibility"
+
+const itemOverlapsAppliedDateRange = (
+  value: { date: string; endDate?: string },
+  dateRange: AppliedFilter["dateRange"],
+) => {
+  if (!dateRange) {
+    return true
+  }
+
+  const itemEnd = value.endDate ?? value.date
+  if (dateRange.end !== undefined && value.date > dateRange.end) {
+    return false
+  }
+  if (dateRange.start !== undefined && itemEnd < dateRange.start) {
+    return false
+  }
+  return true
+}
 
 export const getFilteredItems = (
   items: ProcessedCollectionCardProps[],
   appliedFilters: AppliedFilter[],
   searchValue: string,
+  tagCategories?: CollectionPagePageProps["tagCategories"],
 ): ProcessedCollectionCardProps[] => {
+  const visibleAppliedFilters = sanitizeAppliedFiltersForVisibility(
+    appliedFilters,
+    tagCategories,
+  )
+  const normalizedSearchValue =
+    searchValue !== "" ? normalizeCollectionSearchText(searchValue) : ""
+
+  const yearFilter = visibleAppliedFilters.find(
+    (filter) => filter.id === FILTER_ID_YEAR,
+  )
+
+  // Text filters (isTextFilter): match on category.label; legacy rows omit `type`.
+  const textFilters = visibleAppliedFilters.filter(
+    ({ id }) =>
+      id !== FILTER_ID_YEAR &&
+      tagCategories?.some(
+        (category) => category.label === id && isTextFilter(category),
+      ),
+  )
+
+  // Date filters (isDateFilter): match on category.id; always `type: "date"`.
+  const dateFilters = visibleAppliedFilters.filter(
+    ({ id }) =>
+      id !== FILTER_ID_YEAR &&
+      tagCategories?.some(
+        (category) => category.id === id && isDateFilter(category),
+      ),
+  )
+
   return items.filter((item) => {
     // Step 1: Filter based on search value
     if (
-      searchValue !== "" &&
-      !item.title.toLowerCase().includes(searchValue.toLowerCase()) &&
-      !item.description.toLowerCase().includes(searchValue.toLowerCase())
-    ) {
-      return false
-    }
-
-    // Step 2: Remove items that do not match the applied category filters
-    const categoryFilter = appliedFilters.find(
-      (filter) => filter.id === FILTER_ID_CATEGORY,
-    )
-    if (
-      categoryFilter &&
-      !categoryFilter.items.some(
-        (filterItem) => filterItem.id === item.category.toLowerCase(),
+      normalizedSearchValue !== "" &&
+      !normalizeCollectionSearchText(item.title).includes(
+        normalizedSearchValue,
+      ) &&
+      !normalizeCollectionSearchText(item.description ?? "").includes(
+        normalizedSearchValue,
       )
     ) {
       return false
     }
 
-    // Step 3: Remove items that do not match the applied year filters
-    const yearFilter = appliedFilters.find(
-      (filter) => filter.id === FILTER_ID_YEAR,
-    )
+    // Step 2: Remove items that do not match the applied year filters
     if (
       yearFilter &&
       !yearFilter.items.some((filterItem) =>
@@ -52,13 +89,8 @@ export const getFilteredItems = (
       return false
     }
 
-    const remainingFilters = appliedFilters.filter(
-      ({ id }) => id !== FILTER_ID_CATEGORY && id !== FILTER_ID_YEAR,
-    )
-
-    // Step 4: Compute set intersection between remaining filters and the set of items.
-    // Take note that we use OR between items within the same filter and AND between filters.
-    return remainingFilters
+    // Step 3: Text filters (isTextFilter): match item.tags on category.label; OR within filter, AND between filters.
+    const matchesTextFilters = textFilters
       .map(({ items: activeFilters, id }) => {
         return item.tags?.some(({ category, selected: itemLabels }) => {
           return (
@@ -72,5 +104,36 @@ export const getFilteredItems = (
         })
       })
       .every((x) => x)
+
+    if (!matchesTextFilters) {
+      return false
+    }
+
+    // Step 4: Date filters (isDateFilter): match item.dateTagged on category.id; status buckets and date ranges.
+    const matchesDateFilters = dateFilters.every((appliedFilter) => {
+      const value = item.dateTagged?.find(({ id }) => id === appliedFilter.id)
+      if (!value) {
+        return false
+      }
+
+      const matchesBucket =
+        appliedFilter.items.length === 0 ||
+        appliedFilter.items.some(
+          ({ id: statusId }) => getDateFilterStatus(value) === statusId,
+        )
+
+      const matchesRange = itemOverlapsAppliedDateRange(
+        value,
+        appliedFilter.dateRange,
+      )
+
+      return matchesBucket && matchesRange
+    })
+
+    if (!matchesDateFilters) {
+      return false
+    }
+
+    return true
   })
 }

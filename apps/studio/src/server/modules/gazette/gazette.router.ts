@@ -130,9 +130,20 @@ export const gazetteRouter = router({
             .else(4)
             .end()
         }, "asc")
-        // 3. Notification number descending (stored in page.description)
+        // 3. Notification number descending (stored in page.description).
+        //    The field is compared as text, so a plain text sort would put
+        //    "82" above "5337" (lexicographic: '8' > '5') even though 5337
+        //    is numerically larger. Zero-pad purely-numeric descriptions to a
+        //    fixed width first so the text comparison matches numeric order.
+        //    Non-numeric descriptions (rare — e.g. some advertisements have
+        //    no notification number, or a free-text one) fall through
+        //    unpadded, unchanged from the previous behaviour.
         .orderBy(
-          sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'description'`,
+          sql`CASE
+              WHEN COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'description' ~ '^[0-9]+$'
+              THEN LPAD(COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'description', 20, '0')
+              ELSE COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'description'
+            END`,
           (ob) => ob.desc(),
         )
         // 4. Publish date descending

@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
+import posthog from "posthog-js"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { trpc } from "~/utils/trpc"
@@ -34,9 +35,10 @@ export const RemoveUserModal = () => {
 
   const { mutate, isPending } = trpc.user.delete.useMutation({
     onSettled: onClose,
-    onSuccess: async (result) => {
-      await utils.user.list.invalidate()
-      await utils.user.count.invalidate()
+    onSuccess: (result) => {
+      posthog.capture("site_user_removed", { site_id: siteId })
+      void utils.user.list.invalidate()
+      void utils.user.count.invalidate()
       toast({
         status: "success",
         title: `Removed ${result.email} from site.`,

@@ -3,16 +3,29 @@ import { Type } from "@sinclair/typebox"
 import {
   AltTextSchema,
   ARRAY_RADIO_FORMAT,
+  TAG_CATEGORY_ITEM_FORMAT,
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
   generateImageSrcSchema,
+  IsomerString,
   SearchableTableSchema,
 } from "~/interfaces"
 import { imageSchemaObject } from "~/schemas/internal"
 import {
+  COLLECTION_SORT_ORDER_PATTERN,
   REF_HREF_PATTERN,
   TRIMMED_NON_EMPTY_STRING_REGEX,
+  TRIMMED_STRING_OR_EMPTY_REGEX,
 } from "~/utils/validation"
+
+import {
+  DATE_FILTER_STATUS,
+  DEFAULT_COLLECTION_SORT_ORDER,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+  TAG_CATEGORY_TYPE,
+  type DateFilterStatusId,
+  type TagCategoryDisplay,
+} from "./constants"
 
 // NOTE: a tag value is simply a uuid that maps to a given label;
 // essentially, it is just a pointer
@@ -30,34 +43,81 @@ const TagCategoryUuidSchema = generateUuidSchema({
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
 })
 
-const TagCategorySchema = Type.Composite([
-  Type.Object({
-    label: Type.String({
-      title: "Filter name",
-      pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
-      errorMessage: {
-        pattern: "cannot be empty or have leading/trailing spaces",
-      },
-    }),
-    id: TagCategoryUuidSchema,
+const createFilterLabelSchemaObject = ({
+  description,
+}: {
+  description?: string
+} = {}) => ({
+  label: IsomerString({
+    title: "Filter name",
+    ...(description ? { description } : {}),
+    pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or have leading/trailing spaces",
+    },
   }),
-  Type.Object({
-    // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
+  id: TagCategoryUuidSchema,
+})
+
+const tagCategoryIsRequiredSchemaObject = {
+  // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
+  // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
+  // same default to legacy rows that omit this key. New filters set `isRequired: true` in
+  // the tag-categories JsonForms control when adding an item.
+  isRequired: Type.Optional(
+    Type.Boolean({
+      title: "This filter is required",
+      description:
+        "Every item must have at least one option selected from this filter.",
+    }),
+  ),
+}
+
+const dateFilterIsRequiredSchemaObject = {
+  // Same semantics as `tagCategoryIsRequiredSchemaObject`, but date filters use
+  // item-specific copy in Studio because the requirement applies to dates, not
+  // tag options.
+  isRequired: Type.Optional(
+    Type.Boolean({
+      title: "This date is required",
+      description: "Every item must have a date entered for this filter.",
+    }),
+  ),
+}
+
+const TextFilterSchema = Type.Object(
+  {
+    ...createFilterLabelSchemaObject(),
+    ...tagCategoryIsRequiredSchemaObject,
+    // Optional on old rows. Must be "text" or absent so oneOf picks TextFilterSchema.
+    type: Type.Optional(
+      Type.Literal(TAG_CATEGORY_TYPE.Text, { format: "hidden" }),
+    ),
+    // Optional for backward compatibility. Missing/`undefined` must be read as
+    // `DEFAULT_TAG_CATEGORY_DISPLAY` via `resolveTagCategoryDisplay`.
     // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
-    // same default to legacy rows that omit this key. New filters set `isRequired: true` in
-    // the tag-categories JsonForms control when adding an item.
-    isRequired: Type.Optional(
-      Type.Boolean({
-        title: "This filter is required",
-        description:
-          "Every item must have at least one option selected from this filter.",
+    // same default to legacy rows that omit this key. New filters set
+    // `display: DEFAULT_TAG_CATEGORY_DISPLAY` in the tag-categories JsonForms control
+    // when adding an item.
+    display: Type.Optional(
+      Type.Unsafe<TagCategoryDisplay>({
+        oneOf: [
+          {
+            const: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+            image: "tagcategory/pills",
+          },
+          {
+            const: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+            image: "tagcategory/plaintext",
+          },
+        ],
+        title: "Show as",
+        format: "image-radio/2col",
       }),
     ),
-  }),
-  Type.Object({
     options: Type.Array(
       Type.Object({
-        label: Type.String({
+        label: IsomerString({
           title: "Option name",
           pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
           errorMessage: {
@@ -73,8 +133,100 @@ const TagCategorySchema = Type.Composite([
         format: "tag-category-options",
       },
     ),
-  }),
-])
+  },
+  { title: "Text filter" },
+)
+
+const createDateFilterStatusLabelSchema = ({
+  defaultValue,
+}: {
+  defaultValue: string
+}) =>
+  Type.Optional(
+    Type.String({
+      title: "Label",
+      pattern: TRIMMED_STRING_OR_EMPTY_REGEX,
+      errorMessage: {
+        pattern: "cannot have leading/trailing spaces",
+      },
+      default: defaultValue,
+    }),
+  )
+
+const DateFilterSchema = Type.Object(
+  {
+    ...createFilterLabelSchemaObject({
+      description: "The label that visitors see. e.g. Registration date",
+    }),
+    ...dateFilterIsRequiredSchemaObject,
+    // Always "date" on new filters. Keeps oneOf exclusive with TextFilterSchema.
+    type: Type.Literal(TAG_CATEGORY_TYPE.Date, { format: "hidden" }),
+    statusLabels: Type.Object(
+      Object.fromEntries(
+        Object.values(DATE_FILTER_STATUS).map(({ id, defaultLabel }) => [
+          id,
+          createDateFilterStatusLabelSchema({ defaultValue: defaultLabel }),
+        ]),
+      ) as Record<
+        DateFilterStatusId,
+        ReturnType<typeof createDateFilterStatusLabelSchema>
+      >,
+      {
+        title: "Custom labels",
+        description: "If you don't want to show a label, leave fields empty.",
+        format: "date-filter-status-labels",
+      },
+    ),
+    // Hidden toggles default true at render time via
+    // `DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY` — omit JSON Schema `default` for
+    // the same Studio AJV useDefaults reason as `isRequired` above.
+    showStatusLabelsFilter: Type.Optional(
+      Type.Boolean({
+        title: "Show status labels filter",
+        description:
+          "Let visitors filter by status labels (e.g. Ongoing, Upcoming, Ended).",
+        format: "hidden",
+      }),
+    ),
+    showDateRangeFilter: Type.Optional(
+      Type.Boolean({
+        title: "Show date range filter",
+        description: "Let visitors filter by a custom date range.",
+        format: "hidden",
+      }),
+    ),
+  },
+  { title: "Date filter" },
+)
+
+export type TextFilterSchemaType = Static<typeof TextFilterSchema>
+export type DateFilterSchemaType = Static<typeof DateFilterSchema>
+
+type TagCategory = TextFilterSchemaType | DateFilterSchemaType
+
+export type DateFilterSidebarVisibility = Pick<
+  DateFilterSchemaType,
+  "showStatusLabelsFilter" | "showDateRangeFilter"
+>
+
+export const isDateFilter = (
+  category: TagCategory,
+): category is DateFilterSchemaType => category.type === TAG_CATEGORY_TYPE.Date
+
+// Legacy text filters omit `type`; date filters always set `type: "date"`.
+export const isTextFilter = (
+  category: TagCategory,
+): category is TextFilterSchemaType => category.type !== TAG_CATEGORY_TYPE.Date
+
+// oneOf, not a flat object with every field optional. Order: text=0, date=1.
+// TAG_CATEGORY_ITEM_FORMAT tells JsonFormsCombinatorControl to skip the Variant
+// picker — type is chosen at creation, not switched here.
+const TagCategorySchema = Type.Unsafe<
+  Static<typeof TextFilterSchema> | Static<typeof DateFilterSchema>
+>({
+  oneOf: [TextFilterSchema, DateFilterSchema],
+  format: TAG_CATEGORY_ITEM_FORMAT,
+})
 // NOTE: can be optional because the categories might not exist
 const TagCategoriesSchema = Type.Object({
   tagCategories: Type.Optional(
@@ -87,48 +239,6 @@ const TagCategoriesSchema = Type.Object({
   ),
 })
 
-/**
- * `categoryOptions` is optional for backward compatibility: persisted blobs may omit it, and we
- * avoid misleading inferred types (Static<>) that claim the field is always present before
- * migration. After rollout, run a script to populate blobs with `categoryOptions`, then we can
- * make this property required. At the same time, mark `category` as deprecated on collection
- * item props in favour of `categoryId` (and related fields) aligned with these options.
- * Studio AJV still applies `default: []` when the key is missing.
- *
- * Display vs "Manage filters" in Studio is not encoded here: `getScopedSchema` in
- * CollectionEditorStateDrawer includes this field only in the Filters drawer (with tag filters),
- * not under Collection display.
- */
-const CategoriesSchema = Type.Object({
-  categoryOptions: Type.Optional(
-    Type.Array(
-      Type.Object({
-        label: Type.String({
-          title: "Option name",
-          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
-          errorMessage: {
-            pattern: "cannot be empty or have leading/trailing spaces",
-          },
-        }),
-        id: generateUuidSchema({
-          title: "Category id",
-          description:
-            "This is the uuid of a single tag option and will be used to uniquely identify it. This is the uuid of the options of each category",
-        }),
-      }),
-      {
-        title: "Options",
-        format: "category-options",
-        default: [],
-      },
-    ),
-  ),
-})
-
-export type CollectionPageCategoryOption = NonNullable<
-  Static<typeof CategoriesSchema>["categoryOptions"]
->[number]
-
 const TaggedSchema = Type.Optional(
   // NOTE: This stores the `uuid` of the tag option
   Type.Array(TagOptionUuidSchema, {
@@ -138,28 +248,29 @@ const TaggedSchema = Type.Optional(
   }),
 )
 
+// id is the filter uuid. No endDate means a single-day event.
+const DateTaggedItemSchema = Type.Object({
+  id: TagCategoryUuidSchema,
+  date: Type.String({ format: "date" }),
+  endDate: Type.Optional(Type.String({ format: "date" })),
+})
+
+export type DateTaggedItem = Static<typeof DateTaggedItemSchema>
+
+const DateTaggedSchema = Type.Optional(
+  Type.Array(DateTaggedItemSchema, {
+    description: "Pick a single date or a range.",
+    format: "date-tagged",
+  }),
+)
+
 const categorySchemaObject = Type.Object({
-  category: Type.String({
+  category: IsomerString({
     title: "Article category",
-    format: "category",
+    format: "hidden", // We will properly deprecate this key during the post-launch cleanup. Hiding it in Studio UI in the meantime.
     description:
       "The category is used for filtering in the parent collection page",
   }),
-  /**
-   * `categoryId` is optional for backward compatibility: persisted blobs may omit it, and we
-   * avoid misleading inferred types (Static<>) that claim the field is always present before
-   * migration from string `category`. After rollout, populate items with `categoryId` aligned
-   * with `categoryOptions` on the parent collection, then we can make this property required
-   * and deprecate `category`.
-   *
-   * @see {@link CategoriesSchema} for the parent collection's `categoryOptions` shape (`id` on each option).
-   */
-  categoryId: Type.Optional(
-    Type.String({
-      title: "Category",
-      format: "category-id",
-    }),
-  ),
 })
 
 const dateSchemaObject = Type.Object({
@@ -174,6 +285,7 @@ const dateSchemaObject = Type.Object({
 const BaseRefPageSchema = Type.Composite([
   categorySchemaObject,
   Type.Object({ tagged: TaggedSchema }),
+  Type.Object({ dateTagged: DateTaggedSchema }),
   dateSchemaObject,
   imageSchemaObject,
   Type.Object({
@@ -184,7 +296,7 @@ const BaseRefPageSchema = Type.Composite([
       pattern: REF_HREF_PATTERN,
     }),
     description: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Summary",
         description:
           "Add a short description to explain what this collection item is about",
@@ -213,6 +325,7 @@ const TagsSchema = Type.Object(
 export const ArticlePagePageSchema = Type.Composite([
   categorySchemaObject,
   Type.Object({ tagged: TaggedSchema }),
+  Type.Object({ dateTagged: DateTaggedSchema }),
   dateSchemaObject,
   Type.Object({
     articlePageHeader: ArticlePageHeaderSchema,
@@ -237,7 +350,7 @@ const COLLECTION_PAGE_SORT_DIRECTION = {
 
 export const CollectionPagePageSchema = Type.Intersect([
   Type.Object({
-    subtitle: Type.String({
+    subtitle: IsomerString({
       title: "Summary",
       format: "textarea",
     }),
@@ -259,24 +372,16 @@ export const CollectionPagePageSchema = Type.Intersect([
       ),
     ),
     sortOrder: Type.Optional(
-      Type.Union(
-        [
-          Type.Literal("date-desc", {
-            title: "By article date, newest → oldest",
-          }),
-          Type.Literal("date-asc", {
-            title: "By article date, oldest → newest",
-          }),
-          Type.Literal("title-asc", { title: "By title, A → Z" }),
-          Type.Literal("title-desc", { title: "By title, Z → A" }),
-        ],
-        {
-          title: "Sort items by",
-          description: "This might take a while to reflect on the preview.",
-          type: "string",
-          default: "date-desc",
+      Type.String({
+        title: "Sort items by",
+        description: "This might take a while to reflect on the preview.",
+        format: "collection-sort-order",
+        pattern: COLLECTION_SORT_ORDER_PATTERN,
+        errorMessage: {
+          pattern: "must be a valid collection sort order",
         },
-      ),
+        default: DEFAULT_COLLECTION_SORT_ORDER,
+      }),
     ),
     // Deprecated, will be replaced with sortOrder above
     defaultSortBy: Type.Optional(
@@ -363,7 +468,6 @@ export const CollectionPagePageSchema = Type.Intersect([
     ),
   }),
   TagCategoriesSchema,
-  CategoriesSchema,
   TagsSchema,
 ])
 
@@ -400,7 +504,6 @@ export const HomePagePageSchema = Type.Object({})
 export const NotFoundPagePageSchema = Type.Object({})
 export const SearchPagePageSchema = Type.Object({})
 
-export const FileRefPageSchema = BaseRefPageSchema
 export const LinkRefPageSchema = BaseRefPageSchema
 
 // These are props that are required by the render engine, but not enforced by
@@ -416,6 +519,16 @@ type BasePageAdditionalProps = BaseItemAdditionalProps & {
 
 interface ArticlePageAdditionalProps {
   tags?: CollectionPagePageProps["tags"]
+}
+
+// NOTE: derived from `tagCategories` + `tagged` at render time (see
+// `getPillAndPlaintextTags`), not a JSON schema field itself. `id` is the tag
+// category's uuid, used as a stable React key — optional since the legacy
+// `tags` fallback predates tag category uuids.
+export interface TagGroup {
+  id?: string
+  category: string
+  selected: string[]
 }
 
 export type ArticlePagePageProps = Static<typeof ArticlePagePageSchema> &
@@ -436,7 +549,5 @@ export type NotFoundPagePageProps = Static<typeof NotFoundPagePageSchema> &
 export type SearchPagePageProps = Static<typeof SearchPagePageSchema> &
   BasePageAdditionalProps
 
-export type FileRefPageProps = Static<typeof FileRefPageSchema> &
-  BaseItemAdditionalProps
 export type LinkRefPageProps = Static<typeof LinkRefPageSchema> &
   BaseItemAdditionalProps

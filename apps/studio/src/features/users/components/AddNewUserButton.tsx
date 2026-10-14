@@ -1,6 +1,7 @@
 import type { ButtonProps } from "@chakra-ui/react"
 import { Button, Tooltip } from "@chakra-ui/react"
 import { useSetAtom } from "jotai"
+import posthog from "posthog-js"
 import { useContext } from "react"
 import { BiPlus } from "react-icons/bi"
 import { UserManagementContext } from "~/features/users"
@@ -33,11 +34,15 @@ export const AddNewUserButton = ({
     <Button
       variant="solid"
       leftIcon={<BiPlus />}
-      onClick={() =>
+      onClick={() => {
+        posthog.capture("add_user_modal_opened", { site_id: siteId })
         setAddUserModalState({ ...DEFAULT_ADD_USER_MODAL_STATE, siteId })
-      }
+      }}
       isDisabled={isButtonDisabled}
       {...buttonProps}
+      // Disabled buttons drop pointer events, so the Singpass tooltip span
+      // around this button would never see the hover.
+      pointerEvents={canManageUsers && !isSingpassEnabled ? "none" : undefined}
     >
       Add new user
     </Button>
@@ -45,14 +50,14 @@ export const AddNewUserButton = ({
 
   if (!canManageUsers) {
     return (
-      <Tooltip label="Only admins can add users." placement="bottom">
+      <Tooltip label="You need to be an Admin to add users." placement="bottom">
         {button}
       </Tooltip>
     )
   }
 
   return (
-    <SingpassConditionalTooltip placement="bottom">
+    <SingpassConditionalTooltip placement="bottom" shouldWrapChildren>
       {button}
     </SingpassConditionalTooltip>
   )

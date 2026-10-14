@@ -25,4 +25,5 @@ export type DynamicComponentListProps = Static<
 > & {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
+  headingLevel: number
 }

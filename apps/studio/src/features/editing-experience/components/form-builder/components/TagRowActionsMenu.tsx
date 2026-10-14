@@ -4,23 +4,18 @@ import { upperFirst } from "lodash-es"
 import { BiDotsHorizontalRounded, BiTrash } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 
+import { ROW_ACTION_ICON_BUTTON_PROPS } from "./constants"
+
 const ROW_ACTIONS_MENU_BUTTON_PROPS = {
+  ...ROW_ACTION_ICON_BUTTON_PROPS,
   colorScheme: "neutral",
-  variant: "clear",
-  h: "2.125rem",
-  w: "2.125rem",
-  minH: "2.125rem",
-  minW: "2.125rem",
-  p: "0.25rem",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
 } as const
 
 interface TagRowActionsMenuProps {
   noun: string
   index: number
   isDisabled: boolean
+  isDragDisabled?: boolean
   onDelete: () => void
 }
 
@@ -28,6 +23,7 @@ export function TagRowActionsMenu({
   noun,
   index,
   isDisabled,
+  isDragDisabled = false,
   onDelete,
 }: TagRowActionsMenuProps) {
   return (
@@ -36,6 +32,7 @@ export function TagRowActionsMenu({
         as={IconButton}
         icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
         {...ROW_ACTIONS_MENU_BUTTON_PROPS}
+        color={isDragDisabled ? "interaction.support.disabled" : undefined}
         isDisabled={isDisabled}
         aria-label={`${upperFirst(noun)} ${index + 1} actions`}
         onClick={(e) => e.stopPropagation()}

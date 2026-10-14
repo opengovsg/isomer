@@ -5,10 +5,7 @@ import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
-import {
-  createAntiScamBannerEnabledGbParameters,
-  createBannerGbParameters,
-} from "~/stories/utils/growthbook"
+import { createBannerGbParameters } from "~/stories/utils/growthbook"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 
 const COMMON_HANDLERS = [
@@ -149,7 +146,11 @@ export const FullscreenPreview: Story = {
     // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
     const screen = within(canvasElement.parentElement!)
 
-    const button = await canvas.findByRole("button", { name: /default mode/i })
+    const button = await canvas.findByRole(
+      "button",
+      { name: /default mode/i },
+      { timeout: 10000 },
+    )
     await userEvent.click(button)
 
     const text = await screen.findByText(/full screen/i)
@@ -169,9 +170,6 @@ export const WithBanner: Story = {
 }
 
 export const AddAntiScamDisclaimerSaveBlockEnabled: Story = {
-  parameters: {
-    growthbook: [createAntiScamBannerEnabledGbParameters(true)],
-  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const addBlockButton = await canvas.findByRole("button", {
@@ -190,9 +188,6 @@ export const AddAntiScamDisclaimerSaveBlockEnabled: Story = {
 }
 
 export const ReopenAntiScamDisclaimerSaveBlockDisabled: Story = {
-  parameters: {
-    growthbook: [createAntiScamBannerEnabledGbParameters(true)],
-  },
   play: async ({ canvasElement, ...rest }) => {
     await AddAntiScamDisclaimerSaveBlockEnabled.play?.({
       canvasElement,

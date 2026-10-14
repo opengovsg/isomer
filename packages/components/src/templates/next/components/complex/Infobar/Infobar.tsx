@@ -1,6 +1,7 @@
 import type { InfobarProps } from "~/interfaces/complex/Infobar"
 import { DEFAULT_INFOBAR_VARIANT } from "~/interfaces/complex/Infobar/constants"
 import { tv } from "~/lib/tv"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
@@ -94,8 +95,10 @@ export const Infobar = ({
   secondaryButtonUrl,
   layout,
   site,
+  headingLevel,
 }: InfobarProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
+  const Tag = getHeadingTag(headingLevel)
   const hasPrimaryCTA = !!buttonLabel && !!buttonUrl
   const hasSecondaryCTA = !!secondaryButtonLabel && !!secondaryButtonUrl
 
@@ -115,7 +118,7 @@ export const Infobar = ({
       <div className={styles.outerContainer()}>
         <div className={styles.innerContainer()}>
           <div className={styles.headingContainer()}>
-            <h2 className={styles.title()}>{title}</h2>
+            <Tag className={styles.title()}>{title}</Tag>
             {description && (
               <p className={styles.description()}>{description}</p>
             )}

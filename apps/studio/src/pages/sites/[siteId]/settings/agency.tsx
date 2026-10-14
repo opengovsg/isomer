@@ -2,6 +2,7 @@ import type { AgencySettings } from "@opengovsg/isomer-components"
 import type { NextPageWithLayout } from "~/lib/types"
 import { useToast } from "@opengovsg/design-system-react"
 import { AgencySettingsSchema } from "@opengovsg/isomer-components"
+import { isEqual } from "lodash-es"
 import { useState } from "react"
 import { BiWrench } from "react-icons/bi"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -19,6 +20,7 @@ import FormBuilder from "~/features/editing-experience/components/form-builder/F
 import { EditSettingsPreview } from "~/features/editing-experience/components/preview/EditSettingsPreview"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
+import { normalizeSiteEntity } from "~/features/settings/AgencySettings/utils"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
@@ -33,10 +35,10 @@ const validateFn = ajv.compile<AgencySettings>(AgencySettingsSchema)
 const AgencySettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
   const siteId = Number(rawSiteId)
-  const [{ siteName, agencyName, ...rest }] =
-    trpc.site.getConfig.useSuspenseQuery({
-      id: siteId,
-    })
+  const [siteConfig] = trpc.site.getConfig.useSuspenseQuery({
+    id: siteId,
+  })
+  const { siteName, agencyName, siteEntity, ...rest } = siteConfig
   const trpcUtils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
 
@@ -60,11 +62,22 @@ const AgencySettingsPage: NextPageWithLayout = () => {
 
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
-  const [state, setState] = useState<AgencySettings>({
+  const initialSettings: AgencySettings = {
     siteName,
     agencyName,
-  })
-  const isDirty = state.siteName !== siteName
+    siteEntity,
+  }
+  const [state, setState] = useState<AgencySettings>(initialSettings)
+  const isDirty = !isEqual(
+    {
+      ...state,
+      siteEntity: normalizeSiteEntity(state.siteEntity),
+    },
+    {
+      ...initialSettings,
+      siteEntity: normalizeSiteEntity(initialSettings.siteEntity),
+    },
+  )
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
@@ -72,6 +85,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
     updateSiteConfigMutation.mutate({
       siteName: state.siteName,
       agencyName: state.agencyName,
+      siteEntity: normalizeSiteEntity(state.siteEntity),
       siteId,
       ...rest,
     })

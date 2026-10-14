@@ -163,7 +163,7 @@ pnpm test:unit -- src/path/to/file.test.ts   # single file
 ```bash
 pnpm setup:test                                           # start Docker services first
 pnpm test:e2e
-pnpm exec playwright test tests/e2e/specific.spec.ts      # single test
+pnpm exec playwright test tests/e2e/smoke.test.ts         # single test
 ```
 
 - Requires `pnpm setup:test` (containerized PostgreSQL + MockPass)

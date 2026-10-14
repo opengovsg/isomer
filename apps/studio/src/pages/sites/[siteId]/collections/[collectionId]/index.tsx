@@ -1,6 +1,7 @@
 import { useDisclosure } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
+import posthog from "posthog-js"
 import { BiData } from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -77,7 +78,15 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             >
               Collection settings
             </Button>
-            <Button onClick={onPageCreateModalOpen} size="md">
+            <Button
+              onClick={() => {
+                posthog.capture("collection_page_create_modal_opened", {
+                  site_id: siteId,
+                })
+                onPageCreateModalOpen()
+              }}
+              size="md"
+            >
               Add new item
             </Button>
           </>

@@ -17,30 +17,90 @@ const meta: Meta<CalloutProps> = {
 export default meta
 type Story = StoryObj<typeof Callout>
 
+const content: CalloutProps["content"] = {
+  type: "prose",
+  content: [
+    {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: "As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to ",
+        },
+        {
+          type: "text",
+          text: "New Idea Scheme Proposal",
+          marks: [{ type: "link", attrs: { href: "/faq" } }],
+        },
+        {
+          type: "text",
+          text: " while it is being updated.",
+        },
+      ],
+    },
+  ],
+}
+
 // Default scenario
 export const Default: Story = {
   args: {
     site: generateSiteConfig(),
-    content: {
-      type: "prose",
-      content: [
-        {
-          type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
-            },
-          ],
-        },
-      ],
-    },
+    headingLevel: 2,
+    content,
+  },
+}
+
+// Legacy variant value, kept for backward compatibility with content saved
+// before "info" was renamed to "information".
+export const Info: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "info",
+  },
+}
+
+export const GoodToKnow: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "goodToKnow",
+  },
+}
+
+export const Warning: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "warning",
+  },
+}
+
+export const Urgent: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "urgent",
+  },
+}
+
+export const Note: Story = {
+  args: {
+    site: generateSiteConfig(),
+    headingLevel: 2,
+    content,
+    variant: "note",
   },
 }
 
 export const UnorderedListFirst: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [
@@ -94,6 +154,7 @@ export const UnorderedListFirst: Story = {
 export const UnorderedListOnly: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [
@@ -138,6 +199,7 @@ export const UnorderedListOnly: Story = {
 export const OrderedListFirst: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [
@@ -191,6 +253,7 @@ export const OrderedListFirst: Story = {
 export const OrderedListOnly: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [
@@ -235,6 +298,7 @@ export const OrderedListOnly: Story = {
 export const ListInMiddle: Story = {
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     content: {
       type: "prose",
       content: [

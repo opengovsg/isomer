@@ -6,6 +6,7 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupAdminPermissions,
+  setupFolder,
   setupPageResource,
   setupSite,
   setupUser,
@@ -169,6 +170,59 @@ describe("redirect.router bulk upload", async () => {
 
       // Assert
       expect(errorFor(result, "/shadowed")).toBeTruthy()
+    })
+
+    it("flags a wildcard source whose prefix is itself a live published page", async () => {
+      // Arrange
+      await seedPublishedPageAtRoot("news")
+
+      // Act
+      const result = await caller.bulkValidate({
+        siteId,
+        csv: csvOf([["/news/*", "/somewhere"]]),
+      })
+
+      // Assert
+      expect(errorFor(result, "/news/*")).toBeTruthy()
+    })
+
+    it("flags a wildcard source whose prefix has a live page nested under it", async () => {
+      // Arrange — "/news/story" published means "news" is a live folder, so
+      // "/news/*" would shadow it at the edge.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({ siteId, permalink: "news" })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        permalink: "story",
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.bulkValidate({
+        siteId,
+        csv: csvOf([["/news/*", "/somewhere"]]),
+      })
+
+      // Assert
+      expect(errorFor(result, "/news/*")).toBeTruthy()
+    })
+
+    it("does not flag a wildcard source when nothing lives under its prefix", async () => {
+      // Act
+      const result = await caller.bulkValidate({
+        siteId,
+        csv: csvOf([["/anything/*", "/somewhere"]]),
+      })
+
+      // Assert
+      expect(errorFor(result, "/anything/*")).toBeNull()
     })
 
     it("flags a loop formed within the uploaded file", async () => {

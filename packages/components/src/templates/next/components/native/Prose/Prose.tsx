@@ -13,14 +13,18 @@ const ProseComponent = ({
   component,
   site,
   shouldStripContentHtmlTags,
+  headingLevel,
 }: {
   component: NonNullable<ProseProps["content"]>[number]
-} & Pick<ProseProps, "site" | "shouldStripContentHtmlTags">): JSX.Element => {
+} & Pick<
+  ProseProps,
+  "site" | "shouldStripContentHtmlTags" | "headingLevel"
+>): JSX.Element => {
   switch (component.type) {
     case "divider":
       return <Divider {...component} />
     case "heading":
-      return <Heading {...component} site={site} />
+      return <Heading {...component} site={site} headingLevel={headingLevel} />
     case "orderedList":
       return <OrderedList {...component} site={site} />
     case "paragraph":
@@ -46,6 +50,7 @@ export const Prose = ({
   content,
   site,
   shouldStripContentHtmlTags = false,
+  headingLevel,
 }: ProseProps) => {
   if (!content) {
     return <></>
@@ -59,6 +64,7 @@ export const Prose = ({
           key={index}
           site={site}
           shouldStripContentHtmlTags={shouldStripContentHtmlTags}
+          headingLevel={headingLevel}
         />
       ))}
     </>

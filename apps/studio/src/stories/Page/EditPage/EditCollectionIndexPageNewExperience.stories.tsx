@@ -5,8 +5,6 @@ import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-import { userHandlers } from "tests/msw/handlers/user"
-import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 
 const COMMON_HANDLERS = [
@@ -30,7 +28,7 @@ const COMMON_HANDLERS = [
   pageHandlers.readPageAndBlob.collection(),
   pageHandlers.readPage.index(),
   pageHandlers.getFullPermalink.collection(),
-  collectionHandlers.getCategoryOptionUsageCount.default(),
+  collectionHandlers.countFilterUsage.default(),
 ]
 
 const meta: Meta<typeof EditPage> = {
@@ -56,11 +54,21 @@ const meta: Meta<typeof EditPage> = {
 export default meta
 type Story = StoryObj<typeof EditPage>
 
-const newCollectionFiltersIsomerAdminParameters = {
-  growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
+const newCollectionFiltersParameters = {} satisfies Story["parameters"]
+
+const zeroTagOptionsUsageParameters = {
   msw: {
-    handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
+    handlers: [
+      ...COMMON_HANDLERS.slice(0, -1),
+      collectionHandlers.countFilterUsage.zero(),
+    ],
   },
+} satisfies Story["parameters"]
+
+/** Chromatic delay for play-driven inline edit snapshots. */
+const inlineEditSnapshotParameters = {
+  ...newCollectionFiltersParameters,
+  chromatic: { delay: 300 },
 } satisfies Story["parameters"]
 
 async function playOpenManageFilters(canvasElement: HTMLElement) {
@@ -70,21 +78,118 @@ async function playOpenManageFilters(canvasElement: HTMLElement) {
   await canvas.findByText(/Manage filters/i)
 }
 
+/** Click an option row's label to enter inline edit mode (index is 0-based). */
+async function clickOptionRowToEdit(
+  canvasElement: HTMLElement,
+  index0Based: number,
+) {
+  const canvas = within(canvasElement)
+  const namedRow = canvas.queryByText(new RegExp(`^Option ${index0Based + 1}$`))
+  if (namedRow) {
+    await userEvent.click(namedRow)
+    return
+  }
+
+  // When filling rows in order, the next unnamed row is always the first
+  // remaining "New option" label (not the nth match).
+  const [nextUnrenamedRow] = canvas.getAllByText(/^New option$/)
+  if (!nextUnrenamedRow) {
+    throw new Error(`No editable option row found for index ${index0Based}`)
+  }
+  await userEvent.click(nextUnrenamedRow)
+}
+
+/** Open inline edit for an option row and wait for the name textbox (index is 0-based). */
+async function playOpenInlineOptionEdit(
+  canvasElement: HTMLElement,
+  index0Based = 0,
+) {
+  const canvas = within(canvasElement)
+  await clickOptionRowToEdit(canvasElement, index0Based)
+  await canvas.findByRole("textbox", {
+    name: `Option ${index0Based + 1} name`,
+  })
+}
+
+/** Manage filters → first filter editor with a single default option row. */
+async function playOpenFilterEditorWithOneOption(canvasElement: HTMLElement) {
+  await playOpenManageFilters(canvasElement)
+  await playOpenFirstFilterEditor(canvasElement)
+  const canvas = within(canvasElement)
+  await userEvent.click(
+    await canvas.findByRole("button", { name: /^Add option$/i }),
+  )
+}
+
+/** Confirm inline option rename via the row's tick button (not the drawer save). */
+async function confirmInlineOptionRename(nameInput: HTMLElement) {
+  const row = nameInput.parentElement
+  if (!row) {
+    throw new Error("Expected inline edit row container")
+  }
+  await userEvent.click(
+    within(row).getByRole("button", { name: /^Save changes$/i }),
+  )
+}
+
+/** Rename an option row via inline EditableLabel (index is 0-based). */
+async function renameOptionAtIndex(
+  canvasElement: HTMLElement,
+  index0Based: number,
+  name: string,
+) {
+  const canvas = within(canvasElement)
+  await clickOptionRowToEdit(canvasElement, index0Based)
+  const nameInput = await canvas.findByRole("textbox", {
+    name: `Option ${index0Based + 1} name`,
+  })
+  await userEvent.clear(nameInput)
+  await userEvent.type(nameInput, name)
+  await confirmInlineOptionRename(nameInput)
+}
+
+/** Assert three default option rows show clickable "New option" labels. */
+async function assertThreeDefaultOptionRows(canvasElement: HTMLElement) {
+  const canvas = within(canvasElement)
+  const newOptionLabels = await canvas.findAllByText(/^New option$/)
+  await expect(newOptionLabels).toHaveLength(3)
+}
+
 /** Ensures at least one filter row exists, opens nested "Edit Filters" editor. */
 async function playOpenFirstFilterEditor(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
-  if (!canvas.queryByRole("button", { name: /New option/i })) {
-    await userEvent.click(
-      await canvas.findByRole("button", { name: /Add a filter/i }),
-    )
+
+  if (!canvas.queryByText(/Edit Filters/i)) {
+    const hasFilterRow =
+      canvas.queryByText("New filter") ??
+      canvas.queryByRole("button", { name: /Filter 1 actions/i })
+
+    if (!hasFilterRow) {
+      await userEvent.click(
+        await canvas.findByRole("button", { name: /Add a filter/i }),
+      )
+
+      const confirmAddFilter = withinPortals(canvasElement).queryByRole(
+        "button",
+        { name: /^Add filter$/i },
+      )
+      if (confirmAddFilter) {
+        await userEvent.click(confirmAddFilter)
+      }
+    }
+
+    if (!canvas.queryByText(/Edit Filters/i)) {
+      const newFilterLabel = canvas.queryByText("New filter")
+      if (newFilterLabel) {
+        await userEvent.click(newFilterLabel)
+      }
+    }
   }
-  await userEvent.click(
-    await canvas.findByRole("button", { name: /New Filter/i }),
-  )
+
   await canvas.findByText(/Edit Filters/i)
 }
 
-/** From "Edit Filters": add three options and assert default row labels. */
+/** From "Edit Filters": rename filter, add three options, assert default row labels. */
 async function playFillFilterNameAndAddThreeOptions(
   canvasElement: HTMLElement,
 ) {
@@ -98,67 +203,7 @@ async function playFillFilterNameAndAddThreeOptions(
     await userEvent.click(addOption)
   }
 
-  const newOptionButtons = await canvas.findAllByRole("button", {
-    name: /New option/i,
-  })
-  await expect(newOptionButtons).toHaveLength(3)
-}
-
-/** From "Manage filters": open nested "Edit Category" (default category options). */
-async function playOpenCategoryOptionsEditor(canvasElement: HTMLElement) {
-  const canvas = within(canvasElement)
-  const openBtn = await canvas.findByRole("button", {
-    name: /Category/i,
-  })
-  await userEvent.click(openBtn)
-  await canvas.findByText(/Edit Category/i)
-}
-
-/** Inside "Edit Category": add three option rows (labels may be empty). */
-async function playAddThreeCategoryOptions(canvasElement: HTMLElement) {
-  const canvas = within(canvasElement)
-  const addOption = await canvas.findByRole("button", { name: /^Add option$/i })
-  for (let i = 0; i < 3; i += 1) {
-    await userEvent.click(addOption)
-  }
-  const newOptionButtons = await canvas.findAllByRole("button", {
-    name: /New option/i,
-  })
-  await expect(newOptionButtons).toHaveLength(3)
-}
-
-/** Fill option names so "Save changes" enables (blank labels keep save disabled). */
-async function playFillThreeCategoryOptionNames(canvasElement: HTMLElement) {
-  const canvas = within(canvasElement)
-  for (let i = 0; i < 3; i += 1) {
-    const newOptionButtons = await canvas.findAllByRole("button", {
-      name: /New option/i,
-    })
-    await userEvent.click(newOptionButtons[0] as Element)
-    const nameInput = await canvas.findByPlaceholderText(/Option name/i)
-    await userEvent.clear(nameInput)
-    await userEvent.type(nameInput, `Option ${i + 1}`)
-    await userEvent.click(
-      await canvas.findByRole("button", { name: /Return to Options/i }),
-    )
-  }
-}
-
-/**
- * Each option only receives an `id` after its row is opened (hidden UUID control mounts). Fill
- * names, save to leave "Edit Category", then open it again so delete can show the usage modal
- * instead of removing the row immediately.
- */
-async function playFillNamesSaveCategoryOptionsAndReopenEditCategory(
-  canvasElement: HTMLElement,
-) {
-  await playFillThreeCategoryOptionNames(canvasElement)
-  const canvas = within(canvasElement)
-  await userEvent.click(
-    await canvas.findByRole("button", { name: /Save category options/i }),
-  )
-  await canvas.findByText(/Manage filters/i)
-  await playOpenCategoryOptionsEditor(canvasElement)
+  await assertThreeDefaultOptionRows(canvasElement)
 }
 
 async function clickOptionActionsMenu(
@@ -177,34 +222,72 @@ function withinPortals(canvasElement: HTMLElement) {
   return within(canvasElement.ownerDocument.body)
 }
 
-export const NonIsomerAdmin: Story = {
-  parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
-  },
+async function playOpenDeleteOptionModal(canvasElement: HTMLElement) {
+  await playOpenManageFilters(canvasElement)
+  await playOpenFirstFilterEditor(canvasElement)
+  await playFillFilterNameAndAddThreeOptions(canvasElement)
+  await renameOptionAtIndex(canvasElement, 0, "Option 1")
+  await clickOptionActionsMenu(canvasElement, 1)
+  const portals = withinPortals(canvasElement)
+  await userEvent.click(await portals.findByText(/^Delete option$/i), {
+    pointerEventsCheck: 0,
+  })
+  await portals.findByRole("dialog", { name: /Delete filter option/i })
+  return portals
+}
+
+async function playOpenDeleteFilterModal(canvasElement: HTMLElement) {
+  await playOpenManageFilters(canvasElement)
+  await playOpenFirstFilterEditor(canvasElement)
+  await playFillFilterNameAndAddThreeOptions(canvasElement)
+  const canvas = within(canvasElement)
+  await userEvent.click(
+    await canvas.findByRole("button", { name: /Return to Filters/i }),
+  )
+  await userEvent.click(
+    await canvas.findByRole("button", { name: /Filter 1 actions/i }),
+  )
+  const portals = withinPortals(canvasElement)
+  await userEvent.click(
+    await portals.findByRole("menuitem", { name: /Delete filter/i }),
+  )
+  await portals.findByText(/You are deleting an entire filter\./i)
+  return portals
+}
+
+export const ManageCollection: Story = {
+  parameters: {},
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await canvas.findByText(/Manage Collection/i)
+    await expect(
+      canvas.getByRole("button", { name: /Collection display/i }),
+    ).toBeVisible()
+    await expect(canvas.getByRole("button", { name: /Filters/i })).toBeVisible()
   },
 }
 
-// "Filters" block is currently only accessible by Isomer Admin
-export const IsomerAdmin: Story = {
+/** Editors can open Collection display but cannot manage Filters. */
+export const ManageCollectionAsEditor: Story = {
   parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
-      handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
+      handlers: [resourceHandlers.getRolesFor.editor(), ...COMMON_HANDLERS],
     },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await canvas.findByText(/Manage Collection/i)
+    await expect(
+      canvas.getByRole("button", { name: /Collection display/i }),
+    ).toBeVisible()
+    await expect(
+      canvas.queryByRole("button", { name: /Filters/i }),
+    ).not.toBeInTheDocument()
   },
 }
 
 export const CollectionDisplay: Story = {
-  parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
-  },
+  parameters: {},
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
@@ -215,16 +298,15 @@ export const CollectionDisplay: Story = {
   },
 }
 
-// Currently only accessible by Isomer Admin
 export const ManageFilters: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
   },
 }
 
 export const FiltersAddThreeOptions: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
     await playOpenFirstFilterEditor(canvasElement)
@@ -233,11 +315,12 @@ export const FiltersAddThreeOptions: Story = {
 }
 
 export const FiltersOpenOptionRowMenu: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
     await playOpenFirstFilterEditor(canvasElement)
     await playFillFilterNameAndAddThreeOptions(canvasElement)
+    await renameOptionAtIndex(canvasElement, 0, "Option 1")
     await clickOptionActionsMenu(canvasElement, 1)
     const portals = withinPortals(canvasElement)
     await expect(await portals.findByText(/^Delete option$/i)).toBeVisible()
@@ -245,17 +328,9 @@ export const FiltersOpenOptionRowMenu: Story = {
 }
 
 export const FiltersDeleteOptionModalDisabledCta: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
-    await playOpenManageFilters(canvasElement)
-    await playOpenFirstFilterEditor(canvasElement)
-    await playFillFilterNameAndAddThreeOptions(canvasElement)
-    await clickOptionActionsMenu(canvasElement, 1)
-    const portals = withinPortals(canvasElement)
-    await userEvent.click(await portals.findByText(/^Delete option$/i), {
-      pointerEventsCheck: 0,
-    })
-    await portals.findByRole("dialog", { name: /Delete filter option/i })
+    const portals = await playOpenDeleteOptionModal(canvasElement)
     await expect(
       await portals.findByRole("button", { name: /^Delete filter option$/i }),
     ).toBeDisabled()
@@ -263,7 +338,7 @@ export const FiltersDeleteOptionModalDisabledCta: Story = {
 }
 
 export const FiltersDeleteOptionModalEnabledCta: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async (context) => {
     await FiltersDeleteOptionModalDisabledCta.play?.(context)
     const portals = withinPortals(context.canvasElement)
@@ -278,8 +353,21 @@ export const FiltersDeleteOptionModalEnabledCta: Story = {
   },
 }
 
+export const FiltersDeleteOptionModalZeroUsage: Story = {
+  parameters: zeroTagOptionsUsageParameters,
+  play: async ({ canvasElement }) => {
+    const portals = await playOpenDeleteOptionModal(canvasElement)
+    await expect(
+      portals.queryByText(/This option is being used in/i),
+    ).not.toBeInTheDocument()
+    await portals.findByText(
+      /To undo this change, you will need to create and re-assign this option to all items\./i,
+    )
+  },
+}
+
 export const FiltersBackShowsOptionCount: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
     await playOpenFirstFilterEditor(canvasElement)
@@ -294,7 +382,7 @@ export const FiltersBackShowsOptionCount: Story = {
 }
 
 export const FiltersOpenFilterRowMenu: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
     await playOpenFirstFilterEditor(canvasElement)
@@ -314,23 +402,10 @@ export const FiltersOpenFilterRowMenu: Story = {
 }
 
 export const FiltersDeleteFilterModalDisabledCta: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
-    await playOpenManageFilters(canvasElement)
-    await playOpenFirstFilterEditor(canvasElement)
-    await playFillFilterNameAndAddThreeOptions(canvasElement)
-    const canvas = within(canvasElement)
-    await userEvent.click(
-      await canvas.findByRole("button", { name: /Return to Filters/i }),
-    )
-    await userEvent.click(
-      await canvas.findByRole("button", { name: /Filter 1 actions/i }),
-    )
-    const portals = withinPortals(canvasElement)
-    await userEvent.click(
-      await portals.findByRole("menuitem", { name: /Delete filter/i }),
-    )
-    await portals.findByText(/Delete filter "Test filter"\?/i)
+    const portals = await playOpenDeleteFilterModal(canvasElement)
+    await portals.findByText(/It’s being used on/i)
     await expect(
       await portals.findByRole("button", { name: /^Delete filter$/i }),
     ).toBeDisabled()
@@ -338,13 +413,13 @@ export const FiltersDeleteFilterModalDisabledCta: Story = {
 }
 
 export const FiltersDeleteFilterModalEnabledCta: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async (context) => {
     await FiltersDeleteFilterModalDisabledCta.play?.(context)
     const portals = withinPortals(context.canvasElement)
     await userEvent.click(
       portals.getByRole("checkbox", {
-        name: /Yes, delete this filter permanently/i,
+        name: /Yes, delete the entire filter permanently/i,
       }),
     )
     await expect(
@@ -353,96 +428,50 @@ export const FiltersDeleteFilterModalEnabledCta: Story = {
   },
 }
 
-export const CategoryOptionsOpenEditCategory: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+export const FiltersDeleteFilterModalZeroUsage: Story = {
+  parameters: zeroTagOptionsUsageParameters,
   play: async ({ canvasElement }) => {
-    await playOpenManageFilters(canvasElement)
-    await playOpenCategoryOptionsEditor(canvasElement)
-  },
-}
-
-export const CategoryOptionsAddThreeOptions: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
-  play: async ({ canvasElement }) => {
-    await playOpenManageFilters(canvasElement)
-    await playOpenCategoryOptionsEditor(canvasElement)
-    await playAddThreeCategoryOptions(canvasElement)
-  },
-}
-
-export const CategoryOptionsOpenOptionRowMenu: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
-  play: async ({ canvasElement }) => {
-    await playOpenManageFilters(canvasElement)
-    await playOpenCategoryOptionsEditor(canvasElement)
-    await playAddThreeCategoryOptions(canvasElement)
-    await clickOptionActionsMenu(canvasElement, 1)
-    const portals = withinPortals(canvasElement)
-    await expect(await portals.findByText(/^Delete option$/i)).toBeVisible()
-  },
-}
-
-export const CategoryOptionsDeleteOptionModalDisabledCta: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
-  play: async ({ canvasElement }) => {
-    await playOpenManageFilters(canvasElement)
-    await playOpenCategoryOptionsEditor(canvasElement)
-    await playAddThreeCategoryOptions(canvasElement)
-    await playFillNamesSaveCategoryOptionsAndReopenEditCategory(canvasElement)
-    await clickOptionActionsMenu(canvasElement, 1)
-    const portals = withinPortals(canvasElement)
-    await userEvent.click(await portals.findByText(/^Delete option$/i), {
-      pointerEventsCheck: 0,
-    })
-    const deleteCategoryOptionDialog = await portals.findByRole("dialog", {
-      name: /Delete option "Option 1"/i,
-    })
-    await within(deleteCategoryOptionDialog).findByText(
-      /This option is being used in 3 items\./i,
-    )
+    const portals = await playOpenDeleteFilterModal(canvasElement)
     await expect(
-      await portals.findByRole("button", { name: /^Delete option$/i }),
-    ).toBeDisabled()
-  },
-}
-
-export const CategoryOptionsDeleteOptionModalEnabledCta: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
-  play: async (context) => {
-    await CategoryOptionsDeleteOptionModalDisabledCta.play?.(context)
-    const portals = withinPortals(context.canvasElement)
-    await userEvent.click(
-      portals.getByRole("checkbox", {
-        name: /Yes, delete this option permanently/i,
-      }),
+      portals.queryByText(/It’s being used on/i),
+    ).not.toBeInTheDocument()
+    await portals.findByText(
+      /To undo this change, you will need to recreate this filter and assign options to each item individually\./i,
     )
-    await expect(
-      await portals.findByRole("button", { name: /^Delete option$/i }),
-    ).not.toBeDisabled()
   },
 }
 
-export const CategoryOptionsSaveShowsOptionCount: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+export const FiltersDeleteFilterModalManyOptions: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        pageHandlers.readPageAndBlob.collectionWithManyFilterOptions(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
-    await playOpenCategoryOptionsEditor(canvasElement)
-    await playAddThreeCategoryOptions(canvasElement)
-    await playFillThreeCategoryOptionNames(canvasElement)
     const canvas = within(canvasElement)
     await userEvent.click(
-      await canvas.findByRole("button", { name: /Save category options/i }),
+      await canvas.findByRole("button", { name: /Filter 1 actions/i }),
     )
-    await canvas.findByText(/Manage filters/i)
-    await canvas.findByText(/3 options/i)
+    const portals = withinPortals(canvasElement)
+    await userEvent.click(
+      await portals.findByRole("menuitem", { name: /Delete filter/i }),
+    )
+    await portals.findByText(/You are deleting an entire filter\./i)
+    // A filter with 100+ options skips the usage-count query entirely (see
+    // MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT) rather than showing a misleading
+    // capped number.
+    await portals.findByText(/a large number of results/i)
   },
 }
 
 export const CollectionDisplaySaveToast: Story = {
   parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
-      handlers: [pageHandlers.getCategories.default(), ...COMMON_HANDLERS],
+      handlers: COMMON_HANDLERS,
     },
   },
   play: async ({ canvasElement }) => {
@@ -467,16 +496,7 @@ export const CollectionDisplaySaveToast: Story = {
 }
 
 export const ManageFiltersSaveToast: Story = {
-  parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
-    msw: {
-      handlers: [
-        userHandlers.isIsomerAdmin.admin(),
-        pageHandlers.getCategories.default(),
-        ...COMMON_HANDLERS,
-      ],
-    },
-  },
+  parameters: {},
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
     const canvas = within(canvasElement)
@@ -493,5 +513,59 @@ export const ManageFiltersSaveToast: Story = {
       },
       { timeout: 5000 },
     )
+  },
+}
+
+export const FiltersInlineEditTyping: Story = {
+  parameters: inlineEditSnapshotParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenFilterEditorWithOneOption(canvasElement)
+    await playOpenInlineOptionEdit(canvasElement, 0)
+    const canvas = within(canvasElement)
+    const nameInput = canvas.getByRole("textbox", { name: "Option 1 name" })
+    await userEvent.clear(nameInput)
+    await userEvent.type(nameInput, "Announcements")
+  },
+}
+
+export const FiltersInlineEditBlankError: Story = {
+  parameters: inlineEditSnapshotParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenFilterEditorWithOneOption(canvasElement)
+    await playOpenInlineOptionEdit(canvasElement, 0)
+    const canvas = within(canvasElement)
+    const nameInput = canvas.getByRole("textbox", { name: "Option 1 name" })
+    await userEvent.clear(nameInput)
+    await expect(
+      canvas.getByText(/Option name cannot be empty\./i),
+    ).toBeVisible()
+    const row = nameInput.parentElement
+    if (!row) throw new Error("Expected inline edit row container")
+    await expect(
+      within(row).getByRole("button", { name: /^Save changes$/i }),
+    ).toBeDisabled()
+  },
+}
+
+export const FiltersInlineEditDuplicateError: Story = {
+  parameters: inlineEditSnapshotParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenManageFilters(canvasElement)
+    await playOpenFirstFilterEditor(canvasElement)
+    const canvas = within(canvasElement)
+    const addOption = await canvas.findByRole("button", {
+      name: /^Add option$/i,
+    })
+    await userEvent.click(addOption)
+    await userEvent.click(addOption)
+    await renameOptionAtIndex(canvasElement, 0, "Same name")
+    await playOpenInlineOptionEdit(canvasElement, 1)
+    const nameInput = canvas.getByRole("textbox", { name: "Option 2 name" })
+    await userEvent.clear(nameInput)
+    await userEvent.type(nameInput, "Same name")
+    const duplicateErrors = await canvas.findAllByText(
+      /An option with this name already exists\./i,
+    )
+    await expect(duplicateErrors.length).toBeGreaterThanOrEqual(2)
   },
 }

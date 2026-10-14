@@ -1,4 +1,6 @@
+import type { DelayMode } from "msw"
 import { TRPCError } from "@trpc/server"
+import { delay } from "msw"
 
 import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
@@ -45,27 +47,35 @@ export const redirectHandlers = {
       }),
   },
   bulkValidate: {
-    // Every row passes — drives the ready-to-publish preview.
-    allValid: () =>
-      trpcMsw.redirect.bulkValidate.mutation(() => ({
-        fileError: null,
-        rows: [
-          {
-            rowNumber: 2,
-            source: "/old-one",
-            destination: "/new-one",
-            error: null,
-          },
-          {
-            rowNumber: 3,
-            source: "/old-two",
-            destination: "https://www.example.gov.sg",
-            error: null,
-          },
-        ],
-        validCount: 2,
-        errorCount: 0,
-      })),
+    // Every row passes — drives the ready-to-publish preview. `wait` holds the
+    // response open so a story can act on the modal mid-process without racing
+    // the client's own minimum processing duration.
+    allValid: ({ wait }: { wait?: DelayMode | number } = {}) =>
+      trpcMsw.redirect.bulkValidate.mutation(async () => {
+        if (wait !== undefined) {
+          await delay(wait)
+        }
+
+        return {
+          fileError: null,
+          rows: [
+            {
+              rowNumber: 2,
+              source: "/old-one",
+              destination: "/new-one",
+              error: null,
+            },
+            {
+              rowNumber: 3,
+              source: "/old-two",
+              destination: "https://www.example.gov.sg",
+              error: null,
+            },
+          ],
+          validCount: 2,
+          errorCount: 0,
+        }
+      }),
     // A mix of a failing and a passing row — drives the errors screen.
     withErrors: () =>
       trpcMsw.redirect.bulkValidate.mutation(() => ({

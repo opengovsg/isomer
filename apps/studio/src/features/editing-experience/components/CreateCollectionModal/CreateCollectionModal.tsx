@@ -21,6 +21,7 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
+import posthog from "posthog-js"
 import { useEffect } from "react"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
@@ -75,6 +76,7 @@ const CreateCollectionModalContent = ({
     watch,
     formState,
     setValue,
+    setError,
     getFieldState,
   } = useZodForm({
     defaultValues: {
@@ -90,8 +92,11 @@ const CreateCollectionModalContent = ({
   const utils = trpc.useUtils()
   const toast = useToast()
   const { mutate, isPending } = trpc.collection.create.useMutation({
-    onSettled: onClose,
     onSuccess: async () => {
+      posthog.capture("collection_created", {
+        site_id: siteId,
+        has_parent_folder: !!parentFolderId,
+      })
       await utils.resource.listWithoutRoot.invalidate()
       await utils.resource.countWithoutRoot.invalidate()
       await utils.resource.getChildrenOf.invalidate()
@@ -100,8 +105,13 @@ const CreateCollectionModalContent = ({
         status: "success",
         ...BRIEF_TOAST_SETTINGS,
       })
+      onClose()
     },
     onError: (err) => {
+      if (err.data?.code === "CONFLICT") {
+        setError("permalink", { message: err.message }, { shouldFocus: true })
+        return
+      }
       toast({
         title: "Failed to create collection",
         status: "error",
@@ -109,6 +119,7 @@ const CreateCollectionModalContent = ({
         description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })
+      onClose()
     },
   })
 

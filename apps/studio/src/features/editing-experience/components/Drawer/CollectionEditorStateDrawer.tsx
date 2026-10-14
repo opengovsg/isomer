@@ -1,7 +1,4 @@
-import type {
-  CollectionPagePageProps,
-  getLayoutPageSchema,
-} from "@opengovsg/isomer-components"
+import type { getLayoutPageSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
@@ -10,16 +7,14 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { isEmpty, isEqual } from "lodash-es"
+import posthog from "posthog-js"
 import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { useMe } from "~/features/me/api"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { trackEvent, triggerCollectionTagCsatSurveyOnce } from "~/lib/intercom"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
 import {
@@ -46,10 +41,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     setPreviewPageState,
   } = useEditorDrawerContext()
 
-  const { me } = useMe()
-  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  })
+  const canManageFilters = useCanManageCollectionFilters()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
   const utils = trpc.useUtils()
@@ -63,9 +55,9 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
 
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
+      posthog.capture("page_changes_saved", { site_id: siteId })
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
-      await utils.page.getCategories.invalidate({ pageId, siteId })
       toast({
         status: "success",
         title:
@@ -78,34 +70,38 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   })
 
   const schemaFields = useMemo(() => {
-    if (isUserIsomerAdmin) {
+    if (canManageFilters) {
       return drawerStateType === "display"
         ? {
-            exclude: ["tagCategories", "tags", "categoryOptions"],
+            exclude: ["tagCategories", "tags"],
           }
         : {
-            include: ["tagCategories", "tags", "categoryOptions"],
+            include: ["tagCategories", "tags"],
           }
     }
     return {
-      exclude: ["tagCategories", "tags", "categoryOptions"],
+      exclude: ["tagCategories", "tags"],
     }
-  }, [drawerStateType, isUserIsomerAdmin])
+  }, [drawerStateType, canManageFilters])
 
-  const metadataSchema = getScopedSchema({
-    layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
-    scope: "page",
-    ...schemaFields,
-  })
-  const validateFn =
-    ajv.compile<Static<ReturnType<typeof getLayoutPageSchema>>>(metadataSchema)
+  const metadataSchema = useMemo(
+    () =>
+      getScopedSchema({
+        layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
+        scope: "page",
+        ...schemaFields,
+      }),
+    [schemaFields],
+  )
+  const validateFn = useMemo(
+    () =>
+      ajv.compile<Static<ReturnType<typeof getLayoutPageSchema>>>(
+        metadataSchema,
+      ),
+    [metadataSchema],
+  )
 
   const handleSaveChanges = useCallback(() => {
-    const hadNoTagsBefore = !(savedPageState.page as CollectionPagePageProps)
-      .tagCategories?.length
-    const hasTagsNow = !!(previewPageState.page as CollectionPagePageProps)
-      .tagCategories?.length
-
     setSavedPageState(previewPageState)
     mutate(
       {
@@ -116,10 +112,6 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
       {
         onSuccess: () => {
           setDrawerState({ state: "root" })
-          if (hadNoTagsBefore && hasTagsNow) {
-            trackEvent("first_tag_added")
-            triggerCollectionTagCsatSurveyOnce({ userId: me.id })
-          }
         },
       },
     )
@@ -127,11 +119,9 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     mutate,
     pageId,
     previewPageState,
-    savedPageState,
     setDrawerState,
     setSavedPageState,
     siteId,
-    me.id,
   ])
 
   const handleChange = (data: unknown) => {

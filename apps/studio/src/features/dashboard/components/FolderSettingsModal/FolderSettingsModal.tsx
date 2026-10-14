@@ -17,6 +17,7 @@ import {
 } from "@chakra-ui/react"
 import {
   Button,
+  Checkbox,
   FormErrorMessage,
   FormHelperText,
   FormLabel,
@@ -111,6 +112,7 @@ const SuspendableModalContent = ({
     defaultValues: {
       title: originalTitle,
       permalink: originalPermalink,
+      shouldCreateRedirect: true,
     },
     schema: baseEditFolderSchema.omit({ siteId: true, resourceId: true }),
   })
@@ -239,6 +241,29 @@ const SuspendableModalContent = ({
                 characters left
               </FormHelperText>
             </FormControl>
+            {permalink !== originalPermalink && (
+              <FormControl>
+                <Controller
+                  control={control}
+                  name="shouldCreateRedirect"
+                  render={({ field: { value, onChange, ref, ...field } }) => (
+                    <Checkbox
+                      alignItems="flex-start"
+                      size="sm"
+                      isChecked={!!value}
+                      onChange={(e) => onChange(e.target.checked)}
+                      ref={ref}
+                      {...field}
+                    >
+                      <Text textStyle="body-2" color="base.content.strong">
+                        Redirect visitors from everything under the old URL to
+                        the new location.
+                      </Text>
+                    </Checkbox>
+                  )}
+                />
+              </FormControl>
+            )}
           </VStack>
         </ModalBody>
         <ModalFooter>

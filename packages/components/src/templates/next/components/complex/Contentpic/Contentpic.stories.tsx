@@ -21,6 +21,7 @@ const meta: Meta<ContentpicProps> = {
   },
   args: {
     site: generateSiteConfig(),
+    headingLevel: 2,
     imageAlt:
       "Two rhinos. A rhino is peacefully grazing on grass in a field in front of the other rhino.",
     imageSrc:
@@ -165,8 +166,15 @@ const meta: Meta<ContentpicProps> = {
           content: [
             {
               type: "text",
-              marks: [],
-              text: "<a href='https://www.traffic.org/news/singapore-rhino-horn-smuggler-24/'>Singapore court gets tough on rhino horn smuggler</a>",
+              marks: [
+                {
+                  type: "link",
+                  attrs: {
+                    href: "https://www.traffic.org/news/singapore-rhino-horn-smuggler-24/",
+                  },
+                },
+              ],
+              text: "Singapore court gets tough on rhino horn smuggler",
             },
           ],
         },

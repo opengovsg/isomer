@@ -16,10 +16,12 @@ import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
 import {
   getComponentSchema,
+  ISOMER_PAGE_LAYOUTS,
   ISOMER_USABLE_PAGE_LAYOUTS,
   schema,
 } from "@opengovsg/isomer-components"
-import { useCallback, useState } from "react"
+import posthog from "posthog-js"
+import { useCallback, useMemo, useState } from "react"
 import {
   BiCog,
   BiData,
@@ -33,8 +35,8 @@ import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { CanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
@@ -65,7 +67,7 @@ interface FixedBlockContent {
 const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
   article: {
     label: "Article page header",
-    description: "Category, Date, and Summary",
+    description: "Filters, Date, and Summary",
   },
   content: {
     label: "Content page header",
@@ -82,15 +84,10 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
 }
 
 const FixedBlock = () => {
-  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  })
-
   const { setCurrActiveIdx, setDrawerState, previewPageState } =
     useEditorDrawerContext()
   const pageLayout = previewPageState.layout
   const isHeroFixedBlock = getIsHeroFirstBlock(pageLayout, previewPageState)
-  const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
 
   if (isHeroFixedBlock) {
     // Assuming only one fixedBlock can exist at a time for now
@@ -112,11 +109,7 @@ const FixedBlock = () => {
     )
   }
 
-  if (
-    pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
-    isNewCollectionTagsManagementEnabled
-  ) {
-    // New collection editing UI introduced in https://github.com/opengovsg/isomer/pull/2002
+  if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
     return (
       <>
         <BaseBlock
@@ -129,7 +122,7 @@ const FixedBlock = () => {
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
           icon={BiCog}
         />
-        {isUserIsomerAdmin && (
+        <CanManageCollectionFilters>
           <BaseBlock
             variant="vertical"
             onClick={() => {
@@ -140,22 +133,8 @@ const FixedBlock = () => {
             description="Define and manage filters for this Collection."
             icon={BiSlider}
           />
-        )}
+        </CanManageCollectionFilters>
       </>
-    )
-  }
-
-  if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
-    return (
-      <BaseBlock
-        onClick={() => {
-          setCurrActiveIdx(0)
-          setDrawerState({ state: "collectionEditor", type: "display" })
-        }}
-        label="Collection settings"
-        description="Summary, style, categories and sorting"
-        icon={BiPin}
-      />
     )
   }
 
@@ -256,14 +235,23 @@ export default function RootStateDrawer() {
   const { mutate: savePage, isPending: isSavingPage } =
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
+        posthog.capture("page_changes_saved", { site_id: siteId })
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
         if (type === ResourceType.CollectionPage) {
-          void utils.collection.countTagOptionsUsage.invalidate()
+          void utils.collection.countFilterUsage.invalidate()
         }
         toast({
           status: "success",
           title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
+          ...BRIEF_TOAST_SETTINGS,
+        })
+      },
+      onError: (error) => {
+        toast({
+          title: "Failed to convert page",
+          description: error.message,
+          status: "error",
           ...BRIEF_TOAST_SETTINGS,
         })
       },
@@ -368,27 +356,25 @@ export default function RootStateDrawer() {
     pageLayout !== "index" &&
     pageLayout !== "collection"
 
-  validateFn(savedPageState)
+  // Full-page validation walks every block. Repeat renders with the same
+  // saved page skip it; AJV still mutates `validateFn.errors`, so read those
+  // inside this memo.
+  const invalidBlockIndexes = useMemo(() => {
+    validateFn(savedPageState)
+    // instancePath for a content block is "/content/0", "/content/1", ...
+    const contentIndexRegex = /^\/content\/(\d+)/
+    return new Set(
+      (validateFn.errors ?? [])
+        .map((e) => contentIndexRegex.exec(e.instancePath)?.[1])
+        .filter(Boolean)
+        .map(Number),
+    )
+  }, [savedPageState])
 
-  const contentIndexRegex = /^\/content\/(\d+)/
-  const invalidBlockIndexes = new Set(
-    (validateFn.errors ?? [])
-      // When validating content array directly,
-      // instancePath will be like "content/0", "content/1", "content/2", etc.
-      // where the number is the index of the invalid component
-      .map((e) => contentIndexRegex.exec(e.instancePath)?.[1])
-      .filter(Boolean)
-      .map(Number),
-  )
-
-  // NOTE: if a page has either of these `layouts`,
-  // we should disable them from adding blocks
-  // because folder index pages aren't intended to have
-  // content yet and components don't render content
-  // for collection index pages
-  const canAddBlocks = pageLayout !== "collection"
-
-  const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
+  // Collection and system-managed Search pages do not render custom content.
+  const canAddBlocks =
+    pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
+    pageLayout !== ISOMER_PAGE_LAYOUTS.Search
 
   return (
     <Flex direction="column" h="full">
@@ -463,21 +449,13 @@ export default function RootStateDrawer() {
             </Infobox>
           )}
 
-          {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
-          isNewCollectionTagsManagementEnabled ? (
-            // New collection editing UI introduced in https://github.com/opengovsg/isomer/pull/2002
+          {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection ? (
             <Disable when={disableBlocks}>
               <VStack gap="1rem" w="100%" align="start">
                 <VStack gap="0.25rem" align="start">
-                  <Text textStyle="subhead-1">
-                    {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection
-                      ? "Manage Collection"
-                      : "Fixed blocks"}
-                  </Text>
+                  <Text textStyle="subhead-1">Manage Collection</Text>
                   <Text textStyle="caption-2" color="base.content.medium">
-                    {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection
-                      ? "Modify the Collection’s look and feel or manage filters."
-                      : "These are built into the layout, so you can’t delete them."}
+                    Modify the Collection’s look and feel or manage filters.
                   </Text>
                 </VStack>
 
@@ -529,7 +507,7 @@ export default function RootStateDrawer() {
                 <VStack gap="1.5rem" w="100%">
                   <VStack w="100%" h="100%" gap="1rem">
                     <Flex flexDirection="row" w="100%">
-                      {pageLayout !== ISOMER_USABLE_PAGE_LAYOUTS.Collection && (
+                      {canAddBlocks && (
                         <VStack gap="0.25rem" align="start" flex={1}>
                           <Text textStyle="subhead-1">Custom blocks</Text>
                           <Text

@@ -1,11 +1,15 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IconType } from "react-icons"
 import { VStack } from "@chakra-ui/react"
+import { useFeatureValue } from "@growthbook/growthbook-react"
 import { useRouter } from "next/router"
+import { useContext } from "react"
 import { BiDirections, BiPaint, BiWrench } from "react-icons/bi"
 import { CmsCollapsibleSidenav } from "~/components/CmsSidebar/CmsCollapsibleSidenav"
 import { siteSchema } from "~/features/editing-experience/schema"
+import { UserManagementContext } from "~/features/users"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { IS_AUDIT_LOG_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 
 import { HeaderRow } from "./components"
 import { SettingsItem } from "./components/SettingsItem"
@@ -28,6 +32,23 @@ interface SideNavItem {
 export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
   const { siteId } = useQueryParse(siteSchema)
   const router = useRouter()
+
+  // Audit log export is a site-admin-only surface, gated by the same
+  // `manage UserManagement` ability used elsewhere for admin-only actions.
+  // The ability derivation is owned by `UserManagementProvider` (mounted by
+  // `SiteSettingsLayout` around this sidenav); read it here instead of
+  // re-deriving so there is a single source of truth.
+  const ability = useContext(UserManagementContext)
+  const isAdmin = ability.can("manage", "UserManagement")
+
+  // Additionally feature-flagged so the surface can ship dark and be rolled
+  // out per-environment. Defaults to hidden until GrowthBook features load;
+  // the entry simply appears once the flag arrives.
+  const isAuditLogEnabled = useFeatureValue<boolean>(
+    IS_AUDIT_LOG_ENABLED_FEATURE_KEY,
+    false,
+  )
+
   const SIDENAV_ITEMS: SideNavItem[] = [
     {
       header: { label: "General", icon: BiWrench },
@@ -45,6 +66,14 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
           label: "Redirects",
           href: `/sites/${siteId}/settings/redirects`,
         },
+        ...(isAdmin && isAuditLogEnabled
+          ? [
+              {
+                label: "Logs",
+                href: `/sites/${siteId}/settings/audit-log`,
+              },
+            ]
+          : []),
       ],
     },
     {

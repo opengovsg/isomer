@@ -3,8 +3,8 @@ import type { BuildStatusType } from "~prisma/generated/prisma/client"
 import { compact } from "lodash-es"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import {
-  sendFailedPublishEmail,
-  sendSuccessfulPublishEmail,
+  sendSiteUpdateFailedEmail,
+  sendSiteUpdatedEmail,
 } from "~/features/mail/service"
 import {
   ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY,
@@ -128,7 +128,7 @@ const sendEmails = async (
             }
             return {
               id: info.codeBuildJobId, // codebuild job id
-              promise: sendSuccessfulPublishEmail({
+              promise: sendSiteUpdatedEmail({
                 isScheduled: info.isScheduled,
                 recipientEmail: info.email,
                 resource: info,
@@ -137,7 +137,7 @@ const sendEmails = async (
           case "FAILED":
             return {
               id: info.codeBuildJobId, // codebuild job id
-              promise: sendFailedPublishEmail({
+              promise: sendSiteUpdateFailedEmail({
                 isScheduled: info.isScheduled,
                 recipientEmail: info.email,
                 resource: info,

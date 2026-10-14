@@ -26,7 +26,11 @@ import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+import {
+  ResourceState,
+  ResourceType,
+  ScheduledAction,
+} from "~prisma/generated/generatedEnums"
 
 import { db } from "../../database"
 import { resourceRouter } from "../resource.router"
@@ -592,6 +596,47 @@ describe("resource.router", async () => {
         nextOffset: null,
       }
       expect(result).toMatchObject(expected)
+    })
+
+    it("should only hide the default Search page when requested", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "search",
+        title: "Search",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "about",
+        title: "About",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const linkPickerResult = await caller.getChildrenOf({
+        siteId: String(site.id),
+        resourceId: null,
+      })
+      const directorySidebarResult = await caller.getChildrenOf({
+        siteId: String(site.id),
+        resourceId: null,
+        includeSearchPage: false,
+      })
+
+      // Assert
+      expect(linkPickerResult.items.map(({ permalink }) => permalink)).toEqual([
+        "about",
+        "search",
+      ])
+      expect(
+        directorySidebarResult.items.map(({ permalink }) => permalink),
+      ).toEqual(["about"])
     })
 
     it("should not return FolderMeta, CollectionMeta, and CollectionLink as children", async () => {
@@ -1420,7 +1465,7 @@ describe("resource.router", async () => {
       )
     })
 
-    it("should return 403 if source and destination resources belong to different sites", async () => {
+    it("should return 400 if source and destination resources belong to different sites", async () => {
       // Arrange
       const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
       const { page: originPage, site: originSite } = await setupPageResource({
@@ -1445,7 +1490,7 @@ describe("resource.router", async () => {
       expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "FORBIDDEN",
+          code: "BAD_REQUEST",
           message: "You cannot move a resource to a different site",
         }),
       )
@@ -2076,6 +2121,470 @@ describe("resource.router", async () => {
           `[resource:${site.id}:${page.id}]`,
         )
       })
+
+      describe("folder/collection", () => {
+        // A folder ("/dest/src-folder") with one published child page,
+        // alongside a sibling destination folder ("/dest") to move it into.
+        const setupMoveWithPublishedChild = async () => {
+          const { site, rootPage, folder: destinationFolder } = await setup()
+          const { folder: sourceFolder } = await setupFolder({
+            siteId: site.id,
+            parentId: rootPage.id,
+            permalink: "src-folder",
+          })
+          await setupPageResource({
+            siteId: site.id,
+            resourceType: ResourceType.Page,
+            parentId: sourceFolder.id,
+            permalink: "child",
+            state: ResourceState.Published,
+            userId: session.userId,
+          })
+          return { site, rootPage, sourceFolder, destinationFolder }
+        }
+
+        it("creates a wildcard redirect from the old path for a published folder", async () => {
+          const { site, sourceFolder, destinationFolder } =
+            await setupMoveWithPublishedChild()
+
+          await caller.move({
+            siteId: site.id,
+            movedResourceId: sourceFolder.id,
+            destinationResourceId: destinationFolder.id,
+            shouldCreateRedirect: true,
+          })
+
+          const redirects = await liveRedirects(site.id)
+          expect(redirects).toHaveLength(1)
+          expect(redirects[0]!.source).toBe("/src-folder/*")
+          expect(redirects[0]!.destination).toBe(
+            `[resource:${site.id}:${sourceFolder.id}]`,
+          )
+        })
+
+        it("still blocks the move when a descendant would be shadowed, even when shouldCreateRedirect is false", async () => {
+          const { site, rootPage, sourceFolder, destinationFolder } =
+            await setupMoveWithPublishedChild()
+          await db
+            .insertInto("Redirect")
+            .values({
+              siteId: site.id,
+              source: "/dest/src-folder/child",
+              destination: "https://example.gov.sg/elsewhere",
+            })
+            .execute()
+
+          const result = caller.move({
+            siteId: site.id,
+            movedResourceId: sourceFolder.id,
+            destinationResourceId: destinationFolder.id,
+            shouldCreateRedirect: false,
+          })
+
+          await expect(result).rejects.toMatchObject({ code: "CONFLICT" })
+          const stillThere = await db
+            .selectFrom("Resource")
+            .select("parentId")
+            .where("id", "=", sourceFolder.id)
+            .executeTakeFirstOrThrow()
+          expect(String(stillThere.parentId)).toBe(String(rootPage.id))
+        })
+      })
+    })
+
+    describe("scheduled-unpublish destination guard", () => {
+      it("throws when moving a published page into a folder whose IndexPage has a pending scheduled unpublish", async () => {
+        const { site, folder: destinationFolder } = await setupFolder({
+          permalink: "destination",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: destinationFolder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId,
+          scheduledAt: new Date("2999-01-01T00:00:00Z"),
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        const { page: pageToMove } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          permalink: "page-to-move",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        const result = caller.move({
+          siteId: site.id,
+          movedResourceId: pageToMove.id,
+          destinationResourceId: destinationFolder.id,
+        })
+
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+        )
+      })
+
+      it("throws when moving a published page into a destination folder whose own IndexPage is unlocked but whose ancestor has a pending scheduled unpublish", async () => {
+        const { site, folder: grandparentFolder } = await setupFolder({
+          permalink: "grandparent",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: grandparentFolder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId,
+          scheduledAt: new Date("2999-01-01T00:00:00Z"),
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        const { folder: destinationFolder } = await setupFolder({
+          siteId: site.id,
+          permalink: "destination",
+          parentId: grandparentFolder.id,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: destinationFolder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        const { page: pageToMove } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          permalink: "page-to-move",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        const result = caller.move({
+          siteId: site.id,
+          movedResourceId: pageToMove.id,
+          destinationResourceId: destinationFolder.id,
+        })
+
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+        )
+      })
+
+      it("throws when moving a folder with a live descendant (but no publishedVersionId of its own) into such a destination", async () => {
+        const { site, folder: destinationFolder } = await setupFolder({
+          permalink: "destination",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: destinationFolder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId,
+          scheduledAt: new Date("2999-01-01T00:00:00Z"),
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        const { folder: folderToMove } = await setupFolder({
+          siteId: site.id,
+          permalink: "folder-to-move",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folderToMove.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        const result = caller.move({
+          siteId: site.id,
+          movedResourceId: folderToMove.id,
+          destinationResourceId: destinationFolder.id,
+        })
+
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+        )
+      })
+
+      it("allows moving a published page into a folder with no pending schedule", async () => {
+        const { site, folder: destinationFolder } = await setupFolder({
+          permalink: "destination",
+        })
+        const { page: pageToMove } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          permalink: "page-to-move",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        await expect(
+          caller.move({
+            siteId: site.id,
+            movedResourceId: pageToMove.id,
+            destinationResourceId: destinationFolder.id,
+          }),
+        ).resolves.not.toThrow()
+      })
+
+      it("allows moving an unpublished/draft page into a folder with a pending scheduled unpublish", async () => {
+        const { site, folder: destinationFolder } = await setupFolder({
+          permalink: "destination",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: destinationFolder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId,
+          scheduledAt: new Date("2999-01-01T00:00:00Z"),
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        const { page: pageToMove } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          permalink: "page-to-move",
+        })
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        await expect(
+          caller.move({
+            siteId: site.id,
+            movedResourceId: pageToMove.id,
+            destinationResourceId: destinationFolder.id,
+          }),
+        ).resolves.not.toThrow()
+      })
+
+      it("throws when moving a page that isn't live yet but is scheduled to publish, into a folder with a pending scheduled unpublish", async () => {
+        const { site, folder: destinationFolder } = await setupFolder({
+          permalink: "destination",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: destinationFolder.id,
+          resourceType: ResourceType.IndexPage,
+          state: ResourceState.Published,
+          userId: session.userId,
+          scheduledAt: new Date("2999-01-01T00:00:00Z"),
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        const { page: pageToMove } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          permalink: "page-to-move",
+          scheduledAt: new Date("2999-06-01T00:00:00Z"),
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Publish,
+        })
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        const result = caller.move({
+          siteId: site.id,
+          movedResourceId: pageToMove.id,
+          destinationResourceId: destinationFolder.id,
+        })
+
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "PRECONDITION_FAILED" }),
+        )
+      })
+
+      it("allows moving into a folder whose IndexPage has a pending scheduled publish (wrong direction)", async () => {
+        const { site, folder: destinationFolder } = await setupFolder({
+          permalink: "destination",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: destinationFolder.id,
+          resourceType: ResourceType.IndexPage,
+          scheduledAt: new Date("2999-01-01T00:00:00Z"),
+          scheduledBy: session.userId,
+          scheduledAction: ScheduledAction.Publish,
+        })
+        const { page: pageToMove } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          permalink: "page-to-move",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        await expect(
+          caller.move({
+            siteId: site.id,
+            movedResourceId: pageToMove.id,
+            destinationResourceId: destinationFolder.id,
+          }),
+        ).resolves.not.toThrow()
+      })
+
+      it("is unaffected when moving into the root (no destinationResourceId)", async () => {
+        const { site, folder: originFolder } = await setupFolder({
+          permalink: "origin",
+        })
+        await setupPageResource({
+          resourceType: "RootPage",
+          siteId: site.id,
+        })
+        const { page: pageToMove } = await setupPageResource({
+          siteId: site.id,
+          parentId: originFolder.id,
+          resourceType: ResourceType.Page,
+          permalink: "page-to-move",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        await expect(
+          caller.move({
+            siteId: site.id,
+            movedResourceId: pageToMove.id,
+            destinationResourceId: null,
+          }),
+        ).resolves.not.toThrow()
+      })
+    })
+  })
+
+  describe("getMoveLockInfo", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.getMoveLockInfo({
+        siteId: 1,
+        movedResourceId: "1",
+        destinationResourceId: "2",
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("returns isBlocked: true for the same scenario the move mutation blocks", async () => {
+      const { site, folder: destinationFolder } = await setupFolder({
+        permalink: "destination",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: destinationFolder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: new Date("2999-01-01T00:00:00Z"),
+        scheduledBy: session.userId,
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      const { page: pageToMove } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.Page,
+        permalink: "page-to-move",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const result = await caller.getMoveLockInfo({
+        siteId: site.id,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: destinationFolder.id,
+      })
+
+      expect(result).toEqual({ isBlocked: true })
+    })
+
+    it("returns isBlocked: false for a folder with no pending schedule", async () => {
+      const { site, folder: destinationFolder } = await setupFolder({
+        permalink: "destination",
+      })
+      const { page: pageToMove } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.Page,
+        permalink: "page-to-move",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const result = await caller.getMoveLockInfo({
+        siteId: site.id,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: destinationFolder.id,
+      })
+
+      expect(result).toEqual({ isBlocked: false })
+    })
+
+    it("returns isBlocked: false when moving into the root (no destinationResourceId)", async () => {
+      const { site, folder: originFolder } = await setupFolder({
+        permalink: "origin",
+      })
+      await setupPageResource({
+        resourceType: "RootPage",
+        siteId: site.id,
+      })
+      const { page: pageToMove } = await setupPageResource({
+        siteId: site.id,
+        parentId: originFolder.id,
+        resourceType: ResourceType.Page,
+        permalink: "page-to-move",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const result = await caller.getMoveLockInfo({
+        siteId: site.id,
+        movedResourceId: pageToMove.id,
+        destinationResourceId: null,
+      })
+
+      expect(result).toEqual({ isBlocked: false })
     })
   })
 
@@ -2230,6 +2739,33 @@ describe("resource.router", async () => {
       expect(result).toEqual(numberOfPages + numberOfFolders)
     })
 
+    it("should exclude the default Search page from the root count", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "search",
+        title: "Search",
+        resourceType: "Page",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "about",
+        title: "About",
+        resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.countWithoutRoot({ siteId: site.id })
+
+      // Assert
+      expect(result).toBe(1)
+    })
+
     it("should return count of resources nested inside the resourceId", async () => {
       // Arrange
       const { folder: folderToUse, site } = await setupFolder({
@@ -2309,6 +2845,31 @@ describe("resource.router", async () => {
     })
 
     it.skip("should throw 403 if user does not have read access to resource", async () => {})
+
+    it("should only count rows matching the statusFilter", async () => {
+      // Arrange
+      const { site } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Published,
+        userId: session.userId,
+        permalink: "live-page",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        permalink: "draft-page",
+      })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
+
+      // Act
+      const result = await caller.countWithoutRoot({
+        siteId: site.id,
+        statusFilter: ["live"],
+      })
+
+      // Assert
+      expect(result).toEqual(1)
+    })
   })
 
   describe("listWithoutRoot", () => {
@@ -2322,7 +2883,23 @@ describe("resource.router", async () => {
       "parentId",
       "updatedAt",
       "scheduledAt",
+      "scheduledAction",
     ] as const
+
+    // `liveStatus` is derived, not a Resource column — every fixture here is
+    // an unpublished Page/Folder with no published descendants, so it's
+    // always "notLive". Likewise `lastPublishedAt` is read from the Version
+    // table, not a Resource column — these fixtures are never published, so
+    // it's always null.
+    const pickComparable = <
+      T extends Record<(typeof RESOURCE_FIELDS_TO_PICK)[number], unknown>,
+    >(
+      resource: T,
+    ) => ({
+      ...pick(resource, RESOURCE_FIELDS_TO_PICK),
+      liveStatus: "notLive" as const,
+      lastPublishedAt: null,
+    })
 
     const testListComparable = (
       a: { updatedAt: Date; id: string },
@@ -2379,7 +2956,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result } = await caller.listWithoutRoot({
         siteId: site.id,
         limit: 25,
       })
@@ -2399,7 +2976,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result } = await caller.listWithoutRoot({
         siteId: site.id,
         limit: 25,
       })
@@ -2440,7 +3017,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result } = await caller.listWithoutRoot({
         siteId: site.id,
         resourceId: Number(page.id),
         limit: 25,
@@ -2459,7 +3036,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result } = await caller.listWithoutRoot({
         siteId: site.id,
         resourceId: Number(folder.id),
         limit: 25,
@@ -2487,7 +3064,7 @@ describe("resource.router", async () => {
             title: `Test page ${i}`,
             resourceType: "Page",
           })
-          return pick(page, RESOURCE_FIELDS_TO_PICK)
+          return pickComparable(page)
         }),
       )
       const folders = await Promise.all(
@@ -2497,7 +3074,7 @@ describe("resource.router", async () => {
             permalink: `folder-${i}`,
             title: `Test folder ${i}`,
           })
-          return pick(folder, RESOURCE_FIELDS_TO_PICK)
+          return pickComparable(folder)
         }),
       )
       await setupEditorPermissions({
@@ -2506,7 +3083,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result, totalCount } = await caller.listWithoutRoot({
         siteId: site.id,
       })
 
@@ -2515,6 +3092,37 @@ describe("resource.router", async () => {
         .sort(testListComparable)
         .slice(0, 10)
       expect(expected).toMatchObject(result)
+      // The total should reflect the full filtered set, not just this page.
+      expect(totalCount).toBe(numberOfPages + numberOfFolders)
+    })
+
+    it("should exclude the default Search page from the root resource list", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "search",
+        title: "Search",
+        resourceType: "Page",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        permalink: "about",
+        title: "About",
+        resourceType: "Page",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const { items: result } = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result.map(({ permalink }) => permalink)).toEqual(["about"])
     })
 
     it("should return resources (respecting the limit) nested inside the resourceId", async () => {
@@ -2535,7 +3143,7 @@ describe("resource.router", async () => {
             title: `Test page ${i}`,
             resourceType: "Page",
           })
-          return pick(page, RESOURCE_FIELDS_TO_PICK)
+          return pickComparable(page)
         }),
       )
       // Folders inside the folder
@@ -2547,7 +3155,7 @@ describe("resource.router", async () => {
             permalink: `folder-${i}`,
             title: `Test folder ${i}`,
           })
-          return pick(folder, RESOURCE_FIELDS_TO_PICK)
+          return pickComparable(folder)
         }),
       )
       await setupEditorPermissions({
@@ -2556,7 +3164,7 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result } = await caller.listWithoutRoot({
         resourceId: Number(folderToUse.id),
         siteId: site.id,
       })
@@ -2603,17 +3211,17 @@ describe("resource.router", async () => {
         .execute()
 
       // Act
-      const page1First = await caller.listWithoutRoot({
+      const { items: page1First } = await caller.listWithoutRoot({
         siteId: site.id,
         limit: 2,
         offset: 0,
       })
-      const page1Second = await caller.listWithoutRoot({
+      const { items: page1Second } = await caller.listWithoutRoot({
         siteId: site.id,
         limit: 2,
         offset: 0,
       })
-      const page2Result = await caller.listWithoutRoot({
+      const { items: page2Result } = await caller.listWithoutRoot({
         siteId: site.id,
         limit: 2,
         offset: 2,
@@ -2632,6 +3240,37 @@ describe("resource.router", async () => {
       const allIds = new Set([...page1Ids, ...page2Ids])
       const expectedIds = new Set(pages.map(({ page }) => page.id))
       expect(allIds).toEqual(expectedIds)
+    })
+
+    it("should return the true totalCount even when offset skips past every row", async () => {
+      // Arrange: the per-row window-function count is only available on
+      // returned rows, so an out-of-range offset (0 rows back) needs a
+      // fallback query to still report the real total instead of 0.
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+      await Promise.all(
+        ["page-1", "page-2"].map((permalink) =>
+          setupPageResource({
+            siteId: site.id,
+            resourceType: "Page",
+            permalink,
+          }),
+        ),
+      )
+
+      // Act
+      const { items, totalCount } = await caller.listWithoutRoot({
+        siteId: site.id,
+        limit: 10,
+        offset: 100,
+      })
+
+      // Assert
+      expect(items).toEqual([])
+      expect(totalCount).toBe(2)
     })
 
     it("should sort case-insensitively when orderBy is title-asc", async () => {
@@ -2665,13 +3304,184 @@ describe("resource.router", async () => {
       })
 
       // Act
-      const result = await caller.listWithoutRoot({
+      const { items: result } = await caller.listWithoutRoot({
         siteId: site.id,
         orderBy: "title-asc",
       })
 
       // Assert
       expect(result.map((r) => r.title)).toEqual(["apple", "Banana", "cherry"])
+    })
+
+    it("should sort by permalink ascending when orderBy is permalink-asc", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "Zulu",
+        permalink: "charlie",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "Alpha",
+        permalink: "alpha",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "Mike",
+        permalink: "bravo",
+      })
+
+      // Act
+      const { items: result } = await caller.listWithoutRoot({
+        siteId: site.id,
+        orderBy: "permalink-asc",
+      })
+
+      // Assert
+      expect(result.map((r) => r.permalink)).toEqual([
+        "alpha",
+        "bravo",
+        "charlie",
+      ])
+    })
+
+    it("should sort folder children by permalink ascending when orderBy is permalink-asc", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder({
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: "Page",
+        title: "Zulu",
+        permalink: "charlie",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: "Page",
+        title: "Alpha",
+        permalink: "alpha",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: "Page",
+        title: "Mike",
+        permalink: "bravo",
+      })
+
+      // Act
+      const { items: result } = await caller.listWithoutRoot({
+        siteId: site.id,
+        resourceId: Number(folder.id),
+        orderBy: "permalink-asc",
+      })
+
+      // Assert
+      expect(result.map((r) => r.permalink)).toEqual([
+        "alpha",
+        "bravo",
+        "charlie",
+      ])
+    })
+
+    it("should return liveStatus 'live' for a published page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
+
+      // Act
+      const { items: result } = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toEqual([
+        expect.objectContaining({ id: page.id, liveStatus: "live" }),
+      ])
+    })
+
+    it("should return liveStatus 'live' for a folder whose own index page is published", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
+
+      // Act
+      const { items: result } = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toEqual([
+        expect.objectContaining({ id: folder.id, liveStatus: "live" }),
+      ])
+    })
+
+    it("should return liveStatus 'liveTemplate' for a folder whose index page isn't published but a nested descendant is", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "nested-folder",
+      })
+      await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: subfolder.id,
+        permalink: "nested-index",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupEditorPermissions({ siteId: site.id, userId: session.userId })
+
+      // Act
+      const { items: result } = await caller.listWithoutRoot({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: folder.id,
+            liveStatus: "liveTemplate",
+          }),
+        ]),
+      )
     })
 
     it("should throw 403 if user does not have read access to site", async () => {
@@ -2694,6 +3504,351 @@ describe("resource.router", async () => {
     })
 
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
+
+    describe("statusFilter", () => {
+      it("should return only leaf rows matching 'live' when statusFilter is ['live']", async () => {
+        // Arrange
+        const { site, page: livePage } = await setupPageResource({
+          resourceType: "Page",
+          state: ResourceState.Published,
+          userId: session.userId,
+          permalink: "live-page",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "draft-page",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const { items: result } = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["live"],
+        })
+
+        // Assert
+        expect(result).toEqual([
+          expect.objectContaining({ id: livePage.id, liveStatus: "live" }),
+        ])
+      })
+
+      it("should include a container whose child is live when statusFilter is ['live']", async () => {
+        // Arrange
+        const { folder, site } = await setupFolder()
+        await setupPageResource({
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: folder.id,
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "draft-page",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const { items: result } = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["live"],
+        })
+
+        // Assert
+        expect(result).toEqual([
+          expect.objectContaining({ id: folder.id, liveStatus: "live" }),
+        ])
+      })
+
+      it("should return only rows matching 'notLive' when statusFilter is ['notLive']", async () => {
+        // Arrange
+        const { site, page: draftPage } = await setupPageResource({
+          resourceType: "Page",
+          permalink: "draft-page",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          state: ResourceState.Published,
+          userId: session.userId,
+          permalink: "live-page",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const { items: result } = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["notLive"],
+        })
+
+        // Assert
+        expect(result).toEqual([
+          expect.objectContaining({ id: draftPage.id, liveStatus: "notLive" }),
+        ])
+      })
+
+      it("should return rows scheduled to publish when statusFilter is ['scheduledToPublish']", async () => {
+        // Arrange
+        const { site, page: scheduledPage } = await setupPageResource({
+          resourceType: "Page",
+          permalink: "scheduled-publish",
+          scheduledAt: new Date(Date.now() + 60 * 60 * 1000),
+          scheduledAction: ScheduledAction.Publish,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "not-scheduled",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const { items: result } = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["scheduledToPublish"],
+        })
+
+        // Assert
+        expect(result).toEqual([
+          expect.objectContaining({ id: scheduledPage.id }),
+        ])
+      })
+
+      it("should include a container whose IndexPage is scheduled to publish when statusFilter is ['scheduledToPublish']", async () => {
+        // Arrange
+        const { folder, site } = await setupFolder()
+        await setupPageResource({
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: folder.id,
+          scheduledAt: new Date(Date.now() + 60 * 60 * 1000),
+          scheduledAction: ScheduledAction.Publish,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "not-scheduled",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const { items: result } = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["scheduledToPublish"],
+        })
+
+        // Assert
+        expect(result).toEqual([expect.objectContaining({ id: folder.id })])
+      })
+
+      it("should return rows scheduled to unpublish when statusFilter is ['scheduledToUnpublish']", async () => {
+        // Arrange
+        const { site, page: scheduledPage } = await setupPageResource({
+          resourceType: "Page",
+          permalink: "scheduled-unpublish",
+          scheduledAt: new Date(Date.now() + 60 * 60 * 1000),
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "scheduled-publish",
+          scheduledAt: new Date(Date.now() + 60 * 60 * 1000),
+          scheduledAction: ScheduledAction.Publish,
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const { items: result } = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["scheduledToUnpublish"],
+        })
+
+        // Assert
+        expect(result).toEqual([
+          expect.objectContaining({ id: scheduledPage.id }),
+        ])
+      })
+
+      it("should include a container whose IndexPage is scheduled to unpublish when statusFilter is ['scheduledToUnpublish']", async () => {
+        // Arrange
+        const { folder, site } = await setupFolder()
+        await setupPageResource({
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: folder.id,
+          state: ResourceState.Published,
+          userId: session.userId,
+          scheduledAt: new Date(Date.now() + 60 * 60 * 1000),
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "not-scheduled",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const { items: result } = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["scheduledToUnpublish"],
+        })
+
+        // Assert
+        expect(result).toEqual([expect.objectContaining({ id: folder.id })])
+      })
+
+      it("should return rows with a draft when statusFilter is ['hasDraft']", async () => {
+        // Arrange
+        const { site, page: draftPage } = await setupPageResource({
+          resourceType: "Page",
+          permalink: "has-draft",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          state: ResourceState.Published,
+          userId: session.userId,
+          permalink: "no-draft",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const { items: result } = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["hasDraft"],
+        })
+
+        // Assert
+        expect(result).toEqual([expect.objectContaining({ id: draftPage.id })])
+      })
+
+      it("should include a container whose IndexPage has a draft when statusFilter is ['hasDraft']", async () => {
+        // Arrange
+        const { folder, site } = await setupFolder()
+        await setupPageResource({
+          resourceType: ResourceType.IndexPage,
+          siteId: site.id,
+          parentId: folder.id,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          state: ResourceState.Published,
+          userId: session.userId,
+          permalink: "no-draft",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const { items: result } = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["hasDraft"],
+        })
+
+        // Assert
+        expect(result).toEqual([expect.objectContaining({ id: folder.id })])
+      })
+
+      it("should OR multiple tags together", async () => {
+        // Arrange
+        const { site, page: livePage } = await setupPageResource({
+          resourceType: "Page",
+          state: ResourceState.Published,
+          userId: session.userId,
+          permalink: "live-page",
+        })
+        const { page: scheduledPage } = await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "scheduled-unpublish",
+          scheduledAt: new Date(Date.now() + 60 * 60 * 1000),
+          scheduledAction: ScheduledAction.Unpublish,
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "plain-draft",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const { items: result } = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: ["live", "scheduledToUnpublish"],
+        })
+
+        // Assert
+        expect(result).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ id: livePage.id }),
+            expect.objectContaining({ id: scheduledPage.id }),
+          ]),
+        )
+        expect(result).toHaveLength(2)
+      })
+
+      it("should return everything when statusFilter is empty", async () => {
+        // Arrange
+        const { site } = await setupPageResource({
+          resourceType: "Page",
+          state: ResourceState.Published,
+          userId: session.userId,
+          permalink: "live-page",
+        })
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          permalink: "draft-page",
+        })
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        // Act
+        const { items: result } = await caller.listWithoutRoot({
+          siteId: site.id,
+          statusFilter: [],
+        })
+
+        // Assert
+        expect(result).toHaveLength(2)
+      })
+    })
   })
 
   describe("delete", () => {
@@ -2779,6 +3934,411 @@ describe("resource.router", async () => {
         .executeTakeFirst()
       expect(actual).toBeUndefined()
       expect(result).toEqual(page)
+    })
+
+    it("should block deleting a page that is still published", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: page.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This page must be unpublished before it can be deleted",
+        }),
+      )
+      expect(auditSpy).not.toHaveBeenCalled()
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
+    })
+
+    it("should block deleting a folder whose IndexPage is still published", async () => {
+      // Arrange — the folder's own row never carries a publishedVersionId;
+      // it's the child IndexPage that's actually live.
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "This folder has live pages inside it — unpublish them before deleting",
+        }),
+      )
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
+    })
+
+    it("should allow deleting a folder whose IndexPage is not published", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+
+      // Act
+      const result = await caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actual).toBeUndefined()
+    })
+
+    it("should allow deleting a folder whose FolderMeta has a stray publishedVersionId", async () => {
+      // Arrange — FolderMeta is internal ordering metadata that never renders
+      // as visitor-facing content; a stray publishedVersionId on it (seen in
+      // production) must not block deleting an otherwise fully-unpublished folder
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+      const { folderMeta } = await setupFolderMeta({
+        siteId: site.id,
+        folderId: folder.id,
+      })
+      const blob = await setupBlob()
+      const version = await db
+        .insertInto("Version")
+        .values({
+          versionNum: 1,
+          resourceId: folderMeta.id,
+          blobId: blob.id,
+          publishedBy: session.userId as string,
+        })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+      await db
+        .updateTable("Resource")
+        .where("id", "=", folderMeta.id)
+        .set({ publishedVersionId: version.id })
+        .execute()
+
+      // Act
+      const result = await caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actual).toBeUndefined()
+    })
+
+    it("should block deleting a folder whose IndexPage is unpublished but has a live nested page", async () => {
+      // Arrange — `parentId` is `onDelete: Cascade`, so deleting the folder
+      // would silently take the nested page down with it if this weren't blocked
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+      const { page: nestedPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "nested-page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "This folder has live pages inside it — unpublish them before deleting",
+        }),
+      )
+      const actualFolder = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actualFolder).not.toBeUndefined()
+      const actualNestedPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", nestedPage.id)
+        .executeTakeFirst()
+      expect(actualNestedPage).not.toBeUndefined()
+    })
+
+    it("should block deleting a folder whose IndexPage is unpublished but has a live page nested inside a subfolder", async () => {
+      // Arrange — the live descendant is two levels down, not a direct child
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "subfolder",
+      })
+      const { page: nestedPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: subfolder.id,
+        resourceType: ResourceType.Page,
+        permalink: "nested-page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "This folder has live pages inside it — unpublish them before deleting",
+        }),
+      )
+      const actualNestedPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", nestedPage.id)
+        .executeTakeFirst()
+      expect(actualNestedPage).not.toBeUndefined()
+    })
+
+    it("should block deleting a collection whose IndexPage is still published", async () => {
+      const { site, collection } = await setupCollection({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+
+      const result = caller.delete({
+        resourceId: collection.id,
+        siteId: site.id,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "This collection has live pages inside it — unpublish them before deleting",
+        }),
+      )
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", collection.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
+    })
+
+    it("should block deleting a page that is scheduled for a future publish", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        scheduledAt: new Date("2999-01-01T00:00:00Z"),
+        scheduledAction: ScheduledAction.Publish,
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.delete({ resourceId: page.id, siteId: site.id })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "This page is scheduled for a future publish or unpublish — cancel the schedule before deleting",
+        }),
+      )
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
+    })
+
+    it("should block deleting a page that is scheduled for a future unpublish", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId,
+        scheduledAt: new Date("2999-01-01T00:00:00Z"),
+        scheduledAction: ScheduledAction.Unpublish,
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.delete({ resourceId: page.id, siteId: site.id })
+
+      // Assert — still-published also blocks deletion, so either check can
+      // trigger; just confirm it's rejected rather than pinning the message.
+      await expect(result).rejects.toThrow(TRPCError)
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
+    })
+
+    it("should block deleting a folder with a descendant page scheduled for a future publish", async () => {
+      // Arrange — the folder's own row never carries a scheduledAt; the
+      // nested page does.
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        permalink: "scheduled-page",
+        scheduledAt: new Date("2999-01-01T00:00:00Z"),
+        scheduledAction: ScheduledAction.Publish,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "This folder has pages inside it scheduled for a future publish or unpublish — cancel the schedule before deleting",
+        }),
+      )
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
+    })
+
+    it("should allow deleting a folder whose descendants have no pending schedule", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+
+      // Act
+      const result = await caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actual).toBeUndefined()
     })
 
     it("should soft-delete redirects pointing to the deleted page", async () => {
@@ -2971,10 +4531,13 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(auditSpy).not.toHaveBeenCalled()
       await expect(result).rejects.toThrow(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "The root page cannot be deleted",
+        }),
       )
+      expect(auditSpy).not.toHaveBeenCalled()
     })
 
     it("should return 400 if resource to delete is the search page (permalink /search, no parent)", async () => {

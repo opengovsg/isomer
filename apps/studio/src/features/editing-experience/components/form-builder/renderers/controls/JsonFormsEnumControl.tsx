@@ -11,10 +11,9 @@ import {
   FormLabel,
   SingleSelect,
 } from "@opengovsg/design-system-react"
-import { startCase } from "lodash-es"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { getCustomErrorMessage } from "./utils"
+import { formatEnumLabel, getCustomErrorMessage } from "./utils"
 
 export const jsonFormsEnumControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.EnumControl,
@@ -44,16 +43,16 @@ const JsonFormsEnumControl = ({
           items={
             options?.map((option) => {
               return {
-                label: startCase(option.label.toLocaleLowerCase()),
+                label: formatEnumLabel(option.label),
                 // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 value: option.value,
               }
             }) ?? []
           }
-          isClearable={false}
+          isClearable={!required}
           isDisabled={!enabled}
           onChange={(value) => {
-            handleChange(path, value)
+            handleChange(path, value || undefined)
           }}
         />
 

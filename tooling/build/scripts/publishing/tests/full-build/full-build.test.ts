@@ -5,7 +5,7 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
 
-import { seedPublishingSite, TEST_DB_ENV, db } from "../seed"
+import { db, seedPublishingSite, TEST_DATABASE_URL } from "../seed"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PACKAGE_DIR = join(__dirname, "..", "..")
@@ -14,7 +14,15 @@ const TSX_BIN = join(PACKAGE_DIR, "node_modules", ".bin", "tsx")
 // publisher.sh moves the script output into the template before building, so
 // the template's committed placeholder fixtures are swapped for the real
 // output here and restored afterwards
-const TEMPLATE_DIR = join(PACKAGE_DIR, "..", "..", "..", "template")
+const TEMPLATE_DIR = join(
+  PACKAGE_DIR,
+  "..",
+  "..",
+  "..",
+  "..",
+  "apps",
+  "template",
+)
 const NEXT_BIN = join(TEMPLATE_DIR, "node_modules", ".bin", "next")
 const OUT_DIR = join(TEMPLATE_DIR, "out")
 const SWAPPED_PATHS = ["schema", "data", "sitemap.json"]
@@ -24,7 +32,7 @@ let backupDir: string | undefined
 let restored = false
 
 // Idempotent so it can run both on beforeAll failure and in afterAll.
-// If the process is killed mid-build, `git checkout tooling/template` restores
+// If the process is killed mid-build, `git checkout apps/template` restores
 // the fixtures manually.
 const restoreTemplate = () => {
   if (restored || !backupDir) return
@@ -53,7 +61,7 @@ beforeAll(async () => {
       // dd-trace (loaded via NODE_OPTIONS in CI) breaks spawned subprocesses
       NODE_OPTIONS: "",
       SITE_ID: String(siteId),
-      ...TEST_DB_ENV,
+      DATABASE_URL: TEST_DATABASE_URL,
       OUTPUT_DIR: outputDir,
     },
   })

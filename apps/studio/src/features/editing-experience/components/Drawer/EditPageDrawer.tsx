@@ -1,43 +1,41 @@
-import type { IsomerComponent, ProseProps } from "@opengovsg/isomer-components"
-import { getComponentSchema } from "@opengovsg/isomer-components"
+import { useRouter } from "next/router"
+import { useEffect } from "react"
 import ComponentSelector from "~/components/PageEditor/ComponentSelector"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { ajv } from "~/utils/ajv"
 
+import { inferAsProse } from "../../utils/inferAsProse"
 import TipTapProseComponent from "../TipTapProseComponent"
 import CollectionEditorStateDrawer from "./CollectionEditorStateDrawer"
 import ComplexEditorStateDrawer from "./ComplexEditorStateDrawer"
 import DatabaseEditorStateDrawer from "./DatabaseEditorStateDrawer"
 import HeroEditorDrawer from "./HeroEditorDrawer"
+import { HistoryStateDrawer } from "./HistoryStateDrawer"
 import MetadataEditorStateDrawer from "./MetadataEditorStateDrawer"
 import RawJsonEditorModeStateDrawer from "./RawJsonEditorModeStateDrawer"
 import RootStateDrawer from "./RootStateDrawer"
 import SiderailOrderingEditorStateDrawer from "./SiderailOrderingEditorStateDrawer"
-
-const proseSchema = getComponentSchema({ component: "prose" })
-
-const validate = ajv.compile<ProseProps>(proseSchema)
 
 export function EditPageDrawer(): JSX.Element {
   const {
     previewPageState,
     drawerState: currState,
     currActiveIdx,
+    setDrawerState,
   } = useEditorDrawerContext()
+  const router = useRouter()
 
-  const inferAsProse = (component?: IsomerComponent): ProseProps => {
-    if (!component) {
-      throw new Error("Expected component of type prose but got undefined")
-    }
+  // The navbar sits outside EditorDrawerProvider, so use a one-shot route
+  // request to open history without moving or duplicating editor state.
+  useEffect(() => {
+    if (router.query.history !== "true") return
 
-    if (validate(component)) {
-      return component
-    }
-
-    throw new Error(
-      `Expected component of type prose but got type ${component.type}`,
-    )
-  }
+    setDrawerState({ state: "history" })
+    const { history: _, ...query } = router.query
+    void router.replace({ pathname: router.pathname, query }, undefined, {
+      shallow: true,
+      scroll: false,
+    })
+  }, [router, setDrawerState])
 
   switch (currState.state) {
     case "root":
@@ -55,6 +53,8 @@ export function EditPageDrawer(): JSX.Element {
       return <ComplexEditorStateDrawer />
     case "metadataEditor":
       return <MetadataEditorStateDrawer />
+    case "history":
+      return <HistoryStateDrawer />
     case "databaseEditor":
       return <DatabaseEditorStateDrawer />
     case "heroEditor":

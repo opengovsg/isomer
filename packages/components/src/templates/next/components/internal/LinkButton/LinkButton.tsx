@@ -34,7 +34,7 @@ export const LinkButton = ({
         isExternal={isExternalLink}
       >
         {props.children}
-        <BiLinkExternal className={buttonIconStyles({ size })} />
+        <BiLinkExternal aria-hidden className={buttonIconStyles({ size })} />
       </Link>
     )
   }

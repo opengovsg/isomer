@@ -1,21 +1,32 @@
 import type { ImageProps } from "~/interfaces"
 import type {
-  ArticlePagePageProps,
+  DateTaggedItem,
   FormattedDate,
   IsomerSiteProps,
+  TagGroup,
 } from "~/types"
 
-interface FileDetails {
-  type: string
-  size: string
-}
+import type { DateFilterDisplayEntry } from "./DateFilter"
+
 interface BaseCardProps {
-  tags?: ArticlePagePageProps["tags"]
-  tagged?: ArticlePagePageProps["tagged"]
+  // NOTE: All groups (pills + plaintext combined), used for filter matching
+  // (see getFilteredItems/getTagFilters) — derived from `tagged` + `tagCategories`,
+  // no legacy fallback.
+  tags?: TagGroup[]
+  // NOTE: Same as `tags`, but only includes groups shown as pills
+  // (see getPillAndPlaintextTags) — plaintext groups are shown via `plaintextTags`
+  pillTags?: TagGroup[]
   id: string
   date?: Date
   lastModified: string
-  category: string
+  // NOTE: Same shape as `pillTags`, but only includes groups shown as plaintext
+  // — rendered as comma-joined text, dot-separated between groups (see PlaintextTags)
+  plaintextTags?: TagGroup[]
+  // NOTE: one entry per date-type filter the item has a raw value for — used
+  // for filter matching (see getFilteredItems' range-overlap check).
+  dateTagged?: DateTaggedItem[]
+  // NOTE: server-precomputed label + date text for DateFilterDates.
+  dateFilterDisplayEntries?: DateFilterDisplayEntry[]
   title: string
   url: string
   description: string
@@ -28,16 +39,11 @@ interface ArticleCardProps extends BaseCardProps {
   variant: "article"
 }
 
-export interface FileCardProps extends BaseCardProps {
-  variant: "file"
-  fileDetails: FileDetails
-}
-
 interface LinkCardProps extends BaseCardProps {
   variant: "link"
 }
 
-export type AllCardProps = ArticleCardProps | FileCardProps | LinkCardProps
+export type AllCardProps = ArticleCardProps | LinkCardProps
 
 // NOTE: This is client-side rendering and we want as much pre-processing
 // on the server as possible to improve performance + reduce file and bandwidth size
@@ -46,13 +52,15 @@ export type CollectionCardProps = Pick<
   AllCardProps,
   | "id"
   | "date"
-  | "category"
+  | "plaintextTags"
   | "title"
   | "description"
   | "image"
   | "tags"
-  | "tagged"
+  | "pillTags"
   | "isContainNeeded"
+  | "dateTagged"
+  | "dateFilterDisplayEntries"
 > & {
   referenceLinkHref: string | undefined
   imageSrc: string | undefined

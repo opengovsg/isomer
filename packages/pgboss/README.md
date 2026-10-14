@@ -11,6 +11,9 @@ Internal wrapper around `pg-boss` for PostgreSQL-backed background job schedulin
 
 Default timezone is `Asia/Singapore`.
 
+Workers and schedules are registered only when `ENABLE_CRON_WORKERS=true`. The
+flag defaults to `false`; opt in locally only when connected to a local database.
+
 ## Commands
 
 ```bash

@@ -6,6 +6,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Client, Pool } from "pg"
+import Cursor from "pg-cursor"
 import { parse } from "superjson"
 import { PrismaClient } from "~prisma/generated/prisma/client"
 
@@ -81,6 +82,10 @@ const db = new Kysely<DB>({
     pool: new Pool({
       connectionString,
     }),
+    // Without this, any query using `.stream()` (see auditLogExport.service.ts)
+    // throws "cursor is not present in your postgres dialect config" — matches
+    // the cursor wiring in packages/db/src/createDb.ts.
+    cursor: Cursor,
   }),
 })
 

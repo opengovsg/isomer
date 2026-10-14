@@ -2,6 +2,7 @@ import { Button, Flex, Grid, GridItem, Text } from "@chakra-ui/react"
 import { RestrictedGovtMasthead } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
+import posthog from "posthog-js"
 import { useEffect } from "react"
 import { FullscreenSpinner } from "~/components/FullscreenSpinner"
 import { IsomerLogo } from "~/components/Svg"
@@ -42,6 +43,7 @@ export const SingpassCallback = (): JSX.Element => {
     void utils.me.get.invalidate()
 
     if (!isNewUser) {
+      posthog.capture("user_logged_in", { method: "singpass" })
       void router.replace(callbackUrlSchema.parse(redirectUrl))
     }
   }, [

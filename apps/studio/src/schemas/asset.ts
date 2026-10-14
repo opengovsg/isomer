@@ -148,3 +148,22 @@ export const getPresignedGetUrlSchema = z.object({
     error: "Missing file key",
   }),
 })
+
+// Upper bound on how many asset URLs a single admin deleteAssetsByUrl call
+// may target. Mirrors MAX_DELETE_FILE_KEYS's rationale: each URL fans out to
+// a paid S3 tagging call, so an uncapped array lets one caller drive an
+// unbounded number of S3 operations across every site.
+export const MAX_DELETE_ASSET_URLS = 50
+
+export const deleteAssetsByUrlSchema = z.object({
+  urls: z
+    .array(
+      z.string({
+        error: "Missing asset URL",
+      }),
+    )
+    .min(1, { message: "Enter at least one asset URL" })
+    .max(MAX_DELETE_ASSET_URLS, {
+      message: `You can only delete up to ${MAX_DELETE_ASSET_URLS} assets at a time`,
+    }),
+})

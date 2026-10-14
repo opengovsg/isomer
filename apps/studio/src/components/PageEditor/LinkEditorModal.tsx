@@ -3,12 +3,14 @@ import type { LinkTypes } from "~/features/editing-experience/components/LinkEdi
 import {
   Box,
   FormControl,
+  HStack,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Spacer,
 } from "@chakra-ui/react"
 import {
   Button,
@@ -18,6 +20,7 @@ import {
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
+import DOMPurify from "isomorphic-dompurify"
 import { isEmpty } from "lodash-es"
 import { z } from "zod"
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
@@ -43,6 +46,41 @@ import { getReferenceLink } from "~/utils/link"
 import { AttachmentData } from "../AttachmentData"
 import { ResourceSelector } from "../ResourceSelector"
 import { FileAttachment } from "./FileAttachment"
+
+export const linkEditorSchema = z.object({
+  linkText: z.string().min(1, "Link text cannot be empty."),
+  linkHref: z
+    .string()
+    // Strips stray leading/trailing whitespace (e.g. from a paste) before
+    // any other check runs -- LinkHrefEditor's `curHref.startsWith(...)`
+    // display logic otherwise breaks on a leading space.
+    .trim()
+    .min(1, "Link destination cannot be empty.")
+    // A cleared External/Email field still lands here as a bare scheme
+    // ("https://"/"mailto:"), not "", so `.min(1)` alone won't catch it.
+    .refine(
+      (href) => !["https://", "mailto:"].includes(href),
+      "Link destination cannot be empty.",
+    )
+    // Delegates scheme/attribute validation to DOMPurify rather than
+    // hand-rolling our own allowlist/denylist -- see PR #3171 review.
+    .refine(
+      (href) => DOMPurify.isValidAttribute("a", "href", href),
+      "Link destination is not allowed.",
+    )
+    // Page/File hrefs aren't real URLs ([resource:...], /uuid/path) -- only
+    // External/Email are expected to be well-formed URLs. Catches
+    // malformed-but-scheme-safe input (e.g. a stray space in the host)
+    // that DOMPurify doesn't check, since it only validates scheme safety,
+    // not URL structure.
+    .refine((href) => {
+      const type = getLinkHrefType(href)
+      if (type === LINK_TYPES.External || type === LINK_TYPES.Email) {
+        return z.url().safeParse(href).success
+      }
+      return true
+    }, "Link destination is not a valid URL."),
+})
 
 interface PageLinkElementProps {
   value: string
@@ -71,7 +109,7 @@ const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
 
 type LinkEditorModalContentProps = Pick<
   LinkEditorModalProps,
-  "linkText" | "linkHref" | "showLinkText" | "linkTypes" | "onSave"
+  "linkText" | "linkHref" | "showLinkText" | "linkTypes" | "onSave" | "onRemove"
 >
 
 const LinkEditorModalContent = ({
@@ -79,6 +117,7 @@ const LinkEditorModalContent = ({
   linkHref,
   showLinkText = true,
   onSave,
+  onRemove,
   linkTypes,
 }: LinkEditorModalContentProps) => {
   const { strippedLinkText, onUploadedFile, buildFinalLinkTextForSave } =
@@ -95,12 +134,7 @@ const LinkEditorModalContent = ({
     formState: { errors },
   } = useZodForm({
     mode: "onChange",
-    schema: z.object({
-      linkText: z.string().min(1),
-      // TODO: Refactor to be required
-      // Context: quick hack to ensure error message don't shown for empty linkHref for FileAttachment
-      linkHref: z.string().min(1).optional(),
-    }),
+    schema: linkEditorSchema,
     defaultValues: {
       linkText: strippedLinkText,
       linkHref,
@@ -110,12 +144,8 @@ const LinkEditorModalContent = ({
 
   const isEditingLink = !!linkText && !!linkHref
 
-  const onSubmit = handleSubmit(
-    // TODO: Refactor to not have to check for !!linkHref
-    // Context: quick hack to ensure error message don't shown for empty linkHref for FileAttachment
-    ({ linkText, linkHref }) =>
-      !!linkHref &&
-      onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref),
+  const onSubmit = handleSubmit(({ linkText, linkHref }) =>
+    onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref),
   )
 
   return (
@@ -169,16 +199,28 @@ const LinkEditorModalContent = ({
         </ModalBody>
 
         <ModalFooter>
-          <Button
-            variant="solid"
-            onClick={onSubmit}
-            // NOTE: Using `isEmpty` here because we trigger `setError`
-            // using `isValid` doesn't trigger the error
-            isDisabled={!isEmpty(errors)}
-            type="submit"
-          >
-            {isEditingLink ? "Save link" : "Add link"}
-          </Button>
+          <HStack w="100%">
+            {isEditingLink && onRemove && (
+              <Button
+                variant="outline"
+                colorScheme="critical"
+                onClick={onRemove}
+              >
+                Remove link
+              </Button>
+            )}
+            <Spacer />
+            <Button
+              variant="solid"
+              onClick={onSubmit}
+              // NOTE: Using `isEmpty` here because we trigger `setError`
+              // using `isValid` doesn't trigger the error
+              isDisabled={!isEmpty(errors)}
+              type="submit"
+            >
+              {isEditingLink ? "Save link" : "Add link"}
+            </Button>
+          </HStack>
         </ModalFooter>
       </form>
     </ModalContent>
@@ -190,6 +232,7 @@ export interface LinkEditorModalProps {
   linkHref?: string
   showLinkText?: boolean
   onSave: (linkText: string, linkHref: string) => void
+  onRemove?: () => void
   isOpen: boolean
   onClose: () => void
   linkTypes: Record<
@@ -207,6 +250,7 @@ export const LinkEditorModal = ({
   showLinkText,
   linkHref,
   onSave,
+  onRemove,
   linkTypes,
 }: LinkEditorModalProps) => (
   <Modal isOpen={isOpen} onClose={onClose}>
@@ -222,6 +266,13 @@ export const LinkEditorModal = ({
           onSave(linkText, linkHref)
           onClose()
         }}
+        onRemove={
+          onRemove &&
+          (() => {
+            onRemove()
+            onClose()
+          })
+        }
       />
     )}
   </Modal>

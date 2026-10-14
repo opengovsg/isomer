@@ -18,6 +18,7 @@ export const InfoCardWithFullImage = ({
   site,
   shouldLazyLoad = true,
   isFallback,
+  headingLevel,
 }: With4Cols<SingleCardWithImageProps>): JSX.Element => {
   const isExternalLink = isExternalUrl(url)
 
@@ -47,6 +48,7 @@ export const InfoCardWithFullImage = ({
           url={url}
           isExternalLink={isExternalLink}
           variant={INFOCARD_VARIANT.bold}
+          headingLevel={headingLevel}
         />
       </div>
     </InfoCardContainer>

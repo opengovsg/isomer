@@ -34,7 +34,12 @@ export const Notification = ({ type, site, ...props }: NotificationProps) => {
       />
     ) : (
       !!content &&
-      hasContent(content.content) && <Prose {...content} site={site} />
+      hasContent(content.content) && (
+        // Notification is site-wide chrome rendered outside the main content
+        // flow (see Skeleton), so it isn't wired into the page's computed
+        // heading levels — it keeps a fixed level of its own.
+        <Prose {...content} site={site} headingLevel={3} />
+      )
     )
   return <NotificationClient title={title}>{body}</NotificationClient>
 }

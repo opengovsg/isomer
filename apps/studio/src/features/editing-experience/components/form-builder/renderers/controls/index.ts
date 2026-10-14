@@ -49,6 +49,14 @@ export {
   jsonFormsImageControlTester,
 } from "./JsonFormsImageControl"
 export {
+  default as JsonFormsImageRadioControl,
+  jsonFormsImageRadioControlTester,
+} from "./JsonFormsImageRadioControl"
+export {
+  default as JsonFormsIconPickerControl,
+  jsonFormsIconPickerControlTester,
+} from "./JsonFormsIconPickerControl"
+export {
   default as JsonFormsProseControl,
   jsonFormsProseControlTester,
 } from "./JsonFormsProseControl"
@@ -76,14 +84,6 @@ export {
   default as JsonFormsUnionRootControl,
   jsonFormsUnionRootControlTester,
 } from "./JsonFormsUnionRootControl"
-export {
-  default as JsonFormsCategoryControl,
-  jsonFormsCategoryControlTester,
-} from "./JsonFormsCategoryControl"
-export {
-  default as JsonFormsCategoryIdControl,
-  jsonFormsCategoryIdControlTester,
-} from "./JsonFormsCategoryIdControl"
 export {
   default as JsonFormsCollectionDropdownControl,
   jsonFormsCollectionDropdownControlTester,
@@ -117,9 +117,13 @@ export {
   jsonFormsTagCategoryOptionsControlTester,
 } from "./JsonFormsTagCategoryOptionsControl"
 export {
-  default as JsonFormsCategoryOptionsControl,
-  jsonFormsCategoryOptionsControlTester,
-} from "./JsonFormsCategoryOptionsControl"
+  default as JsonFormsDateFilterStatusLabelsControl,
+  jsonFormsDateFilterStatusLabelsControlTester,
+} from "./JsonFormsDateFilterStatusLabelsControl"
+export {
+  default as JsonFormsDateFilterValuesControl,
+  jsonFormsDateFilterValuesControlTester,
+} from "./JsonFormsDateFilterValuesControl"
 export {
   default as JsonFormsNavbarControl,
   jsonFormsNavbarControlTester,
@@ -156,6 +160,11 @@ export {
   default as JsonFormsCollectionVariantControl,
   jsonFormsCollectionVariantControlTester,
 } from "./JsonFormsCollectionVariantControl"
+export {
+  default as JsonFormsCollectionSortOrderControl,
+  JsonFormsCollectionSortOrderControlBase,
+  jsonFormsCollectionSortOrderControlTester,
+} from "./JsonFormsCollectionSortOrderControl"
 
 export {
   default as JsonFormsPrefillLinkControl,

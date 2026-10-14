@@ -1,9 +1,15 @@
 import type { LinkRefPageSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
+import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { format, parse } from "date-fns"
 import { z } from "zod"
 
-import { generateBasePermalinkSchema } from "./common"
+import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "./collection-limits"
+import {
+  generateBasePermalinkSchema,
+  NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
+  noStylizedUnicodeTitleRegex,
+} from "./common"
 import { MAX_FOLDER_PERMALINK_LENGTH, MAX_FOLDER_TITLE_LENGTH } from "./folder"
 import { offsetPaginationSchema } from "./pagination"
 import { resourceOrderByOptions } from "./resource"
@@ -35,6 +41,12 @@ const slashDateSchema = z
     return format(d, SLASH_DATE_FORMAT)
   })
 
+const dateTaggedEntrySchema = z.object({
+  id: z.string().uuid(),
+  date: z.string().min(1),
+  endDate: z.string().optional(),
+})
+
 export const editLinkSchema = z.object({
   date: slashDateSchema.optional(),
   category: z.string(),
@@ -51,13 +63,13 @@ export const editLinkSchema = z.object({
     )
     .optional(),
   tagged: z.array(z.string()).optional(),
+  dateTagged: z.array(dateTaggedEntrySchema).optional(),
   image: z
     .object({
       src: z.string(),
       alt: z.string(),
     })
     .optional(),
-  categoryId: z.string().optional(),
 })
 
 export const readLinkSchema = z.object({
@@ -77,6 +89,9 @@ export const createCollectionSchema = z.object({
     .min(1, { message: "Enter a title for this folder" })
     .max(MAX_FOLDER_TITLE_LENGTH, {
       message: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
+    })
+    .regex(noStylizedUnicodeTitleRegex, {
+      message: NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
     }),
   permalink: permalinkSchema,
   siteId: z.number().min(1),
@@ -96,12 +111,6 @@ export const getCollectionTagsSchema = z
     { message: "Exactly one of resourceId or collectionId must be provided" },
   )
 
-export const getCategoryOptionUsageCountSchema = z.object({
-  siteId: z.number().min(1, { message: "Site ID must be at least 1" }),
-  indexPageId: z.number().min(1, { message: "Page ID must be at least 1" }),
-  categoryId: z.uuid(),
-})
-
 export const getCollectionsSchema = z.object({
   siteId: z.number().min(1),
   hasChildren: z.boolean().optional().default(false),
@@ -115,15 +124,29 @@ export const readCollectionSchema = z
   })
   .merge(offsetPaginationSchema)
 
-/** Counts child collection pages/links whose `tagged` includes any of these option ids. */
-export const countTagOptionsUsageSchema = z.object({
+const countFilterUsageBaseSchema = z.object({
   siteId: z.number().min(1),
   pageId: z.number().min(1), // pageId is the collection index page resource id
-  tagOptionIds: z
-    .array(z.string().uuid())
-    // Upper bound to limit request parsing and SQL cost (ANY(...) on text[]).
-    // Arbitrary limit to prevent abuse; adjust if legitimate collections exceed this.
-    .max(100, {
-      message: `At most 100 tag options can be queried at once`,
-    }),
 })
+
+/**
+ * Counts child collection pages/links that use the given filter.
+ * Text filters match `tagged` against option ids; date filters match
+ * a `dateTagged` entry for the filter id (no per-option granularity).
+ */
+export const countFilterUsageSchema = z.discriminatedUnion("type", [
+  countFilterUsageBaseSchema.extend({
+    type: z.literal(TAG_CATEGORY_TYPE.Text),
+    tagOptionIds: z
+      .array(z.string().uuid())
+      .max(MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT, {
+        message: `At most ${MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT} tag options can be queried at once`,
+      }),
+  }),
+  countFilterUsageBaseSchema.extend({
+    type: z.literal(TAG_CATEGORY_TYPE.Date),
+    dateFilterId: z.string().uuid(),
+  }),
+])
+
+export type CountFilterUsageInput = z.infer<typeof countFilterUsageSchema>

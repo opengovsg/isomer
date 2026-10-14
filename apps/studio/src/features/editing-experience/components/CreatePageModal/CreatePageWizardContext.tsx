@@ -3,6 +3,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { merge } from "lodash-es"
 import { useRouter } from "next/router"
+import posthog from "posthog-js"
 import { createContext, useContext, useMemo, useState } from "react"
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import contentLayoutPreview from "~/features/editing-experience/data/contentLayoutPreview.json"
@@ -113,6 +114,11 @@ const useCreatePageWizardContext = ({
       },
       {
         onSuccess: ({ pageId }) => {
+          posthog.capture("page_created", {
+            site_id: siteId,
+            has_parent_folder: !!folderId,
+            layout: values.layout,
+          })
           void router.push(`/sites/${siteId}/pages/${pageId}`)
         },
         onError: (error) => {

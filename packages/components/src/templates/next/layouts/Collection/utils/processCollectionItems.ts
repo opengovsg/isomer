@@ -13,33 +13,37 @@ export const processCollectionItems = (
     const {
       id,
       site,
-      variant,
       date,
-      category,
+      plaintextTags,
       title,
       description,
       image,
       isContainNeeded,
       url,
       tags,
+      pillTags,
+      dateTagged,
+      dateFilterDisplayEntries,
     } = item
-    const file = variant === "file" ? item.fileDetails : null
     return {
       id,
       date,
-      category,
+      plaintextTags,
       title,
       description,
       image,
       isContainNeeded,
       tags,
+      pillTags,
+      dateTagged,
+      dateFilterDisplayEntries,
       referenceLinkHref: getReferenceLinkHref(
         url,
         site.siteMapArray,
         site.assetsBaseUrl,
       ),
       imageSrc: item.image?.src,
-      itemTitle: `${item.title}${file ? ` [${file.type.toUpperCase()}, ${file.size.toUpperCase()}]` : ""}`,
+      itemTitle: title,
       formattedDate: date ? getFormattedDate(date.toISOString()) : undefined,
     } as Exact<ProcessedCollectionCardProps, ProcessedCollectionCardProps>
   })

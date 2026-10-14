@@ -43,11 +43,20 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 
 ## Catalog
 
+### Components
+
+- [Combine component styles with tv or twMerge in packages/components](conventions/components-tv-twmerge-combine-styles.md) — best practice: use tv/twMerge for variant/merge logic; plain className when there is no variance
+
 ### React
 
 - [Prefer a new component over overloading props](conventions/react-new-component-over-prop-overload.md) — smell: flag soup / single-caller props bending one component into two jobs
 - [Build forms with useZodForm, not per-field useState](conventions/react-forms-usezodform-over-usestate.md) — best practice: forms use the zod-wired useForm wrapper, schema reused from ~/schemas
 - [Drive modals with useDisclosure, renamed on destructure](conventions/react-modal-usedisclosure-renamed.md) — best practice: modals use Chakra's useDisclosure (not custom useState), aliased to names like isDeleteModalOpen
+- [One custom hook per file](conventions/react-one-hook-per-file.md) — best practice: each hook in its own file named after it, one test file per hook; don't group hooks in a shared module
+
+### Analytics
+
+- [Capture PostHog events through the shared hooks](conventions/analytics-shared-posthog-capture-hooks.md) — best practice: use usePostHogCaptureOnceReady / OncePerKey / OptionalStep for render-driven captures, not a hand-rolled useEffect + useRef guard
 
 ### Audit logging
 - [Audit deltas must log real DB rows, not hand-built objects](conventions/audit-log-real-db-rows.md) — best practice: log before/after as rows re-read from the DB inside the same tx, so deltas are accurate
@@ -57,6 +66,7 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 
 ### Testing
 - [Structure tests as Arrange / Act / Assert](conventions/tests-arrange-act-assert.md) — best practice: mark AAA phases (collapse adjacent markers when trivial), one Act per test
+- [E2E test conventions (Studio Playwright suite)](conventions/e2e-tests.md) — best practice: living reference for the Studio Playwright E2E suite
 
 ### Feature flags
 

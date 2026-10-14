@@ -4,8 +4,10 @@ import {
   AUDIO_EMBED_URL_PATTERN,
   GTM_ID_STRING_REGEX,
   isValidAudioEmbedUrl,
+  isValidMapEmbedUrl,
   LINK_HREF_PATTERN,
   MAPS_EMBED_URL_PATTERN,
+  NO_STYLIZED_UNICODE_REGEX,
   VIDEO_EMBED_URL_PATTERN,
 } from "../validation"
 
@@ -152,11 +154,24 @@ describe("validation", () => {
       const testCases = [
         "https://www.onemap.gov.sg/minimap/minimap.html?mapStyle=Default&zoomLevel=15&latLng=1.29793747849037,103.850182257356&ewt=JTNDcCUzRSUzQ3N0cm9uZyUzRU9wZW4lMjBHb3Zlcm5tZW50JTIwUHJvZHVjdHMlMjBvZmZpY2UlM0MlMkZzdHJvbmclM0UlM0MlMkZwJTNF&popupWidth=200&showPopup=true",
         "https://www.onemap.gov.sg/amm/amm.html?mapStyle=Default&zoomLevel=15&marker=postalcode:189554!colour:darkblue&marker=postalcode:068877!colour:red&marker=postalcode:179097!colour:red&popupWidth=200",
+        "https://mobile.onemap.gov.sg/nparks/heritageTrees.html",
+        "https://mobile.onemap.gov.sg/minimap/minimap.html?mapStyle=Default&zoomLevel=15",
       ]
 
       testCases.forEach((testCase) => {
         const result = new RegExp(MAPS_EMBED_URL_PATTERN).test(testCase)
         expect(result).toBe(true)
+      })
+    })
+
+    it("should allow mobile OneMap embed URLs via isValidMapEmbedUrl", () => {
+      const testCases = [
+        "https://mobile.onemap.gov.sg/nparks/heritageTrees.html",
+        "https://mobile.onemap.gov.sg/minimap/minimap.html?mapStyle=Default&zoomLevel=15",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(isValidMapEmbedUrl(testCase)).toBe(true)
       })
     })
 
@@ -183,6 +198,8 @@ describe("validation", () => {
         "https://www.google.com/maps/eee/embed?mid=1Mgnp3R1e7rYXGY2Vn1efD-AWXlfZa8o&ehbc=2E312F",
         "https://www.google.fakesite.com/maps/embed?pb=!1m18!1m12!1m3!1d3961.473373876674!2d103.8486973142665!3d1.3035969990313745!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da19b8b4c6e1e1%3A0x2f1f6b8f0a1b2a7d!2sMinistry%20of%20Communications%20and%20Information!5e0!3m2!1sen!2ssg!4v1632291134655!5m2!1en!2sg",
         "https://www.onemap.gov.sg/minimap/amm.html?mapStyle=Default&zoomLevel=15&marker=postalcode:189554!colour:darkblue&marker=postalcode:068877!colour:red&marker=postalcode:179097!colour:red&popupWidth=200",
+        "https://mobile.onemap.gov.sg/",
+        "https://evil.onemap.gov.sg/nparks/heritageTrees.html",
       ]
 
       testCases.forEach((testCase) => {
@@ -315,6 +332,100 @@ describe("validation", () => {
         // Assert
         expect(result).toBe(false)
       })
+    })
+  })
+
+  describe("NO_STYLIZED_UNICODE_REGEX", () => {
+    it("should allow plain text, other languages, emoji, and flag emoji", () => {
+      // Arrange
+      const testCases = [
+        "Official Unveiling",
+        "海报设计比赛",
+        "Selamat datang ke laman web",
+        "வணக்கம், இது ஒரு சோதனை",
+        "🇸🇬 National Day 2026 🎉",
+        "© 2026 Government of Singapore ® ™",
+        "25℃ / 77℉",
+        "No. 1 → №1",
+        "3ℓ bottle, ℠ ℡ ℹ Å Ω℧ ℮",
+        "",
+      ]
+
+      testCases.forEach((testCase) => {
+        // Act
+        const result = new RegExp(NO_STYLIZED_UNICODE_REGEX).test(testCase)
+
+        // Assert
+        expect(result).toBe(true)
+      })
+    })
+
+    it("should reject Mathematical Alphanumeric Symbols", () => {
+      // Arrange
+      const testCases = [
+        "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥 𝐔𝐧𝐯𝐞𝐢𝐥𝐢𝐧𝐠 𝐨𝐟 “𝐓𝐚𝐩𝐞𝐬𝐭𝐫𝐲 𝐨𝐟 𝐚 𝐍𝐚𝐭𝐢𝐨𝐧” 𝐌𝐮𝐫𝐚𝐥",
+        "𝓕𝓪𝓷𝓬𝔂 𝓼𝓬𝓻𝓲𝓹𝓽",
+        "some 𝟏𝟐𝟑 digits",
+      ]
+
+      testCases.forEach((testCase) => {
+        // Act
+        const result = new RegExp(NO_STYLIZED_UNICODE_REGEX).test(testCase)
+
+        // Assert
+        expect(result).toBe(false)
+      })
+    })
+
+    it("should reject Letterlike Symbols letter lookalikes", () => {
+      // Arrange
+      const testCases = [
+        "ℂℍℕℝℤ",
+        "ℬℰℱℋℐℒℳℛℯℊℴ",
+        "ℎ ⅅⅆⅇⅈⅉ",
+        "Ⅎancy",
+        "⅁⅂⅃⅄",
+        "ⅎancy",
+      ]
+
+      testCases.forEach((testCase) => {
+        // Act
+        const result = new RegExp(NO_STYLIZED_UNICODE_REGEX).test(testCase)
+
+        // Assert
+        expect(result).toBe(false)
+      })
+    })
+
+    it("should reject circled/squared letter lookalikes", () => {
+      // Arrange
+      const testCases = ["Ⓒⓞⓟⓨ", "①②③", "🅁🄴🅂🄴🅁🅅🄴🄳"]
+
+      testCases.forEach((testCase) => {
+        // Act
+        const result = new RegExp(NO_STYLIZED_UNICODE_REGEX).test(testCase)
+
+        // Assert
+        expect(result).toBe(false)
+      })
+    })
+
+    it("should reject fullwidth Latin letters and digits", () => {
+      // Arrange / Act
+      const result = new RegExp(NO_STYLIZED_UNICODE_REGEX).test(
+        "Ａｄｍｉｎ１２３",
+      )
+
+      // Assert
+      expect(result).toBe(false)
+    })
+
+    it("should allow fullwidth CJK punctuation", () => {
+      // Arrange / Act
+      const result = new RegExp(NO_STYLIZED_UNICODE_REGEX).test("你好，世界！")
+
+      // Assert
+      expect(result).toBe(true)
     })
   })
 

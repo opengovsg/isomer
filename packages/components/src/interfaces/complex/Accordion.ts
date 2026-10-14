@@ -3,11 +3,12 @@ import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import { AccordionProseSchema } from "../native/Prose"
+import { IsomerString } from "../primitives/IsomerString"
 
 export const AccordionSchema = Type.Object(
   {
     type: Type.Literal("accordion", { default: "accordion" }),
-    summary: Type.String({
+    summary: IsomerString({
       title: "Title",
     }),
     details: AccordionProseSchema,
@@ -17,4 +18,5 @@ export const AccordionSchema = Type.Object(
 
 export type AccordionProps = Static<typeof AccordionSchema> & {
   site: IsomerSiteProps
+  headingLevel: number
 }

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { expect, userEvent, waitFor, within } from "storybook/test"
+import { MOCK_TEST_USER_NAME } from "tests/msw/constants"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -40,11 +41,10 @@ export const Default: Story = {
   decorators: [ResetUpdateProfileModalDecorator],
   play: async (context) => {
     const screen = within(context.canvasElement)
-    const testUserSelector = await screen.findByText(/TU/i)
-    const testUserSelectorButton = testUserSelector.closest("button")
-    if (testUserSelectorButton) {
-      await userEvent.click(testUserSelectorButton)
-    }
+    const profileMenuButton = await screen.findByRole("button", {
+      name: MOCK_TEST_USER_NAME,
+    })
+    await userEvent.click(profileMenuButton)
     const editProfileButton = await screen.findByText("Edit profile")
     await userEvent.click(editProfileButton, {
       pointerEventsCheck: 0,

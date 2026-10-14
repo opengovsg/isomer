@@ -1,24 +1,49 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
-import { Box, HStack, Text, VStack } from "@chakra-ui/react"
+import { Box, HStack, Text, useDisclosure, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { BiPurchaseTag } from "react-icons/bi"
+import {
+  isDateFilter,
+  isTextFilter,
+  TAG_CATEGORY_TYPE,
+} from "@opengovsg/isomer-components"
+import { useMemo } from "react"
+import { BiCalendar, BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { pageSchema } from "~/features/editing-experience/schema"
+import { useQueryParse } from "~/hooks/useQueryParse"
 
+import type { FilterType } from "../../components/FilterTypeChoiceModal"
 import { AddItemButton } from "../../components/AddItemButton"
-import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
+import { DateFilterOnboardingBanner } from "../../components/DateFilterOnboardingBanner"
+import {
+  DeleteFilterModal,
+  type DeleteFilterModalTarget,
+} from "../../components/DeleteFilterModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
-import { DuplicateLabelError } from "../../components/DuplicateLabelError"
 import { EmptyCategory } from "../../components/EmptyCategory"
+import { FilterTypeChoiceModal } from "../../components/FilterTypeChoiceModal"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
 import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
-import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
-import { createDefaultTagCategory } from "./constants"
+import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
+import { createDefaultDateFilter, createDefaultTagCategory } from "./constants"
+
+const isDateFilterEditorOpen = (
+  tagCategories: CollectionPagePageProps["tagCategories"],
+  selectedIndex: number | undefined,
+): boolean => {
+  if (selectedIndex === undefined) {
+    return false
+  }
+
+  const selectedFilter = tagCategories?.[selectedIndex]
+  return selectedFilter !== undefined && isDateFilter(selectedFilter)
+}
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const {
@@ -39,9 +64,14 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   } = props
   const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
+  const { pageId, siteId } = useQueryParse(pageSchema)
   const page = core?.data as CollectionPagePageProps | undefined
-  const duplicateFilterIndices = useDuplicateLabels(path)
-
+  const { duplicate: duplicateFilterIndices } = useLiveLabelIssues({ path })
+  const {
+    isOpen: isTypeChoiceModalOpen,
+    onOpen: onTypeChoiceModalOpen,
+    onClose: onTypeChoiceModalClose,
+  } = useDisclosure()
   const arrayResult = useArray({
     data,
     path,
@@ -55,6 +85,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     moveDown,
   })
   const {
+    selectedIndex,
     setSelectedIndex,
     isAddItemDisabled,
     isRemoveItemDisabled,
@@ -62,9 +93,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     handleRemoveSelectedItem,
     onDragEnd,
   } = arrayResult
-
-  const hasDuplicateFilterNameError = duplicateFilterIndices.size > 0
-
   const {
     target: deleteTarget,
     openDeleteModal,
@@ -79,44 +107,72 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     }),
   })
 
-  const hasLabelOrDescription = !!label || !!description
+  const deleteFilterModalTarget = useMemo(():
+    | DeleteFilterModalTarget
+    | undefined => {
+    if (!deleteTarget) return undefined
+
+    const tagCategory = page?.tagCategories?.[deleteTarget.index]
+    if (tagCategory && isDateFilter(tagCategory)) {
+      return {
+        type: TAG_CATEGORY_TYPE.Date,
+        dateFilterId: tagCategory.id,
+      }
+    }
+
+    return {
+      type: TAG_CATEGORY_TYPE.Text,
+      tagOptionIds:
+        tagCategory && isTextFilter(tagCategory)
+          ? tagCategory.options
+              .map((option) => option.id)
+              .filter((id): id is string => Boolean(id))
+          : [],
+    }
+  }, [deleteTarget, page?.tagCategories])
+
+  const handleAddFilter = (type: FilterType) => {
+    const newIndex = data
+    addItem(
+      path,
+      type === TAG_CATEGORY_TYPE.Date
+        ? createDefaultDateFilter()
+        : createDefaultTagCategory(),
+    )()
+    setSelectedIndex(newIndex)
+    onTypeChoiceModalClose()
+  }
 
   return (
-    <NestedDrawerSwitch {...props} {...arrayResult}>
+    <NestedDrawerSwitch
+      {...props}
+      {...arrayResult}
+      banner={
+        isDateFilterEditorOpen(page?.tagCategories, selectedIndex) ? (
+          <DateFilterOnboardingBanner />
+        ) : undefined
+      }
+    >
       <VStack spacing={0} align="start">
-        {hasLabelOrDescription && (
-          <VStack align="start" spacing="0.25rem" w="full" mb="1rem">
-            {label && (
-              <Text textStyle="subhead-1" textColor="base.content.strong">
-                {label}
-              </Text>
-            )}
-            {description && (
-              <Text textStyle="body-2" textColor="base.content.default">
-                {description}
-              </Text>
-            )}
-          </VStack>
-        )}
         <VStack align="start" spacing="0.25rem" w="full">
           <HStack w="full" justifyContent="space-between" align="center">
-            <Text
-              textStyle="subhead-2"
-              textColor="base.content.strong"
-              flex={1}
-            >
-              Custom Filters
+            <Text textStyle="subhead-1" flex={1}>
+              {label}
             </Text>
             <AddItemButton
-              onClick={addItem(path, createDefaultTagCategory())}
+              onClick={onTypeChoiceModalOpen}
               isDisabled={isAddItemDisabled}
             >
               Add a filter
             </AddItemButton>
           </HStack>
-          {hasDuplicateFilterNameError && <DuplicateLabelError noun="filter" />}
+          {description && (
+            <Text textStyle="body-2" textColor="base.content.default">
+              {description}
+            </Text>
+          )}
         </VStack>
-        <Box w="full" mt={hasLabelOrDescription ? "0.5rem" : "0.25rem"}>
+        <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="blocks">
               {({ droppableProps, innerRef, placeholder }) => (
@@ -130,7 +186,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                 >
                   {data === 0 && (
                     <EmptyCategory
-                      title="Custom filters you add will appear here"
+                      title="Filters you add will appear here"
                       description="Click 'Add a filter' to add one"
                     />
                   )}
@@ -139,10 +195,18 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                     const childPath = composePaths(path, `${index}`)
                     const isDuplicate = duplicateFilterIndices.has(index)
                     const hasError = hasErrorAt(childPath) || isDuplicate
+                    const tagCategory = page?.tagCategories?.[index]
+                    const isDateFilterEntry =
+                      !!tagCategory && isDateFilter(tagCategory)
                     const count =
-                      page?.tagCategories?.[index]?.options?.length ?? 0
-                    const subtitle =
-                      count === 1 ? "1 option" : `${count} options`
+                      tagCategory && isTextFilter(tagCategory)
+                        ? tagCategory.options.length
+                        : 0
+                    const subtitle = isDateFilterEntry
+                      ? "Date filter"
+                      : count === 1
+                        ? "1 option"
+                        : `${count} options`
 
                     return (
                       <Draggable
@@ -163,7 +227,11 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                             <DraggableTagButton.Body
                               onClick={() => setSelectedIndex(index)}
                             >
-                              <DraggableTagButton.Icon icon={BiPurchaseTag} />
+                              <DraggableTagButton.Icon
+                                icon={
+                                  isDateFilterEntry ? BiCalendar : BiPurchaseTag
+                                }
+                              />
                               <DraggableTagButton.Content>
                                 <DraggableTagButton.Label
                                   index={index}
@@ -172,6 +240,12 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                                   uischema={childUiSchema}
                                   enabled={enabled}
                                   removeItem={handleRemoveSelectedItem}
+                                  // NOTE: `schema` here is the oneOf-wrapped
+                                  // TagCategorySchema — it has no top-level
+                                  // `properties`, so JSONForms' default "first
+                                  // primitive property" fallback can't find a
+                                  // label to show without this explicit hint.
+                                  childLabelProp="label"
                                 />
                                 <DraggableTagButton.Subtitle>
                                   {subtitle}
@@ -206,22 +280,21 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
           </DragDropContext>
         </Box>
       </VStack>
-      {deleteTarget && (
-        <DeleteConfirmModal
+      {deleteTarget && deleteFilterModalTarget && (
+        <DeleteFilterModal
           isOpen
-          label={deleteTarget.label}
-          noun="filter"
-          warningBody={
-            <Text textStyle="body-1" color="base.content.strong">
-              This removes the filter and its options from the collection.
-              Collection items that use these options may need to be updated
-              manually.
-            </Text>
-          }
+          siteId={siteId}
+          pageId={pageId}
+          target={deleteFilterModalTarget}
           onClose={closeDeleteModal}
           onConfirm={handleConfirmDelete}
         />
       )}
+      <FilterTypeChoiceModal
+        isOpen={isTypeChoiceModalOpen}
+        onClose={onTypeChoiceModalClose}
+        onSelect={handleAddFilter}
+      />
     </NestedDrawerSwitch>
   )
 }

@@ -5,7 +5,7 @@ import { dataAttr } from "@chakra-ui/utils"
 import { Button } from "@opengovsg/design-system-react"
 import { getIcon } from "~/utils/resources"
 
-interface ResourceItemProps {
+export interface ResourceItemProps {
   item: ResourceItemContent
   isDisabled?: boolean
   isHighlighted?: boolean

@@ -6,18 +6,11 @@ const DB_USERNAME = process.env.TEST_DB_USERNAME ?? ""
 const DB_PASSWORD = process.env.TEST_DB_PASSWORD ?? ""
 const DB_NAME = process.env.TEST_DB_NAME ?? ""
 
-export const db = createDb({
-  connectionString: `postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}`,
-})
+export const TEST_DATABASE_URL = `postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}`
 
-// Connection env vars for spawning the publishing script as a subprocess
-export const TEST_DB_ENV = {
-  DB_HOST,
-  DB_PORT,
-  DB_USERNAME,
-  DB_PASSWORD,
-  DB_NAME,
-}
+export const db = createDb({
+  connectionString: TEST_DATABASE_URL,
+})
 
 const USER_ID = "publishing-e2e-user"
 
@@ -352,6 +345,21 @@ export const seedPublishingSite = async () => {
     siteId,
     source: "/ref-page",
     destination: `[resource:${siteId}:${ourTeamPageId}]`,
+  })
+  // Reproduces ISOM-2525: a redirect created before a folder rename now
+  // resolves to the exact same live URL as its source and must not be emitted.
+  await seedRedirect({
+    siteId,
+    source: "/about/our-team",
+    destination: `[resource:${siteId}:${ourTeamPageId}]`,
+  })
+  // Folder variant of the same failure: the wildcard resolver appends the
+  // matched remainder, so /about/* -> /about sends every request back to the
+  // exact path it started from.
+  await seedRedirect({
+    siteId,
+    source: "/about/*",
+    destination: `[resource:${siteId}:${aboutFolderId}]`,
   })
   // A reference to an index page resolves to its folder (the "_index" segment
   // is stripped, matching what the editor displays)

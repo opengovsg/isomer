@@ -82,7 +82,11 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
 
   const updateSiteIntegrationsMutation =
     trpc.site.updateSiteIntegrations.useMutation({
-      onSuccess: async () => {
+      onSuccess: async (updatedSite) => {
+        setComplexIntegrationSettings({
+          askgov: updatedSite.config.askgov,
+          vica: updatedSite.config.vica,
+        })
         toast({
           ...SETTINGS_TOAST_MESSAGES.success,
           status: "success",

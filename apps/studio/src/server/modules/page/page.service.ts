@@ -1,4 +1,3 @@
-import type { CollectionPageCategoryOption } from "@opengovsg/isomer-components"
 import type { UnwrapTagged } from "type-fest"
 import type { NEW_PAGE_LAYOUT_VALUES } from "~/schemas/page"
 import {
@@ -6,11 +5,27 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
-import { format } from "date-fns"
-import { z } from "zod"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { format, isBefore } from "date-fns"
+import {
+  AuditLogEvent,
+  ResourceType,
+  ScheduledAction,
+} from "~prisma/generated/generatedEnums"
 
-import { db, sql } from "../database"
+import type { Resource } from "../database"
+import { logResourceEvent } from "../audit/audit.service"
+import { db } from "../database"
+import { AncestorScheduledUnpublishLockError } from "../resource/resource.error"
+import {
+  getAncestorIndexPages,
+  getDescendantResourceIdsUnsafeForScheduledUnpublish,
+  getLockingAncestorIndexPages,
+  getPageById,
+  resolveEffectiveResourceId,
+  UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
+  updatePageById,
+} from "../resource/resource.service"
+import { getUserById } from "../user/user.service"
 
 export const createDefaultPage = ({
   layout,
@@ -87,74 +102,357 @@ export const createFolderIndexPage = (title: string) => {
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }
 
-const uuidSchema = z.uuid()
-
-function isCollectionPageCategoryOption(
-  value: unknown,
-): value is CollectionPageCategoryOption {
-  if (!value || typeof value !== "object") {
-    return false
-  }
-  const rec = value as Record<string, unknown>
-  return (
-    uuidSchema.safeParse(rec.id).success &&
-    typeof rec.label === "string" &&
-    rec.label.trim().length > 0 &&
-    rec.label === rec.label.trim()
-  )
-}
-
-export const getCategoryOptionsForPage = async ({
-  siteId,
-  pageId,
-}: {
+interface SchedulePublishParams {
+  userId: string
   siteId: number
   pageId: number
-}): Promise<{ categoryOptions: CollectionPageCategoryOption[] }> => {
-  const page = await db
-    .selectFrom("Resource as r")
-    .innerJoin("Resource as parent", "parent.id", "r.parentId")
-    .where("r.siteId", "=", siteId)
-    .where("r.id", "=", String(pageId))
-    .select(["r.parentId", "parent.type as parentType"])
-    .executeTakeFirst()
+  scheduledAt: Date
+}
 
-  if (!page?.parentId) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Page not found",
-    })
-  }
-
-  if (page.parentType !== ResourceType.Collection) {
+export const schedulePublish = async ({
+  userId,
+  siteId,
+  pageId,
+  scheduledAt,
+}: SchedulePublishParams): Promise<Resource> => {
+  if (isBefore(scheduledAt, new Date())) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Page is not a child of a Collection",
+      message: "Scheduled time must be in the future",
     })
   }
 
-  // Intentionally reads only from the published index blob: child pages/links
-  // may only choose from category options that have been published on the
-  // collection index. Newly-added or edited options are not selectable until
-  // the index is published.
-  const row = await db
-    .selectFrom("Resource as r")
-    .innerJoin("Version as v", "r.publishedVersionId", "v.id")
-    .innerJoin("Blob as vb", "v.blobId", "vb.id")
-    .where("r.siteId", "=", siteId)
-    .where("r.parentId", "=", page.parentId)
-    .where("r.type", "=", ResourceType.IndexPage)
-    .select(
-      sql<
-        CollectionPageCategoryOption[] | null
-      >`vb.content->'page'->'categoryOptions'`.as("categoryOptions"),
-    )
-    .executeTakeFirst()
+  const by = await getUserById(userId)
 
-  const raw = row?.categoryOptions
-  return {
-    categoryOptions: Array.isArray(raw)
-      ? raw.filter(isCollectionPageCategoryOption)
-      : [],
+  return db.transaction().execute(async (tx) => {
+    // pageId may be a Folder/Collection id shorthand for its landing page —
+    // resolve inside the transaction, same as publishPageResource does via
+    // getFullPageById, so the input contract matches the immediate-publish
+    // flow exactly.
+    const resolvedResourceId = await resolveEffectiveResourceId(tx, {
+      resourceId: pageId,
+      siteId,
+    })
+    // Fetch inside the transaction to avoid racing a concurrent update.
+    const resource = await getPageById(tx, {
+      resourceId: resolvedResourceId,
+      siteId,
+    })
+    if (!resource) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Resource not found",
+      })
+    }
+    if (resource.scheduledAt) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: `Page already has a scheduled action at ${format(resource.scheduledAt, "yyyy-MM-dd HH:mm")}`,
+      })
+    }
+
+    // A pending ancestor scheduled-unpublish locks out scheduling a publish
+    // underneath it, at any nesting depth, regardless of timing (see
+    // getLockingAncestorIndexPages).
+    const ancestorIndexPages = await getAncestorIndexPages(tx, {
+      siteId,
+      resourceId: resource.id,
+    })
+    const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
+    if (lockingAncestor?.scheduledAt) {
+      throw new AncestorScheduledUnpublishLockError(
+        lockingAncestor.scheduledAt,
+        "publish this page",
+      )
+    }
+
+    const updatedPage = await updatePageById(
+      {
+        id: resolvedResourceId,
+        siteId,
+        scheduledAt,
+        scheduledBy: by.id,
+        scheduledAction: ScheduledAction.Publish,
+      },
+      tx,
+    )
+    if (!updatedPage) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to schedule page",
+      })
+    }
+    await logResourceEvent(tx, {
+      siteId,
+      by,
+      delta: { before: resource, after: updatedPage },
+      eventType: AuditLogEvent.SchedulePublish,
+    })
+    return updatedPage
+  })
+}
+
+interface ScheduleUnpublishParams {
+  userId: string
+  siteId: number
+  pageId: number
+  scheduledAt: Date
+}
+
+export const scheduleUnpublish = async ({
+  userId,
+  siteId,
+  pageId,
+  scheduledAt,
+}: ScheduleUnpublishParams): Promise<Resource> => {
+  if (isBefore(scheduledAt, new Date())) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Scheduled time must be in the future",
+    })
   }
+
+  const by = await getUserById(userId)
+
+  return db.transaction().execute(async (tx) => {
+    // pageId may be a Folder/Collection id shorthand for its landing page —
+    // resolve inside the transaction, same as unpublishPageResource does via
+    // getFullPageById, so the input contract matches unpublishPage exactly.
+    const resolvedResourceId = await resolveEffectiveResourceId(tx, {
+      resourceId: pageId,
+      siteId,
+    })
+    const resource = await getPageById(tx, {
+      resourceId: resolvedResourceId,
+      siteId,
+    })
+    if (!resource) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
+      })
+    }
+    if (!resource.publishedVersionId) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "This page is not currently published",
+      })
+    }
+    if (resource.scheduledAt) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: `Page already has a scheduled action at ${format(resource.scheduledAt, "yyyy-MM-dd HH:mm")}`,
+      })
+    }
+
+    // Schedule-time analogue of unpublishPageResource's container-siblings
+    // guard: block scheduling a folder/collection's landing page to unpublish
+    // while another page inside it won't be safely down by then. The
+    // execution-time guard still runs when this fires (see
+    // unpublishPageResource) — this only gives the caller earlier feedback.
+    if (resource.type === ResourceType.IndexPage && resource.parentId) {
+      // resourceId here is the container (parent) whose subtree is walked;
+      // the IndexPage being scheduled is itself part of that subtree and is
+      // still published/unscheduled at this point, so it must be excluded
+      // from the result the same way getPublishedDescendantResourceIds's
+      // callers exclude the resource being unpublished (see
+      // unpublishPageResource's container-siblings guard).
+      const unsafeDescendantIds = (
+        await getDescendantResourceIdsUnsafeForScheduledUnpublish(tx, {
+          siteId,
+          resourceId: resource.parentId,
+          scheduledAt,
+        })
+      ).filter((id) => id !== resource.id)
+      if (unsafeDescendantIds.length > 0) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "Some pages in this folder/collection will still be live at that time. Schedule or unpublish those pages first.",
+        })
+      }
+    }
+
+    const updatedPage = await updatePageById(
+      {
+        id: resolvedResourceId,
+        siteId,
+        scheduledAt,
+        scheduledBy: by.id,
+        scheduledAction: ScheduledAction.Unpublish,
+      },
+      tx,
+    )
+    if (!updatedPage) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to schedule unpublish",
+      })
+    }
+    await logResourceEvent(tx, {
+      siteId,
+      by,
+      delta: { before: resource, after: updatedPage },
+      eventType: AuditLogEvent.ScheduleUnpublish,
+    })
+    return updatedPage
+  })
+}
+
+interface CancelSchedulePublishParams {
+  userId: string
+  siteId: number
+  pageId: number
+}
+
+export const cancelSchedulePublish = async ({
+  userId,
+  siteId,
+  pageId,
+}: CancelSchedulePublishParams): Promise<Resource> => {
+  const by = await getUserById(userId)
+
+  return db.transaction().execute(async (tx) => {
+    const resolvedResourceId = await resolveEffectiveResourceId(tx, {
+      resourceId: pageId,
+      siteId,
+    })
+    const resource = await getPageById(tx, {
+      resourceId: resolvedResourceId,
+      siteId,
+    })
+    if (!resource) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Resource not found",
+      })
+    }
+    // A resource scheduled before scheduledAction existed has it as null;
+    // the cron treats that null the same as Publish (see
+    // schedulePublishingJob.ts), so cancellation must match that convention
+    // rather than requiring an exact enum match.
+    const effectiveScheduledAction =
+      resource.scheduledAction ?? ScheduledAction.Publish
+    if (
+      !resource.scheduledAt ||
+      effectiveScheduledAction !== ScheduledAction.Publish
+    ) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message:
+          "Unable to cancel schedule for a page that is not scheduled to be published",
+      })
+    }
+
+    const updatedPage = await updatePageById(
+      {
+        id: resolvedResourceId,
+        siteId,
+        scheduledAt: null,
+        scheduledBy: null,
+        scheduledAction: null,
+      },
+      tx,
+    )
+    if (!updatedPage) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to cancel page schedule",
+      })
+    }
+    await logResourceEvent(tx, {
+      siteId,
+      by,
+      delta: { before: resource, after: updatedPage },
+      eventType: AuditLogEvent.CancelSchedulePublish,
+    })
+    return updatedPage
+  })
+}
+
+interface CancelScheduleUnpublishParams {
+  userId: string
+  siteId: number
+  pageId: number
+}
+
+export const cancelScheduleUnpublish = async ({
+  userId,
+  siteId,
+  pageId,
+}: CancelScheduleUnpublishParams): Promise<Resource> => {
+  const by = await getUserById(userId)
+
+  return db.transaction().execute(async (tx) => {
+    const resolvedResourceId = await resolveEffectiveResourceId(tx, {
+      resourceId: pageId,
+      siteId,
+    })
+    const resource = await getPageById(tx, {
+      resourceId: resolvedResourceId,
+      siteId,
+    })
+    if (!resource) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: UNPUBLISH_PAGE_NOT_FOUND_MESSAGE,
+      })
+    }
+    const effectiveScheduledAction =
+      resource.scheduledAction ?? ScheduledAction.Publish
+    if (
+      !resource.scheduledAt ||
+      effectiveScheduledAction !== ScheduledAction.Unpublish
+    ) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message:
+          "Unable to cancel schedule for a page that is not scheduled to be unpublished",
+      })
+    }
+
+    // Scheduling this container's own unpublish (or any ancestor's) required
+    // this resource to already be dark, or scheduled to go dark, by that
+    // time — see getDescendantResourceIdsUnsafeForScheduledUnpublish.
+    // Cancelling this resource's own scheduled unpublish while that ancestor
+    // lock still stands would leave it live past the ancestor's scheduled
+    // unpublish, so it's locked the same way scheduling a new publish
+    // underneath a locked ancestor is (see
+    // getLockingAncestorIndexPages/AncestorScheduledUnpublishLockError).
+    const ancestorIndexPages = await getAncestorIndexPages(tx, {
+      siteId,
+      resourceId: resource.id,
+    })
+    const [lockingAncestor] = getLockingAncestorIndexPages(ancestorIndexPages)
+    if (lockingAncestor?.scheduledAt) {
+      throw new AncestorScheduledUnpublishLockError(
+        lockingAncestor.scheduledAt,
+        "cancel this page's scheduled unpublish",
+      )
+    }
+
+    const updatedPage = await updatePageById(
+      {
+        id: resolvedResourceId,
+        siteId,
+        scheduledAt: null,
+        scheduledBy: null,
+        scheduledAction: null,
+      },
+      tx,
+    )
+    if (!updatedPage) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to cancel scheduled unpublish",
+      })
+    }
+    await logResourceEvent(tx, {
+      siteId,
+      by,
+      delta: { before: resource, after: updatedPage },
+      eventType: AuditLogEvent.CancelScheduleUnpublish,
+    })
+    return updatedPage
+  })
 }

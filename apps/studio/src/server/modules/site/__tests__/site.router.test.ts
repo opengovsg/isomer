@@ -19,10 +19,19 @@ import {
 } from "tests/integration/helpers/seed"
 import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import type { User } from "../../database"
-import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
+import * as awsUtils from "../../aws/utils"
+import {
+  AuditLogEvent,
+  db,
+  jsonb,
+  ResourceState,
+  ResourceType,
+} from "../../database"
+import { getResourcePermission } from "../../permissions/permissions.service"
+import { FOOTER, NAVBAR_CONTENT } from "../constants"
 import { siteRouter } from "../site.router"
 
 // Mock env to set production environment for SearchSG tests
@@ -42,6 +51,11 @@ const createCaller = createCallerFactory(siteRouter)
 const MOCK_SITE_NAME = "isobad"
 const MOCK_LOGO_URL = "https://isobad.com/logo.png"
 const MOCK_SEARCHSG_CLIENT_ID = "550e8400-e29b-41d4-a716-446655440000"
+// A UUID belonging to a different site's SearchSG project. It has to satisfy
+// `isValidSearchSGClientId` (RFC 4122, so version 4 and variant 8 here), because
+// clearing that check is what lets a tampered clientId reach the SearchSG API.
+const MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID =
+  "11111111-2222-4333-8444-555555555555"
 const MOCK_EGAZETTE_ALGOLIA_SEARCH = {
   type: "egazette-algolia",
   appId: "MOCK_APP_ID",
@@ -185,6 +199,7 @@ describe("site.router", async () => {
         {
           id: site.id,
           config: site.config,
+          role: RoleType.Editor,
         },
       ])
     })
@@ -206,6 +221,7 @@ describe("site.router", async () => {
         {
           id: site1.id,
           config: site1.config,
+          role: RoleType.Editor,
         },
       ])
     })
@@ -242,6 +258,7 @@ describe("site.router", async () => {
         {
           id: site2.id,
           config: site2.config,
+          role: RoleType.Editor,
         },
       ])
     })
@@ -262,8 +279,37 @@ describe("site.router", async () => {
       expect(result).toEqual(
         [site1, site2]
           .sort((a, b) => a.id - b.id)
-          .map((site) => ({ id: site.id, config: site.config })),
+          .map((site) => ({
+            id: site.id,
+            config: site.config,
+            role: RoleType.Admin,
+          })),
       )
+    })
+
+    it("should return the Admin role even if the user also has an explicit lower role on the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
+
+      // Act
+      const result = await caller.list()
+
+      // Assert
+      expect(result).toEqual([
+        {
+          id: site.id,
+          config: site.config,
+          role: RoleType.Admin,
+        },
+      ])
     })
   })
 
@@ -539,6 +585,30 @@ describe("site.router", async () => {
         .executeTakeFirstOrThrow()
       expect(updatedSite.name).toEqual(MOCK_SITE_NAME)
     })
+    it("should normalize an AskGov URL when updating the site config", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        askgov: {
+          "data-agency":
+            "https://www.ask.gov.sg/mha/questions/question-id?from=widget",
+        },
+      })
+
+      // Assert
+      expect(result.askgov).toEqual({ "data-agency": "mha" })
+    })
     it("should generate an audit log entry", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -681,6 +751,50 @@ describe("site.router", async () => {
         { name: MOCK_SITE_NAME, _kind: "name" },
         existingClientId,
         result.url,
+      )
+    })
+    it("uses clientId fixtures that pass the SearchSG format check", () => {
+      // Guards the premise of the tampering tests below: a malformed clientId
+      // is rejected downstream anyway, so the fixtures have to be well-formed
+      // for those tests to cover the case that actually reaches SearchSG.
+      expect(
+        searchSgService.isValidSearchSGClientId(MOCK_SEARCHSG_CLIENT_ID),
+      ).toBe(true)
+      expect(
+        searchSgService.isValidSearchSGClientId(
+          MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID,
+        ),
+      ).toBe(true)
+    })
+    it("should not allow a site admin to enable searchSG with a supplied clientId", async () => {
+      // Arrange - no search integration, so there is no clientId in the DB to
+      // fall back on. The clientId is a valid UUID belonging to another site.
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        search: {
+          type: "searchSG",
+          clientId: MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID,
+        },
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Cannot enable the SearchSG search integration. Contact Isomer Support to set it up.",
+        }),
       )
     })
     it("should not allow a site admin to switch search to egazette-algolia", async () => {
@@ -867,6 +981,41 @@ describe("site.router", async () => {
       // Assert
       expect(result.config).toEqual(MOCK_INTEGRATION_DATA)
     })
+    it.each([
+      {
+        input: "http://ask.gov.sg/mom/?topic=employment#contact",
+        expected: "mom",
+        description: "URL",
+      },
+      {
+        input: "www.ask.gov.sg/help/questions/question-id",
+        expected: "help",
+        description: "scheme-less URL",
+      },
+      { input: "mha", expected: "mha", description: "ID" },
+    ])(
+      "should store an AskGov $description as the agency ID when updating site integrations",
+      async ({ input, expected }) => {
+        // Arrange
+        const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        // Act
+        const result = await caller.updateSiteIntegrations({
+          data: {
+            ...MOCK_INTEGRATION_DATA,
+            askgov: { "data-agency": input },
+          },
+          siteId: site.id,
+        })
+
+        // Assert
+        expect(result.config.askgov).toEqual({ "data-agency": expected })
+      },
+    )
     it("should generate an audit log entry", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -927,6 +1076,71 @@ describe("site.router", async () => {
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
+    it("should not allow a site admin to change the searchSG clientId", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({
+          config: {
+            ...site.config,
+            search: { type: "searchSG", clientId: MOCK_SEARCHSG_CLIENT_ID },
+          },
+        })
+        .where("id", "=", site.id)
+        .execute()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - submit another site's clientId
+      const result = await caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: {
+          ...MOCK_INTEGRATION_DATA,
+          search: {
+            type: "searchSG",
+            clientId: MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID,
+          },
+        },
+      })
+
+      // Assert - the stored clientId should be the original DB value
+      expect(result.config.search).toEqual({
+        type: "searchSG",
+        clientId: MOCK_SEARCHSG_CLIENT_ID,
+      })
+    })
+    it("should not allow a site admin to enable searchSG with a supplied clientId", async () => {
+      // Arrange - no search integration, so there is no clientId in the DB
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: {
+          ...MOCK_INTEGRATION_DATA,
+          search: {
+            type: "searchSG",
+            clientId: MOCK_OTHER_SITE_SEARCHSG_CLIENT_ID,
+          },
+        },
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Cannot enable the SearchSG search integration. Contact Isomer Support to set it up.",
+        }),
+      )
+    })
     it("should throw 400 if downgrading search integration from searchSG to localSearch", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -2169,6 +2383,68 @@ describe("site.router", async () => {
       ).toBe(true)
       expect(auditLogs.every((log) => log.userId === session.userId)).toBe(true)
     })
+
+    it("should persist and reload valid config, theme, navbar, and footer JSON", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
+      const newConfig = {
+        theme: "isomer-next",
+        siteName: "Updated by admin",
+        logoUrl: "https://example.com/logo.svg",
+        isGovernment: true,
+        url: "https://www.example.gov.sg",
+      }
+      const newTheme = {
+        colors: {
+          brand: {
+            canvas: {
+              default: "#111111",
+              alt: "#222222",
+              backdrop: "#333333",
+              inverse: "#444444",
+            },
+            interaction: {
+              default: "#555555",
+              hover: "#666666",
+              pressed: "#777777",
+            },
+          },
+        },
+      }
+      const newNavbar = { items: [{ name: "Admin nav", url: "/admin-nav" }] }
+      const newFooter = {
+        contactUsLink: "/contact-admin",
+        feedbackFormLink: "https://www.form.gov.sg",
+        privacyStatementLink: "/privacy",
+        termsOfUseLink: "/terms-of-use",
+        siteNavItems: [{ title: "Admin footer", url: "/admin-footer" }],
+      }
+
+      // Act
+      await caller.setSiteConfigByAdmin({
+        siteId: site.id,
+        config: JSON.stringify(newConfig),
+        theme: JSON.stringify(newTheme),
+        navbar: JSON.stringify(newNavbar),
+        footer: JSON.stringify(newFooter),
+      })
+
+      // Assert
+      await expect(caller.getConfig({ id: site.id })).resolves.toMatchObject(
+        newConfig,
+      )
+      await expect(caller.getTheme({ id: site.id })).resolves.toEqual(newTheme)
+      await expect(caller.getNavbar({ id: site.id })).resolves.toMatchObject({
+        content: newNavbar,
+      })
+      await expect(caller.getFooter({ id: site.id })).resolves.toMatchObject({
+        content: newFooter,
+      })
+    })
   })
 
   describe("create", () => {
@@ -2207,11 +2483,21 @@ describe("site.router", async () => {
       )
     })
 
-    it("should create a new site successfully if user is an Isomer Core Admin", async () => {
+    it("should create a new site with default config, pages, and implicit Isomer admin access", async () => {
       // Arrange
       await setupIsomerAdmin({
         userId: session.userId!,
         role: IsomerAdminRole.Core,
+      })
+      const otherCoreUser = await setupUser({
+        email: "other-core@mock.com",
+      })
+      await setupIsomerAdmin({
+        userId: otherCoreUser.id,
+        role: IsomerAdminRole.Core,
+      })
+      const regularUser = await setupUser({
+        email: "regular@mock.com",
       })
 
       // Act
@@ -2224,6 +2510,92 @@ describe("site.router", async () => {
         siteId: expect.any(Number),
         siteName: "foo",
       })
+
+      const site = await db
+        .selectFrom("Site")
+        .where("id", "=", result.siteId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(site.name).toBe("foo")
+      expect(site.config).toMatchObject({
+        theme: "isomer-next",
+        siteName: "foo",
+        url: "https://www.isomer.gov.sg",
+        logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+        isGovernment: true,
+      })
+      expect(site.theme).toMatchObject({
+        colors: {
+          brand: {
+            canvas: { inverse: "#00405f" },
+            interaction: { default: "#00405f" },
+          },
+        },
+      })
+
+      const navbar = await db
+        .selectFrom("Navbar")
+        .where("siteId", "=", result.siteId)
+        .select("content")
+        .executeTakeFirstOrThrow()
+      expect(navbar.content).toEqual(NAVBAR_CONTENT)
+
+      const footer = await db
+        .selectFrom("Footer")
+        .where("siteId", "=", result.siteId)
+        .select("content")
+        .executeTakeFirstOrThrow()
+      expect(footer.content).toEqual(FOOTER)
+
+      const home = await db
+        .selectFrom("Resource")
+        .where("siteId", "=", result.siteId)
+        .where("type", "=", ResourceType.RootPage)
+        .select(["title", "permalink", "state"])
+        .executeTakeFirstOrThrow()
+      expect(home).toMatchObject({
+        title: "Home",
+        permalink: "",
+        state: ResourceState.Published,
+      })
+
+      const search = await db
+        .selectFrom("Resource")
+        .where("siteId", "=", result.siteId)
+        .where("permalink", "=", "search")
+        .select(["title", "type", "state"])
+        .executeTakeFirstOrThrow()
+      expect(search).toMatchObject({
+        title: "Search",
+        type: ResourceType.Page,
+        state: ResourceState.Published,
+      })
+
+      const explicitPermissions = await db
+        .selectFrom("ResourcePermission")
+        .where("siteId", "=", result.siteId)
+        .selectAll()
+        .execute()
+      expect(explicitPermissions).toHaveLength(0)
+
+      await expect(
+        getResourcePermission({
+          userId: session.userId!,
+          siteId: result.siteId,
+        }),
+      ).resolves.toEqual([{ role: RoleType.Admin }])
+      await expect(
+        getResourcePermission({
+          userId: otherCoreUser.id,
+          siteId: result.siteId,
+        }),
+      ).resolves.toEqual([{ role: RoleType.Admin }])
+      await expect(
+        getResourcePermission({
+          userId: regularUser.id,
+          siteId: result.siteId,
+        }),
+      ).resolves.toEqual([])
     })
 
     it.each(["", " ", "\t", "\n", " \t\n "])(
@@ -2250,6 +2622,10 @@ describe("site.router", async () => {
   })
 
   describe("publish", () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
     it("should throw 401 if user is not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -2286,13 +2662,14 @@ describe("site.router", async () => {
       )
     })
 
-    it("should publish a site successfully if user is an Isomer Core Admin", async () => {
+    it("should no-op publish when the site has no CodeBuild ID", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupIsomerAdmin({
         userId: session.userId!,
         role: IsomerAdminRole.Core,
       })
+      const startProjectByIdSpy = vi.spyOn(awsUtils, "startProjectById")
 
       // Act
       const result = await caller.publish({
@@ -2300,7 +2677,43 @@ describe("site.router", async () => {
       })
 
       // Assert
-      expect(result).toBeUndefined() // does not return anything
+      expect(result).toBeUndefined()
+      expect(startProjectByIdSpy).not.toHaveBeenCalled()
+    })
+
+    it("should start a CodeBuild publish when the site has a CodeBuild ID", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({ codeBuildId: "test-codebuild-project-id" })
+        .where("id", "=", site.id)
+        .execute()
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
+      vi.spyOn(awsUtils, "computeBuildChanges").mockResolvedValue({
+        isNewBuildNeeded: true,
+      })
+      const startProjectByIdSpy = vi
+        .spyOn(awsUtils, "startProjectById")
+        .mockResolvedValue({
+          id: "test-build-id",
+          startTime: new Date("2024-01-01T00:00:00.000Z"),
+        })
+
+      // Act
+      const result = await caller.publish({
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toBeUndefined()
+      expect(startProjectByIdSpy).toHaveBeenCalledWith(
+        expect.anything(),
+        "test-codebuild-project-id",
+      )
     })
   })
 })

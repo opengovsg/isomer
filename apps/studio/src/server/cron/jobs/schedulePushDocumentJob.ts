@@ -8,12 +8,15 @@ import { getBlob, setAssetAsPublished } from "~/lib/s3"
 import { createGrowthBookContext } from "~/server/context"
 import { db } from "~/server/modules/database"
 import {
-  buildGazetteSearchRecords,
   generateDocumentId,
-  parseFullTextFromPDF,
   pushDocumentsForIngestion,
 } from "~/server/modules/gazette/gazette.service"
 
+import {
+  buildGazetteSearchRecords,
+  getContentDispositionForTitle,
+  parseFullTextFromPDF,
+} from "@isomer/algolia"
 import { registerPgbossJob } from "@isomer/pgboss"
 
 const JOB_NAME = "schedule-push-document"
@@ -36,7 +39,10 @@ const collectionIndexPageContentSchema = z.object({
   page: z.object({
     tagCategories: z.array(
       z.object({
-        options: z.array(z.object({ id: z.string(), label: z.string() })),
+        // Date filters have no options
+        options: z
+          .array(z.object({ id: z.string(), label: z.string() }))
+          .optional(),
       }),
     ),
   }),
@@ -56,10 +62,12 @@ const collectionIndexPageContentSchema = z.object({
 const extractResourceData = async ({
   resourceId,
   parentId,
+  title,
   content,
 }: {
   resourceId: string
   parentId: string | null
+  title: string
   content: unknown
 }): Promise<{
   ref: string
@@ -103,10 +111,12 @@ const extractResourceData = async ({
   const blob = await getBlob(env.S3_GAZETTE_BUCKET_NAME, ref.slice(1))
 
   // NOTE: Remove `scheduledAt` tags from our s3 object
-  // so that the pdf is viewable to MOPs
+  // so that the pdf is viewable to MOPs, and rename the download
+  // filename to the gazette's title
   await setAssetAsPublished({
     Key: ref.slice(1),
     Bucket: env.S3_GAZETTE_BUCKET_NAME,
+    ContentDisposition: getContentDispositionForTitle(title, ref),
   })
 
   // NOTE: Derive the subcategory from the tagged mapping
@@ -124,7 +134,7 @@ const extractResourceData = async ({
   const { tagCategories } = indexParsed.data.page
   // reduce the tag category options into a single array then we find
   const options =
-    tagCategories?.map((category) => category.options).flat() ?? []
+    tagCategories?.flatMap((category) => category.options ?? []) ?? []
   const subcategory = options.find(
     (option) => option.id === parsed.data.page.tagged[0],
   )
@@ -198,6 +208,7 @@ export const schedulePushDocumentJobHandler = async () => {
             const extracted = await extractResourceData({
               resourceId,
               parentId,
+              title,
               content,
             })
             if (extracted === null) return null
@@ -253,6 +264,7 @@ export const schedulePushDocumentJobHandler = async () => {
           const extracted = await extractResourceData({
             resourceId,
             parentId,
+            title,
             content,
           })
           if (extracted === null) continue

@@ -3,6 +3,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import type {
   AddUserModalState,
+  ExportAccessLogsModalState,
   RemoveUserModalState,
   UpdateUserModalState,
 } from "./types"
@@ -40,4 +41,13 @@ export const DEFAULT_REMOVE_USER_MODAL_STATE = {
 
 export const removeUserModalAtom = atom<RemoveUserModalState>(
   DEFAULT_REMOVE_USER_MODAL_STATE,
+)
+
+export const DEFAULT_EXPORT_ACCESS_LOGS_MODAL_STATE = {
+  siteId: 0,
+  isOpen: false,
+} as const
+
+export const exportAccessLogsModalAtom = atom<ExportAccessLogsModalState>(
+  DEFAULT_EXPORT_ACCESS_LOGS_MODAL_STATE,
 )

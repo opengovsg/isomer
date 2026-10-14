@@ -5,6 +5,7 @@ import {
   CARDS_WITHOUT_IMAGES,
   INFOCARD_VARIANT,
 } from "~/interfaces/complex/InfoCards"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
@@ -28,12 +29,14 @@ export const InfoCards = ({
   layout,
   site,
   shouldLazyLoad,
+  headingLevel,
 }: InfoCardsProps): JSX.Element => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const cardVariant =
     variant === CARDS_WITH_FULL_IMAGES
       ? INFOCARD_VARIANT.bold
       : INFOCARD_VARIANT.default
+  const TitleTag = getHeadingTag(headingLevel)
 
   const InfoCardsToRender = () => {
     switch (variant) {
@@ -48,6 +51,7 @@ export const InfoCards = ({
                 layout={layout}
                 site={site}
                 shouldLazyLoad={shouldLazyLoad}
+                headingLevel={headingLevel + 1}
               />
             ))}
           </>
@@ -56,7 +60,12 @@ export const InfoCards = ({
         return (
           <>
             {cards.map((card, idx) => (
-              <InfoCardNoImage key={idx} {...card} site={site} />
+              <InfoCardNoImage
+                key={idx}
+                {...card}
+                site={site}
+                headingLevel={headingLevel + 1}
+              />
             ))}
           </>
         )
@@ -71,6 +80,7 @@ export const InfoCards = ({
                 layout={layout}
                 site={site}
                 shouldLazyLoad={shouldLazyLoad}
+                headingLevel={headingLevel + 1}
               />
             ))}
           </>
@@ -96,7 +106,7 @@ export const InfoCards = ({
             variant: cardVariant,
           })}
         >
-          <h2 className={compoundStyles.headingTitle()}>{title}</h2>
+          <TitleTag className={compoundStyles.headingTitle()}>{title}</TitleTag>
 
           {subtitle && (
             <p

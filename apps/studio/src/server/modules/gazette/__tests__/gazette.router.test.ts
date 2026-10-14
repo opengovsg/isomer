@@ -3,7 +3,6 @@ import { subDays, subMinutes } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
-import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
 import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
@@ -21,6 +20,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
 import * as mailService from "~/features/mail/service"
 import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
+import { mockFeatureFlags } from "~/lib/growthbookOffline"
 import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
 import {
@@ -178,6 +178,65 @@ describe("gazette.router", async () => {
           offset: 0,
         }),
       ).rejects.toThrowError(new TRPCError({ code: "UNAUTHORIZED" }))
+    })
+  })
+
+  describe("list ordering", () => {
+    it("orders by notification number numerically, not lexicographically", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+      vi.spyOn(s3Lib, "getFileSize").mockResolvedValue(0)
+
+      // Notification numbers deliberately mix digit lengths: a naive text
+      // sort would put "82" above "5337" ('8' > '5' as the first
+      // character), even though 5337 is numerically larger.
+      const notificationNumbers = [
+        "82",
+        "81",
+        "80",
+        "78",
+        "5337",
+        "5336",
+        "5335",
+      ]
+      for (const notificationNumber of notificationNumbers) {
+        await caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: `Notice ${notificationNumber}`,
+          permalink: crypto.randomUUID(),
+          ref: `/sites/1/gazettes/${crypto.randomUUID()}/notif-${notificationNumber}.pdf`,
+          category: "Government Gazette",
+          date: "30/04/2026",
+          description: notificationNumber,
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        })
+      }
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        limit: 10,
+        offset: 0,
+      })
+
+      // Assert
+      const orderedNotificationNumbers = result.map(
+        (gazette) =>
+          (gazette.content as { page?: { description?: string } })?.page
+            ?.description,
+      )
+      expect(orderedNotificationNumbers).toEqual([
+        "5337",
+        "5336",
+        "5335",
+        "82",
+        "81",
+        "80",
+        "78",
+      ])
     })
   })
 
@@ -1129,9 +1188,9 @@ describe("gazette.router", async () => {
       expect(resource).toBeUndefined()
     })
 
-    it("rejects deletion after the 15-minute grace period", async () => {
+    it("rejects deletion after the 30-minute grace period", async () => {
       const { site, collection, user } = await seedToppanWithCollection()
-      const publishedAt = subMinutes(FIXED_NOW, 16) // 16 minutes ago
+      const publishedAt = subMinutes(FIXED_NOW, 31) // 31 minutes ago
 
       const { gazetteId } = await seedPublishedGazette({
         siteId: site.id,
@@ -1149,7 +1208,7 @@ describe("gazette.router", async () => {
         new TRPCError({
           code: "FORBIDDEN",
           message:
-            "Gazettes are unable to be deleted after the given grace period of 15 minutes",
+            "Gazettes are unable to be deleted after the given grace period of 30 minutes",
         }),
       )
 

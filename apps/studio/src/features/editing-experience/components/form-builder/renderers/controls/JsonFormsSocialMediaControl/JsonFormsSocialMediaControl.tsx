@@ -374,7 +374,10 @@ const JsonFormsSocialMediaControl = ({
                 variant="clear"
                 size="xs"
                 leftIcon={<Icon as={BiPlusCircle} />}
-                onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+                onClick={() => {
+                  addItem(path, createDefaultValue(schema, rootSchema))()
+                  setSelectedIndex(data)
+                }}
                 isDisabled={
                   arraySchema.maxItems ? data >= arraySchema.maxItems : false
                 }

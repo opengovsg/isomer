@@ -1,11 +1,12 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
+import { IsomerString } from "~/interfaces/primitives/IsomerString"
 
 export const META_IMAGE_FORMAT = "meta-image"
 
 const BaseItemMetaSchema = Type.Object({
   description: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Meta description",
       description:
         "This is a description that appears on search engine results.",
@@ -44,7 +45,6 @@ export const HomePageMetaSchema = BasePageMetaSchema
 export const NotFoundPageMetaSchema = BasePageMetaSchema
 export const SearchPageMetaSchema = BasePageMetaSchema
 
-export const FileRefMetaSchema = BaseItemMetaSchema
 export const LinkRefMetaSchema = BaseItemMetaSchema
 
 export type ArticlePageMetaProps = Static<typeof ArticlePageMetaSchema>
@@ -54,5 +54,4 @@ export type HomePageMetaProps = Static<typeof HomePageMetaSchema>
 export type NotFoundPageMetaProps = Static<typeof NotFoundPageMetaSchema>
 export type SearchPageMetaProps = Static<typeof SearchPageMetaSchema>
 
-export type FileRefMetaProps = Static<typeof FileRefMetaSchema>
 export type LinkRefMetaProps = Static<typeof LinkRefMetaSchema>
