@@ -79,7 +79,7 @@ export const findHoveredTableCornerPos = ({
     containerRect,
     scrollTop,
     scrollLeft,
-    })
+  })
 
   const match = geometries.find((geometry) => {
     const bounds = getTableBounds(geometry)
