@@ -4,7 +4,11 @@ import { isSiteNotificationActive } from "../isSiteNotificationActive"
 
 describe("isSiteNotificationActive", () => {
   it("returns false when notification is undefined", () => {
-    expect(isSiteNotificationActive(undefined)).toBe(false)
+    // Arrange / Act
+    const result = isSiteNotificationActive(undefined)
+
+    // Assert
+    expect(result).toBe(false)
   })
 
   describe("when type is omitted (backward compatibility)", () => {
