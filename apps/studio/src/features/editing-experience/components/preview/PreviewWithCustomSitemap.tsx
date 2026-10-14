@@ -12,7 +12,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { merge } from "lodash-es"
 import Script from "next/script"
-import { forwardRef } from "react"
+import { forwardRef, useEffect } from "react"
 import { withSuspense } from "~/hocs/withSuspense"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
@@ -23,6 +23,9 @@ export type PreviewProps = IsomerSchema & {
   siteId: number
   overrides?: PartialDeep<IsomerPageSchemaType>
   siteMap: IsomerGeneratedSiteProps["siteMap"]
+  // Called once the page itself has rendered, i.e. after the site queries
+  // resolve and the loading skeleton is replaced.
+  onRendered?: () => void
 }
 
 // Add a fake link component to prevent the preview from navigating away
@@ -42,6 +45,7 @@ function SuspendablePreviewWithCustomSitemap({
   siteId,
   overrides = {},
   siteMap,
+  onRendered,
   ...props
 }: PreviewProps) {
   const [baseSiteConfig] = trpc.site.getConfig.useSuspenseQuery({ id: siteId })
@@ -51,6 +55,10 @@ function SuspendablePreviewWithCustomSitemap({
   const [{ content: navbar }] = trpc.site.getNavbar.useSuspenseQuery({
     id: siteId,
   })
+
+  useEffect(() => {
+    onRendered?.()
+  }, [onRendered])
 
   const renderProps = merge(props, overrides, {
     page: {

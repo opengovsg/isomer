@@ -40,6 +40,9 @@ export const AddNewUserButton = ({
       }}
       isDisabled={isButtonDisabled}
       {...buttonProps}
+      // Disabled buttons drop pointer events, so the Singpass tooltip span
+      // around this button would never see the hover.
+      pointerEvents={canManageUsers && !isSingpassEnabled ? "none" : undefined}
     >
       Add new user
     </Button>
@@ -54,7 +57,7 @@ export const AddNewUserButton = ({
   }
 
   return (
-    <SingpassConditionalTooltip placement="bottom">
+    <SingpassConditionalTooltip placement="bottom" shouldWrapChildren>
       {button}
     </SingpassConditionalTooltip>
   )

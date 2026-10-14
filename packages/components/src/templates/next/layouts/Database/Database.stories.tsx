@@ -370,7 +370,16 @@ export const Default: Story = {
               content: [
                 {
                   type: "text",
-                  text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+                  text: "As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to ",
+                },
+                {
+                  type: "text",
+                  text: "New Idea Scheme Proposal",
+                  marks: [{ type: "link", attrs: { href: "/faq" } }],
+                },
+                {
+                  type: "text",
+                  text: " while it is being updated.",
                 },
               ],
             },

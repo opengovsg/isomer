@@ -107,7 +107,10 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     }
   }, [metadataSchema, previewPageState.layout])
 
-  const validateFn = ajv.compile<Static<typeof metadataSchema>>(filteredSchema)
+  const validateFn = useMemo(
+    () => ajv.compile<Static<typeof metadataSchema>>(filteredSchema),
+    [filteredSchema],
+  )
 
   const handleSaveChanges = useCallback(() => {
     setSavedPageState(previewPageState)

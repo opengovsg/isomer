@@ -1,43 +1,40 @@
 import { expect, test } from "@playwright/test"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
-import { storageStateFor } from "../fixtures/auth"
+import { roleTag } from "../fixtures/auth"
+import { provisionE2ESite } from "../fixtures/site"
 
-test.describe("site list", () => {
-  test("editor sees the Sample Site seed site", async ({
-    browser,
-    baseURL,
+let siteName: string
+
+test.beforeAll(async () => {
+  const site = await provisionE2ESite({ roles: [RoleType.Editor] })
+  siteName = site.siteName
+})
+
+test.describe("editor", { tag: roleTag("editor") }, () => {
+  test("editor sees their provisioned site on the dashboard", async ({
+    page,
   }) => {
-    const ctx = await browser.newContext({
-      baseURL,
-      storageState: storageStateFor("editor"),
-    })
-    const page = await ctx.newPage()
+    // Act
     await page.goto("/")
 
+    // Assert
     await expect(
       page.getByRole("heading", { name: "Your sites" }),
     ).toBeVisible()
-    await expect(page.getByRole("link", { name: "Sample Site" })).toBeVisible()
-    await ctx.close()
+    await expect(page.getByRole("link", { name: siteName })).toBeVisible()
   })
+})
 
-  test("user with no permissions sees empty state", async ({
-    browser,
-    baseURL,
-  }) => {
-    const ctx = await browser.newContext({
-      baseURL,
-      storageState: storageStateFor("nomember"),
-    })
-    const page = await ctx.newPage()
+test.describe("nomember", { tag: roleTag("nomember") }, () => {
+  test("user with no permissions sees empty state", async ({ page }) => {
+    // Act
     await page.goto("/")
 
+    // Assert
     await expect(
       page.getByText("You don't have access to any sites yet."),
     ).toBeVisible()
-    await expect(
-      page.getByRole("link", { name: "Sample Site" }),
-    ).not.toBeVisible()
-    await ctx.close()
+    await expect(page.getByRole("link", { name: siteName })).not.toBeVisible()
   })
 })

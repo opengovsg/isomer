@@ -1,59 +1,122 @@
 import { expect, test } from "@playwright/test"
-import { sql } from "kysely"
-import { db } from "~/server/modules/database"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
-import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
-import { getSeedSiteId } from "../fixtures/seed"
+import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { resetSiteNotification } from "../fixtures/reset"
+import { provisionE2ESite } from "../fixtures/site"
+import { expectSiteNotificationTitle } from "../fixtures/site-expect"
 import { SitePO } from "../fixtures/site.po"
+import { ensureUserOnboarded } from "../fixtures/user"
 
-test.use({ storageState: storageStateFor("admin") })
+let siteId: number
 
-test.beforeEach(async () => {
-  // Ensure the admin user has name + phone set so the "Welcome" onboarding
-  // dialog does not appear and obstruct the form.
-  await db
-    .updateTable("User")
-    .set({ name: "test-e2e", phone: "82345678" })
-    .where("email", "=", TEST_EMAILS.admin)
-    .execute()
-
-  // Reset the notification on the seed site so the test starts from a clean
-  // state (toggle off). The `-` operator removes a key from a JSONB column.
-  await db
-    .updateTable("Site")
-    .set({ config: sql`config - 'notification'` })
-    .where("id", "=", getSeedSiteId())
-    .execute()
+test.beforeAll(async () => {
+  const site = await provisionE2ESite({ roles: [RoleType.Admin] })
+  siteId = site.siteId
 })
 
-test("admin can save a notification title", async ({ page }) => {
-  const site = new SitePO(page)
-  await page.goto(`/sites/${getSeedSiteId()}/settings/notification`)
-  await page.waitForURL(/\/settings\/notification$/)
+test.describe("admin", { tag: roleTag("admin") }, () => {
+  test.beforeEach(async () => {
+    await ensureUserOnboarded(TEST_EMAILS.admin)
+    await resetSiteNotification(siteId)
+  })
 
-  // The notification object is optional. FormBuilder renders optional objects
-  // with a Switch (Chakra UI). The Switch renders a <label> wrapping a hidden
-  // <input type="checkbox">. The label intercepts pointer events, so we click
-  // the label (.chakra-switch) rather than the underlying input.
-  const toggleLabel = page.locator(".chakra-switch")
-  await expect(toggleLabel).toBeVisible()
-  await toggleLabel.click()
+  test("admin can save a notification title", async ({ page }) => {
+    const site = new SitePO(page)
+    const notificationTitle = "e2e test notification"
 
-  // After toggling on, the "Notification title" input should appear.
-  const titleField = page.getByLabel("Notification title")
-  await expect(titleField).toBeVisible({ timeout: 5000 })
-  await titleField.fill("e2e test notification")
+    // Arrange
+    await site.gotoSettingsSection(siteId, "notification")
+    await expect(site.notificationBannerToggle()).toBeVisible()
 
-  await site.publishButton().click()
-  await site.expectChangesPublishedToast()
+    // Act
+    await site.enableNotificationBanner()
+    await site.expectNotificationTitleFieldVisible()
+    await site.fillNotificationTitle(notificationTitle)
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
 
-  // Stretch: reload and confirm persistence.
-  await page.reload()
-  await page.waitForURL(/\/settings\/notification$/)
-  // After reload, the toggle should still be checked (notification persisted).
-  const reloadedCheckbox = page.getByRole("checkbox")
-  await expect(reloadedCheckbox).toBeChecked()
-  await expect(page.getByLabel("Notification title")).toHaveValue(
-    "e2e test notification",
-  )
+    // Assert
+    await expectSiteNotificationTitle(siteId).toBe(notificationTitle)
+    await site.reloadSettingsSection("notification")
+    await expect(site.notificationBannerToggle()).toBeChecked()
+    await expect(site.notificationTitleField()).toHaveValue(notificationTitle)
+  })
+
+  test("admin can disable and remove a published notification", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
+    const notificationTitle = "e2e removable notification"
+
+    // Arrange: publish a notification first
+    await site.gotoSettingsSection(siteId, "notification")
+    await site.enableNotificationBanner()
+    await site.expectNotificationTitleFieldVisible()
+    await site.fillNotificationTitle(notificationTitle)
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+    await expectSiteNotificationTitle(siteId).toBe(notificationTitle)
+
+    // Act
+    await site.disableNotificationBanner()
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+
+    // Assert
+    await expectSiteNotificationTitle(siteId).toBeNull()
+    await site.reloadSettingsSection("notification")
+    await expect(site.notificationBannerToggle()).not.toBeChecked()
+  })
+
+  test("notification title enforces a 150 character limit", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "notification")
+    await site.enableNotificationBanner()
+    await site.expectNotificationTitleFieldVisible()
+
+    // Act: the input has a native maxlength=150 (mirroring the schema's
+    // own maxLength: 150), so typing/pasting more than that never reaches
+    // the browser's value — it's truncated before the AJV validator (and
+    // its "must NOT have more than 150 characters" message) ever sees it.
+    await site.fillNotificationTitle("a".repeat(151))
+
+    // Assert
+    await expect(site.notificationTitleField()).toHaveValue("a".repeat(150))
+    await expect(site.publishButton()).toBeEnabled()
+  })
+
+  test("notification content supports rich text formatting", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
+    const notificationTitle = "e2e rich text notification"
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "notification")
+    await site.enableNotificationBanner()
+    await site.expectNotificationTitleFieldVisible()
+    await site.fillNotificationTitle(notificationTitle)
+
+    // Act
+    await site.notificationContentEditor().click()
+    await site.notificationContentEditor().fill("Important update")
+    await site.notificationContentEditor().selectText()
+    await site.notificationContentToolbarButton("Bold").click()
+    await site.notificationContentToolbarButton("Italicise").click()
+    await site.notificationContentToolbarButton("Underline").click()
+
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+
+    // Assert
+    await site.reloadSettingsSection("notification")
+    await expect(site.notificationContentEditor()).toContainText(
+      "Important update",
+    )
+  })
 })

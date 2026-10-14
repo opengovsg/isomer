@@ -7,6 +7,7 @@ import {
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
   generateImageSrcSchema,
+  IsomerString,
   SearchableTableSchema,
 } from "~/interfaces"
 import { imageSchemaObject } from "~/schemas/internal"
@@ -47,7 +48,7 @@ const createFilterLabelSchemaObject = ({
 }: {
   description?: string
 } = {}) => ({
-  label: Type.String({
+  label: IsomerString({
     title: "Filter name",
     ...(description ? { description } : {}),
     pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
@@ -116,7 +117,7 @@ const TextFilterSchema = Type.Object(
     ),
     options: Type.Array(
       Type.Object({
-        label: Type.String({
+        label: IsomerString({
           title: "Option name",
           pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
           errorMessage: {
@@ -264,7 +265,7 @@ const DateTaggedSchema = Type.Optional(
 )
 
 const categorySchemaObject = Type.Object({
-  category: Type.String({
+  category: IsomerString({
     title: "Article category",
     format: "hidden", // We will properly deprecate this key during the post-launch cleanup. Hiding it in Studio UI in the meantime.
     description:
@@ -295,7 +296,7 @@ const BaseRefPageSchema = Type.Composite([
       pattern: REF_HREF_PATTERN,
     }),
     description: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Summary",
         description:
           "Add a short description to explain what this collection item is about",
@@ -349,7 +350,7 @@ const COLLECTION_PAGE_SORT_DIRECTION = {
 
 export const CollectionPagePageSchema = Type.Intersect([
   Type.Object({
-    subtitle: Type.String({
+    subtitle: IsomerString({
       title: "Summary",
       format: "textarea",
     }),

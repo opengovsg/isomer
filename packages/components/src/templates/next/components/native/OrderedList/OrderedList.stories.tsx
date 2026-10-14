@@ -58,7 +58,28 @@ export const Simple: Story = {
             content: [
               {
                 type: "text",
-                text: 'This is a long item <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">with links</a> and other <b>markup</b>',
+                text: "This is a long item ",
+              },
+              {
+                type: "text",
+                text: "with links",
+                marks: [
+                  {
+                    type: "link",
+                    attrs: {
+                      href: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                    },
+                  },
+                ],
+              },
+              {
+                type: "text",
+                text: " and other ",
+              },
+              {
+                type: "text",
+                text: "markup",
+                marks: [{ type: "bold" }],
               },
             ],
           },
@@ -78,7 +99,14 @@ export const Simple: Story = {
             content: [
               {
                 type: "text",
-                text: "Item 6 with line break<br />Item 6 continued",
+                text: "Item 6 with line break",
+              },
+              {
+                type: "hardBreak",
+              },
+              {
+                type: "text",
+                text: "Item 6 continued",
               },
             ],
           },
