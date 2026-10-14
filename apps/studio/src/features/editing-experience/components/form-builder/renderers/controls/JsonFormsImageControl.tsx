@@ -20,6 +20,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 
 import { useAdjustmentConfigForField } from "../../hooks/useAdjustmentConfigForField"
+import { isManagedSiteAsset } from "./isManagedSiteAsset"
 import { getCustomErrorMessage } from "./utils"
 
 // JsonFormsImageControl is registered as a renderer for every FormBuilder
@@ -67,10 +68,10 @@ function JsonFormsImageControl({
   // Gate the adjustment entry point behind a GrowthBook flag (off by default,
   // rolled out per-user) — this is a rollout-sensitive editor path.
   const isImageAdjustmentEnabled = useIsImageAdjustmentEnabled()
-  // Only managed site-storage assets (relative "/{siteId}/..." paths) can be
-  // baked; external/absolute URLs have no derivable bake key, so hide Adjust
-  // for them rather than letting Save fail.
-  const isManagedAsset = !!data && data.startsWith("/")
+  // Only managed site-storage assets ("/{siteId}/..." paths) can be baked;
+  // external/absolute URLs and the built-in placeholder have no derivable bake
+  // key, so hide Adjust for them rather than letting Save fail.
+  const isManagedAsset = isManagedSiteAsset(data, siteId)
 
   // Reads the sibling imageAdjustment field and containing block via
   // JsonForms' core data (the only way to reach data outside this control's
