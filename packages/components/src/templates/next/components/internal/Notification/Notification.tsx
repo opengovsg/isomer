@@ -6,30 +6,6 @@ import { hasContent } from "../../native/Prose/utils"
 import { BaseParagraph } from "../BaseParagraph"
 import { NotificationClient } from "./NotificationClient"
 
-const antiScamContent = [
-  {
-    type: "text" as const,
-    text: "If you're unsure if something is a scam, call ",
-  },
-  {
-    type: "text" as const,
-    text: "ScamShield",
-    marks: [
-      {
-        type: "link" as const,
-        attrs: {
-          href: "https://www.scamshield.gov.sg",
-          target: "_blank" as const,
-        },
-      },
-    ],
-  },
-  {
-    type: "text" as const,
-    text: " at 1799.",
-  },
-]
-
 export const Notification = ({ site, ...notification }: NotificationProps) => {
   if (notification.type === "antiscam") {
     return (
@@ -37,7 +13,29 @@ export const Notification = ({ site, ...notification }: NotificationProps) => {
         <BaseParagraph
           content={getTextAsHtml({
             site,
-            content: antiScamContent,
+            content: [
+              {
+                type: "text" as const,
+                text: "If you're unsure if something is a scam, call ",
+              },
+              {
+                type: "text" as const,
+                text: "ScamShield",
+                marks: [
+                  {
+                    type: "link" as const,
+                    attrs: {
+                      href: "https://www.scamshield.gov.sg",
+                      target: "_blank" as const,
+                    },
+                  },
+                ],
+              },
+              {
+                type: "text" as const,
+                text: " at 1799.",
+              },
+            ],
           })}
           className="prose-body-base"
         />
