@@ -1,4 +1,3 @@
-import type { SiteNotification } from "~/features/settings/notification/notificationSettings.utils"
 import type { NextPageWithLayout } from "~/lib/types"
 import type { Notification } from "~/schemas/site"
 import { Box, FormControl, HStack, Text, VStack } from "@chakra-ui/react"
@@ -30,18 +29,29 @@ import FormBuilder from "~/features/editing-experience/components/form-builder/F
 import { EditSettingsPreview } from "~/features/editing-experience/components/preview/EditSettingsPreview"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
-import {
-  canPublishNotificationSettings,
-  resolveNotificationFormBuilderChange,
-  siteNotificationBodyValidator,
-} from "~/features/settings/notification/notificationSettings.utils"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
+import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
+
+type SiteNotification = NonNullable<Notification["notification"]>
+
+const siteNotificationBodyValidator =
+  ajv.compile<SiteNotification>(NotificationSchema)
+
+const normalizeSiteNotification = (
+  notification: SiteNotification,
+): SiteNotification => {
+  if (notification.type === "antiscam") {
+    return { type: "antiscam" }
+  }
+
+  return notification
+}
 
 interface NotificationSettingsEditorProps {
   siteId: number
@@ -88,7 +98,10 @@ const NotificationSettingsEditor = ({
   const isOpen = !!nextUrl
 
   const isDirty = !isEqual(state, previousNotification)
-  const canPublish = canPublishNotificationSettings(isDirty, state.notification)
+  const canPublish =
+    isDirty &&
+    (state.notification === undefined ||
+      isSiteNotificationActive(state.notification))
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
@@ -165,17 +178,13 @@ const NotificationSettingsEditor = ({
                   validateFn={siteNotificationBodyValidator}
                   data={state.notification}
                   handleChange={(notification) => {
-                    const nextNotification =
-                      resolveNotificationFormBuilderChange(
-                        formBuilderChangesEnabledRef.current,
-                        notification,
-                      )
-
-                    if (nextNotification === undefined) {
+                    if (!formBuilderChangesEnabledRef.current) {
                       return
                     }
 
-                    setState({ notification: nextNotification })
+                    setState({
+                      notification: normalizeSiteNotification(notification),
+                    })
                   }}
                 />
               </Box>
