@@ -1,4 +1,4 @@
-import type { NotificationProps } from "~/interfaces"
+import type { HardBreakProps, NotificationProps, TextProps } from "~/interfaces"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
 import { Prose } from "../../native/Prose"
@@ -15,27 +15,27 @@ export const Notification = ({ site, ...notification }: NotificationProps) => {
             site,
             content: [
               {
-                type: "text" as const,
+                type: "text",
                 text: "If you're unsure if something is a scam, call ",
               },
               {
-                type: "text" as const,
+                type: "text",
                 text: "ScamShield",
                 marks: [
                   {
-                    type: "link" as const,
+                    type: "link",
                     attrs: {
                       href: "https://www.scamshield.gov.sg",
-                      target: "_blank" as const,
+                      target: "_blank",
                     },
                   },
                 ],
               },
               {
-                type: "text" as const,
+                type: "text",
                 text: " at 1799.",
               },
-            ],
+            ] satisfies (HardBreakProps | TextProps)[],
           })}
           className="prose-body-base"
         />
