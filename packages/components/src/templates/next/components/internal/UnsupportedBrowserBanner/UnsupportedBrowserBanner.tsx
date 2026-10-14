@@ -3,7 +3,7 @@
 import type { SupportedBrowserBannerProps } from "~/utils/isSupportedBrowser"
 import { useEffect, useState } from "react"
 import { BiInfoCircle, BiX } from "react-icons/bi"
-import { useIsUnsupportedBrowserBannerDismissed } from "~/hooks/useIsUnsupportedBrowserBannerDismissed"
+import { useSessionStorage } from "usehooks-ts"
 import { isSupportedBrowser } from "~/utils/isSupportedBrowser"
 
 import { IconButton } from "../IconButton"
@@ -15,7 +15,10 @@ const supportedBrowserDocumentLink =
 export const UnsupportedBrowserBanner = ({
   userAgent: initialUserAgent,
 }: SupportedBrowserBannerProps) => {
-  const [isDismissed, setIsDismissed] = useIsUnsupportedBrowserBannerDismissed()
+  const [isDismissed, setIsDismissed] = useSessionStorage(
+    "unsupported-browser-banner-dismissed",
+    false,
+  )
   const [navigatorUserAgent, setNavigatorUserAgent] = useState(
     initialUserAgent || "",
   )
