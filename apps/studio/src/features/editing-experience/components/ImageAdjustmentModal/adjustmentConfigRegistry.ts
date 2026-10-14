@@ -67,8 +67,6 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   // Full-bleed; no CSS width cap. Warn against the 1280px content ceiling
   // (max-w-screen-xl) as a conservative "looks soft on desktop" floor.
   maxRenderedWidthPx: 1280,
-  // Banner is 500px tall at lg (lg:min-h-[31.25rem]).
-  maxRenderedHeightPx: 500,
   previewStates: responsivePreviewStates({
     mobile: { width: 375, height: 240 },
     tablet: { width: 768, height: 360 },
@@ -97,8 +95,6 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   focalEnabled: true,
   // Image band is half the viewport at lg (lg:w-1/2); ~960px on large desktop.
   maxRenderedWidthPx: 960,
-  // Image band is 500px tall at lg (lg:min-h-[31.25rem]).
-  maxRenderedHeightPx: 500,
   previewStates: responsivePreviewStates({
     mobile: { width: 375, height: 240 },
     tablet: { width: 768, height: 360 },
@@ -145,9 +141,6 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
   focalEnabled: true,
   // One of two columns at lg (lg:grid-cols-2); ~960px on large desktop.
   maxRenderedWidthPx: 960,
-  // object-cover frame; image band is capped at 400px (max-h-[400px]) and the
-  // container floors at 360px — 400 is a conservative height floor.
-  maxRenderedHeightPx: 400,
   previewStates: responsivePreviewStates({
     mobile: { width: 375, height: 300 },
     tablet: { width: 768, height: 400 },
@@ -168,8 +161,6 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   focalEnabled: true,
   // Full-bleed; warn against the 1280px content ceiling (same as hero:gradient).
   maxRenderedWidthPx: 1280,
-  // Widest frame is 2:1 from md up (md:aspect-[2/1]) → 640px tall at 1280px.
-  maxRenderedHeightPx: 640,
   previewStates: responsivePreviewStates({
     mobile: { width: 1, height: 1 },
     tablet: { width: 2, height: 1 },
@@ -262,8 +253,6 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   // warn against a generous multi-column card width so the common 2–4 column
   // grids don't false-warn on perfectly sharp images.
   maxRenderedWidthPx: 640,
-  // Image frame is 3:2 (cardImageContainer aspect-[3/2]) → ~427px tall at 640px.
-  maxRenderedHeightPx: 427,
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
   skipRealComponentPreview: true,
@@ -301,9 +290,6 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   // Same column-dependent card width as cardsWithImages — warn against a
   // generous multi-column width (see that config).
   maxRenderedWidthPx: 640,
-  // Full-image cards are square on mobile, portrait at lg (lg:aspect-[2/3]);
-  // 640 is a conservative height representative (the square case at 640px).
-  maxRenderedHeightPx: 640,
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
   skipRealComponentPreview: true,
