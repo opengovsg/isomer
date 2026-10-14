@@ -19,7 +19,6 @@ describe("resolveAdjustmentConfig", () => {
   // registry entry can't silently light the modal up on one of them.
   describe("Tier D (preserve-only) blocks resolve no config", () => {
     const tierDBlocks = [
-      { type: "imagegallery" },
       { type: "logocloud" },
       { type: "video" },
       { type: "navbar" },
@@ -50,6 +49,28 @@ describe("resolveAdjustmentConfig", () => {
       expect(config?.lockedRatios).toBeUndefined()
       expect(config?.skipRealComponentPreview).toBeFalsy()
       expect(config?.previewStates.length).toBeGreaterThan(0)
+    })
+  })
+
+  // ImageGallery (P2b): array-nested, always letterboxed (object-contain). Crop
+  // is offered but there's no focal (nothing cover-fits), and the preview uses
+  // the framed approximation with a contain fit (the real component renders the
+  // whole gallery, not the single image being edited).
+  describe("imagegallery (P2b — crop, letterboxed)", () => {
+    const config = resolveAdjustmentConfig({
+      block: { type: "imagegallery" },
+      fieldName: "src",
+    })
+
+    it("resolves a custom-crop, no-focal, contain-preview config", () => {
+      expect(config).toBeDefined()
+      expect(config?.cropMode).toBe("custom")
+      expect(config?.focalEnabled).toBe(false)
+      expect(config?.lockedRatios).toBeUndefined()
+      // Array-nested: preview the single image framed, not the whole gallery.
+      expect(config?.skipRealComponentPreview).toBe(true)
+      // Always letterboxed → the preview must contain, never cover.
+      expect(config?.previewObjectFitFor?.({})).toBe("contain")
     })
   })
 
