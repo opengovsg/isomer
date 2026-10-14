@@ -2,11 +2,12 @@ import { type Browser, type BrowserContext, type Page } from "@playwright/test"
 import { type RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, type Role } from "./auth"
-import { CollectionPO } from "./collection.po"
-import { DashboardPO } from "./dashboard.po"
-import { PageEditorPO } from "./page-editor.po"
-import { getCollectionByTitle, getFolderByTitle } from "./resource.db"
-import { UsersPO } from "./users.po"
+import { getIndexPageId } from "./collection/db"
+import { CollectionPO } from "./po/collection"
+import { DashboardPO } from "./po/dashboard"
+import { PageEditorPO } from "./po/page-editor"
+import { UsersPO } from "./po/users"
+import { getCollectionByTitle, getFolderByTitle } from "./resource/db"
 
 export const openSeededPageEditor = async (
   page: Page,
@@ -32,27 +33,6 @@ export const openSeededPageEditorAsRole = async (
   const page = await context.newPage()
   const editor = await openSeededPageEditor(page, siteId, pageId)
   return { context, page, editor }
-}
-
-/**
- * Secondary browser context for a different role. The context is always closed
- * in `finally` — prefer this over `openSeededPageEditorAsRole` when you only
- * need a short-lived second session.
- */
-export const withRoleSession = async <T>(
-  browser: Browser,
-  role: Role,
-  fn: (session: { context: BrowserContext; page: Page }) => Promise<T>,
-): Promise<T> => {
-  const context = await browser.newContext({
-    storageState: storageStateFor(role),
-  })
-  const page = await context.newPage()
-  try {
-    return await fn({ context, page })
-  } finally {
-    await context.close()
-  }
 }
 
 /**
@@ -147,7 +127,8 @@ export const createCollectionViaWizard = async (
   await dashboard.fillCollectionWizard(title)
 
   const collection = await getCollectionByTitle({ siteId, title })
-  return { collectionId: collection.id }
+  const indexPageId = await getIndexPageId(collection.id)
+  return { collectionId: collection.id, indexPageId }
 }
 
 export const createCollectionItemViaWizard = async (

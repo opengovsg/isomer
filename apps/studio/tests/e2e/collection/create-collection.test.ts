@@ -1,14 +1,16 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
+import { createCollectionViaWizard } from "~e2e/fixtures/helpers"
+import { DashboardPO } from "~e2e/fixtures/po"
+import {
+  expectResource,
+  expectResourceByTitle,
+  seedFolder,
+} from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
-import { createCollectionViaWizard } from "../fixtures/helpers"
-import { seedFolder } from "../fixtures/page-seed"
-import { getResource, getResourceByTitle } from "../fixtures/resource.db"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 const UNIQUE_TITLE = () =>
   `E2E Test Collection ${crypto.randomUUID().slice(0, 8)}`
@@ -39,10 +41,10 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
 
     // Assert
-    const created = await getResource(collectionId)
-    expect(created).toBeTruthy()
-    expect(created?.type).toBe("Collection")
-    expect(created?.parentId).toBeNull()
+    await expectResource(collectionId).toMatchObject({
+      type: "Collection",
+      parentId: null,
+    })
   })
 
   test("admin can close the create collection modal without creating a collection", async ({
@@ -60,8 +62,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.cancelCreateCollectionModal()
 
     // Assert
-    const created = await getResourceByTitle({ siteId, title })
-    expect(created).toBeUndefined()
+    await expectResourceByTitle({ siteId, title }).toBeUndefined()
   })
 })
 
@@ -127,9 +128,7 @@ test.describe(
       })
 
       // Assert
-      const created = await getResource(collectionId)
-      expect(created).toBeTruthy()
-      expect(created?.parentId).toBe(folderId)
+      await expectResource(collectionId).toMatchObject({ parentId: folderId })
     })
   },
 )
@@ -162,9 +161,7 @@ test.describe(
       })
 
       // Assert
-      const created = await getResource(collectionId)
-      expect(created).toBeTruthy()
-      expect(created?.parentId).toBe(folderId)
+      await expectResource(collectionId).toMatchObject({ parentId: folderId })
     })
   },
 )
@@ -197,9 +194,7 @@ test.describe(
       })
 
       // Assert
-      const created = await getResource(collectionId)
-      expect(created).toBeTruthy()
-      expect(created?.parentId).toBe(folderId)
+      await expectResource(collectionId).toMatchObject({ parentId: folderId })
     })
   },
 )

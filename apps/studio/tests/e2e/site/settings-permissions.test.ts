@@ -1,10 +1,9 @@
 import { expect, test } from "@playwright/test"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
+import { PUBLISH_GATED_SETTINGS_SECTIONS, SitePO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { provisionE2ESite } from "../fixtures/site"
-import { PUBLISH_GATED_SETTINGS_SECTIONS, SitePO } from "../fixtures/site.po"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number
 

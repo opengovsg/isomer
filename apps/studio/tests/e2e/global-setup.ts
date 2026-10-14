@@ -2,10 +2,9 @@ import type { FullConfig } from "@playwright/test"
 import { execFileSync } from "child_process"
 import { env } from "~/env.mjs"
 import { db, sql } from "~/server/modules/database"
-
-import { ROLES, TEST_EMAILS, type Role } from "./fixtures/auth"
-import { seedRolesForE2E } from "./fixtures/seed"
-import { mintStorageStateForRole } from "./fixtures/session-mint"
+import { ROLES, TEST_EMAILS, type Role } from "~e2e/fixtures/auth"
+import { seedRolesForE2E } from "~e2e/fixtures/role"
+import { mintStorageStateForRole } from "~e2e/fixtures/session-mint"
 
 // The e2e suite's DATABASE_URL points at a `test` database that has no
 // purpose other than e2e fixtures (a separate logical database from local

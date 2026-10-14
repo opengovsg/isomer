@@ -1,18 +1,16 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
-import { GodmodePO } from "../fixtures/godmode.po"
-import { mockTrpcMutationError } from "../fixtures/network"
-import { getResourceByTitle } from "../fixtures/resource.db"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { mockTrpcMutationError } from "~e2e/fixtures/network"
+import { DashboardPO, GodmodePO } from "~e2e/fixtures/po"
+import { expectResourceByTitle } from "~e2e/fixtures/resource"
 import {
   expectFooterContains,
   expectNavbarContains,
   expectSiteName,
   expectSiteThemeBrandColour,
-} from "../fixtures/site-expect"
-import { ensureUserOnboarded } from "../fixtures/user"
+} from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 
 const DEFAULT_THEME_BRAND = "#00405f"
 
@@ -42,13 +40,15 @@ test.describe("core", { tag: roleTag("core") }, () => {
     await expectNavbarContains(siteId, "Expandable nav item").toBe(true)
     await expectFooterContains(siteId, "About us").toBe(true)
 
-    await expect
-      .poll(() => getResourceByTitle({ siteId, title: "Home" }))
-      .toMatchObject({ type: "RootPage", state: "Published" })
+    await expectResourceByTitle({ siteId, title: "Home" }).toMatchObject({
+      type: "RootPage",
+      state: "Published",
+    })
 
-    await expect
-      .poll(() => getResourceByTitle({ siteId, title: "Search" }))
-      .toMatchObject({ type: "Page", state: "Published" })
+    await expectResourceByTitle({ siteId, title: "Search" }).toMatchObject({
+      type: "Page",
+      state: "Published",
+    })
 
     await dashboard.expectCreateButtonVisible()
     await dashboard.expectHomepageRowVisible()

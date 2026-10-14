@@ -1,13 +1,12 @@
 import { expect, test } from "@playwright/test"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { GodmodePO } from "../fixtures/godmode.po"
-import { deleteWhitelistedVendorEmails } from "../fixtures/reset"
-import { ensureUserOnboarded, uniqueVendorEmail } from "../fixtures/user"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
+import { GodmodePO } from "~e2e/fixtures/po"
+import { deleteWhitelistedVendorEmails } from "~e2e/fixtures/reset"
+import { ensureUserOnboarded, uniqueVendorEmail } from "~e2e/fixtures/user"
 import {
   expectWhitelistedVendorEmail,
   expectWhitelistEntryAbsent,
-} from "../fixtures/whitelist-expect"
+} from "~e2e/fixtures/whitelist"
 
 test.describe("migrator", { tag: roleTag("migrator") }, () => {
   test.beforeEach(async () => {

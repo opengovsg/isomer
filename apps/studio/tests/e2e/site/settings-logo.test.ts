@@ -1,22 +1,21 @@
 import { expect, test } from "@playwright/test"
 import path from "path"
 import { fileURLToPath } from "url"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import {
   mockAssetUploadRoutes,
   mockFailedAssetUpload,
   mockPresignedPutUrl,
-} from "../fixtures/network"
-import { resetSiteLogoSettings } from "../fixtures/reset"
-import { provisionE2ESite } from "../fixtures/site"
+} from "~e2e/fixtures/network"
+import { SitePO } from "~e2e/fixtures/po"
+import { resetSiteLogoSettings } from "~e2e/fixtures/reset"
 import {
   expectSiteFaviconUrl,
   expectSiteLogoUrl,
-} from "../fixtures/site-expect"
-import { SitePO } from "../fixtures/site.po"
-import { ensureUserOnboarded } from "../fixtures/user"
+  provisionE2ESite,
+} from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 const LOGO_FIXTURE = fileURLToPath(
   new URL("../fixtures/e2e-logo.png", import.meta.url),

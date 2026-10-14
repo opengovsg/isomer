@@ -1,17 +1,19 @@
 import { test } from "@playwright/test"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { inviteCollaborator } from "../fixtures/helpers"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded, uniqueInviteeEmail } from "../fixtures/user"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { inviteCollaborator } from "~e2e/fixtures/helpers"
+import { UsersPO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
 import {
+  deleteUsersByEmail,
+  ensureUserOnboarded,
   expectUserAbsentOnSite,
   expectUserRoleOnSite,
-} from "../fixtures/user-expect"
-import { UsersPO } from "../fixtures/users.po"
+  uniqueInviteeEmail,
+} from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
+let inviteeEmail: string
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeAll(async () => {
@@ -23,10 +25,14 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
+  test.afterEach(async () => {
+    await deleteUsersByEmail(inviteeEmail)
+  })
+
   test("admin can remove a collaborator via RemoveUserModal", async ({
     page,
   }) => {
-    const inviteeEmail = uniqueInviteeEmail()
+    inviteeEmail = uniqueInviteeEmail()
 
     // Arrange
     await inviteCollaborator(page, {
@@ -52,7 +58,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin can cancel RemoveUserModal without removing the collaborator", async ({
     page,
   }) => {
-    const inviteeEmail = uniqueInviteeEmail()
+    inviteeEmail = uniqueInviteeEmail()
 
     // Arrange
     await inviteCollaborator(page, {

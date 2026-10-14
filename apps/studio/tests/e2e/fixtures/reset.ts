@@ -1,9 +1,8 @@
 import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import { sql } from "kysely"
-import { normalizeRedirectSource } from "~/schemas/redirect/utils"
 import { db, jsonb } from "~/server/modules/database"
 
-export { ensureUserOnboarded } from "./user"
+export { deleteRedirectBySource, seedRedirect } from "./site/db"
 
 const DEFAULT_AGENCY_SITE_NAME = "Isomer"
 
@@ -56,46 +55,6 @@ export const resetSiteTheme = (siteId: number) =>
     .updateTable("Site")
     .set({ theme: jsonb(DEFAULT_SITE_THEME) })
     .where("id", "=", siteId)
-    .execute()
-
-/** Delete a single resource row created during a test. */
-export const deleteResource = (resourceId: string) =>
-  db.deleteFrom("Resource").where("id", "=", resourceId).execute()
-
-/** Delete resources on a site whose title matches a SQL LIKE pattern. */
-export const deleteResourcesByTitleLike = (
-  siteId: number,
-  titlePattern: string,
-) =>
-  db
-    .deleteFrom("Resource")
-    .where("siteId", "=", siteId)
-    .where("title", "like", titlePattern)
-    .execute()
-
-/** Insert a live redirect row for publish-conflict E2E scenarios. */
-export const seedRedirect = (opts: {
-  siteId: number
-  source: string
-  destination: string
-}) =>
-  db
-    .insertInto("Redirect")
-    .values({
-      siteId: opts.siteId,
-      source: normalizeRedirectSource(opts.source),
-      destination: opts.destination,
-    })
-    .execute()
-
-export const deleteRedirectBySource = (opts: {
-  siteId: number
-  source: string
-}) =>
-  db
-    .deleteFrom("Redirect")
-    .where("siteId", "=", opts.siteId)
-    .where("source", "=", normalizeRedirectSource(opts.source))
     .execute()
 
 // Defaults mirror tests/integration/helpers/seed/index.ts setupSite().
@@ -164,7 +123,7 @@ export const resetSiteNavbar = (siteId: number) =>
     .where("siteId", "=", siteId)
     .execute()
 
-/** Seed 8 top-level navbar items (the schema's maxItems) for max-limit tests. */
+/** Seed the navbar with 8 top-level links (the schema's maxItems) for max-limit tests. */
 export const resetSiteNavbarAtMaxItems = (siteId: number) =>
   db
     .updateTable("Navbar")

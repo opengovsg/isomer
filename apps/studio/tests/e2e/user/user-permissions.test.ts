@@ -1,10 +1,9 @@
 import { test } from "@playwright/test"
+import { ROLES, TEST_EMAILS, roleTag, type Role } from "~e2e/fixtures/auth"
+import { UsersPO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { ROLES, TEST_EMAILS, roleTag, type Role } from "../fixtures/auth"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
-import { UsersPO } from "../fixtures/users.po"
 
 /**
  * Permission gates for the collaborators page — who cannot manage users.

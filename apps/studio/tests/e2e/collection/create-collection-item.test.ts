@@ -1,14 +1,16 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
+import { createCollectionItemViaWizard } from "~e2e/fixtures/helpers"
+import { DashboardPO } from "~e2e/fixtures/po"
+import {
+  expectResource,
+  expectResourcesByParentCount,
+  seedRootCollection,
+} from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { ResourceType, RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
-import { createCollectionItemViaWizard } from "../fixtures/helpers"
-import { seedRootCollection } from "../fixtures/page-seed"
-import { getResource, listResourcesByParent } from "../fixtures/resource.db"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 const UNIQUE_TITLE = (label: string) =>
   `E2E Test ${label} ${crypto.randomUUID().slice(0, 8)}`
@@ -47,10 +49,10 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
 
     // Assert
-    const created = await getResource(itemId)
-    expect(created).toBeTruthy()
-    expect(created?.type).toBe("CollectionPage")
-    expect(created?.parentId).toBe(collectionId)
+    await expectResource(itemId).toMatchObject({
+      type: "CollectionPage",
+      parentId: collectionId,
+    })
   })
 
   test("admin can create a collection link via the wizard", async ({
@@ -68,21 +70,16 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
 
     // Assert
-    const created = await getResource(itemId)
-    expect(created).toBeTruthy()
-    expect(created?.type).toBe("CollectionLink")
-    expect(created?.parentId).toBe(collectionId)
+    await expectResource(itemId).toMatchObject({
+      type: "CollectionLink",
+      parentId: collectionId,
+    })
   })
 
   test("admin can cancel the add collection item wizard without creating a page", async ({
     page,
   }) => {
     const dashboard = new DashboardPO(page)
-    const childrenBefore = await listResourcesByParent({
-      siteId,
-      parentId: collectionId,
-      type: ResourceType.CollectionPage,
-    })
 
     // Arrange
     await dashboard.gotoCollection(siteId, collectionId)
@@ -92,12 +89,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.cancelCollectionItemWizard()
 
     // Assert
-    const childrenAfter = await listResourcesByParent({
+    await expectResourcesByParentCount({
       siteId,
       parentId: collectionId,
       type: ResourceType.CollectionPage,
-    })
-    expect(childrenAfter).toHaveLength(childrenBefore.length)
+    }).toBe(0)
   })
 })
 
@@ -126,9 +122,10 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     })
 
     // Assert
-    const created = await getResource(itemId)
-    expect(created?.type).toBe("CollectionPage")
-    expect(created?.parentId).toBe(collectionId)
+    await expectResource(itemId).toMatchObject({
+      type: "CollectionPage",
+      parentId: collectionId,
+    })
   })
 
   test("editor can create a collection link via the wizard", async ({
@@ -146,8 +143,9 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     })
 
     // Assert
-    const created = await getResource(itemId)
-    expect(created?.type).toBe("CollectionLink")
-    expect(created?.parentId).toBe(collectionId)
+    await expectResource(itemId).toMatchObject({
+      type: "CollectionLink",
+      parentId: collectionId,
+    })
   })
 })

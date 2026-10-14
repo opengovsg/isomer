@@ -1,55 +1,57 @@
 import { test } from "@playwright/test"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { mockGodmodeSitePublish } from "~e2e/fixtures/network"
+import { GodmodePO } from "~e2e/fixtures/po"
+import {
+  clearSiteCodeBuildId,
+  e2eCodeBuildIdForSite,
+  expectSitePublishAuditLog,
+  provisionE2ESite,
+  setSiteCodeBuildId,
+} from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { GodmodePO } from "../fixtures/godmode.po"
-import { mockGodmodeSitePublish } from "../fixtures/network"
-import { provisionE2ESite, setSiteCodeBuildId } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
-
-let publishableSiteId: number
-let publishableSiteName: string
-let publishableCodeBuildId: string
+let siteId: number
 let unconfiguredSiteId: number
 let unconfiguredSiteName: string
+let retryableSiteId: number
 
 test.describe("core", { tag: roleTag("core") }, () => {
   test.beforeAll(async () => {
-    const publishable = await provisionE2ESite({ roles: [RoleType.Admin] })
-    publishableSiteId = publishable.siteId
-    publishableSiteName = publishable.siteName
-    publishableCodeBuildId = `e2e-codebuild-${publishableSiteId}`
-    await setSiteCodeBuildId(publishableSiteId, publishableCodeBuildId)
+    const site = await provisionE2ESite({ roles: [RoleType.Admin] })
+    siteId = site.siteId
+    await setSiteCodeBuildId(siteId, e2eCodeBuildIdForSite(siteId))
 
     const unconfigured = await provisionE2ESite({ roles: [RoleType.Admin] })
     unconfiguredSiteId = unconfigured.siteId
     unconfiguredSiteName = unconfigured.siteName
+
+    const retryable = await provisionE2ESite({ roles: [RoleType.Admin] })
+    retryableSiteId = retryable.siteId
+    await setSiteCodeBuildId(
+      retryableSiteId,
+      e2eCodeBuildIdForSite(retryableSiteId),
+    )
   })
 
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.core)
   })
 
-  test("core admin can list and publish a configured site from godmode", async ({
-    page,
-  }) => {
+  test("core admin can publish a site from godmode", async ({ page }) => {
     const godmode = new GodmodePO(page)
 
-    // Arrange
-    await mockGodmodeSitePublish(page)
-    await godmode.gotoPublishing()
-    await godmode.expectSiteListed({
-      siteId: publishableSiteId,
-      siteName: publishableSiteName,
-      codeBuildId: publishableCodeBuildId,
-    })
-    await godmode.expectPublishButtonVisible(publishableSiteId)
+    // Arrange — gotoPublishing waits for listAllSites to include this site.
+    await godmode.gotoPublishing(siteId)
 
-    // Act
-    await godmode.clickPublishForSite(publishableSiteId)
+    // Act — clear CodeBuild id after the button renders so publishSite skips AWS
+    await clearSiteCodeBuildId(siteId)
+    await godmode.clickPublishForSite(siteId)
 
-    // Assert — CodeBuild is async; UI toast only
+    // Assert
     await godmode.expectSitePublishedToast()
+    await expectSitePublishAuditLog(siteId).toBe(true)
   })
 
   test("core admin cannot publish a site without a CodeBuild ID", async ({
@@ -76,20 +78,17 @@ test.describe("core", { tag: roleTag("core") }, () => {
     const errorMessage = "CodeBuild unavailable"
 
     // Arrange
-    await mockGodmodeSitePublish(page, {
-      failTimes: 1,
-      errorMessage,
-    })
-    await godmode.gotoPublishing()
+    await mockGodmodeSitePublish(page, { failTimes: 1, errorMessage })
+    await godmode.gotoPublishing(retryableSiteId)
 
     // Act
-    await godmode.clickPublishForSite(publishableSiteId)
+    await godmode.clickPublishForSite(retryableSiteId)
 
     // Assert
     await godmode.expectPublishFailedToast(errorMessage)
 
     // Act
-    await godmode.clickPublishForSite(publishableSiteId)
+    await godmode.clickPublishForSite(retryableSiteId)
 
     // Assert
     await godmode.expectSitePublishedToast()

@@ -1,20 +1,19 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
 import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "~/schemas/collection-limits"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { TEST_EMAILS, roleTag } from "~e2e/fixtures/auth"
 import {
   createCollectionPage,
   createCollectionWithTagCategories,
-} from "../fixtures/collection"
-import { getDraftIndexPage } from "../fixtures/collection.db"
-import { openCollectionIndexEditor } from "../fixtures/helpers"
-import { failTagOptionsUsageCount } from "../fixtures/network"
-import { PageEditorPO } from "../fixtures/page-editor.po"
-import { seedCollection } from "../fixtures/page-seed"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
+  expectDraftIndexPage,
+} from "~e2e/fixtures/collection"
+import { openCollectionIndexEditor } from "~e2e/fixtures/helpers"
+import { failTagOptionsUsageCount } from "~e2e/fixtures/network"
+import { PageEditorPO } from "~e2e/fixtures/po"
+import { seedCollection } from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 const option = (label: string) => ({
   id: crypto.randomUUID(),
@@ -67,13 +66,16 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await collection.expectFilterPresentationSelected("Plaintext")
     await collection.expectOptionNamedVisible("Technology")
     await collection.expectOptionNamedVisible("Policy")
-    const draft = await getDraftIndexPage(indexPage.id)
-    expect(draft?.tagCategories?.[0]?.label).toBe("Topic")
-    expect(draft?.tagCategories?.[0]?.isRequired).toBe(true)
-    expect(draft?.tagCategories?.[0]?.display).toBe("plaintext")
-    expect(
-      draft?.tagCategories?.[0]?.options.map((item) => item.label),
-    ).toEqual(["Technology", "Policy"])
+    await expectDraftIndexPage(indexPage.id).toMatchObject({
+      tagCategories: [
+        {
+          label: "Topic",
+          isRequired: true,
+          display: "plaintext",
+          options: [{ label: "Technology" }, { label: "Policy" }],
+        },
+      ],
+    })
   })
 
   test("admin can edit filter and option names", async ({ page }) => {
@@ -142,11 +144,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await collection.saveFilters()
 
     // Assert
-    const draft = await getDraftIndexPage(seeded.indexPageId)
-    expect(draft?.tagCategories?.map((category) => category.label)).toEqual([
-      "Second filter",
-      "First filter",
-    ])
+    await expectDraftIndexPage(seeded.indexPageId).toMatchObject({
+      tagCategories: [{ label: "Second filter" }, { label: "First filter" }],
+    })
   })
 
   test("admin can reorder options", async ({ page }) => {
@@ -178,10 +178,13 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await collection.saveFilters()
 
     // Assert
-    const draft = await getDraftIndexPage(seeded.indexPageId)
-    expect(
-      draft?.tagCategories?.[0]?.options.map((item) => item.label),
-    ).toEqual(["Second option", "First option"])
+    await expectDraftIndexPage(seeded.indexPageId).toMatchObject({
+      tagCategories: [
+        {
+          options: [{ label: "Second option" }, { label: "First option" }],
+        },
+      ],
+    })
   })
 
   test("duplicate filter names show a validation error", async ({ page }) => {
@@ -442,8 +445,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await collection.saveFilters()
 
     // Assert
-    const saved = await getDraftIndexPage(seeded.indexPageId)
-    expect(saved?.tagCategories ?? []).toHaveLength(0)
+    await expectDraftIndexPage(seeded.indexPageId).toMatchObject({
+      tagCategories: [],
+    })
   })
 
   test("deleting a filter with many options shows the large-usage warning", async ({
