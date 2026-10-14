@@ -63,11 +63,7 @@ const singpassSchema = z.object({
   SINGPASS_ENCRYPTION_KEY_ALG: z.string().min(1).default("ECDH-ES+A256KW"),
   SINGPASS_SIGNING_PRIVATE_KEY: z.string().min(1),
   SINGPASS_SIGNING_KEY_ALG: z.string().min(1).default("ES512"),
-  // Blank is treated as unset so existing environments keep the legacy flow
-  // until the FAPI issuer is configured.
-  SINGPASS_FAPI_ISSUER_ENDPOINT: z
-    .union([z.string().url(), z.literal("")])
-    .optional(),
+  SINGPASS_FAPI_ISSUER_ENDPOINT: z.string().url().min(1),
 })
 
 /**
