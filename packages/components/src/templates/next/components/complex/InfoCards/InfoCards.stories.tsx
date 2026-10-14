@@ -120,7 +120,7 @@ const generateArgs = ({
 
   if (focal) {
     cards.forEach((card) => {
-      ;(card as any).imageFit = "cover"
+      ;(card as any).imageFit = isImageFitContain ? "contain" : "cover"
       ;(card as any).imageAdjustment = { focal }
     })
   }
@@ -185,6 +185,19 @@ export const FullImageFocalPoint: Story = {
   args: generateArgs({
     maxColumns: "3",
     variant: "cardsWithFullImages",
+    focal: { x: 0.2, y: 0.2 },
+  }),
+}
+
+// Regression: a focal set earlier under cover must NOT leak through once the
+// card switches to "Resize image to fit" (contain). Despite a top-left focal,
+// the letterboxed images stay centred (no object-position) — InfoCardImage
+// ignores focal under contain. Contrast with WithImageFocalPoint above.
+export const ContainImageIgnoresFocalPoint: Story = {
+  name: "Contain fit ignores focal point",
+  args: generateArgs({
+    maxColumns: "3",
+    isImageFitContain: true,
     focal: { x: 0.2, y: 0.2 },
   }),
 }

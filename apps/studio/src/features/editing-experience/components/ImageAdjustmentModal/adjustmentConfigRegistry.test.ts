@@ -40,14 +40,13 @@ describe("resolveAdjustmentConfig", () => {
       fieldName: "imageUrl",
     })
 
-    it("resolves a cover+focal config for both image variants", () => {
+    it("resolves a crop+focal config for both image variants", () => {
       for (const config of [withImages, fullImage]) {
         expect(config).toBeDefined()
         expect(config?.cropMode).toBe("custom")
         expect(config?.focalEnabled).toBe(true)
         // Array-nested field: preview the single card, not the whole block.
         expect(config?.skipRealComponentPreview).toBe(true)
-        expect(config?.disabledReason).toBeTruthy()
       }
     })
 
@@ -60,14 +59,22 @@ describe("resolveAdjustmentConfig", () => {
       ).toBeUndefined()
     })
 
-    it("is adjustable only when the card's imageFit is cover (or unset)", () => {
-      const isAdjustable = withImages?.isAdjustable
-      expect(isAdjustable).toBeDefined()
+    it("offers the focal point only when the card's imageFit is cover (or unset)", () => {
+      const focalEnabledFor = withImages?.focalEnabledFor
+      expect(focalEnabledFor).toBeDefined()
       // Unset defaults to cover.
-      expect(isAdjustable?.({})).toBe(true)
-      expect(isAdjustable?.({ imageFit: "cover" })).toBe(true)
-      // "contain" (Resize image to fit) has nothing to crop.
-      expect(isAdjustable?.({ imageFit: "contain" })).toBe(false)
+      expect(focalEnabledFor?.({})).toBe(true)
+      expect(focalEnabledFor?.({ imageFit: "cover" })).toBe(true)
+      // "contain" (Resize image to fit) letterboxes the whole image — no focal.
+      expect(focalEnabledFor?.({ imageFit: "contain" })).toBe(false)
+    })
+
+    it("previews with object-contain only under 'Resize image to fit'", () => {
+      const previewObjectFitFor = withImages?.previewObjectFitFor
+      expect(previewObjectFitFor).toBeDefined()
+      expect(previewObjectFitFor?.({})).toBe("cover")
+      expect(previewObjectFitFor?.({ imageFit: "cover" })).toBe("cover")
+      expect(previewObjectFitFor?.({ imageFit: "contain" })).toBe("contain")
     })
 
     it("mirrors the full-image card's bottom gradient overlay as a scrim", () => {

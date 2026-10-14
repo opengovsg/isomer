@@ -45,9 +45,11 @@ const SingleCardWithImageSchema = Type.Composite([
   Type.Object({
     imageUrl: ImageSrcSchema,
     imageFit: Type.Optional(InfoCardsImageFitSchema),
-    // Crop/focal baked into imageUrl + applied as object-position. Only offered
-    // under imageFit "cover" (the editor hides it for "contain") — see the
-    // InfoCards AdjustmentConfig entries in Studio's adjustmentConfigRegistry.
+    // Crop is baked into imageUrl under both fits; focal renders as
+    // object-position only under imageFit "cover" (the editor hides the focal
+    // control for "contain", and InfoCardImage ignores any stale focal there, so
+    // a letterboxed image stays object-center) — see the InfoCards
+    // AdjustmentConfig entries in Studio's adjustmentConfigRegistry.
     imageAdjustment: Type.Optional(imageAdjustmentSchema),
     imageAlt: AltTextSchema,
   }),

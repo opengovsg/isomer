@@ -85,12 +85,6 @@ function JsonFormsImageControl({
     config,
   } = useAdjustmentConfigForField(path)
 
-  // Tier C conditional (e.g. InfoCards): adjustment is offered only when the
-  // config says this field's host is adjustable (an InfoCards card under
-  // imageFit "cover"). When not, the entry point shows a disabled control with
-  // the config's reason instead of opening the modal.
-  const isAdjustable = !config?.isAdjustable || config.isAdjustable(fieldHost)
-
   const handleAdjustmentSave = ({
     src,
     imageAdjustment,
@@ -120,60 +114,40 @@ function JsonFormsImageControl({
           />
           {/* Adjustment entry point — only for components with a config, and
               only for managed (bakeable) assets */}
-          {isImageAdjustmentEnabled &&
-            isManagedAsset &&
-            config &&
-            (isAdjustable ? (
-              <>
-                <HStack spacing="1rem" mt="1rem">
-                  <Button
-                    leftIcon={<BiPencil />}
-                    variant="clear"
-                    colorScheme="neutral"
-                    onClick={onAdjustmentModalOpen}
-                  >
-                    Adjust image
-                  </Button>
-                  <Text textStyle="body-2" color="base.content.medium">
-                    {currentAdjustment ? "Adjusted" : "Not adjusted"}
-                  </Text>
-                </HStack>
-
-                <ImageAdjustmentModal
-                  key={data}
-                  isOpen={isAdjustmentModalOpen}
-                  onClose={onAdjustmentModalClose}
-                  config={config}
-                  src={data}
-                  value={currentAdjustment}
-                  block={block}
-                  imageFieldName={fieldName}
-                  siteId={siteId}
-                  resourceId={
-                    (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
-                  }
-                  onSave={handleAdjustmentSave}
-                />
-              </>
-            ) : (
-              // Tier C disabled state: offered but not applicable to this
-              // field's current setting (e.g. an InfoCards card set to
-              // "contain"). Show the pencil disabled + the config's reason.
+          {isImageAdjustmentEnabled && isManagedAsset && config && (
+            <>
               <HStack spacing="1rem" mt="1rem">
                 <Button
                   leftIcon={<BiPencil />}
                   variant="clear"
                   colorScheme="neutral"
-                  isDisabled
+                  onClick={onAdjustmentModalOpen}
                 >
                   Adjust image
                 </Button>
                 <Text textStyle="body-2" color="base.content.medium">
-                  {config.disabledReason ??
-                    "Adjustment isn't available for this image."}
+                  {currentAdjustment ? "Adjusted" : "Not adjusted"}
                 </Text>
               </HStack>
-            ))}
+
+              <ImageAdjustmentModal
+                key={data}
+                isOpen={isAdjustmentModalOpen}
+                onClose={onAdjustmentModalClose}
+                config={config}
+                src={data}
+                value={currentAdjustment}
+                block={block}
+                imageFieldName={fieldName}
+                fieldHost={fieldHost}
+                siteId={siteId}
+                resourceId={
+                  (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
+                }
+                onSave={handleAdjustmentSave}
+              />
+            </>
+          )}
         </Box>
       ) : (
         <Box>

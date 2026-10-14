@@ -8,16 +8,21 @@ import type {
 const asBlock = (block: unknown): { type?: string; variant?: string } =>
   typeof block === "object" && block !== null ? block : {}
 
-// InfoCards is Tier C: a card is adjustable only when its image is set to
-// "cover" (imageFit "Default (recommended)"). Under "contain" ("Resize image
-// to fit") the whole source is shown letterboxed, so there is nothing to crop
-// or anchor. imageFit is optional and defaults to "cover", so an unset value
-// is adjustable. The fieldHost here is the individual card object.
-const isInfoCardImageAdjustable = (fieldHost: unknown): boolean =>
+// InfoCards is Tier C: a card is always adjustable (you can crop the image that
+// is then displayed) regardless of its imageFit, but the controls offered depend
+// on the fit. Under "cover" ("Default") the card crops the image to fill its
+// frame, so both crop and focal apply. Under "contain" ("Resize image to fit")
+// the whole image is letterboxed, so the focal anchor has nothing to do — crop
+// stays available (it defines the region that is then letterboxed), focal is
+// hidden. imageFit is optional and defaults to "cover". The fieldHost here is
+// the individual card object.
+const infoCardFocalEnabled = (fieldHost: unknown): boolean =>
   (fieldHost as { imageFit?: string } | null)?.imageFit !== "contain"
 
-const INFOCARDS_DISABLED_REASON =
-  'Image fit is set to "Resize image to fit", so there is nothing to crop. Switch it to "Default" to crop or set a focal point.'
+const infoCardPreviewObjectFit = (fieldHost: unknown): "cover" | "contain" =>
+  (fieldHost as { imageFit?: string } | null)?.imageFit === "contain"
+    ? "contain"
+    : "cover"
 
 // Every Tier B config previews at the same three breakpoint viewport widths
 // (mobile 375 / tablet 768 / desktop 1280); only the aspect-ratio guess differs
@@ -189,6 +194,9 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 1, height: 1 }],
+  // Both states are 1:1 — side-by-side they'd be small; stack them so each
+  // circle/square mask gets the full preview column width.
+  stackPreviews: true,
   previewStates: [
     {
       id: "circle",
@@ -213,16 +221,17 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
 // whose aspect ratio swings across breakpoints (3:2 on mobile → 1:1 at lg for
 // the default 3-column content layout, or 2:1 for a 2-column homepage), so this
 // is the Tier-B cover+focal pattern (free crop baked in, focal anchors the
-// subject across the swing) — but offered CONDITIONALLY, only under imageFit
-// "cover". The preview uses the framed-image approximation, not the real block
-// (which would render every card), with the three ratio states showing the
-// swing the focal has to survive.
+// subject across the swing). Crop is always offered; focal is offered only under
+// imageFit "cover" (focalEnabledFor) — under "contain" the image is letterboxed,
+// so the preview switches to object-contain (previewObjectFitFor) and the focal
+// control is hidden. The preview uses the framed-image approximation, not the
+// real block (which would render every card), with the three ratio states.
 const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   componentType: "infocards:cardsWithImages",
   cropMode: "custom",
   focalEnabled: true,
-  isAdjustable: isInfoCardImageAdjustable,
-  disabledReason: INFOCARDS_DISABLED_REASON,
+  focalEnabledFor: infoCardFocalEnabled,
+  previewObjectFitFor: infoCardPreviewObjectFit,
   skipRealComponentPreview: true,
   previewStates: [
     {
@@ -246,7 +255,7 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
     "The card crops this image to fill its frame, and the frame's shape changes across screen sizes. Set a focal point so your key subject stays in view.",
 }
 
-// Tier C — InfoCards "cards with full images". Same conditional cover+focal as
+// Tier C — InfoCards "cards with full images". Same conditional crop/focal as
 // the default variant, but the image fills the whole card (square on mobile →
 // 2:3 portrait at lg) with a dark bottom gradient the title sits over. That
 // overlay is mirrored as a scrim so editors can judge whether the focal keeps
@@ -255,8 +264,8 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   componentType: "infocards:cardsWithFullImages",
   cropMode: "custom",
   focalEnabled: true,
-  isAdjustable: isInfoCardImageAdjustable,
-  disabledReason: INFOCARDS_DISABLED_REASON,
+  focalEnabledFor: infoCardFocalEnabled,
+  previewObjectFitFor: infoCardPreviewObjectFit,
   skipRealComponentPreview: true,
   previewStates: [
     {

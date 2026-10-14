@@ -84,6 +84,7 @@ const ImageAdjustmentModalHarness = ({
         value={value}
         block={block}
         imageFieldName="backgroundUrl"
+        fieldHost={block}
         siteId={1}
         resourceId="test-resource"
         onSave={({ src, imageAdjustment }) => {

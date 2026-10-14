@@ -34,9 +34,12 @@ export const InfoCardImage = ({
   | "variant"
 >): JSX.Element => {
   // Focal point for a "cover"-fit card: anchors the subject as the card's
-  // aspect ratio swings across breakpoints. A no-op (undefined) when no focal
-  // is set, so "contain" cards keep the object-center default.
-  const objectPosition = getFocalObjectPosition(imageAdjustment)
+  // aspect ratio swings across breakpoints. Ignored under "contain": the whole
+  // (already-cropped) image is letterboxed, so an object-position would only
+  // shove it off-center within the letterbox — a focal set earlier under cover
+  // must not leak through. "contain" cards always keep the object-center default.
+  const objectPosition =
+    imageFit === "contain" ? undefined : getFocalObjectPosition(imageAdjustment)
   return (
     <div
       className={compoundStyles.cardImageContainer({

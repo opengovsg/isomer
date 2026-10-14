@@ -55,6 +55,14 @@ interface AdjustmentPreviewProps {
   // the real component would render the whole block/all cards instead of the
   // single card being edited.
   skipRealComponentPreview?: boolean
+  // Stack the preview frames vertically (one per row) instead of side-by-side,
+  // giving each the full column width. See AdjustmentConfig.stackPreviews.
+  stackPreviews?: boolean
+  // The object-fit the framed-image approximation uses (skipRealComponentPreview
+  // path). "contain" letterboxes the whole (cropped) image to match InfoCards'
+  // "Resize image to fit"; defaults to "cover". Ignored on the real-component
+  // path, which renders the component's own fit.
+  objectFit?: "cover" | "contain"
   // Needed to pull the site's brand theme CSS vars into the preview iframe —
   // without them, classes like `bg-brand-canvas-inverse` resolve to nothing.
   siteId: number
@@ -74,6 +82,10 @@ const FRAME_DISPLAY_WIDTH: Record<string, number> = {
   desktop: 320,
 }
 const DEFAULT_FRAME_DISPLAY_WIDTH = 220
+// Wider width used when frames are stacked vertically (stackPreviews): each
+// frame has the whole column to itself, so it can be larger than the
+// side-by-side widths above.
+const STACKED_FRAME_DISPLAY_WIDTH = 360
 
 export const AdjustmentPreview = ({
   src,
@@ -84,8 +96,16 @@ export const AdjustmentPreview = ({
   block,
   imageFieldName,
   skipRealComponentPreview,
+  stackPreviews,
+  objectFit = "cover",
   siteId,
 }: AdjustmentPreviewProps): JSX.Element => {
+  // When stacking, each frame gets the full column width; otherwise fall back
+  // to the per-breakpoint side-by-side widths.
+  const resolveDisplayWidth = (stateId: string): number =>
+    stackPreviews
+      ? STACKED_FRAME_DISPLAY_WIDTH
+      : (FRAME_DISPLAY_WIDTH[stateId] ?? DEFAULT_FRAME_DISPLAY_WIDTH)
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const bakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -282,10 +302,15 @@ export const AdjustmentPreview = ({
 
   if (defaultRender) {
     return (
-      <Flex wrap="wrap" align="flex-start" gap="1rem" w="100%">
+      <Flex
+        direction={stackPreviews ? "column" : "row"}
+        wrap={stackPreviews ? "nowrap" : "wrap"}
+        align="flex-start"
+        gap="1rem"
+        w="100%"
+      >
         {previewStates.map((state) => {
-          const displayWidth =
-            FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
+          const displayWidth = resolveDisplayWidth(state.id)
           const rendered = state.layout
             ? renderPreviewComponent(state.layout)
             : defaultRender
@@ -297,13 +322,19 @@ export const AdjustmentPreview = ({
             <ErrorBoundary
               key={state.id}
               fallbackRender={() => (
-                <PreviewFrame state={state}>{rendered}</PreviewFrame>
+                <PreviewFrame state={state} displayWidth={displayWidth}>
+                  {rendered}
+                </PreviewFrame>
               )}
             >
               <Suspense
                 fallback={<Skeleton w={`${displayWidth}px`} h="9rem" />}
               >
-                <ThemedPreviewFrame siteId={siteId} state={state}>
+                <ThemedPreviewFrame
+                  siteId={siteId}
+                  state={state}
+                  displayWidth={displayWidth}
+                >
                   {rendered}
                 </ThemedPreviewFrame>
               </Suspense>
@@ -315,10 +346,15 @@ export const AdjustmentPreview = ({
   }
 
   return (
-    <Flex wrap="wrap" align="flex-start" gap="1rem" w="100%">
+    <Flex
+      direction={stackPreviews ? "column" : "row"}
+      wrap={stackPreviews ? "nowrap" : "wrap"}
+      align="flex-start"
+      gap="1rem"
+      w="100%"
+    >
       {previewStates.map((state) => {
-        const displayWidth =
-          FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
+        const displayWidth = resolveDisplayWidth(state.id)
         const aspect = state.aspectRatio
           ? state.aspectRatio.width / state.aspectRatio.height
           : 1
@@ -332,8 +368,13 @@ export const AdjustmentPreview = ({
             w="100%"
             h="100%"
             style={{
-              objectFit: "cover",
-              objectPosition: getFocalObjectPosition(adjustment?.focal),
+              objectFit,
+              // Mirror the renderer: focal is ignored under "contain" (the
+              // letterboxed image stays object-center), applied under "cover".
+              objectPosition:
+                objectFit === "contain"
+                  ? undefined
+                  : getFocalObjectPosition(adjustment?.focal),
             }}
           />
         )
@@ -412,10 +453,12 @@ export const AdjustmentPreview = ({
 // ErrorBoundary fallback above.
 const PreviewFrame = ({
   state,
+  displayWidth,
   themeCssVars,
   children,
 }: {
   state: AdjustmentPreviewState
+  displayWidth: number
   themeCssVars?: CSSProperties
   children: React.ReactNode
 }) => {
@@ -447,8 +490,6 @@ const PreviewFrame = ({
     [],
   )
 
-  const displayWidth =
-    FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
   const scale = displayWidth / viewportWidth
 
   return (
@@ -501,15 +542,21 @@ const PreviewFrame = ({
 const ThemedPreviewFrame = ({
   siteId,
   state,
+  displayWidth,
   children,
 }: {
   siteId: number
   state: AdjustmentPreviewState
+  displayWidth: number
   children: React.ReactNode
 }) => {
   const themeCssVars = useSiteThemeCssVars({ siteId })
   return (
-    <PreviewFrame state={state} themeCssVars={themeCssVars}>
+    <PreviewFrame
+      state={state}
+      displayWidth={displayWidth}
+      themeCssVars={themeCssVars}
+    >
       {children}
     </PreviewFrame>
   )

@@ -26,8 +26,8 @@ export const useAdjustmentConfigForField = (path: string) => {
 
   // The field's immediate host: for a root-level image field the block itself,
   // for an array-nested field (e.g. an InfoCards card) the card object. This is
-  // what Tier C's isAdjustable reads (e.g. the card's imageFit), and where the
-  // imageAdjustment sibling is written.
+  // what Tier C's focalEnabledFor/previewObjectFitFor read (e.g. the card's
+  // imageFit), and where the imageAdjustment sibling is written.
   // Per-block editor forms (e.g. HeroEditorDrawer) mount the form with the
   // block itself as the data root, so a top-level image field has an empty
   // parentPath -- in that case the host IS rootData.
