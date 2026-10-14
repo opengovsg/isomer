@@ -150,6 +150,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     )
     await expect(site.addNavbarLinkButton()).toBeEnabled()
 
+    // Valid edit first — invalid nine-item state is not synced to preview, so
+    // Publish would stay disabled from !isDirty alone without this step.
+    await site.editNavbarItemLabel("Max item 1", "Max item 1 edited")
+    await expect(site.publishButton()).toBeEnabled()
+
     // Act — ninth first-level link is allowed in the editor; publish is blocked.
     await site.addNavbarLink("Ninth top-level link", "example.com/ninth")
 
