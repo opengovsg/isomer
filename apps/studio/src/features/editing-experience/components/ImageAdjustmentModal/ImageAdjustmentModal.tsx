@@ -241,6 +241,9 @@ export const ImageAdjustmentModal = ({
   // imageAspect loads for locked ratios — see isLockedRatioAspectPending — so a
   // square-assumed crop can never be baked.)
   const handleRotate = (direction: "cw" | "ccw") => {
+    // Defence in depth: the rotate buttons are already disabled in this state,
+    // but never re-derive a locked crop against a square-assumed aspect.
+    if (isLockedRatioAspectPending) return
     setDraft((d) => {
       const base = ensureAdjustment(d)
       const rotate = nextRotation(base, direction)

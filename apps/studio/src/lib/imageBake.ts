@@ -147,27 +147,6 @@ export const cropRectToPixels = (
 }
 
 /**
- * Calculate output canvas dimensions after rotation.
- * Rotations of 90 or 270 degrees swap width and height.
- * Rotations of 0 or 180 degrees preserve the dimensions.
- *
- * @param croppedWidth - Pixel width of the cropped region
- * @param croppedHeight - Pixel height of the cropped region
- * @param rotate - Rotation in degrees: 0, 90, 180, or 270
- * @returns Object with output {width, height}
- */
-export const outputDimensions = (
-  croppedWidth: number,
-  croppedHeight: number,
-  rotate: 0 | 90 | 180 | 270,
-): { width: number; height: number } => {
-  if (rotate === 90 || rotate === 270) {
-    return { width: croppedHeight, height: croppedWidth }
-  }
-  return { width: croppedWidth, height: croppedHeight }
-}
-
-/**
  * Compute canvas transform scale factors (rotate, flipH, flipV).
  * Returns the transformation parameters to be applied to the canvas.
  *
