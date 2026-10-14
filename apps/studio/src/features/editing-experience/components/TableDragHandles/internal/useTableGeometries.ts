@@ -12,6 +12,14 @@ import {
 
 const EMPTY_GEOMETRIES: TableGeometry[] = []
 
+/** Scrolls that can move this editor's cells relative to its drag handles. */
+export const scrollTargetAffectsContainer = (
+  target: EventTarget | null,
+  container: Node,
+): boolean =>
+  target instanceof Node &&
+  (container.contains(target) || target.contains(container))
+
 /**
  * Row and column rects for every table in the document, in container
  * coordinates, kept in step with editing, scrolling and layout changes.
@@ -69,10 +77,18 @@ export const useTableGeometries = (
     window.addEventListener("resize", measure)
     // The table scrollport sits inside the editor, so a scroll there moves
     // cells and leaves the absolutely positioned handles behind. Capture on
-    // window sees that scroll and any ancestor. Measure on the next frame,
-    // once layout has settled, and flush the paint in that same frame.
+    // window also sees ancestors. Unrelated scrollers (another editor, the
+    // preview pane) are ignored. Measure on the next frame, once layout has
+    // settled, and flush the paint in that same frame.
     let scrollFrame = 0
-    const onScroll = () => {
+    const onScroll = (event: Event) => {
+      const container = containerRef.current
+      if (
+        !container ||
+        !scrollTargetAffectsContainer(event.target, container)
+      ) {
+        return
+      }
       if (scrollFrame) return
       scrollFrame = requestAnimationFrame(() => {
         scrollFrame = 0

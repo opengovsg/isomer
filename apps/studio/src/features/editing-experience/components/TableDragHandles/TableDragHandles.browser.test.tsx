@@ -16,6 +16,7 @@ import {
 import { theme } from "~/theme"
 
 import { ADD_PILL_ICON_SIZE_PX, ADD_PILL_RADIUS_PX } from "./internal/chrome"
+import { scrollTargetAffectsContainer } from "./internal/useTableGeometries"
 import { TableDragHandles } from "./TableDragHandles"
 
 const SEED_CONTENT: JSONContent = {
@@ -99,6 +100,7 @@ const TALL_CONTENT: JSONContent = {
   ],
 }
 
+// 400px columns are wider than the 280px harness so the scrollport overflows.
 const WIDE_CONTENT: JSONContent = {
   type: "prose",
   content: [
@@ -276,6 +278,34 @@ const dragHandleTo = async ({
     fireEvent.mouseUp(document, { clientX, clientY })
   })
 }
+
+describe("scrollTargetAffectsContainer", () => {
+  it("includes the editor, a descendant, and an ancestor", () => {
+    // Arrange
+    const ancestor = document.createElement("div")
+    const container = document.createElement("div")
+    const child = document.createElement("div")
+    ancestor.append(container)
+    container.append(child)
+
+    // Act / Assert
+    expect(scrollTargetAffectsContainer(container, container)).toBe(true)
+    expect(scrollTargetAffectsContainer(child, container)).toBe(true)
+    expect(scrollTargetAffectsContainer(ancestor, container)).toBe(true)
+  })
+
+  it("ignores a scroller outside the editor", () => {
+    // Arrange
+    const parent = document.createElement("div")
+    const container = document.createElement("div")
+    const sibling = document.createElement("div")
+    parent.append(container, sibling)
+
+    // Act / Assert
+    expect(scrollTargetAffectsContainer(sibling, container)).toBe(false)
+    expect(scrollTargetAffectsContainer(null, container)).toBe(false)
+  })
+})
 
 describe("TableDragHandles", () => {
   it("shows a handle for every row and column without hovering", async () => {
