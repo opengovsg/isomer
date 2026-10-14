@@ -64,6 +64,9 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   componentType: "hero:gradient",
   cropMode: "custom",
   focalEnabled: true,
+  // Full-bleed; no CSS width cap. Warn against the 1280px content ceiling
+  // (max-w-screen-xl) as a conservative "looks soft on desktop" floor.
+  maxRenderedWidthPx: 1280,
   previewStates: responsivePreviewStates({
     mobile: { width: 375, height: 240 },
     tablet: { width: 768, height: 360 },
@@ -90,6 +93,8 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   componentType: "hero:block",
   cropMode: "custom",
   focalEnabled: true,
+  // Image band is half the viewport at lg (lg:w-1/2); ~960px on large desktop.
+  maxRenderedWidthPx: 960,
   previewStates: responsivePreviewStates({
     mobile: { width: 375, height: 240 },
     tablet: { width: 768, height: 360 },
@@ -107,6 +112,8 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 5, height: 6 }],
+  // Fixed 200px-wide frame from sm up (sm:w-[200px]).
+  maxRenderedWidthPx: 200,
   // Contentpic stacks (image above text) as a column below Tailwind `sm` (640px)
   // and switches to its real side-by-side row layout — image fixed at 200×240 —
   // at `sm` and up (`sm:flex-row`). Preview at exactly 640px so the frame shows
@@ -122,6 +129,8 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
       aspectRatio: { width: 640, height: 300 },
     },
   ],
+  preUploadCopy:
+    "Use a high-resolution image (at least 400×480px) with a 5:6 (portrait) aspect ratio. Keep the key subject centered — the image is cropped to a fixed portrait frame beside your text.",
 }
 
 // Tier B — responsive image with text. Content-dependent cover: frame height
@@ -130,6 +139,8 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
   componentType: "infopic",
   cropMode: "custom",
   focalEnabled: true,
+  // One of two columns at lg (lg:grid-cols-2); ~960px on large desktop.
+  maxRenderedWidthPx: 960,
   previewStates: responsivePreviewStates({
     mobile: { width: 375, height: 300 },
     tablet: { width: 768, height: 400 },
@@ -148,6 +159,8 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   componentType: "hero:largeImage",
   cropMode: "custom",
   focalEnabled: true,
+  // Full-bleed; warn against the 1280px content ceiling (same as hero:gradient).
+  maxRenderedWidthPx: 1280,
   previewStates: responsivePreviewStates({
     mobile: { width: 1, height: 1 },
     tablet: { width: 2, height: 1 },
@@ -173,6 +186,9 @@ const HERO_FLOATING_CONFIG: AdjustmentConfig = {
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 3, height: 2 }],
+  // Full-width below lg (~1024px), 66.67% (~800px) at lg — the tablet regime
+  // is the widest frame.
+  maxRenderedWidthPx: 1024,
   previewStates: responsivePreviewStates({
     mobile: { width: 3, height: 2 },
     tablet: { width: 3, height: 2 },
@@ -194,6 +210,9 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 1, height: 1 }],
+  // Masked avatar: 240px on the homepage (w-60), 96px elsewhere — warn against
+  // the larger.
+  maxRenderedWidthPx: 240,
   // Both states are 1:1 — side-by-side they'd be small; stack them so each
   // circle/square mask gets the full preview column width.
   stackPreviews: true,
@@ -230,6 +249,10 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   componentType: "infocards:cardsWithImages",
   cropMode: "custom",
   focalEnabled: true,
+  // Card width depends on column count (1200px at 1 column down to ~260px at 4);
+  // warn against a generous multi-column card width so the common 2–4 column
+  // grids don't false-warn on perfectly sharp images.
+  maxRenderedWidthPx: 640,
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
   skipRealComponentPreview: true,
@@ -264,6 +287,9 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   componentType: "infocards:cardsWithFullImages",
   cropMode: "custom",
   focalEnabled: true,
+  // Same column-dependent card width as cardsWithImages — warn against a
+  // generous multi-column width (see that config).
+  maxRenderedWidthPx: 640,
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
   skipRealComponentPreview: true,

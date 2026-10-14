@@ -17,10 +17,11 @@ import {
 } from "@chakra-ui/react"
 import {
   Button,
+  Infobox,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
@@ -28,6 +29,8 @@ import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
 import { CropFocalControl } from "./controls/CropFocalControl"
 import { defaultCropRect } from "./controls/cropGeometry"
+import { TransformControl } from "./controls/TransformControl"
+import { computeLowResWarning } from "./resolutionWarning"
 import {
   resolveOriginalKey,
   useSaveImageAdjustment,
@@ -88,6 +91,12 @@ export const ImageAdjustmentModal = ({
   // `undefined` until the image loads: for a locked ratio the reset is disabled
   // until then, so a wrong (square-assumed) crop can never be baked.
   const [imageAspect, setImageAspect] = useState<number | undefined>(undefined)
+  // The source image's true pixel dimensions, reported by CropFocalControl once
+  // its <img> loads — used to warn when the cropped region is too low-res for
+  // the component's rendered frame.
+  const [naturalSize, setNaturalSize] = useState<
+    { width: number; height: number } | undefined
+  >(undefined)
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
@@ -107,6 +116,26 @@ export const ImageAdjustmentModal = ({
 
   const lockedRatio =
     config.cropMode === "fixed" ? config.lockedRatios?.[0] : undefined
+
+  // Warn when the cropped region can't fill this component's largest rendered
+  // frame even at 1x (see computeLowResWarning).
+  const lowResWarning = useMemo(
+    () =>
+      computeLowResWarning({
+        naturalSize,
+        crop: draft?.crop,
+        rotate: draft?.rotate,
+        lockedRatio,
+        maxRenderedWidthPx: config.maxRenderedWidthPx,
+      }),
+    [
+      naturalSize,
+      config.maxRenderedWidthPx,
+      draft?.crop,
+      draft?.rotate,
+      lockedRatio,
+    ],
+  )
 
   // The crop/focal canvas and the live preview must both edit/bake from the
   // TRUE original, never a previous bake — same rule useSaveImageAdjustment
@@ -168,14 +197,13 @@ export const ImageAdjustmentModal = ({
     }
   }
 
-  // Resets just the crop/focal draft back to defaults (full-image crop, or
-  // the largest centered rect under a locked ratio; centered focal) — it
-  // does NOT save or close, same as any other crop/focal edit, so the editor
-  // can see the reset in the preview and still Save/Undo/Cancel from there.
-  // Disabled for a locked ratio until the real image aspect is known (see
-  // imageAspect) — without the true aspect, defaultCropRect would bake the
-  // wrong pixel ratio. A free (non-locked) crop ignores imageAspect, so it is
-  // always resettable.
+  // Resets all adjustments back to defaults (full-image crop or the largest
+  // centered rect under a locked ratio; centered focal; no rotation/flip) — it
+  // does NOT save or close, same as any other edit, so the editor can see the
+  // reset in the preview and still Save/Undo/Cancel from there. Disabled for a
+  // locked ratio until the real image aspect is known (see imageAspect) —
+  // without the true aspect, defaultCropRect would bake the wrong pixel ratio. A
+  // free (non-locked) crop ignores imageAspect, so it is always resettable.
   const isResetDisabled = lockedRatio != null && imageAspect === undefined
 
   const handleReset = () => {
@@ -183,6 +211,9 @@ export const ImageAdjustmentModal = ({
       ...ensureAdjustment(d),
       crop: defaultCropRect(lockedRatio, imageAspect ?? 1),
       focal: { x: 0.5, y: 0.5 },
+      rotate: 0,
+      flipH: false,
+      flipV: false,
     }))
   }
 
@@ -268,7 +299,37 @@ export const ImageAdjustmentModal = ({
                         setDraft((d) => ({ ...ensureAdjustment(d), focal }))
                       }
                       onImageAspectChange={setImageAspect}
+                      onNaturalSizeChange={setNaturalSize}
                     />
+                  )}
+
+                  {/* Rotate & flip — applies to every adjustable component. */}
+                  <TransformControl
+                    rotate={draft?.rotate ?? 0}
+                    flipH={draft?.flipH ?? false}
+                    flipV={draft?.flipV ?? false}
+                    onRotateChange={(rotate) =>
+                      setDraft((d) => ({ ...ensureAdjustment(d), rotate }))
+                    }
+                    onFlipHChange={(flipH) =>
+                      setDraft((d) => ({ ...ensureAdjustment(d), flipH }))
+                    }
+                    onFlipVChange={(flipV) =>
+                      setDraft((d) => ({ ...ensureAdjustment(d), flipV }))
+                    }
+                  />
+
+                  {/* Low-resolution warning — the kept crop can't fill this
+                      component's largest frame even at 1x, so it would look soft. */}
+                  {lowResWarning && (
+                    <Infobox variant="warning" size="sm">
+                      <Text textStyle="body-2">
+                        This image may look blurry here. The area you've kept is
+                        about {lowResWarning.effectiveWidth}px wide, but it can
+                        display up to {lowResWarning.targetWidth}px wide. Use a
+                        larger image, or keep a wider area in the crop.
+                      </Text>
+                    </Infobox>
                   )}
 
                   {/* Preserve-only note */}
@@ -370,7 +431,7 @@ export const ImageAdjustmentModal = ({
                 onClick={handleReset}
                 isDisabled={isResetDisabled || isSaving}
               >
-                Reset crop & focal
+                Reset adjustments
               </Button>
               <Button
                 variant="clear"

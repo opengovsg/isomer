@@ -53,6 +53,10 @@ interface CropFocalControlProps {
   // that needs to compute a ratio-correct crop independently (e.g. the
   // modal's "Reset image" button) can do the same math this control does.
   onImageAspectChange?: (aspect: number) => void
+  // Fired once the image's true pixel dimensions are known, so the modal can
+  // compare the cropped region's effective resolution against the component's
+  // rendered frame and warn on low-resolution crops.
+  onNaturalSizeChange?: (size: { width: number; height: number }) => void
 }
 
 type DragTarget = "rect" | "focal" | HandlePosition | null
@@ -72,6 +76,7 @@ export const CropFocalControl = ({
   onCropChange,
   onFocalChange,
   onImageAspectChange,
+  onNaturalSizeChange,
 }: CropFocalControlProps): JSX.Element => {
   const boxRef = useRef<HTMLDivElement>(null)
   const [aspectRatio, setAspectRatio] = useState<number | undefined>(undefined)
@@ -135,6 +140,10 @@ export const CropFocalControl = ({
       const aspect = img.naturalWidth / img.naturalHeight
       setAspectRatio(aspect)
       onImageAspectChange?.(aspect)
+      onNaturalSizeChange?.({
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+      })
     }
   }
 
