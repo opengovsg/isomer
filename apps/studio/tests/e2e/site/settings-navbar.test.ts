@@ -137,18 +137,32 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expect(site.publishButton()).toBeDisabled()
   })
 
-  test("cannot add more than 8 top-level links", async ({ page }) => {
+  test("can add links at the first-level cap but cannot publish over the limit", async ({
+    page,
+  }) => {
     const site = new SitePO(page)
     await resetSiteNavbarAtMaxItems(siteId)
 
     // Arrange
     await site.gotoSettingsSection(siteId, "navbar")
-
-    // Assert
     await expect(site.navbarLinksCountText()).toHaveText(
       "8/8 first-level links added",
     )
-    await expect(site.addNavbarLinkButton()).toBeDisabled()
+    await expect(site.addNavbarLinkButton()).toBeEnabled()
+
+    // Act — ninth first-level link is allowed in the editor; publish is blocked.
+    await site.addNavbarLink("Ninth top-level link", "example.com/ninth")
+
+    // Assert
+    await expect(site.navbarLinksCountText()).toHaveText(
+      "9/8 first-level links added",
+    )
+    await expect(
+      page.getByText(
+        "You can only have up to 8 first-level links. Move the extra links under an existing first-level link, or remove them, before publishing.",
+      ),
+    ).toBeVisible()
+    await expect(site.publishButton()).toBeDisabled()
   })
 
   test("admin can configure Call-to-Action with mobile pinning and publish", async ({
