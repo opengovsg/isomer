@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   canPublishNotificationSettings,
   normalizeSiteNotification,
+  resolveNotificationFormBuilderChange,
 } from "../notificationSettings.utils"
 
 describe("normalizeSiteNotification", () => {
@@ -33,6 +34,33 @@ describe("normalizeSiteNotification", () => {
 
     // Assert
     expect(result).toEqual(notification)
+  })
+})
+
+describe("resolveNotificationFormBuilderChange", () => {
+  it("returns undefined when form builder changes are disabled", () => {
+    // Arrange
+    const notification = { type: "antiscam" as const }
+
+    // Act
+    const result = resolveNotificationFormBuilderChange(false, notification)
+
+    // Assert
+    expect(result).toBeUndefined()
+  })
+
+  it("normalizes notification when form builder changes are enabled", () => {
+    // Arrange
+    const notification = {
+      type: "antiscam" as const,
+      title: "stale",
+    }
+
+    // Act
+    const result = resolveNotificationFormBuilderChange(true, notification)
+
+    // Assert
+    expect(result).toEqual({ type: "antiscam" })
   })
 })
 

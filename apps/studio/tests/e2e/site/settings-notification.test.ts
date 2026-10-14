@@ -154,4 +154,32 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     ).toBeChecked()
     await expect(site.notificationTitleField()).toBeHidden()
   })
+
+  test("admin can disable an anti-scam banner with one toggle click", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "notification")
+    await site.enableNotificationBanner()
+    await site.selectNotificationType("Anti-scam disclaimer")
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+
+    // Act
+    await site.disableNotificationBanner()
+
+    // Assert
+    await expect(site.notificationBannerToggle()).not.toBeChecked()
+    await expect(
+      site.notificationTypeOption("Anti-scam disclaimer"),
+    ).toBeHidden()
+
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+    await expect.poll(async () => getSiteNotification(siteId)).toBeNull()
+    await site.reloadSettingsSection("notification")
+    await expect(site.notificationBannerToggle()).not.toBeChecked()
+  })
 })

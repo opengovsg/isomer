@@ -9,7 +9,7 @@ import {
   useIsNotificationDismissed,
 } from "@opengovsg/isomer-components"
 import { isEqual } from "lodash-es"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { BiWrench } from "react-icons/bi"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
@@ -32,7 +32,7 @@ import { UnsavedSettingModal } from "~/features/editing-experience/components/Un
 import { siteSchema } from "~/features/editing-experience/schema"
 import {
   canPublishNotificationSettings,
-  normalizeSiteNotification,
+  resolveNotificationFormBuilderChange,
   siteNotificationBodyValidator,
 } from "~/features/settings/notification/notificationSettings.utils"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
@@ -82,6 +82,7 @@ const NotificationSettingsEditor = ({
       : {},
   )
   const [snapshot, setSnapshot] = useState(state.notification)
+  const formBuilderChangesEnabledRef = useRef(true)
 
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
@@ -95,6 +96,9 @@ const NotificationSettingsEditor = ({
 
   const toggleBanner = () => {
     if (bannerOn) {
+      // JsonForms can emit a final onChange while unmounting; ignore it so the
+      // banner stays off after the first toggle click (notably for antiscam).
+      formBuilderChangesEnabledRef.current = false
       setSnapshot(state.notification)
       setState({})
       setErrors({})
@@ -103,6 +107,7 @@ const NotificationSettingsEditor = ({
       return
     }
 
+    formBuilderChangesEnabledRef.current = true
     setState({ notification: snapshot ?? { title: "" } })
   }
 
@@ -160,9 +165,17 @@ const NotificationSettingsEditor = ({
                   validateFn={siteNotificationBodyValidator}
                   data={state.notification}
                   handleChange={(notification) => {
-                    setState({
-                      notification: normalizeSiteNotification(notification),
-                    })
+                    const nextNotification =
+                      resolveNotificationFormBuilderChange(
+                        formBuilderChangesEnabledRef.current,
+                        notification,
+                      )
+
+                    if (nextNotification === undefined) {
+                      return
+                    }
+
+                    setState({ notification: nextNotification })
                   }}
                 />
               </Box>

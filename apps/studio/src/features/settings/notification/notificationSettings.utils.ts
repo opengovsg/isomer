@@ -20,6 +20,17 @@ export const normalizeSiteNotification = (
   return notification
 }
 
+export const resolveNotificationFormBuilderChange = (
+  isFormBuilderAcceptingChanges: boolean,
+  notification: SiteNotification,
+): SiteNotification | undefined => {
+  if (!isFormBuilderAcceptingChanges) {
+    return undefined
+  }
+
+  return normalizeSiteNotification(notification)
+}
+
 export const canPublishNotificationSettings = (
   isDirty: boolean,
   notification: Notification["notification"],
