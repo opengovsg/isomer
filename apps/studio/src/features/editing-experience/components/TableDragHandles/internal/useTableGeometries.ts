@@ -67,14 +67,26 @@ export const useTableGeometries = (
     // `transaction` covers document updates too, so one listener is enough.
     editor.on("transaction", onEditorChange)
     window.addEventListener("resize", measure)
-    const container = containerRef.current
-    container?.addEventListener("scroll", measure, true)
+    // The table scrollport sits inside the editor, so a scroll there moves
+    // cells and leaves the absolutely positioned handles behind. Capture on
+    // window sees that scroll and any ancestor. Measure on the next frame,
+    // once layout has settled, and flush the paint in that same frame.
+    let scrollFrame = 0
+    const onScroll = () => {
+      if (scrollFrame) return
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = 0
+        flushSync(measure)
+      })
+    }
+    window.addEventListener("scroll", onScroll, true)
 
     return () => {
       cancelAnimationFrame(raf)
+      cancelAnimationFrame(scrollFrame)
       editor.off("transaction", onEditorChange)
       window.removeEventListener("resize", measure)
-      container?.removeEventListener("scroll", measure, true)
+      window.removeEventListener("scroll", onScroll, true)
       resizeObserver.disconnect()
     }
   }, [editor, containerRef])
