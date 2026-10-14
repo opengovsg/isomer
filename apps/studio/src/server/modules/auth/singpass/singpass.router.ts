@@ -24,7 +24,6 @@ const singpassErrorCode = (error: unknown) =>
 export const singpassRouter = router({
   login: publicProcedure
     .input(singpassLoginSchema)
-    .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { landingUrl } }) => {
       // NOTE: The Singpass login flow is not the first login mechanism that the
       // user encounters, as they should have completed the email OTP
@@ -66,7 +65,6 @@ export const singpassRouter = router({
         authorizationUrl = authorization.authorizationUrl
         session = authorization.session
       } catch (error) {
-        if (error instanceof TRPCError) throw error
         ctx.logger.error(
           { singpassError: singpassErrorCode(error) },
           "Singpass authorization request failed",
@@ -121,8 +119,7 @@ export const singpassRouter = router({
 
   callback: publicProcedure
     .input(singpassCallbackSchema)
-    .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
-    .query(async ({ ctx, input: { state, code, iss } }) => {
+    .query(async ({ ctx, input: { state, code } }) => {
       if (!ctx.session.singpass?.sessionState) {
         ctx.logger.warn("No Singpass session state found")
 
@@ -182,11 +179,9 @@ export const singpassRouter = router({
           state: expectedState,
           useFapi: useFapi === true,
           dpopPrivateJwk,
-          iss,
         })
         uuid = result.uuid
       } catch (error) {
-        if (error instanceof TRPCError) throw error
         ctx.logger.error(
           { singpassError: singpassErrorCode(error) },
           "Failed to login to Singpass",

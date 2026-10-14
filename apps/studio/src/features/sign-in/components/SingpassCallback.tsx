@@ -22,14 +22,13 @@ export const SingpassCallback = (): JSX.Element => {
   const utils = trpc.useUtils()
 
   const {
-    query: { code, state, iss },
+    query: { code, state },
   } = router
 
   const [data, dataQuery] = trpc.auth.singpass.callback.useSuspenseQuery(
     {
       code: String(code),
       state: String(state),
-      ...(typeof iss === "string" ? { iss } : {}),
     },
     {
       staleTime: Infinity,

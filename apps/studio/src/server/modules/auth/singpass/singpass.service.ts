@@ -134,7 +134,6 @@ export const getAuthorizationUrl = async ({
       nonce,
       state,
       authentication_context_type: "APP_AUTHENTICATION_DEFAULT",
-      authentication_context_message: "Sign in to Isomer Studio",
     },
   })
   return { authorizationUrl, session }
@@ -147,7 +146,6 @@ interface LoginParams {
   state: string
   useFapi: boolean
   dpopPrivateJwk?: string
-  iss?: string
 }
 
 export const login = async ({
@@ -157,7 +155,6 @@ export const login = async ({
   state,
   useFapi,
   dpopPrivateJwk,
-  iss,
 }: LoginParams) => {
   const client = useFapi ? await getFapiClient() : await getLegacyClient()
   if (useFapi && !dpopPrivateJwk) {
@@ -168,7 +165,6 @@ export const login = async ({
     {
       code,
       state,
-      ...(iss ? { iss } : {}),
     },
     {
       state,

@@ -18,7 +18,6 @@ const parameters = {
   nonce: "nonce",
   state: "state",
   authentication_context_type: "APP_AUTHENTICATION_DEFAULT",
-  authentication_context_message: "Sign in to Isomer Studio",
 }
 
 const clientWith = (pushedAuthorizationRequest: ReturnType<typeof vi.fn>) =>

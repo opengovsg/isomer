@@ -13,20 +13,6 @@ import {
 // async context and the client's HTTP hook copies it onto that request only.
 const dpopProofHeader = new AsyncLocalStorage<string>()
 
-const RETRYABLE_SINGPASS_ERRORS = new Set([
-  "server_error",
-  "upstream_dependency_error",
-  "temporarily_unavailable",
-])
-
-// One attempt plus up to three retries, matching Singpass's retry guidance.
-const MAX_SINGPASS_ATTEMPTS = 4
-
-const sleep = (ms: number) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
-
 export const installDpopHeader = (client: Client): void => {
   client[custom.http_options] = (_url, options) => {
     const proof = dpopProofHeader.getStore()
@@ -153,45 +139,36 @@ export const pushFapiAuthorizationRequest = async ({
     "authorization_endpoint",
   )
   const htu = dpopHtu(parEndpoint)
-  let dpopNonce: string | undefined
 
-  for (let attempt = 0; attempt < MAX_SINGPASS_ATTEMPTS; attempt += 1) {
+  const push = async (nonce?: string) => {
     const proof = await createDpopProof({
       privateKey,
       htm: "POST",
       htu,
-      nonce: dpopNonce,
+      nonce,
     })
-
-    try {
-      const pushed = await dpopProofHeader.run(proof, () =>
-        client.pushedAuthorizationRequest(parameters),
-      )
-      return buildFapiRedirectUrl(
-        authorizationEndpoint,
-        clientId,
-        pushed.request_uri,
-      )
-    } catch (error) {
-      const nonce = readDpopNonce(error)
-      if (singpassErrorCode(error) === "use_dpop_nonce" && nonce) {
-        dpopNonce = nonce
-        continue
-      }
-
-      const code = singpassErrorCode(error)
-      if (
-        code &&
-        RETRYABLE_SINGPASS_ERRORS.has(code) &&
-        attempt < MAX_SINGPASS_ATTEMPTS - 1
-      ) {
-        await sleep(200 * 2 ** attempt)
-        continue
-      }
-
-      throw error
-    }
+    return dpopProofHeader.run(proof, () =>
+      client.pushedAuthorizationRequest(parameters),
+    )
   }
 
-  throw new Error("Singpass authorization request failed")
+  try {
+    const pushed = await push()
+    return buildFapiRedirectUrl(
+      authorizationEndpoint,
+      clientId,
+      pushed.request_uri,
+    )
+  } catch (error) {
+    const nonce = readDpopNonce(error)
+    if (singpassErrorCode(error) !== "use_dpop_nonce" || !nonce) {
+      throw error
+    }
+    const pushed = await push(nonce)
+    return buildFapiRedirectUrl(
+      authorizationEndpoint,
+      clientId,
+      pushed.request_uri,
+    )
+  }
 }
