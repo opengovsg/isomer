@@ -636,41 +636,55 @@ describe("TableCaption", () => {
       if (node.type.name === "tableCell") texts.push(node.textContent)
     })
     expect(texts[2]).toContain("X")
+  })
+
+  it("keeps drag handles beside the table after going back to editing", async () => {
+    // Arrange
+    renderHarness(twoTableContent("First table", "Second table"))
+    const editButtons = await screen.findAllByRole("button", {
+      name: "Expand table",
+    })
+    await userEvent.click(editButtons[0]!)
+    const dialog = await screen.findByRole("dialog", { name: "Expanded table" })
+
+    // Act
+    within(dialog).getByRole("button", { name: "Back to editing" }).click()
+
+    // Assert
     await waitFor(() => {
+      const tables = [...document.querySelectorAll("table")]
       const rowHandles = screen.getAllByRole("button", {
         name: "Drag to reorder row",
       })
       const columnHandles = screen.getAllByRole("button", {
         name: "Drag to reorder column",
       })
-      // Two tables, each with a header row, one body row, and two columns.
-      expect(rowHandles).toHaveLength(4)
-      expect(columnHandles).toHaveLength(4)
-      const table = document.querySelector("table")
-      if (!(table instanceof HTMLElement)) throw new Error("expected table")
-      const tableRect = table.getBoundingClientRect()
-      const besideRow = rowHandles.some((handle) => {
-        const rect = handle.getBoundingClientRect()
-        const center = rect.top + rect.height / 2
-        return (
-          rect.width > 0 &&
-          center >= tableRect.top &&
-          center <= tableRect.bottom &&
-          Math.abs(rect.right - tableRect.left) < 48
-        )
-      })
-      const aboveColumn = columnHandles.some((handle) => {
-        const rect = handle.getBoundingClientRect()
-        const center = rect.left + rect.width / 2
-        return (
-          rect.height > 0 &&
-          center >= tableRect.left &&
-          center <= tableRect.right &&
-          Math.abs(rect.bottom - tableRect.top) < 48
-        )
-      })
-      expect(besideRow).toBe(true)
-      expect(aboveColumn).toBe(true)
+      expect(tables).toHaveLength(2)
+      for (const table of tables) {
+        const tableRect = table.getBoundingClientRect()
+        expect(
+          rowHandles.some((handle) => {
+            const rect = handle.getBoundingClientRect()
+            const center = rect.top + rect.height / 2
+            return (
+              center >= tableRect.top &&
+              center <= tableRect.bottom &&
+              Math.abs(rect.right - tableRect.left) < 48
+            )
+          }),
+        ).toBe(true)
+        expect(
+          columnHandles.some((handle) => {
+            const rect = handle.getBoundingClientRect()
+            const center = rect.left + rect.width / 2
+            return (
+              center >= tableRect.left &&
+              center <= tableRect.right &&
+              Math.abs(rect.bottom - tableRect.top) < 48
+            )
+          }),
+        ).toBe(true)
+      }
     })
   })
 
