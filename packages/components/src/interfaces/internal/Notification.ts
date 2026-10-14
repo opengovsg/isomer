@@ -17,7 +17,11 @@ const NotificationCustomSchema = Type.Object(
     ),
     title: IsomerString({
       title: "Notification title",
+      minLength: 1,
       maxLength: 150,
+      errorMessage: {
+        minLength: "Enter a notification title",
+      },
     }),
     content: Type.Optional(
       Type.Union([Type.Array(TextSchema), SimpleProseSchema], {
