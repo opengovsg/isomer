@@ -262,6 +262,7 @@ test file only constructs the PO and asserts outcomes.
 |------|-----|
 | `async ({ page })` fixture destructuring | Playwright test signature |
 | `new SomePO(page)` | PO construction |
+| `page.clock.install` before navigation | See [Reducing flakiness](#reducing-flakiness). Must run while the page is still `about:blank`, so it stays in the test ahead of `goto` |
 | Documented infra exceptions in this file | e.g. `setOfflineGrowthBookFeature(page, key, value)` in `fixtures/network.ts` after the page has loaded |
 
 Everything else — `page.goto`, `page.getByRole`, `page.getByLabel`, `page.locator`,
@@ -287,6 +288,17 @@ crosses surfaces/modals).
 - `logoUploadInput()` — scopes past the separate favicon control
 - GrowthBook-gated UI: load the page, then `setOfflineGrowthBookFeature(page, key, value)` from `fixtures/network.ts`. The test build's GrowthBook client is offline, so a CDN route stub does not change the flag.
 
+## Reducing flakiness
+
+Install `page.clock` before any navigation. `clock.install` injects `__pwClock` into frames that are idle, then calls `controller.install` on every frame. A frame that is mid-navigation is skipped for the inject and then throws `Cannot read properties of undefined (reading 'controller')` once that document commits. Call it while the page is still `about:blank`, before `goto` or `openSeededPageEditor`. The init script replays the installed time on the next document, so the loaded page still sees it.
+
+```ts
+await page.clock.install({ time: SCHEDULE_TEST_FROZEN_TIME })
+const editor = await openSeededPageEditor(page, siteId, seededPage.id)
+```
+
+`resource/schedule-publish.test.ts` is the reference. Do not move the call into a page object that runs after `goto`.
+
 ## How to detect violations
 
 - Asserting "Sample Site", hardcoding a site ID, or calling `teardownE2ESite`/`getSeedSiteId()` (neither exists anymore) → use `provisionE2ESite` and assert on the returned site
@@ -297,3 +309,4 @@ crosses surfaces/modals).
 - Inline `db.selectFrom(...)` (or Prisma query) in a test file feeding an `expect()` → extract the query into `fixtures/<entity>.db.ts`
 - Raw `page.waitForURL(...)` for dashboard navigation → use `DashboardPO.expectOnFolder` / `expectOnCollection` / `expectOnPageEditor`
 - Any `page.<method>(` in `*.test.ts` outside the allowlist above → move to the relevant `*.po.ts` or `helpers.ts`
+- `page.clock.install` (or `setFixedTime`) after `goto` / `openSeededPageEditor` → move it to before that navigation
