@@ -41,10 +41,14 @@ export const UnsupportedBrowserBanner = ({
   }
 
   return (
-    <div className="bg-[#FFCC15]">
+    <div
+      className="bg-[#FFCC15]"
+      role="region"
+      aria-label="Unsupported browser notice"
+    >
       <div className="relative mx-auto flex max-w-screen-xl flex-row gap-4 px-6 py-4 text-base-content md:px-10 md:py-4">
         <div className="flex flex-row gap-2">
-          <BiInfoCircle className="mt-[3px] h-4 w-4 shrink-0" />
+          <BiInfoCircle className="mt-[3px] h-4 w-4 shrink-0" aria-hidden />
           <div className="flex flex-1 flex-col gap-0.5">
             <div className="base-content-default prose-headline-base-medium [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0">
               This browser is not supported.
@@ -55,6 +59,7 @@ export const UnsupportedBrowserBanner = ({
               <a
                 href={supportedBrowserDocumentLink}
                 target="_blank"
+                rel="noopener noreferrer"
                 className="underline"
               >
                 View our supported browsers
