@@ -23,7 +23,7 @@ export const AntiScamDisclaimerBanner = () => {
             phone call.
           </p>
           <p className="prose-headline-lg-regular m-0 text-base-content-medium">
-            If you&apos;re unsure if something is a scam, call{" "}
+            If you're unsure if something is a scam, call{" "}
             <Link
               href="https://www.scamshield.gov.sg"
               isExternal
@@ -32,8 +32,8 @@ export const AntiScamDisclaimerBanner = () => {
               className="text-link underline underline-offset-4 visited:text-link-visited hover:text-link-hover"
             >
               ScamShield
-            </Link>
-            {" at 1799."}
+            </Link>{" "}
+            at 1799.
           </p>
         </div>
       </div>
