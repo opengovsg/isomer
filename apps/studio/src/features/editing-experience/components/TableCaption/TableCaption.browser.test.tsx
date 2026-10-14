@@ -37,12 +37,10 @@ const Harness = ({
   initialContent,
   onEditorReady,
   pageAction,
-  scrollParent,
 }: {
   initialContent: JSONContent
   onEditorReady?: (editor: TiptapEditor) => void
   pageAction?: string
-  scrollParent?: boolean
 }) => {
   const [content, setContent] = useState<JSONContent | undefined>(
     initialContent,
@@ -53,34 +51,20 @@ const Harness = ({
 
   if (!editor) return null
 
-  const editorNode = (
-    <Editor
-      editor={editor}
-      menubar={() => <button type="button">Page toolbar</button>}
-    />
-  )
-
   return (
     <>
       {pageAction ? <button type="button">{pageAction}</button> : null}
-      {scrollParent ? (
-        <div
-          data-editor-scroll=""
-          style={{ height: "240px", overflow: "auto" }}
-        >
-          {editorNode}
-          <div style={{ height: "120vh" }} />
-        </div>
-      ) : (
-        editorNode
-      )}
+      <Editor
+        editor={editor}
+        menubar={() => <button type="button">Page toolbar</button>}
+      />
     </>
   )
 }
 
 const renderHarness = (
   initialContent: JSONContent,
-  options?: { pageAction?: string; scrollParent?: boolean },
+  options?: { pageAction?: string },
 ) => {
   let editor: TiptapEditor | undefined
   const utils = render(
@@ -91,7 +75,6 @@ const renderHarness = (
           editor = e
         }}
         pageAction={options?.pageAction}
-        scrollParent={options?.scrollParent}
       />
     </ThemeProvider>,
   )
@@ -653,109 +636,6 @@ describe("TableCaption", () => {
       if (node.type.name === "tableCell") texts.push(node.textContent)
     })
     expect(texts[2]).toContain("X")
-  })
-
-  it("does not scroll the page behind the expanded table", async () => {
-    // Arrange
-    renderHarness(twoTableContent("First table", "Second table"), {
-      scrollParent: true,
-    })
-    const editButtons = await screen.findAllByRole("button", {
-      name: "Expand table",
-    })
-    await userEvent.click(editButtons[0]!)
-    const back = await screen.findByRole("button", { name: "Back to editing" })
-    const scroller = document.querySelector("[data-editor-scroll]")
-    if (!(scroller instanceof HTMLElement)) throw new Error("expected scroller")
-    const outside = scroller.lastElementChild
-    if (!(outside instanceof HTMLElement)) throw new Error("expected spacer")
-
-    // Act
-    const onHeader = new WheelEvent("wheel", {
-      deltaY: 120,
-      bubbles: true,
-      cancelable: true,
-    })
-    const onPage = new WheelEvent("wheel", {
-      deltaY: 120,
-      bubbles: true,
-      cancelable: true,
-    })
-    back.dispatchEvent(onHeader)
-    outside.dispatchEvent(onPage)
-
-    // Assert
-    expect(onHeader.defaultPrevented).toBe(true)
-    expect(onPage.defaultPrevented).toBe(true)
-  })
-
-  it("hides page controls from assistive technology while the table is expanded", async () => {
-    // Arrange
-    renderHarness(twoTableContent("First table", "Second table"), {
-      pageAction: "Save page",
-    })
-    const save = [...document.querySelectorAll("button")].find(
-      (button) => button.textContent === "Save page",
-    )
-    if (!save) throw new Error("expected Save page")
-    const editButtons = await screen.findAllByRole("button", {
-      name: "Expand table",
-    })
-
-    // Act
-    await userEvent.click(editButtons[0]!)
-
-    // Assert
-    await waitFor(() => {
-      expect(save.getAttribute("aria-hidden")).toBe("true")
-    })
-  })
-
-  it("keeps table settings visible to assistive technology over the expanded table", async () => {
-    // Arrange
-    renderHarness(twoTableContent("First table", "Second table"))
-    const editButtons = await screen.findAllByRole("button", {
-      name: "Expand table",
-    })
-    await userEvent.click(editButtons[0]!)
-    const dialog = await screen.findByRole("dialog", { name: "Expanded table" })
-
-    // Act
-    within(dialog).getByRole("button", { name: "Edit table caption" }).click()
-
-    // Assert
-    const settings = await screen.findByRole("dialog", {
-      name: "Table settings",
-    })
-    expect(settings.getAttribute("aria-hidden")).not.toBe("true")
-    expect(settings.closest("[aria-hidden='true']")).toBeNull()
-  })
-
-  it("restores page controls to assistive technology after going back to editing", async () => {
-    // Arrange
-    renderHarness(twoTableContent("First table", "Second table"), {
-      pageAction: "Save page",
-    })
-    const save = [...document.querySelectorAll("button")].find(
-      (button) => button.textContent === "Save page",
-    )
-    if (!save) throw new Error("expected Save page")
-    const editButtons = await screen.findAllByRole("button", {
-      name: "Expand table",
-    })
-    await userEvent.click(editButtons[0]!)
-    const dialog = await screen.findByRole("dialog", { name: "Expanded table" })
-    await waitFor(() => {
-      expect(save.getAttribute("aria-hidden")).toBe("true")
-    })
-
-    // Act
-    within(dialog).getByRole("button", { name: "Back to editing" }).click()
-
-    // Assert
-    await waitFor(() => {
-      expect(save.getAttribute("aria-hidden")).not.toBe("true")
-    })
   })
 
   it("keeps drag handles beside the table after going back to editing", async () => {
