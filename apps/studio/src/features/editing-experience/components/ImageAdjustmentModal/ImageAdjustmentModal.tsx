@@ -316,6 +316,7 @@ export const ImageAdjustmentModal = ({
 
       <Modal
         size={{ base: "full", md: "6xl" }}
+        isCentered
         isOpen={isOpen}
         onClose={handleClose}
         closeOnOverlayClick={!isSaving}
@@ -358,19 +359,22 @@ export const ImageAdjustmentModal = ({
               h={{ md: "100%" }}
               minH={0}
             >
-              {/* Crop column: canvas + a toolbar (aspect ratio | rotate/flip).
-                  Scrolls on its own only if it can't fit the fixed height. */}
-              <Box
+              {/* Crop column: the canvas flex-fills the fixed body height and
+                  the toolbar is pinned below it, so the editor always fits the
+                  modal without scrolling — regardless of the image's shape (the
+                  image is letterboxed inside the fixed canvas). */}
+              <Flex
+                direction="column"
+                gap="1.125rem"
                 flex="1"
                 minW={0}
                 w="100%"
                 minH={0}
-                overflowY={{ md: "auto" }}
               >
-                <VStack align="stretch" spacing="1.125rem">
-                  {/* Crop + focal point: one shared image canvas, since focal
-                      is only meaningful relative to the crop. */}
-                  {(config.cropMode !== "none" || focalEnabled) && (
+                {/* Crop + focal point: one shared image canvas, since focal
+                    is only meaningful relative to the crop. */}
+                {(config.cropMode !== "none" || focalEnabled) && (
+                  <Box flex="1" minH={0}>
                     <CropFocalControl
                       src={originalSrc}
                       crop={draft?.crop}
@@ -390,47 +394,49 @@ export const ImageAdjustmentModal = ({
                       onImageAspectChange={setImageAspect}
                       onNaturalSizeChange={setNaturalSize}
                     />
-                  )}
+                  </Box>
+                )}
 
-                  <Flex
-                    justify="space-between"
-                    align="center"
-                    wrap="wrap"
-                    gap="1rem"
+                <Flex
+                  justify="space-between"
+                  align="center"
+                  wrap="wrap"
+                  gap="1rem"
+                  w="100%"
+                  flexShrink={0}
+                >
+                  <AspectRatioControl
+                    cropMode={config.cropMode}
+                    lockedRatios={config.lockedRatios}
+                  />
+                  {/* Rotate & flip — applies to every adjustable component. */}
+                  <TransformControl
+                    flipH={draft?.flipH ?? false}
+                    flipV={draft?.flipV ?? false}
+                    rotateDisabled={isLockedRatioAspectPending}
+                    onRotate={handleRotate}
+                    onFlip={handleFlip}
+                  />
+                </Flex>
+
+                {/* Preserve-only note */}
+                {config.cropMode === "none" && (
+                  <Box
                     w="100%"
+                    flexShrink={0}
+                    p="1rem"
+                    bgColor="utility.ui"
+                    borderRadius="0.25rem"
+                    borderWidth="1px"
+                    borderColor="base.divider.medium"
                   >
-                    <AspectRatioControl
-                      cropMode={config.cropMode}
-                      lockedRatios={config.lockedRatios}
-                    />
-                    {/* Rotate & flip — applies to every adjustable component. */}
-                    <TransformControl
-                      flipH={draft?.flipH ?? false}
-                      flipV={draft?.flipV ?? false}
-                      rotateDisabled={isLockedRatioAspectPending}
-                      onRotate={handleRotate}
-                      onFlip={handleFlip}
-                    />
-                  </Flex>
-
-                  {/* Preserve-only note */}
-                  {config.cropMode === "none" && (
-                    <Box
-                      w="100%"
-                      p="1rem"
-                      bgColor="utility.ui"
-                      borderRadius="0.25rem"
-                      borderWidth="1px"
-                      borderColor="base.divider.medium"
-                    >
-                      <Text textStyle="body-2">
-                        This image cannot be cropped. Only focal point and
-                        rotation adjustments are available.
-                      </Text>
-                    </Box>
-                  )}
-                </VStack>
-              </Box>
+                    <Text textStyle="body-2">
+                      This image cannot be cropped. Only focal point and
+                      rotation adjustments are available.
+                    </Text>
+                  </Box>
+                )}
+              </Flex>
 
               {/* Preview rail — scrolls within the fixed modal height, so a
                   taller/shorter preview (from a different crop) never resizes
