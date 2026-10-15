@@ -715,5 +715,15 @@ export const sitesHandlers = {
         }
       })
     },
+
+    antiScamDisclaimer: () => {
+      return trpcMsw.site.getNotification.query(() => {
+        return {
+          notification: {
+            type: "antiscam",
+          },
+        }
+      })
+    },
   },
 }

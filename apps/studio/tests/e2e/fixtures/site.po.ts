@@ -132,6 +132,19 @@ export class SitePO {
     return this.page.getByLabel("Notification title")
   }
 
+  /** Type radio on the notification settings form ("Custom notification" | "Anti-scam disclaimer"). */
+  notificationTypeOption(name: "Custom notification" | "Anti-scam disclaimer") {
+    return this.page.getByRole("radio", { name })
+  }
+
+  async selectNotificationType(
+    name: "Custom notification" | "Anti-scam disclaimer",
+  ) {
+    // ODS Radio hides the input (pointer-events: none); force the click
+    // through to it, same as other visually-hidden radios in this suite.
+    await this.notificationTypeOption(name).click({ force: true })
+  }
+
   /** Tiptap simple-prose content editor toolbar buttons on the notification settings page. */
   notificationContentToolbarButton(
     name: "Bold" | "Italicise" | "Underline" | "Link",
@@ -704,6 +717,10 @@ export class SitePO {
 
   async expectNotificationTitleFieldVisible() {
     await this.notificationTitleField().waitFor({ state: "visible" })
+  }
+
+  async expectNotificationTitleFieldHidden() {
+    await this.notificationTitleField().waitFor({ state: "hidden" })
   }
 
   /** Click the settings Publish button. */
