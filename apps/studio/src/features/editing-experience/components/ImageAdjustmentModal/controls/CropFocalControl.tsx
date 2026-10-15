@@ -345,6 +345,11 @@ export const CropFocalControl = ({
           left: "50%",
           width: `${boxSize.height}px`,
           height: `${boxSize.width}px`,
+          // The swapped width can exceed the box width; without this the global
+          // `img { max-width: 100% }` would cap it and desync the displayed image
+          // from the crop overlay (which uses the uncapped, swapped bounds).
+          maxWidth: "none",
+          maxHeight: "none",
           objectFit: "contain",
           transform: `translate(-50%, -50%) scale(${flipX}, ${flipY}) rotate(${rotate}deg)`,
           transformOrigin: "center",

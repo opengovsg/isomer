@@ -55,6 +55,11 @@ interface AdjustmentPreviewProps {
   // the real component would render the whole block/all cards instead of the
   // single card being edited.
   skipRealComponentPreview?: boolean
+  // Stack every preview tile at full rail width (one per row) instead of the
+  // default big-tile + two-up layout. For components whose states are all small,
+  // equal-ratio masks (e.g. Blockquote's circle + square) where a half-width
+  // tile would be too small to read.
+  stackPreviews?: boolean
   // Draw the component's scrim overlay in the framed-image approximation. Backs
   // the modal's "Show hero text over the image" toggle — a preview-only aid, so
   // it gates only the overlay here (the real-component path renders its own
@@ -85,6 +90,7 @@ export const AdjustmentPreview = ({
   block,
   imageFieldName,
   skipRealComponentPreview,
+  stackPreviews,
   showHeroText = true,
   objectFit = "cover",
   siteId,
@@ -383,18 +389,28 @@ export const AdjustmentPreview = ({
   }
 
   // The widest state fills the rail on its own row; the rest sit two-up below.
+  // A state with no explicit viewportWidth renders at PreviewFrame's 1024px
+  // default, so rank it as such (not 0) — otherwise a Mobile-only-375 set like
+  // InfoCards would wrongly promote Mobile over the (wider) desktop states.
   const bigState = [...previewStates].sort(
-    (a, b) => (b.viewportWidth ?? 0) - (a.viewportWidth ?? 0),
+    (a, b) => (b.viewportWidth ?? 1024) - (a.viewportWidth ?? 1024),
   )[0]
   const restStates = previewStates.filter((s) => s.id !== bigState?.id)
 
   return (
     <VStack ref={railRef} align="stretch" spacing="1rem" w="100%">
-      {bigState && renderTile(bigState, railWidth)}
-      {restStates.length > 0 && (
-        <Flex gap={`${TILE_GAP_PX}px`} wrap="wrap" align="flex-start">
-          {restStates.map((state) => renderTile(state, smallTileWidth))}
-        </Flex>
+      {stackPreviews ? (
+        // Every tile full-width, one per row (see the prop's doc).
+        previewStates.map((state) => renderTile(state, railWidth))
+      ) : (
+        <>
+          {bigState && renderTile(bigState, railWidth)}
+          {restStates.length > 0 && (
+            <Flex gap={`${TILE_GAP_PX}px`} wrap="wrap" align="flex-start">
+              {restStates.map((state) => renderTile(state, smallTileWidth))}
+            </Flex>
+          )}
+        </>
       )}
     </VStack>
   )

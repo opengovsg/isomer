@@ -386,6 +386,9 @@ export const ImageAdjustmentModal = ({
                 w="100%"
                 minH={{ md: 0 }}
                 overflowY={{ md: "auto" }}
+                // Reserve the scrollbar gutter so toggling it never changes the
+                // content width (prevents a resize feedback loop with the tiles).
+                sx={{ scrollbarGutter: "stable" }}
               >
                 {/* Crop + focal point: one shared image canvas, since focal
                     is only meaningful relative to the crop. */}
@@ -468,6 +471,10 @@ export const ImageAdjustmentModal = ({
                 flexShrink={0}
                 minH={0}
                 overflowY={{ md: "auto" }}
+                // Reserve the scrollbar gutter so toggling it never changes the
+                // rail's content width — otherwise tile heights (derived from
+                // that width) would oscillate and loop the ResizeObserver.
+                sx={{ scrollbarGutter: "stable" }}
               >
                 {/* Pinned so it stays visible while the tiles scroll. Opaque bg
                     + zIndex so scrolling previews pass behind it. */}
@@ -490,6 +497,7 @@ export const ImageAdjustmentModal = ({
                   block={block}
                   imageFieldName={imageFieldName}
                   skipRealComponentPreview={config.skipRealComponentPreview}
+                  stackPreviews={config.stackPreviews}
                   showHeroText={showHeroText}
                   objectFit={previewObjectFit}
                   siteId={siteId}
