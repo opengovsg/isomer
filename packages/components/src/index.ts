@@ -20,6 +20,7 @@ export {
   TRIMMED_NON_EMPTY_STRING_REGEX,
   TRIMMED_STRING_OR_EMPTY_REGEX,
   NO_STYLIZED_UNICODE_REGEX,
+  isSiteNotificationActive,
   createChildrenPagesComparator,
   formatBytes,
   DGS_REQUEST_MAX_BYTES,

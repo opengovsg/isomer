@@ -132,6 +132,19 @@ export class SitePO {
     return this.page.getByLabel("Notification title")
   }
 
+  /** Type radio on the notification settings form ("Custom notification" | "Anti-scam disclaimer"). */
+  notificationTypeOption(name: "Custom notification" | "Anti-scam disclaimer") {
+    return this.page.getByRole("radio", { name })
+  }
+
+  async selectNotificationType(
+    name: "Custom notification" | "Anti-scam disclaimer",
+  ) {
+    // ODS Radio hides the input (pointer-events: none); force the click
+    // through to it, same as other visually-hidden radios in this suite.
+    await this.notificationTypeOption(name).click({ force: true })
+  }
+
   /** Tiptap simple-prose content editor toolbar buttons on the notification settings page. */
   notificationContentToolbarButton(
     name: "Bold" | "Italicise" | "Underline" | "Link",
@@ -383,6 +396,13 @@ export class SitePO {
 
   navbarLinksCountText() {
     return this.page.getByText(/\d+\/8 first-level links added/)
+  }
+
+  /** Warning Infobox when more than 8 first-level navbar links exist (JsonFormsNavbarControl). */
+  navbarFirstLevelOverLimitWarning() {
+    return this.page.getByText(
+      "You can only have up to 8 first-level links. Move the extra links under an existing first-level link, or remove them, before publishing.",
+    )
   }
 
   navbarCustomiseTab() {
@@ -697,6 +717,10 @@ export class SitePO {
 
   async expectNotificationTitleFieldVisible() {
     await this.notificationTitleField().waitFor({ state: "visible" })
+  }
+
+  async expectNotificationTitleFieldHidden() {
+    await this.notificationTitleField().waitFor({ state: "hidden" })
   }
 
   /** Click the settings Publish button. */

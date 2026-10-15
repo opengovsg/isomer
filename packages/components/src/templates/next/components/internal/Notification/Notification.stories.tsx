@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { NotificationProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import { Notification } from "./Notification"
 
 const meta: Meta<NotificationProps> = {
@@ -125,5 +127,15 @@ export const LongContent: Story = {
         },
       ],
     },
+  },
+}
+
+export const Antiscam: Story = {
+  args: {
+    type: "antiscam",
+  },
+  parameters: {
+    layout: "fullscreen",
+    chromatic: withChromaticModes(["desktop", "tablet", "mobile"]),
   },
 }
