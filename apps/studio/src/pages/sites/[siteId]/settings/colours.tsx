@@ -19,11 +19,10 @@ import {
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { EditSettingsPreview } from "~/features/editing-experience/components/preview/EditSettingsPreview"
-import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
+import { UnsavedSettingsGuard } from "~/features/editing-experience/components/UnsavedSettingsGuard"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
-import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { siteThemeValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
@@ -42,8 +41,6 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
     siteId,
   })
 
-  const [nextUrl, setNextUrl] = useState("")
-  const isOpen = !!nextUrl
   const [siteTheme, setSiteTheme] = useState<SiteTheme | undefined>(
     theme ?? undefined,
   )
@@ -68,8 +65,6 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
     },
   })
 
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
-
   const onSubmit = () => {
     if (!siteTheme) return
 
@@ -78,11 +73,7 @@ const ColoursSettingsPage: NextPageWithLayout = () => {
 
   return (
     <ErrorProvider>
-      <UnsavedSettingModal
-        isOpen={isOpen}
-        onClose={() => setNextUrl("")}
-        nextUrl={nextUrl}
-      />
+      <UnsavedSettingsGuard isDirty={isDirty} />
       <SettingsGrid>
         <SettingsEditorGridItem as={SettingsEditingLayout}>
           <SettingsHeader

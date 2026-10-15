@@ -13,11 +13,10 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
-import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
+import { UnsavedSettingsGuard } from "~/features/editing-experience/components/UnsavedSettingsGuard"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { EditFooterPreview } from "~/features/settings/EditFooterPreview"
 import { FooterEditor } from "~/features/settings/FooterEditor"
-import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
@@ -28,8 +27,6 @@ const FooterSettingsPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteSchema)
   const utils = trpc.useUtils()
   const toast = useToast()
-  const [nextUrl, setNextUrl] = useState("")
-
   const [{ content }] = trpc.site.getFooter.useSuspenseQuery({
     id: Number(siteId),
   })
@@ -56,7 +53,6 @@ const FooterSettingsPage: NextPageWithLayout = () => {
   const [previewFooterState, setPreviewFooterState] = useState<
     FooterSchemaType | undefined
   >(content)
-  const isOpen = !!nextUrl
   const isDirty = !isEqual(previewFooterState, content)
 
   const handleSaveFooter = (data?: FooterSchemaType) => {
@@ -64,15 +60,9 @@ const FooterSettingsPage: NextPageWithLayout = () => {
     saveFooter({ siteId: Number(siteId), footer: JSON.stringify(data) })
   }
 
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
-
   return (
     <>
-      <UnsavedSettingModal
-        isOpen={isOpen}
-        onClose={() => setNextUrl("")}
-        nextUrl={nextUrl}
-      />
+      <UnsavedSettingsGuard isDirty={isDirty} />
 
       <SettingsGrid>
         <SettingsEditorGridItem>

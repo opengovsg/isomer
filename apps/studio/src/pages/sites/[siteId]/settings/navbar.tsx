@@ -14,11 +14,10 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
-import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
+import { UnsavedSettingsGuard } from "~/features/editing-experience/components/UnsavedSettingsGuard"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { EditNavbarPreview } from "~/features/settings/EditNavbarPreview"
 import { NavbarEditor } from "~/features/settings/NavbarEditor"
-import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
@@ -29,8 +28,6 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
 
   const utils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
-  const [nextUrl, setNextUrl] = useState("")
-
   const [{ content }] = trpc.site.getNavbar.useSuspenseQuery({
     id: Number(siteId),
   })
@@ -55,7 +52,6 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
   const [previewNavbarState, setPreviewNavbarState] = useState<
     NavbarSchemaType | undefined
   >(content)
-  const isOpen = !!nextUrl
   const isDirty = !isEqual(previewNavbarState, content)
 
   const handleSaveNavbar = (data: NavbarSchemaType | undefined) => {
@@ -63,15 +59,9 @@ const NavbarSettingsPage: NextPageWithLayout = () => {
     saveNavbar({ siteId: Number(siteId), navbar: JSON.stringify(data) })
   }
 
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
-
   return (
     <>
-      <UnsavedSettingModal
-        isOpen={isOpen}
-        onClose={() => setNextUrl("")}
-        nextUrl={nextUrl}
-      />
+      <UnsavedSettingsGuard isDirty={isDirty} />
 
       <SettingsGrid>
         <SettingsEditorGridItem h="full">

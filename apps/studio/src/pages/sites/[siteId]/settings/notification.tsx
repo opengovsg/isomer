@@ -23,11 +23,10 @@ import {
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { EditSettingsPreview } from "~/features/editing-experience/components/preview/EditSettingsPreview"
-import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
+import { UnsavedSettingsGuard } from "~/features/editing-experience/components/UnsavedSettingsGuard"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout"
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
-import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { notificationValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
@@ -72,12 +71,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
     previousNotification.notification?.title ? previousNotification : {},
   )
 
-  const [nextUrl, setNextUrl] = useState("")
-  const isOpen = !!nextUrl
-
   const isDirty = !isEqual(state, previousNotification)
-
-  useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
 
   const onSubmit = () =>
     notificationMutation.mutate({
@@ -87,11 +81,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
 
   return (
     <ErrorProvider>
-      <UnsavedSettingModal
-        isOpen={isOpen}
-        onClose={() => setNextUrl("")}
-        nextUrl={nextUrl}
-      />
+      <UnsavedSettingsGuard isDirty={isDirty} />
       <SettingsGrid>
         <SettingsEditorGridItem as={SettingsEditingLayout}>
           <SettingsHeader
