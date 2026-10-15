@@ -324,9 +324,11 @@ const IMAGE_CONFIG: AdjustmentConfig = {
   componentType: "image",
   cropMode: "custom",
   focalEnabled: false,
-  // Fills the ~744px content column at "default" size on desktop; round up to a
-  // conservative floor so a sharp image near that width doesn't false-warn.
-  maxRenderedWidthPx: 768,
+  // Widest the native image renders: the content column is full-width (col-span-12)
+  // just below the `lg` breakpoint, ~943px at a 1023px viewport (above `lg` it
+  // narrows to col-span-9). Round up to 960 so a sharp image at that width doesn't
+  // false-warn while genuinely soft crops below it still do.
+  maxRenderedWidthPx: 960,
   previewStates: [
     {
       id: "default",
@@ -353,11 +355,13 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
   componentType: "imagegallery",
   cropMode: "custom",
   focalEnabled: false,
-  // Main slideshow spans the full content column (~744px); round up as a
-  // conservative floor. No height floor: object-contain letterboxes the short
-  // axis without upscaling, so the common landscape image must not false-warn
-  // on height.
-  maxRenderedWidthPx: 768,
+  // Main slideshow: full content column wide (~943px just below `lg`, round up to
+  // 960) and a fixed 28.5rem = 456px tall, object-contain. Both axes are needed
+  // because contain only upscales when the crop falls short on BOTH — so a wide
+  // landscape or a tall portrait stays sharp and doesn't false-warn, while a
+  // genuinely small crop still does (see computeLowResWarning).
+  maxRenderedWidthPx: 960,
+  maxRenderedHeightPx: 456,
   previewObjectFitFor: () => "contain",
   skipRealComponentPreview: true,
   // object-contain shows the whole image regardless of frame shape, so one

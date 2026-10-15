@@ -144,10 +144,14 @@ export const ImageAdjustmentModal = ({
         rotate: draft?.rotate,
         lockedRatio,
         maxRenderedWidthPx: config.maxRenderedWidthPx,
+        maxRenderedHeightPx: config.maxRenderedHeightPx,
+        objectFit: previewObjectFit,
       }),
     [
       naturalSize,
       config.maxRenderedWidthPx,
+      config.maxRenderedHeightPx,
+      previewObjectFit,
       draft?.crop,
       draft?.rotate,
       lockedRatio,
@@ -509,9 +513,13 @@ export const ImageAdjustmentModal = ({
                   <Infobox variant="warning" size="sm">
                     <Text textStyle="body-2">
                       This image may look blurry here. The area you've kept is
-                      about {lowResWarning.effectiveWidth}px wide, but it can
-                      display up to {lowResWarning.targetWidth}px wide. Use a
-                      larger image, or keep a wider area in the crop.
+                      about {lowResWarning.effectivePx}px{" "}
+                      {lowResWarning.dimension === "width" ? "wide" : "tall"},
+                      but it can display up to {lowResWarning.targetPx}px{" "}
+                      {lowResWarning.dimension === "width" ? "wide" : "tall"}.
+                      Use a larger image, or keep a{" "}
+                      {lowResWarning.dimension === "width" ? "wider" : "taller"}{" "}
+                      area in the crop.
                     </Text>
                   </Infobox>
                 )}
