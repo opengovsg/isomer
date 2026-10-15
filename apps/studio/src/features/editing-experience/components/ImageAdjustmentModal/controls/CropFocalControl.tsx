@@ -368,14 +368,14 @@ export const CropFocalControl = ({
       position="relative"
       w="100%"
       h="100%"
-      minH="14rem"
       borderRadius="0.25rem"
       overflow="hidden"
-      // Fixed canvas (Figma): the image is letterboxed inside via object-contain,
-      // and all crop/focal math maps through `imageBounds`, so the canvas size is
-      // independent of the image's aspect — a stable editor height that fills the
-      // column without the box growing/shrinking per image. Flat backdrop; the
-      // crop frame + dim-outside overlay make the image bounds clear.
+      // Fills its slot; the parent wrapper owns the sizing (flex-fill on desktop,
+      // a fixed height when stacked). The image is letterboxed inside via
+      // object-contain and all crop/focal math maps through `imageBounds`, so the
+      // canvas size is independent of the image's aspect — a stable editor height,
+      // not one that grows/shrinks per image. Flat backdrop; the crop frame +
+      // dim-outside overlay make the image bounds clear.
       bgColor="#f3f4f6"
     >
       {/* oxlint-disable-next-line @next/next/no-img-element -- needs naturalWidth/Height for the no-letterbox aspect mapping; user image, not an LCP hero */}

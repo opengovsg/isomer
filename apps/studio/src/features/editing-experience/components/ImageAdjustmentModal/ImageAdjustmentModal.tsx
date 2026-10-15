@@ -359,22 +359,30 @@ export const ImageAdjustmentModal = ({
               h={{ md: "100%" }}
               minH={0}
             >
-              {/* Crop column: the canvas flex-fills the fixed body height and
-                  the toolbar is pinned below it, so the editor always fits the
-                  modal without scrolling — regardless of the image's shape (the
-                  image is letterboxed inside the fixed canvas). */}
+              {/* Crop column. On desktop the canvas flex-fills the fixed body
+                  height with the toolbar pinned below, so the editor fits without
+                  scrolling regardless of the image's shape (it's letterboxed
+                  inside a fixed canvas); if the viewport is too short to fit even
+                  the minimum editor, the column scrolls as a fallback. When
+                  stacked (narrow viewport) the canvas takes a fixed height and
+                  the whole body scrolls. */}
               <Flex
                 direction="column"
                 gap="1.125rem"
-                flex="1"
+                flex={{ md: "1" }}
                 minW={0}
                 w="100%"
-                minH={0}
+                minH={{ md: 0 }}
+                overflowY={{ md: "auto" }}
               >
                 {/* Crop + focal point: one shared image canvas, since focal
                     is only meaningful relative to the crop. */}
                 {(config.cropMode !== "none" || focalEnabled) && (
-                  <Box flex="1" minH={0}>
+                  <Box
+                    h={{ base: "18rem", md: "auto" }}
+                    flex={{ md: "1" }}
+                    minH={{ md: "14rem" }}
+                  >
                     <CropFocalControl
                       src={originalSrc}
                       crop={draft?.crop}
