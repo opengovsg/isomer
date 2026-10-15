@@ -1,4 +1,4 @@
-import { NextPreset } from "@opengovsg/isomer-components"
+import { NextPreset } from "@opengovsg/isomer-components/presets"
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -14,11 +14,7 @@ export default {
   // arbitrary-property utilities. "[resource:...]" isn't valid CSS (oxfmt
   // >=0.57.0 rejects it); "[resource:some-resource]" is valid but stray noise.
   blocklist: ["[resource:...]", "[resource:some-resource]"],
-  presets: [
-    //   // Note: This is here temporarily until we can figure out how to load the
-    //   // presets dynamically depending on the template being used.
-    NextPreset,
-  ],
+  presets: [NextPreset],
   theme: {
     extend: {
       colors: {

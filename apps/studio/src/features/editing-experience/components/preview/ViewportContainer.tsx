@@ -87,6 +87,7 @@ export const ViewportContainer = ({
           {...innerContainerProps}
         >
           <PreviewIframe
+            siteId={siteId}
             style={mergedTheme}
             viewport={viewport}
             callback={callback}

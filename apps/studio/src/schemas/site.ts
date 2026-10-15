@@ -6,6 +6,7 @@ import {
   SiteConfigSchema,
   SiteThemeSchema,
 } from "@opengovsg/isomer-components"
+import { getPublishableTheme } from "@opengovsg/isomer-components/themes"
 import { z } from "zod"
 import { ajv } from "~/utils/ajv"
 
@@ -63,7 +64,20 @@ export const setNavbarSchema = z.object({
 // until the proper editing experience is implemented
 export const setSiteConfigByAdminSchema = z.object({
   siteId: z.number().min(1),
-  config: z.string(),
+  config: z.string().superRefine((value, ctx) => {
+    try {
+      const parsed: unknown = JSON.parse(value)
+      if (!parsed || typeof parsed !== "object" || !("theme" in parsed)) {
+        throw new Error("Site config must include a theme")
+      }
+      getPublishableTheme(parsed.theme)
+    } catch (error) {
+      ctx.addIssue({
+        code: "custom",
+        message: error instanceof Error ? error.message : "Invalid site theme",
+      })
+    }
+  }),
   theme: z.string(),
   navbar: z.string(),
   footer: z.string(),

@@ -1,3 +1,5 @@
+export { renderComponent } from "./renderComponent"
+export { renderLayout } from "./renderLayout"
 export {
   RenderEngine,
   renderComponentPreviewText,

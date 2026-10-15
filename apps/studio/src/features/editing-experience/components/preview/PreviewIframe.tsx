@@ -1,12 +1,15 @@
 import type { CSSProperties, PropsWithChildren } from "react"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Flex } from "@chakra-ui/react"
+import { getTheme } from "@opengovsg/isomer-components/themes"
 import { useEffect, useMemo, useRef } from "react"
 import Frame, { useFrame } from "react-frame-component"
+import { trpc } from "~/utils/trpc"
 
 import type { ViewportOptions } from "./IframeToolbar"
 
 interface PreviewIframeProps {
+  siteId: number
   preventPointerEvents?: boolean
   keyForRerender?: string
   style?: CSSProperties
@@ -16,18 +19,16 @@ interface PreviewIframeProps {
 
 export const PreviewIframe = ({
   children,
+  siteId,
   preventPointerEvents,
   keyForRerender,
   style,
   viewport,
   callback,
 }: PropsWithChildren<PreviewIframeProps>): JSX.Element => {
-  const extraProps = preventPointerEvents
-    ? {
-        initialContent: `<!DOCTYPE html><html><head></head><body><div id="frame-root" style="pointer-events: none;"></div></body></html>`,
-        mountTarget: "#frame-root",
-      }
-    : {}
+  const [siteConfig] = trpc.site.getConfig.useSuspenseQuery({ id: siteId })
+  const themeId = getTheme(siteConfig.theme)
+  const initialContent = `<!DOCTYPE html><html data-theme="${themeId}"><head></head><body><div id="frame-root"${preventPointerEvents ? ' style="pointer-events: none;"' : ""}></div></body></html>`
 
   const containerStyles = useMemo(() => {
     if (!viewport)
@@ -71,13 +72,15 @@ export const PreviewIframe = ({
     >
       <Frame
         style={containerStyles}
-        {...extraProps}
+        key={themeId}
+        initialContent={initialContent}
+        mountTarget="#frame-root"
         head={
           // oxlint-disable-next-line @next/next/no-css-tags
           <link
             rel="stylesheet"
             type="text/css"
-            href="/assets/css/preview-tw.css"
+            href={`/assets/css/themes/${themeId}.css`}
           />
         }
       >

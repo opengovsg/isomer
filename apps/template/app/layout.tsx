@@ -2,14 +2,18 @@ import type { Metadata } from "next"
 import type { CSSProperties } from "react"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
-import "@/styles/globals.css"
 import sitemap from "@/sitemap.json"
+import "@/styles/globals.css"
 import {
   getSiteJsonLd,
   type IsomerSitemap,
   RenderApplicationHeadScripts,
   RenderApplicationScripts,
 } from "@opengovsg/isomer-components"
+import {
+  getPublishableTheme,
+  ISOMER_THEMES,
+} from "@opengovsg/isomer-components/themes"
 import { Inter } from "next/font/google"
 import Script from "next/script"
 
@@ -25,6 +29,9 @@ const inter = Inter({
   display: "swap",
   variable: "--font-inter",
 })
+
+const theme = getPublishableTheme(config.site.theme)
+const fontStylesheet = ISOMER_THEMES[theme].fontStylesheet
 
 const jsonLd = getSiteJsonLd({
   site: {
@@ -64,11 +71,12 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html
       lang="en"
-      data-theme={config.site.theme || "isomer-next"}
-      className={inter.variable}
+      data-theme={theme}
+      className={theme === "isomer-next" ? inter.variable : undefined}
       style={localTheme}
     >
       <head>
+        {fontStylesheet && <link rel="stylesheet" href={fontStylesheet} />}
         <RenderApplicationHeadScripts
           site={{
             ...config.site,

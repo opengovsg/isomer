@@ -552,7 +552,7 @@ describe("site.router", async () => {
       },
     )
 
-    it("should update the site config if the user is a site admin", async () => {
+    it("should update the site config while retaining its theme if the user is a site admin", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
@@ -565,7 +565,7 @@ describe("site.router", async () => {
         siteName: MOCK_SITE_NAME,
         logoUrl: MOCK_LOGO_URL,
         url: "https://www.isomer.gov.sg",
-        theme: "isomer-next",
+        theme: "isomer-classic",
         siteId: site.id,
       })
 
@@ -964,7 +964,7 @@ describe("site.router", async () => {
         }),
       )
     })
-    it("should update the site integrations if the user is a site admin", async () => {
+    it("should update the site integrations while retaining its theme if the user is a site admin", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
@@ -974,7 +974,7 @@ describe("site.router", async () => {
 
       // Act
       const result = await caller.updateSiteIntegrations({
-        data: MOCK_INTEGRATION_DATA,
+        data: { ...MOCK_INTEGRATION_DATA, theme: "isomer-classic" },
         siteId: site.id,
       })
 
@@ -2226,7 +2226,7 @@ describe("site.router", async () => {
       // Act
       const result = unauthedCaller.setSiteConfigByAdmin({
         siteId: 1,
-        config: "config",
+        config: JSON.stringify({ theme: "isomer-next" }),
         theme: "theme",
         navbar: "navbar",
         footer: "footer",
@@ -2246,7 +2246,7 @@ describe("site.router", async () => {
       // Act
       const result = caller.setSiteConfigByAdmin({
         siteId: 1,
-        config: "config",
+        config: JSON.stringify({ theme: "isomer-next" }),
         theme: "theme",
         navbar: "navbar",
         footer: "footer",
@@ -2264,7 +2264,10 @@ describe("site.router", async () => {
 
     it("should save changes to the site config, navbar and footer successfully if user is an Isomer Core Admin", async () => {
       // Arrange
-      const NEW_CONFIG = `"config"`
+      const NEW_CONFIG = JSON.stringify({
+        theme: "isomer-next",
+        siteName: "Updated site",
+      })
       const NEW_THEME = `"theme"`
       const NEW_NAVBAR = `"navbar"`
       const NEW_FOOTER = `"footer"`
@@ -2301,7 +2304,7 @@ describe("site.router", async () => {
         .executeTakeFirstOrThrow()
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
 
-      expect(newSite.config).toEqual(NEW_CONFIG.replaceAll(`"`, ""))
+      expect(newSite.config).toEqual(JSON.parse(NEW_CONFIG))
       expect(newSite.theme).toEqual(NEW_THEME.replaceAll(`"`, ""))
       expect(newNavbar.content).toEqual(NEW_NAVBAR.replaceAll(`"`, ""))
       expect(newFooter.content).toEqual(NEW_FOOTER.replaceAll(`"`, ""))
@@ -2325,7 +2328,10 @@ describe("site.router", async () => {
 
     it("should save changes to the site config, navbar and footer successfully if user is an Isomer Migrator Admin", async () => {
       // Arrange
-      const NEW_CONFIG = `"config"`
+      const NEW_CONFIG = JSON.stringify({
+        theme: "isomer-next",
+        siteName: "Updated site",
+      })
       const NEW_THEME = `"theme"`
       const NEW_NAVBAR = `"navbar"`
       const NEW_FOOTER = `"footer"`
@@ -2362,7 +2368,7 @@ describe("site.router", async () => {
         .executeTakeFirstOrThrow()
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
 
-      expect(newSite.config).toEqual(NEW_CONFIG.replaceAll(`"`, ""))
+      expect(newSite.config).toEqual(JSON.parse(NEW_CONFIG))
       expect(newSite.theme).toEqual(NEW_THEME.replaceAll(`"`, ""))
       expect(newNavbar.content).toEqual(NEW_NAVBAR.replaceAll(`"`, ""))
       expect(newFooter.content).toEqual(NEW_FOOTER.replaceAll(`"`, ""))
