@@ -1,16 +1,11 @@
 import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
-import { Box, FormControl, HStack, Text, useDisclosure } from "@chakra-ui/react"
+import { Box, FormControl, Text, useDisclosure } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-import {
-  Button,
-  FormErrorMessage,
-  FormLabel,
-} from "@opengovsg/design-system-react"
+import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import dynamic from "next/dynamic"
-import { BiPencil } from "react-icons/bi"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -86,6 +81,10 @@ function JsonFormsImageControl({
     config,
   } = useAdjustmentConfigForField(path)
 
+  // The adjustment entry point shows only when the flag is on, the asset is
+  // bakeable, and the owning component has a config.
+  const canAdjust = isImageAdjustmentEnabled && isManagedAsset && !!config
+
   const handleAdjustmentSave = ({
     src,
     imageAdjustment,
@@ -102,8 +101,11 @@ function JsonFormsImageControl({
       <FormLabel description={description}>{label}</FormLabel>
       {data ? (
         <Box>
+          {/* Adjustment entry point — a pencil on the file row, only for
+              components with a config and only for managed (bakeable) assets. */}
           <AttachmentData
             data={data.split("/").pop() ?? "Unknown"}
+            onEdit={canAdjust ? onAdjustmentModalOpen : undefined}
             onClick={() => {
               // Clear the sibling adjustment too — otherwise a stale
               // imageAdjustment (with an originalKey pointing at the removed
@@ -113,41 +115,23 @@ function JsonFormsImageControl({
               if (currentAdjustment) handleChange(siblingPath, undefined)
             }}
           />
-          {/* Adjustment entry point — only for components with a config, and
-              only for managed (bakeable) assets */}
-          {isImageAdjustmentEnabled && isManagedAsset && config && (
-            <>
-              <HStack spacing="1rem" mt="1rem">
-                <Button
-                  leftIcon={<BiPencil />}
-                  variant="clear"
-                  colorScheme="neutral"
-                  onClick={onAdjustmentModalOpen}
-                >
-                  Adjust image
-                </Button>
-                <Text textStyle="body-2" color="base.content.medium">
-                  {currentAdjustment ? "Adjusted" : "Not adjusted"}
-                </Text>
-              </HStack>
-
-              <ImageAdjustmentModal
-                key={data}
-                isOpen={isAdjustmentModalOpen}
-                onClose={onAdjustmentModalClose}
-                config={config}
-                src={data}
-                value={currentAdjustment}
-                block={block}
-                imageFieldName={fieldName}
-                fieldHost={fieldHost}
-                siteId={siteId}
-                resourceId={
-                  (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
-                }
-                onSave={handleAdjustmentSave}
-              />
-            </>
+          {canAdjust && (
+            <ImageAdjustmentModal
+              key={data}
+              isOpen={isAdjustmentModalOpen}
+              onClose={onAdjustmentModalClose}
+              config={config}
+              src={data}
+              value={currentAdjustment}
+              block={block}
+              imageFieldName={fieldName}
+              fieldHost={fieldHost}
+              siteId={siteId}
+              resourceId={
+                (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
+              }
+              onSave={handleAdjustmentSave}
+            />
           )}
         </Box>
       ) : (

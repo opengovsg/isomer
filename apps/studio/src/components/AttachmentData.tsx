@@ -1,11 +1,19 @@
-import { Flex, IconButton, Text } from "@chakra-ui/react"
-import { BiTrash } from "react-icons/bi"
+import { Flex, HStack, Text } from "@chakra-ui/react"
+import { IconButton } from "@opengovsg/design-system-react"
+import { BiPencil, BiTrash } from "react-icons/bi"
 
 interface AttachmentDataProps {
   data: string
   onClick: () => void
+  // When provided, renders a pencil button beside the remove button — the
+  // image-adjustment entry point. Omitted for non-adjustable attachments.
+  onEdit?: () => void
 }
-export const AttachmentData = ({ data, onClick }: AttachmentDataProps) => {
+export const AttachmentData = ({
+  data,
+  onClick,
+  onEdit,
+}: AttachmentDataProps) => {
   return (
     <Flex
       px="1rem"
@@ -16,14 +24,26 @@ export const AttachmentData = ({ data, onClick }: AttachmentDataProps) => {
       alignItems="center"
     >
       <Text overflow="auto">{data.split("/").pop()}</Text>
-      <IconButton
-        size="xs"
-        variant="clear"
-        colorScheme="critical"
-        aria-label="Remove file"
-        icon={<BiTrash />}
-        onClick={onClick}
-      />
+      <HStack spacing={0}>
+        {onEdit && (
+          <IconButton
+            size="xs"
+            variant="clear"
+            colorScheme="neutral"
+            aria-label="Edit image"
+            icon={<BiPencil />}
+            onClick={onEdit}
+          />
+        )}
+        <IconButton
+          size="xs"
+          variant="clear"
+          colorScheme="critical"
+          aria-label="Remove file"
+          icon={<BiTrash />}
+          onClick={onClick}
+        />
+      </HStack>
     </Flex>
   )
 }

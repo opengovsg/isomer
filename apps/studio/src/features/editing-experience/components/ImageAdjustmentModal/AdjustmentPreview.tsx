@@ -55,9 +55,11 @@ interface AdjustmentPreviewProps {
   // the real component would render the whole block/all cards instead of the
   // single card being edited.
   skipRealComponentPreview?: boolean
-  // Stack the preview frames vertically (one per row) instead of side-by-side,
-  // giving each the full column width. See AdjustmentConfig.stackPreviews.
-  stackPreviews?: boolean
+  // Draw the component's scrim overlay in the framed-image approximation. Backs
+  // the modal's "Show hero text over the image" toggle — a preview-only aid, so
+  // it gates only the overlay here (the real-component path renders its own
+  // copy/scrim, which this cannot suppress). Defaults to true.
+  showHeroText?: boolean
   // The object-fit the framed-image approximation uses (skipRealComponentPreview
   // path). "contain" letterboxes the whole (cropped) image to match InfoCards'
   // "Resize image to fit"; defaults to "cover". Ignored on the real-component
@@ -68,24 +70,11 @@ interface AdjustmentPreviewProps {
   siteId: number
 }
 
-// Fixed on-screen DISPLAY WIDTH per breakpoint, shared by every component's
-// preview — narrower for mobile, wider for tablet/desktop. This alone tends
-// to produce portrait-looking mobile frames and landscape-looking
-// tablet/desktop frames, since that mirrors how each component's own
-// responsive layout actually behaves at those widths (e.g. mobile widths
-// stack content vertically). The resulting HEIGHT is never guessed or
-// capped — see PreviewFrame — so nothing is ever cropped or hidden behind a
-// scrollbar; what's shown always exactly matches the real published result.
-const FRAME_DISPLAY_WIDTH: Record<string, number> = {
-  mobile: 140,
-  tablet: 220,
-  desktop: 320,
-}
-const DEFAULT_FRAME_DISPLAY_WIDTH = 220
-// Wider width used when frames are stacked vertically (stackPreviews): each
-// frame has the whole column to itself, so it can be larger than the
-// side-by-side widths above.
-const STACKED_FRAME_DISPLAY_WIDTH = 360
+// Gap (px) between the two small tiles in the rail's second row.
+const TILE_GAP_PX = 12
+// The rail's design width (Figma) — used as the pre-measure default so tiles
+// render at the right size on first paint, before the ResizeObserver reports.
+const DEFAULT_RAIL_WIDTH_PX = 336
 
 export const AdjustmentPreview = ({
   src,
@@ -96,16 +85,26 @@ export const AdjustmentPreview = ({
   block,
   imageFieldName,
   skipRealComponentPreview,
-  stackPreviews,
+  showHeroText = true,
   objectFit = "cover",
   siteId,
 }: AdjustmentPreviewProps): JSX.Element => {
-  // When stacking, each frame gets the full column width; otherwise fall back
-  // to the per-breakpoint side-by-side widths.
-  const resolveDisplayWidth = (stateId: string): number =>
-    stackPreviews
-      ? STACKED_FRAME_DISPLAY_WIDTH
-      : (FRAME_DISPLAY_WIDTH[stateId] ?? DEFAULT_FRAME_DISPLAY_WIDTH)
+  // The preview tiles are sized relative to the rail's own width: the widest
+  // state fills the rail on its own row, the rest sit two-up below it.
+  const railRef = useRef<HTMLDivElement>(null)
+  const [railWidth, setRailWidth] = useState(DEFAULT_RAIL_WIDTH_PX)
+  useEffect(() => {
+    const el = railRef.current
+    if (!el) return
+    const observer = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width
+      if (w) setRailWidth(w)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+  const smallTileWidth = Math.floor((railWidth - TILE_GAP_PX) / 2)
+
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const bakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -292,98 +291,83 @@ export const AdjustmentPreview = ({
 
   // Gate on the default-layout render succeeding, same as every state did
   // before per-state layout existed — a failure here falls through to the
-  // framed-<img> approximation below for every state, not just the one that
-  // failed. A state requesting a non-default `layout` re-renders on its own
-  // and, in the rarer case that only its specific layout throws, is simply
-  // skipped (its sibling states still render for real).
+  // framed-<img> approximation for every state, not just the one that failed.
+  // A state requesting a non-default `layout` re-renders on its own and, in the
+  // rarer case that only its specific layout throws, is simply skipped (its
+  // sibling states still render for real).
   const defaultRender = skipRealComponentPreview
     ? null
     : renderPreviewComponent(undefined)
+  const useRealComponent = !!defaultRender
 
-  if (defaultRender) {
-    return (
-      <Flex
-        direction={stackPreviews ? "column" : "row"}
-        wrap={stackPreviews ? "nowrap" : "wrap"}
-        align="flex-start"
-        gap="1rem"
-        w="100%"
-      >
-        {previewStates.map((state) => {
-          const displayWidth = resolveDisplayWidth(state.id)
-          const rendered = state.layout
-            ? renderPreviewComponent(state.layout)
-            : defaultRender
-          if (!rendered) return null
-          return (
-            // The theme fetch suspends AND can throw; without the ErrorBoundary
-            // a failed getTheme would tear down the whole modal instead of this
-            // one frame degrading to a theme-less (but still correct) preview.
-            <ErrorBoundary
-              key={state.id}
-              fallbackRender={() => (
-                <PreviewFrame state={state} displayWidth={displayWidth}>
-                  {rendered}
-                </PreviewFrame>
-              )}
+  // One rail tile at a given display width — either the real-component render
+  // (scaled in an iframe) or the framed-image approximation.
+  const renderTile = (
+    state: AdjustmentPreviewState,
+    width: number,
+  ): React.ReactNode => {
+    if (useRealComponent) {
+      const rendered = state.layout
+        ? renderPreviewComponent(state.layout)
+        : defaultRender
+      if (!rendered) return null
+      return (
+        // The theme fetch suspends AND can throw; without the ErrorBoundary a
+        // failed getTheme would tear down the whole modal instead of this one
+        // frame degrading to a theme-less (but still correct) preview.
+        <ErrorBoundary
+          key={state.id}
+          fallbackRender={() => (
+            <PreviewFrame state={state} displayWidth={width}>
+              {rendered}
+            </PreviewFrame>
+          )}
+        >
+          <Suspense fallback={<Skeleton w={`${width}px`} h="9rem" />}>
+            <ThemedPreviewFrame
+              siteId={siteId}
+              state={state}
+              displayWidth={width}
             >
-              <Suspense
-                fallback={<Skeleton w={`${displayWidth}px`} h="9rem" />}
-              >
-                <ThemedPreviewFrame
-                  siteId={siteId}
-                  state={state}
-                  displayWidth={displayWidth}
-                >
-                  {rendered}
-                </ThemedPreviewFrame>
-              </Suspense>
-            </ErrorBoundary>
-          )
-        })}
-      </Flex>
-    )
-  }
+              {rendered}
+            </ThemedPreviewFrame>
+          </Suspense>
+        </ErrorBoundary>
+      )
+    }
 
-  return (
-    <Flex
-      direction={stackPreviews ? "column" : "row"}
-      wrap={stackPreviews ? "nowrap" : "wrap"}
-      align="flex-start"
-      gap="1rem"
-      w="100%"
-    >
-      {previewStates.map((state) => {
-        const displayWidth = resolveDisplayWidth(state.id)
-        const aspect = state.aspectRatio
-          ? state.aspectRatio.width / state.aspectRatio.height
-          : 1
-        const displayHeight = displayWidth / aspect
-
-        const imageNode = (
-          <Box
-            as="img"
-            src={adjustedSrc}
-            alt={`Preview: ${state.label}`}
-            w="100%"
-            h="100%"
-            style={{
-              objectFit,
-              // Mirror the renderer: focal is ignored under "contain" (the
-              // letterboxed image stays object-center), applied under "cover".
-              objectPosition:
-                objectFit === "contain"
-                  ? undefined
-                  : getFocalObjectPosition(adjustment?.focal),
-            }}
-          />
-        )
-
-        const frameContent = (
+    // Framed-image approximation.
+    const aspect = state.aspectRatio
+      ? state.aspectRatio.width / state.aspectRatio.height
+      : 1
+    return (
+      <VStack
+        key={state.id}
+        align="stretch"
+        spacing="0.375rem"
+        flexShrink={0}
+        w={`${width}px`}
+      >
+        <Box {...TILE_FRAME_PROPS} style={{ width, height: width / aspect }}>
           <Box w="100%" h="100%" position="relative" overflow="hidden">
-            {imageNode}
-            {/* Scrim overlay for contrast visualization */}
-            {scrim && (
+            <Box
+              as="img"
+              src={adjustedSrc}
+              alt={`Preview: ${state.label}`}
+              w="100%"
+              h="100%"
+              style={{
+                objectFit,
+                // Mirror the renderer: focal is ignored under "contain" (the
+                // letterboxed image stays object-center), applied under "cover".
+                objectPosition:
+                  objectFit === "contain"
+                    ? undefined
+                    : getFocalObjectPosition(adjustment?.focal),
+              }}
+            />
+            {/* Scrim overlay — a preview aid, gated by "Show hero text". */}
+            {scrim && showHeroText && (
               <Box
                 position="absolute"
                 inset={0}
@@ -392,47 +376,51 @@ export const AdjustmentPreview = ({
               />
             )}
           </Box>
-        )
+        </Box>
+        <TileCaption>{state.label}</TileCaption>
+      </VStack>
+    )
+  }
 
-        return (
-          <VStack
-            key={state.id}
-            align="stretch"
-            spacing="0.5rem"
-            flexShrink={0}
-          >
-            {/* Label with optional viewport width */}
-            <Text
-              textStyle="body-2"
-              fontWeight="semibold"
-              color="base.content.medium"
-            >
-              {state.label}
-              {state.viewportWidth && ` (${state.viewportWidth}px)`}
-            </Text>
+  // The widest state fills the rail on its own row; the rest sit two-up below.
+  const bigState = [...previewStates].sort(
+    (a, b) => (b.viewportWidth ?? 0) - (a.viewportWidth ?? 0),
+  )[0]
+  const restStates = previewStates.filter((s) => s.id !== bigState?.id)
 
-            {/* Frame box, using the same per-breakpoint display width as
-                every other component's preview. */}
-            <Box
-              borderWidth="1px"
-              borderColor="base.divider.medium"
-              borderRadius="0.25rem"
-              overflow="hidden"
-              bg="base.canvas.default"
-              position="relative"
-              style={{
-                width: displayWidth,
-                height: displayHeight,
-              }}
-            >
-              {frameContent}
-            </Box>
-          </VStack>
-        )
-      })}
-    </Flex>
+  return (
+    <VStack ref={railRef} align="stretch" spacing="1rem" w="100%">
+      {bigState && renderTile(bigState, railWidth)}
+      {restStates.length > 0 && (
+        <Flex gap={`${TILE_GAP_PX}px`} wrap="wrap" align="flex-start">
+          {restStates.map((state) => renderTile(state, smallTileWidth))}
+        </Flex>
+      )}
+    </VStack>
   )
 }
+
+// Shared tile chrome + caption, used by both the real-component and framed-image
+// tiles so their frames stay visually identical.
+const TILE_FRAME_PROPS = {
+  borderWidth: "1px",
+  borderColor: "base.divider.medium",
+  borderRadius: "0.125rem",
+  overflow: "hidden",
+  bg: "base.canvas.default",
+  position: "relative",
+} as const
+
+const TileCaption = ({ children }: { children: string }): JSX.Element => (
+  <Text
+    textStyle="caption-2"
+    textTransform="uppercase"
+    letterSpacing="0.05em"
+    color="base.content.medium"
+  >
+    {children}
+  </Text>
+)
 
 // Renders the real component inside a simulated device viewport at this
 // breakpoint's exact width (so the component's own sm:/md:/lg: Tailwind
@@ -493,26 +481,15 @@ const PreviewFrame = ({
   const scale = displayWidth / viewportWidth
 
   return (
-    <VStack align="stretch" spacing="0.5rem" flexShrink={0}>
-      <Text
-        textStyle="body-2"
-        fontWeight="semibold"
-        color="base.content.medium"
-      >
-        {state.label}
-        {state.viewportWidth && ` (${state.viewportWidth}px)`}
-      </Text>
-
+    <VStack
+      align="stretch"
+      spacing="0.375rem"
+      flexShrink={0}
+      w={`${displayWidth}px`}
+    >
       <Box
-        borderWidth="1px"
-        borderColor="base.divider.medium"
-        borderRadius="0.25rem"
-        overflow="hidden"
-        style={{
-          width: displayWidth,
-          height: viewportHeight * scale,
-          position: "relative",
-        }}
+        {...TILE_FRAME_PROPS}
+        style={{ width: displayWidth, height: viewportHeight * scale }}
       >
         <Box
           style={{
@@ -533,6 +510,7 @@ const PreviewFrame = ({
           </PreviewIframe>
         </Box>
       </Box>
+      <TileCaption>{state.label}</TileCaption>
     </VStack>
   )
 }

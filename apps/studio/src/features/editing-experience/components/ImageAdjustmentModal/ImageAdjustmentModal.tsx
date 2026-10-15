@@ -1,8 +1,7 @@
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
 import {
   Box,
-  Grid,
-  GridItem,
+  Flex,
   HStack,
   Modal,
   ModalBody,
@@ -17,6 +16,7 @@ import {
 } from "@chakra-ui/react"
 import {
   Button,
+  Checkbox,
   Infobox,
   ModalCloseButton,
   useToast,
@@ -27,6 +27,7 @@ import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
 import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
+import { AspectRatioControl } from "./controls/AspectRatioControl"
 import { CropFocalControl } from "./controls/CropFocalControl"
 import { defaultCropRect } from "./controls/cropGeometry"
 import {
@@ -121,6 +122,11 @@ export const ImageAdjustmentModal = ({
   // Drives UI locking during a save. Local (not the hook's isSaving) so the
   // save timeout below can unlock the modal even if the underlying upload hangs.
   const [isSaving, setIsSaving] = useState(false)
+  // Preview-only toggle for the scrim/text overlay in the framed-image preview.
+  // Default on; only surfaced for components whose framed preview draws a scrim.
+  const [showHeroText, setShowHeroText] = useState(true)
+  const showTextOverlayToggle =
+    !!config.scrim && !!config.skipRealComponentPreview
 
   // Check if draft differs from original value.
   const isModified = JSON.stringify(draft) !== JSON.stringify(value)
@@ -316,13 +322,11 @@ export const ImageAdjustmentModal = ({
         closeOnEsc={!isSaving}
       >
         <ModalOverlay />
-        <ModalContent overflow="hidden">
+        <ModalContent overflow="hidden" maxW={{ md: "75rem" }}>
           <ModalHeader pr="4.5rem">
-            <HStack spacing={3}>
-              <Text as="span" textStyle="h5" fontWeight="semibold">
-                Adjust image
-              </Text>
-            </HStack>
+            <Text as="span" textStyle="h4" fontWeight="semibold">
+              Edit image
+            </Text>
           </ModalHeader>
 
           <ModalCloseButton
@@ -332,32 +336,15 @@ export const ImageAdjustmentModal = ({
           />
 
           <ModalBody overflow="auto" p="2rem">
-            <Grid
-              templateColumns={{ base: "1fr", md: "1fr 1fr" }}
-              gap="2rem"
+            <Flex
+              direction={{ base: "column", md: "row" }}
+              gap="1.5rem"
+              align="start"
               w="100%"
-              h="100%"
             >
-              {/* Canvas Area: Live Breakpoint Preview */}
-              <GridItem>
-                <AdjustmentPreview
-                  src={src}
-                  originalSrc={originalSrc}
-                  adjustment={draft}
-                  previewStates={config.previewStates}
-                  scrim={config.scrim}
-                  block={block}
-                  imageFieldName={imageFieldName}
-                  skipRealComponentPreview={config.skipRealComponentPreview}
-                  stackPreviews={config.stackPreviews}
-                  objectFit={previewObjectFit}
-                  siteId={siteId}
-                />
-              </GridItem>
-
-              {/* Controls Panel */}
-              <GridItem>
-                <VStack align="start" spacing="1.5rem" w="100%">
+              {/* Crop column: canvas + a toolbar (aspect ratio | rotate/flip). */}
+              <Box flex="1" minW={0} w="100%">
+                <VStack align="stretch" spacing="1.125rem">
                   {/* Crop + focal point: one shared image canvas, since focal
                       is only meaningful relative to the crop. */}
                   {(config.cropMode !== "none" || focalEnabled) && (
@@ -382,27 +369,26 @@ export const ImageAdjustmentModal = ({
                     />
                   )}
 
-                  {/* Rotate & flip — applies to every adjustable component. */}
-                  <TransformControl
-                    flipH={draft?.flipH ?? false}
-                    flipV={draft?.flipV ?? false}
-                    rotateDisabled={isLockedRatioAspectPending}
-                    onRotate={handleRotate}
-                    onFlip={handleFlip}
-                  />
-
-                  {/* Low-resolution warning — the kept crop can't fill this
-                      component's largest frame even at 1x, so it would look soft. */}
-                  {lowResWarning && (
-                    <Infobox variant="warning" size="sm">
-                      <Text textStyle="body-2">
-                        This image may look blurry here. The area you've kept is
-                        about {lowResWarning.effectiveWidth}px wide, but it can
-                        display up to {lowResWarning.targetWidth}px wide. Use a
-                        larger image, or keep a wider area in the crop.
-                      </Text>
-                    </Infobox>
-                  )}
+                  <Flex
+                    justify="space-between"
+                    align="center"
+                    wrap="wrap"
+                    gap="1rem"
+                    w="100%"
+                  >
+                    <AspectRatioControl
+                      cropMode={config.cropMode}
+                      lockedRatios={config.lockedRatios}
+                    />
+                    {/* Rotate & flip — applies to every adjustable component. */}
+                    <TransformControl
+                      flipH={draft?.flipH ?? false}
+                      flipV={draft?.flipV ?? false}
+                      rotateDisabled={isLockedRatioAspectPending}
+                      onRotate={handleRotate}
+                      onFlip={handleFlip}
+                    />
+                  </Flex>
 
                   {/* Preserve-only note */}
                   {config.cropMode === "none" && (
@@ -420,98 +406,72 @@ export const ImageAdjustmentModal = ({
                       </Text>
                     </Box>
                   )}
-
-                  {/* Locked Ratios */}
-                  {config.lockedRatios && config.lockedRatios.length > 0 && (
-                    <Box w="100%">
-                      <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
-                        Aspect ratios
-                      </Text>
-                      <VStack align="start" spacing="0.25rem">
-                        {config.lockedRatios.map((ratio, idx) => (
-                          <Text
-                            key={idx}
-                            textStyle="body-2"
-                            color="base.content.medium"
-                          >
-                            {ratio.width}:{ratio.height}
-                          </Text>
-                        ))}
-                      </VStack>
-                    </Box>
-                  )}
-
-                  {/* Preview States */}
-                  {config.previewStates.length > 0 && (
-                    <Box w="100%">
-                      <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
-                        Preview states
-                      </Text>
-                      <VStack align="start" spacing="0.25rem">
-                        {config.previewStates.map((state) => (
-                          <Text
-                            key={state.id}
-                            textStyle="body-2"
-                            color="base.content.medium"
-                          >
-                            {state.label}
-                            {state.viewportWidth &&
-                              ` (${state.viewportWidth}px)`}
-                          </Text>
-                        ))}
-                      </VStack>
-                    </Box>
-                  )}
-
-                  {/* Overlay */}
-                  {config.scrim && (
-                    <Box w="100%">
-                      <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
-                        Overlay
-                      </Text>
-                      <Text textStyle="body-2" color="base.content.medium">
-                        {config.scrim.className}
-                      </Text>
-                    </Box>
-                  )}
-
-                  {/* Pre-upload Copy */}
-                  {config.preUploadCopy && (
-                    <Box
-                      w="100%"
-                      p="1rem"
-                      bgColor="utility.ui"
-                      borderRadius="0.25rem"
-                      borderWidth="1px"
-                      borderColor="base.divider.medium"
-                    >
-                      <Text textStyle="body-2">{config.preUploadCopy}</Text>
-                    </Box>
-                  )}
-
-                  <Spacer />
                 </VStack>
-              </GridItem>
-            </Grid>
+              </Box>
+
+              {/* Preview rail */}
+              <VStack
+                align="stretch"
+                spacing="1rem"
+                w={{ base: "100%", md: "21rem" }}
+                flexShrink={0}
+              >
+                <Text textStyle="subhead-1">Preview</Text>
+                <AdjustmentPreview
+                  src={src}
+                  originalSrc={originalSrc}
+                  adjustment={draft}
+                  previewStates={config.previewStates}
+                  scrim={config.scrim}
+                  block={block}
+                  imageFieldName={imageFieldName}
+                  skipRealComponentPreview={config.skipRealComponentPreview}
+                  showHeroText={showHeroText}
+                  objectFit={previewObjectFit}
+                  siteId={siteId}
+                />
+
+                {/* Low-resolution warning — the kept crop can't fill this
+                    component's largest frame even at 1x, so it would look soft. */}
+                {lowResWarning && (
+                  <Infobox variant="warning" size="sm">
+                    <Text textStyle="body-2">
+                      This image may look blurry here. The area you've kept is
+                      about {lowResWarning.effectiveWidth}px wide, but it can
+                      display up to {lowResWarning.targetWidth}px wide. Use a
+                      larger image, or keep a wider area in the crop.
+                    </Text>
+                  </Infobox>
+                )}
+
+                {showTextOverlayToggle && (
+                  <Checkbox
+                    isChecked={showHeroText}
+                    onChange={(e) => setShowHeroText(e.target.checked)}
+                  >
+                    <Text textStyle="body-2">Show text over the image</Text>
+                  </Checkbox>
+                )}
+              </VStack>
+            </Flex>
           </ModalBody>
 
           <ModalFooter borderTopWidth="1px" borderColor="base.divider.medium">
-            <HStack spacing="0.75rem" w="100%">
+            <HStack spacing="1rem" w="100%">
               <Button
-                variant="clear"
-                colorScheme="neutral"
-                onClick={handleReset}
-                isDisabled={isResetDisabled || isSaving}
-              >
-                Reset adjustments
-              </Button>
-              <Button
-                variant="clear"
-                colorScheme="neutral"
+                variant="link"
                 onClick={handleUndo}
                 isDisabled={!isModified || isSaving}
               >
                 Undo changes
+              </Button>
+              <Button
+                variant="link"
+                colorScheme="critical"
+                onClick={handleReset}
+                isDisabled={isResetDisabled || isSaving}
+              >
+                Reset image
               </Button>
               <Spacer />
               <Button
@@ -523,7 +483,7 @@ export const ImageAdjustmentModal = ({
                 Cancel
               </Button>
               <Button variant="solid" onClick={handleSave} isLoading={isSaving}>
-                Save
+                Save changes
               </Button>
             </HStack>
           </ModalFooter>
