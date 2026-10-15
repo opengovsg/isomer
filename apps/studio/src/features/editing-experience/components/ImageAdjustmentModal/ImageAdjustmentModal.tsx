@@ -317,6 +317,11 @@ export const ImageAdjustmentModal = ({
       <Modal
         size={{ base: "full", md: "6xl" }}
         isCentered
+        // Scroll INSIDE the body, not the (centered) outer container — otherwise
+        // when content is taller than the viewport, centering offsets the top
+        // above the scroll origin and it can't be reached (the editor gets cut
+        // off with the scrollbar already at its max).
+        scrollBehavior="inside"
         isOpen={isOpen}
         onClose={handleClose}
         closeOnOverlayClick={!isSaving}
