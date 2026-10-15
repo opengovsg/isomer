@@ -322,7 +322,13 @@ export const ImageAdjustmentModal = ({
         closeOnEsc={!isSaving}
       >
         <ModalOverlay />
-        <ModalContent overflow="hidden" maxW={{ md: "75rem" }}>
+        {/* Fixed height so edits inside never resize (and thus reposition) the
+            modal — the preview rail scrolls internally instead. */}
+        <ModalContent
+          overflow="hidden"
+          maxW={{ md: "75rem" }}
+          h={{ md: "min(44.25rem, 90vh)" }}
+        >
           <ModalHeader pr="4.5rem">
             <Text as="span" textStyle="h4" fontWeight="semibold">
               Edit image
@@ -335,15 +341,32 @@ export const ImageAdjustmentModal = ({
             isDisabled={isSaving}
           />
 
-          <ModalBody overflow="auto" p="2rem">
+          {/* On desktop the body fills the fixed height and does NOT scroll as
+              a whole; each column scrolls on its own (see below). On mobile
+              (stacked), fall back to normal body scroll. */}
+          <ModalBody
+            p="2rem"
+            flex="1"
+            minH={0}
+            overflow={{ base: "auto", md: "hidden" }}
+          >
             <Flex
               direction={{ base: "column", md: "row" }}
               gap="1.5rem"
-              align="start"
+              align="stretch"
               w="100%"
+              h={{ md: "100%" }}
+              minH={0}
             >
-              {/* Crop column: canvas + a toolbar (aspect ratio | rotate/flip). */}
-              <Box flex="1" minW={0} w="100%">
+              {/* Crop column: canvas + a toolbar (aspect ratio | rotate/flip).
+                  Scrolls on its own only if it can't fit the fixed height. */}
+              <Box
+                flex="1"
+                minW={0}
+                w="100%"
+                minH={0}
+                overflowY={{ md: "auto" }}
+              >
                 <VStack align="stretch" spacing="1.125rem">
                   {/* Crop + focal point: one shared image canvas, since focal
                       is only meaningful relative to the crop. */}
@@ -409,12 +432,16 @@ export const ImageAdjustmentModal = ({
                 </VStack>
               </Box>
 
-              {/* Preview rail */}
+              {/* Preview rail — scrolls within the fixed modal height, so a
+                  taller/shorter preview (from a different crop) never resizes
+                  the modal. */}
               <VStack
                 align="stretch"
                 spacing="1rem"
                 w={{ base: "100%", md: "21rem" }}
                 flexShrink={0}
+                minH={0}
+                overflowY={{ md: "auto" }}
               >
                 <Text textStyle="subhead-1">Preview</Text>
                 <AdjustmentPreview
