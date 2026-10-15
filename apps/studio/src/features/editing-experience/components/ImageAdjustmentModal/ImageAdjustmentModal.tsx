@@ -443,7 +443,18 @@ export const ImageAdjustmentModal = ({
                 minH={0}
                 overflowY={{ md: "auto" }}
               >
-                <Text textStyle="subhead-1">Preview</Text>
+                {/* Pinned so it stays visible while the tiles scroll. Opaque bg
+                    + zIndex so scrolling previews pass behind it. */}
+                <Text
+                  textStyle="subhead-1"
+                  position={{ md: "sticky" }}
+                  top={0}
+                  zIndex={1}
+                  bg="base.canvas.default"
+                  pb="0.25rem"
+                >
+                  Preview
+                </Text>
                 <AdjustmentPreview
                   src={src}
                   originalSrc={originalSrc}
