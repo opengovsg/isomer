@@ -24,6 +24,7 @@ import type {
   GazetteDeletionEmailTemplateData,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
+  OtpEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
   PublishAlertSiteAdminEmailTemplateData,
   SchedulePageTemplateData,
@@ -32,6 +33,16 @@ import type {
   SiteUpdatedTemplateData,
 } from "./types"
 import { escapeHtml, escapeTemplateArguments, unescapeHtml } from "../utils"
+import {
+  getEnvironmentLabel,
+  renderCallout,
+  renderCodeBox,
+  renderEmailLayout,
+  renderHeading,
+  renderLink,
+  renderParagraph,
+  renderStudioLink,
+} from "./layout"
 
 // `sizeInBytes` is `null` only when the size genuinely couldn't be
 // determined (e.g. a HEAD request failing) — a real 0-byte file must still
@@ -498,7 +509,37 @@ ${failedSection}
   }
 }
 
+// A utility email: no greeting or sign-off, so the code sits at the top.
+// Never put the token in the subject: subjects are logged and appear on lock
+// screens.
+const otpTemplate = (data: OtpEmailTemplateData): EmailTemplate => {
+  const { otpPrefix, token, expiryMinutes } = data
+
+  const content = [
+    renderHeading("Your OTP"),
+    renderCodeBox({ code: token, prefix: otpPrefix }),
+    renderParagraph(
+      `This OTP expires in <b>${expiryMinutes} minutes</b> and can only be used once. Requesting a new OTP will cancel this one.`,
+    ),
+    renderCallout(
+      `Make sure you're on ${renderStudioLink()} before entering this OTP. Don't share it with anyone. The Isomer team will never ask for it.`,
+    ),
+    renderParagraph(
+      `Didn't request this? You can safely ignore this email. If it keeps happening, contact ${renderLink(ISOMER_SUPPORT_LINK, ISOMER_SUPPORT_EMAIL)}.`,
+    ),
+  ].join("\n")
+
+  return {
+    subject: `Your Isomer Studio${getEnvironmentLabel()} OTP`,
+    body: renderEmailLayout({
+      preheader: `Reference ${otpPrefix} &middot; expires in ${expiryMinutes} minutes`,
+      content,
+    }),
+  }
+}
+
 const _templates = {
+  otp: otpTemplate satisfies EmailTemplateFunction<OtpEmailTemplateData>,
   invitation:
     invitationTemplate satisfies EmailTemplateFunction<InvitationEmailTemplateData>,
   loginAlert:

@@ -4,6 +4,10 @@ import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 import { isEmailWhitelisted } from "~/server/modules/whitelist/whitelist.service"
 
+// Postman's default sender name is "Postman.gov.sg". The address must stay
+// Postman's own unless a custom from-address is onboarded with Postman.
+export const DEFAULT_SENDER = "Isomer Studio <info@mail.postman.gov.sg>"
+
 interface SendMailParams {
   recipient: string
   body: string
@@ -41,6 +45,7 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
   }
   const cc = whitelistedCc.map((r) => r.email)
   const payload = {
+    from: DEFAULT_SENDER,
     recipient: params.recipient,
     subject: params.subject,
     body: params.body,

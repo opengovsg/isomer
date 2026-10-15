@@ -67,9 +67,10 @@ describe("auth.email", () => {
         otpPrefix: expect.any(String),
       }
       expect(spy).toHaveBeenCalledWith({
-        body: expect.stringContaining("Your OTP is"),
+        body: expect.stringContaining(`${result.otpPrefix}&nbsp;&ndash;`),
         recipient: TEST_VALID_EMAIL,
-        subject: expect.stringContaining("Sign in to"),
+        subject: expect.stringMatching(/^Your Isomer Studio( \(.+\))? OTP$/),
+        cc: undefined,
       })
       expect(result).toEqual(expectedReturn)
     })
