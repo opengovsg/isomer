@@ -13,7 +13,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import Suspense from "~/components/Suspense"
 import { PreviewIframe } from "~/features/editing-experience/components/preview/PreviewIframe"
-import { useSiteThemeCssVars } from "~/hooks/useSiteThemeCssVars"
+import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { bakeImage, canBakeImage, isAnimatedImageBlob } from "~/lib/imageBake"
 import { ASSETS_BASE_URL, generateAssetUrl } from "~/utils/generateAssetUrl"
 
