@@ -333,7 +333,14 @@ export const ImageAdjustmentModal = ({
         <ModalContent
           overflow="hidden"
           maxW={{ md: "75rem" }}
-          h={{ md: "min(44.25rem, 90vh)" }}
+          // Give the dialog a real, generous height. `scrollBehavior="inside"`
+          // only sets a maxH (calc(100% - 7.5rem)) and no height, so without an
+          // explicit floor the centered dialog collapses toward its content. minH
+          // overrides that cap to lock a stable height; it scales with the
+          // viewport but is capped so it isn't tiny on short screens or huge on
+          // tall ones. Both are the same value → a fixed height that never jumps.
+          h={{ md: "min(50rem, 90vh)" }}
+          minH={{ md: "min(50rem, 90vh)" }}
         >
           <ModalHeader pr="4.5rem">
             <Text as="span" textStyle="h4" fontWeight="semibold">
