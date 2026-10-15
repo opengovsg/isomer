@@ -5,6 +5,7 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { resetSiteNotification } from "../fixtures/reset"
 import { provisionE2ESite } from "../fixtures/site"
 import { expectSiteNotificationTitle } from "../fixtures/site-expect"
+import { getSiteNotification } from "../fixtures/site.db"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -118,5 +119,61 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expect(site.notificationContentEditor()).toContainText(
       "Important update",
     )
+  })
+
+  test("admin can publish an anti-scam banner and see it again after reload", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "notification")
+    await site.enableNotificationBanner()
+    await site.expectNotificationTitleFieldVisible()
+
+    // Act
+    await site.selectNotificationType("Anti-scam disclaimer")
+    await site.expectNotificationTitleFieldHidden()
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+
+    // Assert
+    await expect
+      .poll(async () => {
+        const notification = await getSiteNotification(siteId)
+        return {
+          type: notification?.type ?? null,
+          title: notification?.title || null,
+        }
+      })
+      .toEqual({ type: "antiscam", title: null })
+    await site.reloadSettingsSection("notification")
+    await expect(site.notificationBannerToggle()).toBeChecked()
+    await expect(
+      site.notificationTypeOption("Anti-scam disclaimer"),
+    ).toBeChecked()
+    await expect(site.notificationTitleField()).toBeHidden()
+  })
+
+  test("turning off the banner hides anti-scam type options", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "notification")
+    await site.enableNotificationBanner()
+    await site.selectNotificationType("Anti-scam disclaimer")
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+
+    // Act
+    await site.disableNotificationBanner()
+
+    // Assert
+    await expect(site.notificationBannerToggle()).not.toBeChecked()
+    await expect(
+      site.notificationTypeOption("Anti-scam disclaimer"),
+    ).toBeHidden()
   })
 })

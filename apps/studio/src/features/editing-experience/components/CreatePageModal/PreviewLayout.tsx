@@ -3,7 +3,7 @@ import { useIsMobile } from "@opengovsg/design-system-react"
 import { format } from "date-fns"
 import { useMemo } from "react"
 import Suspense from "~/components/Suspense"
-import { useSiteThemeCssVars } from "~/hooks/useSiteThemeCssVars"
+import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 
 import { PreviewIframe } from "../preview/PreviewIframe"
 import PreviewWithCustomSitemap from "../preview/PreviewWithCustomSitemap"

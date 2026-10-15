@@ -13,7 +13,6 @@ import {
   HStack,
   Icon,
   Text,
-  Tooltip,
   VStack,
 } from "@chakra-ui/react"
 import {
@@ -110,7 +109,6 @@ function JsonFormsNavbarControl({
   )
 
   const isOverMaxItems = isFirstLevelLinksOverLimit(data, arraySchema.maxItems)
-  const isAtMaxItems = isFirstLevelLinksAtLimit(data, arraySchema.maxItems)
 
   const getChildUiSchema = useCallback(
     (subPath: string) =>
@@ -233,27 +231,17 @@ function JsonFormsNavbarControl({
                   )}
                 </Text>
 
-                <Tooltip
-                  label={
-                    isAtMaxItems
-                      ? `You can only have up to ${arraySchema.maxItems} first-level links.`
-                      : undefined
-                  }
-                  hasArrow
+                <Button
+                  variant="clear"
+                  size="xs"
+                  leftIcon={<Icon as={BiPlusCircle} />}
+                  onClick={() => {
+                    addItem(path, createDefaultValue(schema, rootSchema))()
+                    setSelectedPath(composePaths(path, String(data)))
+                  }}
                 >
-                  <Button
-                    variant="clear"
-                    size="xs"
-                    leftIcon={<Icon as={BiPlusCircle} />}
-                    isDisabled={isAtMaxItems}
-                    onClick={() => {
-                      addItem(path, createDefaultValue(schema, rootSchema))()
-                      setSelectedPath(composePaths(path, String(data)))
-                    }}
-                  >
-                    Add a link
-                  </Button>
-                </Tooltip>
+                  Add a link
+                </Button>
               </HStack>
 
               {isOverMaxItems && (
