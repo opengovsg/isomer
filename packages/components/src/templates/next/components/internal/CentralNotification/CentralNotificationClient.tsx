@@ -6,14 +6,13 @@ import type {
   CentralNotificationProps,
 } from "~/interfaces"
 import { useEffect, useState } from "react"
-import { BiInfoCircle, BiX } from "react-icons/bi"
 import { useIsCentralNotificationDismissed } from "~/hooks/useIsCentralNotificationDismissed"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
 import { Prose } from "../../native/Prose"
 import { hasContent } from "../../native/Prose/utils"
 import { BaseParagraph } from "../BaseParagraph"
-import { IconButton } from "../IconButton"
+import { NotificationBanner } from "../Notification/NotificationBanner"
 
 interface CentralNotificationClientProps extends CentralNotificationProps {
   assetsBaseUrl: string
@@ -76,23 +75,8 @@ export const CentralNotificationClient = ({
   }
 
   return (
-    <div className="bg-utility-feedback-info-faint">
-      <div className="relative mx-auto flex max-w-screen-xl flex-row gap-4 px-6 py-8 text-base-content md:px-10 md:py-6">
-        <BiInfoCircle className="mt-0.5 h-6 w-6 shrink-0" />
-        <div className="flex flex-1 flex-col gap-1">
-          {!!title && <h2 className="prose-headline-lg-medium">{title}</h2>}
-          <div className="[&_p]:!mb-0 [&_p]:!mt-0">
-            <ContentParagraph />
-          </div>
-        </div>
-        <div aria-hidden className="flex h-6 w-6 shrink-0" />
-        <IconButton
-          onPress={onDismiss}
-          icon={BiX}
-          className="absolute right-3 top-[22px] md:right-7 md:top-3.5"
-          aria-label="Dismiss central notification temporarily"
-        />
-      </div>
-    </div>
+    <NotificationBanner title={title} onDismiss={onDismiss}>
+      <ContentParagraph />
+    </NotificationBanner>
   )
 }
