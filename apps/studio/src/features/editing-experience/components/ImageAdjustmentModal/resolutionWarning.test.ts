@@ -11,7 +11,7 @@ describe("computeLowResWarning", () => {
     ).toBeUndefined()
   })
 
-  it("returns undefined for components with no configured frame width", () => {
+  it("returns undefined for components with no configured frame size", () => {
     expect(
       computeLowResWarning({
         naturalSize: { width: 100, height: 100 },
@@ -37,7 +37,7 @@ describe("computeLowResWarning", () => {
         crop: fullCrop,
         maxRenderedWidthPx: 1280,
       }),
-    ).toEqual({ effectiveWidth: 800, targetWidth: 1280 })
+    ).toEqual({ dimension: "width", effectivePx: 800, targetPx: 1280 })
   })
 
   it("warns when a tight crop drops the effective width below the frame", () => {
@@ -48,12 +48,23 @@ describe("computeLowResWarning", () => {
         crop: { x: 0, y: 0, width: 0.5, height: 1 },
         maxRenderedWidthPx: 1280,
       }),
-    ).toEqual({ effectiveWidth: 1000, targetWidth: 1280 })
+    ).toEqual({ dimension: "width", effectivePx: 1000, targetPx: 1280 })
+  })
+
+  // Regression (PR #3621 review): the native Image column is ~943px wide just
+  // below `lg`, so the threshold is 960 — a crop between the old 768 floor and
+  // 960 must now warn.
+  it("warns on a crop that fills the old 768 floor but not the real frame", () => {
+    expect(
+      computeLowResWarning({
+        naturalSize: { width: 900, height: 600 },
+        crop: fullCrop,
+        maxRenderedWidthPx: 960,
+      }),
+    ).toEqual({ dimension: "width", effectivePx: 900, targetPx: 960 })
   })
 
   it("uses the rotated output width (90° swaps width and height)", () => {
-    // Landscape 2000×400: wide enough un-rotated (2000 ≥ 1280), but a 90°
-    // rotation makes the cropped height (400px) the output width → warns.
     const size = { width: 2000, height: 400 }
     expect(
       computeLowResWarning({
@@ -69,15 +80,10 @@ describe("computeLowResWarning", () => {
         rotate: 90,
         maxRenderedWidthPx: 1280,
       }),
-    ).toEqual({ effectiveWidth: 400, targetWidth: 1280 })
+    ).toEqual({ dimension: "width", effectivePx: 400, targetPx: 1280 })
   })
 
   it("measures crop.width against the rotated display frame (not crop.height)", () => {
-    // Square 2000×2000, rotated 90°. The crop is display-space: its WIDTH maps
-    // to the (swapped) display width. A full-width / half-height crop ships at
-    // 1×2000 = 2000px (sharp) and must NOT warn; the mirrored half-width /
-    // full-height crop ships at 1000px and MUST warn. A naive implementation
-    // that cropped the un-rotated frame then rotated would swap these.
     const size = { width: 2000, height: 2000 }
     expect(
       computeLowResWarning({
@@ -94,16 +100,86 @@ describe("computeLowResWarning", () => {
         rotate: 90,
         maxRenderedWidthPx: 1280,
       }),
-    ).toEqual({ effectiveWidth: 1000, targetWidth: 1280 })
+    ).toEqual({ dimension: "width", effectivePx: 1000, targetPx: 1280 })
   })
 
   it("falls back to the full-image default crop when none is set yet", () => {
-    // No crop and no locked ratio → the default is the whole image.
     expect(
       computeLowResWarning({
         naturalSize: { width: 500, height: 500 },
         maxRenderedWidthPx: 1280,
       }),
-    ).toEqual({ effectiveWidth: 500, targetWidth: 1280 })
+    ).toEqual({ dimension: "width", effectivePx: 500, targetPx: 1280 })
+  })
+
+  describe("cover: either axis short upscales (reports the worst)", () => {
+    it("warns on a wide-but-short crop via the height axis", () => {
+      // 2000×300 fills the width (2000 ≥ 1280) but is too short (300 < 456).
+      expect(
+        computeLowResWarning({
+          naturalSize: { width: 2000, height: 300 },
+          crop: fullCrop,
+          maxRenderedWidthPx: 1280,
+          maxRenderedHeightPx: 456,
+          objectFit: "cover",
+        }),
+      ).toEqual({ dimension: "height", effectivePx: 300, targetPx: 456 })
+    })
+
+    it("reports the axis that falls furthest short", () => {
+      // width ratio 1280/800 = 1.6; height ratio 456/300 = 1.52 → width is worse.
+      expect(
+        computeLowResWarning({
+          naturalSize: { width: 800, height: 300 },
+          crop: fullCrop,
+          maxRenderedWidthPx: 1280,
+          maxRenderedHeightPx: 456,
+          objectFit: "cover",
+        }),
+      ).toEqual({ dimension: "width", effectivePx: 800, targetPx: 1280 })
+    })
+  })
+
+  describe("contain: only upscaled when BOTH axes fall short", () => {
+    // Gallery frame: 960 wide × 456 tall, object-contain.
+    const frame = {
+      maxRenderedWidthPx: 960,
+      maxRenderedHeightPx: 456,
+      objectFit: "contain" as const,
+    }
+
+    it("does not warn on a wide landscape crop (fills the width)", () => {
+      expect(
+        computeLowResWarning({
+          naturalSize: { width: 1200, height: 400 },
+          crop: fullCrop,
+          ...frame,
+        }),
+      ).toBeUndefined()
+    })
+
+    it("does not warn on a tall portrait crop (fills the height)", () => {
+      // Regression: width-only would have false-warned (500 < 960) even though
+      // contain scales this down to fit the 456px height — sharp.
+      expect(
+        computeLowResWarning({
+          naturalSize: { width: 500, height: 1500 },
+          crop: fullCrop,
+          ...frame,
+        }),
+      ).toBeUndefined()
+    })
+
+    it("warns on a genuinely small crop, reporting the binding axis", () => {
+      // 500×300: width ratio 960/500 = 1.92, height ratio 456/300 = 1.52 →
+      // contain fills on the smaller ratio (height), the actual upscale.
+      expect(
+        computeLowResWarning({
+          naturalSize: { width: 500, height: 300 },
+          crop: fullCrop,
+          ...frame,
+        }),
+      ).toEqual({ dimension: "height", effectivePx: 300, targetPx: 456 })
+    })
   })
 })

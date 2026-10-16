@@ -1,9 +1,13 @@
 "use client"
 
 import type { CSSProperties } from "react"
-import { Box, Text, VStack } from "@chakra-ui/react"
+import { Box } from "@chakra-ui/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
+
+// The brand accent, read from Chakra's generated CSS var so these inline styles
+// (on raw canvas divs, where theme tokens aren't available) track the theme.
+const ACCENT = "var(--chakra-colors-interaction-main-default)"
 
 import type {
   CropRectNormalized,
@@ -286,7 +290,7 @@ export const CropFocalControl = ({
     top: `${cropBoxSpace.y * 100}%`,
     width: `${currentCrop.width * imageBounds.width * 100}%`,
     height: `${currentCrop.height * imageBounds.height * 100}%`,
-    border: "2px solid #0066cc",
+    border: "1.5px solid #ffffff",
     boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.45)",
     cursor: dragTarget === "rect" ? "grabbing" : "move",
     pointerEvents: "auto",
@@ -301,8 +305,8 @@ export const CropFocalControl = ({
     width: "10px",
     height: "10px",
     backgroundColor: "white",
-    border: "2px solid #0066cc",
-    borderRadius: "2px",
+    border: `1.5px solid ${ACCENT}`,
+    borderRadius: "1px",
     cursor: dragTarget === handle ? "grabbing" : HANDLE_LAYOUT[handle].cursor,
     pointerEvents: "auto",
     zIndex: 12,
@@ -315,12 +319,12 @@ export const CropFocalControl = ({
     left: `${focalBoxSpace.x * 100}%`,
     top: `${focalBoxSpace.y * 100}%`,
     transform: "translate(-50%, -50%)",
-    width: "16px",
-    height: "16px",
+    width: "18px",
+    height: "18px",
     borderRadius: "50%",
-    backgroundColor: "white",
-    border: "2px solid #e53e3e",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+    backgroundColor: ACCENT,
+    border: "2px solid #ffffff",
+    boxShadow: "0 0 0 1.5px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.3)",
     cursor: dragTarget === "focal" ? "grabbing" : "grab",
     pointerEvents: "auto",
     zIndex: 11,
@@ -341,6 +345,11 @@ export const CropFocalControl = ({
           left: "50%",
           width: `${boxSize.height}px`,
           height: `${boxSize.width}px`,
+          // The swapped width can exceed the box width; without this the global
+          // `img { max-width: 100% }` would cap it and desync the displayed image
+          // from the crop overlay (which uses the uncapped, swapped bounds).
+          maxWidth: "none",
+          maxHeight: "none",
           objectFit: "contain",
           transform: `translate(-50%, -50%) scale(${flipX}, ${flipY}) rotate(${rotate}deg)`,
           transformOrigin: "center",
@@ -358,90 +367,60 @@ export const CropFocalControl = ({
           pointerEvents: "none",
         }
 
-  const label =
-    showCrop && focalEnabled
-      ? "Crop & focal point"
-      : showCrop
-        ? "Crop"
-        : "Focal point"
-  const hint = [
-    showCrop && "Drag the frame to reposition, the handles to resize.",
-    focalEnabled && "Drag the dot to choose the part to keep in view.",
-  ]
-    .filter(Boolean)
-    .join(" ")
-
   return (
-    <VStack align="start" spacing="0.5rem" w="100%">
-      <Text textStyle="h6" fontWeight="semibold">
-        {label}
-      </Text>
-      <Text textStyle="body-2" color="base.content.medium">
-        {hint}
-      </Text>
+    <Box
+      ref={boxRef}
+      position="relative"
+      w="100%"
+      h="100%"
+      borderRadius="0.25rem"
+      overflow="hidden"
+      // Fills its slot; the parent wrapper owns the sizing (flex-fill on desktop,
+      // a fixed height when stacked). The image is letterboxed inside via
+      // object-contain and all crop/focal math maps through `imageBounds`, so the
+      // canvas size is independent of the image's aspect — a stable editor height,
+      // not one that grows/shrinks per image. Flat backdrop; the crop frame +
+      // dim-outside overlay make the image bounds clear.
+      bgColor="#f3f4f6"
+    >
+      {/* oxlint-disable-next-line @next/next/no-img-element -- needs naturalWidth/Height for the no-letterbox aspect mapping; user image, not an LCP hero */}
+      <img
+        src={generateAssetUrl(src)}
+        alt="Image for crop and focal point adjustment"
+        onLoad={handleImageLoad}
+        style={displayImageStyle}
+      />
 
-      <Box
-        ref={boxRef}
-        position="relative"
-        w="100%"
-        maxH="20rem"
-        aspectRatio={aspectRatio}
-        borderWidth="1px"
-        borderColor="base.divider.medium"
-        borderRadius="0.25rem"
-        overflow="hidden"
-        style={{
-          // Checkerboard makes the letterboxed/pillarboxed "bleed" area (where
-          // the box's aspect ratio doesn't match the image's) visually obvious
-          // — it only ever shows through where the <img> (object-fit: contain)
-          // doesn't cover, since the image sits on top of this background.
-          background:
-            "repeating-conic-gradient(#d9d9d9 0% 25%, #f1f1f1 0% 50%) 50% / 20px 20px",
-        }}
-      >
-        {/* oxlint-disable-next-line @next/next/no-img-element -- needs naturalWidth/Height for the no-letterbox aspect mapping; user image, not an LCP hero */}
-        <img
-          src={generateAssetUrl(src)}
-          alt="Image for crop and focal point adjustment"
-          onLoad={handleImageLoad}
-          style={displayImageStyle}
+      {showCrop && (
+        <div
+          style={rectStyle}
+          onPointerDown={handleRectPointerDown}
+          onPointerMove={handleRectPointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+        >
+          {activeHandles.map((handle) => (
+            <div
+              key={handle}
+              style={getHandleStyle(handle)}
+              onPointerDown={(event) => handleResizePointerDown(event, handle)}
+              onPointerMove={(event) => handleResizePointerMove(event, handle)}
+              onPointerUp={handlePointerUp}
+              onPointerLeave={handlePointerUp}
+            />
+          ))}
+        </div>
+      )}
+
+      {focalEnabled && (
+        <div
+          style={markerStyle}
+          onPointerDown={handleFocalPointerDown}
+          onPointerMove={handleFocalPointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
         />
-
-        {showCrop && (
-          <div
-            style={rectStyle}
-            onPointerDown={handleRectPointerDown}
-            onPointerMove={handleRectPointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
-          >
-            {activeHandles.map((handle) => (
-              <div
-                key={handle}
-                style={getHandleStyle(handle)}
-                onPointerDown={(event) =>
-                  handleResizePointerDown(event, handle)
-                }
-                onPointerMove={(event) =>
-                  handleResizePointerMove(event, handle)
-                }
-                onPointerUp={handlePointerUp}
-                onPointerLeave={handlePointerUp}
-              />
-            ))}
-          </div>
-        )}
-
-        {focalEnabled && (
-          <div
-            style={markerStyle}
-            onPointerDown={handleFocalPointerDown}
-            onPointerMove={handleFocalPointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
-          />
-        )}
-      </Box>
-    </VStack>
+      )}
+    </Box>
   )
 }

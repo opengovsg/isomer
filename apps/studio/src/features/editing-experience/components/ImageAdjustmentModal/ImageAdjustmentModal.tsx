@@ -1,8 +1,7 @@
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
 import {
   Box,
-  Grid,
-  GridItem,
+  Flex,
   HStack,
   Modal,
   ModalBody,
@@ -17,6 +16,7 @@ import {
 } from "@chakra-ui/react"
 import {
   Button,
+  Checkbox,
   Infobox,
   ModalCloseButton,
   useToast,
@@ -27,6 +27,7 @@ import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
 import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
+import { AspectRatioControl } from "./controls/AspectRatioControl"
 import { CropFocalControl } from "./controls/CropFocalControl"
 import { defaultCropRect } from "./controls/cropGeometry"
 import {
@@ -121,6 +122,11 @@ export const ImageAdjustmentModal = ({
   // Drives UI locking during a save. Local (not the hook's isSaving) so the
   // save timeout below can unlock the modal even if the underlying upload hangs.
   const [isSaving, setIsSaving] = useState(false)
+  // Preview-only toggle for the scrim/text overlay in the framed-image preview.
+  // Default on; only surfaced for components whose framed preview draws a scrim.
+  const [showHeroText, setShowHeroText] = useState(true)
+  const showTextOverlayToggle =
+    !!config.scrim && !!config.skipRealComponentPreview
 
   // Check if draft differs from original value.
   const isModified = JSON.stringify(draft) !== JSON.stringify(value)
@@ -138,10 +144,14 @@ export const ImageAdjustmentModal = ({
         rotate: draft?.rotate,
         lockedRatio,
         maxRenderedWidthPx: config.maxRenderedWidthPx,
+        maxRenderedHeightPx: config.maxRenderedHeightPx,
+        objectFit: previewObjectFit,
       }),
     [
       naturalSize,
       config.maxRenderedWidthPx,
+      config.maxRenderedHeightPx,
+      previewObjectFit,
       draft?.crop,
       draft?.rotate,
       lockedRatio,
@@ -310,19 +320,36 @@ export const ImageAdjustmentModal = ({
 
       <Modal
         size={{ base: "full", md: "6xl" }}
+        isCentered
+        // Scroll INSIDE the body, not the (centered) outer container — otherwise
+        // when content is taller than the viewport, centering offsets the top
+        // above the scroll origin and it can't be reached (the editor gets cut
+        // off with the scrollbar already at its max).
+        scrollBehavior="inside"
         isOpen={isOpen}
         onClose={handleClose}
         closeOnOverlayClick={!isSaving}
         closeOnEsc={!isSaving}
       >
         <ModalOverlay />
-        <ModalContent overflow="hidden">
+        {/* Fixed height so edits inside never resize (and thus reposition) the
+            modal — the preview rail scrolls internally instead. */}
+        <ModalContent
+          overflow="hidden"
+          maxW={{ md: "75rem" }}
+          // Give the dialog a real, generous height. `scrollBehavior="inside"`
+          // only sets a maxH (calc(100% - 7.5rem)) and no height, so without an
+          // explicit floor the centered dialog collapses toward its content. minH
+          // overrides that cap to lock a stable height; it scales with the
+          // viewport but is capped so it isn't tiny on short screens or huge on
+          // tall ones. Both are the same value → a fixed height that never jumps.
+          h={{ md: "min(50rem, 90vh)" }}
+          minH={{ md: "min(50rem, 90vh)" }}
+        >
           <ModalHeader pr="4.5rem">
-            <HStack spacing={3}>
-              <Text as="span" textStyle="h5" fontWeight="semibold">
-                Adjust image
-              </Text>
-            </HStack>
+            <Text as="span" textStyle="h4" fontWeight="semibold">
+              Edit image
+            </Text>
           </ModalHeader>
 
           <ModalCloseButton
@@ -331,36 +358,50 @@ export const ImageAdjustmentModal = ({
             isDisabled={isSaving}
           />
 
-          <ModalBody overflow="auto" p="2rem">
-            <Grid
-              templateColumns={{ base: "1fr", md: "1fr 1fr" }}
-              gap="2rem"
+          {/* On desktop the body fills the fixed height and does NOT scroll as
+              a whole; each column scrolls on its own (see below). On mobile
+              (stacked), fall back to normal body scroll. */}
+          <ModalBody
+            p="2rem"
+            flex="1"
+            minH={0}
+            overflow={{ base: "auto", md: "hidden" }}
+          >
+            <Flex
+              direction={{ base: "column", md: "row" }}
+              gap="1.5rem"
+              align="stretch"
               w="100%"
-              h="100%"
+              h={{ md: "100%" }}
+              minH={0}
             >
-              {/* Canvas Area: Live Breakpoint Preview */}
-              <GridItem>
-                <AdjustmentPreview
-                  src={src}
-                  originalSrc={originalSrc}
-                  adjustment={draft}
-                  previewStates={config.previewStates}
-                  scrim={config.scrim}
-                  block={block}
-                  imageFieldName={imageFieldName}
-                  skipRealComponentPreview={config.skipRealComponentPreview}
-                  stackPreviews={config.stackPreviews}
-                  objectFit={previewObjectFit}
-                  siteId={siteId}
-                />
-              </GridItem>
-
-              {/* Controls Panel */}
-              <GridItem>
-                <VStack align="start" spacing="1.5rem" w="100%">
-                  {/* Crop + focal point: one shared image canvas, since focal
-                      is only meaningful relative to the crop. */}
-                  {(config.cropMode !== "none" || focalEnabled) && (
+              {/* Crop column. On desktop the canvas flex-fills the fixed body
+                  height with the toolbar pinned below, so the editor fits without
+                  scrolling regardless of the image's shape (it's letterboxed
+                  inside a fixed canvas); if the viewport is too short to fit even
+                  the minimum editor, the column scrolls as a fallback. When
+                  stacked (narrow viewport) the canvas takes a fixed height and
+                  the whole body scrolls. */}
+              <Flex
+                direction="column"
+                gap="1.125rem"
+                flex={{ md: "1" }}
+                minW={0}
+                w="100%"
+                minH={{ md: 0 }}
+                overflowY={{ md: "auto" }}
+                // Reserve the scrollbar gutter so toggling it never changes the
+                // content width (prevents a resize feedback loop with the tiles).
+                sx={{ scrollbarGutter: "stable" }}
+              >
+                {/* Crop + focal point: one shared image canvas, since focal
+                    is only meaningful relative to the crop. */}
+                {(config.cropMode !== "none" || focalEnabled) && (
+                  <Box
+                    h={{ base: "18rem", md: "auto" }}
+                    flex={{ md: "1" }}
+                    minH={{ md: "14rem" }}
+                  >
                     <CropFocalControl
                       src={originalSrc}
                       crop={draft?.crop}
@@ -380,8 +421,21 @@ export const ImageAdjustmentModal = ({
                       onImageAspectChange={setImageAspect}
                       onNaturalSizeChange={setNaturalSize}
                     />
-                  )}
+                  </Box>
+                )}
 
+                <Flex
+                  justify="space-between"
+                  align="center"
+                  wrap="wrap"
+                  gap="1rem"
+                  w="100%"
+                  flexShrink={0}
+                >
+                  <AspectRatioControl
+                    cropMode={config.cropMode}
+                    lockedRatios={config.lockedRatios}
+                  />
                   {/* Rotate & flip — applies to every adjustable component. */}
                   <TransformControl
                     flipH={draft?.flipH ?? false}
@@ -390,128 +444,114 @@ export const ImageAdjustmentModal = ({
                     onRotate={handleRotate}
                     onFlip={handleFlip}
                   />
+                </Flex>
 
-                  {/* Low-resolution warning — the kept crop can't fill this
-                      component's largest frame even at 1x, so it would look soft. */}
-                  {lowResWarning && (
-                    <Infobox variant="warning" size="sm">
-                      <Text textStyle="body-2">
-                        This image may look blurry here. The area you've kept is
-                        about {lowResWarning.effectiveWidth}px wide, but it can
-                        display up to {lowResWarning.targetWidth}px wide. Use a
-                        larger image, or keep a wider area in the crop.
-                      </Text>
-                    </Infobox>
-                  )}
+                {/* Preserve-only note */}
+                {config.cropMode === "none" && (
+                  <Box
+                    w="100%"
+                    flexShrink={0}
+                    p="1rem"
+                    bgColor="utility.ui"
+                    borderRadius="0.25rem"
+                    borderWidth="1px"
+                    borderColor="base.divider.medium"
+                  >
+                    <Text textStyle="body-2">
+                      This image cannot be cropped. Only focal point and
+                      rotation adjustments are available.
+                    </Text>
+                  </Box>
+                )}
+              </Flex>
 
-                  {/* Preserve-only note */}
-                  {config.cropMode === "none" && (
-                    <Box
-                      w="100%"
-                      p="1rem"
-                      bgColor="utility.ui"
-                      borderRadius="0.25rem"
-                      borderWidth="1px"
-                      borderColor="base.divider.medium"
-                    >
-                      <Text textStyle="body-2">
-                        This image cannot be cropped. Only focal point and
-                        rotation adjustments are available.
-                      </Text>
-                    </Box>
-                  )}
+              {/* Preview rail — scrolls within the fixed modal height, so a
+                  taller/shorter preview (from a different crop) never resizes
+                  the modal. */}
+              <VStack
+                align="stretch"
+                spacing="1rem"
+                w={{ base: "100%", md: "21rem" }}
+                flexShrink={0}
+                minH={0}
+                overflowY={{ md: "auto" }}
+                // Reserve the scrollbar gutter so toggling it never changes the
+                // rail's content width — otherwise tile heights (derived from
+                // that width) would oscillate and loop the ResizeObserver.
+                sx={{ scrollbarGutter: "stable" }}
+              >
+                {/* Pinned so it stays visible while the tiles scroll. Opaque bg
+                    + zIndex so scrolling previews pass behind it. */}
+                <Text
+                  textStyle="subhead-1"
+                  position={{ md: "sticky" }}
+                  top={0}
+                  zIndex={1}
+                  bg="base.canvas.default"
+                  pb="0.25rem"
+                >
+                  Preview
+                </Text>
+                <AdjustmentPreview
+                  src={src}
+                  originalSrc={originalSrc}
+                  adjustment={draft}
+                  previewStates={config.previewStates}
+                  scrim={config.scrim}
+                  block={block}
+                  imageFieldName={imageFieldName}
+                  skipRealComponentPreview={config.skipRealComponentPreview}
+                  stackPreviews={config.stackPreviews}
+                  showHeroText={showHeroText}
+                  objectFit={previewObjectFit}
+                  siteId={siteId}
+                />
 
-                  {/* Locked Ratios */}
-                  {config.lockedRatios && config.lockedRatios.length > 0 && (
-                    <Box w="100%">
-                      <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
-                        Aspect ratios
-                      </Text>
-                      <VStack align="start" spacing="0.25rem">
-                        {config.lockedRatios.map((ratio, idx) => (
-                          <Text
-                            key={idx}
-                            textStyle="body-2"
-                            color="base.content.medium"
-                          >
-                            {ratio.width}:{ratio.height}
-                          </Text>
-                        ))}
-                      </VStack>
-                    </Box>
-                  )}
+                {/* Low-resolution warning — the kept crop can't fill this
+                    component's largest frame even at 1x, so it would look soft. */}
+                {lowResWarning && (
+                  <Infobox variant="warning" size="sm">
+                    <Text textStyle="body-2">
+                      This image may look blurry here. The area you've kept is
+                      about {lowResWarning.effectivePx}px{" "}
+                      {lowResWarning.dimension === "width" ? "wide" : "tall"},
+                      but it can display up to {lowResWarning.targetPx}px{" "}
+                      {lowResWarning.dimension === "width" ? "wide" : "tall"}.
+                      Use a larger image, or keep a{" "}
+                      {lowResWarning.dimension === "width" ? "wider" : "taller"}{" "}
+                      area in the crop.
+                    </Text>
+                  </Infobox>
+                )}
 
-                  {/* Preview States */}
-                  {config.previewStates.length > 0 && (
-                    <Box w="100%">
-                      <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
-                        Preview states
-                      </Text>
-                      <VStack align="start" spacing="0.25rem">
-                        {config.previewStates.map((state) => (
-                          <Text
-                            key={state.id}
-                            textStyle="body-2"
-                            color="base.content.medium"
-                          >
-                            {state.label}
-                            {state.viewportWidth &&
-                              ` (${state.viewportWidth}px)`}
-                          </Text>
-                        ))}
-                      </VStack>
-                    </Box>
-                  )}
-
-                  {/* Overlay */}
-                  {config.scrim && (
-                    <Box w="100%">
-                      <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
-                        Overlay
-                      </Text>
-                      <Text textStyle="body-2" color="base.content.medium">
-                        {config.scrim.className}
-                      </Text>
-                    </Box>
-                  )}
-
-                  {/* Pre-upload Copy */}
-                  {config.preUploadCopy && (
-                    <Box
-                      w="100%"
-                      p="1rem"
-                      bgColor="utility.ui"
-                      borderRadius="0.25rem"
-                      borderWidth="1px"
-                      borderColor="base.divider.medium"
-                    >
-                      <Text textStyle="body-2">{config.preUploadCopy}</Text>
-                    </Box>
-                  )}
-
-                  <Spacer />
-                </VStack>
-              </GridItem>
-            </Grid>
+                {showTextOverlayToggle && (
+                  <Checkbox
+                    isChecked={showHeroText}
+                    onChange={(e) => setShowHeroText(e.target.checked)}
+                  >
+                    <Text textStyle="body-2">Show text over the image</Text>
+                  </Checkbox>
+                )}
+              </VStack>
+            </Flex>
           </ModalBody>
 
           <ModalFooter borderTopWidth="1px" borderColor="base.divider.medium">
-            <HStack spacing="0.75rem" w="100%">
+            <HStack spacing="1rem" w="100%">
               <Button
-                variant="clear"
-                colorScheme="neutral"
-                onClick={handleReset}
-                isDisabled={isResetDisabled || isSaving}
-              >
-                Reset adjustments
-              </Button>
-              <Button
-                variant="clear"
-                colorScheme="neutral"
+                variant="link"
                 onClick={handleUndo}
                 isDisabled={!isModified || isSaving}
               >
                 Undo changes
+              </Button>
+              <Button
+                variant="link"
+                colorScheme="critical"
+                onClick={handleReset}
+                isDisabled={isResetDisabled || isSaving}
+              >
+                Reset image
               </Button>
               <Spacer />
               <Button
@@ -523,7 +563,7 @@ export const ImageAdjustmentModal = ({
                 Cancel
               </Button>
               <Button variant="solid" onClick={handleSave} isLoading={isSaving}>
-                Save
+                Save changes
               </Button>
             </HStack>
           </ModalFooter>

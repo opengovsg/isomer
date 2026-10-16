@@ -313,6 +313,72 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
     "The card crops this image to fill its frame and overlays the title on a dark gradient at the bottom. Keep your key subject in the upper half and set a focal point to anchor it.",
 }
 
+// Native Image block (P2a) — free-form crop. Unlike every framed component, the
+// native image renders at its own (now cropped) aspect ratio with no fixed
+// frame, so the crop is unconstrained (custom) and there's no focal point to
+// set — nothing cover-fits, so an anchor would have nothing to anchor against.
+// The crop is baked into src; the real-component preview renders the actual
+// Image block, so no skipRealComponentPreview. One preview state is enough since
+// the image is the same shape at every breakpoint (it just scales down).
+const IMAGE_CONFIG: AdjustmentConfig = {
+  componentType: "image",
+  cropMode: "custom",
+  focalEnabled: false,
+  // Widest the native image renders: the content column is full-width (col-span-12)
+  // just below the `lg` breakpoint, ~943px at a 1023px viewport (above `lg` it
+  // narrows to col-span-9). Round up to 960 so a sharp image at that width doesn't
+  // false-warn while genuinely soft crops below it still do.
+  maxRenderedWidthPx: 960,
+  previewStates: [
+    {
+      id: "default",
+      label: "Default",
+      viewportWidth: 1280,
+      // Pre-measure flash guess only — the real render measures the true height.
+      aspectRatio: { width: 3, height: 2 },
+    },
+  ],
+  preUploadCopy:
+    "You can crop this image to any shape. Use a high-resolution image so the area you keep stays sharp at the size it displays on your page.",
+}
+
+// ImageGallery (P2b) — array-nested, always letterboxed. Every gallery image
+// renders object-contain in a fixed-height frame (main slideshow + square
+// thumbnails), so nothing cover-fits: the crop only defines the region that is
+// baked in and then letterboxed, and a focal anchor has nothing to anchor
+// against (same as InfoCards under "Resize image to fit"). Array-nested, so the
+// real component renders the WHOLE gallery, not the single image being edited —
+// use the framed approximation with a contain preview fit. This enables cropping
+// only; it does not add a cover/"Fill" display option (the frame still
+// letterboxes), which would be a separate renderer + schema change.
+const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
+  componentType: "imagegallery",
+  cropMode: "custom",
+  focalEnabled: false,
+  // Main slideshow: full content column wide (~943px just below `lg`, round up to
+  // 960) and a fixed 28.5rem = 456px tall, object-contain. Both axes are needed
+  // because contain only upscales when the crop falls short on BOTH — so a wide
+  // landscape or a tall portrait stays sharp and doesn't false-warn, while a
+  // genuinely small crop still does (see computeLowResWarning).
+  maxRenderedWidthPx: 960,
+  maxRenderedHeightPx: 456,
+  previewObjectFitFor: () => "contain",
+  skipRealComponentPreview: true,
+  // object-contain shows the whole image regardless of frame shape, so one
+  // representative frame state is enough. The main frame is a fixed 28.5rem tall
+  // over the content column (~5:3).
+  previewStates: [
+    {
+      id: "gallery",
+      label: "Gallery",
+      viewportWidth: 1280,
+      aspectRatio: { width: 5, height: 3 },
+    },
+  ],
+  preUploadCopy:
+    "Gallery images are shown in full (letterboxed to fit the frame), never cropped to it. Crop here only to trim parts of the image you don't want to show.",
+}
+
 /**
  * Resolves the adjustment config for an image field, by the containing block's
  * discriminators. Returns undefined for components not yet wired — the entry
@@ -323,6 +389,8 @@ export function resolveAdjustmentConfig(args: {
   fieldName: string
 }): AdjustmentConfig | undefined {
   const { type, variant } = asBlock(args.block)
+  if (type === "image") return IMAGE_CONFIG
+  if (type === "imagegallery") return IMAGE_GALLERY_CONFIG
   if (type === "hero" && variant === "gradient") return HERO_GRADIENT_CONFIG
   if (type === "hero" && variant === "largeImage")
     return HERO_LARGE_IMAGE_CONFIG

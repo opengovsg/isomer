@@ -1,16 +1,16 @@
 import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
-import { Box, FormControl, HStack, Text, useDisclosure } from "@chakra-ui/react"
+import { Box, FormControl, Text, useDisclosure } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
-  Button,
   FormErrorMessage,
   FormLabel,
+  Infobox,
 } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import dynamic from "next/dynamic"
-import { BiPencil } from "react-icons/bi"
+import { useEffect, useRef } from "react"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -18,8 +18,11 @@ import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useIsImageAdjustmentEnabled } from "~/hooks/useIsImageAdjustmentEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
+import { canBakeImage, mimeFromKeyExtension } from "~/lib/imageBake"
+import { generateOriginalAssetUrl } from "~/utils/generateAssetUrl"
 
 import { useAdjustmentConfigForField } from "../../hooks/useAdjustmentConfigForField"
+import { isManagedSiteAsset } from "./isManagedSiteAsset"
 import { getCustomErrorMessage } from "./utils"
 
 // JsonFormsImageControl is registered as a renderer for every FormBuilder
@@ -67,10 +70,10 @@ function JsonFormsImageControl({
   // Gate the adjustment entry point behind a GrowthBook flag (off by default,
   // rolled out per-user) — this is a rollout-sensitive editor path.
   const isImageAdjustmentEnabled = useIsImageAdjustmentEnabled()
-  // Only managed site-storage assets (relative "/{siteId}/..." paths) can be
-  // baked; external/absolute URLs have no derivable bake key, so hide Adjust
-  // for them rather than letting Save fail.
-  const isManagedAsset = !!data && data.startsWith("/")
+  // Only managed site-storage assets (relative "/..." paths) can be baked;
+  // external/absolute URLs and the built-in placeholder have no derivable bake
+  // key, so hide Adjust for them rather than letting Save fail.
+  const isManagedAsset = isManagedSiteAsset(data, siteId)
 
   // Reads the sibling imageAdjustment field and containing block via
   // JsonForms' core data (the only way to reach data outside this control's
@@ -84,6 +87,33 @@ function JsonFormsImageControl({
     currentAdjustment,
     config,
   } = useAdjustmentConfigForField(path)
+
+  // AVIF/TIFF etc. are uploadable but can't be baked (canvas can't re-encode
+  // them), so the editor would fail on save. Derive editability from the
+  // asset's extension and gate the entry point on it.
+  const isBakeableFormat =
+    !!data && canBakeImage(mimeFromKeyExtension(data) ?? "")
+
+  // The adjustment entry point shows only when the flag is on, the asset is a
+  // managed, bakeable-format asset, and the owning component has a config.
+  const canAdjust =
+    isImageAdjustmentEnabled && isManagedAsset && !!config && isBakeableFormat
+
+  // Same asset that would be adjustable but for its format — tell the user why
+  // the editor isn't offered, rather than silently hiding the pencil.
+  const showUnsupportedFormatCallout =
+    isImageAdjustmentEnabled && isManagedAsset && !!config && !isBakeableFormat
+
+  // Auto-open the editor right after a fresh upload (set in FileAttachment's
+  // setHref below) once the new asset turns out to be adjustable — not on page
+  // load for an already-saved image.
+  const justUploadedRef = useRef(false)
+  useEffect(() => {
+    if (justUploadedRef.current && canAdjust) {
+      justUploadedRef.current = false
+      onAdjustmentModalOpen()
+    }
+  }, [canAdjust, onAdjustmentModalOpen])
 
   const handleAdjustmentSave = ({
     src,
@@ -101,8 +131,15 @@ function JsonFormsImageControl({
       <FormLabel description={description}>{label}</FormLabel>
       {data ? (
         <Box>
+          {/* Adjustment entry point — a pencil on the file row, only for
+              components with a config and only for managed (bakeable) assets. */}
           <AttachmentData
             data={data.split("/").pop() ?? "Unknown"}
+            // Bypass the CDN transcode (same as the editor preview) so a
+            // just-saved image's thumbnail resolves immediately instead of
+            // 404ing until it propagates.
+            imageSrc={generateOriginalAssetUrl(data)}
+            onEdit={canAdjust ? onAdjustmentModalOpen : undefined}
             onClick={() => {
               // Clear the sibling adjustment too — otherwise a stale
               // imageAdjustment (with an originalKey pointing at the removed
@@ -112,41 +149,31 @@ function JsonFormsImageControl({
               if (currentAdjustment) handleChange(siblingPath, undefined)
             }}
           />
-          {/* Adjustment entry point — only for components with a config, and
-              only for managed (bakeable) assets */}
-          {isImageAdjustmentEnabled && isManagedAsset && config && (
-            <>
-              <HStack spacing="1rem" mt="1rem">
-                <Button
-                  leftIcon={<BiPencil />}
-                  variant="clear"
-                  colorScheme="neutral"
-                  onClick={onAdjustmentModalOpen}
-                >
-                  Adjust image
-                </Button>
-                <Text textStyle="body-2" color="base.content.medium">
-                  {currentAdjustment ? "Adjusted" : "Not adjusted"}
-                </Text>
-              </HStack>
-
-              <ImageAdjustmentModal
-                key={data}
-                isOpen={isAdjustmentModalOpen}
-                onClose={onAdjustmentModalClose}
-                config={config}
-                src={data}
-                value={currentAdjustment}
-                block={block}
-                imageFieldName={fieldName}
-                fieldHost={fieldHost}
-                siteId={siteId}
-                resourceId={
-                  (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
-                }
-                onSave={handleAdjustmentSave}
-              />
-            </>
+          {canAdjust && (
+            <ImageAdjustmentModal
+              key={data}
+              isOpen={isAdjustmentModalOpen}
+              onClose={onAdjustmentModalClose}
+              config={config}
+              src={data}
+              value={currentAdjustment}
+              block={block}
+              imageFieldName={fieldName}
+              fieldHost={fieldHost}
+              siteId={siteId}
+              resourceId={
+                (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
+              }
+              onSave={handleAdjustmentSave}
+            />
+          )}
+          {showUnsupportedFormatCallout && (
+            <Infobox variant="warning" size="sm" mt="0.75rem">
+              <Text textStyle="body-2">
+                This image's format can't be edited. Only JPEG, PNG, and WebP
+                images can be cropped or adjusted.
+              </Text>
+            </Infobox>
           )}
         </Box>
       ) : (
@@ -155,17 +182,9 @@ function JsonFormsImageControl({
               component's real frame behaviour (never a universal ratio for a
               responsive frame). */}
           {isImageAdjustmentEnabled && config?.preUploadCopy && (
-            <Box
-              w="100%"
-              mb="0.75rem"
-              p="1rem"
-              bgColor="utility.ui"
-              borderRadius="0.25rem"
-              borderWidth="1px"
-              borderColor="base.divider.medium"
-            >
+            <Infobox variant="info" size="sm" mb="0.75rem">
               <Text textStyle="body-2">{config.preUploadCopy}</Text>
-            </Box>
+            </Infobox>
           )}
           <FileAttachment
             maxSizeInBytes={schema.maxSizeInBytes ?? MAX_IMG_FILE_SIZE_BYTES}
@@ -176,7 +195,12 @@ function JsonFormsImageControl({
             resourceId={
               (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
             }
-            setHref={(src) => handleChange(path, src)}
+            setHref={(src) => {
+              handleChange(path, src)
+              // Mark a real upload (not the loading-state "" or a clear) so the
+              // editor auto-opens once the new src lands and canAdjust is true.
+              if (src) justUploadedRef.current = true
+            }}
             shouldFetchResource={true}
           />
         </Box>
