@@ -1,3 +1,3 @@
 export { useDgsMetadata } from "./useDgsMetadata"
-export { useIsCentralNotificationDismissed } from "./useIsCentralNotificationDismissed"
+export { useDismissedCentralNotification } from "./useDismissedCentralNotification"
 export { useIsNotificationDismissed } from "./useIsNotificationDismissed"

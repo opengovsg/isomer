@@ -40,6 +40,7 @@ export {
   type NavbarSchemaType,
 } from "./Navbar"
 export {
+  NotificationCustomSchema,
   NotificationSchema,
   NotificationSettingsSchema,
   type NotificationProps,

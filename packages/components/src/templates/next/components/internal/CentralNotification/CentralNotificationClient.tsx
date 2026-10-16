@@ -6,7 +6,7 @@ import type {
   CentralNotificationProps,
 } from "~/interfaces"
 import { useEffect, useState } from "react"
-import { useIsCentralNotificationDismissed } from "~/hooks/useIsCentralNotificationDismissed"
+import { useDismissedCentralNotification } from "~/hooks/useDismissedCentralNotification"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
 import { Prose } from "../../native/Prose"
@@ -19,17 +19,21 @@ interface CentralNotificationClientProps extends CentralNotificationProps {
   siteUrl: string
 }
 
+// Broadcast URLs are typed by hand; tolerate case and trailing-slash drift
+const normaliseUrl = (url: string) =>
+  url.trim().toLowerCase().replace(/\/+$/, "")
+
 export const CentralNotificationClient = ({
   assetsBaseUrl,
   siteUrl,
   site,
 }: CentralNotificationClientProps) => {
-  const [isDismissed, setIsDismissed] = useIsCentralNotificationDismissed()
+  const [dismissedKey, setDismissedKey] = useDismissedCentralNotification()
   const [matchedEntry, setMatchedEntry] =
     useState<CentralNotificationEntry | null>(null)
 
   useEffect(() => {
-    if (isDismissed || !assetsBaseUrl) return
+    if (!assetsBaseUrl) return
 
     fetch(`${assetsBaseUrl}/central-notification.json`)
       .then((res) => {
@@ -39,23 +43,33 @@ export const CentralNotificationClient = ({
       .then((data: CentralNotificationBroadcast) => {
         if (!Array.isArray(data)) return
 
-        const match = data.find((entry) => entry.targetSites.includes(siteUrl))
+        const normalisedSiteUrl = normaliseUrl(siteUrl)
+        const match = data.find(
+          (entry) =>
+            Array.isArray(entry.targetSites) &&
+            entry.targetSites.some(
+              (target) => normaliseUrl(target) === normalisedSiteUrl,
+            ),
+        )
         if (match) {
           setMatchedEntry(match)
         }
       })
-      .catch(() => {
-        // Silently fail - no notification is shown if fetch fails
-      })
-  }, [assetsBaseUrl, siteUrl, isDismissed])
+      .catch(() => undefined)
+  }, [assetsBaseUrl, siteUrl])
 
-  const onDismiss = () => {
-    setIsDismissed(true)
-  }
-
-  if (isDismissed || !matchedEntry) return null
+  if (!matchedEntry) return null
 
   const { notification } = matchedEntry
+  const notificationKey = JSON.stringify(notification)
+  if (dismissedKey === notificationKey) {
+    return null
+  }
+
+  const onDismiss = () => {
+    setDismissedKey(notificationKey)
+  }
+
   const { title, content } = notification
 
   const ContentParagraph = () => {
