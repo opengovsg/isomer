@@ -2,7 +2,18 @@ import type { AddressInfo } from "node:net"
 import { decodeJwt } from "jose"
 import http from "node:http"
 import { Issuer } from "openid-client"
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest"
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
+
+import { getAuthorizationUrl } from "../singpass.service"
 
 const REQUEST_URI = "urn:ietf:params:oauth:request_uri:integration-test"
 
@@ -36,20 +47,22 @@ describe("getAuthorizationUrl", () => {
     )
   })
 
-  it("sends DPoP on PAR through the production FAPI2Client setup", async () => {
-    // Arrange
-    vi.resetModules()
+  beforeEach(() => {
     parProofs.length = 0
-    const discoverSpy = vi.spyOn(Issuer, "discover").mockResolvedValue(
+    vi.spyOn(Issuer, "discover").mockResolvedValue(
       new Issuer({
         issuer: baseUrl,
         authorization_endpoint: `${baseUrl}/auth`,
         pushed_authorization_request_endpoint: `${baseUrl}/par`,
       }),
     )
+  })
 
-    const { getAuthorizationUrl } = await import("../singpass.service")
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
 
+  it("sends DPoP on PAR through the production FAPI2Client setup", async () => {
     // Act
     const { authorizationUrl } = await getAuthorizationUrl({ useFapi: true })
 
@@ -59,8 +72,5 @@ describe("getAuthorizationUrl", () => {
     expect(proof.htm).toBe("POST")
     expect(proof.htu).toBe(`${baseUrl}/par`)
     expect(authorizationUrl).toContain(REQUEST_URI)
-
-    discoverSpy.mockRestore()
-    vi.resetModules()
   })
 })
