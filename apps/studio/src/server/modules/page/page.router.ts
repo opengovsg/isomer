@@ -31,7 +31,6 @@ import {
   createPageSchema,
   getPrefillSchema,
   getRootPageSchema,
-  listPagesSchema,
   pageSettingsSchema,
   publishPageSchema,
   readPageOutputSchema,
@@ -55,7 +54,7 @@ import {
 
 import { logResourceEvent } from "../audit/audit.service"
 import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
-import { db, jsonb, sql } from "../database"
+import { db, jsonb } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { applyPermalinkChangeRedirects } from "../redirect/redirect.service"
@@ -143,75 +142,6 @@ export const pageRouter = router({
       const { title, content } = resource
 
       return { title, ...renderPrefillText(content) }
-    }),
-
-  list: protectedProcedure
-    .input(listPagesSchema)
-    .query(async ({ ctx, input: { siteId, resourceId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      let query = db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-
-      if (resourceId) {
-        query = query.where("Resource.parentId", "=", String(resourceId))
-      }
-      return query
-        .select([
-          "Resource.id",
-          "Resource.permalink",
-          "Resource.title",
-          "Resource.publishedVersionId",
-          "Resource.draftBlobId",
-          "Resource.type",
-        ])
-        .execute()
-    }),
-
-  getCategories: protectedProcedure
-    .input(basePageSchema)
-    .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      const { parentId } = await db
-        .selectFrom("Resource")
-        .where("siteId", "=", siteId)
-        .where("id", "=", String(pageId))
-        .select("parentId")
-        .executeTakeFirstOrThrow()
-
-      const blobs = await db
-        .selectFrom("Resource as r")
-        .leftJoin("Blob as b", "r.draftBlobId", "b.id")
-        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
-        .leftJoin("Blob as vb", "v.blobId", "vb.id")
-        .where("r.siteId", "=", siteId)
-        .where("r.parentId", "=", String(parentId))
-        .select((eb) => {
-          return eb.fn
-            .coalesce(
-              sql<string>`b.content->'page'->>'category'`,
-              sql<string>`vb.content->'page'->>'category'`,
-            )
-            .as("category")
-        })
-        .distinct()
-        .execute()
-
-      const categories = blobs
-        .map((blob) => blob.category)
-        .filter((c) => !!c && !!c.trim())
-
-      return { categories }
     }),
 
   readPage: protectedProcedure

@@ -355,282 +355,6 @@ describe("redirect.router", async () => {
     })
   })
 
-  describe("validate", () => {
-    it("should throw 401 if not logged in", async () => {
-      // Arrange / Act
-      const result = unauthedCaller.validate({
-        siteId,
-        source: "/old",
-        destination: "/new",
-      })
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "UNAUTHORIZED" }),
-      )
-    })
-
-    it("should throw 403 if user does not have read access to the site", async () => {
-      // Arrange
-      const { site: otherSite } = await setupSite()
-
-      // Act
-      const result = caller.validate({
-        siteId: otherSite.id,
-        source: "/old",
-        destination: "/new",
-      })
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have sufficient permissions to perform this action",
-        }),
-      )
-    })
-
-    it("should report no issues for a redirect to an external URL", async () => {
-      // Arrange / Act
-      const result = await caller.validate({
-        siteId,
-        source: "/old",
-        destination: "https://www.example.gov.sg/new",
-      })
-
-      // Assert
-      expect(result).toEqual({ errors: [] })
-    })
-
-    it("should report no issues for a redirect to a published page", async () => {
-      // Arrange
-      await seedPageAtRoot({ permalink: "published-page", published: true })
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/old",
-        destination: "/published-page",
-      })
-
-      // Assert
-      expect(result).toEqual({ errors: [] })
-    })
-
-    it("should error when a live redirect already exists for the source", async () => {
-      // Arrange
-      await db
-        .insertInto("Redirect")
-        .values({ siteId, source: "/old", destination: "/somewhere" })
-        .execute()
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/old",
-        destination: "https://www.example.gov.sg",
-      })
-
-      // Assert
-      expect(result.errors).toContainEqual({
-        code: "ALREADY_EXISTS",
-        message: "This page is already being redirected.",
-      })
-    })
-
-    it("should error when the redirect would create a loop", async () => {
-      // Arrange
-      // /b already redirects to /a, so adding /a -> /b bounces straight back
-      await db
-        .insertInto("Redirect")
-        .values({ siteId, source: "/b", destination: "/a" })
-        .execute()
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/a",
-        destination: "/b",
-      })
-
-      // Assert
-      expect(result.errors).toContainEqual({
-        code: "REDIRECT_LOOP",
-        message: "This will trap visitors in a never-ending loop.",
-        description:
-          "/b already redirects to /a. Visitors will get stuck in between pages. Delete existing redirects or direct to a different page.",
-      })
-    })
-
-    it("should detect a loop even when the existing destination has a trailing slash", async () => {
-      // Arrange
-      // Stored "/b -> /a/" must still loop with a new "/a -> /b" once the
-      // stored destination is normalised for comparison.
-      await db
-        .insertInto("Redirect")
-        .values({ siteId, source: "/b", destination: "/a/" })
-        .execute()
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/a",
-        destination: "/b",
-      })
-
-      // Assert
-      expect(result.errors).toContainEqual(
-        expect.objectContaining({ code: "REDIRECT_LOOP" }),
-      )
-    })
-
-    it("should not flag a multi-hop cycle as a loop (only one hop is checked)", async () => {
-      // Arrange — /b -> /c and /c -> /a already exist. Adding /a -> /b closes a
-      // three-redirect cycle, but loop detection only looks one hop deep by
-      // design, so it is allowed rather than flagged as a loop error.
-      await db
-        .insertInto("Redirect")
-        .values([
-          { siteId, source: "/b", destination: "/c" },
-          { siteId, source: "/c", destination: "/a" },
-        ])
-        .execute()
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/a",
-        destination: "/b",
-      })
-
-      // Assert
-      expect(result.errors).not.toContainEqual(
-        expect.objectContaining({ code: "REDIRECT_LOOP" }),
-      )
-    })
-
-    it("should not flag a multi-hop chain that never returns to the source", async () => {
-      // Arrange — /b -> /c -> /d terminates at /d, so adding /a -> /b chains but
-      // does not loop, so it is allowed.
-      await db
-        .insertInto("Redirect")
-        .values([
-          { siteId, source: "/b", destination: "/c" },
-          { siteId, source: "/c", destination: "/d" },
-        ])
-        .execute()
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/a",
-        destination: "/b",
-      })
-
-      // Assert
-      expect(result.errors).not.toContainEqual(
-        expect.objectContaining({ code: "REDIRECT_LOOP" }),
-      )
-    })
-
-    it("should not report ALREADY_EXISTS when only a soft-deleted redirect exists for the source", async () => {
-      // Arrange
-      await db
-        .insertInto("Redirect")
-        .values({
-          siteId,
-          source: "/old",
-          destination: "/x",
-          deletedAt: new Date(),
-        })
-        .execute()
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/old",
-        destination: "https://www.example.gov.sg",
-      })
-
-      // Assert
-      expect(result.errors).toEqual([])
-    })
-
-    it("should error when the source is the URL of a published page", async () => {
-      // Arrange — a live page sits at /live-page; redirecting from there would
-      // shadow it on the published site.
-      await seedPageAtRoot({ permalink: "live-page", published: true })
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/live-page",
-        destination: "/somewhere",
-      })
-
-      // Assert
-      expect(result.errors).toContainEqual({
-        code: "SOURCE_IS_EXISTING_PAGE",
-        message:
-          "A live page already uses this URL. The redirect would hide it. Move or unpublish that page first.",
-      })
-    })
-
-    it("should not error when the source matches only an unpublished page", async () => {
-      // Arrange — an unpublished page isn't live, so it can't be shadowed yet
-      // (publishing it later is guarded on the page side).
-      await seedPageAtRoot({ permalink: "draft-page", published: false })
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/draft-page",
-        destination: "/somewhere",
-      })
-
-      // Assert
-      expect(result.errors).toEqual([])
-    })
-
-    it("should error when the source is the URL of a live folder (published index)", async () => {
-      // Arrange — a folder whose index page is published is live at "/folder",
-      // so a redirect there would shadow it. Regression test: the source guard
-      // must resolve top-level containers (parentId = null), not only pages.
-      await setupPageResource({
-        siteId,
-        resourceType: ResourceType.RootPage,
-        parentId: null,
-      })
-      const { folder } = await setupFolder({
-        siteId,
-        permalink: "folder",
-        parentId: null,
-      })
-      await setupPageResource({
-        siteId,
-        resourceType: ResourceType.IndexPage,
-        parentId: folder.id,
-        state: ResourceState.Published,
-        userId,
-      })
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/folder",
-        destination: "/somewhere",
-      })
-
-      // Assert
-      expect(result.errors).toContainEqual({
-        code: "SOURCE_IS_EXISTING_PAGE",
-        message:
-          "A live page already uses this URL. The redirect would hide it. Move or unpublish that page first.",
-      })
-    })
-  })
-
   describe("create", () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange / Act
@@ -794,6 +518,34 @@ describe("redirect.router", async () => {
       expect(rows).toHaveLength(0)
     })
 
+    it("should throw 422 and create nothing if the redirect would loop when the existing destination has a trailing slash", async () => {
+      // Arrange
+      // Stored "/b -> /a/" must still loop with a new "/a -> /b" once the
+      // stored destination is normalised for comparison.
+      await db
+        .insertInto("Redirect")
+        .values({ siteId, source: "/b", destination: "/a/" })
+        .execute()
+
+      // Act
+      const result = caller.create({ siteId, source: "/a", destination: "/b" })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "UNPROCESSABLE_CONTENT",
+          message: "This will trap visitors in a never-ending loop.",
+        }),
+      )
+      const rows = await db
+        .selectFrom("Redirect")
+        .select("source")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/a")
+        .execute()
+      expect(rows).toHaveLength(0)
+    })
+
     it("should create a redirect that only closes a multi-hop cycle (loop check is one hop)", async () => {
       // Arrange — /b -> /c -> /a. Creating /a -> /b closes a 3-redirect cycle,
       // but the loop guard only looks one hop deep by design, so the create is
@@ -844,6 +596,52 @@ describe("redirect.router", async () => {
         .select("source")
         .where("siteId", "=", siteId)
         .where("source", "=", "/live-page")
+        .execute()
+      expect(rows).toHaveLength(0)
+    })
+
+    it("should throw 412 and create nothing if the source is a live folder's URL", async () => {
+      // Arrange — a folder whose index page is published is live at "/folder",
+      // so a redirect there would shadow it. Regression test: the source guard
+      // must resolve top-level containers (parentId = null), not only pages.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        source: "/folder",
+        destination: "/somewhere",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "A live page already uses this URL. The redirect would hide it. Move or unpublish that page first.",
+        }),
+      )
+      const rows = await db
+        .selectFrom("Redirect")
+        .select("source")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/folder")
         .execute()
       expect(rows).toHaveLength(0)
     })
