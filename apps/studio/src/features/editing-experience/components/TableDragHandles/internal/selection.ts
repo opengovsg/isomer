@@ -1,5 +1,9 @@
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import { CellSelection, selectedRect, TableMap } from "@tiptap/pm/tables"
+import {
+  isRowSlotClippedByVerticalSpan,
+  selectionForRowSlot,
+} from "~/features/editing-experience/utils/tableSlotSelection"
 
 import type { Axis } from "./axisView"
 import { AXIS_TABLE_OPS, getTableAt } from "./axisTableOps"
@@ -42,11 +46,17 @@ export const selectWholeSlot = (
   const table = getTableAt(editor.state.doc, tablePos)
   if (!table) return
   const map = TableMap.get(table)
-  const cellPos =
-    tablePos + 1 + AXIS_TABLE_OPS[axis].cellOffsetAt(map, table, index)
-  const selection = AXIS_TABLE_OPS[axis].cellSelection(
-    editor.state.doc.resolve(cellPos),
-  )
+  let selection: CellSelection
+  if (axis === "row") {
+    const rowSelection = selectionForRowSlot(editor.state.doc, tablePos, index)
+    if (!rowSelection) return
+    selection = rowSelection
+  } else {
+    const cellPos =
+      tablePos + 1 + AXIS_TABLE_OPS[axis].cellOffsetAt(map, table, index)
+    const $cell = editor.state.doc.resolve(cellPos)
+    selection = AXIS_TABLE_OPS.column.cellSelection($cell)
+  }
   editor.view.dispatch(editor.state.tr.setSelection(selection))
   editor.view.focus()
 }
@@ -82,10 +92,20 @@ export const getSelectionHandleTarget = (
 
   const isRow = selection.isRowSelection()
   const isCol = selection.isColSelection()
-  if (isRow === isCol) return null
-
   const rect = selectedRect(editor.state)
   const tablePos = rect.tableStart - 1
+  const isSingleCell = selection.$anchorCell.pos === selection.$headCell.pos
+  const singleCell = isSingleCell ? selection.$anchorCell.nodeAfter : null
+  const singleCellIsMerged =
+    !!singleCell &&
+    ((singleCell.attrs.colspan as number) > 1 ||
+      (singleCell.attrs.rowspan as number) > 1)
+  if (isRow === isCol) {
+    if (!isRow && isRowSlotClippedByVerticalSpan(rect) && !singleCellIsMerged) {
+      return { tablePos, rows: [rect.top], cols: [] }
+    }
+    return null
+  }
   if (isRow) {
     const rows: number[] = []
     for (let r = rect.top; r < rect.bottom; r++) rows.push(r)

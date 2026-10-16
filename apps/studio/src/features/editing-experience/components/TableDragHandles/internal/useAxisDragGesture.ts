@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react"
+import { reorderRowBesideVerticalSpan } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.utils"
 
 import type { Rect, TableGeometry } from "./axisMath"
 import type { Axis } from "./axisView"
@@ -94,7 +95,23 @@ export const useAxisDragGesture = ({
           transaction = tr
           return true
         })
-        if (!moved) return
+        if (!moved) {
+          if (intent.axis !== "row" || !tableBefore) return
+          const reordered = reorderRowBesideVerticalSpan(
+            tableBefore,
+            intent.from,
+            intent.to,
+          )
+          if (!reordered) return
+          editor.view.dispatch(
+            state.tr.replaceWith(
+              intent.tablePos,
+              intent.tablePos + tableBefore.nodeSize,
+              reordered,
+            ),
+          )
+          return
+        }
         if (normalize && headerAxisFlags) {
           transaction = applyHeaderAxisNormalization(
             transaction,

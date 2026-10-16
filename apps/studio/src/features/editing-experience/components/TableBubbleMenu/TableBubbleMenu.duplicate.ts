@@ -9,6 +9,7 @@ import {
   TableMap,
   tableNodeTypes,
 } from "@tiptap/pm/tables"
+import { mapSlotCellOffset } from "~/features/editing-experience/utils/tableSlotSelection"
 
 import {
   selectionIncludesHeaderColumn,
@@ -410,14 +411,15 @@ export const duplicateSelectedRows = (editor: Editor): void => {
       }
       return next
     },
-    selectCorners: ({ info, rect: selectionRect }) => ({
-      anchor: info.map.positionAt(selectionRect.bottom, 0, info.table),
-      head: info.map.positionAt(
-        selectionRect.bottom + span - 1,
-        info.map.width - 1,
-        info.table,
-      ),
-    }),
+    selectCorners: ({ info, rect: selectionRect }) => {
+      const { map } = info
+      const firstRow = selectionRect.bottom
+      const lastRow = selectionRect.bottom + span - 1
+      return {
+        anchor: mapSlotCellOffset(map, firstRow, selectionRect.left),
+        head: mapSlotCellOffset(map, lastRow, selectionRect.right - 1),
+      }
+    },
   })
 }
 

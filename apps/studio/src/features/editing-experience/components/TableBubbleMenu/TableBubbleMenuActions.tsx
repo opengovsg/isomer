@@ -60,6 +60,7 @@ import {
   canSplitCell,
   getColumnMovePlan,
   getRowMovePlan,
+  reorderRowBesideVerticalSpan,
   restoreMovedBlockSelection,
   selectionIncludesHeaderColumn,
   selectionIncludesHeaderRow,
@@ -77,14 +78,33 @@ const moveTableBlock = (
   const tablePos = rect.tableStart - 1
   const move = axis === "row" ? moveTableRow : moveTableColumn
 
-  move({
+  const bounds = {
+    top: rect.top,
+    bottom: rect.bottom,
+    left: rect.left,
+    right: rect.right,
+  }
+  const moved = move({
     from: plan.from,
     to: plan.to,
     select: false,
     pos: rect.tableStart,
   })(state, (tr) => {
-    restoreMovedBlockSelection(view, tr, tablePos, plan, axis)
+    restoreMovedBlockSelection(view, tr, tablePos, plan, axis, bounds)
   })
+  if (!moved && axis === "row" && plan.span === 1) {
+    const table = state.doc.nodeAt(tablePos)
+    const reordered =
+      table && reorderRowBesideVerticalSpan(table, plan.from, plan.to)
+    if (table && reordered) {
+      const tr = state.tr.replaceWith(
+        tablePos,
+        tablePos + table.nodeSize,
+        reordered,
+      )
+      restoreMovedBlockSelection(view, tr, tablePos, plan, axis, bounds)
+    }
+  }
   editor.commands.focus()
 }
 
