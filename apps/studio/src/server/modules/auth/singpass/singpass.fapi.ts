@@ -8,6 +8,7 @@ import {
   type AuthorizationParameters,
   type Client,
 } from "openid-client"
+import { z } from "zod"
 
 import type { Logger } from "@isomer/logging"
 
@@ -48,13 +49,21 @@ export const createEphemeralDpopKey = async (): Promise<{
   return { privateKey, privateJwk: JSON.stringify(jwk) }
 }
 
-export const importDpopPrivateKey = (privateJwk: string): KeyObject =>
-  // JSON.parse is `any`. createPrivateKey wants crypto.webcrypto.JsonWebKey,
-  // which is a different type from the global JsonWebKey.
-  crypto.createPrivateKey({
-    key: JSON.parse(privateJwk) as crypto.webcrypto.JsonWebKey,
+const dpopEcPrivateJwkSchema = z.object({
+  kty: z.literal("EC"),
+  crv: z.string().min(1),
+  x: z.string().min(1),
+  y: z.string().min(1),
+  d: z.string().min(1),
+})
+
+export const importDpopPrivateKey = (privateJwk: string): KeyObject => {
+  const jwk = dpopEcPrivateJwkSchema.parse(JSON.parse(privateJwk))
+  return crypto.createPrivateKey({
+    key: jwk,
     format: "jwk",
   })
+}
 
 const endpointUrl = (value: unknown, name: string): string => {
   if (typeof value !== "string" || value.length === 0) {

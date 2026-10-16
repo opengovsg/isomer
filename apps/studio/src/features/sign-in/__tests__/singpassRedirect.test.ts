@@ -7,7 +7,7 @@ import {
 
 describe("singpassCallbackFailurePath", () => {
   it("asks the user to retry when Singpass reports a server error", () => {
-    // Act
+    // Arrange + Act
     const path = singpassCallbackFailurePath("server_error")
 
     // Assert
@@ -15,7 +15,7 @@ describe("singpassCallbackFailurePath", () => {
   })
 
   it("asks the user to wait when Singpass is unavailable", () => {
-    // Act
+    // Arrange + Act
     const path = singpassCallbackFailurePath("temporarily_unavailable")
 
     // Assert
@@ -23,7 +23,7 @@ describe("singpassCallbackFailurePath", () => {
   })
 
   it("uses a generic error for any other Singpass error", () => {
-    // Act
+    // Arrange + Act
     const unknown = singpassCallbackFailurePath("invalid_request_uri")
     const missing = singpassCallbackFailurePath(undefined)
 
@@ -35,7 +35,7 @@ describe("singpassCallbackFailurePath", () => {
 
 describe("singpassSignInError", () => {
   it("only treats our own error values as specific cases", () => {
-    // Act
+    // Arrange + Act
     const retry = singpassSignInError("retry")
     const unavailable = singpassSignInError("unavailable")
     const singpassCode = singpassSignInError("server_error")

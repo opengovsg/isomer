@@ -161,53 +161,34 @@ export const getAuthorizationUrl = async ({
   const { privateKey, privateJwk } = await createEphemeralDpopKey()
   session.dpopPrivateJwk = privateJwk
   const client = await getFapiClient()
-  try {
-    const authorizationUrl = await pushFapiAuthorizationRequest({
-      client,
-      clientId: env.SINGPASS_CLIENT_ID,
-      privateKey,
-      logger,
-      parameters: {
-        redirect_uri: SINGPASS_REDIRECT_URI,
-        response_type: "code",
-        scope: SINGPASS_SCOPES.join(" "),
-        code_challenge_method: "S256",
-        code_challenge: codeChallenge,
-        nonce,
-        state,
-        authentication_context_type: "APP_AUTHENTICATION_DEFAULT",
-      },
-    })
-    logger?.info(
-      singpassLoginLogFields({
-        useFapi: true,
-        stage: "authorization",
-        outcome: "success",
-      }),
-      singpassLogMessage({
-        useFapi: true,
-        message: "authorization URL built",
-      }),
-    )
-    return { authorizationUrl, session }
-  } catch (error) {
-    logger?.error(
-      {
-        ...singpassLoginLogFields({
-          useFapi: true,
-          stage: "authorization",
-          outcome: "failure",
-        }),
-        singpassError: singpassErrorCode(error),
-        err: error,
-      },
-      singpassLogMessage({
-        useFapi: true,
-        message: "authorization request failed",
-      }),
-    )
-    throw error
-  }
+  const authorizationUrl = await pushFapiAuthorizationRequest({
+    client,
+    clientId: env.SINGPASS_CLIENT_ID,
+    privateKey,
+    logger,
+    parameters: {
+      redirect_uri: SINGPASS_REDIRECT_URI,
+      response_type: "code",
+      scope: SINGPASS_SCOPES.join(" "),
+      code_challenge_method: "S256",
+      code_challenge: codeChallenge,
+      nonce,
+      state,
+      authentication_context_type: "APP_AUTHENTICATION_DEFAULT",
+    },
+  })
+  logger?.info(
+    singpassLoginLogFields({
+      useFapi: true,
+      stage: "authorization",
+      outcome: "success",
+    }),
+    singpassLogMessage({
+      useFapi: true,
+      message: "authorization URL built",
+    }),
+  )
+  return { authorizationUrl, session }
 }
 
 interface LoginParams {

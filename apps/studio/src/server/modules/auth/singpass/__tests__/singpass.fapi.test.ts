@@ -1,6 +1,7 @@
 import { decodeJwt, exportJWK, importJWK, jwtVerify } from "jose"
 import crypto from "node:crypto"
 import { custom, errors, type Client } from "openid-client"
+import { ZodError } from "zod"
 import { env } from "~/env.mjs"
 
 import {
@@ -63,6 +64,14 @@ describe("importDpopPrivateKey", () => {
     expect(key).toBeInstanceOf(crypto.KeyObject)
     expect(key.type).toBe("private")
     expect(key.asymmetricKeyType).toBe("ec")
+  })
+
+  it("rejects a malformed stored DPoP JWK", () => {
+    // Arrange + Act
+    const importKey = () => importDpopPrivateKey(JSON.stringify({ kty: "RSA" }))
+
+    // Assert
+    expect(importKey).toThrow(ZodError)
   })
 })
 

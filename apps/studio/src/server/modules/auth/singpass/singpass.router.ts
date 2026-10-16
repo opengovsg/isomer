@@ -27,8 +27,8 @@ import { getAuthorizationUrl, login } from "./singpass.service"
 export const singpassRouter = router({
   login: publicProcedure
     .input(singpassLoginSchema)
-    // User-triggered PAR / discovery. 10 per minute per fingerprint.
-    .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
+    // TODO: Re-enable per-user + IP rate limits once fingerprint can include session userId.
+    // .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { landingUrl } }) => {
       // NOTE: The Singpass login flow is not the first login mechanism that the
       // user encounters, as they should have completed the email OTP
@@ -159,8 +159,8 @@ export const singpassRouter = router({
 
   callback: publicProcedure
     .input(singpassCallbackSchema)
-    // User-triggered token exchange. 10 per minute per fingerprint.
-    .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
+    // TODO: Re-enable per-user + IP rate limits once fingerprint can include session userId.
+    // .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .query(async ({ ctx, input: { state, code, iss } }) => {
       if (!ctx.session.singpass?.sessionState) {
         ctx.logger.warn("No Singpass session state found")
