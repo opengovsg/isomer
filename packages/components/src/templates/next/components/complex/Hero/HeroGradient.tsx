@@ -1,4 +1,5 @@
 import type { HeroGradientProps } from "~/interfaces/complex/Hero"
+import { getFocalObjectPosition } from "~/utils/getFocalObjectPosition"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
@@ -18,10 +19,7 @@ export const HeroGradient = ({
   site,
   headingLevel,
 }: HeroGradientProps) => {
-  const objectPosition =
-    imageAdjustment?.focal != null
-      ? `${imageAdjustment.focal.x * 100}% ${imageAdjustment.focal.y * 100}%`
-      : undefined
+  const objectPosition = getFocalObjectPosition(imageAdjustment)
   const Tag = getHeadingTag(headingLevel)
   return (
     <section className="relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]">

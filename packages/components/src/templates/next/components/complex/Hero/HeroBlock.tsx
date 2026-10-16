@@ -1,4 +1,5 @@
 import type { HeroBlockProps } from "~/interfaces/complex/Hero"
+import { getFocalObjectPosition } from "~/utils/getFocalObjectPosition"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
@@ -28,10 +29,12 @@ export const HeroBlock = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   backgroundUrl,
+  imageAdjustment,
   site,
   theme = "default",
   headingLevel,
 }: HeroBlockProps) => {
+  const objectPosition = getFocalObjectPosition(imageAdjustment)
   const heroColour = HERO_THEME_MAPPINGS.hero[theme]
   const heroTextColour = HERO_THEME_MAPPINGS.text[theme]
   const heroButton = HERO_THEME_MAPPINGS.button[theme]
@@ -94,6 +97,7 @@ export const HeroBlock = ({
           alt=""
           width="100%"
           className="absolute inset-0 h-full w-full object-cover object-center"
+          objectPosition={objectPosition}
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={false} // hero is always above the fold
         />

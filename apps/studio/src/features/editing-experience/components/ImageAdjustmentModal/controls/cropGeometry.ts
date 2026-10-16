@@ -124,6 +124,16 @@ const HANDLE_EDGES: Record<HandlePosition, HandleEdges> = {
  * moves and the rect never exceeds the unit square — no separate bounds clamp
  * needed (unlike moveRect, shifting x/y here would move the anchor, which is
  * wrong for a resize).
+ *
+ * `imageAspect` (the source image's true pixel width/height) defaults to 1
+ * (square) for backward compatibility, but MUST be passed for a correct
+ * result on any non-square source: `rect.width`/`rect.height` are fractions
+ * of the image's independent width/height axes, not a square unit space, so
+ * `bakeImage` later multiplies them by the image's actual (possibly
+ * unequal) pixel width/height — the FINAL baked pixel ratio is
+ * `(rect.width/rect.height) * imageAspect`, not `rect.width/rect.height`
+ * alone. To make that final ratio equal `lockedRatio`, the rect's own
+ * normalized ratio must be pre-divided by `imageAspect`.
  */
 export const resizeRectByHandle = (
   rect: CropRectNormalized,
@@ -131,6 +141,7 @@ export const resizeRectByHandle = (
   pointerX: number,
   pointerY: number,
   lockedRatio?: { width: number; height: number },
+  imageAspect = 1,
 ): CropRectNormalized => {
   const edges = HANDLE_EDGES[handle]
   const px = clampUnit(pointerX)
@@ -147,7 +158,7 @@ export const resizeRectByHandle = (
   if (edges.movesBottom) bottom = Math.max(py, top + MIN_CROP_SIZE)
 
   if (lockedRatio && CORNER_HANDLES.includes(handle)) {
-    const ratio = lockedRatio.width / lockedRatio.height
+    const ratio = lockedRatio.width / lockedRatio.height / imageAspect
     const anchorX = edges.movesLeft ? right : left
     const anchorY = edges.movesTop ? bottom : top
     const maxWidth = edges.movesLeft ? anchorX : 1 - anchorX
@@ -178,13 +189,20 @@ export const resizeRectByHandle = (
 /**
  * Default starting rect: for a locked ratio, the largest centered rect of
  * that ratio that fits the unit square; otherwise the full image.
+ *
+ * `imageAspect` defaults to 1 (square) for backward compatibility — see the
+ * matching note on `resizeRectByHandle` for why a non-square source needs it
+ * passed to land the correct baked pixel ratio.
  */
-export const defaultCropRect = (lockedRatio?: {
-  width: number
-  height: number
-}): CropRectNormalized => {
+export const defaultCropRect = (
+  lockedRatio?: {
+    width: number
+    height: number
+  },
+  imageAspect = 1,
+): CropRectNormalized => {
   if (!lockedRatio) return { x: 0, y: 0, width: 1, height: 1 }
-  const ratio = lockedRatio.width / lockedRatio.height
+  const ratio = lockedRatio.width / lockedRatio.height / imageAspect
   let width = 1
   let height = width / ratio
   if (height > 1) {
@@ -206,3 +224,38 @@ export const clientDeltaToNormalized = (
   dx: boxRect.width > 0 ? dxPx / boxRect.width : 0,
   dy: boxRect.height > 0 ? dyPx / boxRect.height : 0,
 })
+
+export interface NormalizedRect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+/**
+ * Where an image actually renders inside a box under `object-fit: contain`,
+ * as a rect normalized to the BOX (not the image) — i.e. the complement of
+ * this rect is the letterboxed/pillarboxed "bleed" space. Crop/focal values
+ * are normalized to the IMAGE, so callers must map through this rect before
+ * treating box-space pointer/percentage math as image-space — otherwise the
+ * crop UI lets you drag into bleed space that doesn't exist in the real image.
+ */
+export const getContainedImageBounds = (
+  box: { width: number; height: number },
+  imageAspect: number,
+): NormalizedRect => {
+  if (box.width <= 0 || box.height <= 0 || !Number.isFinite(imageAspect)) {
+    return { x: 0, y: 0, width: 1, height: 1 }
+  }
+  const boxAspect = box.width / box.height
+  if (imageAspect > boxAspect) {
+    // Image is relatively wider than the box: fills box width, letterboxed
+    // (blank bars) top/bottom.
+    const height = boxAspect / imageAspect
+    return { x: 0, y: (1 - height) / 2, width: 1, height }
+  }
+  // Image is relatively narrower/taller than the box: fills box height,
+  // pillarboxed (blank bars) left/right.
+  const width = imageAspect / boxAspect
+  return { x: (1 - width) / 2, y: 0, width, height: 1 }
+}

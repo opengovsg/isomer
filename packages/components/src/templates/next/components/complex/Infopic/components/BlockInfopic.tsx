@@ -1,4 +1,5 @@
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
+import { getFocalObjectPosition } from "~/utils/getFocalObjectPosition"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
@@ -15,6 +16,7 @@ export const BlockInfopic = ({
   buttonUrl,
   description,
   imageAlt,
+  imageAdjustment,
   isTextOnRight,
   shouldLazyLoad,
   site,
@@ -27,6 +29,7 @@ export const BlockInfopic = ({
     colorScheme: "default",
   })
   const hasLinkButton = !!buttonLabel && !!buttonUrl
+  const objectPosition = getFocalObjectPosition(imageAdjustment)
 
   return (
     <section id={id} className={compoundStyles.container()}>
@@ -56,6 +59,7 @@ export const BlockInfopic = ({
           className={compoundStyles.image()}
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={shouldLazyLoad}
+          objectPosition={objectPosition}
         />
       </div>
     </section>
