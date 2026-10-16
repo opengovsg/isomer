@@ -181,6 +181,7 @@ const HeroFloatingSchema = Type.Composite(
         default: HERO_STYLE.floating.key,
       }),
       backgroundUrl: BackgroundUrlSchema,
+      imageAdjustment: Type.Optional(imageAdjustmentSchema),
     }),
     HeroBaseSchema,
     CallToActionsSchema,

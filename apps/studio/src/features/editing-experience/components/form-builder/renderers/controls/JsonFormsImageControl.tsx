@@ -76,8 +76,14 @@ function JsonFormsImageControl({
   // JsonForms' core data (the only way to reach data outside this control's
   // own path) and memoizes the derived config -- see the hook's own comment
   // for why that matters.
-  const { block, fieldName, siblingPath, currentAdjustment, config } =
-    useAdjustmentConfigForField(path)
+  const {
+    block,
+    fieldHost,
+    fieldName,
+    siblingPath,
+    currentAdjustment,
+    config,
+  } = useAdjustmentConfigForField(path)
 
   const handleAdjustmentSave = ({
     src,
@@ -133,6 +139,7 @@ function JsonFormsImageControl({
                 value={currentAdjustment}
                 block={block}
                 imageFieldName={fieldName}
+                fieldHost={fieldHost}
                 siteId={siteId}
                 resourceId={
                   (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
