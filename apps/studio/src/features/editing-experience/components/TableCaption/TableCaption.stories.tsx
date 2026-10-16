@@ -153,3 +153,7 @@ export const EditCaptionViaModal: Story = {
     ).toBeInTheDocument()
   },
 }
+
+export const ExpandedTable: Story = {
+  args: { initialContent: SINGLE_TABLE_WITH_CAPTION },
+}

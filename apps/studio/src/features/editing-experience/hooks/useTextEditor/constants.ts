@@ -48,6 +48,7 @@ import {
   createTableSelectionBorderPlugin,
   getHtmlWithRelativeReferenceLinks,
 } from "../../utils"
+import { expandedTablePlugin } from "../../utils/expandTableEditor"
 import {
   wrapHeaderToggleCommand,
   type HeaderToggleCommand,
@@ -217,7 +218,11 @@ export const IsomerTable = Table.extend({
     }
   },
   addProseMirrorPlugins() {
-    return [...(this.parent?.() ?? []), createTableSelectionBorderPlugin()]
+    return [
+      ...(this.parent?.() ?? []),
+      createTableSelectionBorderPlugin(),
+      expandedTablePlugin(),
+    ]
   },
 })
 

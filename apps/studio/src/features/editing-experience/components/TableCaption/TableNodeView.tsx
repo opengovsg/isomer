@@ -32,7 +32,6 @@ export const TableNodeView = ({
     scrollportRef,
     `${columnCount}:${sum ?? "auto"}`,
   )
-
   useLayoutEffect(() => {
     const table = rootRef.current?.querySelector("table")
     if (!(table instanceof HTMLTableElement)) return
@@ -88,6 +87,8 @@ export const TableNodeView = ({
               ? () => commitColumnWidths(null)
               : undefined
           }
+          editor={editor}
+          getPos={getPos}
         />
       </Box>
       <Box p={`${TABLE_GUTTER_PX}px`} minW={0}>
