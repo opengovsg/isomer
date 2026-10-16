@@ -27,7 +27,8 @@ describe("getAuthorizationUrl", () => {
       if (req.method === "POST" && req.url === "/par") {
         const dpop = req.headers.dpop
         if (typeof dpop === "string") parProofs.push(dpop)
-        res.writeHead(200, { "content-type": "application/json" })
+        // openid-client treats a successful PAR as HTTP 201.
+        res.writeHead(201, { "content-type": "application/json" })
         res.end(JSON.stringify({ request_uri: REQUEST_URI, expires_in: 60 }))
         return
       }
@@ -57,7 +58,8 @@ describe("getAuthorizationUrl", () => {
         authorization_endpoint: `${baseUrl}/auth`,
         pushed_authorization_request_endpoint: `${baseUrl}/par`,
         token_endpoint: `${baseUrl}/token`,
-        token_endpoint_auth_signing_alg_values_supported: ["ES256"],
+        // Matches SINGPASS_SIGNING_KEY_ALG (ES512 when unset).
+        token_endpoint_auth_signing_alg_values_supported: ["ES512"],
       }),
     )
   })
@@ -75,6 +77,8 @@ describe("getAuthorizationUrl", () => {
     const proof = decodeJwt(parProofs[0]!)
     expect(proof.htm).toBe("POST")
     expect(proof.htu).toBe(`${baseUrl}/par`)
-    expect(authorizationUrl).toContain(REQUEST_URI)
+    expect(new URL(authorizationUrl).searchParams.get("request_uri")).toBe(
+      REQUEST_URI,
+    )
   })
 })
