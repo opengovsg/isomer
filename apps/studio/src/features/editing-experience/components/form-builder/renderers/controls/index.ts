@@ -93,6 +93,14 @@ export {
   jsonFormsChildrenPagesLayoutControlTester,
 } from "./JsonFormsChildPageLayoutControl"
 export {
+  default as JsonFormsHeroActionLayoutControl,
+  jsonFormsHeroActionLayoutControlTester,
+} from "./JsonFormsHeroActionLayoutControl"
+export {
+  default as JsonFormsHeroQuickActionsControl,
+  jsonFormsHeroQuickActionsControlTester,
+} from "./JsonFormsHeroQuickActionsControl"
+export {
   default as JsonFormsChildrenPagesOrderingControl,
   jsonFormsChildrenPagesOrderingControlTester,
 } from "./JsonFormsChildrenPagesOrderingControl"
