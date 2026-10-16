@@ -1,5 +1,6 @@
 import type { AttachmentProps } from "@opengovsg/design-system-react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
+import { datadogRum } from "@datadog/browser-rum"
 import { Attachment, useToast } from "@opengovsg/design-system-react"
 import { uniq } from "lodash-es"
 import dynamic from "next/dynamic"
@@ -66,7 +67,12 @@ export const FileAttachment = ({
           if (shouldFetchResource) {
             void handleAssetUpload(path)
               .then((src) => setHref(src))
-              .catch(() => {
+              .catch((error) => {
+                datadogRum.addError(error, {
+                  feature: "asset-upload-fetch",
+                  siteId,
+                  resourceId,
+                })
                 toast({
                   title: "Failed to upload file",
                   description: "Please try again.",
@@ -75,6 +81,30 @@ export const FileAttachment = ({
                 })
               })
           } else setHref(path)
+        },
+        // Without this, a failure in the presign call or the S3 PUT itself
+        // (permission denied, validation, network/CORS) silently reverts the
+        // control to its pre-upload state with no visible error at all.
+        onError: (error) => {
+          // Report to Datadog (RUM Error Tracking) so this is alarmable --
+          // the hero-banner upload failures (ISOM-2680) are silent and only
+          // surface via support tickets; console.error alone isn't forwarded.
+          datadogRum.addError(error, {
+            feature: "asset-upload",
+            siteId,
+            resourceId,
+            fileName: file.name,
+            fileSize: file.size,
+          })
+          toast({
+            title: "Failed to upload file",
+            // Generic on purpose: by here it's a presign/S3/network failure,
+            // not a user-actionable validation error (those are caught earlier
+            // by onFileValidation/maxSize). Don't leak raw error text.
+            description: "Please try again.",
+            status: "error",
+            ...BRIEF_TOAST_SETTINGS,
+          })
         },
       },
     )
