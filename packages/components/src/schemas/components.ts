@@ -29,6 +29,7 @@ import {
   KeyStatisticsSchema,
   LogoCloudSchema,
   MapSchema,
+  NoStylizedUnicodeStringSchema,
   OrderedListSchema,
   ParagraphSchema,
   ProseSchema,
@@ -82,6 +83,7 @@ export const componentSchemaDefinitions = {
     complex: IsomerComplexComponentsMap,
     native: IsomerNativeComponentsMap,
   },
+  noStylizedUnicodeString: NoStylizedUnicodeStringSchema,
 }
 
 interface ComponentSchema {
