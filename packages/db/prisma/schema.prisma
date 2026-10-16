@@ -85,6 +85,7 @@ model Resource {
   ResourcePermission ResourcePermission[]
   CodeBuildJobs      CodeBuildJobs[]
   pushDocumentJobs   PushDocumentJob[]
+  AssetLink          AssetLink[]
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
@@ -153,6 +154,7 @@ model User {
   ScheduledResources    Resource[]
   pushDocumentJobs      PushDocumentJob[]
   AuditLogExportRequest AuditLogExportRequest[]
+  Asset                 Asset[]
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
@@ -186,6 +188,7 @@ model Site {
   CodeBuildJobs         CodeBuildJobs[]
   Redirect              Redirect[]
   AuditLogExportRequest AuditLogExportRequest[]
+  Asset                 Asset[]
 }
 
 model Redirect {
@@ -310,6 +313,8 @@ enum AuditLogEvent {
   RedirectCreate
   RedirectDelete
   AuditLogExportCreate
+  AssetCreate
+  AssetDelete
 }
 
 model AuditLog {
@@ -462,4 +467,60 @@ model AuditLogExportBatch {
   emailAttempts Int                     @default(0)
   createdAt     DateTime                @default(now())
   requests      AuditLogExportRequest[]
+}
+
+enum AssetStatus {
+  PENDING_UPLOAD
+  UPLOADED
+  REMOVAL_FAILED
+}
+
+enum AssetLinkSource {
+  RESOURCE
+  SITE_CONFIG
+  NAVBAR
+  FOOTER
+}
+
+// One row per uploaded original file; renditions in the same S3 folder are
+// not registered.
+model Asset {
+  id             BigInt      @id @default(autoincrement())
+  siteId         Int
+  site           Site        @relation(fields: [siteId], references: [id])
+  // Exact original object key, without the bucket hostname
+  s3Key          String      @unique
+  // Null for legacy assets and system imports
+  uploadedBy     String?
+  uploader       User?       @relation(fields: [uploadedBy], references: [id], onDelete: Restrict)
+  status         AssetStatus @default(PENDING_UPLOAD)
+  // When the asset last lost all usages; null while referenced
+  unreferencedAt DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @default(now()) @updatedAt
+  AssetLink      AssetLink[]
+
+  @@index([siteId])
+}
+
+// One row per (asset, content source). Rows persist when both usage flags are
+// false.
+model AssetLink {
+  id              BigInt          @id @default(autoincrement())
+  assetId         BigInt
+  asset           Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  // Set iff source is RESOURCE (enforced by a CHECK constraint). Restrict so
+  // a resource delete that skips the asset removal flow fails loudly.
+  resourceId      BigInt?
+  resource        Resource?       @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  source          AssetLinkSource
+  // Always false for site-wide sources (enforced by a CHECK constraint)
+  usedInDraft     Boolean         @default(false)
+  usedInPublished Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @default(now()) @updatedAt
+
+  // The migration creates this index NULLS NOT DISTINCT, which Prisma cannot express
+  @@unique([assetId, source, resourceId])
+  @@index([resourceId])
 }
