@@ -1,15 +1,28 @@
+import type { CentralNotificationEntry } from "@opengovsg/isomer-components"
+import { NotificationCustomSchema } from "@opengovsg/isomer-components"
 import { z } from "zod"
+import { ajv } from "~/utils/ajv"
 
-const centralNotificationEntrySchema = z.object({
-  notification: z.object({
-    title: z.string().min(1).max(150),
-    content: z.unknown().optional(),
-  }),
-  targetSites: z.array(z.string().url()),
-})
+export type CentralNotification = CentralNotificationEntry["notification"]
+
+// Same schema the site renders against, so a published banner cannot crash
+// the client.
+export const centralNotificationValidator = ajv.compile<CentralNotification>(
+  NotificationCustomSchema,
+)
 
 export const setGlobalNotificationSchema = z.object({
-  entries: z.array(centralNotificationEntrySchema),
+  // null clears the banner
+  notification: z
+    .custom<CentralNotification>(
+      (value) => centralNotificationValidator(value),
+      {
+        message: "Enter a notification title of up to 150 characters",
+      },
+    )
+    .nullable(),
+  // ETag of the broadcast the editor loaded; null if none existed yet
+  version: z.string().nullable(),
 })
 
 export type SetGlobalNotificationInput = z.infer<

@@ -1,66 +1,98 @@
-import {
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3"
+import type { CentralNotificationBroadcast } from "@opengovsg/isomer-components"
+import type { CentralNotification } from "~/schemas/global"
+import { TRPCError } from "@trpc/server"
+import { MOE_SITES } from "~/constants/misc"
 import { env } from "~/env.mjs"
+import {
+  getTextObject,
+  isConditionalWriteFailedError,
+  putObjectDirect,
+} from "~/lib/s3"
 
-const { NEXT_PUBLIC_S3_REGION, NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
-
-const storage = new S3Client({
-  region: NEXT_PUBLIC_S3_REGION,
-})
+const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
 
 const CENTRAL_NOTIFICATION_KEY = "central-notification.json"
 
-export interface CentralNotificationEntry {
-  notification: {
-    title: string
-    content?: unknown
-  }
-  targetSites: string[]
+interface GlobalNotificationState {
+  notification: CentralNotification | null
+  // S3 ETag, passed back on publish to detect concurrent edits
+  version: string | null
 }
 
-export type CentralNotificationBroadcast = CentralNotificationEntry[]
-
 export const getGlobalNotification =
-  async (): Promise<CentralNotificationBroadcast> => {
+  async (): Promise<GlobalNotificationState> => {
+    let object: Awaited<ReturnType<typeof getTextObject>>
     try {
-      const response = await storage.send(
-        new GetObjectCommand({
-          Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
-          Key: CENTRAL_NOTIFICATION_KEY,
-        }),
+      object = await getTextObject(
+        NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+        CENTRAL_NOTIFICATION_KEY,
       )
-
-      const body = await response.Body?.transformToString()
-      if (!body) return []
-
-      const data = JSON.parse(body) as CentralNotificationBroadcast
-      return Array.isArray(data) ? data : []
     } catch (error) {
-      // If the file doesn't exist yet, return empty array
-      if (
-        error instanceof Error &&
-        "name" in error &&
-        error.name === "NoSuchKey"
-      ) {
-        return []
-      }
-      throw error
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Unable to load the central notification",
+        cause: error,
+      })
+    }
+
+    if (!object) {
+      return { notification: null, version: null }
+    }
+
+    let broadcast: unknown
+    try {
+      broadcast = JSON.parse(object.body)
+    } catch (error) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "The stored central notification is malformed",
+        cause: error,
+      })
+    }
+
+    const [entry] = Array.isArray(broadcast)
+      ? (broadcast as CentralNotificationBroadcast)
+      : []
+
+    return {
+      notification: entry?.notification ?? null,
+      version: object.eTag ?? null,
     }
   }
 
-export const publishGlobalNotification = async (
-  data: CentralNotificationBroadcast,
-): Promise<void> => {
-  await storage.send(
-    new PutObjectCommand({
+export const publishGlobalNotification = async ({
+  notification,
+  version,
+}: GlobalNotificationState): Promise<void> => {
+  // ponytail: one banner for the MOE pilot; per-entry targeting when more
+  // agencies onboard. The file stays an array so sites need no change then.
+  const broadcast: CentralNotificationBroadcast = notification
+    ? [{ notification, targetSites: MOE_SITES }]
+    : []
+
+  try {
+    await putObjectDirect({
       Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
       Key: CENTRAL_NOTIFICATION_KEY,
-      Body: JSON.stringify(data),
+      Body: JSON.stringify(broadcast),
       ContentType: "application/json",
       CacheControl: "no-cache, no-store, must-revalidate",
-    }),
-  )
+      // Reject the write if someone else published since this editor loaded
+      ...(version ? { IfMatch: version } : { IfNoneMatch: "*" }),
+    })
+  } catch (error) {
+    if (isConditionalWriteFailedError(error)) {
+      throw new TRPCError({
+        code: "CONFLICT",
+        message:
+          "Someone else published the central notification. Reload to see the latest version.",
+      })
+    }
+
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Unable to publish the central notification",
+      cause: error,
+    })
+  }
 }
