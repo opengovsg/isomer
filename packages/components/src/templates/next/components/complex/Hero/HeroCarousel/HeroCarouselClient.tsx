@@ -1,7 +1,7 @@
 "use client"
 
 import type { HeadingTag } from "~/utils/getHeadingTag"
-import { useCallback, useState, useTransition } from "react"
+import { useCallback, useState } from "react"
 import { tv } from "~/lib/tv"
 
 import { ComponentContent } from "../../../internal/customCssClass"
@@ -79,15 +79,12 @@ export const HeroCarouselClient = ({
   slides: HeroCarouselSlideView[]
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [isPending, startTransition] = useTransition()
 
   const navigateByDirection = useCallback(
     (direction: "prev" | "next") => {
-      startTransition(() => {
-        setCurrentIndex((prev) => {
-          const offset = direction === "next" ? 1 : -1
-          return (prev + offset + slides.length) % slides.length
-        })
+      setCurrentIndex((prev) => {
+        const offset = direction === "next" ? 1 : -1
+        return (prev + offset + slides.length) % slides.length
       })
     },
     [slides.length],
@@ -123,7 +120,6 @@ export const HeroCarouselClient = ({
         currentIndex={currentIndex}
         onPrev={() => navigateByDirection("prev")}
         onNext={() => navigateByDirection("next")}
-        isPending={isPending}
       />
     </div>
   )
@@ -227,7 +223,6 @@ export const HeroCarouselClient = ({
             currentIndex={currentIndex}
             onPrev={() => navigateByDirection("prev")}
             onNext={() => navigateByDirection("next")}
-            isPending={isPending}
             isDesktopOnly
             hasTopMargin={isBlock}
           />

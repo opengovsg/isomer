@@ -26,11 +26,9 @@ const carouselDotStyles = tv({
 const CarouselArrowButton = ({
   direction,
   onClick,
-  isDisabled,
 }: {
   direction: "prev" | "next"
   onClick: () => void
-  isDisabled?: boolean
 }) => {
   const Icon = direction === "prev" ? BiChevronLeft : BiChevronRight
   const label = direction === "prev" ? "Previous slide" : "Next slide"
@@ -38,9 +36,8 @@ const CarouselArrowButton = ({
   return (
     <button
       type="button"
-      className="flex h-10 w-10 items-center justify-center rounded-full border border-transparent bg-white text-base-content shadow-sm hover:bg-white/90 focus-visible:outline focus-visible:outline-[0.25rem] focus-visible:outline-offset-[0.125rem] focus-visible:outline-utility-highlight disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-transparent bg-white text-base-content shadow-sm hover:bg-white/90 focus-visible:outline focus-visible:outline-[0.25rem] focus-visible:outline-offset-[0.125rem] focus-visible:outline-utility-highlight"
       aria-label={label}
-      disabled={isDisabled}
       onClick={onClick}
     >
       <Icon className="h-6 w-6" aria-hidden />
@@ -70,7 +67,6 @@ export const CarouselControls = ({
   currentIndex,
   onPrev,
   onNext,
-  isPending,
   isDesktopOnly,
   hasTopMargin,
 }: {
@@ -78,23 +74,14 @@ export const CarouselControls = ({
   currentIndex: number
   onPrev: () => void
   onNext: () => void
-  isPending: boolean
   isDesktopOnly?: boolean
   hasTopMargin?: boolean
 }) => (
   <div className={carouselControlsStyles({ isDesktopOnly, hasTopMargin })}>
     <CarouselDots count={slideCount} currentIndex={currentIndex} />
     <div className="flex items-center gap-2">
-      <CarouselArrowButton
-        direction="prev"
-        onClick={onPrev}
-        isDisabled={isPending}
-      />
-      <CarouselArrowButton
-        direction="next"
-        onClick={onNext}
-        isDisabled={isPending}
-      />
+      <CarouselArrowButton direction="prev" onClick={onPrev} />
+      <CarouselArrowButton direction="next" onClick={onNext} />
     </div>
   </div>
 )
