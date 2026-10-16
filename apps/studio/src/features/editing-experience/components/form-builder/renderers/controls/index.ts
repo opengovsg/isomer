@@ -93,6 +93,10 @@ export {
   jsonFormsChildrenPagesLayoutControlTester,
 } from "./JsonFormsChildPageLayoutControl"
 export {
+  default as JsonFormsHeroCarouselStyleControl,
+  jsonFormsHeroCarouselStyleControlTester,
+} from "./JsonFormsHeroCarouselStyleControl"
+export {
   default as JsonFormsChildrenPagesOrderingControl,
   jsonFormsChildrenPagesOrderingControlTester,
 } from "./JsonFormsChildrenPagesOrderingControl"

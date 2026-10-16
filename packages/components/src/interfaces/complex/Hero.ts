@@ -6,7 +6,7 @@ import { omit } from "lodash-es"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
-import { ARRAY_RADIO_FORMAT, HERO_BANNER_STYLE_FORMAT } from "../format"
+import { HERO_BANNER_STYLE_FORMAT, HERO_CAROUSEL_STYLE_FORMAT } from "../format"
 import { IsomerString } from "../primitives/IsomerString"
 import { generateImageSrcSchema } from "./Image"
 
@@ -255,8 +255,10 @@ const HeroCarouselSchema = Type.Object(
       ],
       {
         title: "Style",
+        description:
+          "Check the desktop layout in Fullscreen, under preview options.",
         default: HERO_CAROUSEL_STYLE.block,
-        format: ARRAY_RADIO_FORMAT,
+        format: HERO_CAROUSEL_STYLE_FORMAT,
       },
     ),
     slides: Type.Array(HeroCarouselSlideSchema, {
