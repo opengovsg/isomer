@@ -1,13 +1,14 @@
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
 import { useState } from "react"
-import { env } from "~/env.mjs"
 import {
   BAKEABLE_FORMAT_BY_MIME,
   bakeImage,
   canBakeImage,
   isAnimatedImageBlob,
+  mimeFromKeyExtension,
 } from "~/lib/imageBake"
 import { performUpload } from "~/lib/storage/client"
+import { generateOriginalAssetUrl } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
 
 /**
@@ -28,17 +29,27 @@ export const resolveOriginalKey = (
  * Choose the MIME type to use for baking, preserving the original format.
  * Unsupported formats are rejected rather than silently flattened to JPEG,
  * which would rasterize vectors (SVG) and drop animation frames (GIF/APNG).
- * @param originalType - The original image MIME type
+ *
+ * Prefers the fetched blob's Content-Type, but falls back to the key's
+ * (server-validated) extension when that type is missing or generic — a CDN
+ * can serve a real PNG as "binary/octet-stream", which must not block a save.
+ * @param originalType - The original image MIME type (from the HTTP response)
+ * @param originalKey - The original image key, used for the extension fallback
  * @returns The MIME type to use for baking
  * @throws If the original format cannot be baked (see BAKEABLE_FORMAT_BY_MIME)
  */
-export const chooseBakeMime = (originalType: string): string => {
-  if (!canBakeImage(originalType)) {
-    throw new Error(
-      `This image can't be adjusted. Only JPEG, PNG, and WebP images are supported (got "${originalType}").`,
-    )
-  }
-  return originalType
+export const chooseBakeMime = (
+  originalType: string,
+  originalKey: string,
+): string => {
+  if (canBakeImage(originalType)) return originalType
+
+  const fromExtension = mimeFromKeyExtension(originalKey)
+  if (fromExtension) return fromExtension
+
+  throw new Error(
+    `This image can't be adjusted. Only JPEG, PNG, and WebP images are supported (got "${originalType}").`,
+  )
 }
 
 interface UseSaveImageAdjustmentInput {
@@ -83,15 +94,14 @@ export const useSaveImageAdjustment = ({
       // Step 1: Resolve the original key
       const originalKey = resolveOriginalKey(currentSrc, draft)
 
-      // Step 2: Fetch the original blob from S3
+      // Step 2: Fetch the pristine original blob (bypass the CDN transcode so we
+      // bake full-resolution original bytes, not a downscaled derivative).
       const originalBlob = await (
-        await fetch(
-          `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}/${originalKey}`,
-        )
+        await fetch(generateOriginalAssetUrl(`/${originalKey}`))
       ).blob()
 
       // Step 3: Choose the MIME type for baking
-      const mime = chooseBakeMime(originalBlob.type)
+      const mime = chooseBakeMime(originalBlob.type, originalKey)
 
       // Reject animated WebP/APNG: they pass the MIME gate but baking would
       // flatten them to a single frame and drop the animation.

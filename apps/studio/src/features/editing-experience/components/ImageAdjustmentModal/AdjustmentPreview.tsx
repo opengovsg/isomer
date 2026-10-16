@@ -15,7 +15,11 @@ import Suspense from "~/components/Suspense"
 import { PreviewIframe } from "~/features/editing-experience/components/preview/PreviewIframe"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { bakeImage, canBakeImage, isAnimatedImageBlob } from "~/lib/imageBake"
-import { ASSETS_BASE_URL, generateAssetUrl } from "~/utils/generateAssetUrl"
+import {
+  ASSETS_BASE_URL,
+  generateAssetUrl,
+  generateOriginalAssetUrl,
+} from "~/utils/generateAssetUrl"
 
 import type {
   AdjustmentPreviewState,
@@ -124,7 +128,10 @@ export const AdjustmentPreview = ({
   // the asset domain for DISPLAY (the fallback shown before any bake exists),
   // same as ImageClient does at render time.
   const displaySrc = generateAssetUrl(src)
-  const originalFetchUrl = generateAssetUrl(originalSrc)
+  // Bake from the pristine original (bypass the CDN transcode), matching the
+  // save path — the transcoded variant can be downscaled or carry a generic
+  // "binary/octet-stream" type that the bake gate rejects.
+  const originalFetchUrl = generateOriginalAssetUrl(originalSrc)
 
   // Fetch the original image once per resolved original. Comment notes CORS
   // must be readable.

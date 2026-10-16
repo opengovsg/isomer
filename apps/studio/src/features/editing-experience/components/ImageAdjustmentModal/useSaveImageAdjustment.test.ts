@@ -42,34 +42,46 @@ describe("useSaveImageAdjustment pure helpers", () => {
 
   describe("chooseBakeMime", () => {
     it("returns the original MIME type for bakeable formats (JPEG)", () => {
-      const result = chooseBakeMime("image/jpeg")
-      expect(result).toBe("image/jpeg")
+      expect(chooseBakeMime("image/jpeg", "1/uuid/photo.jpg")).toBe(
+        "image/jpeg",
+      )
     })
 
     it("returns the original MIME type for bakeable formats (PNG)", () => {
-      const result = chooseBakeMime("image/png")
-      expect(result).toBe("image/png")
+      expect(chooseBakeMime("image/png", "1/uuid/photo.png")).toBe("image/png")
     })
 
     it("returns the original MIME type for bakeable formats (WebP)", () => {
-      const result = chooseBakeMime("image/webp")
-      expect(result).toBe("image/webp")
+      expect(chooseBakeMime("image/webp", "1/uuid/photo.webp")).toBe(
+        "image/webp",
+      )
     })
 
-    it("throws for non-bakeable formats (GIF)", () => {
-      expect(() => chooseBakeMime("image/gif")).toThrow()
+    // The bug on staging: the CDN served a real PNG as "binary/octet-stream",
+    // which blocked saving. Fall back to the server-validated key extension.
+    it("falls back to the key extension when the type is generic (octet-stream)", () => {
+      expect(chooseBakeMime("binary/octet-stream", "1/uuid/photo.png")).toBe(
+        "image/png",
+      )
     })
 
-    it("throws for non-bakeable formats (AVIF)", () => {
-      expect(() => chooseBakeMime("image/avif")).toThrow()
+    it("falls back to the key extension for the .jpg alias", () => {
+      expect(chooseBakeMime("", "1/uuid/photo.jpg")).toBe("image/jpeg")
     })
 
-    it("throws for non-bakeable formats (TIFF)", () => {
-      expect(() => chooseBakeMime("image/tiff")).toThrow()
+    it("throws when both the type and key extension are non-bakeable", () => {
+      expect(() => chooseBakeMime("image/gif", "1/uuid/anim.gif")).toThrow()
+      expect(() => chooseBakeMime("image/avif", "1/uuid/photo.avif")).toThrow()
+      expect(() => chooseBakeMime("image/tiff", "1/uuid/photo.tiff")).toThrow()
+      expect(() =>
+        chooseBakeMime("image/svg+xml", "1/uuid/vector.svg"),
+      ).toThrow()
     })
 
-    it("throws for vector formats (SVG)", () => {
-      expect(() => chooseBakeMime("image/svg+xml")).toThrow()
+    it("throws for a generic type with a non-image extension", () => {
+      expect(() =>
+        chooseBakeMime("binary/octet-stream", "1/uuid/doc.pdf"),
+      ).toThrow()
     })
   })
 })

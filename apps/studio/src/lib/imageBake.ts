@@ -50,6 +50,27 @@ export const BAKEABLE_EXTENSIONS = Object.values(BAKEABLE_FORMAT_BY_MIME) as [
 export const canBakeImage = (mimeType: string): boolean =>
   Object.hasOwn(BAKEABLE_FORMAT_BY_MIME, mimeType)
 
+// Inverse of BAKEABLE_FORMAT_BY_MIME (plus the ".jpg" alias) for deriving a
+// trusted MIME from a server-validated key extension when the fetched blob's
+// HTTP Content-Type is missing or generic (e.g. a CDN serving
+// "binary/octet-stream").
+const BAKEABLE_MIME_BY_EXTENSION: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+}
+
+/**
+ * Derive a bakeable MIME from a key/filename extension, or undefined if the
+ * extension isn't a bakeable image format.
+ * @param key - An asset key or filename (e.g. "1/uuid/photo.png")
+ */
+export const mimeFromKeyExtension = (key: string): string | undefined => {
+  const ext = key.split(".").pop()?.toLowerCase()
+  return ext ? BAKEABLE_MIME_BY_EXTENSION[ext] : undefined
+}
+
 // --- Animation sniffing -----------------------------------------------------
 // Animated WebP and APNG share image/webp and image/png with their static
 // counterparts, so canBakeImage passes them. Baking rasterizes a single frame
