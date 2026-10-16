@@ -58,9 +58,20 @@ const dpopEcPrivateJwkSchema = z.object({
 })
 
 export const importDpopPrivateKey = (privateJwk: string): KeyObject => {
-  const jwk = dpopEcPrivateJwkSchema.parse(JSON.parse(privateJwk))
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(privateJwk)
+  } catch {
+    throw new Error("Invalid DPoP private key JSON in session")
+  }
+
+  const result = dpopEcPrivateJwkSchema.safeParse(parsed)
+  if (!result.success) {
+    throw new Error("Invalid DPoP private key shape in session")
+  }
+
   return crypto.createPrivateKey({
-    key: jwk,
+    key: result.data,
     format: "jwk",
   })
 }
