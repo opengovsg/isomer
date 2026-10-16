@@ -24,7 +24,9 @@ export {
   ImageSrcSchema,
   AltTextSchema,
   ImageSchema,
+  imageAdjustmentSchema,
   type ImageProps,
+  type ImageAdjustment,
 } from "./Image"
 export {
   InfoCardsSchema,

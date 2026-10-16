@@ -4,6 +4,7 @@ import { deleteFile } from "~/lib/s3"
 
 import {
   deleteAssetsByUrl,
+  deriveBakeKey,
   doAllFileKeysBelongToSite,
   getContentDispositionForKey,
   getContentTypeFromKey,
@@ -671,6 +672,77 @@ describe("asset.service", () => {
         new TRPCError({
           code: "BAD_REQUEST",
           message: "SVG failed to parse as valid XML",
+        }),
+      )
+    })
+  })
+
+  describe("deriveBakeKey", () => {
+    const UUID = "11111111-1111-1111-1111-111111111111"
+    const BAKE_UUID_PATTERN =
+      /^36\/11111111-1111-1111-1111-111111111111\/baked-[0-9a-f\-]{36}\.jpeg$/i
+
+    it("should mint a server leaf while preserving the source folder", () => {
+      // Arrange
+      const src = `/${36}/${UUID}/source.png`
+      const siteId = 36
+      const ext = "jpeg"
+
+      // Act
+      const key1 = deriveBakeKey({ src, ext, siteId })
+      const key2 = deriveBakeKey({ src, ext, siteId })
+
+      // Assert — same folder, different leaves
+      expect(key1).toMatch(BAKE_UUID_PATTERN)
+      expect(key2).toMatch(BAKE_UUID_PATTERN)
+      expect(key1).not.toEqual(key2)
+      expect(
+        key1.startsWith("36/11111111-1111-1111-1111-111111111111/baked-"),
+      ).toBe(true)
+    })
+
+    it("should use the correct extension from input", () => {
+      // Arrange
+      const src = `/${36}/${UUID}/source.png`
+      const siteId = 36
+
+      // Act
+      const keyJpeg = deriveBakeKey({ src, ext: "jpeg", siteId })
+      const keyPng = deriveBakeKey({ src, ext: "png", siteId })
+      const keyWebp = deriveBakeKey({ src, ext: "webp", siteId })
+
+      // Assert
+      expect(keyJpeg).toMatch(/\.jpeg$/)
+      expect(keyPng).toMatch(/\.png$/)
+      expect(keyWebp).toMatch(/\.webp$/)
+    })
+
+    it("should throw BAD_REQUEST for invalid source URL", () => {
+      // Arrange
+      const src = "/invalid-path"
+      const siteId = 36
+      const ext = "jpeg"
+
+      // Act & Assert
+      expect(() => deriveBakeKey({ src, ext, siteId })).toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid image source URL",
+        }),
+      )
+    })
+
+    it("should throw BAD_REQUEST for source from different site", () => {
+      // Arrange — source belongs to siteId 99, but we're deriving for siteId 36
+      const src = `/99/${UUID}/source.png`
+      const siteId = 36
+      const ext = "jpeg"
+
+      // Act & Assert
+      expect(() => deriveBakeKey({ src, ext, siteId })).toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Image source does not belong to this site",
         }),
       )
     })
