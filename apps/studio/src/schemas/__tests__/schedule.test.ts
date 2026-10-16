@@ -43,23 +43,37 @@ describe("scheduleUnpublishClientSchema", () => {
     ).toThrow()
   })
 
-  it("should reject a scheduledAt earlier than the minimum lead time, attaching the error to unpublishTime when the date is today", () => {
-    // Arrange
-    const now = new Date()
-    const tooSoon = subMinutes(now, 1)
-
-    // Act
-    const result = scheduleUnpublishClientSchema.safeParse({
-      ...VALID_BASE,
-      unpublishDate: tooSoon,
-      unpublishTime: format(tooSoon, "HH:mm"),
+  describe("lead time when the scheduled date is today", () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+      // Mid-afternoon so subMinutes(now, 1) stays on the same calendar day as
+      // earliestScheduleTime — avoids attaching the error to unpublishDate near
+      // midnight (CI sets TZ=Asia/Singapore).
+      vi.setSystemTime(new Date("2026-06-15T14:00:00"))
     })
 
-    // Assert
-    expect(result.success).toBe(false)
-    if (!result.success) {
-      expect(result.error.issues[0]?.path).toEqual(["unpublishTime"])
-    }
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it("should reject a scheduledAt earlier than the minimum lead time, attaching the error to unpublishTime", () => {
+      // Arrange
+      const now = new Date()
+      const tooSoon = subMinutes(now, 1)
+
+      // Act
+      const result = scheduleUnpublishClientSchema.safeParse({
+        ...VALID_BASE,
+        unpublishDate: tooSoon,
+        unpublishTime: format(tooSoon, "HH:mm"),
+      })
+
+      // Assert
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error.issues[0]?.path).toEqual(["unpublishTime"])
+      }
+    })
   })
 
   it("should reject a scheduledAt on a past date, attaching the error to unpublishDate", () => {
