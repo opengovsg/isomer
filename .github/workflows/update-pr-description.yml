@@ -20,9 +20,16 @@ name: Update PR description
 # since the two workflows run in separate contexts and can't share
 # environment variables.
 on:
-  workflow_run:
+  # Fork PR description updates; PR resolved from workflow_run head, not artifact.
+  workflow_run: # jactionlint ignore=dangerous-triggers
     workflows: ["pr-breakdown"]
     types: [completed]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.id }}
+  cancel-in-progress: true
 
 jobs:
   pr-diff-description:
@@ -30,6 +37,7 @@ jobs:
     # a PR to edit.
     if: github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
       actions: read # needed by actions/download-artifact to access a different run's artifacts
@@ -37,6 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           sparse-checkout: .github/scripts
 
       # Download happens before PR resolution now: the resolution step below

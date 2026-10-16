@@ -3,12 +3,19 @@ name: Delete Neon Branch
 on:
   pull_request:
     types: [closed]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   delete-neon-branch:
     # Additional guard to ensure main is never deleted
     if: github.head_ref != 'main'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: neondatabase/delete-branch-action@4468d825d5a88ef4012f1705a82f02ec3072f776
         with:
