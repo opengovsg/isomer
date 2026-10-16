@@ -13,6 +13,7 @@ import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useIsImageAdjustmentEnabled } from "~/hooks/useIsImageAdjustmentEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
+import { generateAssetUrl } from "~/utils/generateAssetUrl"
 
 import { useAdjustmentConfigForField } from "../../hooks/useAdjustmentConfigForField"
 import { isManagedSiteAsset } from "./isManagedSiteAsset"
@@ -66,7 +67,7 @@ function JsonFormsImageControl({
   // Only managed site-storage assets (relative "/..." paths) can be baked;
   // external/absolute URLs and the built-in placeholder have no derivable bake
   // key, so hide Adjust for them rather than letting Save fail.
-  const isManagedAsset = isManagedSiteAsset(data)
+  const isManagedAsset = isManagedSiteAsset(data, siteId)
 
   // Reads the sibling imageAdjustment field and containing block via
   // JsonForms' core data (the only way to reach data outside this control's
@@ -105,6 +106,7 @@ function JsonFormsImageControl({
               components with a config and only for managed (bakeable) assets. */}
           <AttachmentData
             data={data.split("/").pop() ?? "Unknown"}
+            imageSrc={generateAssetUrl(data)}
             onEdit={canAdjust ? onAdjustmentModalOpen : undefined}
             onClick={() => {
               // Clear the sibling adjustment too — otherwise a stale
