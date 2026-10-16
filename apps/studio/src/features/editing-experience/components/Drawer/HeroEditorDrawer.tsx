@@ -11,6 +11,7 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { ajv } from "~/utils/ajv"
+import { serializePageBlob } from "~/utils/combinatorArrayFields"
 import { trpc } from "~/utils/trpc"
 
 import { pageSchema } from "../../schema"
@@ -133,7 +134,7 @@ export default function HeroEditorDrawer(): JSX.Element {
       {
         pageId,
         siteId,
-        content: JSON.stringify(newPageState),
+        content: serializePageBlob(newPageState),
       },
       {
         onSuccess: () => {
