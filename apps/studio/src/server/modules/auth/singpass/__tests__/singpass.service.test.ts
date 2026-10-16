@@ -13,13 +13,14 @@ import {
   vi,
 } from "vitest"
 
+import { getAuthorizationUrl } from "../singpass.service"
+
 const REQUEST_URI = "urn:ietf:params:oauth:request_uri:integration-test"
 
 describe("getAuthorizationUrl", () => {
   let server: http.Server
   let baseUrl: string
   const parProofs: string[] = []
-  let getAuthorizationUrl: typeof import("../singpass.service").getAuthorizationUrl
 
   beforeAll(async () => {
     server = http.createServer((req, res) => {
@@ -46,10 +47,10 @@ describe("getAuthorizationUrl", () => {
     )
   })
 
-  beforeEach(async () => {
+  beforeEach(() => {
     parProofs.length = 0
-    // singpass.service caches the FAPI client at module scope; reload after mocking discover.
-    vi.resetModules()
+    // Spy the same Issuer instance singpass.service imported. resetModules()
+    // would load a second openid-client and the spy would not apply.
     vi.spyOn(Issuer, "discover").mockResolvedValue(
       new Issuer({
         issuer: baseUrl,
@@ -59,8 +60,6 @@ describe("getAuthorizationUrl", () => {
         token_endpoint_auth_signing_alg_values_supported: ["ES256"],
       }),
     )
-    const service = await import("../singpass.service")
-    getAuthorizationUrl = service.getAuthorizationUrl
   })
 
   afterEach(() => {
