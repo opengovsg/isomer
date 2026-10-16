@@ -30,7 +30,9 @@ function JsonFormsHeroCarouselStyleControl({
   return (
     <Box>
       <FormControl isRequired gap="0.5rem">
-        <FormLabel description={description}>{label || "Style"}</FormLabel>
+        <FormLabel color="base.content.default" description={description}>
+          {label || "Style"}
+        </FormLabel>
         <Radio.RadioGroup
           display="flex"
           flexDir="row"
