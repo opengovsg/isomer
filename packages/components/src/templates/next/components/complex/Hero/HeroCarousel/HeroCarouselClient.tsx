@@ -1,7 +1,7 @@
 "use client"
 
 import type { HeadingTag } from "~/utils/getHeadingTag"
-import { useCallback, useState } from "react"
+import { useCallback, useState, useTransition } from "react"
 import { tv } from "~/lib/tv"
 
 import { ComponentContent } from "../../../internal/customCssClass"
@@ -38,7 +38,6 @@ const createHeroCarouselStyles = tv({
           "relative z-10 w-full justify-end bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]",
         contentInner: `${ComponentContent} py-16 text-start text-base-content-inverse`,
         title: "break-words",
-        mobileControls: "bg-gradient-to-t from-black/50 to-transparent",
       },
     },
     isCurrent: {
@@ -79,15 +78,18 @@ export const HeroCarouselClient = ({
   slides: HeroCarouselSlideView[]
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [, startTransition] = useTransition()
 
   const navigateByDirection = useCallback(
     (direction: "prev" | "next") => {
-      setCurrentIndex((prev) => {
-        const offset = direction === "next" ? 1 : -1
-        return (prev + offset + slides.length) % slides.length
+      startTransition(() => {
+        setCurrentIndex((prev) => {
+          const offset = direction === "next" ? 1 : -1
+          return (prev + offset + slides.length) % slides.length
+        })
       })
     },
-    [slides.length],
+    [slides.length, startTransition],
   )
 
   const currentSlide = slides[currentIndex]
@@ -113,14 +115,16 @@ export const HeroCarouselClient = ({
     )
   })
 
-  const mobileControls = (
+  const carouselControlProps = {
+    slideCount: slides.length,
+    currentIndex,
+    onPrev: () => navigateByDirection("prev"),
+    onNext: () => navigateByDirection("next"),
+  }
+
+  const blockMobileControls = (
     <div className={styles.mobileControls({ isBlock })}>
-      <CarouselControls
-        slideCount={slides.length}
-        currentIndex={currentIndex}
-        onPrev={() => navigateByDirection("prev")}
-        onNext={() => navigateByDirection("next")}
-      />
+      <CarouselControls {...carouselControlProps} />
     </div>
   )
 
@@ -219,15 +223,16 @@ export const HeroCarouselClient = ({
           </div>
 
           <CarouselControls
-            slideCount={slides.length}
-            currentIndex={currentIndex}
-            onPrev={() => navigateByDirection("prev")}
-            onNext={() => navigateByDirection("next")}
+            {...carouselControlProps}
             isDesktopOnly
             hasTopMargin={isBlock}
           />
+          {!isBlock && (
+            <div className="lg:hidden">
+              <CarouselControls {...carouselControlProps} />
+            </div>
+          )}
         </div>
-        {!isBlock && mobileControls}
       </div>
 
       {isBlock && (
@@ -236,7 +241,7 @@ export const HeroCarouselClient = ({
           style={{ contain: "layout" }}
         >
           {images}
-          {mobileControls}
+          {blockMobileControls}
         </div>
       )}
     </section>
