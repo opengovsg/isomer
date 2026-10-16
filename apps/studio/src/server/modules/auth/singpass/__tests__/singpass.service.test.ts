@@ -13,7 +13,10 @@ import {
   vi,
 } from "vitest"
 
-import { getAuthorizationUrl } from "../singpass.service"
+import {
+  getAuthorizationUrl,
+  resetCachedSingpassClientsForTests,
+} from "../singpass.service"
 
 const REQUEST_URI = "urn:ietf:params:oauth:request_uri:integration-test"
 
