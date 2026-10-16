@@ -2,6 +2,7 @@ import type { SessionData } from "~/lib/types/session"
 import type { GrowthbookAttributes } from "~/types/growthbook"
 import { TRPCError } from "@trpc/server"
 import { pick, set } from "lodash-es"
+import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { sendLoginAlertEmail } from "~/features/mail/service"
 import {
@@ -13,7 +14,6 @@ import {
   emailSignInSchema,
   emailVerifyOtpSchema,
 } from "~/schemas/auth/email/sign-in"
-import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { publicProcedure, router } from "~/server/trpc"
 import { getBaseUrl } from "~/utils/getBaseUrl"
 
