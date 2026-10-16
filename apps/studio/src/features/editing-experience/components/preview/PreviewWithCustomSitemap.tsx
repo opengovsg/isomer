@@ -8,6 +8,7 @@ import type { PartialDeep } from "type-fest"
 import { Skeleton } from "@chakra-ui/react"
 import {
   LinkComponentProvider,
+  OriginalAssetProvider,
   RenderEngine,
 } from "@opengovsg/isomer-components"
 import { merge } from "lodash-es"
@@ -76,22 +77,27 @@ function SuspendablePreviewWithCustomSitemap({
 
   return (
     <LinkComponentProvider value={FakeLink}>
-      <RenderEngine
-        {...renderProps}
-        // TODO: fixup all the typing errors
-        // @ts-expect-error to fix when types are proper
-        site={{
-          ...siteConfig,
-          siteMap,
-          environment: "production",
-          search: {
-            type: "localSearch",
-            searchUrl: "/search",
-          },
-          assetsBaseUrl: ASSETS_BASE_URL,
-        }}
-        ScriptComponent={Script}
-      />
+      {/* Editor preview renders managed assets via the CDN transcode bypass so a
+          just-saved image shows immediately instead of 404ing until it
+          propagates. Scoped to the preview; the published site is unaffected. */}
+      <OriginalAssetProvider value={true}>
+        <RenderEngine
+          {...renderProps}
+          // TODO: fixup all the typing errors
+          // @ts-expect-error to fix when types are proper
+          site={{
+            ...siteConfig,
+            siteMap,
+            environment: "production",
+            search: {
+              type: "localSearch",
+              searchUrl: "/search",
+            },
+            assetsBaseUrl: ASSETS_BASE_URL,
+          }}
+          ScriptComponent={Script}
+        />
+      </OriginalAssetProvider>
     </LinkComponentProvider>
   )
 }

@@ -2,6 +2,7 @@
 
 import type { ImageClientProps } from "~/interfaces"
 import { forwardRef } from "react"
+import { useOriginalAsset } from "~/templates/next/context/OriginalAssetContext"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 export const ImageClient = forwardRef<
@@ -21,10 +22,14 @@ export const ImageClient = forwardRef<
     },
     ref,
   ) => {
+    // Editor preview only (see OriginalAssetContext): bypass the CDN transcode
+    // so a just-saved image resolves immediately instead of 404ing until it
+    // propagates. Off by default, so the published site is unchanged.
+    const useOriginal = useOriginalAsset()
     const imgSrc =
       isExternalUrl(src) || assetsBaseUrl === undefined
         ? src
-        : `${assetsBaseUrl}${src}`
+        : `${assetsBaseUrl}${src}${useOriginal ? "?original=true" : ""}`
 
     return (
       <img
