@@ -13,6 +13,10 @@ export function AppNavbar(): JSX.Element {
   const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
+  // The central banner page and its procedures are Core-only
+  const { isAdmin: isUserIsomerCoreAdmin } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core],
+  })
 
   return (
     <Flex flex="0 0 auto" gridColumn="1/-1" height={ADMIN_NAVBAR_HEIGHT}>
@@ -45,7 +49,7 @@ export function AppNavbar(): JSX.Element {
             alt="Back to sites"
             priority
           />
-          {isUserIsomerAdmin && (
+          {isUserIsomerCoreAdmin && (
             <Button
               variant="clear"
               size="xs"

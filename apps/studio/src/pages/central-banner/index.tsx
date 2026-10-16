@@ -1,5 +1,6 @@
 import type { NextPageWithLayout } from "~/lib/types"
-import type { Notification } from "~/schemas/site"
+import type { CentralNotification } from "~/schemas/global"
+import type { RouterOutput } from "~/utils/trpc"
 import {
   Box,
   Breadcrumb,
@@ -7,86 +8,61 @@ import {
   BreadcrumbLink,
   Button,
   Flex,
-  IconButton,
+  FormControl,
+  HStack,
   Skeleton,
   Text,
+  VStack,
 } from "@chakra-ui/react"
-import { useToast } from "@opengovsg/design-system-react"
-import { NotificationSettingsSchema } from "@opengovsg/isomer-components"
+import { Switch, useToast } from "@opengovsg/design-system-react"
+import { NotificationCustomSchema } from "@opengovsg/isomer-components"
+import { isEqual } from "lodash-es"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
-import { useState } from "react"
-import { BiPlus, BiTrash } from "react-icons/bi"
-import { ISOMER_SUPPORT_EMAIL, MOE_SITES } from "~/constants/misc"
+import { useEffect, useRef, useState } from "react"
+import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
+import {
+  ErrorProvider,
+  useBuilderErrors,
+} from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { notificationValidator } from "~/schemas/site"
+import { centralNotificationValidator } from "~/schemas/global"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-interface NotificationEntry {
-  notification: Notification
-  targetSites: string[]
-}
+type CentralBannerEditorProps = RouterOutput["global"]["getNotification"]
 
-const EMPTY_ENTRY: NotificationEntry = {
-  notification: {},
-  targetSites: [],
-}
-
-const CentralBannerPage: NextPageWithLayout = () => {
+const CentralBannerEditor = ({
+  notification: previousNotification,
+  version,
+}: CentralBannerEditorProps) => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
-  const router = useRouter()
   const trpcUtils = trpc.useUtils()
+  const { errors, setErrors } = useBuilderErrors()
 
-  // TODO: Change this to a feature flag to allow other users to access
-  const { isAdmin: isEnabled, isLoading: isAdminCheckLoading } =
-    useIsUserIsomerAdmin({
-      roles: [IsomerAdminRole.Core],
-    })
-
-  if (!isAdminCheckLoading && !isEnabled) {
-    toast({
-      title: "You do not have permission to access this page.",
-      status: "error",
-    })
-    void router.push(`/`)
-  }
-
-  const { data: existingEntries, isLoading } =
-    trpc.global.getNotification.useQuery(undefined, {
-      enabled: isEnabled,
-    })
-
-  const [entries, setEntries] = useState<NotificationEntry[]>([])
-  const [isInitialized, setIsInitialized] = useState(false)
-
-  // Initialize state from server data once loaded
-  if (existingEntries && !isInitialized) {
-    setEntries(
-      existingEntries.map((entry) => ({
-        notification: (entry.notification
-          ? { notification: entry.notification }
-          : {}) as Notification,
-        targetSites: entry.targetSites,
-      })),
-    )
-    setIsInitialized(true)
-  }
+  const [notification, setNotification] = useState(previousNotification)
+  const [snapshot, setSnapshot] = useState(previousNotification)
+  const formBuilderChangesEnabledRef = useRef(true)
 
   const mutation = trpc.global.setNotification.useMutation({
     onSuccess: () => {
+      // Refetch for the new version; the editor remounts with it
       void trpcUtils.global.getNotification.invalidate()
       toast({
         title: "Central notification published",
-        description: "Changes are live immediately on all targeted sites.",
+        description: "It may take a few minutes to appear on targeted sites.",
         status: "success",
       })
     },
-    onError: () => {
+    onError: (error) => {
+      if (error.data?.code === "CONFLICT") {
+        toast({ title: error.message, status: "error" })
+        return
+      }
+
       toast({
         title: "Error publishing central notification!",
         description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
@@ -95,30 +71,141 @@ const CentralBannerPage: NextPageWithLayout = () => {
     },
   })
 
-  const handleAddEntry = () => {
-    setEntries((prev) => [...prev, { ...EMPTY_ENTRY }])
+  const bannerOn = notification !== null
+  // FormBuilder only forwards valid data, so visible errors must block publish
+  const canPublish =
+    !isEqual(notification, previousNotification) &&
+    Object.keys(errors).length === 0
+
+  const toggleBanner = () => {
+    if (bannerOn) {
+      // JsonForms can emit a final onChange while unmounting; ignore it so
+      // the banner stays off.
+      formBuilderChangesEnabledRef.current = false
+      setSnapshot(notification)
+      setNotification(null)
+      setErrors({})
+      return
+    }
+
+    formBuilderChangesEnabledRef.current = true
+    setNotification(snapshot ?? { title: "" })
   }
 
-  const handleRemoveEntry = (index: number) => {
-    setEntries((prev) => prev.filter((_, i) => i !== index))
-  }
+  return (
+    <Box
+      mt="1.5rem"
+      p="1.5rem"
+      bg="base.canvas.default"
+      border="1px solid"
+      borderColor="base.divider.medium"
+      borderRadius="0.5rem"
+    >
+      <HStack justifyContent="space-between" spacing="1rem">
+        <FormControl display="flex" alignItems="center">
+          <VStack gap="0.25rem" alignItems="start">
+            <Text textStyle="subhead-1" textColor="base.content.strong">
+              Display a banner
+            </Text>
+            <Text textStyle="body-2" textColor="base.content.medium">
+              Shown on every targeted site until the visitor dismisses it.
+            </Text>
+          </VStack>
+        </FormControl>
+        <Switch
+          size="md"
+          isChecked={bannerOn}
+          onChange={toggleBanner}
+          aria-label="Display a banner"
+        />
+      </HStack>
 
-  const handleNotificationChange = (index: number, data: Notification) => {
-    setEntries((prev) =>
-      prev.map((entry, i) =>
-        i === index ? { ...entry, notification: data } : entry,
-      ),
+      {bannerOn && (
+        <Box mt="1.25rem">
+          <FormBuilder<CentralNotification>
+            schema={NotificationCustomSchema}
+            validateFn={centralNotificationValidator}
+            data={notification}
+            handleChange={(data) => {
+              if (!formBuilderChangesEnabledRef.current) {
+                return
+              }
+              setNotification(data)
+            }}
+          />
+        </Box>
+      )}
+
+      <Flex justifyContent="flex-end" mt="1.5rem">
+        <Button
+          colorScheme="main"
+          size="sm"
+          onClick={() => mutation.mutate({ notification, version })}
+          isLoading={mutation.isPending}
+          isDisabled={!canPublish}
+        >
+          Publish
+        </Button>
+      </Flex>
+    </Box>
+  )
+}
+
+const CentralBannerPage: NextPageWithLayout = () => {
+  const toast = useToast(BRIEF_TOAST_SETTINGS)
+  const router = useRouter()
+
+  // TODO: Change this to a feature flag to allow other users to access
+  const { isAdmin: isEnabled, isLoading: isAdminCheckLoading } =
+    useIsUserIsomerAdmin({
+      roles: [IsomerAdminRole.Core],
+    })
+
+  useEffect(() => {
+    if (isAdminCheckLoading || isEnabled) {
+      return
+    }
+
+    toast({
+      title: "You do not have permission to access this page.",
+      status: "error",
+    })
+    void router.push(`/`)
+  }, [isAdminCheckLoading, isEnabled, toast, router])
+
+  const query = trpc.global.getNotification.useQuery(undefined, {
+    enabled: isEnabled,
+  })
+
+  const renderBody = () => {
+    if (!isEnabled || query.isPending) {
+      return <Skeleton height="20rem" mt="1.5rem" borderRadius="0.5rem" />
+    }
+
+    // Never offer Publish without the saved state: it would overwrite it.
+    if (query.isError) {
+      return (
+        <VStack alignItems="start" mt="1.5rem" gap="0.75rem">
+          <Text textStyle="body-2" color="utility.feedback.critical">
+            Unable to load the current central notification.
+          </Text>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void query.refetch()}
+            isLoading={query.isRefetching}
+          >
+            Retry
+          </Button>
+        </VStack>
+      )
+    }
+
+    return (
+      <ErrorProvider key={query.data.version ?? ""}>
+        <CentralBannerEditor {...query.data} />
+      </ErrorProvider>
     )
-  }
-
-  const handleSubmit = () => {
-    const payload = entries.flatMap(({ notification: { notification } }) =>
-      notification?.type !== "antiscam" && notification?.title
-        ? [{ notification, targetSites: MOE_SITES }]
-        : [],
-    )
-
-    mutation.mutate({ entries: payload })
   }
 
   return (
@@ -134,78 +221,15 @@ const CentralBannerPage: NextPageWithLayout = () => {
         </BreadcrumbItem>
       </Breadcrumb>
 
-      <Flex justifyContent="space-between" alignItems="center" mt="1rem">
-        <Text as="h3" size="lg" textStyle="h3">
-          Central Notification Banner
-        </Text>
-        <Flex gap="0.5rem">
-          <Button
-            colorScheme="main"
-            size="sm"
-            onClick={handleSubmit}
-            isLoading={mutation.isPending}
-          >
-            Publish
-          </Button>
-        </Flex>
-      </Flex>
-
-      <Text textStyle="body-2" color="base.content.medium" mt="0.5rem">
-        Manage notification banners that are displayed across multiple sites.
-        Each notification targets a specific set of sites. A site will show at
-        most one notification (the first matching entry).
+      <Text as="h3" size="lg" textStyle="h3" mt="1rem">
+        Central Notification Banner
       </Text>
 
-      {isLoading ? (
-        <Skeleton height="20rem" mt="1.5rem" borderRadius="0.5rem" />
-      ) : (
-        <Flex flexDirection="column" mt="1.5rem" gap="1.5rem">
-          {entries.map((entry, index) => (
-            <Box
-              key={index}
-              p="1.5rem"
-              bg="base.canvas.default"
-              border="1px solid"
-              borderColor="base.divider.medium"
-              borderRadius="0.5rem"
-            >
-              <Flex
-                justifyContent="space-between"
-                alignItems="center"
-                mb="1rem"
-              >
-                <Text textStyle="subhead-1">Notification {index + 1}</Text>
-                <IconButton
-                  aria-label="Remove notification entry"
-                  icon={<BiTrash />}
-                  variant="outline"
-                  colorScheme="critical"
-                  size="sm"
-                  onClick={() => handleRemoveEntry(index)}
-                />
-              </Flex>
+      <Text textStyle="body-2" color="base.content.medium" mt="0.5rem">
+        Manage the notification banner shown across MOE sites.
+      </Text>
 
-              <ErrorProvider>
-                <FormBuilder<Notification>
-                  schema={NotificationSettingsSchema}
-                  validateFn={notificationValidator}
-                  data={entry.notification}
-                  handleChange={(data) => handleNotificationChange(index, data)}
-                />
-              </ErrorProvider>
-            </Box>
-          ))}
-
-          <Button
-            leftIcon={<BiPlus />}
-            variant="outline"
-            onClick={handleAddEntry}
-            width="fit-content"
-          >
-            Add notification
-          </Button>
-        </Flex>
-      )}
+      {renderBody()}
     </Flex>
   )
 }
