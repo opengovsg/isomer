@@ -19,8 +19,8 @@ import {
   jsonFormsBooleanControlTester,
   JsonFormsChildrenPagesLayoutControl,
   jsonFormsChildrenPagesLayoutControlTester,
-  JsonFormsHeroCarouselStyleControl,
-  jsonFormsHeroCarouselStyleControlTester,
+  JsonFormsHeroCarouselLayoutControl,
+  jsonFormsHeroCarouselLayoutControlTester,
   JsonFormsChildrenPagesOrderingControl,
   jsonFormsChildrenPagesOrderingControlTester,
   JsonFormsCollectionDropdownControl,
@@ -213,8 +213,8 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: JsonFormsChildrenPagesLayoutControl,
   },
   {
-    tester: jsonFormsHeroCarouselStyleControlTester,
-    renderer: JsonFormsHeroCarouselStyleControl,
+    tester: jsonFormsHeroCarouselLayoutControlTester,
+    renderer: JsonFormsHeroCarouselLayoutControl,
   },
   {
     tester: jsonFormsMaxColumnsControlTester,

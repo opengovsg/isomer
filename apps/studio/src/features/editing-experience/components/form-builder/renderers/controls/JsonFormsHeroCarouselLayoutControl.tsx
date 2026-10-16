@@ -4,8 +4,8 @@ import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Radio } from "@opengovsg/design-system-react"
 import {
-  HERO_CAROUSEL_STYLE,
-  HERO_CAROUSEL_STYLE_FORMAT,
+  HERO_CAROUSEL_LAYOUT,
+  HERO_CAROUSEL_LAYOUT_FORMAT,
 } from "@opengovsg/isomer-components"
 import {
   IconHeroCarouselBlock,
@@ -15,12 +15,12 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 // TODO: This control is purely duplicative of JsonFormsChildPageLayoutControl.tsx;
 // combine into a shared illustrated radio-group control driven by schema format/options.
-export const jsonFormsHeroCarouselStyleControlTester: RankedTester = rankWith(
-  JSON_FORMS_RANKING.HeroCarouselStyleControl,
-  schemaMatches((schema) => schema.format === HERO_CAROUSEL_STYLE_FORMAT),
+export const jsonFormsHeroCarouselLayoutControlTester: RankedTester = rankWith(
+  JSON_FORMS_RANKING.HeroCarouselLayoutControl,
+  schemaMatches((schema) => schema.format === HERO_CAROUSEL_LAYOUT_FORMAT),
 )
 
-function JsonFormsHeroCarouselStyleControl({
+function JsonFormsHeroCarouselLayoutControl({
   data,
   label,
   handleChange,
@@ -31,7 +31,7 @@ function JsonFormsHeroCarouselStyleControl({
     <Box>
       <FormControl isRequired gap="0.5rem">
         <FormLabel color="base.content.default" description={description}>
-          {label || "Style"}
+          {label || "Layout"}
         </FormLabel>
         <Radio.RadioGroup
           display="flex"
@@ -43,7 +43,7 @@ function JsonFormsHeroCarouselStyleControl({
           value={data as string}
         >
           <Radio
-            value={HERO_CAROUSEL_STYLE.block}
+            value={HERO_CAROUSEL_LAYOUT.block}
             allowDeselect={false}
             size="sm"
           >
@@ -51,7 +51,7 @@ function JsonFormsHeroCarouselStyleControl({
             <IconHeroCarouselBlock mt="10px" />
           </Radio>
           <Radio
-            value={HERO_CAROUSEL_STYLE.gradient}
+            value={HERO_CAROUSEL_LAYOUT.gradient}
             allowDeselect={false}
             size="sm"
           >
@@ -64,4 +64,4 @@ function JsonFormsHeroCarouselStyleControl({
   )
 }
 
-export default withJsonFormsControlProps(JsonFormsHeroCarouselStyleControl)
+export default withJsonFormsControlProps(JsonFormsHeroCarouselLayoutControl)

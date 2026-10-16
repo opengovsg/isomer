@@ -102,7 +102,7 @@ function hasOwn(value: Record<string, unknown>, key: string) {
   return Object.prototype.hasOwnProperty.call(value, key)
 }
 
-/** Keep fields the selected branch defines. Drop the rest, including carousel `slides` and `style`. */
+/** Keep fields the selected branch defines. Drop the rest, including carousel `slides` and `layout`. */
 export function nextVariantData(
   previous: unknown,
   next: unknown,

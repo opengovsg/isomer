@@ -1,7 +1,7 @@
 import type { HeroCarouselProps } from "~/interfaces/complex/Hero"
 import {
   HERO_CAROUSEL_SLIDE_LIMITS,
-  HERO_CAROUSEL_STYLE,
+  HERO_CAROUSEL_LAYOUT,
 } from "~/interfaces/complex/Hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
@@ -11,7 +11,7 @@ import { HeroCarouselClient } from "./HeroCarouselClient"
 export const HeroCarousel = ({
   site,
   slides,
-  style,
+  layout,
   headingLevel,
 }: HeroCarouselProps) => {
   if (slides.length < HERO_CAROUSEL_SLIDE_LIMITS.minItems) {
@@ -20,7 +20,7 @@ export const HeroCarousel = ({
 
   return (
     <HeroCarouselClient
-      isBlock={style === HERO_CAROUSEL_STYLE.block}
+      isBlock={layout === HERO_CAROUSEL_LAYOUT.block}
       headingTag={getHeadingTag(headingLevel)}
       assetsBaseUrl={site.assetsBaseUrl}
       slides={slides.map((slide) => ({

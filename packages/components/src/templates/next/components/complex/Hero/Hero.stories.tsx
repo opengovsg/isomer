@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { HERO_CAROUSEL_STYLE } from "~/interfaces/complex/Hero"
+import { HERO_CAROUSEL_LAYOUT } from "~/interfaces/complex/Hero"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
@@ -190,7 +190,7 @@ export const CarouselBlock: Story = {
     headingLevel: 1,
     site: generateSiteConfig(),
     variant: "carousel",
-    style: HERO_CAROUSEL_STYLE.block,
+    layout: HERO_CAROUSEL_LAYOUT.block,
     slides: [
       {
         backgroundUrl: carouselImageUrl,
@@ -220,7 +220,7 @@ export const CarouselBlock: Story = {
 export const CarouselGradient: Story = {
   args: {
     ...CarouselBlock.args,
-    style: HERO_CAROUSEL_STYLE.gradient,
+    layout: HERO_CAROUSEL_LAYOUT.gradient,
   },
 }
 
