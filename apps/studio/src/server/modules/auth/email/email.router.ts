@@ -101,7 +101,7 @@ export const emailSessionRouter = router({
                 body: `Your OTP is ${otpPrefix}-<b>${token}</b>. It expires in ${expiryMinutes} minutes.
       Please use this to login to your account.
       <p>If your OTP does not work, please request for a new one.</p>
-      <p>If you did not request this OTP, you can safely ignore this email.</p>`,
+      <p>If you did not request this OTP, please report it to support@isomer.gov.sg.</p>`,
                 recipient: email,
               }),
         ])
