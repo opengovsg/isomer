@@ -89,12 +89,6 @@ const getFapiClient = async (): Promise<Client> => {
   return fapiClient
 }
 
-/** Clears cached OIDC clients between Vitest cases (integration tests). */
-export const resetCachedSingpassClientsForTests = (): void => {
-  legacyClient = null
-  fapiClient = null
-}
-
 interface SingpassAuthSession {
   codeVerifier: string
   nonce: string
