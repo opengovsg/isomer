@@ -4,6 +4,9 @@ import { Type } from "@sinclair/typebox"
 
 import { NotificationCustomSchema } from "./Notification"
 
+// Studio publishes this file to the assets bucket; sites fetch it
+export const CENTRAL_NOTIFICATION_FILE_NAME = "central-notification.json"
+
 export const CentralNotificationEntrySchema = Type.Object({
   notification: NotificationCustomSchema,
   targetSites: Type.Array(Type.String(), {

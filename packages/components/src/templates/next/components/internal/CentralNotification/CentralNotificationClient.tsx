@@ -3,10 +3,11 @@
 import type {
   CentralNotificationBroadcast,
   CentralNotificationEntry,
-  CentralNotificationProps,
 } from "~/interfaces"
+import type { IsomerSiteProps } from "~/types"
 import { useEffect, useState } from "react"
 import { useDismissedCentralNotification } from "~/hooks/useDismissedCentralNotification"
+import { CENTRAL_NOTIFICATION_FILE_NAME } from "~/interfaces"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
 import { Prose } from "../../native/Prose"
@@ -14,7 +15,7 @@ import { hasContent } from "../../native/Prose/utils"
 import { BaseParagraph } from "../BaseParagraph"
 import { NotificationBanner } from "../Notification/NotificationBanner"
 
-interface CentralNotificationClientProps extends CentralNotificationProps {
+interface CentralNotificationClientProps {
   assetsBaseUrl: string
   siteUrl: string
 }
@@ -26,7 +27,6 @@ const normaliseUrl = (url: string) =>
 export const CentralNotificationClient = ({
   assetsBaseUrl,
   siteUrl,
-  site,
 }: CentralNotificationClientProps) => {
   const [dismissedKey, setDismissedKey] = useDismissedCentralNotification()
   const [matchedEntry, setMatchedEntry] =
@@ -35,7 +35,7 @@ export const CentralNotificationClient = ({
   useEffect(() => {
     if (!assetsBaseUrl) return
 
-    fetch(`${assetsBaseUrl}/central-notification.json`)
+    fetch(`${assetsBaseUrl}/${CENTRAL_NOTIFICATION_FILE_NAME}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch central notification")
         return res.json()
@@ -71,6 +71,11 @@ export const CentralNotificationClient = ({
   }
 
   const { title, content } = notification
+
+  // Central banners hold only absolute links (Studio enforces this), so no
+  // site map is needed. Passing the real site from the server would
+  // serialise it into every page's HTML.
+  const site = { siteMapArray: [], assetsBaseUrl } as unknown as IsomerSiteProps
 
   const ContentParagraph = () => {
     if (!content) return null

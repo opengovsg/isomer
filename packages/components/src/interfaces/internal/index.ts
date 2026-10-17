@@ -3,6 +3,7 @@ export {
   type ArticlePageHeaderProps,
 } from "./ArticlePageHeader"
 export {
+  CENTRAL_NOTIFICATION_FILE_NAME,
   CentralNotificationEntrySchema,
   CentralNotificationBroadcastSchema,
   type CentralNotificationEntry,

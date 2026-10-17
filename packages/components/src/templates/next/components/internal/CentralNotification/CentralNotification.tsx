@@ -9,7 +9,6 @@ export const CentralNotification = ({ site }: CentralNotificationProps) => {
     <CentralNotificationClient
       assetsBaseUrl={site.assetsBaseUrl}
       siteUrl={site.url}
-      site={site}
     />
   )
 }
