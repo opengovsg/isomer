@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import { HERO_CAROUSEL_LAYOUT } from "~/interfaces/complex/Hero"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
@@ -8,6 +9,11 @@ import { generateSiteConfig } from "~/stories/helpers"
 import { withChromaticModes } from "@isomer/storybook-config"
 
 import { Hero } from "./Hero"
+
+const carouselImageUrl =
+  "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+const carouselImageUrlAlt =
+  "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
 
 const meta: Meta<typeof Hero> = {
   title: "Next/Components/Hero",
@@ -176,6 +182,45 @@ export const Searchbar: Story = {
     subtitle:
       "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
     variant: "searchbar",
+  },
+}
+
+export const CarouselBlock: Story = {
+  args: {
+    headingLevel: 1,
+    site: generateSiteConfig(),
+    variant: "carousel",
+    layout: HERO_CAROUSEL_LAYOUT.block,
+    slides: [
+      {
+        backgroundUrl: carouselImageUrl,
+        title: "Set up good government websites, fast",
+        subtitle:
+          "Isomer is a website builder made for government teams. Pick a template, add your content, and publish.",
+        buttonLabel: "Get started",
+        buttonUrl: "/",
+        secondaryButtonLabel: "Learn more",
+        secondaryButtonUrl: "/",
+      },
+      {
+        backgroundUrl: carouselImageUrlAlt,
+        title: "Built for the public sector",
+        subtitle:
+          "Meet accessibility, security, and branding requirements out of the box.",
+        buttonLabel: "See templates",
+        buttonUrl: "/",
+        secondaryButtonLabel: "Contact us",
+        secondaryButtonUrl: "/",
+      },
+    ],
+    theme: "default",
+  },
+}
+
+export const CarouselGradient: Story = {
+  args: {
+    ...CarouselBlock.args,
+    layout: HERO_CAROUSEL_LAYOUT.gradient,
   },
 }
 
