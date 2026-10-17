@@ -59,7 +59,11 @@ describe("global.router", async () => {
       const result = await caller.getNotification()
 
       // Assert
-      expect(result).toEqual({ notification: NOTIFICATION, version: ETAG })
+      // Validation fills in the schema default `type`
+      expect(result).toEqual({
+        notification: { ...NOTIFICATION, type: "custom" },
+        version: ETAG,
+      })
     })
 
     it("returns an empty state when nothing is published yet", async () => {
@@ -87,6 +91,36 @@ describe("global.router", async () => {
       // Assert
       await expect(result).rejects.toThrow(TRPCError)
       expect(getTextObject).not.toHaveBeenCalled()
+    })
+
+    it("rejects a user who is not an Isomer admin before reading S3", async () => {
+      // Act
+      const result = caller.getNotification()
+
+      // Assert
+      await expect(result).rejects.toThrow(TRPCError)
+      expect(getTextObject).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      ["invalid JSON", "{"],
+      ["a non-array body", JSON.stringify({ notification: NOTIFICATION })],
+      [
+        "an entry without targets",
+        JSON.stringify([{ notification: NOTIFICATION }]),
+      ],
+    ])("returns INTERNAL_SERVER_ERROR for %s", async (_, body) => {
+      // Arrange
+      await setupIsomerAdmin({ userId: session.userId! })
+      vi.mocked(getTextObject).mockResolvedValue({ body, eTag: ETAG })
+
+      // Act
+      const result = caller.getNotification()
+
+      // Assert
+      await expect(result).rejects.toMatchObject({
+        code: "INTERNAL_SERVER_ERROR",
+      })
     })
   })
 
@@ -156,6 +190,80 @@ describe("global.router", async () => {
 
       // Assert
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+      expect(putObjectDirect).not.toHaveBeenCalled()
+    })
+
+    it("rejects internal links, which sites cannot resolve", async () => {
+      // Arrange
+      await setupIsomerAdmin({ userId: session.userId! })
+
+      // Act
+      const result = caller.setNotification({
+        notification: {
+          title: "Notice",
+          content: [
+            {
+              type: "text",
+              text: "our page",
+              marks: [{ type: "link", attrs: { href: "[resource:1:2]" } }],
+            },
+          ],
+        },
+        version: ETAG,
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+      expect(putObjectDirect).not.toHaveBeenCalled()
+    })
+
+    it("accepts web and email links", async () => {
+      // Arrange
+      await setupIsomerAdmin({ userId: session.userId! })
+
+      // Act
+      await caller.setNotification({
+        notification: {
+          title: "Notice",
+          content: [
+            {
+              type: "text",
+              text: "haze.gov.sg",
+              marks: [
+                { type: "link", attrs: { href: "https://www.haze.gov.sg" } },
+              ],
+            },
+            {
+              type: "text",
+              text: "email us",
+              marks: [
+                { type: "link", attrs: { href: "mailto:help@example.gov.sg" } },
+              ],
+            },
+          ],
+        },
+        version: ETAG,
+      })
+
+      // Assert
+      expect(putObjectDirect).toHaveBeenCalledOnce()
+    })
+
+    it("rejects a Migrator before writing S3", async () => {
+      // Arrange
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Migrator,
+      })
+
+      // Act
+      const result = caller.setNotification({
+        notification: NOTIFICATION,
+        version: ETAG,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(TRPCError)
       expect(putObjectDirect).not.toHaveBeenCalled()
     })
 

@@ -21,7 +21,10 @@ import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { useEffect, useRef, useState } from "react"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import {
+  ACTIONABLE_ERROR_TOAST_SETTINGS,
+  BRIEF_TOAST_SETTINGS,
+} from "~/constants/toast"
 import {
   ErrorProvider,
   useBuilderErrors,
@@ -59,7 +62,11 @@ const CentralBannerEditor = ({
     },
     onError: (error) => {
       if (error.data?.code === "CONFLICT") {
-        toast({ title: error.message, status: "error" })
+        toast({
+          ...ACTIONABLE_ERROR_TOAST_SETTINGS,
+          title: error.message,
+          status: "error",
+        })
         return
       }
 

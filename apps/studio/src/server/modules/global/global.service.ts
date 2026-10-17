@@ -1,5 +1,6 @@
 import type { CentralNotificationBroadcast } from "@opengovsg/isomer-components"
 import type { CentralNotification } from "~/schemas/global"
+import { CENTRAL_NOTIFICATION_FILE_NAME } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { MOE_SITES } from "~/constants/misc"
 import { env } from "~/env.mjs"
@@ -8,10 +9,11 @@ import {
   isConditionalWriteFailedError,
   putObjectDirect,
 } from "~/lib/s3"
+import { centralNotificationBroadcastValidator } from "~/schemas/global"
 
 const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
 
-const CENTRAL_NOTIFICATION_KEY = "central-notification.json"
+const MALFORMED_MESSAGE = "The stored central notification is malformed"
 
 interface GlobalNotificationState {
   notification: CentralNotification | null
@@ -25,7 +27,7 @@ export const getGlobalNotification =
     try {
       object = await getTextObject(
         NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
-        CENTRAL_NOTIFICATION_KEY,
+        CENTRAL_NOTIFICATION_FILE_NAME,
       )
     } catch (error) {
       throw new TRPCError({
@@ -45,14 +47,19 @@ export const getGlobalNotification =
     } catch (error) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "The stored central notification is malformed",
+        message: MALFORMED_MESSAGE,
         cause: error,
       })
     }
 
-    const [entry] = Array.isArray(broadcast)
-      ? (broadcast as CentralNotificationBroadcast)
-      : []
+    if (!centralNotificationBroadcastValidator(broadcast)) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: MALFORMED_MESSAGE,
+      })
+    }
+
+    const [entry] = broadcast
 
     return {
       notification: entry?.notification ?? null,
@@ -73,7 +80,7 @@ export const publishGlobalNotification = async ({
   try {
     await putObjectDirect({
       Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
-      Key: CENTRAL_NOTIFICATION_KEY,
+      Key: CENTRAL_NOTIFICATION_FILE_NAME,
       Body: JSON.stringify(broadcast),
       ContentType: "application/json",
       CacheControl: "no-cache, no-store, must-revalidate",
