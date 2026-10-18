@@ -19,7 +19,7 @@ import { useIsImageAdjustmentEnabled } from "~/hooks/useIsImageAdjustmentEnabled
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 import { canBakeImage, mimeFromKeyExtension } from "~/lib/imageBake"
-import { generateOriginalAssetUrl } from "~/utils/generateAssetUrl"
+import { generateAssetUrl } from "~/utils/generateAssetUrl"
 
 import { useAdjustmentConfigForField } from "../../hooks/useAdjustmentConfigForField"
 import { isManagedSiteAsset } from "./isManagedSiteAsset"
@@ -135,10 +135,9 @@ function JsonFormsImageControl({
               components with a config and only for managed (bakeable) assets. */}
           <AttachmentData
             data={data.split("/").pop() ?? "Unknown"}
-            // Bypass the CDN transcode (same as the editor preview) so a
-            // just-saved image's thumbnail resolves immediately instead of
-            // 404ing until it propagates.
-            imageSrc={generateOriginalAssetUrl(data)}
+            // Plain (optimized) URL — the ?original object is gated by a
+            // malware-scan tag and 403s; the variant is fine for a thumbnail.
+            imageSrc={generateAssetUrl(data)}
             onEdit={canAdjust ? onAdjustmentModalOpen : undefined}
             onClick={() => {
               // Clear the sibling adjustment too — otherwise a stale

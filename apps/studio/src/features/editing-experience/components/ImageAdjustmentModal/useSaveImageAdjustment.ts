@@ -8,7 +8,10 @@ import {
   mimeFromKeyExtension,
 } from "~/lib/imageBake"
 import { performUpload } from "~/lib/storage/client"
-import { generateOriginalAssetUrl } from "~/utils/generateAssetUrl"
+import {
+  generateAssetUrl,
+  generateOriginalAssetUrl,
+} from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
 
 /**
@@ -50,6 +53,28 @@ export const chooseBakeMime = (
   throw new Error(
     `This image can't be adjusted. Only JPEG, PNG, and WebP images are supported (got "${originalType}").`,
   )
+}
+
+/**
+ * Fetch image bytes for baking, preferring the pristine original (transcode
+ * bypass) and falling back to the plain (transcoded) URL when the original is
+ * inaccessible — the ?original object is gated by a malware-scan tag and 403s
+ * for unscanned/just-uploaded or post-conversion-deleted originals. Throws on a
+ * non-ok response so a 403 XML body is never mistaken for image bytes.
+ * @param key - The image key with leading slash (e.g. "/site/uuid/file.png")
+ */
+const fetchImageBlob = async (key: string): Promise<Blob> => {
+  const originalUrl = generateOriginalAssetUrl(key)
+  const plainUrl = generateAssetUrl(key)
+
+  let response = await fetch(originalUrl)
+  if (!response.ok && plainUrl !== originalUrl) {
+    response = await fetch(plainUrl)
+  }
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image: ${response.status}`)
+  }
+  return response.blob()
 }
 
 interface UseSaveImageAdjustmentInput {
@@ -94,11 +119,9 @@ export const useSaveImageAdjustment = ({
       // Step 1: Resolve the original key
       const originalKey = resolveOriginalKey(currentSrc, draft)
 
-      // Step 2: Fetch the pristine original blob (bypass the CDN transcode so we
-      // bake full-resolution original bytes, not a downscaled derivative).
-      const originalBlob = await (
-        await fetch(generateOriginalAssetUrl(`/${originalKey}`))
-      ).blob()
+      // Step 2: Fetch the bytes to bake — prefers the pristine original, falls
+      // back to the plain URL when it's gated (see fetchImageBlob).
+      const originalBlob = await fetchImageBlob(`/${originalKey}`)
 
       // Step 3: Choose the MIME type for baking
       const mime = chooseBakeMime(originalBlob.type, originalKey)

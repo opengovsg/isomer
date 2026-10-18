@@ -5,8 +5,7 @@ import { BlockInfopic } from "./components/BlockInfopic"
 import { FullInfopic } from "./components/FullInfopic"
 
 // imageSrc is passed through raw (relative). ImageClient (BlockInfopic) and
-// FullInfopic resolve it against assetsBaseUrl themselves, so the editor's
-// ?original transcode-bypass applies — see ImageClient / OriginalAssetContext.
+// FullInfopic resolve it against assetsBaseUrl themselves.
 export const Infopic = ({
   site,
   // NOTE: We need to set a default value here for back-compat

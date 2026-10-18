@@ -132,13 +132,20 @@ export const AdjustmentPreview = ({
   // save path — the transcoded variant can be downscaled or carry a generic
   // "binary/octet-stream" type that the bake gate rejects.
   const originalFetchUrl = generateOriginalAssetUrl(originalSrc)
+  // Fallback for environments where the ?original bypass is unavailable (e.g.
+  // 403): the plain (transcoded) URL still lets baking proceed — canBakeImage
+  // rejects an octet-stream variant anyway, so this never bakes garbage.
+  const plainFetchUrl = generateAssetUrl(originalSrc)
 
   // Fetch the original image once per resolved original. Comment notes CORS
   // must be readable.
   useEffect(() => {
     const fetchOriginal = async () => {
       try {
-        const response = await fetch(originalFetchUrl)
+        let response = await fetch(originalFetchUrl)
+        if (!response.ok && plainFetchUrl !== originalFetchUrl) {
+          response = await fetch(plainFetchUrl)
+        }
         if (!response.ok) {
           throw new Error(`Failed to fetch image: ${response.status}`)
         }
@@ -151,7 +158,7 @@ export const AdjustmentPreview = ({
       }
     }
     void fetchOriginal()
-  }, [originalFetchUrl])
+  }, [originalFetchUrl, plainFetchUrl])
 
   // Debounced bake effect (~150ms) keyed on crop/rotate/flipH/flipV changes.
   useEffect(() => {

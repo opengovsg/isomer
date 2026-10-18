@@ -2,7 +2,6 @@
 
 import type { ImageClientProps } from "~/interfaces"
 import { forwardRef } from "react"
-import { useOriginalAsset } from "~/templates/next/context/OriginalAssetContext"
 import { resolveManagedAssetUrl } from "~/utils/resolveManagedAssetUrl"
 
 export const ImageClient = forwardRef<
@@ -22,11 +21,7 @@ export const ImageClient = forwardRef<
     },
     ref,
   ) => {
-    // Editor preview only (see OriginalAssetContext): bypass the CDN transcode
-    // so a just-saved image resolves immediately instead of 404ing until it
-    // propagates. Off by default, so the published site is unchanged.
-    const useOriginal = useOriginalAsset()
-    const imgSrc = resolveManagedAssetUrl(src, assetsBaseUrl, useOriginal)
+    const imgSrc = resolveManagedAssetUrl(src, assetsBaseUrl)
 
     return (
       <img
