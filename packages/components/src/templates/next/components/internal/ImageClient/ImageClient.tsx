@@ -3,7 +3,7 @@
 import type { ImageClientProps } from "~/interfaces"
 import { forwardRef } from "react"
 import { useOriginalAsset } from "~/templates/next/context/OriginalAssetContext"
-import { isExternalUrl } from "~/utils/isExternalUrl"
+import { resolveManagedAssetUrl } from "~/utils/resolveManagedAssetUrl"
 
 export const ImageClient = forwardRef<
   HTMLImageElement,
@@ -26,10 +26,7 @@ export const ImageClient = forwardRef<
     // so a just-saved image resolves immediately instead of 404ing until it
     // propagates. Off by default, so the published site is unchanged.
     const useOriginal = useOriginalAsset()
-    const imgSrc =
-      isExternalUrl(src) || assetsBaseUrl === undefined
-        ? src
-        : `${assetsBaseUrl}${src}${useOriginal ? "?original=true" : ""}`
+    const imgSrc = resolveManagedAssetUrl(src, assetsBaseUrl, useOriginal)
 
     return (
       <img

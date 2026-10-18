@@ -1,7 +1,11 @@
+"use client"
+
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
+import { useOriginalAsset } from "~/templates/next/context/OriginalAssetContext"
 import { getFocalObjectPosition } from "~/utils/getFocalObjectPosition"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { resolveManagedAssetUrl } from "~/utils/resolveManagedAssetUrl"
 
 import type { InfopicProps } from "../types"
 import { LinkButton } from "../../../internal/LinkButton"
@@ -31,10 +35,20 @@ export const FullInfopic = ({
   const hasLinkButton = !!buttonLabel && !!buttonUrl
   const backgroundPosition = getFocalObjectPosition(imageAdjustment) ?? "center"
 
+  // Resolve the managed-asset URL here (a CSS background can't go through
+  // ImageClient). resolveManagedAssetUrl appends original=true in the editor to
+  // bypass the CDN transcode so a just-saved image shows immediately.
+  const useOriginal = useOriginalAsset()
+  const backgroundUrl = resolveManagedAssetUrl(
+    imageSrc,
+    site.assetsBaseUrl,
+    useOriginal,
+  )
+
   return (
     <section
       style={{
-        backgroundImage: `url('${imageSrc}')`,
+        backgroundImage: `url('${backgroundUrl}')`,
         backgroundSize: "cover",
         backgroundPosition,
       }}
