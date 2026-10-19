@@ -23,7 +23,7 @@
     "algoliasearch": "catalog:",
     "content-disposition": "catalog:",
     "date-fns-tz": "catalog:",
-    "pdfreader": "^3.0.8"
+    "pdfreader": "catalog:"
   },
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",

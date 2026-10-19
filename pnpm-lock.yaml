@@ -391,6 +391,9 @@ catalogs:
     papaparse:
       specifier: ^5.7.0
       version: 5.7.0
+    pdfreader:
+      specifier: ^3.0.8
+      version: 3.0.8
     pg-boss:
       specifier: ^12.37.0
       version: 12.37.1
@@ -1344,7 +1347,7 @@ importers:
         specifier: 'catalog:'
         version: 3.2.0(date-fns@4.4.0)
       pdfreader:
-        specifier: ^3.0.8
+        specifier: 'catalog:'
         version: 3.0.8
     devDependencies:
       '@isomer/oxlint-config':
@@ -24656,7 +24659,7 @@ snapshots:
     dependencies:
       chokidar: 5.0.0
       immutable: 5.1.9
-      source-map-js: 1.2.1
+      source-map-js: 1.2.2
     optionalDependencies:
       '@parcel/watcher': 2.5.6
     optional: true
