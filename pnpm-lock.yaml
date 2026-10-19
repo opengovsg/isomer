@@ -412,9 +412,6 @@ catalogs:
     posthog-js:
       specifier: ^1.438.1
       version: 1.438.8
-    posthog-node:
-      specifier: ^5.54.0
-      version: 5.55.0
     rate-limiter-flexible:
       specifier: ^11.2.1
       version: 11.2.1
@@ -1056,18 +1053,12 @@ importers:
       papaparse:
         specifier: 'catalog:'
         version: 5.7.0
-      pdfreader:
-        specifier: ^3.0.8
-        version: 3.0.8
       pg:
         specifier: catalog:pg
         version: 8.23.1
       posthog-js:
         specifier: 'catalog:'
         version: 1.438.8(@types/react@18.3.31)(react@18.3.1)
-      posthog-node:
-        specifier: 'catalog:'
-        version: 5.55.0(rxjs@7.8.2)
       rate-limiter-flexible:
         specifier: 'catalog:'
         version: 11.2.1
@@ -5983,14 +5974,8 @@ packages:
   '@posthog/browser-common@0.9.4':
     resolution: {integrity: sha512-QlG0WZFG9iTp9cmXTypB4cgnxBAD3GImrj9AwmA84uh8uy5vIVgVLjoTTdOAW29XL+kh/eLn/5ZtBQt2JQfR+w==}
 
-  '@posthog/core@1.55.3':
-    resolution: {integrity: sha512-XnmG9jo7WlxTeN4oCNWH4ESLQHR6ZPZ+mcq+8JxU62k5i1BAe3BSrybnmXHjqKp7e3rUvLK2bOzGZGSlfHvlNA==}
-
   '@posthog/core@1.58.0':
     resolution: {integrity: sha512-vluXIlVF6WGeHoQbsQK8Y1ywXZlJDU7YHEKiXAArQU38yFBpgxxfD0kInbYHtura4Fr7Z7H8WiDFvtMpCGehGg==}
-
-  '@posthog/types@1.413.0':
-    resolution: {integrity: sha512-tYAVzNojWckuG/wxBB0fwE70sFruQQq4xbhkci7eH2ARU3mMfUTkvpN1HwBMpm0AtbxidLiH0IFvagmdJ8opPw==}
 
   '@posthog/types@1.415.2':
     resolution: {integrity: sha512-BIIHPyXcPZuNTImrR1qLqLKFw7j9o8co6LG/9OpLtpWJ3RT0y89Lx6VCtd37N9/dkr/qW7y0uPjJxAxjsALHtw==}
@@ -11501,15 +11486,6 @@ packages:
       '@types/react':
         optional: true
       react:
-        optional: true
-
-  posthog-node@5.55.0:
-    resolution: {integrity: sha512-8dFtlDTqs0CKGZ8t4mUnk4NdShAgzru3B9D0MfM/NTBzlRyAjctivzWINLtMLRQxYjvgBohxy7RTwiQf4mPycQ==}
-    engines: {node: ^20.20.0 || >=22.22.0}
-    peerDependencies:
-      rxjs: ^7.0.0
-    peerDependenciesMeta:
-      rxjs:
         optional: true
 
   pprof-format@2.3.2:
@@ -17505,15 +17481,9 @@ snapshots:
       '@posthog/core': 1.58.0
       '@posthog/types': 1.415.2
 
-  '@posthog/core@1.55.3':
-    dependencies:
-      '@posthog/types': 1.413.0
-
   '@posthog/core@1.58.0':
     dependencies:
       '@posthog/types': 1.415.2
-
-  '@posthog/types@1.413.0': {}
 
   '@posthog/types@1.415.2': {}
 
@@ -23866,12 +23836,6 @@ snapshots:
       react: 18.3.1
     transitivePeerDependencies:
       - preact-render-to-string
-
-  posthog-node@5.55.0(rxjs@7.8.2):
-    dependencies:
-      '@posthog/core': 1.55.3
-    optionalDependencies:
-      rxjs: 7.8.2
 
   pprof-format@2.3.2:
     optional: true

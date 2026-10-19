@@ -1,5 +1,0 @@
-export { IconCalloutGoodToKnow } from "./goodToKnow"
-export { IconCalloutInformation } from "./information"
-export { IconCalloutNote } from "./note"
-export { IconCalloutUrgent } from "./urgent"
-export { IconCalloutWarning } from "./warning"
