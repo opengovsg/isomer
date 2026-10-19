@@ -45,6 +45,11 @@ export default defineConfig({
                   !!process.env.CI && process.env.ARGOS_UPLOAD !== "false",
               }),
             ],
+            optimizeDeps: {
+              // Scan every story up front. Dependencies discovered mid-run make
+              // Vite re-optimize and reload, which fails in-flight story imports.
+              entries: ["src/**/*.stories.{ts,tsx}", ".storybook/preview.tsx"],
+            },
             test: {
               name: "storybook",
               alias,
