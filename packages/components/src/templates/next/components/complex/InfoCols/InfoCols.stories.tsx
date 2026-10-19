@@ -24,7 +24,6 @@ type Story = StoryObj<InfoColsProps>
 // Setting this as default for now since it's what has been through the most design work
 export const Default: Story = {
   args: {
-    sectionIdx: 0,
     title: "MTI Highlights",
     subtitle:
       "These are some of the things we are working on. As a ministry, we focus on delivering value to the members of public.",
@@ -83,7 +82,6 @@ export const Default: Story = {
 
 export const FourInfoBoxes: Story = {
   args: {
-    sectionIdx: 0,
     title: "Highlights",
     subtitle: "Some of the things that we are working on",
     infoBoxes: [
@@ -121,7 +119,6 @@ export const FourInfoBoxes: Story = {
 
 export const HoverBehaviour: Story = {
   args: {
-    sectionIdx: 0,
     title: "Highlights",
     subtitle: "Some of the things that we are working on",
     infoBoxes: [

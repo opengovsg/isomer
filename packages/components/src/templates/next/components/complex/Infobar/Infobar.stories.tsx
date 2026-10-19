@@ -24,7 +24,6 @@ type Story = StoryObj<typeof Infobar>
 export const Default: Story = {
   name: "Default",
   args: {
-    sectionIdx: 0,
     title: "This is a place where you can put nice content",
     description: "About a sentence worth of description here",
     buttonLabel: "Primary CTA",
@@ -37,7 +36,6 @@ export const Default: Story = {
 export const DefaultOneButton: Story = {
   name: "Default/One Button",
   args: {
-    sectionIdx: 0,
     title: "This is a place where you can put nice content",
     description: "About a sentence worth of description here",
     buttonLabel: "Primary CTA",
@@ -48,7 +46,6 @@ export const DefaultOneButton: Story = {
 export const DefaultLongText: Story = {
   name: "Default/Long Text",
   args: {
-    sectionIdx: 0,
     title:
       "Longer title here that spans multiple lines and is quite long and verbose and takes up a lot of space",
     description:
@@ -63,7 +60,6 @@ export const DefaultLongText: Story = {
 export const DefaultNoCTA: Story = {
   name: "Default/No CTA",
   args: {
-    sectionIdx: 0,
     title:
       "Longer title here that spans multiple lines and is quite long and verbose and takes up a lot of space",
     description:
@@ -84,7 +80,6 @@ export const Homepage: Story = {
   name: "Homepage",
   args: {
     layout: "homepage",
-    sectionIdx: 0,
     title: "This is a place where you can put nice content",
     description: "About a sentence worth of description here",
     buttonLabel: "Primary CTA",
@@ -98,7 +93,6 @@ export const HomepageOneButton: Story = {
   name: "Homepage/One Button",
   args: {
     layout: "homepage",
-    sectionIdx: 0,
     title: "This is a place where you can put nice content",
     description: "About a sentence worth of description here",
     buttonLabel: "Primary CTA",
@@ -110,7 +104,6 @@ export const HomepageNoCTA: Story = {
   name: "Homepage/No CTA",
   args: {
     layout: "homepage",
-    sectionIdx: 0,
     title:
       "Longer title here that spans multiple lines and is quite long and verbose and takes up a lot of space",
     description:

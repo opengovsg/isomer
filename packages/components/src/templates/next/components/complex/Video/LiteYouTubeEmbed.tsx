@@ -27,7 +27,8 @@ export const LiteYouTubeEmbed = ({
   )
 
   useEffect(() => {
-    // For playlist/video-series embeds, fetch an actual preview image via oEmbed.
+    // Single-video: use static thumbnail.
+    // Playlist/video series: resolve thumbnail via oEmbed.
     if (videoId) {
       setOEmbedThumbnailUrl(null)
       return
@@ -55,7 +56,7 @@ export const LiteYouTubeEmbed = ({
   }, [src, videoId])
 
   //  We add autoplay here because the user already click on the facade button once,
-  // and we don't them to have to click again to play.
+  // and we don't want them to have to click again to play.
   const srcWithAutoplay = () => {
     const u = new URL(src)
     u.searchParams.set("autoplay", "1")
