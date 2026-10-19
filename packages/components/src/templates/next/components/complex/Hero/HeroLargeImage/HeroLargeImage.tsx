@@ -4,10 +4,6 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { ComponentContent } from "../../../internal/customCssClass"
 import { LinkButton } from "../../../internal/LinkButton/LinkButton"
-import {
-  heroBannerSubtitleClassName,
-  heroBannerTitleClassName,
-} from "../heroBannerTextClassNames"
 import { ImageContainer } from "./ImageContainer"
 
 export const HeroLargeImage = ({
@@ -30,9 +26,11 @@ export const HeroLargeImage = ({
       >
         {/* Text container */}
         <div className="flex flex-col items-center gap-5 text-base-content-strong sm:items-start md:gap-6 md:text-center lg:mx-auto lg:max-w-[66.67%]">
-          <Tag className={`w-full ${heroBannerTitleClassName}`}>{title}</Tag>
+          <Tag className="prose-display-xl w-full text-[2.25rem] leading-[1.2] md:text-[3rem] md:leading-[1.1] xl:text-[3rem] xl:leading-[1.1]">
+            {title}
+          </Tag>
           {subtitle && (
-            <p className={`w-full ${heroBannerSubtitleClassName}`}>
+            <p className="prose-title-lg-regular w-full text-[1.125rem] md:text-[1.5rem]">
               {subtitle}
             </p>
           )}

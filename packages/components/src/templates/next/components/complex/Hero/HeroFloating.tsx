@@ -5,11 +5,6 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
-import {
-  heroBannerSubtitleClassName,
-  heroBannerTitleClassName,
-} from "./heroBannerTextClassNames"
-
 const HERO_THEME_MAPPINGS = {
   hero: {
     default: "bg-brand-canvas-inverse",
@@ -70,12 +65,14 @@ export const HeroFloating = ({
         >
           {/* Text container */}
           <div className={`flex flex-col gap-6 text-start ${heroTitleColour}`}>
-            <Tag className={`${heroBannerTitleClassName} ${heroTitleColour}`}>
+            <Tag
+              className={`prose-display-xl text-[2.25rem] leading-[1.2] md:text-[3rem] md:leading-[1.1] xl:text-[3rem] xl:leading-[1.1] ${heroTitleColour}`}
+            >
               {title}
             </Tag>
             {subtitle && (
               <p
-                className={`${heroBannerSubtitleClassName} ${heroSubtitleColour}`}
+                className={`prose-title-lg-regular text-[1.125rem] md:text-[1.5rem] ${heroSubtitleColour}`}
               >
                 {subtitle}
               </p>

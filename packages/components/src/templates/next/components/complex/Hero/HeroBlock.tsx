@@ -9,11 +9,6 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
-import {
-  heroBannerSubtitleClassName,
-  heroBannerTitleClassName,
-} from "./heroBannerTextClassNames"
-
 const HERO_THEME_MAPPINGS = {
   text: {
     default: "text-base-content-inverse",
@@ -144,13 +139,13 @@ export const HeroBlock = ({
           className={`flex w-full max-w-[548px] flex-col justify-center gap-9 ${heroTextColour}`}
         >
           <div className="flex flex-col gap-6">
-            <Tag
-              className={`wrap-break-word text-balance ${heroBannerTitleClassName}`}
-            >
+            <Tag className="wrap-break-word prose-display-xl text-balance text-[2.25rem] leading-[1.2] md:text-[3rem] md:leading-[1.1] xl:text-[3rem] xl:leading-[1.1]">
               {title}
             </Tag>
             {subtitle && (
-              <p className={heroBannerSubtitleClassName}>{subtitle}</p>
+              <p className="prose-title-lg-regular text-[1.125rem] md:text-[1.5rem]">
+                {subtitle}
+              </p>
             )}
           </div>
           {buttonLabel && buttonUrl && (
