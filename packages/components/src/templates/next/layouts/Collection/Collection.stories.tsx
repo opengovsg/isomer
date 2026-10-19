@@ -11,7 +11,7 @@ import {
   TAG_CATEGORY_TYPE,
 } from "~/types/constants"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { CollectionLayout } from "./Collection"
 
@@ -115,7 +115,7 @@ const meta: Meta<CollectionPageSchemaType> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    argos: withArgosModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -356,7 +356,7 @@ export const Blog: Story = {
 
 // Anchored to the same fixed reference date `.storybook/preview.tsx`'s
 // `MockDateDecorator` freezes `Date` to for every story (deterministic
-// Chromatic snapshots) — NOT real wall-clock `new Date()`. The decorator's
+// Argos snapshots) — NOT real wall-clock `new Date()`. The decorator's
 // `mockdate.set(...)` only takes effect once the story actually renders, by
 // which point this module has already finished evaluating, so anchoring to
 // real time here would compute dates relative to a "today" the app never

@@ -905,8 +905,8 @@ export const OrderedList100Items: Story = {
 export const VideoEmbed: Story = {
   name: "VideoEmbed",
   parameters: {
-    // Delay the Chromatic snapshot so iframes have time to load and don’t appear as white blocks.
-    chromatic: { delay: 10000 },
+    // Delay the Argos snapshot so iframes have time to load and don’t appear as white blocks.
+    argos: { delay: 10000 },
   },
   args: {
     ...generateArgs({

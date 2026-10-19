@@ -18,6 +18,8 @@
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
     "@typescript/native-preview": "catalog:",
-    "typescript": "catalog:"
+    "storybook": "catalog:storybook",
+    "typescript": "catalog:",
+    "vitest": "catalog:vitest"
   }
 }

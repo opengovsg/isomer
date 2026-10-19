@@ -4,7 +4,7 @@ import { expect, within } from "storybook/test"
 import { buildDateFilterStatusLabels } from "~/templates/next/layouts/Collection/utils/buildDateFilterStatusLabels"
 import { DATE_FILTER_STATUS } from "~/types/constants"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { BlogCard } from "./BlogCard"
 
@@ -32,7 +32,7 @@ const meta: Meta<typeof BlogCard> = {
     themes: {
       themeOverride: "Isomer Next",
     },
-    chromatic: withChromaticModes(["desktop", "mobile"]),
+    argos: withArgosModes(["desktop", "mobile"]),
   },
 }
 export default meta

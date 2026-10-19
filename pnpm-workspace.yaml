@@ -71,13 +71,14 @@ catalog:
   # (algoliasearch(appId, key).initIndex(name), index.saveObjects, index.deleteBy).
   # v5 changed the client API — do not "upgrade" this without reviewing egazette compatibility.
   algoliasearch: ^4.27.0
+  "@argos-ci/cli": ^6.10.0
+  "@argos-ci/storybook": ^6.4.2
   ajv: ^8.20.0
   autoprefixer: ^10.6.1
   axios: ^1.20.0
   bootstrap-icons: ^1.13.1
   browserslist-useragent-regexp: ^4.1.4
   cheerio: ^1.2.0
-  chromatic: ^18.10.1
   clean-webpack-plugin: ^4.0.0
   dayjs: ^1.11.23
   date-fns: ^4.4.0
@@ -250,6 +251,7 @@ catalogs:
     "@storybook/addon-docs": 10.6.2
     "@storybook/addon-links": 10.6.2
     "@storybook/addon-themes": 10.6.2
+    "@storybook/addon-vitest": 10.6.2
     "@storybook/nextjs-vite": 10.6.2
     "@storybook/react-vite": 10.6.2
     eslint-plugin-storybook: 10.6.2

@@ -5,7 +5,7 @@ import { meHandlers } from "tests/msw/handlers/me"
 import SignInPage from "~/pages/sign-in"
 import { createSingpassEnabledGbParameters } from "~/stories/utils/growthbook"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 const VALID_AUTH_EMAIL = "test@example.gov.sg"
 
@@ -14,7 +14,7 @@ const meta: Meta<typeof SignInPage> = {
   component: SignInPage,
   parameters: {
     loginState: false,
-    chromatic: withChromaticModes(["gsib", "mobile"]),
+    argos: withArgosModes(["gsib", "mobile"]),
     growthbook: [createSingpassEnabledGbParameters(true)],
     msw: {
       handlers: [

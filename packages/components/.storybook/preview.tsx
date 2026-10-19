@@ -8,7 +8,7 @@ import { MINIMAL_VIEWPORTS } from "storybook/viewport"
 import "bootstrap-icons/font/bootstrap-icons.css"
 
 import "../src/index.css"
-import { viewport } from "@isomer/storybook-config"
+import { applyViewportInVitest, viewport } from "@isomer/storybook-config"
 
 const CUSTOM_GENERAL_VIEWPORTS = {
   smallDesktop: {
@@ -101,8 +101,11 @@ const preview: Preview = {
   // state written by a previous story can leak into the next one. Reset only
   // Isomer's parameters before rendering; Storybook owns the other parameters
   // in the search string. A lifecycle hook keeps this side effect out of
-  // React's render phase, which is required by Chromatic's story renderer.
-  beforeEach: resetIsomerQueryParams,
+  // React's render phase.
+  beforeEach: async (context) => {
+    resetIsomerQueryParams()
+    await applyViewportInVitest(context)
+  },
 
   loaders: [
     mswLoader(async () => {
@@ -127,14 +130,11 @@ const preview: Preview = {
      * ```
      * export const SomeStory: Story = {
      *   parameters: {
-     *     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+     *     argos: withArgosModes(["mobile", "tablet", "desktop"]),
      *   }
      * }
      * ```
      */
-    chromatic: {
-      prefersReducedMotion: "reduce",
-    },
   },
 
   tags: ["autodocs"],

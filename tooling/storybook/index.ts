@@ -1,3 +1,4 @@
 export { viewport } from "./viewports"
-export { withChromaticModes } from "./chromatic"
+export { withArgosModes } from "./argos"
 export { getViewportByMode } from "./modes"
+export { applyViewportInVitest } from "./test-viewport"

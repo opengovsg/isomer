@@ -1,4 +1,7 @@
+import { argosVitestPlugin } from "@argos-ci/storybook/vitest-plugin"
+import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
 import { playwright } from "@vitest/browser-playwright"
+import { fileURLToPath } from "url"
 import { configDefaults, defineConfig } from "vitest/config"
 
 // Tests that need a real DOM (component/hook rendering) are named
@@ -57,6 +60,31 @@ export default defineConfig({
             provider: playwright(),
             instances: [{ browser: "chromium" }],
             headless: !!process.env.CI,
+          },
+        },
+      },
+      {
+        extends: true,
+        plugins: [
+          storybookTest({
+            configDir: fileURLToPath(new URL(".storybook", import.meta.url)),
+          }),
+          argosVitestPlugin({
+            uploadToArgos:
+              !!process.env.CI && process.env.ARGOS_UPLOAD !== "false",
+          }),
+        ],
+        test: {
+          name: "storybook",
+          browser: {
+            enabled: true,
+            provider: playwright({
+              launchOptions: {
+                args: ["--disable-lcd-text", "--font-render-hinting=none"],
+              },
+            }),
+            headless: true,
+            instances: [{ browser: "chromium" }],
           },
         },
       },

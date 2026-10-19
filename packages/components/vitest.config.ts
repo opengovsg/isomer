@@ -1,3 +1,5 @@
+import { argosVitestPlugin } from "@argos-ci/storybook/vitest-plugin"
+import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
 import react from "@vitejs/plugin-react"
 import { playwright } from "@vitest/browser-playwright"
 import { fileURLToPath } from "url"
@@ -56,6 +58,32 @@ export default defineConfig({
             provider: playwright(),
             instances: [{ browser: "chromium" }],
             headless: !!process.env.CI,
+          },
+        },
+      },
+      {
+        extends: true,
+        plugins: [
+          storybookTest({
+            configDir: fileURLToPath(new URL(".storybook", import.meta.url)),
+          }),
+          argosVitestPlugin({
+            uploadToArgos:
+              !!process.env.CI && process.env.ARGOS_UPLOAD !== "false",
+          }),
+        ],
+        test: {
+          name: "storybook",
+          alias,
+          browser: {
+            enabled: true,
+            provider: playwright({
+              launchOptions: {
+                args: ["--disable-lcd-text", "--font-render-hinting=none"],
+              },
+            }),
+            headless: true,
+            instances: [{ browser: "chromium" }],
           },
         },
       },

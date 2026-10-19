@@ -33,7 +33,7 @@ import { LoginStateContext } from "~/features/auth"
 import { createMockGrowthBook } from "~/stories/utils/growthbook"
 import { theme } from "~/theme"
 
-import { viewport, withChromaticModes } from "@isomer/storybook-config"
+import { viewport, withArgosModes } from "@isomer/storybook-config"
 
 // Storybook's Next.js preview runs on Next's bundled React 19, which removed
 // findDOMNode. react-input-mask and react-transition-group (used by OGP's
@@ -205,15 +205,12 @@ const preview: Preview = {
      * ```
      * export const SomeStory: Story = {
      *   parameters: {
-     *     chromatic: withChromaticModes(["gsib", "desktop", "tablet"]),
+     *     argos: withArgosModes(["gsib", "desktop", "tablet"]),
      *   }
      * }
      * ```
      */
-    chromatic: {
-      ...withChromaticModes(["gsib"]),
-      prefersReducedMotion: "reduce",
-    },
+    argos: withArgosModes(["gsib"]),
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
       matchers: {
