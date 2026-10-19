@@ -4,8 +4,8 @@
  * - We export only the functionality that we use so we can enforce which base procedures should be used
  *
  * Learn how to create protected base procedures and other things below:
- * @see https://trpc.io/docs/v10/router
- * @see https://trpc.io/docs/v10/procedures
+ * @see https://trpc.io/docs/router
+ * @see https://trpc.io/docs/server/procedures
  */
 
 import { initTRPC, TRPCError } from "@trpc/server"
@@ -33,11 +33,11 @@ const t = initTRPC
   .meta<Meta>()
   .create({
     /**
-     * @see https://trpc.io/docs/v10/data-transformers
+     * @see https://trpc.io/docs/server/data-transformers
      */
     transformer: superjson,
     /**
-     * @see https://trpc.io/docs/v10/error-formatting
+     * @see https://trpc.io/docs/server/error-formatting
      */
     errorFormatter({ shape, error }) {
       return {
@@ -247,7 +247,7 @@ const rateLimitMiddleware = t.middleware(async ({ next, ctx, meta }) => {
 
 /**
  * Create a router
- * @see https://trpc.io/docs/v10/router
+ * @see https://trpc.io/docs/router
  */
 export const router = t.router
 
@@ -259,7 +259,7 @@ const baseProcedure = t.procedure
 
 /**
  * Create an unprotected procedure
- * @see https://trpc.io/docs/v10/procedures
+ * @see https://trpc.io/docs/server/procedures
  * */
 export const publicProcedure = baseProcedure.use(baseMiddleware)
 
@@ -276,12 +276,12 @@ export const protectedProcedure = baseProcedure.use(authMiddleware)
 export const webhookProcedure = baseProcedure.use(webhookMiddleware)
 
 /**
- * @see https://trpc.io/docs/v10/middlewares
+ * @see https://trpc.io/docs/server/middlewares
  */
 export const { middleware } = t
 
 /**
- * @see https://trpc.io/docs/v10/merging-routers
+ * @see https://trpc.io/docs/server/merging-routers
  */
 export const { mergeRouters } = t
 

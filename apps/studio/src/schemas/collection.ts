@@ -77,18 +77,18 @@ export const readLinkSchema = z.object({
   siteId: z.number().min(1),
 })
 
-const permalinkSchema = generateBasePermalinkSchema("folder")
-  .min(1, { message: "Enter a URL for this folder" })
+const permalinkSchema = generateBasePermalinkSchema("collection")
+  .min(1, { message: "Enter a URL for this collection" })
   .max(MAX_FOLDER_PERMALINK_LENGTH, {
-    message: `Folder URL should be shorter than ${MAX_FOLDER_PERMALINK_LENGTH} characters.`,
+    message: `Collection URL should be shorter than ${MAX_FOLDER_PERMALINK_LENGTH} characters.`,
   })
 
 export const createCollectionSchema = z.object({
   collectionTitle: z
     .string()
-    .min(1, { message: "Enter a title for this folder" })
+    .min(1, { message: "Enter a title for this collection" })
     .max(MAX_FOLDER_TITLE_LENGTH, {
-      message: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
+      message: `Collection title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
     })
     .regex(noStylizedUnicodeTitleRegex, {
       message: NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,

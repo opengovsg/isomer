@@ -86,14 +86,12 @@ const useCreateCollectionPageWizardContext = ({
   const utils = trpc.useUtils()
   const router = useRouter()
 
-  // TODO: Call correct mutation
   const { mutate, isPending } =
     trpc.collection.createCollectionPage.useMutation({
       onSuccess: async () => {
         await utils.collection.list.invalidate()
         onClose()
       },
-      // TOOD: Error handling
     })
 
   const handleCreatePage = formMethods.handleSubmit(
