@@ -7,7 +7,12 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
     ".prose-display-xl": {
       fontWeight: theme("fontWeight.semibold"),
       letterSpacing: "-0.022em",
-      "@apply text-[3rem] xl:text-[4.25rem] leading-[1.2] xl:leading-[1.1]": {},
+      "@apply text-[2.25rem] md:text-[3rem] leading-[1.2] md:leading-[1.1]": {},
+    },
+    ".prose-hero-subtitle": {
+      fontWeight: theme("fontWeight.normal"),
+      letterSpacing: "0",
+      "@apply text-[1.125rem] md:text-[1.5rem] leading-[1.3]": {},
     },
     ".prose-display-lg": {
       fontWeight: theme("fontWeight.semibold"),

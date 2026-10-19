@@ -68,7 +68,7 @@ export const HeroFloating = ({
           <div className={`flex flex-col gap-6 text-start ${heroTitleColour}`}>
             <Tag className={`prose-display-xl ${heroTitleColour}`}>{title}</Tag>
             {subtitle && (
-              <p className={`prose-title-lg-regular ${heroSubtitleColour}`}>
+              <p className={`prose-hero-subtitle ${heroSubtitleColour}`}>
                 {subtitle}
               </p>
             )}
