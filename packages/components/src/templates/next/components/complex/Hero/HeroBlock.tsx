@@ -44,7 +44,7 @@ const heroBlockStyles = tv({
       },
       [HERO_BLOCK_IMAGE_POSITION.left]: {
         section: "max-lg:flex-col-reverse lg:flex-row-reverse",
-        textColumn: "lg:justify-start lg:pl-8 lg:pr-10",
+        textColumn: "lg:justify-start lg:pl-16 lg:pr-10",
       },
     },
     imageEdge: {
