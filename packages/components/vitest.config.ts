@@ -61,32 +61,42 @@ export default defineConfig({
           },
         },
       },
-      {
-        extends: true,
-        plugins: [
-          storybookTest({
-            configDir: fileURLToPath(new URL(".storybook", import.meta.url)),
-          }),
-          argosVitestPlugin({
-            uploadToArgos:
-              !!process.env.CI && process.env.ARGOS_UPLOAD !== "false",
-          }),
-        ],
-        test: {
-          name: "storybook",
-          alias,
-          browser: {
-            enabled: true,
-            provider: playwright({
-              launchOptions: {
-                args: ["--disable-lcd-text", "--font-render-hinting=none"],
+      // Opt-in: the Argos plugin uploads on CI, so unit runs must not load it.
+      ...(process.env.VITEST_STORYBOOK
+        ? [
+            {
+              extends: true,
+              plugins: [
+                storybookTest({
+                  configDir: fileURLToPath(
+                    new URL(".storybook", import.meta.url),
+                  ),
+                }),
+                argosVitestPlugin({
+                  uploadToArgos:
+                    !!process.env.CI && process.env.ARGOS_UPLOAD !== "false",
+                }),
+              ],
+              test: {
+                name: "storybook",
+                alias,
+                browser: {
+                  enabled: true,
+                  provider: playwright({
+                    launchOptions: {
+                      args: [
+                        "--disable-lcd-text",
+                        "--font-render-hinting=none",
+                      ],
+                    },
+                  }),
+                  headless: true,
+                  instances: [{ browser: "chromium" as const }],
+                },
               },
-            }),
-            headless: true,
-            instances: [{ browser: "chromium" }],
-          },
-        },
-      },
+            },
+          ]
+        : []),
     ],
   },
 })
