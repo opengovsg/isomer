@@ -21,6 +21,11 @@ import {
 
 type HeroBlockImageData = NonNullable<HeroBlockProps["blockImage"]>
 
+// Text-only position choices — no card-style hover (edge previews keep default).
+const imagePositionRadioCss = {
+  _hover: { bg: "none" },
+}
+
 export const jsonFormsHeroBlockImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.HeroBlockImageControl,
   and(
@@ -67,6 +72,7 @@ function JsonFormsHeroBlockImageControl({
             value={HERO_BLOCK_IMAGE_POSITION.right}
             allowDeselect={false}
             size="sm"
+            __css={imagePositionRadioCss}
           >
             Right
           </Radio>
@@ -74,6 +80,7 @@ function JsonFormsHeroBlockImageControl({
             value={HERO_BLOCK_IMAGE_POSITION.left}
             allowDeselect={false}
             size="sm"
+            __css={imagePositionRadioCss}
           >
             <Flex as="span" align="center">
               Left
