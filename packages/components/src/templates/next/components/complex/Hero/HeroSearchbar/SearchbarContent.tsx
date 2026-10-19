@@ -4,6 +4,7 @@ import { getHeadingTag } from "~/utils/getHeadingTag"
 import { ComponentContent } from "../../../internal/customCssClass"
 import { LocalSearchInputBox } from "../../../internal/LocalSearchInputBox"
 import { HomepageSearchSGInputBox } from "../../../internal/SearchSGInputBox"
+import { heroBannerSubtitleClassName } from "../heroBannerTextClassNames"
 
 interface SearchInputBoxProps {
   search: NonNullable<HeroSearchbarProps["site"]["search"]>
@@ -46,7 +47,7 @@ export const SearchbarContent = ({
       <div className="flex w-full max-w-[760px] flex-col items-center gap-5 text-center md:gap-6">
         <Tag className="prose-display-lg w-full text-center">{title}</Tag>
         {!!subtitle && (
-          <p className="prose-title-lg-regular w-full text-center">
+          <p className={`w-full text-center ${heroBannerSubtitleClassName}`}>
             {subtitle}
           </p>
         )}

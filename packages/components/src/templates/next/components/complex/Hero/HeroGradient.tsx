@@ -5,6 +5,10 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
+import {
+  heroBannerSubtitleClassName,
+  heroBannerTitleClassName,
+} from "./heroBannerTextClassNames"
 
 export const HeroGradient = ({
   title,
@@ -40,8 +44,12 @@ export const HeroGradient = ({
         >
           <div className="xl:max-w-50% flex w-full flex-col gap-9 sm:w-3/5">
             <div className="flex flex-col gap-6">
-              <Tag className="prose-display-xl break-words">{title}</Tag>
-              {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
+              <Tag className={`break-words ${heroBannerTitleClassName}`}>
+                {title}
+              </Tag>
+              {subtitle && (
+                <p className={heroBannerSubtitleClassName}>{subtitle}</p>
+              )}
             </div>
             {buttonLabel && buttonUrl && (
               <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">

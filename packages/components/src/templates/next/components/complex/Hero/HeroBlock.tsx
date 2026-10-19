@@ -9,6 +9,10 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
+import {
+  heroBannerSubtitleClassName,
+  heroBannerTitleClassName,
+} from "./heroBannerTextClassNames"
 
 const HERO_THEME_MAPPINGS = {
   text: {
@@ -140,10 +144,14 @@ export const HeroBlock = ({
           className={`flex w-full max-w-[548px] flex-col justify-center gap-9 ${heroTextColour}`}
         >
           <div className="flex flex-col gap-6">
-            <Tag className="wrap-break-word prose-display-xl text-balance">
+            <Tag
+              className={`wrap-break-word text-balance ${heroBannerTitleClassName}`}
+            >
               {title}
             </Tag>
-            {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
+            {subtitle && (
+              <p className={heroBannerSubtitleClassName}>{subtitle}</p>
+            )}
           </div>
           {buttonLabel && buttonUrl && (
             <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
