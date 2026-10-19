@@ -1,6 +1,15 @@
-import { Flex, HStack, Image, Text } from "@chakra-ui/react"
+import { Box, Flex, HStack, Image, Skeleton, Text } from "@chakra-ui/react"
 import { IconButton } from "@opengovsg/design-system-react"
+import { useEffect, useRef, useState } from "react"
 import { BiPencil, BiTrash } from "react-icons/bi"
+import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
+
+// Match ImageClient's self-heal: a just-saved/just-uploaded asset isn't servable
+// for a window (CDN variant not built / original not malware-scanned yet), so the
+// first load can 404/403. Retry the same URL with bounded exponential backoff
+// before giving up.
+const MAX_THUMBNAIL_RETRIES = 5
+const retryDelayMs = (attempt: number) => Math.min(1000 * 2 ** attempt, 16000)
 
 interface AttachmentDataProps {
   data: string
@@ -18,6 +27,27 @@ export const AttachmentData = ({
   onEdit,
   imageSrc,
 }: AttachmentDataProps) => {
+  // Only self-heal managed CDN assets — an external URL's error is permanent and
+  // a cache-bust query could break a signed external URL.
+  const canRetry =
+    !!imageSrc && ASSETS_BASE_URL !== "" && imageSrc.startsWith(ASSETS_BASE_URL)
+  // The src actually requested — bumped with a cache-bust param on each retry so
+  // the browser re-fetches (the CDN ignores unknown query params for its cache
+  // key, so this doesn't fragment the cache).
+  const [currentSrc, setCurrentSrc] = useState(imageSrc)
+  const [isLoaded, setIsLoaded] = useState(false)
+  const attemptRef = useRef(0)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Reset when the underlying image changes (the row is reused across uploads).
+  useEffect(() => {
+    setCurrentSrc(imageSrc)
+    setIsLoaded(false)
+    attemptRef.current = 0
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    }
+  }, [imageSrc])
+
   return (
     <Flex
       px="1rem"
@@ -29,14 +59,35 @@ export const AttachmentData = ({
     >
       <HStack spacing="0.75rem" minW={0}>
         {imageSrc && (
-          <Image
-            src={imageSrc}
-            alt=""
-            boxSize="2.5rem"
-            objectFit="cover"
-            borderRadius="0.25rem"
-            flexShrink={0}
-          />
+          <Box position="relative" boxSize="2.5rem" flexShrink={0}>
+            {/* Fading-gray skeleton shown until the image loads — and left in
+                place (instead of a broken-image icon) if every retry fails. */}
+            {!isLoaded && (
+              <Skeleton position="absolute" inset={0} borderRadius="0.25rem" />
+            )}
+            <Image
+              src={currentSrc}
+              alt=""
+              boxSize="2.5rem"
+              objectFit="cover"
+              borderRadius="0.25rem"
+              // Hide the img until it loads so a failed load reveals the skeleton
+              // behind it, never the browser's broken-image glyph.
+              opacity={isLoaded ? 1 : 0}
+              onLoad={() => setIsLoaded(true)}
+              onError={() => {
+                if (!canRetry || attemptRef.current >= MAX_THUMBNAIL_RETRIES) {
+                  return
+                }
+                const attempt = attemptRef.current
+                attemptRef.current = attempt + 1
+                const sep = imageSrc.includes("?") ? "&" : "?"
+                timeoutRef.current = setTimeout(() => {
+                  setCurrentSrc(`${imageSrc}${sep}retry=${attempt + 1}`)
+                }, retryDelayMs(attempt))
+              }}
+            />
+          </Box>
         )}
         <Text overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
           {data.split("/").pop()}

@@ -14,7 +14,7 @@ import { ErrorBoundary } from "react-error-boundary"
 import Suspense from "~/components/Suspense"
 import { PreviewIframe } from "~/features/editing-experience/components/preview/PreviewIframe"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
-import { bakeImage, canBakeImage, isAnimatedImageBlob } from "~/lib/imageBake"
+import { bakeImage, isAnimatedImageBlob } from "~/lib/imageBake"
 import {
   ASSETS_BASE_URL,
   generateAssetUrl,
@@ -25,6 +25,7 @@ import type {
   AdjustmentPreviewState,
   AdjustmentScrim,
 } from "./AdjustmentConfig"
+import { chooseBakeMime } from "./useSaveImageAdjustment"
 
 // Minimal site stub for an ISOLATED single-block preview — there is no real
 // page/nav/footer context here (this renders one block, not a whole page), so
@@ -167,23 +168,33 @@ export const AdjustmentPreview = ({
       return
     }
     const fetchOriginal = async () => {
-      try {
-        let response = await fetch(originalFetchUrl)
-        if (!response.ok && plainFetchUrl !== originalFetchUrl) {
-          response = await fetch(plainFetchUrl, {
-            headers: { Accept: "image/webp" },
-          })
+      // Try ?original (pristine), then fall back to the plain variant — the same
+      // URL the <img> display uses. The ?original object is gated by a
+      // malware-scan tag and can 403; critically, that error response can also be
+      // CORS-opaque, so the fetch *throws* rather than resolving with !ok. Each
+      // attempt is therefore isolated so a thrown ?original never skips the plain
+      // fallback (the earlier `let response = await fetch(...)` aborted the whole
+      // bake on a throw, freezing the preview on the previous bake).
+      const tryFetch = async (
+        url: string,
+        init?: RequestInit,
+      ): Promise<Blob | null> => {
+        try {
+          const response = await fetch(url, init)
+          return response.ok ? await response.blob() : null
+        } catch {
+          return null
         }
-        if (!response.ok) {
-          throw new Error(`Failed to fetch image: ${response.status}`)
-        }
-        const blob = await response.blob()
-        setOriginalBlob(blob)
-      } catch (error) {
-        // Silently fail: CORS-blocked images will fall back to uncropped src
-        console.debug("Failed to fetch original image", error)
-        setOriginalBlob(null)
       }
+      const blob =
+        (await tryFetch(originalFetchUrl)) ??
+        (plainFetchUrl !== originalFetchUrl
+          ? await tryFetch(plainFetchUrl, { headers: { Accept: "image/webp" } })
+          : null)
+      if (!blob) {
+        console.debug("Failed to fetch original image for preview bake")
+      }
+      setOriginalBlob(blob)
     }
     void fetchOriginal()
   }, [originalFile, originalFetchUrl, plainFetchUrl])
@@ -214,17 +225,31 @@ export const AdjustmentPreview = ({
 
     const runBake = async () => {
       try {
-        // Guard: only bake static, supported formats. Animated WebP/APNG pass
-        // canBakeImage but would be flattened, so fall back to uncropped src.
-        if (
-          !canBakeImage(originalBlob.type) ||
-          (await isAnimatedImageBlob(originalBlob))
-        ) {
+        // Resolve the bake MIME the same way the save path does: prefer the
+        // fetched blob's Content-Type, but fall back to the key's extension when
+        // that type is missing or generic. ?original can return 200 with a
+        // generic "binary/octet-stream" (no network/console error), which a bare
+        // canBakeImage(blob.type) gate would silently reject — freezing the
+        // preview on the previous bake for a re-edit. chooseBakeMime throws for a
+        // genuinely unbakeable format, which we treat as "fall back to uncropped".
+        let mimeType: string
+        try {
+          mimeType = chooseBakeMime(
+            originalBlob.type,
+            originalSrc.replace(/^\//, ""),
+          )
+        } catch {
+          return
+        }
+
+        // Animated WebP/APNG pass the MIME gate but would be flattened, so fall
+        // back to the uncropped src rather than baking a single frame.
+        if (await isAnimatedImageBlob(originalBlob)) {
           return
         }
 
         const bakedBlob = await bakeImage(originalBlob, adjustment, {
-          mimeType: originalBlob.type,
+          mimeType,
         })
         // A newer adjustment started while this bake ran — discard this result
         // so the older crop can't replace the newer preview.
@@ -261,7 +286,7 @@ export const AdjustmentPreview = ({
         clearTimeout(bakeTimeoutRef.current)
       }
     }
-  }, [originalBlob, adjustment])
+  }, [originalBlob, adjustment, originalSrc])
 
   // Cleanup: revoke object URL on unmount
   useEffect(() => {

@@ -47,7 +47,12 @@ export const ImageClient = forwardRef<
         height="auto"
         className={className}
         style={objectPosition ? { objectPosition } : undefined}
-        onLoad={onLoad}
+        onLoad={(e) => {
+          // Reveal the image once it loads (it may have been hidden by a prior
+          // error while self-healing — see onError).
+          e.currentTarget.style.opacity = "1"
+          onLoad?.(e)
+        }}
         onError={({ currentTarget }) => {
           // Reset the counter when the underlying src changed (reused <img>).
           if (currentTarget.dataset.retryBase !== imgSrc) {
@@ -57,6 +62,10 @@ export const ImageClient = forwardRef<
           const attempt = Number(currentTarget.dataset.retry ?? "0")
           if (canRetry && attempt < MAX_RETRIES) {
             currentTarget.dataset.retry = String(attempt + 1)
+            // Hide the broken-image glyph while self-healing — onLoad restores it
+            // once a retry succeeds. Leaves blank space (not an error icon) during
+            // the propagation window. Inert on the published site (no errors there).
+            currentTarget.style.opacity = "0"
             // Cache-bust so the browser re-fetches; the CDN ignores unknown query
             // params for its cache key, so this doesn't fragment the cache.
             const sep = imgSrc.includes("?") ? "&" : "?"
@@ -65,7 +74,9 @@ export const ImageClient = forwardRef<
             }, retryDelayMs(attempt))
             return
           }
+          // Retries exhausted: show the placeholder (visible, not hidden).
           currentTarget.onerror = null
+          currentTarget.style.opacity = "1"
           currentTarget.src = placeholderSrc
         }}
         loading={lazyLoading ? "lazy" : "eager"}

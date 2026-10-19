@@ -67,17 +67,35 @@ export const fetchImageBlob = async (key: string): Promise<Blob> => {
   const originalUrl = generateOriginalAssetUrl(key)
   const plainUrl = generateAssetUrl(key)
 
-  let response = await fetch(originalUrl)
-  if (!response.ok && plainUrl !== originalUrl) {
-    // Force the webp variant (not avif): the CDN picks the format from Accept,
-    // and the baker only accepts jpeg/png/webp (BAKEABLE_FORMAT_BY_MIME), so a
-    // default */* (avif) fetch would be rejected downstream.
-    response = await fetch(plainUrl, { headers: { Accept: "image/webp" } })
+  // Each attempt is isolated so a thrown ?original never skips the plain
+  // fallback: the ?original object is gated by a malware-scan tag and can 403,
+  // and that error response can be CORS-opaque, making the fetch *throw* rather
+  // than resolve with !ok. A bare `await fetch(originalUrl)` would then abort the
+  // whole save before the fallback ran.
+  const tryFetch = async (
+    url: string,
+    init?: RequestInit,
+  ): Promise<Blob | null> => {
+    try {
+      const response = await fetch(url, init)
+      return response.ok ? await response.blob() : null
+    } catch {
+      return null
+    }
   }
-  if (!response.ok) {
-    throw new Error(`Failed to fetch image: ${response.status}`)
+
+  // Force the webp variant (not avif) on the fallback: the CDN picks the format
+  // from Accept, and the baker only accepts jpeg/png/webp (BAKEABLE_FORMAT_BY_MIME),
+  // so a default */* (avif) fetch would be rejected downstream.
+  const blob =
+    (await tryFetch(originalUrl)) ??
+    (plainUrl !== originalUrl
+      ? await tryFetch(plainUrl, { headers: { Accept: "image/webp" } })
+      : null)
+  if (!blob) {
+    throw new Error(`Failed to fetch image: ${key}`)
   }
-  return response.blob()
+  return blob
 }
 
 interface UseSaveImageAdjustmentInput {

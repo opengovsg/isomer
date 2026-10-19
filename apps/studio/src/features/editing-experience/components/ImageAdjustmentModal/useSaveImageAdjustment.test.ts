@@ -142,4 +142,33 @@ describe("fetchImageBlob", () => {
       /Failed to fetch image/,
     )
   })
+
+  it("falls back to the plain URL when ?original THROWS (CORS-opaque 403)", async () => {
+    // Regression: a CORS-opaque error response makes the cors fetch reject
+    // rather than resolve with !ok. The fallback must still run (a bare
+    // `await fetch(original)` would abort before reaching it).
+    const webp = new Blob(["webp"], { type: "image/webp" })
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockResolvedValueOnce(okResponse(webp))
+    vi.stubGlobal("fetch", fetchMock)
+
+    const result = await fetchImageBlob("/1/uuid/photo.png")
+
+    expect(result).toBe(webp)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it("throws when ?original throws and the fallback also throws", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+    vi.stubGlobal("fetch", fetchMock)
+
+    await expect(fetchImageBlob("/1/uuid/photo.png")).rejects.toThrow(
+      /Failed to fetch image/,
+    )
+  })
 })
