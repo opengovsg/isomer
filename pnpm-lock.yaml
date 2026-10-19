@@ -1355,9 +1355,6 @@ importers:
       pdfreader:
         specifier: ^3.0.8
         version: 3.0.8
-      vitest:
-        specifier: catalog:vitest
-        version: 5.0.3(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-istanbul@5.0.3)(@vitest/ui@5.0.3)(happy-dom@20.10.6)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.6.5)(typescript@6.0.3))(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
     devDependencies:
       '@isomer/oxlint-config':
         specifier: workspace:*
@@ -1374,12 +1371,12 @@ importers:
       '@vitest/coverage-istanbul':
         specifier: catalog:vitest
         version: 5.0.3(vitest@5.0.3)
-      npm-run-all2:
-        specifier: 'catalog:'
-        version: 9.0.3
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+      vitest:
+        specifier: catalog:vitest
+        version: 5.0.3(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-istanbul@5.0.3)(@vitest/ui@5.0.3)(happy-dom@20.10.6)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.6.5)(typescript@6.0.3))(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
 
   packages/components:
     dependencies:
@@ -1668,9 +1665,6 @@ importers:
       pg-boss:
         specifier: 'catalog:'
         version: 12.37.1(@opentelemetry/api@1.9.1)
-      vitest:
-        specifier: catalog:vitest
-        version: 5.0.3(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-istanbul@5.0.3)(@vitest/ui@5.0.3)(happy-dom@20.10.6)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.6.5)(typescript@6.0.3))(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
       zod:
         specifier: 'catalog:'
         version: 4.5.4
@@ -1696,6 +1690,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+      vitest:
+        specifier: catalog:vitest
+        version: 5.0.3(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-istanbul@5.0.3)(@vitest/ui@5.0.3)(happy-dom@20.10.6)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.6.5)(typescript@6.0.3))(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
 
   packages/validators:
     devDependencies:
