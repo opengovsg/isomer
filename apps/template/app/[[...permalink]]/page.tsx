@@ -3,6 +3,7 @@ import type { Metadata, ResolvingMetadata } from "next"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
+import { formatLastUpdated } from "@/lib/utils/lastUpdated"
 import sitemap from "@/sitemap.json"
 import {
   getMetadata,
@@ -42,13 +43,7 @@ const getPatchedPermalink = async (
   return params.permalink ?? [""]
 }
 
-const timeNow = new Date()
-const lastUpdated =
-  timeNow.getDate().toString().padStart(2, "0") +
-  " " +
-  timeNow.toLocaleString("default", { month: "short" }) +
-  " " +
-  timeNow.getFullYear()
+const lastUpdated = formatLastUpdated()
 
 const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
   const joinedPermalink: string = permalink.join("/")
@@ -87,7 +82,7 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
     getSitemapXml(sitemap).find(
       ({ url }) =>
         joinedPermalink === url.replace(/^\//, "").replace(/\/$/, ""),
-    ).lastModified || new Date().toISOString()
+    )?.lastModified || new Date().toISOString()
 
   schema.page.permalink = "/" + joinedPermalink
   schema.page.lastModified = lastModified

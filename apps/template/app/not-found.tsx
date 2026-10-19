@@ -3,6 +3,7 @@ import type { Metadata, ResolvingMetadata } from "next"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
+import { formatLastUpdated } from "@/lib/utils/lastUpdated"
 import sitemap from "@/sitemap.json"
 import { getMetadata, RenderEngine } from "@opengovsg/isomer-components"
 
@@ -12,22 +13,16 @@ const PAGE_TITLE = "404: Page not found"
 const PAGE_DESCRIPTION = "The page that you are accessing does not exist"
 const PAGE_SCHEMA_VERSION = "0.1.0"
 
-const timeNow = new Date()
-const lastUpdated =
-  timeNow.getDate().toString().padStart(2, "0") +
-  " " +
-  timeNow.toLocaleString("default", { month: "short" }) +
-  " " +
-  timeNow.getFullYear()
+const lastUpdated = formatLastUpdated()
 
 export const generateMetadata = async (
   _props: never,
   _parent: ResolvingMetadata,
 ): Promise<Metadata> => {
   // Context for using @/schema/not-found.json
-  // For some next15 magical reason, using @/schema/_index.json will cause
+  // For some App Router quirk, using @/schema/_index.json will cause
   // duplicated generation of the homepage, resulting in wrong meta values
-  // Suspected to be due to next15 changing app router SSG to render twice and in async manner
+  // Suspected to be due to static generation rendering twice and in an async manner
   // During deployment, publisher.sh duplicate homepage "_index.json" to "not-found.json"
   // For development, if `not-found.json` isn't found, simply manually copy and rename
   const schema = (await import(`@/schema/not-found.json`).then(
