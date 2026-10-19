@@ -10,9 +10,7 @@ const displayDateInDDMMMYYYY = (date: Date): string => {
     month: "short",
     year: "numeric",
   }
-  return date
-    .toLocaleDateString("en-GB", options)
-    .replace(/(\d{2}) (\w{3}) (\d{4})/, "$1 $2 $3")
+  return date.toLocaleDateString("en-GB", options)
 }
 
 export const formatDate = (date: Date): string => {

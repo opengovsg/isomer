@@ -6,7 +6,6 @@
  */
 
 import type {
-  IsomerPageSchemaType as _IsomerPageSchemaType,
   IsomerSchema as _IsomerSchema,
   IsomerSiteConfigProps as _IsomerSiteConfigProps,
   IsomerSiteThemeProps as _IsomerSiteThemeProps,

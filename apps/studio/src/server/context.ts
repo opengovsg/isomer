@@ -5,16 +5,13 @@ import { getIronSession } from "iron-session"
 import { env } from "~/env.mjs"
 import { createOfflineGrowthBook } from "~/lib/growthbookOffline"
 import { type Session, type SessionData } from "~/lib/types/session"
-import { type User } from "~prisma/generated/prisma/client"
 
 import { generateSessionOptions } from "./modules/auth/session"
 import { db } from "./modules/database"
-import { type defaultUserSelect } from "./modules/me/me.select"
 import { prisma } from "./prisma"
 
 interface CreateContextOptions {
   session?: Session
-  user?: Pick<User, (typeof defaultUserSelect)[number]>
 }
 
 /**
