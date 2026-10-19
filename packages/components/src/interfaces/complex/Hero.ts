@@ -14,6 +14,7 @@ import {
 import {
   HERO_ACTION_LAYOUT_FORMAT,
   HERO_BANNER_STYLE_FORMAT,
+  HERO_BLOCK_IMAGE_FORMAT,
   HERO_QUICK_ACTIONS_FORMAT,
   ICON_PICKER_FORMAT,
 } from "../format"
@@ -35,6 +36,16 @@ export const HERO_ACTION_LAYOUT = {
 
 export type HeroActionLayout =
   (typeof HERO_ACTION_LAYOUT)[keyof typeof HERO_ACTION_LAYOUT]
+
+export const HERO_BLOCK_IMAGE_POSITION = {
+  left: "left",
+  right: "right",
+} as const
+
+export const HERO_BLOCK_IMAGE_EDGE = {
+  straight: "straight",
+  curved: "curved",
+} as const
 
 export type HeroStyleVariant =
   (typeof HERO_STYLE)[keyof typeof HERO_STYLE]["key"]
@@ -276,6 +287,29 @@ const HeroBlockSchema = Type.Composite(
         default: HERO_STYLE.block.key,
       }),
       backgroundUrl: BackgroundUrlSchema,
+      blockImage: Type.Optional(
+        Type.Object(
+          {
+            imagePosition: Type.Union(
+              [
+                Type.Literal(HERO_BLOCK_IMAGE_POSITION.right),
+                Type.Literal(HERO_BLOCK_IMAGE_POSITION.left),
+              ],
+              { type: "string" },
+            ),
+            imageEdge: Type.Union(
+              [
+                Type.Literal(HERO_BLOCK_IMAGE_EDGE.straight),
+                Type.Literal(HERO_BLOCK_IMAGE_EDGE.curved),
+              ],
+              { type: "string" },
+            ),
+          },
+          {
+            format: HERO_BLOCK_IMAGE_FORMAT,
+          },
+        ),
+      ),
     }),
     HeroBaseSchema,
     CallToActionsSchema,

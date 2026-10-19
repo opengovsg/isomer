@@ -34,15 +34,13 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   test("publisher can schedule publish, see dashboard badge, cancel, and clear DB schedule", async ({
     page,
   }) => {
-    // Arrange
+    // Arrange. Install the clock before navigation: installing into an
+    // already-open page races in-flight frames and throws reading 'controller'.
     const { folder, page: seededPage } = await seedFolderWithPage({ siteId })
+    await page.clock.install({ time: SCHEDULE_TEST_FROZEN_TIME })
 
     // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
-    // Freeze the clock at a fixed early-morning SGT time so later TimeSelect
-    // slots stay selectable. Options earlier than the schedule lead time are
-    // hidden, which made this flow fail whenever the suite ran late in the day.
-    await page.clock.install({ time: SCHEDULE_TEST_FROZEN_TIME })
 
     await editor.openScheduleModal()
     await editor.schedulePublishForToday()
@@ -84,7 +82,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.openScheduleModal()
     await editor.schedulePublishForToday("5:00 PM")
-    await editor.expectScheduledSuccessfully()
+    await editor.expectScheduledSuccessfully("5:00 PM")
     await expect
       .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
       .not.toBeNull()
@@ -101,7 +99,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
       .toBeNull()
     await editor.openScheduleModal()
     await editor.schedulePublishForToday("9:00 AM")
-    await editor.expectScheduledSuccessfully()
+    await editor.expectScheduledSuccessfully("9:00 AM")
 
     // Assert
     await expect

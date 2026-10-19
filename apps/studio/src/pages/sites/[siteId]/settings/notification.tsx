@@ -1,13 +1,14 @@
 import type { NextPageWithLayout } from "~/lib/types"
 import type { Notification } from "~/schemas/site"
-import { Box } from "@chakra-ui/react"
-import { useToast } from "@opengovsg/design-system-react"
+import { Box, FormControl, HStack, Text, VStack } from "@chakra-ui/react"
+import { Switch, useToast } from "@opengovsg/design-system-react"
 import {
-  NotificationSettingsSchema,
+  isSiteNotificationActive,
+  NotificationSchema,
   useIsNotificationDismissed,
 } from "@opengovsg/isomer-components"
-import { isEmpty, isEqual } from "lodash-es"
-import { useState } from "react"
+import { isEqual } from "lodash-es"
+import { useRef, useState } from "react"
 import { BiWrench } from "react-icons/bi"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import {
@@ -20,7 +21,10 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
-import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
+import {
+  ErrorProvider,
+  useBuilderErrors,
+} from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { EditSettingsPreview } from "~/features/editing-experience/components/preview/EditSettingsPreview"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
@@ -29,22 +33,40 @@ import { SettingsEditingLayout } from "~/features/settings/SettingsEditingLayout
 import { SettingsHeader } from "~/features/settings/SettingsHeader"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { notificationValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
+import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-const validateFn = notificationValidator
+type SiteNotification = NonNullable<Notification["notification"]>
 
-const NotificationSettingsPage: NextPageWithLayout = () => {
-  const { siteId: rawSiteId } = useQueryParse(siteSchema)
-  const siteId = Number(rawSiteId)
+const siteNotificationBodyValidator =
+  ajv.compile<SiteNotification>(NotificationSchema)
+
+const normalizeSiteNotification = (
+  notification: SiteNotification,
+): SiteNotification => {
+  if (notification.type === "antiscam") {
+    return { type: "antiscam" }
+  }
+
+  return notification
+}
+
+interface NotificationSettingsEditorProps {
+  siteId: number
+  siteName: string
+  previousNotification: Notification
+}
+
+const NotificationSettingsEditor = ({
+  siteId,
+  siteName,
+  previousNotification,
+}: NotificationSettingsEditorProps) => {
   const trpcUtils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
-  const [{ name }] = trpc.site.getSiteName.useSuspenseQuery({
-    siteId,
-  })
-
+  const { setErrors } = useBuilderErrors()
   const [, setIsDismissed] = useIsNotificationDismissed()
 
   const notificationMutation = trpc.site.setNotification.useMutation({
@@ -64,20 +86,43 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
     },
   })
 
-  const [previousNotification] = trpc.site.getNotification.useSuspenseQuery({
-    siteId,
-  })
-
   const [state, setState] = useState<Notification>(
-    previousNotification.notification?.title ? previousNotification : {},
+    isSiteNotificationActive(previousNotification.notification)
+      ? previousNotification
+      : {},
   )
+  const [snapshot, setSnapshot] = useState(state.notification)
+  const formBuilderChangesEnabledRef = useRef(true)
 
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
 
   const isDirty = !isEqual(state, previousNotification)
+  const canPublish =
+    isDirty &&
+    (state.notification === undefined ||
+      isSiteNotificationActive(state.notification))
 
   useNavigationEffect({ isOpen, isDirty, callback: setNextUrl })
+
+  const bannerOn = state.notification !== undefined
+
+  const toggleBanner = () => {
+    if (bannerOn) {
+      // JsonForms can emit a final onChange while unmounting; ignore it so the
+      // banner stays off after the first toggle click (notably for antiscam).
+      formBuilderChangesEnabledRef.current = false
+      setSnapshot(state.notification)
+      setState({})
+      setErrors({})
+      // Show the banner again the next time it is turned on.
+      setIsDismissed(false)
+      return
+    }
+
+    formBuilderChangesEnabledRef.current = true
+    setState({ notification: snapshot ?? { title: "" } })
+  }
 
   const onSubmit = () =>
     notificationMutation.mutate({
@@ -86,7 +131,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
     })
 
   return (
-    <ErrorProvider>
+    <>
       <UnsavedSettingModal
         isOpen={isOpen}
         onClose={() => setNextUrl("")}
@@ -99,31 +144,82 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
             title="Notification banner"
             icon={BiWrench}
             isLoading={notificationMutation.isPending}
-            isDisabled={!isDirty}
+            isDisabled={!canPublish}
           />
           <Box w="100%">
-            <Box mb="-0.5rem" />
-            <FormBuilder<Notification>
-              schema={NotificationSettingsSchema}
-              validateFn={validateFn}
-              data={state}
-              handleChange={(data) => {
-                setState(data)
-                // NOTE: We have to set `isDismissed` here because
-                // we need to show the notification banner again when
-                // the user toggles it on
-                if (isEmpty(data)) setIsDismissed(false)
-              }}
-            />
+            <HStack
+              alignItems="space-between"
+              w="full"
+              spacing="1rem"
+              pt="0.5rem"
+            >
+              <FormControl display="flex" alignItems="center">
+                <VStack gap="0.25rem" alignItems="start">
+                  <Text textStyle="subhead-1" textColor="base.content.strong">
+                    Display a banner
+                  </Text>
+                  <Text textStyle="body-2" textColor="base.content.medium">
+                    The site notification will always be visible on the site
+                    until it is dismissed by the user.
+                  </Text>
+                </VStack>
+              </FormControl>
+              <Switch
+                size="md"
+                isChecked={bannerOn}
+                onChange={toggleBanner}
+                aria-label="Display a banner"
+              />
+            </HStack>
+            {bannerOn && (
+              <Box mt="1.25rem">
+                <FormBuilder<SiteNotification>
+                  schema={NotificationSchema}
+                  validateFn={siteNotificationBodyValidator}
+                  data={state.notification}
+                  handleChange={(notification) => {
+                    if (!formBuilderChangesEnabledRef.current) {
+                      return
+                    }
+
+                    setState({
+                      notification: normalizeSiteNotification(notification),
+                    })
+                  }}
+                />
+              </Box>
+            )}
           </Box>
         </SettingsEditorGridItem>
         <SettingsPreviewGridItem>
           <EditSettingsPreview
-            siteName={name}
+            siteName={siteName}
             notification={state.notification}
           />
         </SettingsPreviewGridItem>
       </SettingsGrid>
+    </>
+  )
+}
+
+const NotificationSettingsPage: NextPageWithLayout = () => {
+  const { siteId: rawSiteId } = useQueryParse(siteSchema)
+  const siteId = Number(rawSiteId)
+  const [{ name }] = trpc.site.getSiteName.useSuspenseQuery({
+    siteId,
+  })
+
+  const [previousNotification] = trpc.site.getNotification.useSuspenseQuery({
+    siteId,
+  })
+
+  return (
+    <ErrorProvider>
+      <NotificationSettingsEditor
+        siteId={siteId}
+        siteName={name}
+        previousNotification={previousNotification}
+      />
     </ErrorProvider>
   )
 }

@@ -78,3 +78,15 @@ export const Disabled: Story = {
     },
   },
 }
+
+export const AntiScamDisclaimer: Story = {
+  args: {},
+  parameters: {
+    msw: {
+      handlers: [
+        sitesHandlers.getNotification.antiScamDisclaimer(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+}

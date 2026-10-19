@@ -97,6 +97,10 @@ export {
   jsonFormsHeroActionLayoutControlTester,
 } from "./JsonFormsHeroActionLayoutControl"
 export {
+  default as JsonFormsHeroBlockImageControl,
+  jsonFormsHeroBlockImageControlTester,
+} from "./JsonFormsHeroBlockImageControl"
+export {
   default as JsonFormsHeroQuickActionsControl,
   jsonFormsHeroQuickActionsControlTester,
 } from "./JsonFormsHeroQuickActionsControl"

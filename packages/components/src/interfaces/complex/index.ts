@@ -14,11 +14,14 @@ export { FormSGSchema, type FormSGProps } from "./FormSG"
 export {
   getHeroStyleVariantForBranchTitle,
   HERO_ACTION_LAYOUT,
+  HERO_BLOCK_IMAGE_EDGE,
+  HERO_BLOCK_IMAGE_POSITION,
   HERO_STYLE,
   HeroSchema,
   type HeroActionLayout,
-  type HeroActionLayoutQuickActionsProps,
   type HeroActionLayoutQuickActionItem,
+  type HeroActionLayoutQuickActionsProps,
+  type HeroBlockProps,
   type HeroProps,
   type HeroStyleVariant,
 } from "./Hero"

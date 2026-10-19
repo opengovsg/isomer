@@ -10,6 +10,15 @@ export const getFolderByTitle = (opts: { siteId: number; title: string }) =>
     .select("id")
     .executeTakeFirstOrThrow()
 
+export const getCollectionByTitle = (opts: { siteId: number; title: string }) =>
+  db
+    .selectFrom("Resource")
+    .where("siteId", "=", opts.siteId)
+    .where("title", "=", opts.title)
+    .where("type", "=", ResourceType.Collection)
+    .select("id")
+    .executeTakeFirstOrThrow()
+
 export const getResourceByTitle = (opts: { siteId: number; title: string }) =>
   db
     .selectFrom("Resource")
@@ -24,6 +33,46 @@ export const getResource = (resourceId: string) =>
     .where("id", "=", resourceId)
     .selectAll()
     .executeTakeFirst()
+
+export const listResourcesByParent = (opts: {
+  siteId: number
+  parentId: string
+  type: ResourceType
+}) =>
+  db
+    .selectFrom("Resource")
+    .where("siteId", "=", opts.siteId)
+    .where("parentId", "=", opts.parentId)
+    .where("type", "=", opts.type)
+    .select("id")
+    .execute()
+
+export const findResourceId = async (resourceId: string) =>
+  (
+    await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("id")
+      .executeTakeFirst()
+  )?.id ?? null
+
+export const getResourceParentId = async (resourceId: string) =>
+  (
+    await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("parentId")
+      .executeTakeFirst()
+  )?.parentId ?? null
+
+export const getResourceTitle = async (resourceId: string) =>
+  (
+    await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("title")
+      .executeTakeFirst()
+  )?.title ?? null
 
 export const getResourceDraftBlobContent = async (resourceId: string) => {
   const row = await db
