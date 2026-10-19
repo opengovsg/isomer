@@ -70,6 +70,44 @@ export const LargeDatasetNoSearchResults: Story = {
       resourceId: DGS_LARGE_DATASET_RESOURCE_ID,
     },
   },
+  parameters: {
+    // Mocked so the story does not depend on the live data.gov.sg API.
+    msw: {
+      handlers: [
+        http.get(
+          `https://api-production.data.gov.sg/v2/public/api/datasets/${DGS_LARGE_DATASET_RESOURCE_ID}/metadata`,
+          () =>
+            HttpResponse.json({
+              data: {
+                name: "Large dataset",
+                format: "CSV",
+                // Above the 4MB limit, so search happens server side.
+                datasetSize: 5 * 1024 * 1024,
+                columnMetadata: {
+                  metaMapping: {
+                    name: { name: "name", columnTitle: "Name", index: "0" },
+                  },
+                },
+              },
+            }),
+        ),
+        http.get(
+          "https://data.gov.sg/api/action/datastore_search",
+          ({ request }) =>
+            HttpResponse.json({
+              success: true,
+              result: {
+                // Any search term matches nothing.
+                records: new URL(request.url).searchParams.has("q")
+                  ? []
+                  : [{ _id: 1, name: "water" }],
+                total: new URL(request.url).searchParams.has("q") ? 0 : 1,
+              },
+            }),
+        ),
+      ],
+    },
+  },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
     const searchElem = screen.getByRole("searchbox", {
