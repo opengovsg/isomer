@@ -28,75 +28,72 @@ export default defineConfig({
         "**/*.d.ts",
       ],
     },
-    projects: [
-      {
-        extends: true,
-        test: {
-          name: "node",
-          dir: "src",
-          globals: true,
-          exclude: [
-            ...configDefaults.exclude,
-            "**/playwright/**",
-            "tests/load/**",
-            BROWSER_TEST_PATTERN,
-          ],
-          alias,
-        },
-      },
-      {
-        extends: true,
-        test: {
-          name: "browser",
-          dir: "src",
-          globals: true,
-          include: [BROWSER_TEST_PATTERN],
-          alias,
-          setupFiles: ["src/__tests__/browserSetup.ts"],
-          browser: {
-            enabled: true,
-            provider: playwright(),
-            instances: [{ browser: "chromium" }],
-            headless: !!process.env.CI,
-          },
-        },
-      },
-      // Opt-in: the Argos plugin uploads on CI, so unit runs must not load it.
-      ...(process.env.VITEST_STORYBOOK
-        ? [
-            {
-              extends: true,
-              plugins: [
-                storybookTest({
-                  configDir: fileURLToPath(
-                    new URL(".storybook", import.meta.url),
-                  ),
+    // Storybook runs separately (VITEST_STORYBOOK=true) so unit runs never load
+    // the Argos plugin, which uploads screenshots on CI.
+    projects: process.env.VITEST_STORYBOOK
+      ? [
+          {
+            extends: true,
+            plugins: [
+              storybookTest({
+                configDir: fileURLToPath(
+                  new URL(".storybook", import.meta.url),
+                ),
+              }),
+              argosVitestPlugin({
+                uploadToArgos:
+                  !!process.env.CI && process.env.ARGOS_UPLOAD !== "false",
+              }),
+            ],
+            test: {
+              name: "storybook",
+              alias,
+              browser: {
+                enabled: true,
+                provider: playwright({
+                  launchOptions: {
+                    args: ["--disable-lcd-text", "--font-render-hinting=none"],
+                  },
                 }),
-                argosVitestPlugin({
-                  uploadToArgos:
-                    !!process.env.CI && process.env.ARGOS_UPLOAD !== "false",
-                }),
-              ],
-              test: {
-                name: "storybook",
-                alias,
-                browser: {
-                  enabled: true,
-                  provider: playwright({
-                    launchOptions: {
-                      args: [
-                        "--disable-lcd-text",
-                        "--font-render-hinting=none",
-                      ],
-                    },
-                  }),
-                  headless: true,
-                  instances: [{ browser: "chromium" as const }],
-                },
+                headless: true,
+                instances: [{ browser: "chromium" as const }],
               },
             },
-          ]
-        : []),
-    ],
+          },
+        ]
+      : [
+          {
+            extends: true,
+            test: {
+              name: "node",
+              dir: "src",
+              globals: true,
+              exclude: [
+                ...configDefaults.exclude,
+                "**/playwright/**",
+                "tests/load/**",
+                BROWSER_TEST_PATTERN,
+              ],
+              alias,
+            },
+          },
+          {
+            extends: true,
+            test: {
+              name: "browser",
+              dir: "src",
+              globals: true,
+              include: [BROWSER_TEST_PATTERN],
+              alias,
+              setupFiles: ["src/__tests__/browserSetup.ts"],
+              browser: {
+                enabled: true,
+                provider: playwright(),
+                instances: [{ browser: "chromium" }],
+                headless: !!process.env.CI,
+              },
+            },
+          },
+        ],
   },
 })

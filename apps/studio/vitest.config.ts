@@ -24,80 +24,77 @@ export default defineConfig({
         "**/*.d.ts",
       ],
     },
-    projects: [
-      {
-        extends: true,
-        test: {
-          name: "node",
-          include: [
-            "src/**/*.test.{ts,tsx}",
-            "prisma/scripts/**/*.test.ts",
-            "scripts/**/*.test.ts",
-            "tests/e2e/fixtures/**/*.test.ts",
-          ],
-          exclude: [
-            ...configDefaults.exclude,
-            // Playwright specs under tests/e2e/ are not in include; only
-            // tests/e2e/fixtures/**/*.test.ts is allow-listed for Vitest.
-            "tests/load/**",
-            BROWSER_TEST_PATTERN,
-          ],
-          retry: 0,
-          globals: true,
-          setupFiles: ["tests/mocks/db.ts", "tests/mocks/mockpass.ts"],
-          globalSetup: ["tests/global-setup.ts"],
-        },
-      },
-      {
-        extends: true,
-        test: {
-          name: "browser",
-          include: [BROWSER_TEST_PATTERN],
-          retry: 0,
-          globals: true,
-          browser: {
-            enabled: true,
-            provider: playwright(),
-            instances: [{ browser: "chromium" }],
-            headless: !!process.env.CI,
-          },
-        },
-      },
-      // Opt-in: the Argos plugin uploads on CI, so unit runs must not load it.
-      ...(process.env.VITEST_STORYBOOK
-        ? [
-            {
-              extends: true,
-              plugins: [
-                storybookTest({
-                  configDir: fileURLToPath(
-                    new URL(".storybook", import.meta.url),
-                  ),
+    // Storybook runs separately (VITEST_STORYBOOK=true) so unit runs never load
+    // the Argos plugin, which uploads screenshots on CI.
+    projects: process.env.VITEST_STORYBOOK
+      ? [
+          {
+            extends: true,
+            plugins: [
+              storybookTest({
+                configDir: fileURLToPath(
+                  new URL(".storybook", import.meta.url),
+                ),
+              }),
+              argosVitestPlugin({
+                uploadToArgos:
+                  !!process.env.CI && process.env.ARGOS_UPLOAD !== "false",
+              }),
+            ],
+            test: {
+              name: "storybook",
+              browser: {
+                enabled: true,
+                provider: playwright({
+                  launchOptions: {
+                    args: ["--disable-lcd-text", "--font-render-hinting=none"],
+                  },
                 }),
-                argosVitestPlugin({
-                  uploadToArgos:
-                    !!process.env.CI && process.env.ARGOS_UPLOAD !== "false",
-                }),
-              ],
-              test: {
-                name: "storybook",
-                browser: {
-                  enabled: true,
-                  provider: playwright({
-                    launchOptions: {
-                      args: [
-                        "--disable-lcd-text",
-                        "--font-render-hinting=none",
-                      ],
-                    },
-                  }),
-                  headless: true,
-                  instances: [{ browser: "chromium" as const }],
-                },
+                headless: true,
+                instances: [{ browser: "chromium" as const }],
               },
             },
-          ]
-        : []),
-    ],
+          },
+        ]
+      : [
+          {
+            extends: true,
+            test: {
+              name: "node",
+              include: [
+                "src/**/*.test.{ts,tsx}",
+                "prisma/scripts/**/*.test.ts",
+                "scripts/**/*.test.ts",
+                "tests/e2e/fixtures/**/*.test.ts",
+              ],
+              exclude: [
+                ...configDefaults.exclude,
+                // Playwright specs under tests/e2e/ are not in include; only
+                // tests/e2e/fixtures/**/*.test.ts is allow-listed for Vitest.
+                "tests/load/**",
+                BROWSER_TEST_PATTERN,
+              ],
+              retry: 0,
+              globals: true,
+              setupFiles: ["tests/mocks/db.ts", "tests/mocks/mockpass.ts"],
+              globalSetup: ["tests/global-setup.ts"],
+            },
+          },
+          {
+            extends: true,
+            test: {
+              name: "browser",
+              include: [BROWSER_TEST_PATTERN],
+              retry: 0,
+              globals: true,
+              browser: {
+                enabled: true,
+                provider: playwright(),
+                instances: [{ browser: "chromium" }],
+                headless: !!process.env.CI,
+              },
+            },
+          },
+        ],
   },
 })
