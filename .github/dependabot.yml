@@ -144,7 +144,7 @@ updates:
         update-types: ["version-update:semver-minor", "version-update:semver-major"]
       - dependency-name: "@storybook/addon-themes"
         update-types: ["version-update:semver-minor", "version-update:semver-major"]
-      - dependency-name: "@storybook/nextjs"
+      - dependency-name: "@storybook/nextjs-vite"
         update-types: ["version-update:semver-minor", "version-update:semver-major"]
       - dependency-name: "@storybook/react-vite"
         update-types: ["version-update:semver-minor", "version-update:semver-major"]
