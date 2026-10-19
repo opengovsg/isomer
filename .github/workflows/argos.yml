@@ -154,13 +154,15 @@ jobs:
       - name: Test Storybook
         if: ${{ needs.changes.outputs.studio == 'true' }}
         working-directory: apps/studio
+        # Studio stories each register the MSW service worker on one origin.
+        # Many parallel pages starve story loading on a 4 vCPU runner, so cap them.
         run: |
           rm -rf screenshots
           mkdir screenshots
           if [[ -n "$AFFECTED_BASE" ]]; then
-            pnpm test-storybook --changed="$AFFECTED_BASE" --passWithNoTests
+            pnpm test-storybook --maxWorkers=2 --changed="$AFFECTED_BASE" --passWithNoTests
           else
-            pnpm test-storybook
+            pnpm test-storybook --maxWorkers=2
           fi
         env:
           ARGOS_UPLOAD: "false"
