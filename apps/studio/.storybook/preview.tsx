@@ -218,7 +218,12 @@ const preview: Preview = {
      * }
      * ```
      */
-    argos: withArgosModes(["gsib"]),
+    argos: {
+      ...withArgosModes(["gsib"]),
+      // Modals and drawers render in portals, so cropping to the body's
+      // content captures a sliver. Capture the whole viewport like Chromatic.
+      fitToContent: false,
+    },
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
       matchers: {
