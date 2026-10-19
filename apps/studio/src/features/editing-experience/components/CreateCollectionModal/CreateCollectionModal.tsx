@@ -115,7 +115,6 @@ const CreateCollectionModalContent = ({
       toast({
         title: "Failed to create collection",
         status: "error",
-        // TODO: check if this property is correct
         description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })

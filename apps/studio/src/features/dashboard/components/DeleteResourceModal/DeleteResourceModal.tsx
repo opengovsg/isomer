@@ -132,7 +132,6 @@ const DeleteResourceModalContent = ({
       toast({
         title: `Failed to delete ${label}`,
         status: "error",
-        // TODO: check if this property is correct
         description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })

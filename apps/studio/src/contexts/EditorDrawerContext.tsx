@@ -108,7 +108,7 @@ export const useEditorDrawerContext = () => {
 
   if (!editorDrawerContext) {
     throw new Error(
-      "useEditorDrawer must be used within an EditorDrawerContextProvider",
+      "useEditorDrawerContext must be used within an EditorDrawerProvider",
     )
   }
 

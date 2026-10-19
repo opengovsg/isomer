@@ -71,7 +71,6 @@ const MoveResourceContent = withSuspense(
         })
       },
       onSettled: () => {
-        // TODO: actually close the modal
         setMovedItem(null)
       },
       onSuccess: async () => {

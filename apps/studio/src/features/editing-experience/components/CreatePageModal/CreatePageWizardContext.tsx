@@ -102,7 +102,6 @@ const useCreatePageWizardContext = ({
       await utils.resource.listWithoutRoot.invalidate()
       onClose()
     },
-    // TODO: Error handling
   })
 
   const handleCreatePage = formMethods.handleSubmit((values) => {

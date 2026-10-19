@@ -110,7 +110,6 @@ const CreateFolderModalContent = ({
       toast({
         title: "Failed to create folder",
         status: "error",
-        // TODO: check if this property is correct
         description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })
