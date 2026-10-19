@@ -45,6 +45,11 @@ interface AdjustmentPreviewProps {
   // not compound). On a first edit this equals `src`; on a re-edit, `src` is
   // the previous bake and only this points at the true original.
   originalSrc: string
+  // The retained client-side original bytes, when the image was uploaded this
+  // session. Baked from directly (no fetch) and shown as the uncropped display
+  // fallback, so the preview works while the uploaded original is still gated by
+  // the malware-scan window.
+  originalFile?: Blob
   adjustment?: ImageAdjustment
   previewStates: AdjustmentPreviewState[]
   scrim?: AdjustmentScrim
@@ -88,6 +93,7 @@ const DEFAULT_RAIL_WIDTH_PX = 336
 export const AdjustmentPreview = ({
   src,
   originalSrc,
+  originalFile,
   adjustment,
   previewStates,
   scrim,
@@ -124,27 +130,49 @@ export const AdjustmentPreview = ({
   // result instead of overwriting the preview of a newer draft.
   const bakeRequestIdRef = useRef(0)
 
+  // Object URL for the retained local original (when the image was uploaded this
+  // session), used as the uncropped display fallback — avoids a 404 before the
+  // first bake for a fresh upload whose CDN variant hasn't propagated yet.
+  const [localOriginalUrl, setLocalOriginalUrl] = useState<string | null>(null)
+  useEffect(() => {
+    if (!originalFile) {
+      setLocalOriginalUrl(null)
+      return
+    }
+    const url = URL.createObjectURL(originalFile)
+    setLocalOriginalUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [originalFile])
+
   // src arrives as the raw stored path (e.g. "/1/uuid/file.png"); resolve it to
   // the asset domain for DISPLAY (the fallback shown before any bake exists),
-  // same as ImageClient does at render time.
-  const displaySrc = generateAssetUrl(src)
+  // same as ImageClient does at render time. Prefer the local original when we
+  // have it.
+  const displaySrc = localOriginalUrl ?? generateAssetUrl(src)
   // Bake from the pristine original (bypass the CDN transcode), matching the
   // save path — the transcoded variant can be downscaled or carry a generic
   // "binary/octet-stream" type that the bake gate rejects.
   const originalFetchUrl = generateOriginalAssetUrl(originalSrc)
-  // Fallback for environments where the ?original bypass is unavailable (e.g.
-  // 403): the plain (transcoded) URL still lets baking proceed — canBakeImage
-  // rejects an octet-stream variant anyway, so this never bakes garbage.
+  // Fallback when the ?original bypass is gated (e.g. 403): force the webp
+  // variant (not avif) so baking can proceed — the baker only accepts
+  // jpeg/png/webp, so a default */* (avif) fetch would be rejected downstream.
   const plainFetchUrl = generateAssetUrl(originalSrc)
 
-  // Fetch the original image once per resolved original. Comment notes CORS
-  // must be readable.
+  // Get the bytes to bake: the retained local original if we have it (no fetch;
+  // works while the uploaded original is still gated), else fetch — ?original
+  // first, then the webp variant. CORS must be readable.
   useEffect(() => {
+    if (originalFile) {
+      setOriginalBlob(originalFile)
+      return
+    }
     const fetchOriginal = async () => {
       try {
         let response = await fetch(originalFetchUrl)
         if (!response.ok && plainFetchUrl !== originalFetchUrl) {
-          response = await fetch(plainFetchUrl)
+          response = await fetch(plainFetchUrl, {
+            headers: { Accept: "image/webp" },
+          })
         }
         if (!response.ok) {
           throw new Error(`Failed to fetch image: ${response.status}`)
@@ -158,7 +186,7 @@ export const AdjustmentPreview = ({
       }
     }
     void fetchOriginal()
-  }, [originalFetchUrl, plainFetchUrl])
+  }, [originalFile, originalFetchUrl, plainFetchUrl])
 
   // Debounced bake effect (~150ms) keyed on crop/rotate/flipH/flipV changes.
   useEffect(() => {

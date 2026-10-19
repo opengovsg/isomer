@@ -21,7 +21,7 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
@@ -68,6 +68,11 @@ interface ImageAdjustmentModalProps {
   // object) — read by the config's focalEnabledFor/previewObjectFitFor to resolve
   // the controls for this card's current imageFit.
   fieldHost: unknown
+  // The retained client-side bytes of the just-uploaded original, when available
+  // (see JsonFormsImageControl). Lets the crop canvas, preview, and save bake
+  // from local bytes while the uploaded original is still gated by the scan
+  // window. Kept client-side only — never sent to the Studio server.
+  originalFile?: File
   siteId: number
   resourceId?: string
   onSave: (result: {
@@ -84,11 +89,24 @@ export const ImageAdjustmentModal = ({
   block,
   imageFieldName,
   fieldHost,
+  originalFile,
   value,
   siteId,
   resourceId,
   onSave,
 }: ImageAdjustmentModalProps): JSX.Element => {
+  // One object URL for the retained local original, shared by the crop canvas.
+  // Revoked on unmount / when the file changes. The modal remounts per image
+  // (key={data}), so originalFile is stable within a mount.
+  const localOriginalUrl = useMemo(
+    () => (originalFile ? URL.createObjectURL(originalFile) : undefined),
+    [originalFile],
+  )
+  useEffect(() => {
+    return () => {
+      if (localOriginalUrl) URL.revokeObjectURL(localOriginalUrl)
+    }
+  }, [localOriginalUrl])
   // Tier C (InfoCards): focal and the preview's object-fit depend on the card's
   // current imageFit; other components have no resolver and fall back to the
   // static config / cover.
@@ -194,7 +212,7 @@ export const ImageAdjustmentModal = ({
     let timeoutId: ReturnType<typeof setTimeout> | undefined
     try {
       const result = await Promise.race([
-        save(src, draft),
+        save(src, draft, originalFile),
         new Promise<never>((_, reject) => {
           timeoutId = setTimeout(
             () => reject(new Error("Saving took too long. Please try again.")),
@@ -403,7 +421,7 @@ export const ImageAdjustmentModal = ({
                     minH={{ md: "14rem" }}
                   >
                     <CropFocalControl
-                      src={originalSrc}
+                      src={localOriginalUrl ?? originalSrc}
                       crop={draft?.crop}
                       focal={draft?.focal}
                       cropMode={config.cropMode}
@@ -495,6 +513,7 @@ export const ImageAdjustmentModal = ({
                 <AdjustmentPreview
                   src={src}
                   originalSrc={originalSrc}
+                  originalFile={originalFile}
                   adjustment={draft}
                   previewStates={config.previewStates}
                   scrim={config.scrim}

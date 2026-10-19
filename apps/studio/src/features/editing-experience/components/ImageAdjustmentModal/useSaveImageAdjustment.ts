@@ -63,13 +63,16 @@ export const chooseBakeMime = (
  * non-ok response so a 403 XML body is never mistaken for image bytes.
  * @param key - The image key with leading slash (e.g. "/site/uuid/file.png")
  */
-const fetchImageBlob = async (key: string): Promise<Blob> => {
+export const fetchImageBlob = async (key: string): Promise<Blob> => {
   const originalUrl = generateOriginalAssetUrl(key)
   const plainUrl = generateAssetUrl(key)
 
   let response = await fetch(originalUrl)
   if (!response.ok && plainUrl !== originalUrl) {
-    response = await fetch(plainUrl)
+    // Force the webp variant (not avif): the CDN picks the format from Accept,
+    // and the baker only accepts jpeg/png/webp (BAKEABLE_FORMAT_BY_MIME), so a
+    // default */* (avif) fetch would be rejected downstream.
+    response = await fetch(plainUrl, { headers: { Accept: "image/webp" } })
   }
   if (!response.ok) {
     throw new Error(`Failed to fetch image: ${response.status}`)
@@ -86,6 +89,10 @@ interface UseSaveImageAdjustmentOutput {
   save: (
     currentSrc: string,
     draft: ImageAdjustment,
+    // The retained client-side original bytes, when the image being edited was
+    // uploaded this session. Bakes from these directly (no fetch), so a save
+    // works even while the uploaded original is still gated by the scan window.
+    originalFile?: Blob,
   ) => Promise<{ src: string; imageAdjustment: ImageAdjustment }>
   isSaving: boolean
   error: Error | null
@@ -111,6 +118,7 @@ export const useSaveImageAdjustment = ({
   const save = async (
     currentSrc: string,
     draft: ImageAdjustment,
+    originalFile?: Blob,
   ): Promise<{ src: string; imageAdjustment: ImageAdjustment }> => {
     setIsSaving(true)
     setError(null)
@@ -119,9 +127,12 @@ export const useSaveImageAdjustment = ({
       // Step 1: Resolve the original key
       const originalKey = resolveOriginalKey(currentSrc, draft)
 
-      // Step 2: Fetch the bytes to bake — prefers the pristine original, falls
-      // back to the plain URL when it's gated (see fetchImageBlob).
-      const originalBlob = await fetchImageBlob(`/${originalKey}`)
+      // Step 2: Get the bytes to bake — the retained client-side original if we
+      // have it (no fetch; works while the uploaded original is still gated),
+      // else fetch, preferring the pristine original and falling back to the
+      // plain URL (see fetchImageBlob).
+      const originalBlob =
+        originalFile ?? (await fetchImageBlob(`/${originalKey}`))
 
       // Step 3: Choose the MIME type for baking
       const mime = chooseBakeMime(originalBlob.type, originalKey)
