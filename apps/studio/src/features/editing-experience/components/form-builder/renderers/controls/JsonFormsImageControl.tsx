@@ -115,24 +115,6 @@ function JsonFormsImageControl({
     }
   }, [canAdjust, onAdjustmentModalOpen])
 
-  // Retain the just-uploaded File client-side (never sent to the Studio server —
-  // it goes direct to S3 via a presigned PUT) so the editor can bake from local
-  // bytes while the uploaded original is still gated by the malware-scan window.
-  // pendingFileRef bridges onUploadedFile (has the File) and setHref (has the
-  // resulting key); uploadedOriginalRef holds the committed {key, file}.
-  const pendingFileRef = useRef<File | null>(null)
-  const uploadedOriginalRef = useRef<{ key: string; file: File } | null>(null)
-
-  // The original key for the image being edited — `data` on a first edit, or the
-  // stored originalKey on a re-edit. Mirrors resolveOriginalKey, inlined to keep
-  // the heavy imageBake module out of this shared bundle (see dynamic import).
-  const editingOriginalKey =
-    currentAdjustment?.originalKey || data?.replace(/^\//, "")
-  const originalFile =
-    uploadedOriginalRef.current?.key === editingOriginalKey
-      ? uploadedOriginalRef.current.file
-      : undefined
-
   const handleAdjustmentSave = ({
     src,
     imageAdjustment,
@@ -164,7 +146,6 @@ function JsonFormsImageControl({
               // next at this field.
               handleChange(path, undefined)
               if (currentAdjustment) handleChange(siblingPath, undefined)
-              uploadedOriginalRef.current = null
             }}
           />
           {canAdjust && (
@@ -178,7 +159,6 @@ function JsonFormsImageControl({
               block={block}
               imageFieldName={fieldName}
               fieldHost={fieldHost}
-              originalFile={originalFile}
               siteId={siteId}
               resourceId={
                 (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
@@ -214,24 +194,11 @@ function JsonFormsImageControl({
             resourceId={
               (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
             }
-            onUploadedFile={(file) => {
-              // Stash the picked File; setHref below pairs it with its key.
-              pendingFileRef.current = file
-            }}
             setHref={(src) => {
               handleChange(path, src)
               // Mark a real upload (not the loading-state "" or a clear) so the
               // editor auto-opens once the new src lands and canAdjust is true.
-              if (src) {
-                justUploadedRef.current = true
-                if (pendingFileRef.current) {
-                  uploadedOriginalRef.current = {
-                    key: src.replace(/^\//, ""),
-                    file: pendingFileRef.current,
-                  }
-                  pendingFileRef.current = null
-                }
-              }
+              if (src) justUploadedRef.current = true
             }}
             shouldFetchResource={true}
           />
