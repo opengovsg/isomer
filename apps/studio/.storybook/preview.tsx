@@ -23,6 +23,7 @@ import { setupWorker } from "msw/browser"
 import { useCallback, useState } from "react"
 import ReactDOM from "react-dom"
 import { ErrorBoundary } from "react-error-boundary"
+import { configure } from "storybook/test"
 import superjson from "superjson"
 import { AppBanner } from "~/components/AppBanner"
 import { EnvProvider } from "~/components/AppProviders"
@@ -185,6 +186,13 @@ const decorators: Decorator[] = [
 ]
 
 const preview: Preview = {
+  // Stories load data through MSW and render Suspense skeletons first. The 1s
+  // default for findBy*/waitFor is too short on a loaded CI runner, so wait
+  // longer instead of failing the play function.
+  beforeAll: () => {
+    configure({ asyncUtilTimeout: 5000 })
+  },
+
   loaders: [
     mswLoader(async () => {
       const worker = setupWorker()
