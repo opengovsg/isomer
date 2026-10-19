@@ -156,16 +156,40 @@ export const getPresignedPutUrl = async ({
   return { presignedPutUrl, contentType, contentDisposition }
 }
 
+const BARE_UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 /**
- * Derive a bake key from the source image's current location.
- * Bridges relative path to full URL, extracts folder, and mints server leaf.
+ * Derive a human-friendly base name for a bake leaf from the TRUE original key,
+ * so the baked file keeps the uploader's filename (e.g. "beach-photo") instead
+ * of an opaque "baked-<uuid>". Derived from the original (not a previous bake),
+ * so re-edits stay "beach-photo-<newuuid>" without accumulating. Legacy
+ * originals that are themselves baked keys — or have no recoverable name — fall
+ * back to "image".
+ */
+export const deriveBakeBaseName = (originalKey: string): string => {
+  const leaf = originalKey.split("/").pop() ?? ""
+  let base = leaf.replace(/\.[^.]+$/, "") // drop extension
+  if (base.startsWith("baked-")) base = base.slice("baked-".length) // legacy prefix
+  if (BARE_UUID_PATTERN.test(base)) return "image" // legacy baked key, no real name
+  // filenamify strips path separators and unsafe chars, so originalKey can't
+  // inject a path segment into the key.
+  return filenamify(base, { replacement: "-" }) || "image"
+}
+
+/**
+ * Derive a bake key from the source image's current location, keeping the
+ * uploader's filename in the leaf. Folder comes from the current `src`; the
+ * display base name comes from `originalKey` (the true original).
  */
 export const deriveBakeKey = ({
   src,
+  originalKey,
   ext,
   siteId,
 }: {
   src: string
+  originalKey: string
   ext: string
   siteId: number
 }): string => {
@@ -191,8 +215,9 @@ export const deriveBakeKey = ({
     })
   }
 
-  // Mint server leaf and return full bake key
-  return `${folder}/baked-${randomUUID()}.${ext}`
+  // Mint a server leaf that preserves the uploader's filename, with a fresh
+  // UUID for uniqueness (and to stay distinct from the original leaf).
+  return `${folder}/${deriveBakeBaseName(originalKey)}-${randomUUID()}.${ext}`
 }
 
 // Best-effort delete: the derived format may not exist for every asset

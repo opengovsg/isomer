@@ -177,6 +177,9 @@ export const useSaveImageAdjustment = ({
         siteId,
         resourceId: resourceId || "",
         src: currentSrc,
+        // Keeps the uploader's filename in the baked key (derived from the true
+        // original, so re-edits don't accumulate suffixes).
+        originalKey,
         ext,
         fileSize: bakedBlob.size,
       })
