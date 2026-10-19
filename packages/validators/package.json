@@ -13,7 +13,7 @@
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
-    "test": "run-s test:*",
+    "test": "pnpm test:unit",
     "test-ci:unit": "vitest run -- --coverage",
     "test:unit": "vitest run",
     "test:watch": "vitest watch",
