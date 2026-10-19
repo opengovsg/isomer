@@ -206,7 +206,16 @@ const preview: Preview = {
     layout: "fullscreen",
     // MOH site launch!!! aka birth of Isomer Next hehe
     date: new Date(2024, 10, 28),
-    viewport,
+    viewport: {
+      // Argos reads "100%" heights as 100px, which clips modals and drawers
+      // (they render in portals), so give Studio a real viewport height.
+      viewports: Object.fromEntries(
+        Object.entries(viewport.viewports).map(([key, value]) => [
+          key,
+          { ...value, styles: { ...value.styles, height: "720px" } },
+        ]),
+      ),
+    },
     /**
      * If tablet view is needed, add it on a per-story basis.
      * @example

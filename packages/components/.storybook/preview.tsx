@@ -116,6 +116,11 @@ const preview: Preview = {
   ],
 
   parameters: {
+    argos: {
+      // Argos crops, pads and zooms the capture by default. Chromatic captured
+      // the full viewport width as rendered.
+      fitToContent: false,
+    },
     viewport: {
       options: {
         ...viewport.viewports,

@@ -43,11 +43,11 @@ interface StorybookViewportParameter {
  */
 export const viewport = {
   viewports: {
-    xs: { name: "xs", styles: { width: "320px", height: "720px" } },
-    sm: { name: "sm", styles: { width: "480px", height: "720px" } },
-    md: { name: "md", styles: { width: "768px", height: "720px" } },
-    lg: { name: "lg", styles: { width: "1280px", height: "720px" } },
-    xl: { name: "xl", styles: { width: "1440px", height: "720px" } },
-    "2xl": { name: "2xl", styles: { width: "1536px", height: "720px" } },
+    xs: { name: "xs", styles: { width: "320px", height: "100%" } },
+    sm: { name: "sm", styles: { width: "480px", height: "100%" } },
+    md: { name: "md", styles: { width: "768px", height: "100%" } },
+    lg: { name: "lg", styles: { width: "1280px", height: "100%" } },
+    xl: { name: "xl", styles: { width: "1440px", height: "100%" } },
+    "2xl": { name: "2xl", styles: { width: "1536px", height: "100%" } },
   },
 } as const satisfies StorybookViewportParameter
