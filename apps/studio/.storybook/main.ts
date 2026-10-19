@@ -33,5 +33,16 @@ const config: StorybookConfig = {
     check: false,
     reactDocgen: "react-docgen-typescript",
   },
+
+  // The Vite builder only exposes STORYBOOK_-prefixed `env` values to the
+  // preview, so src/env.mjs would otherwise validate the missing NEXT_PUBLIC_*
+  // vars and throw on load. The preview supplies its own env (see preview.tsx).
+  viteFinal: (config) => ({
+    ...config,
+    define: {
+      ...config.define,
+      "process.env.SKIP_ENV_VALIDATION": JSON.stringify("true"),
+    },
+  }),
 }
 export default config
