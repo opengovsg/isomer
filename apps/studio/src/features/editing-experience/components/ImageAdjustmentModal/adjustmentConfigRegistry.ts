@@ -24,11 +24,12 @@ const infoCardPreviewObjectFit = (fieldHost: unknown): "cover" | "contain" =>
     ? "contain"
     : "cover"
 
-// Every Tier B config previews at the same three breakpoint viewport widths
-// (mobile 375 / tablet 768 / desktop 1280); only the aspect-ratio guess differs
-// per component, so declare just the ratios. The ratios are an initial guess —
-// PreviewFrame measures the real rendered height — so they only need to be in
-// the right ballpark for the pre-measure flash.
+// Standard Desktop/Tablet/Mobile preview set, shared by every component so all
+// editor previews show the same three breakpoint viewport widths (mobile 375 /
+// tablet 768 / desktop 1280); only the aspect ratio differs per component. For
+// real-component previews the ratio is just a pre-measure flash guess
+// (PreviewFrame measures the real rendered height); for framed previews
+// (skipRealComponentPreview) it sets the tile's actual shape.
 const responsivePreviewStates = (ratios: {
   mobile: AspectRatio
   tablet: AspectRatio
@@ -115,20 +116,15 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
   // Fixed 200px-wide frame from sm up (sm:w-[200px]).
   maxRenderedWidthPx: 200,
   // Contentpic stacks (image above text) as a column below Tailwind `sm` (640px)
-  // and switches to its real side-by-side row layout — image fixed at 200×240 —
-  // at `sm` and up (`sm:flex-row`). Preview at exactly 640px so the frame shows
-  // that true desktop row layout rather than the narrow mobile column a <640px
-  // viewport would render; it's also the smallest faithful desktop width, which
-  // keeps the image as large as possible once the frame is scaled down.
-  previewStates: [
-    {
-      id: "desktop",
-      label: "Desktop",
-      viewportWidth: 640,
-      // Rough landscape estimate for the pre-measure flash only.
-      aspectRatio: { width: 640, height: 300 },
-    },
-  ],
+  // and switches to its side-by-side row layout at `sm` and up (`sm:flex-row`),
+  // so Mobile (375) shows the stacked layout while Tablet/Desktop show the row.
+  // Aspect ratios are pre-measure flash guesses only (PreviewFrame measures the
+  // real rendered height).
+  previewStates: responsivePreviewStates({
+    mobile: { width: 4, height: 5 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 2, height: 1 },
+  }),
   preUploadCopy:
     "Use a high-resolution image (at least 400×480px) with a 5:6 (portrait) aspect ratio. Keep the key subject centered — the image is cropped to a fixed portrait frame beside your text.",
 }
@@ -256,24 +252,14 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
   skipRealComponentPreview: true,
-  previewStates: [
-    {
-      id: "mobile",
-      label: "Mobile",
-      viewportWidth: 375,
-      aspectRatio: { width: 3, height: 2 },
-    },
-    {
-      id: "desktop",
-      label: "Desktop (3 columns)",
-      aspectRatio: { width: 1, height: 1 },
-    },
-    {
-      id: "wide",
-      label: "Desktop (2 columns)",
-      aspectRatio: { width: 2, height: 1 },
-    },
-  ],
+  // Card image frame is 3:2 up to lg, then aspect-square at lg in the default
+  // 3-column content layout (the homepage 2-column variant is 2:1 at lg). Preview
+  // the default layout across breakpoints: 3:2 on mobile/tablet, square on desktop.
+  previewStates: responsivePreviewStates({
+    mobile: { width: 3, height: 2 },
+    tablet: { width: 3, height: 2 },
+    desktop: { width: 1, height: 1 },
+  }),
   preUploadCopy:
     "The card crops this image to fill its frame, and the frame's shape changes across screen sizes. Set a focal point so your key subject stays in view.",
 }
@@ -293,15 +279,13 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
   skipRealComponentPreview: true,
-  previewStates: [
-    {
-      id: "mobile",
-      label: "Mobile",
-      viewportWidth: 375,
-      aspectRatio: { width: 1, height: 1 },
-    },
-    { id: "desktop", label: "Desktop", aspectRatio: { width: 2, height: 3 } },
-  ],
+  // Card is square up to lg, then 2:3 portrait at lg: square on mobile/tablet,
+  // portrait on desktop.
+  previewStates: responsivePreviewStates({
+    mobile: { width: 1, height: 1 },
+    tablet: { width: 1, height: 1 },
+    desktop: { width: 2, height: 3 },
+  }),
   // Approximates the real card's bottom-half dark gradient (the title overlay):
   // opaque at the bottom edge, fading out by the vertical midpoint.
   scrim: {
@@ -318,8 +302,9 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
 // frame, so the crop is unconstrained (custom) and there's no focal point to
 // set — nothing cover-fits, so an anchor would have nothing to anchor against.
 // The crop is baked into src; the real-component preview renders the actual
-// Image block, so no skipRealComponentPreview. One preview state is enough since
-// the image is the same shape at every breakpoint (it just scales down).
+// Image block, so no skipRealComponentPreview. The image is the same shape at
+// every breakpoint (it just scales), so the three breakpoints show the same crop
+// at different widths — kept for a consistent Desktop/Tablet/Mobile set.
 const IMAGE_CONFIG: AdjustmentConfig = {
   componentType: "image",
   cropMode: "custom",
@@ -329,15 +314,12 @@ const IMAGE_CONFIG: AdjustmentConfig = {
   // narrows to col-span-9). Round up to 960 so a sharp image at that width doesn't
   // false-warn while genuinely soft crops below it still do.
   maxRenderedWidthPx: 960,
-  previewStates: [
-    {
-      id: "default",
-      label: "Default",
-      viewportWidth: 1280,
-      // Pre-measure flash guess only — the real render measures the true height.
-      aspectRatio: { width: 3, height: 2 },
-    },
-  ],
+  // Aspect ratios are pre-measure flash guesses only (the real render is measured).
+  previewStates: responsivePreviewStates({
+    mobile: { width: 3, height: 2 },
+    tablet: { width: 3, height: 2 },
+    desktop: { width: 3, height: 2 },
+  }),
   preUploadCopy:
     "You can crop this image to any shape. Use a high-resolution image so the area you keep stays sharp at the size it displays on your page.",
 }
@@ -364,17 +346,15 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
   maxRenderedHeightPx: 456,
   previewObjectFitFor: () => "contain",
   skipRealComponentPreview: true,
-  // object-contain shows the whole image regardless of frame shape, so one
-  // representative frame state is enough. The main frame is a fixed 28.5rem tall
-  // over the content column (~5:3).
-  previewStates: [
-    {
-      id: "gallery",
-      label: "Gallery",
-      viewportWidth: 1280,
-      aspectRatio: { width: 5, height: 3 },
-    },
-  ],
+  // object-contain shows the whole image regardless of frame shape. The frame is
+  // a fixed height (17rem mobile → 28.5rem from sm) over the content column, so it
+  // grows wider as the viewport grows — the three states approximate that frame
+  // shape per breakpoint (the image is letterboxed to fit either way).
+  previewStates: responsivePreviewStates({
+    mobile: { width: 5, height: 4 },
+    tablet: { width: 3, height: 2 },
+    desktop: { width: 2, height: 1 },
+  }),
   preUploadCopy:
     "Gallery images are shown in full (letterboxed to fit the frame), never cropped to it. Crop here only to trim parts of the image you don't want to show.",
 }
