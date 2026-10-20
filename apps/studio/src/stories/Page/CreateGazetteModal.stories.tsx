@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { Box } from "@chakra-ui/react"
 import { Suspense } from "react"
 import { gazetteHandlers } from "tests/msw/handlers/gazette"
