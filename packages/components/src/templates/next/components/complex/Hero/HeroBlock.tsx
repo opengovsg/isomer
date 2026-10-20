@@ -139,7 +139,7 @@ export const HeroBlock = ({
           className={`flex w-full max-w-[548px] flex-col justify-center gap-9 ${heroTextColour}`}
         >
           <div className="flex flex-col gap-6">
-            <Tag className="wrap-break-word prose-display-xl text-balance text-[2.25rem] leading-[1.2] md:text-[3rem] md:leading-[1.1] xl:text-[3rem] xl:leading-[1.1]">
+            <Tag className="wrap-break-word prose-display-xl text-balance">
               {title}
             </Tag>
             {subtitle && (
