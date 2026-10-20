@@ -1,17 +1,6 @@
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
-
-const carouselControlsStyles = tv({
-  base: "flex w-full items-center justify-between gap-4",
-  variants: {
-    isDesktopOnly: {
-      true: "hidden lg:flex",
-    },
-    hasTopMargin: {
-      true: "mt-8",
-    },
-  },
-})
+import { twMerge } from "~/lib/twMerge"
 
 const carouselDotStyles = tv({
   base: "h-2 shrink-0 rounded-full transition-[width,background-color] duration-150 ease-out motion-reduce:transition-none",
@@ -67,17 +56,20 @@ export const CarouselControls = ({
   currentIndex,
   onPrev,
   onNext,
-  isDesktopOnly,
-  hasTopMargin,
+  className,
 }: {
   slideCount: number
   currentIndex: number
   onPrev: () => void
   onNext: () => void
-  isDesktopOnly?: boolean
-  hasTopMargin?: boolean
+  className?: string
 }) => (
-  <div className={carouselControlsStyles({ isDesktopOnly, hasTopMargin })}>
+  <div
+    className={twMerge(
+      "flex w-full items-center justify-between gap-4",
+      className,
+    )}
+  >
     <CarouselDots count={slideCount} currentIndex={currentIndex} />
     <div className="flex items-center gap-2">
       <CarouselArrowButton direction="prev" onClick={onPrev} />

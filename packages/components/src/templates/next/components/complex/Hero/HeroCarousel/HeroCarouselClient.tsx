@@ -18,6 +18,7 @@ const createHeroCarouselStyles = tv({
     contentPanel: "flex flex-col",
     contentInner: "flex w-full flex-col gap-9",
     title: "prose-display-xl",
+    controls: "",
     mobileControls:
       "absolute inset-x-0 bottom-0 z-20 px-6 pb-6 pt-12 md:px-10 lg:hidden",
     slideImage:
@@ -34,6 +35,7 @@ const createHeroCarouselStyles = tv({
         contentInner:
           "max-w-[548px] justify-center text-base-content-inverse lg:mx-0 lg:ml-auto",
         title: "wrap-break-word text-balance",
+        controls: "mt-8 hidden lg:flex",
       },
       [HERO_CAROUSEL_LAYOUT.gradient]: {
         section: "relative",
@@ -41,6 +43,7 @@ const createHeroCarouselStyles = tv({
           "relative z-10 w-full justify-end bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]",
         contentInner: `${ComponentContent} py-16 pb-10 text-start text-base-content-inverse lg:pb-[54px]`,
         title: "break-words",
+        controls: "",
       },
     } satisfies Record<
       HeroCarouselLayout,
@@ -49,6 +52,7 @@ const createHeroCarouselStyles = tv({
         contentPanel: string
         contentInner: string
         title: string
+        controls: string
       }
     >,
     isCurrent: {
@@ -243,14 +247,8 @@ export const HeroCarouselClient = ({
 
           <CarouselControls
             {...carouselControlProps}
-            isDesktopOnly
-            hasTopMargin={layout === HERO_CAROUSEL_LAYOUT.block}
+            className={styles.controls({ layout })}
           />
-          {layout === HERO_CAROUSEL_LAYOUT.gradient && (
-            <div className="lg:hidden">
-              <CarouselControls {...carouselControlProps} />
-            </div>
-          )}
         </div>
       </div>
 
@@ -260,9 +258,10 @@ export const HeroCarouselClient = ({
           style={{ contain: "layout" }}
         >
           {images}
-          <div className={styles.mobileControls()}>
-            <CarouselControls {...carouselControlProps} />
-          </div>
+          <CarouselControls
+            {...carouselControlProps}
+            className={styles.mobileControls()}
+          />
         </div>
       )}
     </section>
