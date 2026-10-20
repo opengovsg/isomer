@@ -16,7 +16,7 @@ const createHeroCarouselStyles = tv({
     contentInner: "flex w-full flex-col gap-9",
     title: "prose-display-xl",
     mobileControls:
-      "absolute inset-x-0 bottom-0 z-20 px-6 pb-10 pt-12 md:px-10 lg:hidden",
+      "absolute inset-x-0 bottom-0 z-20 px-6 pb-6 pt-12 md:px-10 lg:hidden",
     slideImage:
       "absolute inset-0 z-0 h-full w-full opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
     slideContent:
@@ -36,7 +36,7 @@ const createHeroCarouselStyles = tv({
         section: "relative",
         contentPanel:
           "relative z-10 w-full justify-end bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]",
-        contentInner: `${ComponentContent} py-16 text-start text-base-content-inverse`,
+        contentInner: `${ComponentContent} py-16 pb-10 text-start text-base-content-inverse lg:pb-[54px]`,
         title: "break-words",
       },
     },
