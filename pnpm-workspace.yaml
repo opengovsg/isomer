@@ -97,7 +97,7 @@ catalog:
   "@opengovsg/validators": ^1.4.1
   "@paralleldrive/cuid2": ^3.3.0
   "@sinclair/typebox": ^0.33.24
-  "@tanstack/react-table": ^9.2.4
+  "@tanstack/react-table": ^9.3.1
   "@testing-library/react": ^16.3.3
   pino: ^10.3.1
   pino-pretty: ^13.2.0
