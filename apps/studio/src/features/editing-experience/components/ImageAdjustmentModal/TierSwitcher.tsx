@@ -39,6 +39,17 @@ export const TierSwitcher = ({
                 colorScheme="neutral"
                 onClick={() => onSelect(tier)}
                 aria-pressed={isActive}
+                // Inactive tiers were near-invisible (borderless, canvas-coloured
+                // bg). Give them a white fill + a visible divider border so every
+                // tier reads as a distinct, clickable chip.
+                bg={isActive ? undefined : "white"}
+                borderWidth="1px"
+                borderColor={isActive ? undefined : "base.divider.medium"}
+                _hover={
+                  isActive
+                    ? undefined
+                    : { bg: "interaction.muted.neutral.hover" }
+                }
               >
                 <HStack spacing="0.375rem">
                   <Text

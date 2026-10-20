@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest"
 import {
   customiseTier,
   getTierCropFocal,
+  governingTierForWidth,
   isTierCustomised,
   mapAllTiersCropFocal,
   tierOrder,
@@ -155,6 +156,19 @@ describe("tier labels", () => {
       // sm=640, md=768, lg=1024
       expect(tierRangeLabel("sm", ["sm", "lg"])).toBe("640–1023px")
       expect(tierRangeLabel("lg", ["sm", "lg"])).toBe("1024px and up")
+    })
+  })
+
+  describe("governingTierForWidth", () => {
+    it("maps a width to the largest breakpoint it meets, else base", () => {
+      // sm=640, lg=1024
+      expect(governingTierForWidth(375, ["sm", "lg"])).toBe("base")
+      expect(governingTierForWidth(768, ["sm", "lg"])).toBe("sm")
+      expect(governingTierForWidth(1280, ["sm", "lg"])).toBe("lg")
+      expect(governingTierForWidth(1024, ["sm", "lg"])).toBe("lg")
+    })
+    it("is always base when there are no tiers", () => {
+      expect(governingTierForWidth(1920, [])).toBe("base")
     })
   })
 })

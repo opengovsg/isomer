@@ -1,6 +1,7 @@
 "use client"
 
 import type {
+  Breakpoint,
   IsomerComponent,
   IsomerSiteProps,
   ImageAdjustment,
@@ -25,6 +26,8 @@ import type {
   AdjustmentPreviewState,
   AdjustmentScrim,
 } from "./AdjustmentConfig"
+import type { ActiveTier } from "./adjustmentDraft"
+import { governingTierForWidth } from "./adjustmentDraft"
 import { chooseBakeMime } from "./useSaveImageAdjustment"
 
 // Minimal site stub for an ISOLATED single-block preview — there is no real
@@ -78,6 +81,13 @@ interface AdjustmentPreviewProps {
   // Needed to pull the site's brand theme CSS vars into the preview iframe —
   // without them, classes like `bg-brand-canvas-inverse` resolve to nothing.
   siteId: number
+  // Per-breakpoint-crop: a tile highlights when the tier governing its viewport
+  // width is the one being edited. Absent for single-crop components (no
+  // highlight). customisedTiers lists the breakpoints with their own crop, so an
+  // inherited governing tier resolves to base (matching the renderer).
+  configTiers?: Breakpoint[]
+  activeTier?: ActiveTier
+  customisedTiers?: Breakpoint[]
 }
 
 // Gap (px) between the two small tiles in the rail's second row.
@@ -99,6 +109,9 @@ export const AdjustmentPreview = ({
   stackPreviews,
   objectFit = "cover",
   siteId,
+  configTiers,
+  activeTier,
+  customisedTiers,
 }: AdjustmentPreviewProps): JSX.Element => {
   // The preview tiles are sized relative to the rail's own width: the widest
   // state fills the rail on its own row, the rest sit two-up below it.
@@ -459,17 +472,53 @@ export const AdjustmentPreview = ({
   )[0]
   const restStates = previewStates.filter((s) => s.id !== bigState?.id)
 
+  // Per-pane tier highlight: dim tiles not affected by the tier being edited and
+  // ring the ones that are, so the editor sees which screen sizes their crop
+  // applies to. A tile's governing tier resolves to base when inherited (matching
+  // the renderer). Only active when the component declares tiers.
+  const hasTierHighlight = (configTiers?.length ?? 0) > 0
+  const paneTierFor = (state: AdjustmentPreviewState): ActiveTier => {
+    const governing = governingTierForWidth(
+      state.viewportWidth ?? 1024,
+      configTiers ?? [],
+    )
+    return governing !== "base" && (customisedTiers ?? []).includes(governing)
+      ? governing
+      : "base"
+  }
+  const renderTileWithHighlight = (
+    state: AdjustmentPreviewState,
+    width: number,
+  ): React.ReactNode => {
+    const node = renderTile(state, width)
+    if (!hasTierHighlight || node === null) return node
+    const affected = paneTierFor(state) === activeTier
+    return (
+      <Box
+        key={state.id}
+        borderRadius="0.25rem"
+        transition="opacity 0.15s ease, box-shadow 0.15s ease"
+        opacity={affected ? 1 : 0.45}
+        boxShadow={affected ? "0 0 0 2px rgba(59, 130, 246, 0.7)" : undefined}
+      >
+        {node}
+      </Box>
+    )
+  }
+
   return (
     <VStack ref={railRef} align="stretch" spacing="1rem" w="100%">
       {stackPreviews ? (
         // Every tile full-width, one per row (see the prop's doc).
-        previewStates.map((state) => renderTile(state, railWidth))
+        previewStates.map((state) => renderTileWithHighlight(state, railWidth))
       ) : (
         <>
-          {bigState && renderTile(bigState, railWidth)}
+          {bigState && renderTileWithHighlight(bigState, railWidth)}
           {restStates.length > 0 && (
             <Flex gap={`${TILE_GAP_PX}px`} wrap="wrap" align="flex-start">
-              {restStates.map((state) => renderTile(state, smallTileWidth))}
+              {restStates.map((state) =>
+                renderTileWithHighlight(state, smallTileWidth),
+              )}
             </Flex>
           )}
         </>

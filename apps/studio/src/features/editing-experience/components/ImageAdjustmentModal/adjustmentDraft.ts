@@ -70,6 +70,20 @@ export const tierRangeLabel = (
     : `${lower}–${BREAKPOINTS[next] - 1}px`
 }
 
+// The tier that governs a given viewport width: the largest configured
+// breakpoint whose min-width the viewport meets, else "base". Maps a preview
+// pane (rendered at a viewport width) to the tier whose crop applies there.
+export const governingTierForWidth = (
+  width: number,
+  configTiers: Breakpoint[],
+): ActiveTier => {
+  let governing: ActiveTier = "base"
+  for (const bp of sortBreakpointsAsc(configTiers)) {
+    if (width >= BREAKPOINTS[bp]) governing = bp
+  }
+  return governing
+}
+
 // The crop/focal to show for a tier: its own if customised, base's for "base",
 // or undefined for an inherited (uncustomised) breakpoint tier.
 export const getTierCropFocal = (

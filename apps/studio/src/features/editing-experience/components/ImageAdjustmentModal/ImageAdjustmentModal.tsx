@@ -601,6 +601,9 @@ export const ImageAdjustmentModal = ({
                   stackPreviews={config.stackPreviews}
                   objectFit={previewObjectFit}
                   siteId={siteId}
+                  configTiers={configTiers}
+                  activeTier={activeTier}
+                  customisedTiers={draft?.tiers?.map((t) => t.breakpoint) ?? []}
                 />
 
                 {/* Low-resolution warning — the kept crop can't fill this
