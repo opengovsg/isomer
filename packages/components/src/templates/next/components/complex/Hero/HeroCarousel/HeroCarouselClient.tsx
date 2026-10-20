@@ -20,7 +20,7 @@ const createHeroCarouselStyles = tv({
     slideImage:
       "absolute inset-0 z-0 h-full w-full opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
     slideContent:
-      "flex flex-col gap-6 opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
+      "col-start-1 row-start-1 flex flex-col gap-6 opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
   },
   variants: {
     isBlock: {
@@ -48,7 +48,7 @@ const createHeroCarouselStyles = tv({
     },
     isHidden: {
       true: {
-        slideContent: "pointer-events-none absolute inset-0",
+        slideContent: "pointer-events-none",
       },
     },
   },
@@ -149,7 +149,7 @@ export const HeroCarouselClient = ({
       )}
       <div className={styles.contentPanel({ isBlock })}>
         <div className={styles.contentInner({ isBlock })}>
-          <div className="relative">
+          <div className="grid">
             {slides.map((slide, index) => {
               const isCurrent = index === currentIndex
 
@@ -178,7 +178,7 @@ export const HeroCarouselClient = ({
             })}
           </div>
 
-          <div className="relative min-h-[3rem]">
+          <div className="grid min-h-[3rem]">
             {slides.map((slide, index) => {
               const isCurrent = index === currentIndex
 
