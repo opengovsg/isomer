@@ -1,5 +1,13 @@
 import type { ImageAdjustment } from "~/interfaces/complex/Image"
 
+// A normalized focal point as a CSS object-position / background-position string
+// (e.g. { x: 0.5, y: 0.2 } -> "50% 20%"). Shared by the single-crop path and the
+// per-tier scoped focal CSS (buildImageTierRendering).
+export const focalToObjectPosition = (focal: {
+  x: number
+  y: number
+}): string => `${focal.x * 100}% ${focal.y * 100}%`
+
 // The focal point is emitted at render time as a CSS object-position /
 // background-position string (e.g. "50% 50%"). Returns undefined when no focal
 // is set, so <img>-based components fall back to their object-center class;
@@ -10,5 +18,5 @@ export const getFocalObjectPosition = (
   imageAdjustment?: ImageAdjustment,
 ): string | undefined =>
   imageAdjustment?.focal != null
-    ? `${imageAdjustment.focal.x * 100}% ${imageAdjustment.focal.y * 100}%`
+    ? focalToObjectPosition(imageAdjustment.focal)
     : undefined

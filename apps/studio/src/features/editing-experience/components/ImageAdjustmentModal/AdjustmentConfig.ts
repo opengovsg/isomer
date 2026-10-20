@@ -1,4 +1,7 @@
-import type { Breakpoint, IsomerPageLayoutType } from "@opengovsg/isomer-components"
+import type {
+  Breakpoint,
+  IsomerPageLayoutType,
+} from "@opengovsg/isomer-components"
 
 // FROZEN CONTRACT (W0-A / ISOM-2587). The per-component declaration that drives
 // the component-agnostic image adjustment modal (W0-D). Every per-component

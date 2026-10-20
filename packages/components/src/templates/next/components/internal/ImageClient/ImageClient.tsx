@@ -1,7 +1,9 @@
 "use client"
 
+import type { ReactEventHandler } from "react"
 import type { ImageClientProps } from "~/interfaces"
 import { forwardRef } from "react"
+import { buildImageTierRendering } from "~/utils/buildImageTierRendering"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { resolveManagedAssetUrl } from "~/utils/resolveManagedAssetUrl"
 
@@ -29,6 +31,7 @@ export const ImageClient = forwardRef<
       lazyLoading = true, // next/image defaults to lazy loading true too
       onLoad,
       objectPosition,
+      imageAdjustment,
     },
     ref,
   ) => {
@@ -38,50 +41,91 @@ export const ImageClient = forwardRef<
     // cache-bust query could break a signed external URL.
     const canRetry = !isExternalUrl(src) && assetsBaseUrl !== undefined
 
+    const handleLoad: ReactEventHandler<HTMLImageElement> = (e) => {
+      // Reveal the image once it loads (it may have been hidden by a prior error
+      // while self-healing — see handleError).
+      e.currentTarget.style.opacity = "1"
+      onLoad?.(e)
+    }
+
+    const handleError: ReactEventHandler<HTMLImageElement> = ({
+      currentTarget,
+    }) => {
+      // Reset the counter when the underlying src changed (reused <img>).
+      if (currentTarget.dataset.retryBase !== imgSrc) {
+        currentTarget.dataset.retryBase = imgSrc
+        currentTarget.dataset.retry = "0"
+      }
+      const attempt = Number(currentTarget.dataset.retry ?? "0")
+      if (canRetry && attempt < MAX_RETRIES) {
+        currentTarget.dataset.retry = String(attempt + 1)
+        // Hide the broken-image glyph while self-healing — handleLoad restores it
+        // once a retry succeeds. Leaves blank space (not an error icon) during the
+        // propagation window. Inert on the published site (no errors there).
+        currentTarget.style.opacity = "0"
+        // Cache-bust so the browser re-fetches; the CDN ignores unknown query
+        // params for its cache key, so this doesn't fragment the cache.
+        const sep = imgSrc.includes("?") ? "&" : "?"
+        window.setTimeout(() => {
+          currentTarget.src = `${imgSrc}${sep}retry=${attempt + 1}`
+        }, retryDelayMs(attempt))
+        return
+      }
+      // Retries exhausted: show the placeholder (visible, not hidden).
+      currentTarget.onerror = null
+      currentTarget.style.opacity = "1"
+      currentTarget.src = placeholderSrc
+    }
+
+    // Shared across the single-crop <img> and the per-tier <picture> fallback.
+    const commonImgProps = {
+      ref,
+      src: imgSrc,
+      alt,
+      width,
+      height: "auto",
+      onLoad: handleLoad,
+      onError: handleError,
+      loading: lazyLoading ? "lazy" : ("eager" as const),
+      fetchPriority: lazyLoading ? "auto" : ("high" as const),
+      decoding: lazyLoading ? "async" : ("auto" as const), // sync can block the main thread
+    } as const
+
+    // Per-breakpoint art direction: a <source> per tier (base = the <img>
+    // fallback) plus a scoped <style> for the per-breakpoint focal, since
+    // object-position can't be varied per breakpoint by an inline style.
+    const tierRendering = buildImageTierRendering(
+      src,
+      imageAdjustment,
+      assetsBaseUrl,
+    )
+    if (tierRendering !== null) {
+      return (
+        <>
+          {/* Scoped focal rules — outside <picture>, which only allows <source>/<img>. */}
+          <style dangerouslySetInnerHTML={{ __html: tierRendering.focalCss }} />
+          <picture>
+            {tierRendering.sources.map((source) => (
+              <source
+                key={source.media}
+                media={source.media}
+                srcSet={source.srcSet}
+              />
+            ))}
+            <img
+              {...commonImgProps}
+              className={`${className} ${tierRendering.focalClassName}`}
+            />
+          </picture>
+        </>
+      )
+    }
+
     return (
       <img
-        ref={ref}
-        src={imgSrc}
-        alt={alt}
-        width={width}
-        height="auto"
+        {...commonImgProps}
         className={className}
         style={objectPosition ? { objectPosition } : undefined}
-        onLoad={(e) => {
-          // Reveal the image once it loads (it may have been hidden by a prior
-          // error while self-healing — see onError).
-          e.currentTarget.style.opacity = "1"
-          onLoad?.(e)
-        }}
-        onError={({ currentTarget }) => {
-          // Reset the counter when the underlying src changed (reused <img>).
-          if (currentTarget.dataset.retryBase !== imgSrc) {
-            currentTarget.dataset.retryBase = imgSrc
-            currentTarget.dataset.retry = "0"
-          }
-          const attempt = Number(currentTarget.dataset.retry ?? "0")
-          if (canRetry && attempt < MAX_RETRIES) {
-            currentTarget.dataset.retry = String(attempt + 1)
-            // Hide the broken-image glyph while self-healing — onLoad restores it
-            // once a retry succeeds. Leaves blank space (not an error icon) during
-            // the propagation window. Inert on the published site (no errors there).
-            currentTarget.style.opacity = "0"
-            // Cache-bust so the browser re-fetches; the CDN ignores unknown query
-            // params for its cache key, so this doesn't fragment the cache.
-            const sep = imgSrc.includes("?") ? "&" : "?"
-            window.setTimeout(() => {
-              currentTarget.src = `${imgSrc}${sep}retry=${attempt + 1}`
-            }, retryDelayMs(attempt))
-            return
-          }
-          // Retries exhausted: show the placeholder (visible, not hidden).
-          currentTarget.onerror = null
-          currentTarget.style.opacity = "1"
-          currentTarget.src = placeholderSrc
-        }}
-        loading={lazyLoading ? "lazy" : "eager"}
-        fetchPriority={lazyLoading ? "auto" : "high"}
-        decoding={lazyLoading ? "async" : "auto"} // sync decoding can block the main thread
       />
     )
   },
