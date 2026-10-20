@@ -64,6 +64,21 @@ export class PageEditorPO {
     ).toBeVisible()
   }
 
+  async editArticleHeaderSummary(summary: string) {
+    await this.page
+      .getByRole("button", { name: "Article page header" })
+      .click({ force: true })
+    await this.page.getByLabel("Article summary").fill(summary)
+    await this.saveBlockChanges()
+  }
+
+  async expectArticleHeaderSummary(summary: string) {
+    await this.page
+      .getByRole("button", { name: "Article page header" })
+      .click({ force: true })
+    await expect(this.page.getByLabel("Article summary")).toHaveValue(summary)
+  }
+
   private publishOptionsButton() {
     return this.page.getByRole("button", {
       name: "Publish options",
@@ -148,8 +163,16 @@ export class PageEditorPO {
     await this.page.getByRole("button", { name: "Schedule publish" }).click()
   }
 
-  async expectScheduledSuccessfully() {
-    await expect(this.page.getByText("scheduled to publish on")).toBeVisible()
+  async expectScheduledSuccessfully(expectedTimeLabel?: string) {
+    const scheduleAlert = expectedTimeLabel
+      ? this.page.getByText(
+          new RegExp(
+            `scheduled to publish on.*${expectedTimeLabel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
+            "i",
+          ),
+        )
+      : this.page.getByText("scheduled to publish on").first()
+    await expect(scheduleAlert).toBeVisible()
   }
 
   async expectCancelScheduleVisible() {

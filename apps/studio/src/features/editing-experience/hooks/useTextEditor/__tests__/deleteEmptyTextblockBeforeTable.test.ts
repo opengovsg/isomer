@@ -1,4 +1,5 @@
 import type { JSONContent } from "@tiptap/react"
+import { TableRow } from "@tiptap/extension-table-row"
 import { Editor } from "@tiptap/react"
 import TextDirection from "tiptap-text-direction"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
@@ -11,7 +12,6 @@ import {
   IsomerTableHeader,
   PARAGRAPH_TYPE,
   PROSE_EXTENSIONS,
-  TableRow,
 } from "../constants"
 import { deleteEmptyTextblockBeforeTable } from "../deleteEmptyTextblockBeforeTable"
 

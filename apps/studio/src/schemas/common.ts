@@ -1,4 +1,10 @@
+import { NO_STYLIZED_UNICODE_REGEX } from "@opengovsg/isomer-components"
 import { z } from "zod"
+
+export const NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE =
+  "Title cannot contain stylised or decorative unicode characters"
+
+export const noStylizedUnicodeTitleRegex = new RegExp(NO_STYLIZED_UNICODE_REGEX)
 
 export const generateBasePermalinkSchema = (label: string) =>
   z

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import NotificationsSettingsPage from "~/pages/sites/[siteId]/settings/notification"
@@ -75,6 +75,18 @@ export const Disabled: Story = {
   parameters: {
     msw: {
       handlers: [sitesHandlers.getNotification.disabled(), ...COMMON_HANDLERS],
+    },
+  },
+}
+
+export const AntiScamDisclaimer: Story = {
+  args: {},
+  parameters: {
+    msw: {
+      handlers: [
+        sitesHandlers.getNotification.antiScamDisclaimer(),
+        ...COMMON_HANDLERS,
+      ],
     },
   },
 }

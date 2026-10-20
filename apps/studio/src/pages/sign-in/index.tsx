@@ -7,9 +7,8 @@ import {
   BaseGridLayout,
   CurrentLoginStep,
   FooterGridArea,
+  FreshFromIsomerPanel,
   LoginGridArea,
-  LoginImageSvgr,
-  NonMobileFooterLeftGridArea,
   NonMobileSidebarGridArea,
   SignInContextProvider,
 } from "~/features/sign-in/components"
@@ -22,7 +21,7 @@ const SignIn: NextPageWithLayout = () => {
         <RestrictedGovtMasthead />
         <BaseGridLayout flex={1}>
           <NonMobileSidebarGridArea>
-            <LoginImageSvgr aria-hidden />
+            <FreshFromIsomerPanel />
           </NonMobileSidebarGridArea>
 
           <LoginGridArea>
@@ -31,12 +30,9 @@ const SignIn: NextPageWithLayout = () => {
             </SignInContextProvider>
           </LoginGridArea>
 
-          <NonMobileFooterLeftGridArea>
-            <RestrictedMiniFooter />
-          </NonMobileFooterLeftGridArea>
-
           <FooterGridArea>
             <LandingLinks />
+            <RestrictedMiniFooter />
           </FooterGridArea>
         </BaseGridLayout>
       </Flex>

@@ -1,5 +1,5 @@
 import { Box } from "@chakra-ui/react"
-import { type Meta, type StoryObj } from "@storybook/nextjs"
+import { type Meta, type StoryObj } from "@storybook/nextjs-vite"
 import { VersionModal } from "~/components/VersionWrapper/VersionModal"
 
 import { withChromaticModes } from "@isomer/storybook-config"

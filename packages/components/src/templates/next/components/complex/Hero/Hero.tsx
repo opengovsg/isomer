@@ -10,15 +10,15 @@ import { HeroSearchbar } from "./HeroSearchbar"
 export const Hero = (props: HeroProps) => {
   const { variant } = props
   switch (variant) {
-    case HERO_STYLE.gradient:
+    case HERO_STYLE.gradient.key:
       return <HeroGradient {...props} />
-    case HERO_STYLE.block:
+    case HERO_STYLE.block.key:
       return <HeroBlock {...props} />
-    case HERO_STYLE.largeImage:
+    case HERO_STYLE.largeImage.key:
       return <HeroLargeImage {...props} />
-    case HERO_STYLE.floating:
+    case HERO_STYLE.floating.key:
       return <HeroFloating {...props} />
-    case HERO_STYLE.searchbar:
+    case HERO_STYLE.searchbar.key:
       return <HeroSearchbar {...props} />
     default:
       const _exhaustiveCheck: never = variant
