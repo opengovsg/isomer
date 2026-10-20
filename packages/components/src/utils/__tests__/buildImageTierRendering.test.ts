@@ -117,4 +117,27 @@ describe("buildImageTierRendering", () => {
     expect(a?.focalClassName).not.toBe(c?.focalClassName)
     expect(a?.focalClassName).toMatch(/^isomer-focal-[a-z0-9]+$/)
   })
+
+  it("keeps the sources but drops focal when focalEnabled is false", () => {
+    const adjustment: ImageAdjustment = {
+      ...base,
+      tiers: [
+        {
+          breakpoint: "lg",
+          crop,
+          focal: { x: 0.3, y: 0.4 },
+          src: "/site/1/lg.webp",
+        },
+      ],
+    }
+    const result = buildImageTierRendering(
+      "/site/1/base.webp",
+      adjustment,
+      "",
+      false,
+    )
+    expect(result?.sources).toHaveLength(1)
+    expect(result?.focalClassName).toBe("")
+    expect(result?.focalCss).toBe("")
+  })
 })

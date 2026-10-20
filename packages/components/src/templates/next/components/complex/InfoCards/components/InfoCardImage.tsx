@@ -59,6 +59,7 @@ export const InfoCardImage = ({
           isFallback,
         })}
         objectPosition={objectPosition}
+        imageAdjustment={imageAdjustment}
         assetsBaseUrl={site.assetsBaseUrl}
         lazyLoading={shouldLazyLoad}
       />

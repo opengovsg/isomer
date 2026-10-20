@@ -93,17 +93,25 @@ export const ImageClient = forwardRef<
 
     // Per-breakpoint art direction: a <source> per tier (base = the <img>
     // fallback) plus a scoped <style> for the per-breakpoint focal, since
-    // object-position can't be varied per breakpoint by an inline style.
+    // object-position can't be varied per breakpoint by an inline style. The
+    // presence of `objectPosition` doubles as the focal-enabled signal — a
+    // component that suppresses focal (e.g. InfoCards under a "contain" fit)
+    // passes undefined, so the tier path emits sources without a focal <style>.
     const tierRendering = buildImageTierRendering(
       src,
       imageAdjustment,
       assetsBaseUrl,
+      objectPosition !== undefined,
     )
     if (tierRendering !== null) {
       return (
         <>
           {/* Scoped focal rules — outside <picture>, which only allows <source>/<img>. */}
-          <style dangerouslySetInnerHTML={{ __html: tierRendering.focalCss }} />
+          {tierRendering.focalCss !== "" && (
+            <style
+              dangerouslySetInnerHTML={{ __html: tierRendering.focalCss }}
+            />
+          )}
           <picture>
             {tierRendering.sources.map((source) => (
               <source
@@ -114,7 +122,11 @@ export const ImageClient = forwardRef<
             ))}
             <img
               {...commonImgProps}
-              className={`${className} ${tierRendering.focalClassName}`}
+              className={
+                tierRendering.focalClassName !== ""
+                  ? `${className} ${tierRendering.focalClassName}`
+                  : className
+              }
             />
           </picture>
         </>

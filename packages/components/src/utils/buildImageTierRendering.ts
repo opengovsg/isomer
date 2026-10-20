@@ -13,12 +13,14 @@ export interface ImageTierRendering {
   // <source> list, largest min-width first — <picture> takes the first match.
   sources: ImagePictureSource[]
   // Unique, SSR-deterministic class applied to the <img> and targeted by focalCss.
+  // Empty string when focal is disabled (e.g. a letterboxed "contain" fit).
   focalClassName: string
   // Scoped stylesheet (for a <style> next to the <picture>): the base
   // object-position + one @media rule per tier, ascending so the largest matching
   // breakpoint wins by source order. object-position can't be varied per
   // breakpoint by an inline style, hence the scoped rules; px come from the shared
-  // BREAKPOINTS so they stay in lockstep with the <source> media queries.
+  // BREAKPOINTS so they stay in lockstep with the <source> media queries. Empty
+  // string when focal is disabled.
   focalCss: string
 }
 
@@ -37,11 +39,14 @@ const byWidthAsc = (a: ImageTier, b: ImageTier) =>
 
 // Builds the <picture> sources + scoped focal CSS for a multi-tier image, or null
 // when the image has no per-breakpoint tiers — the caller then renders the plain
-// <img> + inline object-position (today's single-crop behaviour).
+// <img> + inline object-position (today's single-crop behaviour). focalEnabled
+// false (a letterboxed "contain" fit) keeps the per-tier pixels but drops the
+// focal, matching the single-crop path where object-position is suppressed.
 export const buildImageTierRendering = (
   src: string,
   imageAdjustment: ImageAdjustment | undefined,
   assetsBaseUrl: string | undefined,
+  focalEnabled = true,
 ): ImageTierRendering | null => {
   const tiers = imageAdjustment?.tiers
   if (tiers === undefined || tiers.length === 0) return null
@@ -53,6 +58,10 @@ export const buildImageTierRendering = (
       media: mediaMinWidth(tier.breakpoint),
       srcSet: resolveManagedAssetUrl(tier.src, assetsBaseUrl),
     }))
+
+  if (!focalEnabled) {
+    return { sources, focalClassName: "", focalCss: "" }
+  }
 
   const focalClassName = `isomer-focal-${hash(
     resolveManagedAssetUrl(src, assetsBaseUrl),

@@ -29,6 +29,7 @@ const generateArgs = ({
   variant = "cardsWithImages",
   numCards = 6,
   focal,
+  demoTiers = false,
 }: {
   layout?: IsomerPageLayoutType
   maxColumns: "1" | "2" | "3"
@@ -39,6 +40,9 @@ const generateArgs = ({
   // When set, applies an imageAdjustment focal point (cover fit) to every card,
   // exercising the object-position render path used by the image editor.
   focal?: { x: number; y: number }
+  // When true, gives every card a per-breakpoint `tiers` imageAdjustment so the
+  // image swaps at lg (1024px): the base <img> below lg, the lg <source> above.
+  demoTiers?: boolean
 }): InfoCardsProps => {
   const cards = [
     {
@@ -125,6 +129,28 @@ const generateArgs = ({
     })
   }
 
+  if (demoTiers) {
+    const fullCrop = { x: 0, y: 0, width: 1, height: 1 }
+    cards.forEach((card) => {
+      ;(card as any).imageFit = "cover"
+      // base tier (below lg): a wide green "base" image
+      ;(card as any).imageUrl =
+        "https://placehold.co/900x400/16a34a/ffffff?text=base+(mobile+/+tablet)"
+      // lg tier (>=1024px): a square blue "lg" image swapped in via <source>
+      ;(card as any).imageAdjustment = {
+        focal: { x: 0.5, y: 0.5 },
+        tiers: [
+          {
+            breakpoint: "lg",
+            focal: { x: 0.5, y: 0.5 },
+            crop: fullCrop,
+            src: "https://placehold.co/600x600/2563eb/ffffff?text=lg+(desktop)",
+          },
+        ],
+      }
+    })
+  }
+
   return {
     layout: layout,
     title: "Section title ministry highlights",
@@ -204,6 +230,14 @@ export const ContainImageIgnoresFocalPoint: Story = {
 
 export const WithContainImageFit: Story = {
   args: generateArgs({ maxColumns: "3", isImageFitContain: true }),
+}
+
+// Per-breakpoint tiers: a <picture> renders the green "base" image below lg and
+// the blue "lg" image at 1024px+. Resize the Storybook canvas across 1024px to
+// see the image swap (the renderer the per-breakpoint-crop editor will drive).
+export const WithBreakpointTiers: Story = {
+  name: "With breakpoint tiers (resize across 1024px)",
+  args: generateArgs({ maxColumns: "3", demoTiers: true }),
 }
 
 export const WithLink: Story = {
