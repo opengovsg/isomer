@@ -10,11 +10,6 @@ import { withChromaticModes } from "@isomer/storybook-config"
 
 import { Hero } from "./Hero"
 
-const carouselImageUrl =
-  "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-const carouselImageUrlAlt =
-  "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-
 const meta: Meta<typeof Hero> = {
   title: "Next/Components/Hero",
   component: Hero,
@@ -235,7 +230,8 @@ export const CarouselBlock: Story = {
     carousel: { layout: HERO_CAROUSEL_LAYOUT.block },
     slides: [
       {
-        backgroundUrl: carouselImageUrl,
+        backgroundUrl:
+          "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         title: "Set up good government websites, fast",
         subtitle:
           "Isomer is a website builder made for government teams. Pick a template, add your content, and publish.",
@@ -245,7 +241,8 @@ export const CarouselBlock: Story = {
         secondaryButtonUrl: "/",
       },
       {
-        backgroundUrl: carouselImageUrlAlt,
+        backgroundUrl:
+          "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         title: "Built for the public sector",
         subtitle:
           "Meet accessibility, security, and branding requirements out of the box.",
