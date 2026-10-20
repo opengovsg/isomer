@@ -413,8 +413,8 @@ catalogs:
       specifier: ^1.438.1
       version: 1.438.8
     posthog-node:
-      specifier: ^5.54.0
-      version: 5.55.0
+      specifier: ^5.55.3
+      version: 5.56.2
     rate-limiter-flexible:
       specifier: ^11.2.1
       version: 11.2.1
@@ -1067,7 +1067,7 @@ importers:
         version: 1.438.8(@types/react@18.3.31)(react@18.3.1)
       posthog-node:
         specifier: 'catalog:'
-        version: 5.55.0(rxjs@7.8.2)
+        version: 5.56.2(@opentelemetry/api@1.9.1)(rxjs@7.8.2)
       rate-limiter-flexible:
         specifier: 'catalog:'
         version: 11.2.1
@@ -5444,17 +5444,17 @@ packages:
   '@posthog/browser-common@0.9.4':
     resolution: {integrity: sha512-QlG0WZFG9iTp9cmXTypB4cgnxBAD3GImrj9AwmA84uh8uy5vIVgVLjoTTdOAW29XL+kh/eLn/5ZtBQt2JQfR+w==}
 
-  '@posthog/core@1.55.3':
-    resolution: {integrity: sha512-XnmG9jo7WlxTeN4oCNWH4ESLQHR6ZPZ+mcq+8JxU62k5i1BAe3BSrybnmXHjqKp7e3rUvLK2bOzGZGSlfHvlNA==}
-
   '@posthog/core@1.58.0':
     resolution: {integrity: sha512-vluXIlVF6WGeHoQbsQK8Y1ywXZlJDU7YHEKiXAArQU38yFBpgxxfD0kInbYHtura4Fr7Z7H8WiDFvtMpCGehGg==}
 
-  '@posthog/types@1.413.0':
-    resolution: {integrity: sha512-tYAVzNojWckuG/wxBB0fwE70sFruQQq4xbhkci7eH2ARU3mMfUTkvpN1HwBMpm0AtbxidLiH0IFvagmdJ8opPw==}
+  '@posthog/core@1.59.1':
+    resolution: {integrity: sha512-P39YgzQVDh6oz6wAzQXEnoHgTYpM7gifonmVKq1scAJco79h31XmmNVurRq9tTmmyIrr1uX8FHT0riCsyfV9AQ==}
 
   '@posthog/types@1.415.2':
     resolution: {integrity: sha512-BIIHPyXcPZuNTImrR1qLqLKFw7j9o8co6LG/9OpLtpWJ3RT0y89Lx6VCtd37N9/dkr/qW7y0uPjJxAxjsALHtw==}
+
+  '@posthog/types@1.416.0':
+    resolution: {integrity: sha512-0/9+02s/0uDyrH4G/qUg1yyl6gXUg8Uuxw/PlDad3KLzo9FFS9zS/kAQaEshx/saVGupj1aAy/4EUBxWisBogw==}
 
   '@prisma/adapter-pg@7.10.0':
     resolution: {integrity: sha512-N7nwSor0HO1Kz6xBv0TPAjAPysKK0fac6p4fVN3ensLOuzc/83Fgmln5k92eK/cvzqdkSR/2kkAqlbcdwVrwpw==}
@@ -10403,12 +10403,15 @@ packages:
       react:
         optional: true
 
-  posthog-node@5.55.0:
-    resolution: {integrity: sha512-8dFtlDTqs0CKGZ8t4mUnk4NdShAgzru3B9D0MfM/NTBzlRyAjctivzWINLtMLRQxYjvgBohxy7RTwiQf4mPycQ==}
+  posthog-node@5.56.2:
+    resolution: {integrity: sha512-1/qYFNuHkDJJuDHjAvozN/fH/+XdqzlIZ0WCsCYrhUgGNxDBw5M3kZaJaRX0YSPi9tn7PnZFD5eTXg2Z7m5LeQ==}
     engines: {node: ^20.20.0 || >=22.22.0}
     peerDependencies:
+      '@opentelemetry/api': ^1.2.0
       rxjs: ^7.0.0
     peerDependenciesMeta:
+      '@opentelemetry/api':
+        optional: true
       rxjs:
         optional: true
 
@@ -15587,17 +15590,17 @@ snapshots:
       '@posthog/core': 1.58.0
       '@posthog/types': 1.415.2
 
-  '@posthog/core@1.55.3':
-    dependencies:
-      '@posthog/types': 1.413.0
-
   '@posthog/core@1.58.0':
     dependencies:
       '@posthog/types': 1.415.2
 
-  '@posthog/types@1.413.0': {}
+  '@posthog/core@1.59.1':
+    dependencies:
+      '@posthog/types': 1.416.0
 
   '@posthog/types@1.415.2': {}
+
+  '@posthog/types@1.416.0': {}
 
   '@prisma/adapter-pg@7.10.0':
     dependencies:
@@ -21159,10 +21162,11 @@ snapshots:
     transitivePeerDependencies:
       - preact-render-to-string
 
-  posthog-node@5.55.0(rxjs@7.8.2):
+  posthog-node@5.56.2(@opentelemetry/api@1.9.1)(rxjs@7.8.2):
     dependencies:
-      '@posthog/core': 1.55.3
+      '@posthog/core': 1.59.1
     optionalDependencies:
+      '@opentelemetry/api': 1.9.1
       rxjs: 7.8.2
 
   pprof-format@2.3.2:
