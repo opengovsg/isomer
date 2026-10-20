@@ -74,7 +74,7 @@ catalog:
   ajv: ^8.20.0
   autoprefixer: ^10.6.1
   axios: ^1.20.0
-  bootstrap-icons: ^1.13.1
+  bootstrap-icons: ^1.13.2
   browserslist-useragent-regexp: ^4.1.4
   cheerio: ^1.2.0
   chromatic: ^18.10.1
