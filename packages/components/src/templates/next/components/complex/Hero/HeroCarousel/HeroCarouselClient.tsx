@@ -195,7 +195,7 @@ export const HeroCarouselClient = ({
                   })}
                   {...(isCurrent ? {} : { inert: "" })}
                 >
-                  <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
+                  <div className="flex flex-wrap gap-4">
                     <LinkButton
                       href={slide.primaryHref}
                       size="lg"
