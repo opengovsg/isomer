@@ -7,7 +7,7 @@
     "access": "restricted"
   },
   "scripts": {
-    "build": "SKIP_ENV_VALIDATION=true next build --webpack",
+    "build": "SKIP_ENV_VALIDATION=true next build",
     "build-storybook": "storybook build",
     "build:preview-tw": "NODE_ENV=production pnpm exec tailwindcss build -i src/styles/tailwind.css -o public/assets/css/preview-tw.css",
     "build:theme": "pnpm exec chakra-cli tokens src/theme/index.ts",
@@ -20,7 +20,7 @@
     "db:reset": "pnpm --filter @isomer/db migrate:reset && pnpm db:seed",
     "db:seed": "dotenv -e .env -- tsx prisma/seed.ts",
     "db:sleep": "sleep 3",
-    "dev": "next dev --webpack",
+    "dev": "next dev",
     "dev:e2e": "dotenv -e .env.test start-server-and-test dev http://127.0.0.1:3000 test:e2e",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
