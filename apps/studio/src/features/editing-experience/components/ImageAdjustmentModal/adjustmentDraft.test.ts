@@ -81,7 +81,7 @@ describe("per-tier draft helpers", () => {
       expect(next.crop).toEqual(baseCrop)
     })
 
-    it("updates an existing tier entry without touching others", () => {
+    it("a crop change updates the tier and clears its src (marks it for re-bake)", () => {
       const start = { ...draft(), tiers: [lgTier] }
       const next = updateTierCropFocal(start, "lg", {
         crop: { x: 0, y: 0, width: 0.3, height: 0.3 },
@@ -89,6 +89,18 @@ describe("per-tier draft helpers", () => {
       expect(next.tiers?.[0]).toEqual({
         ...lgTier,
         crop: { x: 0, y: 0, width: 0.3, height: 0.3 },
+        src: "",
+      })
+    })
+
+    it("a focal-only change keeps the tier's src (focal isn't baked)", () => {
+      const start = { ...draft(), tiers: [lgTier] }
+      const next = updateTierCropFocal(start, "lg", {
+        focal: { x: 0.9, y: 0.1 },
+      })
+      expect(next.tiers?.[0]).toEqual({
+        ...lgTier,
+        focal: { x: 0.9, y: 0.1 },
       })
     })
   })

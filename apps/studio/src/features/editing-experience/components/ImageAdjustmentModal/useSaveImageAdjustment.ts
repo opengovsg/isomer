@@ -118,10 +118,11 @@ interface UseSaveImageAdjustmentOutput {
 
 /**
  * Hook to save an image adjustment via the fail-safe order:
- * 1. Bake the original image
- * 2. Upload the bake to S3
- * 3. Only on success, return the new src + imageAdjustment with originalKey set
- * Any earlier failure leaves the blob untouched.
+ * 1. Bake the base crop + every customised tier whose crop changed
+ * 2. Upload the bakes to S3
+ * 3. Only once ALL succeed, return the new base src + imageAdjustment (tier srcs
+ *    filled, originalKey set)
+ * Any failure leaves the stored blobs untouched (partial uploads are orphaned).
  */
 export const useSaveImageAdjustment = ({
   siteId,
@@ -163,37 +164,62 @@ export const useSaveImageAdjustment = ({
         )
       }
 
-      // Step 4: Bake the image
-      const bakedBlob = await bakeImage(originalBlob, draft, {
-        mimeType: mime,
-      })
-
-      // Step 5: Get the extension for the baked image
+      // Step 4: Extension for the baked image (shared by every bake)
       const ext =
         BAKEABLE_FORMAT_BY_MIME[mime as keyof typeof BAKEABLE_FORMAT_BY_MIME]
 
-      // Step 6: Get presigned PUT URL for the bake
-      const { fileKey, uploadConfig } = await getPresignedPutUrlForBake({
-        siteId,
-        resourceId: resourceId || "",
-        src: currentSrc,
-        // Keeps the uploader's filename in the baked key (derived from the true
-        // original, so re-edits don't accumulate suffixes).
-        originalKey,
-        ext,
-        fileSize: bakedBlob.size,
-      })
+      // Bake one crop (the base or a tier) from the shared original and upload
+      // it, returning the new "/key". Every bake reuses the one original blob +
+      // mime, and keeps the uploader's filename in the key (derived from the true
+      // original, so re-edits don't accumulate suffixes).
+      const bakeAndUpload = async (
+        adjustmentForBake: ImageAdjustment,
+      ): Promise<string> => {
+        const bakedBlob = await bakeImage(originalBlob, adjustmentForBake, {
+          mimeType: mime,
+        })
+        const { fileKey, uploadConfig } = await getPresignedPutUrlForBake({
+          siteId,
+          resourceId: resourceId || "",
+          src: currentSrc,
+          originalKey,
+          ext,
+          fileSize: bakedBlob.size,
+        })
+        const file = new File([bakedBlob], `baked.${ext}`, { type: mime })
+        await performUpload(file, fileKey, uploadConfig)
+        return `/${fileKey}`
+      }
 
-      // Step 7: Upload the baked image to S3
-      const file = new File([bakedBlob], `baked.${ext}`, { type: mime })
-      await performUpload(file, fileKey, uploadConfig)
+      // Step 5: Bake the base crop + every tier whose crop changed (marked by an
+      // empty src) in parallel. Unchanged tiers keep their baked src — a
+      // focal-only change needs no re-bake (focal is render-time CSS). bakeImage
+      // reads crop/rotate/flip, so a tier bakes its own crop with the shared
+      // rotate/flip. All-or-nothing: Promise.all rejects on any failure, so a
+      // partial result is never written back (already-uploaded bakes are
+      // orphaned, matching the single-bake behaviour).
+      const tiers = draft.tiers ?? []
+      const [newSrc, bakedTiers] = await Promise.all([
+        bakeAndUpload(draft),
+        Promise.all(
+          tiers.map(async (tier) =>
+            tier.src === ""
+              ? {
+                  ...tier,
+                  src: await bakeAndUpload({ ...draft, crop: tier.crop }),
+                }
+              : tier,
+          ),
+        ),
+      ])
 
-      // Step 8: Return the new src and imageAdjustment
+      // Step 6: Return the new base src + imageAdjustment with baked tier srcs.
       return {
-        src: `/${fileKey}`,
+        src: newSrc,
         imageAdjustment: {
           ...draft,
           originalKey,
+          tiers: bakedTiers.length > 0 ? bakedTiers : undefined,
         },
       }
     } catch (err) {

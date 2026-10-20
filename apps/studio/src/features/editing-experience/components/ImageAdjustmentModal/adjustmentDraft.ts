@@ -60,26 +60,31 @@ export const isTierCustomised = (
 
 // Write crop and/or focal to a tier. "base" updates the top-level fields; a
 // breakpoint tier updates its entry (creating one from base defensively if the
-// caller skipped customiseTier).
+// caller skipped customiseTier). A crop change clears the tier's `src` so the
+// save/bake flow re-bakes it; a focal-only change keeps `src` (focal is
+// render-time CSS, not baked).
 export const updateTierCropFocal = (
   draft: ImageAdjustment,
   tier: ActiveTier,
   patch: Partial<CropFocal>,
 ): ImageAdjustment => {
   if (tier === "base") return { ...draft, ...patch }
+  const applyPatch = (t: ImageTier): ImageTier => {
+    const next = { ...t, ...patch }
+    return patch.crop !== undefined ? { ...next, src: "" } : next
+  }
   const tiers = draft.tiers ?? []
   const exists = tiers.some((t) => t.breakpoint === tier)
   const nextTiers = exists
-    ? tiers.map((t) => (t.breakpoint === tier ? { ...t, ...patch } : t))
+    ? tiers.map((t) => (t.breakpoint === tier ? applyPatch(t) : t))
     : [
         ...tiers,
-        {
+        applyPatch({
           breakpoint: tier,
           crop: draft.crop,
           focal: draft.focal,
           src: "",
-          ...patch,
-        },
+        }),
       ]
   return { ...draft, tiers: nextTiers }
 }
