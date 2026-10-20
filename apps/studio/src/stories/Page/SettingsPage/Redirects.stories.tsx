@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { expect, userEvent, waitFor, within } from "storybook/test"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { redirectHandlers } from "tests/msw/handlers/redirect"

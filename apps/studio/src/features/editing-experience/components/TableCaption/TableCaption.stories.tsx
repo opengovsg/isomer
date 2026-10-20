@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import type { JSONContent } from "@tiptap/react"
 import { Box } from "@chakra-ui/react"
 import { useState } from "react"

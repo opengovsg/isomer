@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { userEvent, within } from "storybook/test"
 import { MOCK_TEST_USER_NAME } from "tests/msw/constants"
 import { collectionHandlers } from "tests/msw/handlers/collection"
