@@ -8,6 +8,7 @@ describe("getPresignedPutUrlForBakeSchema", () => {
     siteId: 1,
     resourceId: "1",
     src: "https://example.com/image.jpg",
+    originalKey: "1/uuid/image.jpg",
     ext: "jpeg" as const,
   }
 
