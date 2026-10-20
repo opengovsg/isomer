@@ -1,5 +1,5 @@
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { useState } from "react"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
