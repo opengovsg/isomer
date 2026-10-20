@@ -56,7 +56,6 @@ interface Fiber {
   stateNode: unknown
   child?: Fiber
 }
-
 const trpc = createTRPCReact<AppRouter>()
 
 const StorybookEnvDecorator: Decorator = (story) => {
