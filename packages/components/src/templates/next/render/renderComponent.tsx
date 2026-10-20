@@ -66,8 +66,12 @@ export const renderComponent = ({
       return <Contentpic key={elementKey} {...component} {...rest} />
     case "formsg":
       return <FormSG key={elementKey} {...component} {...rest} />
-    case "hero":
-      return <Hero key={elementKey} {...component} {...rest} />
+    case "hero": {
+      // Page layout and the carousel layout field share a name. The page
+      // value must not overwrite the carousel's "block" | "gradient" layout.
+      const { layout: _pageLayout, ...heroRest } = rest
+      return <Hero key={elementKey} {...component} {...heroRest} />
+    }
     case "iframe":
       return <Iframe key={elementKey} {...component} {...rest} />
     case "image":
