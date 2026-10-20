@@ -1,26 +1,16 @@
 import { useMediaQuery } from "usehooks-ts"
 
-// Unable to use breakpoints directly from tailwind config as it may not be available
-// depending on how this component is used.
-const breakpoints = {
-  xs: "576px",
-  sm: "640px",
-  md: "768px",
-  lg: "1024px",
-  xl: "1240px",
-  "2xl": "1536px",
-}
+import type { Breakpoint } from "~/constants/breakpoints"
+import { mediaMinWidth } from "~/constants/breakpoints"
 
 /**
- * Returns `true` if screen size matches the
- * `breakpoint`.
+ * Returns `true` if the screen is at least `breakpoint` wide (min-width).
  */
-export const useBreakpoint = (breakpoint: keyof typeof breakpoints) => {
-  const breakpointQuery = breakpoints[breakpoint]
+export const useBreakpoint = (breakpoint: Breakpoint) => {
   // initializeWithValue: false keeps the initial client render in sync with
   // SSR output (both start as false), preventing React hydration mismatches
   // in components like PaginationControls that derive DOM structure from this.
-  return useMediaQuery(`(min-width: ${breakpointQuery})`, {
+  return useMediaQuery(mediaMinWidth(breakpoint), {
     initializeWithValue: false,
   })
 }

@@ -3,6 +3,8 @@ import racPlugin from "tailwindcss-react-aria-components"
 import defaultTheme from "tailwindcss/defaultTheme"
 import plugin from "tailwindcss/plugin"
 
+import type { Breakpoint } from "../../constants/breakpoints"
+import { BREAKPOINTS, breakpointPx } from "../../constants/breakpoints"
 import { colors } from "./colors"
 import { isomerTypography } from "./typography"
 
@@ -85,17 +87,16 @@ export function createNextPreset({
   return {
     content: [],
     theme: {
-      screens: {
-        // breakpoints need to be sorted from smallest to largest in order to work as expected with a min-width breakpoint system
-        // See https://tailwindcss.com/docs/screens#adding-smaller-breakpoints
-        xs: "576px",
-        //
-        ...defaultTheme.screens,
-      },
+      // Single source of truth: screens derive from BREAKPOINTS (shared with
+      // useBreakpoint + per-breakpoint image tiers). Already sorted
+      // smallest-to-largest, as the min-width breakpoint system requires.
+      screens: Object.fromEntries(
+        (Object.keys(BREAKPOINTS) as Breakpoint[]).map((bp) => [
+          bp,
+          breakpointPx(bp),
+        ]),
+      ) as Record<string, string>,
       extend: {
-        screens: {
-          xl: "1240px",
-        },
         keyframes: {
           buttonPulse: {
             "0%, 100%": { backgroundColor: "rgba(0, 0, 0, 0.65)" },

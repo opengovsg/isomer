@@ -31,23 +31,50 @@ export const ImageSrcSchema = generateImageSrcSchema({})
 // Normalized [0,1] coordinate, shared by crop + focal in imageAdjustment.
 const NormalizedUnit = Type.Number({ minimum: 0, maximum: 1 })
 
+const cropSchema = Type.Object({
+  x: NormalizedUnit,
+  y: NormalizedUnit,
+  width: NormalizedUnit,
+  height: NormalizedUnit,
+})
+
+const focalSchema = Type.Object({
+  x: NormalizedUnit,
+  y: NormalizedUnit,
+})
+
+// One per-breakpoint crop ABOVE the base tier (per-breakpoint-crop RFC). "base"
+// is not a breakpoint — it's the top-level crop/focal; a tier only names a
+// breakpoint at which the component's image box changes aspect. crop is baked
+// into `src`; focal is emitted at render time as object-position. Absence of a
+// tier for a breakpoint = inherit the next-smaller tier (ultimately base).
+const imageTierSchema = Type.Object({
+  breakpoint: Type.Union([
+    Type.Literal("xs"),
+    Type.Literal("sm"),
+    Type.Literal("md"),
+    Type.Literal("lg"),
+    Type.Literal("xl"),
+    Type.Literal("2xl"),
+  ]),
+  crop: cropSchema,
+  focal: focalSchema,
+  src: Type.String(),
+})
+
+export type ImageTier = Static<typeof imageTierSchema>
+
 // The imageAdjustment sibling object (Engineering RFC 09). Optional per
 // image-bearing component; absence = unedited. crop/rotate/flip are baked into
 // the rendered pixels and kept only so the editor can re-bake from the original;
-// focal is emitted at render time as object-position. Written by the adjustment
-// modal, never a hand-edited JSONForms control -> format: "hidden".
+// focal is emitted at render time as object-position. `tiers` holds optional
+// per-breakpoint crops above base (absent = single crop, today's behaviour).
+// Written by the adjustment modal, never a hand-edited JSONForms control ->
+// format: "hidden".
 export const imageAdjustmentSchema = Type.Object(
   {
-    crop: Type.Object({
-      x: NormalizedUnit,
-      y: NormalizedUnit,
-      width: NormalizedUnit,
-      height: NormalizedUnit,
-    }),
-    focal: Type.Object({
-      x: NormalizedUnit,
-      y: NormalizedUnit,
-    }),
+    crop: cropSchema,
+    focal: focalSchema,
     rotate: Type.Union(
       [Type.Literal(0), Type.Literal(90), Type.Literal(180), Type.Literal(270)],
       { default: 0 },
@@ -55,6 +82,7 @@ export const imageAdjustmentSchema = Type.Object(
     flipH: Type.Boolean({ default: false }),
     flipV: Type.Boolean({ default: false }),
     originalKey: Type.String(),
+    tiers: Type.Optional(Type.Array(imageTierSchema)),
   },
   {
     title: "Image adjustment",

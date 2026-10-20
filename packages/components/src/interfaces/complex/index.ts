@@ -30,6 +30,7 @@ export {
   imageAdjustmentSchema,
   type ImageProps,
   type ImageAdjustment,
+  type ImageTier,
 } from "./Image"
 export {
   InfoCardsSchema,
