@@ -1,4 +1,4 @@
-import type { IsomerPageLayoutType } from "@opengovsg/isomer-components"
+import type { Breakpoint, IsomerPageLayoutType } from "@opengovsg/isomer-components"
 
 // FROZEN CONTRACT (W0-A / ISOM-2587). The per-component declaration that drives
 // the component-agnostic image adjustment modal (W0-D). Every per-component
@@ -44,6 +44,10 @@ export interface AdjustmentConfig {
   // Block/component type key this config applies to.
   componentType: string
   cropMode: CropMode
+  // Per-breakpoint-crop (wave-5): viewport breakpoints that get their OWN baked
+  // crop + focal, on top of the implicit base tier. Absent = single crop (today).
+  // Viewport-only (media-query art direction); distinct from previewStates.
+  tiers?: Breakpoint[]
   // For cropMode "fixed": the ratio(s) to enforce. One entry = Tier A. Multiple
   // = Tier B responsive (ratio varies by breakpoint, paired with previewStates).
   lockedRatios?: AspectRatio[]

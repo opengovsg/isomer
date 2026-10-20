@@ -245,6 +245,8 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   componentType: "infocards:cardsWithImages",
   cropMode: "custom",
   focalEnabled: true,
+  // Card aspect swings at lg (3:2 below → square/2:1 at and above): base/lg tiers.
+  tiers: ["lg"],
   // Card width depends on column count (1200px at 1 column down to ~260px at 4);
   // warn against a generous multi-column card width so the common 2–4 column
   // grids don't false-warn on perfectly sharp images.
@@ -273,6 +275,8 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   componentType: "infocards:cardsWithFullImages",
   cropMode: "custom",
   focalEnabled: true,
+  // Card aspect swings at lg (square below → 2:3 portrait at and above): base/lg.
+  tiers: ["lg"],
   // Same column-dependent card width as cardsWithImages — warn against a
   // generous multi-column width (see that config).
   maxRenderedWidthPx: 640,
