@@ -60,6 +60,7 @@ export const BlockInfopic = ({
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={shouldLazyLoad}
           objectPosition={objectPosition}
+          imageAdjustment={imageAdjustment}
         />
       </div>
     </section>

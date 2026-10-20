@@ -70,6 +70,7 @@ export const HeroLargeImage = ({
         imageAlt=""
         assetsBaseUrl={site.assetsBaseUrl}
         objectPosition={objectPosition}
+        imageAdjustment={imageAdjustment}
       />
     </section>
   )

@@ -65,6 +65,8 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   componentType: "hero:gradient",
   cropMode: "custom",
   focalEnabled: true,
+  // Full-bleed band reshapes at sm and lg (240/360/500px tall): base/sm/lg tiers.
+  tiers: ["sm", "lg"],
   // Full-bleed; no CSS width cap. Warn against the 1280px content ceiling
   // (max-w-screen-xl) as a conservative "looks soft on desktop" floor.
   maxRenderedWidthPx: 1280,
@@ -94,6 +96,8 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   componentType: "hero:block",
   cropMode: "custom",
   focalEnabled: true,
+  // Full-width band below lg, right half-panel at lg: base/lg tiers.
+  tiers: ["lg"],
   // Image band is half the viewport at lg (lg:w-1/2); ~960px on large desktop.
   maxRenderedWidthPx: 960,
   previewStates: responsivePreviewStates({
@@ -135,6 +139,9 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
   componentType: "infopic",
   cropMode: "custom",
   focalEnabled: true,
+  // Stacked full-width below lg, half-width column at lg: base/lg tiers. Applies
+  // to BlockInfopic (<img>); FullInfopic's background-image path is deferred.
+  tiers: ["lg"],
   // One of two columns at lg (lg:grid-cols-2); ~960px on large desktop.
   maxRenderedWidthPx: 960,
   previewStates: responsivePreviewStates({
@@ -155,6 +162,8 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   componentType: "hero:largeImage",
   cropMode: "custom",
   focalEnabled: true,
+  // aspect-square below md, 2:1 at md and up: base/md tiers.
+  tiers: ["md"],
   // Full-bleed; warn against the 1280px content ceiling (same as hero:gradient).
   maxRenderedWidthPx: 1280,
   previewStates: responsivePreviewStates({

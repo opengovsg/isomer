@@ -34,6 +34,7 @@ export const HeroGradient = ({
           width="100%"
           className="absolute inset-0 h-full w-full object-cover object-center"
           objectPosition={objectPosition}
+          imageAdjustment={imageAdjustment}
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={false} // hero is always above the fold
         />

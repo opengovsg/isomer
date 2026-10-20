@@ -189,6 +189,7 @@ export const HeroBlock = ({
           width="100%"
           className={styles.image()}
           objectPosition={objectPosition}
+          imageAdjustment={imageAdjustment}
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={false} // hero is always above the fold
         />
