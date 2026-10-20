@@ -63,7 +63,7 @@ allowBuilds:
   core-js: false
 
 patchedDependencies:
-  next@16.3.3: patches/next@16.3.3.patch
+  next@16.4.2: patches/next@16.4.2.patch
 
 catalog:
   # v4 is pinned deliberately: the legacy egazette integration uses the v4 client API
@@ -154,7 +154,7 @@ catalog:
   kysely: ^0.29.6
   lodash-es: ^4.18.1
   nanoid: ^6.0.1
-  next: 16.3.3
+  next: ^16.4.1
   openid-client: ^5.7.1
   oxfmt: ^0.70.0
   oxlint: ^1.86.0
