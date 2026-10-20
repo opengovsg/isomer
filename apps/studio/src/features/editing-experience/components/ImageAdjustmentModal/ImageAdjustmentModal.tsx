@@ -23,8 +23,17 @@ import {
 import { useEffect, useMemo, useState } from "react"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
+import type { ActiveTier } from "./adjustmentDraft"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
-import { ensureAdjustment } from "./adjustmentDraft"
+import {
+  customiseTier,
+  ensureAdjustment,
+  getTierCropFocal,
+  isTierCustomised,
+  mapAllTiersCropFocal,
+  uncustomiseTier,
+  updateTierCropFocal,
+} from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
 import { AspectRatioControl } from "./controls/AspectRatioControl"
 import { CropFocalControl } from "./controls/CropFocalControl"
@@ -42,6 +51,7 @@ import {
 } from "./controls/displayTransform"
 import { TransformControl } from "./controls/TransformControl"
 import { computeLowResWarning } from "./resolutionWarning"
+import { TierSwitcher } from "./TierSwitcher"
 import {
   resolveOriginalKey,
   useSaveImageAdjustment,
@@ -114,6 +124,9 @@ export const ImageAdjustmentModal = ({
     : config.focalEnabled
   const previewObjectFit = config.previewObjectFitFor?.(fieldHost) ?? "cover"
   const [draft, setDraft] = useState<ImageAdjustment | undefined>(value)
+  // Which screen size is being cropped: "base" (the default crop) or one of the
+  // component's breakpoints. Only surfaced when the component declares tiers.
+  const [activeTier, setActiveTier] = useState<ActiveTier>("base")
   // The source image's true pixel aspect ratio, reported by CropFocalControl
   // once its <img> loads — needed so "Reset crop & focal" can seed the same
   // ratio-correct crop the control itself would (see defaultCropRect).
@@ -144,6 +157,13 @@ export const ImageAdjustmentModal = ({
 
   const lockedRatio =
     config.cropMode === "fixed" ? config.lockedRatios?.[0] : undefined
+
+  const configTiers = config.tiers ?? []
+  const hasTiers = configTiers.length > 0
+  // The crop/focal for the active tier; an inherited tier shows base's.
+  const activeCropFocal = getTierCropFocal(draft, activeTier)
+  const isActiveTierInherited =
+    hasTiers && activeTier !== "base" && !isTierCustomised(draft, activeTier)
 
   // Warn when the cropped region can't fill this component's largest rendered
   // frame even at 1x (see computeLowResWarning).
@@ -189,6 +209,7 @@ export const ImageAdjustmentModal = ({
   }
 
   const handleDiscard = () => {
+    setActiveTier("base")
     setDraft(value)
     onDiscardChangesModalClose()
   }
@@ -242,6 +263,9 @@ export const ImageAdjustmentModal = ({
   const isResetDisabled = isLockedRatioAspectPending
 
   const handleReset = () => {
+    // Reset the whole image: base default crop + drop every tier (back to the
+    // single-crop state), and return focus to the base tier.
+    setActiveTier("base")
     setDraft((d) => ({
       ...ensureAdjustment(d),
       crop: defaultCropRect(lockedRatio, imageAspect ?? 1),
@@ -249,6 +273,7 @@ export const ImageAdjustmentModal = ({
       rotate: 0,
       flipH: false,
       flipV: false,
+      tiers: undefined,
     }))
   }
 
@@ -280,17 +305,14 @@ export const ImageAdjustmentModal = ({
           focal: { x: 0.5, y: 0.5 },
         }
       }
+      // Free crop: rotate base AND every tier's crop/focal (shared transform).
       return {
-        ...base,
+        ...mapAllTiersCropFocal(base, ({ crop, focal }) => ({
+          crop: direction === "cw" ? rotateRectCw(crop) : rotateRectCcw(crop),
+          focal:
+            direction === "cw" ? rotatePointCw(focal) : rotatePointCcw(focal),
+        })),
         rotate,
-        crop:
-          direction === "cw"
-            ? rotateRectCw(base.crop)
-            : rotateRectCcw(base.crop),
-        focal:
-          direction === "cw"
-            ? rotatePointCw(base.focal)
-            : rotatePointCcw(base.focal),
       }
     })
   }
@@ -298,23 +320,20 @@ export const ImageAdjustmentModal = ({
   const handleFlip = (axis: "h" | "v") => {
     setDraft((d) => {
       const base = ensureAdjustment(d)
+      // Flip base AND every tier's crop/focal (shared transform).
+      const flipped = mapAllTiersCropFocal(base, ({ crop, focal }) =>
+        axis === "h"
+          ? { crop: flipRectH(crop), focal: flipPointH(focal) }
+          : { crop: flipRectV(crop), focal: flipPointV(focal) },
+      )
       return axis === "h"
-        ? {
-            ...base,
-            flipH: !base.flipH,
-            crop: flipRectH(base.crop),
-            focal: flipPointH(base.focal),
-          }
-        : {
-            ...base,
-            flipV: !base.flipV,
-            crop: flipRectV(base.crop),
-            focal: flipPointV(base.focal),
-          }
+        ? { ...flipped, flipH: !base.flipH }
+        : { ...flipped, flipV: !base.flipV }
     })
   }
 
   const handleUndo = () => {
+    setActiveTier("base")
     setDraft(value)
   }
 
@@ -405,6 +424,52 @@ export const ImageAdjustmentModal = ({
                 // content width (prevents a resize feedback loop with the tiles).
                 sx={{ scrollbarGutter: "stable" }}
               >
+                {/* Screen-size switcher — pick which tier's crop to edit. The
+                    canvas below edits the active tier; base + each tier share
+                    the rotate/flip transform. */}
+                {hasTiers && (
+                  <VStack align="stretch" spacing="0.5rem" flexShrink={0}>
+                    <TierSwitcher
+                      configTiers={configTiers}
+                      activeTier={activeTier}
+                      onSelect={setActiveTier}
+                      isCustomised={(tier) => isTierCustomised(draft, tier)}
+                    />
+                    {activeTier !== "base" && (
+                      <Box>
+                        {isActiveTierInherited ? (
+                          <Button
+                            size="xs"
+                            variant="outline"
+                            onClick={() =>
+                              setDraft((d) =>
+                                customiseTier(ensureAdjustment(d), activeTier),
+                              )
+                            }
+                          >
+                            Customise this screen size
+                          </Button>
+                        ) : (
+                          <Button
+                            size="xs"
+                            variant="link"
+                            onClick={() =>
+                              setDraft((d) =>
+                                uncustomiseTier(
+                                  ensureAdjustment(d),
+                                  activeTier,
+                                ),
+                              )
+                            }
+                          >
+                            Reset to default crop
+                          </Button>
+                        )}
+                      </Box>
+                    )}
+                  </VStack>
+                )}
+
                 {/* Crop + focal point: one shared image canvas, since focal
                     is only meaningful relative to the crop. */}
                 {(config.cropMode !== "none" || focalEnabled) && (
@@ -415,8 +480,8 @@ export const ImageAdjustmentModal = ({
                   >
                     <CropFocalControl
                       src={localOriginalUrl ?? originalSrc}
-                      crop={draft?.crop}
-                      focal={draft?.focal}
+                      crop={activeCropFocal?.crop ?? draft?.crop}
+                      focal={activeCropFocal?.focal ?? draft?.focal}
                       cropMode={config.cropMode}
                       lockedRatio={lockedRatio}
                       focalEnabled={focalEnabled}
@@ -424,10 +489,18 @@ export const ImageAdjustmentModal = ({
                       flipH={draft?.flipH ?? false}
                       flipV={draft?.flipV ?? false}
                       onCropChange={(crop) =>
-                        setDraft((d) => ({ ...ensureAdjustment(d), crop }))
+                        setDraft((d) =>
+                          updateTierCropFocal(ensureAdjustment(d), activeTier, {
+                            crop,
+                          }),
+                        )
                       }
                       onFocalChange={(focal) =>
-                        setDraft((d) => ({ ...ensureAdjustment(d), focal }))
+                        setDraft((d) =>
+                          updateTierCropFocal(ensureAdjustment(d), activeTier, {
+                            focal,
+                          }),
+                        )
                       }
                       onImageAspectChange={setImageAspect}
                       onNaturalSizeChange={setNaturalSize}

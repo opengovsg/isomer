@@ -6,6 +6,8 @@ import {
   getTierCropFocal,
   isTierCustomised,
   mapAllTiersCropFocal,
+  tierOrder,
+  tierRangeLabel,
   uncustomiseTier,
   updateTierCropFocal,
 } from "./adjustmentDraft"
@@ -127,6 +129,32 @@ describe("per-tier draft helpers", () => {
       }))
       expect(next.focal).toEqual({ x: 0.5, y: 0.5 })
       expect(next.tiers?.[0]?.focal).toEqual({ x: 0.7, y: 0.4 })
+      // A transform changes every tier's crop, so each src is cleared for re-bake.
+      expect(next.tiers?.[0]?.src).toBe("")
+    })
+  })
+})
+
+describe("tier labels", () => {
+  describe("tierOrder", () => {
+    it("puts base first, then configured breakpoints ascending", () => {
+      expect(tierOrder(["lg", "sm"])).toEqual(["base", "sm", "lg"])
+    })
+    it("is just base when there are no tiers", () => {
+      expect(tierOrder(undefined)).toEqual(["base"])
+      expect(tierOrder([])).toEqual(["base"])
+    })
+  })
+
+  describe("tierRangeLabel", () => {
+    it("labels base by the span up to the first tier", () => {
+      expect(tierRangeLabel("base", ["lg"])).toBe("Default · up to 1024px")
+      expect(tierRangeLabel("base", [])).toBe("Default")
+    })
+    it("labels a middle tier as a closed range and the last as open-ended", () => {
+      // sm=640, md=768, lg=1024
+      expect(tierRangeLabel("sm", ["sm", "lg"])).toBe("640–1023px")
+      expect(tierRangeLabel("lg", ["sm", "lg"])).toBe("1024px and up")
     })
   })
 })

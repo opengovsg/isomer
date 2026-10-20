@@ -3,6 +3,7 @@ import type {
   ImageAdjustment,
   ImageTier,
 } from "@opengovsg/isomer-components"
+import { BREAKPOINTS } from "@opengovsg/isomer-components"
 
 /**
  * Default adjustment with all required fields.
@@ -36,6 +37,38 @@ export const ensureAdjustment = (draft?: ImageAdjustment): ImageAdjustment =>
 export type ActiveTier = "base" | Breakpoint
 
 type CropFocal = Pick<ImageTier, "crop" | "focal">
+
+// Config lists only the breakpoints above base; sort ascending defensively.
+const sortBreakpointsAsc = (bps: Breakpoint[]): Breakpoint[] =>
+  [...bps].sort((a, b) => BREAKPOINTS[a] - BREAKPOINTS[b])
+
+// The ordered selectable tiers for a component: "base" first (implied, always
+// present), then its configured breakpoints ascending.
+export const tierOrder = (
+  configTiers: Breakpoint[] | undefined,
+): ActiveTier[] => ["base", ...sortBreakpointsAsc(configTiers ?? [])]
+
+// Human label for the viewport range a tier governs, derived from where the next
+// tier starts: base spans up to the first tier; a middle tier is a closed range;
+// the last tier is open-ended "and up". Deliberately NOT device names — base can
+// span mobile+tablet, so "Mobile" would misrepresent its coverage.
+export const tierRangeLabel = (
+  tier: ActiveTier,
+  configTiers: Breakpoint[],
+): string => {
+  const sorted = sortBreakpointsAsc(configTiers)
+  if (tier === "base") {
+    const first = sorted[0]
+    return first === undefined
+      ? "Default"
+      : `Default · up to ${BREAKPOINTS[first]}px`
+  }
+  const next = sorted[sorted.indexOf(tier) + 1]
+  const lower = BREAKPOINTS[tier]
+  return next === undefined
+    ? `${lower}px and up`
+    : `${lower}–${BREAKPOINTS[next] - 1}px`
+}
 
 // The crop/focal to show for a tier: its own if customised, base's for "base",
 // or undefined for an inherited (uncustomised) breakpoint tier.
@@ -118,7 +151,9 @@ export const uncustomiseTier = (
 }
 
 // Apply a crop+focal transform (rotate/flip) to base AND every tier, so a shared
-// transform keeps all crops framing the same subject.
+// transform keeps all crops framing the same subject. Because it changes every
+// tier's crop, each tier's src is cleared (the re-bake sentinel) — stale baked
+// pixels would otherwise survive a rotate/flip.
 export const mapAllTiersCropFocal = (
   draft: ImageAdjustment,
   fn: (cf: CropFocal) => CropFocal,
@@ -130,7 +165,7 @@ export const mapAllTiersCropFocal = (
     focal: baseCf.focal,
     tiers: draft.tiers?.map((t) => {
       const cf = fn({ crop: t.crop, focal: t.focal })
-      return { ...t, crop: cf.crop, focal: cf.focal }
+      return { ...t, crop: cf.crop, focal: cf.focal, src: "" }
     }),
   }
 }
