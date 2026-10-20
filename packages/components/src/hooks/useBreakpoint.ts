@@ -1,6 +1,5 @@
-import { useMediaQuery } from "usehooks-ts"
-
 import type { Breakpoint } from "~/constants/breakpoints"
+import { useMediaQuery } from "usehooks-ts"
 import { mediaMinWidth } from "~/constants/breakpoints"
 
 /**
