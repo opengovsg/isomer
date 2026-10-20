@@ -45,6 +45,8 @@ import {
   jsonFormsEnumControlTester,
   jsonFormsGroupLayoutRenderer,
   jsonFormsGroupLayoutTester,
+  JsonFormsHeroBlockImageControl,
+  jsonFormsHeroBlockImageControlTester,
   JsonFormsHiddenControl,
   jsonFormsHiddenControlTester,
   JsonFormsIconPickerControl,
@@ -209,6 +211,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsChildrenPagesLayoutControlTester,
     renderer: JsonFormsChildrenPagesLayoutControl,
+  },
+  {
+    tester: jsonFormsHeroBlockImageControlTester,
+    renderer: JsonFormsHeroBlockImageControl,
   },
   {
     tester: jsonFormsMaxColumnsControlTester,
