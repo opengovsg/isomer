@@ -139,10 +139,3 @@ export function nextVariantData(
 
   return merged
 }
-
-export function isHeroCarouselSlideSchema(schema: JsonSchema) {
-  return (
-    schema.title === "Slide" &&
-    schema.properties?.backgroundUrl?.format === "image"
-  )
-}

@@ -2,9 +2,9 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import { useState } from "react"
 import { describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
-import { HeroCarouselPreviewProvider } from "~/templates/next/context/HeroCarouselPreviewContext"
 
 import { HeroCarouselClient } from "./HeroCarouselClient"
+import { HeroCarouselPreviewProvider } from "./HeroCarouselPreviewContext"
 
 const shortSlide = {
   backgroundUrl: "/short.png",

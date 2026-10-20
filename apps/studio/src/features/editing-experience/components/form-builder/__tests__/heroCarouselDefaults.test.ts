@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest"
 import {
   defaultHeroCarouselSlide,
   HERO_CAROUSEL_PLACEHOLDER_IMAGE,
-  isHeroCarouselSlideSchema,
   nextVariantData,
   withHeroCarouselSlides,
 } from "../heroCarouselDefaults"
@@ -163,23 +162,5 @@ describe("nextVariantData", () => {
         defaultHeroCarouselSlide(),
       ],
     })
-  })
-})
-
-describe("isHeroCarouselSlideSchema", () => {
-  it("matches a carousel slide and ignores other item schemas", () => {
-    // Arrange / Act / Assert
-    expect(
-      isHeroCarouselSlideSchema({
-        title: "Slide",
-        properties: { backgroundUrl: { format: "image" } },
-      }),
-    ).toBe(true)
-    expect(
-      isHeroCarouselSlideSchema({
-        title: "Card",
-        properties: { backgroundUrl: { format: "image" } },
-      }),
-    ).toBe(false)
   })
 })

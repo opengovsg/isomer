@@ -8,6 +8,7 @@ import { ComponentContent } from "../../../internal/customCssClass"
 import { ImageClient } from "../../../internal/ImageClient"
 import { LinkButton } from "../../../internal/LinkButton/LinkButton"
 import { CarouselControls } from "./CarouselControls"
+import { useHeroCarouselPreview } from "./HeroCarouselPreviewContext"
 
 const createHeroCarouselStyles = tv({
   slots: {
@@ -77,19 +78,32 @@ export const HeroCarouselClient = ({
   assetsBaseUrl?: string
   slides: HeroCarouselSlideView[]
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const preview = useHeroCarouselPreview()
+  const [localIndex, setLocalIndex] = useState(0)
   const [, startTransition] = useTransition()
+
+  const rawIndex = preview ? preview.activeIndex : localIndex
+  // Clamp for this render only. Arrow clicks are what write a new index.
+  const currentIndex =
+    slides.length === 0 ? 0 : Math.min(Math.max(rawIndex, 0), slides.length - 1)
 
   const navigateByDirection = useCallback(
     (direction: "prev" | "next") => {
+      if (slides.length === 0) {
+        return
+      }
+
+      const offset = direction === "next" ? 1 : -1
+      const next = (currentIndex + offset + slides.length) % slides.length
       startTransition(() => {
-        setCurrentIndex((prev) => {
-          const offset = direction === "next" ? 1 : -1
-          return (prev + offset + slides.length) % slides.length
-        })
+        if (preview) {
+          preview.setActiveIndex(next)
+        } else {
+          setLocalIndex(next)
+        }
       })
     },
-    [slides.length, startTransition],
+    [currentIndex, preview, slides.length, startTransition],
   )
 
   const currentSlide = slides[currentIndex]

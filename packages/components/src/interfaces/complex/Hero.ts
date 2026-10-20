@@ -10,6 +10,7 @@ import {
   HERO_BANNER_STYLE_FORMAT,
   HERO_BLOCK_IMAGE_FORMAT,
   HERO_CAROUSEL_FORMAT,
+  HERO_CAROUSEL_SLIDES_FORMAT,
 } from "../format"
 import { IsomerString } from "../primitives/IsomerString"
 import { generateImageSrcSchema } from "./Image"
@@ -303,6 +304,7 @@ const HeroCarouselSchema = Type.Object(
     ),
     slides: Type.Array(HeroCarouselSlideSchema, {
       title: "Slides",
+      format: HERO_CAROUSEL_SLIDES_FORMAT,
       ...HERO_CAROUSEL_SLIDE_LIMITS,
     }),
   },
