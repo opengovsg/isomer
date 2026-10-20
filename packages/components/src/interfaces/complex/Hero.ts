@@ -29,6 +29,9 @@ export const HERO_CAROUSEL_LAYOUT = {
   gradient: "gradient",
 } as const
 
+export type HeroCarouselLayout =
+  (typeof HERO_CAROUSEL_LAYOUT)[keyof typeof HERO_CAROUSEL_LAYOUT]
+
 export const HERO_BLOCK_IMAGE_POSITION = {
   left: "left",
   right: "right",
@@ -282,25 +285,23 @@ const HeroCarouselSchema = Type.Object(
     variant: Type.Literal(HERO_STYLE.carousel.key, {
       default: HERO_STYLE.carousel.key,
     }),
-    carousel: Type.Optional(
-      Type.Object(
-        {
-          layout: Type.Union(
-            [
-              Type.Literal(HERO_CAROUSEL_LAYOUT.block, {
-                title: "Block",
-              }),
-              Type.Literal(HERO_CAROUSEL_LAYOUT.gradient, {
-                title: "Gradient",
-              }),
-            ],
-            { type: "string" },
-          ),
-        },
-        {
-          format: HERO_CAROUSEL_FORMAT,
-        },
-      ),
+    carousel: Type.Object(
+      {
+        layout: Type.Union(
+          [
+            Type.Literal(HERO_CAROUSEL_LAYOUT.block, {
+              title: "Block",
+            }),
+            Type.Literal(HERO_CAROUSEL_LAYOUT.gradient, {
+              title: "Gradient",
+            }),
+          ],
+          { type: "string" },
+        ),
+      },
+      {
+        format: HERO_CAROUSEL_FORMAT,
+      },
     ),
     slides: Type.Array(HeroCarouselSlideSchema, {
       title: "Slides",

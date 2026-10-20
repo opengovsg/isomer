@@ -1,5 +1,5 @@
 import type { JsonSchema } from "@jsonforms/core"
-import { HERO_STYLE } from "@opengovsg/isomer-components"
+import { HERO_CAROUSEL_LAYOUT, HERO_STYLE } from "@opengovsg/isomer-components"
 
 import { PLACEHOLDER_IMAGE_FILENAME } from "../constants"
 
@@ -42,6 +42,23 @@ function carriedSlideFields(previous: Record<string, unknown>) {
   return carried
 }
 
+function carouselLayout(next: Record<string, unknown>) {
+  const carousel = isRecord(next.carousel) ? next.carousel : {}
+  const layout = carousel.layout
+
+  if (
+    layout === HERO_CAROUSEL_LAYOUT.block ||
+    layout === HERO_CAROUSEL_LAYOUT.gradient
+  ) {
+    return carousel
+  }
+
+  return {
+    ...carousel,
+    layout: HERO_CAROUSEL_LAYOUT.block,
+  }
+}
+
 export function withHeroCarouselSlides<T>(previous: unknown, next: T): T {
   if (!isRecord(next) || next.variant !== HERO_STYLE.carousel.key) {
     return next
@@ -52,6 +69,7 @@ export function withHeroCarouselSlides<T>(previous: unknown, next: T): T {
 
   return {
     ...next,
+    carousel: carouselLayout(next),
     slides: [
       {
         ...defaultHeroCarouselSlide(

@@ -19,6 +19,7 @@ export {
   HERO_STYLE,
   HeroSchema,
   type HeroBlockProps,
+  type HeroCarouselLayout,
   type HeroProps,
   type HeroStyleVariant,
 } from "./Hero"

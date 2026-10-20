@@ -1,7 +1,9 @@
 "use client"
 
+import type { HeroCarouselLayout } from "~/interfaces/complex/Hero"
 import type { HeadingTag } from "~/utils/getHeadingTag"
 import { useCallback, useState, useTransition } from "react"
+import { HERO_CAROUSEL_LAYOUT } from "~/interfaces/complex/Hero"
 import { tv } from "~/lib/tv"
 
 import { ComponentContent } from "../../../internal/customCssClass"
@@ -24,8 +26,8 @@ const createHeroCarouselStyles = tv({
       "col-start-1 row-start-1 flex flex-col gap-6 opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
   },
   variants: {
-    isBlock: {
-      true: {
+    layout: {
+      [HERO_CAROUSEL_LAYOUT.block]: {
         section: "flex-col lg:flex-row",
         contentPanel:
           "bg-brand-canvas-inverse px-6 pb-6 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pb-12 lg:pl-10 lg:pr-8",
@@ -33,14 +35,22 @@ const createHeroCarouselStyles = tv({
           "max-w-[548px] justify-center text-base-content-inverse lg:mx-0 lg:ml-auto",
         title: "wrap-break-word text-balance",
       },
-      false: {
+      [HERO_CAROUSEL_LAYOUT.gradient]: {
         section: "relative",
         contentPanel:
           "relative z-10 w-full justify-end bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]",
         contentInner: `${ComponentContent} py-16 pb-10 text-start text-base-content-inverse lg:pb-[54px]`,
         title: "break-words",
       },
-    },
+    } satisfies Record<
+      HeroCarouselLayout,
+      {
+        section: string
+        contentPanel: string
+        contentInner: string
+        title: string
+      }
+    >,
     isCurrent: {
       true: {
         slideImage: "z-10 opacity-100",
@@ -68,12 +78,12 @@ interface HeroCarouselSlideView {
 }
 
 export const HeroCarouselClient = ({
-  isBlock,
+  layout,
   headingTag: Tag,
   assetsBaseUrl,
   slides,
 }: {
-  isBlock: boolean
+  layout: HeroCarouselLayout
   headingTag: HeadingTag
   assetsBaseUrl?: string
   slides: HeroCarouselSlideView[]
@@ -136,15 +146,9 @@ export const HeroCarouselClient = ({
     onNext: () => navigateByDirection("next"),
   }
 
-  const blockMobileControls = (
-    <div className={styles.mobileControls({ isBlock })}>
-      <CarouselControls {...carouselControlProps} />
-    </div>
-  )
-
   return (
     <section
-      className={styles.section({ isBlock })}
+      className={styles.section({ layout })}
       aria-roledescription="carousel"
       aria-label="Hero carousel"
     >
@@ -153,7 +157,7 @@ export const HeroCarouselClient = ({
           ? `Slide ${currentIndex + 1} of ${slides.length}: ${currentSlide.title}`
           : ""}
       </p>
-      {!isBlock && (
+      {layout === HERO_CAROUSEL_LAYOUT.gradient && (
         <div
           className="absolute inset-0 overflow-hidden"
           style={{ contain: "layout" }}
@@ -161,8 +165,8 @@ export const HeroCarouselClient = ({
           {images}
         </div>
       )}
-      <div className={styles.contentPanel({ isBlock })}>
-        <div className={styles.contentInner({ isBlock })}>
+      <div className={styles.contentPanel({ layout })}>
+        <div className={styles.contentInner({ layout })}>
           <div className="grid">
             {slides.map((slide, index) => {
               const isCurrent = index === currentIndex
@@ -180,7 +184,7 @@ export const HeroCarouselClient = ({
                   {...(isCurrent ? {} : { inert: "" })}
                 >
                   <div className="flex flex-col gap-6">
-                    <Tag className={styles.title({ isBlock })}>
+                    <Tag className={styles.title({ layout })}>
                       {slide.title}
                     </Tag>
                     {slide.subtitle && (
@@ -214,7 +218,8 @@ export const HeroCarouselClient = ({
                       href={slide.primaryHref}
                       size="lg"
                       variant="solid"
-                      colorScheme={isBlock ? "inverse" : undefined}
+                      // TODO: non-inverse color schemes are not supported yet
+                      colorScheme="inverse"
                       isWithFocusVisibleHighlight
                     >
                       {slide.primaryLabel}
@@ -239,9 +244,9 @@ export const HeroCarouselClient = ({
           <CarouselControls
             {...carouselControlProps}
             isDesktopOnly
-            hasTopMargin={isBlock}
+            hasTopMargin={layout === HERO_CAROUSEL_LAYOUT.block}
           />
-          {!isBlock && (
+          {layout === HERO_CAROUSEL_LAYOUT.gradient && (
             <div className="lg:hidden">
               <CarouselControls {...carouselControlProps} />
             </div>
@@ -249,13 +254,15 @@ export const HeroCarouselClient = ({
         </div>
       </div>
 
-      {isBlock && (
+      {layout === HERO_CAROUSEL_LAYOUT.block && (
         <div
           className="relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2"
           style={{ contain: "layout" }}
         >
           {images}
-          {blockMobileControls}
+          <div className={styles.mobileControls()}>
+            <CarouselControls {...carouselControlProps} />
+          </div>
         </div>
       )}
     </section>

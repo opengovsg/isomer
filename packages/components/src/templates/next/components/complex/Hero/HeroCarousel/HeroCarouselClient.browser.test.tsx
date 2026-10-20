@@ -1,7 +1,9 @@
+import type { HeroCarouselLayout } from "~/interfaces/complex/Hero"
 import { fireEvent, render, screen } from "@testing-library/react"
 import { useState } from "react"
 import { describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
+import { HERO_CAROUSEL_LAYOUT } from "~/interfaces/complex/Hero"
 
 import { HeroCarouselClient } from "./HeroCarouselClient"
 import { HeroCarouselPreviewProvider } from "./HeroCarouselPreviewContext"
@@ -24,10 +26,10 @@ const tallSlide = {
   secondaryHref: "/",
 }
 
-const renderCarousel = (isBlock: boolean) => {
+const renderCarousel = (layout: HeroCarouselLayout) => {
   const view = render(
     <HeroCarouselClient
-      isBlock={isBlock}
+      layout={layout}
       headingTag="h1"
       slides={[shortSlide, tallSlide]}
     />,
@@ -40,14 +42,11 @@ const renderCarousel = (isBlock: boolean) => {
 }
 
 describe("HeroCarouselClient", () => {
-  it.each([
-    ["block", true],
-    ["gradient", false],
-  ])(
+  it.each([HERO_CAROUSEL_LAYOUT.block, HERO_CAROUSEL_LAYOUT.gradient])(
     "keeps the %s carousel height and controls fixed across slides",
-    (_, isBlock) => {
+    (layout) => {
       // Arrange
-      const section = renderCarousel(isBlock)
+      const section = renderCarousel(layout)
       const next = screen.getByRole("button", { name: "Next slide" })
       const heightBefore = section.getBoundingClientRect().height
       const controlsTopBefore = next.getBoundingClientRect().top
@@ -75,7 +74,7 @@ describe("HeroCarouselClient preview index", () => {
     // Arrange
     render(
       <HeroCarouselClient
-        isBlock={false}
+        layout={HERO_CAROUSEL_LAYOUT.gradient}
         headingTag="h1"
         slides={indexedSlides}
       />,
@@ -96,7 +95,7 @@ describe("HeroCarouselClient preview index", () => {
       return (
         <HeroCarouselPreviewProvider value={{ activeIndex, setActiveIndex }}>
           <HeroCarouselClient
-            isBlock={false}
+            layout={HERO_CAROUSEL_LAYOUT.gradient}
             headingTag="h1"
             slides={indexedSlides}
           />
