@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { Box, useDisclosure } from "@chakra-ui/react"
 import { useEffect } from "react"
 import { userEvent, within } from "storybook/test"

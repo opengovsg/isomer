@@ -8,6 +8,9 @@ const meta: Meta = {
   title: "Next/Internal Components/UnsupportedBrowserBanner",
   component: UnsupportedBrowserBanner,
   argTypes: {},
+  beforeEach: () => {
+    sessionStorage.removeItem("unsupported-browser-banner-dismissed")
+  },
   parameters: {
     themes: {
       themeOverride: "Isomer Next",
