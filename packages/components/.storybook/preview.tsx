@@ -110,7 +110,12 @@ const preview: Preview = {
   loaders: [
     mswLoader(async () => {
       const worker = setupWorker()
-      await worker.start({ onUnhandledFrame: "bypass" })
+      // Relative, so the worker resolves next to the Storybook even when it is
+      // deployed under a sub-path (/components/, /studio/) instead of the root.
+      await worker.start({
+        onUnhandledFrame: "bypass",
+        serviceWorker: { url: "./mockServiceWorker.js" },
+      })
       return worker
     }),
   ],
