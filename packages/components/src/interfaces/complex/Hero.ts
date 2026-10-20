@@ -8,6 +8,7 @@ import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import {
   HERO_BANNER_STYLE_FORMAT,
+  HERO_BLOCK_IMAGE_FORMAT,
   HERO_CAROUSEL_LAYOUT_FORMAT,
 } from "../format"
 import { IsomerString } from "../primitives/IsomerString"
@@ -25,6 +26,16 @@ export const HERO_STYLE = {
 export const HERO_CAROUSEL_LAYOUT = {
   block: "block",
   gradient: "gradient",
+} as const
+
+export const HERO_BLOCK_IMAGE_POSITION = {
+  left: "left",
+  right: "right",
+} as const
+
+export const HERO_BLOCK_IMAGE_EDGE = {
+  straight: "straight",
+  curved: "curved",
 } as const
 
 export type HeroStyleVariant =
@@ -145,6 +156,29 @@ const HeroBlockSchema = Type.Composite(
         default: HERO_STYLE.block.key,
       }),
       backgroundUrl: BackgroundUrlSchema,
+      blockImage: Type.Optional(
+        Type.Object(
+          {
+            imagePosition: Type.Union(
+              [
+                Type.Literal(HERO_BLOCK_IMAGE_POSITION.right),
+                Type.Literal(HERO_BLOCK_IMAGE_POSITION.left),
+              ],
+              { type: "string" },
+            ),
+            imageEdge: Type.Union(
+              [
+                Type.Literal(HERO_BLOCK_IMAGE_EDGE.straight),
+                Type.Literal(HERO_BLOCK_IMAGE_EDGE.curved),
+              ],
+              { type: "string" },
+            ),
+          },
+          {
+            format: HERO_BLOCK_IMAGE_FORMAT,
+          },
+        ),
+      ),
     }),
     HeroBaseSchema,
     CallToActionsSchema,

@@ -137,18 +137,33 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expect(site.publishButton()).toBeDisabled()
   })
 
-  test("cannot add more than 8 top-level links", async ({ page }) => {
+  test("can add links at the first-level cap but cannot publish over the limit", async ({
+    page,
+  }) => {
     const site = new SitePO(page)
     await resetSiteNavbarAtMaxItems(siteId)
 
     // Arrange
     await site.gotoSettingsSection(siteId, "navbar")
-
-    // Assert
     await expect(site.navbarLinksCountText()).toHaveText(
       "8/8 first-level links added",
     )
-    await expect(site.addNavbarLinkButton()).toBeDisabled()
+    await expect(site.addNavbarLinkButton()).toBeEnabled()
+
+    // Valid edit first — invalid nine-item state is not synced to preview, so
+    // Publish would stay disabled from !isDirty alone without this step.
+    await site.editNavbarItemLabel("Max item 1", "Max item 1 edited")
+    await expect(site.publishButton()).toBeEnabled()
+
+    // Act — ninth first-level link is allowed in the editor; publish is blocked.
+    await site.addNavbarLink("Ninth top-level link", "example.com/ninth")
+
+    // Assert
+    await expect(site.navbarLinksCountText()).toHaveText(
+      "9/8 first-level links added",
+    )
+    await expect(site.navbarFirstLevelOverLimitWarning()).toBeVisible()
+    await expect(site.publishButton()).toBeDisabled()
   })
 
   test("admin can configure Call-to-Action with mobile pinning and publish", async ({

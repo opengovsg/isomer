@@ -31,9 +31,8 @@ export const isFirstLevelLinksOverLimit = (
   maxItems?: number,
 ): boolean => !!(maxItems && itemCount > maxItems)
 
-// At-limit (not over): Add is disabled, matching footer columns and utility
-// links. Over-limit still uses isFirstLevelLinksOverLimit for the warning
-// Infobox (existing payloads that already have too many first-level items).
+// At-limit: block drag-and-drop moves that would add another first-level item
+// (e.g. promoting a sub-item). Add stays enabled so users can still nest links.
 export const isFirstLevelLinksAtLimit = (
   itemCount: number,
   maxItems?: number,
