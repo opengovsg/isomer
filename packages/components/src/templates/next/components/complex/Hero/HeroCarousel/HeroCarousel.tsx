@@ -19,8 +19,7 @@ export const HeroCarousel = ({
     return null
   }
 
-  const layout = carousel?.layout
-
+  const layout = carousel.layout
   switch (layout) {
     case HERO_CAROUSEL_LAYOUT.block:
     case HERO_CAROUSEL_LAYOUT.gradient:
