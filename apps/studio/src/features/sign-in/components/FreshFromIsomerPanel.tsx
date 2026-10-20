@@ -227,67 +227,77 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
         })}
       </Flex>
 
-      <Box
-        id={`fresh-from-isomer-panel-${active.id}`}
-        role="tabpanel"
-        aria-labelledby={`fresh-from-isomer-tab-${active.id}`}
-        borderRadius="lg"
-        overflow="hidden"
-        borderWidth="1px"
-        borderColor="base.divider.medium"
-        boxShadow="md"
-        w="100%"
-      >
-        <Box
-          ref={mediaFrameRef}
-          w="100%"
-          aspectRatio={active.aspectRatio}
-          position="relative"
-          overflow="hidden"
-          bg="#ebebeb"
-        >
-          {active.media.type === "video" ? (
-            <Box
-              key={active.id}
-              as="video"
-              ref={videoRef}
-              src={active.media.src}
-              muted
-              playsInline
-              autoPlay
-              loop={SPOTLIGHTS.length === 1}
-              preload="auto"
-              aria-label={active.title}
-              position="absolute"
-              inset={0}
-              w="100%"
-              h="100%"
-              objectFit="cover"
-              display="block"
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              onWaiting={() => setIsBuffering(true)}
-              onPlaying={() => setIsBuffering(false)}
-              onEnded={() => {
-                if (SPOTLIGHTS.length > 1) {
-                  selectSpotlight((activeIndex + 1) % SPOTLIGHTS.length)
-                }
-              }}
-            />
-          ) : (
-            <Box
-              as="img"
-              src={active.media.src}
-              position="absolute"
-              inset={0}
-              w="100%"
-              h="100%"
-              objectFit="cover"
-              display="block"
-            />
-          )}
-        </Box>
-      </Box>
+      {SPOTLIGHTS.map((item, index) => {
+        const isPanelActive = index === activeIndex
+
+        return (
+          <Box
+            key={item.id}
+            id={`fresh-from-isomer-panel-${item.id}`}
+            role="tabpanel"
+            aria-labelledby={`fresh-from-isomer-tab-${item.id}`}
+            hidden={!isPanelActive}
+            borderRadius="lg"
+            overflow="hidden"
+            borderWidth="1px"
+            borderColor="base.divider.medium"
+            boxShadow="md"
+            w="100%"
+          >
+            {isPanelActive && (
+              <Box
+                ref={mediaFrameRef}
+                w="100%"
+                aspectRatio={item.aspectRatio}
+                position="relative"
+                overflow="hidden"
+                bg="#ebebeb"
+              >
+                {item.media.type === "video" ? (
+                  <Box
+                    key={item.id}
+                    as="video"
+                    ref={videoRef}
+                    src={item.media.src}
+                    muted
+                    playsInline
+                    autoPlay
+                    loop={SPOTLIGHTS.length === 1}
+                    preload="auto"
+                    aria-label={item.title}
+                    position="absolute"
+                    inset={0}
+                    w="100%"
+                    h="100%"
+                    objectFit="cover"
+                    display="block"
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    onWaiting={() => setIsBuffering(true)}
+                    onPlaying={() => setIsBuffering(false)}
+                    onEnded={() => {
+                      if (SPOTLIGHTS.length > 1) {
+                        selectSpotlight((activeIndex + 1) % SPOTLIGHTS.length)
+                      }
+                    }}
+                  />
+                ) : (
+                  <Box
+                    as="img"
+                    src={item.media.src}
+                    position="absolute"
+                    inset={0}
+                    w="100%"
+                    h="100%"
+                    objectFit="cover"
+                    display="block"
+                  />
+                )}
+              </Box>
+            )}
+          </Box>
+        )
+      })}
 
       <Stack spacing="0.75rem">
         <Flex align="center" gap="0.75rem">
