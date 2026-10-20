@@ -1,5 +1,13 @@
 import type { StorybookConfig } from "@storybook/nextjs-vite"
 
+// Only public values may reach the browser bundle.
+const publicEnv = Object.fromEntries(
+  Object.entries(process.env).filter(
+    (entry): entry is [string, string] =>
+      entry[0].startsWith("NEXT_PUBLIC_") && entry[1] !== undefined,
+  ),
+)
+
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
 
@@ -26,7 +34,7 @@ const config: StorybookConfig = {
   env: (config) => ({
     ...config,
     SKIP_ENV_VALIDATION: "true",
-    STORYBOOK_ENVIRONMENT: JSON.stringify(process.env),
+    STORYBOOK_ENVIRONMENT: JSON.stringify(publicEnv),
   }),
 
   typescript: {
@@ -35,13 +43,21 @@ const config: StorybookConfig = {
   },
 
   // The Vite builder only exposes STORYBOOK_-prefixed `env` values to the
-  // preview, so src/env.mjs would otherwise validate the missing NEXT_PUBLIC_*
-  // vars and throw on load. The preview supplies its own env (see preview.tsx).
+  // preview, so define the browser-safe environment src/env.mjs reads from
+  // `process.env` ourselves: the Storybook flag and payload it keys off, plus
+  // the public NEXT_PUBLIC_* values (which Next would otherwise inline).
   viteFinal: (config) => ({
     ...config,
     define: {
       ...config.define,
-      "process.env.SKIP_ENV_VALIDATION": JSON.stringify("true"),
+      ...Object.fromEntries(
+        Object.entries({
+          ...publicEnv,
+          SKIP_ENV_VALIDATION: "true",
+          STORYBOOK: "true",
+          STORYBOOK_ENVIRONMENT: JSON.stringify(publicEnv),
+        }).map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)]),
+      ),
     },
   }),
 }
