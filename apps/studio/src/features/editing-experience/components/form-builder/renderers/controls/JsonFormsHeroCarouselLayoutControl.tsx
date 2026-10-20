@@ -32,10 +32,8 @@ export const jsonFormsHeroCarouselLayoutControlTester: RankedTester = rankWith(
 
 function JsonFormsHeroCarouselLayoutControl({
   data,
-  label,
   handleChange,
   path,
-  description,
 }: ControlProps): JSX.Element {
   const carousel = data as HeroCarouselData | undefined
   // Display-only fallback when no value is stored yet (schema defaults are
@@ -45,8 +43,11 @@ function JsonFormsHeroCarouselLayoutControl({
   return (
     <Box>
       <FormControl isRequired gap="0.5rem">
-        <FormLabel color="base.content.default" description={description}>
-          {label || "Layout"}
+        <FormLabel
+          color="base.content.default"
+          description="Check the desktop layout in Fullscreen, under preview options"
+        >
+          Layout
         </FormLabel>
         <Radio.RadioGroup
           display="flex"

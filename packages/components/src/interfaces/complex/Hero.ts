@@ -297,9 +297,6 @@ const HeroCarouselSchema = Type.Object(
           ),
         },
         {
-          title: "Layout",
-          description:
-            "Check the desktop layout in Fullscreen, under preview options.",
           format: HERO_CAROUSEL_FORMAT,
         },
       ),
