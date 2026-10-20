@@ -1,11 +1,11 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl } from "@chakra-ui/react"
-import { rankWith, schemaMatches } from "@jsonforms/core"
+import { and, isObjectControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Radio } from "@opengovsg/design-system-react"
 import {
+  HERO_CAROUSEL_FORMAT,
   HERO_CAROUSEL_LAYOUT,
-  HERO_CAROUSEL_LAYOUT_FORMAT,
 } from "@opengovsg/isomer-components"
 import {
   IconHeroCarouselBlock,
@@ -13,11 +13,21 @@ import {
 } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
+type HeroCarouselLayout =
+  (typeof HERO_CAROUSEL_LAYOUT)[keyof typeof HERO_CAROUSEL_LAYOUT]
+
+interface HeroCarouselData {
+  layout: HeroCarouselLayout
+}
+
 // TODO: This control is purely duplicative of JsonFormsChildPageLayoutControl.tsx;
 // combine into a shared illustrated radio-group control driven by schema format/options.
 export const jsonFormsHeroCarouselLayoutControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.HeroCarouselLayoutControl,
-  schemaMatches((schema) => schema.format === HERO_CAROUSEL_LAYOUT_FORMAT),
+  and(
+    isObjectControl,
+    schemaMatches((schema) => schema.format === HERO_CAROUSEL_FORMAT),
+  ),
 )
 
 function JsonFormsHeroCarouselLayoutControl({
@@ -27,6 +37,11 @@ function JsonFormsHeroCarouselLayoutControl({
   path,
   description,
 }: ControlProps): JSX.Element {
+  const carousel = data as HeroCarouselData | undefined
+  // Display-only fallback when no value is stored yet (schema defaults are
+  // avoided because AJV's `useDefaults` would dirty saved pages).
+  const layout = carousel?.layout ?? HERO_CAROUSEL_LAYOUT.block
+
   return (
     <Box>
       <FormControl isRequired gap="0.5rem">
@@ -38,9 +53,12 @@ function JsonFormsHeroCarouselLayoutControl({
           flexDir="row"
           gap={2}
           onChange={(value) => {
-            handleChange(path, value)
+            handleChange(path, {
+              ...carousel,
+              layout: value as HeroCarouselLayout,
+            })
           }}
-          value={data as string}
+          value={layout}
         >
           <Radio
             value={HERO_CAROUSEL_LAYOUT.block}

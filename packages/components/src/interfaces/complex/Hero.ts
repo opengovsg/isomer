@@ -9,7 +9,7 @@ import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 import {
   HERO_BANNER_STYLE_FORMAT,
   HERO_BLOCK_IMAGE_FORMAT,
-  HERO_CAROUSEL_LAYOUT_FORMAT,
+  HERO_CAROUSEL_FORMAT,
 } from "../format"
 import { IsomerString } from "../primitives/IsomerString"
 import { generateImageSrcSchema } from "./Image"
@@ -281,22 +281,28 @@ const HeroCarouselSchema = Type.Object(
     variant: Type.Literal(HERO_STYLE.carousel.key, {
       default: HERO_STYLE.carousel.key,
     }),
-    carouselLayout: Type.Union(
-      [
-        Type.Literal(HERO_CAROUSEL_LAYOUT.block, {
-          title: "Block",
-        }),
-        Type.Literal(HERO_CAROUSEL_LAYOUT.gradient, {
-          title: "Gradient",
-        }),
-      ],
-      {
-        title: "Layout",
-        description:
-          "Check the desktop layout in Fullscreen, under preview options.",
-        default: HERO_CAROUSEL_LAYOUT.block,
-        format: HERO_CAROUSEL_LAYOUT_FORMAT,
-      },
+    carousel: Type.Optional(
+      Type.Object(
+        {
+          layout: Type.Union(
+            [
+              Type.Literal(HERO_CAROUSEL_LAYOUT.block, {
+                title: "Block",
+              }),
+              Type.Literal(HERO_CAROUSEL_LAYOUT.gradient, {
+                title: "Gradient",
+              }),
+            ],
+            { type: "string" },
+          ),
+        },
+        {
+          title: "Layout",
+          description:
+            "Check the desktop layout in Fullscreen, under preview options.",
+          format: HERO_CAROUSEL_FORMAT,
+        },
+      ),
     ),
     slides: Type.Array(HeroCarouselSlideSchema, {
       title: "Slides",

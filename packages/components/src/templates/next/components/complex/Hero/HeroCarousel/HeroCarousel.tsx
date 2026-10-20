@@ -11,16 +11,18 @@ import { HeroCarouselClient } from "./HeroCarouselClient"
 export const HeroCarousel = ({
   site,
   slides,
-  carouselLayout,
+  carousel,
   headingLevel,
 }: HeroCarouselProps) => {
   if (slides.length < HERO_CAROUSEL_SLIDE_LIMITS.minItems) {
     return null
   }
 
+  const layout = carousel?.layout ?? HERO_CAROUSEL_LAYOUT.block
+
   return (
     <HeroCarouselClient
-      isBlock={carouselLayout === HERO_CAROUSEL_LAYOUT.block}
+      isBlock={layout === HERO_CAROUSEL_LAYOUT.block}
       headingTag={getHeadingTag(headingLevel)}
       assetsBaseUrl={site.assetsBaseUrl}
       slides={slides.map((slide) => ({

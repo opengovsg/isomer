@@ -232,7 +232,7 @@ export const CarouselBlock: Story = {
     headingLevel: 1,
     site: generateSiteConfig(),
     variant: "carousel",
-    carouselLayout: HERO_CAROUSEL_LAYOUT.block,
+    carousel: { layout: HERO_CAROUSEL_LAYOUT.block },
     slides: [
       {
         backgroundUrl: carouselImageUrl,
@@ -262,7 +262,7 @@ export const CarouselBlock: Story = {
 export const CarouselGradient: Story = {
   args: {
     ...CarouselBlock.args,
-    carouselLayout: HERO_CAROUSEL_LAYOUT.gradient,
+    carousel: { layout: HERO_CAROUSEL_LAYOUT.gradient },
   },
 }
 
