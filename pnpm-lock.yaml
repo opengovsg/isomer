@@ -368,7 +368,7 @@ catalogs:
       specifier: ^6.0.1
       version: 6.0.1
     next:
-      specifier: ^16.4.1
+      specifier: 16.4.2
       version: 16.4.2
     node-mocks-http:
       specifier: ^1.18.1
