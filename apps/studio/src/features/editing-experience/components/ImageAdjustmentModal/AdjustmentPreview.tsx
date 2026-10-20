@@ -70,11 +70,6 @@ interface AdjustmentPreviewProps {
   // equal-ratio masks (e.g. Blockquote's circle + square) where a half-width
   // tile would be too small to read.
   stackPreviews?: boolean
-  // Draw the component's scrim overlay in the framed-image approximation. Backs
-  // the modal's "Show hero text over the image" toggle — a preview-only aid, so
-  // it gates only the overlay here (the real-component path renders its own
-  // copy/scrim, which this cannot suppress). Defaults to true.
-  showHeroText?: boolean
   // The object-fit the framed-image approximation uses (skipRealComponentPreview
   // path). "contain" letterboxes the whole (cropped) image to match InfoCards'
   // "Resize image to fit"; defaults to "cover". Ignored on the real-component
@@ -102,7 +97,6 @@ export const AdjustmentPreview = ({
   imageFieldName,
   skipRealComponentPreview,
   stackPreviews,
-  showHeroText = true,
   objectFit = "cover",
   siteId,
 }: AdjustmentPreviewProps): JSX.Element => {
@@ -439,8 +433,9 @@ export const AdjustmentPreview = ({
                     : getFocalObjectPosition(adjustment?.focal),
               }}
             />
-            {/* Scrim overlay — a preview aid, gated by "Show hero text". */}
-            {scrim && showHeroText && (
+            {/* Scrim overlay — mirrors the live component's overlay (e.g. the
+                InfoCards full-image gradient) so editors can judge contrast. */}
+            {scrim && (
               <Box
                 position="absolute"
                 inset={0}

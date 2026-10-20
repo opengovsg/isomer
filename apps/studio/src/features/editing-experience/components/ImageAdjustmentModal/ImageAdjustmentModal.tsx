@@ -16,7 +16,6 @@ import {
 } from "@chakra-ui/react"
 import {
   Button,
-  Checkbox,
   Infobox,
   ModalCloseButton,
   useToast,
@@ -140,12 +139,6 @@ export const ImageAdjustmentModal = ({
   // Drives UI locking during a save. Local (not the hook's isSaving) so the
   // save timeout below can unlock the modal even if the underlying upload hangs.
   const [isSaving, setIsSaving] = useState(false)
-  // Preview-only toggle for the scrim/text overlay in the framed-image preview.
-  // Default on; only surfaced for components whose framed preview draws a scrim.
-  const [showHeroText, setShowHeroText] = useState(true)
-  const showTextOverlayToggle =
-    !!config.scrim && !!config.skipRealComponentPreview
-
   // Check if draft differs from original value.
   const isModified = JSON.stringify(draft) !== JSON.stringify(value)
 
@@ -521,7 +514,6 @@ export const ImageAdjustmentModal = ({
                   imageFieldName={imageFieldName}
                   skipRealComponentPreview={config.skipRealComponentPreview}
                   stackPreviews={config.stackPreviews}
-                  showHeroText={showHeroText}
                   objectFit={previewObjectFit}
                   siteId={siteId}
                 />
@@ -541,15 +533,6 @@ export const ImageAdjustmentModal = ({
                       area in the crop.
                     </Text>
                   </Infobox>
-                )}
-
-                {showTextOverlayToggle && (
-                  <Checkbox
-                    isChecked={showHeroText}
-                    onChange={(e) => setShowHeroText(e.target.checked)}
-                  >
-                    <Text textStyle="body-2">Show text over the image</Text>
-                  </Checkbox>
                 )}
               </VStack>
             </Flex>
