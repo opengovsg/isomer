@@ -28,7 +28,9 @@ export const HeroLargeImage = ({
         <div className="flex flex-col items-center gap-5 text-base-content-strong sm:items-start md:gap-6 md:text-center lg:mx-auto lg:max-w-[66.67%]">
           <Tag className="prose-display-xl w-full">{title}</Tag>
           {subtitle && (
-            <p className="prose-title-lg-regular w-full">{subtitle}</p>
+            <p className="prose-title-lg-regular w-full text-[1.125rem] md:text-[1.5rem]">
+              {subtitle}
+            </p>
           )}
         </div>
         {/* Button container */}

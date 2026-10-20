@@ -142,7 +142,11 @@ export const HeroBlock = ({
             <Tag className="wrap-break-word prose-display-xl text-balance">
               {title}
             </Tag>
-            {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
+            {subtitle && (
+              <p className="prose-title-lg-regular text-[1.125rem] md:text-[1.5rem]">
+                {subtitle}
+              </p>
+            )}
           </div>
           {buttonLabel && buttonUrl && (
             <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">

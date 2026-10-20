@@ -33,7 +33,7 @@ export const isomerTypography = plugin(({ addComponents, theme }) => {
     // Group major sections
     ".prose-title-lg": {
       letterSpacing: "0",
-      "@apply text-[1.125rem] md:text-[1.5rem] leading-[1.3]": {},
+      "@apply text-[1.1875rem] lg:text-[1.5rem] leading-[1.3]": {},
     },
     ".prose-title-lg-medium": {
       fontWeight: theme("fontWeight.medium"),
