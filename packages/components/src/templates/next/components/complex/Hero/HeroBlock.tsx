@@ -9,6 +9,7 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
+
 const HERO_THEME_MAPPINGS = {
   text: {
     default: "text-base-content-inverse",

@@ -5,6 +5,7 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
+
 export const HeroGradient = ({
   title,
   subtitle,
