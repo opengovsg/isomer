@@ -1,5 +1,5 @@
 import { Box } from "@chakra-ui/react"
-import { type Meta, type StoryObj } from "@storybook/nextjs"
+import { type Meta, type StoryObj } from "@storybook/nextjs-vite"
 import { FilterTypeChoiceModal } from "~/features/editing-experience/components/form-builder/components/FilterTypeChoiceModal"
 
 import { withChromaticModes } from "@isomer/storybook-config"
