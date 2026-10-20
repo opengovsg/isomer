@@ -2,7 +2,7 @@ import type { HardBreakProps } from "~/interfaces"
 import type { Marks, TextProps } from "~/interfaces/native/Text"
 import type { IsomerSiteProps } from "~/types"
 import DOMPurify from "isomorphic-dompurify"
-import { isEqual } from "lodash-es"
+import { escape, isEqual } from "lodash-es"
 
 import { getReferenceLinkHref } from "./getReferenceLinkHref"
 
@@ -26,7 +26,7 @@ interface GetTextAsHtmlArgs {
   shouldStripContentHtmlTags?: boolean
 }
 
-// We want to prevent user-injected HTML tags from breaking the formatting
+// DOMPurify returns HTML with entities escaped, ready for the HTML consumer.
 function stripHtmlTags(input: string): string {
   return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] })
 }
@@ -36,7 +36,7 @@ export const getTextAsHtml = ({
   site,
   content,
   shouldHideEmptyHardBreak,
-  shouldStripContentHtmlTags = false, // needed for content from tiptap editor
+  shouldStripContentHtmlTags = false,
 }: GetTextAsHtmlArgs) => {
   if (!content) {
     // Note: We need to return a <br /> tag to ensure that the paragraph is not collapsed
@@ -61,6 +61,10 @@ export const getTextAsHtml = ({
       return
     }
 
+    const text = shouldStripContentHtmlTags
+      ? stripHtmlTags(node.text)
+      : escape(node.text)
+
     const currentNodeLinkMark = node.marks?.find((mark) => mark.type === "link")
     const isLinkMarkNew =
       (!previousNodeLinkMark && !!currentNodeLinkMark) ||
@@ -75,9 +79,7 @@ export const getTextAsHtml = ({
 
     // If there are no marks, just push the text
     if (!node.marks) {
-      output.push(
-        shouldStripContentHtmlTags ? stripHtmlTags(node.text) : node.text,
-      )
+      output.push(text)
       return
     }
 
@@ -96,7 +98,7 @@ export const getTextAsHtml = ({
       node.marks.forEach((mark) => {
         if (mark.type === "link") {
           output.push(
-            `<${MARK_DOM_MAPPING.link} target="${mark.attrs.target || "_self"}" href="${getReferenceLinkHref(mark.attrs.href ?? "", site.siteMapArray, site.assetsBaseUrl)}">`,
+            `<${MARK_DOM_MAPPING.link} target="${escape(mark.attrs.target || "_self")}" href="${escape(getReferenceLinkHref(mark.attrs.href ?? "", site.siteMapArray, site.assetsBaseUrl))}">`,
           )
         } else {
           output.push(`<${MARK_DOM_MAPPING[mark.type]}>`)
@@ -112,9 +114,7 @@ export const getTextAsHtml = ({
     }
 
     // Push the text
-    output.push(
-      shouldStripContentHtmlTags ? stripHtmlTags(node.text) : node.text,
-    )
+    output.push(text)
 
     // Close off all marks except for links in reverse order
     const marksToClose = node.marks.filter((mark) => mark.type !== "link")

@@ -1,5 +1,5 @@
-import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge"
-import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
+import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
+import { reorder } from "@atlaskit/pragmatic-drag-and-drop/utils/reorder"
 import { cloneDeep, get, set } from "lodash-es"
 
 import type {
@@ -30,6 +30,13 @@ export const isFirstLevelLinksOverLimit = (
   itemCount: number,
   maxItems?: number,
 ): boolean => !!(maxItems && itemCount > maxItems)
+
+// At-limit: block drag-and-drop moves that would add another first-level item
+// (e.g. promoting a sub-item). Add stays enabled so users can still nest links.
+export const isFirstLevelLinksAtLimit = (
+  itemCount: number,
+  maxItems?: number,
+): boolean => !!(maxItems && itemCount >= maxItems)
 
 export const getInstancePathFromNavbarItemPath = (path: NavbarItemPath) => {
   return `/${path.replace(/\./g, "/")}`

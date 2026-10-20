@@ -55,7 +55,10 @@ export const CollectionResults = ({
 
   if (totalCount === 0) {
     return (
-      <p className="prose-body-base py-32 text-center text-base-content">
+      <p
+        aria-live="polite"
+        className="prose-body-base py-32 text-center text-base-content"
+      >
         There are no items here.
       </p>
     )
@@ -65,7 +68,11 @@ export const CollectionResults = ({
     <>
       <div className="flex w-full flex-col justify-between gap-x-6 gap-y-2 md:flex-row">
         <div className="flex h-full w-full items-center gap-3">
-          <p className="prose-headline-lg-regular text-base-content-medium">
+          <p
+            aria-atomic="true"
+            aria-live="polite"
+            className="prose-headline-lg-regular text-base-content-medium"
+          >
             {`${filteredCount} item${filteredCount === 1 ? "" : "s"}`}
             {searchValue !== "" && (
               <>
@@ -101,7 +108,7 @@ export const CollectionResults = ({
         </div>
       ) : (
         <div className="flex flex-col gap-1 py-32 text-center text-content">
-          <p className="prose-body-base">
+          <p aria-live="polite" className="prose-body-base">
             We couldn’t find any items. Try different search terms or filters.
           </p>
           <button

@@ -12,7 +12,7 @@ Every ticket that an agent may pick up **must** carry the following:
 | ----------------- | --------------------------- | ---------------------------------------------------------------- |
 | `Title`           | all                         | Imperative, scoped. No "investigate X" titles for bugs.          |
 | `Description`     | all                         | Markdown. Sections below.                                        |
-| `Area` label      | all                         | One of: `area:studio`, `area:components`, `area:infra`, `area:db`. Drives which `CLAUDE.md` files the agent loads. |
+| `Area` label      | all                         | One of: `area:studio`, `area:components`, `area:infra`, `area:db`. Drives which `AGENTS.md` files the agent loads. |
 | `Type` label      | all                         | One of: `bug`, `feature`, `chore`, `design-iteration`.           |
 | `Risk` label      | feature, chore              | One of: `risk:low`, `risk:medium`, `risk:high`. Bugs are graded by the agent. |
 | `Trigger` label   | agent-eligible tickets only | `ai:triage` (let agent triage), `ai:implement` (let agent ship a PR). Absence = agent must not act. |
@@ -109,7 +109,7 @@ When the agent opens a PR, it must:
 
 - A required field above is missing or malformed.
 - The ticket is labelled `risk:high` but the agent only has `ai:triage` permission (it can investigate but not open an implementing PR).
-- The area label points to a directory without a `CLAUDE.md` covering its conventions.
+- The area label points to a directory without an `AGENTS.md` covering its conventions.
 - The Figma frame references a component not present in `packages/components/src/`.
 
 Stopping looks like: post a Linear comment listing what's missing, mark the ticket back to the human in the triage column. Never guess.

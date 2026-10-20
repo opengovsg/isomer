@@ -7,6 +7,7 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
 import type {
   ResourceState,
+  ScheduledAction,
   ResourceType,
   RoleType,
   IsomerAdminRole,
@@ -31,6 +32,12 @@ export interface AuditLog {
   delta: PrismaJson.AuditLogDeltaJsonContent
   ipAddress: string | null
 }
+export interface AuditLogExportBatch {
+  id: string
+  emailedAt: Timestamp | null
+  emailAttempts: Generated<number>
+  createdAt: Generated<Timestamp>
+}
 export interface AuditLogExportRequest {
   auditLogDateRange: string
   id: GeneratedAlways<string>
@@ -44,6 +51,7 @@ export interface AuditLogExportRequest {
   completedAt: Timestamp | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
+  batchId: string | null
 }
 export interface Blob {
   id: GeneratedAlways<string>
@@ -133,6 +141,7 @@ export interface Resource {
   type: ResourceType
   scheduledAt: Timestamp | null
   scheduledBy: string | null
+  scheduledAction: ScheduledAction | null
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
@@ -198,6 +207,7 @@ export interface Whitelist {
 }
 export interface DB {
   AuditLog: AuditLog
+  AuditLogExportBatch: AuditLogExportBatch
   AuditLogExportRequest: AuditLogExportRequest
   Blob: Blob
   CodeBuildJobs: CodeBuildJobs

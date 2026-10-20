@@ -1,10 +1,10 @@
-import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge"
+import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { PartialDeep } from "type-fest"
-import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
+import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/extract-closest-edge"
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine"
-import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter"
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/utils/combine"
 import {
   Accordion,
   Box,
@@ -35,7 +35,11 @@ import type { NavbarItems } from "./types"
 import { getParentPath } from "../utils"
 import { EditNavbarItem } from "./EditNavbarItem"
 import { StackableNavbarItem } from "./StackableNavbarItem"
-import { handleMoveItem, isFirstLevelLinksOverLimit } from "./utils"
+import {
+  handleMoveItem,
+  isFirstLevelLinksAtLimit,
+  isFirstLevelLinksOverLimit,
+} from "./utils"
 
 export const jsonFormsNavbarControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.NavbarControl,
@@ -92,7 +96,7 @@ function JsonFormsNavbarControl({
         Actions.update(path, (prevData) =>
           handleMoveItem(
             prevData as NavbarItems["items"],
-            !!(arraySchema.maxItems && data >= arraySchema.maxItems),
+            isFirstLevelLinksAtLimit(data, arraySchema.maxItems),
             originalPath,
             newPath,
             instruction,

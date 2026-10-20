@@ -1,0 +1,36 @@
+import type { ProcessedCollectionCardProps } from "~/interfaces"
+import type { CollectionPageSchemaType } from "~/types"
+import { TAG_CATEGORY_TYPE } from "~/types/constants"
+
+import type { Filter } from "../../../types/Filter"
+import { getDateFilters } from "./getDateFilters"
+
+// Tag and year filters are precomputed with the page. Date-bucket counts are
+// not: they depend on Singapore "today", which moves after publish. Replace
+// only those counts from the items already on the client.
+export const refreshDateFilterCounts = ({
+  filters,
+  items,
+  tagCategories,
+}: {
+  filters: Filter[]
+  items: ProcessedCollectionCardProps[]
+  tagCategories?: CollectionPageSchemaType["page"]["tagCategories"]
+}): Filter[] => {
+  const dateFiltersById = new Map(
+    getDateFilters(items, tagCategories).map((filter) => [filter.id, filter]),
+  )
+
+  return filters.flatMap((filter) => {
+    if (filter.type !== TAG_CATEGORY_TYPE.Date) {
+      return [filter]
+    }
+
+    const fresh = dateFiltersById.get(filter.id)
+    if (!fresh || fresh.items.length < 1) {
+      return []
+    }
+
+    return [fresh]
+  })
+}

@@ -76,6 +76,31 @@ export const userHandlers = {
         ]
       })
     },
+    // Phone is only returned to core Isomer admins
+    usersWithPhone: () => {
+      return trpcMsw.user.list.query(() => {
+        return [
+          {
+            id: "1",
+            name: "Government Editor",
+            email: "example_editor@isomer.gov.sg",
+            role: RoleType.Editor,
+            phone: "91234567",
+            createdAt: new Date(),
+            lastLoginAt: new Date(),
+          },
+          {
+            id: "2",
+            name: "User without phone",
+            email: "no-phone@example.com",
+            role: RoleType.Admin,
+            phone: "",
+            createdAt: new Date(),
+            lastLoginAt: new Date(),
+          },
+        ]
+      })
+    },
     isomerAdmins: () => {
       return trpcMsw.user.list.query(() => {
         return [

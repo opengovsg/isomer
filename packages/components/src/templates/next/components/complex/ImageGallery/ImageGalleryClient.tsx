@@ -43,6 +43,17 @@ const createImagePreviewStyles = tv({
   },
 })
 
+const slideStyles = tv({
+  // z-index ensures the current image always appears on top, preventing visual
+  // glitches when images overlap during transitions or when rapidly changing slides.
+  base: "absolute inset-0 z-0 h-full w-full opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
+  variants: {
+    isCurrent: {
+      true: "z-10 opacity-100",
+    },
+  },
+})
+
 const compoundStyles = createImagePreviewStyles()
 
 export const ImageGalleryClient = ({
@@ -197,11 +208,7 @@ export const ImageGalleryClient = ({
               shouldPreload && (
                 <div
                   key={image.src + index} // in case of same src, use index as key
-                  className={`absolute inset-0 h-full w-full transition-opacity duration-150 ease-out motion-reduce:transition-none ${
-                    // z-index ensures the current image always appears on top,
-                    // preventing visual glitches when images overlap during transitions or when rapidly changing slides.
-                    isCurrentImage ? "z-10 opacity-100" : "z-0 opacity-0"
-                  }`}
+                  className={slideStyles({ isCurrent: isCurrentImage })}
                   aria-hidden={!isCurrentImage}
                 >
                   <div className="relative h-full w-full">

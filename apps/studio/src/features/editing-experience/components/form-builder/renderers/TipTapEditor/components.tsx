@@ -1,10 +1,12 @@
 import type { BoxProps } from "@chakra-ui/react"
 import type { EditorContentProps, Editor as TiptapEditor } from "@tiptap/react"
-import type { PropsWithChildren } from "react"
+import type { PropsWithChildren, RefObject } from "react"
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
-import { useMemo } from "react"
+import { useMemo, useRef, useState } from "react"
+import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
+import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles"
 
 const EditorContainer = ({
   children,
@@ -35,7 +37,7 @@ const EditorContainer = ({
       transitionDuration="normal"
       {...containerProps}
     >
-      <VStack h="100%" w="100%" gap="0">
+      <VStack h="100%" w="100%" gap="0" minH={0}>
         {children}
       </VStack>
     </Box>
@@ -44,20 +46,53 @@ const EditorContainer = ({
 
 const EditorContentWrapper = ({
   editor,
-}: Pick<EditorContentProps, "editor">) => {
+  containerRef,
+  showTableExtras,
+  onDragStateChange,
+}: Pick<EditorContentProps, "editor"> & {
+  containerRef: RefObject<HTMLDivElement>
+  showTableExtras?: boolean
+  onDragStateChange?: (isDragging: boolean) => void
+}) => {
   return (
     <Box
-      as={EditorContent}
-      editor={editor}
+      ref={containerRef}
+      position="relative"
       w="100%"
-      p="1rem"
       flex="1 1 auto"
+      minH={0}
+      display="flex"
+      flexDirection="column"
       overflowX="hidden"
       overflowY="auto"
-      backgroundColor="white"
-      onClick={() => editor?.chain().focus().run()}
-      cursor="text"
-    />
+    >
+      <Box
+        as={EditorContent}
+        editor={editor}
+        w="100%"
+        flex="1 1 auto"
+        minH="100%"
+        display="flex"
+        flexDirection="column"
+        cursor="text"
+        sx={{
+          ".tiptap": {
+            boxSizing: "border-box",
+            flex: "1 1 auto",
+            minHeight: "100%",
+            padding: "1rem",
+            backgroundColor: "white",
+          },
+        }}
+      />
+      {showTableExtras && (
+        <TableDragHandles
+          editor={editor}
+          containerRef={containerRef}
+          onDragStateChange={onDragStateChange}
+        />
+      )}
+    </Box>
   )
 }
 
@@ -66,11 +101,26 @@ interface EditorProps {
   editor: TiptapEditor
   isNested?: boolean
 }
+
 export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isDragReordering, setIsDragReordering] = useState(false)
+  const isTableEditor = editor.extensionManager.extensions.some(
+    (ext) => ext.name === "table",
+  )
+
   return (
     <EditorContainer isNested={isNested}>
       {menubar({ editor })}
-      <EditorContentWrapper editor={editor} />
+      {isTableEditor && (
+        <TableBubbleMenu editor={editor} isDragReordering={isDragReordering} />
+      )}
+      <EditorContentWrapper
+        editor={editor}
+        containerRef={containerRef}
+        showTableExtras={isTableEditor}
+        onDragStateChange={setIsDragReordering}
+      />
     </EditorContainer>
   )
 }

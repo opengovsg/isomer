@@ -1977,6 +1977,96 @@ describe("redirect.router", async () => {
       expect(count).toBe(1)
     })
 
+    it("should count a redirect to the container when given its IndexPage's id and includeContainerReference", async () => {
+      // Arrange — the redirect references the folder, not its IndexPage child
+      const { folder } = await setupFolder({ siteId, permalink: "folder" })
+      const { page: indexPage } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/a",
+          destination: `[resource:${siteId}:${folder.id}]`,
+        })
+        .execute()
+
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: String(indexPage.id),
+        includeContainerReference: true,
+      })
+
+      // Assert
+      expect(count).toBe(1)
+    })
+
+    it("should not count the container reference for an IndexPage id by default (delete-cascade parity)", async () => {
+      // Arrange — same setup as above, but without opting in
+      const { folder } = await setupFolder({ siteId, permalink: "folder" })
+      const { page: indexPage } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/a",
+          destination: `[resource:${siteId}:${folder.id}]`,
+        })
+        .execute()
+
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: String(indexPage.id),
+      })
+
+      // Assert
+      expect(count).toBe(0)
+    })
+
+    it("should not count a parent folder's reference as a container reference when the resource is not an IndexPage", async () => {
+      // Arrange — a non-IndexPage resource has no container to fold in
+      const { folder } = await setupFolder({ siteId, permalink: "folder" })
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        permalink: "leaf",
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/a",
+          destination: `[resource:${siteId}:${folder.id}]`,
+        })
+        .execute()
+
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: String(page.id),
+        includeContainerReference: true,
+      })
+
+      // Assert
+      expect(count).toBe(0)
+    })
+
     it("should not count a literal-path destination (reference-only)", async () => {
       // Arrange — a literal-path destination that happens to match the page's
       // path is not a reference, so it is intentionally not counted
