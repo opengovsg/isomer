@@ -8,7 +8,8 @@ import { MINIMAL_VIEWPORTS } from "storybook/viewport"
 import "bootstrap-icons/font/bootstrap-icons.css"
 
 import "../src/index.css"
-import { applyViewportInVitest, viewport } from "@isomer/storybook-config"
+import { viewport } from "@isomer/storybook-config"
+import { applyViewportInVitest } from "@isomer/storybook-config/test-viewport"
 
 const CUSTOM_GENERAL_VIEWPORTS = {
   smallDesktop: {

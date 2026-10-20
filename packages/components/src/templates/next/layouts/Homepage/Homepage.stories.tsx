@@ -729,8 +729,8 @@ const heroBlockCurvedHomepageProps = {
 
 export const HeroBlockLeftCurved: Story = {
   name: "Curve+Left",
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds the capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       ...heroBlockCurvedHomepageProps,
@@ -741,8 +741,8 @@ export const HeroBlockLeftCurved: Story = {
 
 export const HeroBlockRightCurved: Story = {
   name: "Curve+Right",
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds the capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       ...heroBlockCurvedHomepageProps,

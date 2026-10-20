@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./test-viewport": "./test-viewport.ts"
   },
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
