@@ -281,7 +281,7 @@ const HeroCarouselSchema = Type.Object(
     variant: Type.Literal(HERO_STYLE.carousel.key, {
       default: HERO_STYLE.carousel.key,
     }),
-    layout: Type.Union(
+    carouselLayout: Type.Union(
       [
         Type.Literal(HERO_CAROUSEL_LAYOUT.block, {
           title: "Block",

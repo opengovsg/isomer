@@ -16,7 +16,7 @@ describe("withHeroCarouselSlides", () => {
       backgroundUrl: "/uploads/existing.png",
       title: "Keep me",
     }
-    const next = { variant: "carousel", layout: "block" }
+    const next = { variant: "carousel", carouselLayout: "block" }
 
     // Act
     const result = withHeroCarouselSlides(previous, next)
@@ -24,7 +24,7 @@ describe("withHeroCarouselSlides", () => {
     // Assert
     expect(result).toEqual({
       variant: "carousel",
-      layout: "block",
+      carouselLayout: "block",
       slides: [
         {
           backgroundUrl: "/uploads/existing.png",
@@ -37,7 +37,7 @@ describe("withHeroCarouselSlides", () => {
 
   it("uses the placeholder image when the previous hero has none", () => {
     // Arrange
-    const next = { variant: "carousel", layout: "block" }
+    const next = { variant: "carousel", carouselLayout: "block" }
 
     // Act
     const result = withHeroCarouselSlides(
@@ -48,7 +48,7 @@ describe("withHeroCarouselSlides", () => {
     // Assert
     expect(result).toEqual({
       variant: "carousel",
-      layout: "block",
+      carouselLayout: "block",
       slides: [
         { ...defaultHeroCarouselSlide(), title: "Hello" },
         defaultHeroCarouselSlide(),
@@ -90,18 +90,18 @@ const carouselSchema = {
   properties: {
     type: {},
     variant: {},
-    layout: {},
+    carouselLayout: {},
     slides: {},
   },
 }
 
 describe("nextVariantData", () => {
-  it("drops slides and layout when leaving carousel and keeps the first slide content", () => {
+  it("drops slides and carouselLayout when leaving carousel and keeps the first slide content", () => {
     // Arrange
     const previous = {
       type: "hero",
       variant: "carousel",
-      layout: "gradient",
+      carouselLayout: "gradient",
       title: "Stale root title",
       slides: [
         {
@@ -138,14 +138,14 @@ describe("nextVariantData", () => {
       backgroundUrl: "/uploads/existing.png",
       title: "Hello",
       subtitle: "More",
-      layout: "gradient",
+      carouselLayout: "gradient",
       slides: [{ backgroundUrl: "/stale.png" }],
     }
 
     // Act
     const result = nextVariantData(
       previous,
-      { type: "hero", variant: "carousel", layout: "block" },
+      { type: "hero", variant: "carousel", carouselLayout: "block" },
       carouselSchema,
     )
 
@@ -153,7 +153,7 @@ describe("nextVariantData", () => {
     expect(result).toEqual({
       type: "hero",
       variant: "carousel",
-      layout: "block",
+      carouselLayout: "block",
       slides: [
         {
           backgroundUrl: "/uploads/existing.png",
