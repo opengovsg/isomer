@@ -6,7 +6,7 @@ import { omit } from "lodash-es"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
-import { HERO_BANNER_STYLE_FORMAT } from "../format"
+import { HERO_BANNER_STYLE_FORMAT, HERO_BLOCK_IMAGE_FORMAT } from "../format"
 import { IsomerString } from "../primitives/IsomerString"
 import { generateImageSrcSchema, imageAdjustmentSchema } from "./Image"
 
@@ -16,6 +16,16 @@ export const HERO_STYLE = {
   largeImage: { key: "largeImage", title: "Large image" },
   floating: { key: "floating", title: "Floating" },
   searchbar: { key: "searchbar", title: "Search bar" },
+} as const
+
+export const HERO_BLOCK_IMAGE_POSITION = {
+  left: "left",
+  right: "right",
+} as const
+
+export const HERO_BLOCK_IMAGE_EDGE = {
+  straight: "straight",
+  curved: "curved",
 } as const
 
 export type HeroStyleVariant =
@@ -138,6 +148,29 @@ const HeroBlockSchema = Type.Composite(
       }),
       backgroundUrl: BackgroundUrlSchema,
       imageAdjustment: Type.Optional(imageAdjustmentSchema),
+      blockImage: Type.Optional(
+        Type.Object(
+          {
+            imagePosition: Type.Union(
+              [
+                Type.Literal(HERO_BLOCK_IMAGE_POSITION.right),
+                Type.Literal(HERO_BLOCK_IMAGE_POSITION.left),
+              ],
+              { type: "string" },
+            ),
+            imageEdge: Type.Union(
+              [
+                Type.Literal(HERO_BLOCK_IMAGE_EDGE.straight),
+                Type.Literal(HERO_BLOCK_IMAGE_EDGE.curved),
+              ],
+              { type: "string" },
+            ),
+          },
+          {
+            format: HERO_BLOCK_IMAGE_FORMAT,
+          },
+        ),
+      ),
     }),
     HeroBaseSchema,
     CallToActionsSchema,
