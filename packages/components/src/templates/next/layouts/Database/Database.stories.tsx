@@ -6,7 +6,7 @@ import {
   generateSiteConfig,
 } from "~/stories/helpers"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { DatabaseLayout } from "./Database"
 
@@ -17,7 +17,7 @@ const meta: Meta<typeof DatabaseLayout> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    argos: withArgosModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },

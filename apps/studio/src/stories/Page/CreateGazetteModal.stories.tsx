@@ -24,7 +24,7 @@ const meta: Meta<typeof CreateGazetteModal> = {
   ],
   parameters: {
     layout: "fullscreen",
-    chromatic: { delay: 200 },
+    argos: { delay: 200 },
     msw: {
       handlers: [gazetteHandlers.collectionTags.default()],
     },

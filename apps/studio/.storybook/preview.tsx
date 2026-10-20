@@ -23,6 +23,7 @@ import { setupWorker } from "msw/browser"
 import { useCallback, useState } from "react"
 import ReactDOM from "react-dom"
 import { ErrorBoundary } from "react-error-boundary"
+import { configure } from "storybook/test"
 import superjson from "superjson"
 import { AppBanner } from "~/components/AppBanner"
 import { EnvProvider } from "~/components/AppProviders"
@@ -33,7 +34,7 @@ import { LoginStateContext } from "~/features/auth"
 import { createMockGrowthBook } from "~/stories/utils/growthbook"
 import { theme } from "~/theme"
 
-import { viewport, withChromaticModes } from "@isomer/storybook-config"
+import { viewport, withArgosModes } from "@isomer/storybook-config"
 
 // Storybook's Next.js preview runs on Next's bundled React 19, which removed
 // findDOMNode. react-input-mask and react-transition-group (used by OGP's
@@ -55,7 +56,6 @@ interface Fiber {
   stateNode: unknown
   child?: Fiber
 }
-
 const trpc = createTRPCReact<AppRouter>()
 
 const StorybookEnvDecorator: Decorator = (story) => {
@@ -185,10 +185,22 @@ const decorators: Decorator[] = [
 ]
 
 const preview: Preview = {
+  // Stories load data through MSW and render Suspense skeletons first. The 1s
+  // default for findBy*/waitFor is too short on a loaded CI runner, so wait
+  // longer instead of failing the play function.
+  beforeAll: () => {
+    configure({ asyncUtilTimeout: 5000 })
+  },
+
   loaders: [
     mswLoader(async () => {
       const worker = setupWorker()
-      await worker.start({ onUnhandledFrame: "bypass" })
+      // Relative, so the worker resolves next to the Storybook even when it is
+      // deployed under a sub-path (/components/, /studio/) instead of the root.
+      await worker.start({
+        onUnhandledFrame: "bypass",
+        serviceWorker: { url: "./mockServiceWorker.js" },
+      })
       return worker
     }),
   ],
@@ -198,21 +210,32 @@ const preview: Preview = {
     layout: "fullscreen",
     // MOH site launch!!! aka birth of Isomer Next hehe
     date: new Date(2024, 10, 28),
-    viewport,
+    viewport: {
+      // Argos reads "100%" heights as 100px, which clips modals and drawers
+      // (they render in portals), so give Studio a real viewport height.
+      viewports: Object.fromEntries(
+        Object.entries(viewport.viewports).map(([key, value]) => [
+          key,
+          { ...value, styles: { ...value.styles, height: "720px" } },
+        ]),
+      ),
+    },
     /**
      * If tablet view is needed, add it on a per-story basis.
      * @example
      * ```
      * export const SomeStory: Story = {
      *   parameters: {
-     *     chromatic: withChromaticModes(["gsib", "desktop", "tablet"]),
+     *     argos: withArgosModes(["gsib", "desktop", "tablet"]),
      *   }
      * }
      * ```
      */
-    chromatic: {
-      ...withChromaticModes(["gsib"]),
-      prefersReducedMotion: "reduce",
+    argos: {
+      ...withArgosModes(["gsib"]),
+      // Modals and drawers render in portals, so cropping to the body's
+      // content captures a sliver. Capture the whole viewport like Chromatic.
+      fitToContent: false,
     },
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {

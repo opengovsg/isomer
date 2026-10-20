@@ -9,6 +9,7 @@ import "bootstrap-icons/font/bootstrap-icons.css"
 
 import "../src/index.css"
 import { viewport } from "@isomer/storybook-config"
+import { applyViewportInVitest } from "@isomer/storybook-config/test-viewport"
 
 const CUSTOM_GENERAL_VIEWPORTS = {
   smallDesktop: {
@@ -101,18 +102,31 @@ const preview: Preview = {
   // state written by a previous story can leak into the next one. Reset only
   // Isomer's parameters before rendering; Storybook owns the other parameters
   // in the search string. A lifecycle hook keeps this side effect out of
-  // React's render phase, which is required by Chromatic's story renderer.
-  beforeEach: resetIsomerQueryParams,
+  // React's render phase.
+  beforeEach: async (context) => {
+    resetIsomerQueryParams()
+    await applyViewportInVitest(context)
+  },
 
   loaders: [
     mswLoader(async () => {
       const worker = setupWorker()
-      await worker.start({ onUnhandledFrame: "bypass" })
+      // Relative, so the worker resolves next to the Storybook even when it is
+      // deployed under a sub-path (/components/, /studio/) instead of the root.
+      await worker.start({
+        onUnhandledFrame: "bypass",
+        serviceWorker: { url: "./mockServiceWorker.js" },
+      })
       return worker
     }),
   ],
 
   parameters: {
+    argos: {
+      // Argos crops, pads and zooms the capture by default. Chromatic captured
+      // the full viewport width as rendered.
+      fitToContent: false,
+    },
     viewport: {
       options: {
         ...viewport.viewports,
@@ -127,14 +141,11 @@ const preview: Preview = {
      * ```
      * export const SomeStory: Story = {
      *   parameters: {
-     *     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+     *     argos: withArgosModes(["mobile", "tablet", "desktop"]),
      *   }
      * }
      * ```
      */
-    chromatic: {
-      prefersReducedMotion: "reduce",
-    },
   },
 
   tags: ["autodocs"],
