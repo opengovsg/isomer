@@ -1,10 +1,12 @@
 import { Flex, HStack } from "@chakra-ui/react"
+import { useFeatureValue } from "@growthbook/growthbook-react"
 import { Button } from "@opengovsg/design-system-react"
 import Image from "next/image"
 import NextLink from "next/link"
 import { BiLinkExternal } from "react-icons/bi"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { IS_CENTRAL_NOTIFICATION_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { AvatarMenu } from "./AvatarMenu"
@@ -13,6 +15,10 @@ export function AppNavbar(): JSX.Element {
   const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
+  const isCentralBannerEnabled = useFeatureValue<boolean>(
+    IS_CENTRAL_NOTIFICATION_BANNER_ENABLED_FEATURE_KEY,
+    false,
+  )
 
   return (
     <Flex flex="0 0 auto" gridColumn="1/-1" height={ADMIN_NAVBAR_HEIGHT}>
@@ -45,6 +51,16 @@ export function AppNavbar(): JSX.Element {
             alt="Back to sites"
             priority
           />
+          {isCentralBannerEnabled && (
+            <Button
+              variant="clear"
+              size="xs"
+              as={NextLink}
+              href="/central-banner"
+            >
+              Central Banner
+            </Button>
+          )}
           {isUserIsomerAdmin && (
             <Button variant="clear" size="xs" as={NextLink} href="/godmode">
               👁️ God Mode 👁️
