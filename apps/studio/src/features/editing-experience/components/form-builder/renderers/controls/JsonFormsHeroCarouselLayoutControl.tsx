@@ -7,6 +7,8 @@ import {
   HERO_CAROUSEL_CONTENT_ALIGNMENT,
   HERO_CAROUSEL_FORMAT,
   HERO_CAROUSEL_LAYOUT,
+  type HeroCarouselContentAlignment,
+  type HeroCarouselLayout,
 } from "@opengovsg/isomer-components"
 import {
   IconHeroCarouselBlock,
@@ -14,15 +16,14 @@ import {
 } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-type HeroCarouselLayout =
-  (typeof HERO_CAROUSEL_LAYOUT)[keyof typeof HERO_CAROUSEL_LAYOUT]
-
-type HeroCarouselContentAlignment =
-  (typeof HERO_CAROUSEL_CONTENT_ALIGNMENT)[keyof typeof HERO_CAROUSEL_CONTENT_ALIGNMENT]
-
 interface HeroCarouselData {
   layout: HeroCarouselLayout
   contentAlignment?: HeroCarouselContentAlignment
+}
+
+// Text-only choices — no card-style hover (illustrated layout radios keep default).
+const textRadioCss = {
+  _hover: { bg: "none" },
 }
 
 // TODO: This control is purely duplicative of JsonFormsChildPageLayoutControl.tsx;
@@ -105,6 +106,7 @@ function JsonFormsHeroCarouselLayoutControl({
               value={HERO_CAROUSEL_CONTENT_ALIGNMENT.left}
               allowDeselect={false}
               size="sm"
+              __css={textRadioCss}
             >
               Left
             </Radio>
@@ -112,6 +114,7 @@ function JsonFormsHeroCarouselLayoutControl({
               value={HERO_CAROUSEL_CONTENT_ALIGNMENT.center}
               allowDeselect={false}
               size="sm"
+              __css={textRadioCss}
             >
               Center
             </Radio>
