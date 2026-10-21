@@ -236,6 +236,19 @@ function JsonFormsImageControl({
   return (
     <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
       <FormLabel description={description}>{label}</FormLabel>
+      {/* Guidance shown at all times (before and after upload), per the
+          component's real frame behaviour — a border matching the info icon. */}
+      {isImageAdjustmentEnabled && config?.preUploadCopy && (
+        <Infobox
+          variant="info"
+          size="sm"
+          mb="0.75rem"
+          border="1px solid"
+          borderColor="utility.feedback.info"
+        >
+          <Text textStyle="body-2">{config.preUploadCopy}</Text>
+        </Infobox>
+      )}
       {data ? (
         <Box>
           {/* Adjustment entry point — a pencil on the file row, only for
@@ -295,20 +308,6 @@ function JsonFormsImageControl({
         </Box>
       ) : (
         <Box>
-          {/* Pre-upload guidance — shown before a file is chosen, per the
-              component's real frame behaviour (never a universal ratio for a
-              responsive frame). */}
-          {isImageAdjustmentEnabled && config?.preUploadCopy && (
-            <Infobox
-              variant="info"
-              size="sm"
-              mb="0.75rem"
-              border="1px solid"
-              borderColor="utility.feedback.info"
-            >
-              <Text textStyle="body-2">{config.preUploadCopy}</Text>
-            </Infobox>
-          )}
           <FileAttachment
             maxSizeInBytes={schema.maxSizeInBytes ?? MAX_IMG_FILE_SIZE_BYTES}
             acceptedFileTypes={
