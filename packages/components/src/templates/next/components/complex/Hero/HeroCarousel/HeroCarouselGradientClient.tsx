@@ -36,7 +36,7 @@ const gradientCarouselStyles = tv({
         // The !utilities override ComponentContent's padding and max width,
         // which an ancestor sets with a more specific selector.
         contentInner:
-          "md:!px-[8.75rem] md:py-16 md:text-center lg:!max-w-[54.75rem] lg:!px-10 lg:pb-16",
+          "md:!px-[8.75rem] md:py-16 md:text-center lg:!mx-auto lg:w-full lg:!max-w-[54.75rem] lg:!px-10 lg:pb-16",
         actions: "md:justify-center",
       },
     } satisfies Record<
