@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
 
+import { PLACEHOLDER_IMAGE_FILENAME } from "../../constants"
 import {
   defaultHeroCarouselSlide,
-  HERO_CAROUSEL_PLACEHOLDER_IMAGE,
   nextVariantData,
 } from "../heroCarouselDefaults"
 
@@ -75,7 +75,7 @@ describe("nextVariantData", () => {
       ],
     })
     expect(defaultHeroCarouselSlide().backgroundUrl).toBe(
-      HERO_CAROUSEL_PLACEHOLDER_IMAGE,
+      `/${PLACEHOLDER_IMAGE_FILENAME}`,
     )
   })
 

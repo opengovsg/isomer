@@ -264,7 +264,7 @@ const HeroSearchbarSchema = Type.Composite(
   },
 )
 
-const HeroCarouselSlideSchema = Type.Composite(
+export const HeroCarouselSlideSchema = Type.Composite(
   [
     Type.Object({
       backgroundUrl: BackgroundUrlSchema,

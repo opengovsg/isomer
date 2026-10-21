@@ -18,6 +18,7 @@ export {
   HERO_CAROUSEL_CONTENT_ALIGNMENT,
   HERO_CAROUSEL_LAYOUT,
   HERO_STYLE,
+  HeroCarouselSlideSchema,
   HeroSchema,
   type HeroBlockProps,
   type HeroCarouselContentAlignment,

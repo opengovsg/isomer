@@ -1,26 +1,25 @@
 import type { JsonSchema } from "@jsonforms/core"
-import { HERO_CAROUSEL_LAYOUT, HERO_STYLE } from "@opengovsg/isomer-components"
+import {
+  HERO_CAROUSEL_LAYOUT,
+  HERO_STYLE,
+  HeroCarouselSlideSchema,
+} from "@opengovsg/isomer-components"
 
 import { PLACEHOLDER_IMAGE_FILENAME } from "../constants"
 
-export const HERO_CAROUSEL_PLACEHOLDER_IMAGE = `/${PLACEHOLDER_IMAGE_FILENAME}`
-export const HERO_CAROUSEL_PLACEHOLDER_TITLE = "Enter a title."
-
-export function defaultHeroCarouselSlide(backgroundUrl?: string) {
+export function defaultHeroCarouselSlide({
+  backgroundUrl,
+}: { backgroundUrl?: string } = {}) {
   return {
-    backgroundUrl: backgroundUrl || HERO_CAROUSEL_PLACEHOLDER_IMAGE,
-    title: HERO_CAROUSEL_PLACEHOLDER_TITLE,
+    backgroundUrl: backgroundUrl || `/${PLACEHOLDER_IMAGE_FILENAME}`,
+    title: "Enter a title.",
   }
 }
 
-const CARRIED_SLIDE_FIELDS = [
-  "title",
-  "subtitle",
-  "buttonLabel",
-  "buttonUrl",
-  "secondaryButtonLabel",
-  "secondaryButtonUrl",
-] as const
+// backgroundUrl is carried via defaultHeroCarouselSlide's fallback instead.
+const CARRIED_SLIDE_FIELDS = Object.keys(
+  HeroCarouselSlideSchema.properties,
+).filter((key) => key !== "backgroundUrl")
 
 type HeroData = Record<string, unknown> & {
   variant?: string
@@ -46,7 +45,9 @@ export function nextVariantData(
         carousel: { layout: HERO_CAROUSEL_LAYOUT.block },
         slides: [
           {
-            ...defaultHeroCarouselSlide(previous.backgroundUrl),
+            ...defaultHeroCarouselSlide({
+              backgroundUrl: previous.backgroundUrl,
+            }),
             ...Object.fromEntries(
               CARRIED_SLIDE_FIELDS.filter((key) => previous[key]).map((key) => [
                 key,
