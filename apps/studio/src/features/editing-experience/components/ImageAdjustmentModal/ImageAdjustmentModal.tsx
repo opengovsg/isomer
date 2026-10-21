@@ -395,7 +395,10 @@ export const ImageAdjustmentModal = ({
                         setImageFit(value as "cover" | "contain")
                       }
                     >
-                      <VStack align="stretch" spacing="0.5rem">
+                      {/* Inset so each option's full-width selection focus ring
+                          (a 2px outline at offset 0) isn't clipped by the
+                          scrolling editor column's left/right edges. */}
+                      <VStack align="stretch" spacing="0.5rem" px="0.25rem">
                         <Radio value="cover">Default (recommended)</Radio>
                         <Radio value="contain">Resize crop to fit</Radio>
                       </VStack>
