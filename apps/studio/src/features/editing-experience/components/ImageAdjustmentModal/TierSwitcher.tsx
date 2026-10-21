@@ -35,19 +35,24 @@ export const TierSwitcher = ({
             <WrapItem key={tier}>
               <Button
                 size="xs"
-                variant={isActive ? "solid" : "outline"}
+                variant="outline"
                 colorScheme="neutral"
                 onClick={() => onSelect(tier)}
                 aria-pressed={isActive}
-                // Inactive tiers were near-invisible (borderless, canvas-coloured
-                // bg). Give them a white fill + a visible divider border so every
-                // tier reads as a distinct, clickable chip.
-                bg={isActive ? undefined : "white"}
+                // Both states need an explicit fill: the active chip's default
+                // "solid neutral" blended into the canvas, and inactive chips were
+                // near-invisible (borderless, canvas-coloured bg). Active = brand
+                // fill + white text; inactive = white fill + a divider border, so
+                // the selection is unmistakable and every chip reads as clickable.
+                bg={isActive ? "interaction.main.default" : "white"}
+                color={isActive ? "white" : undefined}
                 borderWidth="1px"
-                borderColor={isActive ? undefined : "base.divider.medium"}
+                borderColor={
+                  isActive ? "interaction.main.default" : "base.divider.medium"
+                }
                 _hover={
                   isActive
-                    ? undefined
+                    ? { bg: "interaction.main.hover" }
                     : { bg: "interaction.muted.neutral.hover" }
                 }
               >

@@ -130,9 +130,11 @@ export const AdjustmentPreview = ({
   const smallTileWidth = Math.floor((railWidth - TILE_GAP_PX) / 2)
 
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  // One baked object URL per tier (keyed "base" | breakpoint) — each preview tile
+  // picks the one for the tier governing its viewport width.
+  const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({})
   const bakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const prevPreviewUrlRef = useRef<string | null>(null)
+  const prevPreviewUrlsRef = useRef<Record<string, string>>({})
   // Monotonic token for the latest bake request. Each effect run bumps it so an
   // older, still-running bake can detect it has been superseded and drop its
   // result instead of overwriting the preview of a newer draft.
@@ -221,12 +223,9 @@ export const AdjustmentPreview = ({
 
     // If no blob or no adjustment with crop, nothing to bake
     if (!originalBlob || !adjustment?.crop) {
-      // Revoke previous URL if clearing the preview
-      if (prevPreviewUrlRef.current) {
-        URL.revokeObjectURL(prevPreviewUrlRef.current)
-        prevPreviewUrlRef.current = null
-      }
-      setPreviewUrl(null)
+      Object.values(prevPreviewUrlsRef.current).forEach(URL.revokeObjectURL)
+      prevPreviewUrlsRef.current = {}
+      setPreviewUrls({})
       return
     }
 
@@ -255,21 +254,39 @@ export const AdjustmentPreview = ({
           return
         }
 
-        const bakedBlob = await bakeImage(originalBlob, adjustment, {
-          mimeType,
-        })
+        // Bake one crop per tier — base + each customised tier — from the one
+        // original (shared rotate/flip). Each preview tile picks the tier
+        // governing its width. bakeImage reads crop/rotate/flip; focal isn't baked.
+        const bakeTiers = [
+          { key: "base", crop: adjustment.crop },
+          ...(adjustment.tiers ?? []).map((t) => ({
+            key: t.breakpoint,
+            crop: t.crop,
+          })),
+        ]
+        const baked = await Promise.all(
+          bakeTiers.map(async ({ key, crop }) => ({
+            key,
+            blob: await bakeImage(
+              originalBlob,
+              { ...adjustment, crop },
+              { mimeType },
+            ),
+          })),
+        )
         // A newer adjustment started while this bake ran — discard this result
-        // so the older crop can't replace the newer preview.
+        // so the older crops can't replace the newer preview.
         if (isStale()) {
           return
         }
-        const bakeUrl = URL.createObjectURL(bakedBlob)
-        // Revoke previous URL before setting new one
-        if (prevPreviewUrlRef.current) {
-          URL.revokeObjectURL(prevPreviewUrlRef.current)
+        const newUrls: Record<string, string> = {}
+        for (const { key, blob } of baked) {
+          newUrls[key] = URL.createObjectURL(blob)
         }
-        prevPreviewUrlRef.current = bakeUrl
-        setPreviewUrl(bakeUrl)
+        // Revoke previous URLs before swapping in the new set.
+        Object.values(prevPreviewUrlsRef.current).forEach(URL.revokeObjectURL)
+        prevPreviewUrlsRef.current = newUrls
+        setPreviewUrls(newUrls)
       } catch (error) {
         // On any failure (CORS taint, canvas issue, etc.): fall back to the
         // uncropped src. Clear the previous preview so a stale crop from an
@@ -279,11 +296,9 @@ export const AdjustmentPreview = ({
         if (isStale()) {
           return
         }
-        if (prevPreviewUrlRef.current) {
-          URL.revokeObjectURL(prevPreviewUrlRef.current)
-          prevPreviewUrlRef.current = null
-        }
-        setPreviewUrl(null)
+        Object.values(prevPreviewUrlsRef.current).forEach(URL.revokeObjectURL)
+        prevPreviewUrlsRef.current = {}
+        setPreviewUrls({})
       }
     }
     bakeTimeoutRef.current = setTimeout(() => void runBake(), 150)
@@ -295,12 +310,10 @@ export const AdjustmentPreview = ({
     }
   }, [originalBlob, adjustment, originalSrc])
 
-  // Cleanup: revoke object URL on unmount
+  // Cleanup: revoke all baked object URLs on unmount
   useEffect(() => {
     return () => {
-      if (prevPreviewUrlRef.current) {
-        URL.revokeObjectURL(prevPreviewUrlRef.current)
-      }
+      Object.values(prevPreviewUrlsRef.current).forEach(URL.revokeObjectURL)
     }
   }, [])
 
@@ -312,7 +325,32 @@ export const AdjustmentPreview = ({
     return `${(focal.x ?? 0.5) * 100}% ${(focal.y ?? 0.5) * 100}%`
   }
 
-  const adjustedSrc = previewUrl ?? displaySrc
+  // Per-pane crop: a tile at a viewport width shows the crop baked for the tier
+  // governing it (base's for non-tiered / inherited), falling back to the base
+  // bake then the uncropped display src until a bake exists.
+  const hasTierHighlight = (configTiers?.length ?? 0) > 0
+  const paneTierFor = (state: AdjustmentPreviewState): ActiveTier => {
+    const governing = governingTierForWidth(
+      state.viewportWidth ?? 1024,
+      configTiers ?? [],
+    )
+    return governing !== "base" && (customisedTiers ?? []).includes(governing)
+      ? governing
+      : "base"
+  }
+  const urlForTier = (tier: ActiveTier): string =>
+    previewUrls[tier] ?? previewUrls.base ?? displaySrc
+  const cropFocalForTier = (
+    tier: ActiveTier,
+  ):
+    | { crop: ImageAdjustment["crop"]; focal: ImageAdjustment["focal"] }
+    | undefined => {
+    if (!adjustment) return undefined
+    if (tier === "base") {
+      return { crop: adjustment.crop, focal: adjustment.focal }
+    }
+    return adjustment.tiers?.find((t) => t.breakpoint === tier)
+  }
 
   // Real-component preview: render the actual published block (real copy,
   // scrim, frame behaviour) with the adjusted image + draft imageAdjustment
@@ -321,6 +359,8 @@ export const AdjustmentPreview = ({
   // non-default `layout` (e.g. Blockquote's homepage/square variant).
   const renderPreviewComponent = (
     layout: AdjustmentPreviewState["layout"],
+    imageSrc: string,
+    paneAdjustment: ImageAdjustment | undefined,
   ): React.ReactNode => {
     if (!block || typeof block !== "object" || !imageFieldName) return null
     try {
@@ -334,8 +374,8 @@ export const AdjustmentPreview = ({
       const hasAlt = typeof existingAlt === "string" && existingAlt.length > 0
       const component = {
         ...block,
-        [imageFieldName]: adjustedSrc,
-        imageAdjustment: adjustment,
+        [imageFieldName]: imageSrc,
+        imageAdjustment: paneAdjustment,
         ...(hasAlt ? {} : { imageAlt: "Preview image" }),
       } as IsomerComponent
       const rendered = renderComponent({
@@ -369,16 +409,17 @@ export const AdjustmentPreview = ({
     }
   }
 
-  // Gate on the default-layout render succeeding, same as every state did
-  // before per-state layout existed — a failure here falls through to the
-  // framed-<img> approximation for every state, not just the one that failed.
-  // A state requesting a non-default `layout` re-renders on its own and, in the
-  // rarer case that only its specific layout throws, is simply skipped (its
-  // sibling states still render for real).
-  const defaultRender = skipRealComponentPreview
+  // Probe the real-component render with the base crop to decide whether to use
+  // it (vs. the framed-image approximation); each tile then renders fresh with
+  // its own tier's src/crop. A probe failure falls through to the approximation
+  // for every tile.
+  const baseAdjustment: ImageAdjustment | undefined = adjustment
+    ? { ...adjustment, tiers: undefined }
+    : undefined
+  const probeRender = skipRealComponentPreview
     ? null
-    : renderPreviewComponent(undefined)
-  const useRealComponent = !!defaultRender
+    : renderPreviewComponent(undefined, urlForTier("base"), baseAdjustment)
+  const useRealComponent = !!probeRender
 
   // One rail tile at a given display width — either the real-component render
   // (scaled in an iframe) or the framed-image approximation.
@@ -386,10 +427,25 @@ export const AdjustmentPreview = ({
     state: AdjustmentPreviewState,
     width: number,
   ): React.ReactNode => {
+    // Each tile shows the crop baked for the tier governing its viewport width.
+    const paneTier = paneTierFor(state)
+    const paneCropFocal = cropFocalForTier(paneTier)
+    const paneSrc = urlForTier(paneTier)
+    const paneAdjustment: ImageAdjustment | undefined = adjustment
+      ? {
+          ...adjustment,
+          crop: paneCropFocal?.crop ?? adjustment.crop,
+          focal: paneCropFocal?.focal ?? adjustment.focal,
+          tiers: undefined,
+        }
+      : undefined
+
     if (useRealComponent) {
-      const rendered = state.layout
-        ? renderPreviewComponent(state.layout)
-        : defaultRender
+      const rendered = renderPreviewComponent(
+        state.layout,
+        paneSrc,
+        paneAdjustment,
+      )
       if (!rendered) return null
       return (
         // The theme fetch suspends AND can throw; without the ErrorBoundary a
@@ -432,7 +488,7 @@ export const AdjustmentPreview = ({
           <Box w="100%" h="100%" position="relative" overflow="hidden">
             <Box
               as="img"
-              src={adjustedSrc}
+              src={paneSrc}
               alt={`Preview: ${state.label}`}
               w="100%"
               h="100%"
@@ -443,7 +499,7 @@ export const AdjustmentPreview = ({
                 objectPosition:
                   objectFit === "contain"
                     ? undefined
-                    : getFocalObjectPosition(adjustment?.focal),
+                    : getFocalObjectPosition(paneCropFocal?.focal),
               }}
             />
             {/* Scrim overlay — mirrors the live component's overlay (e.g. the
@@ -473,19 +529,7 @@ export const AdjustmentPreview = ({
   const restStates = previewStates.filter((s) => s.id !== bigState?.id)
 
   // Per-pane tier highlight: dim tiles not affected by the tier being edited and
-  // ring the ones that are, so the editor sees which screen sizes their crop
-  // applies to. A tile's governing tier resolves to base when inherited (matching
-  // the renderer). Only active when the component declares tiers.
-  const hasTierHighlight = (configTiers?.length ?? 0) > 0
-  const paneTierFor = (state: AdjustmentPreviewState): ActiveTier => {
-    const governing = governingTierForWidth(
-      state.viewportWidth ?? 1024,
-      configTiers ?? [],
-    )
-    return governing !== "base" && (customisedTiers ?? []).includes(governing)
-      ? governing
-      : "base"
-  }
+  // ring the ones that are (paneTierFor / hasTierHighlight are defined above).
   const renderTileWithHighlight = (
     state: AdjustmentPreviewState,
     width: number,

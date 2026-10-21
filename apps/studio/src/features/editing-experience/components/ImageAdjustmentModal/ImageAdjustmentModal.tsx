@@ -160,22 +160,13 @@ export const ImageAdjustmentModal = ({
 
   const configTiers = config.tiers ?? []
   const hasTiers = configTiers.length > 0
-  // The crop/focal for the active tier; an inherited tier shows base's.
+  // The crop/focal for the active tier; an inherited tier shows base's. The crop
+  // canvas + low-res warning edit THIS tier; the preview gets the full `draft`
+  // (tiers included) so it can bake and show every tier's crop per pane.
   const activeCropFocal = getTierCropFocal(draft, activeTier)
   const activeCrop = activeCropFocal?.crop ?? draft?.crop
-  const activeFocal = activeCropFocal?.focal ?? draft?.focal
   const isActiveTierInherited =
     hasTiers && activeTier !== "base" && !isTierCustomised(draft, activeTier)
-  // The preview + low-res warning reflect the tier being edited: its crop/focal
-  // as a single crop (tiers stripped, so the preview shows just this tier).
-  const previewAdjustment: ImageAdjustment | undefined = draft
-    ? {
-        ...draft,
-        crop: activeCrop ?? draft.crop,
-        focal: activeFocal ?? draft.focal,
-        tiers: undefined,
-      }
-    : undefined
 
   // Warn when the cropped region can't fill this component's largest rendered
   // frame even at 1x (see computeLowResWarning).
@@ -592,7 +583,7 @@ export const ImageAdjustmentModal = ({
                   src={src}
                   originalSrc={originalSrc}
                   originalFile={originalFile}
-                  adjustment={previewAdjustment}
+                  adjustment={draft}
                   previewStates={config.previewStates}
                   scrim={config.scrim}
                   block={block}
