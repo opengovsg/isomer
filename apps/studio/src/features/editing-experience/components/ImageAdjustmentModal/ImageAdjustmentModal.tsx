@@ -17,10 +17,19 @@ import {
 import {
   Button,
   Infobox,
+  Menu,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
 import { useEffect, useMemo, useState } from "react"
+import {
+  BiCheck,
+  BiDotsHorizontalRounded,
+  BiReflectHorizontal,
+  BiReflectVertical,
+  BiRotateLeft,
+  BiRotateRight,
+} from "react-icons/bi"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
 import type { ActiveTier } from "./adjustmentDraft"
@@ -49,7 +58,6 @@ import {
   rotateRectCcw,
   rotateRectCw,
 } from "./controls/displayTransform"
-import { TransformControl } from "./controls/TransformControl"
 import { computeLowResWarning } from "./resolutionWarning"
 import { TierSwitcher } from "./TierSwitcher"
 import {
@@ -127,6 +135,13 @@ export const ImageAdjustmentModal = ({
   // Which screen size is being cropped: "base" (the default crop) or one of the
   // component's breakpoints. Only surfaced when the component declares tiers.
   const [activeTier, setActiveTier] = useState<ActiveTier>("base")
+  // Opt-in to per-screen-size cropping. Off by default; a component serves one
+  // crop until the editor turns this on. Starts on when the saved value already
+  // has tiers (editing an image that's already per-screen-cropped). While off
+  // the tier switcher is hidden and only the base crop is saved/previewed.
+  const [perScreenCropEnabled, setPerScreenCropEnabled] = useState<boolean>(
+    (value?.tiers?.length ?? 0) > 0,
+  )
   // The source image's true pixel aspect ratio, reported by CropFocalControl
   // once its <img> loads — needed so "Reset crop & focal" can seed the same
   // ratio-correct crop the control itself would (see defaultCropRect).
@@ -152,8 +167,17 @@ export const ImageAdjustmentModal = ({
   // Drives UI locking during a save. Local (not the hook's isSaving) so the
   // save timeout below can unlock the modal even if the underlying upload hangs.
   const [isSaving, setIsSaving] = useState(false)
-  // Check if draft differs from original value.
-  const isModified = JSON.stringify(draft) !== JSON.stringify(value)
+  // What actually gets saved/previewed/compared. When per-screen cropping is
+  // OFF the image serves ONE crop, so tiers are stripped here — but kept in
+  // `draft` so toggling back on within this session restores them. Saving while
+  // off therefore drops the hidden tiers for good (the schema encodes "one crop"
+  // as the absence of tiers — see ticket 07).
+  const effectiveAdjustment: ImageAdjustment | undefined =
+    draft && !perScreenCropEnabled ? { ...draft, tiers: undefined } : draft
+
+  // Check if the effective (served) adjustment differs from the original value.
+  const isModified =
+    JSON.stringify(effectiveAdjustment) !== JSON.stringify(value)
 
   const lockedRatio =
     config.cropMode === "fixed" ? config.lockedRatios?.[0] : undefined
@@ -213,6 +237,7 @@ export const ImageAdjustmentModal = ({
 
   const handleDiscard = () => {
     setActiveTier("base")
+    setPerScreenCropEnabled((value?.tiers?.length ?? 0) > 0)
     setDraft(value)
     onDiscardChangesModalClose()
   }
@@ -220,7 +245,7 @@ export const ImageAdjustmentModal = ({
   const handleSave = async () => {
     // Nothing to persist (untouched, or reverted back to the original) — just
     // close without re-baking/uploading.
-    if (!isModified || !draft) {
+    if (!isModified || !effectiveAdjustment) {
       onClose()
       return
     }
@@ -229,7 +254,7 @@ export const ImageAdjustmentModal = ({
     let timeoutId: ReturnType<typeof setTimeout> | undefined
     try {
       const result = await Promise.race([
-        save(src, draft, originalFile),
+        save(src, effectiveAdjustment, originalFile),
         new Promise<never>((_, reject) => {
           timeoutId = setTimeout(
             () => reject(new Error("Saving took too long. Please try again.")),
@@ -337,7 +362,17 @@ export const ImageAdjustmentModal = ({
 
   const handleUndo = () => {
     setActiveTier("base")
+    setPerScreenCropEnabled((value?.tiers?.length ?? 0) > 0)
     setDraft(value)
+  }
+
+  // Toggle per-screen-size cropping. Turning it off returns focus to the base
+  // tier (the switcher hides); the draft keeps any tier crops so turning it
+  // back on in this session restores them (effectiveAdjustment gates what's
+  // actually saved/served).
+  const handleTogglePerScreen = (enabled: boolean) => {
+    setPerScreenCropEnabled(enabled)
+    if (!enabled) setActiveTier("base")
   }
 
   return (
@@ -430,13 +465,14 @@ export const ImageAdjustmentModal = ({
                 {/* Screen-size switcher — pick which tier's crop to edit. The
                     canvas below edits the active tier; base + each tier share
                     the rotate/flip transform. */}
-                {hasTiers && (
+                {hasTiers && perScreenCropEnabled && (
                   <VStack align="stretch" spacing="0.5rem" flexShrink={0}>
                     <TierSwitcher
                       configTiers={configTiers}
                       activeTier={activeTier}
                       onSelect={setActiveTier}
                       isCustomised={(tier) => isTierCustomised(draft, tier)}
+                      previewStates={config.previewStates}
                     />
                     {activeTier !== "base" && (
                       <Box>
@@ -523,14 +559,66 @@ export const ImageAdjustmentModal = ({
                     cropMode={config.cropMode}
                     lockedRatios={config.lockedRatios}
                   />
-                  {/* Rotate & flip — applies to every adjustable component. */}
-                  <TransformControl
-                    flipH={draft?.flipH ?? false}
-                    flipV={draft?.flipV ?? false}
-                    rotateDisabled={isLockedRatioAspectPending}
-                    onRotate={handleRotate}
-                    onFlip={handleFlip}
-                  />
+                  {/* Overflow menu — keeps the main panel uncluttered. Holds the
+                      per-screen-crop toggle (tiered components only) plus rotate/
+                      flip (every adjustable component). Opens upward since the row
+                      sits low in the editor column. */}
+                  <Menu placement="top-end">
+                    <Menu.Button
+                      variant="outline"
+                      colorScheme="neutral"
+                      size="xs"
+                      leftIcon={<BiDotsHorizontalRounded fontSize="1.25rem" />}
+                    >
+                      More
+                    </Menu.Button>
+                    <Menu.List>
+                      {hasTiers && (
+                        <>
+                          <Menu.Item
+                            icon={
+                              perScreenCropEnabled ? (
+                                <BiCheck fontSize="1.25rem" />
+                              ) : undefined
+                            }
+                            closeOnSelect={false}
+                            onClick={() =>
+                              handleTogglePerScreen(!perScreenCropEnabled)
+                            }
+                          >
+                            Customize crop by screen size
+                          </Menu.Item>
+                          <Menu.Divider />
+                        </>
+                      )}
+                      <Menu.Item
+                        icon={<BiRotateLeft fontSize="1.25rem" />}
+                        isDisabled={isLockedRatioAspectPending}
+                        onClick={() => handleRotate("ccw")}
+                      >
+                        Rotate left
+                      </Menu.Item>
+                      <Menu.Item
+                        icon={<BiRotateRight fontSize="1.25rem" />}
+                        isDisabled={isLockedRatioAspectPending}
+                        onClick={() => handleRotate("cw")}
+                      >
+                        Rotate right
+                      </Menu.Item>
+                      <Menu.Item
+                        icon={<BiReflectVertical fontSize="1.25rem" />}
+                        onClick={() => handleFlip("h")}
+                      >
+                        Flip horizontal
+                      </Menu.Item>
+                      <Menu.Item
+                        icon={<BiReflectHorizontal fontSize="1.25rem" />}
+                        onClick={() => handleFlip("v")}
+                      >
+                        Flip vertical
+                      </Menu.Item>
+                    </Menu.List>
+                  </Menu>
                 </Flex>
 
                 {/* Preserve-only note */}
@@ -583,7 +671,7 @@ export const ImageAdjustmentModal = ({
                   src={src}
                   originalSrc={originalSrc}
                   originalFile={originalFile}
-                  adjustment={draft}
+                  adjustment={effectiveAdjustment}
                   previewStates={config.previewStates}
                   scrim={config.scrim}
                   block={block}
@@ -592,9 +680,15 @@ export const ImageAdjustmentModal = ({
                   stackPreviews={config.stackPreviews}
                   objectFit={previewObjectFit}
                   siteId={siteId}
-                  configTiers={configTiers}
+                  // While per-screen cropping is off, don't art-direct or
+                  // highlight panes — every pane shows the single base crop.
+                  configTiers={perScreenCropEnabled ? configTiers : []}
                   activeTier={activeTier}
-                  customisedTiers={draft?.tiers?.map((t) => t.breakpoint) ?? []}
+                  customisedTiers={
+                    perScreenCropEnabled
+                      ? (draft?.tiers?.map((t) => t.breakpoint) ?? [])
+                      : []
+                  }
                 />
 
                 {/* Low-resolution warning — the kept crop can't fill this

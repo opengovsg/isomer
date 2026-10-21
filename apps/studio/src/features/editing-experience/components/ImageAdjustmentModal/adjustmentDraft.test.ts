@@ -3,10 +3,12 @@ import { describe, expect, it } from "vitest"
 
 import {
   customiseTier,
+  deviceBucket,
   getTierCropFocal,
   governingTierForWidth,
   isTierCustomised,
   mapAllTiersCropFocal,
+  tierDeviceLabel,
   tierOrder,
   tierRangeLabel,
   uncustomiseTier,
@@ -169,6 +171,56 @@ describe("tier labels", () => {
     })
     it("is always base when there are no tiers", () => {
       expect(governingTierForWidth(1920, [])).toBe("base")
+    })
+  })
+})
+
+describe("device-type tier labels", () => {
+  describe("deviceBucket", () => {
+    it("buckets widths by the md/lg breakpoints", () => {
+      // md=768, lg=1024
+      expect(deviceBucket(375)).toBe("Mobile")
+      expect(deviceBucket(767)).toBe("Mobile")
+      expect(deviceBucket(768)).toBe("Tablet")
+      expect(deviceBucket(1023)).toBe("Tablet")
+      expect(deviceBucket(1024)).toBe("Desktop")
+      expect(deviceBucket(1920)).toBe("Desktop")
+    })
+  })
+
+  describe("tierDeviceLabel", () => {
+    const previewStates = [
+      { viewportWidth: 375 }, // mobile
+      { viewportWidth: 768 }, // tablet
+      { viewportWidth: 1280 }, // desktop
+    ]
+
+    it("labels each tier by the single device bucket it governs", () => {
+      // tiers sm(640)/lg(1024): base <640, sm 640–1023, lg ≥1024
+      expect(tierDeviceLabel("base", ["sm", "lg"], previewStates)).toBe(
+        "Mobile",
+      )
+      expect(tierDeviceLabel("sm", ["sm", "lg"], previewStates)).toBe("Tablet")
+      expect(tierDeviceLabel("lg", ["sm", "lg"], previewStates)).toBe("Desktop")
+    })
+
+    it("joins multiple covered buckets with ' and '", () => {
+      // tiers lg(1024) only: base governs mobile(375) AND tablet(768)
+      expect(tierDeviceLabel("base", ["lg"], previewStates)).toBe(
+        "Mobile and Tablet",
+      )
+      expect(tierDeviceLabel("lg", ["lg"], previewStates)).toBe("Desktop")
+    })
+
+    it("defaults a width-less previewState to the lg fallback (Desktop)", () => {
+      expect(tierDeviceLabel("lg", ["lg"], [{}])).toBe("Desktop")
+    })
+
+    it("falls back to the px-range label when a tier governs nothing", () => {
+      // Only a desktop previewState exists, governed by lg — base covers none.
+      expect(tierDeviceLabel("base", ["lg"], [{ viewportWidth: 1280 }])).toBe(
+        "Default · up to 1024px",
+      )
     })
   })
 })

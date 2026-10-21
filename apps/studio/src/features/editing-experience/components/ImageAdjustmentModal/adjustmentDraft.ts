@@ -84,6 +84,46 @@ export const governingTierForWidth = (
   return governing
 }
 
+// A coarse device class for a viewport width, used to LABEL a tier by the kinds
+// of screen it covers (rather than the exact px range). Thresholds are the
+// shared md/lg breakpoints: phones below md, tablets md–lg, desktops lg and up.
+export type DeviceBucket = "Mobile" | "Tablet" | "Desktop"
+const DEVICE_BUCKET_ORDER: DeviceBucket[] = ["Mobile", "Tablet", "Desktop"]
+
+export const deviceBucket = (width: number): DeviceBucket =>
+  width >= BREAKPOINTS.lg
+    ? "Desktop"
+    : width >= BREAKPOINTS.md
+      ? "Tablet"
+      : "Mobile"
+
+// Width assumed for a previewState that declares none — mirrors
+// AdjustmentPreview's own `?? 1024` fallback so labels and panes agree on it.
+const DEFAULT_PREVIEW_WIDTH = BREAKPOINTS.lg
+
+// Device-type label for a tier: the unique device buckets of the previewStates
+// it governs (governingTierForWidth), in Mobile→Tablet→Desktop order, joined
+// with " and " (e.g. "Mobile and Tablet", "Desktop"). Falls back to the px-range
+// label if the tier governs no previewState (defensive — a configured tier
+// normally governs at least one).
+export const tierDeviceLabel = (
+  tier: ActiveTier,
+  configTiers: Breakpoint[],
+  previewStates: readonly { viewportWidth?: number }[],
+): string => {
+  const buckets = new Set<DeviceBucket>()
+  for (const ps of previewStates) {
+    const width = ps.viewportWidth ?? DEFAULT_PREVIEW_WIDTH
+    if (governingTierForWidth(width, configTiers) === tier) {
+      buckets.add(deviceBucket(width))
+    }
+  }
+  const ordered = DEVICE_BUCKET_ORDER.filter((b) => buckets.has(b))
+  return ordered.length > 0
+    ? ordered.join(" and ")
+    : tierRangeLabel(tier, configTiers)
+}
+
 // The crop/focal to show for a tier: its own if customised, base's for "base",
 // or undefined for an inherited (uncustomised) breakpoint tier.
 export const getTierCropFocal = (
