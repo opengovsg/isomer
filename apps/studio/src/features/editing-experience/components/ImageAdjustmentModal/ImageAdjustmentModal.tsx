@@ -366,13 +366,26 @@ export const ImageAdjustmentModal = ({
     setDraft(value)
   }
 
-  // Toggle per-screen-size cropping. Turning it off returns focus to the base
-  // tier (the switcher hides); the draft keeps any tier crops so turning it
-  // back on in this session restores them (effectiveAdjustment gates what's
-  // actually saved/served).
+  // Toggle per-screen-size cropping. Turning it ON immediately splits every
+  // configured breakpoint into its own crop (seeded from base) so each is
+  // editable straight away and the preview art-directs per breakpoint — no
+  // extra "Customise this screen size" step. customiseTier is idempotent, so
+  // re-enabling after a toggle-off keeps any crops still held in the draft.
+  // Turning it off returns focus to the base tier (the switcher hides); the
+  // draft keeps the tier crops so re-enabling in this session restores them
+  // (effectiveAdjustment gates what's actually saved/served).
   const handleTogglePerScreen = (enabled: boolean) => {
     setPerScreenCropEnabled(enabled)
-    if (!enabled) setActiveTier("base")
+    if (enabled) {
+      setDraft((d) =>
+        configTiers.reduce(
+          (next, bp) => customiseTier(next, bp),
+          ensureAdjustment(d),
+        ),
+      )
+    } else {
+      setActiveTier("base")
+    }
   }
 
   return (
@@ -584,6 +597,16 @@ export const ImageAdjustmentModal = ({
                             closeOnSelect={false}
                             onClick={() =>
                               handleTogglePerScreen(!perScreenCropEnabled)
+                            }
+                            // Tint the row while on, so its enabled state reads
+                            // even when the menu is reopened.
+                            bg={
+                              perScreenCropEnabled
+                                ? "interaction.muted.main.active"
+                                : undefined
+                            }
+                            fontWeight={
+                              perScreenCropEnabled ? "600" : undefined
                             }
                           >
                             Customize crop by screen size

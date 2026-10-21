@@ -34,7 +34,10 @@ export const TierSwitcher = ({
     <VStack align="stretch" spacing="0.5rem" w="100%" flexShrink={0}>
       <Text textStyle="subhead-2">Crop per screen size</Text>
       <Wrap spacing="0.5rem">
-        {tierOrder(configTiers).map((tier) => {
+        {/* Largest first: Desktop, Tablet, Mobile — the big screen reads as the
+            primary crop, base (Mobile) last. tierOrder stays base-first for
+            logic; only the display order is reversed here. */}
+        {[...tierOrder(configTiers)].reverse().map((tier) => {
           const isActive = tier === activeTier
           const customised = isCustomised(tier)
           const deviceLabel = tierDeviceLabel(tier, configTiers, previewStates)

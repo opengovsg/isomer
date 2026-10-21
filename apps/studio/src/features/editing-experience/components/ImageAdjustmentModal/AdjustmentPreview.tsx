@@ -429,6 +429,9 @@ export const AdjustmentPreview = ({
   ): React.ReactNode => {
     // Each tile shows the crop baked for the tier governing its viewport width.
     const paneTier = paneTierFor(state)
+    // This pane is governed by the tier currently being edited — flag its
+    // caption so the affected panes stand out (see TileCaption `selected`).
+    const selected = hasTierHighlight && paneTier === activeTier
     const paneCropFocal = cropFocalForTier(paneTier)
     const paneSrc = urlForTier(paneTier)
     const paneAdjustment: ImageAdjustment | undefined = adjustment
@@ -454,7 +457,11 @@ export const AdjustmentPreview = ({
         <ErrorBoundary
           key={state.id}
           fallbackRender={() => (
-            <PreviewFrame state={state} displayWidth={width}>
+            <PreviewFrame
+              state={state}
+              displayWidth={width}
+              selected={selected}
+            >
               {rendered}
             </PreviewFrame>
           )}
@@ -464,6 +471,7 @@ export const AdjustmentPreview = ({
               siteId={siteId}
               state={state}
               displayWidth={width}
+              selected={selected}
             >
               {rendered}
             </ThemedPreviewFrame>
@@ -484,6 +492,7 @@ export const AdjustmentPreview = ({
         flexShrink={0}
         w={`${width}px`}
       >
+        <TileCaption selected={selected}>{state.label}</TileCaption>
         <Box {...TILE_FRAME_PROPS} style={{ width, height: width / aspect }}>
           <Box w="100%" h="100%" position="relative" overflow="hidden">
             <Box
@@ -514,7 +523,6 @@ export const AdjustmentPreview = ({
             )}
           </Box>
         </Box>
-        <TileCaption>{state.label}</TileCaption>
       </VStack>
     )
   }
@@ -528,8 +536,10 @@ export const AdjustmentPreview = ({
   )[0]
   const restStates = previewStates.filter((s) => s.id !== bigState?.id)
 
-  // Per-pane tier highlight: dim tiles not affected by the tier being edited and
-  // ring the ones that are (paneTierFor / hasTierHighlight are defined above).
+  // Per-pane tier highlight: dim the tiles NOT affected by the tier being edited
+  // so the affected ones stand out. The affected tiles are marked positively by
+  // their inverted caption (see TileCaption `selected`) — no frame outline, which
+  // the scrolling rail would clip. (paneTierFor / hasTierHighlight defined above.)
   const renderTileWithHighlight = (
     state: AdjustmentPreviewState,
     width: number,
@@ -540,10 +550,8 @@ export const AdjustmentPreview = ({
     return (
       <Box
         key={state.id}
-        borderRadius="0.25rem"
-        transition="opacity 0.15s ease, box-shadow 0.15s ease"
+        transition="opacity 0.15s ease"
         opacity={affected ? 1 : 0.45}
-        boxShadow={affected ? "0 0 0 2px rgba(59, 130, 246, 0.7)" : undefined}
       >
         {node}
       </Box>
@@ -582,12 +590,26 @@ const TILE_FRAME_PROPS = {
   position: "relative",
 } as const
 
-const TileCaption = ({ children }: { children: string }): JSX.Element => (
+// Sits ABOVE its frame. When `selected` (the tier being edited governs this
+// pane) it inverts — brand fill + white text — so the affected panes read at a
+// glance, without an outline around the frame that the scroll container clips.
+const TileCaption = ({
+  children,
+  selected = false,
+}: {
+  children: string
+  selected?: boolean
+}): JSX.Element => (
   <Text
     textStyle="caption-2"
     textTransform="uppercase"
     letterSpacing="0.05em"
-    color="base.content.medium"
+    alignSelf="flex-start"
+    px="0.375rem"
+    py="0.0625rem"
+    borderRadius="0.125rem"
+    bg={selected ? "interaction.main.default" : "transparent"}
+    color={selected ? "white" : "base.content.medium"}
   >
     {children}
   </Text>
@@ -614,11 +636,13 @@ const PreviewFrame = ({
   state,
   displayWidth,
   themeCssVars,
+  selected = false,
   children,
 }: {
   state: AdjustmentPreviewState
   displayWidth: number
   themeCssVars?: CSSProperties
+  selected?: boolean
   children: React.ReactNode
 }) => {
   const viewportWidth = state.viewportWidth ?? 1024
@@ -658,6 +682,7 @@ const PreviewFrame = ({
       flexShrink={0}
       w={`${displayWidth}px`}
     >
+      <TileCaption selected={selected}>{state.label}</TileCaption>
       <Box
         {...TILE_FRAME_PROPS}
         style={{ width: displayWidth, height: viewportHeight * scale }}
@@ -681,7 +706,6 @@ const PreviewFrame = ({
           </PreviewIframe>
         </Box>
       </Box>
-      <TileCaption>{state.label}</TileCaption>
     </VStack>
   )
 }
@@ -692,11 +716,13 @@ const ThemedPreviewFrame = ({
   siteId,
   state,
   displayWidth,
+  selected = false,
   children,
 }: {
   siteId: number
   state: AdjustmentPreviewState
   displayWidth: number
+  selected?: boolean
   children: React.ReactNode
 }) => {
   const themeCssVars = useSiteThemeCssVars({ siteId })
@@ -705,6 +731,7 @@ const ThemedPreviewFrame = ({
       state={state}
       displayWidth={displayWidth}
       themeCssVars={themeCssVars}
+      selected={selected}
     >
       {children}
     </PreviewFrame>
