@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
+import { useIntersectionObserver } from "usehooks-ts"
 import { HERO_CAROUSEL_SLIDE_LIMITS } from "~/interfaces/complex/Hero"
 
 import { HERO_CAROUSEL_ROTATION_INTERVAL_MS } from "../constants"
@@ -25,6 +26,18 @@ export const useRotation = (slideCount: number) => {
     elapsedMsRef.current = 0
     runningSinceRef.current = null
   }, [])
+
+  // The hook starts "not intersecting". This hero should rotate until the
+  // observer reports that it has left the viewport.
+  const { ref: sectionRef, isIntersecting } = useIntersectionObserver({
+    initialIsIntersecting: true,
+    onChange: (intersecting) => {
+      if (!intersecting) {
+        resetElapsed()
+      }
+    },
+  })
+  const isOffscreen = !isIntersecting
 
   const stop = useCallback(() => {
     resetElapsed()
@@ -69,7 +82,11 @@ export const useRotation = (slideCount: number) => {
   const { onNext, onPrev } = controlProps
   const hasEnoughSlides = slideCount >= HERO_CAROUSEL_SLIDE_LIMITS.minItems
   const canRotate =
-    phase === "rotating" && !isDocumentHidden && !isPreview && hasEnoughSlides
+    phase === "rotating" &&
+    !isDocumentHidden &&
+    !isOffscreen &&
+    !isPreview &&
+    hasEnoughSlides
   const shouldRun = canRotate && !isHoverPaused
 
   useEffect(() => {
@@ -133,6 +150,7 @@ export const useRotation = (slideCount: number) => {
     showLiveRegion: hasEnoughSlides,
     politeness: phase === "stopped" ? ("polite" as const) : ("off" as const),
     sectionProps: {
+      ref: sectionRef,
       onFocus: stop,
       onPointerEnter: () => setIsHoverPaused(true),
       onPointerLeave: () => setIsHoverPaused(false),
