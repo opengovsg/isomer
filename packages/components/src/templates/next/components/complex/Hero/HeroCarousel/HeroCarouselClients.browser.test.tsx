@@ -29,15 +29,24 @@ const tallSlide = {
 
 const carouselVariants = {
   block: (slides: (typeof shortSlide)[]) => (
-    <HeroCarouselBlockClient headingTag="h1" slides={slides} />
+    <HeroCarouselBlockClient
+      headingTag="h1"
+      inactiveHeadingTag="h2"
+      slides={slides}
+    />
   ),
   gradient: (slides: (typeof shortSlide)[]) => (
-    <HeroCarouselGradientClient headingTag="h1" slides={slides} />
+    <HeroCarouselGradientClient
+      headingTag="h1"
+      inactiveHeadingTag="h2"
+      slides={slides}
+    />
   ),
   "gradient centered": (slides: (typeof shortSlide)[]) => (
     <HeroCarouselGradientClient
       contentAlignment={HERO_CAROUSEL_CONTENT_ALIGNMENT.center}
       headingTag="h1"
+      inactiveHeadingTag="h2"
       slides={slides}
     />
   ),
@@ -79,7 +88,11 @@ describe("hero carousel preview index", () => {
   it("changes its own slide on next when no preview provider is present", async () => {
     // Arrange
     render(
-      <HeroCarouselGradientClient headingTag="h1" slides={indexedSlides} />,
+      <HeroCarouselGradientClient
+        headingTag="h1"
+        inactiveHeadingTag="h2"
+        slides={indexedSlides}
+      />,
     )
 
     // Act
@@ -96,7 +109,11 @@ describe("hero carousel preview index", () => {
 
       return (
         <HeroCarouselPreviewProvider value={{ activeIndex, setActiveIndex }}>
-          <HeroCarouselGradientClient headingTag="h1" slides={indexedSlides} />
+          <HeroCarouselGradientClient
+            headingTag="h1"
+            inactiveHeadingTag="h2"
+            slides={indexedSlides}
+          />
         </HeroCarouselPreviewProvider>
       )
     }
@@ -128,7 +145,11 @@ const renderGradient = (
   slides: typeof indexedSlides | typeof linkedSlides = indexedSlides,
 ) => {
   const view = render(
-    <HeroCarouselGradientClient headingTag="h1" slides={slides} />,
+    <HeroCarouselGradientClient
+      headingTag="h1"
+      inactiveHeadingTag="h2"
+      slides={slides}
+    />,
   )
   const section = view.container.querySelector("section")
   if (!section) {
@@ -471,7 +492,11 @@ describe("hero carousel rotation", () => {
 
       return (
         <HeroCarouselPreviewProvider value={{ activeIndex, setActiveIndex }}>
-          <HeroCarouselGradientClient headingTag="h1" slides={indexedSlides} />
+          <HeroCarouselGradientClient
+            headingTag="h1"
+            inactiveHeadingTag="h2"
+            slides={indexedSlides}
+          />
         </HeroCarouselPreviewProvider>
       )
     }
@@ -575,6 +600,7 @@ describe("hero carousel rotation", () => {
     render(
       <HeroCarouselGradientClient
         headingTag="h1"
+        inactiveHeadingTag="h2"
         slides={[indexedSlides[0]!]}
       />,
     )

@@ -51,11 +51,13 @@ const gradientCarouselStyles = tv({
 export const HeroCarouselGradientClient = ({
   contentAlignment = HERO_CAROUSEL_CONTENT_ALIGNMENT.left,
   headingTag,
+  inactiveHeadingTag,
   assetsBaseUrl,
   slides,
 }: {
   contentAlignment?: HeroCarouselContentAlignment
   headingTag: HeadingTag
+  inactiveHeadingTag: HeadingTag
   assetsBaseUrl?: string
   slides: HeroCarouselSlideView[]
 }) => {
@@ -98,6 +100,7 @@ export const HeroCarouselGradientClient = ({
             slides={slides}
             currentIndex={currentIndex}
             headingTag={headingTag}
+            inactiveHeadingTag={inactiveHeadingTag}
             titleClassName="prose-display-xl break-words"
             actionsClassName={styles.actions()}
             isVerticallyCenteredPerSlide={

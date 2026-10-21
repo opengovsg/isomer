@@ -13,10 +13,12 @@ import { useRotation } from "./hooks/useRotation"
 
 export const HeroCarouselBlockClient = ({
   headingTag,
+  inactiveHeadingTag,
   assetsBaseUrl,
   slides,
 }: {
   headingTag: HeadingTag
+  inactiveHeadingTag: HeadingTag
   assetsBaseUrl?: string
   slides: HeroCarouselSlideView[]
 }) => {
@@ -49,6 +51,7 @@ export const HeroCarouselBlockClient = ({
             slides={slides}
             currentIndex={currentIndex}
             headingTag={headingTag}
+            inactiveHeadingTag={inactiveHeadingTag}
             titleClassName="prose-display-xl wrap-break-word text-balance"
             actionsClassName="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row"
           />

@@ -118,6 +118,7 @@ export const CarouselSlideContent = ({
   slides,
   currentIndex,
   headingTag: Tag,
+  inactiveHeadingTag,
   titleClassName,
   actionsClassName,
   isVerticallyCenteredPerSlide = false,
@@ -125,20 +126,31 @@ export const CarouselSlideContent = ({
   slides: HeroCarouselSlideView[]
   currentIndex: number
   headingTag: HeadingTag
+  inactiveHeadingTag: HeadingTag
   titleClassName: string
   actionsClassName: string
   // From md up, each slide's title and CTAs are centered as one block, so a
   // slide without CTAs isn't pushed up by space reserved for other slides'
   isVerticallyCenteredPerSlide?: boolean
 }) => {
-  const title = (slide: HeroCarouselSlideView) => (
-    <div className="flex flex-col gap-6">
-      <Tag className={titleClassName}>{slide.title}</Tag>
-      {slide.subtitle && (
-        <p className="prose-title-lg-regular">{slide.subtitle}</p>
-      )}
-    </div>
-  )
+  const title = ({
+    slide,
+    isCurrent,
+  }: {
+    slide: HeroCarouselSlideView
+    isCurrent: boolean
+  }) => {
+    const SlideTag = isCurrent ? Tag : inactiveHeadingTag
+
+    return (
+      <div className="flex flex-col gap-6">
+        <SlideTag className={titleClassName}>{slide.title}</SlideTag>
+        {slide.subtitle && (
+          <p className="prose-title-lg-regular">{slide.subtitle}</p>
+        )}
+      </div>
+    )
+  }
 
   if (isVerticallyCenteredPerSlide) {
     return (
@@ -159,7 +171,7 @@ export const CarouselSlideContent = ({
               aria-label={`${index + 1} of ${slides.length}`}
               {...(isCurrent ? {} : { inert: "" })}
             >
-              {title(slide)}
+              {title({ slide, isCurrent })}
               <SlideActions slide={slide} className={actionsClassName} />
             </div>
           )
@@ -190,7 +202,7 @@ export const CarouselSlideContent = ({
               aria-label={`${index + 1} of ${slides.length}`}
               {...(isCurrent ? {} : { inert: "" })}
             >
-              {title(slide)}
+              {title({ slide, isCurrent })}
             </div>
           )
         })}

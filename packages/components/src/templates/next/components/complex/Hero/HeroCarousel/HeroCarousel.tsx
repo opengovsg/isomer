@@ -21,6 +21,7 @@ export const HeroCarousel = ({
   }
 
   const headingTag = getHeadingTag(headingLevel)
+  const inactiveHeadingTag = getHeadingTag(headingLevel + 1)
 
   const slideViews = slides.map((slide) => ({
     backgroundUrl: slide.backgroundUrl,
@@ -45,6 +46,7 @@ export const HeroCarousel = ({
       return (
         <HeroCarouselBlockClient
           headingTag={headingTag}
+          inactiveHeadingTag={inactiveHeadingTag}
           assetsBaseUrl={site.assetsBaseUrl}
           slides={slideViews}
         />
@@ -53,6 +55,7 @@ export const HeroCarousel = ({
       return (
         <HeroCarouselGradientClient
           headingTag={headingTag}
+          inactiveHeadingTag={inactiveHeadingTag}
           assetsBaseUrl={site.assetsBaseUrl}
           slides={slideViews}
           contentAlignment={carousel.contentAlignment}
