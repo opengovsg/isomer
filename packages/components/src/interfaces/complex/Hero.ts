@@ -32,6 +32,14 @@ export const HERO_CAROUSEL_LAYOUT = {
 export type HeroCarouselLayout =
   (typeof HERO_CAROUSEL_LAYOUT)[keyof typeof HERO_CAROUSEL_LAYOUT]
 
+export const HERO_CAROUSEL_CONTENT_ALIGNMENT = {
+  left: "left",
+  center: "center",
+} as const
+
+export type HeroCarouselContentAlignment =
+  (typeof HERO_CAROUSEL_CONTENT_ALIGNMENT)[keyof typeof HERO_CAROUSEL_CONTENT_ALIGNMENT]
+
 export const HERO_BLOCK_IMAGE_POSITION = {
   left: "left",
   right: "right",
@@ -285,23 +293,29 @@ const HeroCarouselSchema = Type.Object(
     variant: Type.Literal(HERO_STYLE.carousel.key, {
       default: HERO_STYLE.carousel.key,
     }),
-    carousel: Type.Object(
-      {
-        layout: Type.Union(
-          [
-            Type.Literal(HERO_CAROUSEL_LAYOUT.block, {
-              title: "Block",
-            }),
-            Type.Literal(HERO_CAROUSEL_LAYOUT.gradient, {
-              title: "Gradient",
-            }),
-          ],
-          { type: "string" },
-        ),
-      },
-      {
-        format: HERO_CAROUSEL_FORMAT,
-      },
+    carousel: Type.Union(
+      [
+        Type.Object({
+          layout: Type.Literal(HERO_CAROUSEL_LAYOUT.block, { title: "Block" }),
+        }),
+        Type.Object({
+          layout: Type.Literal(HERO_CAROUSEL_LAYOUT.gradient, {
+            title: "Gradient",
+          }),
+          contentAlignment: Type.Union(
+            [
+              Type.Literal(HERO_CAROUSEL_CONTENT_ALIGNMENT.left, {
+                title: "Left",
+              }),
+              Type.Literal(HERO_CAROUSEL_CONTENT_ALIGNMENT.center, {
+                title: "Center",
+              }),
+            ],
+            { type: "string" },
+          ),
+        }),
+      ],
+      { format: HERO_CAROUSEL_FORMAT },
     ),
     slides: Type.Array(HeroCarouselSlideSchema, {
       title: "Slides",

@@ -1,11 +1,11 @@
-import type { HeroCarouselLayout } from "~/interfaces/complex/Hero"
 import { fireEvent, render, screen } from "@testing-library/react"
 import { useState } from "react"
 import { describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
-import { HERO_CAROUSEL_LAYOUT } from "~/interfaces/complex/Hero"
+import { HERO_CAROUSEL_CONTENT_ALIGNMENT } from "~/interfaces/complex/Hero"
 
-import { HeroCarouselClient } from "./HeroCarouselClient"
+import { HeroCarouselBlockClient } from "./HeroCarouselBlockClient"
+import { HeroCarouselGradientClient } from "./HeroCarouselGradientClient"
 import { HeroCarouselPreviewProvider } from "./HeroCarouselPreviewContext"
 
 const shortSlide = {
@@ -26,27 +26,32 @@ const tallSlide = {
   secondaryHref: "/",
 }
 
-const renderCarousel = (layout: HeroCarouselLayout) => {
-  const view = render(
-    <HeroCarouselClient
-      layout={layout}
+const carouselVariants = {
+  block: (slides: (typeof shortSlide)[]) => (
+    <HeroCarouselBlockClient headingTag="h1" slides={slides} />
+  ),
+  gradient: (slides: (typeof shortSlide)[]) => (
+    <HeroCarouselGradientClient headingTag="h1" slides={slides} />
+  ),
+  "gradient centered": (slides: (typeof shortSlide)[]) => (
+    <HeroCarouselGradientClient
+      contentAlignment={HERO_CAROUSEL_CONTENT_ALIGNMENT.center}
       headingTag="h1"
-      slides={[shortSlide, tallSlide]}
-    />,
-  )
-  const section = view.container.querySelector("section")
-  if (!section) {
-    throw new Error("Expected a carousel section")
-  }
-  return section
+      slides={slides}
+    />
+  ),
 }
 
-describe("HeroCarouselClient", () => {
-  it.each([HERO_CAROUSEL_LAYOUT.block, HERO_CAROUSEL_LAYOUT.gradient])(
+describe("hero carousel clients", () => {
+  it.each(Object.entries(carouselVariants))(
     "keeps the %s carousel height and controls fixed across slides",
-    (layout) => {
+    (_name, renderVariant) => {
       // Arrange
-      const section = renderCarousel(layout)
+      const view = render(renderVariant([shortSlide, tallSlide]))
+      const section = view.container.querySelector("section")
+      if (!section) {
+        throw new Error("Expected a carousel section")
+      }
       const next = screen.getByRole("button", { name: "Next slide" })
       const heightBefore = section.getBoundingClientRect().height
       const controlsTopBefore = next.getBoundingClientRect().top
@@ -69,15 +74,11 @@ const indexedSlides = [
 
 const liveRegion = () => screen.getByText(/Slide \d of \d:/)
 
-describe("HeroCarouselClient preview index", () => {
+describe("hero carousel preview index", () => {
   it("changes its own slide on next when no preview provider is present", async () => {
     // Arrange
     render(
-      <HeroCarouselClient
-        layout={HERO_CAROUSEL_LAYOUT.gradient}
-        headingTag="h1"
-        slides={indexedSlides}
-      />,
+      <HeroCarouselGradientClient headingTag="h1" slides={indexedSlides} />,
     )
 
     // Act
@@ -94,11 +95,7 @@ describe("HeroCarouselClient preview index", () => {
 
       return (
         <HeroCarouselPreviewProvider value={{ activeIndex, setActiveIndex }}>
-          <HeroCarouselClient
-            layout={HERO_CAROUSEL_LAYOUT.gradient}
-            headingTag="h1"
-            slides={indexedSlides}
-          />
+          <HeroCarouselGradientClient headingTag="h1" slides={indexedSlides} />
         </HeroCarouselPreviewProvider>
       )
     }

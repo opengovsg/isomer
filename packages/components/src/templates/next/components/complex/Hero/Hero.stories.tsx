@@ -1,5 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { HERO_CAROUSEL_LAYOUT } from "~/interfaces/complex/Hero"
+import {
+  HERO_CAROUSEL_CONTENT_ALIGNMENT,
+  HERO_CAROUSEL_LAYOUT,
+} from "~/interfaces/complex/Hero"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
@@ -266,7 +269,20 @@ export const CarouselBlock: Story = {
 export const CarouselGradient: Story = {
   args: {
     ...CarouselBlock.args,
-    carousel: { layout: HERO_CAROUSEL_LAYOUT.gradient },
+    carousel: {
+      layout: HERO_CAROUSEL_LAYOUT.gradient,
+      contentAlignment: HERO_CAROUSEL_CONTENT_ALIGNMENT.left,
+    },
+  },
+}
+
+export const CarouselGradientCenter: Story = {
+  args: {
+    ...CarouselBlock.args,
+    carousel: {
+      layout: HERO_CAROUSEL_LAYOUT.gradient,
+      contentAlignment: HERO_CAROUSEL_CONTENT_ALIGNMENT.center,
+    },
   },
 }
 

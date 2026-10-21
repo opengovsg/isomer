@@ -6,7 +6,8 @@ import {
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
-import { HeroCarouselClient } from "./HeroCarouselClient"
+import { HeroCarouselBlockClient } from "./HeroCarouselBlockClient"
+import { HeroCarouselGradientClient } from "./HeroCarouselGradientClient"
 
 export const HeroCarousel = ({
   site,
@@ -19,36 +20,46 @@ export const HeroCarousel = ({
     return null
   }
 
-  const layout = carousel.layout
-  switch (layout) {
+  const headingTag = getHeadingTag(headingLevel)
+
+  const slideViews = slides.map((slide) => ({
+    backgroundUrl: slide.backgroundUrl,
+    title: slide.title,
+    subtitle: slide.subtitle,
+    primaryLabel: slide.buttonLabel,
+    primaryHref: getReferenceLinkHref(
+      slide.buttonUrl,
+      site.siteMapArray,
+      site.assetsBaseUrl,
+    ),
+    secondaryLabel: slide.secondaryButtonLabel,
+    secondaryHref: getReferenceLinkHref(
+      slide.secondaryButtonUrl,
+      site.siteMapArray,
+      site.assetsBaseUrl,
+    ),
+  }))
+
+  switch (carousel.layout) {
     case HERO_CAROUSEL_LAYOUT.block:
+      return (
+        <HeroCarouselBlockClient
+          headingTag={headingTag}
+          assetsBaseUrl={site.assetsBaseUrl}
+          slides={slideViews}
+        />
+      )
     case HERO_CAROUSEL_LAYOUT.gradient:
       return (
-        <HeroCarouselClient
-          layout={layout}
-          headingTag={getHeadingTag(headingLevel)}
+        <HeroCarouselGradientClient
+          headingTag={headingTag}
           assetsBaseUrl={site.assetsBaseUrl}
-          slides={slides.map((slide) => ({
-            backgroundUrl: slide.backgroundUrl,
-            title: slide.title,
-            subtitle: slide.subtitle,
-            primaryLabel: slide.buttonLabel,
-            primaryHref: getReferenceLinkHref(
-              slide.buttonUrl,
-              site.siteMapArray,
-              site.assetsBaseUrl,
-            ),
-            secondaryLabel: slide.secondaryButtonLabel,
-            secondaryHref: getReferenceLinkHref(
-              slide.secondaryButtonUrl,
-              site.siteMapArray,
-              site.assetsBaseUrl,
-            ),
-          }))}
+          slides={slideViews}
+          contentAlignment={carousel.contentAlignment}
         />
       )
     default: {
-      const _exhaustiveCheck: never = layout
+      const _exhaustiveCheck: never = carousel
       return null
     }
   }
