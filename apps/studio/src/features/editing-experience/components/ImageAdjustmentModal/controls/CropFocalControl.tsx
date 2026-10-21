@@ -1,8 +1,11 @@
 "use client"
 
 import type { CSSProperties } from "react"
-import { Box } from "@chakra-ui/react"
+import { Box, Tooltip } from "@chakra-ui/react"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { BiCrosshair } from "react-icons/bi"
+import { IMAGE_ADJUSTMENT_FOCAL_HINT_SEEN_KEY } from "~/constants/localStorage"
+import { useLocalStorage } from "~/hooks/useLocalStorage"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 
 // The brand accent, read from Chakra's generated CSS var so these inline styles
@@ -108,6 +111,12 @@ export const CropFocalControl = ({
   const [boxSize, setBoxSize] = useState({ width: 0, height: 0 })
   const [dragTarget, setDragTarget] = useState<DragTarget>(null)
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null)
+  // Dismissed permanently (across sessions) on the user's first crop or focal
+  // edit, so the hint only ever shows once per browser.
+  const [hintSeen, setHintSeen] = useLocalStorage(
+    IMAGE_ADJUSTMENT_FOCAL_HINT_SEEN_KEY,
+    false,
+  )
 
   const showCrop = cropMode !== "none"
   const currentCrop = crop ?? defaultCropRect(lockedRatio, aspectRatio ?? 1)
@@ -200,6 +209,7 @@ export const CropFocalControl = ({
     )
     onCropChange(moveRect(currentCrop, delta.dx, delta.dy))
     lastPointerRef.current = { x: event.clientX, y: event.clientY }
+    if (!hintSeen) setHintSeen(true)
   }
 
   const handleResizePointerDown = (
@@ -226,13 +236,25 @@ export const CropFocalControl = ({
     const imagePixelHeight = imageBounds.height * boxRect.height
     const normalizedX = (event.clientX - imagePixelLeft) / imagePixelWidth
     const normalizedY = (event.clientY - imagePixelTop) / imagePixelHeight
+    // Holding Cmd/Ctrl on a corner handle of a free (unratioed) crop locks the
+    // drag to the image's own natural aspect ratio; edges can't express a
+    // single-dimension lock, so the modifier is ignored there.
+    const wantsAspectLock =
+      (event.metaKey || event.ctrlKey) &&
+      !lockedRatio &&
+      CORNER_HANDLES.includes(handle)
+    const effectiveLockedRatio =
+      lockedRatio ??
+      (wantsAspectLock && aspectRatio
+        ? { width: aspectRatio, height: 1 }
+        : undefined)
     onCropChange(
       resizeRectByHandle(
         currentCrop,
         handle,
         normalizedX,
         normalizedY,
-        lockedRatio,
+        effectiveLockedRatio,
         aspectRatio ?? 1,
       ),
     )
@@ -272,6 +294,7 @@ export const CropFocalControl = ({
       height: imageBounds.height * boxRect.height,
     })
     onFocalChange(pointToCropRelativeFocal(wholeImagePoint, currentCrop))
+    if (!hintSeen) setHintSeen(true)
   }
 
   const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -290,7 +313,7 @@ export const CropFocalControl = ({
     top: `${cropBoxSpace.y * 100}%`,
     width: `${currentCrop.width * imageBounds.width * 100}%`,
     height: `${currentCrop.height * imageBounds.height * 100}%`,
-    border: "1.5px solid #ffffff",
+    border: `1.5px solid ${ACCENT}`,
     boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.45)",
     cursor: dragTarget === "rect" ? "grabbing" : "move",
     pointerEvents: "auto",
@@ -302,8 +325,8 @@ export const CropFocalControl = ({
     left: HANDLE_LAYOUT[handle].left,
     top: HANDLE_LAYOUT[handle].top,
     transform: "translate(-50%, -50%)",
-    width: "10px",
-    height: "10px",
+    width: "14px",
+    height: "14px",
     backgroundColor: "white",
     border: `1.5px solid ${ACCENT}`,
     borderRadius: "1px",
@@ -314,17 +337,19 @@ export const CropFocalControl = ({
 
   const focalWholeImagePoint = focalToWholeImagePoint(currentFocal, currentCrop)
   const focalBoxSpace = toBoxSpace(focalWholeImagePoint)
+  // Sized larger than the icon itself so the hit area stays reasonable.
   const markerStyle: CSSProperties = {
     position: "absolute",
     left: `${focalBoxSpace.x * 100}%`,
     top: `${focalBoxSpace.y * 100}%`,
     transform: "translate(-50%, -50%)",
-    width: "18px",
-    height: "18px",
-    borderRadius: "50%",
-    backgroundColor: ACCENT,
-    border: "2px solid #ffffff",
-    boxShadow: "0 0 0 1.5px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.3)",
+    width: "28px",
+    height: "28px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: ACCENT,
+    filter: "drop-shadow(0 0 1.5px #fff) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4))",
     cursor: dragTarget === "focal" ? "grabbing" : "grab",
     pointerEvents: "auto",
     zIndex: 11,
@@ -369,7 +394,6 @@ export const CropFocalControl = ({
 
   return (
     <Box
-      ref={boxRef}
       position="relative"
       w="100%"
       h="100%"
@@ -383,44 +407,62 @@ export const CropFocalControl = ({
       // dim-outside overlay make the image bounds clear.
       bgColor="#f3f4f6"
     >
-      {/* oxlint-disable-next-line @next/next/no-img-element -- needs naturalWidth/Height for the no-letterbox aspect mapping; user image, not an LCP hero */}
-      <img
-        src={generateAssetUrl(src)}
-        alt="Image for crop and focal point adjustment"
-        onLoad={handleImageLoad}
-        style={displayImageStyle}
-      />
+      {/* `boxRef`/`boxSize` measure THIS inset div (not the outer Box), so every
+      percentage below — image, crop rect, handles, marker — is relative to the
+      same padded frame and stays glued to the image's true edges. */}
+      <Box ref={boxRef} position="absolute" inset="0.75rem">
+        {/* oxlint-disable-next-line @next/next/no-img-element -- needs naturalWidth/Height for the no-letterbox aspect mapping; user image, not an LCP hero */}
+        <img
+          src={generateAssetUrl(src)}
+          alt="Image for crop and focal point adjustment"
+          onLoad={handleImageLoad}
+          style={displayImageStyle}
+        />
 
-      {showCrop && (
-        <div
-          style={rectStyle}
-          onPointerDown={handleRectPointerDown}
-          onPointerMove={handleRectPointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
-        >
-          {activeHandles.map((handle) => (
+        {showCrop && (
+          <div
+            style={rectStyle}
+            onPointerDown={handleRectPointerDown}
+            onPointerMove={handleRectPointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+          >
+            {activeHandles.map((handle) => (
+              <div
+                key={handle}
+                style={getHandleStyle(handle)}
+                onPointerDown={(event) =>
+                  handleResizePointerDown(event, handle)
+                }
+                onPointerMove={(event) =>
+                  handleResizePointerMove(event, handle)
+                }
+                onPointerUp={handlePointerUp}
+                onPointerLeave={handlePointerUp}
+              />
+            ))}
+          </div>
+        )}
+
+        {focalEnabled && (
+          <Tooltip
+            label="Move the focal point"
+            placement="top"
+            isOpen={!hintSeen}
+            hasArrow
+          >
             <div
-              key={handle}
-              style={getHandleStyle(handle)}
-              onPointerDown={(event) => handleResizePointerDown(event, handle)}
-              onPointerMove={(event) => handleResizePointerMove(event, handle)}
+              style={markerStyle}
+              onPointerDown={handleFocalPointerDown}
+              onPointerMove={handleFocalPointerMove}
               onPointerUp={handlePointerUp}
               onPointerLeave={handlePointerUp}
-            />
-          ))}
-        </div>
-      )}
-
-      {focalEnabled && (
-        <div
-          style={markerStyle}
-          onPointerDown={handleFocalPointerDown}
-          onPointerMove={handleFocalPointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
-        />
-      )}
+            >
+              <BiCrosshair size={20} />
+            </div>
+          </Tooltip>
+        )}
+      </Box>
     </Box>
   )
 }

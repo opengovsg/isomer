@@ -18,6 +18,7 @@ import {
   Button,
   Infobox,
   ModalCloseButton,
+  Radio,
   useToast,
 } from "@opengovsg/design-system-react"
 import { useEffect, useMemo, useState } from "react"
@@ -26,21 +27,8 @@ import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
 import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
-import { AspectRatioControl } from "./controls/AspectRatioControl"
 import { CropFocalControl } from "./controls/CropFocalControl"
 import { defaultCropRect } from "./controls/cropGeometry"
-import {
-  flipPointH,
-  flipPointV,
-  flipRectH,
-  flipRectV,
-  nextRotation,
-  rotatePointCcw,
-  rotatePointCw,
-  rotateRectCcw,
-  rotateRectCw,
-} from "./controls/displayTransform"
-import { TransformControl } from "./controls/TransformControl"
 import { computeLowResWarning } from "./resolutionWarning"
 import {
   resolveOriginalKey,
@@ -74,9 +62,13 @@ interface ImageAdjustmentModalProps {
   originalFile?: File
   siteId: number
   resourceId?: string
+  // When provided, this component owns an imageFit (e.g. InfoCards) and the
+  // fit control + its live preview/focal derivation are enabled.
+  initialImageFit?: "cover" | "contain"
   onSave: (result: {
     src: string
     imageAdjustment: ImageAdjustment | undefined
+    imageFit?: "cover" | "contain"
   }) => void
 }
 
@@ -92,6 +84,7 @@ export const ImageAdjustmentModal = ({
   value,
   siteId,
   resourceId,
+  initialImageFit,
   onSave,
 }: ImageAdjustmentModalProps): JSX.Element => {
   // One object URL for the retained local original, shared by the crop canvas.
@@ -106,13 +99,26 @@ export const ImageAdjustmentModal = ({
       if (localOriginalUrl) URL.revokeObjectURL(localOriginalUrl)
     }
   }, [localOriginalUrl])
+  // When this modal owns an imageFit (InfoCards), the fit control shown below
+  // drives the live preview/focal directly from local state, instead of the
+  // stale fieldHost-derived config (the control hasn't been saved yet).
+  const hasImageFitControl = initialImageFit !== undefined
+  const [imageFit, setImageFit] = useState<"cover" | "contain">(
+    initialImageFit ?? "cover",
+  )
   // Tier C (InfoCards): focal and the preview's object-fit depend on the card's
   // current imageFit; other components have no resolver and fall back to the
   // static config / cover.
-  const focalEnabled = config.focalEnabledFor
-    ? config.focalEnabledFor(fieldHost)
-    : config.focalEnabled
-  const previewObjectFit = config.previewObjectFitFor?.(fieldHost) ?? "cover"
+  const focalEnabled = hasImageFitControl
+    ? imageFit !== "contain"
+    : config.focalEnabledFor
+      ? config.focalEnabledFor(fieldHost)
+      : config.focalEnabled
+  const previewObjectFit = hasImageFitControl
+    ? imageFit === "contain"
+      ? "contain"
+      : "cover"
+    : (config.previewObjectFitFor?.(fieldHost) ?? "cover")
   const [draft, setDraft] = useState<ImageAdjustment | undefined>(value)
   // The source image's true pixel aspect ratio, reported by CropFocalControl
   // once its <img> loads — needed so "Reset crop & focal" can seed the same
@@ -139,8 +145,10 @@ export const ImageAdjustmentModal = ({
   // Drives UI locking during a save. Local (not the hook's isSaving) so the
   // save timeout below can unlock the modal even if the underlying upload hangs.
   const [isSaving, setIsSaving] = useState(false)
-  // Check if draft differs from original value.
-  const isModified = JSON.stringify(draft) !== JSON.stringify(value)
+  // Check if draft (or, when shown, imageFit) differs from its original value.
+  const isModified =
+    JSON.stringify(draft) !== JSON.stringify(value) ||
+    (hasImageFitControl && imageFit !== (initialImageFit ?? "cover"))
 
   const lockedRatio =
     config.cropMode === "fixed" ? config.lockedRatios?.[0] : undefined
@@ -196,7 +204,14 @@ export const ImageAdjustmentModal = ({
   const handleSave = async () => {
     // Nothing to persist (untouched, or reverted back to the original) — just
     // close without re-baking/uploading.
-    if (!isModified || !draft) {
+    if (!isModified) {
+      onClose()
+      return
+    }
+    // Only imageFit changed (crop/focal untouched) — nothing to bake, so skip
+    // straight to onSave instead of invoking save() with an empty draft.
+    if (!draft) {
+      onSave({ src, imageAdjustment: value, imageFit })
       onClose()
       return
     }
@@ -213,7 +228,7 @@ export const ImageAdjustmentModal = ({
           )
         }),
       ])
-      onSave(result)
+      onSave({ ...result, imageFit })
       onClose()
     } catch (err) {
       toast({
@@ -230,15 +245,13 @@ export const ImageAdjustmentModal = ({
   }
 
   // A locked-ratio crop can only be (re)computed once the real image aspect is
-  // known — without it, defaultCropRect would bake the wrong pixel ratio. Both
-  // Reset and Rotate re-derive the locked crop, so both are blocked until the
-  // image loads (a free crop ignores imageAspect, and flips just mirror the
-  // existing rect, so neither needs this guard).
+  // known — without it, defaultCropRect would bake the wrong pixel ratio. Reset
+  // re-derives the locked crop, so it's blocked until the image loads.
   const isLockedRatioAspectPending =
     lockedRatio != null && imageAspect === undefined
 
   // Reset does NOT save or close, same as any other edit, so the editor can see
-  // the reset in the preview and still Save/Undo/Cancel from there.
+  // the reset in the preview and still Save/Cancel from there.
   const isResetDisabled = isLockedRatioAspectPending
 
   const handleReset = () => {
@@ -250,72 +263,6 @@ export const ImageAdjustmentModal = ({
       flipH: false,
       flipV: false,
     }))
-  }
-
-  // Rotating/flipping moves the crop + focal with the image content so they
-  // keep framing the same subject. The stored rotate value is resolved via
-  // nextRotation (a single flip reverses the displayed rotation sense); the
-  // crop/focal always move in the COMMANDED display direction. A quarter turn
-  // inverts the aspect, which would break a locked ratio's fixed output shape —
-  // so for locked-ratio components re-fit the crop to a valid centered rect in
-  // the new orientation instead of rotating it geometrically. (Disabled until
-  // imageAspect loads for locked ratios — see isLockedRatioAspectPending — so a
-  // square-assumed crop can never be baked.)
-  const handleRotate = (direction: "cw" | "ccw") => {
-    // Defence in depth: the rotate buttons are already disabled in this state,
-    // but never re-derive a locked crop against a square-assumed aspect.
-    if (isLockedRatioAspectPending) return
-    setDraft((d) => {
-      const base = ensureAdjustment(d)
-      const rotate = nextRotation(base, direction)
-      if (lockedRatio) {
-        const quarter = rotate === 90 || rotate === 270
-        const displayAspect = quarter
-          ? 1 / (imageAspect ?? 1)
-          : (imageAspect ?? 1)
-        return {
-          ...base,
-          rotate,
-          crop: defaultCropRect(lockedRatio, displayAspect),
-          focal: { x: 0.5, y: 0.5 },
-        }
-      }
-      return {
-        ...base,
-        rotate,
-        crop:
-          direction === "cw"
-            ? rotateRectCw(base.crop)
-            : rotateRectCcw(base.crop),
-        focal:
-          direction === "cw"
-            ? rotatePointCw(base.focal)
-            : rotatePointCcw(base.focal),
-      }
-    })
-  }
-
-  const handleFlip = (axis: "h" | "v") => {
-    setDraft((d) => {
-      const base = ensureAdjustment(d)
-      return axis === "h"
-        ? {
-            ...base,
-            flipH: !base.flipH,
-            crop: flipRectH(base.crop),
-            focal: flipPointH(base.focal),
-          }
-        : {
-            ...base,
-            flipV: !base.flipV,
-            crop: flipRectV(base.crop),
-            focal: flipPointV(base.focal),
-          }
-    })
-  }
-
-  const handleUndo = () => {
-    setDraft(value)
   }
 
   return (
@@ -435,27 +382,30 @@ export const ImageAdjustmentModal = ({
                   </Box>
                 )}
 
-                <Flex
-                  justify="space-between"
-                  align="center"
-                  wrap="wrap"
-                  gap="1rem"
-                  w="100%"
-                  flexShrink={0}
-                >
-                  <AspectRatioControl
-                    cropMode={config.cropMode}
-                    lockedRatios={config.lockedRatios}
-                  />
-                  {/* Rotate & flip — applies to every adjustable component. */}
-                  <TransformControl
-                    flipH={draft?.flipH ?? false}
-                    flipV={draft?.flipV ?? false}
-                    rotateDisabled={isLockedRatioAspectPending}
-                    onRotate={handleRotate}
-                    onFlip={handleFlip}
-                  />
-                </Flex>
+                {/* Image fit — only for components (e.g. InfoCards) whose
+                    layout lets the image either cover or letterbox its frame. */}
+                {hasImageFitControl && (
+                  <Box w="100%" flexShrink={0}>
+                    <Text textStyle="subhead-2" mb="0.5rem">
+                      Image fit
+                    </Text>
+                    <Radio.RadioGroup
+                      value={imageFit}
+                      onChange={(value: string) =>
+                        setImageFit(value as "cover" | "contain")
+                      }
+                    >
+                      <VStack align="stretch" spacing="0.5rem">
+                        <Radio value="cover">Default (recommended)</Radio>
+                        <Radio value="contain">Resize image to fit</Radio>
+                      </VStack>
+                    </Radio.RadioGroup>
+                    <Text textStyle="body-2" color="base.content.medium" mt="0.5rem">
+                      Select &quot;Resize image to fit&quot; only if the image
+                      has a white background.
+                    </Text>
+                  </Box>
+                )}
 
                 {/* Preserve-only note */}
                 {config.cropMode === "none" && (
@@ -503,20 +453,6 @@ export const ImageAdjustmentModal = ({
                 >
                   Preview
                 </Text>
-                <AdjustmentPreview
-                  src={src}
-                  originalSrc={originalSrc}
-                  originalFile={originalFile}
-                  adjustment={draft}
-                  previewStates={config.previewStates}
-                  scrim={config.scrim}
-                  block={block}
-                  imageFieldName={imageFieldName}
-                  skipRealComponentPreview={config.skipRealComponentPreview}
-                  stackPreviews={config.stackPreviews}
-                  objectFit={previewObjectFit}
-                  siteId={siteId}
-                />
 
                 {/* Low-resolution warning — the kept crop can't fill this
                     component's largest frame even at 1x, so it would look soft. */}
@@ -534,19 +470,27 @@ export const ImageAdjustmentModal = ({
                     </Text>
                   </Infobox>
                 )}
+
+                <AdjustmentPreview
+                  src={src}
+                  originalSrc={originalSrc}
+                  originalFile={originalFile}
+                  adjustment={draft}
+                  previewStates={config.previewStates}
+                  scrim={config.scrim}
+                  block={block}
+                  imageFieldName={imageFieldName}
+                  skipRealComponentPreview={config.skipRealComponentPreview}
+                  stackPreviews={config.stackPreviews}
+                  objectFit={previewObjectFit}
+                  siteId={siteId}
+                />
               </VStack>
             </Flex>
           </ModalBody>
 
           <ModalFooter borderTopWidth="1px" borderColor="base.divider.medium">
             <HStack spacing="1rem" w="100%">
-              <Button
-                variant="link"
-                onClick={handleUndo}
-                isDisabled={!isModified || isSaving}
-              >
-                Undo changes
-              </Button>
               <Button
                 variant="link"
                 colorScheme="critical"

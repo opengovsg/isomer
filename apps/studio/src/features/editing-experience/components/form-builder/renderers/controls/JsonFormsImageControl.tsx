@@ -10,15 +10,20 @@ import {
 } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import dynamic from "next/dynamic"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { fetchImageBlob } from "~/features/editing-experience/components/ImageAdjustmentModal/useSaveImageAdjustment"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useIsImageAdjustmentEnabled } from "~/hooks/useIsImageAdjustmentEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
-import { canBakeImage, mimeFromKeyExtension } from "~/lib/imageBake"
+import {
+  canBakeImage,
+  isAnimatedImageBlob,
+  mimeFromKeyExtension,
+} from "~/lib/imageBake"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 
 import { useAdjustmentConfigForField } from "../../hooks/useAdjustmentConfigForField"
@@ -96,24 +101,14 @@ function JsonFormsImageControl({
 
   // The adjustment entry point shows only when the flag is on, the asset is a
   // managed, bakeable-format asset, and the owning component has a config.
-  const canAdjust =
+  // Animated-format detection (below) further gates this once it resolves.
+  const canAdjustBase =
     isImageAdjustmentEnabled && isManagedAsset && !!config && isBakeableFormat
 
   // Same asset that would be adjustable but for its format — tell the user why
   // the editor isn't offered, rather than silently hiding the pencil.
   const showUnsupportedFormatCallout =
     isImageAdjustmentEnabled && isManagedAsset && !!config && !isBakeableFormat
-
-  // Auto-open the editor right after a fresh upload (set in FileAttachment's
-  // setHref below) once the new asset turns out to be adjustable — not on page
-  // load for an already-saved image.
-  const justUploadedRef = useRef(false)
-  useEffect(() => {
-    if (justUploadedRef.current && canAdjust) {
-      justUploadedRef.current = false
-      onAdjustmentModalOpen()
-    }
-  }, [canAdjust, onAdjustmentModalOpen])
 
   // Retain the just-uploaded File client-side (never sent to the Studio server —
   // it goes direct to S3 via a presigned PUT) so the editor can bake from local
@@ -138,15 +133,104 @@ function JsonFormsImageControl({
       ? uploadedOriginal.file
       : undefined
 
+  // Animated WebP/APNG pass the MIME/extension gate above but useSaveImageAdjustment
+  // rejects them at save time (baking would flatten them to one frame) — detect
+  // it up front so the editor isn't offered just to fail later. Fails open: stays
+  // false while the check is pending or if it errors, since the save-time guard
+  // remains the backstop. Only WebP and PNG can carry animation, so skip the
+  // (full-image) fetch entirely for every other format — the common JPEG case
+  // never downloads just to sniff a header it can't have.
+  const assetMime = data ? mimeFromKeyExtension(data) : undefined
+  const couldBeAnimated = assetMime === "image/webp" || assetMime === "image/png"
+  const [isAnimatedAsset, setIsAnimatedAsset] = useState(false)
+  // Whether the animation check has settled for the current asset. Auto-open
+  // waits on this so a freshly-uploaded animated image is never popped open
+  // before we've ruled it out (reset to false on each new upload in setHref).
+  const [animationResolved, setAnimationResolved] = useState(false)
+  useEffect(() => {
+    // Nothing to fetch (not adjustable, or a format that can't animate) — settle
+    // immediately as "not animated".
+    if (!canAdjustBase || !editingOriginalKey || !couldBeAnimated) {
+      setIsAnimatedAsset(false)
+      setAnimationResolved(true)
+      return
+    }
+    let cancelled = false
+    setAnimationResolved(false)
+    const blobPromise = originalFile
+      ? Promise.resolve(originalFile)
+      : fetchImageBlob(`/${editingOriginalKey}`)
+    blobPromise
+      .then(isAnimatedImageBlob)
+      .then((animated) => {
+        if (!cancelled) {
+          setIsAnimatedAsset(animated)
+          setAnimationResolved(true)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setIsAnimatedAsset(false)
+          setAnimationResolved(true)
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [canAdjustBase, editingOriginalKey, originalFile, couldBeAnimated])
+
+  const canAdjust = canAdjustBase && !isAnimatedAsset
+
+  // Tell the user why an otherwise-adjustable asset can't be edited, rather
+  // than silently hiding the pencil.
+  const showAnimatedFormatCallout = canAdjustBase && isAnimatedAsset
+
+  // Auto-open the editor right after a fresh upload (set in FileAttachment's
+  // setHref below) once the new asset turns out to be adjustable — not on page
+  // load for an already-saved image. Restricted to hero banners: other
+  // components keep the manual Edit/Adjust button instead of popping the modal.
+  const justUploadedRef = useRef(false)
+  useEffect(() => {
+    if (!justUploadedRef.current) return
+    // Wait for the animation check to settle before deciding, so an animated
+    // upload is never auto-opened in the window before it's ruled out.
+    if (!animationResolved) return
+    justUploadedRef.current = false
+    if (canAdjust && config?.componentType.startsWith("hero:")) {
+      onAdjustmentModalOpen()
+    }
+  }, [animationResolved, canAdjust, onAdjustmentModalOpen, config])
+
+  // InfoCards owns a sibling `imageFit` field on the card (the modal's fit
+  // control writes back to it) — detect it by component type so other
+  // components never get an unexpected imageFit control.
+  const isInfoCardsField =
+    config?.componentType.startsWith("infocards:") ?? false
+  const initialImageFit = isInfoCardsField
+    ? ((fieldHost as { imageFit?: "cover" | "contain" } | null)?.imageFit ??
+      "cover")
+    : undefined
+
+  // Sibling path for the card's imageFit field, mirroring siblingPath's
+  // parent+field construction for imageAdjustment.
+  const imageFitPath = [path.split(".").slice(0, -1).join("."), "imageFit"]
+    .filter(Boolean)
+    .join(".")
+
   const handleAdjustmentSave = ({
     src,
     imageAdjustment,
+    imageFit,
   }: {
     src: string
     imageAdjustment: ImageAdjustment | undefined
+    imageFit?: "cover" | "contain"
   }) => {
     handleChange(path, src)
     handleChange(siblingPath, imageAdjustment)
+    if (imageFit !== undefined) {
+      handleChange(imageFitPath, imageFit)
+    }
   }
 
   return (
@@ -188,6 +272,7 @@ function JsonFormsImageControl({
               resourceId={
                 (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
               }
+              initialImageFit={initialImageFit}
               onSave={handleAdjustmentSave}
             />
           )}
@@ -199,6 +284,14 @@ function JsonFormsImageControl({
               </Text>
             </Infobox>
           )}
+          {showAnimatedFormatCallout && (
+            <Infobox variant="warning" size="sm" mt="0.75rem">
+              <Text textStyle="body-2">
+                Animated images can't be adjusted. Editing would flatten it to
+                a single frame.
+              </Text>
+            </Infobox>
+          )}
         </Box>
       ) : (
         <Box>
@@ -206,7 +299,13 @@ function JsonFormsImageControl({
               component's real frame behaviour (never a universal ratio for a
               responsive frame). */}
           {isImageAdjustmentEnabled && config?.preUploadCopy && (
-            <Infobox variant="info" size="sm" mb="0.75rem">
+            <Infobox
+              variant="info"
+              size="sm"
+              mb="0.75rem"
+              border="1px solid"
+              borderColor="utility.feedback.info"
+            >
               <Text textStyle="body-2">{config.preUploadCopy}</Text>
             </Infobox>
           )}
@@ -229,6 +328,9 @@ function JsonFormsImageControl({
               // editor auto-opens once the new src lands and canAdjust is true.
               if (src) {
                 justUploadedRef.current = true
+                // New asset → force the auto-open gate to wait for a fresh
+                // animation check (avoids acting on the prior asset's result).
+                setAnimationResolved(false)
                 if (pendingFileRef.current) {
                   uploadedOriginalRef.current = {
                     key: src.replace(/^\//, ""),

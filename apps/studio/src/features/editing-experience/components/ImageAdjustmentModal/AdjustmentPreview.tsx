@@ -415,6 +415,9 @@ export const AdjustmentPreview = ({
         flexShrink={0}
         w={`${width}px`}
       >
+        <TileCaption subLabel={formatDimensions(state)}>
+          {state.label}
+        </TileCaption>
         <Box {...TILE_FRAME_PROPS} style={{ width, height: width / aspect }}>
           <Box w="100%" h="100%" position="relative" overflow="hidden">
             <Box
@@ -445,7 +448,6 @@ export const AdjustmentPreview = ({
             )}
           </Box>
         </Box>
-        <TileCaption>{state.label}</TileCaption>
       </VStack>
     )
   }
@@ -489,16 +491,41 @@ const TILE_FRAME_PROPS = {
   position: "relative",
 } as const
 
-const TileCaption = ({ children }: { children: string }): JSX.Element => (
-  <Text
-    textStyle="caption-2"
-    textTransform="uppercase"
-    letterSpacing="0.05em"
-    color="base.content.medium"
-  >
-    {children}
-  </Text>
+const TileCaption = ({
+  children,
+  subLabel,
+}: {
+  children: string
+  subLabel?: string
+}): JSX.Element => (
+  <VStack align="stretch" spacing={0}>
+    <Text
+      textStyle="caption-2"
+      textTransform="uppercase"
+      letterSpacing="0.05em"
+      color="base.content.medium"
+    >
+      {children}
+    </Text>
+    {subLabel && (
+      <Text textStyle="caption-2" color="base.content.medium">
+        {subLabel}
+      </Text>
+    )}
+  </VStack>
 )
+
+// The pixel size a tile is SIMULATING (not the live, ResizeObserver-measured
+// height, which jitters as content renders) — derived from the same stable
+// viewportWidth/aspectRatio PreviewFrame uses for its initial height guess.
+const formatDimensions = (state: AdjustmentPreviewState): string => {
+  const width = state.viewportWidth ?? 1024
+  if (!state.aspectRatio) return `${width} px wide`
+  const height = Math.round(
+    (width * state.aspectRatio.height) / state.aspectRatio.width,
+  )
+  return `${width} × ${height} px`
+}
 
 // Renders the real component inside a simulated device viewport at this
 // breakpoint's exact width (so the component's own sm:/md:/lg: Tailwind
@@ -565,6 +592,9 @@ const PreviewFrame = ({
       flexShrink={0}
       w={`${displayWidth}px`}
     >
+      <TileCaption subLabel={formatDimensions(state)}>
+        {state.label}
+      </TileCaption>
       <Box
         {...TILE_FRAME_PROPS}
         style={{ width: displayWidth, height: viewportHeight * scale }}
@@ -588,7 +618,6 @@ const PreviewFrame = ({
           </PreviewIframe>
         </Box>
       </Box>
-      <TileCaption>{state.label}</TileCaption>
     </VStack>
   )
 }
