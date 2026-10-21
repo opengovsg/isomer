@@ -337,19 +337,23 @@ export const CropFocalControl = ({
 
   const focalWholeImagePoint = focalToWholeImagePoint(currentFocal, currentCrop)
   const focalBoxSpace = toBoxSpace(focalWholeImagePoint)
-  // Sized larger than the icon itself so the hit area stays reasonable.
+  // A white disc behind the crosshair so the brand-blue marker stays legible
+  // over any image; the ring + shadow separate it from light backgrounds. Sized
+  // larger than the icon so the hit area stays reasonable.
   const markerStyle: CSSProperties = {
     position: "absolute",
     left: `${focalBoxSpace.x * 100}%`,
     top: `${focalBoxSpace.y * 100}%`,
     transform: "translate(-50%, -50%)",
-    width: "28px",
-    height: "28px",
+    width: "26px",
+    height: "26px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: "50%",
+    backgroundColor: "white",
     color: ACCENT,
-    filter: "drop-shadow(0 0 1.5px #fff) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4))",
+    boxShadow: "0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.35)",
     cursor: dragTarget === "focal" ? "grabbing" : "grab",
     pointerEvents: "auto",
     zIndex: 11,
@@ -458,7 +462,7 @@ export const CropFocalControl = ({
               onPointerUp={handlePointerUp}
               onPointerLeave={handlePointerUp}
             >
-              <BiCrosshair size={20} />
+              <BiCrosshair size={18} />
             </div>
           </Tooltip>
         )}
