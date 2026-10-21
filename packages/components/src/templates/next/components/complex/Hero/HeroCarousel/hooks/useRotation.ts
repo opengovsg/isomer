@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { HERO_CAROUSEL_SLIDE_LIMITS } from "~/interfaces/complex/Hero"
 
-import { HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS } from "./constants"
-import { useHeroCarouselPreview } from "./HeroCarouselPreviewContext"
-import { useHeroCarouselNavigation } from "./useHeroCarouselNavigation"
+import { HERO_CAROUSEL_ROTATION_INTERVAL_MS } from "../constants"
+import { useHeroCarouselPreview } from "../HeroCarouselPreviewContext"
+import { useNavigation } from "./useNavigation"
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)"
 
@@ -12,28 +12,28 @@ type RotationPhase = "pending" | "rotating" | "stopped"
 const prefersReducedMotion = () =>
   window.matchMedia(REDUCED_MOTION_QUERY).matches
 
-export const useHeroCarouselAutorotate = (slideCount: number) => {
+export const useRotation = (slideCount: number) => {
   const isPreview = useHeroCarouselPreview() !== null
-  const { currentIndex, controlProps } = useHeroCarouselNavigation(slideCount)
+  const { currentIndex, controlProps } = useNavigation(slideCount)
   const [phase, setPhase] = useState<RotationPhase>("pending")
   const [isHoverPaused, setIsHoverPaused] = useState(false)
   const [isDocumentHidden, setIsDocumentHidden] = useState(false)
-  const [clock, setClock] = useState<{
+  const [countdown, setCountdown] = useState<{
     elapsedMs: number
     startedAt: number | null
   }>({ elapsedMs: 0, startedAt: null })
   const elapsedMsRef = useRef(0)
   const runningSinceRef = useRef<number | null>(null)
 
-  const discardRunningSegment = useCallback(() => {
+  const resetElapsed = useCallback(() => {
     elapsedMsRef.current = 0
     runningSinceRef.current = null
   }, [])
 
   const stop = useCallback(() => {
-    discardRunningSegment()
+    resetElapsed()
     setPhase("stopped")
-  }, [discardRunningSegment])
+  }, [resetElapsed])
 
   useEffect(() => {
     const media = window.matchMedia(REDUCED_MOTION_QUERY)
@@ -60,8 +60,8 @@ export const useHeroCarouselAutorotate = (slideCount: number) => {
   useEffect(() => {
     const syncVisibility = () => {
       if (document.hidden) {
-        discardRunningSegment()
-        setClock({ elapsedMs: 0, startedAt: null })
+        resetElapsed()
+        setCountdown({ elapsedMs: 0, startedAt: null })
       }
       setIsDocumentHidden(document.hidden)
     }
@@ -69,7 +69,7 @@ export const useHeroCarouselAutorotate = (slideCount: number) => {
     document.addEventListener("visibilitychange", syncVisibility)
     return () =>
       document.removeEventListener("visibilitychange", syncVisibility)
-  }, [discardRunningSegment])
+  }, [resetElapsed])
 
   const { onNext, onPrev } = controlProps
   const hasEnoughSlides = slideCount >= HERO_CAROUSEL_SLIDE_LIMITS.minItems
@@ -84,11 +84,11 @@ export const useHeroCarouselAutorotate = (slideCount: number) => {
 
     const startedAt = performance.now()
     runningSinceRef.current = startedAt
-    setClock({ elapsedMs: elapsedMsRef.current, startedAt })
+    setCountdown({ elapsedMs: elapsedMsRef.current, startedAt })
 
     const remaining = Math.max(
       0,
-      HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS - elapsedMsRef.current,
+      HERO_CAROUSEL_ROTATION_INTERVAL_MS - elapsedMsRef.current,
     )
     const timeoutId = window.setTimeout(() => {
       elapsedMsRef.current = 0
@@ -102,11 +102,11 @@ export const useHeroCarouselAutorotate = (slideCount: number) => {
         return
       }
       elapsedMsRef.current = Math.min(
-        HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS,
+        HERO_CAROUSEL_ROTATION_INTERVAL_MS,
         elapsedMsRef.current + (performance.now() - runningSinceRef.current),
       )
       runningSinceRef.current = null
-      setClock({ elapsedMs: elapsedMsRef.current, startedAt: null })
+      setCountdown({ elapsedMs: elapsedMsRef.current, startedAt: null })
     }
   }, [onNext, shouldRun])
 
@@ -125,14 +125,14 @@ export const useHeroCarouselAutorotate = (slideCount: number) => {
       if (isPreview) {
         return
       }
-      discardRunningSegment()
+      resetElapsed()
       if (next === "rotating") {
         setIsHoverPaused(false)
-        setClock({ elapsedMs: 0, startedAt: null })
+        setCountdown({ elapsedMs: 0, startedAt: null })
       }
       setPhase(next)
     },
-    [discardRunningSegment, isPreview],
+    [resetElapsed, isPreview],
   )
 
   const showRotationControl = phase !== "pending" && hasEnoughSlides
@@ -154,8 +154,8 @@ export const useHeroCarouselAutorotate = (slideCount: number) => {
         ? {
             isRotating: phase === "rotating",
             showCountdown: canRotate,
-            elapsedMs: clock.elapsedMs,
-            startedAt: clock.startedAt,
+            elapsedMs: countdown.elapsedMs,
+            startedAt: countdown.startedAt,
             onChange: onRotationChange,
           }
         : undefined,

@@ -3,7 +3,7 @@ import { BiChevronLeft, BiChevronRight, BiPause, BiPlay } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 
-import { HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS } from "./constants"
+import { HERO_CAROUSEL_ROTATION_INTERVAL_MS } from "./constants"
 
 const carouselButtonClassName =
   "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-transparent bg-white text-base-content shadow-sm hover:bg-white/90 focus-visible:outline focus-visible:outline-[0.25rem] focus-visible:outline-offset-[0.125rem] focus-visible:outline-utility-highlight"
@@ -109,16 +109,13 @@ const RotationCountdown = ({
     if (!progress) return
 
     const draw = (elapsed: number) => {
-      const ratio = Math.min(elapsed / HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS, 1)
+      const ratio = Math.min(elapsed / HERO_CAROUSEL_ROTATION_INTERVAL_MS, 1)
       progress.style.strokeDashoffset = String(
         COUNTDOWN_CIRCUMFERENCE * (1 - ratio),
       )
     }
 
-    if (
-      startedAt === null ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
+    if (startedAt === null) {
       draw(elapsedMs)
       return
     }
@@ -136,6 +133,7 @@ const RotationCountdown = ({
   return (
     <svg
       data-rotation-countdown=""
+      data-chromatic="ignore"
       aria-hidden
       viewBox="0 0 40 40"
       className="pointer-events-none absolute inset-0 h-full w-full"
@@ -182,8 +180,8 @@ const CarouselRotationButton = ({
 }) => {
   // Pointerdown runs before focusin. Focusing the button stops rotation and
   // re-renders, so the click that follows must apply the action captured
-  // here. Otherwise an unfocused Pause click focuses it (stop) and then
-  // toggles back to playing.
+  // here. An unfocused Pause click focuses the button, which stops rotation,
+  // and the click then toggles it back to playing.
   const intendedRotation = useRef<Rotation | null>(null)
   const label = isRotating ? "Pause slide rotation" : "Start slide rotation"
   const Icon = isRotating ? BiPause : BiPlay

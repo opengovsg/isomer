@@ -13,7 +13,7 @@ import {
   CarouselSlideContent,
   CarouselSlideImages,
 } from "./CarouselSlides"
-import { useHeroCarouselAutorotate } from "./useHeroCarouselAutorotate"
+import { useRotation } from "./hooks/useRotation"
 
 const gradientCarouselStyles = tv({
   slots: {
@@ -65,7 +65,7 @@ export const HeroCarouselGradientClient = ({
     showLiveRegion,
     politeness,
     sectionProps,
-  } = useHeroCarouselAutorotate(slides.length)
+  } = useRotation(slides.length)
   const styles = gradientCarouselStyles({ contentAlignment })
 
   return (

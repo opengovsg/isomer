@@ -9,7 +9,7 @@ import {
   CarouselSlideContent,
   CarouselSlideImages,
 } from "./CarouselSlides"
-import { useHeroCarouselAutorotate } from "./useHeroCarouselAutorotate"
+import { useRotation } from "./hooks/useRotation"
 
 export const HeroCarouselBlockClient = ({
   headingTag,
@@ -26,7 +26,7 @@ export const HeroCarouselBlockClient = ({
     showLiveRegion,
     politeness,
     sectionProps,
-  } = useHeroCarouselAutorotate(slides.length)
+  } = useRotation(slides.length)
 
   return (
     <section

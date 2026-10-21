@@ -1,8 +1,8 @@
 import { useCallback, useState, useTransition } from "react"
 
-import { useHeroCarouselPreview } from "./HeroCarouselPreviewContext"
+import { useHeroCarouselPreview } from "../HeroCarouselPreviewContext"
 
-export const useHeroCarouselNavigation = (slideCount: number) => {
+export const useNavigation = (slideCount: number) => {
   const preview = useHeroCarouselPreview()
   const [localIndex, setLocalIndex] = useState(0)
   const [, startTransition] = useTransition()

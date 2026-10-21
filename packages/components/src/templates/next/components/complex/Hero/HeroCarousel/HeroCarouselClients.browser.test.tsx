@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { userEvent } from "vitest/browser"
 import { HERO_CAROUSEL_CONTENT_ALIGNMENT } from "~/interfaces/complex/Hero"
 
-import { HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS } from "./constants"
+import { HERO_CAROUSEL_ROTATION_INTERVAL_MS } from "./constants"
 import { HeroCarouselBlockClient } from "./HeroCarouselBlockClient"
 import { HeroCarouselGradientClient } from "./HeroCarouselGradientClient"
 import { HeroCarouselPreviewProvider } from "./HeroCarouselPreviewContext"
@@ -202,7 +202,7 @@ const installBrowserStubs = () => {
   )
 }
 
-describe("hero carousel auto-rotate", () => {
+describe("hero carousel rotation", () => {
   beforeEach(() => {
     prefersReducedMotion = false
     documentHidden = false
@@ -221,7 +221,7 @@ describe("hero carousel auto-rotate", () => {
     renderGradient()
 
     // Act
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS - 1)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS - 1)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
@@ -233,13 +233,13 @@ describe("hero carousel auto-rotate", () => {
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
 
     // Act
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 3 of 3: Gamma")
 
     // Act
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
@@ -252,7 +252,7 @@ describe("hero carousel auto-rotate", () => {
 
     // Act
     fireEvent.click(rotationButton())
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
@@ -266,7 +266,7 @@ describe("hero carousel auto-rotate", () => {
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Next slide" }))
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
@@ -278,7 +278,7 @@ describe("hero carousel auto-rotate", () => {
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Previous slide" }))
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 3 of 3: Gamma")
@@ -293,7 +293,7 @@ describe("hero carousel auto-rotate", () => {
     act(() => {
       callToAction.focus()
     })
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 2: Short")
@@ -309,7 +309,7 @@ describe("hero carousel auto-rotate", () => {
     act(() => {
       pause.focus()
     })
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
@@ -333,7 +333,7 @@ describe("hero carousel auto-rotate", () => {
     expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
 
     // Act
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS - 1)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS - 1)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
@@ -349,12 +349,12 @@ describe("hero carousel auto-rotate", () => {
   it("freezes the countdown while hovered and continues the remaining time", () => {
     // Arrange
     const section = renderGradient()
-    const halfway = HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS / 2
+    const halfway = HERO_CAROUSEL_ROTATION_INTERVAL_MS / 2
     advanceRotation(halfway)
 
     // Act
     fireEvent.pointerEnter(section)
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
@@ -363,7 +363,7 @@ describe("hero carousel auto-rotate", () => {
     expect(frozen.offset).toBeCloseTo(frozen.circumference / 2, 0)
 
     // Act
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(countdownProgress(section).offset).toBeCloseTo(frozen.offset, 0)
@@ -399,7 +399,7 @@ describe("hero carousel auto-rotate", () => {
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
 
     // Act
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS - 1)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS - 1)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
@@ -414,14 +414,14 @@ describe("hero carousel auto-rotate", () => {
   it("pauses the timer while the document is hidden and restarts a full interval when it is visible", () => {
     // Arrange
     renderGradient()
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS - 1)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS - 1)
 
     // Act
     act(() => {
       documentHidden = true
       document.dispatchEvent(new Event("visibilitychange"))
     })
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
@@ -431,7 +431,7 @@ describe("hero carousel auto-rotate", () => {
       documentHidden = false
       document.dispatchEvent(new Event("visibilitychange"))
     })
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS - 1)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS - 1)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
@@ -449,7 +449,7 @@ describe("hero carousel auto-rotate", () => {
     renderGradient()
 
     // Act
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
@@ -459,14 +459,14 @@ describe("hero carousel auto-rotate", () => {
   it("stops rotation when reduced motion is turned on mid-session", () => {
     // Arrange
     renderGradient()
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS - 1)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS - 1)
 
     // Act
     act(() => {
       prefersReducedMotion = true
       reducedMotionListeners.forEach((listener) => listener())
     })
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
@@ -487,9 +487,9 @@ describe("hero carousel auto-rotate", () => {
     render(<Harness />)
 
     // Act
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
     fireEvent.click(rotationButton())
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
@@ -532,7 +532,7 @@ describe("hero carousel auto-rotate", () => {
     // Act / Assert
     expect(region).toHaveAttribute("aria-live", "off")
 
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     expect(region).toHaveAttribute("aria-live", "off")
     expect(region.textContent).toBe("Slide 2 of 3: Beta")
@@ -567,7 +567,7 @@ describe("hero carousel auto-rotate", () => {
       [...section.querySelectorAll("img")].map((image) => image.parentElement!)
 
     // Act
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     const groups = slideGroups()
@@ -589,7 +589,7 @@ describe("hero carousel auto-rotate", () => {
     )
 
     // Act
-    advanceRotation(HERO_CAROUSEL_AUTOROTATE_INTERVAL_MS)
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(
