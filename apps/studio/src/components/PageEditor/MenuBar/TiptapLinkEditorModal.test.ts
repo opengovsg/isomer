@@ -1,7 +1,6 @@
 import type { JSONContent } from "@tiptap/react"
 import { Editor } from "@tiptap/react"
 import { afterEach, describe, expect, it } from "vitest"
-
 import {
   BASE_EXTENSIONS,
   PROSE_EXTENSIONS,
