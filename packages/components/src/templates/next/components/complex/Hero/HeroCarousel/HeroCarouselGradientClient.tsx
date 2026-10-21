@@ -18,25 +18,28 @@ import { useRotation } from "./hooks/useRotation"
 const gradientCarouselStyles = tv({
   slots: {
     section:
-      "relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]",
-    contentPanel:
-      "relative z-10 flex w-full flex-col justify-end bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]",
+      "relative flex min-h-[15rem] [touch-action:pan-y_pinch-zoom] sm:min-h-[22.5rem] lg:min-h-[31.25rem]",
+    contentPanel: "relative z-10 flex w-full flex-col justify-end",
     contentInner: `${ComponentContent} flex flex-col gap-9 py-16 pb-10 text-start text-base-content-inverse lg:pb-[54px]`,
     actions: "flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row",
   },
   variants: {
     // Mobile stays left-aligned; centered from md up with a fixed height
     contentAlignment: {
-      [HERO_CAROUSEL_CONTENT_ALIGNMENT.left]: {},
+      [HERO_CAROUSEL_CONTENT_ALIGNMENT.left]: {
+        // max-lg: black/60. lg+: gradient black to black/25 (max-lg classes
+        // avoid applying both).
+        contentPanel:
+          "max-lg:bg-black/60 lg:bg-gradient-to-r lg:from-black lg:to-black/25",
+      },
       [HERO_CAROUSEL_CONTENT_ALIGNMENT.center]: {
         section: "md:h-[40rem] md:min-h-0 lg:min-h-0",
-        // Flat 60% black overlay instead of the left-to-right gradient
-        contentPanel: "md:justify-center md:bg-black/60 md:bg-none",
-        // Tablet: clear the arrows (3.5rem offset + 2.5rem button) by 44px.
-        // The !utilities override ComponentContent's padding and max width,
-        // which an ancestor sets with a more specific selector.
+        // black/60 at all breakpoints (no left-layout gradient).
+        contentPanel: "bg-black/60",
+        // !utilities override ComponentContent padding from a more specific
+        // ancestor. md:flex-1 positions the bottom control row.
         contentInner:
-          "md:!px-[8.75rem] md:py-16 md:text-center lg:!mx-auto lg:w-full lg:!max-w-[54.75rem] lg:!px-10 lg:pb-16",
+          "md:relative md:!mx-auto md:w-full md:!max-w-[54.75rem] md:flex-1 md:justify-center md:self-center md:!px-10 md:py-16 md:text-center lg:pb-16",
         actions: "md:justify-center",
       },
     } satisfies Record<
@@ -91,6 +94,7 @@ export const HeroCarouselGradientClient = ({
         <div className={styles.contentInner()}>
           <CarouselControls
             {...controlProps}
+            onPhoto
             className="order-2"
             isCenteredOnTablet={
               contentAlignment === HERO_CAROUSEL_CONTENT_ALIGNMENT.center

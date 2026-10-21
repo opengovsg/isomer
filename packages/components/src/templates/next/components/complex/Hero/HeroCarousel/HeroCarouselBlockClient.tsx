@@ -32,13 +32,14 @@ export const HeroCarouselBlockClient = ({
 
   return (
     <section
-      className="relative flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row"
+      className="relative flex min-h-[15rem] flex-col [touch-action:pan-y_pinch-zoom] sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row"
       aria-roledescription="carousel"
       aria-label="Hero carousel"
       {...sectionProps}
     >
       <CarouselControls
         {...controlProps}
+        onPhoto
         className="absolute inset-x-0 bottom-0 z-20 px-6 pb-6 pt-12 md:px-10 lg:hidden"
       />
       <div className="flex flex-col bg-brand-canvas-inverse px-6 pb-6 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pb-12 lg:pl-10 lg:pr-8">

@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+  type PointerEvent,
+} from "react"
 import { useIntersectionObserver } from "usehooks-ts"
 import { HERO_CAROUSEL_SLIDE_LIMITS } from "~/interfaces/complex/Hero"
 
@@ -7,6 +14,7 @@ import { useHeroCarouselPreview } from "../HeroCarouselPreviewContext"
 import { useNavigation } from "./useNavigation"
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)"
+const SWIPE_THRESHOLD_PX = 40
 
 type RotationPhase = "pending" | "rotating" | "stopped"
 
@@ -15,12 +23,18 @@ const prefersReducedMotion = () =>
 
 export const useRotation = (slideCount: number) => {
   const isPreview = useHeroCarouselPreview() !== null
-  const { currentIndex, controlProps } = useNavigation(slideCount)
+  const { currentIndex, onGoTo } = useNavigation(slideCount)
   const [phase, setPhase] = useState<RotationPhase>("pending")
   const [isHoverPaused, setIsHoverPaused] = useState(false)
   const [isDocumentHidden, setIsDocumentHidden] = useState(false)
   const elapsedMsRef = useRef(0)
   const runningSinceRef = useRef<number | null>(null)
+  const swipeRef = useRef<{
+    pointerId: number
+    x: number
+    y: number
+  } | null>(null)
+  const suppressClickRef = useRef(false)
 
   const resetElapsed = useCallback(() => {
     elapsedMsRef.current = 0
@@ -79,7 +93,6 @@ export const useRotation = (slideCount: number) => {
       document.removeEventListener("visibilitychange", syncVisibility)
   }, [resetElapsed])
 
-  const { onNext, onPrev } = controlProps
   const hasEnoughSlides = slideCount >= HERO_CAROUSEL_SLIDE_LIMITS.minItems
   const canRotate =
     phase === "rotating" &&
@@ -103,7 +116,7 @@ export const useRotation = (slideCount: number) => {
     const timeoutId = window.setTimeout(() => {
       elapsedMsRef.current = 0
       runningSinceRef.current = null
-      onNext()
+      onGoTo((currentIndex + 1) % slideCount)
     }, remaining)
 
     return () => {
@@ -117,17 +130,96 @@ export const useRotation = (slideCount: number) => {
       )
       runningSinceRef.current = null
     }
-  }, [onNext, shouldRun])
+  }, [currentIndex, onGoTo, shouldRun, slideCount])
 
   const onUserPrev = useCallback(() => {
     stop()
-    onPrev()
-  }, [onPrev, stop])
+    if (slideCount === 0) {
+      return
+    }
+    onGoTo((currentIndex - 1 + slideCount) % slideCount)
+  }, [currentIndex, onGoTo, slideCount, stop])
 
   const onUserNext = useCallback(() => {
     stop()
-    onNext()
-  }, [onNext, stop])
+    if (slideCount === 0) {
+      return
+    }
+    onGoTo((currentIndex + 1) % slideCount)
+  }, [currentIndex, onGoTo, slideCount, stop])
+
+  const onUserGoTo = useCallback(
+    (index: number) => {
+      stop()
+      onGoTo(index)
+    },
+    [onGoTo, stop],
+  )
+
+  const onPointerEnter = (event: PointerEvent<HTMLElement>) => {
+    if (event.pointerType !== "mouse") {
+      return
+    }
+    setIsHoverPaused(true)
+  }
+
+  const onPointerLeave = (event: PointerEvent<HTMLElement>) => {
+    if (event.pointerType !== "mouse") {
+      return
+    }
+    setIsHoverPaused(false)
+  }
+
+  const onPointerDown = (event: PointerEvent<HTMLElement>) => {
+    suppressClickRef.current = false
+    if (event.pointerType === "touch" || event.pointerType === "pen") {
+      stop()
+    }
+    if (event.pointerType !== "touch") {
+      swipeRef.current = null
+      return
+    }
+    swipeRef.current = {
+      pointerId: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+    }
+  }
+
+  const onPointerUp = (event: PointerEvent<HTMLElement>) => {
+    const start = swipeRef.current
+    swipeRef.current = null
+    if (!start || start.pointerId !== event.pointerId) {
+      return
+    }
+
+    const dx = event.clientX - start.x
+    const dy = event.clientY - start.y
+    if (Math.abs(dx) < SWIPE_THRESHOLD_PX || Math.abs(dx) <= Math.abs(dy)) {
+      return
+    }
+
+    // Block the synthetic click after a swipe so links under the finger do not fire.
+    suppressClickRef.current = true
+    if (dx < 0) {
+      onUserNext()
+    } else {
+      onUserPrev()
+    }
+  }
+
+  const onPointerCancel = () => {
+    swipeRef.current = null
+  }
+
+  const onClickCapture = (event: MouseEvent<HTMLElement>) => {
+    if (!suppressClickRef.current) {
+      return
+    }
+    suppressClickRef.current = false
+    event.preventDefault()
+    event.stopPropagation()
+  }
 
   const onRotationChange = useCallback(
     (next: "rotating" | "stopped") => {
@@ -152,13 +244,17 @@ export const useRotation = (slideCount: number) => {
     sectionProps: {
       ref: sectionRef,
       onFocus: stop,
-      onPointerEnter: () => setIsHoverPaused(true),
-      onPointerLeave: () => setIsHoverPaused(false),
+      onPointerEnter,
+      onPointerLeave,
+      onPointerDown,
+      onPointerUp,
+      onPointerCancel,
+      onClickCapture,
     },
     controlProps: {
-      ...controlProps,
-      onPrev: onUserPrev,
-      onNext: onUserNext,
+      slideCount,
+      currentIndex,
+      onGoTo: onUserGoTo,
       rotation: showRotationControl
         ? {
             isRotating: phase === "rotating",

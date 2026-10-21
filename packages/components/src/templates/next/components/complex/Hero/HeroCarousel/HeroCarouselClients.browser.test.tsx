@@ -62,16 +62,20 @@ describe("hero carousel clients", () => {
       if (!section) {
         throw new Error("Expected a carousel section")
       }
-      const next = screen.getByRole("button", { name: "Next slide" })
+      const pause = screen.getByRole("button", {
+        name: "Pause slide rotation",
+      })
       const heightBefore = section.getBoundingClientRect().height
-      const controlsTopBefore = next.getBoundingClientRect().top
+      const controlsTopBefore = pause.getBoundingClientRect().top
 
       // Act
-      fireEvent.click(next)
+      fireEvent.click(
+        screen.getByRole("button", { name: "Go to slide 2 of 2" }),
+      )
 
       // Assert
       expect(section.getBoundingClientRect().height).toBe(heightBefore)
-      expect(next.getBoundingClientRect().top).toBe(controlsTopBefore)
+      expect(pause.getBoundingClientRect().top).toBe(controlsTopBefore)
     },
   )
 })
@@ -85,7 +89,7 @@ const indexedSlides = [
 const liveRegion = () => screen.getByText(/Slide \d of \d:/)
 
 describe("hero carousel preview index", () => {
-  it("changes its own slide on next when no preview provider is present", async () => {
+  it("changes its own slide when a dot is pressed and no preview provider is present", async () => {
     // Arrange
     render(
       <HeroCarouselGradientClient
@@ -96,13 +100,15 @@ describe("hero carousel preview index", () => {
     )
 
     // Act
-    await userEvent.click(screen.getByRole("button", { name: "Next slide" }))
+    await userEvent.click(
+      screen.getByRole("button", { name: "Go to slide 2 of 3" }),
+    )
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
   })
 
-  it("follows the preview index and sends next through setActiveIndex", async () => {
+  it("follows the preview index and sends a dot press through setActiveIndex", async () => {
     // Arrange
     const Harness = () => {
       const [activeIndex, setActiveIndex] = useState(1)
@@ -123,7 +129,9 @@ describe("hero carousel preview index", () => {
     // Act / Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
 
-    await userEvent.click(screen.getByRole("button", { name: "Next slide" }))
+    await userEvent.click(
+      screen.getByRole("button", { name: "Go to slide 3 of 3" }),
+    )
 
     expect(liveRegion().textContent).toBe("Slide 3 of 3: Gamma")
   })
@@ -270,24 +278,24 @@ describe("hero carousel rotation", () => {
     expect(section.querySelector("[data-rotation-countdown]")).toBeNull()
   })
 
-  it("does not advance after next is pressed", () => {
+  it("does not advance after a dot is pressed", () => {
     // Arrange
     renderGradient()
 
     // Act
-    fireEvent.click(screen.getByRole("button", { name: "Next slide" }))
+    fireEvent.click(screen.getByRole("button", { name: "Go to slide 2 of 3" }))
     advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
   })
 
-  it("does not advance after previous is pressed", () => {
+  it("does not advance after a dot for another slide is pressed", () => {
     // Arrange
     renderGradient()
 
     // Act
-    fireEvent.click(screen.getByRole("button", { name: "Previous slide" }))
+    fireEvent.click(screen.getByRole("button", { name: "Go to slide 3 of 3" }))
     advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
@@ -367,7 +375,7 @@ describe("hero carousel rotation", () => {
       )
 
     // Act
-    fireEvent.pointerEnter(section)
+    fireEvent.pointerEnter(section, { pointerType: "mouse" })
     advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
@@ -376,7 +384,7 @@ describe("hero carousel rotation", () => {
     expect(progress()?.style.animationPlayState).toBe("paused")
 
     // Act
-    fireEvent.pointerLeave(section)
+    fireEvent.pointerLeave(section, { pointerType: "mouse" })
 
     // Assert
     expect(progress()?.style.animationPlayState).toBe("running")
@@ -397,8 +405,8 @@ describe("hero carousel rotation", () => {
   it("starts a full interval when play is pressed while the pointer is still inside", () => {
     // Arrange
     const section = renderGradient()
-    fireEvent.pointerEnter(section)
-    fireEvent.click(screen.getByRole("button", { name: "Next slide" }))
+    fireEvent.pointerEnter(section, { pointerType: "mouse" })
+    fireEvent.click(screen.getByRole("button", { name: "Go to slide 2 of 3" }))
 
     // Act
     fireEvent.click(
@@ -513,7 +521,7 @@ describe("hero carousel rotation", () => {
   })
 
   it.each(Object.entries(carouselVariants))(
-    "puts the pause button first in the %s carousel, swapping label and icon without aria-pressed",
+    "swaps the %s pause label and icon without aria-pressed",
     (_name, renderVariant) => {
       // Arrange
       const view = render(renderVariant([shortSlide, tallSlide]))
@@ -525,7 +533,7 @@ describe("hero carousel rotation", () => {
       const icon = pause.querySelector("svg")?.innerHTML
 
       // Act / Assert
-      expect(tabbableIn(section)[0]).toBe(pause)
+      expect(tabbableIn(section)[0]).toHaveAccessibleName("Go to slide 1 of 2")
       expect(pause).toHaveAttribute("type", "button")
       expect(pause).not.toHaveAttribute("aria-pressed")
 
@@ -564,7 +572,7 @@ describe("hero carousel rotation", () => {
     expect(region.textContent).not.toBe(textWhileRotating)
 
     // Act
-    fireEvent.click(screen.getByRole("button", { name: "Next slide" }))
+    fireEvent.click(screen.getByRole("button", { name: "Go to slide 3 of 3" }))
 
     // Assert
     expect(region).toHaveAttribute("aria-live", "polite")

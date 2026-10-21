@@ -8,18 +8,17 @@ export const useNavigation = (slideCount: number) => {
   const [, startTransition] = useTransition()
 
   const rawIndex = preview ? preview.activeIndex : localIndex
-  // Clamp for this render only. Arrow clicks are what write a new index.
+  // Clamp for this render. Dots and swipes set the index.
   const currentIndex =
     slideCount === 0 ? 0 : Math.min(Math.max(rawIndex, 0), slideCount - 1)
 
-  const navigateByDirection = useCallback(
-    (direction: "prev" | "next") => {
+  const onGoTo = useCallback(
+    (index: number) => {
       if (slideCount === 0) {
         return
       }
 
-      const offset = direction === "next" ? 1 : -1
-      const next = (currentIndex + offset + slideCount) % slideCount
+      const next = Math.min(Math.max(index, 0), slideCount - 1)
       startTransition(() => {
         if (preview) {
           preview.setActiveIndex(next)
@@ -28,25 +27,8 @@ export const useNavigation = (slideCount: number) => {
         }
       })
     },
-    [currentIndex, preview, slideCount, startTransition],
+    [preview, slideCount, startTransition],
   )
 
-  const onPrev = useCallback(
-    () => navigateByDirection("prev"),
-    [navigateByDirection],
-  )
-  const onNext = useCallback(
-    () => navigateByDirection("next"),
-    [navigateByDirection],
-  )
-
-  return {
-    currentIndex,
-    controlProps: {
-      slideCount,
-      currentIndex,
-      onPrev,
-      onNext,
-    },
-  }
+  return { currentIndex, onGoTo }
 }

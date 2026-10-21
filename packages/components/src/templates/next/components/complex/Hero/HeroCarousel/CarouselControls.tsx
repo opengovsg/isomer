@@ -1,5 +1,5 @@
 import { useRef } from "react"
-import { BiChevronLeft, BiChevronRight, BiPause, BiPlay } from "react-icons/bi"
+import { BiPause, BiPlay } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 
@@ -12,12 +12,23 @@ const carouselButtonClassName =
 const coarsePointerControlSizeClassName =
   "[@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
 
-const carouselDotStyles = tv({
-  base: "h-2 shrink-0 rounded-full transition-[width,background-color] duration-150 ease-out motion-reduce:transition-none",
+// 16px gap between dots; h-6 buttons keep 24px-tall targets from overlapping.
+const carouselDotButtonStyles = tv({
+  base: "flex h-6 shrink-0 items-center justify-center focus-visible:outline focus-visible:outline-[0.25rem] focus-visible:outline-offset-[0.125rem] focus-visible:outline-utility-highlight",
   variants: {
     isActive: {
-      true: "w-6 bg-white",
-      false: "w-2 bg-white/50",
+      true: "w-11",
+      false: "w-[1.625rem]",
+    },
+  },
+})
+
+const carouselDotStyles = tv({
+  base: "pointer-events-none h-2.5 shrink-0 rounded-full transition-[width,background-color] duration-150 ease-out motion-reduce:transition-none",
+  variants: {
+    isActive: {
+      true: "w-7 bg-white",
+      false: "w-2.5 bg-white/50",
     },
   },
 })
@@ -25,72 +36,56 @@ const carouselDotStyles = tv({
 const carouselControlsStyles = tv({
   slots: {
     root: "flex w-full items-center justify-between gap-4",
-    dots: "flex items-center gap-2",
-    arrows: "flex items-center gap-2",
+    dots: "flex items-center",
     rotation: "",
-    prev: "",
-    next: "",
   },
   variants: {
-    // From md up: dots sit bottom-centre and arrows at the vertical middle of
-    // the nearest positioned ancestor's edges
+    onPhoto: {
+      true: {
+        // black/70: white/50 dots are 3:1 on white. black/60 is 2.72:1.
+        dots: "rounded-full bg-black/70 px-2",
+      },
+    },
+    // md+: dots on the centred copy line, pause on the right. pointer-events-none
+    // on the row so copy at the bottom stays clickable.
     isCenteredOnTablet: {
       true: {
-        root: "md:pointer-events-none md:absolute md:inset-0",
-        dots: "md:absolute md:bottom-9 md:left-1/2 md:-translate-x-1/2 lg:bottom-10",
-        arrows: "md:contents",
-        // Sit just to the left of the next arrow (right-14 / right-16 + 2.5rem
-        // button + 0.5rem gap). `arrows` is `display: contents` from md, so
-        // this positions against the controls overlay.
-        rotation:
-          "md:pointer-events-auto md:absolute md:right-[6.5rem] md:top-1/2 md:-translate-y-1/2 lg:right-[7rem]",
-        prev: "md:pointer-events-auto md:absolute md:left-14 md:top-1/2 md:-translate-y-1/2 lg:left-16",
-        next: "md:pointer-events-auto md:absolute md:right-14 md:top-1/2 md:-translate-y-1/2 lg:right-16",
+        root: "md:pointer-events-none md:absolute md:inset-x-0 md:bottom-9 md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:px-10 lg:bottom-10",
+        dots: "md:pointer-events-auto md:col-start-2 md:justify-self-center",
+        rotation: "md:pointer-events-auto md:col-start-3 md:justify-self-end",
       },
     },
   },
 })
 
-const CarouselArrowButton = ({
-  direction,
-  onClick,
-  className,
-}: {
-  direction: "prev" | "next"
-  onClick: () => void
-  className?: string
-}) => {
-  const Icon = direction === "prev" ? BiChevronLeft : BiChevronRight
-  const label = direction === "prev" ? "Previous slide" : "Next slide"
-
-  return (
-    <button
-      type="button"
-      className={twMerge(carouselButtonClassName, className)}
-      aria-label={label}
-      onClick={onClick}
-    >
-      <Icon className="h-6 w-6" aria-hidden />
-    </button>
-  )
-}
-
 const CarouselDots = ({
   count,
   currentIndex,
+  onGoTo,
   className,
 }: {
   count: number
   currentIndex: number
+  onGoTo: (index: number) => void
   className?: string
 }) => (
-  <div className={className} aria-hidden>
-    {Array.from({ length: count }, (_, index) => (
-      <span
-        key={index}
-        className={carouselDotStyles({ isActive: index === currentIndex })}
-      />
-    ))}
+  <div className={className}>
+    {Array.from({ length: count }, (_, index) => {
+      const isActive = index === currentIndex
+
+      return (
+        <button
+          key={index}
+          type="button"
+          className={carouselDotButtonStyles({ isActive })}
+          aria-label={`Go to slide ${index + 1} of ${count}`}
+          aria-current={isActive ? "true" : undefined}
+          onClick={() => onGoTo(index)}
+        >
+          <span className={carouselDotStyles({ isActive })} />
+        </button>
+      )
+    })}
   </div>
 )
 
@@ -202,16 +197,15 @@ const CarouselRotationButton = ({
 export const CarouselControls = ({
   slideCount,
   currentIndex,
-  onPrev,
-  onNext,
+  onGoTo,
   rotation,
   className,
   isCenteredOnTablet,
+  onPhoto,
 }: {
   slideCount: number
   currentIndex: number
-  onPrev: () => void
-  onNext: () => void
+  onGoTo: (index: number) => void
   rotation?: {
     isRotating: boolean
     showCountdown: boolean
@@ -220,38 +214,28 @@ export const CarouselControls = ({
   }
   className?: string
   isCenteredOnTablet?: boolean
+  onPhoto?: boolean
 }) => {
-  const styles = carouselControlsStyles({ isCenteredOnTablet })
+  const styles = carouselControlsStyles({ isCenteredOnTablet, onPhoto })
 
   return (
     <div className={styles.root({ className })}>
       <CarouselDots
         count={slideCount}
         currentIndex={currentIndex}
+        onGoTo={onGoTo}
         className={styles.dots()}
       />
-      <div className={styles.arrows()}>
-        {rotation && (
-          <CarouselRotationButton
-            isRotating={rotation.isRotating}
-            showCountdown={rotation.showCountdown}
-            isPaused={rotation.isPaused}
-            currentIndex={currentIndex}
-            onChange={rotation.onChange}
-            className={styles.rotation()}
-          />
-        )}
-        <CarouselArrowButton
-          direction="prev"
-          onClick={onPrev}
-          className={styles.prev()}
+      {rotation && (
+        <CarouselRotationButton
+          isRotating={rotation.isRotating}
+          showCountdown={rotation.showCountdown}
+          isPaused={rotation.isPaused}
+          currentIndex={currentIndex}
+          onChange={rotation.onChange}
+          className={styles.rotation()}
         />
-        <CarouselArrowButton
-          direction="next"
-          onClick={onNext}
-          className={styles.next()}
-        />
-      </div>
+      )}
     </div>
   )
 }
