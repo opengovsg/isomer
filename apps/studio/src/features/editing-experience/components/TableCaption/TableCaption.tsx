@@ -1,6 +1,6 @@
-import { Flex, Icon, Text, useDisclosure } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
-import { BiPencil } from "react-icons/bi"
+import { Flex, Icon, Text, Tooltip, useDisclosure } from "@chakra-ui/react"
+import { Button, IconButton } from "@opengovsg/design-system-react"
+import { BiPencil, BiRevision } from "react-icons/bi"
 import { TableSettingsModal } from "~/features/editing-experience/components/TableSettingsModal/TableSettingsModal"
 
 import { isPlaceholderTableCaption } from "./utils"
@@ -8,11 +8,13 @@ import { isPlaceholderTableCaption } from "./utils"
 export interface TableCaptionProps {
   caption: string
   onCaptionChange: (caption: string) => void
+  onResetColumnWidths?: () => void
 }
 
 export const TableCaption = ({
   caption,
   onCaptionChange,
+  onResetColumnWidths,
 }: TableCaptionProps) => {
   const {
     isOpen: isTableSettingsModalOpen,
@@ -35,25 +37,42 @@ export const TableCaption = ({
         >
           {caption}
         </Text>
-        <Button
-          variant="clear"
-          size="xs"
-          leftIcon={
-            <Icon
-              as={BiPencil}
-              color="interaction.links.default"
-              boxSize="1rem"
-            />
-          }
-          color="interaction.links.default"
-          textStyle="caption-1"
-          padding="0.5rem"
-          flexShrink={0}
-          onClick={onTableSettingsModalOpen}
-          aria-label={hasCaption ? "Edit table caption" : "Add table caption"}
-        >
-          {hasCaption ? "Edit caption" : "Add caption"}
-        </Button>
+        <Flex align="center" gap="0.5rem" flexShrink={0}>
+          <Button
+            variant="clear"
+            size="xs"
+            leftIcon={
+              <Icon
+                as={BiPencil}
+                color="interaction.links.default"
+                boxSize="1rem"
+              />
+            }
+            color="interaction.links.default"
+            textStyle="caption-1"
+            padding="0.5rem"
+            onClick={onTableSettingsModalOpen}
+            aria-label={hasCaption ? "Edit table caption" : "Add table caption"}
+          >
+            {hasCaption ? "Edit caption" : "Add caption"}
+          </Button>
+          {onResetColumnWidths && (
+            <Tooltip label="Reset column width" hasArrow>
+              <IconButton
+                aria-label="Reset column width"
+                variant="clear"
+                color="interaction.links.default"
+                fontSize="1rem"
+                icon={<BiRevision />}
+                minW="unset"
+                minH="unset"
+                h="auto"
+                p="0.5rem"
+                onClick={onResetColumnWidths}
+              />
+            </Tooltip>
+          )}
+        </Flex>
       </Flex>
 
       {/* Unmount while closed so defaultValues match the caption at open time. */}
