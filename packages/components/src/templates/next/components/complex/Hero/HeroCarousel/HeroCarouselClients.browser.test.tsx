@@ -521,6 +521,32 @@ describe("hero carousel rotation", () => {
   })
 
   it.each(Object.entries(carouselVariants))(
+    "tabs the %s carousel from pause to the call to action, then the dots",
+    (_name, renderVariant) => {
+      // Arrange
+      const view = render(renderVariant([shortSlide, tallSlide]))
+      const section = view.container.querySelector("section")
+      if (!section) {
+        throw new Error("Expected a carousel section")
+      }
+
+      // Act
+      const tabOrder = tabbableIn(section).map(
+        (element) =>
+          element.getAttribute("aria-label") ?? element.textContent?.trim(),
+      )
+
+      // Assert
+      expect(tabOrder).toEqual([
+        "Pause slide rotation",
+        "Start",
+        "Go to slide 1 of 2",
+        "Go to slide 2 of 2",
+      ])
+    },
+  )
+
+  it.each(Object.entries(carouselVariants))(
     "swaps the %s pause label and icon without aria-pressed",
     (_name, renderVariant) => {
       // Arrange
@@ -533,7 +559,7 @@ describe("hero carousel rotation", () => {
       const icon = pause.querySelector("svg")?.innerHTML
 
       // Act / Assert
-      expect(tabbableIn(section)[0]).toHaveAccessibleName("Go to slide 1 of 2")
+      expect(tabbableIn(section)[0]).toBe(pause)
       expect(pause).toHaveAttribute("type", "button")
       expect(pause).not.toHaveAttribute("aria-pressed")
 

@@ -7,7 +7,7 @@ import { tv } from "~/lib/tv"
 
 import type { HeroCarouselSlideView } from "./CarouselSlides"
 import { ComponentContent } from "../../../internal/customCssClass"
-import { CarouselControls } from "./CarouselControls"
+import { CarouselDotsControl, CarouselPauseControl } from "./CarouselControls"
 import {
   CarouselLiveRegion,
   CarouselSlideContent,
@@ -20,26 +20,24 @@ const gradientCarouselStyles = tv({
     section:
       "relative flex min-h-[15rem] [touch-action:pan-y_pinch-zoom] sm:min-h-[22.5rem] lg:min-h-[31.25rem]",
     contentPanel: "relative z-10 flex w-full flex-col justify-end",
-    contentInner: `${ComponentContent} flex flex-col gap-9 py-16 pb-10 text-start text-base-content-inverse lg:pb-[54px]`,
+    // Copy spans row 1; pause and dots share row 2 (right column, left column).
+    contentInner: `${ComponentContent} grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-9 py-16 pb-10 text-start text-base-content-inverse lg:pb-[54px]`,
     actions: "flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row",
   },
   variants: {
     // Mobile stays left-aligned; centered from md up with a fixed height
     contentAlignment: {
       [HERO_CAROUSEL_CONTENT_ALIGNMENT.left]: {
-        // max-lg: black/60. lg+: gradient black to black/25 (max-lg classes
-        // avoid applying both).
         contentPanel:
           "max-lg:bg-black/60 lg:bg-gradient-to-r lg:from-black lg:to-black/25",
       },
       [HERO_CAROUSEL_CONTENT_ALIGNMENT.center]: {
         section: "md:h-[40rem] md:min-h-0 lg:min-h-0",
-        // black/60 at all breakpoints (no left-layout gradient).
         contentPanel: "bg-black/60",
-        // !utilities override ComponentContent padding from a more specific
-        // ancestor. md:flex-1 positions the bottom control row.
+        // !utilities override ComponentContent padding from a more specific ancestor.
+        // From md, flex centres the copy; pause and dots are positioned on their own.
         contentInner:
-          "md:relative md:!mx-auto md:w-full md:!max-w-[54.75rem] md:flex-1 md:justify-center md:self-center md:!px-10 md:py-16 md:text-center lg:pb-16",
+          "md:relative md:!mx-auto md:flex md:w-full md:!max-w-[54.75rem] md:flex-1 md:flex-col md:justify-center md:self-center md:!px-10 md:py-16 md:text-center lg:pb-16",
         actions: "md:justify-center",
       },
     } satisfies Record<
@@ -72,6 +70,7 @@ export const HeroCarouselGradientClient = ({
     sectionProps,
   } = useRotation(slides.length)
   const styles = gradientCarouselStyles({ contentAlignment })
+  const isCentered = contentAlignment === HERO_CAROUSEL_CONTENT_ALIGNMENT.center
 
   return (
     <section
@@ -92,24 +91,28 @@ export const HeroCarouselGradientClient = ({
       </div>
       <div className={styles.contentPanel()}>
         <div className={styles.contentInner()}>
-          <CarouselControls
-            {...controlProps}
-            onPhoto
-            className="order-2"
-            isCenteredOnTablet={
-              contentAlignment === HERO_CAROUSEL_CONTENT_ALIGNMENT.center
-            }
-          />
-          <CarouselSlideContent
-            slides={slides}
+          <CarouselPauseControl
             currentIndex={currentIndex}
-            headingTag={headingTag}
-            inactiveHeadingTag={inactiveHeadingTag}
-            titleClassName="prose-display-xl break-words"
-            actionsClassName={styles.actions()}
-            isVerticallyCenteredPerSlide={
-              contentAlignment === HERO_CAROUSEL_CONTENT_ALIGNMENT.center
-            }
+            rotation={controlProps.rotation}
+            isCenteredOnTablet={isCentered}
+          />
+          <div className="col-span-2 row-start-1 flex min-w-0 flex-col gap-9">
+            <CarouselSlideContent
+              slides={slides}
+              currentIndex={currentIndex}
+              headingTag={headingTag}
+              inactiveHeadingTag={inactiveHeadingTag}
+              titleClassName="prose-display-xl break-words"
+              actionsClassName={styles.actions()}
+              isVerticallyCenteredPerSlide={isCentered}
+            />
+          </div>
+          <CarouselDotsControl
+            slideCount={controlProps.slideCount}
+            currentIndex={currentIndex}
+            onGoTo={controlProps.onGoTo}
+            onPhoto
+            isCenteredOnTablet={isCentered}
           />
         </div>
       </div>
