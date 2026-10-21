@@ -15,7 +15,7 @@ export interface HeroCarouselSlideView {
 }
 
 const slideImageStyles = tv({
-  base: "absolute inset-0 z-0 h-full w-full opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
+  base: "absolute inset-0 z-0 h-full w-full opacity-0 transition-opacity duration-[400ms] ease-out motion-reduce:transition-none",
   variants: {
     isCurrent: {
       true: "z-10 opacity-100",
@@ -24,7 +24,7 @@ const slideImageStyles = tv({
 })
 
 const slideContentStyles = tv({
-  base: "col-start-1 row-start-1 flex w-full flex-col gap-6 self-start opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
+  base: "col-start-1 row-start-1 flex w-full flex-col gap-6 self-start opacity-0 transition-opacity duration-[400ms] ease-out motion-reduce:transition-none",
   variants: {
     isCurrent: {
       true: "relative z-10 opacity-100",

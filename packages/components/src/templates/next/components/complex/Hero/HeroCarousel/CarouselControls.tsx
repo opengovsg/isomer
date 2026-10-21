@@ -6,7 +6,11 @@ import { twMerge } from "~/lib/twMerge"
 import { HERO_CAROUSEL_ROTATION_INTERVAL_MS } from "./constants"
 
 const carouselButtonClassName =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-transparent bg-white text-base-content shadow-sm hover:bg-white/90 focus-visible:outline focus-visible:outline-[0.25rem] focus-visible:outline-offset-[0.125rem] focus-visible:outline-utility-highlight"
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-transparent bg-white text-base-content shadow-sm [@media(hover:hover)]:hover:bg-gray-200 [@media(hover:hover)]:hover:shadow-md focus-visible:outline focus-visible:outline-[0.25rem] focus-visible:outline-offset-[0.125rem] focus-visible:outline-utility-highlight"
+
+// pointer:coarse is a proxy for whether the user is using a touch-only pointer type.
+const coarsePointerControlSizeClassName =
+  "[@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
 
 const carouselDotStyles = tv({
   base: "h-2 shrink-0 rounded-full transition-[width,background-color] duration-150 ease-out motion-reduce:transition-none",
@@ -160,11 +164,18 @@ const CarouselRotationButton = ({
 
   return (
     <span
-      className={twMerge("relative inline-flex h-10 w-10 shrink-0", className)}
+      className={twMerge(
+        "relative inline-flex h-10 w-10 shrink-0",
+        coarsePointerControlSizeClassName,
+        className,
+      )}
     >
       <button
         type="button"
-        className={carouselButtonClassName}
+        className={twMerge(
+          carouselButtonClassName,
+          coarsePointerControlSizeClassName,
+        )}
         aria-label={label}
         onPointerDown={() => {
           intendedRotation.current = isRotating ? "stopped" : "rotating"
