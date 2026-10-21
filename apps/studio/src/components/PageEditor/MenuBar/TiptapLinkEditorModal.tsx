@@ -11,9 +11,10 @@ interface LinkEditorModalProps {
 }
 
 export const getLinkText = (editor: Editor): string => {
-  if (editor.isActive("link")) {
+  const linkType = editor.schema.marks.link
+  if (linkType && editor.isActive("link")) {
     const { doc, selection } = editor.state
-    const range = getMarkRange(doc.resolve(selection.from), editor.schema.marks.link)
+    const range = getMarkRange(doc.resolve(selection.from), linkType)
     return range ? doc.textBetween(range.from, range.to) : ""
   }
 
