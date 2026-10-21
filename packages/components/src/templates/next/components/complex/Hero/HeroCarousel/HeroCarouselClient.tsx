@@ -24,7 +24,7 @@ const createHeroCarouselStyles = tv({
     slideImage:
       "absolute inset-0 z-0 h-full w-full opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
     slideContent:
-      "col-start-1 row-start-1 flex flex-col gap-6 opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
+      "col-start-1 row-start-1 flex w-full flex-col gap-6 self-start opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
   },
   variants: {
     layout: {
@@ -217,7 +217,7 @@ export const HeroCarouselClient = ({
                   })}
                   {...(isCurrent ? {} : { inert: "" })}
                 >
-                  <div className="flex flex-wrap gap-4">
+                  <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
                     <LinkButton
                       href={slide.primaryHref}
                       size="lg"
