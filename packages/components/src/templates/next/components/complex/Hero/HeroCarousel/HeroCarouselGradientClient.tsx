@@ -13,7 +13,7 @@ import {
   CarouselSlideContent,
   CarouselSlideImages,
 } from "./CarouselSlides"
-import { useHeroCarouselNavigation } from "./useHeroCarouselNavigation"
+import { useHeroCarouselAutorotate } from "./useHeroCarouselAutorotate"
 
 const gradientCarouselStyles = tv({
   slots: {
@@ -59,9 +59,13 @@ export const HeroCarouselGradientClient = ({
   assetsBaseUrl?: string
   slides: HeroCarouselSlideView[]
 }) => {
-  const { currentIndex, controlProps } = useHeroCarouselNavigation(
-    slides.length,
-  )
+  const {
+    currentIndex,
+    controlProps,
+    showLiveRegion,
+    politeness,
+    sectionProps,
+  } = useHeroCarouselAutorotate(slides.length)
   const styles = gradientCarouselStyles({ contentAlignment })
 
   return (
@@ -69,8 +73,8 @@ export const HeroCarouselGradientClient = ({
       className={styles.section()}
       aria-roledescription="carousel"
       aria-label="Hero carousel"
+      {...sectionProps}
     >
-      <CarouselLiveRegion slides={slides} currentIndex={currentIndex} />
       <div
         className="absolute inset-0 overflow-hidden"
         style={{ contain: "layout" }}
@@ -83,6 +87,13 @@ export const HeroCarouselGradientClient = ({
       </div>
       <div className={styles.contentPanel()}>
         <div className={styles.contentInner()}>
+          <CarouselControls
+            {...controlProps}
+            className="order-2"
+            isCenteredOnTablet={
+              contentAlignment === HERO_CAROUSEL_CONTENT_ALIGNMENT.center
+            }
+          />
           <CarouselSlideContent
             slides={slides}
             currentIndex={currentIndex}
@@ -93,14 +104,15 @@ export const HeroCarouselGradientClient = ({
               contentAlignment === HERO_CAROUSEL_CONTENT_ALIGNMENT.center
             }
           />
-          <CarouselControls
-            {...controlProps}
-            isCenteredOnTablet={
-              contentAlignment === HERO_CAROUSEL_CONTENT_ALIGNMENT.center
-            }
-          />
         </div>
       </div>
+      {showLiveRegion && (
+        <CarouselLiveRegion
+          slides={slides}
+          currentIndex={currentIndex}
+          politeness={politeness}
+        />
+      )}
     </section>
   )
 }

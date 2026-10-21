@@ -38,11 +38,13 @@ const slideContentStyles = tv({
 export const CarouselLiveRegion = ({
   slides,
   currentIndex,
+  politeness,
 }: {
   slides: HeroCarouselSlideView[]
   currentIndex: number
+  politeness: "off" | "polite"
 }) => (
-  <p className="sr-only" aria-live="polite" aria-atomic="true">
+  <p className="sr-only" aria-live={politeness} aria-atomic="true">
     {slides[currentIndex]
       ? `Slide ${currentIndex + 1} of ${slides.length}: ${slides[currentIndex].title}`
       : ""}

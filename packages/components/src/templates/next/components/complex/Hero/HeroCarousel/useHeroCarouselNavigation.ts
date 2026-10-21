@@ -31,13 +31,22 @@ export const useHeroCarouselNavigation = (slideCount: number) => {
     [currentIndex, preview, slideCount, startTransition],
   )
 
+  const onPrev = useCallback(
+    () => navigateByDirection("prev"),
+    [navigateByDirection],
+  )
+  const onNext = useCallback(
+    () => navigateByDirection("next"),
+    [navigateByDirection],
+  )
+
   return {
     currentIndex,
     controlProps: {
       slideCount,
       currentIndex,
-      onPrev: () => navigateByDirection("prev"),
-      onNext: () => navigateByDirection("next"),
+      onPrev,
+      onNext,
     },
   }
 }
