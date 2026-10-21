@@ -127,16 +127,68 @@ export const isAnimatedPng = (bytes: Uint8Array): boolean => {
   return false
 }
 
+// Skip a GIF data-sub-block chain (each block: a 1-byte length then that many
+// bytes; a zero-length block terminates). Returns the offset past the terminator.
+const skipGifSubBlocks = (bytes: Uint8Array, offset: number): number => {
+  while (offset < bytes.length) {
+    const size = bytes[offset] ?? 0
+    offset += 1
+    if (size === 0) break
+    offset += size
+  }
+  return offset
+}
+
+/**
+ * Detect an animated GIF — one carrying more than one image frame. Needed
+ * because a GIF can arrive under a .webp/.png name (wrong extension), passing
+ * the bakeable-format gate; baking would then flatten the animation. Walks the
+ * block stream counting Image Separators (0x2C) and bails safely on malformed
+ * structure (treated as not-animated — the save-time guard remains a backstop).
+ */
+export const isAnimatedGif = (bytes: Uint8Array): boolean => {
+  if (bytes.length < 13) return false
+  if (!matchesAscii(bytes, 0, "GIF87a") && !matchesAscii(bytes, 0, "GIF89a")) {
+    return false
+  }
+  // 6-byte header + 7-byte logical screen descriptor; skip the global color
+  // table when its flag (bit 7 of the packed byte at offset 10) is set.
+  let offset = 13
+  const packed = bytes[10] ?? 0
+  if (packed & 0x80) offset += 3 * (2 << (packed & 0x07))
+
+  let frames = 0
+  while (offset < bytes.length) {
+    const block = bytes[offset]
+    if (block === 0x3b) break // trailer
+    if (block === 0x2c) {
+      if (++frames > 1) return true
+      const imgPacked = bytes[offset + 9] ?? 0
+      offset += 10 // image descriptor
+      if (imgPacked & 0x80) offset += 3 * (2 << (imgPacked & 0x07)) // local table
+      offset += 1 // LZW minimum code size
+      offset = skipGifSubBlocks(bytes, offset)
+    } else if (block === 0x21) {
+      offset += 2 // extension introducer + label
+      offset = skipGifSubBlocks(bytes, offset)
+    } else {
+      break // unknown block — bail safely
+    }
+  }
+  return false
+}
+
 /**
  * Whether the given bytes are an animated image that baking would flatten.
  * Sniffs by magic bytes, NOT the declared MIME: a Blob's `type` is often empty
  * or a generic "binary/octet-stream" (uploaded File with no type, a ?original
- * fetch), which would make a MIME switch miss a genuinely animated image. Each
- * sniffer self-guards on its container signature, so OR-ing them is safe — only
- * an actual animated WebP/APNG returns true; JPEG and every static image don't.
+ * fetch), and a file can even carry the wrong extension (an animated GIF named
+ * .webp), either of which would make a MIME switch miss it. Each sniffer
+ * self-guards on its container signature, so OR-ing them is safe — only
+ * an actual animated WebP/APNG/GIF returns true; JPEG and every static image don't.
  */
 export const isAnimatedImageBytes = (bytes: Uint8Array): boolean =>
-  isAnimatedWebp(bytes) || isAnimatedPng(bytes)
+  isAnimatedWebp(bytes) || isAnimatedPng(bytes) || isAnimatedGif(bytes)
 
 /** Blob wrapper around isAnimatedImageBytes. */
 export const isAnimatedImageBlob = async (blob: Blob): Promise<boolean> =>
