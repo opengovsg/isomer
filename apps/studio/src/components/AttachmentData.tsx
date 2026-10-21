@@ -1,4 +1,12 @@
-import { Box, Flex, HStack, Image, Skeleton, Text, VStack } from "@chakra-ui/react"
+import {
+  Box,
+  Flex,
+  HStack,
+  Image,
+  Skeleton,
+  Text,
+  VStack,
+} from "@chakra-ui/react"
 import { IconButton } from "@opengovsg/design-system-react"
 import { useEffect, useRef, useState } from "react"
 import { BiTrash } from "react-icons/bi"

@@ -141,7 +141,8 @@ function JsonFormsImageControl({
   // (full-image) fetch entirely for every other format — the common JPEG case
   // never downloads just to sniff a header it can't have.
   const assetMime = data ? mimeFromKeyExtension(data) : undefined
-  const couldBeAnimated = assetMime === "image/webp" || assetMime === "image/png"
+  const couldBeAnimated =
+    assetMime === "image/webp" || assetMime === "image/png"
   const [isAnimatedAsset, setIsAnimatedAsset] = useState(false)
   // Whether the animation check has settled for the current asset. Auto-open
   // waits on this so a freshly-uploaded animated image is never popped open
@@ -300,8 +301,8 @@ function JsonFormsImageControl({
           {showAnimatedFormatCallout && (
             <Infobox variant="warning" size="sm" mt="0.75rem">
               <Text textStyle="body-2">
-                Animated images can't be adjusted. Editing would flatten it to
-                a single frame.
+                Animated images can't be adjusted. Editing would flatten it to a
+                single frame.
               </Text>
             </Infobox>
           )}
