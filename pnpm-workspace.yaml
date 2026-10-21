@@ -99,7 +99,7 @@ catalog:
   "@sinclair/typebox": ^0.33.24
   "@tanstack/react-table": ^9.3.1
   "@testing-library/react": ^16.3.3
-  pino: ^10.3.1
+  pino: ^10.4.0
   pino-pretty: ^13.2.0
   postcss: ^8.5.28
   postcss-preset-env: ^11.5.2
