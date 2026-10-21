@@ -1,8 +1,14 @@
 import type { Node, NodeSpec } from "@tiptap/pm/model"
 import { Schema } from "@tiptap/pm/model"
 import { EditorState } from "@tiptap/pm/state"
-import { CellSelection, TableMap } from "@tiptap/pm/tables"
+import {
+  CellSelection,
+  moveTableRow,
+  selectedRect,
+  TableMap,
+} from "@tiptap/pm/tables"
 import { describe, expect, it } from "vitest"
+import { selectionForRowSlot } from "~/features/editing-experience/utils/tableSlotSelection"
 
 import {
   canMergeCellSelection,
@@ -12,6 +18,7 @@ import {
   getMovedBlockCellCorners,
   getRowMovePlan,
   getTableSelectionKind,
+  reorderRowBesideVerticalSpan,
   selectionIncludesHeaderColumn,
   selectionIncludesHeaderRow,
   type TableHeaderOverlapRect,
@@ -566,36 +573,103 @@ describe("getRowMovePlan", () => {
   })
 })
 
-const tableMap = ({
-  width,
-  height,
-}: {
-  width: number
-  height: number
-}): Pick<TableMap, "width" | "height" | "positionAt"> => ({
-  width,
-  height,
-  positionAt: (row, col) => row * width + col,
-})
+describe("reorderRowBesideVerticalSpan", () => {
+  const textCell = (
+    text: string,
+    attrs?: { rowspan?: number; backgroundColor?: string },
+  ) =>
+    tableSchema.nodes.tableCell.create(
+      {
+        colspan: 1,
+        rowspan: attrs?.rowspan ?? 1,
+        colwidth: null,
+        backgroundColor: attrs?.backgroundColor ?? null,
+      },
+      tableSchema.nodes.paragraph.create(null, tableSchema.text(text)),
+    )
+  const textRow = (...cells: Node[]) =>
+    tableSchema.nodes.tableRow.create(null, cells)
+  const rowTexts = (table: Node) => {
+    const texts: string[][] = []
+    table.forEach((row) => {
+      const cells: string[] = []
+      row.forEach((cell) => {
+        cells.push(cell.textContent)
+      })
+      texts.push(cells)
+    })
+    return texts
+  }
 
-const emptyTable = {} as Node
+  it("swaps the cells beside a merged first column when prosemirror refuses the move", () => {
+    // Arrange
+    const table = tableSchema.nodes.table.create(null, [
+      textRow(
+        textCell("span", { rowspan: 2 }),
+        textCell("A", { backgroundColor: "pink" }),
+        textCell("B"),
+      ),
+      textRow(textCell("C"), textCell("D")),
+      textRow(textCell("E"), textCell("F"), textCell("G")),
+    ])
+    const doc = tableSchema.nodes.doc.create(null, table)
+    const selection = selectionForRowSlot(doc, 0, 0)
+    if (!selection) throw new Error("missing row selection")
+    let state = EditorState.create({ doc, schema: tableSchema })
+    state = state.apply(state.tr.setSelection(selection))
+    const rect = selectedRect(state)
+    const plan = getRowMovePlan(
+      { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
+      "down",
+    )
+    if (!plan) throw new Error("missing move plan")
+
+    // Act
+    const moved = moveTableRow({
+      from: plan.from,
+      to: plan.to,
+      select: false,
+      pos: rect.tableStart,
+    })(state, () => true)
+    const reordered = reorderRowBesideVerticalSpan(table, plan.from, plan.to)
+
+    // Assert
+    expect(moved).toBe(false)
+    expect(reordered).not.toBeNull()
+    expect(rowTexts(reordered!)).toEqual([
+      ["span", "C", "D"],
+      ["A", "B"],
+      ["E", "F", "G"],
+    ])
+    expect(reordered?.child(0).child(1).attrs.backgroundColor).toBeNull()
+    expect(reordered?.child(1).child(0).attrs.backgroundColor).toBe("pink")
+    expect(reordered?.child(0).child(0).attrs.rowspan).toBe(2)
+  })
+})
 
 describe("getMovedBlockCellCorners", () => {
   const plan = { from: 0, to: 1, newStart: 1, span: 2 }
+  const fullTableBounds = { top: 0, bottom: 3, left: 0, right: 4 }
 
   it("selects top-left to bottom-right for a moved row block", () => {
-    const map = tableMap({ width: 4, height: 3 })
-    expect(getMovedBlockCellCorners(map, emptyTable, plan, "row")).toEqual({
-      anchor: 4,
-      head: 11,
-    })
+    const table = buildUniformTable(4, 3)
+    const map = TableMap.get(table)
+    expect(getMovedBlockCellCorners(map, plan, "row", fullTableBounds)).toEqual(
+      {
+        anchor: map.map[4],
+        head: map.map[11],
+      },
+    )
   })
 
   it("selects bottom-left to top-right for a moved column block", () => {
-    const map = tableMap({ width: 4, height: 3 })
-    expect(getMovedBlockCellCorners(map, emptyTable, plan, "column")).toEqual({
-      anchor: 9,
-      head: 2,
+    const table = buildUniformTable(4, 3)
+    const map = TableMap.get(table)
+    expect(
+      getMovedBlockCellCorners(map, plan, "column", fullTableBounds),
+    ).toEqual({
+      anchor: map.map[9],
+      head: map.map[2],
     })
   })
 })
