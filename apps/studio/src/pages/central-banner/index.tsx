@@ -30,11 +30,9 @@ import {
   useBuilderErrors,
 } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { centralNotificationValidator } from "~/schemas/global"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 type CentralBannerEditorProps = RouterOutput["global"]["getNotification"]
 
@@ -162,14 +160,13 @@ const CentralBannerPage: NextPageWithLayout = () => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const router = useRouter()
 
-  // TODO: Change this to a feature flag to allow other users to access
-  const { isAdmin: isEnabled, isLoading: isAdminCheckLoading } =
-    useIsUserIsomerAdmin({
-      roles: [IsomerAdminRole.Core],
-    })
+  const query = trpc.global.getNotification.useQuery()
+  // The server checks the feature flag; the client's GrowthBook may not have
+  // the user's email attribute yet on first render
+  const isForbidden = query.error?.data?.code === "FORBIDDEN"
 
   useEffect(() => {
-    if (isAdminCheckLoading || isEnabled) {
+    if (!isForbidden) {
       return
     }
 
@@ -178,14 +175,10 @@ const CentralBannerPage: NextPageWithLayout = () => {
       status: "error",
     })
     void router.push(`/`)
-  }, [isAdminCheckLoading, isEnabled, toast, router])
-
-  const query = trpc.global.getNotification.useQuery(undefined, {
-    enabled: isEnabled,
-  })
+  }, [isForbidden, toast, router])
 
   const renderBody = () => {
-    if (!isEnabled || query.isPending) {
+    if (isForbidden || query.isPending) {
       return <Skeleton height="20rem" mt="1.5rem" borderRadius="0.5rem" />
     }
 

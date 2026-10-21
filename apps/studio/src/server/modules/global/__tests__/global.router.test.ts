@@ -1,19 +1,19 @@
 import type * as S3 from "~/lib/s3"
-import { TRPCError } from "@trpc/server"
-import { resetTables } from "tests/integration/helpers/db"
+import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
-import {
-  setupIsomerAdmin,
-  setUpWhitelist,
-} from "tests/integration/helpers/seed"
+import { setUpWhitelist } from "tests/integration/helpers/seed"
 import { vi } from "vitest"
 import { MOE_SITES } from "~/constants/misc"
+import { IS_CENTRAL_NOTIFICATION_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
+import {
+  applyGrowthBookOverride,
+  mockFeatureFlags,
+} from "~/lib/growthbookOffline"
 import { getTextObject, putObjectDirect } from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { globalRouter } from "../global.router"
 
@@ -38,16 +38,23 @@ describe("global.router", async () => {
   })
 
   beforeEach(async () => {
-    await resetTables("IsomerAdmin")
     await setUpWhitelist({ email: "test@open.gov.sg" })
     vi.clearAllMocks()
     vi.mocked(putObjectDirect).mockResolvedValue(undefined)
+    applyGrowthBookOverride(
+      mockGrowthBook,
+      IS_CENTRAL_NOTIFICATION_BANNER_ENABLED_FEATURE_KEY,
+      true,
+    )
+  })
+
+  afterEach(() => {
+    mockGrowthBook.setForcedFeatures(mockFeatureFlags)
   })
 
   describe("getNotification", () => {
-    it("returns the first entry and its version for a Core admin", async () => {
+    it("returns the first entry and its version", async () => {
       // Arrange
-      await setupIsomerAdmin({ userId: session.userId! })
       vi.mocked(getTextObject).mockResolvedValue({
         body: JSON.stringify([
           { notification: NOTIFICATION, targetSites: MOE_SITES },
@@ -68,7 +75,6 @@ describe("global.router", async () => {
 
     it("returns an empty state when nothing is published yet", async () => {
       // Arrange
-      await setupIsomerAdmin({ userId: session.userId! })
       vi.mocked(getTextObject).mockResolvedValue(null)
 
       // Act
@@ -78,27 +84,19 @@ describe("global.router", async () => {
       expect(result).toEqual({ notification: null, version: null })
     })
 
-    it("rejects a Migrator before reading S3", async () => {
+    it("rejects a user without the feature flag before reading S3", async () => {
       // Arrange
-      await setupIsomerAdmin({
-        userId: session.userId!,
-        role: IsomerAdminRole.Migrator,
-      })
+      applyGrowthBookOverride(
+        mockGrowthBook,
+        IS_CENTRAL_NOTIFICATION_BANNER_ENABLED_FEATURE_KEY,
+        false,
+      )
 
       // Act
       const result = caller.getNotification()
 
       // Assert
-      await expect(result).rejects.toThrow(TRPCError)
-      expect(getTextObject).not.toHaveBeenCalled()
-    })
-
-    it("rejects a user who is not an Isomer admin before reading S3", async () => {
-      // Act
-      const result = caller.getNotification()
-
-      // Assert
-      await expect(result).rejects.toThrow(TRPCError)
+      await expect(result).rejects.toMatchObject({ code: "FORBIDDEN" })
       expect(getTextObject).not.toHaveBeenCalled()
     })
 
@@ -111,7 +109,6 @@ describe("global.router", async () => {
       ],
     ])("returns INTERNAL_SERVER_ERROR for %s", async (_, body) => {
       // Arrange
-      await setupIsomerAdmin({ userId: session.userId! })
       vi.mocked(getTextObject).mockResolvedValue({ body, eTag: ETAG })
 
       // Act
@@ -126,9 +123,6 @@ describe("global.router", async () => {
 
   describe("setNotification", () => {
     it("publishes to MOE sites conditioned on the loaded version", async () => {
-      // Arrange
-      await setupIsomerAdmin({ userId: session.userId! })
-
       // Act
       await caller.setNotification({
         notification: NOTIFICATION,
@@ -147,9 +141,6 @@ describe("global.router", async () => {
     })
 
     it("only creates the file when no version was loaded", async () => {
-      // Arrange
-      await setupIsomerAdmin({ userId: session.userId! })
-
       // Act
       await caller.setNotification({ notification: null, version: null })
 
@@ -161,7 +152,6 @@ describe("global.router", async () => {
 
     it("returns CONFLICT when someone else published first", async () => {
       // Arrange
-      await setupIsomerAdmin({ userId: session.userId! })
       vi.mocked(putObjectDirect).mockRejectedValue(
         Object.assign(new Error("PreconditionFailed"), {
           $metadata: { httpStatusCode: HTTP_PRECONDITION_FAILED },
@@ -179,9 +169,6 @@ describe("global.router", async () => {
     })
 
     it("rejects content the site cannot render", async () => {
-      // Arrange
-      await setupIsomerAdmin({ userId: session.userId! })
-
       // Act
       const result = caller.setNotification({
         notification: { title: "Notice", content: {} } as never,
@@ -194,9 +181,6 @@ describe("global.router", async () => {
     })
 
     it("rejects internal links, which sites cannot resolve", async () => {
-      // Arrange
-      await setupIsomerAdmin({ userId: session.userId! })
-
       // Act
       const result = caller.setNotification({
         notification: {
@@ -218,9 +202,6 @@ describe("global.router", async () => {
     })
 
     it("accepts web and email links", async () => {
-      // Arrange
-      await setupIsomerAdmin({ userId: session.userId! })
-
       // Act
       await caller.setNotification({
         notification: {
@@ -249,12 +230,13 @@ describe("global.router", async () => {
       expect(putObjectDirect).toHaveBeenCalledOnce()
     })
 
-    it("rejects a Migrator before writing S3", async () => {
+    it("rejects a user without the feature flag before writing S3", async () => {
       // Arrange
-      await setupIsomerAdmin({
-        userId: session.userId!,
-        role: IsomerAdminRole.Migrator,
-      })
+      applyGrowthBookOverride(
+        mockGrowthBook,
+        IS_CENTRAL_NOTIFICATION_BANNER_ENABLED_FEATURE_KEY,
+        false,
+      )
 
       // Act
       const result = caller.setNotification({
@@ -263,19 +245,7 @@ describe("global.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow(TRPCError)
-      expect(putObjectDirect).not.toHaveBeenCalled()
-    })
-
-    it("rejects a user who is not an Isomer admin before writing S3", async () => {
-      // Act
-      const result = caller.setNotification({
-        notification: NOTIFICATION,
-        version: ETAG,
-      })
-
-      // Assert
-      await expect(result).rejects.toThrow(TRPCError)
+      await expect(result).rejects.toMatchObject({ code: "FORBIDDEN" })
       expect(putObjectDirect).not.toHaveBeenCalled()
     })
   })

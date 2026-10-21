@@ -1,8 +1,9 @@
+import type { GrowthbookAttributes } from "~/types/growthbook"
+import { TRPCError } from "@trpc/server"
+import { IS_CENTRAL_NOTIFICATION_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { setGlobalNotificationSchema } from "~/schemas/global"
 import { protectedProcedure, router } from "~/server/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
 import {
   getGlobalNotification,
   publishGlobalNotification,
@@ -11,27 +12,26 @@ import {
 // Both procedures hit S3
 const S3_RATE_LIMIT = { max: 10, windowMs: 60_000 }
 
+const centralBannerProcedure = protectedProcedure
+  .meta({ rateLimitOptions: S3_RATE_LIMIT })
+  .use(async ({ ctx, next }) => {
+    // The request-scoped instance has no attributes until we set them
+    const attributes: GrowthbookAttributes = { email: ctx.user.email }
+    await ctx.gb.setAttributes(attributes)
+
+    if (!ctx.gb.isOn(IS_CENTRAL_NOTIFICATION_BANNER_ENABLED_FEATURE_KEY)) {
+      throw new TRPCError({ code: "FORBIDDEN" })
+    }
+
+    return next()
+  })
+
 export const globalRouter = router({
-  getNotification: protectedProcedure
-    .meta({ rateLimitOptions: S3_RATE_LIMIT })
-    .query(async ({ ctx }) => {
-      await validateUserIsIsomerAdmin({
-        userId: ctx.user.id,
-        roles: [IsomerAdminRole.Core],
-      })
+  getNotification: centralBannerProcedure.query(() => getGlobalNotification()),
 
-      return getGlobalNotification()
-    }),
-
-  setNotification: protectedProcedure
-    .meta({ rateLimitOptions: S3_RATE_LIMIT })
+  setNotification: centralBannerProcedure
     .input(setGlobalNotificationSchema)
-    .mutation(async ({ ctx, input }) => {
-      await validateUserIsIsomerAdmin({
-        userId: ctx.user.id,
-        roles: [IsomerAdminRole.Core],
-      })
-
+    .mutation(async ({ input }) => {
       await publishGlobalNotification(input)
 
       return { success: true }
