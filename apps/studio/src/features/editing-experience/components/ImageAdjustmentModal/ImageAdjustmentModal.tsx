@@ -397,12 +397,12 @@ export const ImageAdjustmentModal = ({
                     >
                       <VStack align="stretch" spacing="0.5rem">
                         <Radio value="cover">Default (recommended)</Radio>
-                        <Radio value="contain">Resize image to fit</Radio>
+                        <Radio value="contain">Resize crop to fit</Radio>
                       </VStack>
                     </Radio.RadioGroup>
                     <Text textStyle="body-2" color="base.content.medium" mt="0.5rem">
-                      Select &quot;Resize image to fit&quot; only if the image
-                      has a white background.
+                      Select &quot;Resize crop to fit&quot; only if the image has
+                      a white background.
                     </Text>
                   </Box>
                 )}
