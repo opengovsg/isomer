@@ -9,7 +9,7 @@ interface LinkEditorModalProps {
   onClose: () => void
 }
 
-const getLinkText = (editor: Editor): string => {
+export const getLinkText = (editor: Editor): string => {
   if (editor.isActive("link")) {
     return (
       editor.state.doc.nodeAt(Math.max(1, editor.view.state.selection.from - 1))
