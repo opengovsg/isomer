@@ -171,7 +171,16 @@ function JsonFormsCombinatorControl({
       if (newSchema.type === "string") {
         handleChange(path, newSchema.const || "")
       } else {
-        handleChange(path, nextVariantData(data, newData, newSchema))
+        handleChange(
+          path,
+          schema.format === HERO_BANNER_STYLE_FORMAT
+            ? // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
+              nextVariantData(data, newData, newSchema)
+            : {
+                ...data,
+                ...newData,
+              },
+        )
       }
     }
   }
