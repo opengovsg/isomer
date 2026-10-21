@@ -46,6 +46,7 @@ export interface TableDragHandlesProps {
   editor: TiptapEditor | null
   containerRef: RefObject<HTMLElement>
   onDragStateChange?: (isDragging: boolean) => void
+  expandedTablePos?: number | null
 }
 
 /**
@@ -57,12 +58,25 @@ export const TableDragHandles = ({
   editor,
   containerRef,
   onDragStateChange,
+  expandedTablePos = null,
 }: TableDragHandlesProps) => {
   const geometries = useTableGeometries(editor, containerRef)
+  const visibleGeometries = useMemo(
+    () =>
+      expandedTablePos === null
+        ? geometries
+        : geometries.filter((geometry) => geometry.pos === expandedTablePos),
+    [expandedTablePos, geometries],
+  )
   const { drag, beginGesture, isGestureActive, consumeClickSuppression } =
-    useAxisDragGesture({ editor, containerRef, geometries, onDragStateChange })
+    useAxisDragGesture({
+      editor,
+      containerRef,
+      geometries: visibleGeometries,
+      onDragStateChange,
+    })
   const { tablePos: hoverTablePos, cornerTablePos } = useHoveredTable(
-    geometries,
+    visibleGeometries,
     containerRef,
     isGestureActive,
   )
@@ -84,7 +98,7 @@ export const TableDragHandles = ({
 
   const dropIndicator = useMemo(() => {
     if (!drag) return null
-    const geometry = geometryAt(geometries, drag.tablePos)
+    const geometry = geometryAt(visibleGeometries, drag.tablePos)
     const bounds = geometry ? getTableBounds(geometry) : null
     if (!bounds) return null
     const at =
@@ -93,7 +107,7 @@ export const TableDragHandles = ({
     return drag.axis === "row"
       ? { left: bounds.left, top: at, width: bounds.width, height: 2 }
       : { left: at, top: bounds.top, width: 2, height: bounds.height }
-  }, [drag, geometries])
+  }, [drag, visibleGeometries])
 
   if (!editor) return null
 
@@ -198,7 +212,7 @@ export const TableDragHandles = ({
 
   return (
     <>
-      {geometries.map((geometry) => (
+      {visibleGeometries.map((geometry) => (
         <Fragment key={geometry.pos}>
           {AXES.map((axis) => renderAxisHandles(geometry, axis))}
           {renderSelectTableButton(geometry)}
