@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useRef } from "react"
 import { BiChevronLeft, BiChevronRight, BiPause, BiPlay } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
@@ -92,43 +92,11 @@ const CarouselDots = ({
 
 type Rotation = "rotating" | "stopped"
 
-const COUNTDOWN_RADIUS = 18
-const COUNTDOWN_CIRCUMFERENCE = 2 * Math.PI * COUNTDOWN_RADIUS
-
-const RotationCountdown = ({
-  elapsedMs,
-  startedAt,
-}: {
-  elapsedMs: number
-  startedAt: number | null
-}) => {
-  const progressRef = useRef<SVGCircleElement>(null)
-
-  useEffect(() => {
-    const progress = progressRef.current
-    if (!progress) return
-
-    const draw = (elapsed: number) => {
-      const ratio = Math.min(elapsed / HERO_CAROUSEL_ROTATION_INTERVAL_MS, 1)
-      progress.style.strokeDashoffset = String(
-        COUNTDOWN_CIRCUMFERENCE * (1 - ratio),
-      )
-    }
-
-    if (startedAt === null) {
-      draw(elapsedMs)
-      return
-    }
-
-    let frame = 0
-    const tick = (now: number) => {
-      draw(elapsedMs + (now - startedAt))
-      frame = requestAnimationFrame(tick)
-    }
-
-    frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
-  }, [elapsedMs, startedAt])
+const RotationCountdown = ({ isPaused }: { isPaused: boolean }) => {
+  const radius = 18
+  const circumference = 2 * Math.PI * radius
+  const animation = "hero-carousel-countdown"
+  const keyframes = `@keyframes ${animation} { from { stroke-dashoffset: ${circumference}; } to { stroke-dashoffset: 0; } }`
 
   return (
     <svg
@@ -136,28 +104,32 @@ const RotationCountdown = ({
       data-chromatic="ignore"
       aria-hidden
       viewBox="0 0 40 40"
-      className="pointer-events-none absolute inset-0 h-full w-full"
+      className="pointer-events-none absolute inset-0 h-full w-full motion-reduce:hidden"
     >
+      <style>{keyframes}</style>
       <circle
         cx="20"
         cy="20"
-        r={COUNTDOWN_RADIUS}
+        r={radius}
         fill="none"
         stroke="rgba(0,0,0,0.22)"
         strokeWidth="2"
       />
       <circle
-        ref={progressRef}
         cx="20"
         cy="20"
-        r={COUNTDOWN_RADIUS}
+        r={radius}
         fill="none"
         stroke="rgba(0,0,0,0.72)"
         strokeWidth="2"
         strokeLinecap="round"
-        strokeDasharray={COUNTDOWN_CIRCUMFERENCE}
-        strokeDashoffset={COUNTDOWN_CIRCUMFERENCE}
+        strokeDasharray={circumference}
+        strokeDashoffset={circumference}
         transform="rotate(-90 20 20)"
+        style={{
+          animation: `${animation} ${HERO_CAROUSEL_ROTATION_INTERVAL_MS}ms linear forwards`,
+          animationPlayState: isPaused ? "paused" : "running",
+        }}
       />
     </svg>
   )
@@ -166,15 +138,15 @@ const RotationCountdown = ({
 const CarouselRotationButton = ({
   isRotating,
   showCountdown,
-  elapsedMs,
-  startedAt,
+  isPaused,
+  currentIndex,
   onChange,
   className,
 }: {
   isRotating: boolean
   showCountdown: boolean
-  elapsedMs: number
-  startedAt: number | null
+  isPaused: boolean
+  currentIndex: number
   onChange: (next: Rotation) => void
   className?: string
 }) => {
@@ -210,7 +182,7 @@ const CarouselRotationButton = ({
         <Icon className="h-6 w-6" aria-hidden />
       </button>
       {showCountdown && (
-        <RotationCountdown elapsedMs={elapsedMs} startedAt={startedAt} />
+        <RotationCountdown key={currentIndex} isPaused={isPaused} />
       )}
     </span>
   )
@@ -232,8 +204,7 @@ export const CarouselControls = ({
   rotation?: {
     isRotating: boolean
     showCountdown: boolean
-    elapsedMs: number
-    startedAt: number | null
+    isPaused: boolean
     onChange: (next: Rotation) => void
   }
   className?: string
@@ -253,8 +224,8 @@ export const CarouselControls = ({
           <CarouselRotationButton
             isRotating={rotation.isRotating}
             showCountdown={rotation.showCountdown}
-            elapsedMs={rotation.elapsedMs}
-            startedAt={rotation.startedAt}
+            isPaused={rotation.isPaused}
+            currentIndex={currentIndex}
             onChange={rotation.onChange}
             className={styles.rotation()}
           />

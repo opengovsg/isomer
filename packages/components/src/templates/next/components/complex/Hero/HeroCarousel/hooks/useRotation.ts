@@ -18,10 +18,6 @@ export const useRotation = (slideCount: number) => {
   const [phase, setPhase] = useState<RotationPhase>("pending")
   const [isHoverPaused, setIsHoverPaused] = useState(false)
   const [isDocumentHidden, setIsDocumentHidden] = useState(false)
-  const [countdown, setCountdown] = useState<{
-    elapsedMs: number
-    startedAt: number | null
-  }>({ elapsedMs: 0, startedAt: null })
   const elapsedMsRef = useRef(0)
   const runningSinceRef = useRef<number | null>(null)
 
@@ -61,7 +57,6 @@ export const useRotation = (slideCount: number) => {
     const syncVisibility = () => {
       if (document.hidden) {
         resetElapsed()
-        setCountdown({ elapsedMs: 0, startedAt: null })
       }
       setIsDocumentHidden(document.hidden)
     }
@@ -84,8 +79,6 @@ export const useRotation = (slideCount: number) => {
 
     const startedAt = performance.now()
     runningSinceRef.current = startedAt
-    setCountdown({ elapsedMs: elapsedMsRef.current, startedAt })
-
     const remaining = Math.max(
       0,
       HERO_CAROUSEL_ROTATION_INTERVAL_MS - elapsedMsRef.current,
@@ -106,7 +99,6 @@ export const useRotation = (slideCount: number) => {
         elapsedMsRef.current + (performance.now() - runningSinceRef.current),
       )
       runningSinceRef.current = null
-      setCountdown({ elapsedMs: elapsedMsRef.current, startedAt: null })
     }
   }, [onNext, shouldRun])
 
@@ -128,11 +120,10 @@ export const useRotation = (slideCount: number) => {
       resetElapsed()
       if (next === "rotating") {
         setIsHoverPaused(false)
-        setCountdown({ elapsedMs: 0, startedAt: null })
       }
       setPhase(next)
     },
-    [resetElapsed, isPreview],
+    [isPreview, resetElapsed],
   )
 
   const showRotationControl = phase !== "pending" && hasEnoughSlides
@@ -154,8 +145,7 @@ export const useRotation = (slideCount: number) => {
         ? {
             isRotating: phase === "rotating",
             showCountdown: canRotate,
-            elapsedMs: countdown.elapsedMs,
-            startedAt: countdown.startedAt,
+            isPaused: isHoverPaused,
             onChange: onRotationChange,
           }
         : undefined,

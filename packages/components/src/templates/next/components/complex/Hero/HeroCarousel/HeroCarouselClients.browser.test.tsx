@@ -146,19 +146,6 @@ const advanceRotation = (ms: number) => {
   })
 }
 
-const countdownProgress = (section: HTMLElement) => {
-  const progress = section.querySelector<SVGCircleElement>(
-    "[data-rotation-countdown] circle:last-of-type",
-  )
-  if (!progress) {
-    throw new Error("Expected a countdown ring")
-  }
-  return {
-    offset: Number(progress.style.strokeDashoffset),
-    circumference: Number(progress.getAttribute("stroke-dasharray")),
-  }
-}
-
 const tabbableIn = (section: HTMLElement) =>
   [
     ...section.querySelectorAll<HTMLElement>(
@@ -207,7 +194,9 @@ describe("hero carousel rotation", () => {
     prefersReducedMotion = false
     documentHidden = false
     reducedMotionListeners.clear()
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "performance"] })
+    vi.useFakeTimers({
+      toFake: ["setTimeout", "clearTimeout", "performance"],
+    })
     installBrowserStubs()
   })
 
@@ -351,6 +340,10 @@ describe("hero carousel rotation", () => {
     const section = renderGradient()
     const halfway = HERO_CAROUSEL_ROTATION_INTERVAL_MS / 2
     advanceRotation(halfway)
+    const progress = () =>
+      section.querySelector<SVGCircleElement>(
+        "[data-rotation-countdown] circle:last-of-type",
+      )
 
     // Act
     fireEvent.pointerEnter(section)
@@ -359,17 +352,15 @@ describe("hero carousel rotation", () => {
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
     expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
-    const frozen = countdownProgress(section)
-    expect(frozen.offset).toBeCloseTo(frozen.circumference / 2, 0)
-
-    // Act
-    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
-
-    // Assert
-    expect(countdownProgress(section).offset).toBeCloseTo(frozen.offset, 0)
+    expect(progress()?.style.animationPlayState).toBe("paused")
 
     // Act
     fireEvent.pointerLeave(section)
+
+    // Assert
+    expect(progress()?.style.animationPlayState).toBe("running")
+
+    // Act
     advanceRotation(halfway - 1)
 
     // Assert
