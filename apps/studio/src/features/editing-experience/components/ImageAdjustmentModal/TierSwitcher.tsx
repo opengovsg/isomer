@@ -1,5 +1,5 @@
 import type { Breakpoint } from "@opengovsg/isomer-components"
-import { HStack, Text, VStack, Wrap, WrapItem } from "@chakra-ui/react"
+import { Text, VStack, Wrap, WrapItem } from "@chakra-ui/react"
 import { Button, Tooltip } from "@opengovsg/design-system-react"
 
 import type { ActiveTier } from "./adjustmentDraft"
@@ -10,8 +10,6 @@ interface TierSwitcherProps {
   configTiers: Breakpoint[]
   activeTier: ActiveTier
   onSelect: (tier: ActiveTier) => void
-  // Whether a tier has its own crop (● ) vs inherits base (○).
-  isCustomised: (tier: ActiveTier) => boolean
   // Preview panes — used to label each tier by the device types it covers
   // (e.g. "Mobile and Tablet"); the exact px range stays on the tooltip.
   previewStates: readonly { viewportWidth?: number }[]
@@ -22,12 +20,12 @@ interface TierSwitcherProps {
 // more preview panes than crop tiers (e.g. two desktop column layouts at one
 // breakpoint), but <picture> art-directs by viewport only. Each chip is labelled
 // by the device types it covers (derived from the governed previewStates), with
-// the precise px range on hover.
+// the precise px range on hover. (Enabling per-screen cropping splits every
+// breakpoint at once, so there's no per-tier customised/inherited distinction.)
 export const TierSwitcher = ({
   configTiers,
   activeTier,
   onSelect,
-  isCustomised,
   previewStates,
 }: TierSwitcherProps): JSX.Element => {
   return (
@@ -39,7 +37,6 @@ export const TierSwitcher = ({
             logic; only the display order is reversed here. */}
         {[...tierOrder(configTiers)].reverse().map((tier) => {
           const isActive = tier === activeTier
-          const customised = isCustomised(tier)
           const deviceLabel = tierDeviceLabel(tier, configTiers, previewStates)
           const rangeLabel = tierRangeLabel(tier, configTiers)
           return (
@@ -71,17 +68,7 @@ export const TierSwitcher = ({
                       : { bg: "interaction.muted.neutral.hover" }
                   }
                 >
-                  <HStack spacing="0.375rem">
-                    <Text
-                      as="span"
-                      aria-label={
-                        customised ? "customised" : "inherits default"
-                      }
-                    >
-                      {customised ? "●" : "○"}
-                    </Text>
-                    <Text as="span">{deviceLabel}</Text>
-                  </HStack>
+                  {deviceLabel}
                 </Button>
               </Tooltip>
             </WrapItem>

@@ -23,7 +23,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { useEffect, useMemo, useState } from "react"
 import {
-  BiCheck,
+  BiDevices,
   BiDotsHorizontalRounded,
   BiReflectHorizontal,
   BiReflectVertical,
@@ -38,9 +38,7 @@ import {
   customiseTier,
   ensureAdjustment,
   getTierCropFocal,
-  isTierCustomised,
   mapAllTiersCropFocal,
-  uncustomiseTier,
   updateTierCropFocal,
 } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
@@ -184,13 +182,12 @@ export const ImageAdjustmentModal = ({
 
   const configTiers = config.tiers ?? []
   const hasTiers = configTiers.length > 0
-  // The crop/focal for the active tier; an inherited tier shows base's. The crop
-  // canvas + low-res warning edit THIS tier; the preview gets the full `draft`
-  // (tiers included) so it can bake and show every tier's crop per pane.
+  // The crop/focal for the active tier. The crop canvas + low-res warning edit
+  // THIS tier; the preview gets the full `draft` (tiers included) so it can bake
+  // and show every tier's crop per pane. Editing a not-yet-seeded tier (legacy
+  // data with partial tiers) auto-creates its entry via updateTierCropFocal.
   const activeCropFocal = getTierCropFocal(draft, activeTier)
   const activeCrop = activeCropFocal?.crop ?? draft?.crop
-  const isActiveTierInherited =
-    hasTiers && activeTier !== "base" && !isTierCustomised(draft, activeTier)
 
   // Warn when the cropped region can't fill this component's largest rendered
   // frame even at 1x (see computeLowResWarning).
@@ -292,8 +289,10 @@ export const ImageAdjustmentModal = ({
 
   const handleReset = () => {
     // Reset the whole image: base default crop + drop every tier (back to the
-    // single-crop state), and return focus to the base tier.
+    // single-crop state). Switch off per-screen cropping too — the reset means
+    // the one default crop now applies across all breakpoints.
     setActiveTier("base")
+    setPerScreenCropEnabled(false)
     setDraft((d) => ({
       ...ensureAdjustment(d),
       crop: defaultCropRect(lockedRatio, imageAspect ?? 1),
@@ -479,47 +478,12 @@ export const ImageAdjustmentModal = ({
                     canvas below edits the active tier; base + each tier share
                     the rotate/flip transform. */}
                 {hasTiers && perScreenCropEnabled && (
-                  <VStack align="stretch" spacing="0.5rem" flexShrink={0}>
-                    <TierSwitcher
-                      configTiers={configTiers}
-                      activeTier={activeTier}
-                      onSelect={setActiveTier}
-                      isCustomised={(tier) => isTierCustomised(draft, tier)}
-                      previewStates={config.previewStates}
-                    />
-                    {activeTier !== "base" && (
-                      <Box>
-                        {isActiveTierInherited ? (
-                          <Button
-                            size="xs"
-                            variant="outline"
-                            onClick={() =>
-                              setDraft((d) =>
-                                customiseTier(ensureAdjustment(d), activeTier),
-                              )
-                            }
-                          >
-                            Customise this screen size
-                          </Button>
-                        ) : (
-                          <Button
-                            size="xs"
-                            variant="link"
-                            onClick={() =>
-                              setDraft((d) =>
-                                uncustomiseTier(
-                                  ensureAdjustment(d),
-                                  activeTier,
-                                ),
-                              )
-                            }
-                          >
-                            Reset to default crop
-                          </Button>
-                        )}
-                      </Box>
-                    )}
-                  </VStack>
+                  <TierSwitcher
+                    configTiers={configTiers}
+                    activeTier={activeTier}
+                    onSelect={setActiveTier}
+                    previewStates={config.previewStates}
+                  />
                 )}
 
                 {/* Crop + focal point: one shared image canvas, since focal
@@ -589,20 +553,23 @@ export const ImageAdjustmentModal = ({
                       {hasTiers && (
                         <>
                           <Menu.Item
-                            icon={
-                              perScreenCropEnabled ? (
-                                <BiCheck fontSize="1.25rem" />
-                              ) : undefined
-                            }
+                            // Fixed icon (never appears/disappears, so the label
+                            // can't shift); the on-state rides the colour cue.
+                            icon={<BiDevices fontSize="1.25rem" />}
                             closeOnSelect={false}
                             onClick={() =>
                               handleTogglePerScreen(!perScreenCropEnabled)
                             }
-                            // Tint the row while on, so its enabled state reads
-                            // even when the menu is reopened.
+                            // Strong on-state: brand tint + brand text + bold, so
+                            // it reads clearly even when the menu is reopened.
                             bg={
                               perScreenCropEnabled
                                 ? "interaction.muted.main.active"
+                                : undefined
+                            }
+                            color={
+                              perScreenCropEnabled
+                                ? "interaction.main.default"
                                 : undefined
                             }
                             fontWeight={

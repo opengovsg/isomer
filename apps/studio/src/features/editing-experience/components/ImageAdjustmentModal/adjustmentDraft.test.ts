@@ -6,12 +6,10 @@ import {
   deviceBucket,
   getTierCropFocal,
   governingTierForWidth,
-  isTierCustomised,
   mapAllTiersCropFocal,
   tierDeviceLabel,
   tierOrder,
   tierRangeLabel,
-  uncustomiseTier,
   updateTierCropFocal,
 } from "./adjustmentDraft"
 
@@ -55,18 +53,6 @@ describe("per-tier draft helpers", () => {
     })
   })
 
-  describe("isTierCustomised", () => {
-    it("treats base as customised whenever a draft exists", () => {
-      expect(isTierCustomised(draft(), "base")).toBe(true)
-      expect(isTierCustomised(undefined, "base")).toBe(false)
-    })
-
-    it("tracks breakpoint tiers by presence of an entry", () => {
-      expect(isTierCustomised(draft(), "lg")).toBe(false)
-      expect(isTierCustomised({ ...draft(), tiers: [lgTier] }, "lg")).toBe(true)
-    })
-  })
-
   describe("customiseTier", () => {
     it("seeds a tier from base crop/focal and is idempotent", () => {
       const once = customiseTier(draft(), "lg")
@@ -107,19 +93,6 @@ describe("per-tier draft helpers", () => {
         ...lgTier,
         focal: { x: 0.9, y: 0.1 },
       })
-    })
-  })
-
-  describe("uncustomiseTier", () => {
-    it("drops the entry and clears tiers when it was the last", () => {
-      const next = uncustomiseTier({ ...draft(), tiers: [lgTier] }, "lg")
-      expect(next.tiers).toBeUndefined()
-    })
-
-    it("keeps the other tiers", () => {
-      const md = { ...lgTier, breakpoint: "md" as const }
-      const next = uncustomiseTier({ ...draft(), tiers: [lgTier, md] }, "lg")
-      expect(next.tiers).toEqual([md])
     })
   })
 

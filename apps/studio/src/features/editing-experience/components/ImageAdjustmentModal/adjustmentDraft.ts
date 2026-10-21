@@ -135,16 +135,6 @@ export const getTierCropFocal = (
   return draft.tiers?.find((t) => t.breakpoint === tier)
 }
 
-// base is always "customised" (it's the stored crop); a breakpoint tier is
-// customised only once it has its own entry.
-export const isTierCustomised = (
-  draft: ImageAdjustment | undefined,
-  tier: ActiveTier,
-): boolean => {
-  if (tier === "base") return draft !== undefined
-  return draft?.tiers?.some((t) => t.breakpoint === tier) ?? false
-}
-
 // Write crop and/or focal to a tier. "base" updates the top-level fields; a
 // breakpoint tier updates its entry (creating one from base defensively if the
 // caller skipped customiseTier). A crop change clears the tier's `src` so the
@@ -190,18 +180,6 @@ export const customiseTier = (
     src: "",
   }
   return { ...draft, tiers: [...(draft.tiers ?? []), seeded] }
-}
-
-// Reset a tier back to inherited by dropping its entry (clears `tiers` entirely
-// when it was the last one, so an un-customised image matches its original).
-export const uncustomiseTier = (
-  draft: ImageAdjustment,
-  tier: Breakpoint,
-): ImageAdjustment => {
-  const nextTiers = (draft.tiers ?? []).filter((t) => t.breakpoint !== tier)
-  return nextTiers.length > 0
-    ? { ...draft, tiers: nextTiers }
-    : { ...draft, tiers: undefined }
 }
 
 // Apply a crop+focal transform (rotate/flip) to base AND every tier, so a shared
