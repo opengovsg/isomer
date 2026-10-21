@@ -297,7 +297,7 @@ describe("isAnimatedPng", () => {
 })
 
 describe("isAnimatedImageBytes", () => {
-  it("sniffs WebP by MIME", () => {
+  it("sniffs an animated WebP by its container bytes", () => {
     const animated = Uint8Array.from([
       ...asciiBytes("RIFF"),
       0,
@@ -313,21 +313,19 @@ describe("isAnimatedImageBytes", () => {
       0x02,
       ...new Array<number>(10).fill(0),
     ])
-    expect(isAnimatedImageBytes("image/webp", animated)).toBe(true)
+    expect(isAnimatedImageBytes(animated)).toBe(true)
   })
 
-  it("sniffs PNG by MIME", () => {
+  it("sniffs an APNG by its container bytes", () => {
     const apng = Uint8Array.from([
       ...PNG_SIGNATURE,
       ...pngChunk("acTL", 8),
       ...pngChunk("IDAT", 4),
     ])
-    expect(isAnimatedImageBytes("image/png", apng)).toBe(true)
+    expect(isAnimatedImageBytes(apng)).toBe(true)
   })
 
-  it("returns false for formats that can't animate (JPEG)", () => {
-    expect(isAnimatedImageBytes("image/jpeg", Uint8Array.from([1, 2, 3]))).toBe(
-      false,
-    )
+  it("returns false for bytes that aren't an animated WebP/APNG (e.g. JPEG)", () => {
+    expect(isAnimatedImageBytes(Uint8Array.from([1, 2, 3]))).toBe(false)
   })
 })

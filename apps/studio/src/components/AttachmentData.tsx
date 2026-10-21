@@ -1,7 +1,7 @@
-import { Box, Flex, HStack, Image, Skeleton, Text } from "@chakra-ui/react"
+import { Box, Flex, HStack, Image, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { IconButton } from "@opengovsg/design-system-react"
 import { useEffect, useRef, useState } from "react"
-import { BiPencil, BiTrash } from "react-icons/bi"
+import { BiTrash } from "react-icons/bi"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 // Match ImageClient's self-heal: a just-saved/just-uploaded asset isn't servable
@@ -14,8 +14,9 @@ const retryDelayMs = (attempt: number) => Math.min(1000 * 2 ** attempt, 16000)
 interface AttachmentDataProps {
   data: string
   onClick: () => void
-  // When provided, renders a pencil button beside the remove button — the
-  // image-adjustment entry point. Omitted for non-adjustable attachments.
+  // When provided, the whole row becomes the image-adjustment entry point: it's
+  // clickable (opens the editor) and shows an "Edit image" link under the name.
+  // Omitted for non-adjustable attachments (row isn't clickable).
   onEdit?: () => void
   // When provided, renders a small thumbnail at the start of the row. Must be a
   // loadable URL (resolve managed "/..." paths via generateAssetUrl first).
@@ -56,6 +57,23 @@ export const AttachmentData = ({
       background="brand.primary.100"
       justifyContent="space-between"
       alignItems="center"
+      // The whole row is the editor entry point when adjustable; the Remove
+      // button below stops propagation so it isn't swallowed by this handler.
+      onClick={onEdit}
+      cursor={onEdit ? "pointer" : undefined}
+      role={onEdit ? "button" : undefined}
+      tabIndex={onEdit ? 0 : undefined}
+      onKeyDown={
+        onEdit
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault()
+                onEdit()
+              }
+            }
+          : undefined
+      }
+      _hover={onEdit ? { background: "brand.primary.200" } : undefined}
     >
       <HStack spacing="0.75rem" minW={0}>
         {imageSrc && (
@@ -89,28 +107,37 @@ export const AttachmentData = ({
             />
           </Box>
         )}
-        <Text overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-          {data.split("/").pop()}
-        </Text>
+        <VStack align="start" spacing={0} minW={0}>
+          <Text
+            overflow="hidden"
+            textOverflow="ellipsis"
+            whiteSpace="nowrap"
+            w="100%"
+          >
+            {data.split("/").pop()}
+          </Text>
+          {onEdit && (
+            <Text
+              textStyle="caption-2"
+              fontWeight="500"
+              color="interaction.links.default"
+            >
+              Edit image
+            </Text>
+          )}
+        </VStack>
       </HStack>
       <HStack spacing={0} flexShrink={0}>
-        {onEdit && (
-          <IconButton
-            size="xs"
-            variant="clear"
-            colorScheme="neutral"
-            aria-label="Edit image"
-            icon={<BiPencil />}
-            onClick={onEdit}
-          />
-        )}
         <IconButton
           size="xs"
           variant="clear"
           colorScheme="critical"
           aria-label="Remove file"
           icon={<BiTrash />}
-          onClick={onClick}
+          onClick={(e) => {
+            e.stopPropagation()
+            onClick()
+          }}
         />
       </HStack>
     </Flex>

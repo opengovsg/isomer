@@ -129,20 +129,18 @@ export const isAnimatedPng = (bytes: Uint8Array): boolean => {
 
 /**
  * Whether the given bytes are an animated image that baking would flatten.
- * Only WebP and PNG need sniffing; JPEG (the other bakeable MIME) can't animate.
+ * Sniffs by magic bytes, NOT the declared MIME: a Blob's `type` is often empty
+ * or a generic "binary/octet-stream" (uploaded File with no type, a ?original
+ * fetch), which would make a MIME switch miss a genuinely animated image. Each
+ * sniffer self-guards on its container signature, so OR-ing them is safe — only
+ * an actual animated WebP/APNG returns true; JPEG and every static image don't.
  */
-export const isAnimatedImageBytes = (
-  mimeType: string,
-  bytes: Uint8Array,
-): boolean => {
-  if (mimeType === "image/webp") return isAnimatedWebp(bytes)
-  if (mimeType === "image/png") return isAnimatedPng(bytes)
-  return false
-}
+export const isAnimatedImageBytes = (bytes: Uint8Array): boolean =>
+  isAnimatedWebp(bytes) || isAnimatedPng(bytes)
 
 /** Blob wrapper around isAnimatedImageBytes. */
 export const isAnimatedImageBlob = async (blob: Blob): Promise<boolean> =>
-  isAnimatedImageBytes(blob.type, new Uint8Array(await blob.arrayBuffer()))
+  isAnimatedImageBytes(new Uint8Array(await blob.arrayBuffer()))
 
 /**
  * Convert a normalized crop rectangle to pixel coordinates.

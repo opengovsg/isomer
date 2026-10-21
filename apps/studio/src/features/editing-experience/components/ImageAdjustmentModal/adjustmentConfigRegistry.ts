@@ -290,8 +290,11 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   // opaque at the bottom edge, fading out by the vertical midpoint.
   scrim: {
     id: "infocards-full-image-overlay",
+    // Exactly the gradient InfoCardWithFullImage renders (from-[…100%] to-[…0%]),
+    // so Studio's Tailwind actually generates these classes (it scans the real
+    // component) and the preview overlay matches the published card.
     className:
-      "bg-gradient-to-t from-[rgba(38,38,38,0.9)] via-[rgba(38,38,38,0)] via-[50%] to-transparent",
+      "bg-gradient-to-t from-[rgba(38,38,38,100%)] to-[rgba(38,38,38,0%)]",
   },
   preUploadCopy:
     "The card crops this image to fill its frame and overlays the title on a dark gradient at the bottom. Keep your key subject in the upper half and set a focal point to anchor it.",
