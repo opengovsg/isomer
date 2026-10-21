@@ -861,6 +861,26 @@ const heroCarouselHomepageProps = {
       subtitle:
         "Meet accessibility, security, and branding requirements out of the box.",
     },
+    {
+      backgroundUrl:
+        "https://images.unsplash.com/photo-1594318142972-1e2ea7487a3e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1740",
+      title: "Templates that already meet the bar",
+      subtitle:
+        "Start from a layout that handles accessibility, security, and branding.",
+      buttonLabel: "Browse all website templates",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Contact the Isomer team",
+      secondaryButtonUrl: "/",
+    },
+    {
+      backgroundUrl:
+        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      title: "Publish with confidence",
+      subtitle:
+        "Preview changes, collaborate with your team, and ship updates when you are ready.",
+      buttonLabel: "See how publishing works",
+      buttonUrl: "/",
+    },
   ],
 }
 
