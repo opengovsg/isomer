@@ -92,7 +92,20 @@ calculate_duration "$start_time"
 pwd
 
 corepack enable
-corepack install -g pnpm@12.0.0
+
+# pnpm 12's npm package is only a wrapper: on first run it downloads the native
+# @pnpm/exe.<platform> binary from the npm registry into corepack's cache. Cache that
+# directory in S3 so builds don't depend on registry.npmjs.org being reachable.
+PNPM_VERSION="12.0.0"
+PNPM_TGZ="pnpm-$PNPM_VERSION-$(uname -m).tar.zst"
+PNPM_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/tools/$PNPM_TGZ"
+COREPACK_DIR="${COREPACK_HOME:-$HOME/.cache/node/corepack}"
+if ! fetch_cached "$PNPM_CACHE_PATH" "$PNPM_TGZ" "$COREPACK_DIR"; then
+  corepack install -g "pnpm@$PNPM_VERSION"
+  # Forces the native binary download so it's included in the archive.
+  pnpm --version
+  cache_upload "$PNPM_CACHE_PATH" "$PNPM_TGZ" -C "$COREPACK_DIR" .
+fi
 
 # Use a project-local store only in this CodeBuild job so the S3 tarball is self-contained.
 # Do not set storeDir in pnpm-workspace.yaml: local dev keeps the default global store.
