@@ -39,6 +39,35 @@ const SINGLE_TABLE_WITH_CAPTION: JSONContent = {
   content: [tableContent("Figure 1: Quarterly revenue by department")],
 }
 
+const WIDE_TABLE: JSONContent = {
+  type: "prose",
+  content: [
+    {
+      type: "table",
+      attrs: {
+        caption: "Wide table",
+        columnWidths: [400, 400, 400],
+      },
+      content: [
+        {
+          type: "tableRow",
+          content: ["Alpha", "Beta", "Gamma"].map((text) => ({
+            type: "tableHeader",
+            content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+          })),
+        },
+        {
+          type: "tableRow",
+          content: ["One", "Two", "Three"].map((text) => ({
+            type: "tableCell",
+            content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+          })),
+        },
+      ],
+    },
+  ],
+}
+
 const TableCaptionHarness = ({
   initialContent,
 }: {
@@ -92,6 +121,10 @@ export const PopulatedCaption: Story = {
   },
 }
 
+export const OverflowingTable: Story = {
+  args: { initialContent: WIDE_TABLE },
+}
+
 export const EditCaptionViaModal: Story = {
   args: { initialContent: SINGLE_TABLE_PLACEHOLDER_CAPTION },
   play: async ({ canvasElement }) => {
@@ -119,4 +152,8 @@ export const EditCaptionViaModal: Story = {
       await canvas.findByRole("button", { name: "Edit table caption" }),
     ).toBeInTheDocument()
   },
+}
+
+export const ExpandedTable: Story = {
+  args: { initialContent: SINGLE_TABLE_WITH_CAPTION },
 }
