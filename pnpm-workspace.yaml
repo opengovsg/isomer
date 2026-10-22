@@ -65,8 +65,10 @@ allowBuilds:
 
 patchedDependencies:
   next@16.3.3: patches/next@16.3.3.patch
+  tailwind-variants@3.3.1: patches/tailwind-variants@3.3.1.patch
 
 catalog:
+  acorn: ^8.18.0
   # v4 is pinned deliberately: the legacy egazette integration uses the v4 client API
   # (algoliasearch(appId, key).initIndex(name), index.saveObjects, index.deleteBy).
   # v5 changed the client API — do not "upgrade" this without reviewing egazette compatibility.

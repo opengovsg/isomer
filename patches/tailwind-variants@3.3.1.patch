@@ -1,0 +1,44 @@
+diff --git a/dist/chunk-2BFDQGZN.cjs b/dist/chunk-2BFDQGZN.cjs
+index 461f220b156128b33a566d1f8fca8e57ce59225c..12835568a17b3e785a3b5c58ea54393d71fb3f78 100644
+--- a/dist/chunk-2BFDQGZN.cjs
++++ b/dist/chunk-2BFDQGZN.cjs
+@@ -3,7 +3,7 @@
+ // src/internal/join-class-value.ts
+ var isArray = Array.isArray;
+ var joinClassValue = (value) => {
+-  if (!value && value !== 0 && value !== 0n) return "";
++  if (!value && value !== 0 && typeof value !== "bigint") return "";
+   if (typeof value === "string") return value;
+   if (typeof value === "number") {
+     if (value !== value) return "";
+@@ -15,7 +15,7 @@ var joinClassValue = (value) => {
+     const length = value.length;
+     for (let index = 0; index < length; index++) {
+       const item = value[index];
+-      if (!item && item !== 0 && item !== 0n) continue;
++      if (!item && item !== 0 && typeof item !== "bigint") continue;
+       const resolved = typeof item === "string" ? item : joinClassValue(item);
+       if (resolved) {
+         if (result) result += " ";
+diff --git a/dist/chunk-OYFAXDFZ.js b/dist/chunk-OYFAXDFZ.js
+index 7d9980e26b42d99c23e7ff6e2a637d1c478b2b95..06905331ff6c91bb2ca73bf9499f9a16cfe1ee32 100644
+--- a/dist/chunk-OYFAXDFZ.js
++++ b/dist/chunk-OYFAXDFZ.js
+@@ -1,7 +1,7 @@
+ // src/internal/join-class-value.ts
+ var isArray = Array.isArray;
+ var joinClassValue = (value) => {
+-  if (!value && value !== 0 && value !== 0n) return "";
++  if (!value && value !== 0 && typeof value !== "bigint") return "";
+   if (typeof value === "string") return value;
+   if (typeof value === "number") {
+     if (value !== value) return "";
+@@ -13,7 +13,7 @@ var joinClassValue = (value) => {
+     const length = value.length;
+     for (let index = 0; index < length; index++) {
+       const item = value[index];
+-      if (!item && item !== 0 && item !== 0n) continue;
++      if (!item && item !== 0 && typeof item !== "bigint") continue;
+       const resolved = typeof item === "string" ? item : joinClassValue(item);
+       if (resolved) {
+         if (result) result += " ";

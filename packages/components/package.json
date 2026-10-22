@@ -98,6 +98,7 @@
     "@vitejs/plugin-react": "catalog:vitest",
     "@vitest/browser-playwright": "catalog:vitest",
     "@vitest/coverage-istanbul": "catalog:vitest",
+    "acorn": "catalog:",
     "bootstrap-icons": "catalog:",
     "browserslist-useragent-regexp": "catalog:",
     "chromatic": "catalog:",

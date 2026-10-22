@@ -36,6 +36,18 @@ const nextConfig = {
   // Next resolves them the same from the app root as from the workspace package (pnpm); otherwise
   // Next may bundle jsdom and break __dirname (default-stylesheet.css ENOENT).
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
+  // Next compiles our code down to .browserslistrc but leaves node_modules as is.
+  // These ship ES2020+ syntax (`?.`, `??`) into the client bundle, which older
+  // supported browsers cannot parse.
+  transpilePackages: [
+    "@sinclair/typebox",
+    "react-aria",
+    "react-stately",
+    "tailwind-merge",
+    "tailwind-variants",
+    "usehooks-ts",
+    "zod",
+  ],
   // No need as this only runs for packages of versions that passes in CI
   typescript: { ignoreBuildErrors: true },
   webpack(config, { webpack }) {
