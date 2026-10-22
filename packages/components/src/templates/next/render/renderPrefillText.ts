@@ -1,54 +1,25 @@
-import type { IsomerSchema } from "~/types"
-import { z } from "zod"
-
-// Zod parsers for extracting prefill data from different page layouts
-// NOTE: This is a temporary construct and the long term fix should be
-// to migrate IsomerSchema to use `Type.Intersect` rather than `Type.Composite`
-const imageSchema = z.object({
-  src: z.string(),
-  alt: z.string(),
-})
-
-const articlePageHeaderSchema = z.object({
-  summary: z.string(),
-})
-
-const contentPageHeaderSchema = z.object({
-  summary: z.string(),
-})
-
-const articlePageSchema = z.object({
-  articlePageHeader: articlePageHeaderSchema.optional(),
-  image: imageSchema.optional(),
-})
-
-const contentPageSchema = z.object({
-  contentPageHeader: contentPageHeaderSchema.optional(),
-  image: imageSchema.optional(),
-})
-
-const databasePageSchema = z.object({
-  contentPageHeader: contentPageHeaderSchema.optional(),
-})
-
-const collectionPageSchema = z.object({
-  subtitle: z.string().optional(),
-})
-
-const refPageSchema = z.object({
-  description: z.string().optional(),
-  image: imageSchema.optional(),
-})
+import type {
+  ArticlePagePageProps,
+  CollectionPagePageProps,
+  ContentPagePageProps,
+  DatabasePagePageProps,
+  IsomerSchema,
+  LinkRefPageProps,
+} from "~/types"
 
 interface PrefillContent {
   description?: string
   thumbnail?: string
   thumbnailAlt?: string
 }
+
+// Extracts card prefill fields from validated page content. Avoid Zod here: this
+// module is pulled in by Tailwind's jiti scanner, and Zod 4.6.x named exports
+// do not interop correctly with jiti (`import { z }` is undefined).
 export const renderPrefillText = (content: IsomerSchema): PrefillContent => {
   switch (content.layout) {
     case "article": {
-      const page = articlePageSchema.parse(content.page)
+      const page = content.page as ArticlePagePageProps
       return {
         description: page.articlePageHeader?.summary,
         thumbnail: page.image?.src,
@@ -57,7 +28,7 @@ export const renderPrefillText = (content: IsomerSchema): PrefillContent => {
     }
     case "content":
     case "index": {
-      const page = contentPageSchema.parse(content.page)
+      const page = content.page as ContentPagePageProps
       return {
         description: page.contentPageHeader?.summary,
         thumbnail: page.image?.src,
@@ -65,19 +36,19 @@ export const renderPrefillText = (content: IsomerSchema): PrefillContent => {
       }
     }
     case "database": {
-      const page = databasePageSchema.parse(content.page)
+      const page = content.page as DatabasePagePageProps
       return {
         description: page.contentPageHeader?.summary,
       }
     }
     case "collection": {
-      const page = collectionPageSchema.parse(content.page)
+      const page = content.page as CollectionPagePageProps
       return {
         description: page.subtitle,
       }
     }
     case "link": {
-      const page = refPageSchema.parse(content.page)
+      const page = content.page as LinkRefPageProps
       return {
         description: page.description,
         thumbnail: page.image?.src,
