@@ -13,9 +13,8 @@ interface PrefillContent {
   thumbnailAlt?: string
 }
 
-// Extracts card prefill fields from validated page content. Avoid Zod here: this
-// module is pulled in by Tailwind's jiti scanner, and Zod 4.6.x named exports
-// do not interop correctly with jiti (`import { z }` is undefined).
+// Studio's Tailwind build loads this file through jiti. On Zod 4.6.x, `import { z }`
+// from "zod" is undefined there, so use page prop types instead of Zod parsers.
 export const renderPrefillText = (content: IsomerSchema): PrefillContent => {
   switch (content.layout) {
     case "article": {
