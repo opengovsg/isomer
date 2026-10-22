@@ -387,10 +387,55 @@ export const getBlob = async (bucketName: string, key: string) => {
 export const putObjectDirect = async (
   props: Pick<
     PutObjectCommandInput,
-    "Bucket" | "Key" | "Body" | "ContentType" | "ContentDisposition" | "Tagging"
+    | "Bucket"
+    | "Key"
+    | "Body"
+    | "ContentType"
+    | "ContentDisposition"
+    | "Tagging"
+    | "CacheControl"
+    | "IfMatch"
+    | "IfNoneMatch"
   >,
 ): Promise<void> => {
   await storage.send(new PutObjectCommand(props))
+}
+
+// Returns null when the object does not exist.
+export const getTextObject = async (
+  bucketName: string,
+  key: string,
+): Promise<{ body: string; eTag?: string } | null> => {
+  try {
+    const data = await storage.send(
+      new GetObjectCommand({ Bucket: bucketName, Key: key }),
+    )
+    return {
+      body: (await data.Body?.transformToString()) ?? "",
+      eTag: data.ETag,
+    }
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return null
+    }
+    throw error
+  }
+}
+
+const HTTP_PRECONDITION_FAILED = 412
+const HTTP_CONFLICT = 409
+
+// S3 answers a failed If-Match / If-None-Match with 412, or 409 when a
+// concurrent conditional write to the same key wins the race.
+export const isConditionalWriteFailedError = (error: unknown): boolean => {
+  if (typeof error !== "object" || error === null) {
+    return false
+  }
+  const { $metadata } = error as { $metadata?: { httpStatusCode?: unknown } }
+  return (
+    $metadata?.httpStatusCode === HTTP_PRECONDITION_FAILED ||
+    $metadata?.httpStatusCode === HTTP_CONFLICT
+  )
 }
 
 // Resolves the private studio assets bucket — a dedicated bucket for

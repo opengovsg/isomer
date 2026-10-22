@@ -1,8 +1,8 @@
 diff --git a/dist/esm/export/routes/app-page.js b/dist/esm/export/routes/app-page.js
-index d454fbc17f6a8a9484bbc62a4aacfa1fd8842bee..77714f095b2c29fec82a01aeb3ecccc51becd931 100644
+index 9e09b8c9dbda809058cf50a2b303ca49851869eb..d5a4139b8fa48a0e8b0185e39166b911da4aff36 100644
 --- a/dist/esm/export/routes/app-page.js
 +++ b/dist/esm/export/routes/app-page.js
-@@ -94,19 +94,10 @@ import { UNDERSCORE_GLOBAL_ERROR_ROUTE_ENTRY, UNDERSCORE_NOT_FOUND_ROUTE_ENTRY }
+@@ -92,19 +92,10 @@ import { UNDERSCORE_GLOBAL_ERROR_ROUTE_ENTRY, UNDERSCORE_NOT_FOUND_ROUTE_ENTRY }
                  fileWriter.append(htmlFilepath.replace(/\.html$/, RSC_SUFFIX), flightData);
              }
          }
@@ -27,10 +27,10 @@ index d454fbc17f6a8a9484bbc62a4aacfa1fd8842bee..77714f095b2c29fec82a01aeb3ecccc5
              ...metadata.headers
          };
 diff --git a/dist/export/routes/app-page.js b/dist/export/routes/app-page.js
-index 077bd5329166c59ba41c8fc4cc0f90f04751b024..a9e5678360859f2dd613a7b9170d77e5a66458b5 100644
+index 3273610e477eb94716e5dbf20c89a08b3e7822df..b4150199525dc1ab8c9456328c5d5c31fa05bcc3 100644
 --- a/dist/export/routes/app-page.js
 +++ b/dist/export/routes/app-page.js
-@@ -102,19 +102,10 @@ async function exportAppPage(req, res, page, path, pathname, query, fallbackRout
+@@ -100,19 +100,10 @@ async function exportAppPage(req, res, page, path, pathname, query, fallbackRout
                  fileWriter.append(htmlFilepath.replace(/\.html$/, _constants.RSC_SUFFIX), flightData);
              }
          }
