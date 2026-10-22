@@ -1,6 +1,5 @@
 import type { AttachmentProps } from "@opengovsg/design-system-react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
-import { datadogRum } from "@datadog/browser-rum"
 import { Attachment, useToast } from "@opengovsg/design-system-react"
 import { uniq } from "lodash-es"
 import dynamic from "next/dynamic"
@@ -8,6 +7,7 @@ import { useEffect, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
+import { reportClientError } from "~/lib/datadogError"
 import { RISKY_FILE_EXTENSIONS } from "~/lib/fileUpload"
 import { fileNameAndSizeSchema, uploadSvgSchema } from "~/schemas/asset"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
@@ -68,10 +68,12 @@ export const FileAttachment = ({
             void handleAssetUpload(path)
               .then((src) => setHref(src))
               .catch((error) => {
-                datadogRum.addError(error, {
+                reportClientError(error, {
                   feature: "asset-upload-fetch",
                   siteId,
                   resourceId,
+                  fileExtension: getFileExtension(file.name),
+                  fileSize: file.size,
                 })
                 toast({
                   title: "Failed to upload file",
@@ -85,17 +87,11 @@ export const FileAttachment = ({
         // Without this, a failure in the presign call or the S3 PUT itself
         // (permission denied, validation, network/CORS) silently reverts the
         // control to its pre-upload state with no visible error at all.
+        // Reporting to Datadog happens in useUploadAssetMutation's own
+        // onError (so it isn't skipped if this component unmounts first);
+        // this handler is just for the visible toast.
         onError: (error) => {
-          // Report to Datadog (RUM Error Tracking) so this is alarmable --
-          // the hero-banner upload failures (ISOM-2680) are silent and only
-          // surface via support tickets; console.error alone isn't forwarded.
-          datadogRum.addError(error, {
-            feature: "asset-upload",
-            siteId,
-            resourceId,
-            fileName: file.name,
-            fileSize: file.size,
-          })
+          console.error("Failed to upload file", error)
           toast({
             title: "Failed to upload file",
             // Generic on purpose: by here it's a presign/S3/network failure,
