@@ -4,8 +4,6 @@ import type { CSSProperties } from "react"
 import { Box, Tooltip } from "@chakra-ui/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { BiCrosshair } from "react-icons/bi"
-import { IMAGE_ADJUSTMENT_FOCAL_HINT_SEEN_KEY } from "~/constants/localStorage"
-import { useLocalStorage } from "~/hooks/useLocalStorage"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 
 // The brand accent, read from Chakra's generated CSS var so these inline styles
@@ -111,12 +109,6 @@ export const CropFocalControl = ({
   const [boxSize, setBoxSize] = useState({ width: 0, height: 0 })
   const [dragTarget, setDragTarget] = useState<DragTarget>(null)
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null)
-  // Dismissed permanently (across sessions) on the user's first crop or focal
-  // edit, so the hint only ever shows once per browser.
-  const [hintSeen, setHintSeen] = useLocalStorage(
-    IMAGE_ADJUSTMENT_FOCAL_HINT_SEEN_KEY,
-    false,
-  )
 
   const showCrop = cropMode !== "none"
   const currentCrop = crop ?? defaultCropRect(lockedRatio, aspectRatio ?? 1)
@@ -209,7 +201,6 @@ export const CropFocalControl = ({
     )
     onCropChange(moveRect(currentCrop, delta.dx, delta.dy))
     lastPointerRef.current = { x: event.clientX, y: event.clientY }
-    if (!hintSeen) setHintSeen(true)
   }
 
   const handleResizePointerDown = (
@@ -294,7 +285,6 @@ export const CropFocalControl = ({
       height: imageBounds.height * boxRect.height,
     })
     onFocalChange(pointToCropRelativeFocal(wholeImagePoint, currentCrop))
-    if (!hintSeen) setHintSeen(true)
   }
 
   const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -452,7 +442,7 @@ export const CropFocalControl = ({
           <Tooltip
             label="Move the focal point"
             placement="top"
-            isOpen={!hintSeen}
+            closeOnPointerDown
             hasArrow
           >
             <div
