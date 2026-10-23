@@ -143,5 +143,20 @@ describe("resolveAdjustmentConfig", () => {
       expect(withImages?.scrim).toBeUndefined()
       expect(fullImage?.scrim?.className).toContain("bg-gradient-to-t")
     })
+
+    // Mirrors common.ts: the card image squares off at lg (lg:aspect-square) only
+    // in the default 3-column layout; 1/2-column cards stay 3:2 on desktop.
+    it("derives the desktop card ratio from maxColumns", () => {
+      const desktopRatio = (block: Record<string, unknown>) =>
+        resolveAdjustmentConfig({
+          block: { type: "infocards", variant: "cardsWithImages", ...block },
+          fieldName: "imageUrl",
+        })?.previewStates.find((s) => s.id === "desktop")?.aspectRatio
+
+      expect(desktopRatio({ maxColumns: "3" })).toEqual({ width: 1, height: 1 })
+      expect(desktopRatio({})).toEqual({ width: 1, height: 1 }) // defaults to 3
+      expect(desktopRatio({ maxColumns: "2" })).toEqual({ width: 3, height: 2 })
+      expect(desktopRatio({ maxColumns: "1" })).toEqual({ width: 3, height: 2 })
+    })
   })
 })
