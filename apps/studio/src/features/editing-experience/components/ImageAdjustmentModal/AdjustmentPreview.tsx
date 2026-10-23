@@ -498,21 +498,13 @@ const TileCaption = ({
   children: string
   subLabel?: string
 }): JSX.Element => (
-  <VStack align="stretch" spacing={0}>
-    <Text
-      textStyle="caption-2"
-      textTransform="uppercase"
-      letterSpacing="0.05em"
-      color="base.content.medium"
-    >
+  // Name + dimensions on one line: uppercase device name, then the dimensions.
+  <Text textStyle="caption-2" color="base.content.medium">
+    <Text as="span" textTransform="uppercase" letterSpacing="0.05em">
       {children}
     </Text>
-    {subLabel && (
-      <Text textStyle="caption-2" color="base.content.medium">
-        {subLabel}
-      </Text>
-    )}
-  </VStack>
+    {subLabel ? ` · ${subLabel}` : ""}
+  </Text>
 )
 
 const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
