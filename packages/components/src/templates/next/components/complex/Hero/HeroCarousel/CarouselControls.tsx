@@ -1,5 +1,5 @@
 import { useRef } from "react"
-import { BiPause, BiPlay } from "react-icons/bi"
+import { BiChevronLeft, BiChevronRight, BiPause, BiPlay } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 
@@ -9,50 +9,26 @@ import { HERO_CAROUSEL_ROTATION_INTERVAL_MS } from "./constants"
 const coarsePointerControlSizeClassName =
   "[@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
 
-// 16px gap between dots; h-6 buttons keep 24px-tall targets from overlapping.
-const carouselDotButtonStyles = tv({
-  base: "flex h-6 shrink-0 items-center justify-center focus-visible:outline focus-visible:outline-[0.25rem] focus-visible:outline-offset-[0.125rem] focus-visible:outline-utility-highlight",
-  variants: {
-    isActive: {
-      true: "w-11",
-      false: "w-[1.625rem]",
-    },
-  },
-})
-
-const carouselDotStyles = tv({
-  base: "pointer-events-none h-2.5 shrink-0 rounded-full transition-[width,background-color] duration-150 ease-out motion-reduce:transition-none",
-  variants: {
-    isActive: {
-      true: "w-7 bg-white",
-      false: "w-2.5 bg-white/50",
-    },
-  },
-})
-
-// Pause is first in the DOM and dots are last, so tab order is pause, call to action, dots.
+// Pause is first in the DOM and slide navigation is last, so tab order is
+// pause, call to action, previous, next.
 const carouselControlsStyles = tv({
   slots: {
-    // Bottom row, right column, vertically centred with the dots.
+    // Bottom row, right column, vertically centred with the slide position.
     rotation: "col-start-2 row-start-2 self-center justify-self-end",
     // Bottom row, left column. w-fit stops the chip stretching across the row.
-    dots: "col-start-1 row-start-2 flex w-fit items-center self-center justify-self-start",
-    // Hugs the dot buttons; the photo scrim is added only for onPhoto.
-    chip: "flex items-center",
+    position:
+      "col-start-1 row-start-2 flex w-fit items-center self-center justify-self-start",
+    // White on black/70 stays above 4.5:1 even over a white photo.
+    chip: "flex h-10 items-center rounded-full bg-black/70 px-1 text-white [@media(pointer:coarse)]:h-11",
   },
   variants: {
-    onPhoto: {
-      true: {
-        // black/70: white/50 dots are 3:1 on white. black/60 is 2.72:1.
-        chip: "rounded-full bg-black/70 px-2",
-      },
-    },
     isCenteredOnTablet: {
       true: {
         // From md, leave the grid and pin the pause to the hero's right edge.
         rotation: "md:absolute md:bottom-9 md:right-10 md:z-10 lg:bottom-10",
-        // From md, centre the dots on the hero. h-10 matches the pause so the chip stays centred on it.
-        dots: "md:absolute md:bottom-9 md:left-1/2 md:z-10 md:h-10 md:-translate-x-1/2 md:items-center lg:bottom-10 [@media(pointer:coarse)]:md:h-11",
+        // From md, centre the position chip on the hero. h-10 matches the pause.
+        position:
+          "md:absolute md:bottom-9 md:left-1/2 md:z-10 md:h-10 md:-translate-x-1/2 md:items-center lg:bottom-10 [@media(pointer:coarse)]:md:h-11",
       },
     },
   },
@@ -137,7 +113,7 @@ const CarouselRotationButton = ({
       <button
         type="button"
         className={twMerge(
-          "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-transparent bg-white text-base-content shadow-sm [@media(hover:hover)]:hover:bg-gray-200 [@media(hover:hover)]:hover:shadow-md focus-visible:outline focus-visible:outline-[0.25rem] focus-visible:outline-offset-[0.125rem] focus-visible:outline-utility-highlight",
+          "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-transparent bg-white text-base-content shadow-none [@media(hover:hover)]:hover:bg-gray-200 [@media(hover:hover)]:hover:shadow-none focus-visible:outline focus-visible:outline-[0.25rem] focus-visible:outline-offset-[0.125rem] focus-visible:outline-utility-highlight",
           coarsePointerControlSizeClassName,
         )}
         aria-label={label}
@@ -187,42 +163,65 @@ export const CarouselPauseControl = ({
   )
 }
 
-export const CarouselDotsControl = ({
+const CarouselNavButton = ({
+  label,
+  onClick,
+  icon: Icon,
+}: {
+  label: string
+  onClick: () => void
+  icon: typeof BiChevronLeft
+}) => (
+  <button
+    type="button"
+    className={twMerge(
+      "flex size-8 shrink-0 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-[0.25rem] focus-visible:outline-offset-[0.125rem] focus-visible:outline-utility-highlight [@media(hover:hover)]:hover:bg-white/20",
+      coarsePointerControlSizeClassName,
+    )}
+    aria-label={label}
+    onClick={onClick}
+  >
+    <Icon className="h-6 w-6" aria-hidden />
+  </button>
+)
+
+export const CarouselPositionControl = ({
   slideCount,
   currentIndex,
-  onGoTo,
+  onPrev,
+  onNext,
   className,
   isCenteredOnTablet,
-  onPhoto,
 }: {
   slideCount: number
   currentIndex: number
-  onGoTo: (index: number) => void
+  onPrev: () => void
+  onNext: () => void
   className?: string
   isCenteredOnTablet?: boolean
-  onPhoto?: boolean
 }) => {
-  const styles = carouselControlsStyles({ isCenteredOnTablet, onPhoto })
+  const styles = carouselControlsStyles({ isCenteredOnTablet })
+
+  if (slideCount < 2) {
+    return null
+  }
 
   return (
-    <div className={styles.dots({ className })}>
+    <div className={styles.position({ className })}>
       <div className={styles.chip()}>
-        {Array.from({ length: slideCount }, (_, index) => {
-          const isActive = index === currentIndex
-
-          return (
-            <button
-              key={index}
-              type="button"
-              className={carouselDotButtonStyles({ isActive })}
-              aria-label={`Go to slide ${index + 1} of ${slideCount}`}
-              aria-current={isActive ? "true" : undefined}
-              onClick={() => onGoTo(index)}
-            >
-              <span className={carouselDotStyles({ isActive })} />
-            </button>
-          )
-        })}
+        <CarouselNavButton
+          label="Previous slide"
+          onClick={onPrev}
+          icon={BiChevronLeft}
+        />
+        <p className="prose-label-md-medium min-w-[4.25rem] px-1 text-center tabular-nums">
+          {currentIndex + 1} of {slideCount}
+        </p>
+        <CarouselNavButton
+          label="Next slide"
+          onClick={onNext}
+          icon={BiChevronRight}
+        />
       </div>
     </div>
   )

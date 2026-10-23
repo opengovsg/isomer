@@ -7,7 +7,10 @@ import { tv } from "~/lib/tv"
 
 import type { HeroCarouselSlideView } from "./CarouselSlides"
 import { ComponentContent } from "../../../internal/customCssClass"
-import { CarouselDotsControl, CarouselPauseControl } from "./CarouselControls"
+import {
+  CarouselPauseControl,
+  CarouselPositionControl,
+} from "./CarouselControls"
 import {
   CarouselLiveRegion,
   CarouselSlideContent,
@@ -20,7 +23,7 @@ const gradientCarouselStyles = tv({
     section:
       "relative flex min-h-[15rem] [touch-action:pan-y_pinch-zoom] sm:min-h-[22.5rem] lg:min-h-[31.25rem]",
     contentPanel: "relative z-10 flex w-full flex-col justify-end",
-    // Copy spans row 1; pause and dots share row 2 (right column, left column).
+    // Copy spans row 1; pause and slide position share row 2 (right column, left column).
     contentInner: `${ComponentContent} grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-9 py-16 pb-10 text-start text-base-content-inverse lg:pb-[54px]`,
     actions: "flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row",
   },
@@ -36,7 +39,7 @@ const gradientCarouselStyles = tv({
         contentPanel: "bg-black/60",
         // !utilities override ComponentContent padding from a more specific ancestor.
         // From md, flex centres the copy. This box stays unpositioned so the
-        // pause and dots anchor to contentPanel, the full-bleed hero.
+        // pause and slide position anchor to contentPanel, the full-bleed hero.
         contentInner:
           "md:!mx-auto md:flex md:w-full md:!max-w-[54.75rem] md:flex-1 md:flex-col md:justify-center md:self-center md:!px-10 md:py-16 md:text-center lg:pb-16",
         actions: "md:justify-center",
@@ -108,11 +111,11 @@ export const HeroCarouselGradientClient = ({
               isVerticallyCenteredPerSlide={isCentered}
             />
           </div>
-          <CarouselDotsControl
+          <CarouselPositionControl
             slideCount={controlProps.slideCount}
             currentIndex={currentIndex}
-            onGoTo={controlProps.onGoTo}
-            onPhoto
+            onPrev={controlProps.onPrev}
+            onNext={controlProps.onNext}
             isCenteredOnTablet={isCentered}
           />
         </div>

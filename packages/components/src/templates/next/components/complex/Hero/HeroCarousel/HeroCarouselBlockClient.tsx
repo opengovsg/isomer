@@ -8,7 +8,10 @@ import {
 import { tv } from "~/lib/tv"
 
 import type { HeroCarouselSlideView } from "./CarouselSlides"
-import { CarouselDotsControl, CarouselPauseControl } from "./CarouselControls"
+import {
+  CarouselPauseControl,
+  CarouselPositionControl,
+} from "./CarouselControls"
 import {
   CarouselLiveRegion,
   CarouselSlideContent,
@@ -94,7 +97,7 @@ export const HeroCarouselBlockClient = ({
         className={styles.mobilePause()}
       />
       <div className={styles.textColumn()}>
-        {/* Desktop: copy on row 1, dots left and pause right on row 2. */}
+        {/* Desktop: copy on row 1, slide position left and pause right on row 2. */}
         <div className={styles.content()}>
           <CarouselPauseControl
             currentIndex={currentIndex}
@@ -111,10 +114,11 @@ export const HeroCarouselBlockClient = ({
               actionsClassName="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row"
             />
           </div>
-          <CarouselDotsControl
+          <CarouselPositionControl
             slideCount={controlProps.slideCount}
             currentIndex={currentIndex}
-            onGoTo={controlProps.onGoTo}
+            onPrev={controlProps.onPrev}
+            onNext={controlProps.onNext}
             className="mt-8 hidden lg:flex"
           />
         </div>
@@ -127,13 +131,13 @@ export const HeroCarouselBlockClient = ({
           assetsBaseUrl={assetsBaseUrl}
         />
       </div>
-      {/* Below lg, dots overlay the image after the call to action. h-10 centres them on the pause. */}
+      {/* Below lg, the position chip overlays the image. h-10 centres it on the pause. */}
       <div className={styles.mobileDots()}>
-        <CarouselDotsControl
+        <CarouselPositionControl
           slideCount={controlProps.slideCount}
           currentIndex={currentIndex}
-          onGoTo={controlProps.onGoTo}
-          onPhoto
+          onPrev={controlProps.onPrev}
+          onNext={controlProps.onNext}
         />
       </div>
       {showLiveRegion && (

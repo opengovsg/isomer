@@ -8,7 +8,7 @@ export const useNavigation = (slideCount: number) => {
   const [, startTransition] = useTransition()
 
   const rawIndex = preview ? preview.activeIndex : localIndex
-  // Clamp for this render. Dots and swipes set the index.
+  // Clamp for this render. Buttons and swipes set the index.
   const currentIndex =
     slideCount === 0 ? 0 : Math.min(Math.max(rawIndex, 0), slideCount - 1)
 

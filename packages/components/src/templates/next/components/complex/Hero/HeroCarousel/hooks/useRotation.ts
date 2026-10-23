@@ -146,14 +146,6 @@ export const useRotation = (slideCount: number) => {
     onGoTo((currentIndex + 1) % slideCount)
   }, [currentIndex, onGoTo, slideCount, stop])
 
-  const onUserGoTo = useCallback(
-    (index: number) => {
-      stop()
-      onGoTo(index)
-    },
-    [onGoTo, stop],
-  )
-
   const onPointerDown = (event: PointerEvent<HTMLElement>) => {
     suppressClickRef.current = false
     if (event.pointerType === "touch" || event.pointerType === "pen") {
@@ -235,7 +227,8 @@ export const useRotation = (slideCount: number) => {
     controlProps: {
       slideCount,
       currentIndex,
-      onGoTo: onUserGoTo,
+      onPrev: onUserPrev,
+      onNext: onUserNext,
       rotation: showRotationControl
         ? {
             isRotating: phase === "rotating",

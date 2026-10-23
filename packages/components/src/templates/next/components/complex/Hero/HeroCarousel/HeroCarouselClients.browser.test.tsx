@@ -81,9 +81,7 @@ describe("hero carousel clients", () => {
       const controlsTopBefore = pause.getBoundingClientRect().top
 
       // Act
-      fireEvent.click(
-        screen.getByRole("button", { name: "Go to slide 2 of 2" }),
-      )
+      fireEvent.click(screen.getByRole("button", { name: "Next slide" }))
 
       // Assert
       expect(section.getBoundingClientRect().height).toBe(heightBefore)
@@ -101,7 +99,7 @@ const indexedSlides = [
 const liveRegion = () => screen.getByText(/Slide \d of \d:/)
 
 describe("hero carousel preview index", () => {
-  it("changes its own slide when a dot is pressed and no preview provider is present", async () => {
+  it("changes its own slide when next is pressed and no preview provider is present", async () => {
     // Arrange
     render(
       <HeroCarouselGradientClient
@@ -110,17 +108,17 @@ describe("hero carousel preview index", () => {
         slides={indexedSlides}
       />,
     )
+    expect(screen.getByText("1 of 3")).toBeInTheDocument()
 
     // Act
-    await userEvent.click(
-      screen.getByRole("button", { name: "Go to slide 2 of 3" }),
-    )
+    await userEvent.click(screen.getByRole("button", { name: "Next slide" }))
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
+    expect(screen.getByText("2 of 3")).toBeInTheDocument()
   })
 
-  it("follows the preview index and sends a dot press through setActiveIndex", async () => {
+  it("follows the preview index and sends a next press through setActiveIndex", async () => {
     // Arrange
     const Harness = () => {
       const [activeIndex, setActiveIndex] = useState(1)
@@ -141,9 +139,7 @@ describe("hero carousel preview index", () => {
     // Act / Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
 
-    await userEvent.click(
-      screen.getByRole("button", { name: "Go to slide 3 of 3" }),
-    )
+    await userEvent.click(screen.getByRole("button", { name: "Next slide" }))
 
     expect(liveRegion().textContent).toBe("Slide 3 of 3: Gamma")
   })
@@ -290,28 +286,29 @@ describe("hero carousel rotation", () => {
     expect(section.querySelector("[data-rotation-countdown]")).toBeNull()
   })
 
-  it("does not advance after a dot is pressed", () => {
+  it("does not advance after next is pressed", () => {
     // Arrange
     renderGradient()
 
     // Act
-    fireEvent.click(screen.getByRole("button", { name: "Go to slide 2 of 3" }))
+    fireEvent.click(screen.getByRole("button", { name: "Next slide" }))
     advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
   })
 
-  it("does not advance after a dot for another slide is pressed", () => {
+  it("wraps to the last slide when previous is pressed and does not advance", () => {
     // Arrange
     renderGradient()
 
     // Act
-    fireEvent.click(screen.getByRole("button", { name: "Go to slide 3 of 3" }))
+    fireEvent.click(screen.getByRole("button", { name: "Previous slide" }))
     advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 3 of 3: Gamma")
+    expect(screen.getByText("3 of 3")).toBeInTheDocument()
   })
 
   it("does not advance after focus enters a slide call to action", () => {
@@ -488,7 +485,7 @@ describe("hero carousel rotation", () => {
   })
 
   it.each(Object.entries(carouselVariants))(
-    "tabs the %s carousel from pause to the call to action, then the dots",
+    "tabs the %s carousel from pause to the call to action, then the slide controls",
     (_name, renderVariant) => {
       // Arrange
       const view = render(renderVariant([shortSlide, tallSlide]))
@@ -507,8 +504,8 @@ describe("hero carousel rotation", () => {
       expect(tabOrder).toEqual([
         "Pause slide rotation",
         "Start",
-        "Go to slide 1 of 2",
-        "Go to slide 2 of 2",
+        "Previous slide",
+        "Next slide",
       ])
     },
   )
@@ -565,7 +562,7 @@ describe("hero carousel rotation", () => {
     expect(region.textContent).not.toBe(textWhileRotating)
 
     // Act
-    fireEvent.click(screen.getByRole("button", { name: "Go to slide 3 of 3" }))
+    fireEvent.click(screen.getByRole("button", { name: "Next slide" }))
 
     // Assert
     expect(region).toHaveAttribute("aria-live", "polite")
