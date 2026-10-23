@@ -32,6 +32,8 @@ const blockCarouselStyles = tv({
       "relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2",
     mobileDots:
       "absolute left-6 z-20 flex h-10 items-center md:left-10 lg:hidden [@media(pointer:coarse)]:h-11",
+    contentPause: "",
+    contentPosition: "mt-8",
   },
   variants: {
     imagePosition: {
@@ -41,12 +43,20 @@ const blockCarouselStyles = tv({
         textColumn: "lg:pl-10 lg:pr-8",
         content: "lg:ml-auto",
         mobileDots: "bottom-6",
+        // Below lg these controls overlay the image, so this copy stays hidden.
+        contentPause: "mt-8 hidden lg:inline-flex",
+        contentPosition: "hidden lg:flex",
       },
       [HERO_BLOCK_IMAGE_POSITION.left]: {
         section: "max-lg:flex-col-reverse lg:flex-row-reverse",
-        mobilePause: "top-[calc(20rem-1.5rem)] -translate-y-full",
-        textColumn: "lg:pl-16 lg:pr-10",
-        mobileDots: "top-[calc(20rem-1.5rem)] -translate-y-full",
+        // Image is above the copy below lg, so the controls stay in the text block.
+        mobilePause: "hidden",
+        // Anchor the pause to this column below lg, not the 548px copy grid.
+        textColumn: "max-lg:relative lg:pl-16 lg:pr-10",
+        mobileDots: "hidden",
+        contentPause:
+          "max-lg:absolute max-lg:bottom-6 max-lg:right-6 max-lg:z-20 md:max-lg:right-10 lg:mt-8",
+        contentPosition: "flex",
       },
     } satisfies Record<
       HeroCarouselImagePosition,
@@ -56,6 +66,8 @@ const blockCarouselStyles = tv({
         textColumn: string
         mobileDots: string
         content?: string
+        contentPause: string
+        contentPosition: string
       }
     >,
   },
@@ -90,19 +102,19 @@ export const HeroCarouselBlockClient = ({
       aria-label="Hero carousel"
       {...sectionProps}
     >
-      {/* Below lg, pause overlays the image. First in the DOM, so it is the first tab stop. */}
+      {/* Image-right below lg: pause overlays the image. First in the DOM, so it is the first tab stop. */}
       <CarouselPauseControl
         currentIndex={currentIndex}
         rotation={controlProps.rotation}
         className={styles.mobilePause()}
       />
       <div className={styles.textColumn()}>
-        {/* Desktop: copy on row 1, slide position left and pause right on row 2. */}
+        {/* Copy on row 1. Slide position sits left and pause right on row 2. */}
         <div className={styles.content()}>
           <CarouselPauseControl
             currentIndex={currentIndex}
             rotation={controlProps.rotation}
-            className="mt-8 hidden lg:inline-flex"
+            className={styles.contentPause()}
           />
           <div className="col-span-2 row-start-1 flex min-w-0 flex-col gap-9">
             <CarouselSlideContent
@@ -119,7 +131,7 @@ export const HeroCarouselBlockClient = ({
             currentIndex={currentIndex}
             onPrev={controlProps.onPrev}
             onNext={controlProps.onNext}
-            className="mt-8 hidden lg:flex"
+            className={styles.contentPosition()}
           />
         </div>
       </div>
@@ -131,7 +143,7 @@ export const HeroCarouselBlockClient = ({
           assetsBaseUrl={assetsBaseUrl}
         />
       </div>
-      {/* Below lg, the position chip overlays the image. h-10 centres it on the pause. */}
+      {/* Image-right below lg: the position chip overlays the image. h-10 centres it on the pause. */}
       <div className={styles.mobileDots()}>
         <CarouselPositionControl
           slideCount={controlProps.slideCount}
