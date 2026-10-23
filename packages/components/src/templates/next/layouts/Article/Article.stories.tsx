@@ -875,6 +875,56 @@ export const WithDateFilter: Story = {
   },
 }
 
+export const InformationCallout: Story = {
+  name: "Information callout without nested scrollbar",
+  args: {
+    ...generateArgs({ summary: "" }),
+    content: [
+      {
+        type: "callout",
+        variant: "information",
+        content: {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Developers of EdTech products with ",
+                },
+                {
+                  type: "text",
+                  text: "AI-enabled features",
+                  marks: [{ type: "bold" }],
+                },
+                {
+                  type: "text",
+                  text: " interested in whitelisting or integrating with SLS can refer to these ",
+                },
+                {
+                  type: "text",
+                  text: "guidelines",
+                  marks: [
+                    {
+                      type: "link",
+                      attrs: {
+                        href: "https://www.example.gov.sg/guidelines",
+                        target: "_blank",
+                      },
+                    },
+                  ],
+                },
+                { type: "text", text: "." },
+              ],
+            },
+          ],
+        },
+      },
+    ],
+  },
+}
+
 // Placing this story here as it's due to the overflow-x-auto class on the parent div
 export const OrderedList100Items: Story = {
   name: "100th Ordered Marker Not Truncated",
