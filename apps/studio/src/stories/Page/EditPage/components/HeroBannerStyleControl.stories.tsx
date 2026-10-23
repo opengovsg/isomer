@@ -16,6 +16,7 @@ const HERO_BANNER_VARIANT_SCHEMA_OPTIONS = {
   block: {},
   largeImage: {},
   floating: {},
+  carousel: {},
   searchbar: { format: "hidden" },
 } satisfies Record<HeroStyleId, { format?: string }>
 
@@ -80,6 +81,9 @@ export const ChoosingStyle: Story = {
     ).toBeVisible()
     await expect(
       await canvas.findByRole("radio", { name: "Block" }),
+    ).toBeVisible()
+    await expect(
+      await canvas.findByRole("radio", { name: "Carousel" }),
     ).toBeVisible()
     await expect(canvas.queryByRole("radio", { name: "Search bar" })).toBeNull()
   },
