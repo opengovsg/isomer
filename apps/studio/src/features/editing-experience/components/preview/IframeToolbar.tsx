@@ -51,7 +51,7 @@ export const IframeToolbar = ({
       case "responsive":
         return {
           mode: "Preview in different screen sizes before you publish",
-          viewport: "Default mode",
+          viewport: `Fit to screen (${defaultModeDeviceLabel})`,
         }
       case "fullscreen":
         return {
@@ -59,7 +59,7 @@ export const IframeToolbar = ({
           viewport: "Full screen",
         }
     }
-  }, [viewport])
+  }, [viewport, defaultModeDeviceLabel])
 
   const containerStyles = useMemo(() => {
     if (viewport === "fullscreen") {
