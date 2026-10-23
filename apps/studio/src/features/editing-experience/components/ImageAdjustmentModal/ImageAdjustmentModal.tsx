@@ -1,8 +1,10 @@
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
 import {
   Box,
+  ButtonGroup,
   Flex,
   HStack,
+  Icon,
   Modal,
   ModalBody,
   ModalContent,
@@ -11,6 +13,7 @@ import {
   ModalOverlay,
   Spacer,
   Text,
+  Tooltip,
   VStack,
   useDisclosure,
 } from "@chakra-ui/react"
@@ -18,10 +21,10 @@ import {
   Button,
   Infobox,
   ModalCloseButton,
-  Radio,
   useToast,
 } from "@opengovsg/design-system-react"
 import { useEffect, useMemo, useState } from "react"
+import { BiInfoCircle } from "react-icons/bi"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
@@ -383,35 +386,41 @@ export const ImageAdjustmentModal = ({
                 )}
 
                 {/* Image fit — only for components (e.g. InfoCards) whose
-                    layout lets the image either cover or letterbox its frame. */}
+                    layout lets the image either cover (Fill) or letterbox (Fit)
+                    its frame. Inline segmented toggle to keep the UI compact. */}
                 {hasImageFitControl && (
-                  <Box w="100%" flexShrink={0}>
-                    <Text textStyle="subhead-2" mb="0.5rem">
-                      Image fit
-                    </Text>
-                    <Radio.RadioGroup
-                      value={imageFit}
-                      onChange={(value: string) =>
-                        setImageFit(value as "cover" | "contain")
-                      }
-                    >
-                      {/* Inset so each option's full-width selection focus ring
-                          (a 2px outline at offset 0) isn't clipped by the
-                          scrolling editor column's left/right edges. */}
-                      <VStack align="stretch" spacing="0.5rem" px="0.25rem">
-                        <Radio value="cover">Default (recommended)</Radio>
-                        <Radio value="contain">Resize crop to fit</Radio>
-                      </VStack>
-                    </Radio.RadioGroup>
-                    <Text
-                      textStyle="body-2"
-                      color="base.content.medium"
-                      mt="0.5rem"
-                    >
-                      Select &quot;Resize crop to fit&quot; only if the image
-                      has a white background.
-                    </Text>
-                  </Box>
+                  <HStack w="100%" flexShrink={0} justify="space-between">
+                    <HStack spacing="0.25rem">
+                      <Text textStyle="subhead-2">Image fit</Text>
+                      <Tooltip
+                        label="Choose Fit only if the image has a white background."
+                        placement="top"
+                        hasArrow
+                      >
+                        <Icon
+                          as={BiInfoCircle}
+                          color="base.content.medium"
+                          aria-label="Image fit help"
+                        />
+                      </Tooltip>
+                    </HStack>
+                    <ButtonGroup isAttached size="xs" aria-label="Image fit">
+                      <Button
+                        variant={imageFit === "cover" ? "solid" : "outline"}
+                        aria-pressed={imageFit === "cover"}
+                        onClick={() => setImageFit("cover")}
+                      >
+                        Fill
+                      </Button>
+                      <Button
+                        variant={imageFit === "contain" ? "solid" : "outline"}
+                        aria-pressed={imageFit === "contain"}
+                        onClick={() => setImageFit("contain")}
+                      >
+                        Fit
+                      </Button>
+                    </ButtonGroup>
+                  </HStack>
                 )}
 
                 {/* Preserve-only note */}
