@@ -45,8 +45,12 @@ import {
   jsonFormsEnumControlTester,
   jsonFormsGroupLayoutRenderer,
   jsonFormsGroupLayoutTester,
+  JsonFormsHeroBlockImageControl,
+  jsonFormsHeroBlockImageControlTester,
   JsonFormsHiddenControl,
   jsonFormsHiddenControlTester,
+  JsonFormsIconPickerControl,
+  jsonFormsIconPickerControlTester,
   JsonFormsImageControl,
   jsonFormsImageControlTester,
   JsonFormsImageRadioControl,
@@ -172,6 +176,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     tester: jsonFormsImageRadioControlTester,
     renderer: JsonFormsImageRadioControl,
   },
+  {
+    tester: jsonFormsIconPickerControlTester,
+    renderer: JsonFormsIconPickerControl,
+  },
   { tester: jsonFormsImageControlTester, renderer: JsonFormsImageControl },
   { tester: jsonFormsLinkControlTester, renderer: JsonFormsLinkControl },
   { tester: jsonFormsEnumControlTester, renderer: JsonFormsEnumControl },
@@ -203,6 +211,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsChildrenPagesLayoutControlTester,
     renderer: JsonFormsChildrenPagesLayoutControl,
+  },
+  {
+    tester: jsonFormsHeroBlockImageControlTester,
+    renderer: JsonFormsHeroBlockImageControl,
   },
   {
     tester: jsonFormsMaxColumnsControlTester,

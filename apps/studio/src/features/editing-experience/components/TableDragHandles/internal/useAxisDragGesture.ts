@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react"
+import { moveTableColumnWithWidths } from "~/features/editing-experience/utils/columnWidths"
 
 import type { Rect, TableGeometry } from "./axisMath"
 import type { Axis } from "./axisView"
@@ -22,7 +23,8 @@ import { IDLE_GESTURE, reduceGesture } from "./dragMachine"
 import { viewportPointToContainerPoint } from "./measure"
 import {
   applyHeaderAxisNormalization,
-  shouldNormalizeHeaderAxis,
+  getHeaderAxisFlags,
+  shouldNormalizeHeaderTypesAfterDrag,
 } from "./normalizeHeaderAxis"
 import { selectWholeSlot } from "./selection"
 
@@ -76,13 +78,25 @@ export const useAxisDragGesture = ({
       }
       if (intent.type === "moveSlot") {
         const tableBefore = getTableAt(editor.state.doc, intent.tablePos)
+        const headerAxisFlags = tableBefore
+          ? getHeaderAxisFlags(tableBefore)
+          : null
         const normalize =
-          !!tableBefore && shouldNormalizeHeaderAxis(tableBefore, intent.axis)
-        const move = AXIS_TABLE_OPS[intent.axis].move({
-          from: intent.from,
-          to: intent.to,
-          pos: intent.tablePos + 1,
-        })
+          !!headerAxisFlags &&
+          shouldNormalizeHeaderTypesAfterDrag(intent.axis, headerAxisFlags)
+        const move =
+          intent.axis === "column"
+            ? moveTableColumnWithWidths({
+                from: intent.from,
+                to: intent.to,
+                pos: intent.tablePos + 1,
+                tablePos: intent.tablePos,
+              })
+            : AXIS_TABLE_OPS[intent.axis].move({
+                from: intent.from,
+                to: intent.to,
+                pos: intent.tablePos + 1,
+              })
         const { state, schema } = editor
         let transaction = state.tr
         const moved = move(state, (tr) => {
@@ -90,11 +104,11 @@ export const useAxisDragGesture = ({
           return true
         })
         if (!moved) return
-        if (normalize) {
+        if (normalize && headerAxisFlags) {
           transaction = applyHeaderAxisNormalization(
             transaction,
             intent.tablePos,
-            intent.axis,
+            headerAxisFlags,
             schema,
           )
         }

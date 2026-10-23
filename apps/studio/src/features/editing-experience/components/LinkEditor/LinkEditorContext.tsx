@@ -4,7 +4,8 @@ import type {
   LinkTypes,
 } from "~/features/editing-experience/components/LinkEditor/constants"
 import { createContext, useContext, useState } from "react"
-import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
+
+import { getLinkHrefType } from "./utils"
 
 type LinkEditorContextReturn = ReturnType<typeof useLinkEditorContext>
 const LinkEditorContext = createContext<LinkEditorContextReturn | undefined>(
@@ -23,7 +24,13 @@ const useLinkEditorContext = ({
   error,
   onChange,
 }: UseLinkEditorContextProps) => {
-  const [curType, setCurType] = useState<LinkTypes>(LINK_TYPES.Page)
+  const [curType, setCurType] = useState<LinkTypes>(() => {
+    const hrefType = getLinkHrefType(linkHref)
+    // Fall back to the first offered type, e.g. when Page is not offered
+    return hrefType in linkTypes
+      ? hrefType
+      : ((Object.keys(linkTypes)[0] as LinkTypes | undefined) ?? hrefType)
+  })
   const [curHref, setHref] = useState(linkHref)
 
   return {

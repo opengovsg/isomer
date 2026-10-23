@@ -3,6 +3,7 @@ import type { CreateNextContextOptions } from "@trpc/server/adapters/next"
 import { GrowthBook } from "@growthbook/growthbook"
 import { getIronSession } from "iron-session"
 import { env } from "~/env.mjs"
+import { createOfflineGrowthBook } from "~/lib/growthbookOffline"
 import { type Session, type SessionData } from "~/lib/types/session"
 import { type User } from "~prisma/generated/prisma/client"
 
@@ -52,6 +53,11 @@ export const createContext = async (opts: CreateNextContextOptions) => {
 }
 
 export const createGrowthBookContext = async () => {
+  // E2E and Vitest set NEXT_PUBLIC_APP_ENV=test.
+  if (env.NEXT_PUBLIC_APP_ENV === "test") {
+    return createOfflineGrowthBook()
+  }
+
   const growthbookContext = new GrowthBook({
     apiHost: "https://cdn.growthbook.io",
     clientKey: env.GROWTHBOOK_CLIENT_KEY,

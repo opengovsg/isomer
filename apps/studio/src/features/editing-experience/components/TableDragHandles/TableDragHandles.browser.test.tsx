@@ -16,6 +16,7 @@ import {
 import { theme } from "~/theme"
 
 import { ADD_PILL_ICON_SIZE_PX, ADD_PILL_RADIUS_PX } from "./internal/chrome"
+import { scrollTargetAffectsContainer } from "./internal/useTableGeometries"
 import { TableDragHandles } from "./TableDragHandles"
 
 const SEED_CONTENT: JSONContent = {
@@ -88,6 +89,87 @@ const renderHarness = async () => {
   return { ...utils, editor: editor! }
 }
 
+const TALL_CONTENT: JSONContent = {
+  type: "prose",
+  content: [
+    ...Array.from({ length: 12 }, (_, index) => ({
+      type: "paragraph",
+      content: [{ type: "text", text: `Spacer ${index}` }],
+    })),
+    ...(SEED_CONTENT.content ?? []),
+  ],
+}
+
+// 400px columns are wider than the 280px harness so the scrollport overflows.
+const WIDE_CONTENT: JSONContent = {
+  type: "prose",
+  content: [
+    {
+      ...SEED_CONTENT.content![0]!,
+      attrs: { caption: "Wide table", columnWidths: [400, 400, 400] },
+    },
+  ],
+}
+
+const ScrollHarness = ({
+  onReady,
+  content,
+  height,
+  width,
+}: {
+  onReady: (editor: Editor) => void
+  content: JSONContent
+  height?: number
+  width?: number
+}) => {
+  const editor = useTextEditor({ data: content, handleChange: () => null })
+  const containerRef = useRef<HTMLDivElement>(null)
+  if (editor) onReady(editor)
+  return (
+    <div
+      ref={containerRef}
+      data-testid="editor-scroll"
+      style={{
+        position: "relative",
+        height,
+        width,
+        overflowX: "hidden",
+        overflowY: height === undefined ? undefined : "auto",
+      }}
+    >
+      {editor && (
+        <TableDragHandles editor={editor} containerRef={containerRef} />
+      )}
+      {editor && <EditorContent editor={editor} />}
+    </div>
+  )
+}
+
+const renderScrollHarness = async (
+  props: Omit<Parameters<typeof ScrollHarness>[0], "onReady">,
+) => {
+  let editor: Editor | undefined
+  const utils = render(
+    <ThemeProvider theme={theme}>
+      <ScrollHarness {...props} onReady={(next) => (editor = next)} />
+    </ThemeProvider>,
+  )
+  await waitFor(() => {
+    if (!editor) throw new Error("editor not ready")
+  })
+  return { ...utils, editor: editor! }
+}
+
+const midY = (element: Element) => {
+  const rect = element.getBoundingClientRect()
+  return rect.top + rect.height / 2
+}
+
+const midX = (element: Element) => {
+  const rect = element.getBoundingClientRect()
+  return rect.left + rect.width / 2
+}
+
 const findByCellText = (container: HTMLElement, text: string): HTMLElement => {
   const cells = container.querySelectorAll("td, th")
   for (const cell of cells) {
@@ -127,6 +209,11 @@ const centreOf = (el: Element) => {
   return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
 }
 
+const nearTopLeft = (table: Element) => {
+  const rect = table.getBoundingClientRect()
+  return { x: rect.left + 8, y: rect.top + 8 }
+}
+
 const hoverAt = (x: number, y: number) => {
   act(() => {
     fireEvent.mouseMove(document, { clientX: x, clientY: y })
@@ -163,6 +250,67 @@ const waitForHandle = async (
     if (!handle) throw new Error(`${axis} handle ${index} not found`)
     return handle
   })
+
+const firstColumnCellTags = (container: HTMLElement): string[] => {
+  const table = container.querySelector("table")
+  if (!table) throw new Error("table not found")
+  return [...table.querySelectorAll("tr")].map(
+    (row) => row.cells[0]?.tagName.toLowerCase() ?? "",
+  )
+}
+
+const dragHandleTo = async ({
+  container,
+  axis,
+  index,
+  clientX,
+  clientY,
+}: {
+  container: HTMLElement
+  axis: "row" | "column"
+  index: number
+  clientX: number
+  clientY: number
+}) => {
+  const handle = await waitForHandle(container, axis, index)
+  const handleCentre = centreOf(handle)
+  act(() => {
+    fireEvent.mouseDown(handle, {
+      clientX: handleCentre.x,
+      clientY: handleCentre.y,
+    })
+    fireEvent.mouseMove(document, { clientX, clientY })
+    fireEvent.mouseUp(document, { clientX, clientY })
+  })
+}
+
+describe("scrollTargetAffectsContainer", () => {
+  it("includes the editor, a descendant, and an ancestor", () => {
+    // Arrange
+    const ancestor = document.createElement("div")
+    const container = document.createElement("div")
+    const child = document.createElement("div")
+    ancestor.append(container)
+    container.append(child)
+
+    // Act / Assert
+    expect(scrollTargetAffectsContainer(container, container)).toBe(true)
+    expect(scrollTargetAffectsContainer(child, container)).toBe(true)
+    expect(scrollTargetAffectsContainer(ancestor, container)).toBe(true)
+  })
+
+  it("ignores a scroller outside the editor", () => {
+    // Arrange
+    const parent = document.createElement("div")
+    const container = document.createElement("div")
+    const sibling = document.createElement("div")
+    parent.append(container, sibling)
+
+    // Act / Assert
+    expect(scrollTargetAffectsContainer(sibling, container)).toBe(false)
+    expect(scrollTargetAffectsContainer(null, container)).toBe(false)
+  })
+})
 
 describe("TableDragHandles", () => {
   it("shows a handle for every row and column without hovering", async () => {
@@ -633,6 +781,51 @@ describe("TableDragHandles", () => {
     })
   })
 
+  it("keeps header column cells as th after row and column drags", async () => {
+    // Arrange
+    const { editor, container } = await renderHarness()
+    selectCells(editor, 0, 9)
+    act(() => {
+      editor.chain().focus().toggleHeaderColumn().run()
+    })
+
+    // Act: drag the last body row above the row above it
+    const rowThreeCell = findByCellText(container, "Row 3, A")
+    const rowTwoCell = findByCellText(container, "Row 2, A")
+    const rowDropY =
+      centreOf(rowTwoCell).y - rowTwoCell.getBoundingClientRect().height / 2
+    await dragHandleTo({
+      container,
+      axis: "row",
+      index: 3,
+      clientX: centreOf(rowThreeCell).x,
+      clientY: rowDropY,
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(firstColumnCellTags(container)).toEqual(["th", "th", "th", "th"])
+    })
+
+    // Act: drag column C before column B
+    const columnCCell = findByCellText(container, "Column C")
+    const columnBCell = findByCellText(container, "Column B")
+    const columnDropX =
+      centreOf(columnBCell).x - columnBCell.getBoundingClientRect().width / 2
+    await dragHandleTo({
+      container,
+      axis: "column",
+      index: 2,
+      clientX: columnDropX,
+      clientY: centreOf(columnCCell).y,
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(firstColumnCellTags(container)).toEqual(["th", "th", "th", "th"])
+    })
+  })
+
   it("keeps the add-row pill under the table after a vertical merge", async () => {
     // Arrange
     // Merging the bottom two cells in column A makes column 0 of the last row
@@ -828,6 +1021,65 @@ describe("TableDragHandles", () => {
     })
   })
 
+  it("keeps row handles on their rows when the editor scrolls", async () => {
+    // Arrange
+    const { container } = await renderScrollHarness({
+      content: TALL_CONTENT,
+      height: 180,
+    })
+    const row = findByCellText(container, "Row 1, A").closest("tr")
+    const handle = await waitForHandle(container, "row", 1)
+    const scroller = container.querySelector("[data-testid=editor-scroll]")
+    if (!row || !(scroller instanceof HTMLElement)) {
+      throw new Error("scroll fixture not found")
+    }
+    await waitFor(() => {
+      expect(Math.abs(midY(handle) - midY(row))).toBeLessThanOrEqual(1)
+    })
+
+    // Act
+    act(() => {
+      scroller.scrollTop = 80
+    })
+
+    // Assert
+    expect(scroller.scrollTop).toBe(80)
+    await waitFor(() => {
+      expect(Math.abs(midY(handle) - midY(row))).toBeLessThanOrEqual(1)
+    })
+  })
+
+  it("keeps column handles on their columns when the table scrolls sideways", async () => {
+    // Arrange
+    const { container } = await renderScrollHarness({
+      content: WIDE_CONTENT,
+      width: 280,
+    })
+    const header = findByCellText(container, "Column A")
+    const handle = await waitForHandle(container, "column", 0)
+    const scrollport = container.querySelector("[data-table-scrollport]")
+    if (!(scrollport instanceof HTMLElement)) {
+      throw new Error("table scrollport not found")
+    }
+    await waitFor(() => {
+      expect(scrollport.scrollWidth).toBeGreaterThan(scrollport.clientWidth)
+      expect(Math.abs(midX(handle) - midX(header))).toBeLessThanOrEqual(1)
+    })
+    const headerLeft = header.getBoundingClientRect().left
+
+    // Act
+    act(() => {
+      scrollport.scrollLeft = 80
+    })
+
+    // Assert
+    expect(scrollport.scrollLeft).toBeGreaterThan(0)
+    expect(header.getBoundingClientRect().left).toBeLessThan(headerLeft - 40)
+    await waitFor(() => {
+      expect(Math.abs(midX(handle) - midX(header))).toBeLessThanOrEqual(1)
+    })
+  })
+
   it("remeasures handle position when the table is resized", async () => {
     // Arrange
     const { container } = await renderHarness()
@@ -849,6 +1101,333 @@ describe("TableDragHandles", () => {
           Math.abs(after.width - before.width),
       ).toBeGreaterThan(1)
     })
+  })
+
+  it("hides the select-table button until the pointer is over the table", async () => {
+    // Arrange / Act
+    const { queryByRole } = await renderHarness()
+
+    // Assert
+    expect(queryByRole("button", { name: "Select entire table" })).toBeNull()
+  })
+
+  it("pins the select-table button to the table's top-left corner while hovering there", async () => {
+    // Arrange
+    const { container, getByRole } = await renderHarness()
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const { x, y } = nearTopLeft(table)
+
+    // Act
+    const button = await hoverUntil(x, y, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+
+    // Assert
+    const buttonRect = button.getBoundingClientRect()
+    const tableRect = table.getBoundingClientRect()
+    expect(
+      Math.abs(buttonRect.left + buttonRect.width / 2 - tableRect.left),
+    ).toBeLessThan(2)
+    expect(
+      Math.abs(buttonRect.top + buttonRect.height / 2 - tableRect.top),
+    ).toBeLessThan(2)
+    expect(buttonRect.width).toBeGreaterThan(0)
+    expect(Math.abs(buttonRect.width - buttonRect.height)).toBeLessThan(1)
+    expect(
+      parseFloat(getComputedStyle(button).borderTopLeftRadius),
+    ).toBeGreaterThan(buttonRect.width / 2)
+    expect(getComputedStyle(button).backgroundColor).toBe("rgb(255, 255, 255)")
+    expect(button.getAttribute("data-emphasis")).toBe("ready")
+    expect(getComputedStyle(button).opacity).toBe("1")
+    const readyIcon = button.querySelector("svg")
+    expect(readyIcon && getComputedStyle(readyIcon).color).toBe(
+      "rgb(33, 100, 218)",
+    )
+  })
+
+  it("shows the select-table button in the gutter at the top-left corner", async () => {
+    // Arrange
+    const { container, getByRole } = await renderHarness()
+    await waitForHandle(container, "column", 0)
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const tableRect = table.getBoundingClientRect()
+
+    // Act
+    const button = await hoverUntil(tableRect.left - 4, tableRect.top - 4, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+
+    // Assert
+    expect(button).toBeVisible()
+  })
+
+  it("shows a quiet select-table button while the pointer is over the rest of the table", async () => {
+    // Arrange
+    const { container, getByLabelText, getByRole } = await renderHarness()
+    const cell = findByCellText(container, "Row 2, B")
+    const { x, y } = centreOf(cell)
+
+    // Act
+    await hoverUntil(x, y, () => getByLabelText("Add row below"))
+    const button = getByRole("button", { name: "Select entire table" })
+
+    // Assert
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const buttonRect = button.getBoundingClientRect()
+    const tableRect = table.getBoundingClientRect()
+    expect(
+      Math.abs(buttonRect.left + buttonRect.width / 2 - tableRect.left),
+    ).toBeLessThan(2)
+    expect(
+      Math.abs(buttonRect.top + buttonRect.height / 2 - tableRect.top),
+    ).toBeLessThan(2)
+    expect(button.getAttribute("data-emphasis")).toBe("quiet")
+    expect(getComputedStyle(button).opacity).toBe("1")
+    expect(getComputedStyle(button).boxShadow).not.toBe("none")
+    const quietIcon = button.querySelector("svg")
+    expect(quietIcon && getComputedStyle(quietIcon).color).toBe(
+      "rgb(160, 164, 173)",
+    )
+  })
+
+  it("selects every cell and hides the button after it is clicked", async () => {
+    // Arrange
+    const { editor, container, getByRole, getByLabelText, queryByRole } =
+      await renderHarness()
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const { x, y } = nearTopLeft(table)
+    const button = await hoverUntil(x, y, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+    const buttonCentre = centreOf(button)
+    hoverAt(buttonCentre.x, buttonCentre.y)
+
+    // Act
+    act(() => {
+      fireEvent.click(button)
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(queryByRole("button", { name: "Select entire table" })).toBeNull()
+    })
+    expect(getByLabelText("Add row below")).toBeVisible()
+    const cells = container.querySelectorAll("td, th")
+    expect(cells.length).toBe(12)
+    for (const selected of cells) {
+      expect(selected.classList.contains("selectedCell")).toBe(true)
+    }
+    expect(findByCellText(container, "Column A").className).toContain(
+      "selectedCell-border-top",
+    )
+    expect(findByCellText(container, "Column A").className).toContain(
+      "selectedCell-border-left",
+    )
+    expect(findByCellText(container, "Row 3, C").className).toContain(
+      "selectedCell-border-bottom",
+    )
+    expect(findByCellText(container, "Row 3, C").className).toContain(
+      "selectedCell-border-right",
+    )
+    const selection = editor.state.selection
+    expect(selection).toBeInstanceOf(CellSelection)
+    if (!(selection instanceof CellSelection)) {
+      throw new Error("expected a cell selection")
+    }
+    expect(selection.isRowSelection()).toBe(true)
+    expect(selection.isColSelection()).toBe(true)
+    expect(getCellText(editor)).toHaveLength(12)
+  })
+
+  it("selects the whole table when the bottom-right cell is merged vertically", async () => {
+    // Arrange
+    const { editor, container, getByRole } = await renderHarness()
+    selectCells(editor, 8, 11)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const { x, y } = nearTopLeft(table)
+    const button = await hoverUntil(x, y, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+
+    // Act
+    act(() => {
+      fireEvent.click(button)
+    })
+
+    // Assert
+    const cells = container.querySelectorAll("td, th")
+    expect(cells.length).toBe(11)
+    for (const selected of cells) {
+      expect(selected.classList.contains("selectedCell")).toBe(true)
+    }
+    const selection = editor.state.selection
+    expect(selection).toBeInstanceOf(CellSelection)
+    if (!(selection instanceof CellSelection)) {
+      throw new Error("expected a cell selection")
+    }
+    expect(selection.isRowSelection()).toBe(true)
+    expect(selection.isColSelection()).toBe(true)
+    expect(getCellText(editor)).toHaveLength(11)
+  })
+
+  it("selects the whole table when the top-left cell is merged vertically", async () => {
+    // Arrange
+    const { editor, container, getByRole } = await renderHarness()
+    selectCells(editor, 0, 3)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const { x, y } = nearTopLeft(table)
+    const button = await hoverUntil(x, y, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+
+    // Act
+    act(() => {
+      fireEvent.click(button)
+    })
+
+    // Assert
+    const cells = container.querySelectorAll("td, th")
+    expect(cells.length).toBe(11)
+    for (const selected of cells) {
+      expect(selected.classList.contains("selectedCell")).toBe(true)
+    }
+    const selection = editor.state.selection
+    expect(selection).toBeInstanceOf(CellSelection)
+    if (!(selection instanceof CellSelection)) {
+      throw new Error("expected a cell selection")
+    }
+    expect(selection.isRowSelection()).toBe(true)
+    expect(selection.isColSelection()).toBe(true)
+    expect(getCellText(editor)).toHaveLength(11)
+  })
+
+  it("shows the select-table button again after the pointer leaves and returns", async () => {
+    // Arrange
+    const { container, getByRole, queryByRole } = await renderHarness()
+    const table = container.querySelector("table")
+    if (!table) throw new Error("table not found")
+    const { x, y } = nearTopLeft(table)
+    const button = await hoverUntil(x, y, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+    act(() => {
+      fireEvent.click(button)
+    })
+    await waitFor(() => {
+      expect(queryByRole("button", { name: "Select entire table" })).toBeNull()
+    })
+    const tableRect = table.getBoundingClientRect()
+
+    // Act. Retry the move. useHoveredTable drops a mousemove while a frame is pending.
+    await waitFor(() => {
+      hoverAt(tableRect.left + tableRect.width / 2, tableRect.bottom + 80)
+      expect(queryByRole("button", { name: "Add row below" })).toBeNull()
+    })
+    const returned = await hoverUntil(x, y, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+
+    // Assert
+    expect(returned).toBeVisible()
+  })
+
+  it("clears select-table hover chrome when the container scrolls without a pointer move", async () => {
+    // Arrange
+    let editor: Editor | undefined
+    const ScrollHarness = () => {
+      const tipTap = useTextEditor({
+        data: SEED_CONTENT,
+        handleChange: () => null,
+      })
+      const containerRef = useRef<HTMLDivElement>(null)
+      if (tipTap) editor = tipTap
+      return (
+        <div
+          data-testid="scroll-root"
+          ref={containerRef}
+          style={{ position: "relative", height: 240, overflow: "auto" }}
+        >
+          <div style={{ height: 320 }} />
+          {tipTap && (
+            <TableDragHandles editor={tipTap} containerRef={containerRef} />
+          )}
+          {tipTap && <EditorContent editor={tipTap} />}
+        </div>
+      )
+    }
+    const { getByRole, getByTestId, queryByRole } = render(
+      <ThemeProvider theme={theme}>
+        <ScrollHarness />
+      </ThemeProvider>,
+    )
+    await waitFor(() => {
+      if (!editor) throw new Error("editor not ready")
+    })
+    const scrollRoot = getByTestId("scroll-root")
+    const table = scrollRoot.querySelector("table")
+    if (!table) throw new Error("table not found")
+    act(() => {
+      scrollRoot.scrollTop = table.offsetTop - 8
+    })
+    const { x, y } = nearTopLeft(table)
+    await hoverUntil(x, y, () =>
+      getByRole("button", { name: "Select entire table" }),
+    )
+
+    // Act
+    act(() => {
+      scrollRoot.scrollTop += 200
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(queryByRole("button", { name: "Select entire table" })).toBeNull()
+    })
+  })
+
+  it("moves the add-column pill in the same frame the table resizes", async () => {
+    // Arrange
+    const { container, getByLabelText } = await renderHarness()
+    const cell = findByCellText(container, "Row 1, C")
+    const { x, y } = centreOf(cell)
+    await hoverUntil(x, y, () => getByLabelText("Add column to the right"))
+    const table = container.querySelector("table")
+    const scrollport = container.querySelector("[data-table-scrollport]")
+    if (!table || !scrollport) throw new Error("table not found")
+    // Observers fire in creation order, so this one runs after the
+    // component's remeasure and before the browser paints.
+    const gaps: number[] = []
+    const observer = new ResizeObserver(() => {
+      const tableRight = Math.min(
+        table.getBoundingClientRect().right,
+        scrollport.getBoundingClientRect().right,
+      )
+      const pill = getByLabelText("Add column to the right")
+      gaps.push(pill.getBoundingClientRect().left - tableRight)
+    })
+    observer.observe(table)
+    await waitFor(() => expect(gaps).toHaveLength(1))
+    gaps.length = 0
+
+    // Act
+    table.style.width = `${table.getBoundingClientRect().width + 40}px`
+    await waitFor(() => expect(gaps).toHaveLength(1))
+    observer.disconnect()
+
+    // Assert
+    expect(gaps[0]).toBeCloseTo(TABLE_CHROME_GAP_PX, 0)
   })
 
   it("updates drop targets when the table resizes during a drag", async () => {

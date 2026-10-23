@@ -1,6 +1,10 @@
 import { z } from "zod"
 
-import { generateBasePermalinkSchema } from "./common"
+import {
+  generateBasePermalinkSchema,
+  NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
+  noStylizedUnicodeTitleRegex,
+} from "./common"
 import { offsetPaginationSchema } from "./pagination"
 
 export const MAX_FOLDER_TITLE_LENGTH = 250
@@ -9,17 +13,20 @@ export const MAX_FOLDER_TITLE_LENGTH = 250
 export const MAX_FOLDER_PERMALINK_LENGTH = 250
 
 const permalinkSchema = generateBasePermalinkSchema("folder")
-  .min(1, { message: "Enter a URL for this folder" })
+  .min(1, { error: "Enter a URL for this folder" })
   .max(MAX_FOLDER_PERMALINK_LENGTH, {
-    message: `Folder URL should be shorter than ${MAX_FOLDER_PERMALINK_LENGTH} characters.`,
+    error: `Folder URL should be shorter than ${MAX_FOLDER_PERMALINK_LENGTH} characters.`,
   })
 
 export const createFolderSchema = z.object({
   folderTitle: z
     .string()
-    .min(1, { message: "Enter a title for this folder" })
+    .min(1, { error: "Enter a title for this folder" })
     .max(MAX_FOLDER_TITLE_LENGTH, {
-      message: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
+      error: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
+    })
+    .regex(noStylizedUnicodeTitleRegex, {
+      error: NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
     }),
   permalink: permalinkSchema,
   siteId: z.number().min(1),
@@ -32,7 +39,7 @@ export const readFolderSchema = z
     siteId: z.number().min(1),
     resourceId: z.number().min(1),
   })
-  .merge(offsetPaginationSchema)
+  .extend(offsetPaginationSchema.shape)
 
 const baseFolderSchema = z.object({
   resourceId: z.string(),
@@ -43,9 +50,12 @@ export const baseEditFolderSchema = baseFolderSchema.extend({
   permalink: permalinkSchema,
   title: z
     .string()
-    .min(1, { message: "Enter a title for this folder" })
+    .min(1, { error: "Enter a title for this folder" })
     .max(MAX_FOLDER_TITLE_LENGTH, {
-      message: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
+      error: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
+    })
+    .regex(noStylizedUnicodeTitleRegex, {
+      error: NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
     }),
   // When the permalink changes, preserve the old URLs of everything under this
   // folder with a wildcard redirect. Defaults true (matches the move flow); the

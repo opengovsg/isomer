@@ -1,0 +1,157 @@
+import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
+import type { SupportedIconName } from "@opengovsg/isomer-components"
+import { Box, chakra, FormControl, Grid, Icon } from "@chakra-ui/react"
+import { rankWith, schemaMatches } from "@jsonforms/core"
+import { withJsonFormsControlProps } from "@jsonforms/react"
+import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
+import {
+  ICON_PICKER_FORMAT,
+  SUPPORTED_ICONS_MAP,
+} from "@opengovsg/isomer-components"
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
+import { getCustomErrorMessage } from "./utils"
+
+// Two rows of icons in the picker; column count sets the grid width.
+const ICON_PICKER_COLUMNS = 9
+
+export const jsonFormsIconPickerControlTester: RankedTester = rankWith(
+  JSON_FORMS_RANKING.IconPickerControl,
+  schemaMatches((schema) => schema.format === ICON_PICKER_FORMAT),
+)
+
+const isSupportedIconName = (value: unknown): value is SupportedIconName =>
+  typeof value === "string" && value in SUPPORTED_ICONS_MAP
+
+// The icon field is a union of string literals, which TypeBox emits as
+// `anyOf: [{ const }]`. Fall back to `oneOf`/`enum` so the picker keeps
+// working if the schema shape changes.
+export const getIconPickerOptions = (
+  schema: JsonSchema,
+): SupportedIconName[] => {
+  const literalSchemas = schema.anyOf ?? schema.oneOf
+  const candidates: unknown[] = literalSchemas
+    ? literalSchemas.map((literal) => literal.const as unknown)
+    : (schema.enum ?? [])
+
+  return candidates.filter(isSupportedIconName)
+}
+
+interface IconPickerButtonProps {
+  value: SupportedIconName
+  isSelected: boolean
+  isDisabled: boolean
+  onClick: () => void
+}
+
+const IconPickerButton = ({
+  value,
+  isSelected,
+  isDisabled,
+  onClick,
+}: IconPickerButtonProps) => {
+  const IconComponent = SUPPORTED_ICONS_MAP[value]
+
+  return (
+    <chakra.button
+      type="button"
+      disabled={isDisabled}
+      onClick={onClick}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      minW={0}
+      w="100%"
+      sx={{ aspectRatio: "1 / 1" }}
+      borderRadius="4px"
+      borderWidth="1.5px"
+      borderStyle="solid"
+      borderColor={
+        isSelected ? "interaction.main.default" : "base.divider.medium"
+      }
+      bg={isSelected ? "interaction.muted.main.active" : "white"}
+      color={isSelected ? "base.content.brand" : "base.content.default"}
+      cursor="pointer"
+      transitionProperty="common"
+      transitionDuration="normal"
+      _hover={{
+        borderColor: isSelected
+          ? "interaction.main.default"
+          : "interaction.main-subtle.hover",
+        bg: isSelected
+          ? "interaction.muted.main.active"
+          : "interaction.muted.main.hover",
+      }}
+      _focusVisible={{
+        outline: "none",
+        borderColor: "utility.focus-default",
+        boxShadow: "0 0 0 1px var(--chakra-colors-utility-focus-default)",
+      }}
+      _disabled={{
+        cursor: "not-allowed",
+        opacity: 0.5,
+        _hover: {
+          borderColor: isSelected
+            ? "interaction.main.default"
+            : "base.divider.medium",
+          bg: isSelected ? "interaction.muted.main.active" : "white",
+        },
+      }}
+    >
+      <Icon as={IconComponent} boxSize="1.25rem" aria-hidden />
+    </chakra.button>
+  )
+}
+
+function JsonFormsIconPickerControl({
+  data,
+  label,
+  description,
+  required,
+  errors,
+  path,
+  schema,
+  enabled,
+  handleChange,
+}: ControlProps): JSX.Element {
+  const options = getIconPickerOptions(schema)
+  const columns = ICON_PICKER_COLUMNS
+
+  return (
+    <Box>
+      <FormControl isRequired={required} isInvalid={!!errors} gap="0.5rem">
+        <FormLabel description={description}>{label}</FormLabel>
+        <Grid
+          role="group"
+          templateColumns={`repeat(${columns}, minmax(0, 2.5rem))`}
+          gap="0.5rem"
+        >
+          {options.map((value) => {
+            const isSelected = data === value
+
+            return (
+              <IconPickerButton
+                key={value}
+                value={value}
+                isSelected={isSelected}
+                isDisabled={!enabled}
+                onClick={() => {
+                  if (isSelected && !required) {
+                    handleChange(path, undefined)
+                    return
+                  }
+                  handleChange(path, value)
+                }}
+              />
+            )
+          })}
+        </Grid>
+        <FormErrorMessage>
+          {label} {getCustomErrorMessage(errors)}
+        </FormErrorMessage>
+      </FormControl>
+    </Box>
+  )
+}
+
+export default withJsonFormsControlProps(JsonFormsIconPickerControl)

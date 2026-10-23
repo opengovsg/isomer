@@ -426,7 +426,8 @@ describe("TableBubbleMenu", () => {
 
   it("shows Merge cells for a full row selection", async () => {
     // Arrange
-    const { editor, findByText, findByRole } = await renderHarness()
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
     selectCells(editor, 3, 5) // first body row: cells 3-5
 
     // Act
@@ -435,11 +436,55 @@ describe("TableBubbleMenu", () => {
     // Assert
     expect(await findByText("Delete row")).toBeTruthy()
     expect(await findByText("Merge cells")).toBeTruthy()
+    expect(queryByText("Split cell")).toBeNull()
+  })
+
+  it("hides Merge cells and refuses the command for two full rows", async () => {
+    // Arrange
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
+    selectCells(editor, 3, 8)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+    let merged = false
+    act(() => {
+      merged = editor.chain().focus().mergeCells().run()
+    })
+
+    // Assert
+    expect(await findByText("Delete row")).toBeTruthy()
+    expect(queryByText("Merge cells")).toBeNull()
+    expect(merged).toBe(false)
+    expect(rowCellCount(editor, 1)).toBe(3)
+    expect(rowCellCount(editor, 2)).toBe(3)
+  })
+
+  it("hides Merge cells and refuses the command for two full columns", async () => {
+    // Arrange
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
+    selectCells(editor, 0, 7)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+    let merged = false
+    act(() => {
+      merged = editor.chain().focus().mergeCells().run()
+    })
+
+    // Assert
+    expect(await findByText("Delete column")).toBeTruthy()
+    expect(queryByText("Merge cells")).toBeNull()
+    expect(merged).toBe(false)
+    expect(tableColumnCount(editor)).toBe(3)
+    expect(rowCellCount(editor, 0)).toBe(3)
   })
 
   it("shows Merge cells for a full column selection", async () => {
     // Arrange
-    const { editor, findByText, findByRole } = await renderHarness()
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
     selectCells(editor, 1, 7) // column B (header + both body rows)
 
     // Act
@@ -448,6 +493,92 @@ describe("TableBubbleMenu", () => {
     // Assert
     expect(await findByText("Delete column")).toBeTruthy()
     expect(await findByText("Merge cells")).toBeTruthy()
+    expect(queryByText("Split cell")).toBeNull()
+  })
+
+  it("splits a cell created by merging a full row", async () => {
+    // Arrange
+    const { editor, findByText, findByRole } = await renderHarness()
+    selectCells(editor, 3, 5)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    expect(rowCellCount(editor, 1)).toBe(1)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+    const split = await findByText("Split cell")
+    expect(await findByText("Delete row")).toBeTruthy()
+    act(() => {
+      split.click()
+    })
+
+    // Assert
+    expect(rowCellCount(editor, 1)).toBe(3)
+  })
+
+  it("splits a cell created by merging a full column", async () => {
+    // Arrange
+    const { editor, findByText, findByRole } = await renderHarness()
+    selectCells(editor, 1, 7)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    expect(rowCellCount(editor, 1)).toBe(2)
+    expect(rowCellCount(editor, 2)).toBe(2)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+    const split = await findByText("Split cell")
+    expect(await findByText("Delete column")).toBeTruthy()
+    act(() => {
+      split.click()
+    })
+
+    // Assert
+    expect(rowCellCount(editor, 0)).toBe(3)
+    expect(rowCellCount(editor, 1)).toBe(3)
+    expect(rowCellCount(editor, 2)).toBe(3)
+  })
+
+  it("splits a cell created by merging the only row of a table", async () => {
+    // Arrange: 1×2 table; full selection is kind "table", not "row"
+    const { editor, findByText, findByRole } = await renderHarness({
+      type: "prose",
+      content: [
+        {
+          type: "table",
+          attrs: { caption: "One row" },
+          content: [
+            {
+              type: "tableRow",
+              content: ["A", "B"].map((text) => ({
+                type: "tableCell",
+                content: [
+                  { type: "paragraph", content: [{ type: "text", text }] },
+                ],
+              })),
+            },
+          ],
+        },
+      ],
+    })
+    selectCells(editor, 0, 1)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    expect(rowCellCount(editor, 0)).toBe(1)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+    const split = await findByText("Split cell")
+    expect(await findByText("Delete table")).toBeTruthy()
+    act(() => {
+      split.click()
+    })
+
+    // Assert
+    expect(rowCellCount(editor, 0)).toBe(2)
   })
 
   it("shows Header row/column only for the exact top row / leftmost column", async () => {
@@ -922,6 +1053,26 @@ describe("TableBubbleMenu", () => {
     expect(tableColumnCount(editor)).toBe(3)
     expect(rowTextsAt(editor, 1)).toEqual(["", "", "Row 1, C"])
     expect(rowTextsAt(editor, 2)).toEqual(["", "", "Row 2, C"])
+  })
+
+  it("offers Reset column width in the menu after column widths are edited", async () => {
+    // Arrange
+    const { editor, findByText, findByRole } = await renderHarness({
+      type: "prose",
+      content: [
+        {
+          ...SEED_TABLE,
+          attrs: { caption: "Test table", columnWidths: [120, 160, 200] },
+        },
+      ],
+    })
+    selectCells(editor, 0, 0)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+
+    // Assert
+    expect(await findByText("Reset column width")).toBeTruthy()
   })
 
   it("shows Clear contents and Delete table for a whole-table selection", async () => {
@@ -1439,11 +1590,11 @@ describe("TableBubbleMenu", () => {
       return (
         <div
           data-testid="scroll-parent"
-          style={{ height: "80px", overflowY: "auto" }}
+          style={{ height: "360px", overflowY: "auto" }}
         >
-          <div style={{ height: "600px" }} />
           {e && <TableBubbleMenu editor={e} />}
           {e && <EditorContent editor={e} />}
+          <div style={{ height: "800px" }} />
         </div>
       )
     }
@@ -1476,15 +1627,73 @@ describe("TableBubbleMenu", () => {
       '[data-testid="scroll-parent"]',
     ) as HTMLElement
 
-    // Act
+    // Act: scroll while the selection corner is still inside the editor.
     act(() => {
-      scrollParent.scrollTop = 300
+      scrollParent.scrollTop = 40
       scrollParent.dispatchEvent(new Event("scroll"))
     })
 
     // Assert
     await waitFor(() => {
+      expect(getComputedStyle(menuEl!).visibility).toBe("visible")
       expect(menuEl?.getBoundingClientRect().top).not.toBe(initialTop)
+    })
+  })
+
+  it("hides the pencil when the selection corner leaves the editor viewport", async () => {
+    // Arrange: the table starts inside a scrollable editor, with room to
+    // scroll the highlighted cells out of that viewport.
+    let editor: Editor | undefined
+
+    const ScrollingHarness = () => {
+      const e = useTextEditor({ data: SEED_CONTENT, handleChange: () => null })
+      useEffect(() => {
+        if (e) editor = e
+      }, [e])
+      return (
+        <div
+          data-testid="scroll-parent"
+          style={{ height: "360px", overflowY: "auto" }}
+        >
+          {e && <TableBubbleMenu editor={e} />}
+          {e && <EditorContent editor={e} />}
+          <div style={{ height: "800px" }} />
+        </div>
+      )
+    }
+
+    const { findByRole, container } = render(
+      <ThemeProvider theme={theme}>
+        <ScrollingHarness />
+      </ThemeProvider>,
+    )
+    await waitFor(() => {
+      if (!editor) throw new Error("editor not ready")
+    })
+    const readyEditor = editor!
+
+    selectCells(readyEditor, 3, 5)
+    const trigger = await findByRole("button", { name: "Table actions" })
+    const scrollParent = container.querySelector(
+      '[data-testid="scroll-parent"]',
+    ) as HTMLElement
+    const cell = readyEditor.view.nodeDOM(nthCellPos(readyEditor, 5))
+    if (!(cell instanceof HTMLElement)) throw new Error("cell missing")
+
+    // Act: scroll until the selection's bottom-right corner is above the editor.
+    act(() => {
+      const cellRect = cell.getBoundingClientRect()
+      const parentRect = scrollParent.getBoundingClientRect()
+      scrollParent.scrollTop += cellRect.bottom - parentRect.top + 8
+      scrollParent.dispatchEvent(new Event("scroll"))
+    })
+
+    // Assert
+    await waitFor(() => {
+      const cellRect = cell.getBoundingClientRect()
+      const parentRect = scrollParent.getBoundingClientRect()
+      expect(cellRect.bottom).toBeLessThan(parentRect.top)
+      expect(getComputedStyle(trigger).visibility).toBe("hidden")
     })
   })
 

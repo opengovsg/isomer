@@ -9,13 +9,20 @@ import { OrderedList } from "../OrderedList"
 import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
 import { resolveTableLayout } from "./resolveTableLayout"
-import { normalizeColspan, normalizeRowspan } from "./tableLayoutLimits"
+import {
+  normalizeColspan,
+  normalizeRowspan,
+  rowCells,
+} from "./tableLayoutLimits"
 
 const tableStyles = tv({
   base: "w-full border-collapse border-spacing-0 border border-base-divider-medium",
   variants: {
     isFixedLayout: {
       true: "table-fixed",
+    },
+    authorWidth: {
+      true: "w-auto",
     },
   },
 })
@@ -27,12 +34,20 @@ const tableCellStyles = tv({
       true: "bg-base-canvas-backdrop [&_ol]:prose-label-md-bold [&_p]:prose-label-md-bold [&_ul]:prose-label-md-bold",
       false: "bg-base-canvas-alt [&_ol]:prose-body-sm [&_p]:prose-body-sm",
     },
+    authorWidth: {
+      true: "max-w-none",
+    },
   },
 })
 
-export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
+export const Table = ({
+  attrs: { caption, columnWidths },
+  content,
+  site,
+}: TableProps) => {
   const tableDescriptionId = useId()
-  const layout = resolveTableLayout(content)
+  const layout = resolveTableLayout(content, columnWidths)
+  const authorWidth = layout.kind === "author"
 
   return (
     <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
@@ -43,10 +58,16 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
       />
       <div className="overflow-x-auto" tabIndex={0}>
         <table
-          className={tableStyles({ isFixedLayout: layout.kind === "fixed" })}
+          className={tableStyles({
+            isFixedLayout: layout.kind !== "auto",
+            authorWidth,
+          })}
           aria-describedby={tableDescriptionId}
+          style={
+            layout.kind === "author" ? { width: layout.tableWidth } : undefined
+          }
         >
-          {layout.kind === "fixed" && (
+          {layout.kind !== "auto" && (
             <colgroup>
               {layout.columnWidths.map((width, index) => (
                 <col key={index} style={{ width }} />
@@ -56,7 +77,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
           <tbody>
             {content.map((row, index) => (
               <tr key={index} className="text-left">
-                {row.content.map((cell, cellIndex) => {
+                {rowCells(row).map((cell, cellIndex) => {
                   const isHeader = cell.type === "tableHeader"
                   const CellTag = isHeader ? "th" : "td"
                   const backgroundColor = getTableCellBackgroundColorCss(
@@ -68,7 +89,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                       key={cellIndex}
                       colSpan={normalizeColspan(cell.attrs?.colspan)}
                       rowSpan={normalizeRowspan(cell.attrs?.rowspan)}
-                      className={tableCellStyles({ isHeader })}
+                      className={tableCellStyles({ isHeader, authorWidth })}
                       style={backgroundColor ? { backgroundColor } : undefined}
                     >
                       {cell.content.map((cellContent, index) => {

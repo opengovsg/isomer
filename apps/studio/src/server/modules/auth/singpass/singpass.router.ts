@@ -11,7 +11,11 @@ import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import { logUserEvent } from "../../audit/audit.service"
 import { recordUserLogin } from "../auth.service"
-import { generateSessionOptions } from "../session"
+import {
+  clearSessionData,
+  generateSessionOptions,
+  SINGPASS_COMPLETED_SESSION_TTL_HOURS,
+} from "../session"
 import { getAuthorizationUrl, login } from "./singpass.service"
 
 export const singpassRouter = router({
@@ -38,8 +42,8 @@ export const singpassRouter = router({
 
       const { authorizationUrl, session } = await getAuthorizationUrl()
 
-      // Reset session state
-      ctx.session.destroy()
+      // Reset session state without destroy() — iron-session v9 treats destroy as terminal.
+      clearSessionData(ctx.session)
 
       set(ctx.session, "singpass.sessionState", {
         ...session,
@@ -193,9 +197,13 @@ export const singpassRouter = router({
         })
       })
 
-      ctx.session.destroy()
+      clearSessionData(ctx.session)
       ctx.session.userId = verifiedUserId
-      ctx.session.updateConfig(generateSessionOptions({ ttlInHours: 12 }))
+      ctx.session.updateConfig(
+        generateSessionOptions({
+          ttlInHours: SINGPASS_COMPLETED_SESSION_TTL_HOURS,
+        }),
+      )
       await ctx.session.save()
 
       return {

@@ -2,11 +2,16 @@ import type { Static } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { TABLE_CELL_BACKGROUND_COLOR_TOKENS } from "~/constants/tableCellBackgroundColor"
+import {
+  TABLE_COLUMN_MAX_WIDTH_PX,
+  TABLE_COLUMN_MIN_WIDTH_PX,
+} from "~/constants/tableColumnWidth"
 
 import type { DividerProps } from "./Divider"
 import type { OrderedListProps } from "./OrderedList"
 import type { ParagraphProps } from "./Paragraph"
 import type { UnorderedListProps } from "./UnorderedList"
+import { IsomerString } from "../primitives/IsomerString"
 import { OrderedListSchema } from "./OrderedList"
 import { ParagraphSchema } from "./Paragraph"
 import { UnorderedListSchema } from "./UnorderedList"
@@ -119,10 +124,25 @@ export const TableSchema = Type.Object(
   {
     type: Type.Literal("table", { default: "table" }),
     attrs: Type.Object({
-      caption: Type.String({
+      caption: IsomerString({
         title: "Table caption",
         description: "The caption of the table",
       }),
+      columnWidths: Type.Optional(
+        Type.Union(
+          [
+            Type.Null(),
+            Type.Array(Type.Integer(), {
+              title: "Column widths",
+              description: `Whole-pixel width of each column, in order. Omitted, null, a length that does not match the column count, or a non-numeric entry means automatic layout. Rendered widths are clamped to ${TABLE_COLUMN_MIN_WIDTH_PX}-${TABLE_COLUMN_MAX_WIDTH_PX}px.`,
+            }),
+          ],
+          {
+            description:
+              "Omitted or invalid data means automatic column layout.",
+          },
+        ),
+      ),
     }),
     content: Type.Array(
       Type.Union([TableHeaderRowSchema, TableContentRowSchema]),

@@ -369,7 +369,52 @@ export const Default: Story = {
               content: [
                 {
                   type: "text",
-                  text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+                  text: "As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to ",
+                },
+                {
+                  type: "text",
+                  text: "New Idea Scheme Proposal",
+                  marks: [{ type: "link", attrs: { href: "/faq" } }],
+                },
+                {
+                  type: "text",
+                  text: " while it is being updated.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        type: "callout",
+        variant: "urgent",
+        content: {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Applications close on 31 December 2024. Submissions received after this date will not be considered.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        type: "callout",
+        variant: "information",
+        content: {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Processing of proposals typically takes 6 to 8 weeks. You will be notified of the outcome via email.",
                 },
               ],
             },
@@ -686,7 +731,15 @@ export const Default: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://www.asean.org/asean/asean-agreements-on-investment/'>EN download (3.2 MB)</a>",
+                            text: "EN download (3.2 MB)",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: {
+                                  href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                                },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -709,7 +762,23 @@ export const Default: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "The ASEAN IGA was terminated when <a href='https://www.asean.org/asean/asean-agreements-on-investment/'>ACIA</a> entered into force on 29 Mar 2012.",
+                            text: "The ASEAN IGA was terminated when ",
+                          },
+                          {
+                            type: "text",
+                            text: "ACIA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: {
+                                  href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                                },
+                              },
+                            ],
+                          },
+                          {
+                            type: "text",
+                            text: " entered into force on 29 Mar 2012.",
                           },
                         ],
                       },
@@ -733,7 +802,13 @@ export const Default: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>AANZFTA</a>",
+                                    text: "AANZFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -747,7 +822,13 @@ export const Default: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>ACFTA</a>",
+                                    text: "ACFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -761,7 +842,13 @@ export const Default: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>AKFTA</a>",
+                                    text: "AKFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -775,7 +862,13 @@ export const Default: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>AIFTA</a>",
+                                    text: "AIFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -816,7 +909,13 @@ export const Default: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                            text: "EN download (2.4 MB)",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com/" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -839,7 +938,23 @@ export const Default: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "The ASEAN IGA was terminated when <a href='https://www.asean.org/asean/asean-agreements-on-investment/'>ACIA</a> entered into force on 29 Mar 2012.",
+                            text: "The ASEAN IGA was terminated when ",
+                          },
+                          {
+                            type: "text",
+                            text: "ACIA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: {
+                                  href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                                },
+                              },
+                            ],
+                          },
+                          {
+                            type: "text",
+                            text: " entered into force on 29 Mar 2012.",
                           },
                         ],
                       },
@@ -863,7 +978,13 @@ export const Default: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>AANZFTA</a>",
+                                    text: "AANZFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -877,7 +998,13 @@ export const Default: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>ACFTA</a>",
+                                    text: "ACFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -891,7 +1018,13 @@ export const Default: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>AKFTA</a>",
+                                    text: "AKFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -905,7 +1038,13 @@ export const Default: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>AIFTA</a>",
+                                    text: "AIFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -946,7 +1085,13 @@ export const Default: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                            text: "EN download (2.4 MB)",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com/" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -1001,7 +1146,13 @@ export const Default: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                            text: "EN download (2.4 MB)",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com/" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -1058,7 +1209,13 @@ export const Default: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                            text: "EN download (2.4 MB)",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com/" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -1352,8 +1509,15 @@ export const Default: Story = {
               content: [
                 {
                   type: "text",
-                  marks: [],
-                  text: "<a href='https://www.traffic.org/news/singapore-rhino-horn-smuggler-24/'>Singapore court gets tough on rhino horn smuggler</a>",
+                  marks: [
+                    {
+                      type: "link",
+                      attrs: {
+                        href: "https://www.traffic.org/news/singapore-rhino-horn-smuggler-24/",
+                      },
+                    },
+                  ],
+                  text: "Singapore court gets tough on rhino horn smuggler",
                 },
               ],
             },
@@ -1987,7 +2151,16 @@ export const Image: Story = {
               content: [
                 {
                   type: "text",
-                  text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+                  text: "As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to ",
+                },
+                {
+                  type: "text",
+                  text: "New Idea Scheme Proposal",
+                  marks: [{ type: "link", attrs: { href: "/faq" } }],
+                },
+                {
+                  type: "text",
+                  text: " while it is being updated.",
                 },
               ],
             },
@@ -2304,7 +2477,15 @@ export const Image: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://www.asean.org/asean/asean-agreements-on-investment/'>EN download (3.2 MB)</a>",
+                            text: "EN download (3.2 MB)",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: {
+                                  href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                                },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -2327,7 +2508,23 @@ export const Image: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "The ASEAN IGA was terminated when <a href='https://www.asean.org/asean/asean-agreements-on-investment/'>ACIA</a> entered into force on 29 Mar 2012.",
+                            text: "The ASEAN IGA was terminated when ",
+                          },
+                          {
+                            type: "text",
+                            text: "ACIA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: {
+                                  href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                                },
+                              },
+                            ],
+                          },
+                          {
+                            type: "text",
+                            text: " entered into force on 29 Mar 2012.",
                           },
                         ],
                       },
@@ -2351,7 +2548,13 @@ export const Image: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>AANZFTA</a>",
+                                    text: "AANZFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -2365,7 +2568,13 @@ export const Image: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>ACFTA</a>",
+                                    text: "ACFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -2379,7 +2588,13 @@ export const Image: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>AKFTA</a>",
+                                    text: "AKFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -2393,7 +2608,13 @@ export const Image: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>AIFTA</a>",
+                                    text: "AIFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -2434,7 +2655,13 @@ export const Image: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                            text: "EN download (2.4 MB)",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com/" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -2457,7 +2684,23 @@ export const Image: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "The ASEAN IGA was terminated when <a href='https://www.asean.org/asean/asean-agreements-on-investment/'>ACIA</a> entered into force on 29 Mar 2012.",
+                            text: "The ASEAN IGA was terminated when ",
+                          },
+                          {
+                            type: "text",
+                            text: "ACIA",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: {
+                                  href: "https://www.asean.org/asean/asean-agreements-on-investment/",
+                                },
+                              },
+                            ],
+                          },
+                          {
+                            type: "text",
+                            text: " entered into force on 29 Mar 2012.",
                           },
                         ],
                       },
@@ -2481,7 +2724,13 @@ export const Image: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>AANZFTA</a>",
+                                    text: "AANZFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -2495,7 +2744,13 @@ export const Image: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>ACFTA</a>",
+                                    text: "ACFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -2509,7 +2764,13 @@ export const Image: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>AKFTA</a>",
+                                    text: "AKFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -2523,7 +2784,13 @@ export const Image: Story = {
                                 content: [
                                   {
                                     type: "text",
-                                    text: "<a href='https://google.com'>AIFTA</a>",
+                                    text: "AIFTA",
+                                    marks: [
+                                      {
+                                        type: "link",
+                                        attrs: { href: "https://google.com" },
+                                      },
+                                    ],
                                   },
                                 ],
                               },
@@ -2564,7 +2831,13 @@ export const Image: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                            text: "EN download (2.4 MB)",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com/" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -2619,7 +2892,13 @@ export const Image: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                            text: "EN download (2.4 MB)",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com/" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -2676,7 +2955,13 @@ export const Image: Story = {
                         content: [
                           {
                             type: "text",
-                            text: "<a href='https://google.com/'>EN download (2.4 MB)</a>",
+                            text: "EN download (2.4 MB)",
+                            marks: [
+                              {
+                                type: "link",
+                                attrs: { href: "https://google.com/" },
+                              },
+                            ],
                           },
                         ],
                       },
@@ -2899,8 +3184,15 @@ export const Image: Story = {
               content: [
                 {
                   type: "text",
-                  marks: [],
-                  text: "<a href='https://www.traffic.org/news/singapore-rhino-horn-smuggler-24/'>Singapore court gets tough on rhino horn smuggler</a>",
+                  marks: [
+                    {
+                      type: "link",
+                      attrs: {
+                        href: "https://www.traffic.org/news/singapore-rhino-horn-smuggler-24/",
+                      },
+                    },
+                  ],
+                  text: "Singapore court gets tough on rhino horn smuggler",
                 },
               ],
             },
@@ -3178,7 +3470,16 @@ export const NoTable: Story = {
               content: [
                 {
                   type: "text",
-                  text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+                  text: "As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to ",
+                },
+                {
+                  type: "text",
+                  text: "New Idea Scheme Proposal",
+                  marks: [{ type: "link", attrs: { href: "/faq" } }],
+                },
+                {
+                  type: "text",
+                  text: " while it is being updated.",
                 },
               ],
             },
@@ -3587,7 +3888,16 @@ export const SmallTable: Story = {
               content: [
                 {
                   type: "text",
-                  text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+                  text: "As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to ",
+                },
+                {
+                  type: "text",
+                  text: "New Idea Scheme Proposal",
+                  marks: [{ type: "link", attrs: { href: "/faq" } }],
+                },
+                {
+                  type: "text",
+                  text: " while it is being updated.",
                 },
               ],
             },
@@ -4153,7 +4463,16 @@ export const FirstLevelPage: Story = {
               content: [
                 {
                   type: "text",
-                  text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+                  text: "As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to ",
+                },
+                {
+                  type: "text",
+                  text: "New Idea Scheme Proposal",
+                  marks: [{ type: "link", attrs: { href: "/faq" } }],
+                },
+                {
+                  type: "text",
+                  text: " while it is being updated.",
                 },
               ],
             },

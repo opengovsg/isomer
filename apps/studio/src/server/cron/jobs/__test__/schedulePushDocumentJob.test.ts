@@ -1,5 +1,6 @@
 import type * as serverContextType from "~/server/context"
 import type { User } from "~prisma/generated/selectableTypes"
+import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { addMinutes } from "date-fns"
 import MockDate from "mockdate"
 import { resetTables } from "tests/integration/helpers/db"
@@ -69,12 +70,14 @@ const seedDocumentReadyForIngestion = async ({
   category,
   publishedBy,
   description,
+  extraTagCategories = [],
 }: {
   parentTitle: string
   ref: string
   category: string
   publishedBy: string
   description?: string
+  extraTagCategories?: unknown[]
 }) => {
   const { page: parent, site } = await setupPageResource({
     resourceType: ResourceType.Folder,
@@ -102,6 +105,7 @@ const seedDocumentReadyForIngestion = async ({
             {
               options: [{ id: "tag-1", label: "Public" }],
             },
+            ...extraTagCategories,
           ],
         },
       } as never,
@@ -295,6 +299,36 @@ describe("schedulePushDocumentJobHandler", async () => {
           ContentDisposition: `inline; filename="Document Title.pdf"`,
         }),
       )
+    })
+
+    it("ingests when the index page also has a date filter (no options)", async () => {
+      // Arrange
+      const { resourceId } = await seedDocumentReadyForIngestion({
+        parentTitle: "Notices",
+        ref: "/some-bucket-key/file.pdf",
+        category: "Government Gazettes",
+        publishedBy: user.id,
+        extraTagCategories: [
+          { id: "date-1", label: "Date", type: TAG_CATEGORY_TYPE.Date },
+        ],
+      })
+      await db
+        .insertInto("PushDocumentJob")
+        .values({
+          resourceId: String(resourceId),
+          scheduledAt: FIXED_NOW,
+          scheduledBy: user.id,
+        })
+        .execute()
+
+      // Act
+      await schedulePushDocumentJobHandler()
+
+      // Assert
+      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
+      const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
+        .calls[0]!
+      expect(records[0]).toMatchObject({ subCategory: "Public" })
     })
 
     it("passes the full PDF text to Algolia without truncating to 50k", async () => {

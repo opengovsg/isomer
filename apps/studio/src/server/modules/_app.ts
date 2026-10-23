@@ -9,12 +9,14 @@ import { authRouter } from "./auth/auth.router"
 import { collectionRouter } from "./collection/collection.router"
 import { folderRouter } from "./folder/folder.router"
 import { gazetteRouter } from "./gazette/gazette.router"
+import { globalRouter } from "./global/global.router"
 import { meRouter } from "./me/me.router"
 import { pageRouter } from "./page/page.router"
 import { redirectRouter } from "./redirect/redirect.router"
 import { resourceRouter } from "./resource/resource.router"
 import { siteRouter } from "./site/site.router"
 import { userRouter } from "./user/user.router"
+import { versionRouter } from "./version/version.router"
 import { webhookRouter } from "./webhook/webhook.router"
 import { whitelistRouter } from "./whitelist/whitelist.router"
 
@@ -28,10 +30,12 @@ export const appRouter = router({
   folder: folderRouter,
   collection: collectionRouter,
   gazette: gazetteRouter,
+  global: globalRouter,
   site: siteRouter,
   redirect: redirectRouter,
   resource: resourceRouter,
   user: userRouter,
+  version: versionRouter,
   whitelist: whitelistRouter,
   webhook: webhookRouter,
 })

@@ -3,7 +3,6 @@ import { db, jsonb } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS } from "./auth"
-import { getSeedSiteId } from "./seed"
 
 export const uniqueSuffix = () => crypto.randomUUID().slice(0, 8)
 
@@ -16,6 +15,7 @@ export interface TagCategory {
   id: string
   label: string
   isRequired: boolean
+  display?: "pills" | "plaintext"
   options: TagCategoryOption[]
 }
 
@@ -25,8 +25,8 @@ export interface TagCategory {
 // must be published, not just drafted, or drawers under test won't see them.
 export const createCollectionWithTagCategories = async (
   tagCategories: TagCategory[],
+  siteId: number,
 ) => {
-  const siteId = getSeedSiteId()
   const suffix = uniqueSuffix()
 
   const collection = await db
@@ -110,18 +110,22 @@ export const deleteCollection = (collectionId: string) =>
 export const createCollectionLink = async ({
   collectionId,
   ref,
-  siteId = getSeedSiteId(),
+  siteId,
+  tagged = [],
+  title = "E2E Tags Link",
 }: {
   collectionId: string
   ref: string
-  siteId?: number
+  siteId: number
+  tagged?: string[]
+  title?: string
 }) => {
   const blob = await db
     .insertInto("Blob")
     .values({
       content: jsonb({
         layout: "link",
-        page: { ref, summary: "", category: "", date: "01/01/2026" },
+        page: { ref, summary: "", category: "", date: "01/01/2026", tagged },
         content: [],
         version: "0.1.0",
       }),
@@ -135,7 +139,7 @@ export const createCollectionLink = async ({
       permalink: `e2e-tags-link-${uniqueSuffix()}`,
       siteId,
       parentId: collectionId,
-      title: "E2E Tags Link",
+      title,
       type: ResourceType.CollectionLink,
       state: ResourceState.Draft,
       draftBlobId: blob.id,
@@ -147,10 +151,14 @@ export const createCollectionLink = async ({
 
 export const createCollectionPage = async ({
   collectionId,
-  siteId = getSeedSiteId(),
+  siteId,
+  tagged = [],
+  title = "E2E Tags Page",
 }: {
   collectionId: string
-  siteId?: number
+  siteId: number
+  tagged?: string[]
+  title?: string
 }) => {
   const blob = await db
     .insertInto("Blob")
@@ -161,6 +169,7 @@ export const createCollectionPage = async ({
           date: "01/01/2026",
           category: "Feature Articles",
           articlePageHeader: { summary: "E2E test summary" },
+          tagged,
         },
         content: [],
         version: "0.1.0",
@@ -175,7 +184,7 @@ export const createCollectionPage = async ({
       permalink: `e2e-tags-page-${uniqueSuffix()}`,
       siteId,
       parentId: collectionId,
-      title: "E2E Tags Page",
+      title,
       type: ResourceType.CollectionPage,
       state: ResourceState.Draft,
       draftBlobId: blob.id,
@@ -194,12 +203,24 @@ export const readBlobContent = async (blobId: string) => {
   return blob.content as unknown as { page: { tagged?: string[] } }
 }
 
-export const getRootPageId = async (siteId = getSeedSiteId()) => {
-  const rootPage = await db
-    .selectFrom("Resource")
-    .where("siteId", "=", siteId)
-    .where("type", "=", ResourceType.RootPage)
-    .select("id")
-    .executeTakeFirstOrThrow()
-  return rootPage.id
-}
+export const seedCollectionPages = async ({
+  siteId,
+  collectionId,
+  count,
+  titlePrefix = "E2E Sort Item",
+}: {
+  siteId: number
+  collectionId: string
+  count: number
+  titlePrefix?: string
+}) =>
+  Promise.all(
+    Array.from({ length: count }, (_, i) => {
+      const title = `${titlePrefix} ${String(i + 1).padStart(2, "0")}`
+      return createCollectionPage({
+        collectionId,
+        siteId,
+        title,
+      })
+    }),
+  )

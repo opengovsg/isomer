@@ -1,4 +1,4 @@
-FROM node:24-alpine@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43 AS base
+FROM node:24.22.1-alpine@sha256:6a1c190e17215d844926b0677f4bf87273ff7d5e54db06d3b5b5863ab0b09a3d AS base
 
 ARG NEXT_PUBLIC_APP_ENV
 ENV NEXT_PUBLIC_APP_ENV=$NEXT_PUBLIC_APP_ENV
@@ -50,7 +50,7 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME/bin:$PATH"
 RUN corepack enable && corepack install -g pnpm@12.0.0
 # Pin turbo to the resolved catalog version to prevent supply chain attacks
-RUN pnpm add -g turbo@2.10.13
+RUN pnpm add -g turbo@2.11.2
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.

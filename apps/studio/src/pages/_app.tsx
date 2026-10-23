@@ -17,6 +17,10 @@ import Suspense from "~/components/Suspense"
 import { VersionWrapper } from "~/components/VersionWrapper"
 import { env } from "~/env.mjs"
 import { LoginStateProvider } from "~/features/auth"
+import {
+  applyGrowthBookOverride,
+  createOfflineGrowthBook,
+} from "~/lib/growthbookOffline"
 import { type NextPageWithLayout } from "~/lib/types"
 import { DefaultLayout } from "~/templates/layouts/DefaultLayout"
 import { theme } from "~/theme"
@@ -52,17 +56,32 @@ datadogRum.init({
   ],
 })
 
-// Create a GrowthBook instance
-const gb = new GrowthBook({
-  apiHost: "https://cdn.growthbook.io",
-  clientKey: env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
-  enabled: true,
-})
+// Next inlines NEXT_PUBLIC_APP_ENV at build time. E2E builds with .env.test.
+const gb =
+  env.NEXT_PUBLIC_APP_ENV === "test"
+    ? createOfflineGrowthBook()
+    : new GrowthBook({
+        apiHost: "https://cdn.growthbook.io",
+        clientKey: env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
+        enabled: true,
+      })
 
-void gb.init({
-  // Optional, enable streaming updates
-  streaming: true,
-})
+if (env.NEXT_PUBLIC_APP_ENV !== "test") {
+  void gb.init({
+    // Optional, enable streaming updates
+    streaming: true,
+  })
+} else if (typeof window !== "undefined") {
+  // E2E uses the offline client, so CDN route stubs never reach feature
+  // reads. Tests call this after load; setForcedFeatures re-renders subscribers.
+  ;(
+    window as Window & {
+      __e2eSetGrowthBookFeature?: (key: string, value: unknown) => void
+    }
+  ).__e2eSetGrowthBookFeature = (key, value) => {
+    applyGrowthBookOverride(gb, key, value)
+  }
+}
 
 const MyApp = ((props: AppPropsWithAuthAndLayout) => {
   // ErrorBoundary keeps the fallback until resetKeys changes. asPath remounts

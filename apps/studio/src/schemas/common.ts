@@ -1,4 +1,10 @@
+import { NO_STYLIZED_UNICODE_REGEX } from "@opengovsg/isomer-components"
 import { z } from "zod"
+
+export const NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE =
+  "Title cannot contain stylised or decorative unicode characters"
+
+export const noStylizedUnicodeTitleRegex = new RegExp(NO_STYLIZED_UNICODE_REGEX)
 
 export const generateBasePermalinkSchema = (label: string) =>
   z
@@ -7,7 +13,7 @@ export const generateBasePermalinkSchema = (label: string) =>
     })
     // Using `*` instead of `+` to allow empty strings, so the correct required error message is shown instead of the regex error message.
     .regex(/^[a-z0-9-]*$/, {
-      message: "Only lowercase alphanumeric characters and hyphens are allowed",
+      error: "Only lowercase alphanumeric characters and hyphens are allowed",
     })
 
 // A bigint id surfaced by kysely as a string. kysely won't accept a JS bigint
@@ -17,8 +23,8 @@ export const generateBasePermalinkSchema = (label: string) =>
 export const generateBigIntSchema = (label: string) =>
   z
     .string()
-    .min(1, { message: `Enter a valid ${label}` })
-    .regex(/^[0-9]+$/, { message: `Enter a valid ${label}` })
+    .min(1, { error: `Enter a valid ${label}` })
+    .regex(/^[0-9]+$/, { error: `Enter a valid ${label}` })
     .refine((value) => !value.startsWith("0"), {
-      message: `Enter a valid ${label}`,
+      error: `Enter a valid ${label}`,
     })
