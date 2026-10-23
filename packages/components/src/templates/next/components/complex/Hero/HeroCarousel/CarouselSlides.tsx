@@ -24,13 +24,18 @@ const slideImageStyles = tv({
 })
 
 const slideContentStyles = tv({
-  base: "col-start-1 row-start-1 flex w-full flex-col gap-6 self-start opacity-0 transition-opacity duration-[400ms] ease-out motion-reduce:transition-none",
+  base: "col-start-1 row-start-1 flex w-full flex-col gap-9 self-start opacity-0 transition-opacity duration-[400ms] ease-out motion-reduce:transition-none",
   variants: {
     isCurrent: {
       true: "relative z-10 opacity-100",
     },
     isHidden: {
       true: "pointer-events-none",
+    },
+    // From md, centre the title and CTAs together so a short slide isn't
+    // pinned to the top of space reserved by a taller one.
+    isVerticallyCentered: {
+      true: "md:self-center",
     },
   },
 })
@@ -129,105 +134,35 @@ export const CarouselSlideContent = ({
   inactiveHeadingTag: HeadingTag
   titleClassName: string
   actionsClassName: string
-  // From md up, each slide's title and CTAs are centered as one block, so a
-  // slide without CTAs isn't pushed up by space reserved for other slides'
   isVerticallyCenteredPerSlide?: boolean
-}) => {
-  const title = ({
-    slide,
-    isCurrent,
-  }: {
-    slide: HeroCarouselSlideView
-    isCurrent: boolean
-  }) => {
-    const SlideTag = isCurrent ? Tag : inactiveHeadingTag
+}) => (
+  <div className="grid">
+    {slides.map((slide, index) => {
+      const isCurrent = index === currentIndex
+      const SlideTag = isCurrent ? Tag : inactiveHeadingTag
 
-    return (
-      <div className="flex flex-col gap-6">
-        <SlideTag className={titleClassName}>{slide.title}</SlideTag>
-        {slide.subtitle && (
-          <p className="prose-title-lg-regular">{slide.subtitle}</p>
-        )}
-      </div>
-    )
-  }
-
-  if (isVerticallyCenteredPerSlide) {
-    return (
-      <div className="grid">
-        {slides.map((slide, index) => {
-          const isCurrent = index === currentIndex
-
-          return (
-            <div
-              key={index}
-              className={slideContentStyles({
-                isCurrent,
-                isHidden: !isCurrent,
-                className: "gap-9 md:self-center",
-              })}
-              role="group"
-              aria-roledescription="slide"
-              aria-label={`${index + 1} of ${slides.length}`}
-              {...(isCurrent ? {} : { inert: "" })}
-            >
-              {title({ slide, isCurrent })}
-              <SlideActions slide={slide} className={actionsClassName} />
-            </div>
-          )
-        })}
-      </div>
-    )
-  }
-
-  // Skip the CTA row (and its gap) entirely when no slide has one, otherwise
-  // it leaves empty space below the title
-  const hasActions = slides.some((s) => s.primaryLabel && s.primaryHref)
-
-  return (
-    <>
-      <div className="grid">
-        {slides.map((slide, index) => {
-          const isCurrent = index === currentIndex
-
-          return (
-            <div
-              key={index}
-              className={slideContentStyles({
-                isCurrent,
-                isHidden: !isCurrent,
-              })}
-              role="group"
-              aria-roledescription="slide"
-              aria-label={`${index + 1} of ${slides.length}`}
-              {...(isCurrent ? {} : { inert: "" })}
-            >
-              {title({ slide, isCurrent })}
-            </div>
-          )
-        })}
-      </div>
-
-      {hasActions && (
-        <div className="grid min-h-[3rem]">
-          {slides.map((slide, index) => {
-            const isCurrent = index === currentIndex
-
-            return (
-              <div
-                key={index}
-                className={slideContentStyles({
-                  isCurrent,
-                  isHidden: !isCurrent,
-                })}
-                {...(isCurrent ? {} : { inert: "" })}
-              >
-                <SlideActions slide={slide} className={actionsClassName} />
-              </div>
-            )
+      return (
+        <div
+          key={index}
+          className={slideContentStyles({
+            isCurrent,
+            isHidden: !isCurrent,
+            isVerticallyCentered: isVerticallyCenteredPerSlide,
           })}
+          role="group"
+          aria-roledescription="slide"
+          aria-label={`${index + 1} of ${slides.length}`}
+          {...(isCurrent ? {} : { inert: "" })}
+        >
+          <div className="flex flex-col gap-6">
+            <SlideTag className={titleClassName}>{slide.title}</SlideTag>
+            {slide.subtitle && (
+              <p className="prose-title-lg-regular">{slide.subtitle}</p>
+            )}
+          </div>
+          <SlideActions slide={slide} className={actionsClassName} />
         </div>
-      )}
-    </>
-  )
-}
+      )
+    })}
+  </div>
+)
