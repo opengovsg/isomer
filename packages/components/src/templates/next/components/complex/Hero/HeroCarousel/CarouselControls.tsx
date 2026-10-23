@@ -63,11 +63,10 @@ type Rotation = "rotating" | "stopped"
 interface CarouselRotationControl {
   isRotating: boolean
   showCountdown: boolean
-  isPaused: boolean
   onChange: (next: Rotation) => void
 }
 
-const RotationCountdown = ({ isPaused }: { isPaused: boolean }) => {
+const RotationCountdown = () => {
   const radius = 18
   const circumference = 2 * Math.PI * radius
   const animation = "hero-carousel-countdown"
@@ -103,7 +102,6 @@ const RotationCountdown = ({ isPaused }: { isPaused: boolean }) => {
         transform="rotate(-90 20 20)"
         style={{
           animation: `${animation} ${HERO_CAROUSEL_ROTATION_INTERVAL_MS}ms linear forwards`,
-          animationPlayState: isPaused ? "paused" : "running",
         }}
       />
     </svg>
@@ -115,7 +113,6 @@ const CarouselRotationButton = ({
   className,
   isRotating,
   showCountdown,
-  isPaused,
   onChange,
 }: CarouselRotationControl & {
   currentIndex: number
@@ -159,9 +156,7 @@ const CarouselRotationButton = ({
       >
         <Icon className="h-6 w-6" aria-hidden />
       </button>
-      {showCountdown && (
-        <RotationCountdown key={currentIndex} isPaused={isPaused} />
-      )}
+      {showCountdown && <RotationCountdown key={currentIndex} />}
     </span>
   )
 }

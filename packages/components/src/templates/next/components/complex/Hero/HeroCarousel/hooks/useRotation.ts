@@ -25,7 +25,6 @@ export const useRotation = (slideCount: number) => {
   const isPreview = useHeroCarouselPreview() !== null
   const { currentIndex, onGoTo } = useNavigation(slideCount)
   const [phase, setPhase] = useState<RotationPhase>("pending")
-  const [isHoverPaused, setIsHoverPaused] = useState(false)
   const [isDocumentHidden, setIsDocumentHidden] = useState(false)
   const elapsedMsRef = useRef(0)
   const runningSinceRef = useRef<number | null>(null)
@@ -100,10 +99,9 @@ export const useRotation = (slideCount: number) => {
     !isOffscreen &&
     !isPreview &&
     hasEnoughSlides
-  const shouldRun = canRotate && !isHoverPaused
 
   useEffect(() => {
-    if (!shouldRun) {
+    if (!canRotate) {
       return
     }
 
@@ -130,7 +128,7 @@ export const useRotation = (slideCount: number) => {
       )
       runningSinceRef.current = null
     }
-  }, [currentIndex, onGoTo, shouldRun, slideCount])
+  }, [currentIndex, onGoTo, canRotate, slideCount])
 
   const onUserPrev = useCallback(() => {
     stop()
@@ -155,20 +153,6 @@ export const useRotation = (slideCount: number) => {
     },
     [onGoTo, stop],
   )
-
-  const onPointerEnter = (event: PointerEvent<HTMLElement>) => {
-    if (event.pointerType !== "mouse") {
-      return
-    }
-    setIsHoverPaused(true)
-  }
-
-  const onPointerLeave = (event: PointerEvent<HTMLElement>) => {
-    if (event.pointerType !== "mouse") {
-      return
-    }
-    setIsHoverPaused(false)
-  }
 
   const onPointerDown = (event: PointerEvent<HTMLElement>) => {
     suppressClickRef.current = false
@@ -227,9 +211,6 @@ export const useRotation = (slideCount: number) => {
         return
       }
       resetElapsed()
-      if (next === "rotating") {
-        setIsHoverPaused(false)
-      }
       setPhase(next)
     },
     [isPreview, resetElapsed],
@@ -243,9 +224,9 @@ export const useRotation = (slideCount: number) => {
     politeness: phase === "stopped" ? ("polite" as const) : ("off" as const),
     sectionProps: {
       ref: sectionRef,
+      // Focus stops rotation, which is how keyboard and screen reader users
+      // reach the controls. Hover does not, so the mouse can pass over the hero.
       onFocus: stop,
-      onPointerEnter,
-      onPointerLeave,
       onPointerDown,
       onPointerUp,
       onPointerCancel,
@@ -259,7 +240,6 @@ export const useRotation = (slideCount: number) => {
         ? {
             isRotating: phase === "rotating",
             showCountdown: canRotate,
-            isPaused: isHoverPaused,
             onChange: onRotationChange,
           }
         : undefined,

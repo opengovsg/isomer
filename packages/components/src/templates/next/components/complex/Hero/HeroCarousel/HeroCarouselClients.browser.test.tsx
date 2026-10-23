@@ -376,71 +376,26 @@ describe("hero carousel rotation", () => {
     expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
   })
 
-  it("freezes the countdown while hovered and continues the remaining time", () => {
+  it("keeps rotating while the pointer is inside", () => {
     // Arrange
     const section = renderGradient()
     const halfway = HERO_CAROUSEL_ROTATION_INTERVAL_MS / 2
-    advanceRotation(halfway)
-    const progress = () =>
-      section.querySelector<SVGCircleElement>(
-        "[data-rotation-countdown] circle:last-of-type",
-      )
 
     // Act
     fireEvent.pointerEnter(section, { pointerType: "mouse" })
-    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
+    advanceRotation(halfway)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
     expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
-    expect(progress()?.style.animationPlayState).toBe("paused")
 
     // Act
     fireEvent.pointerLeave(section, { pointerType: "mouse" })
-
-    // Assert
-    expect(progress()?.style.animationPlayState).toBe("running")
-
-    // Act
-    advanceRotation(halfway - 1)
-
-    // Assert
-    expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
-
-    // Act
-    advanceRotation(1)
+    advanceRotation(halfway)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
-  })
-
-  it("starts a full interval when play is pressed while the pointer is still inside", () => {
-    // Arrange
-    const section = renderGradient()
-    fireEvent.pointerEnter(section, { pointerType: "mouse" })
-    fireEvent.click(screen.getByRole("button", { name: "Go to slide 2 of 3" }))
-
-    // Act
-    fireEvent.click(
-      screen.getByRole("button", { name: "Start slide rotation" }),
-    )
-
-    // Assert
     expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
-    expect(section.querySelector("[data-rotation-countdown]")).toBeTruthy()
-    expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
-
-    // Act
-    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS - 1)
-
-    // Assert
-    expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
-
-    // Act
-    advanceRotation(1)
-
-    // Assert
-    expect(liveRegion().textContent).toBe("Slide 3 of 3: Gamma")
   })
 
   it("pauses the timer while the document is hidden and restarts a full interval when it is visible", () => {
