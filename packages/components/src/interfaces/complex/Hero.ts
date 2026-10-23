@@ -8,7 +8,7 @@ import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import { HERO_BANNER_STYLE_FORMAT, HERO_BLOCK_IMAGE_FORMAT } from "../format"
 import { IsomerString } from "../primitives/IsomerString"
-import { generateImageSrcSchema } from "./Image"
+import { generateImageSrcSchema, imageAdjustmentSchema } from "./Image"
 
 export const HERO_STYLE = {
   gradient: { key: "gradient", title: "Gradient (Default)" },
@@ -125,6 +125,7 @@ const HeroGradientSchema = Type.Composite(
         default: HERO_STYLE.gradient.key,
       }),
       backgroundUrl: BackgroundUrlSchema,
+      imageAdjustment: Type.Optional(imageAdjustmentSchema),
     }),
     HeroBaseSchema,
     CallToActionsSchema,

@@ -6,6 +6,7 @@ import {
   MAX_IMG_FILE_SIZE_BYTES,
   MAX_SVG_FILE_SIZE_BYTES,
 } from "~/lib/fileUpload"
+import { BAKEABLE_EXTENSIONS } from "~/lib/imageBake"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 
 // Combine allowed extensions from existing constants
@@ -167,3 +168,23 @@ export const deleteAssetsByUrlSchema = z.object({
       error: `You can only delete up to ${MAX_DELETE_ASSET_URLS} assets at a time`,
     }),
 })
+
+export const getPresignedPutUrlForBakeSchema = z.object({
+  siteId: z.number().min(1),
+  resourceId: z.string(),
+  src: z.string({
+    error: "Missing image source",
+  }),
+  ext: z.enum(BAKEABLE_EXTENSIONS, {
+    message: "Unsupported image format. Use jpeg, png, or webp.",
+  }),
+  // Baked objects are always images (ext is a BAKEABLE_EXTENSIONS value), so the
+  // image size limit applies unconditionally here.
+  fileSize: fileSizeSchema.max(MAX_IMG_FILE_SIZE_BYTES, {
+    message: `File size must not exceed ${formatFileSizeLimit({ bytes: MAX_IMG_FILE_SIZE_BYTES })}`,
+  }),
+})
+
+export type GetPresignedPutUrlForBakeInput = z.infer<
+  typeof getPresignedPutUrlForBakeSchema
+>

@@ -8,4 +8,5 @@ export interface ImageClientProps {
   assetsBaseUrl?: string
   lazyLoading?: boolean
   onLoad?: ReactEventHandler<HTMLImageElement>
+  objectPosition?: string // focal-point render; applied as inline object-position only when set
 }

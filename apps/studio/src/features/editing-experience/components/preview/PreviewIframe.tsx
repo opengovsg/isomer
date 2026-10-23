@@ -11,6 +11,16 @@ interface PreviewIframeProps {
   keyForRerender?: string
   style?: CSSProperties
   viewport?: ViewportOptions
+  // Exact pixel size for the iframe's OWN layout viewport, bypassing the
+  // `viewport` enum's fixed presets — so a caller can simulate an arbitrary
+  // breakpoint width (e.g. a design's custom 375/768/1440 set) and have the
+  // content's real CSS media queries evaluate against that width. The caller
+  // is then free to CSS-transform-scale the whole iframe down to fit a
+  // smaller display area without affecting the internal viewport the
+  // content's media queries see (a transform only affects the rendered
+  // output box, not the iframe's own layout viewport).
+  widthPx?: number
+  heightPx?: number
   callback?: (props: IframeCallbackFnProps) => void
 }
 
@@ -20,6 +30,8 @@ export const PreviewIframe = ({
   keyForRerender,
   style,
   viewport,
+  widthPx,
+  heightPx,
   callback,
 }: PropsWithChildren<PreviewIframeProps>): JSX.Element => {
   const extraProps = preventPointerEvents
@@ -30,41 +42,52 @@ export const PreviewIframe = ({
     : {}
 
   const containerStyles = useMemo(() => {
+    if (widthPx !== undefined) {
+      return {
+        width: `${widthPx}px`,
+        height: heightPx !== undefined ? `${heightPx}px` : "100%",
+        borderRadius: "8px",
+      }
+    }
     if (!viewport)
       return {
         width: "100%",
+        height: "100%",
       }
     switch (viewport) {
       case "tablet":
         return {
           width: "768px",
+          height: "100%",
           borderRadius: "8px",
         }
       case "mobile":
         return {
           width: "480px",
+          height: "100%",
           borderRadius: "8px",
         }
       case "responsive":
         return {
           width: "100%",
+          height: "100%",
           borderRadius: "8px",
         }
       case "fullscreen": {
         return {
           width: "100%",
+          height: "100%",
           borderRadius: 0,
         }
       }
     }
-  }, [viewport])
+  }, [viewport, widthPx, heightPx])
 
   return (
     <Flex
       bg="white"
       shadow="md"
       justify="center"
-      h="100%"
       mx="auto"
       userSelect="none"
       {...containerStyles}
