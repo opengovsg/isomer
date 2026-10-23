@@ -54,6 +54,9 @@ interface AdjustmentPreviewProps {
   adjustment?: ImageAdjustment
   previewStates: AdjustmentPreviewState[]
   scrim?: AdjustmentScrim
+  // Text drawn over the scrim in the framed preview — the card title for the
+  // full-image InfoCards variant, which overlays its title on the gradient.
+  scrimText?: string
   // The real block content + the field name holding the image, so the real
   // published component can be rendered (real copy/scrim/frame) instead of
   // the framed-<img> approximation below. Falls back to the approximation
@@ -93,6 +96,7 @@ export const AdjustmentPreview = ({
   adjustment,
   previewStates,
   scrim,
+  scrimText,
   block,
   imageFieldName,
   skipRealComponentPreview,
@@ -415,9 +419,7 @@ export const AdjustmentPreview = ({
         flexShrink={0}
         w={`${width}px`}
       >
-        <TileCaption subLabel={formatDimensions(state)}>
-          {state.label}
-        </TileCaption>
+        <TileCaption>{state.label}</TileCaption>
         <Box {...TILE_FRAME_PROPS} style={{ width, height: width / aspect }}>
           <Box w="100%" h="100%" position="relative" overflow="hidden">
             <Box
@@ -444,7 +446,26 @@ export const AdjustmentPreview = ({
                 inset={0}
                 className={scrim.className}
                 pointerEvents="none"
-              />
+              >
+                {/* The full-image card overlays its title on the gradient — show
+                    it so editors can judge the subject against the text. */}
+                {scrimText && (
+                  <Text
+                    position="absolute"
+                    bottom={0}
+                    left={0}
+                    right={0}
+                    px="0.5rem"
+                    pb="0.5rem"
+                    color="white"
+                    textStyle="caption-1"
+                    fontWeight="600"
+                    noOfLines={2}
+                  >
+                    {scrimText}
+                  </Text>
+                )}
+              </Box>
             )}
           </Box>
         </Box>
@@ -491,39 +512,16 @@ const TILE_FRAME_PROPS = {
   position: "relative",
 } as const
 
-const TileCaption = ({
-  children,
-  subLabel,
-}: {
-  children: string
-  subLabel?: string
-}): JSX.Element => (
-  // Name + dimensions on one line: uppercase device name, then the dimensions.
-  <Text textStyle="caption-2" color="base.content.medium">
-    <Text as="span" textTransform="uppercase" letterSpacing="0.05em">
-      {children}
-    </Text>
-    {subLabel ? ` · ${subLabel}` : ""}
+const TileCaption = ({ children }: { children: string }): JSX.Element => (
+  <Text
+    textStyle="caption-2"
+    textTransform="uppercase"
+    letterSpacing="0.05em"
+    color="base.content.medium"
+  >
+    {children}
   </Text>
 )
-
-const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
-
-// The pixel size a tile is SIMULATING (not the live, ResizeObserver-measured
-// height, which jitters as content renders) — derived from the same stable
-// viewportWidth/aspectRatio PreviewFrame uses for its initial height guess.
-const formatDimensions = (state: AdjustmentPreviewState): string => {
-  const width = state.viewportWidth ?? 1024
-  if (!state.aspectRatio) return `${width} px wide`
-  const height = Math.round(
-    (width * state.aspectRatio.height) / state.aspectRatio.width,
-  )
-  // Reduce the stored ratio (e.g. {32,18}) to simplest form (16:9) for display.
-  const divisor = gcd(state.aspectRatio.width, state.aspectRatio.height)
-  const ratioW = state.aspectRatio.width / divisor
-  const ratioH = state.aspectRatio.height / divisor
-  return `${width} × ${height} px, ${ratioW}:${ratioH}`
-}
 
 // Renders the real component inside a simulated device viewport at this
 // breakpoint's exact width (so the component's own sm:/md:/lg: Tailwind
@@ -590,9 +588,7 @@ const PreviewFrame = ({
       flexShrink={0}
       w={`${displayWidth}px`}
     >
-      <TileCaption subLabel={formatDimensions(state)}>
-        {state.label}
-      </TileCaption>
+      <TileCaption>{state.label}</TileCaption>
       <Box
         {...TILE_FRAME_PROPS}
         style={{ width: displayWidth, height: viewportHeight * scale }}

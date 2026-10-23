@@ -464,16 +464,30 @@ export const ImageAdjustmentModal = ({
               >
                 {/* Pinned so it stays visible while the tiles scroll. Opaque bg
                     + zIndex so scrolling previews pass behind it. */}
-                <Text
-                  textStyle="subhead-1"
+                <HStack
+                  spacing="0.25rem"
                   position={{ md: "sticky" }}
                   top={0}
                   zIndex={1}
                   bg="base.canvas.default"
                   pb="0.25rem"
                 >
-                  Preview
-                </Text>
+                  <Text textStyle="subhead-1">Preview</Text>
+                  <Tooltip
+                    label="Previews show common phone, tablet and desktop sizes. Your screen may show a slightly different layout."
+                    placement="top"
+                    hasArrow
+                  >
+                    <Box
+                      as="span"
+                      display="inline-flex"
+                      color="base.content.medium"
+                      aria-label="About previews"
+                    >
+                      <Icon as={BiInfoCircle} />
+                    </Box>
+                  </Tooltip>
+                </HStack>
 
                 {/* Low-resolution warning — the kept crop can't fill this
                     component's largest frame even at 1x, so it would look soft. */}
@@ -499,6 +513,9 @@ export const ImageAdjustmentModal = ({
                   adjustment={draft}
                   previewStates={config.previewStates}
                   scrim={config.scrim}
+                  // The card's title, overlaid on the gradient in the full-image
+                  // card preview (only drawn when the config has a scrim).
+                  scrimText={(fieldHost as { title?: string } | null)?.title}
                   block={block}
                   imageFieldName={imageFieldName}
                   skipRealComponentPreview={config.skipRealComponentPreview}
