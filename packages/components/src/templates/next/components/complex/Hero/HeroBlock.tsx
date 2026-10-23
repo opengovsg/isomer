@@ -76,31 +76,14 @@ const heroBlockStyles = tv({
     },
     {
       theme: "default",
-      imageEdge: HERO_BLOCK_IMAGE_EDGE.straight,
       class: {
         textColumn: "bg-brand-canvas-inverse",
       },
     },
     {
       theme: "inverse",
-      imageEdge: HERO_BLOCK_IMAGE_EDGE.straight,
       class: {
         textColumn: "bg-brand-canvas-alt",
-      },
-    },
-    {
-      theme: "default",
-      imageEdge: HERO_BLOCK_IMAGE_EDGE.curved,
-      class: {
-        // Shows through the circle cutout.
-        section: "bg-brand-canvas-inverse",
-      },
-    },
-    {
-      theme: "inverse",
-      imageEdge: HERO_BLOCK_IMAGE_EDGE.curved,
-      class: {
-        section: "bg-brand-canvas-alt",
       },
     },
   ],
