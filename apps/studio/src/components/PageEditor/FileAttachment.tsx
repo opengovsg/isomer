@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
+import { reportClientError } from "~/lib/datadogError"
 import { RISKY_FILE_EXTENSIONS } from "~/lib/fileUpload"
 import { fileNameAndSizeSchema, uploadSvgSchema } from "~/schemas/asset"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
@@ -66,7 +67,14 @@ export const FileAttachment = ({
           if (shouldFetchResource) {
             void handleAssetUpload(path)
               .then((src) => setHref(src))
-              .catch(() => {
+              .catch((error) => {
+                reportClientError(error, {
+                  feature: "asset-upload-fetch",
+                  siteId,
+                  resourceId,
+                  fileExtension: getFileExtension(file.name),
+                  fileSize: file.size,
+                })
                 toast({
                   title: "Failed to upload file",
                   description: "Please try again.",
@@ -75,6 +83,24 @@ export const FileAttachment = ({
                 })
               })
           } else setHref(path)
+        },
+        // Without this, a failure in the presign call or the S3 PUT itself
+        // (permission denied, validation, network/CORS) silently reverts the
+        // control to its pre-upload state with no visible error at all.
+        // Reporting to Datadog happens in useUploadAssetMutation's own
+        // onError (so it isn't skipped if this component unmounts first);
+        // this handler is just for the visible toast.
+        onError: (error) => {
+          console.error("Failed to upload file", error)
+          toast({
+            title: "Failed to upload file",
+            // Generic on purpose: by here it's a presign/S3/network failure,
+            // not a user-actionable validation error (those are caught earlier
+            // by onFileValidation/maxSize). Don't leak raw error text.
+            description: "Please try again.",
+            status: "error",
+            ...BRIEF_TOAST_SETTINGS,
+          })
         },
       },
     )
