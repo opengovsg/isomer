@@ -161,7 +161,7 @@ catalog:
   oxlint: ^1.88.0
   oxlint-tsgolint: ^7.0.2002
   papaparse: ^5.7.0
-  pg-boss: ^12.37.0
+  pg-boss: ^12.38.0
   postcss-load-config: ^6.0.1
   posthog-js: ^1.438.1
   posthog-node: ^5.55.3
