@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest"
 
 import { PLACEHOLDER_IMAGE_FILENAME } from "../../constants"
-import {
-  defaultHeroCarouselSlide,
-  nextVariantData,
-} from "../heroCarouselDefaults"
+import { defaultHeroCarouselSlide } from "../utils/defaultHeroCarouselSlide"
+import { nextHeroCarouselVariantData } from "../utils/nextHeroCarouselVariantData"
 
 const blockSchema = {
   type: "object",
@@ -27,7 +25,7 @@ const carouselSchema = {
   },
 }
 
-describe("nextVariantData", () => {
+describe("nextHeroCarouselVariantData", () => {
   it("keeps the previous hero image on the first slide and placeholders the second", () => {
     // Arrange
     const previous = {
@@ -37,7 +35,7 @@ describe("nextVariantData", () => {
     }
 
     // Act
-    const result = nextVariantData(
+    const result = nextHeroCarouselVariantData(
       previous,
       { variant: "carousel" },
       carouselSchema,
@@ -59,7 +57,7 @@ describe("nextVariantData", () => {
 
   it("uses the placeholder image when the previous hero has none", () => {
     // Act
-    const result = nextVariantData(
+    const result = nextHeroCarouselVariantData(
       { variant: "block", title: "Hello" },
       { variant: "carousel" },
       carouselSchema,
@@ -81,7 +79,7 @@ describe("nextVariantData", () => {
 
   it("keeps shared fields when switching between non-carousel variants", () => {
     // Act
-    const result = nextVariantData(
+    const result = nextHeroCarouselVariantData(
       { type: "hero", variant: "gradient", title: "Hello" },
       { type: "hero", variant: "block" },
       blockSchema,
@@ -109,7 +107,7 @@ describe("nextVariantData", () => {
     }
 
     // Act
-    const result = nextVariantData(
+    const result = nextHeroCarouselVariantData(
       previous,
       { type: "hero", variant: "block" },
       blockSchema,
@@ -138,7 +136,7 @@ describe("nextVariantData", () => {
     }
 
     // Act
-    const result = nextVariantData(
+    const result = nextHeroCarouselVariantData(
       previous,
       { type: "hero", variant: "carousel", carousel: { layout: "block" } },
       carouselSchema,

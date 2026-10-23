@@ -1,4 +1,4 @@
-import { PLACEHOLDER_IMAGE_FILENAME } from "../constants"
+import { PLACEHOLDER_IMAGE_FILENAME } from "../../constants"
 
 export function defaultHeroCarouselSlide({
   backgroundUrl,

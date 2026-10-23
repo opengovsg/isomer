@@ -17,19 +17,19 @@ import {
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 
-import { AddItemButton } from "../../components/AddItemButton"
-import { DraggableTagButton } from "../../components/DraggableTagButton"
-import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
-import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
-import { useBuilderErrors } from "../../ErrorProvider"
-import { defaultHeroCarouselSlide } from "../../heroCarouselDefaults"
+import { AddItemButton } from "../../../components/AddItemButton"
+import { DraggableTagButton } from "../../../components/DraggableTagButton"
+import { NestedDrawerSwitch } from "../../../components/NestedDrawerSwitch"
+import { TagRowActionsMenu } from "../../../components/TagRowActionsMenu"
+import { useBuilderErrors } from "../../../ErrorProvider"
+import { useArray } from "../../../hooks/useArray"
+import { defaultHeroCarouselSlide } from "../../../utils/defaultHeroCarouselSlide"
 import {
   indexAfterDelete,
   indexAfterMove,
   slideImageFileName,
   slideRowTitle,
-} from "../../heroCarouselSlideList"
-import { useArray } from "../../hooks/useArray"
+} from "./utils"
 
 export const jsonFormsHeroCarouselSlidesControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.HeroCarouselSlidesControl,
