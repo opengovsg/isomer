@@ -49,9 +49,9 @@ const carouselControlsStyles = tv({
     },
     isCenteredOnTablet: {
       true: {
-        // From md, leave the grid and pin the pause to the content's right edge.
+        // From md, leave the grid and pin the pause to the hero's right edge.
         rotation: "md:absolute md:bottom-9 md:right-10 md:z-10 lg:bottom-10",
-        // From md, centre the dots on the copy. h-10 matches the pause so the chip stays centred on it.
+        // From md, centre the dots on the hero. h-10 matches the pause so the chip stays centred on it.
         dots: "md:absolute md:bottom-9 md:left-1/2 md:z-10 md:h-10 md:-translate-x-1/2 md:items-center lg:bottom-10 [@media(pointer:coarse)]:md:h-11",
       },
     },

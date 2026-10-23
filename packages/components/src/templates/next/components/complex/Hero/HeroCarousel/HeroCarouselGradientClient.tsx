@@ -35,9 +35,10 @@ const gradientCarouselStyles = tv({
         section: "md:h-[40rem] md:min-h-0 lg:min-h-0",
         contentPanel: "bg-black/60",
         // !utilities override ComponentContent padding from a more specific ancestor.
-        // From md, flex centres the copy; pause and dots are positioned on their own.
+        // From md, flex centres the copy. This box stays unpositioned so the
+        // pause and dots anchor to contentPanel, the full-bleed hero.
         contentInner:
-          "md:relative md:!mx-auto md:flex md:w-full md:!max-w-[54.75rem] md:flex-1 md:flex-col md:justify-center md:self-center md:!px-10 md:py-16 md:text-center lg:pb-16",
+          "md:!mx-auto md:flex md:w-full md:!max-w-[54.75rem] md:flex-1 md:flex-col md:justify-center md:self-center md:!px-10 md:py-16 md:text-center lg:pb-16",
         actions: "md:justify-center",
       },
     } satisfies Record<
