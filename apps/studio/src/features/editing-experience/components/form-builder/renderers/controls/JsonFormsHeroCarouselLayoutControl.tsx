@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Box, Flex, FormControl } from "@chakra-ui/react"
+import { Box, FormControl } from "@chakra-ui/react"
 import { and, isAnyOfControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Radio } from "@opengovsg/design-system-react"
@@ -17,7 +17,6 @@ import {
   IconHeroCarouselGradient,
 } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { NewFeatureBadge } from "~/features/editing-experience/components/shared/NewFeatureBadge"
 
 interface HeroCarouselData {
   layout: HeroCarouselLayout
@@ -123,10 +122,7 @@ function JsonFormsHeroCarouselLayoutControl({
               size="sm"
               __css={textRadioCss}
             >
-              <Flex as="span" align="center">
-                Left
-                <NewFeatureBadge />
-              </Flex>
+              Left
             </Radio>
           </Radio.RadioGroup>
         </FormControl>
