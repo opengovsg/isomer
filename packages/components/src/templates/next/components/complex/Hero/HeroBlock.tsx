@@ -40,7 +40,7 @@ const heroBlockStyles = tv({
     imagePosition: {
       [HERO_BLOCK_IMAGE_POSITION.right]: {
         section: "lg:flex-row",
-        textColumn: "lg:justify-end lg:pl-10 lg:pr-8",
+        textColumn: "lg:justify-end lg:pl-10 lg:pr-16",
       },
       [HERO_BLOCK_IMAGE_POSITION.left]: {
         section: "max-lg:flex-col-reverse lg:flex-row-reverse",
@@ -140,10 +140,14 @@ export const HeroBlock = ({
           className={`flex w-full max-w-[548px] flex-col justify-center gap-9 ${heroTextColour}`}
         >
           <div className="flex flex-col gap-6">
-            <Tag className="wrap-break-word prose-display-xl text-balance">
+            <Tag className="wrap-break-word prose-display-xl text-balance text-[2.25rem] leading-[1.2] md:text-[3rem] md:leading-[1.1] xl:text-[3rem] xl:leading-[1.1]">
               {title}
             </Tag>
-            {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
+            {subtitle && (
+              <p className="prose-title-lg-regular text-[1.125rem] md:text-[1.5rem]">
+                {subtitle}
+              </p>
+            )}
           </div>
           {buttonLabel && buttonUrl && (
             <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
