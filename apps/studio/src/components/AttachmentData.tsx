@@ -5,6 +5,7 @@ import {
   Image,
   Skeleton,
   Text,
+  Tooltip,
   VStack,
 } from "@chakra-ui/react"
 import { IconButton } from "@opengovsg/design-system-react"
@@ -26,6 +27,9 @@ interface AttachmentDataProps {
   // clickable (opens the editor) and shows an "Edit image" link under the name.
   // Omitted for non-adjustable attachments (row isn't clickable).
   onEdit?: () => void
+  // When provided (and onEdit is not), shows a disabled "Edit image" affordance
+  // with this text as a hover tooltip, keeping the row non-clickable.
+  editDisabledReason?: string
   // When provided, renders a small thumbnail at the start of the row. Must be a
   // loadable URL (resolve managed "/..." paths via generateAssetUrl first).
   imageSrc?: string
@@ -34,6 +38,7 @@ export const AttachmentData = ({
   data,
   onClick,
   onEdit,
+  editDisabledReason,
   imageSrc,
 }: AttachmentDataProps) => {
   // Only self-heal managed CDN assets — an external URL's error is permanent and
@@ -132,6 +137,23 @@ export const AttachmentData = ({
             >
               Edit image
             </Text>
+          )}
+          {!onEdit && editDisabledReason && (
+            <Tooltip
+              label={editDisabledReason}
+              placement="bottom"
+              hasArrow
+              closeOnPointerDown
+            >
+              <Text
+                textStyle="caption-2"
+                fontWeight="500"
+                color="interaction.support.disabled-content"
+                w="fit-content"
+              >
+                Edit image
+              </Text>
+            </Tooltip>
           )}
         </VStack>
       </HStack>

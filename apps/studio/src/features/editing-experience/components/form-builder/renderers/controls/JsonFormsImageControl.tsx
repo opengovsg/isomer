@@ -246,6 +246,7 @@ function JsonFormsImageControl({
           mb="0.75rem"
           border="1px solid"
           borderColor="utility.feedback.info"
+          borderRadius="0.25rem"
         >
           <Text textStyle="body-2">{config.preUploadCopy}</Text>
         </Infobox>
@@ -260,6 +261,13 @@ function JsonFormsImageControl({
             // malware-scan tag and 403s; the variant is fine for a thumbnail.
             imageSrc={generateAssetUrl(data)}
             onEdit={canAdjust ? onAdjustmentModalOpen : undefined}
+            // Unsupported format: show a disabled Edit affordance with a tooltip
+            // instead of opening the editor.
+            editDisabledReason={
+              showUnsupportedFormatCallout
+                ? "Only JPG, PNG and WebP can be edited"
+                : undefined
+            }
             onClick={() => {
               // Clear the sibling adjustment too — otherwise a stale
               // imageAdjustment (with an originalKey pointing at the removed
@@ -289,14 +297,6 @@ function JsonFormsImageControl({
               initialImageFit={initialImageFit}
               onSave={handleAdjustmentSave}
             />
-          )}
-          {showUnsupportedFormatCallout && (
-            <Infobox variant="warning" size="sm" mt="0.75rem">
-              <Text textStyle="body-2">
-                This image's format can't be edited. Only JPEG, PNG, and WebP
-                images can be cropped or adjusted.
-              </Text>
-            </Infobox>
           )}
           {showAnimatedFormatCallout && (
             <Infobox variant="warning" size="sm" mt="0.75rem">
