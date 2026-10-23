@@ -3,6 +3,7 @@ import type { HeroProps } from "~/interfaces/complex/Hero"
 import type { HomePageSchemaType } from "~/types"
 import { http, HttpResponse } from "msw"
 import {
+  HERO_BLOCK_IMAGE_POSITION,
   HERO_CAROUSEL_CONTENT_ALIGNMENT,
   HERO_CAROUSEL_LAYOUT,
 } from "~/interfaces/complex/Hero"
@@ -884,13 +885,29 @@ const heroCarouselHomepageProps = {
   ],
 }
 
-export const HeroCarouselBlock: Story = {
+export const HeroCarouselBlockImageRight: Story = {
   // The full page exceeds Chromatic's capture pixel limit at 320px wide.
   parameters: { chromatic: chromaticWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       ...heroCarouselHomepageProps,
-      carousel: { layout: HERO_CAROUSEL_LAYOUT.block },
+      carousel: {
+        layout: HERO_CAROUSEL_LAYOUT.block,
+        imagePosition: HERO_BLOCK_IMAGE_POSITION.right,
+      },
+    },
+  }),
+}
+
+export const HeroCarouselBlockImageLeft: Story = {
+  parameters: { chromatic: chromaticWithoutMobileSmall },
+  args: generateArgs({
+    heroProps: {
+      ...heroCarouselHomepageProps,
+      carousel: {
+        layout: HERO_CAROUSEL_LAYOUT.block,
+        imagePosition: HERO_BLOCK_IMAGE_POSITION.left,
+      },
     },
   }),
 }

@@ -45,6 +45,9 @@ export const HERO_BLOCK_IMAGE_POSITION = {
   right: "right",
 } as const
 
+export type HeroCarouselImagePosition =
+  (typeof HERO_BLOCK_IMAGE_POSITION)[keyof typeof HERO_BLOCK_IMAGE_POSITION]
+
 export const HERO_BLOCK_IMAGE_EDGE = {
   straight: "straight",
   curved: "curved",
@@ -297,6 +300,17 @@ const HeroCarouselSchema = Type.Object(
       [
         Type.Object({
           layout: Type.Literal(HERO_CAROUSEL_LAYOUT.block, { title: "Block" }),
+          imagePosition: Type.Union(
+            [
+              Type.Literal(HERO_BLOCK_IMAGE_POSITION.right, {
+                title: "Right",
+              }),
+              Type.Literal(HERO_BLOCK_IMAGE_POSITION.left, {
+                title: "Left",
+              }),
+            ],
+            { type: "string" },
+          ),
         }),
         Type.Object({
           layout: Type.Literal(HERO_CAROUSEL_LAYOUT.gradient, {

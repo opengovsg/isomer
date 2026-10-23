@@ -22,6 +22,7 @@ export {
   HeroSchema,
   type HeroBlockProps,
   type HeroCarouselContentAlignment,
+  type HeroCarouselImagePosition,
   type HeroCarouselLayout,
   type HeroProps,
   type HeroStyleVariant,

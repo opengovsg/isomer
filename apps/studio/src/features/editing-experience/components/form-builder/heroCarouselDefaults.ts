@@ -1,5 +1,6 @@
 import type { JsonSchema } from "@jsonforms/core"
 import {
+  HERO_BLOCK_IMAGE_POSITION,
   HERO_CAROUSEL_LAYOUT,
   HERO_STYLE,
   HeroCarouselSlideSchema,
@@ -42,7 +43,10 @@ export function nextVariantData(
   const seeded = isCarousel(next)
     ? {
         ...next,
-        carousel: { layout: HERO_CAROUSEL_LAYOUT.block },
+        carousel: {
+          layout: HERO_CAROUSEL_LAYOUT.block,
+          imagePosition: HERO_BLOCK_IMAGE_POSITION.right,
+        },
         slides: [
           {
             ...defaultHeroCarouselSlide({

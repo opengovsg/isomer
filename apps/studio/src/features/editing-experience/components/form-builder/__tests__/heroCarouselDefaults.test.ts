@@ -46,7 +46,7 @@ describe("nextVariantData", () => {
     // Assert
     expect(result).toEqual({
       variant: "carousel",
-      carousel: { layout: "block" },
+      carousel: { layout: "block", imagePosition: "right" },
       slides: [
         {
           backgroundUrl: "/uploads/existing.png",
@@ -68,7 +68,7 @@ describe("nextVariantData", () => {
     // Assert
     expect(result).toEqual({
       variant: "carousel",
-      carousel: { layout: "block" },
+      carousel: { layout: "block", imagePosition: "right" },
       slides: [
         { ...defaultHeroCarouselSlide(), title: "Hello" },
         defaultHeroCarouselSlide(),
@@ -148,7 +148,7 @@ describe("nextVariantData", () => {
     expect(result).toEqual({
       type: "hero",
       variant: "carousel",
-      carousel: { layout: "block" },
+      carousel: { layout: "block", imagePosition: "right" },
       slides: [
         {
           backgroundUrl: "/uploads/existing.png",

@@ -2,7 +2,10 @@ import { act, fireEvent, render, screen } from "@testing-library/react"
 import { useState } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { userEvent } from "vitest/browser"
-import { HERO_CAROUSEL_CONTENT_ALIGNMENT } from "~/interfaces/complex/Hero"
+import {
+  HERO_BLOCK_IMAGE_POSITION,
+  HERO_CAROUSEL_CONTENT_ALIGNMENT,
+} from "~/interfaces/complex/Hero"
 
 import { HERO_CAROUSEL_ROTATION_INTERVAL_MS } from "./constants"
 import { HeroCarouselBlockClient } from "./HeroCarouselBlockClient"
@@ -30,6 +33,15 @@ const tallSlide = {
 const carouselVariants = {
   block: (slides: (typeof shortSlide)[]) => (
     <HeroCarouselBlockClient
+      imagePosition={HERO_BLOCK_IMAGE_POSITION.right}
+      headingTag="h1"
+      inactiveHeadingTag="h2"
+      slides={slides}
+    />
+  ),
+  "block image left": (slides: (typeof shortSlide)[]) => (
+    <HeroCarouselBlockClient
+      imagePosition={HERO_BLOCK_IMAGE_POSITION.left}
       headingTag="h1"
       inactiveHeadingTag="h2"
       slides={slides}

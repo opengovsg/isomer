@@ -1,13 +1,15 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Box, FormControl } from "@chakra-ui/react"
+import { Box, Flex, FormControl } from "@chakra-ui/react"
 import { and, isAnyOfControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Radio } from "@opengovsg/design-system-react"
 import {
+  HERO_BLOCK_IMAGE_POSITION,
   HERO_CAROUSEL_CONTENT_ALIGNMENT,
   HERO_CAROUSEL_FORMAT,
   HERO_CAROUSEL_LAYOUT,
   type HeroCarouselContentAlignment,
+  type HeroCarouselImagePosition,
   type HeroCarouselLayout,
 } from "@opengovsg/isomer-components"
 import {
@@ -15,10 +17,12 @@ import {
   IconHeroCarouselGradient,
 } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { NewFeatureBadge } from "~/features/editing-experience/components/shared/NewFeatureBadge"
 
 interface HeroCarouselData {
   layout: HeroCarouselLayout
   contentAlignment?: HeroCarouselContentAlignment
+  imagePosition: HeroCarouselImagePosition
 }
 
 // Text-only choices — no card-style hover (illustrated layout radios keep default).
@@ -41,7 +45,7 @@ function JsonFormsHeroCarouselLayoutControl({
   handleChange,
   path,
 }: ControlProps): JSX.Element {
-  const { layout, contentAlignment } = data as HeroCarouselData
+  const { layout, contentAlignment, imagePosition } = data as HeroCarouselData
 
   return (
     <Box>
@@ -64,7 +68,10 @@ function JsonFormsHeroCarouselLayoutControl({
                     layout: value,
                     contentAlignment: HERO_CAROUSEL_CONTENT_ALIGNMENT.left,
                   }
-                : { layout: value as HeroCarouselLayout },
+                : {
+                    layout: HERO_CAROUSEL_LAYOUT.block,
+                    imagePosition: HERO_BLOCK_IMAGE_POSITION.right,
+                  },
             )
           }}
           value={layout}
@@ -87,6 +94,43 @@ function JsonFormsHeroCarouselLayoutControl({
           </Radio>
         </Radio.RadioGroup>
       </FormControl>
+      {layout === HERO_CAROUSEL_LAYOUT.block && (
+        <FormControl isRequired gap="0.5rem" mt="1rem">
+          <FormLabel color="base.content.default">Image position</FormLabel>
+          <Radio.RadioGroup
+            display="flex"
+            flexDir="row"
+            gap={2}
+            onChange={(value) => {
+              handleChange(path, {
+                layout: HERO_CAROUSEL_LAYOUT.block,
+                imagePosition: value as HeroCarouselImagePosition,
+              })
+            }}
+            value={imagePosition}
+          >
+            <Radio
+              value={HERO_BLOCK_IMAGE_POSITION.right}
+              allowDeselect={false}
+              size="sm"
+              __css={textRadioCss}
+            >
+              Right
+            </Radio>
+            <Radio
+              value={HERO_BLOCK_IMAGE_POSITION.left}
+              allowDeselect={false}
+              size="sm"
+              __css={textRadioCss}
+            >
+              <Flex as="span" align="center">
+                Left
+                <NewFeatureBadge />
+              </Flex>
+            </Radio>
+          </Radio.RadioGroup>
+        </FormControl>
+      )}
       {layout === HERO_CAROUSEL_LAYOUT.gradient && (
         <FormControl isRequired gap="0.5rem" mt="1rem">
           <FormLabel color="base.content.default">Content alignment</FormLabel>

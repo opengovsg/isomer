@@ -1,6 +1,11 @@
 "use client"
 
 import type { HeadingTag } from "~/utils/getHeadingTag"
+import {
+  HERO_BLOCK_IMAGE_POSITION,
+  type HeroCarouselImagePosition,
+} from "~/interfaces/complex/Hero"
+import { tv } from "~/lib/tv"
 
 import type { HeroCarouselSlideView } from "./CarouselSlides"
 import { CarouselDotsControl, CarouselPauseControl } from "./CarouselControls"
@@ -11,12 +16,56 @@ import {
 } from "./CarouselSlides"
 import { useRotation } from "./hooks/useRotation"
 
+const blockCarouselStyles = tv({
+  slots: {
+    section:
+      "relative flex min-h-[15rem] flex-col [touch-action:pan-y_pinch-zoom] sm:min-h-[22.5rem] lg:min-h-[31.25rem]",
+    mobilePause: "absolute right-6 z-20 md:right-10 lg:hidden",
+    textColumn:
+      "flex flex-col bg-brand-canvas-inverse px-6 pb-6 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pb-12",
+    content:
+      "grid w-full max-w-[548px] grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-9 text-base-content-inverse lg:mx-0",
+    imageColumn:
+      "relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2",
+    mobileDots:
+      "absolute left-6 z-20 flex h-10 items-center md:left-10 lg:hidden [@media(pointer:coarse)]:h-11",
+  },
+  variants: {
+    imagePosition: {
+      [HERO_BLOCK_IMAGE_POSITION.right]: {
+        section: "lg:flex-row",
+        mobilePause: "bottom-6",
+        textColumn: "lg:pl-10 lg:pr-8",
+        content: "lg:ml-auto",
+        mobileDots: "bottom-6",
+      },
+      [HERO_BLOCK_IMAGE_POSITION.left]: {
+        section: "max-lg:flex-col-reverse lg:flex-row-reverse",
+        mobilePause: "top-[calc(20rem-1.5rem)] -translate-y-full",
+        textColumn: "lg:pl-16 lg:pr-10",
+        mobileDots: "top-[calc(20rem-1.5rem)] -translate-y-full",
+      },
+    } satisfies Record<
+      HeroCarouselImagePosition,
+      {
+        section: string
+        mobilePause: string
+        textColumn: string
+        mobileDots: string
+        content?: string
+      }
+    >,
+  },
+})
+
 export const HeroCarouselBlockClient = ({
+  imagePosition,
   headingTag,
   inactiveHeadingTag,
   assetsBaseUrl,
   slides,
 }: {
+  imagePosition: HeroCarouselImagePosition
   headingTag: HeadingTag
   inactiveHeadingTag: HeadingTag
   assetsBaseUrl?: string
@@ -29,10 +78,11 @@ export const HeroCarouselBlockClient = ({
     politeness,
     sectionProps,
   } = useRotation(slides.length)
+  const styles = blockCarouselStyles({ imagePosition })
 
   return (
     <section
-      className="relative flex min-h-[15rem] flex-col [touch-action:pan-y_pinch-zoom] sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row"
+      className={styles.section()}
       aria-roledescription="carousel"
       aria-label="Hero carousel"
       {...sectionProps}
@@ -41,11 +91,11 @@ export const HeroCarouselBlockClient = ({
       <CarouselPauseControl
         currentIndex={currentIndex}
         rotation={controlProps.rotation}
-        className="absolute bottom-6 right-6 z-20 md:right-10 lg:hidden"
+        className={styles.mobilePause()}
       />
-      <div className="flex flex-col bg-brand-canvas-inverse px-6 pb-6 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pb-12 lg:pl-10 lg:pr-8">
+      <div className={styles.textColumn()}>
         {/* Desktop: copy on row 1, dots left and pause right on row 2. */}
-        <div className="grid w-full max-w-[548px] grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-9 text-base-content-inverse lg:mx-0 lg:ml-auto">
+        <div className={styles.content()}>
           <CarouselPauseControl
             currentIndex={currentIndex}
             rotation={controlProps.rotation}
@@ -70,10 +120,7 @@ export const HeroCarouselBlockClient = ({
         </div>
       </div>
 
-      <div
-        className="relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2"
-        style={{ contain: "layout" }}
-      >
+      <div className={styles.imageColumn()} style={{ contain: "layout" }}>
         <CarouselSlideImages
           slides={slides}
           currentIndex={currentIndex}
@@ -81,7 +128,7 @@ export const HeroCarouselBlockClient = ({
         />
       </div>
       {/* Below lg, dots overlay the image after the call to action. h-10 centres them on the pause. */}
-      <div className="absolute bottom-6 left-6 z-20 flex h-10 items-center md:left-10 lg:hidden [@media(pointer:coarse)]:h-11">
+      <div className={styles.mobileDots()}>
         <CarouselDotsControl
           slideCount={controlProps.slideCount}
           currentIndex={currentIndex}

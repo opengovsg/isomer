@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import {
+  HERO_BLOCK_IMAGE_POSITION,
   HERO_CAROUSEL_CONTENT_ALIGNMENT,
   HERO_CAROUSEL_LAYOUT,
 } from "~/interfaces/complex/Hero"
@@ -230,7 +231,10 @@ export const CarouselBlock: Story = {
     headingLevel: 1,
     site: generateSiteConfig(),
     variant: "carousel",
-    carousel: { layout: HERO_CAROUSEL_LAYOUT.block },
+    carousel: {
+      layout: HERO_CAROUSEL_LAYOUT.block,
+      imagePosition: HERO_BLOCK_IMAGE_POSITION.right,
+    },
     slides: [
       {
         backgroundUrl:
@@ -272,6 +276,16 @@ export const CarouselBlock: Story = {
       },
     ],
     theme: "default",
+  },
+}
+
+export const CarouselBlockImageLeft: Story = {
+  args: {
+    ...CarouselBlock.args,
+    carousel: {
+      layout: HERO_CAROUSEL_LAYOUT.block,
+      imagePosition: HERO_BLOCK_IMAGE_POSITION.left,
+    },
   },
 }
 

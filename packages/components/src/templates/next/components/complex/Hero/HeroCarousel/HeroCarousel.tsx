@@ -49,6 +49,7 @@ export const HeroCarousel = ({
           inactiveHeadingTag={inactiveHeadingTag}
           assetsBaseUrl={site.assetsBaseUrl}
           slides={slideViews}
+          imagePosition={carousel.imagePosition}
         />
       )
     case HERO_CAROUSEL_LAYOUT.gradient:
