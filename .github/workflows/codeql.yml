@@ -1,16 +1,13 @@
 name: 'CodeQL'
 
-on:
+# GHA is free for public repos; no concurrency grouping.
+on: # jactionlint ignore=concurrency-limits
  push:
    branches: [ 'main' ]
  pull_request: 
    branches: [ 'main' ]
  schedule:
    - cron: '0 10 * * *'
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
  analyze:

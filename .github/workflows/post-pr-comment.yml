@@ -14,17 +14,14 @@ name: Post PR comments
 #
 # This job downloads a small metadata artifact written by ci.yml, since the
 # two workflows run in separate contexts and can't share environment variables.
-on:
+# GHA is free for public repos; no concurrency grouping.
+on: # jactionlint ignore=concurrency-limits
   # Fork PR comments need base-repo token; metadata validated, not sourced from artifacts.
   workflow_run: # jactionlint ignore=dangerous-triggers
     workflows: ["CI"]
     types: [completed]
 
 permissions: {}
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.workflow_run.id }}
-  cancel-in-progress: true
 
 jobs:
   post-e2e-comment:

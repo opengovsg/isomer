@@ -19,17 +19,14 @@ name: Update PR description
 # This job downloads a small metadata artifact written by pr-breakdown.yml,
 # since the two workflows run in separate contexts and can't share
 # environment variables.
-on:
+# GHA is free for public repos; no concurrency grouping.
+on: # jactionlint ignore=concurrency-limits
   # Fork PR description updates; PR resolved from workflow_run head, not artifact.
   workflow_run: # jactionlint ignore=dangerous-triggers
     workflows: ["pr-breakdown"]
     types: [completed]
 
 permissions: {}
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.workflow_run.id }}
-  cancel-in-progress: true
 
 jobs:
   pr-diff-description:

@@ -9,12 +9,10 @@ name: pr-breakdown
 # finishes, instead of waiting on ci.yml's slower jobs (e2e-tests,
 # test-studio, etc). See update-pr-description.yml for why a `workflow_run`
 # trigger is needed at all.
-on:
+# GHA is free for public repos; no concurrency grouping.
+on: # jactionlint ignore=concurrency-limits
   pull_request:
     types: [opened, synchronize]
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
 
 permissions:
   contents: read

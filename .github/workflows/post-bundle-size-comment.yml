@@ -27,17 +27,14 @@ name: Post bundle size comment
 # value is a plain non-negative integer — and never runs a script the
 # artifact supplied. comment-template-bundle-size.sh instead comes from this
 # job's own checkout of the trusted base-repo ref.
-on:
+# GHA is free for public repos; no concurrency grouping.
+on: # jactionlint ignore=concurrency-limits
   # Fork PR comments need base-repo token; values.env validated, never sourced.
   workflow_run: # jactionlint ignore=dangerous-triggers
     workflows: ["bundle-size"]
     types: [completed]
 
 permissions: {}
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.workflow_run.id }}
-  cancel-in-progress: true
 
 jobs:
   post-bundle-size-comment:

@@ -8,7 +8,8 @@ name: Update publisher script
 # trigger type (push, release, workflow_dispatch) isn't worth the complexity.
 # No direct trigger of its own (yet) - wire this up from a caller
 # (workflow_call) or run it manually (workflow_dispatch).
-on:
+# GHA is free for public repos; no concurrency grouping.
+on: # jactionlint ignore=concurrency-limits
   workflow_dispatch:
     inputs:
       aws-region:
@@ -49,10 +50,6 @@ on:
         type: string
 
 permissions: {}
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   update-publisher:

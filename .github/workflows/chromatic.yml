@@ -2,17 +2,14 @@
 name: "Chromatic"
 
 # Event for the workflow
-on:
+# GHA is free for public repos; no concurrency grouping.
+on: # jactionlint ignore=concurrency-limits
   pull_request:
     types: [opened, reopened, synchronize]
 
   push:
     branches:
       - main
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
 
 permissions:
   contents: read
