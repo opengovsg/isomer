@@ -19,8 +19,6 @@ describe("resolveAdjustmentConfig", () => {
   // registry entry can't silently light the modal up on one of them.
   describe("Tier D (preserve-only) blocks resolve no config", () => {
     const tierDBlocks = [
-      { type: "image" },
-      { type: "imagegallery" },
       { type: "logocloud" },
       { type: "video" },
       { type: "navbar" },
@@ -32,6 +30,48 @@ describe("resolveAdjustmentConfig", () => {
         ).toBeUndefined()
       })
     }
+  })
+
+  // Native Image block (P2a): the one block that offers a free-form crop with no
+  // focal point — it renders at its own cropped aspect ratio, so nothing
+  // cover-fits and an anchor would have nothing to anchor. Lock in custom/no-focal
+  // and that it previews the real component (not the framed approximation).
+  describe("image (P2a — free-form crop)", () => {
+    const config = resolveAdjustmentConfig({
+      block: { type: "image" },
+      fieldName: "src",
+    })
+
+    it("resolves a custom-crop, no-focal config", () => {
+      expect(config).toBeDefined()
+      expect(config?.cropMode).toBe("custom")
+      expect(config?.focalEnabled).toBe(false)
+      expect(config?.lockedRatios).toBeUndefined()
+      expect(config?.skipRealComponentPreview).toBeFalsy()
+      expect(config?.previewStates.length).toBeGreaterThan(0)
+    })
+  })
+
+  // ImageGallery (P2b): array-nested, always letterboxed (object-contain). Crop
+  // is offered but there's no focal (nothing cover-fits), and the preview uses
+  // the framed approximation with a contain fit (the real component renders the
+  // whole gallery, not the single image being edited).
+  describe("imagegallery (P2b — crop, letterboxed)", () => {
+    const config = resolveAdjustmentConfig({
+      block: { type: "imagegallery" },
+      fieldName: "src",
+    })
+
+    it("resolves a custom-crop, no-focal, contain-preview config", () => {
+      expect(config).toBeDefined()
+      expect(config?.cropMode).toBe("custom")
+      expect(config?.focalEnabled).toBe(false)
+      expect(config?.lockedRatios).toBeUndefined()
+      // Array-nested: preview the single image framed, not the whole gallery.
+      expect(config?.skipRealComponentPreview).toBe(true)
+      // Always letterboxed → the preview must contain, never cover.
+      expect(config?.previewObjectFitFor?.({})).toBe("contain")
+    })
   })
 
   describe("hero:floating", () => {
@@ -102,6 +142,16 @@ describe("resolveAdjustmentConfig", () => {
     it("mirrors the full-image card's bottom gradient overlay as a scrim", () => {
       expect(withImages?.scrim).toBeUndefined()
       expect(fullImage?.scrim?.className).toContain("bg-gradient-to-t")
+    })
+
+    // common.ts: the card image is aspect-[3/2] across breakpoints; it only squares
+    // off (lg:aspect-square) in the default 3-column layout at ≥1024px, which the
+    // framed preview can't know. Keep every breakpoint 3:2 to match the shape editors
+    // see (including desktop, not 1:1).
+    it("previews the card at 3:2 on every breakpoint", () => {
+      for (const state of withImages?.previewStates ?? []) {
+        expect(state.aspectRatio).toEqual({ width: 3, height: 2 })
+      }
     })
   })
 })

@@ -63,6 +63,13 @@ export interface AdjustmentConfig {
   // that frame even at 1x — i.e. the result would look soft/blurry. Omit for
   // components whose frame width isn't meaningfully bounded.
   maxRenderedWidthPx?: number
+  // The tallest CSS-pixel height of that same rendered frame. Needed to warn
+  // correctly for fixed-height frames: under object-contain the image is only
+  // upscaled when it falls short on BOTH axes, so a height target is required to
+  // tell a genuinely small crop from a sharp wide/tall one (see
+  // computeLowResWarning). Omit when the frame height isn't meaningfully bounded
+  // (e.g. a width-driven natural-aspect image whose height just follows width).
+  maxRenderedHeightPx?: number
   // Tier C conditional focal: overrides focalEnabled based on the field's
   // immediate host object — the block itself, or for an array-nested image field
   // (e.g. an InfoCards card) the card object. InfoCards offers the focal point

@@ -24,11 +24,12 @@ const infoCardPreviewObjectFit = (fieldHost: unknown): "cover" | "contain" =>
     ? "contain"
     : "cover"
 
-// Every Tier B config previews at the same three breakpoint viewport widths
-// (mobile 375 / tablet 768 / desktop 1280); only the aspect-ratio guess differs
-// per component, so declare just the ratios. The ratios are an initial guess —
-// PreviewFrame measures the real rendered height — so they only need to be in
-// the right ballpark for the pre-measure flash.
+// Standard Desktop/Tablet/Mobile preview set, shared by every component so all
+// editor previews show the same three breakpoint viewport widths (mobile 375 /
+// tablet 768 / desktop 1280); only the aspect ratio differs per component. For
+// real-component previews the ratio is just a pre-measure flash guess
+// (PreviewFrame measures the real rendered height); for framed previews
+// (skipRealComponentPreview) it sets the tile's actual shape.
 const responsivePreviewStates = (ratios: {
   mobile: AspectRatio
   tablet: AspectRatio
@@ -67,10 +68,12 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   // Full-bleed; no CSS width cap. Warn against the 1280px content ceiling
   // (max-w-screen-xl) as a conservative "looks soft on desktop" floor.
   maxRenderedWidthPx: 1280,
+  // Closest common ratio to each breakpoint's hero band (375×240→16:10,
+  // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
   previewStates: responsivePreviewStates({
-    mobile: { width: 375, height: 240 },
-    tablet: { width: 768, height: 360 },
-    desktop: { width: 1280, height: 500 },
+    mobile: { width: 16, height: 10 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 5, height: 2 },
   }),
   // Mirrors HeroGradient's left-to-right dark gradient so editors can judge
   // text contrast against the chosen crop/focal.
@@ -95,10 +98,12 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   focalEnabled: true,
   // Image band is half the viewport at lg (lg:w-1/2); ~960px on large desktop.
   maxRenderedWidthPx: 960,
+  // Closest common ratio to each breakpoint's hero band (375×240→16:10,
+  // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
   previewStates: responsivePreviewStates({
-    mobile: { width: 375, height: 240 },
-    tablet: { width: 768, height: 360 },
-    desktop: { width: 1280, height: 500 },
+    mobile: { width: 16, height: 10 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 5, height: 2 },
   }),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text.",
@@ -115,20 +120,15 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
   // Fixed 200px-wide frame from sm up (sm:w-[200px]).
   maxRenderedWidthPx: 200,
   // Contentpic stacks (image above text) as a column below Tailwind `sm` (640px)
-  // and switches to its real side-by-side row layout — image fixed at 200×240 —
-  // at `sm` and up (`sm:flex-row`). Preview at exactly 640px so the frame shows
-  // that true desktop row layout rather than the narrow mobile column a <640px
-  // viewport would render; it's also the smallest faithful desktop width, which
-  // keeps the image as large as possible once the frame is scaled down.
-  previewStates: [
-    {
-      id: "desktop",
-      label: "Desktop",
-      viewportWidth: 640,
-      // Rough landscape estimate for the pre-measure flash only.
-      aspectRatio: { width: 640, height: 300 },
-    },
-  ],
+  // and switches to its side-by-side row layout at `sm` and up (`sm:flex-row`),
+  // so Mobile (375) shows the stacked layout while Tablet/Desktop show the row.
+  // Aspect ratios are pre-measure flash guesses only (PreviewFrame measures the
+  // real rendered height).
+  previewStates: responsivePreviewStates({
+    mobile: { width: 4, height: 5 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 2, height: 1 },
+  }),
   preUploadCopy:
     "Use a high-resolution image (at least 400×480px) with a 5:6 (portrait) aspect ratio. Keep the key subject centered — the image is cropped to a fixed portrait frame beside your text.",
 }
@@ -141,10 +141,12 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
   focalEnabled: true,
   // One of two columns at lg (lg:grid-cols-2); ~960px on large desktop.
   maxRenderedWidthPx: 960,
+  // Closest common ratio to each breakpoint's frame (375×300→5:4,
+  // 768×400→2:1, 1280×450→3:1); the real tile height is still measured.
   previewStates: responsivePreviewStates({
-    mobile: { width: 375, height: 300 },
-    tablet: { width: 768, height: 400 },
-    desktop: { width: 1280, height: 450 },
+    mobile: { width: 5, height: 4 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 3, height: 1 },
   }),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px). Place the key subject on the side matching where the image sits (left or right) rather than centering it.",
@@ -245,6 +247,11 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
 // so the preview switches to object-contain (previewObjectFitFor) and the focal
 // control is hidden. The preview uses the framed-image approximation, not the
 // real block (which would render every card), with the three ratio states.
+// Card image frame is `aspect-[3/2]` across breakpoints (common.ts). It squares
+// off (lg:aspect-square) ONLY in the default 3-column layout at ≥1024px — an edge
+// the framed preview can't know (no real viewport/column count) and that the
+// narrower Studio preview pane doesn't show either, so desktop keeps the 3:2 base
+// to match mobile/tablet and the shape editors actually see.
 const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   componentType: "infocards:cardsWithImages",
   cropMode: "custom",
@@ -256,24 +263,11 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
   skipRealComponentPreview: true,
-  previewStates: [
-    {
-      id: "mobile",
-      label: "Mobile",
-      viewportWidth: 375,
-      aspectRatio: { width: 3, height: 2 },
-    },
-    {
-      id: "desktop",
-      label: "Desktop (3 columns)",
-      aspectRatio: { width: 1, height: 1 },
-    },
-    {
-      id: "wide",
-      label: "Desktop (2 columns)",
-      aspectRatio: { width: 2, height: 1 },
-    },
-  ],
+  previewStates: responsivePreviewStates({
+    mobile: { width: 3, height: 2 },
+    tablet: { width: 3, height: 2 },
+    desktop: { width: 3, height: 2 },
+  }),
   preUploadCopy:
     "The card crops this image to fill its frame, and the frame's shape changes across screen sizes. Set a focal point so your key subject stays in view.",
 }
@@ -293,24 +287,88 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
   skipRealComponentPreview: true,
-  previewStates: [
-    {
-      id: "mobile",
-      label: "Mobile",
-      viewportWidth: 375,
-      aspectRatio: { width: 1, height: 1 },
-    },
-    { id: "desktop", label: "Desktop", aspectRatio: { width: 2, height: 3 } },
-  ],
+  // Card is square up to lg, then 2:3 portrait at lg: square on mobile/tablet,
+  // portrait on desktop.
+  previewStates: responsivePreviewStates({
+    mobile: { width: 1, height: 1 },
+    tablet: { width: 1, height: 1 },
+    desktop: { width: 2, height: 3 },
+  }),
   // Approximates the real card's bottom-half dark gradient (the title overlay):
   // opaque at the bottom edge, fading out by the vertical midpoint.
   scrim: {
     id: "infocards-full-image-overlay",
+    // Exactly the gradient InfoCardWithFullImage renders (from-[…100%] to-[…0%]),
+    // so Studio's Tailwind actually generates these classes (it scans the real
+    // component) and the preview overlay matches the published card.
     className:
-      "bg-gradient-to-t from-[rgba(38,38,38,0.9)] via-[rgba(38,38,38,0)] via-[50%] to-transparent",
+      "bg-gradient-to-t from-[rgba(38,38,38,100%)] to-[rgba(38,38,38,0%)]",
   },
   preUploadCopy:
     "The card crops this image to fill its frame and overlays the title on a dark gradient at the bottom. Keep your key subject in the upper half and set a focal point to anchor it.",
+}
+
+// Native Image block (P2a) — free-form crop. Unlike every framed component, the
+// native image renders at its own (now cropped) aspect ratio with no fixed
+// frame, so the crop is unconstrained (custom) and there's no focal point to
+// set — nothing cover-fits, so an anchor would have nothing to anchor against.
+// The crop is baked into src; the real-component preview renders the actual
+// Image block, so no skipRealComponentPreview. The image is the same shape at
+// every breakpoint (it just scales), so the three breakpoints show the same crop
+// at different widths — kept for a consistent Desktop/Tablet/Mobile set.
+const IMAGE_CONFIG: AdjustmentConfig = {
+  componentType: "image",
+  cropMode: "custom",
+  focalEnabled: false,
+  // Widest the native image renders: the content column is full-width (col-span-12)
+  // just below the `lg` breakpoint, ~943px at a 1023px viewport (above `lg` it
+  // narrows to col-span-9). Round up to 960 so a sharp image at that width doesn't
+  // false-warn while genuinely soft crops below it still do.
+  maxRenderedWidthPx: 960,
+  // Free-form crop: no fixed ratio, so previews carry no aspectRatio — the
+  // caption shows width only and the real render is measured.
+  previewStates: [
+    { id: "mobile", label: "Mobile", viewportWidth: 375 },
+    { id: "tablet", label: "Tablet", viewportWidth: 768 },
+    { id: "desktop", label: "Desktop", viewportWidth: 1280 },
+  ],
+  preUploadCopy:
+    "You can crop this image to any shape. Use a high-resolution image so the area you keep stays sharp at the size it displays on your page.",
+}
+
+// ImageGallery (P2b) — array-nested, always letterboxed. Every gallery image
+// renders object-contain in a fixed-height frame (main slideshow + square
+// thumbnails), so nothing cover-fits: the crop only defines the region that is
+// baked in and then letterboxed, and a focal anchor has nothing to anchor
+// against (same as InfoCards under "Resize image to fit"). Array-nested, so the
+// real component renders the WHOLE gallery, not the single image being edited —
+// use the framed approximation with a contain preview fit. This enables cropping
+// only; it does not add a cover/"Fill" display option (the frame still
+// letterboxes), which would be a separate renderer + schema change.
+const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
+  componentType: "imagegallery",
+  cropMode: "custom",
+  focalEnabled: false,
+  // Main slideshow: full content column wide (~943px just below `lg`, round up to
+  // 960) and a fixed 28.5rem = 456px tall, object-contain. Both axes are needed
+  // because contain only upscales when the crop falls short on BOTH — so a wide
+  // landscape or a tall portrait stays sharp and doesn't false-warn, while a
+  // genuinely small crop still does (see computeLowResWarning).
+  maxRenderedWidthPx: 960,
+  maxRenderedHeightPx: 456,
+  previewObjectFitFor: () => "contain",
+  skipRealComponentPreview: true,
+  // object-contain shows the whole image regardless of frame shape. The frame is
+  // a fixed height (17rem mobile → 28.5rem from sm) over the content column, so it
+  // grows wider as the viewport grows — the three states approximate that frame
+  // shape per breakpoint (the image is letterboxed to fit either way).
+  previewStates: responsivePreviewStates({
+    mobile: { width: 5, height: 4 },
+    tablet: { width: 3, height: 2 },
+    desktop: { width: 2, height: 1 },
+  }),
+  preUploadCopy:
+    "Gallery images are shown in full (letterboxed to fit the frame), never cropped to it. Crop here only to trim parts of the image you don't want to show.",
 }
 
 /**
@@ -323,6 +381,8 @@ export function resolveAdjustmentConfig(args: {
   fieldName: string
 }): AdjustmentConfig | undefined {
   const { type, variant } = asBlock(args.block)
+  if (type === "image") return IMAGE_CONFIG
+  if (type === "imagegallery") return IMAGE_GALLERY_CONFIG
   if (type === "hero" && variant === "gradient") return HERO_GRADIENT_CONFIG
   if (type === "hero" && variant === "largeImage")
     return HERO_LARGE_IMAGE_CONFIG
