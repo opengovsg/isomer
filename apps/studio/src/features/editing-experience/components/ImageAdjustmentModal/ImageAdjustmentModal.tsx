@@ -389,7 +389,7 @@ export const ImageAdjustmentModal = ({
                     layout lets the image either cover (Fill) or letterbox (Fit)
                     its frame. Inline segmented toggle to keep the UI compact. */}
                 {hasImageFitControl && (
-                  <HStack w="100%" flexShrink={0} justify="space-between">
+                  <HStack flexShrink={0} spacing="0.75rem">
                     <HStack spacing="0.25rem">
                       <Text textStyle="subhead-2">Image fit</Text>
                       <Tooltip
@@ -397,11 +397,16 @@ export const ImageAdjustmentModal = ({
                         placement="top"
                         hasArrow
                       >
-                        <Icon
-                          as={BiInfoCircle}
+                        {/* A span gives the tooltip a stable anchor — an Icon/svg
+                            ref alone mis-anchors it to the page corner. */}
+                        <Box
+                          as="span"
+                          display="inline-flex"
                           color="base.content.medium"
                           aria-label="Image fit help"
-                        />
+                        >
+                          <Icon as={BiInfoCircle} />
+                        </Box>
                       </Tooltip>
                     </HStack>
                     <ButtonGroup isAttached size="xs" aria-label="Image fit">
