@@ -344,7 +344,7 @@ jobs:
       - name: Upload test results
         if: ${{ !cancelled() }}
         id: upload-test-results
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           # Unique per run+feature so that re-runs and parallel jobs don't collide.
           name: e2e-test-results-${{ github.run_id }}-${{ matrix.feature }}
@@ -370,7 +370,7 @@ jobs:
       # single shared "e2e-comment-metadata" name from every matrix job would collide.
       - name: Upload E2E comment metadata
         if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.upload-test-results.outputs.artifact-url != '' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: e2e-comment-metadata-${{ matrix.feature }}
           path: /tmp/e2e-metadata/

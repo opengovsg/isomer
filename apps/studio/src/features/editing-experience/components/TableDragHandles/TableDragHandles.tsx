@@ -34,10 +34,19 @@ import { useAxisDragGesture } from "./internal/useAxisDragGesture"
 import { useHoveredTable } from "./internal/useHoveredTable"
 import { useTableGeometries } from "./internal/useTableGeometries"
 
+const columnCenterIsVisible = (
+  rect: { left: number; width: number },
+  frame: { left: number; width: number },
+) => {
+  const center = rect.left + rect.width / 2
+  return center >= frame.left && center <= frame.left + frame.width
+}
+
 export interface TableDragHandlesProps {
   editor: TiptapEditor | null
   containerRef: RefObject<HTMLElement>
   onDragStateChange?: (isDragging: boolean) => void
+  expandedTablePos?: number | null
 }
 
 /**
@@ -49,12 +58,25 @@ export const TableDragHandles = ({
   editor,
   containerRef,
   onDragStateChange,
+  expandedTablePos = null,
 }: TableDragHandlesProps) => {
   const geometries = useTableGeometries(editor, containerRef)
+  const visibleGeometries = useMemo(
+    () =>
+      expandedTablePos === null
+        ? geometries
+        : geometries.filter((geometry) => geometry.pos === expandedTablePos),
+    [expandedTablePos, geometries],
+  )
   const { drag, beginGesture, isGestureActive, consumeClickSuppression } =
-    useAxisDragGesture({ editor, containerRef, geometries, onDragStateChange })
+    useAxisDragGesture({
+      editor,
+      containerRef,
+      geometries: visibleGeometries,
+      onDragStateChange,
+    })
   const { tablePos: hoverTablePos, cornerTablePos } = useHoveredTable(
-    geometries,
+    visibleGeometries,
     containerRef,
     isGestureActive,
   )
@@ -76,7 +98,7 @@ export const TableDragHandles = ({
 
   const dropIndicator = useMemo(() => {
     if (!drag) return null
-    const geometry = geometryAt(geometries, drag.tablePos)
+    const geometry = geometryAt(visibleGeometries, drag.tablePos)
     const bounds = geometry ? getTableBounds(geometry) : null
     if (!bounds) return null
     const at =
@@ -85,7 +107,7 @@ export const TableDragHandles = ({
     return drag.axis === "row"
       ? { left: bounds.left, top: at, width: bounds.width, height: 2 }
       : { left: at, top: bounds.top, width: 2, height: bounds.height }
-  }, [drag, geometries])
+  }, [drag, visibleGeometries])
 
   if (!editor) return null
 
@@ -97,9 +119,15 @@ export const TableDragHandles = ({
   const renderAxisHandles = (geometry: TableGeometry, axis: Axis) => {
     const selected = selectedIndexesFor(selectionTarget, geometry.pos, axis)
     const rects = AXIS_VIEW[axis].rectsOf(geometry)
+    const frame = geometry.frame
 
     return rects.map((rect, index) => {
       if (!rect) return null
+      if (axis === "column" && frame && !columnCenterIsVisible(rect, frame)) {
+        return null
+      }
+      const placed =
+        axis === "row" && frame ? { ...rect, left: frame.left } : rect
       const isActive =
         // A multi-slot selection leaves every handle passive.
         (selected.length === 1 && selected.includes(index)) ||
@@ -110,7 +138,7 @@ export const TableDragHandles = ({
         <AxisHandle
           key={`${axis}-${geometry.pos}-${index}`}
           axis={axis}
-          rect={rect}
+          rect={placed}
           isActive={isActive}
           tablePos={geometry.pos}
           index={index}
@@ -149,13 +177,22 @@ export const TableDragHandles = ({
   const renderAddPills = (geometry: TableGeometry) => {
     const bounds = getTableBounds(geometry)
     if (!bounds || hoverTablePos !== geometry.pos || drag) return null
-    const rowPillWidth = Math.max(bounds.width, ADD_PILL_MIN_LENGTH_PX)
+    const frame = geometry.frame
+    const tableLeft = bounds.left
+    const tableRight = bounds.left + bounds.width
+    const frameLeft = frame?.left ?? tableLeft
+    const frameRight = frame ? frame.left + frame.width : tableRight
+    const visibleLeft = Math.max(tableLeft, frameLeft)
+    const visibleRight = Math.min(tableRight, frameRight)
+    const visibleWidth = Math.max(visibleRight - visibleLeft, 0)
+    const rowPillWidth = Math.max(visibleWidth, ADD_PILL_MIN_LENGTH_PX)
     const colPillHeight = Math.max(bounds.height, ADD_PILL_MIN_LENGTH_PX)
+    const columnAnchor = Math.min(tableRight, frameRight)
     return (
       <>
         <AddPillButton
           axis="row"
-          left={bounds.left + (bounds.width - rowPillWidth) / 2}
+          left={visibleLeft + (visibleWidth - rowPillWidth) / 2}
           top={bounds.top + bounds.height + TABLE_CHROME_GAP_PX}
           width={rowPillWidth}
           height={TABLE_CHROME_THICKNESS_PX}
@@ -163,7 +200,7 @@ export const TableDragHandles = ({
         />
         <AddPillButton
           axis="column"
-          left={bounds.left + bounds.width + TABLE_CHROME_GAP_PX}
+          left={columnAnchor + TABLE_CHROME_GAP_PX}
           top={bounds.top + (bounds.height - colPillHeight) / 2}
           width={TABLE_CHROME_THICKNESS_PX}
           height={colPillHeight}
@@ -175,7 +212,7 @@ export const TableDragHandles = ({
 
   return (
     <>
-      {geometries.map((geometry) => (
+      {visibleGeometries.map((geometry) => (
         <Fragment key={geometry.pos}>
           {AXES.map((axis) => renderAxisHandles(geometry, axis))}
           {renderSelectTableButton(geometry)}

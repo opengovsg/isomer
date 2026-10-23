@@ -60,10 +60,11 @@ allowBuilds:
   protobufjs: false
   sharp: false
   ssh2: false
+  "@swc/core": false
   core-js: false
 
 patchedDependencies:
-  next@16.3.3: patches/next@16.3.3.patch
+  next@16.4.2: patches/next@16.4.2.patch
 
 catalog:
   # v4 is pinned deliberately: the legacy egazette integration uses the v4 client API
@@ -73,17 +74,17 @@ catalog:
   ajv: ^8.20.0
   autoprefixer: ^10.6.1
   axios: ^1.20.0
-  bootstrap-icons: ^1.13.1
+  bootstrap-icons: ^1.13.2
   browserslist-useragent-regexp: ^4.1.4
   cheerio: ^1.2.0
-  chromatic: ^18.10.1
+  chromatic: ^18.12.0
   clean-webpack-plugin: ^4.0.0
   dayjs: ^1.11.23
   date-fns: ^4.4.0
   dotenv: ^16.6.1
   dotenv-cli: ^11.0.0
   jsdom: ^30.1.2
-  isomorphic-dompurify: ^4.4.0
+  isomorphic-dompurify: ^4.5.0
   mockdate: ^3.0.5
   msw: ^3.0.0
   msw-storybook-addon: ^3.0.3
@@ -96,19 +97,19 @@ catalog:
   "@opengovsg/validators": ^1.4.1
   "@paralleldrive/cuid2": ^3.3.0
   "@sinclair/typebox": ^0.33.24
-  "@tanstack/react-table": ^9.2.4
+  "@tanstack/react-table": ^9.3.1
   "@testing-library/react": ^16.3.3
-  pino: ^10.3.1
+  pino: ^10.4.0
   pino-pretty: ^13.2.0
   postcss: ^8.5.28
-  postcss-preset-env: ^11.5.2
+  postcss-preset-env: ^11.6.1
   react-icons: ^5.7.0
   rimraf: ^6.1.3
   react-instantsearch: ^7.52.0
   sherif: ^1.13.0
   start-server-and-test: ^3.0.12
   tailwindcss: ^3.4.19
-  testcontainers: ^12.2.0
+  testcontainers: ^12.2.1
   tsc-alias: ^1.9.4
   "@typescript/native-preview": 7.0.0-dev.20260707.2
   type-fest: ^5.10.0
@@ -153,21 +154,21 @@ catalog:
   js-md5: ^0.9.2
   kysely: ^0.29.6
   lodash-es: ^4.18.1
-  nanoid: ^6.0.1
-  next: 16.3.3
+  nanoid: ^6.0.2
+  next: 16.4.2
   openid-client: ^5.7.1
   oxfmt: ^0.70.0
-  oxlint: ^1.86.0
+  oxlint: ^1.88.0
   oxlint-tsgolint: ^7.0.2002
   papaparse: ^5.7.0
   pg-boss: ^12.37.0
   postcss-load-config: ^6.0.1
   posthog-js: ^1.438.1
-  posthog-node: ^5.54.0
+  posthog-node: ^5.55.3
   rate-limiter-flexible: ^11.2.1
   react-error-boundary: ^6.1.6
   react-frame-component: ^5.3.2
-  react-hook-form: ^7.89.0
+  react-hook-form: ^7.90.0
   react-markdown: ^10.1.0
   rehype-external-links: ^3.0.0
   sass: ^1.105.1
@@ -185,22 +186,22 @@ catalogs:
     "@atlaskit/pragmatic-drag-and-drop": ^4.0.0
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^3.0.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1147.0
-    "@aws-sdk/client-amplify": ^3.1147.0
-    "@aws-sdk/client-cloudfront": ^3.1147.0
-    "@aws-sdk/client-codebuild": ^3.1147.0
-    "@aws-sdk/client-s3": ^3.1147.0
-    "@aws-sdk/lib-storage": ^3.1147.0
-    "@aws-sdk/s3-request-presigner": ^3.1147.0
-    "@aws-sdk/credential-providers": ^3.1147.0
-    "@aws-sdk/rds-signer": ^3.1147.0
+    "@aws-sdk/client-acm": ^3.1152.0
+    "@aws-sdk/client-amplify": ^3.1152.0
+    "@aws-sdk/client-cloudfront": ^3.1152.0
+    "@aws-sdk/client-codebuild": ^3.1152.0
+    "@aws-sdk/client-s3": ^3.1152.0
+    "@aws-sdk/lib-storage": ^3.1152.0
+    "@aws-sdk/s3-request-presigner": ^3.1152.0
+    "@aws-sdk/credential-providers": ^3.1152.0
+    "@aws-sdk/rds-signer": ^3.1152.0
   babel:
     "@babel/plugin-transform-class-properties": ^8.0.1
     "@babel/plugin-transform-object-rest-spread": ^8.0.1
     "@babel/preset-env": ^8.0.7
     "@babel/preset-typescript": ^8.0.7
   casl:
-    "@casl/ability": ^7.0.1
+    "@casl/ability": ^7.0.2
     "@casl/react": ^7.0.1
   chakra:
     "@chakra-ui/anatomy": ^2.3.4
@@ -243,56 +244,50 @@ catalogs:
     "@react-aria/utils": ^3.34.1
     "@react-stately/checkbox": ^3.8.1
     "@react-stately/toggle": ^3.10.1
-  # Pinned (not a caret range) to keep pnpm from resolving to 10.5.x: Storybook
-  # 10.5's instrumented HTMLElement.prototype.focus getter breaks
-  # @zag-js/focus-visible's assumption that `focus` is a plain function
-  # (used internally by Chakra/@opengovsg/design-system-react), throwing
-  # "Illegal invocation" and crashing any story that opens a Chakra Menu.
-  # Unpin once fixed upstream.
   storybook:
-    storybook: 10.4.6
-    "@storybook/addon-a11y": 10.4.6
-    "@storybook/addon-docs": 10.4.6
-    "@storybook/addon-links": 10.4.6
-    "@storybook/addon-themes": 10.4.6
-    "@storybook/nextjs": 10.4.6
-    "@storybook/react-vite": 10.4.6
-    eslint-plugin-storybook: 10.4.6
-    storybook-addon-pseudo-states: 10.4.6
+    storybook: 10.6.2
+    "@storybook/addon-a11y": 10.6.2
+    "@storybook/addon-docs": 10.6.2
+    "@storybook/addon-links": 10.6.2
+    "@storybook/addon-themes": 10.6.2
+    "@storybook/nextjs-vite": 10.6.2
+    "@storybook/react-vite": 10.6.2
+    eslint-plugin-storybook: 10.6.2
+    storybook-addon-pseudo-states: 10.6.2
   tanstack-query:
     "@tanstack/query-devtools": ^5.104.2
     "@tanstack/react-query": ^5.104.2
     "@tanstack/react-query-devtools": ^5.104.2
   tiptap:
-    "@tiptap/core": ^3.31.4
-    "@tiptap/extension-bold": ^3.31.4
-    "@tiptap/extension-bullet-list": ^3.31.4
-    "@tiptap/extension-character-count": ^3.31.4
-    "@tiptap/extension-document": ^3.31.4
-    "@tiptap/extension-dropcursor": ^3.31.4
-    "@tiptap/extension-gapcursor": ^3.31.4
-    "@tiptap/extension-hard-break": ^3.31.4
-    "@tiptap/extension-heading": ^3.31.4
-    "@tiptap/extension-history": ^3.31.4
-    "@tiptap/extension-horizontal-rule": ^3.31.4
-    "@tiptap/extension-image": ^3.31.4
-    "@tiptap/extension-italic": ^3.31.4
-    "@tiptap/extension-link": ^3.31.4
-    "@tiptap/extension-list-item": ^3.31.4
-    "@tiptap/extension-ordered-list": ^3.31.4
-    "@tiptap/extension-paragraph": ^3.31.4
-    "@tiptap/extension-strike": ^3.31.4
-    "@tiptap/extension-subscript": ^3.31.4
-    "@tiptap/extension-superscript": ^3.31.4
-    "@tiptap/extension-table": ^3.31.4
-    "@tiptap/extension-table-cell": ^3.31.4
-    "@tiptap/extension-table-header": ^3.31.4
-    "@tiptap/extension-table-row": ^3.31.4
-    "@tiptap/extension-text": ^3.31.4
-    "@tiptap/extension-underline": ^3.31.4
-    "@tiptap/html": ^3.31.4
-    "@tiptap/pm": ^3.31.4
-    "@tiptap/react": ^3.31.4
+    "@tiptap/core": ^3.32.0
+    "@tiptap/extension-bold": ^3.32.0
+    "@tiptap/extension-bullet-list": ^3.32.0
+    "@tiptap/extension-character-count": ^3.32.0
+    "@tiptap/extension-document": ^3.32.0
+    "@tiptap/extension-dropcursor": ^3.32.0
+    "@tiptap/extension-gapcursor": ^3.32.0
+    "@tiptap/extension-hard-break": ^3.32.0
+    "@tiptap/extension-heading": ^3.32.0
+    "@tiptap/extension-history": ^3.32.0
+    "@tiptap/extension-horizontal-rule": ^3.32.0
+    "@tiptap/extension-image": ^3.32.0
+    "@tiptap/extension-italic": ^3.32.0
+    "@tiptap/extension-link": ^3.32.0
+    "@tiptap/extension-list-item": ^3.32.0
+    "@tiptap/extension-ordered-list": ^3.32.0
+    "@tiptap/extension-paragraph": ^3.32.0
+    "@tiptap/extension-strike": ^3.32.0
+    "@tiptap/extension-subscript": ^3.32.0
+    "@tiptap/extension-superscript": ^3.32.0
+    "@tiptap/extension-table": ^3.32.0
+    "@tiptap/extension-table-cell": ^3.32.0
+    "@tiptap/extension-table-header": ^3.32.0
+    "@tiptap/extension-table-row": ^3.32.0
+    "@tiptap/extension-text": ^3.32.0
+    "@tiptap/extension-underline": ^3.32.0
+    "@tiptap/html": ^3.32.0
+    "@tiptap/pm": ^3.32.0
+    "@tiptap/react": ^3.32.0
   trpc:
     "@trpc/client": ^11.19.0
     "@trpc/next": ^11.19.0
