@@ -515,6 +515,8 @@ const TileCaption = ({
   </VStack>
 )
 
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
+
 // The pixel size a tile is SIMULATING (not the live, ResizeObserver-measured
 // height, which jitters as content renders) — derived from the same stable
 // viewportWidth/aspectRatio PreviewFrame uses for its initial height guess.
@@ -524,7 +526,11 @@ const formatDimensions = (state: AdjustmentPreviewState): string => {
   const height = Math.round(
     (width * state.aspectRatio.height) / state.aspectRatio.width,
   )
-  return `${width} × ${height} px`
+  // Reduce the stored ratio (e.g. {32,18}) to simplest form (16:9) for display.
+  const divisor = gcd(state.aspectRatio.width, state.aspectRatio.height)
+  const ratioW = state.aspectRatio.width / divisor
+  const ratioH = state.aspectRatio.height / divisor
+  return `${width} × ${height} px, ${ratioW}:${ratioH}`
 }
 
 // Renders the real component inside a simulated device viewport at this

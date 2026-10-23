@@ -68,10 +68,12 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   // Full-bleed; no CSS width cap. Warn against the 1280px content ceiling
   // (max-w-screen-xl) as a conservative "looks soft on desktop" floor.
   maxRenderedWidthPx: 1280,
+  // Closest common ratio to each breakpoint's hero band (375×240→16:10,
+  // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
   previewStates: responsivePreviewStates({
-    mobile: { width: 375, height: 240 },
-    tablet: { width: 768, height: 360 },
-    desktop: { width: 1280, height: 500 },
+    mobile: { width: 16, height: 10 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 5, height: 2 },
   }),
   // Mirrors HeroGradient's left-to-right dark gradient so editors can judge
   // text contrast against the chosen crop/focal.
@@ -96,10 +98,12 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   focalEnabled: true,
   // Image band is half the viewport at lg (lg:w-1/2); ~960px on large desktop.
   maxRenderedWidthPx: 960,
+  // Closest common ratio to each breakpoint's hero band (375×240→16:10,
+  // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
   previewStates: responsivePreviewStates({
-    mobile: { width: 375, height: 240 },
-    tablet: { width: 768, height: 360 },
-    desktop: { width: 1280, height: 500 },
+    mobile: { width: 16, height: 10 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 5, height: 2 },
   }),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text.",
@@ -137,10 +141,12 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
   focalEnabled: true,
   // One of two columns at lg (lg:grid-cols-2); ~960px on large desktop.
   maxRenderedWidthPx: 960,
+  // Closest common ratio to each breakpoint's frame (375×300→5:4,
+  // 768×400→2:1, 1280×450→3:1); the real tile height is still measured.
   previewStates: responsivePreviewStates({
-    mobile: { width: 375, height: 300 },
-    tablet: { width: 768, height: 400 },
-    desktop: { width: 1280, height: 450 },
+    mobile: { width: 5, height: 4 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 3, height: 1 },
   }),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px). Place the key subject on the side matching where the image sits (left or right) rather than centering it.",
@@ -317,12 +323,13 @@ const IMAGE_CONFIG: AdjustmentConfig = {
   // narrows to col-span-9). Round up to 960 so a sharp image at that width doesn't
   // false-warn while genuinely soft crops below it still do.
   maxRenderedWidthPx: 960,
-  // Aspect ratios are pre-measure flash guesses only (the real render is measured).
-  previewStates: responsivePreviewStates({
-    mobile: { width: 3, height: 2 },
-    tablet: { width: 3, height: 2 },
-    desktop: { width: 3, height: 2 },
-  }),
+  // Free-form crop: no fixed ratio, so previews carry no aspectRatio — the
+  // caption shows width only and the real render is measured.
+  previewStates: [
+    { id: "mobile", label: "Mobile", viewportWidth: 375 },
+    { id: "tablet", label: "Tablet", viewportWidth: 768 },
+    { id: "desktop", label: "Desktop", viewportWidth: 1280 },
+  ],
   preUploadCopy:
     "You can crop this image to any shape. Use a high-resolution image so the area you keep stays sharp at the size it displays on your page.",
 }
