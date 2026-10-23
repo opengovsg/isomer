@@ -247,35 +247,29 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
 // so the preview switches to object-contain (previewObjectFitFor) and the focal
 // control is hidden. The preview uses the framed-image approximation, not the
 // real block (which would render every card), with the three ratio states.
-// Card image frame is 3:2 at every breakpoint EXCEPT lg, where common.ts squares
-// it off (lg:aspect-square) only in the default 3-column layout — 1/2-column cards
-// keep 3:2 on desktop. Derive the desktop ratio from the block's maxColumns so the
-// preview matches the real card. (The homepage 2-column lg:aspect-[2/1] case isn't
-// reachable here: layout isn't on the block in the editor, so default is assumed.)
-const makeInfoCardsWithImagesConfig = (block: unknown): AdjustmentConfig => {
-  const maxColumns =
-    (block as { maxColumns?: string } | null)?.maxColumns ?? "3"
-  const desktop: AspectRatio =
-    maxColumns === "3" ? { width: 1, height: 1 } : { width: 3, height: 2 }
-  return {
-    componentType: "infocards:cardsWithImages",
-    cropMode: "custom",
-    focalEnabled: true,
-    // Card width depends on column count (1200px at 1 column down to ~260px at 4);
-    // warn against a generous multi-column card width so the common 2–4 column
-    // grids don't false-warn on perfectly sharp images.
-    maxRenderedWidthPx: 640,
-    focalEnabledFor: infoCardFocalEnabled,
-    previewObjectFitFor: infoCardPreviewObjectFit,
-    skipRealComponentPreview: true,
-    previewStates: responsivePreviewStates({
-      mobile: { width: 3, height: 2 },
-      tablet: { width: 3, height: 2 },
-      desktop,
-    }),
-    preUploadCopy:
-      "The card crops this image to fill its frame, and the frame's shape changes across screen sizes. Set a focal point so your key subject stays in view.",
-  }
+// Card image frame is `aspect-[3/2]` across breakpoints (common.ts). It squares
+// off (lg:aspect-square) ONLY in the default 3-column layout at ≥1024px — an edge
+// the framed preview can't know (no real viewport/column count) and that the
+// narrower Studio preview pane doesn't show either, so desktop keeps the 3:2 base
+// to match mobile/tablet and the shape editors actually see.
+const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
+  componentType: "infocards:cardsWithImages",
+  cropMode: "custom",
+  focalEnabled: true,
+  // Card width depends on column count (1200px at 1 column down to ~260px at 4);
+  // warn against a generous multi-column card width so the common 2–4 column
+  // grids don't false-warn on perfectly sharp images.
+  maxRenderedWidthPx: 640,
+  focalEnabledFor: infoCardFocalEnabled,
+  previewObjectFitFor: infoCardPreviewObjectFit,
+  skipRealComponentPreview: true,
+  previewStates: responsivePreviewStates({
+    mobile: { width: 3, height: 2 },
+    tablet: { width: 3, height: 2 },
+    desktop: { width: 3, height: 2 },
+  }),
+  preUploadCopy:
+    "The card crops this image to fill its frame, and the frame's shape changes across screen sizes. Set a focal point so your key subject stays in view.",
 }
 
 // Tier C — InfoCards "cards with full images". Same conditional crop/focal as
@@ -398,7 +392,7 @@ export function resolveAdjustmentConfig(args: {
   if (type === "infopic") return INFOPIC_CONFIG
   if (type === "blockquote") return BLOCKQUOTE_CONFIG
   if (type === "infocards" && variant === "cardsWithImages")
-    return makeInfoCardsWithImagesConfig(args.block)
+    return INFOCARDS_WITH_IMAGES_CONFIG
   if (type === "infocards" && variant === "cardsWithFullImages")
     return INFOCARDS_WITH_FULL_IMAGE_CONFIG
   return undefined
