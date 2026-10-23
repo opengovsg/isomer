@@ -52,6 +52,9 @@ const heroBlockStyles = tv({
       curved: {
         // `cqw` in the clips below is the hero width.
         section: "[container-type:inline-size]",
+        // White sits behind the image. The clip lets the text colour show
+        // outside the curve.
+        imageColumn: "bg-base-canvas",
       },
     },
   },
@@ -84,6 +87,20 @@ const heroBlockStyles = tv({
       theme: "inverse",
       class: {
         textColumn: "bg-brand-canvas-alt",
+      },
+    },
+    {
+      theme: "default",
+      imageEdge: HERO_BLOCK_IMAGE_EDGE.curved,
+      class: {
+        section: "bg-brand-canvas-inverse",
+      },
+    },
+    {
+      theme: "inverse",
+      imageEdge: HERO_BLOCK_IMAGE_EDGE.curved,
+      class: {
+        section: "bg-brand-canvas-alt",
       },
     },
   ],
