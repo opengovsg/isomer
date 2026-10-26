@@ -64,25 +64,34 @@ export function getHeroStyleVariantForBranchTitle(
   )?.key
 }
 
+function heroContentFields(descriptions: { title: string; subtitle: string }) {
+  return {
+    title: IsomerString({
+      title: "Hero text",
+      description: descriptions.title,
+      maxLength: 100,
+      pattern: NON_EMPTY_STRING_REGEX,
+      errorMessage: {
+        pattern: "cannot be empty or contain only spaces",
+      },
+    }),
+    subtitle: Type.Optional(
+      IsomerString({
+        title: "Description",
+        description: descriptions.subtitle,
+        format: "textarea",
+        maxLength: 300,
+      }),
+    ),
+  }
+}
+
 const HeroBaseSchema = Type.Object({
   type: Type.Literal("hero", { default: "hero" }),
-  title: IsomerString({
-    title: "Hero text",
-    description: "The title of the hero banner",
-    maxLength: 100,
-    pattern: NON_EMPTY_STRING_REGEX,
-    errorMessage: {
-      pattern: "cannot be empty or contain only spaces",
-    },
+  ...heroContentFields({
+    title: "The title of the hero banner",
+    subtitle: "The contents of the hero banner",
   }),
-  subtitle: Type.Optional(
-    IsomerString({
-      title: "Description",
-      description: "The contents of the hero banner",
-      format: "textarea",
-      maxLength: 300,
-    }),
-  ),
 })
 
 const CallToActionsSchema = Type.Object({
@@ -271,8 +280,13 @@ export const HeroCarouselSlideSchema = Type.Composite(
   [
     Type.Object({
       backgroundUrl: BackgroundUrlSchema,
+      ...heroContentFields({
+        title:
+          "Keep it short. The slide with the most text sets the height for all slides.",
+        subtitle:
+          "Keep text lengths similar across slides, or shorter slides will look empty.",
+      }),
     }),
-    Type.Omit(HeroBaseSchema, ["type"]),
     CallToActionsSchema,
   ],
   {
