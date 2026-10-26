@@ -47,8 +47,8 @@ const ItemIcon = ({ icon }: { icon: SupportedIconName }) => {
 }
 
 interface QuickActionsItemProps {
-  item: HeroGradientQuickActionsProps["quickActionsItems"][number]
-  showIcon: HeroGradientQuickActionsProps["showIcon"]
+  item: HeroGradientQuickActionsProps["actions"]["items"][number]
+  showIcon: HeroGradientQuickActionsProps["actions"]["showIcon"]
   site: HeroGradientQuickActionsProps["site"]
   headingLevel: HeroGradientQuickActionsProps["headingLevel"]
 }

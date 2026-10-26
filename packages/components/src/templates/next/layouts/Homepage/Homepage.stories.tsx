@@ -850,14 +850,16 @@ export const HeroGradientQuickActions: Story = {
     heroProps: {
       type: "hero",
       variant: "gradient",
-      actionLayout: "quickActions",
-      showIcon: true,
       backgroundUrl: "/hero-banner.png",
       title: "Set up a good government website, fast",
       subtitle:
         "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
-      quickActionsTitle: "Get started",
-      quickActionsItems: homepageQuickActionsItems,
+      actions: {
+        layout: "quickActions",
+        title: "Get started",
+        showIcon: true,
+        items: homepageQuickActionsItems,
+      },
     },
   }),
 }
@@ -867,14 +869,16 @@ export const HeroGradientQuickActionsTwoItems: Story = {
     heroProps: {
       type: "hero",
       variant: "gradient",
-      actionLayout: "quickActions",
-      showIcon: true,
       backgroundUrl: "/hero-banner.png",
       title: "Set up a good government website, fast",
       subtitle:
         "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
-      quickActionsTitle: "Get started",
-      quickActionsItems: homepageQuickActionsItems.slice(0, 2),
+      actions: {
+        layout: "quickActions",
+        title: "Get started",
+        showIcon: true,
+        items: homepageQuickActionsItems.slice(0, 2),
+      },
     },
   }),
 }
@@ -885,28 +889,30 @@ export const HeroGradientQuickActionsTwoItemsShortText: Story = {
     heroProps: {
       type: "hero",
       variant: "gradient",
-      actionLayout: "quickActions",
-      showIcon: true,
       backgroundUrl: "/hero-banner.png",
       title: "Title",
       subtitle: "Subtitle",
-      quickActionsTitle: "Tray",
-      quickActionsItems: [
-        {
-          icon: "stars",
-          title: "One",
-          description: "A",
-          buttonLabel: "Go",
-          buttonUrl: "/",
-        },
-        {
-          icon: "line-chart",
-          title: "Two",
-          description: "B",
-          buttonLabel: "Go",
-          buttonUrl: "/",
-        },
-      ],
+      actions: {
+        layout: "quickActions",
+        title: "Tray",
+        showIcon: true,
+        items: [
+          {
+            icon: "stars",
+            title: "One",
+            description: "A",
+            buttonLabel: "Go",
+            buttonUrl: "/",
+          },
+          {
+            icon: "line-chart",
+            title: "Two",
+            description: "B",
+            buttonLabel: "Go",
+            buttonUrl: "/",
+          },
+        ],
+      },
     },
   }),
 }
@@ -916,14 +922,16 @@ export const HeroGradientQuickActionsThreeItems: Story = {
     heroProps: {
       type: "hero",
       variant: "gradient",
-      actionLayout: "quickActions",
-      showIcon: true,
       backgroundUrl: "/hero-banner.png",
       title: "Set up a good government website, fast",
       subtitle:
         "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
-      quickActionsTitle: "Get started",
-      quickActionsItems: homepageQuickActionsItems.slice(0, 3),
+      actions: {
+        layout: "quickActions",
+        title: "Get started",
+        showIcon: true,
+        items: homepageQuickActionsItems.slice(0, 3),
+      },
     },
   }),
 }
@@ -933,13 +941,15 @@ export const HeroGradientQuickActionsNoTitle: Story = {
     heroProps: {
       type: "hero",
       variant: "gradient",
-      actionLayout: "quickActions",
-      showIcon: true,
       backgroundUrl: "/hero-banner.png",
       title: "Set up a good government website, fast",
       subtitle:
         "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
-      quickActionsItems: homepageQuickActionsItems,
+      actions: {
+        layout: "quickActions",
+        showIcon: true,
+        items: homepageQuickActionsItems,
+      },
     },
   }),
 }

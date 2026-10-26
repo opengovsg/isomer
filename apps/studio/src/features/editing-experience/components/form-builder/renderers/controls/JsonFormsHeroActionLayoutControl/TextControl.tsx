@@ -31,7 +31,7 @@ export const actionLayoutTextRenderer: JsonFormsRendererRegistryEntry = {
     JSON_FORMS_RANKING.TextControl + 1,
     and(
       isStringControl,
-      // Leave const fields (e.g. actionLayout) to JsonFormsConstControl.
+      // Leave const fields (e.g. actions.layout) to JsonFormsConstControl.
       schemaMatches(
         (schema) => schema.format === undefined && schema.const === undefined,
       ),

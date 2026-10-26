@@ -11,10 +11,12 @@ describe("nextHeroGradientActionLayoutData", () => {
       type: "hero",
       variant: "gradient",
       title: "Welcome",
-      actionLayout: "quickActions",
-      quickActionsTitle: "Get started",
-      showIcon: true,
-      quickActionsItems: [createDefaultHeroGradientQuickActionsItem()],
+      actions: {
+        layout: "quickActions",
+        title: "Get started",
+        showIcon: true,
+        items: [createDefaultHeroGradientQuickActionsItem()],
+      },
     }
 
     // Act
@@ -28,7 +30,7 @@ describe("nextHeroGradientActionLayoutData", () => {
       type: "hero",
       variant: "gradient",
       title: "Welcome",
-      actionLayout: "buttons",
+      actions: { layout: "buttons" },
     })
   })
 
@@ -53,13 +55,15 @@ describe("nextHeroGradientActionLayoutData", () => {
       type: "hero",
       variant: "gradient",
       title: "Welcome",
-      actionLayout: "quickActions",
-      quickActionsTitle: "Get started",
-      showIcon: true,
-      quickActionsItems: [
-        createDefaultHeroGradientQuickActionsItem(),
-        createDefaultHeroGradientQuickActionsItem(),
-      ],
+      actions: {
+        layout: "quickActions",
+        title: "Get started",
+        showIcon: true,
+        items: [
+          createDefaultHeroGradientQuickActionsItem(),
+          createDefaultHeroGradientQuickActionsItem(),
+        ],
+      },
     })
   })
 })

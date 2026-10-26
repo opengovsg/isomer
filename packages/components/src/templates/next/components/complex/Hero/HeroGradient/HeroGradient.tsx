@@ -5,15 +5,16 @@ import { HeroGradientButtons } from "./HeroGradientButtons"
 import { HeroGradientQuickActions } from "./HeroGradientQuickActions"
 
 export const HeroGradient = (props: HeroGradientProps) => {
-  switch (props.actionLayout) {
+  // TS narrows props.actions (not props) on the nested layout, so pass it back explicitly.
+  switch (props.actions?.layout) {
     case HERO_GRADIENT_ACTION_LAYOUT.quickActions:
-      return <HeroGradientQuickActions {...props} />
+      return <HeroGradientQuickActions {...props} actions={props.actions} />
     case HERO_GRADIENT_ACTION_LAYOUT.buttons:
-    // Existing gradient heroes omit actionLayout and still render buttons.
+    // Existing gradient heroes omit actions and still render buttons.
     case undefined:
-      return <HeroGradientButtons {...props} />
+      return <HeroGradientButtons {...props} actions={props.actions} />
     default: {
-      const _exhaustiveCheck: never = props
+      const _exhaustiveCheck: never = props.actions
       return _exhaustiveCheck
     }
   }

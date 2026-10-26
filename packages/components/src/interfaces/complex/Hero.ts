@@ -196,40 +196,20 @@ const HeroGradientSharedSchema = Type.Composite(
   },
 )
 
-const HeroGradientQuickActionsFieldsSchema = Type.Object({
-  quickActionsTitle: Type.Optional(
-    IsomerString({
-      title: "Title",
-      pattern: NON_EMPTY_STRING_REGEX,
-      errorMessage: {
-        pattern: "cannot be empty or contain only spaces",
-      },
-    }),
-  ),
-  showIcon: Type.Boolean({
-    title: "Show icons",
-    default: true,
-  }),
-  quickActionsItems: Type.Array(HeroGradientQuickActionsItemSchema, {
-    title: "Content",
-    format: HERO_QUICK_ACTIONS_FORMAT,
-    ...HERO_QUICK_ACTIONS_LIMITS,
-  }),
-})
-
-const HeroGradientButtonsFieldsSchema = CallToActionsSchema
-
 const HeroGradientButtonsLayoutSchema = Type.Composite(
   [
     Type.Object({
-      // Optional so existing gradient heroes with no actionLayout still match buttons.
-      actionLayout: Type.Optional(
-        Type.Literal(HERO_GRADIENT_ACTION_LAYOUT.buttons, {
-          default: HERO_GRADIENT_ACTION_LAYOUT.buttons,
+      // Optional so existing gradient heroes with no actions still match buttons.
+      actions: Type.Optional(
+        Type.Object({
+          layout: Type.Literal(HERO_GRADIENT_ACTION_LAYOUT.buttons, {
+            default: HERO_GRADIENT_ACTION_LAYOUT.buttons,
+          }),
         }),
       ),
     }),
-    HeroGradientButtonsFieldsSchema,
+    // Button fields stay at the root, matching existing gradient heroes and the other hero styles.
+    CallToActionsSchema,
   ],
   {
     title: "Buttons only",
@@ -240,23 +220,44 @@ const HeroGradientButtonsLayoutSchema = Type.Composite(
   },
 )
 
-const HeroGradientQuickActionsLayoutSchema = Type.Composite(
-  [
-    Type.Object({
-      actionLayout: Type.Literal(HERO_GRADIENT_ACTION_LAYOUT.quickActions, {
-        default: HERO_GRADIENT_ACTION_LAYOUT.quickActions,
-      }),
-    }),
-    HeroGradientQuickActionsFieldsSchema,
-  ],
+const HeroGradientQuickActionsLayoutSchema = Type.Object(
+  {
+    actions: Type.Object(
+      {
+        layout: Type.Literal(HERO_GRADIENT_ACTION_LAYOUT.quickActions, {
+          default: HERO_GRADIENT_ACTION_LAYOUT.quickActions,
+        }),
+        title: Type.Optional(
+          IsomerString({
+            title: "Title",
+            pattern: NON_EMPTY_STRING_REGEX,
+            errorMessage: {
+              pattern: "cannot be empty or contain only spaces",
+            },
+          }),
+        ),
+        showIcon: Type.Boolean({
+          title: "Show icons",
+          default: true,
+        }),
+        items: Type.Array(HeroGradientQuickActionsItemSchema, {
+          title: "Content",
+          format: HERO_QUICK_ACTIONS_FORMAT,
+          ...HERO_QUICK_ACTIONS_LIMITS,
+        }),
+      },
+      {
+        groups: [
+          {
+            label: "Quick actions",
+            fields: ["title", "showIcon", "items"],
+          },
+        ],
+      },
+    ),
+  },
   {
     title: "Quick actions",
-    groups: [
-      {
-        label: "Quick actions",
-        fields: ["quickActionsTitle", "showIcon", "quickActionsItems"],
-      },
-    ],
   },
 )
 
@@ -419,13 +420,13 @@ export type HeroGradientQuickActionsItem = Static<
 export type HeroGradientButtonsProps = Simplify<
   CommonProps &
     Static<typeof HeroGradientSharedSchema> &
-    Static<typeof HeroGradientButtonsFieldsSchema>
+    Static<typeof HeroGradientButtonsLayoutSchema>
 >
 
 export type HeroGradientQuickActionsProps = Simplify<
   CommonProps &
     Static<typeof HeroGradientSharedSchema> &
-    Static<typeof HeroGradientQuickActionsFieldsSchema>
+    Static<typeof HeroGradientQuickActionsLayoutSchema>
 >
 
 export type HeroGradientProps = Simplify<

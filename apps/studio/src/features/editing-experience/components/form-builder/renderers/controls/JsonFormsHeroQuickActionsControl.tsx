@@ -32,7 +32,7 @@ function JsonFormsHeroQuickActionsControl(props: ArrayLayoutProps) {
   const ctx = useJsonForms()
   const showIcon =
     (ctx.core?.data as Partial<HeroGradientQuickActionsProps> | undefined)
-      ?.showIcon ?? true
+      ?.actions?.showIcon ?? true
 
   return (
     <JsonFormsArrayControl

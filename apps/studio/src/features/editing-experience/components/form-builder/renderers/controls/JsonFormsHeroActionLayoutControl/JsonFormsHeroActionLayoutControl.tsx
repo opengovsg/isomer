@@ -1,22 +1,29 @@
-import type { ControlProps, RankedTester } from "@jsonforms/core"
+import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
 import type {
   HeroGradientActionLayout,
   HeroGradientProps,
 } from "@opengovsg/isomer-components"
 import { Box, Flex, FormControl } from "@chakra-ui/react"
-import { Generate, rankWith, schemaMatches } from "@jsonforms/core"
+import {
+  composePaths,
+  Generate,
+  rankWith,
+  schemaMatches,
+} from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsControlProps } from "@jsonforms/react"
-import { Badge, FormLabel, Radio } from "@opengovsg/design-system-react"
+import { FormLabel, Radio } from "@opengovsg/design-system-react"
 import {
   HERO_GRADIENT_ACTION_LAYOUT,
   HERO_ACTION_LAYOUT_FORMAT,
 } from "@opengovsg/isomer-components"
+import { omit } from "lodash-es"
 import { useMemo } from "react"
 import {
   IconHeroGradientButtonsLayout,
   IconHeroGradientQuickActionsLayout,
 } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { NewFeatureBadge } from "~/features/editing-experience/components/shared/NewFeatureBadge"
 
 import { nextHeroGradientActionLayoutData } from "../../../utils/nextHeroGradientActionLayoutData"
 import { actionLayoutTextRenderer } from "./TextControl"
@@ -26,6 +33,23 @@ const heroActionLayoutRadioCss = {
   _focusWithin: {
     boxShadow: "none",
     outline: "none",
+  },
+}
+
+// Record keyed by layout: adding a layout fails to compile until it has an option here.
+const LAYOUT_OPTIONS: Record<
+  HeroGradientActionLayout,
+  { label: string; Icon: typeof IconHeroGradientButtonsLayout; isNew: boolean }
+> = {
+  [HERO_GRADIENT_ACTION_LAYOUT.buttons]: {
+    label: "Buttons only",
+    Icon: IconHeroGradientButtonsLayout,
+    isNew: false,
+  },
+  [HERO_GRADIENT_ACTION_LAYOUT.quickActions]: {
+    label: "Quick actions",
+    Icon: IconHeroGradientQuickActionsLayout,
+    isNew: true,
   },
 }
 
@@ -48,10 +72,20 @@ function JsonFormsHeroActionLayoutControl({
 }: ControlProps): JSX.Element {
   const heroData = data as Partial<HeroGradientProps> | undefined
   const selectedLayout =
-    heroData?.actionLayout ?? HERO_GRADIENT_ACTION_LAYOUT.buttons
+    heroData?.actions?.layout ?? HERO_GRADIENT_ACTION_LAYOUT.buttons
   const selectedBranch = schema.oneOf?.find(
-    (branch) => branch.properties?.actionLayout?.const === selectedLayout,
+    (branch) =>
+      branch.properties?.actions?.properties?.layout?.const === selectedLayout,
   )
+  // A layout owns fields under `actions` and, for buttons, root CTA fields.
+  const actionsSchema = selectedBranch?.properties?.actions
+  // Cast: omit() widens the JsonSchema4 | JsonSchema7 properties union.
+  const rootFieldsSchema =
+    selectedBranch &&
+    ({
+      ...selectedBranch,
+      properties: omit(selectedBranch.properties, "actions"),
+    } as JsonSchema)
   // Scoped override: text fields in the layout (incl. quick action items) show builder errors.
   const layoutRenderers = useMemo(
     () => [actionLayoutTextRenderer, ...(renderers ?? [])],
@@ -78,51 +112,51 @@ function JsonFormsHeroActionLayoutControl({
             onChange={onChange}
             value={selectedLayout}
           >
-            <Radio
-              value={HERO_GRADIENT_ACTION_LAYOUT.buttons}
-              allowDeselect={false}
-              size="sm"
-              __css={heroActionLayoutRadioCss}
-            >
-              Buttons only
-              <IconHeroGradientButtonsLayout aria-hidden mt="10px" />
-            </Radio>
-            <Radio
-              value={HERO_GRADIENT_ACTION_LAYOUT.quickActions}
-              allowDeselect={false}
-              size="sm"
-              __css={heroActionLayoutRadioCss}
-            >
-              <Flex alignItems="center" gap="8px">
-                Quick actions
-                <Badge
-                  variant="subtle"
-                  colorScheme="success"
-                  size="xs"
-                  bg="interaction.success-subtle.default"
+            {Object.values(HERO_GRADIENT_ACTION_LAYOUT).map((layout) => {
+              const { label: layoutLabel, Icon, isNew } = LAYOUT_OPTIONS[layout]
+              return (
+                <Radio
+                  key={layout}
+                  value={layout}
+                  allowDeselect={false}
+                  size="sm"
+                  __css={heroActionLayoutRadioCss}
                 >
-                  New
-                </Badge>
-              </Flex>
-              <IconHeroGradientQuickActionsLayout aria-hidden mt="10px" />
-            </Radio>
+                  <Flex alignItems="center" gap="8px">
+                    {layoutLabel}
+                    {isNew && <NewFeatureBadge ml={0} />}
+                  </Flex>
+                  <Icon aria-hidden mt="10px" />
+                </Radio>
+              )
+            })}
           </Radio.RadioGroup>
         </FormControl>
       </Box>
-      {selectedBranch && (
-        <JsonFormsDispatch
-          uischema={Generate.uiSchema(
-            selectedBranch,
-            "VerticalLayout",
-            undefined,
-            rootSchema,
-          )}
-          schema={selectedBranch}
-          path={path}
-          enabled={enabled}
-          renderers={layoutRenderers}
-          cells={cells}
-        />
+      {[
+        { fieldsSchema: rootFieldsSchema, fieldsPath: path },
+        {
+          fieldsSchema: actionsSchema,
+          fieldsPath: composePaths(path, "actions"),
+        },
+      ].map(
+        ({ fieldsSchema, fieldsPath }) =>
+          fieldsSchema && (
+            <JsonFormsDispatch
+              key={fieldsPath}
+              uischema={Generate.uiSchema(
+                fieldsSchema,
+                "VerticalLayout",
+                undefined,
+                rootSchema,
+              )}
+              schema={fieldsSchema}
+              path={fieldsPath}
+              enabled={enabled}
+              renderers={layoutRenderers}
+              cells={cells}
+            />
+          ),
       )}
     </>
   )

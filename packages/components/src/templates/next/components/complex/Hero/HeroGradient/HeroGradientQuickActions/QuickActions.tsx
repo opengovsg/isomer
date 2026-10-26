@@ -26,33 +26,27 @@ const quickActionsStyles = tv({
 
 type QuickActionsProps = Pick<
   HeroGradientQuickActionsProps,
-  | "quickActionsTitle"
-  | "showIcon"
-  | "quickActionsItems"
-  | "site"
-  | "headingLevel"
+  "actions" | "site" | "headingLevel"
 >
 
 export const QuickActions = ({
-  quickActionsTitle,
-  showIcon,
-  quickActionsItems,
+  actions: { title, showIcon, items },
   site,
   headingLevel,
 }: QuickActionsProps) => {
-  if (quickActionsItems.length === 0) {
+  if (items.length === 0) {
     return null
   }
 
-  const trimmedTitle = quickActionsTitle?.trim()
+  const trimmedTitle = title?.trim()
   const SectionTitleTag = getHeadingTag(headingLevel + 1)
   const itemHeadingLevel = headingLevel + (trimmedTitle ? 2 : 1)
-  const itemCount = quickActionsItems.length as 2 | 3 | 4
+  const itemCount = items.length as 2 | 3 | 4
   const styles = quickActionsStyles({ itemCount })
 
   const itemsGrid = (
     <div className={styles.items()}>
-      {quickActionsItems.map((item, idx) => (
+      {items.map((item, idx) => (
         <QuickActionsItem
           key={idx}
           item={item}

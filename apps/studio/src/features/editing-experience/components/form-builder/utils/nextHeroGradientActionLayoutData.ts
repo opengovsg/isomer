@@ -2,7 +2,6 @@ import type {
   HeroGradientActionLayout,
   HeroGradientButtonsProps,
   HeroGradientProps,
-  HeroGradientQuickActionsProps,
 } from "@opengovsg/isomer-components"
 import {
   HERO_GRADIENT_ACTION_LAYOUT,
@@ -14,48 +13,39 @@ import { createDefaultHeroGradientQuickActionsItem } from "./defaultHeroGradient
 
 const HERO_QUICK_ACTIONS_DEFAULT_TITLE = "Get started"
 
-// Fields owned by each layout. Dropped when switching to the other layout.
-const LAYOUT_FIELDS = {
-  [HERO_GRADIENT_ACTION_LAYOUT.buttons]: [
-    "buttonLabel",
-    "buttonUrl",
-    "secondaryButtonLabel",
-    "secondaryButtonUrl",
-  ],
-  [HERO_GRADIENT_ACTION_LAYOUT.quickActions]: [
-    "quickActionsTitle",
-    "showIcon",
-    "quickActionsItems",
-  ],
-} as const satisfies {
-  buttons: (keyof HeroGradientButtonsProps)[]
-  quickActions: (keyof HeroGradientQuickActionsProps)[]
+// Button fields live at the hero root (shared with the other hero styles).
+const BUTTON_FIELDS = [
+  "buttonLabel",
+  "buttonUrl",
+  "secondaryButtonLabel",
+  "secondaryButtonUrl",
+] as const satisfies (keyof HeroGradientButtonsProps)[]
+
+// Record keyed by layout: adding a layout fails to compile until it has defaults here.
+const DEFAULT_ACTIONS: Record<
+  HeroGradientActionLayout,
+  () => NonNullable<HeroGradientProps["actions"]>
+> = {
+  [HERO_GRADIENT_ACTION_LAYOUT.buttons]: () => ({
+    layout: HERO_GRADIENT_ACTION_LAYOUT.buttons,
+  }),
+  [HERO_GRADIENT_ACTION_LAYOUT.quickActions]: () => ({
+    layout: HERO_GRADIENT_ACTION_LAYOUT.quickActions,
+    title: HERO_QUICK_ACTIONS_DEFAULT_TITLE,
+    showIcon: true,
+    items: Array.from({ length: HERO_QUICK_ACTIONS_LIMITS.minItems }, () =>
+      createDefaultHeroGradientQuickActionsItem(),
+    ),
+  }),
 }
 
-const defaultQuickActionsFields = () => ({
-  quickActionsTitle: HERO_QUICK_ACTIONS_DEFAULT_TITLE,
-  showIcon: true,
-  quickActionsItems: Array.from(
-    { length: HERO_QUICK_ACTIONS_LIMITS.minItems },
-    () => createDefaultHeroGradientQuickActionsItem(),
-  ),
-})
-
-/** Keep shared hero fields. Drop the layout that was not selected. */
+/** Keep shared hero fields. Replace actions and drop root button fields when leaving buttons. */
 export const nextHeroGradientActionLayoutData = (
   current: Partial<HeroGradientProps> | undefined,
   layout: HeroGradientActionLayout,
-) => {
-  const otherLayout =
-    layout === HERO_GRADIENT_ACTION_LAYOUT.buttons
-      ? HERO_GRADIENT_ACTION_LAYOUT.quickActions
-      : HERO_GRADIENT_ACTION_LAYOUT.buttons
-
-  return {
-    ...omit(current, LAYOUT_FIELDS[otherLayout]),
-    actionLayout: layout,
-    ...(layout === HERO_GRADIENT_ACTION_LAYOUT.quickActions
-      ? defaultQuickActionsFields()
-      : {}),
-  }
-}
+) => ({
+  ...(layout === HERO_GRADIENT_ACTION_LAYOUT.buttons
+    ? current
+    : omit(current, BUTTON_FIELDS)),
+  actions: DEFAULT_ACTIONS[layout](),
+})

@@ -255,6 +255,13 @@ const quickActionsItemsBase = [
   },
 ]
 
+const quickActionsBase = {
+  layout: "quickActions" as const,
+  title: "Get started",
+  showIcon: true,
+  items: quickActionsItemsBase,
+}
+
 export const GradientQuickActions: Story = {
   args: {
     headingLevel: 1,
@@ -264,17 +271,14 @@ export const GradientQuickActions: Story = {
     subtitle:
       "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
     variant: "gradient",
-    actionLayout: "quickActions",
-    showIcon: true,
-    quickActionsTitle: "Get started",
-    quickActionsItems: quickActionsItemsBase,
+    actions: quickActionsBase,
   },
 }
 
 export const GradientQuickActionsTwoItems: Story = {
   args: {
     ...GradientQuickActions.args,
-    quickActionsItems: quickActionsItemsBase.slice(0, 2),
+    actions: { ...quickActionsBase, items: quickActionsItemsBase.slice(0, 2) },
   },
 }
 
@@ -284,55 +288,60 @@ export const GradientQuickActionsTwoItemsShortText: Story = {
     ...GradientQuickActions.args,
     title: "Title",
     subtitle: "Subtitle",
-    showIcon: true,
-    quickActionsTitle: "Tray",
-    quickActionsItems: [
-      {
-        icon: "stars",
-        title: "One",
-        description: "A",
-        buttonLabel: "Go",
-        buttonUrl: "/",
-      },
-      {
-        icon: "line-chart",
-        title: "Two",
-        description: "B",
-        buttonLabel: "Go",
-        buttonUrl: "/",
-      },
-    ],
+    actions: {
+      ...quickActionsBase,
+      title: "Tray",
+      items: [
+        {
+          icon: "stars",
+          title: "One",
+          description: "A",
+          buttonLabel: "Go",
+          buttonUrl: "/",
+        },
+        {
+          icon: "line-chart",
+          title: "Two",
+          description: "B",
+          buttonLabel: "Go",
+          buttonUrl: "/",
+        },
+      ],
+    },
   },
 }
 
 export const GradientQuickActionsThreeItems: Story = {
   args: {
     ...GradientQuickActions.args,
-    quickActionsItems: quickActionsItemsBase.slice(0, 3),
+    actions: { ...quickActionsBase, items: quickActionsItemsBase.slice(0, 3) },
   },
 }
 
 export const GradientQuickActionsNoTitle: Story = {
   args: {
     ...GradientQuickActions.args,
-    quickActionsTitle: undefined,
+    actions: { ...quickActionsBase, title: undefined },
   },
 }
 
 export const GradientQuickActionsNoIcons: Story = {
   args: {
     ...GradientQuickActions.args,
-    showIcon: false,
+    actions: { ...quickActionsBase, showIcon: false },
   },
 }
 
 export const GradientQuickActionsTitleLinkOnly: Story = {
   args: {
     ...GradientQuickActions.args,
-    quickActionsItems: quickActionsItemsBase.slice(0, 2).map((item) => ({
-      ...item,
-      buttonLabel: undefined,
-    })),
+    actions: {
+      ...quickActionsBase,
+      items: quickActionsItemsBase.slice(0, 2).map((item) => ({
+        ...item,
+        buttonLabel: undefined,
+      })),
+    },
   },
 }
 
