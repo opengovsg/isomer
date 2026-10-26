@@ -6,6 +6,9 @@ import { createContext, useContext } from "react"
 export interface HeroCarouselPreview {
   activeIndex: number
   setActiveIndex: (index: number) => void
+  // Studio fullscreen sets this true. Omitted keeps the editor preview still.
+  // A page with no provider is the published carousel, and that one rotates.
+  autoplay?: boolean
 }
 
 const HeroCarouselPreviewContext = createContext<HeroCarouselPreview | null>(

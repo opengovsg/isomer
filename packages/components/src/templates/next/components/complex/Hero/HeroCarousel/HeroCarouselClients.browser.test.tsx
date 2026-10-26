@@ -484,6 +484,70 @@ describe("hero carousel rotation", () => {
     expect(rotationButton()).toHaveAccessibleName("Start slide rotation")
   })
 
+  it("rotates in the studio preview when autoplay turns on", () => {
+    // Arrange
+    const Harness = () => {
+      const [activeIndex, setActiveIndex] = useState(0)
+      const [autoplay, setAutoplay] = useState(false)
+
+      return (
+        <HeroCarouselPreviewProvider
+          value={{ activeIndex, setActiveIndex, autoplay }}
+        >
+          <button type="button" onClick={() => setAutoplay(true)}>
+            Enter fullscreen
+          </button>
+          <HeroCarouselGradientClient
+            headingTag="h1"
+            inactiveHeadingTag="h2"
+            slides={indexedSlides}
+          />
+        </HeroCarouselPreviewProvider>
+      )
+    }
+    render(<Harness />)
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Enter fullscreen" }))
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
+
+    // Assert
+    expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
+    expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
+  })
+
+  it("stops studio preview rotation when autoplay turns off", () => {
+    // Arrange
+    const Harness = () => {
+      const [activeIndex, setActiveIndex] = useState(1)
+      const [autoplay, setAutoplay] = useState(true)
+
+      return (
+        <HeroCarouselPreviewProvider
+          value={{ activeIndex, setActiveIndex, autoplay }}
+        >
+          <button type="button" onClick={() => setAutoplay(false)}>
+            Leave fullscreen
+          </button>
+          <HeroCarouselGradientClient
+            headingTag="h1"
+            inactiveHeadingTag="h2"
+            slides={indexedSlides}
+          />
+        </HeroCarouselPreviewProvider>
+      )
+    }
+    render(<Harness />)
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "Leave fullscreen" }))
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
+
+    // Assert
+    expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
+    expect(rotationButton()).toHaveAccessibleName("Start slide rotation")
+  })
+
   it.each(Object.entries(carouselVariants))(
     "tabs the %s carousel from pause to the call to action, then the slide controls",
     (_name, renderVariant) => {

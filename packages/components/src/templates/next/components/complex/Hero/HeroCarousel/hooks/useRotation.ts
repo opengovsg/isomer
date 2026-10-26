@@ -22,7 +22,11 @@ const prefersReducedMotion = () =>
   window.matchMedia(REDUCED_MOTION_QUERY).matches
 
 export const useRotation = (slideCount: number) => {
-  const isPreview = useHeroCarouselPreview() !== null
+  const preview = useHeroCarouselPreview()
+  // The preview context syncs the editor slide list. Rotation stays off there
+  // unless Studio opts in, which it does for fullscreen.
+  const blockRotation = preview !== null && !preview.autoplay
+  const blockRotationRef = useRef(blockRotation)
   const { currentIndex, onGoTo } = useNavigation(slideCount)
   const [phase, setPhase] = useState<RotationPhase>("pending")
   const [isDocumentHidden, setIsDocumentHidden] = useState(false)
@@ -65,19 +69,22 @@ export const useRotation = (slideCount: number) => {
       }
     }
 
+    const becameAllowed = blockRotationRef.current && !blockRotation
+    blockRotationRef.current = blockRotation
+
     setPhase((current) => {
-      if (current === "stopped") {
+      if (blockRotation || media.matches) {
         return "stopped"
       }
-      if (isPreview || media.matches) {
-        return "stopped"
+      if (becameAllowed || current === "pending") {
+        return "rotating"
       }
-      return "rotating"
+      return current
     })
 
     media.addEventListener("change", stopIfReduced)
     return () => media.removeEventListener("change", stopIfReduced)
-  }, [isPreview])
+  }, [blockRotation])
 
   useEffect(() => {
     const syncVisibility = () => {
@@ -97,7 +104,7 @@ export const useRotation = (slideCount: number) => {
     phase === "rotating" &&
     !isDocumentHidden &&
     !isOffscreen &&
-    !isPreview &&
+    !blockRotation &&
     hasEnoughSlides
 
   useEffect(() => {
@@ -199,13 +206,13 @@ export const useRotation = (slideCount: number) => {
 
   const onRotationChange = useCallback(
     (next: "rotating" | "stopped") => {
-      if (isPreview) {
+      if (blockRotation) {
         return
       }
       resetElapsed()
       setPhase(next)
     },
-    [isPreview, resetElapsed],
+    [blockRotation, resetElapsed],
   )
 
   const showRotationControl = phase !== "pending" && hasEnoughSlides
