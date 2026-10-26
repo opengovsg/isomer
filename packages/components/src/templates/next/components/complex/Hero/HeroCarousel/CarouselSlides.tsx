@@ -24,13 +24,10 @@ const slideImageStyles = tv({
 })
 
 const slideContentStyles = tv({
-  base: "col-start-1 row-start-1 flex w-full flex-col gap-9 self-start opacity-0 transition-opacity duration-[400ms] ease-out motion-reduce:transition-none",
+  base: "pointer-events-none col-start-1 row-start-1 flex w-full flex-col gap-9 self-start opacity-0 transition-opacity duration-[400ms] ease-out motion-reduce:transition-none",
   variants: {
     isCurrent: {
-      true: "relative z-10 opacity-100",
-    },
-    isHidden: {
-      true: "pointer-events-none",
+      true: "pointer-events-auto relative z-10 opacity-100",
     },
     // From md, centre the title and CTAs together so a short slide isn't
     // pinned to the top of space reserved by a taller one.
@@ -146,7 +143,6 @@ export const CarouselSlideContent = ({
           key={index}
           className={slideContentStyles({
             isCurrent,
-            isHidden: !isCurrent,
             isVerticallyCentered: isVerticallyCenteredPerSlide,
           })}
           role="group"

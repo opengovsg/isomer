@@ -43,6 +43,16 @@ const carouselControlsStyles = tv({
   },
 })
 
+// BiPlay's triangle sits left of its viewBox centre; pause is symmetric.
+const rotationIconStyles = tv({
+  base: "h-6 w-6",
+  variants: {
+    isPlaying: {
+      true: "translate-x-0.5",
+    },
+  },
+})
+
 type Rotation = "rotating" | "stopped"
 
 interface CarouselRotationControl {
@@ -139,9 +149,8 @@ const CarouselRotationButton = ({
           onChange(next)
         }}
       >
-        {/* BiPlay's triangle sits left of its viewBox centre; pause is symmetric. */}
         <Icon
-          className={twMerge("h-6 w-6", !isRotating && "translate-x-0.5")}
+          className={rotationIconStyles({ isPlaying: !isRotating })}
           aria-hidden
         />
       </button>
