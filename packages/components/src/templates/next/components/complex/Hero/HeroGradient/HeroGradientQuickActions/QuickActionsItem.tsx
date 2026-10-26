@@ -1,5 +1,5 @@
 import type { SupportedIconName } from "~/common/icons"
-import type { HeroActionLayoutQuickActionsPanelProps } from "~/interfaces/complex/Hero"
+import type { HeroGradientQuickActionsProps } from "~/interfaces/complex/Hero"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { tv } from "~/lib/tv"
@@ -48,10 +48,10 @@ const ItemIcon = ({ icon }: { icon: SupportedIconName }) => {
 }
 
 interface QuickActionsItemProps {
-  item: HeroActionLayoutQuickActionsPanelProps["quickActionsItems"][number]
-  showIcon: HeroActionLayoutQuickActionsPanelProps["showIcon"]
-  site: HeroActionLayoutQuickActionsPanelProps["site"]
-  headingLevel: HeroActionLayoutQuickActionsPanelProps["headingLevel"]
+  item: HeroGradientQuickActionsProps["quickActionsItems"][number]
+  showIcon: HeroGradientQuickActionsProps["showIcon"]
+  site: HeroGradientQuickActionsProps["site"]
+  headingLevel: HeroGradientQuickActionsProps["headingLevel"]
 }
 
 export const QuickActionsItem = ({

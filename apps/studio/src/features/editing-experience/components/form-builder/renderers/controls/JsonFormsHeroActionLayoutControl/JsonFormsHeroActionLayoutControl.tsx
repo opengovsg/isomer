@@ -1,4 +1,8 @@
-import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
+import type { ControlProps, RankedTester } from "@jsonforms/core"
+import type {
+  HeroActionLayout,
+  HeroGradientProps,
+} from "@opengovsg/isomer-components"
 import { Box, Flex, FormControl } from "@chakra-ui/react"
 import { Generate, rankWith, schemaMatches } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsControlProps } from "@jsonforms/react"
@@ -14,11 +18,7 @@ import {
 } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import {
-  createDefaultHeroActionLayoutQuickActionItem,
-  HERO_QUICK_ACTIONS_DEFAULT_TITLE,
-  HERO_QUICK_ACTIONS_MIN_ITEMS,
-} from "./constants"
+import { nextHeroActionLayoutData } from "../../../utils/nextHeroActionLayoutData"
 import { actionLayoutTextRenderer } from "./TextControl"
 
 /** DS Radio wraps label + preview; suppress full-card focus ring on click. */
@@ -27,79 +27,6 @@ const heroActionLayoutRadioCss = {
     boxShadow: "none",
     outline: "none",
   },
-}
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null
-
-const branchLayout = (branch: JsonSchema) => {
-  const actionLayout = branch.properties?.actionLayout
-  if (!actionLayout || typeof actionLayout !== "object") {
-    return undefined
-  }
-
-  return "const" in actionLayout && typeof actionLayout.const === "string"
-    ? actionLayout.const
-    : undefined
-}
-
-const layoutSpecificFieldKeys = (branch: JsonSchema): string[] => {
-  const properties = branch.properties
-  if (!properties || typeof properties !== "object") {
-    return []
-  }
-
-  return Object.keys(properties).filter((key) => key !== "actionLayout")
-}
-
-/** Property keys owned by branches other than the selected layout. */
-const heroActionLayoutKeysToDrop = (
-  branches: JsonSchema[],
-  selectedLayout: string,
-): string[] => {
-  const keys = new Set<string>()
-
-  for (const branch of branches) {
-    const branchActionLayout = branchLayout(branch)
-    if (branchActionLayout === selectedLayout) {
-      continue
-    }
-
-    for (const key of layoutSpecificFieldKeys(branch)) {
-      keys.add(key)
-    }
-  }
-
-  return [...keys]
-}
-
-const defaultQuickActionsFields = () => ({
-  quickActionsTitle: HERO_QUICK_ACTIONS_DEFAULT_TITLE,
-  showIcon: true,
-  quickActionsItems: Array.from({ length: HERO_QUICK_ACTIONS_MIN_ITEMS }, () =>
-    createDefaultHeroActionLayoutQuickActionItem(),
-  ),
-})
-
-/** Keep shared hero fields. Drop the layout that was not selected. */
-export const nextHeroActionLayoutData = (
-  current: unknown,
-  layout: string,
-  branches: JsonSchema[],
-) => {
-  const kept = isRecord(current) ? { ...current } : {}
-
-  for (const key of heroActionLayoutKeysToDrop(branches, layout)) {
-    delete kept[key]
-  }
-
-  return {
-    ...kept,
-    actionLayout: layout,
-    ...(layout === HERO_ACTION_LAYOUT.quickActions
-      ? defaultQuickActionsFields()
-      : {}),
-  }
 }
 
 export const jsonFormsHeroActionLayoutControlTester: RankedTester = rankWith(
@@ -119,26 +46,23 @@ function JsonFormsHeroActionLayoutControl({
   renderers,
   cells,
 }: ControlProps): JSX.Element {
-  const selectedLayout =
-    isRecord(data) && data.actionLayout === HERO_ACTION_LAYOUT.quickActions
-      ? HERO_ACTION_LAYOUT.quickActions
-      : HERO_ACTION_LAYOUT.buttons
-  const branches = Array.isArray(schema.oneOf) ? schema.oneOf : []
-  const selectedBranch =
-    branches.find((branch) => branchLayout(branch) === selectedLayout) ??
-    branches[0]
+  const heroData = data as Partial<HeroGradientProps> | undefined
+  const selectedLayout = heroData?.actionLayout ?? HERO_ACTION_LAYOUT.buttons
+  const selectedBranch = schema.oneOf?.find(
+    (branch) => branch.properties?.actionLayout?.const === selectedLayout,
+  )
   // Scoped override: text fields in the layout (incl. quick action items) show builder errors.
   const layoutRenderers = useMemo(
     () => [actionLayoutTextRenderer, ...(renderers ?? [])],
     [renderers],
   )
 
-  const onChange = (layout: string) => {
+  const onChange = (layout: HeroActionLayout) => {
     if (layout === selectedLayout) {
       return
     }
 
-    handleChange(path, nextHeroActionLayoutData(data, layout, branches))
+    handleChange(path, nextHeroActionLayoutData(heroData, layout))
   }
 
   return (

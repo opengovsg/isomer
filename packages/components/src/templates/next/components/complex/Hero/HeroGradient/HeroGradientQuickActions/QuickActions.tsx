@@ -1,4 +1,4 @@
-import type { HeroActionLayoutQuickActionsPanelProps } from "~/interfaces/complex/Hero"
+import type { HeroGradientQuickActionsProps } from "~/interfaces/complex/Hero"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
@@ -6,8 +6,6 @@ import { QuickActionsItem } from "./QuickActionsItem"
 
 const QUICK_ACTIONS_TITLE_ID = "quick-actions-title"
 
-// TODO: Panel + item styling largely matches InfoCards (border, shadow, typography, link
-// hover). Extract a shared `tv` style module for both blocks to avoid drift.
 const quickActionsStyles = tv({
   slots: {
     root: [
@@ -26,27 +24,35 @@ const quickActionsStyles = tv({
   },
 })
 
+type QuickActionsProps = Pick<
+  HeroGradientQuickActionsProps,
+  | "quickActionsTitle"
+  | "showIcon"
+  | "quickActionsItems"
+  | "site"
+  | "headingLevel"
+>
+
 export const QuickActions = ({
   quickActionsTitle,
   showIcon,
   quickActionsItems,
   site,
   headingLevel,
-}: HeroActionLayoutQuickActionsPanelProps) => {
-  const items = quickActionsItems ?? []
-  if (items.length === 0) {
+}: QuickActionsProps) => {
+  if (quickActionsItems.length === 0) {
     return null
   }
 
   const trimmedTitle = quickActionsTitle?.trim()
   const SectionTitleTag = getHeadingTag(headingLevel + 1)
   const itemHeadingLevel = headingLevel + (trimmedTitle ? 2 : 1)
-  const itemCount = items.length as 2 | 3 | 4
+  const itemCount = quickActionsItems.length as 2 | 3 | 4
   const styles = quickActionsStyles({ itemCount })
 
   const itemsGrid = (
     <div className={styles.items()}>
-      {items.map((item, idx) => (
+      {quickActionsItems.map((item, idx) => (
         <QuickActionsItem
           key={idx}
           item={item}

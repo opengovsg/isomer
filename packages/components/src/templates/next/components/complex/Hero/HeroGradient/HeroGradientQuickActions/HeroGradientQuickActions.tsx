@@ -1,10 +1,10 @@
-import type { HeroActionLayoutQuickActionsProps } from "~/interfaces/complex/Hero"
+import type { HeroGradientQuickActionsProps } from "~/interfaces/complex/Hero"
 import { twMerge } from "~/lib/twMerge"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
-import { ComponentContent } from "../../../internal/customCssClass"
-import { ImageClient } from "../../../internal/ImageClient"
-import { QuickActions } from "../shared/QuickActions"
+import { ComponentContent } from "../../../../internal/customCssClass"
+import { ImageClient } from "../../../../internal/ImageClient"
+import { QuickActions } from "./QuickActions"
 
 export const HeroGradientQuickActions = ({
   title,
@@ -15,7 +15,7 @@ export const HeroGradientQuickActions = ({
   quickActionsItems,
   site,
   headingLevel,
-}: HeroActionLayoutQuickActionsProps) => {
+}: HeroGradientQuickActionsProps) => {
   const HeroTag = getHeadingTag(headingLevel)
 
   return (

@@ -33,6 +33,11 @@ export const HERO_ACTION_LAYOUT = {
 export type HeroActionLayout =
   (typeof HERO_ACTION_LAYOUT)[keyof typeof HERO_ACTION_LAYOUT]
 
+export const HERO_QUICK_ACTIONS_LIMITS = {
+  minItems: 2,
+  maxItems: 4,
+} as const
+
 export const HERO_BLOCK_IMAGE_POSITION = {
   left: "left",
   right: "right",
@@ -208,8 +213,7 @@ const HeroGradientQuickActionsFieldsSchema = Type.Object({
   quickActionsItems: Type.Array(HeroActionLayoutQuickActionItemSchema, {
     title: "Content",
     format: HERO_QUICK_ACTIONS_FORMAT,
-    minItems: 2,
-    maxItems: 4,
+    ...HERO_QUICK_ACTIONS_LIMITS,
   }),
 })
 
@@ -410,27 +414,13 @@ export type HeroActionLayoutQuickActionItem = Static<
   typeof HeroActionLayoutQuickActionItemSchema
 >
 
-/** Props for the shared CTA buttons row (gradient `actionLayout` only today). */
-export type HeroActionLayoutButtonsPanelProps = Simplify<
-  Pick<CommonProps, "site"> & Static<typeof CallToActionsSchema>
->
-
-/** Props for the shared quick-actions panel (gradient `actionLayout` only today). */
-export type HeroActionLayoutQuickActionsPanelProps = Simplify<
-  Pick<CommonProps, "site" | "headingLevel"> & {
-    quickActionsTitle?: string
-    showIcon: boolean
-    quickActionsItems: HeroActionLayoutQuickActionItem[]
-  }
->
-
 export type HeroGradientButtonsProps = Simplify<
   CommonProps &
     Static<typeof HeroGradientSharedSchema> &
     Static<typeof CallToActionsSchema>
 >
 
-export type HeroActionLayoutQuickActionsProps = Simplify<
+export type HeroGradientQuickActionsProps = Simplify<
   CommonProps &
     Static<typeof HeroGradientSharedSchema> &
     Static<typeof HeroGradientQuickActionsFieldsSchema>

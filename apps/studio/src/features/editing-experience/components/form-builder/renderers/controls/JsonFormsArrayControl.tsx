@@ -1,4 +1,8 @@
-import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
+import type {
+  ArrayLayoutProps,
+  RankedTester,
+  UISchemaElement,
+} from "@jsonforms/core"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
@@ -24,7 +28,16 @@ export const jsonFormsArrayControlTester: RankedTester = rankWith(
   or(isObjectArrayControl, isPrimitiveArrayControl),
 )
 
-function JsonFormsArrayControl(props: ArrayLayoutProps) {
+export function JsonFormsArrayControl({
+  createItem,
+  childLabelProp,
+  mapDrawerUiSchema,
+  ...props
+}: ArrayLayoutProps & {
+  createItem?: () => unknown
+  childLabelProp?: string
+  mapDrawerUiSchema?: (uischema: UISchemaElement) => UISchemaElement
+}) {
   const {
     data,
     path,
@@ -63,7 +76,13 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
   } = arrayResult
 
   return (
-    <NestedDrawerSwitch {...props} {...arrayResult}>
+    <NestedDrawerSwitch
+      {...props}
+      {...arrayResult}
+      childUiSchema={
+        mapDrawerUiSchema ? mapDrawerUiSchema(childUiSchema) : childUiSchema
+      }
+    >
       <VStack spacing={0} align="start">
         <VStack align="start" spacing="0.25rem" w="full">
           <HStack w="full" justifyContent="space-between" align="center">
@@ -72,7 +91,12 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
             </Text>
             <AddItemButton
               onClick={() => {
-                addItem(path, createDefaultValue(schema, rootSchema))()
+                addItem(
+                  path,
+                  createItem
+                    ? createItem()
+                    : createDefaultValue(schema, rootSchema),
+                )()
                 setSelectedIndex(data)
               }}
               isDisabled={isAddItemDisabled}
@@ -127,6 +151,9 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
                             >
                               <DraggableTagButton.Content>
                                 <DraggableTagButton.Label
+                                  {...(childLabelProp
+                                    ? { childLabelProp }
+                                    : {})}
                                   index={index}
                                   path={path}
                                   schema={schema}

@@ -1,47 +1,24 @@
-import type { JsonSchema } from "@jsonforms/core"
+import type { HeroGradientProps } from "@opengovsg/isomer-components"
 import { HERO_ACTION_LAYOUT } from "@opengovsg/isomer-components"
 
-import { nextHeroActionLayoutData } from "../JsonFormsHeroActionLayoutControl"
-import { createDefaultHeroActionLayoutQuickActionItem } from "../JsonFormsHeroActionLayoutControl/constants"
-
-const buttonsSchema = {
-  properties: {
-    actionLayout: { const: "buttons" },
-    buttonLabel: {},
-    buttonUrl: {},
-  },
-} satisfies JsonSchema
-
-const quickActionsSchema = {
-  properties: {
-    actionLayout: { const: "quickActions" },
-    quickActionsTitle: {},
-    showIcon: {},
-    quickActionsItems: {},
-  },
-} satisfies JsonSchema
-
-const branches = [buttonsSchema, quickActionsSchema]
+import { createDefaultHeroActionLayoutQuickActionItem } from "../utils/defaultHeroActionLayoutQuickActionItem"
+import { nextHeroActionLayoutData } from "../utils/nextHeroActionLayoutData"
 
 describe("nextHeroActionLayoutData", () => {
   it("drops quick-action fields when switching to buttons", () => {
     // Arrange
-    const current = {
+    const current: Partial<HeroGradientProps> = {
       type: "hero",
       variant: "gradient",
       title: "Welcome",
       actionLayout: "quickActions",
       quickActionsTitle: "Get started",
       showIcon: true,
-      quickActionsItems: [{ title: "Apply" }],
+      quickActionsItems: [createDefaultHeroActionLayoutQuickActionItem()],
     }
 
     // Act
-    const actual = nextHeroActionLayoutData(
-      current,
-      HERO_ACTION_LAYOUT.buttons,
-      branches,
-    )
+    const actual = nextHeroActionLayoutData(current, HERO_ACTION_LAYOUT.buttons)
 
     // Assert
     expect(actual).toEqual({
@@ -54,7 +31,7 @@ describe("nextHeroActionLayoutData", () => {
 
   it("drops button fields when switching to quick actions", () => {
     // Arrange
-    const current = {
+    const current: Partial<HeroGradientProps> = {
       type: "hero",
       variant: "gradient",
       title: "Welcome",
@@ -66,7 +43,6 @@ describe("nextHeroActionLayoutData", () => {
     const actual = nextHeroActionLayoutData(
       current,
       HERO_ACTION_LAYOUT.quickActions,
-      branches,
     )
 
     // Assert
