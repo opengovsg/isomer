@@ -15,7 +15,7 @@ const SENSITIVE_KEYS = new Set([
 ])
 
 // Page and SVG bodies can run to megabytes; their size is enough to debug with
-const SIZE_ONLY_KEYS = new Set(["content"])
+const SIZE_ONLY_KEYS = new Set(["content", "blocks"])
 
 const redactValue = (key: string, value: unknown): unknown => {
   const normalisedKey = key.toLowerCase()
