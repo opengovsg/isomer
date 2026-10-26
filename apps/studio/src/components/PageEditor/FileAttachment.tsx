@@ -26,6 +26,10 @@ interface FileAttachmentProps {
   shouldFetchResource?: boolean
   onUploadedFile?: (file: File) => void
   enableRiskyFileWarning?: boolean
+  // Fired once the file has actually landed in S3 (mutation success), ahead of
+  // the optional asset-fetch step below. Left to callers to decide what (if
+  // anything) to track — this component is shared by non-image attachments too.
+  onUploadSuccess?: () => void
 }
 
 type FileRejections = AttachmentProps<false>["rejections"]
@@ -39,6 +43,7 @@ export const FileAttachment = ({
   shouldFetchResource = true,
   onUploadedFile,
   enableRiskyFileWarning = false,
+  onUploadSuccess,
 }: FileAttachmentProps) => {
   const [rejections, setRejections] = useState<FileRejections>([])
   const [pendingAckRiskyFile, setPendingAckRiskyFile] = useState<File | null>(
@@ -74,6 +79,7 @@ export const FileAttachment = ({
       {
         onSuccess: ({ path }) => {
           onUploadedFile?.(file)
+          onUploadSuccess?.()
           if (shouldFetchResource) {
             void handleAssetUpload(path)
               .then((src) => setHref(src))

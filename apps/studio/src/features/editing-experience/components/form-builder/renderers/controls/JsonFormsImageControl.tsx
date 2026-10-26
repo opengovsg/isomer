@@ -11,6 +11,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import dynamic from "next/dynamic"
+import posthog from "posthog-js"
 import { useEffect, useRef, useState } from "react"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
@@ -68,6 +69,8 @@ function JsonFormsImageControl({
   schema,
 }: JsonFormsImageControlProps) {
   const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
+  const resourceId =
+    (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
   const {
     isOpen: isAdjustmentModalOpen,
     onOpen: onAdjustmentModalOpen,
@@ -199,9 +202,21 @@ function JsonFormsImageControl({
     if (!animationResolved) return
     justUploadedRef.current = false
     if (canAdjust && config?.componentType.startsWith("hero:")) {
+      posthog.capture("image_adjustment_modal_opened", {
+        site_id: siteId,
+        resource_id: resourceId,
+        source: "post_upload",
+      })
       onAdjustmentModalOpen()
     }
-  }, [animationResolved, canAdjust, onAdjustmentModalOpen, config])
+  }, [
+    animationResolved,
+    canAdjust,
+    onAdjustmentModalOpen,
+    config,
+    siteId,
+    resourceId,
+  ])
 
   // InfoCards owns a sibling `imageFit` field on the card (the modal's fit
   // control writes back to it) — detect it by component type so other
@@ -266,7 +281,18 @@ function JsonFormsImageControl({
             // Plain (optimized) URL — the ?original object is gated by a
             // malware-scan tag and 403s; the variant is fine for a thumbnail.
             imageSrc={generateAssetUrl(data)}
-            onEdit={canAdjust ? onAdjustmentModalOpen : undefined}
+            onEdit={
+              canAdjust
+                ? () => {
+                    posthog.capture("image_adjustment_modal_opened", {
+                      site_id: siteId,
+                      resource_id: resourceId,
+                      source: "manual_edit",
+                    })
+                    onAdjustmentModalOpen()
+                  }
+                : undefined
+            }
             // Unsupported format: show a disabled Edit affordance with a tooltip
             // instead of opening the editor.
             editDisabledReason={
@@ -297,9 +323,7 @@ function JsonFormsImageControl({
               fieldHost={fieldHost}
               originalFile={originalFile}
               siteId={siteId}
-              resourceId={
-                (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
-              }
+              resourceId={resourceId}
               initialImageFit={initialImageFit}
               onSave={handleAdjustmentSave}
             />
@@ -321,12 +345,16 @@ function JsonFormsImageControl({
               schema.allowedMimeTypeMappings ?? IMAGE_ACCEPTED_MIME_TYPE_MAPPING
             }
             siteId={siteId}
-            resourceId={
-              (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
-            }
+            resourceId={resourceId}
             onUploadedFile={(file) => {
               // Stash the picked File; setHref below pairs it with its key.
               pendingFileRef.current = file
+            }}
+            onUploadSuccess={() => {
+              posthog.capture("image_upload_completed", {
+                site_id: siteId,
+                resource_id: resourceId,
+              })
             }}
             setHref={(src) => {
               handleChange(path, src)

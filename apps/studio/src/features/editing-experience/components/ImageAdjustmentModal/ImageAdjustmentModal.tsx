@@ -23,7 +23,8 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import { useEffect, useMemo, useState } from "react"
+import posthog from "posthog-js"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { BiInfoCircle, BiReset } from "react-icons/bi"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
@@ -145,6 +146,18 @@ export const ImageAdjustmentModal = ({
     siteId,
     resourceId,
   })
+  // Fires once per tool per modal session (not once per drag/keystroke) --
+  // adoption only cares whether a tool was touched at all while editing.
+  const trackedToolsRef = useRef(new Set<string>())
+  const trackToolUsed = (tool: "crop" | "focal" | "rotate" | "flip") => {
+    if (trackedToolsRef.current.has(tool)) return
+    trackedToolsRef.current.add(tool)
+    posthog.capture("image_adjustment_tool_used", {
+      site_id: siteId,
+      resource_id: resourceId,
+      tool,
+    })
+  }
   // Drives UI locking during a save. Local (not the hook's isSaving) so the
   // save timeout below can unlock the modal even if the underlying upload hangs.
   const [isSaving, setIsSaving] = useState(false)
@@ -231,6 +244,10 @@ export const ImageAdjustmentModal = ({
           )
         }),
       ])
+      posthog.capture("image_adjustment_saved", {
+        site_id: siteId,
+        resource_id: resourceId,
+      })
       onSave({ ...result, imageFit })
       onClose()
     } catch (err) {
@@ -374,12 +391,14 @@ export const ImageAdjustmentModal = ({
                       rotate={draft?.rotate ?? 0}
                       flipH={draft?.flipH ?? false}
                       flipV={draft?.flipV ?? false}
-                      onCropChange={(crop) =>
+                      onCropChange={(crop) => {
+                        trackToolUsed("crop")
                         setDraft((d) => ({ ...ensureAdjustment(d), crop }))
-                      }
-                      onFocalChange={(focal) =>
+                      }}
+                      onFocalChange={(focal) => {
+                        trackToolUsed("focal")
                         setDraft((d) => ({ ...ensureAdjustment(d), focal }))
-                      }
+                      }}
                       onImageAspectChange={setImageAspect}
                       onNaturalSizeChange={setNaturalSize}
                     />
