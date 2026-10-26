@@ -45,18 +45,6 @@ const buildSingleCardPreviewBlock = (
     originalCard !== undefined && siblings.some((c) => c === originalCard)
       ? siblings.map((c) => (c === originalCard ? card : c))
       : [card]
-  // A lone card looks stranded in a multi-column grid. Pad it with one virtual
-  // placeholder — a copy of the edited card with generic text and no link, but
-  // reusing its image so it renders reliably (no fabricated asset URL to 404) —
-  // so the preview reads as a real grid.
-  if (cards.length < 2 && typeof card === "object" && card !== null) {
-    cards.push({
-      ...(card as Record<string, unknown>),
-      title: "Sample card",
-      url: undefined,
-      imageAdjustment: undefined,
-    })
-  }
   return {
     ...blockRecord,
     title: "",
@@ -288,15 +276,11 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
 // subject across the swing). Crop is always offered; focal is offered only under
 // imageFit "cover" (focalEnabledFor) — under "contain" the image is letterboxed,
 // so the preview switches to object-contain (previewObjectFitFor) and the focal
-// control is hidden. The preview renders the real single card (via
-// buildSingleItemPreviewBlock, not the whole block/every card), falling back to
-// the framed-image approximation with the three ratio states below if that
-// fails.
-// Card image frame is `aspect-[3/2]` across breakpoints (common.ts). It squares
-// off (lg:aspect-square) ONLY in the default 3-column layout at ≥1024px — the
-// real-component preview (below) now renders the actual card, so this shows
-// correctly when it succeeds; the previewStates' 3:2 desktop ratio remains the
-// framed-approximation fallback's guess for when it doesn't.
+// control is hidden. The preview shows just the cropped image (framed-image
+// approximation) — on this variant the text sits in a separate section below the
+// image, so it adds nothing to a crop/focal preview. The previewStates' 3:2
+// ratio sets the framed tile's shape (the real card frame is aspect-[3/2],
+// squaring to lg:aspect-square only in the 3-column layout at ≥1024px).
 const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   componentType: "infocards:cardsWithImages",
   cropMode: "custom",
@@ -307,10 +291,12 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   maxRenderedWidthPx: 640,
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
-  // Renders the single card for real via buildSingleItemPreviewBlock; falls
-  // back to the framed-image approximation if that render fails or produces
-  // nothing (see AdjustmentPreview).
-  buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
+  // Preview shows just the cropped image, not the card chrome/text: on this
+  // variant the title/description sit in a separate section below the image, so
+  // they add nothing to a crop/focal preview. Use the framed-image
+  // approximation (previewStates below set its shape); fit/fill still drives
+  // object-fit there via previewObjectFitFor.
+  skipRealComponentPreview: true,
   previewStates: responsivePreviewStates({
     mobile: { width: 3, height: 2 },
     tablet: { width: 3, height: 2 },

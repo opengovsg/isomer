@@ -107,11 +107,15 @@ describe("resolveAdjustmentConfig", () => {
         expect(config).toBeDefined()
         expect(config?.cropMode).toBe("custom")
         expect(config?.focalEnabled).toBe(true)
-        // Array-nested field: the real-component preview renders just the
-        // single card (via buildSingleItemPreviewBlock), not the whole block.
-        expect(config?.skipRealComponentPreview).toBeFalsy()
-        expect(config?.buildSingleItemPreviewBlock).toBeTypeOf("function")
       }
+      // cardsWithImages previews just the cropped image (framed approximation):
+      // its text sits below the image and adds nothing to a crop/focal preview.
+      expect(withImages?.skipRealComponentPreview).toBe(true)
+      expect(withImages?.buildSingleItemPreviewBlock).toBeUndefined()
+      // cardsWithFullImages overlays the title on the image, so it renders the
+      // real card (single card spliced into the block) to show text-over-image.
+      expect(fullImage?.skipRealComponentPreview).toBeFalsy()
+      expect(fullImage?.buildSingleItemPreviewBlock).toBeTypeOf("function")
     })
 
     it("does not resolve for the no-image variant", () => {
