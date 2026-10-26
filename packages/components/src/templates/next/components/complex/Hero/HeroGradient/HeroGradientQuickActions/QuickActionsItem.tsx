@@ -13,7 +13,7 @@ import { Link } from "../../../../internal/Link"
 const createStyles = tv({
   slots: {
     root: "group flex flex-col items-start gap-3 text-left outline-0",
-    icon: "h-auto w-6 text-base-content-strong",
+    icon: "h-auto w-6 text-base-content-strong group-hover:text-brand-interaction",
     title: [
       groupFocusVisibleHighlight(),
       "prose-headline-lg-semibold text-base-content-strong",
@@ -33,7 +33,6 @@ const createStyles = tv({
     hasLink: {
       true: {
         title: "group-hover:text-brand-interaction",
-        icon: "group-hover:text-brand-interaction",
       },
     },
   },
@@ -44,7 +43,7 @@ const styles = createStyles()
 const ItemIcon = ({ icon }: { icon: SupportedIconName }) => {
   const Icon = SUPPORTED_ICONS_MAP[icon]
 
-  return <Icon aria-hidden className={styles.icon({ hasLink: true })} />
+  return <Icon aria-hidden className={styles.icon()} />
 }
 
 interface QuickActionsItemProps {
