@@ -8,18 +8,20 @@ import {
 } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
 import { useMemo } from "react"
-import { BiShow, BiX } from "react-icons/bi"
+import { BiDownload, BiShow, BiX } from "react-icons/bi"
 
 export type ViewportOptions = "mobile" | "tablet" | "responsive" | "fullscreen"
 
 interface IframeToolbarProps {
   viewport: ViewportOptions
   setViewport: (viewport: ViewportOptions) => void
+  onDownload?: () => void
 }
 
 export const IframeToolbar = ({
   viewport,
   setViewport,
+  onDownload,
 }: IframeToolbarProps): JSX.Element => {
   const toolbarTextLabels = useMemo(() => {
     switch (viewport) {
@@ -92,10 +94,23 @@ export const IframeToolbar = ({
           Back to editing
         </Button>
       ) : (
-        <Menu size="sm" placement="bottom-end">
-          <Menu.Button variant="clear" size="xs" p="0" minH="auto">
-            {toolbarTextLabels.viewport}
-          </Menu.Button>
+        <Flex align="center" columnGap="0.75rem">
+          {onDownload && (
+            <Button
+              onClick={onDownload}
+              variant="clear"
+              size="xs"
+              p="0"
+              minH="auto"
+              leftIcon={<BiDownload fontSize="1rem" />}
+            >
+              Download
+            </Button>
+          )}
+          <Menu size="sm" placement="bottom-end">
+            <Menu.Button variant="clear" size="xs" p="0" minH="auto">
+              {toolbarTextLabels.viewport}
+            </Menu.Button>
           <Portal>
             <Menu.List>
               <MenuOptionGroup
@@ -140,7 +155,8 @@ export const IframeToolbar = ({
               </MenuOptionGroup>
             </Menu.List>
           </Portal>
-        </Menu>
+          </Menu>
+        </Flex>
       )}
     </Flex>
   )

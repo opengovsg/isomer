@@ -3,13 +3,15 @@ import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Flex, Portal } from "@chakra-ui/react"
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { convertThemeToCss } from "~/features/settings/utils"
+import { trpc } from "~/utils/trpc"
 
 import type { ViewportOptions } from "./IframeToolbar"
 import { IframeToolbar } from "./IframeToolbar"
 import { PreviewIframe } from "./PreviewIframe"
+import { buildStandaloneHtml, downloadHtml } from "./standaloneHtml"
 
 const PortalIfFullscreen = ({
   viewport,
@@ -27,6 +29,8 @@ interface ViewportContainerProps {
   callback?: (props: IframeCallbackFnProps) => void
   theme?: IsomerSiteThemeProps
   header?: React.ReactNode
+  // When set, a Download button serialises the preview into this .html file.
+  downloadFileName?: string
 }
 export const ViewportContainer = ({
   children,
@@ -34,8 +38,26 @@ export const ViewportContainer = ({
   callback,
   theme,
   header,
+  downloadFileName,
 }: PropsWithChildren<ViewportContainerProps>) => {
   const themeCssVars = useSiteThemeCssVars({ siteId })
+  const [siteConfig] = trpc.site.getConfig.useSuspenseQuery({ id: siteId })
+
+  const iframeDocRef = useRef<Document | null>(null)
+  const handleFrame = useCallback(
+    (props: IframeCallbackFnProps) => {
+      iframeDocRef.current = props.document ?? null
+      callback?.(props)
+    },
+    [callback],
+  )
+
+  const handleDownload = useCallback(async () => {
+    const doc = iframeDocRef.current
+    if (!doc || !downloadFileName) return
+    const html = await buildStandaloneHtml(doc, new URL(siteConfig.url).host)
+    downloadHtml(html, downloadFileName)
+  }, [downloadFileName, siteConfig.url])
   const mergedTheme = theme
     ? { ...themeCssVars, ...convertThemeToCss(theme) }
     : themeCssVars
@@ -76,7 +98,11 @@ export const ViewportContainer = ({
         {...containerProps}
       >
         {!!header && viewport !== "fullscreen" && header}
-        <IframeToolbar viewport={viewport} setViewport={setViewport} />
+        <IframeToolbar
+          viewport={viewport}
+          setViewport={setViewport}
+          onDownload={downloadFileName ? handleDownload : undefined}
+        />
         <Flex
           px="2rem"
           pb="2rem"
@@ -89,7 +115,7 @@ export const ViewportContainer = ({
           <PreviewIframe
             style={mergedTheme}
             viewport={viewport}
-            callback={callback}
+            callback={handleFrame}
           >
             {children}
           </PreviewIframe>

@@ -35,7 +35,10 @@ const SuspendableEditPagePreview = (): JSX.Element => {
   })
 
   return (
-    <ViewportContainer siteId={siteId}>
+    <ViewportContainer
+      siteId={siteId}
+      downloadFileName={permalink.replace(/^\/+|\/+$/g, "").replace(/\//g, "-") || "page"}
+    >
       <PreviewWithCustomSitemap
         {...merge(previewPageState, { page: { title } })}
         siteId={siteId}
