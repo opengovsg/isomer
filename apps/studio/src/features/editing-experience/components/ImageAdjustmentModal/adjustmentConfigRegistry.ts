@@ -24,26 +24,34 @@ const infoCardPreviewObjectFit = (fieldHost: unknown): "cover" | "contain" =>
     ? "contain"
     : "cover"
 
-// Builds the synthetic single-card InfoCards block the real-component preview
-// renders, so only the one card being edited shows (not the whole grid of
-// cards). Drops the section's own title/subtitle/link button — those belong to
-// the containing block, not any individual card, and would otherwise clutter a
-// preview tile meant to show one card's own chrome. Keeps maxColumns/layout
-// as-is so the card's real per-breakpoint aspect (e.g. the lg:aspect-square
-// compound variant at maxColumns "3") matches the live page exactly, even
-// though a multi-column grid will then show empty space beside the one card.
+// Builds the InfoCards block the real-component preview renders. Renders the
+// real sibling cards alongside the one being edited (edited card patched in via
+// `originalCard`) so the multi-column grid (e.g. maxColumns "3") looks natural
+// instead of a lone card in empty columns. Drops the section's own
+// title/subtitle/link button — those belong to the containing block, not the
+// grid of cards, and would clutter the small preview tile. Keeps
+// maxColumns/layout as-is so the cards' real per-breakpoint aspect (e.g. the
+// lg:aspect-square compound variant) matches the live page exactly. Falls back
+// to just the edited card if it can't be located among the siblings.
 const buildSingleCardPreviewBlock = (
   block: unknown,
   card: unknown,
+  originalCard?: unknown,
 ): Record<string, unknown> | undefined => {
   if (typeof block !== "object" || block === null) return undefined
+  const blockRecord = block as Record<string, unknown>
+  const siblings = Array.isArray(blockRecord.cards) ? blockRecord.cards : []
+  const cards =
+    originalCard !== undefined && siblings.some((c) => c === originalCard)
+      ? siblings.map((c) => (c === originalCard ? card : c))
+      : [card]
   return {
-    ...block,
+    ...blockRecord,
     title: "",
     subtitle: undefined,
     url: undefined,
     label: undefined,
-    cards: [card],
+    cards,
   }
 }
 

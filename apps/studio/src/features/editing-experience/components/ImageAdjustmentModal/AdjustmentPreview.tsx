@@ -352,6 +352,12 @@ export const AdjustmentPreview = ({
         [imageFieldName]: adjustedSrc,
         imageAdjustment: adjustment,
         ...(hasAlt ? {} : { imageAlt: "Preview image" }),
+        // A card (nested field) owns an `imageFit` the real component reads to
+        // decide cover vs contain. The Fit/Fill toggle lives in modal state and
+        // arrives here as `objectFit`; splice it onto the edited card so the
+        // real-component preview reflects the toggle live (otherwise it renders
+        // the stale saved fit and the preview appears not to update).
+        ...(isNestedField ? { imageFit: objectFit } : {}),
       }
       let component: IsomerComponent
       if (isNestedField) {
@@ -360,7 +366,7 @@ export const AdjustmentPreview = ({
         // synthetic single-item block so only it renders. No builder (or it
         // returns nothing) falls back to the framed-image approximation,
         // same as skipRealComponentPreview.
-        const built = buildSingleItemPreviewBlock?.(block, adjustedHost)
+        const built = buildSingleItemPreviewBlock?.(block, adjustedHost, host)
         if (!built) return null
         component = built as IsomerComponent
       } else {

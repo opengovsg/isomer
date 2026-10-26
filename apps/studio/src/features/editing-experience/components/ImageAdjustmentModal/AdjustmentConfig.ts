@@ -41,16 +41,18 @@ export interface AdjustmentScrim {
 }
 
 // For an array-nested image field (e.g. an InfoCards card) whose containing
-// block renders EVERY item (not just the one being edited), builds a synthetic
-// single-item version of that block so the real-component preview can show
-// just the one card/item instead of the whole section. `item` is the field
-// host (e.g. the card object) with the adjusted image + imageAdjustment
-// already spliced in. Return undefined to skip the real-component preview for
-// this render (falls back to the framed-image approximation) — e.g. if `block`
-// isn't shaped as expected.
+// block renders EVERY item, builds the block to render for the preview. `item`
+// is the field host (e.g. the card object) with the adjusted image +
+// imageAdjustment already spliced in; `originalItem` is that same host BEFORE
+// the splice, so the builder can locate it among the block's items and swap in
+// the adjusted copy — rendering the real sibling items alongside it so the
+// multi-column grid looks natural. Return undefined to skip the real-component
+// preview for this render (falls back to the framed-image approximation) — e.g.
+// if `block` isn't shaped as expected.
 export type BuildSingleItemPreviewBlock = (
   block: unknown,
   item: unknown,
+  originalItem?: unknown,
 ) => Record<string, unknown> | undefined
 
 export interface AdjustmentConfig {
