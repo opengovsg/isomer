@@ -83,7 +83,7 @@ const HeroBaseSchema = Type.Object({
 const CallToActionsSchema = Type.Object({
   buttonLabel: Type.Optional(
     IsomerString({
-      title: "Primary Call-to-Action text",
+      title: "Primary button text",
       description:
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
     }),
@@ -98,7 +98,7 @@ const CallToActionsSchema = Type.Object({
   ),
   secondaryButtonLabel: Type.Optional(
     IsomerString({
-      title: "Secondary Call-to-Action text",
+      title: "Secondary button text",
       description:
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
     }),
@@ -213,48 +213,34 @@ const HeroGradientButtonsLayoutSchema = Type.Composite(
   ],
   {
     title: "Buttons only",
-    groups: [
-      GROUPINGS.PRIMARY_CALL_TO_ACTION,
-      GROUPINGS.SECONDARY_CALL_TO_ACTION,
-    ],
   },
 )
 
 const HeroGradientQuickActionsLayoutSchema = Type.Object(
   {
-    actions: Type.Object(
-      {
-        layout: Type.Literal(HERO_GRADIENT_ACTION_LAYOUT.quickActions, {
-          default: HERO_GRADIENT_ACTION_LAYOUT.quickActions,
-        }),
-        title: Type.Optional(
-          IsomerString({
-            title: "Title",
-            pattern: NON_EMPTY_STRING_REGEX,
-            errorMessage: {
-              pattern: "cannot be empty or contain only spaces",
-            },
-          }),
-        ),
-        showIcon: Type.Boolean({
-          title: "Show icons",
-          default: true,
-        }),
-        items: Type.Array(HeroGradientQuickActionsItemSchema, {
-          title: "Content",
-          format: HERO_QUICK_ACTIONS_FORMAT,
-          ...HERO_QUICK_ACTIONS_LIMITS,
-        }),
-      },
-      {
-        groups: [
-          {
-            label: "Quick actions",
-            fields: ["title", "showIcon", "items"],
+    actions: Type.Object({
+      layout: Type.Literal(HERO_GRADIENT_ACTION_LAYOUT.quickActions, {
+        default: HERO_GRADIENT_ACTION_LAYOUT.quickActions,
+      }),
+      title: Type.Optional(
+        IsomerString({
+          title: "Title",
+          pattern: NON_EMPTY_STRING_REGEX,
+          errorMessage: {
+            pattern: "cannot be empty or contain only spaces",
           },
-        ],
-      },
-    ),
+        }),
+      ),
+      showIcon: Type.Boolean({
+        title: "Show icons",
+        default: true,
+      }),
+      items: Type.Array(HeroGradientQuickActionsItemSchema, {
+        title: "Content",
+        format: HERO_QUICK_ACTIONS_FORMAT,
+        ...HERO_QUICK_ACTIONS_LIMITS,
+      }),
+    }),
   },
   {
     title: "Quick actions",
