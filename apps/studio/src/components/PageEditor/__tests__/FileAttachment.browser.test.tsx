@@ -25,7 +25,14 @@ vi.mock("@opengovsg/design-system-react", async (importOriginal) => {
   }
 })
 
-const mutateMock = vi.hoisted(() => vi.fn())
+interface MutateOptions {
+  onSuccess: (data: { path: string }) => void
+  onError: (error: unknown) => void
+}
+
+const mutateMock = vi.hoisted(() =>
+  vi.fn<(input: unknown, options: MutateOptions) => void>(),
+)
 vi.mock("~/hooks/useUploadAssetMutation", () => ({
   useUploadAssetMutation: () => ({ mutate: mutateMock }),
 }))
