@@ -22,6 +22,7 @@ import { db } from "./modules/database"
 import { defaultUserSelect } from "./modules/me/me.select"
 import { checkRateLimit } from "./modules/rate-limit/rate-limit.service"
 import { isEmailWhitelisted } from "./modules/whitelist/whitelist.service"
+import { getTrpcErrorLogLevel } from "./trpcErrorLogLevel"
 import { flattenZodErrorForTrpcClient } from "./trpcZodError"
 
 interface Meta {
@@ -73,14 +74,15 @@ const loggerMiddleware = t.middleware(
         `[${type}]: ${path} - ${durationInMs}ms - OK`,
       )
     } else {
-      logger.error(
+      const level = getTrpcErrorLogLevel(result.error)
+      logger[level](
         {
           durationInMs,
           err: result.error,
           rawInput,
           userId: ctx.session?.userId,
         },
-        `[${type}]: ${path} - ${durationInMs}ms - ${result.error.code} ${result.error.message} - ERROR`,
+        `[${type}]: ${path} - ${durationInMs}ms - ${result.error.code} ${result.error.message} - ${level.toUpperCase()}`,
       )
     }
 
