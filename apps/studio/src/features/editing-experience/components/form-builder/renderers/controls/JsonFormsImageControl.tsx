@@ -7,6 +7,7 @@ import {
   FormErrorMessage,
   FormLabel,
   Infobox,
+  Link,
 } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import dynamic from "next/dynamic"
@@ -248,7 +249,12 @@ function JsonFormsImageControl({
           borderColor="utility.feedback.info"
           borderRadius="0.25rem"
         >
-          <Text textStyle="body-2">{config.preUploadCopy}</Text>
+          <Text textStyle="body-2">
+            {config.preUploadCopy}{" "}
+            <Link href="https://sample.isomer.gov.sg" isExternal>
+              Learn more about image guidelines
+            </Link>
+          </Text>
         </Infobox>
       )}
       {data ? (
