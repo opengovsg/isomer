@@ -52,6 +52,10 @@ interface CropFocalControlProps {
   cropMode: "fixed" | "custom" | "none"
   lockedRatio?: { width: number; height: number }
   focalEnabled: boolean
+  // The host modal's open state. Re-showing the focal hint on every open (not
+  // just on mount) needs an explicit open signal — this control's instance
+  // can persist/remount independently of the modal's own open/close cycle.
+  isOpen?: boolean
   // Rotation/flip are applied to the whole image before cropping, so the canvas
   // shows the rotated/flipped ("display") image and crop/focal are placed in
   // that orientation — matching the preview and the baked output.
@@ -84,6 +88,7 @@ export const CropFocalControl = ({
   cropMode,
   lockedRatio,
   focalEnabled,
+  isOpen,
   rotate = 0,
   flipH = false,
   flipV = false,
@@ -109,6 +114,14 @@ export const CropFocalControl = ({
   const [boxSize, setBoxSize] = useState({ width: 0, height: 0 })
   const [dragTarget, setDragTarget] = useState<DragTarget>(null)
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null)
+
+  // Nudges a first-time user toward the focal marker — shown on every modal
+  // open, dismissed for good as soon as they touch the marker.
+  const [showFocalHint, setShowFocalHint] = useState(true)
+  useEffect(() => {
+    if (isOpen) setShowFocalHint(true)
+  }, [isOpen])
+  const dismissFocalHint = () => setShowFocalHint(false)
 
   const showCrop = cropMode !== "none"
   const currentCrop = crop ?? defaultCropRect(lockedRatio, aspectRatio ?? 1)
@@ -269,6 +282,7 @@ export const CropFocalControl = ({
     if (showCrop && crop === undefined) {
       onCropChange(currentCrop)
     }
+    dismissFocalHint()
     setDragTarget("focal")
     event.currentTarget.setPointerCapture(event.pointerId)
   }
@@ -440,13 +454,19 @@ export const CropFocalControl = ({
 
         {focalEnabled && (
           <Tooltip
-            label="Move the focal point"
+            label={
+              showFocalHint ? "Drag to set focal point" : "Move the focal point"
+            }
             placement="top"
+            // Forced open for the hint; once dismissed, hand control back to
+            // Chakra's normal hover behaviour (undefined = uncontrolled).
+            isOpen={showFocalHint || undefined}
             closeOnPointerDown
             hasArrow
           >
             <div
               style={markerStyle}
+              onPointerEnter={dismissFocalHint}
               onPointerDown={handleFocalPointerDown}
               onPointerMove={handleFocalPointerMove}
               onPointerUp={handlePointerUp}

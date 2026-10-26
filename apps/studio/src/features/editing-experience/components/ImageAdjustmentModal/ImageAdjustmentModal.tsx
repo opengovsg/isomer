@@ -24,7 +24,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { useEffect, useMemo, useState } from "react"
-import { BiInfoCircle } from "react-icons/bi"
+import { BiInfoCircle, BiReset } from "react-icons/bi"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
@@ -370,6 +370,7 @@ export const ImageAdjustmentModal = ({
                       cropMode={config.cropMode}
                       lockedRatio={lockedRatio}
                       focalEnabled={focalEnabled}
+                      isOpen={isOpen}
                       rotate={draft?.rotate ?? 0}
                       flipH={draft?.flipH ?? false}
                       flipV={draft?.flipV ?? false}
@@ -456,7 +457,9 @@ export const ImageAdjustmentModal = ({
                 w={{ base: "100%", md: "21rem" }}
                 flexShrink={0}
                 minH={0}
-                overflowY={{ md: "auto" }}
+                // Always render the scrollbar (not just on hover/overflow) so it
+                // never pops in/out and shifts the rail's content width.
+                overflowY={{ base: "visible", md: "scroll" }}
                 // Reserve the scrollbar gutter so toggling it never changes the
                 // rail's content width — otherwise tile heights (derived from
                 // that width) would oscillate and loop the ResizeObserver.
@@ -530,8 +533,9 @@ export const ImageAdjustmentModal = ({
           <ModalFooter borderTopWidth="1px" borderColor="base.divider.medium">
             <HStack spacing="1rem" w="100%">
               <Button
-                variant="link"
+                variant="outline"
                 colorScheme="critical"
+                leftIcon={<BiReset />}
                 onClick={handleReset}
                 isDisabled={isResetDisabled || isSaving}
               >
