@@ -8,9 +8,9 @@ import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVar
 import { convertThemeToCss } from "~/features/settings/utils"
 
 import type { ViewportOptions } from "./IframeToolbar"
-import { useEditPageViewport } from "./EditPagePreviewProvider"
 import { IframeToolbar } from "./IframeToolbar"
 import { PreviewIframe } from "./PreviewIframe"
+import { useViewport } from "./ViewportProvider"
 
 const PortalIfFullscreen = ({
   viewport,
@@ -43,7 +43,7 @@ export const ViewportContainer = ({
     ? { ...themeCssVars, ...convertThemeToCss(theme) }
     : themeCssVars
 
-  const { viewport, setViewport } = useEditPageViewport()
+  const { viewport, setViewport } = useViewport()
 
   const containerProps: Partial<FlexProps> = useMemo(() => {
     if (viewport === "fullscreen") {

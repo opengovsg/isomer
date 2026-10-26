@@ -4,8 +4,9 @@ import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { EditPageDrawer } from "~/features/editing-experience/components/Drawer/EditPageDrawer"
 import { EditingLockedOverlay } from "~/features/editing-experience/components/EditingLockedOverlay"
+import { EditPageCarouselPreviewProvider } from "~/features/editing-experience/components/preview/EditPageCarouselPreviewProvider"
 import { EditPagePreview } from "~/features/editing-experience/components/preview/EditPagePreview"
-import { EditPagePreviewProvider } from "~/features/editing-experience/components/preview/EditPagePreviewProvider"
+import { ViewportProvider } from "~/features/editing-experience/components/preview/ViewportProvider"
 import {
   useContentEditTracker,
   useLeftEditorSurveyTracker,
@@ -65,17 +66,24 @@ const PageEditingView = ({ pageId, siteId }: PageEditingViewProps) => {
   useLeftEditorSurveyTracker()
 
   return (
-    <EditPagePreviewProvider>
-      <Grid h="full" w="100%" templateColumns="repeat(3, 1fr)" gap={0}>
-        <GridItem colSpan={1} overflow="auto" minW="28rem" position="relative">
-          <EditPageDrawer />
-          <EditingLockedOverlay pageId={pageId} siteId={siteId} />
-        </GridItem>
-        <GridItem colSpan={2}>
-          <EditPagePreview />
-        </GridItem>
-      </Grid>
-    </EditPagePreviewProvider>
+    <ViewportProvider>
+      <EditPageCarouselPreviewProvider>
+        <Grid h="full" w="100%" templateColumns="repeat(3, 1fr)" gap={0}>
+          <GridItem
+            colSpan={1}
+            overflow="auto"
+            minW="28rem"
+            position="relative"
+          >
+            <EditPageDrawer />
+            <EditingLockedOverlay pageId={pageId} siteId={siteId} />
+          </GridItem>
+          <GridItem colSpan={2}>
+            <EditPagePreview />
+          </GridItem>
+        </Grid>
+      </EditPageCarouselPreviewProvider>
+    </ViewportProvider>
   )
 }
 

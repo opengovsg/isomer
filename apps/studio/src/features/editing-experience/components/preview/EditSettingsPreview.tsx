@@ -27,9 +27,9 @@ import { waitForElement } from "~/utils/dom"
 import { trpc } from "~/utils/trpc"
 
 import { siteSchema } from "../../schema"
-import { EditPagePreviewProvider } from "./EditPagePreviewProvider"
 import Preview from "./Preview"
 import { ViewportContainer } from "./ViewportContainer"
+import { ViewportProvider } from "./ViewportProvider"
 
 const SHARED_TAB_STYLES = {
   border: "1px solid",
@@ -216,7 +216,7 @@ export const EditSettingsPreview = ({
 
   return (
     <Box bg="base.canvas.backdrop" h="full">
-      <EditPagePreviewProvider>
+      <ViewportProvider>
         <ViewportContainer
           siteId={siteId}
           theme={theme}
@@ -278,7 +278,7 @@ export const EditSettingsPreview = ({
           {!!rest.askgov && <AskgovWidget />}
           {!!rest.vica && <VicaWidget />}
         </ViewportContainer>
-      </EditPagePreviewProvider>
+      </ViewportProvider>
     </Box>
   )
 }

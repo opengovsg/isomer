@@ -11,9 +11,9 @@ import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-import { EditPagePreviewProvider } from "./EditPagePreviewProvider"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
+import { ViewportProvider } from "./ViewportProvider"
 
 const currentDate = new Date().toString()
 
@@ -93,7 +93,7 @@ export const EditCollectionLinkPreview = ({
   )
 
   return (
-    <EditPagePreviewProvider>
+    <ViewportProvider>
       <ViewportContainer siteId={siteId}>
         <PreviewWithCustomSitemap
           content={[]}
@@ -105,6 +105,6 @@ export const EditCollectionLinkPreview = ({
           version="0.1.0"
         />
       </ViewportContainer>
-    </EditPagePreviewProvider>
+    </ViewportProvider>
   )
 }

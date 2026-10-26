@@ -6,10 +6,10 @@ import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
 import { CarouselPreviewNotice } from "./CarouselPreviewNotice"
-import { useEditPageViewport } from "./EditPagePreviewProvider"
 import { LoadingPreview } from "./LoadingPreview"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
+import { useViewport } from "./ViewportProvider"
 
 const LoadingState = (): JSX.Element => {
   return (
@@ -29,7 +29,7 @@ const LoadingState = (): JSX.Element => {
 }
 
 const SuspendableEditPagePreview = (): JSX.Element => {
-  const { viewport } = useEditPageViewport()
+  const { viewport } = useViewport()
   const { previewPageState, pageId, updatedAt, siteId, permalink, title } =
     useEditorDrawerContext()
 
