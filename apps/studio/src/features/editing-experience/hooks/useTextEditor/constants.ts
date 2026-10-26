@@ -32,6 +32,12 @@ import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
 import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
+import {
+  insertColumnWidth,
+  removeColumnWidths,
+  withStoredColumnWidths,
+  type WidthCommand,
+} from "~/features/editing-experience/utils/columnWidths"
 
 import { canMergeCells } from "../../components/TableBubbleMenu/TableBubbleMenu.utils"
 import {
@@ -42,6 +48,7 @@ import {
   createTableSelectionBorderPlugin,
   getHtmlWithRelativeReferenceLinks,
 } from "../../utils"
+import { expandedTablePlugin } from "../../utils/expandTableEditor"
 import {
   wrapHeaderToggleCommand,
   type HeaderToggleCommand,
@@ -151,12 +158,32 @@ export const IsomerTable = Table.extend({
       toggleHeaderColumn: wrapHeaderToggleCommand(
         parentToggleHeaderColumn?.() as HeaderToggleCommand | undefined,
       ),
+      addColumnBefore: () =>
+        withStoredColumnWidths(
+          parent?.addColumnBefore?.() as WidthCommand | undefined,
+          (widths, rect) => insertColumnWidth(widths, rect.left),
+        ),
+      addColumnAfter: () =>
+        withStoredColumnWidths(
+          parent?.addColumnAfter?.() as WidthCommand | undefined,
+          (widths, rect) => insertColumnWidth(widths, rect.right),
+        ),
+      deleteColumn: () =>
+        withStoredColumnWidths(
+          parent?.deleteColumn?.() as WidthCommand | undefined,
+          (widths, rect) => removeColumnWidths(widths, rect.left, rect.right),
+        ),
     }
   },
   addAttributes() {
     return {
       caption: {
         default: DEFAULT_TABLE_CAPTION,
+      },
+      columnWidths: {
+        default: null,
+        // Clipboard HTML stringifies attrs unpredictably; ignore widths on paste.
+        parseHTML: () => null,
       },
     }
   },
@@ -191,7 +218,11 @@ export const IsomerTable = Table.extend({
     }
   },
   addProseMirrorPlugins() {
-    return [...(this.parent?.() ?? []), createTableSelectionBorderPlugin()]
+    return [
+      ...(this.parent?.() ?? []),
+      createTableSelectionBorderPlugin(),
+      expandedTablePlugin(),
+    ]
   },
 })
 

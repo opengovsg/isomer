@@ -76,6 +76,47 @@ export const ColourBlockInverse: Story = {
   },
 }
 
+const colourBlockImageMatrixArgs = {
+  headingLevel: 1,
+  site: generateSiteConfig(),
+  backgroundUrl: "/hero-block-transparent.png",
+  title: "Block hero image position and edge",
+  subtitle:
+    "Use mobile and tablet viewports to check stack order and curved edges.",
+  buttonLabel: "Main CTA",
+  buttonUrl: "/",
+  variant: "block" as const,
+  theme: "default" as const,
+}
+
+export const ColourBlockRightStraight: Story = {
+  args: {
+    ...colourBlockImageMatrixArgs,
+    blockImage: { imagePosition: "right", imageEdge: "straight" },
+  },
+}
+
+export const ColourBlockRightCurved: Story = {
+  args: {
+    ...colourBlockImageMatrixArgs,
+    blockImage: { imagePosition: "right", imageEdge: "curved" },
+  },
+}
+
+export const ColourBlockLeftStraight: Story = {
+  args: {
+    ...colourBlockImageMatrixArgs,
+    blockImage: { imagePosition: "left", imageEdge: "straight" },
+  },
+}
+
+export const ColourBlockLeftCurved: Story = {
+  args: {
+    ...colourBlockImageMatrixArgs,
+    blockImage: { imagePosition: "left", imageEdge: "curved" },
+  },
+}
+
 export const ColourBlockLongWord: Story = {
   args: {
     headingLevel: 1,

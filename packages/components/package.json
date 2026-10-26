@@ -78,8 +78,7 @@
     "tailwind-variants": "catalog:",
     "tailwindcss-react-aria-components": "catalog:",
     "type-fest": "catalog:",
-    "usehooks-ts": "catalog:",
-    "zod": "catalog:"
+    "usehooks-ts": "catalog:"
   },
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",

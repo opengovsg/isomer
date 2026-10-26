@@ -1,5 +1,6 @@
 export const ARRAY_RADIO_FORMAT = "radio"
 export const HERO_BANNER_STYLE_FORMAT = "hero-banner-style"
+export const HERO_BLOCK_IMAGE_FORMAT = "hero-block-image"
 export const COLLECTION_DROPDOWN_FORMAT = "collection-dropdown"
 export const DGS_DATASET_ID_FORMAT = "dgs-dataset-id"
 export const ICON_PICKER_FORMAT = "icon-picker"

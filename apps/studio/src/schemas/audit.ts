@@ -141,7 +141,7 @@ export const getAuditLogExportWindowSchema = z.object({
 
 export const createAuditLogExportRequestSchema = z.object({
   scope: z.enum(AuditLogExportScope, {
-    message: "Select which sites to export",
+    error: "Select which sites to export",
   }),
   // Required when `scope` is "site"; ignored when `scope` is "allSites" (the
   // site list is resolved server-side from the caller's own Admin access —
@@ -159,8 +159,8 @@ export const createAuditLogExportRequestSchema = z.object({
     .pipe(
       z
         .number()
-        .int({ message: "Select a valid site" })
-        .positive({ message: "Select a valid site" }),
+        .int({ error: "Select a valid site" })
+        .positive({ error: "Select a valid site" }),
     )
     .optional(),
   // The future/past-year window is enforced below, on
@@ -172,13 +172,13 @@ export const createAuditLogExportRequestSchema = z.object({
   month: z
     .string()
     .regex(MONTH_REGEX, {
-      message: "Enter a month in the format YYYY-MM, e.g. 2026-03",
+      error: "Enter a month in the format YYYY-MM, e.g. 2026-03",
     })
     // The regex above guarantees the shape at runtime; narrow the inferred
     // output from `string` to `IsoMonth` so consumers get the real type.
     .transform((month) => month as IsoMonth),
   reportType: z.enum(AuditLogExportRequestedReportType, {
-    message: "Select a report type",
+    error: "Select a report type",
   }),
 })
 
@@ -191,7 +191,7 @@ export const createAuditLogExportRequestServerSchema =
     .refine(
       (input) =>
         input.scope !== AuditLogExportScope.Site || input.siteId !== undefined,
-      { message: "Select a valid site", path: ["siteId"] },
+      { error: "Select a valid site", path: ["siteId"] },
     )
     // Scoped to Activity: an Access export always uses the server's current
     // month regardless of what's submitted (see `resolveAuditLogDateRange`),
@@ -202,8 +202,7 @@ export const createAuditLogExportRequestServerSchema =
         input.reportType !== AuditLogExportRequestedReportType.Activity ||
         validateIsNotFutureMonth(input.month) === true,
       {
-        message:
-          "You cannot export audit logs for a month that is in the future",
+        error: "You cannot export audit logs for a month that is in the future",
         path: ["month"],
       },
     )
@@ -212,7 +211,7 @@ export const createAuditLogExportRequestServerSchema =
         input.reportType !== AuditLogExportRequestedReportType.Activity ||
         validateIsMonthInPastYear(input.month) === true,
       {
-        message: "You can only export audit logs from the past 12 months",
+        error: "You can only export audit logs from the past 12 months",
         path: ["month"],
       },
     )

@@ -26,13 +26,13 @@ This folder is the single source of truth for **input schemas shared between the
 
 ### Composition
 
-- Compose with `.extend()` and `.merge()` rather than redeclaring fields.
+- Compose with `.extend()` (e.g. `.extend(otherSchema.shape)`) rather than redeclaring fields.
 - Reuse `basePageSchema`, `baseResourceSchema`, etc. for common identifier shapes.
 - Pull permalink, slug, URL constraints from `common.ts` — do not redefine character classes inline.
 
 ### Error messages
 
-- Every `.min()` / `.max()` / `.regex()` must have a user-facing `message`. Generic Zod messages ("Required") leak through to forms.
+- Every `.min()` / `.max()` / `.regex()` must have a user-facing `error` string (Zod 4; the old `message` param is deprecated). Generic Zod messages ("Required") leak through to forms.
 - Messages should be sentence case, no trailing period, and address the user ("Enter a title for this page", not "Title is required").
 
 ### Server-only schemas
@@ -53,12 +53,12 @@ This folder is the single source of truth for **input schemas shared between the
 1. Decide if it's shared (this folder) or feature-internal (`features/<area>/schema.ts`).
 2. Reuse `common.ts` primitives where possible.
 3. Export the inferred type alongside the schema.
-4. Add user-facing `message` to every validator.
+4. Add user-facing `error` to every validator.
 5. Add the schema to `__tests__/` if it has any conditional rules.
 
 ## Anti-patterns the agent should refuse
 
 - Declaring inline `z.object(...)` schemas inside a router file when more than one caller needs the shape.
-- Schemas without `message` strings on constraints.
+- Schemas without `error` strings on constraints.
 - Hand-written types that duplicate `z.infer` output.
 - Importing a `*ServerSchema` from client code.

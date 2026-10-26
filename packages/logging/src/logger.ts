@@ -64,6 +64,11 @@ class PinoLogger {
             return { level: label.toUpperCase() }
           },
         },
+        // pino only serializes Errors under `err`; elsewhere their message and stack are dropped
+        serializers: {
+          error: pino.stdSerializers.err,
+          originalError: pino.stdSerializers.err,
+        },
       },
       transport,
     )
