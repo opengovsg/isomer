@@ -1,7 +1,7 @@
 "use client"
 
 import type { CSSProperties } from "react"
-import { Box, Tooltip } from "@chakra-ui/react"
+import { Box } from "@chakra-ui/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { BiCrosshair } from "react-icons/bi"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
@@ -348,12 +348,7 @@ export const CropFocalControl = ({
     position: "absolute",
     left: `${focalBoxSpace.x * 100}%`,
     top: `${focalBoxSpace.y * 100}%`,
-    // Center the marker on the focal point via negative margins rather than a
-    // transform: the tooltip positioner measures this element's layout box, and
-    // a transform would leave that box pinned at the top-left (focal point),
-    // pushing the "top"-placed tooltip to the right of the visible icon.
-    marginLeft: "-13px",
-    marginTop: "-13px",
+    transform: "translate(-50%, -50%)",
     width: "26px",
     height: "26px",
     display: "flex",
@@ -366,6 +361,26 @@ export const CropFocalControl = ({
     cursor: dragTarget === "focal" ? "grabbing" : "grab",
     pointerEvents: "auto",
     zIndex: 11,
+  }
+
+  // On-load nudge toward the focal marker. Positioned in the SAME box-space as
+  // the marker (not a Popper tooltip) so it tracks the marker exactly, including
+  // after the image loads and the marker settles into place — a Popper tooltip
+  // anchored at mount would stay at the pre-layout position and read off-center.
+  const focalHintStyle: CSSProperties = {
+    position: "absolute",
+    left: `${focalBoxSpace.x * 100}%`,
+    top: `${focalBoxSpace.y * 100}%`,
+    transform: "translate(-50%, calc(-100% - 20px))",
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    color: "white",
+    fontSize: "0.75rem",
+    lineHeight: 1.2,
+    padding: "0.375rem 0.5rem",
+    borderRadius: "0.25rem",
+    whiteSpace: "nowrap",
+    pointerEvents: "none",
+    zIndex: 12,
   }
 
   // Show the image in "display" orientation (rotate then flip). For 0/180 the
@@ -458,19 +473,10 @@ export const CropFocalControl = ({
         )}
 
         {focalEnabled && (
-          <Tooltip
-            label={
-              showFocalHint ? "Drag to set focal point" : "Move the focal point"
-            }
-            placement="top"
-            // Forced open for the hint; once dismissed, hand control back to
-            // Chakra's normal hover behaviour (undefined = uncontrolled).
-            isOpen={showFocalHint || undefined}
-            closeOnPointerDown
-            hasArrow
-          >
+          <>
             <div
               style={markerStyle}
+              title="Move the focal point"
               onPointerEnter={dismissFocalHint}
               onPointerDown={handleFocalPointerDown}
               onPointerMove={handleFocalPointerMove}
@@ -479,7 +485,11 @@ export const CropFocalControl = ({
             >
               <BiCrosshair size={18} />
             </div>
-          </Tooltip>
+            {/* On-load hint; co-located with the marker so it stays centered. */}
+            {showFocalHint && (
+              <div style={focalHintStyle}>Drag to set focal point</div>
+            )}
+          </>
         )}
       </Box>
     </Box>
