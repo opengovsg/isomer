@@ -1,5 +1,6 @@
 import { backOff } from "exponential-backoff"
 import { useState } from "react"
+import { reportClientError } from "~/lib/datadogError"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 interface UseAssetUploadProps {
@@ -13,6 +14,9 @@ const DEFAULT_BASE_TIMEOUT_MS = 1000
 // Delay before each attempt is min(startingDelay * 2^attempt, maxDelay). With 10 attempts
 // and this cap, total wait time is 1+2+4+8+8*7 ≈ 63s worst case (all retries delayed).
 export const MAX_ASSET_UPLOAD_BACKOFF_DELAY_MS = 8000
+// Per-attempt deadline so a swallowed request (ISOM-2680) can't hang forever
+// without ever reaching backOff's retry/reject logic.
+const FETCH_BACK_ATTEMPT_TIMEOUT_MS = 10_000
 
 export const getAssetUploadBackoffOptions = ({
   numOfAttempts = DEFAULT_NUM_OF_ATTEMPTS,
@@ -29,11 +33,16 @@ export const useAssetUpload = ({
   baseTimeoutMs = DEFAULT_BASE_TIMEOUT_MS,
 }: UseAssetUploadProps) => {
   const [isLoading, setIsLoading] = useState(false)
-  const handleAssetUpload = async (src: string) => {
+  const handleAssetUpload = async (
+    src: string,
+    context?: Record<string, unknown>,
+  ) => {
     setIsLoading(true)
     try {
       await backOff(async () => {
-        const response = await fetch(`${ASSETS_BASE_URL}${src}`)
+        const response = await fetch(`${ASSETS_BASE_URL}${src}`, {
+          signal: AbortSignal.timeout(FETCH_BACK_ATTEMPT_TIMEOUT_MS),
+        })
         if (!response.ok) {
           throw new Error(`Unable to read from ${src}`)
         }
@@ -42,6 +51,9 @@ export const useAssetUpload = ({
       return src
     } catch (e) {
       console.error(e)
+      // Reported here (not by the calling component) so the convention of
+      // keeping side effects out of `components/` holds regardless of caller.
+      reportClientError(e, { feature: "asset-upload-fetch", ...context })
       throw e
     } finally {
       setIsLoading(false)

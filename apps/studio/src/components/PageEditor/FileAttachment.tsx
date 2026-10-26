@@ -7,7 +7,6 @@ import { useEffect, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
-import { reportClientError } from "~/lib/datadogError"
 import { RISKY_FILE_EXTENSIONS } from "~/lib/fileUpload"
 import { fileNameAndSizeSchema, uploadSvgSchema } from "~/schemas/asset"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
@@ -65,16 +64,14 @@ export const FileAttachment = ({
         onSuccess: ({ path }) => {
           onUploadedFile?.(file)
           if (shouldFetchResource) {
-            void handleAssetUpload(path)
+            void handleAssetUpload(path, {
+              siteId,
+              resourceId,
+              fileExtension: getFileExtension(file.name),
+              fileSize: file.size,
+            })
               .then((src) => setHref(src))
-              .catch((error) => {
-                reportClientError(error, {
-                  feature: "asset-upload-fetch",
-                  siteId,
-                  resourceId,
-                  fileExtension: getFileExtension(file.name),
-                  fileSize: file.size,
-                })
+              .catch(() => {
                 toast({
                   title: "Failed to upload file",
                   description: "Please try again.",

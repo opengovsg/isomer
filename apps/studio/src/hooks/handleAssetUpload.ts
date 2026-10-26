@@ -5,6 +5,12 @@ interface HandleUploadParams {
   contentDisposition: string
 }
 
+// Some virtualised/secure browser proxies (e.g. Menlo, SafeSurf) swallow the
+// PUT entirely, so it never rejects or resolves (ISOM-2680). Without a
+// deadline that hang is silent forever instead of a catchable, reportable
+// error.
+const UPLOAD_TIMEOUT_MS = 60_000
+
 // Use server-signed Content-Type and Content-Disposition so upload metadata
 // cannot be overridden by the client (prevents stored XSS via type confusion).
 export const handleAssetUpload = async ({
@@ -20,6 +26,7 @@ export const handleAssetUpload = async ({
     },
     method: "PUT",
     body: file,
+    signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),
   })
 
   if (!response.ok) {
