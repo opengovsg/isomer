@@ -170,7 +170,7 @@ catalog:
   react-hook-form: ^7.90.0
   react-markdown: ^10.1.0
   rehype-external-links: ^3.0.0
-  sass: ^1.105.1
+  sass: ^1.105.2
   superjson: ^2.2.6
   tailwind-merge: ^2.6.1
   tailwind-variants: ^3.3.1
