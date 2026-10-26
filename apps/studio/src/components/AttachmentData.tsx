@@ -8,9 +8,9 @@ import {
   Tooltip,
   VStack,
 } from "@chakra-ui/react"
-import { IconButton } from "@opengovsg/design-system-react"
+import { Button, IconButton } from "@opengovsg/design-system-react"
 import { useEffect, useRef, useState } from "react"
-import { BiTrash } from "react-icons/bi"
+import { BiPencil, BiTrash } from "react-icons/bi"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 // Match ImageClient's self-heal: a just-saved/just-uploaded asset isn't servable
@@ -90,7 +90,36 @@ export const AttachmentData = ({
     >
       <HStack spacing="0.75rem" minW={0}>
         {imageSrc && (
-          <Box position="relative" boxSize="2.5rem" flexShrink={0}>
+          <Box
+            position="relative"
+            boxSize="2.5rem"
+            flexShrink={0}
+            {...(onEdit
+              ? {
+                  as: "button",
+                  type: "button",
+                  "aria-label": "Edit image",
+                  onClick: (e: React.MouseEvent) => {
+                    e.stopPropagation()
+                    onEdit()
+                  },
+                  onKeyDown: (e: React.KeyboardEvent) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      onEdit()
+                    }
+                  },
+                  cursor: "pointer",
+                  _hover: { opacity: 0.8 },
+                  _focusVisible: {
+                    outline: "2px solid",
+                    outlineColor: "utility.focus-default",
+                    outlineOffset: "2px",
+                  },
+                }
+              : {})}
+          >
             {/* Fading-gray skeleton shown until the image loads — and left in
                 place (instead of a broken-image icon) if every retry fails. */}
             {!isLoaded && (
@@ -130,13 +159,17 @@ export const AttachmentData = ({
             {data.split("/").pop()}
           </Text>
           {onEdit && (
-            <Text
-              textStyle="caption-2"
-              fontWeight="500"
-              color="interaction.links.default"
+            <Button
+              size="xs"
+              variant="clear"
+              leftIcon={<BiPencil />}
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit()
+              }}
             >
               Edit image
-            </Text>
+            </Button>
           )}
           {!onEdit && editDisabledReason && (
             <Tooltip
