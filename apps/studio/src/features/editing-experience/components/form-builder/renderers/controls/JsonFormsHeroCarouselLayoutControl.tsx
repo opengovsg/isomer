@@ -29,6 +29,15 @@ const textRadioCss = {
   _hover: { bg: "none" },
 }
 
+// Same tracks for every row so the second option stays put when layout swaps.
+const optionColumns = {
+  display: "grid",
+  w: "full",
+  gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+  columnGap: 2,
+  alignItems: "start",
+} as const
+
 // TODO: This control is purely duplicative of JsonFormsChildPageLayoutControl.tsx;
 // combine into a shared illustrated radio-group control driven by schema format/options.
 export const jsonFormsHeroCarouselLayoutControlTester: RankedTester = rankWith(
@@ -56,9 +65,7 @@ function JsonFormsHeroCarouselLayoutControl({
           Layout
         </FormLabel>
         <Radio.RadioGroup
-          display="flex"
-          flexDir="row"
-          gap={2}
+          {...optionColumns}
           onChange={(value) => {
             handleChange(
               path,
@@ -97,9 +104,7 @@ function JsonFormsHeroCarouselLayoutControl({
         <FormControl isRequired gap="0.5rem" mt="1rem">
           <FormLabel color="base.content.default">Image position</FormLabel>
           <Radio.RadioGroup
-            display="flex"
-            flexDir="row"
-            gap={2}
+            {...optionColumns}
             onChange={(value) => {
               handleChange(path, {
                 layout: HERO_CAROUSEL_LAYOUT.block,
@@ -131,9 +136,7 @@ function JsonFormsHeroCarouselLayoutControl({
         <FormControl isRequired gap="0.5rem" mt="1rem">
           <FormLabel color="base.content.default">Content alignment</FormLabel>
           <Radio.RadioGroup
-            display="flex"
-            flexDir="row"
-            gap={4}
+            {...optionColumns}
             onChange={(value) => {
               handleChange(path, {
                 ...data,
