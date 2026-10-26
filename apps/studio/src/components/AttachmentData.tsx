@@ -88,11 +88,17 @@ export const AttachmentData = ({
       }
       _hover={onEdit ? { background: "brand.primary.200" } : undefined}
     >
-      <HStack spacing="0.75rem" minW={0}>
+      <HStack spacing="0.75rem" minW={0} alignItems="stretch">
         {imageSrc && (
           <Box
             position="relative"
-            boxSize="2.5rem"
+            // Square thumbnail whose height tracks the text column (filename +
+            // "Edit image"): alignSelf stretch takes the row's content height,
+            // aspect-ratio 1 makes width follow, minH floors it. So it stays the
+            // taller element and rescales if the text sizes change.
+            alignSelf="stretch"
+            aspectRatio="1"
+            minH="2.5rem"
             flexShrink={0}
             {...(onEdit
               ? {
@@ -128,7 +134,9 @@ export const AttachmentData = ({
             <Image
               src={currentSrc}
               alt=""
-              boxSize="2.5rem"
+              position="absolute"
+              inset={0}
+              boxSize="100%"
               objectFit="cover"
               borderRadius="0.25rem"
               // Hide the img until it loads so a failed load reveals the skeleton
@@ -160,7 +168,7 @@ export const AttachmentData = ({
           </Text>
           {onEdit && (
             <Text
-              textStyle="caption-2"
+              textStyle="body-2"
               fontWeight="500"
               color="interaction.links.default"
             >
@@ -175,7 +183,7 @@ export const AttachmentData = ({
               closeOnPointerDown
             >
               <Text
-                textStyle="caption-2"
+                textStyle="body-2"
                 fontWeight="500"
                 color="interaction.support.disabled-content"
                 w="fit-content"
