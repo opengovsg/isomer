@@ -95,11 +95,19 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
     }
   }
 
-  console.warn(
-    "POSTMAN_API_KEY is missing. Logging the following mail: ",
-    params,
+  // Local dev reads the OTP from this output (see README); elsewhere the body must not reach logs
+  if (env.NODE_ENV === "development") {
+    console.warn(
+      "POSTMAN_API_KEY is missing. Logging the following mail: ",
+      params,
+    )
+    return
+  }
+
+  logger.error(
+    { recipient: params.recipient, subject: params.subject },
+    "POSTMAN_API_KEY is missing; email not sent",
   )
-  return
 }
 
 class PostmanApiStatusError extends Error {
