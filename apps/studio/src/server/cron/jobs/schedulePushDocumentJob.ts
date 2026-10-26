@@ -85,7 +85,7 @@ const extractResourceData = async ({
   const parsed = pushDocumentContentSchema.safeParse(content)
   if (!parsed.success) {
     logger.error(
-      { content, resourceId },
+      { issues: parsed.error.issues, resourceId },
       "Invalid content structure for push document",
     )
     return null
@@ -124,7 +124,7 @@ const extractResourceData = async ({
     collectionIndexPageContentSchema.safeParse(indexPageContent)
   if (!indexParsed.success) {
     logger.error(
-      { indexPageContent, resourceId },
+      { issues: indexParsed.error.issues, resourceId },
       "Invalid index page content structure",
     )
     throw new Error(
@@ -243,7 +243,10 @@ export const schedulePushDocumentJobHandler = async () => {
       await pushDocumentsForIngestion(documents)
       await deleteProcessedJobs(scheduledAtCutoff)
       logger.info(
-        { count: documents.length, documents },
+        {
+          count: documents.length,
+          documentIds: documents.map(({ documentId }) => documentId),
+        },
         "Completed schedule push document job (SearchSG)",
       )
     } else {
