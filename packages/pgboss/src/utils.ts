@@ -31,7 +31,7 @@ export const sendHeartbeat = async (
       )
       return
     } catch (error) {
-      logger.error(
+      logger.warn(
         { error, jobId },
         `Error sending heartbeat for job attempt ${attempt}`,
       )

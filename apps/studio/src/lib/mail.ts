@@ -33,11 +33,10 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
     (r) => r.isWhitelisted,
   )
   if (droppedCc.length > 0) {
-    logger.warn({
-      error: "Dropping non-whitelisted cc recipients",
-      cc: droppedCc.map((r) => r.email),
-      subject: params.subject,
-    })
+    logger.warn(
+      { cc: droppedCc.map((r) => r.email), subject: params.subject },
+      "Dropping non-whitelisted cc recipients",
+    )
   }
   const cc = whitelistedCc.map((r) => r.email)
   const payload = {
@@ -57,34 +56,41 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
         .res()
 
       if (response.status >= 300) {
-        logger.error({
-          error: "Postman API error",
-          status: response.status,
-          recipient: params.recipient,
-          subject: params.subject,
-        })
+        logger.error(
+          {
+            status: response.status,
+            recipient: params.recipient,
+            subject: params.subject,
+          },
+          "Postman API error",
+        )
         throw new PostmanApiStatusError(
           `Postman API error with status ${response.status}`,
           response.status,
         )
       }
 
-      logger.info({
-        event: "email_send_succeeded",
-        status: response.status,
-        recipient: params.recipient,
-        subject: params.subject,
-      })
+      logger.info(
+        {
+          event: "email_send_succeeded",
+          status: response.status,
+          recipient: params.recipient,
+          subject: params.subject,
+        },
+        "Postman email sent",
+      )
       return
     } catch (error) {
       if (error instanceof PostmanApiStatusError) throw error
 
-      logger.error({
-        error: "Postman API call failed",
-        originalError: error,
-        recipient: params.recipient,
-        subject: params.subject,
-      })
+      logger.error(
+        {
+          originalError: error,
+          recipient: params.recipient,
+          subject: params.subject,
+        },
+        "Postman API call failed",
+      )
       throw error
     }
   }

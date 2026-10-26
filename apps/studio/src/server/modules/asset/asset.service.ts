@@ -294,7 +294,6 @@ export const sanitizeSvg = (content: string): string => {
   // inside DOMParser.parseFromString — DOMPurify only sees the resulting DOM
   // and cannot intercept it. No sanitization library operates at this layer.
   if (/<!ENTITY/i.test(content)) {
-    logger.error("SVG rejected: contains disallowed XML entities")
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "SVG contains disallowed XML entities",
@@ -306,7 +305,6 @@ export const sanitizeSvg = (content: string): string => {
   const doc = new DOMParser().parseFromString(content, "image/svg+xml")
 
   if (doc.getElementsByTagName("parsererror").length > 0) {
-    logger.error("SVG rejected: failed to parse as valid XML")
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "SVG failed to parse as valid XML",
@@ -318,7 +316,7 @@ export const sanitizeSvg = (content: string): string => {
     root.localName !== "svg" ||
     root.namespaceURI !== "http://www.w3.org/2000/svg"
   ) {
-    logger.error(
+    logger.warn(
       { localName: root.localName, namespaceURI: root.namespaceURI },
       "SVG rejected: root element is not a valid SVG element",
     )
