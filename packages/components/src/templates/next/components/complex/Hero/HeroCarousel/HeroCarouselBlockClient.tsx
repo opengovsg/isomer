@@ -132,6 +132,7 @@ export const HeroCarouselBlockClient = ({
             onPrev={controlProps.onPrev}
             onNext={controlProps.onNext}
             className={styles.contentPosition()}
+            hasBackdrop={false}
           />
         </div>
       </div>

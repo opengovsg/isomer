@@ -18,10 +18,16 @@ const carouselControlsStyles = tv({
     // Bottom row, left column. w-fit stops the chip stretching across the row.
     position:
       "col-start-1 row-start-2 flex w-fit items-center self-center justify-self-start",
-    // White on black/70 stays above 4.5:1 even over a white photo.
-    chip: "flex h-10 items-center rounded-full bg-black/70 px-1 text-white [@media(pointer:coarse)]:h-11",
+    chip: "flex h-10 items-center rounded-full px-1 [@media(pointer:coarse)]:h-11",
   },
   variants: {
+    // White on black/70 stays above 4.5:1 even over a white photo.
+    // Controls on the solid base block inherit its inverse text colour.
+    hasBackdrop: {
+      true: {
+        chip: "bg-black/70 text-white",
+      },
+    },
     isCenteredOnTablet: {
       true: {
         // From md, leave the grid and pin the pause to the hero's right edge.
@@ -31,6 +37,9 @@ const carouselControlsStyles = tv({
           "md:absolute md:bottom-9 md:left-1/2 md:z-10 md:h-10 md:-translate-x-1/2 md:items-center lg:bottom-10 [@media(pointer:coarse)]:md:h-11",
       },
     },
+  },
+  defaultVariants: {
+    hasBackdrop: true,
   },
 })
 
@@ -130,7 +139,11 @@ const CarouselRotationButton = ({
           onChange(next)
         }}
       >
-        <Icon className="h-6 w-6" aria-hidden />
+        {/* BiPlay's triangle sits left of its viewBox centre; pause is symmetric. */}
+        <Icon
+          className={twMerge("h-6 w-6", !isRotating && "translate-x-0.5")}
+          aria-hidden
+        />
       </button>
       {showCountdown && <RotationCountdown key={currentIndex} />}
     </span>
@@ -192,6 +205,7 @@ export const CarouselPositionControl = ({
   onNext,
   className,
   isCenteredOnTablet,
+  hasBackdrop = true,
 }: {
   slideCount: number
   currentIndex: number
@@ -199,8 +213,9 @@ export const CarouselPositionControl = ({
   onNext: () => void
   className?: string
   isCenteredOnTablet?: boolean
+  hasBackdrop?: boolean
 }) => {
-  const styles = carouselControlsStyles({ isCenteredOnTablet })
+  const styles = carouselControlsStyles({ isCenteredOnTablet, hasBackdrop })
 
   if (slideCount < 2) {
     return null
