@@ -24,6 +24,29 @@ const infoCardPreviewObjectFit = (fieldHost: unknown): "cover" | "contain" =>
     ? "contain"
     : "cover"
 
+// Builds the synthetic single-card InfoCards block the real-component preview
+// renders, so only the one card being edited shows (not the whole grid of
+// cards). Drops the section's own title/subtitle/link button — those belong to
+// the containing block, not any individual card, and would otherwise clutter a
+// preview tile meant to show one card's own chrome. Keeps maxColumns/layout
+// as-is so the card's real per-breakpoint aspect (e.g. the lg:aspect-square
+// compound variant at maxColumns "3") matches the live page exactly, even
+// though a multi-column grid will then show empty space beside the one card.
+const buildSingleCardPreviewBlock = (
+  block: unknown,
+  card: unknown,
+): Record<string, unknown> | undefined => {
+  if (typeof block !== "object" || block === null) return undefined
+  return {
+    ...block,
+    title: "",
+    subtitle: undefined,
+    url: undefined,
+    label: undefined,
+    cards: [card],
+  }
+}
+
 // Standard Desktop/Tablet/Mobile preview set, shared by every component so all
 // editor previews show the same three breakpoint viewport widths (mobile 375 /
 // tablet 768 / desktop 1280); only the aspect ratio differs per component. For
@@ -245,13 +268,15 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
 // subject across the swing). Crop is always offered; focal is offered only under
 // imageFit "cover" (focalEnabledFor) — under "contain" the image is letterboxed,
 // so the preview switches to object-contain (previewObjectFitFor) and the focal
-// control is hidden. The preview uses the framed-image approximation, not the
-// real block (which would render every card), with the three ratio states.
+// control is hidden. The preview renders the real single card (via
+// buildSingleItemPreviewBlock, not the whole block/every card), falling back to
+// the framed-image approximation with the three ratio states below if that
+// fails.
 // Card image frame is `aspect-[3/2]` across breakpoints (common.ts). It squares
-// off (lg:aspect-square) ONLY in the default 3-column layout at ≥1024px — an edge
-// the framed preview can't know (no real viewport/column count) and that the
-// narrower Studio preview pane doesn't show either, so desktop keeps the 3:2 base
-// to match mobile/tablet and the shape editors actually see.
+// off (lg:aspect-square) ONLY in the default 3-column layout at ≥1024px — the
+// real-component preview (below) now renders the actual card, so this shows
+// correctly when it succeeds; the previewStates' 3:2 desktop ratio remains the
+// framed-approximation fallback's guess for when it doesn't.
 const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   componentType: "infocards:cardsWithImages",
   cropMode: "custom",
@@ -262,7 +287,10 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   maxRenderedWidthPx: 640,
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
-  skipRealComponentPreview: true,
+  // Renders the single card for real via buildSingleItemPreviewBlock; falls
+  // back to the framed-image approximation if that render fails or produces
+  // nothing (see AdjustmentPreview).
+  buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
   previewStates: responsivePreviewStates({
     mobile: { width: 3, height: 2 },
     tablet: { width: 3, height: 2 },
@@ -286,7 +314,10 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   maxRenderedWidthPx: 640,
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
-  skipRealComponentPreview: true,
+  // Renders the single card for real via buildSingleItemPreviewBlock; falls
+  // back to the framed-image approximation (with its scrim below) if that
+  // render fails or produces nothing (see AdjustmentPreview).
+  buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
   // Card is square up to lg, then 2:3 portrait at lg: square on mobile/tablet,
   // portrait on desktop.
   previewStates: responsivePreviewStates({

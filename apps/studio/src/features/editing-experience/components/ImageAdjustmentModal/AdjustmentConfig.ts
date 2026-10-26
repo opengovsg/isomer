@@ -40,6 +40,19 @@ export interface AdjustmentScrim {
   className: string
 }
 
+// For an array-nested image field (e.g. an InfoCards card) whose containing
+// block renders EVERY item (not just the one being edited), builds a synthetic
+// single-item version of that block so the real-component preview can show
+// just the one card/item instead of the whole section. `item` is the field
+// host (e.g. the card object) with the adjusted image + imageAdjustment
+// already spliced in. Return undefined to skip the real-component preview for
+// this render (falls back to the framed-image approximation) — e.g. if `block`
+// isn't shaped as expected.
+export type BuildSingleItemPreviewBlock = (
+  block: unknown,
+  item: unknown,
+) => Record<string, unknown> | undefined
+
 export interface AdjustmentConfig {
   // Block/component type key this config applies to.
   componentType: string
@@ -88,6 +101,13 @@ export interface AdjustmentConfig {
   // edited — the approximation (one framed image + scrim per state) is both
   // simpler and a better single-card preview.
   skipRealComponentPreview?: boolean
+  // For an array-nested image field whose config does NOT set
+  // skipRealComponentPreview, builds the synthetic single-item block the
+  // real-component preview renders (see BuildSingleItemPreviewBlock). Omitting
+  // this while the field is array-nested is equivalent to skipping the
+  // real-component preview for that render (AdjustmentPreview falls back to
+  // the framed approximation rather than rendering every item).
+  buildSingleItemPreviewBlock?: BuildSingleItemPreviewBlock
   // Stack the preview frames vertically (one per row) instead of side-by-side,
   // so each frame gets the full column width. Use for components with only a
   // couple of small-ratio states where side-by-side makes each too small to

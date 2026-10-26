@@ -521,6 +521,10 @@ export const ImageAdjustmentModal = ({
                   scrimText={(fieldHost as { title?: string } | null)?.title}
                   block={block}
                   imageFieldName={imageFieldName}
+                  fieldHost={fieldHost}
+                  buildSingleItemPreviewBlock={
+                    config.buildSingleItemPreviewBlock
+                  }
                   skipRealComponentPreview={config.skipRealComponentPreview}
                   stackPreviews={config.stackPreviews}
                   objectFit={previewObjectFit}

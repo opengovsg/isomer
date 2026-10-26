@@ -24,6 +24,7 @@ import {
 import type {
   AdjustmentPreviewState,
   AdjustmentScrim,
+  BuildSingleItemPreviewBlock,
 } from "./AdjustmentConfig"
 import { chooseBakeMime } from "./useSaveImageAdjustment"
 
@@ -63,10 +64,23 @@ interface AdjustmentPreviewProps {
   // when absent or when rendering the real component fails for any reason.
   block?: unknown
   imageFieldName?: string
+  // The field's immediate host — for a root-level image field this equals
+  // `block`; for an array-nested field (e.g. an InfoCards card) this is the
+  // individual card object. When it differs from `block`, the real-component
+  // render needs `buildSingleItemPreviewBlock` to splice just this one item
+  // back into a synthetic single-item block (otherwise the real component
+  // would render the whole block/every item) — see that prop's doc.
+  fieldHost?: unknown
+  // Builds the synthetic single-item block for an array-nested image field
+  // (see AdjustmentConfig). Required (and used) only when `fieldHost` differs
+  // from `block`; absent/undefined there falls back to the framed-image
+  // approximation, same as `skipRealComponentPreview`.
+  buildSingleItemPreviewBlock?: BuildSingleItemPreviewBlock
   // Opt out of the real-component render and always use the framed-image
-  // approximation below. Set for array-nested image fields (InfoCards), where
-  // the real component would render the whole block/all cards instead of the
-  // single card being edited.
+  // approximation below. Set for array-nested image fields with no
+  // buildSingleItemPreviewBlock (e.g. ImageGallery), where the real component
+  // would render the whole block/all items instead of the single one being
+  // edited.
   skipRealComponentPreview?: boolean
   // Stack every preview tile at full rail width (one per row) instead of the
   // default big-tile + two-up layout. For components whose states are all small,
@@ -99,6 +113,8 @@ export const AdjustmentPreview = ({
   scrimText,
   block,
   imageFieldName,
+  fieldHost,
+  buildSingleItemPreviewBlock,
   skipRealComponentPreview,
   stackPreviews,
   objectFit = "cover",
@@ -315,20 +331,41 @@ export const AdjustmentPreview = ({
   ): React.ReactNode => {
     if (!block || typeof block !== "object" || !imageFieldName) return null
     try {
+      // For an array-nested field (fieldHost !== block, e.g. an InfoCards
+      // card), the image + alt fallback below apply to the field HOST (the
+      // card), not the containing block — read/patch that instead.
+      const isNestedField = fieldHost !== undefined && fieldHost !== block
+      const host = (isNestedField ? fieldHost : block) as Record<
+        string,
+        unknown
+      >
       // Preview-only safety net: some components (e.g. Blockquote) gate
       // whether they render the image at all on a sibling `imageAlt` field,
       // to avoid publishing an inaccessible image when alt text was never
       // filled in. An editor adjusting crop/focal mid-edit shouldn't have
       // that silently blank the very image they're trying to preview — the
       // real saved value (and the production render path) is untouched.
-      const existingAlt = (block as Record<string, unknown>).imageAlt
+      const existingAlt = host.imageAlt
       const hasAlt = typeof existingAlt === "string" && existingAlt.length > 0
-      const component = {
-        ...block,
+      const adjustedHost = {
+        ...host,
         [imageFieldName]: adjustedSrc,
         imageAdjustment: adjustment,
         ...(hasAlt ? {} : { imageAlt: "Preview image" }),
-      } as IsomerComponent
+      }
+      let component: IsomerComponent
+      if (isNestedField) {
+        // The real component renders every item in the block (e.g. every
+        // InfoCards card) — splice the adjusted single item back into a
+        // synthetic single-item block so only it renders. No builder (or it
+        // returns nothing) falls back to the framed-image approximation,
+        // same as skipRealComponentPreview.
+        const built = buildSingleItemPreviewBlock?.(block, adjustedHost)
+        if (!built) return null
+        component = built as IsomerComponent
+      } else {
+        component = adjustedHost as IsomerComponent
+      }
       const rendered = renderComponent({
         component,
         layout: layout ?? "content",

@@ -107,8 +107,10 @@ describe("resolveAdjustmentConfig", () => {
         expect(config).toBeDefined()
         expect(config?.cropMode).toBe("custom")
         expect(config?.focalEnabled).toBe(true)
-        // Array-nested field: preview the single card, not the whole block.
-        expect(config?.skipRealComponentPreview).toBe(true)
+        // Array-nested field: the real-component preview renders just the
+        // single card (via buildSingleItemPreviewBlock), not the whole block.
+        expect(config?.skipRealComponentPreview).toBeFalsy()
+        expect(config?.buildSingleItemPreviewBlock).toBeTypeOf("function")
       }
     })
 
