@@ -16,7 +16,7 @@ import {
   HERO_GRADIENT_ACTION_LAYOUT,
   HERO_ACTION_LAYOUT_FORMAT,
 } from "@opengovsg/isomer-components"
-import { omit } from "lodash-es"
+import { isEmpty, omit } from "lodash-es"
 import { useMemo } from "react"
 import {
   IconHeroGradientButtonsLayout,
@@ -141,7 +141,9 @@ function JsonFormsHeroActionLayoutControl({
         },
       ].map(
         ({ fieldsSchema, fieldsPath }) =>
-          fieldsSchema && (
+          // Skip empty branches (e.g. quick actions has no root fields) so no blank layout adds a gap.
+          fieldsSchema &&
+          !isEmpty(fieldsSchema.properties) && (
             <JsonFormsDispatch
               key={fieldsPath}
               uischema={Generate.uiSchema(
