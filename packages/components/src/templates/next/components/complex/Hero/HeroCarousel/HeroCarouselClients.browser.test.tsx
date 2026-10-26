@@ -288,29 +288,65 @@ describe("hero carousel rotation", () => {
     expect(section.querySelector("[data-rotation-countdown]")).toBeNull()
   })
 
-  it("does not advance after next is pressed", () => {
+  it("resets the interval and keeps rotating after next is pressed", () => {
     // Arrange
-    renderGradient()
+    const section = renderGradient()
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Next slide" }))
-    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
+    expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
+    expect(section.querySelector("[data-rotation-countdown]")).toBeTruthy()
+
+    // Act
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS - 1)
+
+    // Assert
+    expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
+
+    // Act
+    advanceRotation(1)
+
+    // Assert
+    expect(liveRegion().textContent).toBe("Slide 3 of 3: Gamma")
   })
 
-  it("wraps to the last slide when previous is pressed and does not advance", () => {
+  it("wraps to the last slide when previous is pressed and keeps rotating", () => {
     // Arrange
-    renderGradient()
+    const section = renderGradient()
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Previous slide" }))
-    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 3 of 3: Gamma")
     expect(screen.getByText("3 of 3")).toBeInTheDocument()
+    expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
+    expect(section.querySelector("[data-rotation-countdown]")).toBeTruthy()
+
+    // Act
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
+
+    // Assert
+    expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
+  })
+
+  it("keeps rotating when focus enters a slide arrow", () => {
+    // Arrange
+    renderGradient()
+    const next = screen.getByRole("button", { name: "Next slide" })
+
+    // Act
+    act(() => {
+      next.focus()
+    })
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
+
+    // Assert
+    expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
+    expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
   })
 
   it("does not advance after focus enters a slide call to action", () => {

@@ -3,6 +3,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type FocusEvent,
   type MouseEvent,
   type PointerEvent,
 } from "react"
@@ -15,6 +16,7 @@ import { useNavigation } from "./useNavigation"
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)"
 const SWIPE_THRESHOLD_PX = 40
+const SLIDE_NAV_LABELS = new Set(["Previous slide", "Next slide"])
 
 type RotationPhase = "pending" | "rotating" | "stopped"
 
@@ -137,20 +139,28 @@ export const useRotation = (slideCount: number) => {
   }, [currentIndex, onGoTo, canRotate, slideCount])
 
   const onUserPrev = useCallback(() => {
-    stop()
+    resetElapsed()
     if (slideCount === 0) {
       return
     }
     onGoTo((currentIndex - 1 + slideCount) % slideCount)
-  }, [currentIndex, onGoTo, slideCount, stop])
+  }, [currentIndex, onGoTo, resetElapsed, slideCount])
 
   const onUserNext = useCallback(() => {
-    stop()
+    resetElapsed()
     if (slideCount === 0) {
       return
     }
     onGoTo((currentIndex + 1) % slideCount)
-  }, [currentIndex, onGoTo, slideCount, stop])
+  }, [currentIndex, onGoTo, resetElapsed, slideCount])
+
+  const onSectionFocus = (event: FocusEvent<HTMLElement>) => {
+    const label = event.target.getAttribute("aria-label")
+    if (label && SLIDE_NAV_LABELS.has(label)) {
+      return
+    }
+    stop()
+  }
 
   const onPointerDown = (event: PointerEvent<HTMLElement>) => {
     suppressClickRef.current = false
@@ -223,8 +233,9 @@ export const useRotation = (slideCount: number) => {
     sectionProps: {
       ref: sectionRef,
       // Focus stops rotation, which is how keyboard and screen reader users
-      // reach the controls. Hover does not, so the mouse can pass over the hero.
-      onFocus: stop,
+      // reach the call to action and pause control. Slide arrows keep rotating
+      // and restart the interval. Hover does not stop rotation.
+      onFocus: onSectionFocus,
       onPointerDown,
       onPointerUp,
       onPointerCancel,
