@@ -2,7 +2,7 @@
 
 import type { CSSProperties } from "react"
 import { Box } from "@chakra-ui/react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { BiCrosshair } from "react-icons/bi"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 
@@ -122,6 +122,18 @@ export const CropFocalControl = ({
     if (isOpen) setShowFocalHint(true)
   }, [isOpen])
   const dismissFocalHint = () => setShowFocalHint(false)
+  // Measure the hint bubble so it can be clamped inside the canvas and its arrow
+  // aimed at the marker. Measured pre-paint (useLayoutEffect) to avoid a flash.
+  const hintRef = useRef<HTMLDivElement>(null)
+  const [hintSize, setHintSize] = useState({ width: 0, height: 0 })
+  useLayoutEffect(() => {
+    if (showFocalHint && hintRef.current) {
+      setHintSize({
+        width: hintRef.current.offsetWidth,
+        height: hintRef.current.offsetHeight,
+      })
+    }
+  }, [showFocalHint, boxSize.width])
 
   const showCrop = cropMode !== "none"
   const currentCrop = crop ?? defaultCropRect(lockedRatio, aspectRatio ?? 1)
@@ -363,15 +375,36 @@ export const CropFocalControl = ({
     zIndex: 11,
   }
 
-  // On-load nudge toward the focal marker. Positioned in the SAME box-space as
-  // the marker (not a Popper tooltip) so it tracks the marker exactly, including
-  // after the image loads and the marker settles into place — a Popper tooltip
-  // anchored at mount would stay at the pre-layout position and read off-center.
+  // On-load nudge toward the focal marker, rendered in the marker's own box-space
+  // (not a Popper tooltip) so it tracks the marker through async layout. Clamped
+  // inside the measured canvas frame and flipped above/below so it never clips.
+  const HINT_GAP = 10
+  const HINT_PAD = 8
+  const HINT_ARROW = 6
+  const MARKER_HALF = 13
+  const hintAnchorX = focalBoxSpace.x * boxSize.width
+  const hintAnchorY = focalBoxSpace.y * boxSize.height
+  // Flip below the marker when there isn't room above.
+  const hintBelow =
+    hintAnchorY - MARKER_HALF - HINT_GAP - HINT_ARROW - hintSize.height <
+    HINT_PAD
+  const hintTop = hintBelow
+    ? hintAnchorY + MARKER_HALF + HINT_GAP + HINT_ARROW
+    : hintAnchorY - MARKER_HALF - HINT_GAP - HINT_ARROW - hintSize.height
+  // Center on the marker, then clamp so the bubble stays inside the frame.
+  const hintLeft = Math.min(
+    Math.max(hintAnchorX - hintSize.width / 2, HINT_PAD),
+    Math.max(HINT_PAD, boxSize.width - hintSize.width - HINT_PAD),
+  )
+  // Arrow sits at the marker's x within the (possibly shifted) bubble.
+  const hintArrowLeft = Math.min(
+    Math.max(hintAnchorX - hintLeft, HINT_ARROW + 2),
+    Math.max(HINT_ARROW + 2, hintSize.width - HINT_ARROW - 2),
+  )
   const focalHintStyle: CSSProperties = {
     position: "absolute",
-    left: `${focalBoxSpace.x * 100}%`,
-    top: `${focalBoxSpace.y * 100}%`,
-    transform: "translate(-50%, calc(-100% - 20px))",
+    left: `${hintLeft}px`,
+    top: `${hintTop}px`,
     backgroundColor: "rgba(0, 0, 0, 0.8)",
     color: "white",
     fontSize: "0.75rem",
@@ -381,6 +414,26 @@ export const CropFocalControl = ({
     whiteSpace: "nowrap",
     pointerEvents: "none",
     zIndex: 12,
+  }
+  // Triangle aimed at the marker: on the bubble's bottom edge when it sits above
+  // the marker, on the top edge when it sits below.
+  const focalHintArrowStyle: CSSProperties = {
+    position: "absolute",
+    left: `${hintArrowLeft}px`,
+    transform: "translateX(-50%)",
+    width: 0,
+    height: 0,
+    borderLeft: `${HINT_ARROW}px solid transparent`,
+    borderRight: `${HINT_ARROW}px solid transparent`,
+    ...(hintBelow
+      ? {
+          bottom: "100%",
+          borderBottom: `${HINT_ARROW}px solid rgba(0, 0, 0, 0.8)`,
+        }
+      : {
+          top: "100%",
+          borderTop: `${HINT_ARROW}px solid rgba(0, 0, 0, 0.8)`,
+        }),
   }
 
   // Show the image in "display" orientation (rotate then flip). For 0/180 the
@@ -485,9 +538,13 @@ export const CropFocalControl = ({
             >
               <BiCrosshair size={18} />
             </div>
-            {/* On-load hint; co-located with the marker so it stays centered. */}
-            {showFocalHint && (
-              <div style={focalHintStyle}>Drag to set focal point</div>
+            {/* On-load hint; co-located with the marker so it stays centered,
+                clamped inside the canvas and flipped so it never clips. */}
+            {showFocalHint && boxSize.width > 0 && (
+              <div ref={hintRef} style={focalHintStyle}>
+                Drag to set focal point
+                <div style={focalHintArrowStyle} />
+              </div>
             )}
           </>
         )}
