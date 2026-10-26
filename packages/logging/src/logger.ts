@@ -23,31 +23,6 @@ interface LoggerOptions {
   traceId?: string
 }
 
-export const createLoggerOptions = (
-  appEnvLabel: string,
-): pino.LoggerOptions<string> => ({
-  // oxlint-disable-next-line node/no-process-env
-  level: process.env.PINO_LOG_LEVEL || "info",
-  customLevels: levels,
-  useOnlyCustomLevels: true,
-  timestamp: () => `,"timestamp":"${new Date(Date.now()).toISOString()}"`,
-  formatters: {
-    bindings: () => {
-      return {
-        env: appEnvLabel,
-      }
-    },
-    level: (label) => {
-      return { level: label.toUpperCase() }
-    },
-  },
-  // pino only serializes Errors under `err`; elsewhere their message and stack are dropped
-  serializers: {
-    error: pino.stdSerializers.err,
-    originalError: pino.stdSerializers.err,
-  },
-})
-
 class PinoLogger {
   private static instance?: pino.Logger<string>
   // TODO: the singleton-with-args shape here is a footgun — `nodeEnv` and
@@ -72,7 +47,31 @@ class PinoLogger {
     } else {
       transport = pino.destination(1)
     }
-    return pino(createLoggerOptions(appEnvLabel), transport)
+    return pino(
+      {
+        // oxlint-disable-next-line node/no-process-env
+        level: process.env.PINO_LOG_LEVEL || "info",
+        customLevels: levels,
+        useOnlyCustomLevels: true,
+        timestamp: () => `,"timestamp":"${new Date(Date.now()).toISOString()}"`,
+        formatters: {
+          bindings: () => {
+            return {
+              env: appEnvLabel,
+            }
+          },
+          level: (label) => {
+            return { level: label.toUpperCase() }
+          },
+        },
+        // pino only serializes Errors under `err`; elsewhere their message and stack are dropped
+        serializers: {
+          error: pino.stdSerializers.err,
+          originalError: pino.stdSerializers.err,
+        },
+      },
+      transport,
+    )
   }
   /*
   The logger we use inherits the bindings and transport from the parent singleton instance
