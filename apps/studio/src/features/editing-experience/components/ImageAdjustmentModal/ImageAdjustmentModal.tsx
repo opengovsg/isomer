@@ -482,7 +482,27 @@ export const ImageAdjustmentModal = ({
                 // Reserve the scrollbar gutter so toggling it never changes the
                 // rail's content width — otherwise tile heights (derived from
                 // that width) would oscillate and loop the ResizeObserver.
-                sx={{ scrollbarGutter: "stable" }}
+                // Style the scrollbar pseudo-elements so WebKit renders a
+                // persistent classic bar: macOS auto-hides OVERLAY scrollbars
+                // even under overflow:scroll, so styling them is the only way to
+                // keep it always visible (same idiom as CmsContainer). Firefox
+                // uses scrollbarWidth/Color.
+                sx={{
+                  scrollbarGutter: "stable",
+                  scrollbarWidth: "thin",
+                  scrollbarColor:
+                    "var(--chakra-colors-gray-400) var(--chakra-colors-gray-100)",
+                  "&::-webkit-scrollbar": {
+                    width: "var(--chakra-sizes-2)",
+                  },
+                  "&::-webkit-scrollbar-track": {
+                    backgroundColor: "var(--chakra-colors-gray-100)",
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    backgroundColor: "var(--chakra-colors-gray-400)",
+                    borderRadius: "var(--chakra-radii-full)",
+                  },
+                }}
               >
                 {/* Pinned so it stays visible while the tiles scroll. Opaque bg
                     + zIndex so scrolling previews pass behind it. */}
