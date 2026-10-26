@@ -216,7 +216,7 @@ export default function HeroEditorDrawer(): JSX.Element {
               <FormBuilder<IsomerComponent>
                 schema={heroSchema}
                 validateFn={validateHeroFn}
-                data={previewPageState.content[currActiveIdx]}
+                data={previewPageState.content[0]}
                 handleChange={handleChange}
               />
             </Box>

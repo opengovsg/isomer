@@ -7,17 +7,19 @@ import {
   HERO_ACTION_LAYOUT,
   HERO_ACTION_LAYOUT_FORMAT,
 } from "@opengovsg/isomer-components"
-import { useRef } from "react"
+import { useMemo } from "react"
 import {
   IconHeroActionLayoutButtons,
   IconHeroActionLayoutQuickActions,
 } from "~/components/icons"
+import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import {
   createDefaultHeroActionLayoutQuickActionItem,
   HERO_QUICK_ACTIONS_DEFAULT_TITLE,
   HERO_QUICK_ACTIONS_MIN_ITEMS,
-} from "~/components/PageEditor/constants"
-import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+} from "./constants"
+import { actionLayoutTextRenderer } from "./TextControl"
 
 /** DS Radio wraps label + preview; suppress full-card focus ring on click. */
 const heroActionLayoutRadioCss = {
@@ -71,21 +73,6 @@ const heroActionLayoutKeysToDrop = (
   return [...keys]
 }
 
-const pickLayoutBranchFields = (
-  data: Record<string, unknown>,
-  branch: JsonSchema,
-): Record<string, unknown> => {
-  const picked: Record<string, unknown> = {}
-
-  for (const key of layoutSpecificFieldKeys(branch)) {
-    if (key in data) {
-      picked[key] = data[key]
-    }
-  }
-
-  return picked
-}
-
 const defaultQuickActionsFields = () => ({
   quickActionsTitle: HERO_QUICK_ACTIONS_DEFAULT_TITLE,
   showIcon: true,
@@ -99,7 +86,6 @@ export const nextHeroActionLayoutData = (
   current: unknown,
   layout: string,
   branches: JsonSchema[],
-  restoredBranch?: Record<string, unknown>,
 ) => {
   const kept = isRecord(current) ? { ...current } : {}
 
@@ -107,14 +93,12 @@ export const nextHeroActionLayoutData = (
     delete kept[key]
   }
 
-  const restored = restoredBranch ?? {}
-
   return {
     ...kept,
     actionLayout: layout,
     ...(layout === HERO_ACTION_LAYOUT.quickActions
-      ? { ...defaultQuickActionsFields(), ...restored }
-      : restored),
+      ? defaultQuickActionsFields()
+      : {}),
   }
 }
 
@@ -143,36 +127,18 @@ function JsonFormsHeroActionLayoutControl({
   const selectedBranch =
     branches.find((branch) => branchLayout(branch) === selectedLayout) ??
     branches[0]
-  // ponytail: session ref only; reload drops the inactive layout until we persist it
-  const stashRef = useRef<
-    Record<string, Partial<Record<string, Record<string, unknown>>>>
-  >({})
+  // Scoped override: text fields in the layout (incl. quick action items) show builder errors.
+  const layoutRenderers = useMemo(
+    () => [actionLayoutTextRenderer, ...(renderers ?? [])],
+    [renderers],
+  )
 
   const onChange = (layout: string) => {
     if (layout === selectedLayout) {
       return
     }
 
-    const fromBranch = branches.find(
-      (branch) => branchLayout(branch) === selectedLayout,
-    )
-    if (isRecord(data) && fromBranch) {
-      stashRef.current[path] ??= {}
-      stashRef.current[path][selectedLayout] = pickLayoutBranchFields(
-        data,
-        fromBranch,
-      )
-    }
-
-    handleChange(
-      path,
-      nextHeroActionLayoutData(
-        data,
-        layout,
-        branches,
-        stashRef.current[path]?.[layout],
-      ),
-    )
+    handleChange(path, nextHeroActionLayoutData(data, layout, branches))
   }
 
   return (
@@ -229,7 +195,7 @@ function JsonFormsHeroActionLayoutControl({
           schema={selectedBranch}
           path={path}
           enabled={enabled}
-          renderers={renderers}
+          renderers={layoutRenderers}
           cells={cells}
         />
       )}

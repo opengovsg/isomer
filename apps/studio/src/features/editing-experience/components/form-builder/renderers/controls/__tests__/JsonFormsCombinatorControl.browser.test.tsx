@@ -14,7 +14,6 @@ import { describe, expect, it } from "vitest"
 import { theme } from "~/theme"
 import { ajv } from "~/utils/ajv"
 
-import { ErrorProvider } from "../../../ErrorProvider"
 import jsonFormsVerticalLayoutRenderer, {
   jsonFormsVerticalLayoutTester,
 } from "../../layouts/JsonFormsVerticalLayout"
@@ -88,14 +87,7 @@ const lockedDiscriminatedSchema = Type.Unsafe({
 const renderForm = (schema: JsonSchema, data: unknown) =>
   render(
     <ThemeProvider theme={theme}>
-      <ErrorProvider>
-        <JsonForms
-          schema={schema}
-          data={data}
-          renderers={renderers}
-          ajv={ajv}
-        />
-      </ErrorProvider>
+      <JsonForms schema={schema} data={data} renderers={renderers} ajv={ajv} />
     </ThemeProvider>,
   )
 

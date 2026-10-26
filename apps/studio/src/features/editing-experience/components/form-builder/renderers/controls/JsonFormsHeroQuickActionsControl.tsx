@@ -1,22 +1,15 @@
 import type {
   ArrayLayoutProps,
-  OwnPropsOfMasterListItem,
   RankedTester,
-  StatePropsOfMasterItem,
   UISchemaElement,
 } from "@jsonforms/core"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
-import {
-  useJsonForms,
-  withJsonFormsArrayLayoutProps,
-  withJsonFormsMasterListItemProps,
-} from "@jsonforms/react"
+import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { HERO_QUICK_ACTIONS_FORMAT } from "@opengovsg/isomer-components"
 import { get } from "lodash-es"
 import { useCallback } from "react"
-import { createDefaultHeroActionLayoutQuickActionItem } from "~/components/PageEditor/constants"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { AddItemButton } from "../../components/AddItemButton"
@@ -25,8 +18,10 @@ import { EmptyArray } from "../../components/EmptyArray"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
+import { createDefaultHeroActionLayoutQuickActionItem } from "./JsonFormsHeroActionLayoutControl/constants"
 
-// Copy of JsonFormsArrayControl. The row preview is the item title, not the first field.
+// Copy of JsonFormsArrayControl: rows show the item title, new items get quick action
+// defaults, and the item icon field follows the parent showIcon flag.
 
 const omitUiSchemaFields = (
   uischema: UISchemaElement,
@@ -48,29 +43,6 @@ const omitUiSchemaFields = (
     }),
   }
 }
-
-const TitleLabelRaw = withJsonFormsMasterListItemProps(
-  ({ childLabel, index }: StatePropsOfMasterItem) => (
-    <Text textStyle="subhead-2" textAlign="start">
-      {childLabel || `Item ${index + 1}`}
-    </Text>
-  ),
-)
-
-type TitleLabelProps = Pick<
-  OwnPropsOfMasterListItem,
-  "index" | "path" | "schema" | "uischema" | "enabled" | "removeItem"
->
-
-const TitleLabel = (props: TitleLabelProps) => (
-  <TitleLabelRaw
-    {...props}
-    handleSelect={() => () => undefined}
-    selected={false}
-    childLabelProp="title"
-    translations={{}}
-  />
-)
 
 export const jsonFormsHeroQuickActionsControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.HeroQuickActionsControl,
@@ -130,7 +102,8 @@ function JsonFormsHeroQuickActionsControl(props: ArrayLayoutProps) {
     <NestedDrawerSwitch
       {...props}
       {...arrayResult}
-      mapChildUiSchema={mapChildUiSchema}
+      // Item icon follows the parent showIcon flag.
+      childUiSchema={mapChildUiSchema(childUiSchema)}
     >
       <VStack spacing={0} align="start">
         <VStack align="start" spacing="0.25rem" w="full">
@@ -194,7 +167,8 @@ function JsonFormsHeroQuickActionsControl(props: ArrayLayoutProps) {
                               py={hasError ? "0.75rem" : "1rem"}
                             >
                               <DraggableTagButton.Content>
-                                <TitleLabel
+                                <DraggableTagButton.Label
+                                  childLabelProp="title"
                                   index={index}
                                   path={path}
                                   schema={schema}

@@ -15,8 +15,7 @@ import {
   TEXTAREA_MAX_ROWS,
 } from "~/constants/formBuilder"
 
-import { useBuilderErrors } from "../../ErrorProvider"
-import { getBuilderFieldErrorMessage, getCustomErrorMessage } from "./utils"
+import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsTextAreaControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.TextAreaControl,
@@ -44,7 +43,6 @@ function JsonFormsTextAreaControl({
   errors,
   schema,
 }: ControlProps) {
-  const { errors: builderErrors } = useBuilderErrors()
   const { maxLength } = schema
   const remainingCharacterCount = maxLength
     ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)
@@ -59,16 +57,16 @@ function JsonFormsTextAreaControl({
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = e.target
 
-    handleChange(path, value === "" ? undefined : value)
+    if (value === "") {
+      handleChange(path, undefined)
+    } else {
+      handleChange(path, value)
+    }
   }
-
-  const builderErrorMessage = getBuilderFieldErrorMessage(path, builderErrors)
-  const errorMessage = getCustomErrorMessage(errors || builderErrorMessage)
-  const isInvalid = Boolean(errors || builderErrorMessage)
 
   return (
     <Box>
-      <FormControl isRequired={required} isInvalid={isInvalid}>
+      <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description} mb={0}>
           {label}
         </FormLabel>
@@ -81,14 +79,14 @@ function JsonFormsTextAreaControl({
           maxAutosizeRows={numOfRows}
           my="0.5rem"
         />
-        {maxLength && !isInvalid && (
+        {maxLength && !errors && (
           <FormHelperText>
             {remainingCharacterCount}{" "}
             {remainingCharacterCount === 1 ? "character" : "characters"} left
           </FormHelperText>
         )}
         <FormErrorMessage>
-          {label} {errorMessage}
+          {label} {getCustomErrorMessage(errors)}
         </FormErrorMessage>
       </FormControl>
     </Box>
