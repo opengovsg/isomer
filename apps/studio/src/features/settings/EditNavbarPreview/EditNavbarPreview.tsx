@@ -1,6 +1,7 @@
 import type { NavbarSchemaType } from "@opengovsg/isomer-components"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { merge } from "lodash-es"
+import { EditPagePreviewProvider } from "~/features/editing-experience/components/preview/EditPagePreviewProvider"
 import Preview from "~/features/editing-experience/components/preview/Preview"
 import { ViewportContainer } from "~/features/editing-experience/components/preview/ViewportContainer"
 import { waitForElement } from "~/utils/dom"
@@ -41,20 +42,22 @@ export const EditNavbarPreview = ({
   })
 
   return (
-    <ViewportContainer siteId={siteId} callback={handleIframeMount}>
-      <Preview
-        {...merge(content, { page: { title } })}
-        overrides={{
-          site: {
-            navbar: previewNavbarState,
-          },
-        }}
-        siteId={siteId}
-        resourceId={pageId}
-        permalink="/"
-        lastModified={updatedAt.toISOString()}
-        version="0.1.0"
-      />
-    </ViewportContainer>
+    <EditPagePreviewProvider>
+      <ViewportContainer siteId={siteId} callback={handleIframeMount}>
+        <Preview
+          {...merge(content, { page: { title } })}
+          overrides={{
+            site: {
+              navbar: previewNavbarState,
+            },
+          }}
+          siteId={siteId}
+          resourceId={pageId}
+          permalink="/"
+          lastModified={updatedAt.toISOString()}
+          version="0.1.0"
+        />
+      </ViewportContainer>
+    </EditPagePreviewProvider>
   )
 }

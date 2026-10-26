@@ -1,9 +1,12 @@
 import { Box } from "@chakra-ui/react"
+import { HERO_STYLE } from "@opengovsg/isomer-components"
 import { merge } from "lodash-es"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
+import { CarouselPreviewNotice } from "./CarouselPreviewNotice"
+import { useEditPageViewport } from "./EditPagePreviewProvider"
 import { LoadingPreview } from "./LoadingPreview"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
@@ -26,8 +29,16 @@ const LoadingState = (): JSX.Element => {
 }
 
 const SuspendableEditPagePreview = (): JSX.Element => {
+  const { viewport } = useEditPageViewport()
   const { previewPageState, pageId, updatedAt, siteId, permalink, title } =
     useEditorDrawerContext()
+
+  const showCarouselNotice =
+    viewport !== "fullscreen" &&
+    previewPageState.content.some(
+      (block) =>
+        block.type === "hero" && block.variant === HERO_STYLE.carousel.key,
+    )
 
   const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
     siteId,
@@ -35,7 +46,10 @@ const SuspendableEditPagePreview = (): JSX.Element => {
   })
 
   return (
-    <ViewportContainer siteId={siteId}>
+    <ViewportContainer
+      siteId={siteId}
+      banner={showCarouselNotice ? <CarouselPreviewNotice /> : null}
+    >
       <PreviewWithCustomSitemap
         {...merge(previewPageState, { page: { title } })}
         siteId={siteId}

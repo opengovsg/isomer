@@ -11,6 +11,7 @@ import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+import { EditPagePreviewProvider } from "./EditPagePreviewProvider"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
 
@@ -92,16 +93,18 @@ export const EditCollectionLinkPreview = ({
   )
 
   return (
-    <ViewportContainer siteId={siteId}>
-      <PreviewWithCustomSitemap
-        content={[]}
-        page={{ title: parentTitle, tagCategories, showThumbnail, showDate }}
-        layout={"collection"}
-        siteId={siteId}
-        siteMap={siteMap}
-        permalink={parentPermalink}
-        version="0.1.0"
-      />
-    </ViewportContainer>
+    <EditPagePreviewProvider>
+      <ViewportContainer siteId={siteId}>
+        <PreviewWithCustomSitemap
+          content={[]}
+          page={{ title: parentTitle, tagCategories, showThumbnail, showDate }}
+          layout={"collection"}
+          siteId={siteId}
+          siteMap={siteMap}
+          permalink={parentPermalink}
+          version="0.1.0"
+        />
+      </ViewportContainer>
+    </EditPagePreviewProvider>
   )
 }

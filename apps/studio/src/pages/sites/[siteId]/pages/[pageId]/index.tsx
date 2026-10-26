@@ -1,12 +1,11 @@
 import type { NextPageWithLayout } from "~/lib/types"
 import { Grid, GridItem } from "@chakra-ui/react"
-import { HeroCarouselPreviewProvider } from "@opengovsg/isomer-components"
-import { useState } from "react"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { EditPageDrawer } from "~/features/editing-experience/components/Drawer/EditPageDrawer"
 import { EditingLockedOverlay } from "~/features/editing-experience/components/EditingLockedOverlay"
 import { EditPagePreview } from "~/features/editing-experience/components/preview/EditPagePreview"
+import { EditPagePreviewProvider } from "~/features/editing-experience/components/preview/EditPagePreviewProvider"
 import {
   useContentEditTracker,
   useLeftEditorSurveyTracker,
@@ -64,10 +63,9 @@ interface PageEditingViewProps {
 const PageEditingView = ({ pageId, siteId }: PageEditingViewProps) => {
   useContentEditTracker()
   useLeftEditorSurveyTracker()
-  const [activeIndex, setActiveIndex] = useState(0)
 
   return (
-    <HeroCarouselPreviewProvider value={{ activeIndex, setActiveIndex }}>
+    <EditPagePreviewProvider>
       <Grid h="full" w="100%" templateColumns="repeat(3, 1fr)" gap={0}>
         <GridItem colSpan={1} overflow="auto" minW="28rem" position="relative">
           <EditPageDrawer />
@@ -77,7 +75,7 @@ const PageEditingView = ({ pageId, siteId }: PageEditingViewProps) => {
           <EditPagePreview />
         </GridItem>
       </Grid>
-    </HeroCarouselPreviewProvider>
+    </EditPagePreviewProvider>
   )
 }
 
