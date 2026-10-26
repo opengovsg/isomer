@@ -43,7 +43,7 @@ export const HeroGradientButtons = ({
               <Tag className="prose-display-xl break-words">{title}</Tag>
               {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
             </div>
-            {buttonLabel && buttonUrl ? (
+            {buttonLabel && buttonUrl && (
               <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
                 <LinkButton
                   href={getReferenceLinkHref(
@@ -56,7 +56,7 @@ export const HeroGradientButtons = ({
                 >
                   {buttonLabel}
                 </LinkButton>
-                {secondaryButtonLabel && secondaryButtonUrl ? (
+                {secondaryButtonLabel && secondaryButtonUrl && (
                   <LinkButton
                     colorScheme="inverse"
                     variant="outline"
@@ -70,9 +70,9 @@ export const HeroGradientButtons = ({
                   >
                     {secondaryButtonLabel}
                   </LinkButton>
-                ) : null}
+                )}
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       </div>
