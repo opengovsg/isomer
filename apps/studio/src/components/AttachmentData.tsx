@@ -8,9 +8,9 @@ import {
   Tooltip,
   VStack,
 } from "@chakra-ui/react"
-import { Button, IconButton } from "@opengovsg/design-system-react"
+import { IconButton } from "@opengovsg/design-system-react"
 import { useEffect, useRef, useState } from "react"
-import { BiPencil, BiTrash } from "react-icons/bi"
+import { BiTrash } from "react-icons/bi"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 // Match ImageClient's self-heal: a just-saved/just-uploaded asset isn't servable
@@ -159,17 +159,13 @@ export const AttachmentData = ({
             {data.split("/").pop()}
           </Text>
           {onEdit && (
-            <Button
-              size="xs"
-              variant="clear"
-              leftIcon={<BiPencil />}
-              onClick={(e) => {
-                e.stopPropagation()
-                onEdit()
-              }}
+            <Text
+              textStyle="caption-2"
+              fontWeight="500"
+              color="interaction.links.default"
             >
               Edit image
-            </Button>
+            </Text>
           )}
           {!onEdit && editDisabledReason && (
             <Tooltip
