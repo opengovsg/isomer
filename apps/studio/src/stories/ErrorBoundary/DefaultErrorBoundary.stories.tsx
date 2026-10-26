@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { DefaultTrpcError } from "~/components/ErrorBoundary/DefaultTrpcError"
 
 const meta: Meta<typeof DefaultTrpcError> = {

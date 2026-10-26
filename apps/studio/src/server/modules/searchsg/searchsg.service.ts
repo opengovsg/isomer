@@ -73,7 +73,7 @@ const requestSearchSGClient = async () => {
 }
 
 export const isValidSearchSGClientId = (clientId: string): boolean =>
-  z.string().uuid().safeParse(clientId).success
+  z.uuid().safeParse(clientId).success
 
 export const updateSearchSGConfig = async (
   props: UpdateSearchSGConfigProps,
