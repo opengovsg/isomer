@@ -1,10 +1,10 @@
 import type { HeroGradientProps } from "@opengovsg/isomer-components"
-import { HERO_ACTION_LAYOUT } from "@opengovsg/isomer-components"
+import { HERO_GRADIENT_ACTION_LAYOUT } from "@opengovsg/isomer-components"
 
-import { createDefaultHeroActionLayoutQuickActionItem } from "../utils/defaultHeroActionLayoutQuickActionItem"
-import { nextHeroActionLayoutData } from "../utils/nextHeroActionLayoutData"
+import { createDefaultHeroGradientQuickActionsItem } from "../utils/defaultHeroGradientQuickActionsItem"
+import { nextHeroGradientActionLayoutData } from "../utils/nextHeroGradientActionLayoutData"
 
-describe("nextHeroActionLayoutData", () => {
+describe("nextHeroGradientActionLayoutData", () => {
   it("drops quick-action fields when switching to buttons", () => {
     // Arrange
     const current: Partial<HeroGradientProps> = {
@@ -14,11 +14,14 @@ describe("nextHeroActionLayoutData", () => {
       actionLayout: "quickActions",
       quickActionsTitle: "Get started",
       showIcon: true,
-      quickActionsItems: [createDefaultHeroActionLayoutQuickActionItem()],
+      quickActionsItems: [createDefaultHeroGradientQuickActionsItem()],
     }
 
     // Act
-    const actual = nextHeroActionLayoutData(current, HERO_ACTION_LAYOUT.buttons)
+    const actual = nextHeroGradientActionLayoutData(
+      current,
+      HERO_GRADIENT_ACTION_LAYOUT.buttons,
+    )
 
     // Assert
     expect(actual).toEqual({
@@ -40,9 +43,9 @@ describe("nextHeroActionLayoutData", () => {
     }
 
     // Act
-    const actual = nextHeroActionLayoutData(
+    const actual = nextHeroGradientActionLayoutData(
       current,
-      HERO_ACTION_LAYOUT.quickActions,
+      HERO_GRADIENT_ACTION_LAYOUT.quickActions,
     )
 
     // Assert
@@ -54,8 +57,8 @@ describe("nextHeroActionLayoutData", () => {
       quickActionsTitle: "Get started",
       showIcon: true,
       quickActionsItems: [
-        createDefaultHeroActionLayoutQuickActionItem(),
-        createDefaultHeroActionLayoutQuickActionItem(),
+        createDefaultHeroGradientQuickActionsItem(),
+        createDefaultHeroGradientQuickActionsItem(),
       ],
     })
   })

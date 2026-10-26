@@ -25,13 +25,13 @@ export const HERO_STYLE = {
   searchbar: { key: "searchbar", title: "Search bar" },
 } as const
 
-export const HERO_ACTION_LAYOUT = {
+export const HERO_GRADIENT_ACTION_LAYOUT = {
   buttons: "buttons",
   quickActions: "quickActions",
 } as const
 
-export type HeroActionLayout =
-  (typeof HERO_ACTION_LAYOUT)[keyof typeof HERO_ACTION_LAYOUT]
+export type HeroGradientActionLayout =
+  (typeof HERO_GRADIENT_ACTION_LAYOUT)[keyof typeof HERO_GRADIENT_ACTION_LAYOUT]
 
 export const HERO_QUICK_ACTIONS_LIMITS = {
   minItems: 2,
@@ -138,7 +138,7 @@ const GROUPINGS = {
   },
 } as const
 
-const HeroActionLayoutQuickActionItemSchema = Type.Object({
+const HeroGradientQuickActionsItemSchema = Type.Object({
   icon: Type.Union(
     SUPPORTED_ICON_NAMES.map((icon) =>
       Type.Literal(icon, {
@@ -210,24 +210,26 @@ const HeroGradientQuickActionsFieldsSchema = Type.Object({
     title: "Show icons",
     default: true,
   }),
-  quickActionsItems: Type.Array(HeroActionLayoutQuickActionItemSchema, {
+  quickActionsItems: Type.Array(HeroGradientQuickActionsItemSchema, {
     title: "Content",
     format: HERO_QUICK_ACTIONS_FORMAT,
     ...HERO_QUICK_ACTIONS_LIMITS,
   }),
 })
 
+const HeroGradientButtonsFieldsSchema = CallToActionsSchema
+
 const HeroGradientButtonsLayoutSchema = Type.Composite(
   [
     Type.Object({
       // Optional so existing gradient heroes with no actionLayout still match buttons.
       actionLayout: Type.Optional(
-        Type.Literal(HERO_ACTION_LAYOUT.buttons, {
-          default: HERO_ACTION_LAYOUT.buttons,
+        Type.Literal(HERO_GRADIENT_ACTION_LAYOUT.buttons, {
+          default: HERO_GRADIENT_ACTION_LAYOUT.buttons,
         }),
       ),
     }),
-    CallToActionsSchema,
+    HeroGradientButtonsFieldsSchema,
   ],
   {
     title: "Buttons only",
@@ -241,8 +243,8 @@ const HeroGradientButtonsLayoutSchema = Type.Composite(
 const HeroGradientQuickActionsLayoutSchema = Type.Composite(
   [
     Type.Object({
-      actionLayout: Type.Literal(HERO_ACTION_LAYOUT.quickActions, {
-        default: HERO_ACTION_LAYOUT.quickActions,
+      actionLayout: Type.Literal(HERO_GRADIENT_ACTION_LAYOUT.quickActions, {
+        default: HERO_GRADIENT_ACTION_LAYOUT.quickActions,
       }),
     }),
     HeroGradientQuickActionsFieldsSchema,
@@ -410,14 +412,14 @@ type CommonProps = Static<typeof HeroBaseSchema> & {
   headingLevel: number
 }
 
-export type HeroActionLayoutQuickActionItem = Static<
-  typeof HeroActionLayoutQuickActionItemSchema
+export type HeroGradientQuickActionsItem = Static<
+  typeof HeroGradientQuickActionsItemSchema
 >
 
 export type HeroGradientButtonsProps = Simplify<
   CommonProps &
     Static<typeof HeroGradientSharedSchema> &
-    Static<typeof CallToActionsSchema>
+    Static<typeof HeroGradientButtonsFieldsSchema>
 >
 
 export type HeroGradientQuickActionsProps = Simplify<

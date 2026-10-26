@@ -1,6 +1,6 @@
 import { chakra } from "@chakra-ui/react"
 
-export const IconHeroActionLayoutButtons = chakra(
+export const IconHeroGradientButtonsLayout = chakra(
   (props: React.SVGProps<SVGSVGElement>) => {
     return (
       <svg

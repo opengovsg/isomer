@@ -9,7 +9,7 @@ import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { HERO_QUICK_ACTIONS_FORMAT } from "@opengovsg/isomer-components"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { createDefaultHeroActionLayoutQuickActionItem } from "../../utils/defaultHeroActionLayoutQuickActionItem"
+import { createDefaultHeroGradientQuickActionsItem } from "../../utils/defaultHeroGradientQuickActionsItem"
 import { JsonFormsArrayControl } from "./JsonFormsArrayControl"
 
 const omitIconField = (uischema: UISchemaElement): UISchemaElement =>
@@ -37,7 +37,7 @@ function JsonFormsHeroQuickActionsControl(props: ArrayLayoutProps) {
   return (
     <JsonFormsArrayControl
       {...props}
-      createItem={createDefaultHeroActionLayoutQuickActionItem}
+      createItem={createDefaultHeroGradientQuickActionsItem}
       childLabelProp="title"
       mapDrawerUiSchema={showIcon ? undefined : omitIconField}
     />

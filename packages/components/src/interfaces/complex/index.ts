@@ -13,14 +13,14 @@ export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
 export {
   getHeroStyleVariantForBranchTitle,
-  HERO_ACTION_LAYOUT,
+  HERO_GRADIENT_ACTION_LAYOUT,
   HERO_BLOCK_IMAGE_EDGE,
   HERO_BLOCK_IMAGE_POSITION,
   HERO_QUICK_ACTIONS_LIMITS,
   HERO_STYLE,
   HeroSchema,
-  type HeroActionLayout,
-  type HeroActionLayoutQuickActionItem,
+  type HeroGradientActionLayout,
+  type HeroGradientQuickActionsItem,
   type HeroGradientQuickActionsProps,
   type HeroBlockProps,
   type HeroGradientButtonsProps,

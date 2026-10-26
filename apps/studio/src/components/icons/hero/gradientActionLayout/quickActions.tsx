@@ -1,6 +1,6 @@
 import { chakra } from "@chakra-ui/react"
 
-export const IconHeroActionLayoutQuickActions = chakra(
+export const IconHeroGradientQuickActionsLayout = chakra(
   (props: React.SVGProps<SVGSVGElement>) => {
     return (
       <svg

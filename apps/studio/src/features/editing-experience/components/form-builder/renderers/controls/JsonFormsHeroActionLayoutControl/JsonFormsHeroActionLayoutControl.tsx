@@ -1,6 +1,6 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type {
-  HeroActionLayout,
+  HeroGradientActionLayout,
   HeroGradientProps,
 } from "@opengovsg/isomer-components"
 import { Box, Flex, FormControl } from "@chakra-ui/react"
@@ -8,17 +8,17 @@ import { Generate, rankWith, schemaMatches } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsControlProps } from "@jsonforms/react"
 import { Badge, FormLabel, Radio } from "@opengovsg/design-system-react"
 import {
-  HERO_ACTION_LAYOUT,
+  HERO_GRADIENT_ACTION_LAYOUT,
   HERO_ACTION_LAYOUT_FORMAT,
 } from "@opengovsg/isomer-components"
 import { useMemo } from "react"
 import {
-  IconHeroActionLayoutButtons,
-  IconHeroActionLayoutQuickActions,
+  IconHeroGradientButtonsLayout,
+  IconHeroGradientQuickActionsLayout,
 } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { nextHeroActionLayoutData } from "../../../utils/nextHeroActionLayoutData"
+import { nextHeroGradientActionLayoutData } from "../../../utils/nextHeroGradientActionLayoutData"
 import { actionLayoutTextRenderer } from "./TextControl"
 
 /** DS Radio wraps label + preview; suppress full-card focus ring on click. */
@@ -47,7 +47,8 @@ function JsonFormsHeroActionLayoutControl({
   cells,
 }: ControlProps): JSX.Element {
   const heroData = data as Partial<HeroGradientProps> | undefined
-  const selectedLayout = heroData?.actionLayout ?? HERO_ACTION_LAYOUT.buttons
+  const selectedLayout =
+    heroData?.actionLayout ?? HERO_GRADIENT_ACTION_LAYOUT.buttons
   const selectedBranch = schema.oneOf?.find(
     (branch) => branch.properties?.actionLayout?.const === selectedLayout,
   )
@@ -57,12 +58,12 @@ function JsonFormsHeroActionLayoutControl({
     [renderers],
   )
 
-  const onChange = (layout: HeroActionLayout) => {
+  const onChange = (layout: HeroGradientActionLayout) => {
     if (layout === selectedLayout) {
       return
     }
 
-    handleChange(path, nextHeroActionLayoutData(heroData, layout))
+    handleChange(path, nextHeroGradientActionLayoutData(heroData, layout))
   }
 
   return (
@@ -78,16 +79,16 @@ function JsonFormsHeroActionLayoutControl({
             value={selectedLayout}
           >
             <Radio
-              value={HERO_ACTION_LAYOUT.buttons}
+              value={HERO_GRADIENT_ACTION_LAYOUT.buttons}
               allowDeselect={false}
               size="sm"
               __css={heroActionLayoutRadioCss}
             >
               Buttons only
-              <IconHeroActionLayoutButtons aria-hidden mt="10px" />
+              <IconHeroGradientButtonsLayout aria-hidden mt="10px" />
             </Radio>
             <Radio
-              value={HERO_ACTION_LAYOUT.quickActions}
+              value={HERO_GRADIENT_ACTION_LAYOUT.quickActions}
               allowDeselect={false}
               size="sm"
               __css={heroActionLayoutRadioCss}
@@ -103,7 +104,7 @@ function JsonFormsHeroActionLayoutControl({
                   New
                 </Badge>
               </Flex>
-              <IconHeroActionLayoutQuickActions aria-hidden mt="10px" />
+              <IconHeroGradientQuickActionsLayout aria-hidden mt="10px" />
             </Radio>
           </Radio.RadioGroup>
         </FormControl>

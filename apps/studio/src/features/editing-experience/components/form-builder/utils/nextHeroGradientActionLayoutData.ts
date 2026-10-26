@@ -1,28 +1,28 @@
 import type {
-  HeroActionLayout,
+  HeroGradientActionLayout,
   HeroGradientButtonsProps,
   HeroGradientProps,
   HeroGradientQuickActionsProps,
 } from "@opengovsg/isomer-components"
 import {
-  HERO_ACTION_LAYOUT,
+  HERO_GRADIENT_ACTION_LAYOUT,
   HERO_QUICK_ACTIONS_LIMITS,
 } from "@opengovsg/isomer-components"
 import { omit } from "lodash-es"
 
-import { createDefaultHeroActionLayoutQuickActionItem } from "./defaultHeroActionLayoutQuickActionItem"
+import { createDefaultHeroGradientQuickActionsItem } from "./defaultHeroGradientQuickActionsItem"
 
 const HERO_QUICK_ACTIONS_DEFAULT_TITLE = "Get started"
 
 // Fields owned by each layout. Dropped when switching to the other layout.
 const LAYOUT_FIELDS = {
-  [HERO_ACTION_LAYOUT.buttons]: [
+  [HERO_GRADIENT_ACTION_LAYOUT.buttons]: [
     "buttonLabel",
     "buttonUrl",
     "secondaryButtonLabel",
     "secondaryButtonUrl",
   ],
-  [HERO_ACTION_LAYOUT.quickActions]: [
+  [HERO_GRADIENT_ACTION_LAYOUT.quickActions]: [
     "quickActionsTitle",
     "showIcon",
     "quickActionsItems",
@@ -37,24 +37,24 @@ const defaultQuickActionsFields = () => ({
   showIcon: true,
   quickActionsItems: Array.from(
     { length: HERO_QUICK_ACTIONS_LIMITS.minItems },
-    () => createDefaultHeroActionLayoutQuickActionItem(),
+    () => createDefaultHeroGradientQuickActionsItem(),
   ),
 })
 
 /** Keep shared hero fields. Drop the layout that was not selected. */
-export const nextHeroActionLayoutData = (
+export const nextHeroGradientActionLayoutData = (
   current: Partial<HeroGradientProps> | undefined,
-  layout: HeroActionLayout,
+  layout: HeroGradientActionLayout,
 ) => {
   const otherLayout =
-    layout === HERO_ACTION_LAYOUT.buttons
-      ? HERO_ACTION_LAYOUT.quickActions
-      : HERO_ACTION_LAYOUT.buttons
+    layout === HERO_GRADIENT_ACTION_LAYOUT.buttons
+      ? HERO_GRADIENT_ACTION_LAYOUT.quickActions
+      : HERO_GRADIENT_ACTION_LAYOUT.buttons
 
   return {
     ...omit(current, LAYOUT_FIELDS[otherLayout]),
     actionLayout: layout,
-    ...(layout === HERO_ACTION_LAYOUT.quickActions
+    ...(layout === HERO_GRADIENT_ACTION_LAYOUT.quickActions
       ? defaultQuickActionsFields()
       : {}),
   }
