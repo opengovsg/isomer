@@ -26,6 +26,7 @@ interface HeroBannerStyleOption {
 
 const HERO_BANNER_STYLE_VARIANTS_WITH_NEW_BADGE = new Set<HeroStyleVariant>([
   HERO_STYLE.block.key,
+  HERO_STYLE.carousel.key,
 ] satisfies readonly HeroStyleVariant[])
 
 // Match Fixed blocks "Hero banner" row hover in BaseBlock.
