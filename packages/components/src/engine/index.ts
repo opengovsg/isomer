@@ -4,10 +4,7 @@ export {
   renderPrefillText,
 } from "./render"
 export { LinkComponentProvider } from "~/templates/next/context/LinkComponentContext"
-export {
-  HeroCarouselPreviewProvider,
-  useHeroCarouselPreview,
-} from "~/templates/next/components/complex/Hero/HeroCarousel/HeroCarouselPreviewContext"
+export { HeroCarouselPreviewProvider } from "~/templates/next/components/complex/Hero/HeroCarousel/HeroCarouselPreviewContext"
 export { RenderApplicationScripts } from "./renderApplicationScripts"
 export { RenderApplicationHeadScripts } from "./renderApplicationHeadScripts"
 export {

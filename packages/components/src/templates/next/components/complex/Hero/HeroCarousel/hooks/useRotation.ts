@@ -23,9 +23,8 @@ const prefersReducedMotion = () =>
 
 export const useRotation = (slideCount: number) => {
   const preview = useHeroCarouselPreview()
-  // The preview context syncs the editor slide list. Rotation stays off there
-  // unless Studio opts in, which it does for fullscreen.
-  const blockRotation = preview !== null && !preview.autoplay
+  // No provider rotates. A provider holds the slide only when autoplay is false.
+  const blockRotation = preview?.autoplay === false
   const blockRotationRef = useRef(blockRotation)
   const { currentIndex, onGoTo } = useNavigation(slideCount)
   const [phase, setPhase] = useState<RotationPhase>("pending")

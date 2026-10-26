@@ -124,7 +124,9 @@ describe("hero carousel preview index", () => {
       const [activeIndex, setActiveIndex] = useState(1)
 
       return (
-        <HeroCarouselPreviewProvider value={{ activeIndex, setActiveIndex }}>
+        <HeroCarouselPreviewProvider
+          value={{ activeIndex, setActiveIndex, autoplay: false }}
+        >
           <HeroCarouselGradientClient
             headingTag="h1"
             inactiveHeadingTag="h2"
@@ -457,13 +459,15 @@ describe("hero carousel rotation", () => {
     expect(rotationButton()).toHaveAccessibleName("Start slide rotation")
   })
 
-  it("does not rotate in the studio preview and renders the button stopped", () => {
+  it("does not rotate when autoplay is false and renders the button stopped", () => {
     // Arrange
     const Harness = () => {
       const [activeIndex, setActiveIndex] = useState(0)
 
       return (
-        <HeroCarouselPreviewProvider value={{ activeIndex, setActiveIndex }}>
+        <HeroCarouselPreviewProvider
+          value={{ activeIndex, setActiveIndex, autoplay: false }}
+        >
           <HeroCarouselGradientClient
             headingTag="h1"
             inactiveHeadingTag="h2"
@@ -484,7 +488,7 @@ describe("hero carousel rotation", () => {
     expect(rotationButton()).toHaveAccessibleName("Start slide rotation")
   })
 
-  it("rotates in the studio preview when autoplay turns on", () => {
+  it("rotates when autoplay turns on", () => {
     // Arrange
     const Harness = () => {
       const [activeIndex, setActiveIndex] = useState(0)
@@ -495,7 +499,7 @@ describe("hero carousel rotation", () => {
           value={{ activeIndex, setActiveIndex, autoplay }}
         >
           <button type="button" onClick={() => setAutoplay(true)}>
-            Enter fullscreen
+            Turn autoplay on
           </button>
           <HeroCarouselGradientClient
             headingTag="h1"
@@ -508,7 +512,7 @@ describe("hero carousel rotation", () => {
     render(<Harness />)
 
     // Act
-    fireEvent.click(screen.getByRole("button", { name: "Enter fullscreen" }))
+    fireEvent.click(screen.getByRole("button", { name: "Turn autoplay on" }))
     advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
@@ -516,7 +520,7 @@ describe("hero carousel rotation", () => {
     expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
   })
 
-  it("stops studio preview rotation when autoplay turns off", () => {
+  it("stops rotation when autoplay turns off", () => {
     // Arrange
     const Harness = () => {
       const [activeIndex, setActiveIndex] = useState(1)
@@ -527,7 +531,7 @@ describe("hero carousel rotation", () => {
           value={{ activeIndex, setActiveIndex, autoplay }}
         >
           <button type="button" onClick={() => setAutoplay(false)}>
-            Leave fullscreen
+            Turn autoplay off
           </button>
           <HeroCarouselGradientClient
             headingTag="h1"
@@ -540,7 +544,7 @@ describe("hero carousel rotation", () => {
     render(<Harness />)
 
     // Act
-    fireEvent.click(screen.getByRole("button", { name: "Leave fullscreen" }))
+    fireEvent.click(screen.getByRole("button", { name: "Turn autoplay off" }))
     advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
