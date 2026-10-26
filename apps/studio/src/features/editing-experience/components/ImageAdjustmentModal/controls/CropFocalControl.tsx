@@ -348,7 +348,12 @@ export const CropFocalControl = ({
     position: "absolute",
     left: `${focalBoxSpace.x * 100}%`,
     top: `${focalBoxSpace.y * 100}%`,
-    transform: "translate(-50%, -50%)",
+    // Center the marker on the focal point via negative margins rather than a
+    // transform: the tooltip positioner measures this element's layout box, and
+    // a transform would leave that box pinned at the top-left (focal point),
+    // pushing the "top"-placed tooltip to the right of the visible icon.
+    marginLeft: "-13px",
+    marginTop: "-13px",
     width: "26px",
     height: "26px",
     display: "flex",
