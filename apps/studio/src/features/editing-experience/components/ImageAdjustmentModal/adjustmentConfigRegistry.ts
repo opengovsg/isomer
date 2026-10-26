@@ -45,6 +45,18 @@ const buildSingleCardPreviewBlock = (
     originalCard !== undefined && siblings.some((c) => c === originalCard)
       ? siblings.map((c) => (c === originalCard ? card : c))
       : [card]
+  // A lone card looks stranded in a multi-column grid. Pad it with one virtual
+  // placeholder — a copy of the edited card with generic text and no link, but
+  // reusing its image so it renders reliably (no fabricated asset URL to 404) —
+  // so the preview reads as a real grid.
+  if (cards.length < 2 && typeof card === "object" && card !== null) {
+    cards.push({
+      ...(card as Record<string, unknown>),
+      title: "Sample card",
+      url: undefined,
+      imageAdjustment: undefined,
+    })
+  }
   return {
     ...blockRecord,
     title: "",
