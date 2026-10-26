@@ -5,11 +5,7 @@ import { Type } from "@sinclair/typebox"
 import { omit } from "lodash-es"
 import { SUPPORTED_ICON_NAMES } from "~/common/icons"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
-import {
-  LINK_HREF_PATTERN,
-  NON_EMPTY_STRING_REGEX,
-  TRIMMED_NON_EMPTY_STRING_REGEX,
-} from "~/utils/validation"
+import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import {
   HERO_ACTION_LAYOUT_FORMAT,
@@ -152,7 +148,7 @@ const HeroActionLayoutQuickActionItemSchema = Type.Object({
   ),
   title: IsomerString({
     title: "Title",
-    pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+    pattern: NON_EMPTY_STRING_REGEX,
     errorMessage: {
       pattern: "cannot be empty or contain only spaces",
     },
@@ -199,7 +195,7 @@ const HeroGradientQuickActionsFieldsSchema = Type.Object({
   quickActionsTitle: Type.Optional(
     IsomerString({
       title: "Title",
-      pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+      pattern: NON_EMPTY_STRING_REGEX,
       errorMessage: {
         pattern: "cannot be empty or contain only spaces",
       },
