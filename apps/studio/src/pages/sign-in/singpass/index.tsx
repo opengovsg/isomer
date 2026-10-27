@@ -92,16 +92,12 @@ const SingpassSignInPage: NextPageWithLayout = () => {
                 <Infobox variant="error" w="full" size="sm">
                   <Box>
                     <Text textStyle="subhead-2" color="base.content.strong">
-                      {singpassError === "unavailable"
-                        ? "Singpass is temporarily unavailable."
-                        : "We couldn’t authenticate you."}
+                      We couldn’t authenticate you.
                     </Text>
 
                     <Text textStyle="body-2" color="base.content.strong">
                       {singpassError === "retry" ? (
-                        "Singpass ran into a problem. Try signing in again."
-                      ) : singpassError === "unavailable" ? (
-                        "Try again later. If you need to get in now, ask a colleague for help."
+                        <>Singpass ran into a problem. Try signing in again.</>
                       ) : (
                         <>
                           Please try again later. If the issue persists, reach
