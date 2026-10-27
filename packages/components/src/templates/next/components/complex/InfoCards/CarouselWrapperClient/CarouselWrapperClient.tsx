@@ -8,7 +8,7 @@ import { tv } from "~/lib/tv"
 
 import { NavigationButton } from "./NavigationButton"
 import { NavigationDots } from "./NavigationDots"
-import { useInfoCardsCarouselNavigation } from "./useInfoCardsCarouselNavigation"
+import { useNavigation } from "./useNavigation"
 
 const carouselStyles = tv({
   slots: {
@@ -72,7 +72,7 @@ export const CarouselWrapperClient = ({
     pageStart,
     announcement,
     goToPage,
-  } = useInfoCardsCarouselNavigation(cardCount)
+  } = useNavigation({ cardCount })
 
   const slides = Children.toArray(children)
   const fadeSide = isLastPage ? "left" : "right"

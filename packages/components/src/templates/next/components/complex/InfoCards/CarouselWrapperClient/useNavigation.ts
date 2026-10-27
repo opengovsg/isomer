@@ -41,7 +41,11 @@ function readTrackMetrics(viewport: HTMLElement): TrackMetrics | null {
   return { cardsPerPage, cardWidth, gap, viewportWidth }
 }
 
-export function useInfoCardsCarouselNavigation(cardCount: number) {
+interface UseNavigationProps {
+  cardCount: number
+}
+
+export const useNavigation = ({ cardCount }: UseNavigationProps) => {
   const viewportRef = useRef<HTMLDivElement>(null)
   const previousButtonRef = useRef<HTMLButtonElement>(null)
   const nextButtonRef = useRef<HTMLButtonElement>(null)
