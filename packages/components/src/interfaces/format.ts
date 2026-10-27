@@ -1,4 +1,5 @@
 export const ARRAY_RADIO_FORMAT = "radio"
+export const INFOCARDS_LAYOUT_FORMAT = "infocards-layout"
 export const HERO_BANNER_STYLE_FORMAT = "hero-banner-style"
 export const HERO_BLOCK_IMAGE_FORMAT = "hero-block-image"
 export const COLLECTION_DROPDOWN_FORMAT = "collection-dropdown"
