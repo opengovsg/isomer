@@ -50,7 +50,6 @@ export function useInfoCardsCarouselNavigation(cardCount: number) {
   const [pageIndex, setPageIndex] = useState(0)
   const [offset, setOffset] = useState(0)
   const [cardsPerPage, setCardsPerPage] = useState(0)
-  const [ready, setReady] = useState(false)
   const [announcement, setAnnouncement] = useState("")
 
   const applyPage = useCallback(
@@ -70,7 +69,6 @@ export function useInfoCardsCarouselNavigation(cardCount: number) {
       setPageIndex(clamped)
       setOffset(nextOffset)
       setCardsPerPage(metrics.cardsPerPage)
-      setReady(true)
       if (announce && cardCount > metrics.cardsPerPage) {
         setAnnouncement(`Page ${clamped + 1} of ${pages}`)
       }
@@ -110,11 +108,9 @@ export function useInfoCardsCarouselNavigation(cardCount: number) {
   }, [applyPage, cardCount])
 
   const pages = pageCount(cardCount, cardsPerPage)
-  const showControls = ready && cardCount > cardsPerPage
+  const showControls = cardsPerPage > 0 && cardCount > cardsPerPage
   const isLastPage = pageIndex >= pages - 1
-  const pageStart = ready
-    ? pageStartIndex(pageIndex, cardsPerPage, cardCount)
-    : 0
+  const pageStart = pageStartIndex(pageIndex, cardsPerPage, cardCount)
 
   // A disabled arrow cannot keep focus, so move it to the arrow that still works.
   useEffect(() => {

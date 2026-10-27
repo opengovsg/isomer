@@ -39,14 +39,10 @@ const carouselStyles = tv({
       left: {
         fade: "left-0 bg-gradient-to-r from-base-canvas to-transparent",
       },
-      none: {
-        fade: "hidden",
-      },
     },
   },
   defaultVariants: {
     variant: "default",
-    fadeSide: "none",
   },
 })
 
@@ -79,6 +75,7 @@ export const CarouselWrapperClient = ({
   } = useInfoCardsCarouselNavigation(cardCount)
 
   const slides = Children.toArray(children)
+  const fadeSide = isLastPage ? "left" : "right"
 
   return (
     <div>
@@ -117,15 +114,13 @@ export const CarouselWrapperClient = ({
             )
           })}
         </div>
-        <div
-          aria-hidden
-          data-fade-side={
-            showControls ? (isLastPage ? "left" : "right") : "none"
-          }
-          className={carousel.fade({
-            fadeSide: showControls ? (isLastPage ? "left" : "right") : "none",
-          })}
-        />
+        {showControls && (
+          <div
+            aria-hidden
+            data-fade-side={fadeSide}
+            className={carousel.fade({ fadeSide })}
+          />
+        )}
       </div>
 
       <div aria-live="polite" role="status" className="sr-only">
