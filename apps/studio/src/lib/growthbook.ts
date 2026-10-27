@@ -16,6 +16,9 @@ export const IS_AUDIT_LOG_ENABLED_FEATURE_KEY = "is-audit-log-enabled"
 // When ON: gazette ingestion is routed to SearchSG instead.
 export const ENABLE_SEARCHSG_GAZETTE_INGESTION =
   "enable-searchsg-gazette-ingestion"
+// Targets users by `email` attribute to grant access to the central banner
+export const IS_CENTRAL_NOTIFICATION_BANNER_ENABLED_FEATURE_KEY =
+  "is-central-notification-banner-enabled"
 
 // Gates the image-adjustment editor entry point (the "Adjust image" button and
 // modal in JsonFormsImageControl). A boolean On/Off flag, OFF by default; roll
