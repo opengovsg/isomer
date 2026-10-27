@@ -60,7 +60,26 @@ describe("Link", () => {
     const externalIcon = link.querySelector('[aria-hidden="true"]')
 
     // Assert
-    expect(externalIcon?.textContent).toBe(" ↗")
+    expect(externalIcon).not.toBeNull()
+  })
+
+  it("renders the external icon as an SVG so it does not depend on font fallback", () => {
+    // Arrange
+    const { getByRole } = render(
+      <Link href="https://www.scamshield.gov.sg" isExternal showExternalIcon>
+        ScamShield
+      </Link>,
+    )
+
+    // Act
+    const link = getByRole("link", {
+      name: "ScamShield (opens in new tab)",
+    })
+    const externalIcon = link.querySelector('[aria-hidden="true"]')
+
+    // Assert
+    expect(externalIcon?.tagName.toLowerCase()).toBe("svg")
+    expect(link.textContent).not.toContain("↗")
   })
 
   it("includes text rendered by a nested component in the accessible name", () => {
