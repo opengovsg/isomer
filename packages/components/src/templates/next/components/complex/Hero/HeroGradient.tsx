@@ -18,10 +18,6 @@ export const HeroGradient = ({
   site,
   headingLevel,
 }: HeroGradientProps) => {
-  const objectPosition =
-    imageAdjustment?.focal != null
-      ? `${imageAdjustment.focal.x * 100}% ${imageAdjustment.focal.y * 100}%`
-      : undefined
   const Tag = getHeadingTag(headingLevel)
   return (
     <section className="relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]">
@@ -35,7 +31,7 @@ export const HeroGradient = ({
           alt=""
           width="100%"
           className="absolute inset-0 h-full w-full object-cover object-center"
-          objectPosition={objectPosition}
+          imageAdjustment={imageAdjustment}
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={false} // hero is always above the fold
         />
