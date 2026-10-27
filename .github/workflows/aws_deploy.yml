@@ -225,7 +225,7 @@ jobs:
             DD_GIT_COMMIT_SHA=${{ github.sha }}
 
       - name: Scan built image with Inspector
-        uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@a8d909f662496d73f97b86ea9acd11cb7decedb7 # v1
+        uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@c87d8a405e237cfdf16e5dd3808d28d088d7cb6f # v1.6.1
         id: inspector
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
