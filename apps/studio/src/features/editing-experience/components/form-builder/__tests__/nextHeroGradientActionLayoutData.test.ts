@@ -1,21 +1,21 @@
 import type { HeroGradientProps } from "@opengovsg/isomer-components"
 import { HERO_GRADIENT_ACTION_LAYOUT } from "@opengovsg/isomer-components"
 
-import { createDefaultHeroGradientQuickActionsItem } from "../utils/defaultHeroGradientQuickActionsItem"
+import { createDefaultHeroGradientQuickLinksItem } from "../utils/defaultHeroGradientQuickLinksItem"
 import { nextHeroGradientActionLayoutData } from "../utils/nextHeroGradientActionLayoutData"
 
 describe("nextHeroGradientActionLayoutData", () => {
-  it("drops quick-action fields when switching to buttons", () => {
+  it("drops quick-link fields when switching to buttons", () => {
     // Arrange
     const current: Partial<HeroGradientProps> = {
       type: "hero",
       variant: "gradient",
       title: "Welcome",
       actions: {
-        layout: "quickActions",
+        layout: "quickLinks",
         title: "Get started",
         showIcon: true,
-        items: [createDefaultHeroGradientQuickActionsItem()],
+        items: [createDefaultHeroGradientQuickLinksItem()],
       },
     }
 
@@ -34,7 +34,7 @@ describe("nextHeroGradientActionLayoutData", () => {
     })
   })
 
-  it("drops button fields when switching to quick actions", () => {
+  it("drops button fields when switching to quick links", () => {
     // Arrange
     const current: Partial<HeroGradientProps> = {
       type: "hero",
@@ -47,7 +47,7 @@ describe("nextHeroGradientActionLayoutData", () => {
     // Act
     const actual = nextHeroGradientActionLayoutData(
       current,
-      HERO_GRADIENT_ACTION_LAYOUT.quickActions,
+      HERO_GRADIENT_ACTION_LAYOUT.quickLinks,
     )
 
     // Assert
@@ -56,12 +56,12 @@ describe("nextHeroGradientActionLayoutData", () => {
       variant: "gradient",
       title: "Welcome",
       actions: {
-        layout: "quickActions",
+        layout: "quickLinks",
         title: "Get started",
         showIcon: true,
         items: [
-          createDefaultHeroGradientQuickActionsItem(),
-          createDefaultHeroGradientQuickActionsItem(),
+          createDefaultHeroGradientQuickLinksItem(),
+          createDefaultHeroGradientQuickLinksItem(),
         ],
       },
     })

@@ -1,26 +1,26 @@
-import type { HeroGradientQuickActionsProps } from "~/interfaces/complex/Hero"
+import type { HeroGradientQuickLinksProps } from "~/interfaces/complex/Hero"
 import { twMerge } from "~/lib/twMerge"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
 import { ComponentContent } from "../../../../internal/customCssClass"
 import { ImageClient } from "../../../../internal/ImageClient"
-import { QuickActions } from "./QuickActions"
+import { QuickLinks } from "./QuickLinks"
 
-export const HeroGradientQuickActions = ({
+export const HeroGradientQuickLinks = ({
   title,
   subtitle,
   backgroundUrl,
   actions,
   site,
   headingLevel,
-}: HeroGradientQuickActionsProps) => {
+}: HeroGradientQuickLinksProps) => {
   const HeroTag = getHeadingTag(headingLevel)
 
   return (
     <section className="bg-white pb-12 md:pb-16">
       {/*
         Row 1 is the hero copy (py-16 matches the title's inset from the banner top).
-        Quick actions span rows 2–3, with their top aligned below the description.
+        Quick links span rows 2–3, with their top aligned below the description.
         The image covers rows 1–2: 25% of the panel below lg (1fr of 1fr+3fr), 50% at lg.
         Row 3 stays in flow, so the section padding starts at the panel bottom.
       */}
@@ -63,7 +63,7 @@ export const HeroGradientQuickActions = ({
             "z-20 col-start-1 row-start-2 row-end-4 w-full min-w-0 self-stretch",
           )}
         >
-          <QuickActions
+          <QuickLinks
             actions={actions}
             site={site}
             headingLevel={headingLevel}

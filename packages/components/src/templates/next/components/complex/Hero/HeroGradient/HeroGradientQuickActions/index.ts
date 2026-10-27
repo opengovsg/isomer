@@ -1,1 +1,0 @@
-export { HeroGradientQuickActions } from "./HeroGradientQuickActions"

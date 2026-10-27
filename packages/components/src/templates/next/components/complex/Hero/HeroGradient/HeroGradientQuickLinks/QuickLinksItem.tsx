@@ -1,5 +1,5 @@
 import type { SupportedIconName } from "~/common/icons"
-import type { HeroGradientQuickActionsProps } from "~/interfaces/complex/Hero"
+import type { HeroGradientQuickLinksProps } from "~/interfaces/complex/Hero"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { tv } from "~/lib/tv"
@@ -46,19 +46,19 @@ const ItemIcon = ({ icon }: { icon: SupportedIconName }) => {
   return <Icon aria-hidden className={styles.icon()} />
 }
 
-interface QuickActionsItemProps {
-  item: HeroGradientQuickActionsProps["actions"]["items"][number]
-  showIcon: HeroGradientQuickActionsProps["actions"]["showIcon"]
-  site: HeroGradientQuickActionsProps["site"]
-  headingLevel: HeroGradientQuickActionsProps["headingLevel"]
+interface QuickLinksItemProps {
+  item: HeroGradientQuickLinksProps["actions"]["items"][number]
+  showIcon: HeroGradientQuickLinksProps["actions"]["showIcon"]
+  site: HeroGradientQuickLinksProps["site"]
+  headingLevel: HeroGradientQuickLinksProps["headingLevel"]
 }
 
-export const QuickActionsItem = ({
+export const QuickLinksItem = ({
   item,
   showIcon,
   site,
   headingLevel,
-}: QuickActionsItemProps) => {
+}: QuickLinksItemProps) => {
   const { title, icon, description, buttonUrl, buttonLabel } = item
   const trimmedTitle = title?.trim()
   const trimmedButtonLabel = buttonLabel?.trim()

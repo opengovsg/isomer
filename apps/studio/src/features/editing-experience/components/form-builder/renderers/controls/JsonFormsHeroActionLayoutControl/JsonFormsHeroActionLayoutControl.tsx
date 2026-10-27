@@ -20,7 +20,7 @@ import { isEmpty, omit } from "lodash-es"
 import { useMemo } from "react"
 import {
   IconHeroGradientButtonsLayout,
-  IconHeroGradientQuickActionsLayout,
+  IconHeroGradientQuickLinksLayout,
 } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { NewFeatureBadge } from "~/features/editing-experience/components/shared/NewFeatureBadge"
@@ -46,9 +46,9 @@ const LAYOUT_OPTIONS: Record<
     Icon: IconHeroGradientButtonsLayout,
     isNew: false,
   },
-  [HERO_GRADIENT_ACTION_LAYOUT.quickActions]: {
-    label: "Quick actions",
-    Icon: IconHeroGradientQuickActionsLayout,
+  [HERO_GRADIENT_ACTION_LAYOUT.quickLinks]: {
+    label: "Quick links",
+    Icon: IconHeroGradientQuickLinksLayout,
     isNew: true,
   },
 }
@@ -86,7 +86,7 @@ function JsonFormsHeroActionLayoutControl({
       ...selectedBranch,
       properties: omit(selectedBranch.properties, "actions"),
     } as JsonSchema)
-  // Scoped override: text fields in the layout (incl. quick action items) show builder errors.
+  // Scoped override: text fields in the layout (incl. quick link items) show builder errors.
   const layoutRenderers = useMemo(
     () => [actionLayoutTextRenderer, ...(renderers ?? [])],
     [renderers],
@@ -141,7 +141,7 @@ function JsonFormsHeroActionLayoutControl({
         },
       ].map(
         ({ fieldsSchema, fieldsPath }) =>
-          // Skip empty branches (e.g. quick actions has no root fields) so no blank layout adds a gap.
+          // Skip empty branches (e.g. quick links has no root fields) so no blank layout adds a gap.
           fieldsSchema &&
           !isEmpty(fieldsSchema.properties) && (
             <JsonFormsDispatch

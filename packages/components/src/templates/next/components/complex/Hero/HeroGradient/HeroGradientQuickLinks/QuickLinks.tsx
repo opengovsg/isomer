@@ -1,12 +1,12 @@
-import type { HeroGradientQuickActionsProps } from "~/interfaces/complex/Hero"
+import type { HeroGradientQuickLinksProps } from "~/interfaces/complex/Hero"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
-import { QuickActionsItem } from "./QuickActionsItem"
+import { QuickLinksItem } from "./QuickLinksItem"
 
-const QUICK_ACTIONS_TITLE_ID = "quick-actions-title"
+const QUICK_LINKS_TITLE_ID = "quick-links-title"
 
-const quickActionsStyles = tv({
+const quickLinksStyles = tv({
   slots: {
     root: [
       "flex h-full w-full flex-col items-start gap-6 rounded-lg border border-base-divider-subtle bg-white p-6 shadow-[0_0.375rem_1.5rem_0_rgba(0,0,0,0.10)]",
@@ -24,16 +24,16 @@ const quickActionsStyles = tv({
   },
 })
 
-type QuickActionsProps = Pick<
-  HeroGradientQuickActionsProps,
+type QuickLinksProps = Pick<
+  HeroGradientQuickLinksProps,
   "actions" | "site" | "headingLevel"
 >
 
-export const QuickActions = ({
+export const QuickLinks = ({
   actions: { title, showIcon, items },
   site,
   headingLevel,
-}: QuickActionsProps) => {
+}: QuickLinksProps) => {
   if (items.length === 0) {
     return null
   }
@@ -42,12 +42,12 @@ export const QuickActions = ({
   const SectionTitleTag = getHeadingTag(headingLevel + 1)
   const itemHeadingLevel = headingLevel + (trimmedTitle ? 2 : 1)
   const itemCount = items.length as 2 | 3 | 4
-  const styles = quickActionsStyles({ itemCount })
+  const styles = quickLinksStyles({ itemCount })
 
   const itemsGrid = (
     <div className={styles.items()}>
       {items.map((item, idx) => (
-        <QuickActionsItem
+        <QuickLinksItem
           key={idx}
           item={item}
           showIcon={showIcon}
@@ -59,8 +59,8 @@ export const QuickActions = ({
   )
 
   return trimmedTitle ? (
-    <section className={styles.root()} aria-labelledby={QUICK_ACTIONS_TITLE_ID}>
-      <SectionTitleTag id={QUICK_ACTIONS_TITLE_ID} className={styles.title()}>
+    <section className={styles.root()} aria-labelledby={QUICK_LINKS_TITLE_ID}>
+      <SectionTitleTag id={QUICK_LINKS_TITLE_ID} className={styles.title()}>
         {trimmedTitle}
       </SectionTitleTag>
       {itemsGrid}

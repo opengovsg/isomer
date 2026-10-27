@@ -1,6 +1,6 @@
 import { chakra } from "@chakra-ui/react"
 
-export const IconHeroGradientQuickActionsLayout = chakra(
+export const IconHeroGradientQuickLinksLayout = chakra(
   (props: React.SVGProps<SVGSVGElement>) => {
     return (
       <svg
@@ -11,7 +11,7 @@ export const IconHeroGradientQuickActionsLayout = chakra(
         fill="none"
         {...props}
       >
-        <g clipPath="url(#heroActionLayoutQuickActionsClip)">
+        <g clipPath="url(#heroActionLayoutQuickLinksClip)">
           <rect
             x="0.5"
             y="0.5"
@@ -122,7 +122,7 @@ export const IconHeroGradientQuickActionsLayout = chakra(
           />
         </g>
         <defs>
-          <clipPath id="heroActionLayoutQuickActionsClip">
+          <clipPath id="heroActionLayoutQuickLinksClip">
             <rect width="103" height="62" fill="white" />
           </clipPath>
         </defs>

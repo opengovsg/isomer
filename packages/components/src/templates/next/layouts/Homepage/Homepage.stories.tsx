@@ -810,7 +810,7 @@ export const HeroFloatingShortText: Story = {
   }),
 }
 
-const homepageQuickActionsItems = [
+const homepageQuickLinksItems = [
   {
     icon: "stars" as const,
     title: "Explore Isomer's features",
@@ -845,7 +845,7 @@ const homepageQuickActionsItems = [
   },
 ]
 
-export const HeroGradientQuickActions: Story = {
+export const HeroGradientQuickLinks: Story = {
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -855,16 +855,16 @@ export const HeroGradientQuickActions: Story = {
       subtitle:
         "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
       actions: {
-        layout: "quickActions",
+        layout: "quickLinks",
         title: "Get started",
         showIcon: true,
-        items: homepageQuickActionsItems,
+        items: homepageQuickLinksItems,
       },
     },
   }),
 }
 
-export const HeroGradientQuickActionsTwoItems: Story = {
+export const HeroGradientQuickLinksTwoItems: Story = {
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -874,17 +874,17 @@ export const HeroGradientQuickActionsTwoItems: Story = {
       subtitle:
         "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
       actions: {
-        layout: "quickActions",
+        layout: "quickLinks",
         title: "Get started",
         showIcon: true,
-        items: homepageQuickActionsItems.slice(0, 2),
+        items: homepageQuickLinksItems.slice(0, 2),
       },
     },
   }),
 }
 
 // Minimal copy so tray width is driven by layout, not content length (see FloatingShortText).
-export const HeroGradientQuickActionsTwoItemsShortText: Story = {
+export const HeroGradientQuickLinksTwoItemsShortText: Story = {
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -893,7 +893,7 @@ export const HeroGradientQuickActionsTwoItemsShortText: Story = {
       title: "Title",
       subtitle: "Subtitle",
       actions: {
-        layout: "quickActions",
+        layout: "quickLinks",
         title: "Tray",
         showIcon: true,
         items: [
@@ -917,7 +917,7 @@ export const HeroGradientQuickActionsTwoItemsShortText: Story = {
   }),
 }
 
-export const HeroGradientQuickActionsThreeItems: Story = {
+export const HeroGradientQuickLinksThreeItems: Story = {
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -927,16 +927,16 @@ export const HeroGradientQuickActionsThreeItems: Story = {
       subtitle:
         "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
       actions: {
-        layout: "quickActions",
+        layout: "quickLinks",
         title: "Get started",
         showIcon: true,
-        items: homepageQuickActionsItems.slice(0, 3),
+        items: homepageQuickLinksItems.slice(0, 3),
       },
     },
   }),
 }
 
-export const HeroGradientQuickActionsNoTitle: Story = {
+export const HeroGradientQuickLinksNoTitle: Story = {
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -946,9 +946,9 @@ export const HeroGradientQuickActionsNoTitle: Story = {
       subtitle:
         "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
       actions: {
-        layout: "quickActions",
+        layout: "quickLinks",
         showIcon: true,
-        items: homepageQuickActionsItems,
+        items: homepageQuickLinksItems,
       },
     },
   }),

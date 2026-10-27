@@ -5,13 +5,13 @@ import type {
 } from "@opengovsg/isomer-components"
 import {
   HERO_GRADIENT_ACTION_LAYOUT,
-  HERO_QUICK_ACTIONS_LIMITS,
+  HERO_QUICK_LINKS_LIMITS,
 } from "@opengovsg/isomer-components"
 import { omit } from "lodash-es"
 
-import { createDefaultHeroGradientQuickActionsItem } from "./defaultHeroGradientQuickActionsItem"
+import { createDefaultHeroGradientQuickLinksItem } from "./defaultHeroGradientQuickLinksItem"
 
-const HERO_QUICK_ACTIONS_DEFAULT_TITLE = "Get started"
+const HERO_QUICK_LINKS_DEFAULT_TITLE = "Get started"
 
 // Button fields live at the hero root (shared with the other hero styles).
 const BUTTON_FIELDS = [
@@ -29,12 +29,12 @@ const DEFAULT_ACTIONS: Record<
   [HERO_GRADIENT_ACTION_LAYOUT.buttons]: () => ({
     layout: HERO_GRADIENT_ACTION_LAYOUT.buttons,
   }),
-  [HERO_GRADIENT_ACTION_LAYOUT.quickActions]: () => ({
-    layout: HERO_GRADIENT_ACTION_LAYOUT.quickActions,
-    title: HERO_QUICK_ACTIONS_DEFAULT_TITLE,
+  [HERO_GRADIENT_ACTION_LAYOUT.quickLinks]: () => ({
+    layout: HERO_GRADIENT_ACTION_LAYOUT.quickLinks,
+    title: HERO_QUICK_LINKS_DEFAULT_TITLE,
     showIcon: true,
-    items: Array.from({ length: HERO_QUICK_ACTIONS_LIMITS.minItems }, () =>
-      createDefaultHeroGradientQuickActionsItem(),
+    items: Array.from({ length: HERO_QUICK_LINKS_LIMITS.minItems }, () =>
+      createDefaultHeroGradientQuickLinksItem(),
     ),
   }),
 }

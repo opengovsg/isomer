@@ -11,7 +11,7 @@ import {
   HERO_ACTION_LAYOUT_FORMAT,
   HERO_BANNER_STYLE_FORMAT,
   HERO_BLOCK_IMAGE_FORMAT,
-  HERO_QUICK_ACTIONS_FORMAT,
+  HERO_QUICK_LINKS_FORMAT,
   ICON_PICKER_FORMAT,
 } from "../format"
 import { IsomerString } from "../primitives/IsomerString"
@@ -27,13 +27,13 @@ export const HERO_STYLE = {
 
 export const HERO_GRADIENT_ACTION_LAYOUT = {
   buttons: "buttons",
-  quickActions: "quickActions",
+  quickLinks: "quickLinks",
 } as const
 
 export type HeroGradientActionLayout =
   (typeof HERO_GRADIENT_ACTION_LAYOUT)[keyof typeof HERO_GRADIENT_ACTION_LAYOUT]
 
-export const HERO_QUICK_ACTIONS_LIMITS = {
+export const HERO_QUICK_LINKS_LIMITS = {
   minItems: 2,
   maxItems: 4,
 } as const
@@ -138,7 +138,7 @@ const GROUPINGS = {
   },
 } as const
 
-const HeroGradientQuickActionsItemSchema = Type.Object({
+const HeroGradientQuickLinksItemSchema = Type.Object({
   icon: Type.Union(
     SUPPORTED_ICON_NAMES.map((icon) =>
       Type.Literal(icon, {
@@ -216,11 +216,11 @@ const HeroGradientButtonsLayoutSchema = Type.Composite(
   },
 )
 
-const HeroGradientQuickActionsLayoutSchema = Type.Object(
+const HeroGradientQuickLinksLayoutSchema = Type.Object(
   {
     actions: Type.Object({
-      layout: Type.Literal(HERO_GRADIENT_ACTION_LAYOUT.quickActions, {
-        default: HERO_GRADIENT_ACTION_LAYOUT.quickActions,
+      layout: Type.Literal(HERO_GRADIENT_ACTION_LAYOUT.quickLinks, {
+        default: HERO_GRADIENT_ACTION_LAYOUT.quickLinks,
       }),
       title: Type.Optional(
         IsomerString({
@@ -235,15 +235,15 @@ const HeroGradientQuickActionsLayoutSchema = Type.Object(
         title: "Show icons",
         default: true,
       }),
-      items: Type.Array(HeroGradientQuickActionsItemSchema, {
+      items: Type.Array(HeroGradientQuickLinksItemSchema, {
         title: "Content",
-        format: HERO_QUICK_ACTIONS_FORMAT,
-        ...HERO_QUICK_ACTIONS_LIMITS,
+        format: HERO_QUICK_LINKS_FORMAT,
+        ...HERO_QUICK_LINKS_LIMITS,
       }),
     }),
   },
   {
-    title: "Quick actions",
+    title: "Quick links",
   },
 )
 
@@ -252,11 +252,11 @@ const HeroGradientSchema = Type.Intersect(
     HeroGradientSharedSchema,
     Type.Unsafe<
       | Static<typeof HeroGradientButtonsLayoutSchema>
-      | Static<typeof HeroGradientQuickActionsLayoutSchema>
+      | Static<typeof HeroGradientQuickLinksLayoutSchema>
     >({
       oneOf: [
         HeroGradientButtonsLayoutSchema,
-        HeroGradientQuickActionsLayoutSchema,
+        HeroGradientQuickLinksLayoutSchema,
       ],
       format: HERO_ACTION_LAYOUT_FORMAT,
       title: "Layout",
@@ -399,8 +399,8 @@ type CommonProps = Static<typeof HeroBaseSchema> & {
   headingLevel: number
 }
 
-export type HeroGradientQuickActionsItem = Static<
-  typeof HeroGradientQuickActionsItemSchema
+export type HeroGradientQuickLinksItem = Static<
+  typeof HeroGradientQuickLinksItemSchema
 >
 
 export type HeroGradientButtonsProps = Simplify<
@@ -409,10 +409,10 @@ export type HeroGradientButtonsProps = Simplify<
     Static<typeof HeroGradientButtonsLayoutSchema>
 >
 
-export type HeroGradientQuickActionsProps = Simplify<
+export type HeroGradientQuickLinksProps = Simplify<
   CommonProps &
     Static<typeof HeroGradientSharedSchema> &
-    Static<typeof HeroGradientQuickActionsLayoutSchema>
+    Static<typeof HeroGradientQuickLinksLayoutSchema>
 >
 
 export type HeroGradientProps = Simplify<

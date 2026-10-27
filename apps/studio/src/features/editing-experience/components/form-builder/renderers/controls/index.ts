@@ -101,9 +101,9 @@ export {
   jsonFormsHeroBlockImageControlTester,
 } from "./JsonFormsHeroBlockImageControl"
 export {
-  default as JsonFormsHeroQuickActionsControl,
-  jsonFormsHeroQuickActionsControlTester,
-} from "./JsonFormsHeroQuickActionsControl"
+  default as JsonFormsHeroQuickLinksControl,
+  jsonFormsHeroQuickLinksControlTester,
+} from "./JsonFormsHeroQuickLinksControl"
 export {
   default as JsonFormsChildrenPagesOrderingControl,
   jsonFormsChildrenPagesOrderingControlTester,
