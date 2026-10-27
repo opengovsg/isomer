@@ -8,6 +8,13 @@ import type {
 const asBlock = (block: unknown): { type?: string; variant?: string } =>
   typeof block === "object" && block !== null ? block : {}
 
+/** Deliberate opt-outs: these component types will never have image adjustment, by design. */
+export const INTENTIONALLY_NOT_ADJUSTABLE = [
+  "logocloud",
+  "video",
+  "navbar",
+] as const
+
 // InfoCards is Tier C: a card is always adjustable (you can crop the image that
 // is then displayed) regardless of its imageFit, but the controls offered depend
 // on the fit. Under "cover" ("Default") the card crops the image to fill its
@@ -335,5 +342,6 @@ export function resolveAdjustmentConfig(args: {
     return INFOCARDS_WITH_IMAGES_CONFIG
   if (type === "infocards" && variant === "cardsWithFullImages")
     return INFOCARDS_WITH_FULL_IMAGE_CONFIG
+  // absence = not integrated (optional by design); deliberate opt-outs are asserted in the registry test.
   return undefined
 }

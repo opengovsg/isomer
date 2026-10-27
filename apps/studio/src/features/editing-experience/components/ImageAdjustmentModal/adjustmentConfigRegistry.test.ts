@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest"
 
-import { resolveAdjustmentConfig } from "./adjustmentConfigRegistry"
+import {
+  INTENTIONALLY_NOT_ADJUSTABLE,
+  resolveAdjustmentConfig,
+} from "./adjustmentConfigRegistry"
 
 describe("resolveAdjustmentConfig", () => {
   it("returns undefined for components not yet wired", () => {
@@ -21,9 +24,7 @@ describe("resolveAdjustmentConfig", () => {
     const tierDBlocks = [
       { type: "image" },
       { type: "imagegallery" },
-      { type: "logocloud" },
-      { type: "video" },
-      { type: "navbar" },
+      ...INTENTIONALLY_NOT_ADJUSTABLE.map((type) => ({ type })),
     ]
     for (const block of tierDBlocks) {
       it(`returns undefined for "${block.type}"`, () => {
