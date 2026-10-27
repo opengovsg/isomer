@@ -74,7 +74,6 @@ export const CarouselWrapperClient = ({
     goToPage,
   } = useNavigation({ cardCount })
 
-  const slides = Children.toArray(children)
   const fadeSide = isLastPage ? "left" : "right"
 
   return (
@@ -89,7 +88,7 @@ export const CarouselWrapperClient = ({
           className={carousel.track()}
           style={{ transform: `translateX(-${offset}px)` }}
         >
-          {slides.map((slide, index) => {
+          {Children.toArray(children).map((slide, index) => {
             const interactive =
               !showControls ||
               (index >= pageStart && index < pageStart + cardsPerPage)
