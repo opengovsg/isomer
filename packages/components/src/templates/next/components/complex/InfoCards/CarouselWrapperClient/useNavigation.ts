@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react"
+import { useCallback, useLayoutEffect, useRef, useState } from "react"
 
 import {
   pageCount,
@@ -17,6 +11,7 @@ import {
   SLIDE_DATA_ATTRIBUTE,
   TRACK_DATA_ATTRIBUTE,
 } from "./constants"
+import { useDisabledArrowFocus } from "./useDisabledArrowFocus"
 
 interface UseNavigationProps {
   cardCount: number
@@ -24,8 +19,6 @@ interface UseNavigationProps {
 
 export const useNavigation = ({ cardCount }: UseNavigationProps) => {
   const viewportRef = useRef<HTMLDivElement>(null)
-  const previousButtonRef = useRef<HTMLButtonElement>(null)
-  const nextButtonRef = useRef<HTMLButtonElement>(null)
   const metricsRef = useRef<TrackMetrics | null>(null)
   const pageIndexRef = useRef(0)
   const [pageIndex, setPageIndex] = useState(0)
@@ -92,18 +85,11 @@ export const useNavigation = ({ cardCount }: UseNavigationProps) => {
   const showControls = cardsPerPage > 0 && cardCount > cardsPerPage
   const isLastPage = pageIndex >= pages - 1
   const pageStart = pageStartIndex(pageIndex, cardsPerPage, cardCount)
-
-  // A disabled arrow cannot keep focus, so move it to the arrow that still works.
-  useEffect(() => {
-    if (!showControls) return
-    const active = document.activeElement
-    if (pageIndex === 0 && active === previousButtonRef.current) {
-      nextButtonRef.current?.focus()
-    }
-    if (isLastPage && active === nextButtonRef.current) {
-      previousButtonRef.current?.focus()
-    }
-  }, [isLastPage, pageIndex, showControls])
+  const { previousButtonRef, nextButtonRef } = useDisabledArrowFocus({
+    showControls,
+    pageIndex,
+    isLastPage,
+  })
 
   const goToPage = useCallback(
     (nextPage: number) => {
