@@ -2,6 +2,7 @@ import type { SessionData } from "~/lib/types/session"
 import type { GrowthbookAttributes } from "~/types/growthbook"
 import { TRPCError } from "@trpc/server"
 import { pick, set } from "lodash-es"
+import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { sendLoginAlertEmail } from "~/features/mail/service"
 import {
@@ -100,7 +101,8 @@ export const emailSessionRouter = router({
                 subject: `Sign in to ${url.host}`,
                 body: `Your OTP is ${otpPrefix}-<b>${token}</b>. It expires in ${expiryMinutes} minutes.
       Please use this to login to your account.
-      <p>If your OTP does not work, please request for a new one.</p>`,
+      <p>If your OTP does not work, please request for a new one.</p>
+      <p>If you did not request this OTP, please report it to ${ISOMER_SUPPORT_EMAIL}.</p>`,
                 recipient: email,
               }),
         ])

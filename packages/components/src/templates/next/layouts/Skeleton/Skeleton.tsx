@@ -1,6 +1,7 @@
 import type { IsomerPageSchemaType } from "~/types"
 
 import { isSiteNotificationActive } from "../../../../utils/isSiteNotificationActive"
+import { CentralNotification } from "../../components/internal/CentralNotification"
 import { Footer } from "../../components/internal/Footer"
 import { Masthead } from "../../components/internal/Masthead"
 import { Navbar } from "../../components/internal/Navbar"
@@ -28,6 +29,8 @@ export const Skeleton = ({
         <SkipToContent />
 
         {site.isGovernment && <Masthead isStaging={isStaging} />}
+
+        <CentralNotification site={site} />
 
         {isSiteNotificationActive(site.notification) && (
           <Notification {...site.notification} site={site} />

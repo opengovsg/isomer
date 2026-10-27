@@ -90,6 +90,9 @@ const SuspensableResourceSelector = ({
 
   const {
     resourceItemsWithAncestryStack,
+    hasAncestryError,
+    isRetryingAncestry,
+    retryAncestry,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -169,6 +172,9 @@ const SuspensableResourceSelector = ({
       <Suspense fallback={<LoadingResourceItemsResults />}>
         <SuspendableContent
           resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
+          hasError={hasAncestryError}
+          isRetrying={isRetryingAncestry}
+          onRetry={retryAncestry}
           isResourceIdHighlighted={isResourceIdHighlighted}
           isResourceItemDisabled={isResourceItemDisabled}
           hasAdditionalLeftPadding={hasAdditionalLeftPadding}
@@ -182,6 +188,9 @@ const SuspensableResourceSelector = ({
     )
   }, [
     resourceItemsWithAncestryStack,
+    hasAncestryError,
+    isRetryingAncestry,
+    retryAncestry,
     isResourceIdHighlighted,
     isResourceItemDisabled,
     hasAdditionalLeftPadding,
@@ -209,7 +218,7 @@ const SuspensableResourceSelector = ({
       >
         {renderedHeader}
         {renderedContent}
-        {hasNextPage && (
+        {hasNextPage && !hasAncestryError && (
           <Button
             variant="link"
             py="0.5rem"
