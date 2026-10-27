@@ -12,34 +12,11 @@ import {
   pageOffsetPx,
   pageStartIndex,
 } from "../utils/carousel"
-
-interface TrackMetrics {
-  cardsPerPage: number
-  cardWidth: number
-  gap: number
-  viewportWidth: number
-}
-
-function readTrackMetrics(viewport: HTMLElement): TrackMetrics | null {
-  const cardsPerPage = Number.parseInt(
-    getComputedStyle(viewport).getPropertyValue("--cards-per-page"),
-    10,
-  )
-  const track = viewport.querySelector<HTMLElement>("[data-track]")
-  const slide = viewport.querySelector<HTMLElement>("[data-slide]")
-  if (!track || !slide || !Number.isFinite(cardsPerPage) || cardsPerPage <= 0) {
-    return null
-  }
-
-  const cardWidth = slide.getBoundingClientRect().width
-  const gap = Number.parseFloat(getComputedStyle(track).columnGap)
-  const viewportWidth = viewport.clientWidth
-  if (cardWidth <= 0 || !Number.isFinite(gap) || viewportWidth <= 0) {
-    return null
-  }
-
-  return { cardsPerPage, cardWidth, gap, viewportWidth }
-}
+import {
+  CARDS_PER_PAGE_CSS_VAR,
+  SLIDE_DATA_ATTRIBUTE,
+  TRACK_DATA_ATTRIBUTE,
+} from "./constants"
 
 interface UseNavigationProps {
   cardCount: number
@@ -151,4 +128,32 @@ export const useNavigation = ({ cardCount }: UseNavigationProps) => {
     announcement,
     goToPage,
   }
+}
+
+interface TrackMetrics {
+  cardsPerPage: number
+  cardWidth: number
+  gap: number
+  viewportWidth: number
+}
+
+const readTrackMetrics = (viewport: HTMLElement): TrackMetrics | null => {
+  const cardsPerPage = Number.parseInt(
+    getComputedStyle(viewport).getPropertyValue(CARDS_PER_PAGE_CSS_VAR),
+    10,
+  )
+  const track = viewport.querySelector<HTMLElement>(`[${TRACK_DATA_ATTRIBUTE}]`)
+  const slide = viewport.querySelector<HTMLElement>(`[${SLIDE_DATA_ATTRIBUTE}]`)
+  if (!track || !slide || !Number.isFinite(cardsPerPage) || cardsPerPage <= 0) {
+    return null
+  }
+
+  const cardWidth = slide.getBoundingClientRect().width
+  const gap = Number.parseFloat(getComputedStyle(track).columnGap)
+  const viewportWidth = viewport.clientWidth
+  if (cardWidth <= 0 || !Number.isFinite(gap) || viewportWidth <= 0) {
+    return null
+  }
+
+  return { cardsPerPage, cardWidth, gap, viewportWidth }
 }

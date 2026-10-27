@@ -6,9 +6,25 @@ import { Children } from "react"
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 
+import {
+  CARDS_PER_PAGE_CSS_VAR,
+  SLIDE_DATA_ATTRIBUTE,
+  TRACK_DATA_ATTRIBUTE,
+} from "./constants"
 import { NavigationButton } from "./NavigationButton"
 import { NavigationDots } from "./NavigationDots"
 import { useNavigation } from "./useNavigation"
+
+// Written in full so Tailwind extracts every utility. The custom property name
+// has to match what `useNavigation` reads back.
+const viewportClass =
+  "relative overflow-hidden [--card-width:calc((100cqi-var(--sliver)-(var(--cards-per-page)-1)*var(--gap))/var(--cards-per-page))] [--cards-per-page:1] [--has-next:min(1,max(0,var(--card-count)-var(--cards-per-page)))] [--sliver:calc((var(--gap)+5rem)*var(--has-next))] [container-type:inline-size] md:[--cards-per-page:2] md:[--sliver:calc(10%*var(--has-next))] lg:[--cards-per-page:3]"
+
+if (!viewportClass.includes(CARDS_PER_PAGE_CSS_VAR)) {
+  throw new Error(
+    `Carousel viewport classes must set ${CARDS_PER_PAGE_CSS_VAR}`,
+  )
+}
 
 const carouselStyles = tv({
   slots: {
@@ -16,8 +32,7 @@ const carouselStyles = tv({
     // gap. On mobile the gap is wider than 10% of the viewport, which hid the
     // next card. 5rem is the visible slice. The fade is the outer edge of that slice.
     // `--has-next` is 0 when every card already fits, so that sliver is not reserved.
-    viewport:
-      "relative overflow-hidden [--card-width:calc((100cqi-var(--sliver)-(var(--cards-per-page)-1)*var(--gap))/var(--cards-per-page))] [--cards-per-page:1] [--has-next:min(1,max(0,var(--card-count)-var(--cards-per-page)))] [--sliver:calc((var(--gap)+5rem)*var(--has-next))] [container-type:inline-size] md:[--cards-per-page:2] md:[--sliver:calc(10%*var(--has-next))] lg:[--cards-per-page:3]",
+    viewport: viewportClass,
     track:
       "ease flex gap-[var(--gap)] transition-transform duration-300 motion-reduce:transition-none",
     slide: "w-[var(--card-width)] shrink-0",
@@ -84,7 +99,7 @@ export const CarouselWrapperClient = ({
         style={{ "--card-count": cardCount } as CSSProperties}
       >
         <div
-          data-track
+          {...{ [TRACK_DATA_ATTRIBUTE]: true }}
           className={carousel.track()}
           style={{ transform: `translateX(-${offset}px)` }}
         >
@@ -100,7 +115,7 @@ export const CarouselWrapperClient = ({
                   if (interactive) node.removeAttribute("inert")
                   else node.setAttribute("inert", "")
                 }}
-                data-slide
+                {...{ [SLIDE_DATA_ATTRIBUTE]: true }}
                 data-slide-index={index}
                 role="group"
                 aria-roledescription="slide"

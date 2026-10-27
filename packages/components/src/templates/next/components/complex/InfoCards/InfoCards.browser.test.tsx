@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import { INFOCARDS_DISPLAY } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
 
+import { SLIDE_DATA_ATTRIBUTE } from "./CarouselWrapperClient"
 import { InfoCards } from "./InfoCards"
 
 const cards = Array.from({ length: 7 }, (_, index) => ({
@@ -49,7 +50,7 @@ describe("InfoCards carousel paging", () => {
     pageToEnd(next)
 
     // Assert
-    const slides = [...container.querySelectorAll("[data-slide]")]
+    const slides = [...container.querySelectorAll(`[${SLIDE_DATA_ATTRIBUTE}]`)]
     const firstInteractive = slides.findIndex(
       (slide) => !slide.hasAttribute("inert"),
     )
