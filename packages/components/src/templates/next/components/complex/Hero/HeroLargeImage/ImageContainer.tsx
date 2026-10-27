@@ -10,7 +10,7 @@ interface ImageContainerProps {
   imageSrc: ImageClientProps["src"]
   imageAlt: ImageClientProps["alt"]
   assetsBaseUrl: ImageClientProps["assetsBaseUrl"]
-  objectPosition?: ImageClientProps["objectPosition"]
+  imageAdjustment?: ImageClientProps["imageAdjustment"]
 }
 
 // Arbitrary threshold to prevent the button from showing too early
@@ -20,7 +20,7 @@ export const ImageContainer = ({
   imageSrc,
   imageAlt,
   assetsBaseUrl,
-  objectPosition,
+  imageAdjustment,
 }: ImageContainerProps) => {
   const imageRef = useRef<HTMLImageElement>(null)
   const [isFixed, setIsFixed] = useState(false)
@@ -65,7 +65,7 @@ export const ImageContainer = ({
         alt={imageAlt}
         width="100%"
         className="aspect-square max-h-[60rem] w-full object-cover object-center md:aspect-[2/1]"
-        objectPosition={objectPosition}
+        imageAdjustment={imageAdjustment}
         assetsBaseUrl={assetsBaseUrl}
         lazyLoading={false} // hero is always above the fold
       />
