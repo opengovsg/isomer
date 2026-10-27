@@ -11,7 +11,7 @@ import {
   pageIndexForFirstVisibleCard,
   pageOffsetPx,
   pageStartIndex,
-} from "./utils/carousel"
+} from "../utils/carousel"
 
 interface TrackMetrics {
   cardsPerPage: number

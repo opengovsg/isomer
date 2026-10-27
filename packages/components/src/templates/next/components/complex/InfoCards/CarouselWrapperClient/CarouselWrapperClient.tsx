@@ -6,6 +6,8 @@ import { Children } from "react"
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 
+import { NavigationButton } from "./NavigationButton"
+import { NavigationDots } from "./NavigationDots"
 import { useInfoCardsCarouselNavigation } from "./useInfoCardsCarouselNavigation"
 
 const carouselStyles = tv({
@@ -48,39 +50,7 @@ const carouselStyles = tv({
   },
 })
 
-const dotStyles = tv({
-  slots: {
-    group: "flex items-center",
-    // Same padding on every control, so the gap beside the pill matches the
-    // gap between dots. Mobile keeps 12px. Fine pointers from md use 8px,
-    // which still makes a 24px target (WCAG 2.5.8).
-    button:
-      "flex h-6 shrink-0 items-center px-3 focus-visible:bg-utility-highlight focus-visible:shadow-focus-visible focus-visible:outline-0 [@media(pointer:coarse)]:h-11 [@media(pointer:fine)_and_(min-width:768px)]:px-2",
-    dot: "block h-2 w-2 rounded-full bg-base-content-subtle transition-[width,background-color] duration-300 ease-out motion-reduce:transition-none",
-  },
-  variants: {
-    isActive: {
-      true: {
-        dot: "w-6 bg-base-content-strong",
-      },
-    },
-  },
-  defaultVariants: {
-    isActive: false,
-  },
-})
-
-const arrowStyles = tv({
-  slots: {
-    group: "flex items-center gap-2",
-    button:
-      "flex size-10 items-center justify-center rounded-full border border-base-content-strong bg-base-canvas text-base-content-strong focus-visible:bg-utility-highlight focus-visible:text-base-content-strong focus-visible:outline-0 disabled:cursor-not-allowed disabled:border-base-divider-medium disabled:text-base-content-subtle [@media(pointer:coarse)]:size-11",
-  },
-})
-
 const carousel = carouselStyles()
-const dots = dotStyles()
-const arrows = arrowStyles()
 
 interface CarouselWrapperClientProps {
   cardCount: number
@@ -164,44 +134,26 @@ export const CarouselWrapperClient = ({
 
       {showControls && (
         <div className="mt-6 flex items-center justify-between gap-4">
-          <div className={dots.group()}>
-            {Array.from({ length: pages }, (_, index) => {
-              const isActive = index === pageIndex
-              return (
-                <button
-                  key={index}
-                  type="button"
-                  aria-label={`Go to page ${index + 1} of ${pages}`}
-                  aria-current={isActive ? "true" : undefined}
-                  className={dots.button()}
-                  onClick={() => goToPage(index)}
-                >
-                  <span className={dots.dot({ isActive })} />
-                </button>
-              )
-            })}
-          </div>
-          <div className={arrows.group()}>
-            <button
+          <NavigationDots
+            pages={pages}
+            pageIndex={pageIndex}
+            goToPage={goToPage}
+          />
+          <div className="flex items-center gap-2">
+            <NavigationButton
               ref={previousButtonRef}
-              type="button"
               aria-label="Previous page"
-              className={arrows.button()}
               disabled={pageIndex === 0}
               onClick={() => goToPage(pageIndex - 1)}
-            >
-              <BiChevronLeft aria-hidden className="size-6" />
-            </button>
-            <button
+              Icon={BiChevronLeft}
+            />
+            <NavigationButton
               ref={nextButtonRef}
-              type="button"
               aria-label="Next page"
-              className={arrows.button()}
               disabled={isLastPage}
               onClick={() => goToPage(pageIndex + 1)}
-            >
-              <BiChevronRight aria-hidden className="size-6" />
-            </button>
+              Icon={BiChevronRight}
+            />
           </div>
         </div>
       )}
