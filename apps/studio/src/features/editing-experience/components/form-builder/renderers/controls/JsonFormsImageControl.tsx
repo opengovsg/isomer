@@ -69,8 +69,7 @@ function JsonFormsImageControl({
   schema,
 }: JsonFormsImageControlProps) {
   const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
-  const resourceId =
-    (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
+  const resourceId = (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
   const {
     isOpen: isAdjustmentModalOpen,
     onOpen: onAdjustmentModalOpen,
@@ -192,8 +191,9 @@ function JsonFormsImageControl({
 
   // Auto-open the editor right after a fresh upload (set in FileAttachment's
   // setHref below) once the new asset turns out to be adjustable — not on page
-  // load for an already-saved image. Restricted to hero banners: other
-  // components keep the manual Edit/Adjust button instead of popping the modal.
+  // load for an already-saved image. Gated by the config's autoOpenOnUpload
+  // flag (hero banners): other components keep the manual Edit/Adjust button
+  // instead of popping the modal.
   const justUploadedRef = useRef(false)
   useEffect(() => {
     if (!justUploadedRef.current) return
@@ -201,7 +201,7 @@ function JsonFormsImageControl({
     // upload is never auto-opened in the window before it's ruled out.
     if (!animationResolved) return
     justUploadedRef.current = false
-    if (canAdjust && config?.componentType.startsWith("hero:")) {
+    if (canAdjust && config?.autoOpenOnUpload) {
       posthog.capture("image_adjustment_modal_opened", {
         site_id: siteId,
         resource_id: resourceId,
@@ -219,10 +219,9 @@ function JsonFormsImageControl({
   ])
 
   // InfoCards owns a sibling `imageFit` field on the card (the modal's fit
-  // control writes back to it) — detect it by component type so other
-  // components never get an unexpected imageFit control.
-  const isInfoCardsField =
-    config?.componentType.startsWith("infocards:") ?? false
+  // control writes back to it) — gated by the config's ownsImageFitField flag
+  // so other components never get an unexpected imageFit control.
+  const isInfoCardsField = config?.ownsImageFitField ?? false
   const initialImageFit = isInfoCardsField
     ? ((fieldHost as { imageFit?: "cover" | "contain" } | null)?.imageFit ??
       "cover")

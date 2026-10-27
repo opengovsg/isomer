@@ -96,6 +96,7 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   componentType: "hero:gradient",
   cropMode: "custom",
   focalEnabled: true,
+  autoOpenOnUpload: true,
   // Full-bleed; no CSS width cap. Warn against the 1280px content ceiling
   // (max-w-screen-xl) as a conservative "looks soft on desktop" floor.
   maxRenderedWidthPx: 1280,
@@ -127,6 +128,7 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   componentType: "hero:block",
   cropMode: "custom",
   focalEnabled: true,
+  autoOpenOnUpload: true,
   // Image band is half the viewport at lg (lg:w-1/2); ~960px on large desktop.
   maxRenderedWidthPx: 960,
   // Closest common ratio to each breakpoint's hero band (375×240→16:10,
@@ -192,6 +194,7 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   componentType: "hero:largeImage",
   cropMode: "custom",
   focalEnabled: true,
+  autoOpenOnUpload: true,
   // Full-bleed; warn against the 1280px content ceiling (same as hero:gradient).
   maxRenderedWidthPx: 1280,
   previewStates: responsivePreviewStates({
@@ -218,6 +221,7 @@ const HERO_FLOATING_CONFIG: AdjustmentConfig = {
   componentType: "hero:floating",
   cropMode: "fixed",
   focalEnabled: false,
+  autoOpenOnUpload: true,
   lockedRatios: [{ width: 3, height: 2 }],
   // Full-width below lg (~1024px), 66.67% (~800px) at lg — the tablet regime
   // is the widest frame.
@@ -285,6 +289,7 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   componentType: "infocards:cardsWithImages",
   cropMode: "custom",
   focalEnabled: true,
+  ownsImageFitField: true,
   // Card width depends on column count (1200px at 1 column down to ~260px at 4);
   // warn against a generous multi-column card width so the common 2–4 column
   // grids don't false-warn on perfectly sharp images.
@@ -315,6 +320,7 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   componentType: "infocards:cardsWithFullImages",
   cropMode: "custom",
   focalEnabled: true,
+  ownsImageFitField: true,
   // Same column-dependent card width as cardsWithImages — warn against a
   // generous multi-column width (see that config).
   maxRenderedWidthPx: 640,

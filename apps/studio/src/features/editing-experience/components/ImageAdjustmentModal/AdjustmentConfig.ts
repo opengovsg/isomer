@@ -115,4 +115,9 @@ export interface AdjustmentConfig {
   // couple of small-ratio states where side-by-side makes each too small to
   // read (e.g. Blockquote's circle + square 1:1 masks).
   stackPreviews?: boolean
+  // Pop the editor open automatically right after upload (hero banners).
+  autoOpenOnUpload?: boolean
+  // Has a sibling imageFit field that the modal's fit control writes to
+  // (InfoCards' "Resize image to fit").
+  ownsImageFitField?: boolean
 }
