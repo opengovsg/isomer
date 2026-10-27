@@ -58,7 +58,7 @@ describe("useAssetUpload", () => {
     })
 
     // Assert
-    await expect(upload).rejects.toThrow()
+    await expect(upload).rejects.toThrow("Unable to read from /path/to/file.png")
     expect(reportClientError).toHaveBeenCalledWith(expect.any(Error), {
       feature: "asset-upload-fetch",
       siteId: 1,

@@ -4,7 +4,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { theme } from "~/theme"
 
-import { FileAttachment } from "../FileAttachment"
+import { FileAttachment } from "./FileAttachment"
 
 const toastMock = vi.hoisted(() => vi.fn())
 vi.mock("@opengovsg/design-system-react", async (importOriginal) => {

@@ -14,9 +14,6 @@ const DEFAULT_BASE_TIMEOUT_MS = 1000
 // Delay before each attempt is min(startingDelay * 2^attempt, maxDelay). With 10 attempts
 // and this cap, total wait time is 1+2+4+8+8*7 ≈ 63s worst case (all retries delayed).
 export const MAX_ASSET_UPLOAD_BACKOFF_DELAY_MS = 8000
-// Per-attempt deadline so a swallowed request (ISOM-2680) can't hang forever
-// without ever reaching backOff's retry/reject logic.
-const FETCH_BACK_ATTEMPT_TIMEOUT_MS = 10_000
 
 export const getAssetUploadBackoffOptions = ({
   numOfAttempts = DEFAULT_NUM_OF_ATTEMPTS,
@@ -40,9 +37,7 @@ export const useAssetUpload = ({
     setIsLoading(true)
     try {
       await backOff(async () => {
-        const response = await fetch(`${ASSETS_BASE_URL}${src}`, {
-          signal: AbortSignal.timeout(FETCH_BACK_ATTEMPT_TIMEOUT_MS),
-        })
+        const response = await fetch(`${ASSETS_BASE_URL}${src}`)
         if (!response.ok) {
           throw new Error(`Unable to read from ${src}`)
         }
