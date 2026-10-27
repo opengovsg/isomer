@@ -12,7 +12,7 @@ import {
   type Decorator,
   type Preview,
   type ReactRenderer,
-} from "@storybook/nextjs"
+} from "@storybook/nextjs-vite"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"
@@ -21,6 +21,7 @@ import mockdate from "mockdate"
 import { mswLoader } from "msw-storybook-addon/csf3"
 import { setupWorker } from "msw/browser"
 import { useCallback, useState } from "react"
+import ReactDOM from "react-dom"
 import { ErrorBoundary } from "react-error-boundary"
 import superjson from "superjson"
 import { AppBanner } from "~/components/AppBanner"
@@ -33,6 +34,27 @@ import { createMockGrowthBook } from "~/stories/utils/growthbook"
 import { theme } from "~/theme"
 
 import { viewport, withChromaticModes } from "@isomer/storybook-config"
+
+// Storybook's Next.js preview runs on Next's bundled React 19, which removed
+// findDOMNode. react-input-mask and react-transition-group (used by OGP's
+// design system and Chakra) still call it, so restore it by walking from the
+// class instance's fiber to its first host node.
+const legacyReactDOM = ReactDOM as {
+  findDOMNode?: (instance: unknown) => unknown
+}
+legacyReactDOM.findDOMNode ??= (instance) => {
+  if (instance instanceof Element) return instance
+  let fiber = (instance as { _reactInternals?: Fiber } | null)?._reactInternals
+  while (fiber) {
+    if (fiber.stateNode instanceof Element) return fiber.stateNode
+    fiber = fiber.child
+  }
+  return null
+}
+interface Fiber {
+  stateNode: unknown
+  child?: Fiber
+}
 
 const trpc = createTRPCReact<AppRouter>()
 
