@@ -15,6 +15,7 @@ export const CARDS_WITH_FULL_IMAGES = "cardsWithFullImages"
 export const INFOCARD_VARIANT = {
   bold: "bold",
   default: "default",
+  block: "block",
 } as const
 
 export const INFOCARDS_DISPLAY = {
@@ -229,6 +230,7 @@ export type SingleCardNoImageProps = Static<typeof SingleCardNoImageSchema> & {
   site: IsomerSiteProps
   isExternalLink?: boolean
   headingLevel: number
+  variant?: InfoCardVariants
 }
 export type SingleCardWithImageProps = Static<
   typeof SingleCardWithImageSchema

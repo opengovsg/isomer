@@ -1,4 +1,5 @@
 import type { SingleCardNoImageProps } from "~/interfaces/complex/InfoCards"
+import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { InfoCardContainer } from "./InfoCardContainer"
@@ -10,16 +11,23 @@ export const InfoCardNoImage = ({
   url,
   site,
   headingLevel,
+  variant,
 }: SingleCardNoImageProps): JSX.Element => {
   const isExternalLink = isExternalUrl(url)
   return (
-    <InfoCardContainer url={url} site={site} isExternalLink={isExternalLink}>
+    <InfoCardContainer
+      url={url}
+      site={site}
+      isExternalLink={isExternalLink}
+      variant={variant}
+    >
       <InfoCardText
         title={title}
         description={description}
         url={url}
         isExternalLink={isExternalLink}
         headingLevel={headingLevel}
+        variant={variant}
       />
     </InfoCardContainer>
   )

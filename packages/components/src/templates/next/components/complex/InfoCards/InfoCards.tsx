@@ -41,7 +41,9 @@ export const InfoCards = ({
   const cardVariant =
     variant === CARDS_WITH_FULL_IMAGES
       ? INFOCARD_VARIANT.bold
-      : INFOCARD_VARIANT.default
+      : isCarousel && variant === CARDS_WITHOUT_IMAGES
+        ? INFOCARD_VARIANT.block
+        : INFOCARD_VARIANT.default
   const TitleTag = getHeadingTag(headingLevel)
 
   const renderedCards = (() => {
@@ -65,6 +67,7 @@ export const InfoCards = ({
             {...card}
             site={site}
             headingLevel={headingLevel + 1}
+            variant={cardVariant}
           />
         ))
       case CARDS_WITH_FULL_IMAGES:

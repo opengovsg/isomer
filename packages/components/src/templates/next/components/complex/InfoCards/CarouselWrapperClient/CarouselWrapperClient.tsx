@@ -4,6 +4,7 @@ import type { CSSProperties, ReactNode } from "react"
 import type { VariantProps } from "tailwind-variants"
 import { Children } from "react"
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi"
+import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { tv } from "~/lib/tv"
 
 import {
@@ -35,16 +36,19 @@ const carouselStyles = tv({
     viewport: viewportClass,
     track:
       "ease flex gap-[var(--gap)] transition-transform duration-300 motion-reduce:transition-none",
-    slide: "w-[var(--card-width)] shrink-0",
+    slide: "flex w-[var(--card-width)] shrink-0 flex-col",
     fade: "pointer-events-none absolute inset-y-0 z-10 w-6 md:w-[var(--sliver)]",
   },
   variants: {
     variant: {
-      default: {
+      [INFOCARD_VARIANT.default]: {
         viewport: "[--gap:2.5rem] md:[--gap:1.75rem] lg:[--gap:4rem]",
       },
-      bold: {
+      [INFOCARD_VARIANT.bold]: {
         viewport: "[--gap:0.25rem]",
+      },
+      [INFOCARD_VARIANT.block]: {
+        viewport: "[--gap:1.75rem]",
       },
     },
     fadeSide: {
@@ -57,7 +61,7 @@ const carouselStyles = tv({
     },
   },
   defaultVariants: {
-    variant: "default",
+    variant: INFOCARD_VARIANT.default,
   },
 })
 

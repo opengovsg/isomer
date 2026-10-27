@@ -13,12 +13,13 @@ export const infoCardTitleStyle = tv({
     },
     variant: {
       [INFOCARD_VARIANT.default]: "",
+      [INFOCARD_VARIANT.block]: "",
       [INFOCARD_VARIANT.bold]: "h-full text-base-content-inverse",
     },
   },
   compoundVariants: [
     {
-      variant: INFOCARD_VARIANT.default,
+      variant: [INFOCARD_VARIANT.default, INFOCARD_VARIANT.block],
       isClickableCard: true,
       className: "group-hover:text-brand-canvas-inverse",
     },
@@ -48,6 +49,10 @@ const singleInfoCardStyle = tv({
         cardTextContainer: "align-self-bottom text-base-content-inverse",
         cardImageContainer: "h-full",
         cardContainer: "relative aspect-square lg:aspect-[2/3]",
+      },
+      [INFOCARD_VARIANT.block]: {
+        cardContainer: "h-full grow rounded-xl bg-brand-canvas p-8",
+        cardTextContainer: "gap-3",
       },
     },
     isClickableCard: {
@@ -143,6 +148,9 @@ const createInfoCardsStyles = tv({
         headingContainer: "pb-12",
       },
       [INFOCARD_VARIANT.default]: {
+        headingContainer: "pb-8 md:pb-12",
+      },
+      [INFOCARD_VARIANT.block]: {
         headingContainer: "pb-8 md:pb-12",
       },
     },
