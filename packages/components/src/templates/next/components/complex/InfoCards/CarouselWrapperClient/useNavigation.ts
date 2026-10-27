@@ -1,4 +1,6 @@
-import { useCallback, useLayoutEffect, useRef, useState } from "react"
+import { clamp } from "lodash-es"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useResizeObserver } from "usehooks-ts"
 
 import {
   pageCount,
@@ -19,72 +21,35 @@ interface UseNavigationProps {
 
 export const useNavigation = ({ cardCount }: UseNavigationProps) => {
   const viewportRef = useRef<HTMLDivElement>(null)
-  const metricsRef = useRef<TrackMetrics | null>(null)
-  const pageIndexRef = useRef(0)
-  const [pageIndex, setPageIndex] = useState(0)
-  const [offset, setOffset] = useState(0)
-  const [cardsPerPage, setCardsPerPage] = useState(0)
+  const [metrics, setMetrics] = useState<TrackMetrics | null>(null)
+  // Track the first visible card rather than the page index, so the position
+  // survives cardsPerPage changing across breakpoints.
+  const [firstVisible, setFirstVisible] = useState(0)
   const [announcement, setAnnouncement] = useState("")
 
-  const applyPage = useCallback(
-    (nextPage: number, metrics: TrackMetrics, announce: boolean) => {
-      const pages = pageCount(cardCount, metrics.cardsPerPage)
-      const clamped = Math.min(Math.max(nextPage, 0), pages - 1)
-      const nextOffset = pageOffsetPx({
-        pageIndex: clamped,
-        cardsPerPage: metrics.cardsPerPage,
-        cardCount,
-        cardWidth: metrics.cardWidth,
-        gap: metrics.gap,
-        viewportWidth: metrics.viewportWidth,
-      })
-      pageIndexRef.current = clamped
-      metricsRef.current = metrics
-      setPageIndex(clamped)
-      setOffset(nextOffset)
-      setCardsPerPage(metrics.cardsPerPage)
-      if (announce && cardCount > metrics.cardsPerPage) {
-        setAnnouncement(`Page ${clamped + 1} of ${pages}`)
-      }
-    },
-    [cardCount],
-  )
+  const measure = useCallback(() => {
+    const next = viewportRef.current && readTrackMetrics(viewportRef.current)
+    if (next) setMetrics(next)
+  }, [])
 
-  useLayoutEffect(() => {
-    const viewport = viewportRef.current
-    if (!viewport) return
+  useResizeObserver({ ref: viewportRef, onResize: measure })
 
-    const measure = () => {
-      const metrics = readTrackMetrics(viewport)
-      if (!metrics) return
+  // Adding a card doesn't resize the viewport, so re-measure on cardCount too.
+  useEffect(measure, [measure, cardCount])
 
-      const previous = metricsRef.current
-      let nextPage = pageIndexRef.current
-      if (previous && previous.cardsPerPage !== metrics.cardsPerPage) {
-        const firstVisible = pageStartIndex(
-          pageIndexRef.current,
-          previous.cardsPerPage,
-          cardCount,
-        )
-        nextPage = pageIndexForFirstVisibleCard(
-          firstVisible,
-          metrics.cardsPerPage,
-          cardCount,
-        )
-      }
-      applyPage(nextPage, metrics, false)
-    }
-
-    measure()
-    const observer = new ResizeObserver(measure)
-    observer.observe(viewport)
-    return () => observer.disconnect()
-  }, [applyPage, cardCount])
-
-  const pages = pageCount(cardCount, cardsPerPage)
+  const cardsPerPage = metrics?.cardsPerPage ?? 0
+  const pages = pageCount({ cardCount, cardsPerPage })
+  const pageIndex = pageIndexForFirstVisibleCard({
+    firstVisibleIndex: Math.min(firstVisible, cardCount - 1),
+    cardsPerPage,
+    cardCount,
+  })
+  const offset = metrics
+    ? pageOffsetPx({ ...metrics, pageIndex, cardCount })
+    : 0
   const showControls = cardsPerPage > 0 && cardCount > cardsPerPage
   const isLastPage = pageIndex >= pages - 1
-  const pageStart = pageStartIndex(pageIndex, cardsPerPage, cardCount)
+  const pageStart = pageStartIndex({ pageIndex, cardsPerPage, cardCount })
   const { previousButtonRef, nextButtonRef } = useDisabledArrowFocus({
     showControls,
     pageIndex,
@@ -93,11 +58,14 @@ export const useNavigation = ({ cardCount }: UseNavigationProps) => {
 
   const goToPage = useCallback(
     (nextPage: number) => {
-      const metrics = metricsRef.current
-      if (!metrics) return
-      applyPage(nextPage, metrics, true)
+      if (cardsPerPage <= 0) return
+      const clamped = clamp(nextPage, 0, pages - 1)
+      setFirstVisible(
+        pageStartIndex({ pageIndex: clamped, cardsPerPage, cardCount }),
+      )
+      setAnnouncement(`Page ${clamped + 1} of ${pages}`)
     },
-    [applyPage],
+    [cardCount, cardsPerPage, pages],
   )
 
   return {

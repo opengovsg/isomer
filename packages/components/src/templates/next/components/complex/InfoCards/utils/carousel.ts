@@ -1,15 +1,25 @@
-export function pageCount(cardCount: number, cardsPerPage: number): number {
+export function pageCount({
+  cardCount,
+  cardsPerPage,
+}: {
+  cardCount: number
+  cardsPerPage: number
+}): number {
   if (cardsPerPage <= 0) return 1
   return Math.max(1, Math.ceil(cardCount / cardsPerPage))
 }
 
 /** On the last page, the first visible card index is cardCount - cardsPerPage. */
-export function pageStartIndex(
-  pageIndex: number,
-  cardsPerPage: number,
-  cardCount: number,
-): number {
-  const pages = pageCount(cardCount, cardsPerPage)
+export function pageStartIndex({
+  pageIndex,
+  cardsPerPage,
+  cardCount,
+}: {
+  pageIndex: number
+  cardsPerPage: number
+  cardCount: number
+}): number {
+  const pages = pageCount({ cardCount, cardsPerPage })
   const clampedPage = Math.min(Math.max(pageIndex, 0), pages - 1)
   if (clampedPage === pages - 1) {
     return Math.max(0, cardCount - cardsPerPage)
@@ -43,15 +53,19 @@ export function pageOffsetPx({
 }
 
 /** Page whose visible cards include `firstVisibleIndex`, preferring the later page when ranges overlap. */
-export function pageIndexForFirstVisibleCard(
-  firstVisibleIndex: number,
-  cardsPerPage: number,
-  cardCount: number,
-): number {
-  const pages = pageCount(cardCount, cardsPerPage)
+export function pageIndexForFirstVisibleCard({
+  firstVisibleIndex,
+  cardsPerPage,
+  cardCount,
+}: {
+  firstVisibleIndex: number
+  cardsPerPage: number
+  cardCount: number
+}): number {
+  const pages = pageCount({ cardCount, cardsPerPage })
   let match = 0
   for (let page = 0; page < pages; page++) {
-    const start = pageStartIndex(page, cardsPerPage, cardCount)
+    const start = pageStartIndex({ pageIndex: page, cardsPerPage, cardCount })
     const end = start + cardsPerPage
     if (firstVisibleIndex >= start && firstVisibleIndex < end) {
       match = page
