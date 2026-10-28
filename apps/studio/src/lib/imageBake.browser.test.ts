@@ -178,4 +178,21 @@ describe("bakeImage", () => {
     expect(await getPixel(baked, 3, 0)).toEqual(BLUE) // was bottom-left
     expect(await getPixel(baked, 0, 3)).toEqual(GREEN) // was top-right
   })
+
+  it("throws for an animated source, without relying on the caller to check first", () => {
+    // A minimal (undecoded) WebP header with the VP8X animation flag set --
+    // enough for isAnimatedImageBlob to detect, without needing a real
+    // decodable image, since bakeImage must reject this before ever calling
+    // createImageBitmap.
+    const header = new Uint8Array(21)
+    header.set([0x52, 0x49, 0x46, 0x46], 0) // "RIFF"
+    header.set([0x57, 0x45, 0x42, 0x50], 8) // "WEBP"
+    header.set([0x56, 0x50, 0x38, 0x58], 12) // "VP8X"
+    header[20] = 0x02 // animation flag
+    const animatedWebp = new Blob([header], { type: "image/webp" })
+
+    return expect(
+      bakeImage(animatedWebp, baseAdjustment(), { mimeType: "image/webp" }),
+    ).rejects.toThrow(/animated/)
+  })
 })

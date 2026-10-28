@@ -138,12 +138,15 @@ export const cropRectToPixels = (
   srcWidth: number,
   srcHeight: number,
 ): PixelRect => {
-  return {
-    sx: Math.round(crop.x * srcWidth),
-    sy: Math.round(crop.y * srcHeight),
-    sw: Math.round(crop.width * srcWidth),
-    sh: Math.round(crop.height * srcHeight),
-  }
+  // Round the START and END coordinates (not start+size independently), so
+  // sx+sw can never exceed srcWidth due to rounding drift -- e.g. a 0.5/0.5
+  // split of a 3px-wide source independently rounds to sx=2, sw=2 (overflow);
+  // rounding the end coordinate instead gives sx=2, sw=round(3)-2=1.
+  const sx = Math.round(crop.x * srcWidth)
+  const sy = Math.round(crop.y * srcHeight)
+  const sw = Math.round((crop.x + crop.width) * srcWidth) - sx
+  const sh = Math.round((crop.y + crop.height) * srcHeight) - sy
+  return { sx, sy, sw, sh }
 }
 
 /**
@@ -229,74 +232,98 @@ export const bakeImage = async (
     )
   }
 
+  // Guard against baking an animated source: canvas rasterizes a single
+  // frame, silently dropping the animation. This is also checked by
+  // bakeImage's current callers before invoking it, but enforcing it here
+  // too means any future caller gets the same protection for free.
+  if (await isAnimatedImageBlob(original)) {
+    throw new Error(
+      "Cannot bake an animated image: baking would flatten it to a single frame.",
+    )
+  }
+
   // Decode with EXIF orientation normalization (upright reference frame)
   const bitmap = await createImageBitmap(original, {
     imageOrientation: "from-image",
   })
 
-  const { sx, sy, sw, sh } = cropRectToPixels(
-    adjustment.crop,
-    bitmap.width,
-    bitmap.height,
-  )
+  try {
+    const { sx, sy, sw, sh } = cropRectToPixels(
+      adjustment.crop,
+      bitmap.width,
+      bitmap.height,
+    )
 
-  const { width: outputWidth, height: outputHeight } = outputDimensions(
-    sw,
-    sh,
-    adjustment.rotate,
-  )
+    const { width: outputWidth, height: outputHeight } = outputDimensions(
+      sw,
+      sh,
+      adjustment.rotate,
+    )
 
-  // Create canvas and apply transforms
-  const canvas =
-    typeof OffscreenCanvas !== "undefined"
-      ? new OffscreenCanvas(outputWidth, outputHeight)
-      : document.createElement("canvas")
+    // Create canvas and apply transforms
+    const canvas =
+      typeof OffscreenCanvas !== "undefined"
+        ? new OffscreenCanvas(outputWidth, outputHeight)
+        : document.createElement("canvas")
 
-  if ("width" in canvas) canvas.width = outputWidth
-  if ("height" in canvas) canvas.height = outputHeight
+    if ("width" in canvas) canvas.width = outputWidth
+    if ("height" in canvas) canvas.height = outputHeight
 
-  const ctx = canvas.getContext("2d")
-  if (!ctx) {
-    throw new Error("Failed to get 2D canvas context")
+    const ctx = canvas.getContext("2d")
+    if (!ctx) {
+      throw new Error("Failed to get 2D canvas context")
+    }
+
+    // Apply rotate + flip transforms
+    const { rotate, scaleX, scaleY } = computeCanvasTransform(
+      adjustment.rotate,
+      adjustment.flipH,
+      adjustment.flipV,
+    )
+
+    // Translate to center, apply transforms, translate back
+    ctx.translate(outputWidth / 2, outputHeight / 2)
+    if (scaleX !== 1 || scaleY !== 1) {
+      ctx.scale(scaleX, scaleY)
+    }
+    if (rotate !== 0) {
+      ctx.rotate((rotate * Math.PI) / 180)
+    }
+    ctx.translate(-sw / 2, -sh / 2)
+
+    // Draw the cropped region onto the canvas
+    ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, sw, sh)
+
+    // Convert to blob with the specified MIME type and quality.
+    // Guard the OffscreenCanvas symbol via a type predicate: referencing it
+    // directly in `instanceof` throws ReferenceError in browsers that lack it,
+    // and the predicate still narrows the HTMLCanvasElement branch (no cast).
+    const convertToBlob = isOffscreenCanvas(canvas)
+      ? () =>
+          canvas.convertToBlob({ type: opts.mimeType, quality: opts.quality })
+      : () =>
+          new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) reject(new Error("Canvas toBlob returned null"))
+                else resolve(blob)
+              },
+              opts.mimeType,
+              opts.quality,
+            )
+          })
+
+    const blob = await convertToBlob()
+    // Some browsers can decode a format they can't encode via canvas and
+    // silently substitute PNG instead (e.g. requesting webp) -- verify the
+    // actual output type rather than trusting the request succeeded.
+    if (blob.type !== opts.mimeType) {
+      throw new Error(
+        `Failed to encode image as "${opts.mimeType}" (the browser produced "${blob.type || "an unknown type"}" instead).`,
+      )
+    }
+    return blob
+  } finally {
+    bitmap.close()
   }
-
-  // Apply rotate + flip transforms
-  const { rotate, scaleX, scaleY } = computeCanvasTransform(
-    adjustment.rotate,
-    adjustment.flipH,
-    adjustment.flipV,
-  )
-
-  // Translate to center, apply transforms, translate back
-  ctx.translate(outputWidth / 2, outputHeight / 2)
-  if (scaleX !== 1 || scaleY !== 1) {
-    ctx.scale(scaleX, scaleY)
-  }
-  if (rotate !== 0) {
-    ctx.rotate((rotate * Math.PI) / 180)
-  }
-  ctx.translate(-sw / 2, -sh / 2)
-
-  // Draw the cropped region onto the canvas
-  ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, sw, sh)
-
-  // Convert to blob with the specified MIME type and quality.
-  // Guard the OffscreenCanvas symbol via a type predicate: referencing it
-  // directly in `instanceof` throws ReferenceError in browsers that lack it,
-  // and the predicate still narrows the HTMLCanvasElement branch (no cast).
-  const convertToBlob = isOffscreenCanvas(canvas)
-    ? () => canvas.convertToBlob({ type: opts.mimeType, quality: opts.quality })
-    : () =>
-        new Promise<Blob>((resolve, reject) => {
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) reject(new Error("Canvas toBlob returned null"))
-              else resolve(blob)
-            },
-            opts.mimeType,
-            opts.quality,
-          )
-        })
-
-  return convertToBlob()
 }
