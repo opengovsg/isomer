@@ -16,6 +16,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"
+import { Provider as JotaiProvider } from "jotai"
 import { merge } from "lodash-es"
 import mockdate from "mockdate"
 import { mswLoader } from "msw-storybook-addon/csf3"
@@ -170,6 +171,12 @@ const conditionalMockDateDecorator: Decorator = (story, context) => {
   return story()
 }
 
+// Story files share one iframe (Vitest isolate: false), so give each story a
+// fresh Jotai store instead of inheriting atoms from earlier stories.
+const JotaiStoreDecorator: Decorator = (story, context) => (
+  <JotaiProvider key={context.id}>{story()}</JotaiProvider>
+)
+
 const decorators: Decorator[] = [
   WithLayoutDecorator,
   SetupDecorator,
@@ -182,6 +189,7 @@ const decorators: Decorator[] = [
   }),
   LoginStateDecorator,
   conditionalMockDateDecorator,
+  JotaiStoreDecorator,
 ]
 
 const preview: Preview = {
