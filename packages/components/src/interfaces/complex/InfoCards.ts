@@ -208,9 +208,21 @@ const InfoCardsVariantSchema = Type.Unsafe<
   title: "Style",
 })
 
+export const INFOCARDS_CAROUSEL_MAX_CARDS = 6
+
 export const InfoCardsHomepageSchema = Type.Intersect(
   [InfoCardsBaseSchema, InfoCardsLayoutSchema, InfoCardsVariantSchema],
-  { title: "Cards" },
+  {
+    title: "Cards",
+    // Carousel caps cards. Set on the intersect so it sees both display and cards.
+    if: {
+      properties: { display: { const: INFOCARDS_DISPLAY.carousel } },
+      required: ["display"],
+    },
+    then: {
+      properties: { cards: { maxItems: INFOCARDS_CAROUSEL_MAX_CARDS } },
+    },
+  },
 )
 
 // Omits display. Carousel is homepage-only until it ships on other pages.
