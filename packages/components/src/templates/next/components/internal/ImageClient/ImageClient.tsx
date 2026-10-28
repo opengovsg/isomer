@@ -61,6 +61,16 @@ export const ImageClient = forwardRef<
           // Reveal the image once it loads (it may have been hidden by a prior
           // error while self-healing — see onError).
           e.currentTarget.style.opacity = "1"
+          // Cancel any retry still pending from an earlier src on this same
+          // <img> node (e.g. the `src` prop changed and the new image loaded
+          // fine before the old retry's timer fired) -- otherwise that stale
+          // timer still fires later and overwrites this successfully-loaded
+          // image with a cache-busted URL for the OLD src.
+          const pendingRetry = e.currentTarget.dataset.retryTimeoutId
+          if (pendingRetry) {
+            window.clearTimeout(Number(pendingRetry))
+            delete e.currentTarget.dataset.retryTimeoutId
+          }
           onLoad?.(e)
         }}
         onError={({ currentTarget }) => {
@@ -79,9 +89,11 @@ export const ImageClient = forwardRef<
             // Cache-bust so the browser re-fetches; the CDN ignores unknown query
             // params for its cache key, so this doesn't fragment the cache.
             const sep = imgSrc.includes("?") ? "&" : "?"
-            window.setTimeout(() => {
+            const timeoutId = window.setTimeout(() => {
+              delete currentTarget.dataset.retryTimeoutId
               currentTarget.src = `${imgSrc}${sep}retry=${attempt + 1}`
             }, retryDelayMs(attempt))
+            currentTarget.dataset.retryTimeoutId = String(timeoutId)
             return
           }
           // Retries exhausted: show the placeholder (visible, not hidden).

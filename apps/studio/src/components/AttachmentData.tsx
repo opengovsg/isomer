@@ -205,6 +205,11 @@ export const AttachmentData = ({
             e.stopPropagation()
             onClick()
           }}
+          // keydown bubbles independently of click -- without this, pressing
+          // Enter/Space while this button is focused also reaches the row's
+          // own onKeyDown (which only checks e.key, not where it came from)
+          // and triggers onEdit alongside the remove action.
+          onKeyDown={(e) => e.stopPropagation()}
         />
       </HStack>
     </Flex>
