@@ -262,11 +262,10 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
   focalEnabled: true,
   // One of two columns at lg (lg:grid-cols-2); ~960px on large desktop.
   maxRenderedWidthPx: 960,
-  // Matches the Isomer image guidelines' 1280×500 minimum for this variant.
-  // The frame's real height is content-dependent (varies with copy length),
-  // so this is a floor rather than a measured value. Crop is free (custom),
-  // so height must be checked independently of width.
-  maxRenderedHeightPx: 500,
+  // object-cover frame; image band is capped at 400px (max-h-[400px]) and the
+  // container floors at 360px — 400 is a conservative height floor. Crop is
+  // free (custom), so height must be checked independently of width.
+  maxRenderedHeightPx: 400,
   // Closest common ratio to each breakpoint's frame (375×300→5:4,
   // 768×400→2:1, 1280×450→3:1); the real tile height is still measured.
   previewStates: responsivePreviewStates({
@@ -290,10 +289,9 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   autoOpenOnUpload: true,
   // Full-bleed; warn against the 1280px content ceiling (same as hero:gradient).
   maxRenderedWidthPx: 1280,
-  // Matches the Isomer image guidelines' 1280×500 minimum for this variant.
-  // Crop is free (custom) with the largest aspect-ratio swing of any Hero
-  // variant, so height must be checked independently of width.
-  maxRenderedHeightPx: 500,
+  // Widest frame is 2:1 from md up (md:aspect-[2/1]) → 640px tall at 1280px.
+  // Crop is free (custom), so height must be checked independently of width.
+  maxRenderedHeightPx: 640,
   previewStates: responsivePreviewStates({
     mobile: { width: 1, height: 1 },
     tablet: { width: 2, height: 1 },
@@ -390,10 +388,10 @@ const infoCardsWithImagesConfig = (block: unknown): AdjustmentConfig => ({
   // warn against a generous multi-column card width so the common 2–4 column
   // grids don't false-warn on perfectly sharp images.
   maxRenderedWidthPx: 640,
-  // Matches the Isomer image guidelines' 800×400 minimum for Infocard. Crop is
-  // free (custom) and the card's aspect ratio swings across breakpoints, so
-  // height must be checked independently of width.
-  maxRenderedHeightPx: 400,
+  // Image frame is 3:2 (cardImageContainer aspect-[3/2]) → ~427px tall at
+  // 640px. Crop is free (custom), so height must be checked independently
+  // of width.
+  maxRenderedHeightPx: 427,
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
   // Preview shows just the cropped image, not the card chrome/text: on this
@@ -428,8 +426,9 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   // Same column-dependent card width as cardsWithImages — warn against a
   // generous multi-column width (see that config).
   maxRenderedWidthPx: 640,
-  // Same Isomer image guidelines minimum as cardsWithImages (see that config).
-  maxRenderedHeightPx: 400,
+  // Full-image cards are square on mobile, portrait at lg (lg:aspect-[2/3]);
+  // 640 is a conservative height representative (the square case at 640px).
+  maxRenderedHeightPx: 640,
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
   // Renders the single card for real via buildSingleItemPreviewBlock; falls

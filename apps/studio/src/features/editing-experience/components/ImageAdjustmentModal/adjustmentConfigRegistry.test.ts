@@ -221,10 +221,12 @@ describe("resolveAdjustmentConfig", () => {
   // maxRenderedWidthPx — otherwise computeLowResWarning only ever checks the
   // crop's width, and a wide-but-short custom crop (e.g. a 1300×300 region)
   // can pass the width check while still blurring out when the component
-  // stretches it to fill a tall cover frame. Values are sourced from the
-  // Isomer image guidelines (Notion). Fixed-ratio (cropMode "fixed")
-  // components are exempt: the UI constrains their crop to a locked aspect,
-  // so width and height can never diverge independently.
+  // stretches it to fill a tall cover frame. Values are derived from each
+  // component's actual rendered frame height (see the config comments) or,
+  // where the frame itself has no fixed height, the Isomer image guidelines'
+  // minimum (Notion). Fixed-ratio (cropMode "fixed") components are exempt:
+  // the UI constrains their crop to a locked aspect, so width and height can
+  // never diverge independently.
   describe("custom-crop cover-fit components configure a height threshold", () => {
     const cases: { label: string; block: unknown; expectedHeight: number }[] = [
       {
@@ -240,22 +242,22 @@ describe("resolveAdjustmentConfig", () => {
       {
         label: "hero:largeImage",
         block: { type: "hero", variant: "largeImage" },
-        expectedHeight: 500,
+        expectedHeight: 640,
       },
       {
         label: "infopic",
         block: { type: "infopic" },
-        expectedHeight: 500,
+        expectedHeight: 400,
       },
       {
         label: "infocards:cardsWithImages",
         block: { type: "infocards", variant: "cardsWithImages" },
-        expectedHeight: 400,
+        expectedHeight: 427,
       },
       {
         label: "infocards:cardsWithFullImages",
         block: { type: "infocards", variant: "cardsWithFullImages" },
-        expectedHeight: 400,
+        expectedHeight: 640,
       },
     ]
 
