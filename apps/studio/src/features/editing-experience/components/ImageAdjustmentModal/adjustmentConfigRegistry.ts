@@ -66,8 +66,7 @@ const aspectRatiosEqual = (a: AspectRatio, b: AspectRatio): boolean =>
 // shape (1-column, or any combo without an lg override), a single state
 // covers it.
 const infoCardsDesktopStates = (block: unknown): AdjustmentPreviewState[] => {
-  const rawMaxColumns = (block as { maxColumns?: unknown } | null)
-    ?.maxColumns
+  const rawMaxColumns = (block as { maxColumns?: unknown } | null)?.maxColumns
   const maxColumns =
     rawMaxColumns === "1" || rawMaxColumns === "2" || rawMaxColumns === "3"
       ? rawMaxColumns
