@@ -77,7 +77,6 @@ catalog:
   bootstrap-icons: ^1.13.2
   browserslist-useragent-regexp: ^4.1.4
   cheerio: ^1.2.0
-  chromatic: ^18.12.0
   clean-webpack-plugin: ^4.0.0
   dayjs: ^1.11.23
   date-fns: ^4.4.0
@@ -181,6 +180,9 @@ catalog:
   wretch: ^3.0.9
 
 catalogs:
+  argos:
+    "@argos-ci/cli": ^6.10.0
+    "@argos-ci/storybook": ^6.4.2
   atlaskitPragmaticDnd:
     "@atlaskit/pragmatic-drag-and-drop": ^4.0.0
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^3.0.0
@@ -249,6 +251,7 @@ catalogs:
     "@storybook/addon-docs": 10.6.3
     "@storybook/addon-links": 10.6.3
     "@storybook/addon-themes": 10.6.3
+    "@storybook/addon-vitest": 10.6.3
     "@storybook/nextjs-vite": 10.6.3
     "@storybook/react-vite": 10.6.3
     eslint-plugin-storybook: 10.6.3

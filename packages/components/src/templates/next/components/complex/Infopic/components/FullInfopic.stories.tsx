@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { InfopicProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { Infopic } from "../Infopic"
 
@@ -15,8 +15,8 @@ const meta: Meta<InfopicProps> = {
     themes: {
       themeOverride: "Isomer Next",
     },
-    chromatic: {
-      ...withChromaticModes(["desktop", "mobile"]),
+    argos: {
+      ...withArgosModes(["desktop", "mobile"]),
     },
   },
   args: {

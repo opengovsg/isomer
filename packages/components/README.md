@@ -46,7 +46,7 @@ Clean build artifacts with `git clean -xdf dist/` — do not commit `dist/`.
 
 ## Testing
 
-Vitest unit tests + Storybook/Chromatic visual tests. Istanbul coverage (`pnpm test:unit -- --coverage`).
+Vitest unit tests + Storybook/Argos visual tests. Istanbul coverage (`pnpm test:unit -- --coverage`).
 
 ## Tooling
 
