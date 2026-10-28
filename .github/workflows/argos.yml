@@ -81,9 +81,9 @@ jobs:
           rm -rf screenshots
           mkdir screenshots
           if [[ -n "$AFFECTED_BASE" ]]; then
-            pnpm test-storybook --changed="$AFFECTED_BASE" --passWithNoTests
+            pnpm test-storybook --maxWorkers=75% --changed="$AFFECTED_BASE" --passWithNoTests
           else
-            pnpm test-storybook
+            pnpm test-storybook --maxWorkers=75%
           fi
         env:
           ARGOS_UPLOAD: "false"
