@@ -116,9 +116,10 @@ const waitForIframesInVitest = async () => {
   const iframes = Array.from(document.querySelectorAll("iframe"))
   if (iframes.length === 0) return
   iframes.forEach((iframe) => (iframe.loading = "eager"))
-  const deadline = Date.now() + 15_000
+  // Not Date.now(): stories freeze it with mockdate, so it would never pass.
+  const deadline = performance.now() + 15_000
   while (
-    Date.now() < deadline &&
+    performance.now() < deadline &&
     !iframes.every((iframe) => loadedIframes.has(iframe))
   ) {
     await new Promise((resolve) => setTimeout(resolve, 100))

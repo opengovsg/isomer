@@ -85,8 +85,9 @@ const waitForPageSettledInVitest = async () => {
   if (!("__vitest_browser__" in globalThis)) return
   // ponytail: stories that stay loading on purpose (e.g. `Loading`) spend the
   // whole timeout here; add a parameter to skip them if that gets slow.
-  const deadline = Date.now() + 5_000
-  while (Date.now() < deadline && !isPageSettled()) {
+  // Not Date.now(): stories freeze it with mockdate, so it would never pass.
+  const deadline = performance.now() + 5_000
+  while (performance.now() < deadline && !isPageSettled()) {
     await new Promise((resolve) => setTimeout(resolve, 100))
   }
 }
