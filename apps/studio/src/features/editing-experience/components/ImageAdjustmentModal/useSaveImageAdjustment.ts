@@ -84,11 +84,14 @@ export const useSaveImageAdjustment = ({
       const originalKey = resolveOriginalKey(currentSrc, draft)
 
       // Step 2: Fetch the original blob from S3
-      const originalBlob = await (
-        await fetch(
-          `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}/${originalKey}`,
+      const originalUrl = `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}/${originalKey}`
+      const originalResponse = await fetch(originalUrl)
+      if (!originalResponse.ok) {
+        throw new Error(
+          `Failed to fetch the original image (status ${originalResponse.status}).`,
         )
-      ).blob()
+      }
+      const originalBlob = await originalResponse.blob()
 
       // Step 3: Choose the MIME type for baking
       const mime = chooseBakeMime(originalBlob.type)
