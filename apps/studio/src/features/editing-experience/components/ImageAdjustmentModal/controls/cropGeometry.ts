@@ -13,11 +13,14 @@ export interface CropRectNormalized {
 export const MIN_CROP_SIZE = 0.05 // avoid degenerate/zero-size crops
 
 /**
- * Clamps a number to [0, 1] range. Also re-exported from focalGeometry.ts,
- * which needs it for focal coordinates — defined here (not there) so this
- * file stays the dependency-free one.
+ * Clamps a number to [0, 1] range. NaN (e.g. from a 0/0 division against a
+ * zero-size preview box) falls back to 0.5 rather than propagating — NaN
+ * would otherwise survive every downstream Math.min/max untouched. Also
+ * re-exported from focalGeometry.ts, which needs it for focal coordinates —
+ * defined here (not there) so this file stays the dependency-free one.
  */
-export const clampUnit = (n: number): number => Math.min(1, Math.max(0, n))
+export const clampUnit = (n: number): number =>
+  Number.isNaN(n) ? 0.5 : Math.min(1, Math.max(0, n))
 
 /**
  * Clamp a rect to stay within the unit square, preserving width/height where
@@ -158,7 +161,13 @@ export const resizeRectByHandle = (
     const maxWidth = edges.movesLeft ? anchorX : 1 - anchorX
     const maxHeight = edges.movesTop ? anchorY : 1 - anchorY
 
-    let width = Math.max(Math.abs(px - anchorX), MIN_CROP_SIZE)
+    // Derive size from whichever axis the pointer moved further (scaled into
+    // width units via the ratio), not horizontal distance alone — otherwise a
+    // drag that's mostly vertical (e.g. dragging straight down from a corner)
+    // would do nothing.
+    const dx = Math.abs(px - anchorX)
+    const dy = Math.abs(py - anchorY) * ratio
+    let width = Math.max(dx, dy, MIN_CROP_SIZE)
     let height = width / ratio
     if (height > maxHeight) {
       height = maxHeight
@@ -168,8 +177,14 @@ export const resizeRectByHandle = (
       width = maxWidth
       height = width / ratio
     }
-    width = Math.max(width, MIN_CROP_SIZE)
-    height = Math.max(height, MIN_CROP_SIZE)
+    // Scale both dimensions up together (not independently) if either fell
+    // below the minimum — clamping width/height separately here would change
+    // their ratio, defeating the whole point of a locked ratio.
+    if (width < MIN_CROP_SIZE || height < MIN_CROP_SIZE) {
+      const scale = Math.max(MIN_CROP_SIZE / width, MIN_CROP_SIZE / height)
+      width *= scale
+      height *= scale
+    }
 
     left = edges.movesLeft ? anchorX - width : anchorX
     right = edges.movesLeft ? anchorX : anchorX + width
