@@ -22,7 +22,12 @@ const pendingRequests = new Map()
 const DEBUG_CHANNEL = new BroadcastChannel("msw-debug")
 const WORKER_ID = crypto.randomUUID().slice(0, 8)
 function debug(event, data = {}) {
-  DEBUG_CHANNEL.postMessage({ worker: WORKER_ID, t: Date.now(), event, ...data })
+  DEBUG_CHANNEL.postMessage({
+    worker: WORKER_ID,
+    t: Date.now(),
+    event,
+    ...data,
+  })
 }
 debug("script-start")
 
@@ -79,7 +84,7 @@ addEventListener("message", function (event) {
         const client = await self.clients.get(clientId)
 
         if (client != null) {
-          await sendToClient(client, {
+          void sendToClient(client, {
             type: "CLIENT_CLOSED",
           })
         }
@@ -99,16 +104,21 @@ addEventListener("message", function (event) {
         return
       }
 
+      // PATCH(isomer): the client never answers these messages on the reply
+      // port, so awaiting them keeps this event's waitUntil pending forever.
+      // Chrome terminates the worker after 5 minutes of that, and the
+      // restarted worker forgets every active client, so mocking silently
+      // stops. Send them without waiting for a reply.
       switch (event.data) {
         case "KEEPALIVE_REQUEST": {
-          await sendToClient(client, {
+          void sendToClient(client, {
             type: "KEEPALIVE_RESPONSE",
           })
           break
         }
 
         case "INTEGRITY_CHECK_REQUEST": {
-          await sendToClient(client, {
+          void sendToClient(client, {
             type: "INTEGRITY_CHECK_RESPONSE",
             payload: {
               packageVersion: PACKAGE_VERSION,
@@ -122,7 +132,7 @@ addEventListener("message", function (event) {
           activeClientIds.add(clientId)
           debug("mock-activate", { clientId, active: [...activeClientIds] })
 
-          await sendToClient(client, {
+          void sendToClient(client, {
             type: "MOCKING_ENABLED",
             payload: {
               client: {
