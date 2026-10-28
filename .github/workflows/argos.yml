@@ -108,11 +108,20 @@ jobs:
           fi
         env:
           ARGOS_SUBSET: ${{ steps.scope.outputs.base != '' }}
+
+  # Built apart from the test jobs so the deploy doesn't wait on, or rerun,
+  # either Storybook suite.
+  storybook-components:
+    needs: [changes, optimize_ci]
+    if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.optimize_ci.outputs.skip == 'false' && (needs.changes.outputs.studio == 'true' || needs.changes.outputs.ui == 'true') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: Build Storybook
-        if: ${{ needs.changes.outputs.ui == 'true' || needs.changes.outputs.studio == 'true' }}
         run: pnpm --filter @opengovsg/isomer-components run build-storybook
       - name: Upload Storybook build
-        if: ${{ needs.changes.outputs.ui == 'true' || needs.changes.outputs.studio == 'true' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: storybook-components
@@ -187,7 +196,7 @@ jobs:
           if find screenshots -type f -name '*.png' -print -quit | grep -q .; then
             # The CLI does not read ARGOS_SUBSET; --subset is what keeps
             # uncaptured baseline screenshots from being reported as removed.
-            args=(--build-name studio --parallel --parallel-total -1 --parallel-index "${{ matrix.shard }}")
+            args=(--build-name studio --parallel --parallel-nonce "$ARGOS_PARALLEL_NONCE" --parallel-total -1 --parallel-index "${{ matrix.shard }}")
             if [[ "$ARGOS_SUBSET" == "true" ]]; then
               args+=(--subset)
             fi
@@ -198,6 +207,8 @@ jobs:
           fi
         env:
           ARGOS_SUBSET: ${{ steps.scope.outputs.base != '' }}
+          # The CLI requires an explicit nonce; it must match `studio-argos`.
+          ARGOS_PARALLEL_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}
 
   # Closes the sharded studio build, or skips it when studio is unchanged, so the
   # Argos check always resolves.
@@ -215,14 +226,16 @@ jobs:
       - name: Finalize Argos build
         if: ${{ needs.changes.outputs.studio == 'true' }}
         # --skip-if-empty: affected-story runs may capture nothing on any shard.
-        run: pnpm --filter isomer-studio exec argos finalize --build-name studio --skip-if-empty
+        run: pnpm --filter isomer-studio exec argos finalize --build-name studio --skip-if-empty --parallel-nonce "$ARGOS_PARALLEL_NONCE"
+        env:
+          ARGOS_PARALLEL_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}
       - name: Skip Argos build
         if: ${{ needs.changes.outputs.studio != 'true' }}
         run: pnpm --filter isomer-studio exec argos skip --build-name studio
 
   # Built apart from the shards so a components-only change still deploys the
   # studio Storybook without running the studio suite.
-  studio-storybook:
+  storybook-studio:
     needs: [changes, optimize_ci]
     if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.optimize_ci.outputs.skip == 'false' && (needs.changes.outputs.studio == 'true' || needs.changes.outputs.ui == 'true') }}
     runs-on: ubuntu-latest
@@ -249,10 +262,10 @@ jobs:
           retention-days: 1
 
   deploy:
-    needs: [changes, ui, studio, studio-storybook]
+    needs: [changes, ui, studio, storybook-components, storybook-studio]
     # Fork PRs have no access to secrets. `studio` is skipped when only
     # components changed.
-    if: ${{ always() && needs.ui.result == 'success' && needs.studio-storybook.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.studio.result) && (needs.changes.outputs.ui == 'true' || needs.changes.outputs.studio == 'true') && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    if: ${{ always() && needs.ui.result == 'success' && needs.storybook-components.result == 'success' && needs.storybook-studio.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.studio.result) && (needs.changes.outputs.ui == 'true' || needs.changes.outputs.studio == 'true') && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
     environment: staging
     env:
