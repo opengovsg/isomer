@@ -81,8 +81,8 @@
     "usehooks-ts": "catalog:"
   },
   "devDependencies": {
-    "@argos-ci/cli": "catalog:",
-    "@argos-ci/storybook": "catalog:",
+    "@argos-ci/cli": "catalog:argos",
+    "@argos-ci/storybook": "catalog:argos",
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/storybook-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",

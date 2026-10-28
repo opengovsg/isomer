@@ -174,8 +174,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@argos-ci/cli": "catalog:",
-    "@argos-ci/storybook": "catalog:",
+    "@argos-ci/cli": "catalog:argos",
+    "@argos-ci/storybook": "catalog:argos",
     "@babel/plugin-transform-class-properties": "catalog:babel",
     "@babel/plugin-transform-object-rest-spread": "catalog:babel",
     "@babel/preset-env": "catalog:babel",

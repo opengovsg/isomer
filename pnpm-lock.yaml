@@ -106,6 +106,13 @@ settings:
   excludeLinksFromLockfile: false
 
 catalogs:
+  argos:
+    '@argos-ci/cli':
+      specifier: ^6.10.0
+      version: 6.10.0
+    '@argos-ci/storybook':
+      specifier: ^6.4.2
+      version: 6.4.2
   atlaskitPragmaticDnd:
     '@atlaskit/pragmatic-drag-and-drop':
       specifier: ^4.0.0
@@ -184,12 +191,6 @@ catalogs:
     '@1password/sdk':
       specifier: ^0.5.0
       version: 0.5.0
-    '@argos-ci/cli':
-      specifier: ^6.10.0
-      version: 6.10.0
-    '@argos-ci/storybook':
-      specifier: ^6.4.2
-      version: 6.4.2
     '@datadog/browser-rum':
       specifier: ^7.14.0
       version: 7.15.0
@@ -1130,10 +1131,10 @@ importers:
         version: 4.6.7
     devDependencies:
       '@argos-ci/cli':
-        specifier: 'catalog:'
+        specifier: catalog:argos
         version: 6.10.0(@types/node@26.6.5)(supports-color@8.1.1)
       '@argos-ci/storybook':
-        specifier: 'catalog:'
+        specifier: catalog:argos
         version: 6.4.2(@types/node@26.6.5)(@vitest/browser-playwright@5.0.5)(@vitest/browser@5.0.5(msw@3.0.2(@types/node@26.6.5)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.0.5))(playwright@1.64.1)(storybook@10.6.3(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.0.5)
       '@babel/plugin-transform-class-properties':
         specifier: catalog:babel
@@ -1475,10 +1476,10 @@ importers:
         version: 3.1.1(react@18.3.1)
     devDependencies:
       '@argos-ci/cli':
-        specifier: 'catalog:'
+        specifier: catalog:argos
         version: 6.10.0(@types/node@26.5.1)(supports-color@8.1.1)
       '@argos-ci/storybook':
-        specifier: 'catalog:'
+        specifier: catalog:argos
         version: 6.4.2(@types/node@26.5.1)(@vitest/browser-playwright@5.0.5)(@vitest/browser@5.0.5(msw@3.0.2(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.4(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.4(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.0.5))(playwright@1.64.1)(storybook@10.6.3(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.0.5)
       '@isomer/oxlint-config':
         specifier: workspace:*

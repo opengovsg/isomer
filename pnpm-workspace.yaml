@@ -71,8 +71,6 @@ catalog:
   # (algoliasearch(appId, key).initIndex(name), index.saveObjects, index.deleteBy).
   # v5 changed the client API — do not "upgrade" this without reviewing egazette compatibility.
   algoliasearch: ^4.27.0
-  "@argos-ci/cli": ^6.10.0
-  "@argos-ci/storybook": ^6.4.2
   ajv: ^8.20.0
   autoprefixer: ^10.6.1
   axios: ^1.20.0
@@ -182,6 +180,9 @@ catalog:
   wretch: ^3.0.9
 
 catalogs:
+  argos:
+    "@argos-ci/cli": ^6.10.0
+    "@argos-ci/storybook": ^6.4.2
   atlaskitPragmaticDnd:
     "@atlaskit/pragmatic-drag-and-drop": ^4.0.0
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^3.0.0
