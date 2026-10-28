@@ -179,6 +179,11 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   // Full-bleed; no CSS width cap. Warn against the 1280px content ceiling
   // (max-w-screen-xl) as a conservative "looks soft on desktop" floor.
   maxRenderedWidthPx: 1280,
+  // lg:min-h-[31.25rem] (500px) — the hero band's actual minimum rendered
+  // height, matching the Isomer image guidelines' 2560×500 minimum for this
+  // variant. Crop is free (custom), so width and height can fall short
+  // independently — both must be checked.
+  maxRenderedHeightPx: 500,
   // Closest common ratio to each breakpoint's hero band (375×240→16:10,
   // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
   previewStates: responsivePreviewStates({
@@ -210,6 +215,10 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   autoOpenOnUpload: true,
   // Image band is half the viewport at lg (lg:w-1/2); ~960px on large desktop.
   maxRenderedWidthPx: 960,
+  // lg:min-h-[31.25rem] (500px) on the image panel — same minimum height as
+  // HeroGradient, matching the Isomer image guidelines' 1280×500 minimum for
+  // this variant. Crop is free (custom), so height must be checked too.
+  maxRenderedHeightPx: 500,
   // Closest common ratio to each breakpoint's hero band (375×240→16:10,
   // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
   previewStates: responsivePreviewStates({
@@ -253,6 +262,11 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
   focalEnabled: true,
   // One of two columns at lg (lg:grid-cols-2); ~960px on large desktop.
   maxRenderedWidthPx: 960,
+  // Matches the Isomer image guidelines' 1280×500 minimum for this variant.
+  // The frame's real height is content-dependent (varies with copy length),
+  // so this is a floor rather than a measured value. Crop is free (custom),
+  // so height must be checked independently of width.
+  maxRenderedHeightPx: 500,
   // Closest common ratio to each breakpoint's frame (375×300→5:4,
   // 768×400→2:1, 1280×450→3:1); the real tile height is still measured.
   previewStates: responsivePreviewStates({
@@ -276,6 +290,10 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   autoOpenOnUpload: true,
   // Full-bleed; warn against the 1280px content ceiling (same as hero:gradient).
   maxRenderedWidthPx: 1280,
+  // Matches the Isomer image guidelines' 1280×500 minimum for this variant.
+  // Crop is free (custom) with the largest aspect-ratio swing of any Hero
+  // variant, so height must be checked independently of width.
+  maxRenderedHeightPx: 500,
   previewStates: responsivePreviewStates({
     mobile: { width: 1, height: 1 },
     tablet: { width: 2, height: 1 },
@@ -372,6 +390,10 @@ const infoCardsWithImagesConfig = (block: unknown): AdjustmentConfig => ({
   // warn against a generous multi-column card width so the common 2–4 column
   // grids don't false-warn on perfectly sharp images.
   maxRenderedWidthPx: 640,
+  // Matches the Isomer image guidelines' 800×400 minimum for Infocard. Crop is
+  // free (custom) and the card's aspect ratio swings across breakpoints, so
+  // height must be checked independently of width.
+  maxRenderedHeightPx: 400,
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
   // Preview shows just the cropped image, not the card chrome/text: on this
@@ -406,6 +428,8 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   // Same column-dependent card width as cardsWithImages — warn against a
   // generous multi-column width (see that config).
   maxRenderedWidthPx: 640,
+  // Same Isomer image guidelines minimum as cardsWithImages (see that config).
+  maxRenderedHeightPx: 400,
   focalEnabledFor: infoCardFocalEnabled,
   previewObjectFitFor: infoCardPreviewObjectFit,
   // Renders the single card for real via buildSingleItemPreviewBlock; falls
