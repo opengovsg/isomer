@@ -293,8 +293,11 @@ export const ImageAdjustmentModal = ({
   }
 
   // A locked-ratio crop can only be (re)computed once the real image aspect is
-  // known — without it, defaultCropRect would bake the wrong pixel ratio. Reset
-  // re-derives the locked crop, so it's blocked until the image loads.
+  // known — without it, defaultCropRect/resizeRectByHandle would assume a
+  // square (1:1) image and bake the wrong pixel ratio. Reset AND dragging a
+  // handle in CropFocalControl both re-derive/depend on the locked crop, so
+  // both are blocked until the image loads (a free crop ignores imageAspect,
+  // so it's never blocked by this).
   const isLockedRatioAspectPending =
     lockedRatio != null && imageAspect === undefined
 
@@ -429,7 +432,7 @@ export const ImageAdjustmentModal = ({
                       }}
                       onImageAspectChange={setImageAspect}
                       onNaturalSizeChange={setNaturalSize}
-                      isDisabled={isSaving}
+                      isDisabled={isSaving || isLockedRatioAspectPending}
                     />
                   </Box>
                 )}
