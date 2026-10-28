@@ -10,7 +10,7 @@ import { generateSiteConfig } from "~/stories/helpers"
 import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { HomepageLayout } from "./Homepage"
 
@@ -22,12 +22,7 @@ const meta: Meta<typeof HomepageLayout> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes([
-      "mobileSmall",
-      "mobile",
-      "tablet",
-      "desktop",
-    ]),
+    argos: withArgosModes(["mobileSmall", "mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -53,10 +48,10 @@ const meta: Meta<typeof HomepageLayout> = {
 export default meta
 type Story = StoryObj<typeof HomepageLayout>
 
-const chromaticWithoutMobileSmall = {
+const argosWithoutMobileSmall = {
   modes: {
-    // Chromatic stacks story modes with the modes inherited from meta.
-    mobileSmall: { disable: true },
+    // Argos stacks story modes with the modes inherited from meta.
+    mobileSmall: { disabled: true },
   },
 }
 
@@ -700,8 +695,8 @@ export const Dark: Story = {
 }
 
 export const HeroBlock: Story = {
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds Argos's capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -734,8 +729,8 @@ const heroBlockCurvedHomepageProps = {
 
 export const HeroBlockLeftCurved: Story = {
   name: "Curve+Left",
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds the capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       ...heroBlockCurvedHomepageProps,
@@ -746,8 +741,8 @@ export const HeroBlockLeftCurved: Story = {
 
 export const HeroBlockRightCurved: Story = {
   name: "Curve+Right",
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds the capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       ...heroBlockCurvedHomepageProps,
@@ -757,8 +752,8 @@ export const HeroBlockRightCurved: Story = {
 }
 
 export const HeroLargeImage: Story = {
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds Argos's capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -776,8 +771,8 @@ export const HeroLargeImage: Story = {
 }
 
 export const HeroFloating: Story = {
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds Argos's capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",

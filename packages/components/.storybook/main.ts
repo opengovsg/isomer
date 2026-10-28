@@ -9,6 +9,7 @@ const config: StorybookConfig = {
     "@storybook/addon-a11y",
     "storybook-addon-pseudo-states",
     "@storybook/addon-docs",
+    "@storybook/addon-vitest",
   ],
 
   framework: {

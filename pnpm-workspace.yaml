@@ -77,7 +77,6 @@ catalog:
   bootstrap-icons: ^1.13.2
   browserslist-useragent-regexp: ^4.1.4
   cheerio: ^1.2.0
-  chromatic: ^18.12.0
   clean-webpack-plugin: ^4.0.0
   dayjs: ^1.11.23
   date-fns: ^4.4.0
@@ -114,7 +113,7 @@ catalog:
   "@typescript/native-preview": 7.0.0-dev.20260707.2
   type-fest: ^5.10.0
   tsx: ^4.23.15
-  turbo: ^2.11.2
+  turbo: ^2.11.10
   typescript: ^6.0.3
   usehooks-ts: ^3.1.1
   webpack-cli: ^7.2.3
@@ -149,7 +148,7 @@ catalog:
   interweave-ssr: ^2.0.0
   iron-session: ^9.0.1
   jose: ^6.2.12
-  jotai: ^3.0.0
+  jotai: ^3.0.1
   js-md5: ^0.9.2
   kysely: ^0.29.6
   lodash-es: ^4.18.1
@@ -157,12 +156,12 @@ catalog:
   next: 16.4.2
   openid-client: ^5.7.1
   oxfmt: ^0.70.0
-  oxlint: ^1.88.0
+  oxlint: ^1.89.0
   oxlint-tsgolint: ^7.0.2004
   papaparse: ^5.7.0
   pg-boss: ^12.38.0
   postcss-load-config: ^6.0.1
-  posthog-js: ^1.438.1
+  posthog-js: ^1.438.13
   posthog-node: ^5.55.3
   rate-limiter-flexible: ^11.2.1
   react-error-boundary: ^6.1.6
@@ -181,6 +180,9 @@ catalog:
   wretch: ^3.0.9
 
 catalogs:
+  argos:
+    "@argos-ci/cli": ^6.10.0
+    "@argos-ci/storybook": ^6.4.2
   atlaskitPragmaticDnd:
     "@atlaskit/pragmatic-drag-and-drop": ^4.0.0
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^3.0.0
@@ -244,19 +246,20 @@ catalogs:
     "@react-stately/checkbox": ^3.8.1
     "@react-stately/toggle": ^3.10.1
   storybook:
-    storybook: 10.6.2
-    "@storybook/addon-a11y": 10.6.2
-    "@storybook/addon-docs": 10.6.2
-    "@storybook/addon-links": 10.6.2
-    "@storybook/addon-themes": 10.6.2
-    "@storybook/nextjs-vite": 10.6.2
-    "@storybook/react-vite": 10.6.2
-    eslint-plugin-storybook: 10.6.2
-    storybook-addon-pseudo-states: 10.6.2
+    storybook: 10.6.3
+    "@storybook/addon-a11y": 10.6.3
+    "@storybook/addon-docs": 10.6.3
+    "@storybook/addon-links": 10.6.3
+    "@storybook/addon-themes": 10.6.3
+    "@storybook/addon-vitest": 10.6.3
+    "@storybook/nextjs-vite": 10.6.3
+    "@storybook/react-vite": 10.6.3
+    eslint-plugin-storybook: 10.6.3
+    storybook-addon-pseudo-states: 10.6.3
   tanstack-query:
-    "@tanstack/query-devtools": ^5.104.2
-    "@tanstack/react-query": ^5.104.2
-    "@tanstack/react-query-devtools": ^5.104.2
+    "@tanstack/query-devtools": ^5.104.5
+    "@tanstack/react-query": ^5.104.5
+    "@tanstack/react-query-devtools": ^5.104.5
   tiptap:
     "@tiptap/core": ^3.32.0
     "@tiptap/extension-bold": ^3.32.0
@@ -296,5 +299,5 @@ catalogs:
     "@vitejs/plugin-react": ^6.1.2
     "@vitest/browser-playwright": ^5.0.4
     "@vitest/coverage-istanbul": ^5.0.4
-    vite: ^8.3.4
+    vite: ^8.3.5
     vitest: ^5.0.4

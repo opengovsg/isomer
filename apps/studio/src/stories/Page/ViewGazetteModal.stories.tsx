@@ -20,7 +20,7 @@ const meta: Meta<typeof ViewGazetteModal> = {
   ],
   parameters: {
     layout: "fullscreen",
-    chromatic: { delay: 200 },
+    argos: { delay: 200 },
   },
   args: {
     isOpen: true,

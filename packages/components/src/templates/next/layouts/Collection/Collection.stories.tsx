@@ -11,7 +11,7 @@ import {
   TAG_CATEGORY_TYPE,
 } from "~/types/constants"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { CollectionLayout } from "./Collection"
 
@@ -42,7 +42,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
       date: "07/05/2024",
       category: "Category Name",
-      ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
+      ref: "/hero-banner.png",
     },
     {
       id: `${index}`,
@@ -115,7 +115,7 @@ const meta: Meta<CollectionPageSchemaType> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    argos: withArgosModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -195,7 +195,7 @@ export const FilteredEmptyResults: Story = {
           "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
         date: "2025-05-07",
         tagged: [CATEGORY_NAME_2_OPTION_ID],
-        ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
+        ref: "/hero-banner.png",
       },
     ],
   }),
@@ -356,7 +356,7 @@ export const Blog: Story = {
 
 // Anchored to the same fixed reference date `.storybook/preview.tsx`'s
 // `MockDateDecorator` freezes `Date` to for every story (deterministic
-// Chromatic snapshots) — NOT real wall-clock `new Date()`. The decorator's
+// Argos snapshots) — NOT real wall-clock `new Date()`. The decorator's
 // `mockdate.set(...)` only takes effect once the story actually renders, by
 // which point this module has already finished evaluating, so anchoring to
 // real time here would compute dates relative to a "today" the app never
