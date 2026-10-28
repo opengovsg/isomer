@@ -6,21 +6,35 @@ import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
+import { LINK_TYPES_MAPPING } from "../../../../LinkEditor/constants"
 import { useBuilderErrors } from "../../../ErrorProvider"
-import JsonFormsLinkControl from "../JsonFormsLinkControl"
+import { BaseLinkControl } from "../BaseLinkControl"
 import { getBuilderFieldErrorMessage } from "./getBuilderFieldErrorMessage"
 
 // JsonForms drops link field errors under nested hero combinator schemas (same as text).
 // Only registered inside JsonFormsHeroActionLayoutControl, not globally.
-const ActionLayoutLinkControl = (props: ControlProps) => {
-  const { errors } = useBuilderErrors()
+const ActionLayoutLinkControl = ({
+  data,
+  label,
+  handleChange,
+  path,
+  required,
+  errors: jsonFormsErrors,
+}: ControlProps) => {
+  const { errors: builderErrors } = useBuilderErrors()
+  const errors =
+    jsonFormsErrors || getBuilderFieldErrorMessage(path, builderErrors) || ""
 
   return (
-    <JsonFormsLinkControl
-      {...props}
-      errors={
-        props.errors || getBuilderFieldErrorMessage(props.path, errors) || ""
-      }
+    <BaseLinkControl
+      data={data as string}
+      label={label}
+      required={required}
+      handleChange={handleChange}
+      path={path}
+      linkTypes={LINK_TYPES_MAPPING}
+      description="Link a page, file, external URL, or an email address"
+      errors={errors}
     />
   )
 }
