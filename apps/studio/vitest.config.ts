@@ -24,6 +24,8 @@ export default defineConfig({
         "**/*.d.ts",
       ],
     },
+    // Story console noise floods the CI output; keep it only for failed stories.
+    silent: process.env.VITEST_STORYBOOK ? "passed-only" : undefined,
     // Storybook runs separately (VITEST_STORYBOOK=true) so unit runs never load
     // the Argos plugin, which uploads screenshots on CI.
     projects: process.env.VITEST_STORYBOOK
