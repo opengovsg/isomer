@@ -24,7 +24,7 @@ const calloutStyles = tv({
       "flex items-start gap-3 rounded-lg border-[1.5px] [&:not(:first-child)]:mt-7",
     icon: "h-6 w-6 flex-shrink-0",
     content:
-      "prose-headline-lg-regular min-w-0 flex-1 overflow-x-auto [&>:is(ol,ul):first-child>li:first-child]:mt-0 [&>:is(ol,ul):first-child]:mt-0 [&>:is(ol,ul):last-child>li:last-child]:mb-0",
+      "prose-headline-lg-regular min-w-0 flex-1 [&>:is(ol,ul):first-child>li:first-child]:mt-0 [&>:is(ol,ul):first-child]:mt-0 [&>:is(ol,ul):last-child>li:last-child]:mb-0",
   },
   variants: {
     variant: {
@@ -78,7 +78,7 @@ export const Callout = ({
   return (
     <div className={styles.container()} role="group" aria-label={label}>
       {Icon && <Icon aria-hidden className={styles.icon()} />}
-      <div className={styles.content()} tabIndex={0}>
+      <div className={styles.content()}>
         <Prose {...content} site={site} headingLevel={headingLevel} />
       </div>
     </div>
