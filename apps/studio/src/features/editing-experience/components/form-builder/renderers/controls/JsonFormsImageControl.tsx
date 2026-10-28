@@ -1,6 +1,6 @@
 import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
-import { Box, FormControl, useDisclosure } from "@chakra-ui/react"
+import { Box, FormControl, Text, useDisclosure } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
