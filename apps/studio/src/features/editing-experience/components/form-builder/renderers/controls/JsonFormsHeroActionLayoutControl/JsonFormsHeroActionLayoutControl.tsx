@@ -26,6 +26,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { NewFeatureBadge } from "~/features/editing-experience/components/shared/NewFeatureBadge"
 
 import { nextHeroGradientActionLayoutData } from "../../../utils/nextHeroGradientActionLayoutData"
+import { actionLayoutLinkRenderer } from "./LinkControl"
 import { actionLayoutTextRenderer } from "./TextControl"
 
 /** DS Radio wraps label + preview; suppress full-card focus ring on click. */
@@ -86,9 +87,13 @@ function JsonFormsHeroActionLayoutControl({
       ...selectedBranch,
       properties: omit(selectedBranch.properties, "actions"),
     } as JsonSchema)
-  // Scoped override: text fields in the layout (incl. quick link items) show builder errors.
+  // Scoped override: text and link fields in the layout show builder errors JsonForms drops.
   const layoutRenderers = useMemo(
-    () => [actionLayoutTextRenderer, ...(renderers ?? [])],
+    () => [
+      actionLayoutTextRenderer,
+      actionLayoutLinkRenderer,
+      ...(renderers ?? []),
+    ],
     [renderers],
   )
 

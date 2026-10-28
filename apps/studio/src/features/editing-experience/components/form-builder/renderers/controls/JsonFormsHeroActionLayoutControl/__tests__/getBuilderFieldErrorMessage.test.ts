@@ -22,6 +22,30 @@ describe("getBuilderFieldErrorMessage", () => {
     expect(actual).toBe("cannot be empty or contain only spaces")
   })
 
+  it("returns pattern errors on quick link destination paths", () => {
+    // Arrange
+    const errors = {
+      "/actions/items/0/buttonUrl": [
+        {
+          instancePath: "/actions/items/0/buttonUrl",
+          keyword: "pattern",
+          message: 'must match pattern "..."',
+          schemaPath: "",
+          params: {},
+        },
+      ],
+    }
+
+    // Act
+    const actual = getBuilderFieldErrorMessage(
+      "actions.items.0.buttonUrl",
+      errors,
+    )
+
+    // Assert
+    expect(actual).toBe('must match pattern "..."')
+  })
+
   it("returns required errors attached to the parent object path", () => {
     // Arrange
     const errors = {
