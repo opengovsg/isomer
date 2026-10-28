@@ -113,7 +113,7 @@ catalog:
   "@typescript/native-preview": 7.0.0-dev.20260707.2
   type-fest: ^5.10.0
   tsx: ^4.23.15
-  turbo: ^2.11.2
+  turbo: ^2.11.10
   typescript: ^6.0.3
   usehooks-ts: ^3.1.1
   webpack-cli: ^7.2.3
@@ -156,12 +156,12 @@ catalog:
   next: 16.4.2
   openid-client: ^5.7.1
   oxfmt: ^0.70.0
-  oxlint: ^1.88.0
+  oxlint: ^1.89.0
   oxlint-tsgolint: ^7.0.2004
   papaparse: ^5.7.0
   pg-boss: ^12.38.0
   postcss-load-config: ^6.0.1
-  posthog-js: ^1.438.1
+  posthog-js: ^1.438.13
   posthog-node: ^5.55.3
   rate-limiter-flexible: ^11.2.1
   react-error-boundary: ^6.1.6
@@ -299,5 +299,5 @@ catalogs:
     "@vitejs/plugin-react": ^6.1.2
     "@vitest/browser-playwright": ^5.0.4
     "@vitest/coverage-istanbul": ^5.0.4
-    vite: ^8.3.4
+    vite: ^8.3.5
     vitest: ^5.0.4
