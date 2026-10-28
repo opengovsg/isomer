@@ -1,8 +1,6 @@
 import type { BeforeEach } from "storybook/internal/types"
 
-interface ViewportSize {
-  styles?: { width?: string; height?: string }
-}
+import { resolveViewportSize } from "./viewport-size.mjs"
 
 /**
  * Storybook's `viewport` global only resizes the preview wrapper in the UI.
@@ -15,18 +13,8 @@ export const applyViewportInVitest: BeforeEach = async ({
   parameters,
 }) => {
   if (!("__vitest_browser__" in globalThis)) return
-  const global = globals["viewport"] as string | { value?: string } | undefined
-  const key = typeof global === "object" ? global.value : global
-  const options = (
-    parameters["viewport"] as { options?: Record<string, ViewportSize> }
-  ).options
-  const styles = key ? options?.[key]?.styles : undefined
-  const width = parseInt(styles?.width ?? "", 10)
-  if (!width) return
-  // Heights are often "100%"; only trust absolute pixel values.
-  const height = styles?.height?.endsWith("px")
-    ? parseInt(styles.height, 10)
-    : 720
+  const size = resolveViewportSize(globals, parameters)
+  if (!size) return
   const { page } = await import("vitest/browser")
-  await page.viewport(width, height)
+  await page.viewport(size.width, size.height)
 }

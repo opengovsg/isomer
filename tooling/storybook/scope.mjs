@@ -4,7 +4,7 @@
 // by the diff (`vitest --changed=<base>`), or `base=` when the full suite must
 // run (main, or any change Vitest's module graph cannot see).
 import { execFileSync } from "node:child_process"
-import { appendFileSync, readFileSync } from "node:fs"
+import { appendFileSync, existsSync, readFileSync } from "node:fs"
 import nodePath from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -17,15 +17,66 @@ const git = (...args) =>
 // file, so a class that no other file already uses can restyle any story.
 const tokens = (text) => new Set(text.match(/[^\s"'`]+/g) ?? [])
 
+const SOURCE_EXTS = [".tsx", ".ts", ".mts", ".mjs", ".jsx", ".js"]
+
+function resolveModule(absPath) {
+  const candidates = nodePath.extname(absPath)
+    ? [absPath]
+    : SOURCE_EXTS.flatMap((ext) => [
+        absPath + ext,
+        nodePath.join(absPath, `index${ext}`),
+      ])
+  return candidates.find((candidate) => existsSync(candidate))
+}
+
+/** `~/` and relative value specifiers from one file, as repo-relative prefixes. */
+function localImportPrefixes(project, file) {
+  const prefixes = []
+  const text = readFileSync(file, "utf8")
+  for (const match of text.matchAll(/from ["']([^"']+)["']/g)) {
+    const before = text.slice(0, match.index)
+    const start = Math.max(
+      before.lastIndexOf("import "),
+      before.lastIndexOf("export "),
+    )
+    const clause = before.slice(start)
+    // A previous statement sits between this specifier and the keyword.
+    if (start === -1 || clause.includes(";")) continue
+    // Type-only imports do not change the rendered preview.
+    if (/^(?:import|export)\s+type\b/.test(clause)) continue
+    const spec = match[1]
+    if (spec.startsWith("~/")) {
+      prefixes.push(`${project}/src/${spec.slice(2)}`)
+      continue
+    }
+    if (!spec.startsWith(".")) continue
+    const rel = nodePath.relative(
+      root,
+      nodePath.resolve(nodePath.dirname(file), spec),
+    )
+    if (rel.startsWith(`${project}/src/`)) prefixes.push(rel)
+  }
+  return prefixes
+}
+
 /**
  * Preview decorators/providers are loaded as Vitest setup files, outside the
  * story module graph, so changing anything they import must run every story.
+ * One extra hop covers modules those preview imports pull in (for example
+ * `~/lib/growthbook` via `~/stories/utils/growthbook`).
  */
 export function previewImports(project) {
   const preview = nodePath.join(root, project, ".storybook/preview.tsx")
-  return [...readFileSync(preview, "utf8").matchAll(/from "~\/([^"]+)"/g)].map(
-    (match) => `${project}/src/${match[1]}`,
+  const direct = localImportPrefixes(project, preview).filter((prefix) =>
+    prefix.startsWith(`${project}/src/`),
   )
+  const prefixes = new Set(direct)
+  for (const prefix of direct) {
+    const file = resolveModule(nodePath.join(root, prefix))
+    if (!file) continue
+    for (const next of localImportPrefixes(project, file)) prefixes.add(next)
+  }
+  return [...prefixes]
 }
 
 export function requiresFullRun(changes, project, preview = []) {

@@ -160,7 +160,7 @@ export const DatabaseModalValidDatasetId: Story = {
 }
 
 export const DatabaseModalLargeDataset: Story = {
-  // TODO: the size-limit error is cleared before the assertion under Storybook
+  // The size-limit error is cleared before the assertion under Storybook
   // on Next-bundled React 19 (the app runs React 18). Skipped in Vitest so CI
   // stays green; still renders in Storybook.
   tags: ["!test"],

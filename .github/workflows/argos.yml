@@ -63,7 +63,7 @@ jobs:
         run: pnpm --filter @opengovsg/isomer-components exec argos skip --build-name components
       - name: Verify Storybook scope selection
         if: ${{ needs.changes.outputs.ui == 'true' }}
-        run: node --test tooling/storybook/scope.test.mjs
+        run: node --test tooling/storybook/scope.test.mjs tooling/storybook/test-viewport.test.mjs
       - name: Select Storybook scope
         id: scope
         if: ${{ needs.changes.outputs.ui == 'true' }}
@@ -93,7 +93,13 @@ jobs:
         working-directory: packages/components
         run: |
           if find screenshots -type f -name '*.png' -print -quit | grep -q .; then
-            pnpm exec argos upload ./screenshots --build-name components
+            # The CLI does not read ARGOS_SUBSET; --subset is what keeps
+            # uncaptured baseline screenshots from being reported as removed.
+            if [[ "$ARGOS_SUBSET" == "true" ]]; then
+              pnpm exec argos upload ./screenshots --build-name components --subset
+            else
+              pnpm exec argos upload ./screenshots --build-name components
+            fi
           elif [[ "$ARGOS_SUBSET" == "true" ]]; then
             pnpm exec argos skip --build-name components
           else
@@ -131,6 +137,9 @@ jobs:
       - name: Skip Argos build
         if: ${{ needs.changes.outputs.studio != 'true' }}
         run: pnpm --filter isomer-studio exec argos skip --build-name studio
+      - name: Verify Storybook scope selection
+        if: ${{ needs.changes.outputs.studio == 'true' }}
+        run: node --test tooling/storybook/scope.test.mjs tooling/storybook/test-viewport.test.mjs
       - name: Select Storybook scope
         id: scope
         if: ${{ needs.changes.outputs.studio == 'true' }}
@@ -172,7 +181,13 @@ jobs:
         working-directory: apps/studio
         run: |
           if find screenshots -type f -name '*.png' -print -quit | grep -q .; then
-            pnpm exec argos upload ./screenshots --build-name studio
+            # The CLI does not read ARGOS_SUBSET; --subset is what keeps
+            # uncaptured baseline screenshots from being reported as removed.
+            if [[ "$ARGOS_SUBSET" == "true" ]]; then
+              pnpm exec argos upload ./screenshots --build-name studio --subset
+            else
+              pnpm exec argos upload ./screenshots --build-name studio
+            fi
           elif [[ "$ARGOS_SUBSET" == "true" ]]; then
             pnpm exec argos skip --build-name studio
           else

@@ -12,6 +12,7 @@ const change = (path, status = "M") => ({ path, status })
 const project = "packages/components"
 
 test("only project source and docs changes can use affected-story selection", () => {
+  // Arrange / Act / Assert
   assert.equal(
     requiresFullRun(
       [
@@ -48,7 +49,10 @@ test("only project source and docs changes can use affected-story selection", ()
 })
 
 test("modules imported by the preview run every story", () => {
+  // Arrange
   const preview = previewImports("apps/studio")
+
+  // Assert
   assert(preview.length > 0)
   assert.equal(
     requiresFullRun(
@@ -58,9 +62,18 @@ test("modules imported by the preview run every story", () => {
     ),
     true,
   )
+  assert.equal(
+    requiresFullRun(
+      [change("apps/studio/src/lib/growthbook.ts")],
+      "apps/studio",
+      preview,
+    ),
+    true,
+  )
 })
 
 test("main selects the full suite and an empty diff adds no tokens", () => {
+  // Arrange / Act / Assert
   assert.equal(affectedBase("", project), "")
   assert.equal(addsNewTokens([], "HEAD", project), false)
 })

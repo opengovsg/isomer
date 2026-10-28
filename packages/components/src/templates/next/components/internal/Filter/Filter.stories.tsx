@@ -205,9 +205,11 @@ export const MobileDateFilterDrawer: Story = {
   },
 }
 
+const dateFilterDesktopGlobals = {
+  viewport: getViewportByMode("desktop"),
+}
 const dateFilterDesktopParameters = {
   argos: withArgosModes(["desktop"]),
-  globals: { viewport: getViewportByMode("desktop") },
 }
 
 const createDateFilter = (visibility: {
@@ -247,6 +249,7 @@ const assertDateFilterControls = async (
 }
 
 export const DateFilterStatusLabelsOnly: Story = {
+  globals: dateFilterDesktopGlobals,
   parameters: dateFilterDesktopParameters,
   args: {
     filters: [
@@ -266,6 +269,7 @@ export const DateFilterStatusLabelsOnly: Story = {
 }
 
 export const DateFilterDateRangeOnly: Story = {
+  globals: dateFilterDesktopGlobals,
   parameters: dateFilterDesktopParameters,
   args: {
     filters: [
@@ -285,6 +289,7 @@ export const DateFilterDateRangeOnly: Story = {
 }
 
 export const DateFilterBothControls: Story = {
+  globals: dateFilterDesktopGlobals,
   parameters: dateFilterDesktopParameters,
   args: {
     filters: [

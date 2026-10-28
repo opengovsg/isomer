@@ -81,7 +81,15 @@ export const EgazetteAlgolia: Story = {
 // The stories below hit the live staging Algolia index, so hit counts and
 // results vary between runs — skip Argos snapshots to avoid flakiness.
 const liveAlgoliaParameters = {
-  argos: { modes: { skip: { disabled: true } } },
+  // Argos merges this with the meta modes and skips a story only when every
+  // mode is disabled. `disableSnapshot` was the Chromatic equivalent.
+  argos: {
+    modes: {
+      mobile: { disabled: true },
+      tablet: { disabled: true },
+      desktop: { disabled: true },
+    },
+  },
 }
 
 export const EgazetteAlgoliaWithCategorySelected: Story = {
