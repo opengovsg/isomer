@@ -104,5 +104,69 @@ describe("resolveAdjustmentConfig", () => {
       expect(withImages?.scrim).toBeUndefined()
       expect(fullImage?.scrim?.className).toContain("bg-gradient-to-t")
     })
+
+    // The real card frame (InfoCards/common.ts cardImageContainer) is 3:2 at
+    // every breakpoint EXCEPT lg+, where only two combos are overridden:
+    // homepage+2-column -> 2:1, default(content-page)+3-column -> 1:1 square.
+    // Every other combo (including 1-column, which has no lg override) stays
+    // 3:2 for both layouts. The preview must reflect the block's own
+    // maxColumns, previewing both layouts only where they actually diverge.
+    describe("desktop preview states follow the block's maxColumns", () => {
+      const desktopStatesFor = (maxColumns?: string) =>
+        resolveAdjustmentConfig({
+          block: { type: "infocards", variant: "cardsWithImages", maxColumns },
+          fieldName: "imageUrl",
+        })?.previewStates.filter((s) => s.id !== "mobile")
+
+      it("3 columns (default): previews content-page square and homepage 3:2 separately", () => {
+        const states = desktopStatesFor("3")
+        expect(states?.map((s) => s.layout)).toEqual(["content", "homepage"])
+        expect(states?.map((s) => s.aspectRatio)).toEqual([
+          { width: 1, height: 1 },
+          { width: 3, height: 2 },
+        ])
+      })
+
+      it("2 columns: previews content-page 3:2 and homepage 2:1 separately", () => {
+        const states = desktopStatesFor("2")
+        expect(states?.map((s) => s.layout)).toEqual(["content", "homepage"])
+        expect(states?.map((s) => s.aspectRatio)).toEqual([
+          { width: 3, height: 2 },
+          { width: 2, height: 1 },
+        ])
+      })
+
+      it("1 column: both layouts render the same 3:2 shape, so a single state covers it", () => {
+        const states = desktopStatesFor("1")
+        expect(states).toHaveLength(1)
+        expect(states?.[0]?.aspectRatio).toEqual({ width: 3, height: 2 })
+      })
+
+      it("defaults to 3 columns when maxColumns is unset", () => {
+        expect(desktopStatesFor(undefined)).toEqual(desktopStatesFor("3"))
+      })
+    })
+  })
+
+  describe("blockquote (per-state layout override)", () => {
+    const config = resolveAdjustmentConfig({
+      block: { type: "blockquote" },
+      fieldName: "imageSrc",
+    })
+
+    // Blockquote renders the same 1:1 image as a circle everywhere except the
+    // homepage, where it's a square — a real-component preview regression here
+    // would mean an editor never sees the shape their crop will actually take.
+    it("previews a circle state for content pages and a square state for the homepage", () => {
+      expect(config).toBeDefined()
+      expect(config?.previewStates).toEqual([
+        expect.objectContaining({ id: "circle", layout: "content" }),
+        expect.objectContaining({ id: "square", layout: "homepage" }),
+      ])
+    })
+
+    it("stacks the two 1:1 states instead of showing them side-by-side", () => {
+      expect(config?.stackPreviews).toBe(true)
+    })
   })
 })
