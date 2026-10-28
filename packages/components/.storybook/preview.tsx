@@ -97,6 +97,37 @@ const resetIsomerQueryParams = () => {
   }
 }
 
+// `load` doesn't bubble, but a capturing listener still sees it for every
+// iframe, including ones Argos re-renders right before its screenshot.
+const loadedIframes = new WeakSet<EventTarget>()
+document.addEventListener(
+  "load",
+  (event) => {
+    if (event.target instanceof HTMLIFrameElement)
+      loadedIframes.add(event.target)
+  },
+  true,
+)
+
+// Argos stabilization waits for images and fonts but not iframes, so embeds
+// (maps, FormSG, Spotify) would be captured blank on a slow CI network.
+const waitForIframesInVitest = async () => {
+  if (!("__vitest_browser__" in globalThis)) return
+  const iframes = Array.from(document.querySelectorAll("iframe"))
+  if (iframes.length === 0) return
+  iframes.forEach((iframe) => (iframe.loading = "eager"))
+  const deadline = Date.now() + 15_000
+  while (
+    Date.now() < deadline &&
+    !iframes.every((iframe) => loadedIframes.has(iframe))
+  ) {
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
+  // ponytail: fixed settle for embeds that paint after `load` (map tiles,
+  // Spotify player); raise it if those still flake.
+  await new Promise((resolve) => setTimeout(resolve, 1_000))
+}
+
 const preview: Preview = {
   // Storybook's preview iframe is a single persistent document, so query
   // state written by a previous story can leak into the next one. Reset only
@@ -107,6 +138,7 @@ const preview: Preview = {
     resetIsomerQueryParams()
     await applyViewportInVitest(context)
   },
+  afterEach: waitForIframesInVitest,
 
   loaders: [
     mswLoader(async () => {

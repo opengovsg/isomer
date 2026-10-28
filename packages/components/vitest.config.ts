@@ -43,6 +43,12 @@ export default defineConfig({
               argosVitestPlugin({
                 uploadToArgos:
                   !!process.env.CI && process.env.ARGOS_UPLOAD !== "false",
+                // Argos grows the iframe to the in-flow content height, but our
+                // viewports have no px height so it otherwise stays at the 150px
+                // iframe default. Fixed overlays (drawers, modals) add no in-flow
+                // height and get clipped, so give the body a viewport's worth.
+                // 720 matches the fallback height in viewport-size.mjs.
+                argosCSS: "body:has([role='dialog']) { min-height: 720px; }",
               }),
             ],
             optimizeDeps: {
