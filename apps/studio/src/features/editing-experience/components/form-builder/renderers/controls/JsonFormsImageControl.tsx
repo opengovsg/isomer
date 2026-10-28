@@ -1,6 +1,6 @@
 import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
-import { Box, FormControl, HStack, Text, useDisclosure } from "@chakra-ui/react"
+import { Box, FormControl, Text, useDisclosure } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
@@ -124,19 +124,15 @@ function JsonFormsImageControl({
             hasResourceContext &&
             config && (
               <>
-                <HStack spacing="1rem" mt="1rem">
-                  <Button
-                    leftIcon={<BiPencil />}
-                    variant="clear"
-                    colorScheme="neutral"
-                    onClick={onAdjustmentModalOpen}
-                  >
-                    Adjust image
-                  </Button>
-                  <Text textStyle="body-2" color="base.content.medium">
-                    {currentAdjustment ? "Adjusted" : "Not adjusted"}
-                  </Text>
-                </HStack>
+                <Button
+                  leftIcon={<BiPencil />}
+                  variant="clear"
+                  colorScheme="neutral"
+                  mt="1rem"
+                  onClick={onAdjustmentModalOpen}
+                >
+                  Adjust image
+                </Button>
 
                 <ImageAdjustmentModal
                   key={data}
