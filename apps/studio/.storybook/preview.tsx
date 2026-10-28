@@ -199,6 +199,8 @@ const preview: Preview = {
       // deployed under a sub-path (/components/, /studio/) instead of the root.
       await worker.start({
         onUnhandledFrame: "bypass",
+        // Per-request logs flood the Vitest output on CI with thousands of entries.
+        quiet: true,
         serviceWorker: { url: "./mockServiceWorker.js" },
       })
       return worker
