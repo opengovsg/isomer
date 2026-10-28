@@ -126,7 +126,7 @@ jobs:
             # Not using test:unit dependency in Turbo because Datadog Test Visibility requires only the test suite to be run
             run: pnpm exec turbo run generate --filter=isomer-studio
           - name: Configure Datadog Test Visibility
-            uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+            uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
             with:
               languages: js
               service: isomer-studio
@@ -154,7 +154,7 @@ jobs:
             # Required by the vitest "browser" project (Vitest Browser Mode).
             run: pnpm --filter @opengovsg/isomer-components exec playwright install chromium
           - name: Configure Datadog Test Visibility
-            uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+            uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
             with:
               languages: js
               service: isomer-studio
@@ -177,7 +177,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
       - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+        uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
         with:
           languages: js
           service: isomer-template
@@ -199,7 +199,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
       - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+        uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
         with:
           languages: js
           service: isomer-studio
@@ -223,7 +223,7 @@ jobs:
           - name: Start test containers
             run: pnpm exec turbo run setup:test --filter=@isomer/pgboss
           - name: Configure Datadog Test Visibility
-            uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+            uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
             with:
               languages: js
               service: isomer-pgboss
@@ -244,7 +244,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
       - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+        uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
         with:
           languages: js
           service: isomer-publishing
@@ -328,7 +328,7 @@ jobs:
           - name: Start test containers
             run: pnpm run setup:test
           - name: Configure Datadog Test Visibility
-            uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+            uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
             with:
               languages: js
               service: isomer-studio
