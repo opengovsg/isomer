@@ -120,4 +120,25 @@ describe("bakeImage composition", () => {
     expect(out.at(0, 0)).toEqual(BLUE)
     expect(out.at(1, 0)).toEqual(WHITE)
   })
+
+  it("throws for an animated source, without relying on the caller to check first", () => {
+    // A minimal (undecoded) WebP header with the VP8X animation flag set --
+    // enough for isAnimatedImageBlob to detect, without needing a real
+    // decodable image, since bakeImage must reject this before ever calling
+    // createImageBitmap.
+    const header = new Uint8Array(21)
+    header.set([0x52, 0x49, 0x46, 0x46], 0) // "RIFF"
+    header.set([0x57, 0x45, 0x42, 0x50], 8) // "WEBP"
+    header.set([0x56, 0x50, 0x38, 0x58], 12) // "VP8X"
+    header[20] = 0x02 // animation flag
+    const animatedWebp = new Blob([header], { type: "image/webp" })
+
+    return expect(
+      bakeImage(
+        animatedWebp,
+        { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+        { mimeType: "image/webp" },
+      ),
+    ).rejects.toThrow(/animated/)
+  })
 })

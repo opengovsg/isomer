@@ -161,6 +161,14 @@ export const ImageAdjustmentModal = ({
   // Drives UI locking during a save. Local (not the hook's isSaving) so the
   // save timeout below can unlock the modal even if the underlying upload hangs.
   const [isSaving, setIsSaving] = useState(false)
+  // Tracks the REAL underlying save (bake -> presign -> upload), independent
+  // of the UI-facing `isSaving`/timeout below. The timeout exists so a hung
+  // request can't trap the editor in a disabled modal, but it only abandons
+  // the promise -- it doesn't cancel the actual upload. Without this guard,
+  // retrying after a timeout starts a second upload while the first is still
+  // running in the background.
+  const savePromiseRef = useRef<ReturnType<typeof save> | null>(null)
+
   // Check if draft (or, when shown, imageFit) differs from its original value.
   const isModified =
     JSON.stringify(draft) !== JSON.stringify(value) ||
@@ -232,11 +240,31 @@ export const ImageAdjustmentModal = ({
       return
     }
 
+    // A previous save is still actually running in the background (it timed
+    // out from the UI's perspective, but the upload itself can't be
+    // cancelled) -- don't start a second, concurrent one.
+    if (savePromiseRef.current) {
+      toast({
+        title: "Still saving the previous change",
+        description: "Please wait for it to finish before saving again.",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+      })
+      return
+    }
+
     setIsSaving(true)
+    const savePromise = save(src, draft, originalFile)
+    savePromiseRef.current = savePromise
+    void savePromise.finally(() => {
+      savePromiseRef.current = null
+    })
+
     let timeoutId: ReturnType<typeof setTimeout> | undefined
     try {
       const result = await Promise.race([
-        save(src, draft, originalFile),
+        savePromise,
         new Promise<never>((_, reject) => {
           timeoutId = setTimeout(
             () => reject(new Error("Saving took too long. Please try again.")),
@@ -401,6 +429,7 @@ export const ImageAdjustmentModal = ({
                       }}
                       onImageAspectChange={setImageAspect}
                       onNaturalSizeChange={setNaturalSize}
+                      isDisabled={isSaving}
                     />
                   </Box>
                 )}

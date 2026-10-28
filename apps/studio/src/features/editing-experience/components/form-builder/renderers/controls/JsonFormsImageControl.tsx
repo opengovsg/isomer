@@ -82,6 +82,11 @@ function JsonFormsImageControl({
   // external/absolute URLs and the built-in placeholder have no derivable bake
   // key, so hide Adjust for them rather than letting Save fail.
   const isManagedAsset = isManagedSiteAsset(data, siteId)
+  // The bake-presign mutation requires a resourceId; without a page/link in
+  // the URL there's nothing to pass (the save call would send an empty
+  // string and fail server-side), so hide Adjust rather than let an editor
+  // open the modal, make changes, and hit a save error.
+  const hasResourceContext = resourceId !== undefined
 
   // Reads the sibling imageAdjustment field and containing block via
   // JsonForms' core data (the only way to reach data outside this control's
@@ -106,7 +111,11 @@ function JsonFormsImageControl({
   // managed, bakeable-format asset, and the owning component has a config.
   // Animated-format detection (below) further gates this once it resolves.
   const canAdjustBase =
-    isImageAdjustmentEnabled && isManagedAsset && !!config && isBakeableFormat
+    isImageAdjustmentEnabled &&
+    isManagedAsset &&
+    hasResourceContext &&
+    !!config &&
+    isBakeableFormat
 
   // Same asset that would be adjustable but for its format — tell the user why
   // the editor isn't offered, rather than silently hiding the pencil.
