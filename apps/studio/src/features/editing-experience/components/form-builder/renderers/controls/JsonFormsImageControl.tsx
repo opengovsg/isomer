@@ -71,6 +71,11 @@ function JsonFormsImageControl({
   // baked; external/absolute URLs have no derivable bake key, so hide Adjust
   // for them rather than letting Save fail.
   const isManagedAsset = !!data && data.startsWith("/")
+  // The bake-presign mutation requires a resourceId; without a page/link in
+  // the URL there's nothing to pass (the save call would send an empty
+  // string and fail server-side), so hide Adjust rather than let an editor
+  // open the modal, make changes, and hit a save error.
+  const hasResourceContext = !!(pageId ?? linkId)
 
   // Reads the sibling imageAdjustment field and containing block via
   // JsonForms' core data (the only way to reach data outside this control's
@@ -108,39 +113,42 @@ function JsonFormsImageControl({
           />
           {/* Adjustment entry point — only for components with a config, and
               only for managed (bakeable) assets */}
-          {isImageAdjustmentEnabled && isManagedAsset && config && (
-            <>
-              <HStack spacing="1rem" mt="1rem">
-                <Button
-                  leftIcon={<BiPencil />}
-                  variant="clear"
-                  colorScheme="neutral"
-                  onClick={onAdjustmentModalOpen}
-                >
-                  Adjust image
-                </Button>
-                <Text textStyle="body-2" color="base.content.medium">
-                  {currentAdjustment ? "Adjusted" : "Not adjusted"}
-                </Text>
-              </HStack>
+          {isImageAdjustmentEnabled &&
+            isManagedAsset &&
+            hasResourceContext &&
+            config && (
+              <>
+                <HStack spacing="1rem" mt="1rem">
+                  <Button
+                    leftIcon={<BiPencil />}
+                    variant="clear"
+                    colorScheme="neutral"
+                    onClick={onAdjustmentModalOpen}
+                  >
+                    Adjust image
+                  </Button>
+                  <Text textStyle="body-2" color="base.content.medium">
+                    {currentAdjustment ? "Adjusted" : "Not adjusted"}
+                  </Text>
+                </HStack>
 
-              <ImageAdjustmentModal
-                key={data}
-                isOpen={isAdjustmentModalOpen}
-                onClose={onAdjustmentModalClose}
-                config={config}
-                src={data}
-                value={currentAdjustment}
-                block={block}
-                imageFieldName={fieldName}
-                siteId={siteId}
-                resourceId={
-                  (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
-                }
-                onSave={handleAdjustmentSave}
-              />
-            </>
-          )}
+                <ImageAdjustmentModal
+                  key={data}
+                  isOpen={isAdjustmentModalOpen}
+                  onClose={onAdjustmentModalClose}
+                  config={config}
+                  src={data}
+                  value={currentAdjustment}
+                  block={block}
+                  imageFieldName={fieldName}
+                  siteId={siteId}
+                  resourceId={
+                    (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
+                  }
+                  onSave={handleAdjustmentSave}
+                />
+              </>
+            )}
         </Box>
       ) : (
         <Box>

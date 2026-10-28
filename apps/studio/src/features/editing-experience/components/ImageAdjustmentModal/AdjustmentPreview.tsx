@@ -190,9 +190,13 @@ export const AdjustmentPreview = ({
     }
   }, [originalBlob, adjustment])
 
-  // Cleanup: revoke object URL on unmount
+  // Cleanup: revoke object URL on unmount. Also bumps bakeRequestIdRef so a
+  // bake that's still in flight when this unmounts sees isStale() as true
+  // once it resolves, instead of creating (and leaking) a new object URL on
+  // an already-unmounted component.
   useEffect(() => {
     return () => {
+      bakeRequestIdRef.current++
       if (prevPreviewUrlRef.current) {
         URL.revokeObjectURL(prevPreviewUrlRef.current)
       }
