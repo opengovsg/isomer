@@ -2,7 +2,7 @@ import { z } from "zod"
 
 export const isEmailWhitelistedInputSchema = z.object({
   siteId: z.number().min(1),
-  email: z.string().email(),
+  email: z.email(),
 })
 
 export const isEmailWhitelistedOutputSchema = z.boolean()
@@ -16,7 +16,7 @@ const emailArraySchema = z
       emails.map((e) => e.trim().toLowerCase()).filter((e) => e.length > 0),
     ),
   ])
-  .pipe(z.array(z.string().email()))
+  .pipe(z.array(z.email()))
 
 export const whitelistEmailsInputSchema = z.object({
   adminEmails: emailArraySchema,
