@@ -184,13 +184,6 @@ const decorators: Decorator[] = [
   conditionalMockDateDecorator,
 ]
 
-// TEMP(msw-debug): surface the worker's debug broadcasts in the Vitest output.
-if (typeof BroadcastChannel !== "undefined") {
-  new BroadcastChannel("msw-debug").onmessage = (event) => {
-    console.warn("[MSW debug]", JSON.stringify(event.data))
-  }
-}
-
 const preview: Preview = {
   // Stories load data through MSW and render Suspense skeletons first. The 1s
   // default for findBy*/waitFor is too short on a loaded CI runner, so wait
