@@ -1,15 +1,18 @@
 import { act, render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
-import { INFOCARDS_DISPLAY } from "~/interfaces"
+import { INFOCARDS_CAROUSEL_MAX_CARDS, INFOCARDS_DISPLAY } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
 
 import { SLIDE_DATA_ATTRIBUTE } from "./CarouselWrapperClient"
 import { InfoCards } from "./InfoCards"
 
-const cards = Array.from({ length: 7 }, (_, index) => ({
-  title: `Card ${index + 1}`,
-  description: "A short description.",
-}))
+const cards = Array.from(
+  { length: INFOCARDS_CAROUSEL_MAX_CARDS },
+  (_, index) => ({
+    title: `Card ${index + 1}`,
+    description: "A short description.",
+  }),
+)
 
 const renderCarousel = () => {
   const view = render(

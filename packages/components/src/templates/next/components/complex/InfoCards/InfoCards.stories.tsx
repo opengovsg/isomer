@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { InfoCardsProps } from "~/interfaces"
 import type { IsomerPageLayoutType } from "~/types"
-import { INFOCARDS_DISPLAY } from "~/interfaces"
+import { INFOCARDS_CAROUSEL_MAX_CARDS, INFOCARDS_DISPLAY } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
 
 import { withChromaticModes } from "@isomer/storybook-config"
@@ -296,7 +296,7 @@ export const CarouselWithImages: Story = {
     layout: "homepage",
     maxColumns: "2",
     display: INFOCARDS_DISPLAY.carousel,
-    numCards: 7,
+    numCards: INFOCARDS_CAROUSEL_MAX_CARDS,
   }),
 }
 
@@ -307,7 +307,7 @@ export const CarouselWithoutImages: Story = {
     maxColumns: "3",
     display: INFOCARDS_DISPLAY.carousel,
     variant: "cardsWithoutImages",
-    numCards: 7,
+    numCards: INFOCARDS_CAROUSEL_MAX_CARDS,
   }),
 }
 
@@ -318,7 +318,7 @@ export const CarouselFullImages: Story = {
     maxColumns: "2",
     display: INFOCARDS_DISPLAY.carousel,
     variant: "cardsWithFullImages",
-    numCards: 7,
+    numCards: INFOCARDS_CAROUSEL_MAX_CARDS,
   }),
 }
 

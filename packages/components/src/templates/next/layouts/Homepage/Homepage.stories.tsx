@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { HeroProps } from "~/interfaces/complex/Hero"
 import type { HomePageSchemaType } from "~/types"
 import { http, HttpResponse } from "msw"
-import { INFOCARDS_DISPLAY } from "~/interfaces"
+import { INFOCARDS_CAROUSEL_MAX_CARDS, INFOCARDS_DISPLAY } from "~/interfaces"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
@@ -913,7 +913,7 @@ export const InfoCardsCarousel: Story = {
       {
         ...infoCardsCarouselSection,
         variant: "cardsWithImages",
-        cards: infoCardsCarouselCards,
+        cards: infoCardsCarouselCards.slice(0, INFOCARDS_CAROUSEL_MAX_CARDS),
       },
     ],
   },
@@ -931,7 +931,7 @@ export const InfoCardsCarouselWithoutImages: Story = {
       {
         ...infoCardsCarouselSection,
         variant: "cardsWithoutImages",
-        cards: infoCardsCarouselCards,
+        cards: infoCardsCarouselCards.slice(0, INFOCARDS_CAROUSEL_MAX_CARDS),
       },
     ],
   },
@@ -949,7 +949,7 @@ export const InfoCardsCarouselFullImages: Story = {
       {
         ...infoCardsCarouselSection,
         variant: "cardsWithFullImages",
-        cards: infoCardsCarouselCards,
+        cards: infoCardsCarouselCards.slice(0, INFOCARDS_CAROUSEL_MAX_CARDS),
       },
     ],
   },
