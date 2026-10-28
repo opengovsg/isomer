@@ -131,14 +131,38 @@ describe("cropGeometry", () => {
       expect(resized.height).toBeCloseTo(0.4)
     })
 
-    it("derives height from width to preserve a locked ratio (se)", () => {
+    it("derives size from the larger axis to preserve a locked ratio (se)", () => {
       const rect = { x: 0, y: 0, width: 0.2, height: 0.2 }
       const ratio = { width: 2, height: 1 } // 2:1 ratio
       const resized = resizeRectByHandle(rect, "se", 0.8, 0.6, ratio)
-      expect(resized.width).toBeCloseTo(0.8)
-      expect(resized.height).toBeCloseTo(0.4)
+      // Vertical displacement (0.6, scaled by ratio to 1.2) dominates horizontal
+      // (0.8) here, so it drives the size — clamped to the image's right edge.
+      expect(resized.width).toBeCloseTo(1)
+      expect(resized.height).toBeCloseTo(0.5)
       expect(resized.x).toBe(0)
       expect(resized.y).toBe(0)
+    })
+
+    it("scales both dimensions together when clamping to MIN_CROP_SIZE, preserving the ratio", () => {
+      // Regression test: width/height used to be clamped to MIN_CROP_SIZE
+      // independently, which could change the locked ratio for a very
+      // elongated one near the image edge (little room left to grow into).
+      const rect = { x: 0.95, y: 0, width: 0.05, height: 0.05 }
+      const ratio = { width: 10, height: 1 } // very wide 10:1 ratio
+      const resized = resizeRectByHandle(rect, "se", 1, 1, ratio)
+      expect(resized.width / resized.height).toBeCloseTo(10)
+    })
+
+    it("resizes from vertical pointer movement alone, not just horizontal", () => {
+      // Regression test: resizing used to derive size from horizontal
+      // displacement only, so a drag that's mostly vertical did nothing.
+      const rect = { x: 0, y: 0, width: 0.2, height: 0.2 }
+      const ratio = { width: 1, height: 2 } // 1:2 (tall) ratio
+      // Pointer barely moves horizontally (0.21, just past the current edge)
+      // but moves far vertically (0.8) — the resize must still grow to match.
+      const resized = resizeRectByHandle(rect, "se", 0.21, 0.8, ratio)
+      expect(resized.height).toBeCloseTo(0.8)
+      expect(resized.width).toBeCloseTo(0.4)
     })
 
     it("preserves a locked ratio for nw, anchored at the opposite corner", () => {

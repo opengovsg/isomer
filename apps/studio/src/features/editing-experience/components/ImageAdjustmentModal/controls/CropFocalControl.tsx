@@ -280,16 +280,18 @@ export const CropFocalControl = ({
 
         {showCrop && (
           <div
-            style={rectStyle}
+            style={{ ...rectStyle, touchAction: "none" }}
             onPointerDown={handleRectPointerDown}
             onPointerMove={handleRectPointerMove}
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            onLostPointerCapture={handlePointerUp}
           >
             {activeHandles.map((handle) => (
               <div
                 key={handle}
-                style={getHandleStyle(handle)}
+                style={{ ...getHandleStyle(handle), touchAction: "none" }}
                 onPointerDown={(event) =>
                   handleResizePointerDown(event, handle)
                 }
@@ -298,6 +300,8 @@ export const CropFocalControl = ({
                 }
                 onPointerUp={handlePointerUp}
                 onPointerLeave={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+                onLostPointerCapture={handlePointerUp}
               />
             ))}
           </div>
@@ -305,11 +309,13 @@ export const CropFocalControl = ({
 
         {focalEnabled && (
           <div
-            style={markerStyle}
+            style={{ ...markerStyle, touchAction: "none" }}
             onPointerDown={handleFocalPointerDown}
             onPointerMove={handleFocalPointerMove}
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            onLostPointerCapture={handlePointerUp}
           />
         )}
       </Box>
