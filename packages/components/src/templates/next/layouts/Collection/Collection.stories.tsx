@@ -42,7 +42,7 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
       date: "07/05/2024",
       category: "Category Name",
-      ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
+      ref: "/hero-banner.png",
     },
     {
       id: `${index}`,
@@ -195,7 +195,7 @@ export const FilteredEmptyResults: Story = {
           "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
         date: "2025-05-07",
         tagged: [CATEGORY_NAME_2_OPTION_ID],
-        ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
+        ref: "/hero-banner.png",
       },
     ],
   }),
