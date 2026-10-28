@@ -3,7 +3,7 @@ import { http, HttpResponse } from "msw"
 import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { DgsContactInformation } from "./DgsContactInformation"
 
@@ -14,7 +14,7 @@ const meta: Meta<typeof DgsContactInformation> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    argos: withArgosModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },

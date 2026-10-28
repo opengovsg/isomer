@@ -10,7 +10,7 @@ import {
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { Hero } from "./Hero"
 
@@ -19,7 +19,7 @@ const meta: Meta<typeof Hero> = {
   component: Hero,
   argTypes: {},
   parameters: {
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    argos: withArgosModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },

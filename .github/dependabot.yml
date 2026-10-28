@@ -9,6 +9,11 @@ updates:
     cooldown:
       default-days: 7 # to mitigate supply chain attacks
     groups:
+      argos:
+        applies-to: version-updates
+        patterns:
+          - "@argos-ci/cli"
+          - "@argos-ci/storybook"
       atlaskit-pragmatic-dnd:
         applies-to: version-updates
         patterns:
