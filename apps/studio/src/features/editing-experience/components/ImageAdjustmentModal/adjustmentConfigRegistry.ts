@@ -47,7 +47,9 @@ const buildSingleCardPreviewBlock = (
 ): Record<string, unknown> | undefined => {
   if (typeof block !== "object" || block === null) return undefined
   const blockRecord = block as Record<string, unknown>
-  const siblings = Array.isArray(blockRecord.cards) ? blockRecord.cards : []
+  const siblings: unknown[] = Array.isArray(blockRecord.cards)
+    ? blockRecord.cards
+    : []
   const cards =
     originalCard !== undefined && siblings.some((c) => c === originalCard)
       ? siblings.map((c) => (c === originalCard ? card : c))
