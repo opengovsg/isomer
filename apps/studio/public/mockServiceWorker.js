@@ -17,11 +17,22 @@ const activeClientIds = new Set()
  */
 const pendingRequests = new Map()
 
+// TEMP(msw-debug): broadcast worker lifecycle and passthrough decisions so
+// flaky Storybook CI runs show why a mocked request got a real response.
+const DEBUG_CHANNEL = new BroadcastChannel("msw-debug")
+const WORKER_ID = crypto.randomUUID().slice(0, 8)
+function debug(event, data = {}) {
+  DEBUG_CHANNEL.postMessage({ worker: WORKER_ID, t: Date.now(), event, ...data })
+}
+debug("script-start")
+
 addEventListener("install", function () {
+  debug("install")
   self.skipWaiting()
 })
 
 addEventListener("activate", function (event) {
+  debug("activate")
   event.waitUntil(self.clients.claim())
 })
 
@@ -53,8 +64,15 @@ addEventListener("message", function (event) {
           return client.id !== clientId
         })
 
+        debug("client-close", {
+          clientId,
+          remaining: remainingClients.map((client) => client.id),
+          active: [...activeClientIds],
+        })
+
         // Unregister itself when there are no more clients
         if (remainingClients.length === 0) {
+          debug("unregister")
           await self.registration.unregister()
         }
 
@@ -102,6 +120,7 @@ addEventListener("message", function (event) {
 
         case "MOCK_ACTIVATE": {
           activeClientIds.add(clientId)
+          debug("mock-activate", { clientId, active: [...activeClientIds] })
 
           await sendToClient(client, {
             type: "MOCKING_ENABLED",
@@ -133,6 +152,12 @@ addEventListener("fetch", function (event) {
   // Prevents the self-unregistered worked from handling requests
   // after it's been terminated (still remains active until the next reload).
   if (activeClientIds.size === 0) {
+    if (event.request.destination === "") {
+      debug("bypass-no-active-clients", {
+        url: event.request.url,
+        clientId: event.clientId,
+      })
+    }
     return
   }
 
@@ -146,6 +171,14 @@ addEventListener("fetch", function (event) {
  */
 async function handleRequest(event, requestId) {
   const client = await resolveMainClient(event)
+  if (event.request.destination === "" && client?.id !== event.clientId) {
+    debug("routed-to-other-client", {
+      url: event.request.url,
+      clientId: event.clientId,
+      routedTo: client?.id ?? null,
+      active: [...activeClientIds],
+    })
+  }
   const requestCloneForEvents = event.request.clone()
 
   const responsePromise = getResponse(event, client, requestId)
@@ -321,6 +354,9 @@ async function getResponse(event, client, requestId) {
 
   // Bypass mocking when the client is not active.
   if (!client) {
+    if (event.request.destination === "") {
+      debug("passthrough-no-client", { url: event.request.url })
+    }
     return passthrough()
   }
 
@@ -329,6 +365,12 @@ async function getResponse(event, client, requestId) {
   // means that MSW hasn't dispatched the "MOCK_ACTIVATE" event yet
   // and is not ready to handle requests.
   if (!activeClientIds.has(client.id)) {
+    if (event.request.destination === "") {
+      debug("passthrough-inactive-client", {
+        url: event.request.url,
+        clientId: client.id,
+      })
+    }
     return passthrough()
   }
 
