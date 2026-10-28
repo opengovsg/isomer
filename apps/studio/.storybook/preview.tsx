@@ -16,6 +16,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"
+import { createStore, Provider as JotaiProvider } from "jotai"
 import { merge } from "lodash-es"
 import mockdate from "mockdate"
 import { mswLoader } from "msw-storybook-addon/csf3"
@@ -56,11 +57,33 @@ interface Fiber {
   stateNode: unknown
   child?: Fiber
 }
+// Some pages render nothing while loading (`<Suspense fallback={null}>`), so
+// the DOM alone can't tell they are still waiting. Track in-flight fetches
+// (tRPC through MSW) and when the network last changed.
+let pendingFetches = 0
+let lastFetchActivity = 0
+const originalFetch = globalThis.fetch
+globalThis.fetch = async (...args) => {
+  pendingFetches++
+  lastFetchActivity = performance.now()
+  try {
+    return await originalFetch(...args)
+  } finally {
+    pendingFetches--
+    lastFetchActivity = performance.now()
+  }
+}
+
 // Argos only waits for images in the top document, and the Storybook SDK
 // turns off its aria-busy wait. So it would capture Suspense skeletons and the
 // page preview (a same-origin iframe) before their data, styles and images
 // land. Loading Chakra skeletons are the only ones with an infinite animation.
 const isPageSettled = () => {
+  // ponytail: 300ms of network quiet lets React render a resolved query and
+  // start any follow-up query; raise it if chained queries still get cut off.
+  if (pendingFetches > 0 || performance.now() - lastFetchActivity < 300) {
+    return false
+  }
   const frameDocs = Array.from(document.querySelectorAll("iframe")).flatMap(
     (iframe) => (iframe.contentDocument ? [iframe.contentDocument] : []),
   )
@@ -206,6 +229,13 @@ const conditionalMockDateDecorator: Decorator = (story, context) => {
   return story()
 }
 
+// Jotai atoms otherwise live in one global store, so state such as an open
+// settings modal leaks into every later story rendered in the same page.
+const JotaiStoreDecorator: Decorator = (story) => {
+  const [store] = useState(createStore)
+  return <JotaiProvider store={store}>{story()}</JotaiProvider>
+}
+
 const decorators: Decorator[] = [
   WithLayoutDecorator,
   SetupDecorator,
@@ -218,6 +248,7 @@ const decorators: Decorator[] = [
   }),
   LoginStateDecorator,
   conditionalMockDateDecorator,
+  JotaiStoreDecorator,
 ]
 
 const preview: Preview = {
