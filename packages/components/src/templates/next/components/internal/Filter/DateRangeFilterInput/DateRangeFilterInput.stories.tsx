@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import type { DateRangeFilterValue } from "./DateRangeFilterInput"
 import { DateRangeFilterInput } from "./DateRangeFilterInput"
@@ -19,7 +19,7 @@ const meta: Meta<typeof DateRangeFilterInput> = {
     themes: {
       themeOverride: "Isomer Next",
     },
-    chromatic: withChromaticModes(["mobileSmall", "desktop"]),
+    argos: withArgosModes(["mobileSmall", "desktop"]),
   },
 }
 export default meta
