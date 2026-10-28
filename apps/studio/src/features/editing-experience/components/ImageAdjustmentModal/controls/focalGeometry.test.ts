@@ -23,6 +23,13 @@ describe("clampUnit", () => {
     expect(clampUnit(0.5)).toBe(0.5)
     expect(clampUnit(1)).toBe(1)
   })
+
+  it("falls back to 0.5 for NaN instead of propagating it", () => {
+    // Regression test: a zero-size preview box produces a 0/0 division
+    // upstream, and NaN survives Math.min/Math.max untouched.
+    expect(clampUnit(NaN)).toBe(0.5)
+    expect(clampUnit(0 / 0)).toBe(0.5)
+  })
 })
 
 describe("pointToFocal", () => {
