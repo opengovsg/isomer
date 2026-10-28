@@ -123,6 +123,16 @@ describe("cropRectToPixels", () => {
       sh: 40,
     })
   })
+
+  it("never lets sx+sw exceed srcWidth on an odd-dimension source", () => {
+    // Regression test: rounding x and width independently could overflow --
+    // a 3px-wide source with x=0.5/width=0.5 independently rounds to sx=2,
+    // sw=2 (sx+sw=4, overflowing the 3px source).
+    const crop: CropRect = { x: 0.5, y: 0.5, width: 0.5, height: 0.5 }
+    const result = cropRectToPixels(crop, 3, 3)
+    expect(result.sx + result.sw).toBeLessThanOrEqual(3)
+    expect(result.sy + result.sh).toBeLessThanOrEqual(3)
+  })
 })
 
 describe("computeCanvasTransform", () => {

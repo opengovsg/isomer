@@ -63,6 +63,12 @@ interface CropFocalControlProps {
   // compare the cropped region's effective resolution against the component's
   // rendered frame and warn on low-resolution crops.
   onNaturalSizeChange?: (size: { width: number; height: number }) => void
+  // Blocks further crop/focal edits while a save is in flight -- otherwise
+  // an edit made during that window is silently lost: handleSave already
+  // captured the draft it's uploading, so a later edit updates local state
+  // but never makes it into the save that's about to complete and close
+  // the modal via onSave.
+  isDisabled?: boolean
 }
 
 type DragTarget = "rect" | "focal" | HandlePosition | null
@@ -86,6 +92,7 @@ export const CropFocalControl = ({
   onFocalChange,
   onImageAspectChange,
   onNaturalSizeChange,
+  isDisabled = false,
 }: CropFocalControlProps): JSX.Element => {
   const boxRef = useRef<HTMLDivElement>(null)
   // The source image's true (un-rotated) pixel aspect. The canvas works in
@@ -174,6 +181,7 @@ export const CropFocalControl = ({
   // there, so a listener on a *descendant* of the capturing element would
   // never see them.
   const handleRectPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (isDisabled) return
     event.stopPropagation()
     setDragTarget("rect")
     lastPointerRef.current = { x: event.clientX, y: event.clientY }
@@ -202,6 +210,7 @@ export const CropFocalControl = ({
     event: React.PointerEvent<HTMLDivElement>,
     handle: HandlePosition,
   ) => {
+    if (isDisabled) return
     event.stopPropagation()
     setDragTarget(handle)
     event.currentTarget.setPointerCapture(event.pointerId)
@@ -244,6 +253,7 @@ export const CropFocalControl = ({
   const handleFocalPointerDown = (
     event: React.PointerEvent<HTMLDivElement>,
   ) => {
+    if (isDisabled) return
     event.stopPropagation()
     // Commit the (until-now local) default crop on the first focal edit, so a
     // focal-only adjustment still bakes within the correct frame. Focal values
@@ -409,16 +419,18 @@ export const CropFocalControl = ({
 
         {showCrop && (
           <div
-            style={rectStyle}
+            style={{ ...rectStyle, touchAction: "none" }}
             onPointerDown={handleRectPointerDown}
             onPointerMove={handleRectPointerMove}
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            onLostPointerCapture={handlePointerUp}
           >
             {activeHandles.map((handle) => (
               <div
                 key={handle}
-                style={getHandleStyle(handle)}
+                style={{ ...getHandleStyle(handle), touchAction: "none" }}
                 onPointerDown={(event) =>
                   handleResizePointerDown(event, handle)
                 }
@@ -427,6 +439,8 @@ export const CropFocalControl = ({
                 }
                 onPointerUp={handlePointerUp}
                 onPointerLeave={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+                onLostPointerCapture={handlePointerUp}
               />
             ))}
           </div>
@@ -434,11 +448,13 @@ export const CropFocalControl = ({
 
         {focalEnabled && (
           <div
-            style={markerStyle}
+            style={{ ...markerStyle, touchAction: "none" }}
             onPointerDown={handleFocalPointerDown}
             onPointerMove={handleFocalPointerMove}
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            onLostPointerCapture={handlePointerUp}
           />
         )}
       </Box>

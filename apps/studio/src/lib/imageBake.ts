@@ -138,12 +138,15 @@ export const cropRectToPixels = (
   srcWidth: number,
   srcHeight: number,
 ): PixelRect => {
-  return {
-    sx: Math.round(crop.x * srcWidth),
-    sy: Math.round(crop.y * srcHeight),
-    sw: Math.round(crop.width * srcWidth),
-    sh: Math.round(crop.height * srcHeight),
-  }
+  // Round the START and END coordinates (not start+size independently), so
+  // sx+sw can never exceed srcWidth due to rounding drift -- e.g. a 0.5/0.5
+  // split of a 3px-wide source independently rounds to sx=2, sw=2 (overflow);
+  // rounding the end coordinate instead gives sx=2, sw=round(3)-2=1.
+  const sx = Math.round(crop.x * srcWidth)
+  const sy = Math.round(crop.y * srcHeight)
+  const sw = Math.round((crop.x + crop.width) * srcWidth) - sx
+  const sh = Math.round((crop.y + crop.height) * srcHeight) - sy
+  return { sx, sy, sw, sh }
 }
 
 /**
@@ -208,81 +211,106 @@ export const bakeImage = async (
     )
   }
 
+  // Guard against baking an animated source: canvas rasterizes a single
+  // frame, silently dropping the animation. This is also checked by
+  // bakeImage's current callers before invoking it, but enforcing it here
+  // too means any future caller gets the same protection for free.
+  if (await isAnimatedImageBlob(original)) {
+    throw new Error(
+      "Cannot bake an animated image: baking would flatten it to a single frame.",
+    )
+  }
+
   // Decode with EXIF orientation normalization (upright reference frame)
   const bitmap = await createImageBitmap(original, {
     imageOrientation: "from-image",
   })
 
-  // The editor crops against the rotated/flipped ("display") image, so crop
-  // coordinates are normalized to THAT, not the original — rotate/flip first,
-  // then crop. Flipping doesn't change dimensions; a 90/270 rotation swaps them.
-  const rotatedQuarter = adjustment.rotate === 90 || adjustment.rotate === 270
-  const displayWidth = rotatedQuarter ? bitmap.height : bitmap.width
-  const displayHeight = rotatedQuarter ? bitmap.width : bitmap.height
+  try {
+    // The editor crops against the rotated/flipped ("display") image, so crop
+    // coordinates are normalized to THAT, not the original — rotate/flip
+    // first, then crop. Flipping doesn't change dimensions; a 90/270
+    // rotation swaps them.
+    const rotatedQuarter = adjustment.rotate === 90 || adjustment.rotate === 270
+    const displayWidth = rotatedQuarter ? bitmap.height : bitmap.width
+    const displayHeight = rotatedQuarter ? bitmap.width : bitmap.height
 
-  // Crop rect in display-image pixels. Its size is the output size directly —
-  // the rotation has already been accounted for by swapping the display dims.
-  const {
-    sx: dx,
-    sy: dy,
-    sw: outputWidth,
-    sh: outputHeight,
-  } = cropRectToPixels(adjustment.crop, displayWidth, displayHeight)
+    // Crop rect in display-image pixels. Its size is the output size
+    // directly — the rotation has already been accounted for by swapping
+    // the display dims.
+    const {
+      sx: dx,
+      sy: dy,
+      sw: outputWidth,
+      sh: outputHeight,
+    } = cropRectToPixels(adjustment.crop, displayWidth, displayHeight)
 
-  // Create canvas and apply transforms
-  const canvas =
-    typeof OffscreenCanvas !== "undefined"
-      ? new OffscreenCanvas(outputWidth, outputHeight)
-      : document.createElement("canvas")
+    // Create canvas and apply transforms
+    const canvas =
+      typeof OffscreenCanvas !== "undefined"
+        ? new OffscreenCanvas(outputWidth, outputHeight)
+        : document.createElement("canvas")
 
-  if ("width" in canvas) canvas.width = outputWidth
-  if ("height" in canvas) canvas.height = outputHeight
+    if ("width" in canvas) canvas.width = outputWidth
+    if ("height" in canvas) canvas.height = outputHeight
 
-  const ctx = canvas.getContext("2d")
-  if (!ctx) {
-    throw new Error("Failed to get 2D canvas context")
+    const ctx = canvas.getContext("2d")
+    if (!ctx) {
+      throw new Error("Failed to get 2D canvas context")
+    }
+
+    // Apply rotate + flip transforms
+    const { rotate, scaleX, scaleY } = computeCanvasTransform(
+      adjustment.rotate,
+      adjustment.flipH,
+      adjustment.flipV,
+    )
+
+    // Draw the WHOLE original into the cropped display frame: shift so the
+    // crop's top-left sits at the canvas origin, move to the display centre,
+    // flip, rotate, then centre the original before drawing it.
+    ctx.translate(displayWidth / 2 - dx, displayHeight / 2 - dy)
+    if (scaleX !== 1 || scaleY !== 1) {
+      ctx.scale(scaleX, scaleY)
+    }
+    if (rotate !== 0) {
+      ctx.rotate((rotate * Math.PI) / 180)
+    }
+    ctx.translate(-bitmap.width / 2, -bitmap.height / 2)
+
+    // Draw the full original; the canvas size + translate above crop it.
+    ctx.drawImage(bitmap, 0, 0)
+
+    // Convert to blob with the specified MIME type and quality.
+    // Guard the OffscreenCanvas symbol via a type predicate: referencing it
+    // directly in `instanceof` throws ReferenceError in browsers that lack it,
+    // and the predicate still narrows the HTMLCanvasElement branch (no cast).
+    const convertToBlob = isOffscreenCanvas(canvas)
+      ? () =>
+          canvas.convertToBlob({ type: opts.mimeType, quality: opts.quality })
+      : () =>
+          new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) reject(new Error("Canvas toBlob returned null"))
+                else resolve(blob)
+              },
+              opts.mimeType,
+              opts.quality,
+            )
+          })
+
+    const blob = await convertToBlob()
+    // Some browsers can decode a format they can't encode via canvas and
+    // silently substitute PNG instead (e.g. requesting webp) -- verify the
+    // actual output type rather than trusting the request succeeded.
+    if (blob.type !== opts.mimeType) {
+      throw new Error(
+        `Failed to encode image as "${opts.mimeType}" (the browser produced "${blob.type || "an unknown type"}" instead).`,
+      )
+    }
+    return blob
+  } finally {
+    bitmap.close()
   }
-
-  // Apply rotate + flip transforms
-  const { rotate, scaleX, scaleY } = computeCanvasTransform(
-    adjustment.rotate,
-    adjustment.flipH,
-    adjustment.flipV,
-  )
-
-  // Draw the WHOLE original into the cropped display frame: shift so the crop's
-  // top-left sits at the canvas origin, move to the display centre, flip,
-  // rotate, then centre the original before drawing it. (Same flip∘rotate
-  // composition as before; only the crop framing moved after the transform.)
-  ctx.translate(displayWidth / 2 - dx, displayHeight / 2 - dy)
-  if (scaleX !== 1 || scaleY !== 1) {
-    ctx.scale(scaleX, scaleY)
-  }
-  if (rotate !== 0) {
-    ctx.rotate((rotate * Math.PI) / 180)
-  }
-  ctx.translate(-bitmap.width / 2, -bitmap.height / 2)
-
-  // Draw the full original; the canvas size + translate above crop it.
-  ctx.drawImage(bitmap, 0, 0)
-
-  // Convert to blob with the specified MIME type and quality.
-  // Guard the OffscreenCanvas symbol via a type predicate: referencing it
-  // directly in `instanceof` throws ReferenceError in browsers that lack it,
-  // and the predicate still narrows the HTMLCanvasElement branch (no cast).
-  const convertToBlob = isOffscreenCanvas(canvas)
-    ? () => canvas.convertToBlob({ type: opts.mimeType, quality: opts.quality })
-    : () =>
-        new Promise<Blob>((resolve, reject) => {
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) reject(new Error("Canvas toBlob returned null"))
-              else resolve(blob)
-            },
-            opts.mimeType,
-            opts.quality,
-          )
-        })
-
-  return convertToBlob()
 }
