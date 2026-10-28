@@ -9,6 +9,7 @@
  */
 
 import { initTRPC, TRPCError } from "@trpc/server"
+import { getHTTPStatusCodeFromError } from "@trpc/server/http"
 import { timingSafeEqual } from "node:crypto"
 import superjson from "superjson"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
@@ -23,6 +24,8 @@ import { defaultUserSelect } from "./modules/me/me.select"
 import { checkRateLimit } from "./modules/rate-limit/rate-limit.service"
 import { isEmailWhitelisted } from "./modules/whitelist/whitelist.service"
 import { flattenZodErrorForTrpcClient } from "./trpcZodError"
+
+const MIN_SERVER_ERROR_STATUS_CODE = 500
 
 interface Meta {
   rateLimitOptions?: RateLimitMetaOptions
@@ -73,14 +76,19 @@ const loggerMiddleware = t.middleware(
         `[${type}]: ${path} - ${durationInMs}ms - OK`,
       )
     } else {
-      logger.error(
+      // Client errors (4xx) are expected; logging them at error buries real failures
+      const level =
+        getHTTPStatusCodeFromError(result.error) >= MIN_SERVER_ERROR_STATUS_CODE
+          ? "error"
+          : "warn"
+      logger[level](
         {
           durationInMs,
           err: result.error,
           rawInput,
           userId: ctx.session?.userId,
         },
-        `[${type}]: ${path} - ${durationInMs}ms - ${result.error.code} ${result.error.message} - ERROR`,
+        `[${type}]: ${path} - ${durationInMs}ms - ${result.error.code} ${result.error.message} - ${level.toUpperCase()}`,
       )
     }
 

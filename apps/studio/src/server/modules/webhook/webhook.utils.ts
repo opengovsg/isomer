@@ -53,15 +53,16 @@ export const updateCodebuildStatusAndSendEmails = async (
   let codebuildJobIdsForSentEmails: string[] = []
   await updateCurrentAndSupersededBuilds(buildId, status)
   // send notification emails on a best-effort basis, so we catch any errors and log them
+  // `buildStatus`, not `status`: Datadog reads a top-level `status` as the log level
   try {
     codebuildJobIdsForSentEmails = await sendEmails(gb, buildId, status)
     logger.info(
-      { buildId, status, codebuildJobIdsForSentEmails },
+      { buildId, buildStatus: status, codebuildJobIdsForSentEmails },
       `Emails sent for buildId ${String(buildId)}`,
     )
   } catch (error) {
     logger.error(
-      { buildId, status, error },
+      { buildId, buildStatus: status, error },
       `Failed to send notification emails for build status ${String(status)} for buildId ${String(buildId)}.`,
     )
   }

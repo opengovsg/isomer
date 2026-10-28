@@ -24,7 +24,7 @@ const fileNameSchema = z
     error: "Missing file name",
   })
   .refine(fileNameStartingCharRefine, {
-    error: fileNameStartingCharMessage,
+    message: fileNameStartingCharMessage,
   })
   .refine(
     (fileName) => {
@@ -45,14 +45,14 @@ const fileNameSchema = z
       return ALLOWED_EXTENSIONS.includes(extension)
     },
     {
-      error: "File type not allowed. Please upload a supported file type.",
+      message: "File type not allowed. Please upload a supported file type.",
     },
   )
 
 const fileSizeSchema = z
   .number({ error: "Missing file size" })
   .int()
-  .min(1, { error: "File size must be greater than 0 bytes" })
+  .min(1, { message: "File size must be greater than 0 bytes" })
 
 // Cross-field: the size limit that applies to `fileSize` depends on `fileName`'s
 // extension, so it can't be expressed as a per-field constraint. Shared between
@@ -69,7 +69,7 @@ const fileSizeRefine = (
   if (fileSize <= maxFileSize) return
 
   ctx.addIssue({
-    code: z.ZodIssueCode.custom,
+    code: "custom",
     path: ["fileSize"],
     message: `File size must not exceed ${formatFileSizeLimit({ bytes: maxFileSize })}`,
   })
@@ -106,10 +106,10 @@ export const uploadSvgSchema = z.object({
   fileName: z
     .string()
     .refine(fileNameStartingCharRefine, {
-      error: fileNameStartingCharMessage,
+      message: fileNameStartingCharMessage,
     })
     .refine((s) => s.toLowerCase().endsWith(".svg"), {
-      error: "Only .svg files are allowed",
+      message: "Only .svg files are allowed",
     })
     .max(255),
   // z.string().max() counts UTF-16 code units (JS string length), not bytes.
@@ -117,7 +117,7 @@ export const uploadSvgSchema = z.object({
   // is bounded: worst case is 3× (4-byte UTF-8 chars are 2 code units). Acceptable
   // as a rough upper bound; use Buffer.byteLength for an exact byte check if needed.
   content: z.string().max(MAX_SVG_FILE_SIZE_BYTES, {
-    error: `SVG file size must not exceed ${MAX_SVG_FILE_SIZE_BYTES / 1_000_000} MB`,
+    message: `SVG file size must not exceed ${MAX_SVG_FILE_SIZE_BYTES / 1_000_000} MB`,
   }),
   resourceId: z.string().optional(),
   tags: z.array(z.object({ key: z.string(), value: z.string() })).optional(),
@@ -139,7 +139,7 @@ export const deleteAssetsSchema = z.object({
       }),
     )
     .max(MAX_DELETE_FILE_KEYS, {
-      error: `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
+      message: `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
     }),
 })
 
@@ -163,9 +163,9 @@ export const deleteAssetsByUrlSchema = z.object({
         error: "Missing asset URL",
       }),
     )
-    .min(1, { error: "Enter at least one asset URL" })
+    .min(1, { message: "Enter at least one asset URL" })
     .max(MAX_DELETE_ASSET_URLS, {
-      error: `You can only delete up to ${MAX_DELETE_ASSET_URLS} assets at a time`,
+      message: `You can only delete up to ${MAX_DELETE_ASSET_URLS} assets at a time`,
     }),
 })
 
