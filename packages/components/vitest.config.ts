@@ -52,6 +52,9 @@ export default defineConfig({
             },
             test: {
               name: "storybook",
+              // Reuse one iframe per worker instead of a fresh one per story
+              // file; per-file iframe startup dominated the run time.
+              isolate: false,
               alias,
               browser: {
                 enabled: true,
