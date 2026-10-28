@@ -24,6 +24,77 @@ const infoCardPreviewObjectFit = (fieldHost: unknown): "cover" | "contain" =>
     ? "contain"
     : "cover"
 
+// InfoCards' own "cards with images" card frame (common.ts cardImageContainer)
+// is 3:2 at every breakpoint EXCEPT at lg+, where two specific
+// maxColumns+layout combos are overridden: homepage+2-column goes to 2:1,
+// default(content-page)+3-column goes to 1:1 (square) — every other
+// combination (including 1-column, which has no lg override at all) stays
+// 3:2. Keyed by the block's own `maxColumns` (schema only offers "1"/"2"/"3").
+const INFOCARDS_DESKTOP_ASPECT_BY_MAX_COLUMNS: Record<
+  "1" | "2" | "3",
+  { homepage: AspectRatio; contentPage: AspectRatio }
+> = {
+  "1": {
+    homepage: { width: 3, height: 2 },
+    contentPage: { width: 3, height: 2 },
+  },
+  "2": {
+    homepage: { width: 2, height: 1 },
+    contentPage: { width: 3, height: 2 },
+  },
+  "3": {
+    homepage: { width: 3, height: 2 },
+    contentPage: { width: 1, height: 1 },
+  },
+}
+
+const aspectRatiosEqual = (a: AspectRatio, b: AspectRatio): boolean =>
+  a.width / a.height === b.width / b.height
+
+// Builds the lg+ preview state(s) for "cards with images" from the actual
+// block's maxColumns. A block's image field has no way to know which page
+// it's published on, so when the homepage/content-page shapes for this
+// maxColumns actually differ, both are previewed (same per-state `layout`
+// pattern Blockquote uses) rather than guessing one; when they're the same
+// shape (1-column, or any combo without an lg override), a single state
+// covers it.
+const infoCardsDesktopStates = (block: unknown): AdjustmentPreviewState[] => {
+  const rawMaxColumns = (block as { maxColumns?: unknown } | null)
+    ?.maxColumns
+  const maxColumns =
+    rawMaxColumns === "1" || rawMaxColumns === "2" || rawMaxColumns === "3"
+      ? rawMaxColumns
+      : "3"
+  const { homepage, contentPage } =
+    INFOCARDS_DESKTOP_ASPECT_BY_MAX_COLUMNS[maxColumns]
+
+  if (aspectRatiosEqual(homepage, contentPage)) {
+    return [
+      {
+        id: "desktop",
+        label: `Desktop (${maxColumns} column${maxColumns === "1" ? "" : "s"})`,
+        layout: "content",
+        aspectRatio: contentPage,
+      },
+    ]
+  }
+
+  return [
+    {
+      id: "desktop-content",
+      label: `Desktop (${maxColumns} columns, content pages)`,
+      layout: "content",
+      aspectRatio: contentPage,
+    },
+    {
+      id: "desktop-homepage",
+      label: `Desktop (${maxColumns} columns, homepage)`,
+      layout: "homepage",
+      aspectRatio: homepage,
+    },
+  ]
+}
+
 // Every Tier B config previews at the same three breakpoint viewport widths
 // (mobile 375 / tablet 768 / desktop 1280); only the aspect-ratio guess differs
 // per component, so declare just the ratios. The ratios are an initial guess —
@@ -218,15 +289,17 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
 }
 
 // Tier C — InfoCards "cards with images". Per-card image cover-fit into a card
-// whose aspect ratio swings across breakpoints (3:2 on mobile → 1:1 at lg for
-// the default 3-column content layout, or 2:1 for a 2-column homepage), so this
-// is the Tier-B cover+focal pattern (free crop baked in, focal anchors the
-// subject across the swing). Crop is always offered; focal is offered only under
-// imageFit "cover" (focalEnabledFor) — under "contain" the image is letterboxed,
-// so the preview switches to object-contain (previewObjectFitFor) and the focal
-// control is hidden. The preview uses the framed-image approximation, not the
-// real block (which would render every card), with the three ratio states.
-const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
+// whose aspect ratio swings across breakpoints (3:2 on mobile; at lg it's
+// usually still 3:2, but the default 3-column content-page layout overrides it
+// to 1:1 and the 2-column homepage layout overrides it to 2:1 — see
+// infoCardsDesktopStates), so this is the Tier-B cover+focal pattern (free crop
+// baked in, focal anchors the subject across the swing). Crop is always
+// offered; focal is offered only under imageFit "cover" (focalEnabledFor) —
+// under "contain" the image is letterboxed, so the preview switches to
+// object-contain (previewObjectFitFor) and the focal control is hidden. The
+// preview uses the framed-image approximation, not the real block (which would
+// render every card).
+const infoCardsWithImagesConfig = (block: unknown): AdjustmentConfig => ({
   componentType: "infocards:cardsWithImages",
   cropMode: "custom",
   focalEnabled: true,
@@ -240,20 +313,11 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
       viewportWidth: 375,
       aspectRatio: { width: 3, height: 2 },
     },
-    {
-      id: "desktop",
-      label: "Desktop (3 columns)",
-      aspectRatio: { width: 1, height: 1 },
-    },
-    {
-      id: "wide",
-      label: "Desktop (2 columns)",
-      aspectRatio: { width: 2, height: 1 },
-    },
+    ...infoCardsDesktopStates(block),
   ],
   preUploadCopy:
     "The card crops this image to fill its frame, and the frame's shape changes across screen sizes. Set a focal point so your key subject stays in view.",
-}
+})
 
 // Tier C — InfoCards "cards with full images". Same conditional crop/focal as
 // the default variant, but the image fills the whole card (square on mobile →
@@ -306,7 +370,7 @@ export function resolveAdjustmentConfig(args: {
   if (type === "infopic") return INFOPIC_CONFIG
   if (type === "blockquote") return BLOCKQUOTE_CONFIG
   if (type === "infocards" && variant === "cardsWithImages")
-    return INFOCARDS_WITH_IMAGES_CONFIG
+    return infoCardsWithImagesConfig(args.block)
   if (type === "infocards" && variant === "cardsWithFullImages")
     return INFOCARDS_WITH_FULL_IMAGE_CONFIG
   return undefined
