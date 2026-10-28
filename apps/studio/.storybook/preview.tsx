@@ -56,6 +56,41 @@ interface Fiber {
   stateNode: unknown
   child?: Fiber
 }
+// Argos only waits for images in the top document, and the Storybook SDK
+// turns off its aria-busy wait. So it would capture Suspense skeletons and the
+// page preview (a same-origin iframe) before their data, styles and images
+// land. Loading Chakra skeletons are the only ones with an infinite animation.
+const isPageSettled = () => {
+  const frameDocs = Array.from(document.querySelectorAll("iframe")).flatMap(
+    (iframe) => (iframe.contentDocument ? [iframe.contentDocument] : []),
+  )
+  return [document, ...frameDocs].every((doc) => {
+    const isSkeletonLoading = Array.from(
+      doc.querySelectorAll<HTMLElement>(".chakra-skeleton"),
+    ).some((el) => getComputedStyle(el).animationIterationCount === "infinite")
+    if (isSkeletonLoading) return false
+    if (doc === document) return true
+    const images = Array.from(doc.images)
+    images.forEach((img) => (img.loading = "eager"))
+    return (
+      images.every((img) => img.complete) &&
+      Array.from(
+        doc.querySelectorAll<HTMLLinkElement>("link[rel='stylesheet']"),
+      ).every((link) => link.sheet)
+    )
+  })
+}
+
+const waitForPageSettledInVitest = async () => {
+  if (!("__vitest_browser__" in globalThis)) return
+  // ponytail: stories that stay loading on purpose (e.g. `Loading`) spend the
+  // whole timeout here; add a parameter to skip them if that gets slow.
+  const deadline = Date.now() + 5_000
+  while (Date.now() < deadline && !isPageSettled()) {
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
+}
+
 const trpc = createTRPCReact<AppRouter>()
 
 const StorybookEnvDecorator: Decorator = (story) => {
@@ -191,6 +226,7 @@ const preview: Preview = {
   beforeAll: () => {
     configure({ asyncUtilTimeout: 5000 })
   },
+  afterEach: waitForPageSettledInVitest,
 
   loaders: [
     mswLoader(async () => {
