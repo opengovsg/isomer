@@ -342,7 +342,11 @@ export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
   if (!response.ok) {
     const errorText = await response.text()
     logger.error(
-      { status: response.status, error: errorText, documents },
+      {
+        status: response.status,
+        error: errorText,
+        documentIds: documents.map(({ documentId }) => documentId),
+      },
       "Failed to push documents for ingestion",
     )
     throw new Error(
