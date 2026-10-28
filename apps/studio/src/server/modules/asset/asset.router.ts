@@ -4,6 +4,7 @@ import {
   deleteAssetsSchema,
   getPresignedGetUrlSchema,
   getPresignedPutUrlSchema,
+  getPresignedPutUrlForBakeSchema,
   uploadSvgSchema,
 } from "~/schemas/asset"
 import { protectedProcedure, router } from "~/server/trpc"
@@ -13,6 +14,7 @@ import { invalidateAssetPaths } from "../aws/cloudfront.service"
 import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
 import {
   deleteAssetsByUrl,
+  deriveBakeKey,
   doAllFileKeysBelongToSite,
   getFileKey,
   getPresignedGetUrl,
@@ -92,6 +94,45 @@ export const assetRouter = router({
 
       return { presignedGetUrl }
     }),
+
+  getPresignedPutUrlForBake: protectedProcedure
+    .input(getPresignedPutUrlForBakeSchema)
+    .meta({ rateLimitOptions: { max: 10, windowMs: 60_000 } })
+    .mutation(
+      async ({ ctx, input: { siteId, resourceId, src, ext, fileSize } }) => {
+        // Ownership of `src` is NOT re-verified against the resource's
+        // persisted blob here (deliberate: a just-uploaded-but-not-yet-saved
+        // image has no persisted reference yet, and requiring a page save
+        // first was judged worse UX than this). The resourceId/siteId
+        // "create" permission check below is the sole gate; deriveBakeKey
+        // still confirms `src` resolves to a key under this siteId.
+        await validateUserPermissionsForAsset({
+          siteId,
+          resourceId,
+          action: "create",
+          userId: ctx.user.id,
+        })
+
+        const fileKey = deriveBakeKey({ src, ext, siteId })
+
+        const uploadConfig = await getPresignedPutUrl({
+          key: fileKey,
+          fileSize,
+        })
+
+        ctx.logger.info(
+          {
+            userId: ctx.session?.userId,
+            siteId,
+            resourceId,
+            fileKey,
+          },
+          `Generated upload config for bake ${fileKey} for site ${siteId}`,
+        )
+
+        return { fileKey, uploadConfig }
+      },
+    ),
 
   // No rate limit: all agency editors reach Studio through a single shared
   // egress IP (remote browser isolation), and the limiter keys on IP, so any
