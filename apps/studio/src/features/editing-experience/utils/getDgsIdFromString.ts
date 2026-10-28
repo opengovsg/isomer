@@ -2,7 +2,7 @@
 import { z } from "zod"
 
 const DgsDatasetIdSchema = z.string().regex(/^d_[a-zA-Z0-9]+$/, {
-  message:
+  error:
     "DGS dataset ID must start with 'd_' followed by alphanumeric characters",
 })
 

@@ -2,20 +2,24 @@ pull_request_rules:
   - name: Approve and merge non-major version dependabot upgrades
     conditions:
       - author~=^dependabot\[bot\]$
-      - check-success~=tests
+      - "check-success=✅ CI passed"
+      - "#check-failure=0"
+      # `✅ CI passed` allows test jobs to be skipped by the CI optimizer, so
+      # require them by name to prove tests actually ran.
+      - check-success=Test Studio (1/2)
+      - check-success=Test Studio (2/2)
+      - check-success=Test Components
+      - check-success=Test Validators
+      - check-success=Test pgboss
+      - check-success=Publishing script tests
       - -dependabot-update-type = version-update:semver-major
-    actions:
-      review:
-        type: APPROVE
-      merge:
-        method: squash
-
-  - name: Approve and merge Snyk.io upgrades
-    conditions:
-      - author=isomeradmin
-      - check-success~=tests
-      - title~=^\[Snyk\]
-      - base = main
+      # PR author doesn't prove who wrote the code: anyone with write access can
+      # push to a dependabot branch. Dependabot force-pushes a single commit, so
+      # any extra commit disqualifies the PR from auto-merge.
+      - "#commits=1"
+      - "#commits-unverified=0"
+      - commits[0].email_author = 49699333+dependabot[bot]@users.noreply.github.com
+      - commits[0].email_committer = noreply@github.com
     actions:
       review:
         type: APPROVE
