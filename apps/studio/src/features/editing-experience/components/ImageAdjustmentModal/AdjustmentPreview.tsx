@@ -164,7 +164,23 @@ export const AdjustmentPreview = ({
         clearTimeout(bakeTimeoutRef.current)
       }
     }
-  }, [originalBlob, adjustment])
+    // Deliberately narrower than `adjustment` itself: focal is applied at
+    // render time as CSS object-position (see getFocalObjectPosition below
+    // and the framed-image fallback), independent of this baked preview — a
+    // focal-only drag doesn't change which pixels are cropped, so it
+    // shouldn't trigger a canvas re-encode. Depending on the whole object
+    // would re-bake on every focal drag for no visual gain.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    originalBlob,
+    adjustment?.crop?.x,
+    adjustment?.crop?.y,
+    adjustment?.crop?.width,
+    adjustment?.crop?.height,
+    adjustment?.rotate,
+    adjustment?.flipH,
+    adjustment?.flipV,
+  ])
 
   // Cleanup: revoke object URL on unmount
   useEffect(() => {
