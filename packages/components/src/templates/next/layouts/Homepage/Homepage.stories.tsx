@@ -881,8 +881,8 @@ const heroCarouselHomepageProps = {
 }
 
 export const HeroCarouselBlockImageRight: Story = {
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds Argos's capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       ...heroCarouselHomepageProps,
@@ -895,7 +895,7 @@ export const HeroCarouselBlockImageRight: Story = {
 }
 
 export const HeroCarouselBlockImageLeft: Story = {
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       ...heroCarouselHomepageProps,
@@ -908,7 +908,7 @@ export const HeroCarouselBlockImageLeft: Story = {
 }
 
 export const HeroCarouselGradient: Story = {
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       ...heroCarouselHomepageProps,
@@ -921,7 +921,7 @@ export const HeroCarouselGradient: Story = {
 }
 
 export const HeroCarouselGradientCenter: Story = {
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       ...heroCarouselHomepageProps,

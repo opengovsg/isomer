@@ -67,10 +67,11 @@ const RotationCountdown = () => {
   const animation = "hero-carousel-countdown"
   const keyframes = `@keyframes ${animation} { from { stroke-dashoffset: ${circumference}; } to { stroke-dashoffset: 0; } }`
 
+  // The ring advances every frame. Argos hides it in snapshots.
   return (
     <svg
       data-rotation-countdown=""
-      data-chromatic="ignore"
+      data-visual-test="transparent"
       aria-hidden
       viewBox="0 0 40 40"
       className="pointer-events-none absolute inset-0 h-full w-full motion-reduce:hidden"
