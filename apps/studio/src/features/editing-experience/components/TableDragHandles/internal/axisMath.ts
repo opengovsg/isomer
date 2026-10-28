@@ -20,6 +20,8 @@ export interface TableGeometry {
   pos: number
   rowRects: (Rect | null)[]
   colRects: (Rect | null)[]
+  /** Visible scrollport. Absent when the table is not in a scroll frame. */
+  frame?: Rect | null
 }
 
 /**
