@@ -4,7 +4,7 @@ import type { IsomerPageLayoutType } from "~/types"
 import { INFOCARDS_CAROUSEL_MAX_CARDS, INFOCARDS_DISPLAY } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { InfoCards } from "./InfoCards"
 
@@ -324,7 +324,7 @@ export const CarouselFullImages: Story = {
 
 export const CarouselStaticOnDesktop: Story = {
   name: "Carousel (static when cards fit)",
-  parameters: { chromatic: withChromaticModes(["desktop"]) },
+  parameters: { argos: withArgosModes(["desktop"]) },
   args: generateArgs({
     layout: "homepage",
     maxColumns: "3",

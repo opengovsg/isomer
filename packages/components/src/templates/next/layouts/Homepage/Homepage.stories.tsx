@@ -898,7 +898,7 @@ const infoCardsCarouselSection = {
 
 export const InfoCardsCarousel: Story = {
   name: "InfoCards carousel (with image)",
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  parameters: { argos: argosWithoutMobileSmall },
   args: {
     ...generateArgs({
       heroProps: infoCardsCarouselHero,
@@ -916,7 +916,7 @@ export const InfoCardsCarousel: Story = {
 
 export const InfoCardsCarouselWithoutImages: Story = {
   name: "InfoCards carousel (without images)",
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  parameters: { argos: argosWithoutMobileSmall },
   args: {
     ...generateArgs({
       heroProps: infoCardsCarouselHero,
@@ -934,7 +934,7 @@ export const InfoCardsCarouselWithoutImages: Story = {
 
 export const InfoCardsCarouselFullImages: Story = {
   name: "InfoCards carousel (full images)",
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  parameters: { argos: argosWithoutMobileSmall },
   args: {
     ...generateArgs({
       heroProps: infoCardsCarouselHero,
