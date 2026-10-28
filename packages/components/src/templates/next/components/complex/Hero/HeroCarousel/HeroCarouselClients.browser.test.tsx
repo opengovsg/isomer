@@ -108,14 +108,14 @@ describe("hero carousel preview index", () => {
         slides={indexedSlides}
       />,
     )
-    expect(screen.getByText("1 of 3")).toBeInTheDocument()
+    expect(screen.getByText("1 of 3").textContent).toBe("1 of 3")
 
     // Act
     await userEvent.click(screen.getByRole("button", { name: "Next slide" }))
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
-    expect(screen.getByText("2 of 3")).toBeInTheDocument()
+    expect(screen.getByText("2 of 3").textContent).toBe("2 of 3")
   })
 
   it("follows the preview index and sends a next press through setActiveIndex", async () => {
@@ -284,7 +284,9 @@ describe("hero carousel rotation", () => {
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
-    expect(rotationButton()).toHaveAccessibleName("Start slide rotation")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Start slide rotation",
+    )
     expect(section.querySelector("[data-rotation-countdown]")).toBeNull()
   })
 
@@ -297,7 +299,9 @@ describe("hero carousel rotation", () => {
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
-    expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Pause slide rotation",
+    )
     expect(section.querySelector("[data-rotation-countdown]")).toBeTruthy()
 
     // Act
@@ -322,8 +326,10 @@ describe("hero carousel rotation", () => {
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 3 of 3: Gamma")
-    expect(screen.getByText("3 of 3")).toBeInTheDocument()
-    expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
+    expect(screen.getByText("3 of 3").textContent).toBe("3 of 3")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Pause slide rotation",
+    )
     expect(section.querySelector("[data-rotation-countdown]")).toBeTruthy()
 
     // Act
@@ -346,7 +352,9 @@ describe("hero carousel rotation", () => {
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
-    expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Pause slide rotation",
+    )
   })
 
   it("does not advance after focus enters a slide call to action", () => {
@@ -362,7 +370,9 @@ describe("hero carousel rotation", () => {
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 2: Short")
-    expect(rotationButton()).toHaveAccessibleName("Start slide rotation")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Start slide rotation",
+    )
   })
 
   it("does not advance after focus enters the pause button", () => {
@@ -378,7 +388,9 @@ describe("hero carousel rotation", () => {
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
-    expect(rotationButton()).toHaveAccessibleName("Start slide rotation")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Start slide rotation",
+    )
   })
 
   it("restarts rotation on play without stopping again from the existing focus", () => {
@@ -395,7 +407,9 @@ describe("hero carousel rotation", () => {
     )
 
     // Assert
-    expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Pause slide rotation",
+    )
 
     // Act
     advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS - 1)
@@ -408,7 +422,9 @@ describe("hero carousel rotation", () => {
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
-    expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Pause slide rotation",
+    )
   })
 
   it("keeps rotating while the pointer is inside", () => {
@@ -422,7 +438,9 @@ describe("hero carousel rotation", () => {
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
-    expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Pause slide rotation",
+    )
 
     // Act
     fireEvent.pointerLeave(section, { pointerType: "mouse" })
@@ -430,7 +448,9 @@ describe("hero carousel rotation", () => {
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
-    expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Pause slide rotation",
+    )
   })
 
   it("pauses the timer while the document is hidden and restarts a full interval when it is visible", () => {
@@ -475,7 +495,9 @@ describe("hero carousel rotation", () => {
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
-    expect(rotationButton()).toHaveAccessibleName("Start slide rotation")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Start slide rotation",
+    )
   })
 
   it("stops rotation when reduced motion is turned on mid-session", () => {
@@ -492,7 +514,9 @@ describe("hero carousel rotation", () => {
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
-    expect(rotationButton()).toHaveAccessibleName("Start slide rotation")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Start slide rotation",
+    )
   })
 
   it("does not rotate when autoplay is false and renders the button stopped", () => {
@@ -521,7 +545,9 @@ describe("hero carousel rotation", () => {
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
-    expect(rotationButton()).toHaveAccessibleName("Start slide rotation")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Start slide rotation",
+    )
   })
 
   it("rotates when autoplay turns on", () => {
@@ -553,7 +579,9 @@ describe("hero carousel rotation", () => {
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
-    expect(rotationButton()).toHaveAccessibleName("Pause slide rotation")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Pause slide rotation",
+    )
   })
 
   it("stops rotation when autoplay turns off", () => {
@@ -585,7 +613,9 @@ describe("hero carousel rotation", () => {
 
     // Assert
     expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
-    expect(rotationButton()).toHaveAccessibleName("Start slide rotation")
+    expect(rotationButton().getAttribute("aria-label")).toBe(
+      "Start slide rotation",
+    )
   })
 
   it.each(Object.entries(carouselVariants))(
@@ -628,15 +658,15 @@ describe("hero carousel rotation", () => {
 
       // Act / Assert
       expect(tabbableIn(section)[0]).toBe(pause)
-      expect(pause).toHaveAttribute("type", "button")
-      expect(pause).not.toHaveAttribute("aria-pressed")
+      expect(pause.getAttribute("type")).toBe("button")
+      expect(pause.hasAttribute("aria-pressed")).toBe(false)
 
       // Act
       fireEvent.click(pause)
 
       // Assert
       const play = screen.getByRole("button", { name: "Start slide rotation" })
-      expect(play).not.toHaveAttribute("aria-pressed")
+      expect(play.hasAttribute("aria-pressed")).toBe(false)
       expect(play.querySelector("svg")?.innerHTML).not.toBe(icon)
     },
   )
@@ -648,11 +678,11 @@ describe("hero carousel rotation", () => {
     const textWhileRotating = region.textContent
 
     // Act / Assert
-    expect(region).toHaveAttribute("aria-live", "off")
+    expect(region.getAttribute("aria-live")).toBe("off")
 
     advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
-    expect(region).toHaveAttribute("aria-live", "off")
+    expect(region.getAttribute("aria-live")).toBe("off")
     expect(region.textContent).toBe("Slide 2 of 3: Beta")
 
     // Act
@@ -661,7 +691,7 @@ describe("hero carousel rotation", () => {
     )
 
     // Assert
-    expect(region).toHaveAttribute("aria-live", "polite")
+    expect(region.getAttribute("aria-live")).toBe("polite")
     expect(region.textContent).toBe("Slide 2 of 3: Beta")
     expect(region.textContent).not.toBe(textWhileRotating)
 
@@ -669,7 +699,7 @@ describe("hero carousel rotation", () => {
     fireEvent.click(screen.getByRole("button", { name: "Next slide" }))
 
     // Assert
-    expect(region).toHaveAttribute("aria-live", "polite")
+    expect(region.getAttribute("aria-live")).toBe("polite")
     expect(region.textContent).toBe("Slide 3 of 3: Gamma")
   })
 
@@ -689,12 +719,12 @@ describe("hero carousel rotation", () => {
 
     // Assert
     const groups = slideGroups()
-    expect(groups[0]).toHaveAttribute("inert")
-    expect(groups[1]).not.toHaveAttribute("inert")
-    expect(groups[2]).toHaveAttribute("inert")
-    expect(imageFrames()[0]).toHaveAttribute("aria-hidden", "true")
-    expect(imageFrames()[1]).toHaveAttribute("aria-hidden", "false")
-    expect(imageFrames()[2]).toHaveAttribute("aria-hidden", "true")
+    expect(groups[0]?.hasAttribute("inert")).toBe(true)
+    expect(groups[1]?.hasAttribute("inert")).toBe(false)
+    expect(groups[2]?.hasAttribute("inert")).toBe(true)
+    expect(imageFrames()[0]?.getAttribute("aria-hidden")).toBe("true")
+    expect(imageFrames()[1]?.getAttribute("aria-hidden")).toBe("false")
+    expect(imageFrames()[2]?.getAttribute("aria-hidden")).toBe("true")
   })
 
   it("renders one slide without a rotation control, timer, or live region", () => {
@@ -711,10 +741,10 @@ describe("hero carousel rotation", () => {
     advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
     // Assert
-    expect(
-      screen.queryByRole("button", { name: /slide rotation/ }),
-    ).not.toBeInTheDocument()
-    expect(screen.queryByText(/Slide \d of \d:/)).not.toBeInTheDocument()
-    expect(screen.getByRole("heading", { name: "Alpha" })).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /slide rotation/ })).toBeNull()
+    expect(screen.queryByText(/Slide \d of \d:/)).toBeNull()
+    expect(screen.getByRole("heading", { name: "Alpha" }).textContent).toBe(
+      "Alpha",
+    )
   })
 })
