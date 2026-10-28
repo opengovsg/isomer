@@ -9,13 +9,19 @@ name: pr-breakdown
 # finishes, instead of waiting on ci.yml's slower jobs (e2e-tests,
 # test-studio, etc). See update-pr-description.yml for why a `workflow_run`
 # trigger is needed at all.
-on:
+# GHA is free for public repos; no concurrency grouping.
+on: # jactionlint ignore=concurrency-limits
   pull_request:
     types: [opened, synchronize]
+
+permissions:
+  contents: read
 
 jobs:
   optimize_ci:
     runs-on: ubuntu-latest # or whichever runner you use for your CI
+    permissions: {} # only talks to Graphite's API via graphite_token; no GITHUB_TOKEN use
+    timeout-minutes: 30
     outputs:
       skip: ${{ steps.check_skip.outputs.skip }}
     steps:
@@ -29,6 +35,7 @@ jobs:
     name: PR diff breakdown
     needs: optimize_ci
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: needs.optimize_ci.outputs.skip == 'false'
     permissions:
       contents: read
@@ -54,6 +61,7 @@ jobs:
       # revisiting if that ever becomes an actual bottleneck.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Classify changed files
@@ -84,7 +92,9 @@ jobs:
         run: |
           mkdir -p /tmp/pr-breakdown-metadata
           cp /tmp/pr-breakdown-body.md /tmp/pr-breakdown-metadata/body.md
-          echo "${{ github.event.pull_request.base.ref }}" > /tmp/pr-breakdown-metadata/base-ref.txt
+          echo "${PULL_REQUEST_BASE_REF}" > /tmp/pr-breakdown-metadata/base-ref.txt
+        env:
+          PULL_REQUEST_BASE_REF: ${{ github.event.pull_request.base.ref }}
 
       - name: Upload PR breakdown metadata
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
