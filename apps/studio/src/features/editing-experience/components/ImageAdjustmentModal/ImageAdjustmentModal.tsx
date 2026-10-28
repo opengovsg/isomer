@@ -187,11 +187,13 @@ export const ImageAdjustmentModal = ({
   // the largest centered rect under a locked ratio; centered focal) — it
   // does NOT save or close, same as any other crop/focal edit, so the editor
   // can see the reset in the preview and still Save/Undo/Cancel from there.
-  // Disabled for a locked ratio until the real image aspect is known (see
-  // imageAspect) — without the true aspect, defaultCropRect would bake the
-  // wrong pixel ratio. A free (non-locked) crop ignores imageAspect, so it is
-  // always resettable.
-  const isResetDisabled = lockedRatio != null && imageAspect === undefined
+  // True for a locked ratio until the real image aspect is known (see
+  // imageAspect) — without the true aspect, both defaultCropRect (Reset) and
+  // resizeRectByHandle (dragging a handle in CropFocalControl) would assume a
+  // square (1:1) image and bake the wrong pixel ratio. A free (non-locked)
+  // crop ignores imageAspect entirely, so it's never blocked by this.
+  const isAspectPending = lockedRatio != null && imageAspect === undefined
+  const isResetDisabled = isAspectPending
 
   const handleReset = () => {
     setDraft((d) => ({
@@ -280,7 +282,7 @@ export const ImageAdjustmentModal = ({
                         setDraft((d) => ({ ...ensureAdjustment(d), focal }))
                       }
                       onImageAspectChange={setImageAspect}
-                      isDisabled={isSaving}
+                      isDisabled={isSaving || isAspectPending}
                     />
                   )}
 
