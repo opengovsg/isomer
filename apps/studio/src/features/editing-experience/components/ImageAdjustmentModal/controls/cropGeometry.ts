@@ -13,6 +13,13 @@ export interface CropRectNormalized {
 export const MIN_CROP_SIZE = 0.05 // avoid degenerate/zero-size crops
 
 /**
+ * Clamps a number to [0, 1] range. Also re-exported from focalGeometry.ts,
+ * which needs it for focal coordinates — defined here (not there) so this
+ * file stays the dependency-free one.
+ */
+export const clampUnit = (n: number): number => Math.min(1, Math.max(0, n))
+
+/**
  * Clamp a rect to stay within the unit square, preserving width/height where
  * possible by shifting x/y (not resizing) when it would overflow.
  */
@@ -48,8 +55,6 @@ export const CORNER_HANDLES: readonly HandlePosition[] = [
   "sw",
 ]
 export const EDGE_HANDLES: readonly HandlePosition[] = ["n", "e", "s", "w"]
-
-const clampUnit = (n: number): number => Math.min(1, Math.max(0, n))
 
 interface HandleEdges {
   movesLeft: boolean
