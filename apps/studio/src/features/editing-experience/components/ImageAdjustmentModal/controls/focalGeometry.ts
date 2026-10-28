@@ -3,11 +3,9 @@
  * No dependencies, fully unit-testable.
  */
 import type { CropRectNormalized } from "./cropGeometry"
+import { clampUnit } from "./cropGeometry"
 
-/**
- * Clamps a number to [0, 1] range.
- */
-export const clampUnit = (n: number): number => Math.min(1, Math.max(0, n))
+export { clampUnit }
 
 /**
  * Converts client coordinates to normalized focal point coordinates [0, 1].
