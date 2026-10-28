@@ -58,6 +58,13 @@ export default defineConfig({
             },
             test: {
               name: "storybook",
+              // Browser mode's default test timeout is 15s. The preview waits
+              // up to 16s for embed iframes inside that test, and Argos then
+              // re-runs every mode from the hook. Apple Podcast stories hit
+              // the 15s limit when the embed is slow and the shard never
+              // uploads, so Argos treats the rest of the baseline as removed.
+              testTimeout: 60_000,
+              hookTimeout: 120_000,
               alias,
               browser: {
                 enabled: true,
