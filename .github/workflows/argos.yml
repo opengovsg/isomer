@@ -46,7 +46,7 @@ jobs:
   # Storybooks are built whenever either changes and deployed together as one
   # site (/components/ and /studio/) by the final `deploy` job.
   # Components stories are split across shards that upload to one Argos build
-  # in parallel mode; `components-argos` finalizes it once every shard is done.
+  # in parallel mode; `argos-finalize` closes it once every shard is done.
   components:
     name: components (${{ matrix.shard }}/${{ matrix.total_shards }})
     needs: [changes, optimize_ci]
@@ -113,31 +113,8 @@ jobs:
           fi
         env:
           ARGOS_SUBSET: ${{ steps.scope.outputs.base != '' }}
-          # The CLI requires an explicit nonce; it must match `components-argos`.
-          ARGOS_PARALLEL_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}
-
-  # Closes the sharded components build, or skips it when components are
-  # unchanged, so the Argos check always resolves.
-  components-argos:
-    needs: [changes, optimize_ci, components]
-    if: ${{ always() && !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.optimize_ci.outputs.skip == 'false' }}
-    runs-on: ubuntu-latest
-    environment: staging
-    env:
-      ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Setup
-        uses: ./.github/actions/setup
-      - name: Finalize Argos build
-        if: ${{ needs.changes.outputs.components == 'true' }}
-        # --skip-if-empty: affected-story runs may capture nothing on any shard.
-        run: pnpm --filter @opengovsg/isomer-components exec argos finalize --build-name components --skip-if-empty --parallel-nonce "$ARGOS_PARALLEL_NONCE"
-        env:
-          ARGOS_PARALLEL_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Skip Argos build
-        if: ${{ needs.changes.outputs.components != 'true' }}
-        run: pnpm --filter @opengovsg/isomer-components exec argos skip --build-name components
+          # The CLI requires an explicit nonce; it must match `argos-finalize`.
+          ARGOS_PARALLEL_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-components
 
   # Built apart from the test jobs so the deploy doesn't wait on, or rerun,
   # either Storybook suite.
@@ -159,7 +136,7 @@ jobs:
           retention-days: 1
 
   # Studio stories are split across shards that upload to one Argos build in
-  # parallel mode; `studio-argos` finalizes it once every shard has finished.
+  # parallel mode; `argos-finalize` closes it once every shard is done.
   studio:
     name: studio (${{ matrix.shard }}/${{ matrix.total_shards }})
     needs: [changes, optimize_ci]
@@ -237,31 +214,8 @@ jobs:
           fi
         env:
           ARGOS_SUBSET: ${{ steps.scope.outputs.base != '' }}
-          # The CLI requires an explicit nonce; it must match `studio-argos`.
-          ARGOS_PARALLEL_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}
-
-  # Closes the sharded studio build, or skips it when studio is unchanged, so the
-  # Argos check always resolves.
-  studio-argos:
-    needs: [changes, optimize_ci, studio]
-    if: ${{ always() && !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.optimize_ci.outputs.skip == 'false' }}
-    runs-on: ubuntu-latest
-    environment: staging
-    env:
-      ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Setup
-        uses: ./.github/actions/setup
-      - name: Finalize Argos build
-        if: ${{ needs.changes.outputs.studio == 'true' }}
-        # --skip-if-empty: affected-story runs may capture nothing on any shard.
-        run: pnpm --filter isomer-studio exec argos finalize --build-name studio --skip-if-empty --parallel-nonce "$ARGOS_PARALLEL_NONCE"
-        env:
-          ARGOS_PARALLEL_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Skip Argos build
-        if: ${{ needs.changes.outputs.studio != 'true' }}
-        run: pnpm --filter isomer-studio exec argos skip --build-name studio
+          # The CLI requires an explicit nonce; it must match `argos-finalize`.
+          ARGOS_PARALLEL_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-studio
 
   # Built apart from the shards so a components-only change still deploys the
   # studio Storybook without running the studio suite.
@@ -290,6 +244,34 @@ jobs:
           name: storybook-studio
           path: apps/studio/storybook-static
           retention-days: 1
+
+  # Closes each suite's sharded Argos build once its shards are done, or skips
+  # it when the suite is unchanged, so both Argos checks always resolve. Each
+  # suite has its own nonce: finalize closes every build sharing a nonce.
+  argos-finalize:
+    needs: [changes, optimize_ci, components, studio]
+    if: ${{ always() && !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.optimize_ci.outputs.skip == 'false' }}
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup
+        uses: ./.github/actions/setup
+      # --skip-if-empty: affected-story runs may capture nothing on any shard.
+      - name: Finalize components build
+        if: ${{ needs.changes.outputs.components == 'true' }}
+        run: pnpm --filter @opengovsg/isomer-components exec argos finalize --build-name components --skip-if-empty --parallel-nonce "${{ github.run_id }}-${{ github.run_attempt }}-components"
+      - name: Skip components build
+        if: ${{ needs.changes.outputs.components != 'true' }}
+        run: pnpm --filter @opengovsg/isomer-components exec argos skip --build-name components
+      - name: Finalize studio build
+        if: ${{ needs.changes.outputs.studio == 'true' }}
+        run: pnpm --filter isomer-studio exec argos finalize --build-name studio --skip-if-empty --parallel-nonce "${{ github.run_id }}-${{ github.run_attempt }}-studio"
+      - name: Skip studio build
+        if: ${{ needs.changes.outputs.studio != 'true' }}
+        run: pnpm --filter isomer-studio exec argos skip --build-name studio
 
   deploy:
     needs: [changes, components, studio, storybook-components, storybook-studio]
