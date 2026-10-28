@@ -26,15 +26,7 @@ const config: StorybookConfig = {
 
   docs: {},
 
-  staticDirs: [
-    "../public",
-    // Story mocks use these instead of isomer.gov.sg, whose WAF blocks
-    // headless Chrome on CI.
-    {
-      from: "../../../packages/components/.storybook/assets",
-      to: "/components-assets",
-    },
-  ],
+  staticDirs: ["../public", "./assets"],
 
   core: {
     disableTelemetry: true,
