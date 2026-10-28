@@ -32,6 +32,7 @@ export {
 export {
   InfoCardsDefaultSchema,
   InfoCardsHomepageSchema,
+  INFOCARDS_CAROUSEL_MAX_CARDS,
   INFOCARDS_DISPLAY,
   type InfoCardsProps,
   CARDS_WITHOUT_IMAGES,

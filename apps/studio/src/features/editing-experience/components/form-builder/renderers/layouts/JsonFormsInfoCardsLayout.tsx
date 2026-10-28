@@ -5,15 +5,32 @@ import type {
   VerticalLayout,
 } from "@jsonforms/core"
 import type { InfoCardsProps } from "@opengovsg/isomer-components"
-import { Box, FormControl } from "@chakra-ui/react"
+import {
+  Box,
+  FormControl,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react"
 import { composePaths, rankWith, update } from "@jsonforms/core"
 import {
   JsonFormsDispatch,
   useJsonForms,
   withJsonFormsLayoutProps,
 } from "@jsonforms/react"
-import { FormLabel, Radio } from "@opengovsg/design-system-react"
 import {
+  Button,
+  FormLabel,
+  ModalCloseButton,
+  Radio,
+} from "@opengovsg/design-system-react"
+import {
+  INFOCARDS_CAROUSEL_MAX_CARDS,
   INFOCARDS_DISPLAY,
   INFOCARDS_LAYOUT_FORMAT,
 } from "@opengovsg/isomer-components"
@@ -42,7 +59,10 @@ function JsonFormsInfoCardsLayout({
   const { dispatch } = useJsonForms()
   // The tester guarantees a VerticalLayout of the display + maxColumns controls
   const { elements } = uischema as VerticalLayout
-  const { display } = data as Pick<InfoCardsProps, "display">
+  const { display, cards } = data as Pick<InfoCardsProps, "display" | "cards">
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const cardsToRemove = cards.length - INFOCARDS_CAROUSEL_MAX_CARDS
+  const cardsPath = composePaths(path, "cards")
   const hasDisplay = elements.some(
     (element) => (element as ControlElement).scope === DISPLAY_SCOPE,
   )
@@ -73,6 +93,9 @@ function JsonFormsInfoCardsLayout({
             isDisabled={enabled === false}
             onChange={(value) => {
               dispatch?.(update(composePaths(path, "display"), () => value))
+              if (value === INFOCARDS_DISPLAY.carousel && cardsToRemove > 0) {
+                onOpen()
+              }
             }}
           >
             <Radio
@@ -109,6 +132,34 @@ function JsonFormsInfoCardsLayout({
           cells={cells}
         />
       ))}
+      {/* Returning focus to the radio on close scrolls it back into view,
+          cancelling the "Go to cards" scroll */}
+      <Modal isOpen={isOpen} onClose={onClose} returnFocusOnClose={false}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader mr="3.5rem">Too many cards for a carousel</ModalHeader>
+          <ModalCloseButton size="lg" />
+          <ModalBody>
+            <Text textStyle="body-1">
+              A carousel can have up to {INFOCARDS_CAROUSEL_MAX_CARDS} cards.
+              Remove {cardsToRemove} {cardsToRemove === 1 ? "card" : "cards"} to
+              use it.
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              onClick={() => {
+                onClose()
+                document
+                  .querySelector(`[data-path="${cardsPath}"]`)
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }}
+            >
+              Go to cards
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   )
 }
