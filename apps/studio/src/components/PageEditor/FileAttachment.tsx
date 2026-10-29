@@ -142,7 +142,7 @@ export const FileAttachment = ({
         {/* File attachments are served to visitors as-is; Studio never inspects
             their contents, so prompt the editor to verify before uploading. */}
         {enableUploadWarnings && (
-          <Infobox variant="warning" size="sm" mt="0.75rem">
+          <Infobox variant="warning" size="sm" mt={3}>
             <Text textStyle="body-2">
               Please verify contents before proceeding. Isomer Studio does not
               verify contents of uploads and accepts no liability for security
