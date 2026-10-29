@@ -7,6 +7,7 @@ import type {
 import type { InfoCardsProps } from "@opengovsg/isomer-components"
 import {
   Box,
+  Flex,
   FormControl,
   Modal,
   ModalBody,
@@ -36,6 +37,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { IconInfoCardsCarousel, IconInfoCardsWrap } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { NewFeatureBadge } from "~/features/editing-experience/components/shared/NewFeatureBadge"
 
 const DISPLAY_SCOPE = "#/properties/display"
 const MAX_COLUMNS_SCOPE = "#/properties/maxColumns"
@@ -113,7 +115,10 @@ function JsonFormsInfoCardsLayout({
               allowDeselect={false}
               size="sm"
             >
-              Show as a carousel
+              <Flex as="span" align="center">
+                Show as a carousel
+                <NewFeatureBadge />
+              </Flex>
               <Box mt="0.625rem">
                 <IconInfoCardsCarousel />
               </Box>
