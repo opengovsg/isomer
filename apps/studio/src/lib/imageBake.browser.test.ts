@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { bakeImage } from "./imageBake"
+import { bakeImage, bakeImageWithinSizeLimit } from "./imageBake"
 
 type Rgb = [number, number, number]
 
@@ -140,5 +140,84 @@ describe("bakeImage composition", () => {
         { mimeType: "image/webp" },
       ),
     ).rejects.toThrow(/animated/)
+  })
+})
+
+// Noisy (non-uniform) pixels so JPEG quality actually changes the encoded
+// byte count -- a flat-color image compresses to roughly the same tiny size
+// at every quality level, which would make the back-off assertions vacuous.
+const makeNoisyImageBlob = async (size: number): Promise<Blob> => {
+  const pixels: Rgb[] = Array.from({ length: size * size }, (_, i) => [
+    (i * 37) % 256,
+    (i * 91) % 256,
+    (i * 149) % 256,
+  ])
+  return makeImageBlob(size, size, pixels)
+}
+
+describe("bakeImageWithinSizeLimit", () => {
+  it("returns the full-quality bake unchanged when it already fits", async () => {
+    const src = await makeNoisyImageBlob(16)
+    const fullQuality = await bakeImage(
+      src,
+      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { mimeType: "image/jpeg" },
+    )
+    const result = await bakeImageWithinSizeLimit(
+      src,
+      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { mimeType: "image/jpeg", maxBytes: fullQuality.size },
+    )
+    expect(result.size).toBe(fullQuality.size)
+  })
+
+  it("backs off JPEG quality until the bake fits under maxBytes", async () => {
+    const src = await makeNoisyImageBlob(64)
+    const fullQuality = await bakeImage(
+      src,
+      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { mimeType: "image/jpeg" },
+    )
+    // A threshold between full quality and the lowest backoff step's size --
+    // only reachable by actually backing off, not by the full-quality bake.
+    const maxBytes = Math.floor(fullQuality.size * 0.7)
+    const result = await bakeImageWithinSizeLimit(
+      src,
+      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { mimeType: "image/jpeg", maxBytes },
+    )
+    expect(result.type).toBe("image/jpeg")
+    expect(result.size).toBeLessThanOrEqual(maxBytes)
+    expect(result.size).toBeLessThan(fullQuality.size)
+  })
+
+  it("returns the full-quality PNG unchanged when still oversize (no quality knob to back off)", async () => {
+    const src = await makeNoisyImageBlob(16)
+    const fullQuality = await bakeImage(
+      src,
+      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { mimeType: "image/png" },
+    )
+    const result = await bakeImageWithinSizeLimit(
+      src,
+      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { mimeType: "image/png", maxBytes: 1 },
+    )
+    expect(result.size).toBe(fullQuality.size)
+  })
+
+  it("returns its smallest attempt when even the lowest JPEG quality step is still oversize", async () => {
+    const src = await makeNoisyImageBlob(64)
+    const lowestQuality = await bakeImage(
+      src,
+      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { mimeType: "image/jpeg", quality: 0.4 },
+    )
+    const result = await bakeImageWithinSizeLimit(
+      src,
+      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { mimeType: "image/jpeg", maxBytes: 1 },
+    )
+    expect(result.size).toBe(lowestQuality.size)
   })
 })

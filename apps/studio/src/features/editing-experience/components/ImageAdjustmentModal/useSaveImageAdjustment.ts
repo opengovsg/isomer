@@ -1,13 +1,15 @@
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
 import { useState } from "react"
+import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 import {
   BAKEABLE_FORMAT_BY_MIME,
-  bakeImage,
+  bakeImageWithinSizeLimit,
   canBakeImage,
   isAnimatedImageBlob,
   mimeFromKeyExtension,
 } from "~/lib/imageBake"
 import { performUpload } from "~/lib/storage/client"
+import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 import {
   generateAssetUrl,
   generateOriginalAssetUrl,
@@ -163,10 +165,20 @@ export const useSaveImageAdjustment = ({
         )
       }
 
-      // Step 4: Bake the image
-      const bakedBlob = await bakeImage(originalBlob, draft, {
+      // Step 4: Bake the image, backing off quality (JPEG/WebP only) if the
+      // full-quality encode would exceed the server's size cap -- a crop
+      // re-encoded through canvas can end up larger than a well-optimized
+      // source even at default quality, so a source that passed the
+      // upload-time size check can still fail here with no earlier warning.
+      const bakedBlob = await bakeImageWithinSizeLimit(originalBlob, draft, {
         mimeType: mime,
+        maxBytes: MAX_IMG_FILE_SIZE_BYTES,
       })
+      if (bakedBlob.size > MAX_IMG_FILE_SIZE_BYTES) {
+        throw new Error(
+          `This edited image is too large to save (over ${formatFileSizeLimit({ bytes: MAX_IMG_FILE_SIZE_BYTES })}). Try cropping to a smaller region, or use a smaller source image.`,
+        )
+      }
 
       // Step 5: Get the extension for the baked image
       const ext =
