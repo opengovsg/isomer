@@ -649,7 +649,7 @@ export const ImageAdjustmentModal = ({
                     pb="0.25rem"
                     justify="space-between"
                   >
-                    <HStack spacing="0.25rem">
+                    <HStack spacing="0.25rem" flexShrink={0}>
                       <Text textStyle="subhead-1">Preview</Text>
                       <Tooltip
                         label="Previews show common phone, tablet and desktop sizes. Your screen may show a slightly different layout."
@@ -670,52 +670,73 @@ export const ImageAdjustmentModal = ({
                     {/* Only shown when the config declares more than one
                         preview version (e.g. Blockquote's circle/square masks
                         with no page-layout context to narrow to one). The
-                        trigger shows "<group>: <version>" when the active
-                        version belongs to a group (e.g. the collection
-                        thumbnail's "Homepage block: 2 items in collection"),
-                        since the group name alone ("Homepage block") doesn't
-                        say which of its versions is showing. */}
+                        active version's group (e.g. "Homepage block") shows
+                        as a small caption above the button rather than
+                        folded into its text -- the button alone ("2 items in
+                        collection") reads fine, and the full "<group>:
+                        <version>" combo doesn't fit this rail's width once a
+                        version's label is more than a couple words. Both are
+                        truncated with a matching maxW as a hard backstop so
+                        a long label can't push the row wider than the rail. */}
                     {config.versions.length > 1 && (
-                      <Menu closeOnSelect size="sm">
-                        <MenuButton
-                          as={Button}
-                          variant="outline"
-                          size="xs"
-                          rightIcon={<BiChevronDown />}
-                          aria-label="Preview version"
-                        >
-                          {activeVersion?.groupLabel
-                            ? `${activeVersion.groupLabel}: ${activeVersion.label ?? "Preview"}`
-                            : (activeVersion?.label ?? "Preview")}
-                        </MenuButton>
-                        <Portal>
-                          <MenuList maxH="16rem" overflowY="auto">
-                            {groupVersionsByLabel(config.versions).map(
-                              (group, i) => (
-                                <MenuOptionGroup
-                                  key={group.groupLabel ?? `ungrouped-${i}`}
-                                  title={group.groupLabel}
-                                  type="radio"
-                                  value={activeVersionId}
-                                  onChange={(value) =>
-                                    setActiveVersionId(value as string)
-                                  }
-                                >
-                                  {group.versions.map((v) => (
-                                    <MenuItemOption
-                                      key={v.id}
-                                      value={v.id}
-                                      fontSize="sm"
-                                    >
-                                      {v.label ?? "Preview"}
-                                    </MenuItemOption>
-                                  ))}
-                                </MenuOptionGroup>
-                              ),
-                            )}
-                          </MenuList>
-                        </Portal>
-                      </Menu>
+                      <VStack
+                        align="flex-end"
+                        spacing="0"
+                        minW={0}
+                        flexShrink={1}
+                      >
+                        {activeVersion?.groupLabel && (
+                          <Text
+                            textStyle="caption-2"
+                            color="base.content.medium"
+                            noOfLines={1}
+                            maxW="9.5rem"
+                          >
+                            {activeVersion.groupLabel}
+                          </Text>
+                        )}
+                        <Menu closeOnSelect size="sm">
+                          <MenuButton
+                            as={Button}
+                            variant="outline"
+                            size="xs"
+                            maxW="9.5rem"
+                            rightIcon={<BiChevronDown />}
+                            aria-label="Preview version"
+                          >
+                            <Text as="span" noOfLines={1}>
+                              {activeVersion?.label ?? "Preview"}
+                            </Text>
+                          </MenuButton>
+                          <Portal>
+                            <MenuList maxH="16rem" overflowY="auto">
+                              {groupVersionsByLabel(config.versions).map(
+                                (group, i) => (
+                                  <MenuOptionGroup
+                                    key={group.groupLabel ?? `ungrouped-${i}`}
+                                    title={group.groupLabel}
+                                    type="radio"
+                                    value={activeVersionId}
+                                    onChange={(value) =>
+                                      setActiveVersionId(value as string)
+                                    }
+                                  >
+                                    {group.versions.map((v) => (
+                                      <MenuItemOption
+                                        key={v.id}
+                                        value={v.id}
+                                        fontSize="sm"
+                                      >
+                                        {v.label ?? "Preview"}
+                                      </MenuItemOption>
+                                    ))}
+                                  </MenuOptionGroup>
+                                ),
+                              )}
+                            </MenuList>
+                          </Portal>
+                        </Menu>
+                      </VStack>
                     )}
                   </HStack>
 
