@@ -85,11 +85,7 @@ function JsonFormsHeroCarouselLayoutControl({
             size="sm"
           >
             Block
-            {imagePosition === HERO_BLOCK_IMAGE_POSITION.left ? (
-              <IconHeroCarouselBlockLeft mt="10px" />
-            ) : (
-              <IconHeroCarouselBlockRight mt="10px" />
-            )}
+            <IconHeroCarouselBlockRight mt="10px" />
           </Radio>
           <Radio
             value={HERO_CAROUSEL_LAYOUT.gradient}
@@ -97,11 +93,7 @@ function JsonFormsHeroCarouselLayoutControl({
             size="sm"
           >
             Gradient
-            {contentAlignment === HERO_CAROUSEL_CONTENT_ALIGNMENT.center ? (
-              <IconHeroCarouselGradientCenter mt="10px" />
-            ) : (
-              <IconHeroCarouselGradientLeft mt="10px" />
-            )}
+            <IconHeroCarouselGradientLeft mt="10px" />
           </Radio>
         </Radio.RadioGroup>
       </FormControl>

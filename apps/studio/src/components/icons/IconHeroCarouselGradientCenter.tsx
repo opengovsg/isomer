@@ -1,11 +1,7 @@
 import { chakra } from "@chakra-ui/react"
-import { useId } from "react"
 
 export const IconHeroCarouselGradientCenter = chakra(
   (props: React.SVGProps<SVGSVGElement>) => {
-    // Also shown on Layout, so two copies cannot share one clip id.
-    const clipId = useId().split(":").join("")
-
     return (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -16,7 +12,7 @@ export const IconHeroCarouselGradientCenter = chakra(
         aria-hidden
         {...props}
       >
-        <g clipPath={`url(#${clipId})`}>
+        <g clipPath="url(#clip-hero-carousel-gradient-center)">
           <path
             d="M4 0.5H99C100.933 0.5 102.5 2.067 102.5 4V58C102.5 59.933 100.933 61.5 99 61.5H4C2.067 61.5 0.5 59.933 0.5 58V4C0.5 2.067 2.067 0.5 4 0.5Z"
             fill="#D9D9D9"
@@ -60,7 +56,7 @@ export const IconHeroCarouselGradientCenter = chakra(
           <rect x="48" y="52" width="5" height="1" rx="0.5" fill="white" />
         </g>
         <defs>
-          <clipPath id={clipId}>
+          <clipPath id="clip-hero-carousel-gradient-center">
             <rect width="103" height="62" fill="white" />
           </clipPath>
         </defs>
