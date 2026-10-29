@@ -163,7 +163,7 @@ catalog:
   postcss-load-config: ^6.0.1
   posthog-js: ^1.438.13
   posthog-node: ^5.55.3
-  rate-limiter-flexible: ^11.2.1
+  rate-limiter-flexible: ^11.2.3
   react-error-boundary: ^6.1.6
   react-frame-component: ^5.3.2
   react-hook-form: ^7.90.0
