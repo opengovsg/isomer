@@ -1,6 +1,7 @@
 import type { IsomerPageLayoutType } from "@opengovsg/isomer-components"
 import { describe, expect, it } from "vitest"
 
+import type { AdjustmentConfig } from "./AdjustmentConfig"
 import {
   INTENTIONALLY_NOT_ADJUSTABLE,
   resolveAdjustmentConfig,
@@ -430,22 +431,29 @@ describe("resolveAdjustmentConfig", () => {
       ])
     })
 
-    it("models the CollectionCard destination as a fixed 5:4 frame", () => {
+    // Every version previews all three breakpoints (not just one desktop-ish
+    // tile) so the dropdown's "which destination" choice doesn't also hide
+    // "how does it look on mobile/tablet" -- the modal's standard pattern for
+    // every other component in this registry.
+    const aspectRatiosFor = (versionId: string, config: AdjustmentConfig) =>
+      config.versions
+        .find((v) => v.id === versionId)
+        ?.previewStates.map((s) => s.aspectRatio)
+
+    it("models the CollectionCard destination as a fixed 5:4 frame at every breakpoint", () => {
       const config = resolveAdjustmentConfig({
         block: {},
         fieldName: "src",
         context: { isCollectionThumbnail: true },
       })
-      const collectionCardVersion = config?.versions.find(
-        (v) => v.id === "collection-card",
-      )
-      expect(collectionCardVersion?.previewStates[0]?.aspectRatio).toEqual({
-        width: 5,
-        height: 4,
-      })
+      expect(aspectRatiosFor("collection-card", config!)).toEqual([
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+      ])
     })
 
-    it("models the CollectionBlock destination as two always-shown versions (3:2 and 2:1)", () => {
+    it("models the CollectionBlock destination as two always-shown versions, only diverging at desktop", () => {
       const config = resolveAdjustmentConfig({
         block: {},
         fieldName: "src",
@@ -456,27 +464,35 @@ describe("resolveAdjustmentConfig", () => {
       )
       expect(blockVersions).toHaveLength(2)
       expect(
-        blockVersions?.map((v) => v.previewStates[0]?.aspectRatio),
-      ).toEqual([
+        blockVersions?.every((v) => v.groupLabel === "Homepage block"),
+      ).toBe(true)
+
+      // 1-or-3+ items: 3:2 at every breakpoint (no numberOfCards override).
+      expect(aspectRatiosFor("collection-block-3-2", config!)).toEqual([
+        { width: 3, height: 2 },
+        { width: 3, height: 2 },
+        { width: 3, height: 2 },
+      ])
+      // Exactly 2 items: 3:2 below lg, 2:1 only at the lg/desktop breakpoint
+      // (CollectionBlock.tsx's numberOfCards:2 compound variant).
+      expect(aspectRatiosFor("collection-block-2-1", config!)).toEqual([
+        { width: 3, height: 2 },
         { width: 3, height: 2 },
         { width: 2, height: 1 },
       ])
-      expect(
-        blockVersions?.every((v) => v.groupLabel === "Homepage block"),
-      ).toBe(true)
     })
 
-    it("models the BlogCard destination as a fixed 2:1 frame", () => {
+    it("models the BlogCard destination as a fixed 2:1 frame at every breakpoint", () => {
       const config = resolveAdjustmentConfig({
         block: {},
         fieldName: "src",
         context: { isCollectionThumbnail: true },
       })
-      const blogCardVersion = config?.versions.find((v) => v.id === "blog-card")
-      expect(blogCardVersion?.previewStates[0]?.aspectRatio).toEqual({
-        width: 2,
-        height: 1,
-      })
+      expect(aspectRatiosFor("blog-card", config!)).toEqual([
+        { width: 2, height: 1 },
+        { width: 2, height: 1 },
+        { width: 2, height: 1 },
+      ])
     })
   })
 })
