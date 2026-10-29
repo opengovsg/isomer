@@ -45,9 +45,6 @@ export interface PreviewVersion {
   // Dropdown option text. Omit when there's only one version — it's never
   // shown, so most configs don't need it.
   label?: string
-  // Dropdown optgroup label, for a future case where one field feeds multiple
-  // unrelated destination components (grouped in the dropdown). Omit for now.
-  groupLabel?: string
   previewStates: AdjustmentPreviewState[]
 }
 

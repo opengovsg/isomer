@@ -34,7 +34,7 @@ import posthog from "posthog-js"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { BiChevronDown, BiInfoCircle, BiReset } from "react-icons/bi"
 
-import type { AdjustmentConfig, PreviewVersion } from "./AdjustmentConfig"
+import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
 import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
@@ -50,29 +50,6 @@ import {
 // surfacing an error and unlocking the modal, so a hung network request can't
 // trap the editor in a permanently disabled modal.
 const SAVE_TIMEOUT_MS = 30_000
-
-// Groups consecutive versions sharing the same groupLabel into one <optgroup>
-// (e.g. CollectionBlock's two item-count-dependent versions), so the dropdown
-// reads as "which destination, then which variant of it" instead of a flat
-// list. Versions with no groupLabel (e.g. Blockquote's circle/square) render
-// as plain top-level options, same as a native <select> allows mixing both.
-const groupVersionsByLabel = (
-  versions: PreviewVersion[],
-): { groupLabel: string | undefined; versions: PreviewVersion[] }[] => {
-  const groups: {
-    groupLabel: string | undefined
-    versions: PreviewVersion[]
-  }[] = []
-  for (const v of versions) {
-    const lastGroup = groups[groups.length - 1]
-    if (lastGroup && lastGroup.groupLabel === v.groupLabel) {
-      lastGroup.versions.push(v)
-    } else {
-      groups.push({ groupLabel: v.groupLabel, versions: [v] })
-    }
-  }
-  return groups
-}
 
 // Width of the custom scrollbar track rendered over the preview rail.
 const SCROLLBAR_SIZE = "0.5rem"
@@ -671,65 +648,45 @@ export const ImageAdjustmentModal = ({
                         preview version (e.g. Blockquote's circle/square masks
                         with no page-layout context to narrow to one). On its
                         own row (not squeezed beside "Preview") so it gets the
-                        rail's full width -- the active version's group (e.g.
-                        "Homepage block") shows as a small caption above the
-                        button rather than folded into its text, since that
-                        combo didn't fit on one line for longer labels. */}
+                        rail's full width. */}
                     {config.versions.length > 1 && (
-                      <VStack align="flex-start" spacing="0.1rem" w="100%">
-                        {activeVersion?.groupLabel && (
-                          <Text
-                            textStyle="caption-2"
-                            color="base.content.medium"
-                            noOfLines={1}
-                          >
-                            {activeVersion.groupLabel}
+                      <Menu closeOnSelect size="sm" matchWidth>
+                        <MenuButton
+                          as={Button}
+                          variant="outline"
+                          size="xs"
+                          w="100%"
+                          px="0.6rem"
+                          justifyContent="space-between"
+                          rightIcon={<BiChevronDown />}
+                          aria-label="Preview version"
+                        >
+                          <Text as="span" noOfLines={1}>
+                            {activeVersion?.label ?? "Preview"}
                           </Text>
-                        )}
-                        <Menu closeOnSelect size="sm" matchWidth>
-                          <MenuButton
-                            as={Button}
-                            variant="outline"
-                            size="xs"
-                            w="100%"
-                            px="0.6rem"
-                            justifyContent="space-between"
-                            rightIcon={<BiChevronDown />}
-                            aria-label="Preview version"
-                          >
-                            <Text as="span" noOfLines={1}>
-                              {activeVersion?.label ?? "Preview"}
-                            </Text>
-                          </MenuButton>
-                          <Portal>
-                            <MenuList maxH="16rem" overflowY="auto">
-                              {groupVersionsByLabel(config.versions).map(
-                                (group, i) => (
-                                  <MenuOptionGroup
-                                    key={group.groupLabel ?? `ungrouped-${i}`}
-                                    title={group.groupLabel}
-                                    type="radio"
-                                    value={activeVersionId}
-                                    onChange={(value) =>
-                                      setActiveVersionId(value as string)
-                                    }
-                                  >
-                                    {group.versions.map((v) => (
-                                      <MenuItemOption
-                                        key={v.id}
-                                        value={v.id}
-                                        fontSize="sm"
-                                      >
-                                        {v.label ?? "Preview"}
-                                      </MenuItemOption>
-                                    ))}
-                                  </MenuOptionGroup>
-                                ),
-                              )}
-                            </MenuList>
-                          </Portal>
-                        </Menu>
-                      </VStack>
+                        </MenuButton>
+                        <Portal>
+                          <MenuList maxH="16rem" overflowY="auto">
+                            <MenuOptionGroup
+                              type="radio"
+                              value={activeVersionId}
+                              onChange={(value) =>
+                                setActiveVersionId(value as string)
+                              }
+                            >
+                              {config.versions.map((v) => (
+                                <MenuItemOption
+                                  key={v.id}
+                                  value={v.id}
+                                  fontSize="sm"
+                                >
+                                  {v.label ?? "Preview"}
+                                </MenuItemOption>
+                              ))}
+                            </MenuOptionGroup>
+                          </MenuList>
+                        </Portal>
+                      </Menu>
                     )}
                   </VStack>
 

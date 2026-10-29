@@ -423,14 +423,13 @@ describe("resolveAdjustmentConfig", () => {
     // editor genuinely cannot know that, so it's out of scope: the preview
     // only ever shows the collection's own index-page listing, resolved to a
     // single version (no dropdown, matching every other component here).
-    it("resolves exactly one version, with no group label", () => {
+    it("resolves exactly one version", () => {
       const config = resolveAdjustmentConfig({
         block: {},
         fieldName: "src",
         context: { isCollectionThumbnail: true, collectionVariant: "blog" },
       })
       expect(config?.versions).toHaveLength(1)
-      expect(config?.versions[0]?.groupLabel).toBeUndefined()
     })
 
     const aspectRatiosFor = (config: AdjustmentConfig) =>
