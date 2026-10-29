@@ -631,12 +631,18 @@ const COLLECTION_THUMBNAIL_CONFIG: AdjustmentConfig = {
     },
     {
       id: "collection-block-3-2",
-      label: "1 or 3 items",
+      // The homepage block shows up to 3 cards at once (capped — a 4th, 5th,
+      // ... item never changes its layout further), so "1 item, or more than
+      // 2 items" is the accurate editor-facing framing: it covers every
+      // collection size this ratio actually applies to, without implying a
+      // cap of 3 the editor has no reason to know about.
+      label: "1 item, or more than 2 items in the collection",
       groupLabel: "Homepage block",
       previewStates: [
         {
           id: "collection-block-3-2",
-          label: "Homepage block — 1 or 3 items shown",
+          label:
+            "Homepage block — 1 item, or more than 2 items in the collection",
           viewportWidth: 1280,
           aspectRatio: { width: 3, height: 2 },
         },
@@ -644,12 +650,12 @@ const COLLECTION_THUMBNAIL_CONFIG: AdjustmentConfig = {
     },
     {
       id: "collection-block-2-1",
-      label: "2 items",
+      label: "Exactly 2 items in the collection",
       groupLabel: "Homepage block",
       previewStates: [
         {
           id: "collection-block-2-1",
-          label: "Homepage block — 2 items shown",
+          label: "Homepage block — exactly 2 items in the collection",
           viewportWidth: 1280,
           aspectRatio: { width: 2, height: 1 },
         },
