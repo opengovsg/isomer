@@ -640,16 +640,16 @@ export const ImageAdjustmentModal = ({
                 >
                   {/* Pinned so it stays visible while the tiles scroll. Opaque bg
                       + zIndex so scrolling previews pass behind it. */}
-                  <HStack
-                    spacing="0.25rem"
+                  <VStack
+                    align="stretch"
+                    spacing="0.4rem"
                     position={{ md: "sticky" }}
                     top={0}
                     zIndex={1}
                     bg="base.canvas.default"
                     pb="0.25rem"
-                    justify="space-between"
                   >
-                    <HStack spacing="0.25rem" flexShrink={0}>
+                    <HStack spacing="0.25rem">
                       <Text textStyle="subhead-1">Preview</Text>
                       <Tooltip
                         label="Previews show common phone, tablet and desktop sizes. Your screen may show a slightly different layout."
@@ -669,38 +669,31 @@ export const ImageAdjustmentModal = ({
 
                     {/* Only shown when the config declares more than one
                         preview version (e.g. Blockquote's circle/square masks
-                        with no page-layout context to narrow to one). The
-                        active version's group (e.g. "Homepage block") shows
-                        as a small caption above the button rather than
-                        folded into its text -- the button alone ("2 items in
-                        collection") reads fine, and the full "<group>:
-                        <version>" combo doesn't fit this rail's width once a
-                        version's label is more than a couple words. Both are
-                        truncated with a matching maxW as a hard backstop so
-                        a long label can't push the row wider than the rail. */}
+                        with no page-layout context to narrow to one). On its
+                        own row (not squeezed beside "Preview") so it gets the
+                        rail's full width -- the active version's group (e.g.
+                        "Homepage block") shows as a small caption above the
+                        button rather than folded into its text, since that
+                        combo didn't fit on one line for longer labels. */}
                     {config.versions.length > 1 && (
-                      <VStack
-                        align="flex-end"
-                        spacing="0"
-                        minW={0}
-                        flexShrink={1}
-                      >
+                      <VStack align="flex-start" spacing="0.1rem" w="100%">
                         {activeVersion?.groupLabel && (
                           <Text
                             textStyle="caption-2"
                             color="base.content.medium"
                             noOfLines={1}
-                            maxW="9.5rem"
                           >
                             {activeVersion.groupLabel}
                           </Text>
                         )}
-                        <Menu closeOnSelect size="sm">
+                        <Menu closeOnSelect size="sm" matchWidth>
                           <MenuButton
                             as={Button}
                             variant="outline"
                             size="xs"
-                            maxW="9.5rem"
+                            w="100%"
+                            px="0.6rem"
+                            justifyContent="space-between"
                             rightIcon={<BiChevronDown />}
                             aria-label="Preview version"
                           >
@@ -738,7 +731,7 @@ export const ImageAdjustmentModal = ({
                         </Menu>
                       </VStack>
                     )}
-                  </HStack>
+                  </VStack>
 
                   {/* Low-resolution warning — the kept crop can't fill this
                       component's largest frame even at 1x, so it would look soft. */}
