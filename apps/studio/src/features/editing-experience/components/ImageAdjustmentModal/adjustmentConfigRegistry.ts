@@ -175,7 +175,6 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   componentType: "hero:gradient",
   cropMode: "custom",
   focalEnabled: true,
-  autoOpenOnUpload: true,
   // Full-bleed; no CSS width cap. Warn against the 1280px content ceiling
   // (max-w-screen-xl) as a conservative "looks soft on desktop" floor.
   maxRenderedWidthPx: 1280,
@@ -212,7 +211,6 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   componentType: "hero:block",
   cropMode: "custom",
   focalEnabled: true,
-  autoOpenOnUpload: true,
   // Image band is half the viewport at lg (lg:w-1/2); ~960px on large desktop.
   maxRenderedWidthPx: 960,
   // lg:min-h-[31.25rem] (500px) on the image panel — same minimum height as
@@ -286,7 +284,6 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   componentType: "hero:largeImage",
   cropMode: "custom",
   focalEnabled: true,
-  autoOpenOnUpload: true,
   // Full-bleed; warn against the 1280px content ceiling (same as hero:gradient).
   maxRenderedWidthPx: 1280,
   // Widest frame is 2:1 from md up (md:aspect-[2/1]) → 640px tall at 1280px.
@@ -316,7 +313,6 @@ const HERO_FLOATING_CONFIG: AdjustmentConfig = {
   componentType: "hero:floating",
   cropMode: "fixed",
   focalEnabled: false,
-  autoOpenOnUpload: true,
   lockedRatios: [{ width: 3, height: 2 }],
   // Full-width below lg (~1024px), 66.67% (~800px) at lg — the tablet regime
   // is the widest frame.

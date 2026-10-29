@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from "react"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { PLACEHOLDER_IMAGE_FILENAME } from "~/features/editing-experience/components/constants"
 import { fetchImageBlob } from "~/features/editing-experience/components/ImageAdjustmentModal/useSaveImageAdjustment"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useIsImageAdjustmentEnabled } from "~/hooks/useIsImageAdjustmentEnabled"
@@ -82,6 +83,14 @@ function JsonFormsImageControl({
   // external/absolute URLs and the built-in placeholder have no derivable bake
   // key, so hide Adjust for them rather than letting Save fail.
   const isManagedAsset = isManagedSiteAsset(data, siteId)
+  // The built-in placeholder means no real image has been uploaded yet —
+  // offer "Replace image" (opens the upload flow) instead of an edit/adjust
+  // affordance, which doesn't apply to a stock asset.
+  const isPlaceholderImage = data === `/${PLACEHOLDER_IMAGE_FILENAME}`
+  // Lets the "Replace image" text open the same upload flow used for a fresh
+  // upload (see the hidden FileAttachment below), by finding and clicking its
+  // file input directly.
+  const replaceUploadRef = useRef<HTMLDivElement>(null)
   // The bake-presign mutation requires a resourceId; without a page/link in
   // the URL there's nothing to pass (the save call would send an empty
   // string and fail server-side), so hide Adjust rather than let an editor
@@ -199,10 +208,10 @@ function JsonFormsImageControl({
   const showAnimatedFormatCallout = canAdjustBase && isAnimatedAsset
 
   // Auto-open the editor right after a fresh upload (set in FileAttachment's
-  // setHref below) once the new asset turns out to be adjustable — not on page
-  // load for an already-saved image. Gated by the config's autoOpenOnUpload
-  // flag (hero banners): other components keep the manual Edit/Adjust button
-  // instead of popping the modal.
+  // setHref below) for every component resolveAdjustmentConfig has a config
+  // for — not on page load for an already-saved image, not on undo/history
+  // restores, and not for Tier D (no config) components, which keep only the
+  // manual Edit/Adjust button.
   const justUploadedRef = useRef(false)
   useEffect(() => {
     if (!justUploadedRef.current) return
@@ -210,7 +219,7 @@ function JsonFormsImageControl({
     // upload is never auto-opened in the window before it's ruled out.
     if (!animationResolved) return
     justUploadedRef.current = false
-    if (canAdjust && config?.autoOpenOnUpload) {
+    if (canAdjust) {
       posthog.capture("image_adjustment_modal_opened", {
         site_id: siteId,
         resource_id: resourceId,
@@ -218,14 +227,7 @@ function JsonFormsImageControl({
       })
       onAdjustmentModalOpen()
     }
-  }, [
-    animationResolved,
-    canAdjust,
-    onAdjustmentModalOpen,
-    config,
-    siteId,
-    resourceId,
-  ])
+  }, [animationResolved, canAdjust, onAdjustmentModalOpen, siteId, resourceId])
 
   // InfoCards owns a sibling `imageFit` field on the card (the modal's fit
   // control writes back to it) — gated by the config's ownsImageFitField flag
@@ -241,6 +243,46 @@ function JsonFormsImageControl({
   const imageFitPath = [path.split(".").slice(0, -1).join("."), "imageFit"]
     .filter(Boolean)
     .join(".")
+
+  // Shared by the empty-field upload UI and the hidden "Replace image" upload
+  // (triggered via replaceUploadRef) — both are the same upload flow, so the
+  // field value is fully replaced by the new asset either way, never layered.
+  const uploadFileAttachmentProps = {
+    maxSizeInBytes: schema.maxSizeInBytes ?? MAX_IMG_FILE_SIZE_BYTES,
+    acceptedFileTypes:
+      schema.allowedMimeTypeMappings ?? IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
+    siteId,
+    resourceId,
+    onUploadedFile: (file: File) => {
+      // Stash the picked File; setHref below pairs it with its key.
+      pendingFileRef.current = file
+    },
+    onUploadSuccess: () => {
+      posthog.capture("image_upload_completed", {
+        site_id: siteId,
+        resource_id: resourceId,
+      })
+    },
+    setHref: (src?: string) => {
+      handleChange(path, src)
+      // Mark a real upload (not the loading-state "" or a clear) so the
+      // editor auto-opens once the new src lands and canAdjust is true.
+      if (src) {
+        justUploadedRef.current = true
+        // New asset → force the auto-open gate to wait for a fresh
+        // animation check (avoids acting on the prior asset's result).
+        setAnimationResolved(false)
+        if (pendingFileRef.current) {
+          uploadedOriginalRef.current = {
+            key: src.replace(/^\//, ""),
+            file: pendingFileRef.current,
+          }
+          pendingFileRef.current = null
+        }
+      }
+    },
+    shouldFetchResource: true,
+  }
 
   const handleAdjustmentSave = ({
     src,
@@ -290,17 +332,26 @@ function JsonFormsImageControl({
             // malware-scan tag and 403s; the variant is fine for a thumbnail.
             imageSrc={generateAssetUrl(data)}
             onEdit={
-              canAdjust
-                ? () => {
-                    posthog.capture("image_adjustment_modal_opened", {
-                      site_id: siteId,
-                      resource_id: resourceId,
-                      source: "manual_edit",
-                    })
-                    onAdjustmentModalOpen()
-                  }
-                : undefined
+              isPlaceholderImage
+                ? // No real image uploaded yet — reuse the same upload flow as
+                  // the empty-field FileAttachment below (hidden, see
+                  // replaceUploadRef) instead of the adjustment modal.
+                  () =>
+                    replaceUploadRef.current
+                      ?.querySelector<HTMLInputElement>('input[type="file"]')
+                      ?.click()
+                : canAdjust
+                  ? () => {
+                      posthog.capture("image_adjustment_modal_opened", {
+                        site_id: siteId,
+                        resource_id: resourceId,
+                        source: "manual_edit",
+                      })
+                      onAdjustmentModalOpen()
+                    }
+                  : undefined
             }
+            editLabel={isPlaceholderImage ? "Replace image" : undefined}
             // Unsupported format: show a disabled Edit affordance with a tooltip
             // instead of opening the editor.
             editDisabledReason={
@@ -344,46 +395,21 @@ function JsonFormsImageControl({
               </Text>
             </Infobox>
           )}
+          {isPlaceholderImage && (
+            // Not shown — only here so "Replace image" above can open the
+            // native file picker via replaceUploadRef.current.click(), reusing
+            // this exact upload flow instead of a second implementation.
+            <Box display="none">
+              <FileAttachment
+                ref={replaceUploadRef}
+                {...uploadFileAttachmentProps}
+              />
+            </Box>
+          )}
         </Box>
       ) : (
         <Box>
-          <FileAttachment
-            maxSizeInBytes={schema.maxSizeInBytes ?? MAX_IMG_FILE_SIZE_BYTES}
-            acceptedFileTypes={
-              schema.allowedMimeTypeMappings ?? IMAGE_ACCEPTED_MIME_TYPE_MAPPING
-            }
-            siteId={siteId}
-            resourceId={resourceId}
-            onUploadedFile={(file) => {
-              // Stash the picked File; setHref below pairs it with its key.
-              pendingFileRef.current = file
-            }}
-            onUploadSuccess={() => {
-              posthog.capture("image_upload_completed", {
-                site_id: siteId,
-                resource_id: resourceId,
-              })
-            }}
-            setHref={(src) => {
-              handleChange(path, src)
-              // Mark a real upload (not the loading-state "" or a clear) so the
-              // editor auto-opens once the new src lands and canAdjust is true.
-              if (src) {
-                justUploadedRef.current = true
-                // New asset → force the auto-open gate to wait for a fresh
-                // animation check (avoids acting on the prior asset's result).
-                setAnimationResolved(false)
-                if (pendingFileRef.current) {
-                  uploadedOriginalRef.current = {
-                    key: src.replace(/^\//, ""),
-                    file: pendingFileRef.current,
-                  }
-                  pendingFileRef.current = null
-                }
-              }
-            }}
-            shouldFetchResource={true}
-          />
+          <FileAttachment {...uploadFileAttachmentProps} />
         </Box>
       )}
       {!!errors && (

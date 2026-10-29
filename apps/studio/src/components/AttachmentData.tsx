@@ -27,6 +27,9 @@ interface AttachmentDataProps {
   // clickable (opens the editor) and shows an "Edit image" link under the name.
   // Omitted for non-adjustable attachments (row isn't clickable).
   onEdit?: () => void
+  // Overrides the "Edit image" label shown/used alongside onEdit — e.g.
+  // "Replace image" when onEdit opens the upload flow instead of the editor.
+  editLabel?: string
   // When provided (and onEdit is not), shows a disabled "Edit image" affordance
   // with this text as a hover tooltip, keeping the row non-clickable.
   editDisabledReason?: string
@@ -38,6 +41,7 @@ export const AttachmentData = ({
   data,
   onClick,
   onEdit,
+  editLabel = "Edit image",
   editDisabledReason,
   imageSrc,
 }: AttachmentDataProps) => {
@@ -104,7 +108,7 @@ export const AttachmentData = ({
               ? {
                   as: "button",
                   type: "button",
-                  "aria-label": "Edit image",
+                  "aria-label": editLabel,
                   onClick: (e: React.MouseEvent) => {
                     e.stopPropagation()
                     onEdit()
@@ -172,7 +176,7 @@ export const AttachmentData = ({
               fontWeight="500"
               color="interaction.links.default"
             >
-              Edit image
+              {editLabel}
             </Text>
           )}
           {!onEdit && editDisabledReason && (

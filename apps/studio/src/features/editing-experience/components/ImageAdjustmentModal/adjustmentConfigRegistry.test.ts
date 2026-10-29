@@ -269,4 +269,76 @@ describe("resolveAdjustmentConfig", () => {
       })
     }
   })
+
+  // Focal point rule: the control is only ever worth offering when the
+  // component's rendered frame actually reshapes across breakpoints — that's
+  // the only situation where an anchor point has anything to do. A fixed crop
+  // baked once (same shape everywhere) or a letterboxed/contain frame (whole
+  // image always shown, regardless of frame shape) leaves focal with nothing
+  // to anchor. Locks this invariant in across the whole registry so a future
+  // entry can't set focalEnabled ad hoc.
+  describe("focal point is offered only for breakpoint-reshaping (responsive cover) frames", () => {
+    it("responsive cover-fit components have focal enabled", () => {
+      const responsiveBlocks = [
+        { type: "hero", variant: "gradient" }, // 16:10 -> 2:1 -> 5:2
+        { type: "hero", variant: "block" }, // stacked band -> side-by-side
+        { type: "hero", variant: "largeImage" }, // square -> 2:1
+        { type: "infopic" }, // 5:4 -> 2:1 -> 3:1
+      ]
+      for (const block of responsiveBlocks) {
+        const config = resolveAdjustmentConfig({ block, fieldName: "image" })
+        expect(config?.focalEnabled).toBe(true)
+      }
+    })
+
+    it("fixed-crop (baked-once, same shape every breakpoint) components have focal disabled", () => {
+      const fixedBlocks = [
+        { type: "contentpic" }, // aspect-[5/6] always
+        { type: "blockquote" }, // 1:1 always (circle/square mask only)
+        { type: "hero", variant: "floating" }, // aspect-[3/2] always
+      ]
+      for (const block of fixedBlocks) {
+        const config = resolveAdjustmentConfig({ block, fieldName: "image" })
+        expect(config?.cropMode).toBe("fixed")
+        expect(config?.focalEnabled).toBe(false)
+      }
+    })
+
+    it("free-form or letterboxed (object-contain) components have focal disabled even though cropMode is custom", () => {
+      // Native Image block: free-form crop, renders at its own cropped
+      // aspect with no frame to cover-fit into.
+      const image = resolveAdjustmentConfig({
+        block: { type: "image" },
+        fieldName: "src",
+      })
+      expect(image?.cropMode).toBe("custom")
+      expect(image?.focalEnabled).toBe(false)
+
+      // ImageGallery: frame height/ratio does vary by breakpoint, but it's
+      // always object-contain (letterboxed) -- the whole image is shown
+      // regardless of frame shape, so there's still nothing to anchor.
+      const gallery = resolveAdjustmentConfig({
+        block: { type: "imagegallery" },
+        fieldName: "src",
+      })
+      expect(gallery?.cropMode).toBe("custom")
+      expect(gallery?.focalEnabled).toBe(false)
+    })
+
+    it("InfoCards (Tier C) ties focal to imageFit, not just the responsive frame", () => {
+      // The InfoCards frame genuinely reshapes across breakpoints/columns
+      // (common.ts cardImageContainer), so focalEnabled defaults to true --
+      // but focalEnabledFor hides it once imageFit is "contain", since a
+      // letterboxed image has nothing for focal to anchor either.
+      for (const variant of ["cardsWithImages", "cardsWithFullImages"]) {
+        const config = resolveAdjustmentConfig({
+          block: { type: "infocards", variant },
+          fieldName: "imageUrl",
+        })
+        expect(config?.focalEnabled).toBe(true)
+        expect(config?.focalEnabledFor?.({ imageFit: "contain" })).toBe(false)
+        expect(config?.focalEnabledFor?.({ imageFit: "cover" })).toBe(true)
+      }
+    })
+  })
 })

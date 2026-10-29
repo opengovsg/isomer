@@ -1,4 +1,5 @@
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
+import type { RefObject } from "react"
 import {
   Box,
   ButtonGroup,
@@ -43,6 +44,84 @@ import {
 // surfacing an error and unlocking the modal, so a hung network request can't
 // trap the editor in a permanently disabled modal.
 const SAVE_TIMEOUT_MS = 30_000
+
+// Width of the custom scrollbar track rendered over the preview rail.
+const SCROLLBAR_SIZE = "0.5rem"
+
+// A permanently-visible scrollbar track + thumb, overlaid on the reserved
+// gutter of `scrollRef`'s element. Native scrollbars can't be forced to stay
+// visible across browsers — macOS renders overlay scrollbars that auto-hide
+// whenever the user isn't actively scrolling, even with `overflow-y: scroll`
+// and `::-webkit-scrollbar` styling (OS-level compositing, not CSS-reachable).
+// This component reads the element's own scroll state instead, so the track
+// is always drawn and the thumb always reflects real scroll position/size.
+const PersistentScrollbar = ({
+  scrollRef,
+}: {
+  scrollRef: RefObject<HTMLDivElement>
+}) => {
+  const [thumb, setThumb] = useState<{ top: number; height: number } | null>(
+    null,
+  )
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+
+    const update = () => {
+      const { scrollTop, scrollHeight, clientHeight } = el
+      // No overflow — nothing to show a thumb for (track still renders).
+      if (scrollHeight <= clientHeight) {
+        setThumb(null)
+        return
+      }
+      const height = Math.max((clientHeight / scrollHeight) * clientHeight, 24)
+      const maxTop = clientHeight - height
+      const top = (scrollTop / (scrollHeight - clientHeight)) * maxTop || 0
+      setThumb({ top, height })
+    }
+
+    update()
+    el.addEventListener("scroll", update, { passive: true })
+    const observer = new ResizeObserver(update)
+    observer.observe(el)
+    // The rail's content height can change without the element itself
+    // resizing (e.g. tiles loading), so also watch its children.
+    Array.from(el.children).forEach((child) => observer.observe(child))
+
+    return () => {
+      el.removeEventListener("scroll", update)
+      observer.disconnect()
+    }
+  }, [scrollRef])
+
+  return (
+    <Box
+      display={{ base: "none", md: "block" }}
+      position="absolute"
+      top={0}
+      right={0}
+      bottom={0}
+      w={SCROLLBAR_SIZE}
+      bg="gray.100"
+      borderRadius="full"
+      pointerEvents="none"
+      aria-hidden
+    >
+      {thumb && (
+        <Box
+          position="absolute"
+          left={0}
+          right={0}
+          top={`${thumb.top}px`}
+          h={`${thumb.height}px`}
+          bg="gray.400"
+          borderRadius="full"
+        />
+      )}
+    </Box>
+  )
+}
 
 interface ImageAdjustmentModalProps {
   isOpen: boolean
@@ -149,6 +228,9 @@ export const ImageAdjustmentModal = ({
   // Fires once per tool per modal session (not once per drag/keystroke) --
   // adoption only cares whether a tool was touched at all while editing.
   const trackedToolsRef = useRef(new Set<string>())
+  // Scroll container for the preview rail — read by PersistentScrollbar so
+  // its track/thumb overlay reflects this element's real scroll state.
+  const previewRailRef = useRef<HTMLDivElement>(null)
   const trackToolUsed = (tool: "crop" | "focal" | "rotate" | "flip") => {
     if (trackedToolsRef.current.has(tool)) return
     trackedToolsRef.current.add(tool)
@@ -442,25 +524,7 @@ export const ImageAdjustmentModal = ({
                     its frame. Inline segmented toggle to keep the UI compact. */}
                 {hasImageFitControl && (
                   <HStack flexShrink={0} spacing="0.75rem">
-                    <HStack spacing="0.25rem">
-                      <Text textStyle="subhead-2">Image fit</Text>
-                      <Tooltip
-                        label="Choose Fit only if the image has a white background."
-                        placement="top"
-                        hasArrow
-                      >
-                        {/* A span gives the tooltip a stable anchor — an Icon/svg
-                            ref alone mis-anchors it to the page corner. */}
-                        <Box
-                          as="span"
-                          display="inline-flex"
-                          color="base.content.medium"
-                          aria-label="Image fit help"
-                        >
-                          <Icon as={BiInfoCircle} />
-                        </Box>
-                      </Tooltip>
-                    </HStack>
+                    <Text textStyle="subhead-2">Image fit</Text>
                     <ButtonGroup isAttached size="xs" aria-label="Image fit">
                       <Button
                         variant={imageFit === "cover" ? "solid" : "outline"}
@@ -501,107 +565,107 @@ export const ImageAdjustmentModal = ({
 
               {/* Preview rail — scrolls within the fixed modal height, so a
                   taller/shorter preview (from a different crop) never resizes
-                  the modal. */}
-              <VStack
-                align="stretch"
-                spacing="1rem"
+                  the modal. Wrapped in a relative Box so PersistentScrollbar
+                  can overlay a permanently-visible track on the gutter. */}
+              <Box
+                position="relative"
                 w={{ base: "100%", md: "21rem" }}
                 flexShrink={0}
                 minH={0}
-                // Always render the scrollbar (not just on hover/overflow) so it
-                // never pops in/out and shifts the rail's content width.
-                overflowY={{ base: "visible", md: "scroll" }}
-                // Reserve the scrollbar gutter so toggling it never changes the
-                // rail's content width — otherwise tile heights (derived from
-                // that width) would oscillate and loop the ResizeObserver.
-                // Style the scrollbar pseudo-elements so WebKit renders a
-                // persistent classic bar: macOS auto-hides OVERLAY scrollbars
-                // even under overflow:scroll, so styling them is the only way to
-                // keep it always visible (same idiom as CmsContainer). Firefox
-                // uses scrollbarWidth/Color.
-                sx={{
-                  scrollbarGutter: "stable",
-                  scrollbarWidth: "thin",
-                  scrollbarColor:
-                    "var(--chakra-colors-gray-400) var(--chakra-colors-gray-100)",
-                  "&::-webkit-scrollbar": {
-                    width: "var(--chakra-sizes-2)",
-                  },
-                  "&::-webkit-scrollbar-track": {
-                    backgroundColor: "var(--chakra-colors-gray-100)",
-                  },
-                  "&::-webkit-scrollbar-thumb": {
-                    backgroundColor: "var(--chakra-colors-gray-400)",
-                    borderRadius: "var(--chakra-radii-full)",
-                  },
-                }}
+                h={{ md: "100%" }}
               >
-                {/* Pinned so it stays visible while the tiles scroll. Opaque bg
-                    + zIndex so scrolling previews pass behind it. */}
-                <HStack
-                  spacing="0.25rem"
-                  position={{ md: "sticky" }}
-                  top={0}
-                  zIndex={1}
-                  bg="base.canvas.default"
-                  pb="0.25rem"
+                <VStack
+                  ref={previewRailRef}
+                  align="stretch"
+                  spacing="1rem"
+                  w="100%"
+                  h="100%"
+                  // Reserve space for PersistentScrollbar's track so content
+                  // never runs under it, and so the width never changes when
+                  // the thumb appears/disappears (avoids a resize loop, since
+                  // tile heights are derived from this width).
+                  pr={{ md: SCROLLBAR_SIZE }}
+                  overflowY={{ base: "visible", md: "scroll" }}
+                  // Hide the native scrollbar — PersistentScrollbar replaces
+                  // it with a track that's always visible, which native
+                  // scrollbars can't guarantee (macOS auto-hides overlay
+                  // scrollbars regardless of overflow/pseudo-element CSS).
+                  sx={{
+                    scrollbarWidth: "none",
+                    "&::-webkit-scrollbar": { display: "none" },
+                  }}
                 >
-                  <Text textStyle="subhead-1">Preview</Text>
-                  <Tooltip
-                    label="Previews show common phone, tablet and desktop sizes. Your screen may show a slightly different layout."
-                    placement="top"
-                    hasArrow
+                  {/* Pinned so it stays visible while the tiles scroll. Opaque bg
+                      + zIndex so scrolling previews pass behind it. */}
+                  <HStack
+                    spacing="0.25rem"
+                    position={{ md: "sticky" }}
+                    top={0}
+                    zIndex={1}
+                    bg="base.canvas.default"
+                    pb="0.25rem"
                   >
-                    <Box
-                      as="span"
-                      display="inline-flex"
-                      color="base.content.medium"
-                      aria-label="About previews"
+                    <Text textStyle="subhead-1">Preview</Text>
+                    <Tooltip
+                      label="Previews show common phone, tablet and desktop sizes. Your screen may show a slightly different layout."
+                      placement="top"
+                      hasArrow
                     >
-                      <Icon as={BiInfoCircle} />
-                    </Box>
-                  </Tooltip>
-                </HStack>
+                      <Box
+                        as="span"
+                        display="inline-flex"
+                        color="base.content.medium"
+                        aria-label="About previews"
+                      >
+                        <Icon as={BiInfoCircle} />
+                      </Box>
+                    </Tooltip>
+                  </HStack>
 
-                {/* Low-resolution warning — the kept crop can't fill this
-                    component's largest frame even at 1x, so it would look soft. */}
-                {lowResWarning && (
-                  <Infobox variant="warning" size="sm">
-                    <Text textStyle="body-2">
-                      This image may look blurry here. The area you've kept is
-                      about {lowResWarning.effectivePx}px{" "}
-                      {lowResWarning.dimension === "width" ? "wide" : "tall"},
-                      but it can display up to {lowResWarning.targetPx}px{" "}
-                      {lowResWarning.dimension === "width" ? "wide" : "tall"}.
-                      Use a larger image, or keep a{" "}
-                      {lowResWarning.dimension === "width" ? "wider" : "taller"}{" "}
-                      area in the crop.
-                    </Text>
-                  </Infobox>
-                )}
+                  {/* Low-resolution warning — the kept crop can't fill this
+                      component's largest frame even at 1x, so it would look soft. */}
+                  {lowResWarning && (
+                    <Infobox variant="warning" size="sm">
+                      <Text textStyle="body-2">
+                        This image may look blurry here. The area you've kept is
+                        about {lowResWarning.effectivePx}px{" "}
+                        {lowResWarning.dimension === "width" ? "wide" : "tall"},
+                        but it can display up to {lowResWarning.targetPx}
+                        px{" "}
+                        {lowResWarning.dimension === "width" ? "wide" : "tall"}.
+                        Use a larger image, or keep a{" "}
+                        {lowResWarning.dimension === "width"
+                          ? "wider"
+                          : "taller"}{" "}
+                        area in the crop.
+                      </Text>
+                    </Infobox>
+                  )}
 
-                <AdjustmentPreview
-                  src={src}
-                  originalSrc={originalSrc}
-                  originalFile={originalFile}
-                  adjustment={draft}
-                  previewStates={config.previewStates}
-                  scrim={config.scrim}
-                  // The card's title, overlaid on the gradient in the full-image
-                  // card preview (only drawn when the config has a scrim).
-                  scrimText={(fieldHost as { title?: string } | null)?.title}
-                  block={block}
-                  imageFieldName={imageFieldName}
-                  fieldHost={fieldHost}
-                  buildSingleItemPreviewBlock={
-                    config.buildSingleItemPreviewBlock
-                  }
-                  skipRealComponentPreview={config.skipRealComponentPreview}
-                  stackPreviews={config.stackPreviews}
-                  objectFit={previewObjectFit}
-                  siteId={siteId}
-                />
-              </VStack>
+                  <AdjustmentPreview
+                    src={src}
+                    originalSrc={originalSrc}
+                    originalFile={originalFile}
+                    adjustment={draft}
+                    previewStates={config.previewStates}
+                    scrim={config.scrim}
+                    // The card's title, overlaid on the gradient in the full-image
+                    // card preview (only drawn when the config has a scrim).
+                    scrimText={(fieldHost as { title?: string } | null)?.title}
+                    block={block}
+                    imageFieldName={imageFieldName}
+                    fieldHost={fieldHost}
+                    buildSingleItemPreviewBlock={
+                      config.buildSingleItemPreviewBlock
+                    }
+                    skipRealComponentPreview={config.skipRealComponentPreview}
+                    stackPreviews={config.stackPreviews}
+                    objectFit={previewObjectFit}
+                    siteId={siteId}
+                  />
+                </VStack>
+                <PersistentScrollbar scrollRef={previewRailRef} />
+              </Box>
             </Flex>
           </ModalBody>
 
