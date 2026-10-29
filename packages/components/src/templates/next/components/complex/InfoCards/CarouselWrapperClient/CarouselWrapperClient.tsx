@@ -19,7 +19,7 @@ import { useNavigation } from "./useNavigation"
 // Written in full so Tailwind extracts every utility. The custom property name
 // has to match what `useNavigation` reads back.
 const viewportClass =
-  "relative overflow-hidden [--card-width:calc((100cqi-var(--sliver)-(var(--cards-per-page)-1)*var(--gap))/var(--cards-per-page))] [--cards-per-page:1] [--has-next:min(1,max(0,var(--card-count)-var(--cards-per-page)))] [--sliver:calc((var(--gap)+5rem)*var(--has-next))] [container-type:inline-size] md:[--cards-per-page:2] md:[--sliver:calc(10%*var(--has-next))] lg:[--cards-per-page:3]"
+  "relative overflow-hidden [--card-width:calc((100cqi-var(--sliver)-(var(--cards-per-page)-1)*var(--gap))/var(--cards-per-page))] [--cards-per-page:1] [--has-next:min(1,max(0,var(--card-count)-var(--cards-per-page)))] [--sliver:calc((var(--gap)+5rem)*var(--has-next))] [container-type:inline-size] md:[--cards-per-page:2] lg:[--cards-per-page:3] lg:[--sliver:calc(8.75rem*var(--has-next))]"
 
 if (!viewportClass.includes(CARDS_PER_PAGE_CSS_VAR)) {
   throw new Error(
@@ -29,20 +29,22 @@ if (!viewportClass.includes(CARDS_PER_PAGE_CSS_VAR)) {
 
 const carouselStyles = tv({
   slots: {
-    // The next card starts after the gap, so the reserved sliver includes that
-    // gap. On mobile the gap is wider than 10% of the viewport, which hid the
-    // next card. 5rem is the visible slice. The fade is the outer edge of that slice.
-    // `--has-next` is 0 when every card already fits, so that sliver is not reserved.
+    // The next card starts after the gap, so the sliver is that gap plus the
+    // visible slice. Below lg the slice is 5rem, wider than the fade, or the
+    // gradient covers the card. From lg the sliver is the 8.75rem (140px) edge
+    // fade. The fade itself is only the outer edge: 24px, 40px from md, 140px
+    // from lg. `--has-next` is 0 when every card already fits, so that sliver
+    // is not reserved.
     viewport: viewportClass,
     track:
       "ease flex gap-[var(--gap)] transition-transform duration-300 motion-reduce:transition-none",
     slide: "flex w-[var(--card-width)] shrink-0 flex-col",
-    fade: "pointer-events-none absolute inset-y-0 z-10 w-6 md:w-[var(--sliver)]",
+    fade: "pointer-events-none absolute inset-y-0 z-10 w-6 md:w-10 lg:w-[8.75rem]",
   },
   variants: {
     variant: {
       [INFOCARD_VARIANT.default]: {
-        viewport: "[--gap:2.5rem] md:[--gap:1.75rem] lg:[--gap:4rem]",
+        viewport: "[--gap:2rem]",
       },
       [INFOCARD_VARIANT.bold]: {
         viewport: "[--gap:0.25rem]",
@@ -146,7 +148,7 @@ export const CarouselWrapperClient = ({
       </div>
 
       {showControls && (
-        <div className="mt-6 flex items-center justify-between gap-4">
+        <div className="mt-8 flex items-center justify-between gap-4">
           <NavigationDots
             pages={pages}
             pageIndex={pageIndex}
