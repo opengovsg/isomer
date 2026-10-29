@@ -14,10 +14,8 @@ import { NewFeatureBadge } from "~/features/editing-experience/components/shared
 
 import {
   HeroBlockImagePreviewLeftCurvedIcon,
-  HeroBlockImagePreviewLeftIcon,
   HeroBlockImagePreviewLeftStraightIcon,
   HeroBlockImagePreviewRightCurvedIcon,
-  HeroBlockImagePreviewRightIcon,
   HeroBlockImagePreviewRightStraightIcon,
 } from "./heroBlockImagePreview"
 
@@ -72,7 +70,7 @@ function JsonFormsHeroBlockImageControl({
           >
             Right
             <Box mt="0.625rem">
-              <HeroBlockImagePreviewRightIcon />
+              <HeroBlockImagePreviewRightStraightIcon />
             </Box>
           </Radio>
           <Radio
@@ -85,7 +83,7 @@ function JsonFormsHeroBlockImageControl({
               <NewFeatureBadge />
             </Flex>
             <Box mt="0.625rem">
-              <HeroBlockImagePreviewLeftIcon />
+              <HeroBlockImagePreviewLeftStraightIcon />
             </Box>
           </Radio>
         </Radio.RadioGroup>
