@@ -9,7 +9,7 @@ import { TextSchema } from "../native"
 import { SimpleProseSchema } from "../native/Prose"
 import { IsomerString } from "../primitives/IsomerString"
 
-const NotificationCustomSchema = Type.Object(
+export const NotificationCustomSchema = Type.Object(
   {
     type: Type.Optional(
       Type.Literal("custom", {

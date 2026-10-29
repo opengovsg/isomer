@@ -21,7 +21,8 @@ import {
 } from "@opengovsg/design-system-react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import DOMPurify from "isomorphic-dompurify"
-import { isEmpty } from "lodash-es"
+import { isEmpty, omit } from "lodash-es"
+import { useRouter } from "next/router"
 import { z } from "zod"
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
 import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
@@ -144,6 +145,14 @@ const LinkEditorModalContent = ({
 
   const isEditingLink = !!linkText && !!linkHref
 
+  // Pages outside a site (e.g. the central banner) cannot pick pages or files
+  const { query } = useRouter()
+  const parsedSite = pageOrLinkSchema.safeParse(query)
+  const site = parsedSite.success ? parsedSite.data : null
+  const availableLinkTypes = site
+    ? linkTypes
+    : omit(linkTypes, [LINK_TYPES.Page, LINK_TYPES.File])
+
   const onSubmit = handleSubmit(({ linkText, linkHref }) =>
     onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref),
   )
@@ -180,7 +189,7 @@ const LinkEditorModalContent = ({
 
           <Box>
             <LinkEditorContextProvider
-              linkTypes={linkTypes}
+              linkTypes={availableLinkTypes}
               linkHref={linkHref ?? ""}
               onChange={(href) =>
                 setValue("linkHref", href, {
@@ -190,7 +199,7 @@ const LinkEditorModalContent = ({
               }
               error={errors.linkHref?.message}
             >
-              <ModalLinkEditor onUploadedFile={onUploadedFile} />
+              <ModalLinkEditor site={site} onUploadedFile={onUploadedFile} />
               {errors.linkHref?.message && (
                 <FormErrorMessage>{errors.linkHref.message}</FormErrorMessage>
               )}
@@ -279,12 +288,28 @@ export const LinkEditorModal = ({
 )
 
 const ModalLinkEditor = ({
+  site,
   onUploadedFile,
 }: {
+  site: z.infer<typeof pageOrLinkSchema> | null
   onUploadedFile?: (file: File) => void
 }) => {
   const { error, curHref, setHref } = useLinkEditor()
-  const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
+
+  if (!site) {
+    return (
+      <LinkHrefEditor
+        label="Link destination"
+        description="When this is clicked, open:"
+        isRequired
+        isInvalid={!!error}
+        pageLinkElement={null}
+        fileLinkElement={null}
+      />
+    )
+  }
+
+  const { siteId, pageId, linkId } = site
 
   return (
     <LinkHrefEditor

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { expect, userEvent, waitFor, within } from "storybook/test"
 import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
@@ -65,10 +65,10 @@ const zeroTagOptionsUsageParameters = {
   },
 } satisfies Story["parameters"]
 
-/** Chromatic delay for play-driven inline edit snapshots. */
+/** Argos delay for play-driven inline edit snapshots. */
 const inlineEditSnapshotParameters = {
   ...newCollectionFiltersParameters,
-  chromatic: { delay: 300 },
+  argos: { delay: 300 },
 } satisfies Story["parameters"]
 
 async function playOpenManageFilters(canvasElement: HTMLElement) {

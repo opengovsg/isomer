@@ -1,4 +1,5 @@
 import type { Editor } from "@tiptap/react"
+import { getMarkRange } from "@tiptap/react"
 import { LINK_TYPES_MAPPING } from "~/features/editing-experience/components/LinkEditor/constants"
 
 import { LinkEditorModal } from "../LinkEditorModal"
@@ -9,12 +10,12 @@ interface LinkEditorModalProps {
   onClose: () => void
 }
 
-const getLinkText = (editor: Editor): string => {
-  if (editor.isActive("link")) {
-    return (
-      editor.state.doc.nodeAt(Math.max(1, editor.view.state.selection.from - 1))
-        ?.textContent ?? ""
-    )
+export const getLinkText = (editor: Editor): string => {
+  const linkType = editor.schema.marks.link
+  if (linkType && editor.isActive("link")) {
+    const { doc, selection } = editor.state
+    const range = getMarkRange(doc.resolve(selection.from), linkType)
+    return range ? doc.textBetween(range.from, range.to) : ""
   }
 
   const { from, to } = editor.state.selection

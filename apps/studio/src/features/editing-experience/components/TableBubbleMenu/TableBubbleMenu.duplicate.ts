@@ -9,6 +9,11 @@ import {
   TableMap,
   tableNodeTypes,
 } from "@tiptap/pm/tables"
+import {
+  duplicateColumnWidths,
+  setTableColumnWidths,
+  storedColumnWidths,
+} from "~/features/editing-experience/utils/columnWidths"
 
 import {
   selectionIncludesHeaderColumn,
@@ -433,6 +438,8 @@ export const duplicateSelectedColumns = (editor: Editor): void => {
     rect,
     span,
     mutate: ({ tr, tablePos }) => {
+      const table = tr.doc.nodeAt(tablePos)
+      const widths = table ? storedColumnWidths(table, rect.map.width) : null
       for (let i = 0; i < span; i++) {
         if (
           !insertDuplicateColumn({
@@ -444,6 +451,13 @@ export const duplicateSelectedColumns = (editor: Editor): void => {
         ) {
           return false
         }
+      }
+      if (widths) {
+        setTableColumnWidths(
+          tr,
+          tablePos,
+          duplicateColumnWidths(widths, rect.left, rect.right),
+        )
       }
       return tr
     },

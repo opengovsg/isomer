@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { Box } from "@chakra-ui/react"
 import { ViewGazetteModal } from "~/features/gazettes"
 
@@ -17,7 +17,7 @@ const meta: Meta<typeof ViewGazetteModal> = {
   ],
   parameters: {
     layout: "fullscreen",
-    chromatic: { delay: 200 },
+    argos: { delay: 200 },
   },
   args: {
     isOpen: true,

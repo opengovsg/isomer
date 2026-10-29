@@ -225,7 +225,7 @@ jobs:
             DD_GIT_COMMIT_SHA=${{ github.sha }}
 
       - name: Scan built image with Inspector
-        uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@a8d909f662496d73f97b86ea9acd11cb7decedb7 # v1
+        uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@c87d8a405e237cfdf16e5dd3808d28d088d7cb6f # v1.6.1
         id: inspector
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -252,7 +252,7 @@ jobs:
       # from the GitHub actions job summary page.
       - name: Upload Scan Results
         id: upload-scan-results
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           path: |
             ${{ steps.inspector.outputs.inspector_scan_results }}
@@ -359,7 +359,7 @@ jobs:
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@138c24f321fdbdf7edee4a685519d253cae2cdea # v1
+        uses: aws-actions/amazon-ecs-render-task-definition@8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 # v1
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
@@ -371,7 +371,7 @@ jobs:
           image: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
       - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@c465972ecbd160473f22e683363b422a5412a3de # v2
+        uses: aws-actions/amazon-ecs-deploy-task-definition@a00d4d57ac0de1a99b39fe469f3d898d38717c2b # v2
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           cluster: ${{ inputs.ecs-cluster-name }}

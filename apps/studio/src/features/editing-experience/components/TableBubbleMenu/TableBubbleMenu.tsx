@@ -1,4 +1,5 @@
 import type { Editor } from "@tiptap/react"
+import type { RefObject } from "react"
 import { Flex, Icon, Portal, VStack } from "@chakra-ui/react"
 import { memo } from "react"
 import { BiPencil } from "react-icons/bi"
@@ -9,11 +10,14 @@ import { useTableBubbleMenu } from "./useTableBubbleMenu"
 export interface TableBubbleMenuProps {
   editor: Editor
   isDragReordering?: boolean
+  /** Keeps the portaled pencil inside the expanded-table dialog so it stays clickable. */
+  portalContainerRef?: RefObject<HTMLElement | null>
 }
 
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
   isDragReordering = false,
+  portalContainerRef,
 }: TableBubbleMenuProps) {
   const {
     show,
@@ -35,7 +39,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   }
 
   return (
-    <Portal>
+    <Portal containerRef={portalContainerRef}>
       <div
         ref={menuRef}
         // Lets focus move between this portaled menu and Chakra modals (e.g. Table Settings).

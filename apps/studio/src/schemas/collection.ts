@@ -42,7 +42,7 @@ const slashDateSchema = z
   })
 
 const dateTaggedEntrySchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   date: z.string().min(1),
   endDate: z.string().optional(),
 })
@@ -78,20 +78,20 @@ export const readLinkSchema = z.object({
 })
 
 const permalinkSchema = generateBasePermalinkSchema("folder")
-  .min(1, { message: "Enter a URL for this folder" })
+  .min(1, { error: "Enter a URL for this folder" })
   .max(MAX_FOLDER_PERMALINK_LENGTH, {
-    message: `Folder URL should be shorter than ${MAX_FOLDER_PERMALINK_LENGTH} characters.`,
+    error: `Folder URL should be shorter than ${MAX_FOLDER_PERMALINK_LENGTH} characters.`,
   })
 
 export const createCollectionSchema = z.object({
   collectionTitle: z
     .string()
-    .min(1, { message: "Enter a title for this folder" })
+    .min(1, { error: "Enter a title for this folder" })
     .max(MAX_FOLDER_TITLE_LENGTH, {
-      message: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
+      error: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
     })
     .regex(noStylizedUnicodeTitleRegex, {
-      message: NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
+      error: NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
     }),
   permalink: permalinkSchema,
   siteId: z.number().min(1),
@@ -108,7 +108,7 @@ export const getCollectionTagsSchema = z
   .refine(
     (data) =>
       (data.resourceId !== undefined) !== (data.collectionId !== undefined),
-    { message: "Exactly one of resourceId or collectionId must be provided" },
+    { error: "Exactly one of resourceId or collectionId must be provided" },
   )
 
 export const getCollectionsSchema = z.object({
@@ -122,7 +122,7 @@ export const readCollectionSchema = z
     resourceId: z.number().min(1),
     orderBy: z.enum(resourceOrderByOptions).optional().default("updated-desc"),
   })
-  .merge(offsetPaginationSchema)
+  .extend(offsetPaginationSchema.shape)
 
 const countFilterUsageBaseSchema = z.object({
   siteId: z.number().min(1),
@@ -137,15 +137,13 @@ const countFilterUsageBaseSchema = z.object({
 export const countFilterUsageSchema = z.discriminatedUnion("type", [
   countFilterUsageBaseSchema.extend({
     type: z.literal(TAG_CATEGORY_TYPE.Text),
-    tagOptionIds: z
-      .array(z.string().uuid())
-      .max(MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT, {
-        message: `At most ${MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT} tag options can be queried at once`,
-      }),
+    tagOptionIds: z.array(z.uuid()).max(MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT, {
+      error: `At most ${MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT} tag options can be queried at once`,
+    }),
   }),
   countFilterUsageBaseSchema.extend({
     type: z.literal(TAG_CATEGORY_TYPE.Date),
-    dateFilterId: z.string().uuid(),
+    dateFilterId: z.uuid(),
   }),
 ])
 

@@ -98,7 +98,7 @@ function EmbedCodeModal({
             return new RegExp(urlPattern).test(iframeSrc)
           },
           {
-            message:
+            error:
               "This code doesn’t look valid. Copy and paste the code as-is without modifications.",
           },
         ),

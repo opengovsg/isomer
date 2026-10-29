@@ -3,7 +3,7 @@ import type { DynamicComponentListProps } from "~/interfaces"
 import { http, HttpResponse } from "msw"
 import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { DynamicComponentList } from "./DynamicComponentList"
 
@@ -14,7 +14,7 @@ const meta: Meta<DynamicComponentListProps> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },

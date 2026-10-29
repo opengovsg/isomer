@@ -17,7 +17,7 @@ import {
 } from "@opengovsg/isomer-components"
 import {
   CellSelection,
-  moveTableColumn,
+  isInTable,
   moveTableRow,
   selectedRect,
 } from "@tiptap/pm/tables"
@@ -25,6 +25,7 @@ import {
   BiCopy,
   BiDownArrowAlt,
   BiLeftArrowAlt,
+  BiRevision,
   BiRightArrowAlt,
   BiTrash,
   BiUpArrowAlt,
@@ -40,6 +41,11 @@ import {
   IconMergeCells,
   IconSplitCell,
 } from "~/components/icons"
+import {
+  moveTableColumnWithWidths,
+  setTableColumnWidths,
+  storedColumnWidths,
+} from "~/features/editing-experience/utils/columnWidths"
 
 import type {
   SelectionKind,
@@ -55,6 +61,10 @@ import {
   duplicateSelectedColumns,
   duplicateSelectedRows,
 } from "./TableBubbleMenu.duplicate"
+import {
+  splitFullyMergedColumn,
+  splitFullyMergedRow,
+} from "./TableBubbleMenu.split"
 import {
   canMergeCells,
   canSplitCell,
@@ -75,14 +85,23 @@ const moveTableBlock = (
   const { state, view } = editor
   const rect = selectedRect(state)
   const tablePos = rect.tableStart - 1
-  const move = axis === "row" ? moveTableRow : moveTableColumn
+  const move =
+    axis === "row"
+      ? moveTableRow({
+          from: plan.from,
+          to: plan.to,
+          select: false,
+          pos: rect.tableStart,
+        })
+      : moveTableColumnWithWidths({
+          from: plan.from,
+          to: plan.to,
+          select: false,
+          pos: rect.tableStart,
+          tablePos,
+        })
 
-  move({
-    from: plan.from,
-    to: plan.to,
-    select: false,
-    pos: rect.tableStart,
-  })(state, (tr) => {
+  move(state, (tr) => {
     restoreMovedBlockSelection(view, tr, tablePos, plan, axis)
   })
   editor.commands.focus()
@@ -299,6 +318,7 @@ const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
       aria-hidden
       className="chakra-switch__track"
       data-checked={checkedDataAttr}
+
       __css={{
         display: "inline-flex",
         flexShrink: 0,
@@ -310,16 +330,48 @@ const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
       <chakra.span
         className="chakra-switch__thumb"
         data-checked={checkedDataAttr}
+
         __css={styles.thumb}
       >
         <Icon
           as={ThumbIcon}
           data-checked={checkedDataAttr}
+
           __css={styles.thumbIcon}
         />
       </chakra.span>
     </chakra.span>
   )
+}
+
+const splitSelectedMergedCell = (editor: Editor) => {
+  const { state } = editor
+  const selection = state.selection
+
+  if (selection instanceof CellSelection) {
+    const rect = selectedRect(state)
+    if (splitFullyMergedRow(editor, rect)) return
+    if (splitFullyMergedColumn(editor, rect)) return
+
+    if (selection.$anchorCell.pos !== selection.$headCell.pos) {
+      const mapIndex = rect.top * rect.map.width + rect.left
+      const cellOffset = rect.map.map[mapIndex]
+      if (cellOffset !== undefined) {
+        const cellPos = rect.tableStart + cellOffset
+        const narrowed = editor
+          .chain()
+          .focus()
+          .setCellSelection({ anchorCell: cellPos, headCell: cellPos })
+          .run()
+        if (narrowed) {
+          editor.chain().focus().splitCell().run()
+          return
+        }
+      }
+    }
+  }
+
+  editor.chain().focus().splitCell().run()
 }
 
 const MergeCellsButton = ({ editor }: { editor: Editor }) => (
@@ -334,7 +386,7 @@ const SplitCellButton = ({ editor }: { editor: Editor }) => (
   <ActionButton
     label="Split cell"
     icon={<IconSplitCell boxSize="1rem" />}
-    onClick={() => editor.chain().focus().splitCell().run()}
+    onClick={() => splitSelectedMergedCell(editor)}
   />
 )
 
@@ -393,7 +445,6 @@ const RowSelectionActions = ({
     { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
     "down",
   )
-
   return (
     <ActionGroup>
       {selectionIsTopRow(rect) && (
@@ -468,7 +519,6 @@ const ColumnSelectionActions = ({
     { left: rect.left, right: rect.right, tableWidth: rect.map.width },
     "right",
   )
-
   return (
     <ActionGroup>
       {selectionIsLeftmostColumn(rect) && (
@@ -553,6 +603,7 @@ const SelectionActions = ({
           />
         </ActionGroup>
       )
+
     case "multi-cell":
       return (
         <ActionGroup>
@@ -578,6 +629,25 @@ const SelectionActions = ({
   }
 }
 
+const ResetColumnWidths = ({ editor }: { editor: Editor }) => {
+  if (!isInTable(editor.state)) return null
+  const rect = selectedRect(editor.state)
+  if (!storedColumnWidths(rect.table, rect.map.width)) return null
+
+  return (
+    <ActionButton
+      label="Reset column width"
+      icon={<BiRevision fontSize="1rem" />}
+      onClick={() => {
+        const tr = editor.state.tr
+        setTableColumnWidths(tr, rect.tableStart - 1, null)
+        editor.view.dispatch(tr)
+        editor.commands.focus()
+      }}
+    />
+  )
+}
+
 export const TableBubbleMenuActions = ({
   editor,
   kind,
@@ -588,6 +658,7 @@ export const TableBubbleMenuActions = ({
   onColorSet: () => void
 }) => (
   <>
+    <ResetColumnWidths editor={editor} />
     <SelectionActions editor={editor} kind={kind} />
     <BackgroundColor editor={editor} kind={kind} onColorSet={onColorSet} />
   </>

@@ -3,7 +3,7 @@ import { http, HttpResponse } from "msw"
 import { generateSiteConfig } from "~/stories/helpers"
 import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { DynamicDataBanner } from "./DynamicDataBanner"
 
@@ -12,12 +12,7 @@ const meta: Meta<typeof DynamicDataBanner> = {
   component: DynamicDataBanner,
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes([
-      "mobileSmall",
-      "mobile",
-      "tablet",
-      "desktop",
-    ]),
+    argos: withArgosModes(["mobileSmall", "mobile", "tablet", "desktop"]),
   },
   args: {
     site: generateSiteConfig(),

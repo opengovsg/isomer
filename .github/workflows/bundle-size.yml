@@ -81,7 +81,8 @@ jobs:
           # main may have a different lockfile/deps than the PR branch.
           pnpm install --frozen-lockfile
           # Resolve from the checked-out workspace: main may predate the template move.
-          template_dir=$(pnpm --filter isomer-base-template exec pwd)
+          # pnpm exec may re-sync node_modules and print install output first, so keep only pwd.
+          template_dir=$(pnpm --filter isomer-base-template exec pwd | tail -n 1)
           # Drop the PR build artifacts so we measure main cleanly.
           rm -rf packages/components/dist "$template_dir/out" "$template_dir/.next"
           pnpm --filter @opengovsg/isomer-components run build:module
@@ -113,7 +114,7 @@ jobs:
           ENVEOF
 
       - name: Upload bundle size metadata
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: bundle-size-metadata
           path: /tmp/bundle-size-metadata/

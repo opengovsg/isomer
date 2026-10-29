@@ -10,4 +10,4 @@ export const listVersionHistorySchema = z
     pageId: z.number().min(1),
     siteId: z.number().min(1),
   })
-  .merge(infiniteOffsetPaginationSchema)
+  .extend(infiniteOffsetPaginationSchema.shape)

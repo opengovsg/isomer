@@ -46,7 +46,7 @@ A feature lands as a Graphite stack of small PRs, not one big PR. Default split:
 1. **Schema / interface PR.** Type, Zod schema, JSON schema additions. Backward compatible.
 2. **Server PR.** New procedure, service, tests. Wires the new behaviour but is unreachable from the UI.
 3. **Client PR.** Hooks, components, page wiring. The user-visible change.
-4. **Story / Chromatic PR.** Storybook stories for FE work.
+4. **Story / Argos PR.** Storybook stories for FE work.
 
 If the change is one-shot eligible and trivially small (e.g. a single component update for design-iteration), one PR is OK.
 
@@ -138,7 +138,7 @@ PR body template:
 - [ ] typecheck / lint / unit pass
 - [ ] Storybook story added (FE)
 - [ ] tRPC integration test added (BE)
-- [ ] Chromatic preview link (FE, after CI builds)
+- [ ] Argos preview link (FE, after CI builds)
 
 ## Closes
 <ticket id on the bottom PR only>
@@ -159,7 +159,7 @@ Risk: <tier>
 Awaiting: <review or design sign-off>
 ```
 
-If this is a `design-iteration` and Chromatic is wired up, attach the preview link.
+If this is a `design-iteration` and Argos is wired up, attach the preview link.
 
 ## Hard rules
 

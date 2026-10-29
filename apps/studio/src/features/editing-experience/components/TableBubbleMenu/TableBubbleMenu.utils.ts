@@ -268,6 +268,40 @@ const isMergedCell = (rect: ReturnType<typeof selectedRect>): boolean => {
   )
 }
 
+export type TableSelectionRect = ReturnType<typeof selectedRect>
+
+/** Full-width row selection that is a single cell merged across the row. */
+export const selectionIsFullyMergedRow = (
+  rect: TableSelectionRect,
+): boolean => {
+  if (rect.map.width <= 1) return false
+  if (rect.left !== 0 || rect.right !== rect.map.width) return false
+  if (rect.bottom - rect.top !== 1) return false
+
+  const cellStart = rect.map.map[rect.top * rect.map.width + rect.left]
+  if (cellStart === undefined) return false
+  const node = rect.table.nodeAt(cellStart)
+  if (!node) return false
+
+  return (node.attrs.colspan as number) === rect.map.width
+}
+
+/** Full-height column selection that is a single cell merged down the column. */
+export const selectionIsFullyMergedColumn = (
+  rect: TableSelectionRect,
+): boolean => {
+  if (rect.map.height <= 1) return false
+  if (rect.top !== 0 || rect.bottom !== rect.map.height) return false
+  if (rect.right - rect.left !== 1) return false
+
+  const cellStart = rect.map.map[rect.top * rect.map.width + rect.left]
+  if (cellStart === undefined) return false
+  const node = rect.table.nodeAt(cellStart)
+  if (!node) return false
+
+  return (node.attrs.rowspan as number) === rect.map.height
+}
+
 // Menu and mergeCells both call these. A merged cell that fills a row, column,
 // or table is still one cell, so the axis menu must use the same checks.
 export const canMergeCells = (state: EditorState): boolean => {
@@ -309,6 +343,22 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   })
 }
 
-// Hide the menu while a Chakra/modal dialog has focus.
+// Hide the menu while a Chakra modal is open, except the expanded-table
+// editor itself — that dialog is where the menu is supposed to stay usable.
+const BLOCKING_DIALOG =
+  '[role="dialog"][aria-modal="true"]:not([data-expanded-table-editor])'
+
 export const isEditorModalOpen = () =>
-  document.querySelector('[role="dialog"][aria-modal="true"]') != null
+  document.querySelector(BLOCKING_DIALOG) != null
+
+export const subscribeEditorModal = (listener: () => void) => {
+  let open = isEditorModalOpen()
+  const observer = new MutationObserver(() => {
+    const next = isEditorModalOpen()
+    if (next === open) return
+    open = next
+    listener()
+  })
+  observer.observe(document.body, { childList: true, subtree: true })
+  return () => observer.disconnect()
+}

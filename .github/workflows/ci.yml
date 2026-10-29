@@ -126,7 +126,7 @@ jobs:
             # Not using test:unit dependency in Turbo because Datadog Test Visibility requires only the test suite to be run
             run: pnpm exec turbo run generate --filter=isomer-studio
           - name: Configure Datadog Test Visibility
-            uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+            uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
             with:
               languages: js
               service: isomer-studio
@@ -154,7 +154,7 @@ jobs:
             # Required by the vitest "browser" project (Vitest Browser Mode).
             run: pnpm --filter @opengovsg/isomer-components exec playwright install chromium
           - name: Configure Datadog Test Visibility
-            uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+            uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
             with:
               languages: js
               service: isomer-studio
@@ -177,7 +177,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
       - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+        uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
         with:
           languages: js
           service: isomer-template
@@ -199,7 +199,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
       - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+        uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
         with:
           languages: js
           service: isomer-studio
@@ -223,7 +223,7 @@ jobs:
           - name: Start test containers
             run: pnpm exec turbo run setup:test --filter=@isomer/pgboss
           - name: Configure Datadog Test Visibility
-            uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+            uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
             with:
               languages: js
               service: isomer-pgboss
@@ -244,7 +244,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
       - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+        uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
         with:
           languages: js
           service: isomer-publishing
@@ -328,7 +328,7 @@ jobs:
           - name: Start test containers
             run: pnpm run setup:test
           - name: Configure Datadog Test Visibility
-            uses: datadog/test-visibility-github-action@1abae93083b69778facd7ee11f89184306c999e6 # v3.2.0
+            uses: datadog/test-visibility-github-action@7ce545f228901e4ac4ef0b45d946120f1c4124e0 # v3.3.0
             with:
               languages: js
               service: isomer-studio
@@ -344,7 +344,7 @@ jobs:
       - name: Upload test results
         if: ${{ !cancelled() }}
         id: upload-test-results
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           # Unique per run+feature so that re-runs and parallel jobs don't collide.
           name: e2e-test-results-${{ github.run_id }}-${{ matrix.feature }}
@@ -370,7 +370,7 @@ jobs:
       # single shared "e2e-comment-metadata" name from every matrix job would collide.
       - name: Upload E2E comment metadata
         if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.upload-test-results.outputs.artifact-url != '' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: e2e-comment-metadata-${{ matrix.feature }}
           path: /tmp/e2e-metadata/
@@ -397,7 +397,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Decide whether the needed jobs succeeded or failed
-        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # v1.2.2
+        uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0
         with:
           jobs: ${{ toJSON(needs) }}
           # Jobs with `if:` (optimizer / path filters) may skip; build/lint/format/typecheck must not.

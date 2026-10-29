@@ -1,5 +1,6 @@
 import {
   CopyObjectCommand,
+  GetObjectCommand,
   GetObjectTaggingCommand,
   HeadObjectCommand,
   PutObjectRetentionCommand,
@@ -23,8 +24,13 @@ vi.mock("@aws-sdk/client-s3", async (importOriginal) => {
 })
 
 // Imported after the mock is registered so the module-level S3Client is mocked.
-const { copyFile, deleteFile, setAssetAsPublished, getFileSize } =
-  await import("../s3")
+const {
+  copyFile,
+  deleteFile,
+  setAssetAsPublished,
+  getFileSize,
+  getTextObject,
+} = await import("../s3")
 
 const DELETE_TAG = "deletedAt"
 
@@ -151,6 +157,54 @@ describe("getFileSize", () => {
     await expect(
       getFileSize({ Key: "present.csv", Bucket: "test-bucket" }),
     ).rejects.toBe(transientError)
+  })
+})
+
+describe("getTextObject", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("returns the body and ETag of an existing object", async () => {
+    // Arrange
+    sendMock.mockResolvedValueOnce({
+      Body: { transformToString: () => Promise.resolve("[]") },
+      ETag: '"abc123"',
+    })
+
+    // Act
+    const object = await getTextObject("test-bucket", "a.json")
+
+    // Assert
+    expect(object).toEqual({ body: "[]", eTag: '"abc123"' })
+    expect(sendMock.mock.calls[0]?.[0]).toBeInstanceOf(GetObjectCommand)
+  })
+
+  it("returns null when the object does not exist", async () => {
+    // Arrange
+    sendMock.mockRejectedValueOnce(
+      Object.assign(new Error("No such key"), { name: "NoSuchKey" }),
+    )
+
+    // Act
+    const object = await getTextObject("test-bucket", "gone.json")
+
+    // Assert
+    expect(object).toBeNull()
+  })
+
+  it("rethrows other errors", async () => {
+    // Arrange
+    const transientError = Object.assign(new Error("SlowDown"), {
+      name: "SlowDown",
+      $metadata: { httpStatusCode: 503 },
+    })
+    sendMock.mockRejectedValueOnce(transientError)
+
+    // Act + Assert
+    await expect(getTextObject("test-bucket", "a.json")).rejects.toBe(
+      transientError,
+    )
   })
 })
 

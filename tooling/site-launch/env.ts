@@ -22,7 +22,7 @@ const parsed = envSchema.safeParse(processEnv)
 if (parsed.success === false) {
   console.error(
     "❌ Invalid environment variables:",
-    parsed.error.flatten().fieldErrors,
+    z.flattenError(parsed.error).fieldErrors,
   )
   throw new Error("Invalid environment variables")
 }

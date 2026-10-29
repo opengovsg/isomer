@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { Box } from "@chakra-ui/react"
 import { Suspense } from "react"
 import { gazetteHandlers } from "tests/msw/handlers/gazette"
@@ -24,7 +24,7 @@ const meta: Meta<typeof CreateGazetteModal> = {
   ],
   parameters: {
     layout: "fullscreen",
-    chromatic: { delay: 200 },
+    argos: { delay: 200 },
     msw: {
       handlers: [gazetteHandlers.collectionTags.default()],
     },

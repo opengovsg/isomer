@@ -9,6 +9,7 @@ import { authRouter } from "./auth/auth.router"
 import { collectionRouter } from "./collection/collection.router"
 import { folderRouter } from "./folder/folder.router"
 import { gazetteRouter } from "./gazette/gazette.router"
+import { globalRouter } from "./global/global.router"
 import { meRouter } from "./me/me.router"
 import { pageRouter } from "./page/page.router"
 import { redirectRouter } from "./redirect/redirect.router"
@@ -29,6 +30,7 @@ export const appRouter = router({
   folder: folderRouter,
   collection: collectionRouter,
   gazette: gazetteRouter,
+  global: globalRouter,
   site: siteRouter,
   redirect: redirectRouter,
   resource: resourceRouter,

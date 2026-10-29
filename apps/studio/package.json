@@ -48,6 +48,7 @@
     "test-ci:unit": "dotenv -e .env.test -- vitest run --coverage",
     "test-dev": "start-server-and-test dev http://127.0.0.1:3000 test",
     "test-dev:unit": "dotenv -e .env.test -- vitest",
+    "test-storybook": "SKIP_ENV_VALIDATION=true VITEST_STORYBOOK=true vitest run",
     "test:e2e": "dotenv -e .env.test pnpm exec playwright test ${PLAYWRIGHT_TEST_PATHS:-}",
     "test:load:build": "webpack-cli --config tests/load/webpack.config.cjs",
     "test:unit": "dotenv -e .env.test -- vitest run",
@@ -173,6 +174,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@argos-ci/cli": "catalog:argos",
+    "@argos-ci/storybook": "catalog:argos",
     "@babel/plugin-transform-class-properties": "catalog:babel",
     "@babel/plugin-transform-object-rest-spread": "catalog:babel",
     "@babel/preset-env": "catalog:babel",
@@ -187,7 +190,8 @@
     "@storybook/addon-docs": "catalog:storybook",
     "@storybook/addon-links": "catalog:storybook",
     "@storybook/addon-themes": "catalog:storybook",
-    "@storybook/nextjs": "catalog:storybook",
+    "@storybook/addon-vitest": "catalog:storybook",
+    "@storybook/nextjs-vite": "catalog:storybook",
     "@testing-library/react": "catalog:",
     "@types/lodash-es": "catalog:",
     "@types/node": "catalog:",

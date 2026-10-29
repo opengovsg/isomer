@@ -32,18 +32,18 @@ const pageTitleSchema = z
   .string({
     error: "Enter a title for this page",
   })
-  .min(1, { message: "Enter a title for this page" })
+  .min(1, { error: "Enter a title for this page" })
   .max(MAX_TITLE_LENGTH, {
-    message: `Page title should be shorter than ${MAX_TITLE_LENGTH} characters.`,
+    error: `Page title should be shorter than ${MAX_TITLE_LENGTH} characters.`,
   })
   .regex(noStylizedUnicodeTitleRegex, {
-    message: NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
+    error: NO_STYLIZED_UNICODE_TITLE_ERROR_MESSAGE,
   })
 
 const permalinkSchema = generateBasePermalinkSchema("page")
-  .min(1, { message: "Enter a URL for this page" })
+  .min(1, { error: "Enter a URL for this page" })
   .max(MAX_PAGE_URL_LENGTH, {
-    message: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
+    error: `Page URL should be shorter than ${MAX_PAGE_URL_LENGTH} characters.`,
   })
 
 export const listPagesSchema = z.object({
@@ -61,13 +61,7 @@ export const reorderBlobSchema = z.object({
   from: z.number().min(0),
   to: z.number().min(0),
   siteId: z.number().min(1),
-  blocks: z.array(
-    z
-      .object({
-        type: z.string(),
-      })
-      .passthrough(),
-  ),
+  blocks: z.array(z.looseObject({ type: z.string() })),
 })
 
 export const updatePageBlobSchema = basePageSchema.extend({
@@ -102,8 +96,8 @@ export const publishPageSchema = z.object({
 })
 
 export const unpublishPageSchema = z.object({
-  pageId: z.number().min(1, { message: "Select a page to unpublish" }),
-  siteId: z.number().min(1, { message: "Select a site" }),
+  pageId: z.number().min(1, { error: "Select a page to unpublish" }),
+  siteId: z.number().min(1, { error: "Select a site" }),
 })
 
 export const createCollectionPageFormSchema = z
@@ -176,11 +170,11 @@ export const readPageOutputSchema = z.object({
   parentId: z.string().nullable(),
   publishedVersionId: z.string().nullable(),
   draftBlobId: z.string().nullable(),
-  state: z.nativeEnum(ResourceState).nullable(),
-  type: z.nativeEnum(ResourceType),
+  state: z.enum(ResourceState).nullable(),
+  type: z.enum(ResourceType),
   scheduledAt: z.date().nullable(),
   scheduledBy: z.string().nullable(),
-  scheduledAction: z.nativeEnum(ScheduledAction).nullable(),
+  scheduledAction: z.enum(ScheduledAction).nullable(),
   lastPublishedAt: z.date().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),

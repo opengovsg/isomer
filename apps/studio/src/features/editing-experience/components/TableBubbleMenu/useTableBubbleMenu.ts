@@ -6,6 +6,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type FocusEvent,
   type RefCallback,
   type RefObject,
@@ -19,6 +20,7 @@ import type { SelectionKind } from "./TableBubbleMenu.types"
 import {
   detectTableSelectionKind,
   isEditorModalOpen,
+  subscribeEditorModal,
 } from "./TableBubbleMenu.utils"
 import {
   registerTableBubbleMenuFocusTrigger,
@@ -97,11 +99,16 @@ export const useTableBubbleMenu = (
       previous.isDragging === next.isDragging,
   })
 
+  const blockingDialogOpen = useSyncExternalStore(
+    subscribeEditorModal,
+    isEditorModalOpen,
+    () => false,
+  )
   const show =
     kind !== "none" &&
     !isDragging &&
     !isDragReordering &&
-    !isEditorModalOpen() &&
+    !blockingDialogOpen &&
     (isFocused || menuHasFocus)
 
   const selectionRangeKey = getSelectionRangeKey(selection)

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { expect, userEvent, within } from "storybook/test"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { redirectHandlers } from "tests/msw/handlers/redirect"
@@ -18,6 +18,7 @@ const SHARED_HANDLERS_WITHOUT_METADATA = [
   pageHandlers.updateSettings.collection(),
   pageHandlers.getPermalinkTree.withParent(),
   resourceHandlers.getChildrenOf.default(),
+  resourceHandlers.getFolderChildrenOf.default(),
   resourceHandlers.getWithFullPermalink.default(),
   resourceHandlers.getAncestryStack.default(),
 ]

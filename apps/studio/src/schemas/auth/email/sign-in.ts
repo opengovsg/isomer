@@ -5,7 +5,7 @@ import { normaliseEmail } from "~/utils/zod"
 
 export const emailSignInSchema = z.object({
   email: normaliseEmail.refine(isValidEmail, {
-    message: "Please sign in with a valid email address.",
+    error: "Please sign in with a valid email address.",
   }),
 })
 

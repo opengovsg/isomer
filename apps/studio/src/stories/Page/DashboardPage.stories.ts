@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import DashboardPage from "~/pages/index"
 

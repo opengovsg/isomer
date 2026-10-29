@@ -161,6 +161,11 @@ const config = {
   // environment (e.g. nested git worktrees) and silently shifts the server.js path.
   outputFileTracingRoot: new URL("../..", import.meta.url).pathname,
   reactStrictMode: true,
+  experimental: {
+    // The shared runtime inlines a per-page bootstrap script, which Studio's
+    // CSP blocks. External scripts per route still hydrate.
+    turbopackSharedRuntime: false,
+  },
   logging: {
     browserToTerminal: false,
   },

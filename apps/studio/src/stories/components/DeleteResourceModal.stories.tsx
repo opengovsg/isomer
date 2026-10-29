@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { Box } from "@chakra-ui/react"
 import { useSetAtom } from "jotai"
 import { useEffect } from "react"
@@ -25,7 +25,7 @@ const OpenedDeleteResourceModal = (): JSX.Element => {
 const meta: Meta<typeof DeleteResourceModal> = {
   title: "Components/DeleteResourceModal",
   component: DeleteResourceModal,
-  // The modal renders in a portal; give Chromatic a bounding box to snapshot.
+  // The modal renders in a portal; give Argos a bounding box to snapshot.
   decorators: [
     (storyFn) => (
       <Box w="100%" h="100vh">
@@ -37,7 +37,7 @@ const meta: Meta<typeof DeleteResourceModal> = {
   parameters: {
     layout: "fullscreen",
     // Prevent flaky snapshots while the modal animates in.
-    chromatic: { delay: 200 },
+    argos: { delay: 200 },
     msw: {
       handlers: [
         ...ADMIN_HANDLERS,

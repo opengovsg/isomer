@@ -14,3 +14,10 @@ export const ISOMER_SUPPORT_LINK = `mailto:${ISOMER_SUPPORT_EMAIL}`
 // (ADR 0005) — produces links that outlive the object; keep the infra expiry
 // comfortably above this value.
 export const AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS = 3
+
+// NOTE: Hardcoded for now as a proof of concept
+export const MOE_SITES = [
+  "https://test-isomer-next-staging.isomer.gov.sg",
+  "https://test-isomer-vica-staging.isomer.gov.sg",
+  "https://test-isomer-vica-ncss-staging.isomer.gov.sg",
+]

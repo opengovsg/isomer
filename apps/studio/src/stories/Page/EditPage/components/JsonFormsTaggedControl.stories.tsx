@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { Type } from "@sinclair/typebox"
 import { pageHandlers } from "tests/msw/handlers/page"
 import {

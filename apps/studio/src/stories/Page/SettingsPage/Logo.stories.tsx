@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/nextjs"
+import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import LogoSettingsPage from "~/pages/sites/[siteId]/settings/logo"

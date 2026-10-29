@@ -114,19 +114,19 @@ const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
     schema: setSiteConfigByAdminSchema
       .omit({ siteId: true })
       .refine((data) => !!data.config, {
-        message: "Site config must be present",
+        error: "Site config must be present",
         path: ["config"],
       })
       .refine((data) => !!data.theme, {
-        message: "Site theme must be present",
+        error: "Site theme must be present",
         path: ["theme"],
       })
       .refine((data) => !!data.navbar, {
-        message: "Site navbar must be present",
+        error: "Site navbar must be present",
         path: ["navbar"],
       })
       .refine((data) => !!data.footer, {
-        message: "Site footer must be present",
+        error: "Site footer must be present",
         path: ["footer"],
       }),
     defaultValues: {

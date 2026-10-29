@@ -53,7 +53,7 @@ function taggedOverlapExists(tagOptionIds: string[]) {
 
   // Bound parameters as a Postgres text[] for use with = ANY(...).
   // Compare as text: `tagged` is stored inside jsonb (no native uuid type),
-  // and jsonb_array_elements_text returns text. The z.string().uuid() validator
+  // and jsonb_array_elements_text returns text. The z.uuid() validator
   // is a request-boundary check, not a storage-type contract.
   const optionIdsAsSqlArray = sql.join(
     uniqueTagOptionIds.map((id) => sql`${id}::text`),

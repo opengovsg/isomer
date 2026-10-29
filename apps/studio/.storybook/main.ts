@@ -1,4 +1,12 @@
-import type { StorybookConfig } from "@storybook/nextjs"
+import type { StorybookConfig } from "@storybook/nextjs-vite"
+
+// Only public values may reach the browser bundle.
+const publicEnv = Object.fromEntries(
+  Object.entries(process.env).filter(
+    (entry): entry is [string, string] =>
+      entry[0].startsWith("NEXT_PUBLIC_") && entry[1] !== undefined,
+  ),
+)
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
@@ -8,16 +16,17 @@ const config: StorybookConfig = {
     "@storybook/addon-themes",
     "@storybook/addon-a11y",
     "@storybook/addon-docs",
+    "@storybook/addon-vitest",
   ],
 
   framework: {
-    name: "@storybook/nextjs",
+    name: "@storybook/nextjs-vite",
     options: {},
   },
 
   docs: {},
 
-  staticDirs: ["../public"],
+  staticDirs: ["../public", "./assets"],
 
   core: {
     disableTelemetry: true,
@@ -26,35 +35,31 @@ const config: StorybookConfig = {
   env: (config) => ({
     ...config,
     SKIP_ENV_VALIDATION: "true",
-    STORYBOOK_ENVIRONMENT: JSON.stringify(process.env),
+    STORYBOOK_ENVIRONMENT: JSON.stringify(publicEnv),
   }),
 
   typescript: {
     check: false,
-    skipCompiler: false,
     reactDocgen: "react-docgen-typescript",
   },
 
-  // Force Storybook to use the same React version as the app, rather than its
-  // React 19 default. We require React 18 due to
-  // react-input-mask used by OGP's design system, which uses findDOMNode which
-  // has been removed in React 19.
-  // Ref: https://github.com/storybookjs/storybook/issues/30646
-  webpackFinal: (config) => {
-    const unaliases = [
-      "react",
-      "react-dom/test-utils",
-      "react-dom$",
-      "react-dom/client",
-      "react-dom/server",
-    ]
-    if (config.resolve?.alias) {
-      for (const unalias of unaliases) {
-        // @ts-expect-error to fix when types are proper
-        delete config.resolve.alias[unalias]
-      }
-    }
-    return config
-  },
+  // The Vite builder only exposes STORYBOOK_-prefixed `env` values to the
+  // preview, so define the browser-safe environment src/env.mjs reads from
+  // `process.env` ourselves: the Storybook flag and payload it keys off, plus
+  // the public NEXT_PUBLIC_* values (which Next would otherwise inline).
+  viteFinal: (config) => ({
+    ...config,
+    define: {
+      ...config.define,
+      ...Object.fromEntries(
+        Object.entries({
+          ...publicEnv,
+          SKIP_ENV_VALIDATION: "true",
+          STORYBOOK: "true",
+          STORYBOOK_ENVIRONMENT: JSON.stringify(publicEnv),
+        }).map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)]),
+      ),
+    },
+  }),
 }
 export default config

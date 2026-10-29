@@ -102,11 +102,10 @@ const isReservedSource = (value: string) => {
 const sourceSchema = z
   .string()
   .trim()
-  .min(1, { message: "Source path is required" })
-  .max(MAX_REDIRECT_SOURCE_LENGTH, { message: "Source path is too long" })
+  .min(1, { error: "Source path is required" })
+  .max(MAX_REDIRECT_SOURCE_LENGTH, { error: "Source path is too long" })
   .refine((value) => SOURCE_ALLOWED_CHARS_REGEX.test(value), {
-    message:
-      "Source can only contain letters, numbers, and URL path characters",
+    error: "Source can only contain letters, numbers, and URL path characters",
   })
   // A "*" is only allowed as a single trailing "/*" wildcard (the sole form the
   // prefix-walk resolver supports). Reject a mid-string or repeated "*", and any
@@ -123,22 +122,22 @@ const sourceSchema = z
         .split("/")
         .some((segment) => segment !== "" && segment !== ".")
     },
-    { message: "Use a wildcard only as a trailing /* on a path, e.g. /news/*" },
+    { error: "Use a wildcard only as a trailing /* on a path, e.g. /news/*" },
   )
   // The source is a path on this site, never a full URL — a scheme like
   // "https://" can never match an incoming request path, so reject it instead
   // of silently mangling it into a slashed source.
   .refine((value) => !value.includes("://"), {
-    message: "Enter what comes behind your URL (e.g., /contact-us).",
+    error: "Enter what comes behind your URL (e.g., /contact-us).",
   })
   .refine((value) => trimSlashes(value).length > 0, {
-    message: "Source path cannot consist only of slashes",
+    error: "Source path cannot consist only of slashes",
   })
   .refine((value) => !trimSlashes(value).split("/").includes(".."), {
-    message: "Source must not contain '..' path segments",
+    error: "Source must not contain '..' path segments",
   })
   .refine((value) => !isReservedSource(value), {
-    message: "This path is reserved and can't be used as a redirect source",
+    error: "This path is reserved and can't be used as a redirect source",
   })
   // Normalise and lowercase so equivalent inputs map to one source. Page
   // permalinks are lowercase-only, so the source must lowercase to match (and
@@ -154,8 +153,8 @@ const INVALID_DESTINATION_MESSAGE =
 const destinationSchema = z
   .string()
   .trim()
-  .min(1, { message: "Destination is required" })
-  .max(MAX_REDIRECT_DESTINATION_LENGTH, { message: "Destination is too long" })
+  .min(1, { error: "Destination is required" })
+  .max(MAX_REDIRECT_DESTINATION_LENGTH, { error: "Destination is too long" })
   // Strip control characters up front (a stray pasted CR/LF/NUL shouldn't block
   // the user, and must never reach the published redirect rules — see
   // CONTROL_CHARS_REGEX). The cleaned value flows through the checks below.
@@ -167,19 +166,19 @@ const destinationSchema = z
       value.startsWith("/") ||
       isValidExternalDestination(value) ||
       REFERENCE_DESTINATION_REGEX.test(value),
-    { message: INVALID_DESTINATION_MESSAGE },
+    { error: INVALID_DESTINATION_MESSAGE },
   )
   // Backslashes are rejected, not stripped: "\\" is ambiguous in a path/URL and
   // silently removing it could turn "/\\evil.com" into an open redirect.
   .refine((value) => !value.includes("\\"), {
-    message: INVALID_DESTINATION_MESSAGE,
+    error: INVALID_DESTINATION_MESSAGE,
   })
   // Reject "../" path traversal in any destination. It is never meaningful here:
   // an internal path is resolved on our side, and a live site collapses ".." in
   // an external URL's path anyway — so the user can already express the intended
   // target directly. Banning it outright keeps the rule simple.
   .refine((value) => !trimSlashes(value).split("/").includes(".."), {
-    message: INVALID_DESTINATION_MESSAGE,
+    error: INVALID_DESTINATION_MESSAGE,
   })
   // Normalise internal-path destinations like sources (this also collapses a
   // protocol-relative "//evil.com" to "/evil.com", closing an open redirect).
@@ -272,12 +271,12 @@ export const bulkRedirectsCsvSchema = z.object({
   siteId: z.number().min(1),
   csv: z
     .string()
-    .min(1, { message: "Upload a .csv file to continue" })
+    .min(1, { error: "Upload a .csv file to continue" })
     // Cheap code-unit ceiling first (code units <= bytes), so the byte check
     // below never has to encode a pathologically large string.
-    .max(MAX_BULK_REDIRECT_CSV_BYTES, { message: "File is too big" })
+    .max(MAX_BULK_REDIRECT_CSV_BYTES, { error: "File is too big" })
     .refine((csv) => utf8ByteLength(csv) <= MAX_BULK_REDIRECT_CSV_BYTES, {
-      message: "File is too big",
+      error: "File is too big",
     }),
 })
 export type BulkRedirectsCsvInput = z.infer<typeof bulkRedirectsCsvSchema>
@@ -306,7 +305,7 @@ export const listRedirectsSchema = z.object({
     .number()
     .int()
     .positive()
-    .max(MAX_REDIRECT_PAGE_SIZE, { message: "Page size is too large" })
+    .max(MAX_REDIRECT_PAGE_SIZE, { error: "Page size is too large" })
     .default(25),
 })
 export type ListRedirectsInput = z.infer<typeof listRedirectsSchema>
@@ -323,7 +322,7 @@ export const resolveRedirectReferencesSchema = z.object({
   siteId: z.number().min(1),
   references: z
     .array(z.string())
-    .max(MAX_REDIRECT_REFERENCES, { message: "Too many references" }),
+    .max(MAX_REDIRECT_REFERENCES, { error: "Too many references" }),
 })
 export type ResolveRedirectReferencesInput = z.infer<
   typeof resolveRedirectReferencesSchema
@@ -334,11 +333,11 @@ export type ResolveRedirectReferencesInput = z.infer<
 // not necessarily a clean redirect source, so it is normalised server-side
 // before the lookup.
 export const getRedirectBySourceSchema = z.object({
-  siteId: z.number().min(1, { message: "Site ID is required" }),
+  siteId: z.number().min(1, { error: "Site ID is required" }),
   source: z
     .string()
-    .min(1, { message: "Source path is required" })
-    .max(MAX_REDIRECT_SOURCE_LENGTH, { message: "Source path is too long" }),
+    .min(1, { error: "Source path is required" })
+    .max(MAX_REDIRECT_SOURCE_LENGTH, { error: "Source path is too long" }),
 })
 export type GetRedirectBySourceInput = z.infer<typeof getRedirectBySourceSchema>
 
@@ -349,7 +348,7 @@ export type GetRedirectBySourceInput = z.infer<typeof getRedirectBySourceSchema>
 //
 // includeContainerReference is opt-in; see countRedirectsPointingToResource.
 export const countRedirectsByDestinationSchema = z.object({
-  siteId: z.number().min(1, { message: "Site ID is required" }),
+  siteId: z.number().min(1, { error: "Site ID is required" }),
   resourceId: generateBigIntSchema("resource ID"),
   includeContainerReference: z.boolean().optional(),
 })
