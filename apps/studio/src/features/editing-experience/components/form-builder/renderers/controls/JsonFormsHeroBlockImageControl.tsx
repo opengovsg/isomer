@@ -14,17 +14,14 @@ import { NewFeatureBadge } from "~/features/editing-experience/components/shared
 
 import {
   HeroBlockImagePreviewLeftCurvedIcon,
+  HeroBlockImagePreviewLeftIcon,
   HeroBlockImagePreviewLeftStraightIcon,
   HeroBlockImagePreviewRightCurvedIcon,
+  HeroBlockImagePreviewRightIcon,
   HeroBlockImagePreviewRightStraightIcon,
 } from "./heroBlockImagePreview"
 
 type HeroBlockImageData = NonNullable<HeroBlockProps["blockImage"]>
-
-// Text-only position choices — no card-style hover (edge previews keep default).
-const imagePositionRadioCss = {
-  _hover: { bg: "none" },
-}
 
 export const jsonFormsHeroBlockImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.HeroBlockImageControl,
@@ -72,20 +69,24 @@ function JsonFormsHeroBlockImageControl({
             value={HERO_BLOCK_IMAGE_POSITION.right}
             allowDeselect={false}
             size="sm"
-            __css={imagePositionRadioCss}
           >
             Right
+            <Box mt="0.625rem">
+              <HeroBlockImagePreviewRightIcon />
+            </Box>
           </Radio>
           <Radio
             value={HERO_BLOCK_IMAGE_POSITION.left}
             allowDeselect={false}
             size="sm"
-            __css={imagePositionRadioCss}
           >
             <Flex as="span" align="center">
               Left
               <NewFeatureBadge />
             </Flex>
+            <Box mt="0.625rem">
+              <HeroBlockImagePreviewLeftIcon />
+            </Box>
           </Radio>
         </Radio.RadioGroup>
       </FormControl>

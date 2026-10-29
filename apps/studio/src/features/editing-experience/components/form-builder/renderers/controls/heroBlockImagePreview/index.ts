@@ -1,4 +1,6 @@
 export { HeroBlockImagePreviewLeftCurvedIcon } from "./HeroBlockImagePreviewLeftCurvedIcon"
+export { HeroBlockImagePreviewLeftIcon } from "./HeroBlockImagePreviewLeftIcon"
 export { HeroBlockImagePreviewLeftStraightIcon } from "./HeroBlockImagePreviewLeftStraightIcon"
 export { HeroBlockImagePreviewRightCurvedIcon } from "./HeroBlockImagePreviewRightCurvedIcon"
+export { HeroBlockImagePreviewRightIcon } from "./HeroBlockImagePreviewRightIcon"
 export { HeroBlockImagePreviewRightStraightIcon } from "./HeroBlockImagePreviewRightStraightIcon"
