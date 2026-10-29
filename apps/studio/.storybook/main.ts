@@ -16,6 +16,7 @@ const config: StorybookConfig = {
     "@storybook/addon-themes",
     "@storybook/addon-a11y",
     "@storybook/addon-docs",
+    "@storybook/addon-vitest",
   ],
 
   framework: {
@@ -25,7 +26,7 @@ const config: StorybookConfig = {
 
   docs: {},
 
-  staticDirs: ["../public"],
+  staticDirs: ["../public", "./assets"],
 
   core: {
     disableTelemetry: true,

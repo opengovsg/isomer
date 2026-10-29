@@ -112,7 +112,7 @@ export const sitesHandlers = {
           agencyName: "Ministry of Test and Industry",
           isGovernment: true,
           url: "https://www.isomer.gov.sg",
-          logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+          logoUrl: "/isomer-logo.svg",
         } as PrismaJson.SiteJsonConfig
       })
     },
@@ -125,7 +125,7 @@ export const sitesHandlers = {
           agencyName: "Ministry of Test and Industry",
           isGovernment: true,
           url: "https://www.isomer.gov.sg",
-          logoUrl: "https://www.isomer.gov.sg/images/isomer-logo.svg",
+          logoUrl: "/isomer-logo.svg",
           favicon: "avatars.githubusercontent.com/u/40887764",
         } as PrismaJson.SiteJsonConfig
       })

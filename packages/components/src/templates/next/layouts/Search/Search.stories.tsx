@@ -7,7 +7,7 @@ import {
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { SearchLayout } from "./Search"
 
@@ -18,7 +18,7 @@ const meta: Meta<typeof SearchLayout> = {
   argTypes: {},
   tags: ["!autodocs"],
   parameters: {
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    argos: withArgosModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -79,9 +79,17 @@ export const EgazetteAlgolia: Story = {
 }
 
 // The stories below hit the live staging Algolia index, so hit counts and
-// results vary between runs — skip Chromatic snapshots to avoid flakiness.
+// results vary between runs — skip Argos snapshots to avoid flakiness.
 const liveAlgoliaParameters = {
-  chromatic: { disableSnapshot: true },
+  // Argos merges this with the meta modes and skips a story only when every
+  // mode is disabled. `disableSnapshot` was the Chromatic equivalent.
+  argos: {
+    modes: {
+      mobile: { disabled: true },
+      tablet: { disabled: true },
+      desktop: { disabled: true },
+    },
+  },
 }
 
 export const EgazetteAlgoliaWithCategorySelected: Story = {

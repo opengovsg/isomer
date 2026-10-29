@@ -77,7 +77,6 @@ catalog:
   bootstrap-icons: ^1.13.2
   browserslist-useragent-regexp: ^4.1.4
   cheerio: ^1.2.0
-  chromatic: ^18.12.0
   clean-webpack-plugin: ^4.0.0
   dayjs: ^1.11.23
   date-fns: ^4.4.0
@@ -93,7 +92,7 @@ catalog:
   npm-run-all2: ^9.0.3
   "@octokit/rest": ^22.0.1
   "@inquirer/prompts": ^8.7.2
-  "@opengovsg/design-system-react": ^1.35.0
+  "@opengovsg/design-system-react": ^1.35.1
   "@opengovsg/validators": ^1.4.1
   "@paralleldrive/cuid2": ^3.3.0
   "@sinclair/typebox": ^0.33.24
@@ -114,7 +113,7 @@ catalog:
   "@typescript/native-preview": 7.0.0-dev.20260707.2
   type-fest: ^5.10.0
   tsx: ^4.23.15
-  turbo: ^2.11.2
+  turbo: ^2.11.10
   typescript: ^6.0.3
   usehooks-ts: ^3.1.1
   webpack-cli: ^7.2.3
@@ -157,14 +156,14 @@ catalog:
   next: 16.4.2
   openid-client: ^5.7.1
   oxfmt: ^0.70.0
-  oxlint: ^1.88.0
+  oxlint: ^1.89.0
   oxlint-tsgolint: ^7.0.2004
   papaparse: ^5.7.0
   pg-boss: ^12.38.0
   postcss-load-config: ^6.0.1
-  posthog-js: ^1.438.1
+  posthog-js: ^1.438.13
   posthog-node: ^5.55.3
-  rate-limiter-flexible: ^11.2.1
+  rate-limiter-flexible: ^11.2.3
   react-error-boundary: ^6.1.6
   react-frame-component: ^5.3.2
   react-hook-form: ^7.90.0
@@ -181,19 +180,22 @@ catalog:
   wretch: ^3.0.9
 
 catalogs:
+  argos:
+    "@argos-ci/cli": ^6.10.0
+    "@argos-ci/storybook": ^6.4.2
   atlaskitPragmaticDnd:
     "@atlaskit/pragmatic-drag-and-drop": ^4.0.0
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^3.0.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1152.0
-    "@aws-sdk/client-amplify": ^3.1152.0
-    "@aws-sdk/client-cloudfront": ^3.1152.0
-    "@aws-sdk/client-codebuild": ^3.1152.0
-    "@aws-sdk/client-s3": ^3.1152.0
-    "@aws-sdk/lib-storage": ^3.1152.0
-    "@aws-sdk/s3-request-presigner": ^3.1152.0
-    "@aws-sdk/credential-providers": ^3.1152.0
-    "@aws-sdk/rds-signer": ^3.1152.0
+    "@aws-sdk/client-acm": ^3.1155.0
+    "@aws-sdk/client-amplify": ^3.1155.0
+    "@aws-sdk/client-cloudfront": ^3.1155.0
+    "@aws-sdk/client-codebuild": ^3.1155.0
+    "@aws-sdk/client-s3": ^3.1155.0
+    "@aws-sdk/lib-storage": ^3.1155.0
+    "@aws-sdk/s3-request-presigner": ^3.1155.0
+    "@aws-sdk/credential-providers": ^3.1155.0
+    "@aws-sdk/rds-signer": ^3.1155.0
   babel:
     "@babel/plugin-transform-class-properties": ^8.0.1
     "@babel/plugin-transform-object-rest-spread": ^8.0.1
@@ -249,6 +251,7 @@ catalogs:
     "@storybook/addon-docs": 10.6.3
     "@storybook/addon-links": 10.6.3
     "@storybook/addon-themes": 10.6.3
+    "@storybook/addon-vitest": 10.6.3
     "@storybook/nextjs-vite": 10.6.3
     "@storybook/react-vite": 10.6.3
     eslint-plugin-storybook: 10.6.3
@@ -296,5 +299,5 @@ catalogs:
     "@vitejs/plugin-react": ^6.1.2
     "@vitest/browser-playwright": ^5.0.4
     "@vitest/coverage-istanbul": ^5.0.4
-    vite: ^8.3.4
+    vite: ^8.3.5
     vitest: ^5.0.4
