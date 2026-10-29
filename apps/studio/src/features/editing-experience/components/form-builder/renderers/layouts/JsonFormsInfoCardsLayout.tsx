@@ -83,7 +83,7 @@ function JsonFormsInfoCardsLayout({
       {hasDisplay && (
         <FormControl isRequired isDisabled={enabled === false} gap="0.5rem">
           <FormLabel description="Applies when there are more cards than fit on one line.">
-            Extra cards
+            Cards layout
           </FormLabel>
           <Radio.RadioGroup
             display="flex"

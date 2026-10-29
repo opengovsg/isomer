@@ -115,7 +115,7 @@ const InfoCardsLayoutSchema = Type.Object(
           }),
         ],
         {
-          title: "Extra cards",
+          title: "Cards layout",
           description:
             "Applies when there are more cards than fit on one line.",
           default: INFOCARDS_DISPLAY.wrap,
