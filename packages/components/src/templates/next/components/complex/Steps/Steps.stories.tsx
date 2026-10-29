@@ -203,8 +203,7 @@ export const HoverBehaviour: Story = {
   },
 }
 
-// Unbroken strings must wrap inside the card. A long token used to set the
-// grid column's min-content width and paint across the next step.
+// A title or description with no spaces used to widen the grid column and draw across the next step.
 export const LongUnbrokenText: Story = {
   args: {
     title: "How to redeem your NS recognition benefits",
