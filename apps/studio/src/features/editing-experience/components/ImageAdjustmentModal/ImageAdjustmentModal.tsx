@@ -29,7 +29,7 @@ import posthog from "posthog-js"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { BiInfoCircle, BiReset } from "react-icons/bi"
 
-import type { AdjustmentConfig } from "./AdjustmentConfig"
+import type { AdjustmentConfig, PreviewVersion } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
 import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
@@ -45,6 +45,29 @@ import {
 // surfacing an error and unlocking the modal, so a hung network request can't
 // trap the editor in a permanently disabled modal.
 const SAVE_TIMEOUT_MS = 30_000
+
+// Groups consecutive versions sharing the same groupLabel into one <optgroup>
+// (e.g. CollectionBlock's two item-count-dependent versions), so the dropdown
+// reads as "which destination, then which variant of it" instead of a flat
+// list. Versions with no groupLabel (e.g. Blockquote's circle/square) render
+// as plain top-level options, same as a native <select> allows mixing both.
+const groupVersionsByLabel = (
+  versions: PreviewVersion[],
+): { groupLabel: string | undefined; versions: PreviewVersion[] }[] => {
+  const groups: {
+    groupLabel: string | undefined
+    versions: PreviewVersion[]
+  }[] = []
+  for (const v of versions) {
+    const lastGroup = groups[groups.length - 1]
+    if (lastGroup && lastGroup.groupLabel === v.groupLabel) {
+      lastGroup.versions.push(v)
+    } else {
+      groups.push({ groupLabel: v.groupLabel, versions: [v] })
+    }
+  }
+  return groups
+}
 
 // Width of the custom scrollbar track rendered over the preview rail.
 const SCROLLBAR_SIZE = "0.5rem"
@@ -650,11 +673,26 @@ export const ImageAdjustmentModal = ({
                         value={activeVersionId}
                         onChange={(e) => setActiveVersionId(e.target.value)}
                       >
-                        {config.versions.map((v) => (
-                          <option key={v.id} value={v.id}>
-                            {v.label ?? "Preview"}
-                          </option>
-                        ))}
+                        {groupVersionsByLabel(config.versions).map((group) =>
+                          group.groupLabel ? (
+                            <optgroup
+                              key={group.groupLabel}
+                              label={group.groupLabel}
+                            >
+                              {group.versions.map((v) => (
+                                <option key={v.id} value={v.id}>
+                                  {v.label ?? "Preview"}
+                                </option>
+                              ))}
+                            </optgroup>
+                          ) : (
+                            group.versions.map((v) => (
+                              <option key={v.id} value={v.id}>
+                                {v.label ?? "Preview"}
+                              </option>
+                            ))
+                          ),
+                        )}
                       </Select>
                     )}
                   </HStack>

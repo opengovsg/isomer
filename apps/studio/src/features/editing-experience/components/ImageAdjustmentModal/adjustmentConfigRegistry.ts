@@ -573,6 +573,105 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
     "Gallery images are shown in full (letterboxed to fit the frame), never cropped to it. Crop here only to trim parts of the image you don't want to show.",
 }
 
+// Collection item thumbnail (`page.image`) — a page-level field, not a
+// content-block field, so it has no block `type` discriminator for the
+// registry to key off (see resolveAdjustmentConfig's isCollectionThumbnail
+// branch). The SAME source image feeds multiple, simultaneous destinations —
+// not alternatives, a collection item can be rendered by more than one of
+// these at once — each with its own fixed-but-different frame:
+//  - CollectionCard: the collection's own index listing, a fixed 200x160px
+//    (5:4) frame, object-cover (falls back to object-contain + site logo
+//    when there's no image).
+//  - CollectionBlock: embedded elsewhere (e.g. homepage) referencing this
+//    collection. Card frame is aspect-[3/2] normally, but lg:aspect-[2/1]
+//    ONLY when the block ends up showing exactly 2 cards — driven by the
+//    live collection item count at render time, which this field's editor
+//    genuinely cannot know. Both shapes are modelled as always-shown
+//    versions rather than guessing one.
+//  - BlogCard: the collection's "2-column" listing variant, a fixed
+//    aspect-[2/1] frame (no responsive override), object-cover.
+// ChildrenPages was considered but ruled out: it only ever reads the
+// immediate children of the page it's placed on, and a collection's items
+// are children of the Collection resource, one level below that — so a
+// ChildrenPages block can never reach an individual item's thumbnail (at
+// most it would show the Collection's own page.image, a different field).
+// cropMode is "custom" (free crop): a shared source image serving multiple
+// fixed-but-different-per-destination frames, not one fixed shape. Focal is
+// enabled because every destination cover-fits into a frame whose shape can
+// differ (per-destination, and per-breakpoint for CollectionBlock), the same
+// "reshaping cover frame" rule the rest of the registry uses. The real
+// render context is a DIFFERENT page (the collection index, or whatever page
+// embeds the CollectionBlock), not the one being edited — skip the
+// real-component preview in favour of the framed approximation, as
+// ImageGallery does for the same reason.
+const COLLECTION_THUMBNAIL_CONFIG: AdjustmentConfig = {
+  componentType: "collection:thumbnail",
+  cropMode: "custom",
+  focalEnabled: true,
+  // Widest of the three destination frames (CollectionCard 200px,
+  // CollectionBlock card ~1/3 of a 1280px desktop row, BlogCard ~1/2 of that
+  // same row) — conservative so the narrower frames don't false-warn.
+  maxRenderedWidthPx: 640,
+  // CollectionCard's fixed 160px frame is the tallest of the three at that
+  // width; the others are wider, shallower crops.
+  maxRenderedHeightPx: 160,
+  skipRealComponentPreview: true,
+  versions: [
+    {
+      id: "collection-card",
+      label: "Index page",
+      groupLabel: "Collection index page",
+      previewStates: [
+        {
+          id: "collection-card",
+          label: "Collection index page",
+          aspectRatio: { width: 5, height: 4 },
+        },
+      ],
+    },
+    {
+      id: "collection-block-3-2",
+      label: "1 or 3 items",
+      groupLabel: "Homepage block",
+      previewStates: [
+        {
+          id: "collection-block-3-2",
+          label: "Homepage block — 1 or 3 items shown",
+          viewportWidth: 1280,
+          aspectRatio: { width: 3, height: 2 },
+        },
+      ],
+    },
+    {
+      id: "collection-block-2-1",
+      label: "2 items",
+      groupLabel: "Homepage block",
+      previewStates: [
+        {
+          id: "collection-block-2-1",
+          label: "Homepage block — 2 items shown",
+          viewportWidth: 1280,
+          aspectRatio: { width: 2, height: 1 },
+        },
+      ],
+    },
+    {
+      id: "blog-card",
+      label: "Blog listing",
+      groupLabel: "Blog listing page",
+      previewStates: [
+        {
+          id: "blog-card",
+          label: "Blog listing page",
+          aspectRatio: { width: 2, height: 1 },
+        },
+      ],
+    },
+  ],
+  preUploadCopy:
+    "This thumbnail can appear in several places — the collection listing, a 2-column blog listing, and a homepage block — each with a different crop. Set a focal point so your key subject stays in view everywhere it's used.",
+}
+
 /**
  * Resolves the adjustment config for an image field, by the containing block's
  * discriminators. Returns undefined for components not yet wired — the entry
@@ -583,6 +682,12 @@ export function resolveAdjustmentConfig(args: {
   fieldName: string
   context?: AdjustmentRenderContext
 }): AdjustmentConfig | undefined {
+  // Page-level thumbnail field (no block-type ancestor) on a confirmed
+  // collection item — see COLLECTION_THUMBNAIL_CONFIG. Checked before the
+  // block-type switch below since this field's host has no `type`
+  // discriminator for that switch to key off.
+  if (args.context?.isCollectionThumbnail) return COLLECTION_THUMBNAIL_CONFIG
+
   const { type, variant } = asBlock(args.block)
   if (type === "image") return IMAGE_CONFIG
   if (type === "imagegallery") return IMAGE_GALLERY_CONFIG

@@ -376,4 +376,107 @@ describe("resolveAdjustmentConfig", () => {
       }
     })
   })
+
+  describe("collection item thumbnail (page-level, context-resolved)", () => {
+    // The page-level thumbnail has no block-type ancestor, so it's never
+    // keyed off `block` -- it's resolved purely from the
+    // `isCollectionThumbnail` context flag (set by useAdjustmentConfigForField
+    // from the editor's resource type, since the field's own data has no
+    // discriminator to distinguish a collection item from any other page
+    // that happens to compose the same `image` field shape).
+    it("resolves when isCollectionThumbnail is set, regardless of block shape", () => {
+      const config = resolveAdjustmentConfig({
+        block: { layout: "article" },
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      expect(config).toBeDefined()
+      expect(config?.cropMode).toBe("custom")
+      expect(config?.focalEnabled).toBe(true)
+      expect(config?.skipRealComponentPreview).toBe(true)
+    })
+
+    it("does not resolve for a similar-looking page without the collection-item signal", () => {
+      // A content/index/database page composes the identical `image` field
+      // shape for its own unrelated page thumbnail -- without the context
+      // flag (i.e. not a confirmed CollectionPage/CollectionLink resource),
+      // it must not light up the collection-item config.
+      expect(
+        resolveAdjustmentConfig({
+          block: { layout: "content" },
+          fieldName: "src",
+        }),
+      ).toBeUndefined()
+      expect(
+        resolveAdjustmentConfig({
+          block: { layout: "content" },
+          fieldName: "src",
+          context: { isCollectionThumbnail: false },
+        }),
+      ).toBeUndefined()
+    })
+
+    it("always shows all four destination versions (no narrowing is possible)", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      expect(config?.versions.map((v) => v.id)).toEqual([
+        "collection-card",
+        "collection-block-3-2",
+        "collection-block-2-1",
+        "blog-card",
+      ])
+    })
+
+    it("models the CollectionCard destination as a fixed 5:4 frame", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      const collectionCardVersion = config?.versions.find(
+        (v) => v.id === "collection-card",
+      )
+      expect(collectionCardVersion?.previewStates[0]?.aspectRatio).toEqual({
+        width: 5,
+        height: 4,
+      })
+    })
+
+    it("models the CollectionBlock destination as two always-shown versions (3:2 and 2:1)", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      const blockVersions = config?.versions.filter((v) =>
+        v.id.startsWith("collection-block-"),
+      )
+      expect(blockVersions).toHaveLength(2)
+      expect(
+        blockVersions?.map((v) => v.previewStates[0]?.aspectRatio),
+      ).toEqual([
+        { width: 3, height: 2 },
+        { width: 2, height: 1 },
+      ])
+      expect(
+        blockVersions?.every((v) => v.groupLabel === "Homepage block"),
+      ).toBe(true)
+    })
+
+    it("models the BlogCard destination as a fixed 2:1 frame", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      const blogCardVersion = config?.versions.find((v) => v.id === "blog-card")
+      expect(blogCardVersion?.previewStates[0]?.aspectRatio).toEqual({
+        width: 2,
+        height: 1,
+      })
+    })
+  })
 })

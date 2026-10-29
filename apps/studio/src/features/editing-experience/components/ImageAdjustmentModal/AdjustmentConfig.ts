@@ -59,6 +59,12 @@ export interface PreviewVersion {
 // not a plugin system.
 export interface AdjustmentRenderContext {
   pageLayout?: IsomerPageLayoutType
+  // True when the field being resolved is the page-level thumbnail
+  // (`page.image`) of a collection item (a CollectionPage/CollectionLink
+  // resource) — the one root-level image field with no block-type ancestor
+  // to key the registry off of. Set by useAdjustmentConfigForField from the
+  // editor's resource type, since the field's own data has no discriminator.
+  isCollectionThumbnail?: boolean
 }
 
 // Optional scrim/overlay drawn over the preview to mirror the live component

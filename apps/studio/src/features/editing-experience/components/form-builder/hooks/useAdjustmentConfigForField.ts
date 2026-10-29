@@ -4,6 +4,7 @@ import { get } from "lodash-es"
 import { useMemo } from "react"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { resolveAdjustmentConfig } from "~/features/editing-experience/components/ImageAdjustmentModal/adjustmentConfigRegistry"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 /**
  * Resolves the adjustment config, containing block, and sibling
@@ -25,7 +26,19 @@ export const useAdjustmentConfigForField = (path: string) => {
   // settings forms (Navbar/Footer/logo) with no EditorDrawerProvider around it
   // — there, pageLayout is simply undefined, which resolves to "show all
   // versions" rather than throwing.
-  const pageLayout = useOptionalEditorDrawerContext()?.previewPageState.layout
+  const editorDrawerContext = useOptionalEditorDrawerContext()
+  const pageLayout = editorDrawerContext?.previewPageState.layout
+  // Collection items (CollectionPage/CollectionLink resources) are the only
+  // resource types whose page-level `image` field is THIS field -- the
+  // "collection item thumbnail" (page.image.src/alt, composed into every
+  // collection-item page schema via imageSchemaObject). Other layouts
+  // (content/index/database pages) compose the exact same `image` field
+  // shape for their own unrelated "page thumbnail" use, so the resource type
+  // check -- not the field shape -- is what makes this safe to key off.
+  const resourceType = editorDrawerContext?.type
+  const isCollectionItemResource =
+    resourceType === ResourceType.CollectionPage ||
+    resourceType === ResourceType.CollectionLink
 
   const pathParts = path.split(".")
   const fieldName = pathParts.pop() ?? ""
@@ -63,6 +76,16 @@ export const useAdjustmentConfigForField = (path: string) => {
     return fieldHost
   }, [rootData, parentPath, fieldHost])
 
+  // The page-level thumbnail (`page.image.src`) is the one image field with
+  // no block-type ancestor -- imageSchemaObject composes it directly onto the
+  // page metadata object, so its parentPath is always exactly "image" (never
+  // nested inside a block). That shape alone isn't a safe signal on its own
+  // (content/index/database pages compose the identical `image` field for
+  // their own unrelated page thumbnail), so this also requires the resource
+  // type to confirm the page is actually a collection item.
+  const isCollectionThumbnail =
+    isCollectionItemResource && parentPath === "image"
+
   const currentAdjustment = get(rootData, siblingPath) as
     | ImageAdjustment
     | undefined
@@ -77,7 +100,7 @@ export const useAdjustmentConfigForField = (path: string) => {
       config: resolveAdjustmentConfig({
         block: ownerBlock,
         fieldName,
-        context: { pageLayout },
+        context: { pageLayout, isCollectionThumbnail },
       }),
     }),
     [
@@ -87,6 +110,7 @@ export const useAdjustmentConfigForField = (path: string) => {
       siblingPath,
       currentAdjustment,
       pageLayout,
+      isCollectionThumbnail,
     ],
   )
 }
