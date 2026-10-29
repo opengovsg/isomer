@@ -203,6 +203,38 @@ export const HoverBehaviour: Story = {
   },
 }
 
+// Unbroken strings must wrap inside the card. A long token used to set the
+// grid column's min-content width and paint across the next step.
+export const LongUnbrokenText: Story = {
+  args: {
+    title: "How to redeem your NS recognition benefits",
+    numberStyle: "badge",
+    steps: [
+      {
+        title: "Download the LifeSG app and sign in with your singpass",
+        description:
+          "asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd",
+      },
+      {
+        title: "Scroll to 'Benefits and support'",
+        description:
+          "asdasdasdasdasdasdasdasdasdasdasdasd asdasdasd sadasdasdasd dasdasdasdasd",
+      },
+      {
+        title: "Tap 'Scan QR code to pay'",
+        description:
+          "A normal sentence should still wrap at spaces and stay inside the card.",
+      },
+      {
+        title:
+          "ScanTheMerchantsPayNowUENOrUploadASavedQRFromThePhotoGalleryWithoutSpaces",
+        description:
+          "The title above is one unbroken string and should wrap inside the card too.",
+      },
+    ],
+  },
+}
+
 export const MinimumTwoSteps: Story = {
   args: {
     title: "Renewing your licence",
