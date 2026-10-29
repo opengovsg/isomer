@@ -74,7 +74,7 @@ const RotationCountdown = () => {
       data-visual-test="transparent"
       aria-hidden
       viewBox="0 0 40 40"
-      className="pointer-events-none absolute inset-0 h-full w-full motion-reduce:hidden"
+      className="pointer-events-none absolute inset-px motion-reduce:hidden"
     >
       <style>{keyframes}</style>
       <circle
@@ -133,7 +133,7 @@ const CarouselRotationButton = ({
       <button
         type="button"
         className={twMerge(
-          "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-transparent bg-white text-base-content shadow-none [@media(hover:hover)]:hover:bg-gray-200 [@media(hover:hover)]:hover:shadow-none focus-visible:outline focus-visible:outline-[0.25rem] focus-visible:outline-offset-[0.125rem] focus-visible:outline-utility-highlight",
+          "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-base-divider-strong bg-white text-base-content shadow-none [@media(hover:hover)]:hover:bg-gray-200 [@media(hover:hover)]:hover:shadow-none focus-visible:outline focus-visible:outline-[0.25rem] focus-visible:outline-offset-[0.125rem] focus-visible:outline-utility-highlight",
           coarsePointerControlSizeClassName,
         )}
         aria-label={label}
