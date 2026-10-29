@@ -6,13 +6,17 @@ import {
   Flex,
   HStack,
   Icon,
+  MenuButton,
+  MenuItemOption,
+  MenuList,
+  MenuOptionGroup,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Select,
+  Portal,
   Spacer,
   Text,
   Tooltip,
@@ -22,12 +26,13 @@ import {
 import {
   Button,
   Infobox,
+  Menu,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
 import posthog from "posthog-js"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { BiInfoCircle, BiReset } from "react-icons/bi"
+import { BiChevronDown, BiInfoCircle, BiReset } from "react-icons/bi"
 
 import type { AdjustmentConfig, PreviewVersion } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
@@ -664,36 +669,53 @@ export const ImageAdjustmentModal = ({
 
                     {/* Only shown when the config declares more than one
                         preview version (e.g. Blockquote's circle/square masks
-                        with no page-layout context to narrow to one). */}
+                        with no page-layout context to narrow to one). The
+                        trigger shows "<group>: <version>" when the active
+                        version belongs to a group (e.g. the collection
+                        thumbnail's "Homepage block: 2 items in collection"),
+                        since the group name alone ("Homepage block") doesn't
+                        say which of its versions is showing. */}
                     {config.versions.length > 1 && (
-                      <Select
-                        size="xs"
-                        w="auto"
-                        aria-label="Preview version"
-                        value={activeVersionId}
-                        onChange={(e) => setActiveVersionId(e.target.value)}
-                      >
-                        {groupVersionsByLabel(config.versions).map((group) =>
-                          group.groupLabel ? (
-                            <optgroup
-                              key={group.groupLabel}
-                              label={group.groupLabel}
-                            >
-                              {group.versions.map((v) => (
-                                <option key={v.id} value={v.id}>
-                                  {v.label ?? "Preview"}
-                                </option>
-                              ))}
-                            </optgroup>
-                          ) : (
-                            group.versions.map((v) => (
-                              <option key={v.id} value={v.id}>
-                                {v.label ?? "Preview"}
-                              </option>
-                            ))
-                          ),
-                        )}
-                      </Select>
+                      <Menu closeOnSelect size="sm">
+                        <MenuButton
+                          as={Button}
+                          variant="outline"
+                          size="xs"
+                          rightIcon={<BiChevronDown />}
+                          aria-label="Preview version"
+                        >
+                          {activeVersion?.groupLabel
+                            ? `${activeVersion.groupLabel}: ${activeVersion.label ?? "Preview"}`
+                            : (activeVersion?.label ?? "Preview")}
+                        </MenuButton>
+                        <Portal>
+                          <MenuList maxH="16rem" overflowY="auto">
+                            {groupVersionsByLabel(config.versions).map(
+                              (group, i) => (
+                                <MenuOptionGroup
+                                  key={group.groupLabel ?? `ungrouped-${i}`}
+                                  title={group.groupLabel}
+                                  type="radio"
+                                  value={activeVersionId}
+                                  onChange={(value) =>
+                                    setActiveVersionId(value as string)
+                                  }
+                                >
+                                  {group.versions.map((v) => (
+                                    <MenuItemOption
+                                      key={v.id}
+                                      value={v.id}
+                                      fontSize="sm"
+                                    >
+                                      {v.label ?? "Preview"}
+                                    </MenuItemOption>
+                                  ))}
+                                </MenuOptionGroup>
+                              ),
+                            )}
+                          </MenuList>
+                        </Portal>
+                      </Menu>
                     )}
                   </HStack>
 
