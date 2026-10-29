@@ -13,8 +13,10 @@ import {
   type HeroCarouselLayout,
 } from "@opengovsg/isomer-components"
 import {
-  IconHeroCarouselBlock,
-  IconHeroCarouselGradient,
+  IconHeroCarouselBlockLeft,
+  IconHeroCarouselBlockRight,
+  IconHeroCarouselGradientCenter,
+  IconHeroCarouselGradientLeft,
 } from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
@@ -22,11 +24,6 @@ interface HeroCarouselData {
   layout: HeroCarouselLayout
   contentAlignment?: HeroCarouselContentAlignment
   imagePosition: HeroCarouselImagePosition
-}
-
-// Text-only choices — no card-style hover (illustrated layout radios keep default).
-const textRadioCss = {
-  _hover: { bg: "none" },
 }
 
 // Same tracks for every row so the second option stays put when layout swaps.
@@ -88,7 +85,11 @@ function JsonFormsHeroCarouselLayoutControl({
             size="sm"
           >
             Block
-            <IconHeroCarouselBlock mt="10px" />
+            {imagePosition === HERO_BLOCK_IMAGE_POSITION.left ? (
+              <IconHeroCarouselBlockLeft mt="10px" />
+            ) : (
+              <IconHeroCarouselBlockRight mt="10px" />
+            )}
           </Radio>
           <Radio
             value={HERO_CAROUSEL_LAYOUT.gradient}
@@ -96,7 +97,11 @@ function JsonFormsHeroCarouselLayoutControl({
             size="sm"
           >
             Gradient
-            <IconHeroCarouselGradient mt="10px" />
+            {contentAlignment === HERO_CAROUSEL_CONTENT_ALIGNMENT.center ? (
+              <IconHeroCarouselGradientCenter mt="10px" />
+            ) : (
+              <IconHeroCarouselGradientLeft mt="10px" />
+            )}
           </Radio>
         </Radio.RadioGroup>
       </FormControl>
@@ -117,17 +122,17 @@ function JsonFormsHeroCarouselLayoutControl({
               value={HERO_BLOCK_IMAGE_POSITION.right}
               allowDeselect={false}
               size="sm"
-              __css={textRadioCss}
             >
               Right
+              <IconHeroCarouselBlockRight mt="10px" />
             </Radio>
             <Radio
               value={HERO_BLOCK_IMAGE_POSITION.left}
               allowDeselect={false}
               size="sm"
-              __css={textRadioCss}
             >
               Left
+              <IconHeroCarouselBlockLeft mt="10px" />
             </Radio>
           </Radio.RadioGroup>
         </FormControl>
@@ -149,17 +154,17 @@ function JsonFormsHeroCarouselLayoutControl({
               value={HERO_CAROUSEL_CONTENT_ALIGNMENT.left}
               allowDeselect={false}
               size="sm"
-              __css={textRadioCss}
             >
               Left
+              <IconHeroCarouselGradientLeft mt="10px" />
             </Radio>
             <Radio
               value={HERO_CAROUSEL_CONTENT_ALIGNMENT.center}
               allowDeselect={false}
               size="sm"
-              __css={textRadioCss}
             >
               Center
+              <IconHeroCarouselGradientCenter mt="10px" />
             </Radio>
           </Radio.RadioGroup>
         </FormControl>

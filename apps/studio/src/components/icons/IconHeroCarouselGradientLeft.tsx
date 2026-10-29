@@ -1,7 +1,13 @@
 import { chakra } from "@chakra-ui/react"
+import { useId } from "react"
 
-export const IconHeroCarouselGradient = chakra(
+export const IconHeroCarouselGradientLeft = chakra(
   (props: React.SVGProps<SVGSVGElement>) => {
+    // Also shown on Layout, so two copies cannot share clip or gradient ids.
+    const id = useId().split(":").join("")
+    const clipId = `${id}clip`
+    const paintId = `${id}paint`
+
     return (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -9,15 +15,12 @@ export const IconHeroCarouselGradient = chakra(
         height="62"
         viewBox="0 0 103 62"
         fill="none"
+        aria-hidden
         {...props}
       >
-        <g clipPath="url(#clip0_hero_carousel_gradient)">
-          <rect
-            x="0.5"
-            y="0.5"
-            width="102"
-            height="61"
-            rx="3.5"
+        <g clipPath={`url(#${clipId})`}>
+          <path
+            d="M4 0.5H99C100.933 0.5 102.5 2.067 102.5 4V58C102.5 59.933 100.933 61.5 99 61.5H4C2.067 61.5 0.5 59.933 0.5 58V4C0.5 2.067 2.067 0.5 4 0.5Z"
             fill="white"
             stroke="#E5E5E5"
           />
@@ -44,17 +47,28 @@ export const IconHeroCarouselGradient = chakra(
           <path
             opacity="0.3"
             d="M1 3C1 1.89543 1.89543 1 3 1H100C101.105 1 102 1.89543 102 3V59C102 60.1046 101.105 61 100 61H1V3Z"
-            fill="url(#paint0_linear_hero_carousel_gradient)"
+            fill={`url(#${paintId})`}
           />
-          <circle cx="80" cy="52" r="4" fill="white" />
-          <circle cx="9.5" cy="52.5" r="1.5" fill="#D9D9D9" />
-          <circle cx="13.5" cy="52.5" r="1.5" fill="#D9D9D9" />
-          <circle cx="17.5" cy="52.5" r="1.5" fill="#D9D9D9" />
+          <path
+            d="M11 50.5L9 52.5L11 54.5"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            stroke="#EDEDED"
+          />
+          <path
+            d="M22 50.5L24 52.5L22 54.5"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            stroke="#EDEDED"
+          />
+          <rect x="14" y="52" width="5" height="1" rx="0.5" fill="#EDEDED" />
           <circle cx="90" cy="52" r="4" fill="white" />
         </g>
         <defs>
           <linearGradient
-            id="paint0_linear_hero_carousel_gradient"
+            id={paintId}
             x1="36.5"
             y1="31"
             x2="104.02"
@@ -64,7 +78,7 @@ export const IconHeroCarouselGradient = chakra(
             <stop stopColor="white" />
             <stop offset="1" stopColor="#686868" />
           </linearGradient>
-          <clipPath id="clip0_hero_carousel_gradient">
+          <clipPath id={clipId}>
             <rect width="103" height="62" fill="white" />
           </clipPath>
         </defs>
