@@ -19,18 +19,19 @@ export const INTENTIONALLY_NOT_ADJUSTABLE = [
   "navbar",
 ] as const
 
-// InfoCards is Tier C: a card is always adjustable (you can crop the image that
-// is then displayed) regardless of its imageFit, but the controls offered depend
-// on the fit. Under "cover" ("Default") the card crops the image to fill its
-// frame, so both crop and focal apply. Under "contain" ("Resize image to fit")
-// the whole image is letterboxed, so the focal anchor has nothing to do — crop
-// stays available (it defines the region that is then letterboxed), focal is
-// hidden. imageFit is optional and defaults to "cover". The fieldHost here is
-// the individual card object.
-const infoCardFocalEnabled = (fieldHost: unknown): boolean =>
+// Shared by every component with an `ownsImageFitField` sibling toggle
+// (InfoCards' cards, the collection item thumbnail): under "cover" ("Default")
+// the frame crops the image to fill it, so both crop and focal apply. Under
+// "contain" ("Resize image to fit") the whole image is letterboxed, so the
+// focal anchor has nothing to do — crop stays available (it defines the region
+// that is then letterboxed), focal is hidden. imageFit is optional and
+// defaults to "cover". `fieldHost` is whatever object the modal's fit control
+// actually writes its sibling `imageFit` onto (a card for InfoCards, the
+// `image` object for the collection thumbnail).
+const imageFitFocalEnabled = (fieldHost: unknown): boolean =>
   (fieldHost as { imageFit?: string } | null)?.imageFit !== "contain"
 
-const infoCardPreviewObjectFit = (fieldHost: unknown): "cover" | "contain" =>
+const imageFitPreviewObjectFit = (fieldHost: unknown): "cover" | "contain" =>
   (fieldHost as { imageFit?: string } | null)?.imageFit === "contain"
     ? "contain"
     : "cover"
@@ -442,8 +443,8 @@ const infoCardsWithImagesConfig = (block: unknown): AdjustmentConfig => ({
   // 640px. Crop is free (custom), so height must be checked independently
   // of width.
   maxRenderedHeightPx: 427,
-  focalEnabledFor: infoCardFocalEnabled,
-  previewObjectFitFor: infoCardPreviewObjectFit,
+  focalEnabledFor: imageFitFocalEnabled,
+  previewObjectFitFor: imageFitPreviewObjectFit,
   // Preview shows just the cropped image, not the card chrome/text: on this
   // variant the title/description sit in a separate section below the image, so
   // they add nothing to a crop/focal preview. Use the framed-image
@@ -479,8 +480,8 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   // Full-image cards are square on mobile, portrait at lg (lg:aspect-[2/3]);
   // 640 is a conservative height representative (the square case at 640px).
   maxRenderedHeightPx: 640,
-  focalEnabledFor: infoCardFocalEnabled,
-  previewObjectFitFor: infoCardPreviewObjectFit,
+  focalEnabledFor: imageFitFocalEnabled,
+  previewObjectFitFor: imageFitPreviewObjectFit,
   // Renders the single card for real via buildSingleItemPreviewBlock; falls
   // back to the framed-image approximation (with its scrim below) if that
   // render fails or produces nothing (see AdjustmentPreview).
@@ -576,110 +577,71 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
 // Collection item thumbnail (`page.image`) — a page-level field, not a
 // content-block field, so it has no block `type` discriminator for the
 // registry to key off (see resolveAdjustmentConfig's isCollectionThumbnail
-// branch). The SAME source image feeds multiple, simultaneous destinations —
-// not alternatives, a collection item can be rendered by more than one of
-// these at once — each with its own fixed-but-different frame:
-//  - CollectionCard: the collection's own index listing, a fixed 200x160px
-//    (5:4) frame, object-cover (falls back to object-contain + site logo
-//    when there's no image).
-//  - CollectionBlock: embedded elsewhere (e.g. homepage) referencing this
-//    collection. Card frame is aspect-[3/2] normally, but lg:aspect-[2/1]
-//    ONLY when the block ends up showing exactly 2 cards — driven by the
-//    live collection item count at render time, which this field's editor
-//    genuinely cannot know. Both shapes are modelled as always-shown
-//    versions rather than guessing one.
-//  - BlogCard: the collection's "2-column" listing variant, a fixed
-//    aspect-[2/1] frame (no responsive override), object-cover.
+// branch). The same source image also feeds a homepage CollectionBlock
+// embed, whose frame depends on the live collection item count at render
+// time (3:2, or 2:1 at desktop for exactly 2 items) — genuinely unknowable
+// here, and out of scope for this editor; the preview only reflects the
+// collection's own index-page listing.
+// That listing's frame IS knowable: the collection's index page already has
+// a "Layout" setting (JsonFormsCollectionVariantControl, format
+// "collection-variant") picking CollectionCard ("1-column", a fixed 200x160
+// / 5:4 box) or BlogCard ("2-column", a fixed aspect-[2/1] box) — see
+// CollectionResults.tsx. useAdjustmentConfigForField fetches that setting
+// and passes it as `collectionVariant`, so the preview mimics every other
+// component here: one resolved frame, no version picker. Unresolved
+// (query still loading, or this control somehow renders outside a page
+// editor) falls back to the schema's own "collection" (1-column) default.
 // ChildrenPages was considered but ruled out: it only ever reads the
 // immediate children of the page it's placed on, and a collection's items
 // are children of the Collection resource, one level below that — so a
 // ChildrenPages block can never reach an individual item's thumbnail (at
 // most it would show the Collection's own page.image, a different field).
-// cropMode is "custom" (free crop): a shared source image serving multiple
-// fixed-but-different-per-destination frames, not one fixed shape. Focal is
-// enabled because every destination cover-fits into a frame whose shape can
-// differ (per-destination, and per-breakpoint for CollectionBlock), the same
-// "reshaping cover frame" rule the rest of the registry uses. The real
-// render context is a DIFFERENT page (the collection index, or whatever page
-// embeds the CollectionBlock), not the one being edited — skip the
+// cropMode is "custom" (not a locked ratio) and ownsImageFitField is set so
+// editors can choose "Resize image to fit" (contain, no cropping) instead of
+// the default cover crop — same fit/fill toggle InfoCards already offers,
+// with focal hidden under "contain" for the same reason (nothing to anchor
+// once the image is letterboxed). The real render context is a different
+// page (the collection index) than the one being edited — skip the
 // real-component preview in favour of the framed approximation, as
 // ImageGallery does for the same reason.
-const COLLECTION_THUMBNAIL_CONFIG: AdjustmentConfig = {
-  componentType: "collection:thumbnail",
-  cropMode: "custom",
-  focalEnabled: true,
-  // Widest of the three destination frames (CollectionCard 200px,
-  // CollectionBlock card ~1/3 of a 1280px desktop row, BlogCard ~1/2 of that
-  // same row) — conservative so the narrower frames don't false-warn.
-  maxRenderedWidthPx: 640,
-  // CollectionCard's fixed 160px frame is the tallest of the three at that
-  // width; the others are wider, shallower crops.
-  maxRenderedHeightPx: 160,
-  skipRealComponentPreview: true,
-  versions: [
-    {
-      // CollectionCard's thumbnail box is a literal `h-[160px] w-[200px]` with
-      // no md:/lg: override — identical 5:4 at every breakpoint. This is the
-      // collection's "Layout" setting (JsonFormsCollectionVariantControl,
-      // format "collection-variant") at its "1-column" option.
-      id: "collection-card",
-      label: "1-column",
-      groupLabel: "Collection index page",
-      previewStates: responsivePreviewStates({
-        mobile: { width: 5, height: 4 },
-        tablet: { width: 5, height: 4 },
-        desktop: { width: 5, height: 4 },
-      }),
-    },
-    {
-      // BlogCard.tsx's thumbnail is "aspect-[2/1]" with no md:/lg: override --
-      // identical 2:1 at every breakpoint. Same collection index page as
-      // "1-column" above, just the "Layout" setting's "2-column" option
-      // (CollectionResults.tsx picks BlogCard over CollectionCard when
-      // page.variant === "blog") -- grouped together, not a separate page.
-      id: "blog-card",
-      label: "2-column",
-      groupLabel: "Collection index page",
-      previewStates: responsivePreviewStates({
-        mobile: { width: 2, height: 1 },
-        tablet: { width: 2, height: 1 },
-        desktop: { width: 2, height: 1 },
-      }),
-    },
-    {
-      id: "collection-block-3-2",
-      // The homepage block shows up to 3 cards at once (capped — a 4th, 5th,
-      // ... item never changes its layout further), so "1 or 3+ items" is the
-      // accurate editor-facing framing: it covers every collection size this
-      // ratio actually applies to, without implying a cap of 3 the editor has
-      // no reason to know about. Kept short for the dropdown; the preview
-      // tile caption below spells out "items in collection" in full.
-      // CollectionBlock.tsx's cardImageContainer is "aspect-[3/2]" with no
-      // numberOfCards override for 1 or 3 -- 3:2 at every breakpoint.
-      label: "1 or 3+ items in collection",
-      groupLabel: "Homepage block",
-      previewStates: responsivePreviewStates({
-        mobile: { width: 3, height: 2 },
-        tablet: { width: 3, height: 2 },
-        desktop: { width: 3, height: 2 },
-      }),
-    },
-    {
-      id: "collection-block-2-1",
-      // CollectionBlock.tsx's numberOfCards:2 compound variant overrides
-      // cardImageContainer to "aspect-[3/2] lg:aspect-[2/1]" -- 3:2 below lg
-      // (mobile/tablet), 2:1 only at lg+ (desktop).
-      label: "2 items in collection",
-      groupLabel: "Homepage block",
-      previewStates: responsivePreviewStates({
-        mobile: { width: 3, height: 2 },
-        tablet: { width: 3, height: 2 },
-        desktop: { width: 2, height: 1 },
-      }),
-    },
-  ],
-  preUploadCopy:
-    "This thumbnail can appear in several places — the collection listing, a 2-column blog listing, and a homepage block — each with a different crop. Set a focal point so your key subject stays in view everywhere it's used.",
+const buildCollectionThumbnailConfig = (
+  collectionVariant?: "collection" | "blog",
+): AdjustmentConfig => {
+  const isBlogVariant = collectionVariant === "blog"
+
+  return {
+    componentType: "collection:thumbnail",
+    cropMode: "custom",
+    focalEnabled: true,
+    ownsImageFitField: true,
+    focalEnabledFor: imageFitFocalEnabled,
+    previewObjectFitFor: imageFitPreviewObjectFit,
+    // BlogCard's 2-column frame is wider (half a desktop row) than
+    // CollectionCard's fixed 200px box.
+    maxRenderedWidthPx: isBlogVariant ? 640 : 200,
+    // CollectionCard's box is a fixed 160px tall; BlogCard's 2:1 frame at
+    // that same width is shallower.
+    maxRenderedHeightPx: isBlogVariant ? 320 : 160,
+    skipRealComponentPreview: true,
+    // Identical ratio at every breakpoint either way (CollectionCard's
+    // `h-[160px] w-[200px]` and BlogCard's `aspect-[2/1]` both carry no
+    // md:/lg: override), so all three preview states share one ratio.
+    versions: singleVersion(
+      isBlogVariant
+        ? responsivePreviewStates({
+            mobile: { width: 2, height: 1 },
+            tablet: { width: 2, height: 1 },
+            desktop: { width: 2, height: 1 },
+          })
+        : responsivePreviewStates({
+            mobile: { width: 5, height: 4 },
+            tablet: { width: 5, height: 4 },
+            desktop: { width: 5, height: 4 },
+          }),
+    ),
+    preUploadCopy:
+      "This thumbnail appears on your collection listing. Choose whether it should fill the frame (cropped, with a focal point to anchor it) or fit within it (no cropping).",
+  }
 }
 
 /**
@@ -696,7 +658,8 @@ export function resolveAdjustmentConfig(args: {
   // collection item — see COLLECTION_THUMBNAIL_CONFIG. Checked before the
   // block-type switch below since this field's host has no `type`
   // discriminator for that switch to key off.
-  if (args.context?.isCollectionThumbnail) return COLLECTION_THUMBNAIL_CONFIG
+  if (args.context?.isCollectionThumbnail)
+    return buildCollectionThumbnailConfig(args.context.collectionVariant)
 
   const { type, variant } = asBlock(args.block)
   if (type === "image") return IMAGE_CONFIG

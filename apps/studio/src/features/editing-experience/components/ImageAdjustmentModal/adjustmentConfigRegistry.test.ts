@@ -394,6 +394,7 @@ describe("resolveAdjustmentConfig", () => {
       expect(config).toBeDefined()
       expect(config?.cropMode).toBe("custom")
       expect(config?.focalEnabled).toBe(true)
+      expect(config?.ownsImageFitField).toBe(true)
       expect(config?.skipRealComponentPreview).toBe(true)
     })
 
@@ -417,106 +418,87 @@ describe("resolveAdjustmentConfig", () => {
       ).toBeUndefined()
     })
 
-    it("always shows all four destination versions (no narrowing is possible)", () => {
+    // The homepage CollectionBlock embed also consumes this image, but its
+    // frame depends on the live collection item count at render time -- this
+    // editor genuinely cannot know that, so it's out of scope: the preview
+    // only ever shows the collection's own index-page listing, resolved to a
+    // single version (no dropdown, matching every other component here).
+    it("resolves exactly one version, with no group label", () => {
       const config = resolveAdjustmentConfig({
         block: {},
         fieldName: "src",
-        context: { isCollectionThumbnail: true },
+        context: { isCollectionThumbnail: true, collectionVariant: "blog" },
       })
-      expect(config?.versions.map((v) => v.id)).toEqual([
-        "collection-card",
-        "blog-card",
-        "collection-block-3-2",
-        "collection-block-2-1",
+      expect(config?.versions).toHaveLength(1)
+      expect(config?.versions[0]?.groupLabel).toBeUndefined()
+    })
+
+    const aspectRatiosFor = (config: AdjustmentConfig) =>
+      config.versions[0]?.previewStates.map((s) => s.aspectRatio)
+
+    it("models the 1-column (CollectionCard) layout as a fixed 5:4 frame at every breakpoint", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: {
+          isCollectionThumbnail: true,
+          collectionVariant: "collection",
+        },
+      })
+      expect(aspectRatiosFor(config!)).toEqual([
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
       ])
     })
 
-    // Every version previews all three breakpoints (not just one desktop-ish
-    // tile) so the dropdown's "which destination" choice doesn't also hide
-    // "how does it look on mobile/tablet" -- the modal's standard pattern for
-    // every other component in this registry.
-    const aspectRatiosFor = (versionId: string, config: AdjustmentConfig) =>
-      config.versions
-        .find((v) => v.id === versionId)
-        ?.previewStates.map((s) => s.aspectRatio)
+    it("models the 2-column (BlogCard) layout as a fixed 2:1 frame at every breakpoint", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true, collectionVariant: "blog" },
+      })
+      expect(aspectRatiosFor(config!)).toEqual([
+        { width: 2, height: 1 },
+        { width: 2, height: 1 },
+        { width: 2, height: 1 },
+      ])
+    })
 
-    it("groups CollectionCard and BlogCard together as the collection index page's two layouts", () => {
-      // Both are the SAME collection index page -- JsonFormsCollectionVariantControl's
-      // "Layout" radio (1-column -> CollectionCard, 2-column -> BlogCard) toggles
-      // which renders, so they belong in one group, not two separate "pages".
+    it("defaults to the 1-column (CollectionCard) layout when the variant is unresolved", () => {
       const config = resolveAdjustmentConfig({
         block: {},
         fieldName: "src",
         context: { isCollectionThumbnail: true },
       })
-      const indexPageVersions = config?.versions.filter(
-        (v) => v.id === "collection-card" || v.id === "blog-card",
+      expect(aspectRatiosFor(config!)).toEqual([
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+      ])
+    })
+
+    it("offers the focal point only when imageFit is cover (or unset), same as InfoCards", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      expect(config?.focalEnabledFor?.({})).toBe(true)
+      expect(config?.focalEnabledFor?.({ imageFit: "cover" })).toBe(true)
+      expect(config?.focalEnabledFor?.({ imageFit: "contain" })).toBe(false)
+    })
+
+    it("previews with object-contain only under 'Resize image to fit'", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      expect(config?.previewObjectFitFor?.({})).toBe("cover")
+      expect(config?.previewObjectFitFor?.({ imageFit: "contain" })).toBe(
+        "contain",
       )
-      expect(indexPageVersions).toHaveLength(2)
-      expect(
-        indexPageVersions?.every(
-          (v) => v.groupLabel === "Collection index page",
-        ),
-      ).toBe(true)
-      expect(indexPageVersions?.map((v) => v.label)).toEqual([
-        "1-column",
-        "2-column",
-      ])
-    })
-
-    it("models the CollectionCard destination as a fixed 5:4 frame at every breakpoint", () => {
-      const config = resolveAdjustmentConfig({
-        block: {},
-        fieldName: "src",
-        context: { isCollectionThumbnail: true },
-      })
-      expect(aspectRatiosFor("collection-card", config!)).toEqual([
-        { width: 5, height: 4 },
-        { width: 5, height: 4 },
-        { width: 5, height: 4 },
-      ])
-    })
-
-    it("models the CollectionBlock destination as two always-shown versions, only diverging at desktop", () => {
-      const config = resolveAdjustmentConfig({
-        block: {},
-        fieldName: "src",
-        context: { isCollectionThumbnail: true },
-      })
-      const blockVersions = config?.versions.filter((v) =>
-        v.id.startsWith("collection-block-"),
-      )
-      expect(blockVersions).toHaveLength(2)
-      expect(
-        blockVersions?.every((v) => v.groupLabel === "Homepage block"),
-      ).toBe(true)
-
-      // 1-or-3+ items: 3:2 at every breakpoint (no numberOfCards override).
-      expect(aspectRatiosFor("collection-block-3-2", config!)).toEqual([
-        { width: 3, height: 2 },
-        { width: 3, height: 2 },
-        { width: 3, height: 2 },
-      ])
-      // Exactly 2 items: 3:2 below lg, 2:1 only at the lg/desktop breakpoint
-      // (CollectionBlock.tsx's numberOfCards:2 compound variant).
-      expect(aspectRatiosFor("collection-block-2-1", config!)).toEqual([
-        { width: 3, height: 2 },
-        { width: 3, height: 2 },
-        { width: 2, height: 1 },
-      ])
-    })
-
-    it("models the BlogCard destination as a fixed 2:1 frame at every breakpoint", () => {
-      const config = resolveAdjustmentConfig({
-        block: {},
-        fieldName: "src",
-        context: { isCollectionThumbnail: true },
-      })
-      expect(aspectRatiosFor("blog-card", config!)).toEqual([
-        { width: 2, height: 1 },
-        { width: 2, height: 1 },
-        { width: 2, height: 1 },
-      ])
     })
   })
 })

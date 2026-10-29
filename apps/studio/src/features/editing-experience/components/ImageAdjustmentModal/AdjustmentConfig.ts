@@ -65,6 +65,13 @@ export interface AdjustmentRenderContext {
   // to key the registry off of. Set by useAdjustmentConfigForField from the
   // editor's resource type, since the field's own data has no discriminator.
   isCollectionThumbnail?: boolean
+  // The parent collection's index page "Layout" setting (collection-variant
+  // format: "collection" = 1-column CollectionCard, "blog" = 2-column
+  // BlogCard) — fetched by useAdjustmentConfigForField since it lives on a
+  // different page's content than the one being edited. Undefined while that
+  // fetch is loading/unavailable; resolves to the 1-column frame in that case,
+  // matching the schema's own "collection" default.
+  collectionVariant?: "collection" | "blog"
 }
 
 // Optional scrim/overlay drawn over the preview to mirror the live component

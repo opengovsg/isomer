@@ -229,16 +229,17 @@ function JsonFormsImageControl({
     }
   }, [animationResolved, canAdjust, onAdjustmentModalOpen, siteId, resourceId])
 
-  // InfoCards owns a sibling `imageFit` field on the card (the modal's fit
-  // control writes back to it) — gated by the config's ownsImageFitField flag
-  // so other components never get an unexpected imageFit control.
-  const isInfoCardsField = config?.ownsImageFitField ?? false
-  const initialImageFit = isInfoCardsField
+  // Some components (InfoCards' cards, the collection thumbnail) own a
+  // sibling `imageFit` field that the modal's fit control writes back to —
+  // gated by the config's ownsImageFitField flag so other components never
+  // get an unexpected imageFit control.
+  const hasImageFitField = config?.ownsImageFitField ?? false
+  const initialImageFit = hasImageFitField
     ? ((fieldHost as { imageFit?: "cover" | "contain" } | null)?.imageFit ??
       "cover")
     : undefined
 
-  // Sibling path for the card's imageFit field, mirroring siblingPath's
+  // Sibling path for the field host's imageFit field, mirroring siblingPath's
   // parent+field construction for imageAdjustment.
   const imageFitPath = [path.split(".").slice(0, -1).join("."), "imageFit"]
     .filter(Boolean)

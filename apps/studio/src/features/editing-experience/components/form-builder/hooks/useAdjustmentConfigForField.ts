@@ -6,6 +6,8 @@ import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { resolveAdjustmentConfig } from "~/features/editing-experience/components/ImageAdjustmentModal/adjustmentConfigRegistry"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+import { useCollectionIndexVariant } from "./useCollectionIndexVariant"
+
 /**
  * Resolves the adjustment config, containing block, and sibling
  * imageAdjustment value for an image field at `path`.
@@ -86,6 +88,14 @@ export const useAdjustmentConfigForField = (path: string) => {
   const isCollectionThumbnail =
     isCollectionItemResource && parentPath === "image"
 
+  // Only fetched for an actual collection thumbnail field — every other
+  // image field leaves this disabled and gets undefined back immediately.
+  const collectionVariant = useCollectionIndexVariant({
+    siteId: editorDrawerContext?.siteId ?? 0,
+    pageId: editorDrawerContext?.pageId ?? 0,
+    enabled: isCollectionThumbnail && editorDrawerContext !== null,
+  })
+
   const currentAdjustment = get(rootData, siblingPath) as
     | ImageAdjustment
     | undefined
@@ -100,7 +110,7 @@ export const useAdjustmentConfigForField = (path: string) => {
       config: resolveAdjustmentConfig({
         block: ownerBlock,
         fieldName,
-        context: { pageLayout, isCollectionThumbnail },
+        context: { pageLayout, isCollectionThumbnail, collectionVariant },
       }),
     }),
     [
@@ -111,6 +121,7 @@ export const useAdjustmentConfigForField = (path: string) => {
       currentAdjustment,
       pageLayout,
       isCollectionThumbnail,
+      collectionVariant,
     ],
   )
 }
