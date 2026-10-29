@@ -11,17 +11,23 @@ import { Link } from "../../internal/Link"
 
 const createStepStyles = tv({
   slots: {
-    listItem: "flex",
-    // container needs w-full. As a flex child of <li>, a short step shrinks to
-    // its content width instead of filling the grid column.
+    // min-w-0 overrides min-width: auto, which sizes this grid item to the longest unbroken string.
+    listItem: "flex min-w-0",
+    // w-full makes this flex child of the li fill the grid column.
+    // A short step with no width shrinks to its content.
+    // min-w-0 stops that flex item from growing to an unbroken string.
+    // break-words wraps the text inside the column.
     container:
-      "group flex h-full w-full flex-col items-start gap-3 text-left outline-0",
+      "group flex h-full w-full min-w-0 flex-col items-start gap-3 break-words text-left outline-0",
     number: "text-base-content-subtle",
     title: [
       groupFocusVisibleHighlight(),
-      "prose-headline-lg-semibold text-base-content-strong",
+      // items-start sets this width from the text.
+      // max-w-full and min-w-0 limit it to the card. break-words wraps a title with no spaces.
+      "prose-headline-lg-semibold min-w-0 max-w-full break-words text-base-content-strong",
     ],
-    description: "prose-body-base text-base-content",
+    description:
+      "prose-body-base min-w-0 max-w-full break-words text-base-content",
     button:
       "prose-headline-base-medium inline-flex items-center gap-1 pt-1 text-base-content-strong group-hover:text-brand-interaction",
     buttonIcon:
