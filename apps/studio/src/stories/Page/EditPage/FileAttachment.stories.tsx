@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { Box } from "@chakra-ui/react"
-
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import {
   FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
