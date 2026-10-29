@@ -619,14 +619,31 @@ const COLLECTION_THUMBNAIL_CONFIG: AdjustmentConfig = {
   versions: [
     {
       // CollectionCard's thumbnail box is a literal `h-[160px] w-[200px]` with
-      // no md:/lg: override — identical 5:4 at every breakpoint.
+      // no md:/lg: override — identical 5:4 at every breakpoint. This is the
+      // collection's "Layout" setting (JsonFormsCollectionVariantControl,
+      // format "collection-variant") at its "1-column" option.
       id: "collection-card",
-      label: "Index page",
+      label: "1-column",
       groupLabel: "Collection index page",
       previewStates: responsivePreviewStates({
         mobile: { width: 5, height: 4 },
         tablet: { width: 5, height: 4 },
         desktop: { width: 5, height: 4 },
+      }),
+    },
+    {
+      // BlogCard.tsx's thumbnail is "aspect-[2/1]" with no md:/lg: override --
+      // identical 2:1 at every breakpoint. Same collection index page as
+      // "1-column" above, just the "Layout" setting's "2-column" option
+      // (CollectionResults.tsx picks BlogCard over CollectionCard when
+      // page.variant === "blog") -- grouped together, not a separate page.
+      id: "blog-card",
+      label: "2-column",
+      groupLabel: "Collection index page",
+      previewStates: responsivePreviewStates({
+        mobile: { width: 2, height: 1 },
+        tablet: { width: 2, height: 1 },
+        desktop: { width: 2, height: 1 },
       }),
     },
     {
@@ -657,18 +674,6 @@ const COLLECTION_THUMBNAIL_CONFIG: AdjustmentConfig = {
       previewStates: responsivePreviewStates({
         mobile: { width: 3, height: 2 },
         tablet: { width: 3, height: 2 },
-        desktop: { width: 2, height: 1 },
-      }),
-    },
-    {
-      // BlogCard.tsx's thumbnail is "aspect-[2/1]" with no md:/lg: override --
-      // identical 2:1 at every breakpoint.
-      id: "blog-card",
-      label: "Blog listing",
-      groupLabel: "Blog listing page",
-      previewStates: responsivePreviewStates({
-        mobile: { width: 2, height: 1 },
-        tablet: { width: 2, height: 1 },
         desktop: { width: 2, height: 1 },
       }),
     },

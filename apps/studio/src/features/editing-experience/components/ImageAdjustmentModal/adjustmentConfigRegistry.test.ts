@@ -425,9 +425,9 @@ describe("resolveAdjustmentConfig", () => {
       })
       expect(config?.versions.map((v) => v.id)).toEqual([
         "collection-card",
+        "blog-card",
         "collection-block-3-2",
         "collection-block-2-1",
-        "blog-card",
       ])
     })
 
@@ -439,6 +439,30 @@ describe("resolveAdjustmentConfig", () => {
       config.versions
         .find((v) => v.id === versionId)
         ?.previewStates.map((s) => s.aspectRatio)
+
+    it("groups CollectionCard and BlogCard together as the collection index page's two layouts", () => {
+      // Both are the SAME collection index page -- JsonFormsCollectionVariantControl's
+      // "Layout" radio (1-column -> CollectionCard, 2-column -> BlogCard) toggles
+      // which renders, so they belong in one group, not two separate "pages".
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      const indexPageVersions = config?.versions.filter(
+        (v) => v.id === "collection-card" || v.id === "blog-card",
+      )
+      expect(indexPageVersions).toHaveLength(2)
+      expect(
+        indexPageVersions?.every(
+          (v) => v.groupLabel === "Collection index page",
+        ),
+      ).toBe(true)
+      expect(indexPageVersions?.map((v) => v.label)).toEqual([
+        "1-column",
+        "2-column",
+      ])
+    })
 
     it("models the CollectionCard destination as a fixed 5:4 frame at every breakpoint", () => {
       const config = resolveAdjustmentConfig({
