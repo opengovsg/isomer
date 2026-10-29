@@ -12,6 +12,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Select,
   Spacer,
   Text,
   Tooltip,
@@ -203,6 +204,20 @@ export const ImageAdjustmentModal = ({
       : "cover"
     : (config.previewObjectFitFor?.(fieldHost) ?? "cover")
   const [draft, setDraft] = useState<ImageAdjustment | undefined>(value)
+  // Which of config.versions' preview sets the rail currently shows. Defaults
+  // to the first; only surfaced as a dropdown when there's more than one
+  // version (e.g. Blockquote shown with no page-layout context, so both
+  // circle and square are candidates). Reset whenever the config identity
+  // changes (e.g. re-resolved for a different block) so a stale version id
+  // from a previous image can't silently select nothing.
+  const [activeVersionId, setActiveVersionId] = useState(
+    () => config.versions[0]?.id,
+  )
+  useEffect(() => {
+    setActiveVersionId(config.versions[0]?.id)
+  }, [config])
+  const activeVersion =
+    config.versions.find((v) => v.id === activeVersionId) ?? config.versions[0]
   // The source image's true pixel aspect ratio, reported by CropFocalControl
   // once its <img> loads — needed so "Reset crop & focal" can seed the same
   // ratio-correct crop the control itself would (see defaultCropRect).
@@ -604,22 +619,44 @@ export const ImageAdjustmentModal = ({
                     zIndex={1}
                     bg="base.canvas.default"
                     pb="0.25rem"
+                    justify="space-between"
                   >
-                    <Text textStyle="subhead-1">Preview</Text>
-                    <Tooltip
-                      label="Previews show common phone, tablet and desktop sizes. Your screen may show a slightly different layout."
-                      placement="top"
-                      hasArrow
-                    >
-                      <Box
-                        as="span"
-                        display="inline-flex"
-                        color="base.content.medium"
-                        aria-label="About previews"
+                    <HStack spacing="0.25rem">
+                      <Text textStyle="subhead-1">Preview</Text>
+                      <Tooltip
+                        label="Previews show common phone, tablet and desktop sizes. Your screen may show a slightly different layout."
+                        placement="top"
+                        hasArrow
                       >
-                        <Icon as={BiInfoCircle} />
-                      </Box>
-                    </Tooltip>
+                        <Box
+                          as="span"
+                          display="inline-flex"
+                          color="base.content.medium"
+                          aria-label="About previews"
+                        >
+                          <Icon as={BiInfoCircle} />
+                        </Box>
+                      </Tooltip>
+                    </HStack>
+
+                    {/* Only shown when the config declares more than one
+                        preview version (e.g. Blockquote's circle/square masks
+                        with no page-layout context to narrow to one). */}
+                    {config.versions.length > 1 && (
+                      <Select
+                        size="xs"
+                        w="auto"
+                        aria-label="Preview version"
+                        value={activeVersionId}
+                        onChange={(e) => setActiveVersionId(e.target.value)}
+                      >
+                        {config.versions.map((v) => (
+                          <option key={v.id} value={v.id}>
+                            {v.label ?? "Preview"}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
                   </HStack>
 
                   {/* Low-resolution warning — the kept crop can't fill this
@@ -647,7 +684,7 @@ export const ImageAdjustmentModal = ({
                     originalSrc={originalSrc}
                     originalFile={originalFile}
                     adjustment={draft}
-                    previewStates={config.previewStates}
+                    previewStates={activeVersion?.previewStates ?? []}
                     scrim={config.scrim}
                     // The card's title, overlaid on the gradient in the full-image
                     // card preview (only drawn when the config has a scrim).

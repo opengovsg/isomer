@@ -1,3 +1,4 @@
+import type { IsomerPageLayoutType } from "@opengovsg/isomer-components"
 import { describe, expect, it } from "vitest"
 
 import {
@@ -49,7 +50,8 @@ describe("resolveAdjustmentConfig", () => {
       expect(config?.focalEnabled).toBe(false)
       expect(config?.lockedRatios).toBeUndefined()
       expect(config?.skipRealComponentPreview).toBeFalsy()
-      expect(config?.previewStates.length).toBeGreaterThan(0)
+      expect(config?.versions).toHaveLength(1)
+      expect(config?.versions[0]?.previewStates.length).toBeGreaterThan(0)
     })
   })
 
@@ -87,9 +89,9 @@ describe("resolveAdjustmentConfig", () => {
     // hide how much the card covers the subject on mobile/tablet.
     it("previews all three responsive breakpoint regimes", () => {
       expect(config).toBeDefined()
-      expect(config?.previewStates.map((s) => s.viewportWidth)).toEqual([
-        375, 768, 1280,
-      ])
+      expect(
+        config?.versions[0]?.previewStates.map((s) => s.viewportWidth),
+      ).toEqual([375, 768, 1280])
     })
   })
 
@@ -162,7 +164,7 @@ describe("resolveAdjustmentConfig", () => {
         resolveAdjustmentConfig({
           block: { type: "infocards", variant: "cardsWithImages", maxColumns },
           fieldName: "imageUrl",
-        })?.previewStates.filter((s) => s.id !== "mobile")
+        })?.versions[0]?.previewStates.filter((s) => s.id !== "mobile")
 
       it("3 columns (default): previews content-page square and homepage 3:2 separately", () => {
         const states = desktopStatesFor("3")
@@ -194,25 +196,58 @@ describe("resolveAdjustmentConfig", () => {
     })
   })
 
-  describe("blockquote (per-state layout override)", () => {
-    const config = resolveAdjustmentConfig({
-      block: { type: "blockquote" },
-      fieldName: "imageSrc",
-    })
+  describe("blockquote (context-resolved circle/square versions)", () => {
+    const configFor = (pageLayout?: IsomerPageLayoutType) =>
+      resolveAdjustmentConfig({
+        block: { type: "blockquote" },
+        fieldName: "imageSrc",
+        context: { pageLayout },
+      })
 
     // Blockquote renders the same 1:1 image as a circle everywhere except the
-    // homepage, where it's a square — a real-component preview regression here
-    // would mean an editor never sees the shape their crop will actually take.
-    it("previews a circle state for content pages and a square state for the homepage", () => {
-      expect(config).toBeDefined()
-      expect(config?.previewStates).toEqual([
-        expect.objectContaining({ id: "circle", layout: "content" }),
-        expect.objectContaining({ id: "square", layout: "homepage" }),
+    // homepage/notfound layouts, where it's a square — a real-component
+    // preview regression here would mean an editor never sees the shape their
+    // crop will actually take.
+    it("resolves only the circle version for a content-page layout", () => {
+      const config = configFor("content")
+      expect(config?.versions).toEqual([
+        expect.objectContaining({
+          id: "circle",
+          previewStates: [expect.objectContaining({ layout: "content" })],
+        }),
       ])
     })
 
-    it("stacks the two 1:1 states instead of showing them side-by-side", () => {
-      expect(config?.stackPreviews).toBe(true)
+    it("resolves only the square version for the homepage layout", () => {
+      const config = configFor("homepage")
+      expect(config?.versions).toEqual([
+        expect.objectContaining({
+          id: "square",
+          previewStates: [expect.objectContaining({ layout: "homepage" })],
+        }),
+      ])
+    })
+
+    it("resolves only the square version for the notfound layout", () => {
+      const config = configFor("notfound")
+      expect(config?.versions).toEqual([
+        expect.objectContaining({
+          id: "square",
+          previewStates: [expect.objectContaining({ layout: "homepage" })],
+        }),
+      ])
+    })
+
+    // When the page layout isn't known (e.g. this control renders outside a
+    // page editor), fall back to showing both candidate versions.
+    it("resolves both versions when no page-layout context is given", () => {
+      const config = configFor(undefined)
+      expect(config?.versions.map((v) => v.id)).toEqual(["circle", "square"])
+    })
+
+    it("stacks each version's 1:1 state instead of showing it half-width", () => {
+      expect(configFor("content")?.stackPreviews).toBe(true)
+      expect(configFor(undefined)?.stackPreviews).toBe(true)
     })
   })
 

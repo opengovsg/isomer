@@ -14,24 +14,29 @@ const TIER_B_CONFIG: AdjustmentConfig = {
     { width: 4, height: 3 },
   ],
   focalEnabled: true,
-  previewStates: [
+  versions: [
     {
-      id: "mobile",
-      label: "Mobile",
-      viewportWidth: 375,
-      aspectRatio: { width: 4, height: 3 },
-    },
-    {
-      id: "tablet",
-      label: "Tablet",
-      viewportWidth: 768,
-      aspectRatio: { width: 16, height: 9 },
-    },
-    {
-      id: "desktop",
-      label: "Desktop",
-      viewportWidth: 1024,
-      aspectRatio: { width: 16, height: 9 },
+      id: "default",
+      previewStates: [
+        {
+          id: "mobile",
+          label: "Mobile",
+          viewportWidth: 375,
+          aspectRatio: { width: 4, height: 3 },
+        },
+        {
+          id: "tablet",
+          label: "Tablet",
+          viewportWidth: 768,
+          aspectRatio: { width: 16, height: 9 },
+        },
+        {
+          id: "desktop",
+          label: "Desktop",
+          viewportWidth: 1024,
+          aspectRatio: { width: 16, height: 9 },
+        },
+      ],
     },
   ],
   scrim: {
@@ -157,12 +162,14 @@ export const WithRealComponentPreview: Story = {
   },
 }
 
-// Exercises Blockquote's per-state `layout` override: the SAME 1:1 image masks
-// into a circle on a content page and a square on the homepage, driven by
-// BLOCKQUOTE_CONFIG's "circle"/"square" previewStates each forcing their own
-// `layout` on the shared real-component preview (AdjustmentPreview renders the
-// block once per state rather than once-and-reused). Regression coverage for
-// Greptile 4205368562: nothing else in Storybook renders BLOCKQUOTE_CONFIG.
+// Exercises Blockquote's per-version `layout` override: the SAME 1:1 image
+// masks into a circle on a content page and a square on the homepage, driven
+// by its "circle"/"square" PreviewVersions, each forcing their own `layout` on
+// the shared real-component preview (AdjustmentPreview renders the block once
+// per state rather than once-and-reused). No pageLayout context is passed
+// here, so both versions resolve and the version dropdown appears. Regression
+// coverage for Greptile 4205368562: nothing else in Storybook renders the
+// Blockquote config.
 export const WithBlockquotePreview: Story = {
   args: {
     isOpen: true,

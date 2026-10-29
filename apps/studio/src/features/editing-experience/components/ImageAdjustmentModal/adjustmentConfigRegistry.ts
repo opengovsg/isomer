@@ -1,7 +1,11 @@
+import type { IsomerPageLayoutType } from "@opengovsg/isomer-components"
+
 import type {
   AdjustmentConfig,
   AdjustmentPreviewState,
+  AdjustmentRenderContext,
   AspectRatio,
+  PreviewVersion,
 } from "./AdjustmentConfig"
 
 // Narrow an unknown block to read its discriminators safely.
@@ -134,6 +138,14 @@ const infoCardsDesktopStates = (block: unknown): AdjustmentPreviewState[] => {
   ]
 }
 
+// Wraps a plain previewStates array as the sole `PreviewVersion` of a config
+// that has no distinct shape/variant axis (i.e. almost everything but
+// Blockquote) — no `label` needed since the modal only shows its version
+// dropdown when there's more than one version.
+const singleVersion = (
+  previewStates: AdjustmentPreviewState[],
+): PreviewVersion[] => [{ id: "default", previewStates }]
+
 // Standard Desktop/Tablet/Mobile preview set, shared by every component so all
 // editor previews show the same three breakpoint viewport widths (mobile 375 /
 // tablet 768 / desktop 1280); only the aspect ratio differs per component. For
@@ -185,11 +197,13 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   maxRenderedHeightPx: 500,
   // Closest common ratio to each breakpoint's hero band (375×240→16:10,
   // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
-  previewStates: responsivePreviewStates({
-    mobile: { width: 16, height: 10 },
-    tablet: { width: 2, height: 1 },
-    desktop: { width: 5, height: 2 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 16, height: 10 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 5, height: 2 },
+    }),
+  ),
   // Mirrors HeroGradient's left-to-right dark gradient so editors can judge
   // text contrast against the chosen crop/focal.
   scrim: {
@@ -219,11 +233,13 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   maxRenderedHeightPx: 500,
   // Closest common ratio to each breakpoint's hero band (375×240→16:10,
   // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
-  previewStates: responsivePreviewStates({
-    mobile: { width: 16, height: 10 },
-    tablet: { width: 2, height: 1 },
-    desktop: { width: 5, height: 2 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 16, height: 10 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 5, height: 2 },
+    }),
+  ),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text.",
 }
@@ -243,11 +259,13 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
   // so Mobile (375) shows the stacked layout while Tablet/Desktop show the row.
   // Aspect ratios are pre-measure flash guesses only (PreviewFrame measures the
   // real rendered height).
-  previewStates: responsivePreviewStates({
-    mobile: { width: 4, height: 5 },
-    tablet: { width: 2, height: 1 },
-    desktop: { width: 2, height: 1 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 4, height: 5 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 2, height: 1 },
+    }),
+  ),
   preUploadCopy:
     "Use a high-resolution image (at least 400×480px) with a 5:6 (portrait) aspect ratio. Keep the key subject centered — the image is cropped to a fixed portrait frame beside your text.",
 }
@@ -266,11 +284,13 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
   maxRenderedHeightPx: 400,
   // Closest common ratio to each breakpoint's frame (375×300→5:4,
   // 768×400→2:1, 1280×450→3:1); the real tile height is still measured.
-  previewStates: responsivePreviewStates({
-    mobile: { width: 5, height: 4 },
-    tablet: { width: 2, height: 1 },
-    desktop: { width: 3, height: 1 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 5, height: 4 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 3, height: 1 },
+    }),
+  ),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px). Place the key subject on the side matching where the image sits (left or right) rather than centering it.",
 }
@@ -289,11 +309,13 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   // Widest frame is 2:1 from md up (md:aspect-[2/1]) → 640px tall at 1280px.
   // Crop is free (custom), so height must be checked independently of width.
   maxRenderedHeightPx: 640,
-  previewStates: responsivePreviewStates({
-    mobile: { width: 1, height: 1 },
-    tablet: { width: 2, height: 1 },
-    desktop: { width: 2, height: 1 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 1, height: 1 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 2, height: 1 },
+    }),
+  ),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed.",
 }
@@ -317,33 +339,24 @@ const HERO_FLOATING_CONFIG: AdjustmentConfig = {
   // Full-width below lg (~1024px), 66.67% (~800px) at lg — the tablet regime
   // is the widest frame.
   maxRenderedWidthPx: 1024,
-  previewStates: responsivePreviewStates({
-    mobile: { width: 3, height: 2 },
-    tablet: { width: 3, height: 2 },
-    desktop: { width: 3, height: 2 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 3, height: 2 },
+      tablet: { width: 3, height: 2 },
+      desktop: { width: 3, height: 2 },
+    }),
+  ),
   preUploadCopy:
     "Use a high-resolution image (at least 1500×1000px) with a 3:2 aspect ratio. Keep key subjects out of the bottom third — the text card floats over it.",
 }
 
-// Tier A — fixed 1:1 crop, no focal; crop is baked into the src like every
-// other Tier A component. Blockquote renders the SAME 1:1 image two different
-// shapes depending on the page's layout — a circle (rounded-full, every
-// layout except homepage/notfound) or a square (homepage) — so both are
-// previewed, each forcing its own `layout` on the shared real-component
-// preview (see AdjustmentPreview's per-state layout override) rather than
-// relying on a breakpoint/viewport difference.
-const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
-  componentType: "blockquote",
-  cropMode: "fixed",
-  focalEnabled: false,
-  lockedRatios: [{ width: 1, height: 1 }],
-  // Masked avatar: 240px on the homepage (w-60), 96px elsewhere — warn against
-  // the larger.
-  maxRenderedWidthPx: 240,
-  // Both states are 1:1 — side-by-side they'd be small; stack them so each
-  // circle/square mask gets the full preview column width.
-  stackPreviews: true,
+// Blockquote's two rendered shapes — see buildBlockquoteConfig below. Each is
+// its own PreviewVersion (not a second entry in one version's previewStates):
+// the circle/square split is a rendered-SHAPE axis, not a breakpoint, so it
+// belongs in the versions dropdown rather than the breakpoint row.
+const BLOCKQUOTE_CIRCLE_VERSION: PreviewVersion = {
+  id: "circle",
+  label: "Circle (content pages)",
   previewStates: [
     {
       id: "circle",
@@ -352,6 +365,13 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
       viewportWidth: 768,
       aspectRatio: { width: 1, height: 1 },
     },
+  ],
+}
+
+const BLOCKQUOTE_SQUARE_VERSION: PreviewVersion = {
+  id: "square",
+  label: "Square (homepage)",
+  previewStates: [
     {
       id: "square",
       label: "Square (homepage)",
@@ -360,8 +380,42 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
       aspectRatio: { width: 1, height: 1 },
     },
   ],
-  preUploadCopy:
-    "Use a square (1:1) image, at least 240×240px. The subject should sit centered — this image is masked into a circle on most pages.",
+}
+
+// Tier A — fixed 1:1 crop, no focal; crop is baked into the src like every
+// other Tier A component. Blockquote renders the SAME 1:1 image two different
+// shapes depending on the page's layout — a circle (rounded-full, every
+// layout except homepage/notfound) or a square (homepage/notfound). When the
+// page's layout is known (context-resolvable, see AdjustmentRenderContext),
+// this narrows to the single version that actually applies; when it isn't
+// known (e.g. this control renders in a non-page-editor context, like the
+// Navbar/Footer logo settings forms), both versions are offered so the editor
+// can check either shape.
+const buildBlockquoteConfig = (
+  pageLayout?: IsomerPageLayoutType,
+): AdjustmentConfig => {
+  const versions =
+    pageLayout === undefined
+      ? [BLOCKQUOTE_CIRCLE_VERSION, BLOCKQUOTE_SQUARE_VERSION]
+      : pageLayout === "homepage" || pageLayout === "notfound"
+        ? [BLOCKQUOTE_SQUARE_VERSION]
+        : [BLOCKQUOTE_CIRCLE_VERSION]
+
+  return {
+    componentType: "blockquote",
+    cropMode: "fixed",
+    focalEnabled: false,
+    lockedRatios: [{ width: 1, height: 1 }],
+    // Masked avatar: 240px on the homepage (w-60), 96px elsewhere — warn
+    // against the larger.
+    maxRenderedWidthPx: 240,
+    // Each version has a single 1:1 state, which would be small as a
+    // half-width tile — stack it to use the full preview column width.
+    stackPreviews: true,
+    versions,
+    preUploadCopy:
+      "Use a square (1:1) image, at least 240×240px. The subject should sit centered — this image is masked into a circle on most pages.",
+  }
 }
 
 // Tier C — InfoCards "cards with images". Per-card image cover-fit into a card
@@ -396,7 +450,7 @@ const infoCardsWithImagesConfig = (block: unknown): AdjustmentConfig => ({
   // approximation (previewStates below set its shape); fit/fill still drives
   // object-fit there via previewObjectFitFor.
   skipRealComponentPreview: true,
-  previewStates: [
+  versions: singleVersion([
     {
       id: "mobile",
       label: "Mobile",
@@ -404,7 +458,7 @@ const infoCardsWithImagesConfig = (block: unknown): AdjustmentConfig => ({
       aspectRatio: { width: 3, height: 2 },
     },
     ...infoCardsDesktopStates(block),
-  ],
+  ]),
   preUploadCopy:
     "The card crops this image to fill its frame, and the frame's shape changes across screen sizes. Set a focal point so your key subject stays in view.",
 })
@@ -433,11 +487,13 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
   // Card is square up to lg, then 2:3 portrait at lg: square on mobile/tablet,
   // portrait on desktop.
-  previewStates: responsivePreviewStates({
-    mobile: { width: 1, height: 1 },
-    tablet: { width: 1, height: 1 },
-    desktop: { width: 2, height: 3 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 1, height: 1 },
+      tablet: { width: 1, height: 1 },
+      desktop: { width: 2, height: 3 },
+    }),
+  ),
   // Approximates the real card's bottom-half dark gradient (the title overlay):
   // opaque at the bottom edge, fading out by the vertical midpoint.
   scrim: {
@@ -471,11 +527,11 @@ const IMAGE_CONFIG: AdjustmentConfig = {
   maxRenderedWidthPx: 960,
   // Free-form crop: no fixed ratio, so previews carry no aspectRatio — the
   // caption shows width only and the real render is measured.
-  previewStates: [
+  versions: singleVersion([
     { id: "mobile", label: "Mobile", viewportWidth: 375 },
     { id: "tablet", label: "Tablet", viewportWidth: 768 },
     { id: "desktop", label: "Desktop", viewportWidth: 1280 },
-  ],
+  ]),
   preUploadCopy:
     "You can crop this image to any shape. Use a high-resolution image so the area you keep stays sharp at the size it displays on your page.",
 }
@@ -506,11 +562,13 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
   // a fixed height (17rem mobile → 28.5rem from sm) over the content column, so it
   // grows wider as the viewport grows — the three states approximate that frame
   // shape per breakpoint (the image is letterboxed to fit either way).
-  previewStates: responsivePreviewStates({
-    mobile: { width: 5, height: 4 },
-    tablet: { width: 3, height: 2 },
-    desktop: { width: 2, height: 1 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 5, height: 4 },
+      tablet: { width: 3, height: 2 },
+      desktop: { width: 2, height: 1 },
+    }),
+  ),
   preUploadCopy:
     "Gallery images are shown in full (letterboxed to fit the frame), never cropped to it. Crop here only to trim parts of the image you don't want to show.",
 }
@@ -523,6 +581,7 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
 export function resolveAdjustmentConfig(args: {
   block: unknown
   fieldName: string
+  context?: AdjustmentRenderContext
 }): AdjustmentConfig | undefined {
   const { type, variant } = asBlock(args.block)
   if (type === "image") return IMAGE_CONFIG
@@ -534,7 +593,8 @@ export function resolveAdjustmentConfig(args: {
   if (type === "hero" && variant === "floating") return HERO_FLOATING_CONFIG
   if (type === "contentpic") return CONTENTPIC_CONFIG
   if (type === "infopic") return INFOPIC_CONFIG
-  if (type === "blockquote") return BLOCKQUOTE_CONFIG
+  if (type === "blockquote")
+    return buildBlockquoteConfig(args.context?.pageLayout)
   if (type === "infocards" && variant === "cardsWithImages")
     return infoCardsWithImagesConfig(args.block)
   if (type === "infocards" && variant === "cardsWithFullImages")

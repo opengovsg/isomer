@@ -2,6 +2,7 @@ import type { ImageAdjustment } from "@opengovsg/isomer-components"
 import { useJsonForms } from "@jsonforms/react"
 import { get } from "lodash-es"
 import { useMemo } from "react"
+import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { resolveAdjustmentConfig } from "~/features/editing-experience/components/ImageAdjustmentModal/adjustmentConfigRegistry"
 
 /**
@@ -18,6 +19,13 @@ import { resolveAdjustmentConfig } from "~/features/editing-experience/component
 export const useAdjustmentConfigForField = (path: string) => {
   const ctx = useJsonForms()
   const rootData: unknown = ctx.core?.data
+  // Context the registry can use to narrow a component's preview versions
+  // (e.g. Blockquote's circle/square by page layout). Optional-safe: this hook
+  // is also called from JsonFormsImageControl when it renders in provider-less
+  // settings forms (Navbar/Footer/logo) with no EditorDrawerProvider around it
+  // — there, pageLayout is simply undefined, which resolves to "show all
+  // versions" rather than throwing.
+  const pageLayout = useOptionalEditorDrawerContext()?.previewPageState.layout
 
   const pathParts = path.split(".")
   const fieldName = pathParts.pop() ?? ""
@@ -66,8 +74,19 @@ export const useAdjustmentConfigForField = (path: string) => {
       fieldName,
       siblingPath,
       currentAdjustment,
-      config: resolveAdjustmentConfig({ block: ownerBlock, fieldName }),
+      config: resolveAdjustmentConfig({
+        block: ownerBlock,
+        fieldName,
+        context: { pageLayout },
+      }),
     }),
-    [ownerBlock, fieldHost, fieldName, siblingPath, currentAdjustment],
+    [
+      ownerBlock,
+      fieldHost,
+      fieldName,
+      siblingPath,
+      currentAdjustment,
+      pageLayout,
+    ],
   )
 }
