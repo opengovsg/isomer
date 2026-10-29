@@ -91,7 +91,7 @@ function JsonFormsHeroBlockImageControl({
       </FormControl>
 
       <FormControl isRequired gap="0.5rem">
-        <FormLabel description="Check the desktop layout in Fullscreen, under preview options">
+        <FormLabel description="Check the desktop layout in Full screen, under preview options">
           Image edge
         </FormLabel>
         <Radio.RadioGroup

@@ -57,7 +57,7 @@ function JsonFormsHeroCarouselLayoutControl({
       <FormControl isRequired gap="0.5rem">
         <FormLabel
           color="base.content.default"
-          description="Check the desktop layout in Fullscreen, under preview options"
+          description="Check the desktop layout in Full screen, under preview options"
         >
           Layout
         </FormLabel>
