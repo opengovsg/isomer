@@ -1,7 +1,7 @@
 import { tv } from "~/lib/tv"
 
 const dotStyles = tv({
-  base: "block h-2.5 w-2.5 rounded-full bg-brand-canvas transition-[width,background-color] duration-300 ease-out motion-reduce:transition-none",
+  base: "block h-2.5 w-2.5 rounded-full bg-base-content-light transition-[width,background-color] duration-300 ease-out motion-reduce:transition-none",
   variants: {
     isActive: {
       true: "w-7 bg-brand-canvas-inverse",
