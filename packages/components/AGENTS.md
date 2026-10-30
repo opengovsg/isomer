@@ -49,8 +49,7 @@ If a JSONForms component needs Studio-only behaviour, that behaviour belongs in 
 ```
 src/
 ├── templates/
-│   ├── classic/        # Legacy template — frozen, no new features
-│   └── next/           # Current template — new components land here
+│   └── next/           # The template — new components land here
 │       ├── components/
 │       │   ├── complex/    # Composed multi-part blocks
 │       │   ├── internal/   # Used by other components, not exported as blocks
@@ -93,7 +92,6 @@ Bump the package version only when preparing an npm release for consumers outsid
 
 - Tailwind classes drive styling. Tokens come from the Isomer theme (`apps/template/styles/`).
 - Hardcoded hex / px values are an anti-pattern.
-- The classic template is **frozen** — bug fixes only, never new features.
 
 ### Types
 
@@ -123,5 +121,4 @@ Bump the package version only when preparing an npm release for consumers outsid
 - A template component importing from `apps/studio/src/`.
 - A JSONForms component fetching data or holding non-form state.
 - A breaking schema change without a Studio migration PR landing first.
-- New work on the `classic` template.
 - Adding a new block without a Storybook story.

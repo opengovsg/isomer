@@ -29,7 +29,7 @@ If you find yourself in this skill without one of those preconditions, abort and
 
 ### 2. Read the area conventions
 
-For every directory you intend to edit, read its `AGENTS.md`. Quote the relevant rules in your internal scratchpad. Plan the implementation against those rules — do not edit first and reconcile after.
+For every directory you intend to edit, read its `AGENTS.md` and plan the implementation against its rules — do not edit first and reconcile after.
 
 Particular files to re-read every time:
 
@@ -81,7 +81,7 @@ While writing:
 
 **Schema (`apps/studio/src/schemas/**`, `packages/components/src/schemas/**`):**
 
-- User-facing `message` strings on every constraint.
+- User-facing `error` strings on every constraint (see `apps/studio/src/schemas/AGENTS.md`).
 - A unit test for any schema with conditional rules.
 
 These are guardrails, not suggestions. A PR without the required artefact must not be opened.
