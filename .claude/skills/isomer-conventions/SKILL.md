@@ -7,8 +7,7 @@ description: Repository-specific code smells and blessed conventions for the Iso
 
 A growable catalog of repo-specific code smells (patterns to avoid) and best
 practices (the blessed way). Each entry lives in its own file under
-`conventions/`; the [Catalog](#catalog) below indexes them. The catalog starts
-empty and grows as the team discovers conventions during review.
+`conventions/`; the [Catalog](#catalog) below indexes them.
 
 ## Applying conventions
 
@@ -57,6 +56,10 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 ### Analytics
 
 - [Capture PostHog events through the shared hooks](conventions/analytics-shared-posthog-capture-hooks.md) — best practice: use usePostHogCaptureOnceReady / OncePerKey / OptionalStep for render-driven captures, not a hand-rolled useEffect + useRef guard
+
+### Database
+
+- [Prefer Kysely's expression builder over raw sql for supported functions](conventions/kysely-eb-fn-over-raw-sql.md) — best practice: use `eb.fn.*` (e.g. `coalesce`) over raw `` sql`...` `` when the builder has a typed equivalent; raw sql stays fine for JSON paths and Postgres-only functions
 
 ### Audit logging
 - [Audit deltas must log real DB rows, not hand-built objects](conventions/audit-log-real-db-rows.md) — best practice: log before/after as rows re-read from the DB inside the same tx, so deltas are accurate
