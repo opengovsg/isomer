@@ -176,20 +176,21 @@ export const DuplicateNotificationNumber: Story = {
 
     // Category defaults to "Government Gazette"; the form renders the Category
     // and Subcategory SingleSelects in that order, so the second combobox is
-    // the subcategory. Pick "Tenders" — a label that doesn't appear in the
-    // seeded table row, so matching the option by its visible text stays
-    // unambiguous. Government Gazette duplicates are detected by category and
-    // year regardless of subcategory, so this is still a duplicate.
+    // the subcategory. The seeded table row shows the same subcategory label,
+    // so match by option role to only hit the open dropdown. `hidden: true`
+    // because the dropdown portals outside the modal, which aria-hides it.
+    // Government Gazette duplicates are detected by category and year
+    // regardless of subcategory, so this is still a duplicate.
     const subcategoryCombobox = (await screen.findAllByRole("combobox"))[1]
     if (!subcategoryCombobox) {
       throw new Error("Expected a subcategory combobox to be rendered")
     }
     await userEvent.click(subcategoryCombobox)
-    const virtuoso = await screen.findByTestId("virtuoso-item-list")
     await userEvent.click(
-      await within(virtuoso).findByText(
-        governmentGazetteSubcategories.NOTICES_UNDER_OTHER_ACTS,
-      ),
+      await screen.findByRole("option", {
+        hidden: true,
+        name: governmentGazetteSubcategories.NOTICES_UNDER_OTHER_ACTS,
+      }),
     )
 
     await userEvent.type(
