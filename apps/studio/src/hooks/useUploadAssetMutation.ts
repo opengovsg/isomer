@@ -1,7 +1,9 @@
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { useMutation } from "@tanstack/react-query"
+import { reportClientError } from "~/lib/datadogError"
 import { performUpload } from "~/lib/storage/client"
+import { getFileExtension } from "~/utils/getFileExtension"
 import { trpc } from "~/utils/trpc"
 
 type UploadAssetMutationParams = Pick<
@@ -68,6 +70,20 @@ export const useUploadAssetMutation = ({
 
         const path = await performUpload(file, fileKey, uploadConfig)
         return { path }
+      },
+      // Defined on the mutation itself (not passed to `.mutate()`) so this
+      // still fires for failures that reject after the calling component has
+      // unmounted, e.g. the hero banner/complex editor drawers that queue
+      // this mutation and can close before a presign/S3 call settles
+      // (ISOM-2680).
+      onError: (error, { file }) => {
+        reportClientError(error, {
+          feature: "asset-upload",
+          siteId,
+          resourceId,
+          fileExtension: getFileExtension(file.name),
+          fileSize: file.size,
+        })
       },
       retry: false,
     },

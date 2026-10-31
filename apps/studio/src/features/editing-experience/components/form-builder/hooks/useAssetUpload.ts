@@ -1,5 +1,6 @@
 import { backOff } from "exponential-backoff"
 import { useState } from "react"
+import { reportClientError } from "~/lib/datadogError"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 interface UseAssetUploadProps {
@@ -29,7 +30,10 @@ export const useAssetUpload = ({
   baseTimeoutMs = DEFAULT_BASE_TIMEOUT_MS,
 }: UseAssetUploadProps) => {
   const [isLoading, setIsLoading] = useState(false)
-  const handleAssetUpload = async (src: string) => {
+  const handleAssetUpload = async (
+    src: string,
+    context?: Record<string, unknown>,
+  ) => {
     setIsLoading(true)
     try {
       await backOff(async () => {
@@ -42,6 +46,9 @@ export const useAssetUpload = ({
       return src
     } catch (e) {
       console.error(e)
+      // Reported here (not by the calling component) so the convention of
+      // keeping side effects out of `components/` holds regardless of caller.
+      reportClientError(e, { feature: "asset-upload-fetch", ...context })
       throw e
     } finally {
       setIsLoading(false)
