@@ -15,6 +15,7 @@ export const BlockInfopic = ({
   buttonUrl,
   description,
   imageAlt,
+  imageAdjustment,
   isTextOnRight,
   shouldLazyLoad,
   site,
@@ -56,6 +57,7 @@ export const BlockInfopic = ({
           className={compoundStyles.image()}
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={shouldLazyLoad}
+          imageAdjustment={imageAdjustment}
         />
       </div>
     </section>

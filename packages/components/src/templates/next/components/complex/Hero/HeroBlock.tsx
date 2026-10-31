@@ -119,6 +119,7 @@ export const HeroBlock = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   backgroundUrl,
+  imageAdjustment,
   blockImage,
   site,
   theme = "default",
@@ -185,6 +186,7 @@ export const HeroBlock = ({
           alt=""
           width="100%"
           className={styles.image()}
+          imageAdjustment={imageAdjustment}
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={false} // hero is always above the fold
         />

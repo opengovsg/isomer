@@ -47,4 +47,9 @@ export interface AdjustmentConfig {
   scrim?: AdjustmentScrim
   // Guidance copy shown before/around upload (resolution hints etc.).
   preUploadCopy?: string
+  // Tier C conditional enablement: adjustment is offered only when this returns
+  // true for the current block value (e.g. InfoCards only under Fill). When it
+  // returns false, the entry-point shows disabledReason instead of opening.
+  isAdjustable?: (blockValue: unknown) => boolean
+  disabledReason?: string
 }
