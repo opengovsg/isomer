@@ -33,6 +33,44 @@ export interface AdjustmentPreviewState {
   layout?: IsomerPageLayoutType
 }
 
+// A named, switchable variant of a component's preview set — e.g. Blockquote's
+// "circle" vs "square" mask. Each version carries its OWN full breakpoint
+// preview set (the old flat `previewStates`, now scoped per-version instead of
+// global), so the two axes (breakpoint vs. rendered-shape variant) don't get
+// conflated into one array. The modal shows a dropdown to switch between
+// versions, but only when a config declares more than one.
+export interface PreviewVersion {
+  // Stable key, e.g. "circle", "square", "default".
+  id: string
+  // Dropdown option text. Omit when there's only one version — it's never
+  // shown, so most configs don't need it.
+  label?: string
+  previewStates: AdjustmentPreviewState[]
+}
+
+// Extensible options bag for context the registry can use to narrow which
+// version(s) of a config apply to a given instance. Blockquote reads
+// `pageLayout` to deterministically pick circle vs. square when the page's
+// layout is known; everyone else ignores it. Add fields here as future cases
+// need them — this is deliberately just a plain optional-properties object,
+// not a plugin system.
+export interface AdjustmentRenderContext {
+  pageLayout?: IsomerPageLayoutType
+  // True when the field being resolved is the page-level thumbnail
+  // (`page.image`) of a collection item (a CollectionPage/CollectionLink
+  // resource) — the one root-level image field with no block-type ancestor
+  // to key the registry off of. Set by useAdjustmentConfigForField from the
+  // editor's resource type, since the field's own data has no discriminator.
+  isCollectionThumbnail?: boolean
+  // The parent collection's index page "Layout" setting (collection-variant
+  // format: "collection" = 1-column CollectionCard, "blog" = 2-column
+  // BlogCard) — fetched by useAdjustmentConfigForField since it lives on a
+  // different page's content than the one being edited. Undefined while that
+  // fetch is loading/unavailable; resolves to the 1-column frame in that case,
+  // matching the schema's own "collection" default.
+  collectionVariant?: "collection" | "blog"
+}
+
 // Optional scrim/overlay drawn over the preview to mirror the live component
 // (e.g. HeroGradient's left-to-right dark gradient) so editors can judge contrast.
 export interface AdjustmentScrim {
@@ -67,8 +105,11 @@ export interface AdjustmentConfig {
   // field host (focal is meaningless once the image is letterboxed under "Resize
   // image to fit", so it's hidden there).
   focalEnabled: boolean
-  // Breakpoint/layout previews to render; array order = tab order in the modal.
-  previewStates: AdjustmentPreviewState[]
+  // One or more named preview versions (e.g. Blockquote's circle/square masks).
+  // Always >= 1 entry. The modal shows a dropdown to pick the active one only
+  // when there's more than one; otherwise it renders the single version's
+  // previewStates directly, same as before this existed.
+  versions: PreviewVersion[]
   // A single overlay mirroring the live component (e.g. HeroGradient's gradient).
   scrim?: AdjustmentScrim
   // Guidance copy shown before/around upload (resolution hints etc.).

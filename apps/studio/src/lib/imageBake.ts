@@ -385,3 +385,51 @@ export const bakeImage = async (
     bitmap.close()
   }
 }
+
+// Quality steps tried, in order, when the full-quality bake exceeds maxBytes.
+// Only applies to lossy formats (JPEG/WebP) -- PNG has no quality knob, so a
+// source that's already near the limit can still produce an oversize PNG
+// bake; bakeImageWithinSizeLimit returns its best (still-oversize) attempt in
+// that case and leaves surfacing the error to the caller.
+const QUALITY_BACKOFF_STEPS = [0.8, 0.6, 0.4]
+
+/**
+ * Bakes an image, retrying at progressively lower quality if the full-quality
+ * encode exceeds `maxBytes`. A crop/re-encode through canvas can end up
+ * LARGER than a well-optimized source JPEG even at the browser's default
+ * quality (canvas re-encoding loses the original encoder's specific
+ * optimization), so a source that passed the upload-time size check can still
+ * fail the save-time bake check with no warning at upload — this back-off
+ * closes most of that gap before it ever reaches the server.
+ * @param maxBytes - The server's size cap for the baked output
+ * @returns The smallest successful bake, or the smallest attempt tried if
+ * none got under maxBytes (e.g. PNG, which has no quality knob, or still
+ * oversize even at the lowest quality step) -- the caller is responsible for
+ * checking the result's size and surfacing a clear error if it's still too
+ * large.
+ */
+export const bakeImageWithinSizeLimit = async (
+  original: Blob,
+  adjustment: Pick<ImageAdjustment, "crop" | "rotate" | "flipH" | "flipV">,
+  opts: { mimeType: string; maxBytes: number },
+): Promise<Blob> => {
+  const fullQuality = await bakeImage(original, adjustment, {
+    mimeType: opts.mimeType,
+  })
+  if (fullQuality.size <= opts.maxBytes) return fullQuality
+
+  const isLossy =
+    opts.mimeType === "image/jpeg" || opts.mimeType === "image/webp"
+  if (!isLossy) return fullQuality
+
+  let smallest = fullQuality
+  for (const quality of QUALITY_BACKOFF_STEPS) {
+    const attempt = await bakeImage(original, adjustment, {
+      mimeType: opts.mimeType,
+      quality,
+    })
+    if (attempt.size <= opts.maxBytes) return attempt
+    if (attempt.size < smallest.size) smallest = attempt
+  }
+  return smallest
+}
