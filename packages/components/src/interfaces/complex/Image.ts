@@ -110,6 +110,10 @@ export const ImageSchema = Type.Object(
         },
       ),
     ),
+    // Sibling written by the adjustment modal; absence = unedited. The crop is
+    // baked into `src`, so the renderer needs nothing at runtime — this is kept
+    // only so the editor can re-bake from the original (format: "hidden").
+    imageAdjustment: Type.Optional(imageAdjustmentSchema),
   },
   {
     title: "Image",

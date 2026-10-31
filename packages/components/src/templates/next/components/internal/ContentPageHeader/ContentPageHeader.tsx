@@ -2,7 +2,6 @@ import type { ContentPageHeaderProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
-import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { Breadcrumb } from "../Breadcrumb"
 import { ImageClient } from "../ImageClient"
@@ -98,11 +97,9 @@ export const ContentPageHeader = ({
             <ImageClient
               assetsBaseUrl={site.assetsBaseUrl}
               alt={image.alt}
-              src={
-                isExternalUrl(image.src) || site.assetsBaseUrl === undefined
-                  ? image.src
-                  : `${site.assetsBaseUrl}${image.src}`
-              }
+              // Raw (relative) src; ImageClient resolves it against
+              // assetsBaseUrl so the editor's ?original bypass applies.
+              src={image.src}
               width="100%"
               className={styles.image()}
               lazyLoading={false}

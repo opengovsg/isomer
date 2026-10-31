@@ -1,9 +1,9 @@
 import type { AttachmentProps } from "@opengovsg/design-system-react"
-import { FormControl, Skeleton, Text } from "@chakra-ui/react"
+import { Box, FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment, useToast } from "@opengovsg/design-system-react"
 import { uniq } from "lodash-es"
 import dynamic from "next/dynamic"
-import { useEffect, useRef, useState } from "react"
+import { forwardRef, useEffect, useRef, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
@@ -26,153 +26,172 @@ interface FileAttachmentProps {
   shouldFetchResource?: boolean
   onUploadedFile?: (file: File) => void
   enableRiskyFileWarning?: boolean
+  // Fired once the file has actually landed in S3 (mutation success), ahead of
+  // the optional asset-fetch step below. Left to callers to decide what (if
+  // anything) to track — this component is shared by non-image attachments too.
+  onUploadSuccess?: () => void
 }
 
 type FileRejections = AttachmentProps<false>["rejections"]
 
-export const FileAttachment = ({
-  setHref,
-  siteId,
-  resourceId,
-  maxSizeInBytes,
-  acceptedFileTypes,
-  shouldFetchResource = true,
-  onUploadedFile,
-  enableRiskyFileWarning = false,
-}: FileAttachmentProps) => {
-  const [rejections, setRejections] = useState<FileRejections>([])
-  const [pendingAckRiskyFile, setPendingAckRiskyFile] = useState<File | null>(
-    null,
-  )
-  // TODO: Add a mutation for deletion next time of s3 resources
-  const { mutate: uploadFile } = useUploadAssetMutation({
-    siteId,
-    resourceId,
-  })
-  const { handleAssetUpload, isLoading } = useAssetUpload({})
-  const toast = useToast()
-
-  // setHref is recreated on every render by callers (it's an inline closure
-  // over path/handleChange), so it can't be a dependency here without the
-  // effect re-firing on every render while isLoading is true -- each firing
-  // writes "" back into the form state, which can race with and clobber the
-  // real uploaded src. A ref keeps this effect tied only to isLoading's
-  // actual true/false transitions, which is its real intent.
-  const setHrefRef = useRef(setHref)
-  useEffect(() => {
-    setHrefRef.current = setHref
-  })
-
-  useEffect(() => {
-    // NOTE: The outer link modal uses this to disable the button
-    if (isLoading) setHrefRef.current("")
-  }, [isLoading])
-
-  const doUpload = (file: File) => {
-    uploadFile(
-      { file },
-      {
-        onSuccess: ({ path }) => {
-          onUploadedFile?.(file)
-          if (shouldFetchResource) {
-            void handleAssetUpload(path)
-              .then((src) => setHref(src))
-              .catch(() => {
-                toast({
-                  title: "Failed to upload file",
-                  description: "Please try again.",
-                  status: "error",
-                  ...BRIEF_TOAST_SETTINGS,
-                })
-              })
-          } else setHref(path)
-        },
-        // Without this, a failure in the presign call or the S3 PUT itself
-        // (permission denied, validation, network/CORS) silently reverts the
-        // control to its pre-upload state with no visible error at all.
-        onError: (error) => {
-          console.error("Failed to upload file", error)
-          toast({
-            title: "Failed to upload file",
-            description:
-              error instanceof Error ? error.message : "Please try again.",
-            status: "error",
-            ...BRIEF_TOAST_SETTINGS,
-          })
-        },
-      },
+// Forwards ref to a wrapper around the Attachment so callers (e.g. a
+// "Replace image" link standing in for a hidden dropzone) can open the native
+// file picker programmatically — via ref.current.querySelector('input[type=
+// "file"]').click() — reusing this same upload flow instead of
+// re-implementing it. (Attachment's own type doesn't expose a ref, despite
+// being a forwardRef component at runtime, so we wrap it instead of passing
+// ref straight through.)
+export const FileAttachment = forwardRef<HTMLDivElement, FileAttachmentProps>(
+  (
+    {
+      setHref,
+      siteId,
+      resourceId,
+      maxSizeInBytes,
+      acceptedFileTypes,
+      shouldFetchResource = true,
+      onUploadedFile,
+      enableRiskyFileWarning = false,
+      onUploadSuccess,
+    },
+    ref,
+  ) => {
+    const [rejections, setRejections] = useState<FileRejections>([])
+    const [pendingAckRiskyFile, setPendingAckRiskyFile] = useState<File | null>(
+      null,
     )
-  }
+    // TODO: Add a mutation for deletion next time of s3 resources
+    const { mutate: uploadFile } = useUploadAssetMutation({
+      siteId,
+      resourceId,
+    })
+    const { handleAssetUpload, isLoading } = useAssetUpload({})
+    const toast = useToast()
 
-  return (
-    <>
-      <FormControl>
-        <Skeleton isLoaded={!isLoading}>
-          <Attachment
-            isRequired
-            name="file-upload"
-            multiple={false}
-            value={undefined}
-            rejections={rejections}
-            onRejection={setRejections}
-            onChange={(file) => {
-              if (!file) {
-                setHref(undefined)
-                return
-              }
+    // setHref is recreated on every render by callers (it's an inline closure
+    // over path/handleChange), so it can't be a dependency here without the
+    // effect re-firing on every render while isLoading is true -- each firing
+    // writes "" back into the form state, which can race with and clobber the
+    // real uploaded src. A ref keeps this effect tied only to isLoading's
+    // actual true/false transitions, which is its real intent.
+    const setHrefRef = useRef(setHref)
+    useEffect(() => {
+      setHrefRef.current = setHref
+    })
 
-              const ext = getFileExtension(file.name)
-              if (enableRiskyFileWarning && RISKY_FILE_EXTENSIONS.has(ext)) {
-                setPendingAckRiskyFile(file)
-                return
-              }
+    useEffect(() => {
+      // NOTE: The outer link modal uses this to disable the button
+      if (isLoading) setHrefRef.current("")
+    }, [isLoading])
 
-              doUpload(file)
-            }}
-            maxSize={maxSizeInBytes}
-            accept={uniq([
-              ...Object.keys(acceptedFileTypes),
-              ...Object.values(acceptedFileTypes),
-            ])}
-            onFileValidation={(file) => {
-              // SVGs are validated and uploaded via the dedicated uploadSvg
-              // endpoint (not the presigned PUT path), so use uploadSvgSchema
-              // for filename validation to avoid the deliberate SVG rejection
-              // in fileNameAndSizeSchema.
-              const isSvg = file.name.toLowerCase().endsWith(".svg")
-              const parseResult = isSvg
-                ? uploadSvgSchema
-                    .pick({ fileName: true })
-                    .safeParse({ fileName: file.name })
-                : fileNameAndSizeSchema.safeParse({
-                    fileName: file.name,
-                    fileSize: file.size,
+    const doUpload = (file: File) => {
+      uploadFile(
+        { file },
+        {
+          onSuccess: ({ path }) => {
+            onUploadedFile?.(file)
+            onUploadSuccess?.()
+            if (shouldFetchResource) {
+              void handleAssetUpload(path)
+                .then((src) => setHref(src))
+                .catch(() => {
+                  toast({
+                    title: "Failed to upload file",
+                    description: "Please try again.",
+                    status: "error",
+                    ...BRIEF_TOAST_SETTINGS,
                   })
+                })
+            } else setHref(path)
+          },
+          // Without this, a failure in the presign call or the S3 PUT itself
+          // (permission denied, validation, network/CORS) silently reverts the
+          // control to its pre-upload state with no visible error at all.
+          onError: (error) => {
+            console.error("Failed to upload file", error)
+            toast({
+              title: "Failed to upload file",
+              description:
+                error instanceof Error ? error.message : "Please try again.",
+              status: "error",
+              ...BRIEF_TOAST_SETTINGS,
+            })
+          },
+        },
+      )
+    }
 
-              if (parseResult.success) return null
-              // NOTE: safe assertion here because we're in error path and there's at least 1 error
-              return (
-                parseResult.error.issues[0]?.message ||
-                "Please ensure that your file begins with alphanumeric characters!"
-              )
-            }}
+    return (
+      <Box ref={ref}>
+        <FormControl>
+          <Skeleton isLoaded={!isLoading}>
+            <Attachment
+              isRequired
+              name="file-upload"
+              multiple={false}
+              value={undefined}
+              rejections={rejections}
+              onRejection={setRejections}
+              onChange={(file) => {
+                if (!file) {
+                  setHref(undefined)
+                  return
+                }
+
+                const ext = getFileExtension(file.name)
+                if (enableRiskyFileWarning && RISKY_FILE_EXTENSIONS.has(ext)) {
+                  setPendingAckRiskyFile(file)
+                  return
+                }
+
+                doUpload(file)
+              }}
+              maxSize={maxSizeInBytes}
+              accept={uniq([
+                ...Object.keys(acceptedFileTypes),
+                ...Object.values(acceptedFileTypes),
+              ])}
+              onFileValidation={(file) => {
+                // SVGs are validated and uploaded via the dedicated uploadSvg
+                // endpoint (not the presigned PUT path), so use uploadSvgSchema
+                // for filename validation to avoid the deliberate SVG rejection
+                // in fileNameAndSizeSchema.
+                const isSvg = file.name.toLowerCase().endsWith(".svg")
+                const parseResult = isSvg
+                  ? uploadSvgSchema
+                      .pick({ fileName: true })
+                      .safeParse({ fileName: file.name })
+                  : fileNameAndSizeSchema.safeParse({
+                      fileName: file.name,
+                      fileSize: file.size,
+                    })
+
+                if (parseResult.success) return null
+                // NOTE: safe assertion here because we're in error path and there's at least 1 error
+                return (
+                  parseResult.error.issues[0]?.message ||
+                  "Please ensure that your file begins with alphanumeric characters!"
+                )
+              }}
+            />
+          </Skeleton>
+          <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
+            {`Maximum file size: ${formatFileSizeLimit({ bytes: maxSizeInBytes })}`}
+            <br />
+            {`Accepted file types: ${Object.keys(acceptedFileTypes).join(", ")}`}
+          </Text>
+        </FormControl>
+
+        {enableRiskyFileWarning && pendingAckRiskyFile && (
+          <RiskyFileUploadModal
+            isOpen={!!pendingAckRiskyFile}
+            file={pendingAckRiskyFile}
+            onConfirm={() => doUpload(pendingAckRiskyFile)}
+            onClose={() => setPendingAckRiskyFile(null)}
           />
-        </Skeleton>
-        <Text textStyle="body-2" textColor="base.content.medium" pt="0.5rem">
-          {`Maximum file size: ${formatFileSizeLimit({ bytes: maxSizeInBytes })}`}
-          <br />
-          {`Accepted file types: ${Object.keys(acceptedFileTypes).join(", ")}`}
-        </Text>
-      </FormControl>
-
-      {enableRiskyFileWarning && pendingAckRiskyFile && (
-        <RiskyFileUploadModal
-          isOpen={!!pendingAckRiskyFile}
-          file={pendingAckRiskyFile}
-          onConfirm={() => doUpload(pendingAckRiskyFile)}
-          onClose={() => setPendingAckRiskyFile(null)}
-        />
-      )}
-    </>
-  )
-}
+        )}
+      </Box>
+    )
+  },
+)
+FileAttachment.displayName = "FileAttachment"

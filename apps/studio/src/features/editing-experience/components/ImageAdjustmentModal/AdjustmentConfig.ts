@@ -40,6 +40,21 @@ export interface AdjustmentScrim {
   className: string
 }
 
+// For an array-nested image field (e.g. an InfoCards card) whose containing
+// block renders EVERY item, builds the block to render for the preview. `item`
+// is the field host (e.g. the card object) with the adjusted image +
+// imageAdjustment already spliced in; `originalItem` is that same host BEFORE
+// the splice, so the builder can locate it among the block's items and swap in
+// the adjusted copy — rendering the real sibling items alongside it so the
+// multi-column grid looks natural. Return undefined to skip the real-component
+// preview for this render (falls back to the framed-image approximation) — e.g.
+// if `block` isn't shaped as expected.
+export type BuildSingleItemPreviewBlock = (
+  block: unknown,
+  item: unknown,
+  originalItem?: unknown,
+) => Record<string, unknown> | undefined
+
 export interface AdjustmentConfig {
   // Block/component type key this config applies to.
   componentType: string
@@ -63,6 +78,13 @@ export interface AdjustmentConfig {
   // that frame even at 1x — i.e. the result would look soft/blurry. Omit for
   // components whose frame width isn't meaningfully bounded.
   maxRenderedWidthPx?: number
+  // The tallest CSS-pixel height of that same rendered frame. Needed to warn
+  // correctly for fixed-height frames: under object-contain the image is only
+  // upscaled when it falls short on BOTH axes, so a height target is required to
+  // tell a genuinely small crop from a sharp wide/tall one (see
+  // computeLowResWarning). Omit when the frame height isn't meaningfully bounded
+  // (e.g. a width-driven natural-aspect image whose height just follows width).
+  maxRenderedHeightPx?: number
   // Tier C conditional focal: overrides focalEnabled based on the field's
   // immediate host object — the block itself, or for an array-nested image field
   // (e.g. an InfoCards card) the card object. InfoCards offers the focal point
@@ -81,9 +103,19 @@ export interface AdjustmentConfig {
   // edited — the approximation (one framed image + scrim per state) is both
   // simpler and a better single-card preview.
   skipRealComponentPreview?: boolean
+  // For an array-nested image field whose config does NOT set
+  // skipRealComponentPreview, builds the synthetic single-item block the
+  // real-component preview renders (see BuildSingleItemPreviewBlock). Omitting
+  // this while the field is array-nested is equivalent to skipping the
+  // real-component preview for that render (AdjustmentPreview falls back to
+  // the framed approximation rather than rendering every item).
+  buildSingleItemPreviewBlock?: BuildSingleItemPreviewBlock
   // Stack the preview frames vertically (one per row) instead of side-by-side,
   // so each frame gets the full column width. Use for components with only a
   // couple of small-ratio states where side-by-side makes each too small to
   // read (e.g. Blockquote's circle + square 1:1 masks).
   stackPreviews?: boolean
+  // Has a sibling imageFit field that the modal's fit control writes to
+  // (InfoCards' "Resize image to fit").
+  ownsImageFitField?: boolean
 }

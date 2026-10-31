@@ -3,7 +3,7 @@ import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Flex, Portal } from "@chakra-ui/react"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { convertThemeToCss } from "~/features/settings/utils"
 
@@ -42,6 +42,22 @@ export const ViewportContainer = ({
 
   const [viewport, setViewport] = useState<ViewportOptions>("responsive")
 
+  // Measure the preview area's content width so the toolbar's "Fit to screen"
+  // label can report which device bucket the responsive pane is simulating —
+  // in responsive mode the iframe fills 100% of this box.
+  const previewAreaRef = useRef<HTMLDivElement>(null)
+  const [previewAreaWidth, setPreviewAreaWidth] = useState(0)
+  useEffect(() => {
+    const el = previewAreaRef.current
+    if (!el) return
+    const observer = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width
+      if (w) setPreviewAreaWidth(w)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
   const containerProps: Partial<FlexProps> = useMemo(() => {
     if (viewport === "fullscreen") {
       return {
@@ -76,8 +92,13 @@ export const ViewportContainer = ({
         {...containerProps}
       >
         {!!header && viewport !== "fullscreen" && header}
-        <IframeToolbar viewport={viewport} setViewport={setViewport} />
+        <IframeToolbar
+          viewport={viewport}
+          setViewport={setViewport}
+          responsiveWidthPx={previewAreaWidth}
+        />
         <Flex
+          ref={previewAreaRef}
           px="2rem"
           pb="2rem"
           pt="1rem"

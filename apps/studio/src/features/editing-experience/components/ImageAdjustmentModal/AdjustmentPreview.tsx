@@ -14,13 +14,19 @@ import { ErrorBoundary } from "react-error-boundary"
 import Suspense from "~/components/Suspense"
 import { PreviewIframe } from "~/features/editing-experience/components/preview/PreviewIframe"
 import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
-import { bakeImage, canBakeImage, isAnimatedImageBlob } from "~/lib/imageBake"
-import { ASSETS_BASE_URL, generateAssetUrl } from "~/utils/generateAssetUrl"
+import { bakeImage, isAnimatedImageBlob } from "~/lib/imageBake"
+import {
+  ASSETS_BASE_URL,
+  generateAssetUrl,
+  generateOriginalAssetUrl,
+} from "~/utils/generateAssetUrl"
 
 import type {
   AdjustmentPreviewState,
   AdjustmentScrim,
+  BuildSingleItemPreviewBlock,
 } from "./AdjustmentConfig"
+import { chooseBakeMime } from "./useSaveImageAdjustment"
 
 // Minimal site stub for an ISOLATED single-block preview — there is no real
 // page/nav/footer context here (this renders one block, not a whole page), so
@@ -41,22 +47,45 @@ interface AdjustmentPreviewProps {
   // not compound). On a first edit this equals `src`; on a re-edit, `src` is
   // the previous bake and only this points at the true original.
   originalSrc: string
+  // The retained client-side original bytes, when the image was uploaded this
+  // session. Baked from directly (no fetch) and shown as the uncropped display
+  // fallback, so the preview works while the uploaded original is still gated by
+  // the malware-scan window.
+  originalFile?: Blob
   adjustment?: ImageAdjustment
   previewStates: AdjustmentPreviewState[]
   scrim?: AdjustmentScrim
+  // Text drawn over the scrim in the framed preview — the card title for the
+  // full-image InfoCards variant, which overlays its title on the gradient.
+  scrimText?: string
   // The real block content + the field name holding the image, so the real
   // published component can be rendered (real copy/scrim/frame) instead of
   // the framed-<img> approximation below. Falls back to the approximation
   // when absent or when rendering the real component fails for any reason.
   block?: unknown
   imageFieldName?: string
+  // The field's immediate host — for a root-level image field this equals
+  // `block`; for an array-nested field (e.g. an InfoCards card) this is the
+  // individual card object. When it differs from `block`, the real-component
+  // render needs `buildSingleItemPreviewBlock` to splice just this one item
+  // back into a synthetic single-item block (otherwise the real component
+  // would render the whole block/every item) — see that prop's doc.
+  fieldHost?: unknown
+  // Builds the synthetic single-item block for an array-nested image field
+  // (see AdjustmentConfig). Required (and used) only when `fieldHost` differs
+  // from `block`; absent/undefined there falls back to the framed-image
+  // approximation, same as `skipRealComponentPreview`.
+  buildSingleItemPreviewBlock?: BuildSingleItemPreviewBlock
   // Opt out of the real-component render and always use the framed-image
-  // approximation below. Set for array-nested image fields (InfoCards), where
-  // the real component would render the whole block/all cards instead of the
-  // single card being edited.
+  // approximation below. Set for array-nested image fields with no
+  // buildSingleItemPreviewBlock (e.g. ImageGallery), where the real component
+  // would render the whole block/all items instead of the single one being
+  // edited.
   skipRealComponentPreview?: boolean
-  // Stack the preview frames vertically (one per row) instead of side-by-side,
-  // giving each the full column width. See AdjustmentConfig.stackPreviews.
+  // Stack every preview tile at full rail width (one per row) instead of the
+  // default big-tile + two-up layout. For components whose states are all small,
+  // equal-ratio masks (e.g. Blockquote's circle + square) where a half-width
+  // tile would be too small to read.
   stackPreviews?: boolean
   // The object-fit the framed-image approximation uses (skipRealComponentPreview
   // path). "contain" letterboxes the whole (cropped) image to match InfoCards'
@@ -68,44 +97,45 @@ interface AdjustmentPreviewProps {
   siteId: number
 }
 
-// Fixed on-screen DISPLAY WIDTH per breakpoint, shared by every component's
-// preview — narrower for mobile, wider for tablet/desktop. This alone tends
-// to produce portrait-looking mobile frames and landscape-looking
-// tablet/desktop frames, since that mirrors how each component's own
-// responsive layout actually behaves at those widths (e.g. mobile widths
-// stack content vertically). The resulting HEIGHT is never guessed or
-// capped — see PreviewFrame — so nothing is ever cropped or hidden behind a
-// scrollbar; what's shown always exactly matches the real published result.
-const FRAME_DISPLAY_WIDTH: Record<string, number> = {
-  mobile: 140,
-  tablet: 220,
-  desktop: 320,
-}
-const DEFAULT_FRAME_DISPLAY_WIDTH = 220
-// Wider width used when frames are stacked vertically (stackPreviews): each
-// frame has the whole column to itself, so it can be larger than the
-// side-by-side widths above.
-const STACKED_FRAME_DISPLAY_WIDTH = 360
+// Gap (px) between the two small tiles in the rail's second row.
+const TILE_GAP_PX = 12
+// The rail's design width (Figma) — used as the pre-measure default so tiles
+// render at the right size on first paint, before the ResizeObserver reports.
+const DEFAULT_RAIL_WIDTH_PX = 336
 
 export const AdjustmentPreview = ({
   src,
   originalSrc,
+  originalFile,
   adjustment,
   previewStates,
   scrim,
+  scrimText,
   block,
   imageFieldName,
+  fieldHost,
+  buildSingleItemPreviewBlock,
   skipRealComponentPreview,
   stackPreviews,
   objectFit = "cover",
   siteId,
 }: AdjustmentPreviewProps): JSX.Element => {
-  // When stacking, each frame gets the full column width; otherwise fall back
-  // to the per-breakpoint side-by-side widths.
-  const resolveDisplayWidth = (stateId: string): number =>
-    stackPreviews
-      ? STACKED_FRAME_DISPLAY_WIDTH
-      : (FRAME_DISPLAY_WIDTH[stateId] ?? DEFAULT_FRAME_DISPLAY_WIDTH)
+  // The preview tiles are sized relative to the rail's own width: the widest
+  // state fills the rail on its own row, the rest sit two-up below it.
+  const railRef = useRef<HTMLDivElement>(null)
+  const [railWidth, setRailWidth] = useState(DEFAULT_RAIL_WIDTH_PX)
+  useEffect(() => {
+    const el = railRef.current
+    if (!el) return
+    const observer = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width
+      if (w) setRailWidth(w)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+  const smallTileWidth = Math.floor((railWidth - TILE_GAP_PX) / 2)
+
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const bakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -115,31 +145,73 @@ export const AdjustmentPreview = ({
   // result instead of overwriting the preview of a newer draft.
   const bakeRequestIdRef = useRef(0)
 
+  // Object URL for the retained local original (when the image was uploaded this
+  // session), used as the uncropped display fallback — avoids a 404 before the
+  // first bake for a fresh upload whose CDN variant hasn't propagated yet.
+  const [localOriginalUrl, setLocalOriginalUrl] = useState<string | null>(null)
+  useEffect(() => {
+    if (!originalFile) {
+      setLocalOriginalUrl(null)
+      return
+    }
+    const url = URL.createObjectURL(originalFile)
+    setLocalOriginalUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [originalFile])
+
   // src arrives as the raw stored path (e.g. "/1/uuid/file.png"); resolve it to
   // the asset domain for DISPLAY (the fallback shown before any bake exists),
-  // same as ImageClient does at render time.
-  const displaySrc = generateAssetUrl(src)
-  const originalFetchUrl = generateAssetUrl(originalSrc)
+  // same as ImageClient does at render time. Prefer the local original when we
+  // have it.
+  const displaySrc = localOriginalUrl ?? generateAssetUrl(src)
+  // Bake from the pristine original (bypass the CDN transcode), matching the
+  // save path — the transcoded variant can be downscaled or carry a generic
+  // "binary/octet-stream" type that the bake gate rejects.
+  const originalFetchUrl = generateOriginalAssetUrl(originalSrc)
+  // Fallback when the ?original bypass is gated (e.g. 403): force the webp
+  // variant (not avif) so baking can proceed — the baker only accepts
+  // jpeg/png/webp, so a default */* (avif) fetch would be rejected downstream.
+  const plainFetchUrl = generateAssetUrl(originalSrc)
 
-  // Fetch the original image once per resolved original. Comment notes CORS
-  // must be readable.
+  // Get the bytes to bake: the retained local original if we have it (no fetch;
+  // works while the uploaded original is still gated), else fetch — ?original
+  // first, then the webp variant. CORS must be readable.
   useEffect(() => {
+    if (originalFile) {
+      setOriginalBlob(originalFile)
+      return
+    }
     const fetchOriginal = async () => {
-      try {
-        const response = await fetch(originalFetchUrl)
-        if (!response.ok) {
-          throw new Error(`Failed to fetch image: ${response.status}`)
+      // Try ?original (pristine), then fall back to the plain variant — the same
+      // URL the <img> display uses. The ?original object is gated by a
+      // malware-scan tag and can 403; critically, that error response can also be
+      // CORS-opaque, so the fetch *throws* rather than resolving with !ok. Each
+      // attempt is therefore isolated so a thrown ?original never skips the plain
+      // fallback (the earlier `let response = await fetch(...)` aborted the whole
+      // bake on a throw, freezing the preview on the previous bake).
+      const tryFetch = async (
+        url: string,
+        init?: RequestInit,
+      ): Promise<Blob | null> => {
+        try {
+          const response = await fetch(url, init)
+          return response.ok ? await response.blob() : null
+        } catch {
+          return null
         }
-        const blob = await response.blob()
-        setOriginalBlob(blob)
-      } catch (error) {
-        // Silently fail: CORS-blocked images will fall back to uncropped src
-        console.debug("Failed to fetch original image", error)
-        setOriginalBlob(null)
       }
+      const blob =
+        (await tryFetch(originalFetchUrl)) ??
+        (plainFetchUrl !== originalFetchUrl
+          ? await tryFetch(plainFetchUrl, { headers: { Accept: "image/webp" } })
+          : null)
+      if (!blob) {
+        console.debug("Failed to fetch original image for preview bake")
+      }
+      setOriginalBlob(blob)
     }
     void fetchOriginal()
-  }, [originalFetchUrl])
+  }, [originalFile, originalFetchUrl, plainFetchUrl])
 
   // Debounced bake effect (~150ms) keyed on crop/rotate/flipH/flipV changes.
   useEffect(() => {
@@ -167,17 +239,31 @@ export const AdjustmentPreview = ({
 
     const runBake = async () => {
       try {
-        // Guard: only bake static, supported formats. Animated WebP/APNG pass
-        // canBakeImage but would be flattened, so fall back to uncropped src.
-        if (
-          !canBakeImage(originalBlob.type) ||
-          (await isAnimatedImageBlob(originalBlob))
-        ) {
+        // Resolve the bake MIME the same way the save path does: prefer the
+        // fetched blob's Content-Type, but fall back to the key's extension when
+        // that type is missing or generic. ?original can return 200 with a
+        // generic "binary/octet-stream" (no network/console error), which a bare
+        // canBakeImage(blob.type) gate would silently reject — freezing the
+        // preview on the previous bake for a re-edit. chooseBakeMime throws for a
+        // genuinely unbakeable format, which we treat as "fall back to uncropped".
+        let mimeType: string
+        try {
+          mimeType = chooseBakeMime(
+            originalBlob.type,
+            originalSrc.replace(/^\//, ""),
+          )
+        } catch {
+          return
+        }
+
+        // Animated WebP/APNG pass the MIME gate but would be flattened, so fall
+        // back to the uncropped src rather than baking a single frame.
+        if (await isAnimatedImageBlob(originalBlob)) {
           return
         }
 
         const bakedBlob = await bakeImage(originalBlob, adjustment, {
-          mimeType: originalBlob.type,
+          mimeType,
         })
         // A newer adjustment started while this bake ran — discard this result
         // so the older crop can't replace the newer preview.
@@ -214,7 +300,23 @@ export const AdjustmentPreview = ({
         clearTimeout(bakeTimeoutRef.current)
       }
     }
-  }, [originalBlob, adjustment])
+    // Deliberately narrower than `adjustment` itself: focal is applied at
+    // render time as CSS object-position, independent of this baked preview
+    // — a focal-only drag doesn't change which pixels are cropped, so it
+    // shouldn't trigger a canvas re-encode. Depending on the whole object
+    // would re-bake on every focal drag for no visual gain.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    originalBlob,
+    originalSrc,
+    adjustment?.crop?.x,
+    adjustment?.crop?.y,
+    adjustment?.crop?.width,
+    adjustment?.crop?.height,
+    adjustment?.rotate,
+    adjustment?.flipH,
+    adjustment?.flipV,
+  ])
 
   // Cleanup: revoke object URL on unmount. Also bumps bakeRequestIdRef so a
   // bake that's still in flight when this unmounts sees isStale() as true
@@ -249,20 +351,47 @@ export const AdjustmentPreview = ({
   ): React.ReactNode => {
     if (!block || typeof block !== "object" || !imageFieldName) return null
     try {
+      // For an array-nested field (fieldHost !== block, e.g. an InfoCards
+      // card), the image + alt fallback below apply to the field HOST (the
+      // card), not the containing block — read/patch that instead.
+      const isNestedField = fieldHost !== undefined && fieldHost !== block
+      const host = (isNestedField ? fieldHost : block) as Record<
+        string,
+        unknown
+      >
       // Preview-only safety net: some components (e.g. Blockquote) gate
       // whether they render the image at all on a sibling `imageAlt` field,
       // to avoid publishing an inaccessible image when alt text was never
       // filled in. An editor adjusting crop/focal mid-edit shouldn't have
       // that silently blank the very image they're trying to preview — the
       // real saved value (and the production render path) is untouched.
-      const existingAlt = (block as Record<string, unknown>).imageAlt
+      const existingAlt = host.imageAlt
       const hasAlt = typeof existingAlt === "string" && existingAlt.length > 0
-      const component = {
-        ...block,
+      const adjustedHost = {
+        ...host,
         [imageFieldName]: adjustedSrc,
         imageAdjustment: adjustment,
         ...(hasAlt ? {} : { imageAlt: "Preview image" }),
-      } as IsomerComponent
+        // A card (nested field) owns an `imageFit` the real component reads to
+        // decide cover vs contain. The Fit/Fill toggle lives in modal state and
+        // arrives here as `objectFit`; splice it onto the edited card so the
+        // real-component preview reflects the toggle live (otherwise it renders
+        // the stale saved fit and the preview appears not to update).
+        ...(isNestedField ? { imageFit: objectFit } : {}),
+      }
+      let component: IsomerComponent
+      if (isNestedField) {
+        // The real component renders every item in the block (e.g. every
+        // InfoCards card) — splice the adjusted single item back into a
+        // synthetic single-item block so only it renders. No builder (or it
+        // returns nothing) falls back to the framed-image approximation,
+        // same as skipRealComponentPreview.
+        const built = buildSingleItemPreviewBlock?.(block, adjustedHost, host)
+        if (!built) return null
+        component = built as IsomerComponent
+      } else {
+        component = adjustedHost as IsomerComponent
+      }
       const rendered = renderComponent({
         component,
         layout: layout ?? "content",
@@ -296,147 +425,166 @@ export const AdjustmentPreview = ({
 
   // Gate on the default-layout render succeeding, same as every state did
   // before per-state layout existed — a failure here falls through to the
-  // framed-<img> approximation below for every state, not just the one that
-  // failed. A state requesting a non-default `layout` re-renders on its own
-  // and, in the rarer case that only its specific layout throws, is simply
-  // skipped (its sibling states still render for real).
+  // framed-<img> approximation for every state, not just the one that failed.
+  // A state requesting a non-default `layout` re-renders on its own and, in the
+  // rarer case that only its specific layout throws, is simply skipped (its
+  // sibling states still render for real).
   const defaultRender = skipRealComponentPreview
     ? null
     : renderPreviewComponent(undefined)
+  const useRealComponent = !!defaultRender
 
-  if (defaultRender) {
-    return (
-      <Flex
-        direction={stackPreviews ? "column" : "row"}
-        wrap={stackPreviews ? "nowrap" : "wrap"}
-        align="flex-start"
-        gap="1rem"
-        w="100%"
-      >
-        {previewStates.map((state) => {
-          const displayWidth = resolveDisplayWidth(state.id)
-          const rendered = state.layout
-            ? renderPreviewComponent(state.layout)
-            : defaultRender
-          if (!rendered) return null
-          return (
-            // The theme fetch suspends AND can throw; without the ErrorBoundary
-            // a failed getTheme would tear down the whole modal instead of this
-            // one frame degrading to a theme-less (but still correct) preview.
-            <ErrorBoundary
-              key={state.id}
-              fallbackRender={() => (
-                <PreviewFrame state={state} displayWidth={displayWidth}>
-                  {rendered}
-                </PreviewFrame>
-              )}
+  // One rail tile at a given display width — either the real-component render
+  // (scaled in an iframe) or the framed-image approximation.
+  const renderTile = (
+    state: AdjustmentPreviewState,
+    width: number,
+  ): React.ReactNode => {
+    if (useRealComponent) {
+      const rendered = state.layout
+        ? renderPreviewComponent(state.layout)
+        : defaultRender
+      if (!rendered) return null
+      return (
+        // The theme fetch suspends AND can throw; without the ErrorBoundary a
+        // failed getTheme would tear down the whole modal instead of this one
+        // frame degrading to a theme-less (but still correct) preview.
+        <ErrorBoundary
+          key={state.id}
+          fallbackRender={() => (
+            <PreviewFrame state={state} displayWidth={width}>
+              {rendered}
+            </PreviewFrame>
+          )}
+        >
+          <Suspense fallback={<Skeleton w={`${width}px`} h="9rem" />}>
+            <ThemedPreviewFrame
+              siteId={siteId}
+              state={state}
+              displayWidth={width}
             >
-              <Suspense
-                fallback={<Skeleton w={`${displayWidth}px`} h="9rem" />}
-              >
-                <ThemedPreviewFrame
-                  siteId={siteId}
-                  state={state}
-                  displayWidth={displayWidth}
-                >
-                  {rendered}
-                </ThemedPreviewFrame>
-              </Suspense>
-            </ErrorBoundary>
-          )
-        })}
-      </Flex>
-    )
-  }
+              {rendered}
+            </ThemedPreviewFrame>
+          </Suspense>
+        </ErrorBoundary>
+      )
+    }
 
-  return (
-    <Flex
-      direction={stackPreviews ? "column" : "row"}
-      wrap={stackPreviews ? "nowrap" : "wrap"}
-      align="flex-start"
-      gap="1rem"
-      w="100%"
-    >
-      {previewStates.map((state) => {
-        const displayWidth = resolveDisplayWidth(state.id)
-        const aspect = state.aspectRatio
-          ? state.aspectRatio.width / state.aspectRatio.height
-          : 1
-        const displayHeight = displayWidth / aspect
-
-        const imageNode = (
-          <Box
-            as="img"
-            src={adjustedSrc}
-            alt={`Preview: ${state.label}`}
-            w="100%"
-            h="100%"
-            style={{
-              objectFit,
-              // Mirror the renderer: focal is ignored under "contain" (the
-              // letterboxed image stays object-center), applied under "cover".
-              objectPosition:
-                objectFit === "contain"
-                  ? undefined
-                  : getFocalObjectPosition(adjustment?.focal),
-            }}
-          />
-        )
-
-        const frameContent = (
+    // Framed-image approximation.
+    const aspect = state.aspectRatio
+      ? state.aspectRatio.width / state.aspectRatio.height
+      : 1
+    return (
+      <VStack
+        key={state.id}
+        align="stretch"
+        spacing="0.375rem"
+        flexShrink={0}
+        w={`${width}px`}
+      >
+        <TileCaption>{state.label}</TileCaption>
+        <Box {...TILE_FRAME_PROPS} style={{ width, height: width / aspect }}>
           <Box w="100%" h="100%" position="relative" overflow="hidden">
-            {imageNode}
-            {/* Scrim overlay for contrast visualization */}
+            <Box
+              as="img"
+              src={adjustedSrc}
+              alt={`Preview: ${state.label}`}
+              w="100%"
+              h="100%"
+              style={{
+                objectFit,
+                // Mirror the renderer: focal is ignored under "contain" (the
+                // letterboxed image stays object-center), applied under "cover".
+                objectPosition:
+                  objectFit === "contain"
+                    ? undefined
+                    : getFocalObjectPosition(adjustment?.focal),
+              }}
+            />
+            {/* Scrim overlay — mirrors the live component's overlay (e.g. the
+                InfoCards full-image gradient) so editors can judge contrast. */}
             {scrim && (
               <Box
                 position="absolute"
                 inset={0}
                 className={scrim.className}
                 pointerEvents="none"
-              />
+              >
+                {/* The full-image card overlays its title on the gradient — show
+                    it so editors can judge the subject against the text. */}
+                {scrimText && (
+                  <Text
+                    position="absolute"
+                    bottom={0}
+                    left={0}
+                    right={0}
+                    px="0.5rem"
+                    pb="0.5rem"
+                    color="white"
+                    textStyle="caption-1"
+                    fontWeight="600"
+                    noOfLines={2}
+                  >
+                    {scrimText}
+                  </Text>
+                )}
+              </Box>
             )}
           </Box>
-        )
+        </Box>
+      </VStack>
+    )
+  }
 
-        return (
-          <VStack
-            key={state.id}
-            align="stretch"
-            spacing="0.5rem"
-            flexShrink={0}
-          >
-            {/* Label with optional viewport width */}
-            <Text
-              textStyle="body-2"
-              fontWeight="semibold"
-              color="base.content.medium"
-            >
-              {state.label}
-              {state.viewportWidth && ` (${state.viewportWidth}px)`}
-            </Text>
+  // The widest state fills the rail on its own row; the rest sit two-up below.
+  // A state with no explicit viewportWidth renders at PreviewFrame's 1024px
+  // default, so rank it as such (not 0) — otherwise a Mobile-only-375 set like
+  // InfoCards would wrongly promote Mobile over the (wider) desktop states.
+  const bigState = [...previewStates].sort(
+    (a, b) => (b.viewportWidth ?? 1024) - (a.viewportWidth ?? 1024),
+  )[0]
+  const restStates = previewStates.filter((s) => s.id !== bigState?.id)
 
-            {/* Frame box, using the same per-breakpoint display width as
-                every other component's preview. */}
-            <Box
-              borderWidth="1px"
-              borderColor="base.divider.medium"
-              borderRadius="0.25rem"
-              overflow="hidden"
-              bg="base.canvas.default"
-              position="relative"
-              style={{
-                width: displayWidth,
-                height: displayHeight,
-              }}
-            >
-              {frameContent}
-            </Box>
-          </VStack>
-        )
-      })}
-    </Flex>
+  return (
+    <VStack ref={railRef} align="stretch" spacing="1rem" w="100%">
+      {stackPreviews ? (
+        // Every tile full-width, one per row (see the prop's doc).
+        previewStates.map((state) => renderTile(state, railWidth))
+      ) : (
+        <>
+          {bigState && renderTile(bigState, railWidth)}
+          {restStates.length > 0 && (
+            <Flex gap={`${TILE_GAP_PX}px`} wrap="wrap" align="flex-start">
+              {restStates.map((state) => renderTile(state, smallTileWidth))}
+            </Flex>
+          )}
+        </>
+      )}
+    </VStack>
   )
 }
+
+// Shared tile chrome + caption, used by both the real-component and framed-image
+// tiles so their frames stay visually identical.
+const TILE_FRAME_PROPS = {
+  borderWidth: "1px",
+  borderColor: "base.divider.medium",
+  borderRadius: "0.125rem",
+  overflow: "hidden",
+  bg: "base.canvas.default",
+  position: "relative",
+} as const
+
+const TileCaption = ({ children }: { children: string }): JSX.Element => (
+  <Text
+    textStyle="caption-2"
+    textTransform="uppercase"
+    letterSpacing="0.05em"
+    color="base.content.medium"
+  >
+    {children}
+  </Text>
+)
 
 // Renders the real component inside a simulated device viewport at this
 // breakpoint's exact width (so the component's own sm:/md:/lg: Tailwind
@@ -497,26 +645,16 @@ const PreviewFrame = ({
   const scale = displayWidth / viewportWidth
 
   return (
-    <VStack align="stretch" spacing="0.5rem" flexShrink={0}>
-      <Text
-        textStyle="body-2"
-        fontWeight="semibold"
-        color="base.content.medium"
-      >
-        {state.label}
-        {state.viewportWidth && ` (${state.viewportWidth}px)`}
-      </Text>
-
+    <VStack
+      align="stretch"
+      spacing="0.375rem"
+      flexShrink={0}
+      w={`${displayWidth}px`}
+    >
+      <TileCaption>{state.label}</TileCaption>
       <Box
-        borderWidth="1px"
-        borderColor="base.divider.medium"
-        borderRadius="0.25rem"
-        overflow="hidden"
-        style={{
-          width: displayWidth,
-          height: viewportHeight * scale,
-          position: "relative",
-        }}
+        {...TILE_FRAME_PROPS}
+        style={{ width: displayWidth, height: viewportHeight * scale }}
       >
         <Box
           style={{

@@ -15,12 +15,27 @@ export type ViewportOptions = "mobile" | "tablet" | "responsive" | "fullscreen"
 interface IframeToolbarProps {
   viewport: ViewportOptions
   setViewport: (viewport: ViewportOptions) => void
+  // Measured px width of the responsive preview pane, so the "Fit to screen"
+  // label can name the device bucket it's actually simulating. 0 until measured.
+  responsiveWidthPx?: number
 }
 
 export const IframeToolbar = ({
   viewport,
   setViewport,
+  responsiveWidthPx = 0,
 }: IframeToolbarProps): JSX.Element => {
+  // Bucket the ACTUAL responsive-pane width (not the window) against the shared
+  // md/lg breakpoints; defaults to desktop before the first measurement lands.
+  const defaultModeDeviceLabel =
+    responsiveWidthPx >= 1024
+      ? "desktop"
+      : responsiveWidthPx >= 768
+        ? "tablet"
+        : responsiveWidthPx > 0
+          ? "mobile"
+          : "desktop"
+
   const toolbarTextLabels = useMemo(() => {
     switch (viewport) {
       case "mobile":
@@ -36,7 +51,7 @@ export const IframeToolbar = ({
       case "responsive":
         return {
           mode: "Preview in different screen sizes before you publish",
-          viewport: "Default mode",
+          viewport: `Fit to screen (${defaultModeDeviceLabel})`,
         }
       case "fullscreen":
         return {
@@ -44,7 +59,7 @@ export const IframeToolbar = ({
           viewport: "Full screen",
         }
     }
-  }, [viewport])
+  }, [viewport, defaultModeDeviceLabel])
 
   const containerStyles = useMemo(() => {
     if (viewport === "fullscreen") {
@@ -107,7 +122,7 @@ export const IframeToolbar = ({
               >
                 <MenuItemOption value="responsive">
                   <Text color="base.content.strong" textStyle="body-1">
-                    Fit to screen (default)
+                    Fit to screen ({defaultModeDeviceLabel})
                   </Text>
                   <Text color="base.content.medium" textStyle="body-2">
                     Editing mode

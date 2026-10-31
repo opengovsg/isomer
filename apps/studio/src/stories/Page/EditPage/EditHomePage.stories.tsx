@@ -148,7 +148,7 @@ export const FullscreenPreview: Story = {
 
     const button = await canvas.findByRole(
       "button",
-      { name: /default mode/i },
+      { name: /fit to screen/i },
       { timeout: 10000 },
     )
     await userEvent.click(button)

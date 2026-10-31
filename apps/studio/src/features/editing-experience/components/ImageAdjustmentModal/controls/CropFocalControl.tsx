@@ -1,9 +1,14 @@
 "use client"
 
 import type { CSSProperties } from "react"
-import { Box, Text, VStack } from "@chakra-ui/react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { Box } from "@chakra-ui/react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { BiCrosshair } from "react-icons/bi"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
+
+// The brand accent, read from Chakra's generated CSS var so these inline styles
+// (on raw canvas divs, where theme tokens aren't available) track the theme.
+const ACCENT = "var(--chakra-colors-interaction-main-default)"
 
 import type {
   CropRectNormalized,
@@ -47,6 +52,10 @@ interface CropFocalControlProps {
   cropMode: "fixed" | "custom" | "none"
   lockedRatio?: { width: number; height: number }
   focalEnabled: boolean
+  // The host modal's open state. Re-showing the focal hint on every open (not
+  // just on mount) needs an explicit open signal — this control's instance
+  // can persist/remount independently of the modal's own open/close cycle.
+  isOpen?: boolean
   // Rotation/flip are applied to the whole image before cropping, so the canvas
   // shows the rotated/flipped ("display") image and crop/focal are placed in
   // that orientation — matching the preview and the baked output.
@@ -85,6 +94,7 @@ export const CropFocalControl = ({
   cropMode,
   lockedRatio,
   focalEnabled,
+  isOpen,
   rotate = 0,
   flipH = false,
   flipV = false,
@@ -111,6 +121,26 @@ export const CropFocalControl = ({
   const [boxSize, setBoxSize] = useState({ width: 0, height: 0 })
   const [dragTarget, setDragTarget] = useState<DragTarget>(null)
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null)
+
+  // Nudges a first-time user toward the focal marker — shown on every modal
+  // open, dismissed for good as soon as they touch the marker.
+  const [showFocalHint, setShowFocalHint] = useState(true)
+  useEffect(() => {
+    if (isOpen) setShowFocalHint(true)
+  }, [isOpen])
+  const dismissFocalHint = () => setShowFocalHint(false)
+  // Measure the hint bubble so it can be clamped inside the canvas and its arrow
+  // aimed at the marker. Measured pre-paint (useLayoutEffect) to avoid a flash.
+  const hintRef = useRef<HTMLDivElement>(null)
+  const [hintSize, setHintSize] = useState({ width: 0, height: 0 })
+  useLayoutEffect(() => {
+    if (showFocalHint && hintRef.current) {
+      setHintSize({
+        width: hintRef.current.offsetWidth,
+        height: hintRef.current.offsetHeight,
+      })
+    }
+  }, [showFocalHint, boxSize.width])
 
   const showCrop = cropMode !== "none"
   const currentCrop = crop ?? defaultCropRect(lockedRatio, aspectRatio ?? 1)
@@ -231,13 +261,25 @@ export const CropFocalControl = ({
     const imagePixelHeight = imageBounds.height * boxRect.height
     const normalizedX = (event.clientX - imagePixelLeft) / imagePixelWidth
     const normalizedY = (event.clientY - imagePixelTop) / imagePixelHeight
+    // Holding Cmd/Ctrl on a corner handle of a free (unratioed) crop locks the
+    // drag to the image's own natural aspect ratio; edges can't express a
+    // single-dimension lock, so the modifier is ignored there.
+    const wantsAspectLock =
+      (event.metaKey || event.ctrlKey) &&
+      !lockedRatio &&
+      CORNER_HANDLES.includes(handle)
+    const effectiveLockedRatio =
+      lockedRatio ??
+      (wantsAspectLock && aspectRatio
+        ? { width: aspectRatio, height: 1 }
+        : undefined)
     onCropChange(
       resizeRectByHandle(
         currentCrop,
         handle,
         normalizedX,
         normalizedY,
-        lockedRatio,
+        effectiveLockedRatio,
         aspectRatio ?? 1,
       ),
     )
@@ -262,6 +304,7 @@ export const CropFocalControl = ({
     if (showCrop && crop === undefined) {
       onCropChange(currentCrop)
     }
+    dismissFocalHint()
     setDragTarget("focal")
     event.currentTarget.setPointerCapture(event.pointerId)
   }
@@ -296,7 +339,7 @@ export const CropFocalControl = ({
     top: `${cropBoxSpace.y * 100}%`,
     width: `${currentCrop.width * imageBounds.width * 100}%`,
     height: `${currentCrop.height * imageBounds.height * 100}%`,
-    border: "2px solid #0066cc",
+    border: `1.5px solid ${ACCENT}`,
     boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.45)",
     cursor: dragTarget === "rect" ? "grabbing" : "move",
     pointerEvents: "auto",
@@ -308,11 +351,11 @@ export const CropFocalControl = ({
     left: HANDLE_LAYOUT[handle].left,
     top: HANDLE_LAYOUT[handle].top,
     transform: "translate(-50%, -50%)",
-    width: "10px",
-    height: "10px",
+    width: "14px",
+    height: "14px",
     backgroundColor: "white",
-    border: "2px solid #0066cc",
-    borderRadius: "2px",
+    border: `1.5px solid ${ACCENT}`,
+    borderRadius: "1px",
     cursor: dragTarget === handle ? "grabbing" : HANDLE_LAYOUT[handle].cursor,
     pointerEvents: "auto",
     zIndex: 12,
@@ -320,20 +363,87 @@ export const CropFocalControl = ({
 
   const focalWholeImagePoint = focalToWholeImagePoint(currentFocal, currentCrop)
   const focalBoxSpace = toBoxSpace(focalWholeImagePoint)
+  // A white disc behind the crosshair so the brand-blue marker stays legible
+  // over any image; the ring + shadow separate it from light backgrounds. Sized
+  // larger than the icon so the hit area stays reasonable.
   const markerStyle: CSSProperties = {
     position: "absolute",
     left: `${focalBoxSpace.x * 100}%`,
     top: `${focalBoxSpace.y * 100}%`,
     transform: "translate(-50%, -50%)",
-    width: "16px",
-    height: "16px",
+    width: "26px",
+    height: "26px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: "50%",
     backgroundColor: "white",
-    border: "2px solid #e53e3e",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+    color: ACCENT,
+    boxShadow: "0 0 0 1px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.35)",
     cursor: dragTarget === "focal" ? "grabbing" : "grab",
     pointerEvents: "auto",
     zIndex: 11,
+  }
+
+  // On-load nudge toward the focal marker, rendered in the marker's own box-space
+  // (not a Popper tooltip) so it tracks the marker through async layout. Clamped
+  // inside the measured canvas frame and flipped above/below so it never clips.
+  const HINT_GAP = 10
+  const HINT_PAD = 8
+  const HINT_ARROW = 6
+  const MARKER_HALF = 13
+  const hintAnchorX = focalBoxSpace.x * boxSize.width
+  const hintAnchorY = focalBoxSpace.y * boxSize.height
+  // Flip below the marker when there isn't room above.
+  const hintBelow =
+    hintAnchorY - MARKER_HALF - HINT_GAP - HINT_ARROW - hintSize.height <
+    HINT_PAD
+  const hintTop = hintBelow
+    ? hintAnchorY + MARKER_HALF + HINT_GAP + HINT_ARROW
+    : hintAnchorY - MARKER_HALF - HINT_GAP - HINT_ARROW - hintSize.height
+  // Center on the marker, then clamp so the bubble stays inside the frame.
+  const hintLeft = Math.min(
+    Math.max(hintAnchorX - hintSize.width / 2, HINT_PAD),
+    Math.max(HINT_PAD, boxSize.width - hintSize.width - HINT_PAD),
+  )
+  // Arrow sits at the marker's x within the (possibly shifted) bubble.
+  const hintArrowLeft = Math.min(
+    Math.max(hintAnchorX - hintLeft, HINT_ARROW + 2),
+    Math.max(HINT_ARROW + 2, hintSize.width - HINT_ARROW - 2),
+  )
+  const focalHintStyle: CSSProperties = {
+    position: "absolute",
+    left: `${hintLeft}px`,
+    top: `${hintTop}px`,
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    color: "white",
+    fontSize: "0.75rem",
+    lineHeight: 1.2,
+    padding: "0.375rem 0.5rem",
+    borderRadius: "0.25rem",
+    whiteSpace: "nowrap",
+    pointerEvents: "none",
+    zIndex: 12,
+  }
+  // Triangle aimed at the marker: on the bubble's bottom edge when it sits above
+  // the marker, on the top edge when it sits below.
+  const focalHintArrowStyle: CSSProperties = {
+    position: "absolute",
+    left: `${hintArrowLeft}px`,
+    transform: "translateX(-50%)",
+    width: 0,
+    height: 0,
+    borderLeft: `${HINT_ARROW}px solid transparent`,
+    borderRight: `${HINT_ARROW}px solid transparent`,
+    ...(hintBelow
+      ? {
+          bottom: "100%",
+          borderBottom: `${HINT_ARROW}px solid rgba(0, 0, 0, 0.8)`,
+        }
+      : {
+          top: "100%",
+          borderTop: `${HINT_ARROW}px solid rgba(0, 0, 0, 0.8)`,
+        }),
   }
 
   // Show the image in "display" orientation (rotate then flip). For 0/180 the
@@ -351,6 +461,11 @@ export const CropFocalControl = ({
           left: "50%",
           width: `${boxSize.height}px`,
           height: `${boxSize.width}px`,
+          // The swapped width can exceed the box width; without this the global
+          // `img { max-width: 100% }` would cap it and desync the displayed image
+          // from the crop overlay (which uses the uncapped, swapped bounds).
+          maxWidth: "none",
+          maxHeight: "none",
           objectFit: "contain",
           transform: `translate(-50%, -50%) scale(${flipX}, ${flipY}) rotate(${rotate}deg)`,
           transformOrigin: "center",
@@ -368,47 +483,25 @@ export const CropFocalControl = ({
           pointerEvents: "none",
         }
 
-  const label =
-    showCrop && focalEnabled
-      ? "Crop & focal point"
-      : showCrop
-        ? "Crop"
-        : "Focal point"
-  const hint = [
-    showCrop && "Drag the frame to reposition, the handles to resize.",
-    focalEnabled && "Drag the dot to choose the part to keep in view.",
-  ]
-    .filter(Boolean)
-    .join(" ")
-
   return (
-    <VStack align="start" spacing="0.5rem" w="100%">
-      <Text textStyle="h6" fontWeight="semibold">
-        {label}
-      </Text>
-      <Text textStyle="body-2" color="base.content.medium">
-        {hint}
-      </Text>
-
-      <Box
-        ref={boxRef}
-        position="relative"
-        w="100%"
-        maxH="20rem"
-        aspectRatio={aspectRatio}
-        borderWidth="1px"
-        borderColor="base.divider.medium"
-        borderRadius="0.25rem"
-        overflow="hidden"
-        style={{
-          // Checkerboard makes the letterboxed/pillarboxed "bleed" area (where
-          // the box's aspect ratio doesn't match the image's) visually obvious
-          // — it only ever shows through where the <img> (object-fit: contain)
-          // doesn't cover, since the image sits on top of this background.
-          background:
-            "repeating-conic-gradient(#d9d9d9 0% 25%, #f1f1f1 0% 50%) 50% / 20px 20px",
-        }}
-      >
+    <Box
+      position="relative"
+      w="100%"
+      h="100%"
+      borderRadius="0.25rem"
+      overflow="hidden"
+      // Fills its slot; the parent wrapper owns the sizing (flex-fill on desktop,
+      // a fixed height when stacked). The image is letterboxed inside via
+      // object-contain and all crop/focal math maps through `imageBounds`, so the
+      // canvas size is independent of the image's aspect — a stable editor height,
+      // not one that grows/shrinks per image. Flat backdrop; the crop frame +
+      // dim-outside overlay make the image bounds clear.
+      bgColor="#f3f4f6"
+    >
+      {/* `boxRef`/`boxSize` measure THIS inset div (not the outer Box), so every
+      percentage below — image, crop rect, handles, marker — is relative to the
+      same padded frame and stays glued to the image's true edges. */}
+      <Box ref={boxRef} position="absolute" inset="0.75rem">
         {/* oxlint-disable-next-line @next/next/no-img-element -- needs naturalWidth/Height for the no-letterbox aspect mapping; user image, not an LCP hero */}
         <img
           src={generateAssetUrl(src)}
@@ -447,17 +540,31 @@ export const CropFocalControl = ({
         )}
 
         {focalEnabled && (
-          <div
-            style={{ ...markerStyle, touchAction: "none" }}
-            onPointerDown={handleFocalPointerDown}
-            onPointerMove={handleFocalPointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-            onLostPointerCapture={handlePointerUp}
-          />
+          <>
+            <div
+              style={{ ...markerStyle, touchAction: "none" }}
+              title="Move the focal point"
+              onPointerEnter={dismissFocalHint}
+              onPointerDown={handleFocalPointerDown}
+              onPointerMove={handleFocalPointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerLeave={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+              onLostPointerCapture={handlePointerUp}
+            >
+              <BiCrosshair size={18} />
+            </div>
+            {/* On-load hint; co-located with the marker so it stays centered,
+                clamped inside the canvas and flipped so it never clips. */}
+            {showFocalHint && boxSize.width > 0 && (
+              <div ref={hintRef} style={focalHintStyle}>
+                Drag to set focal point
+                <div style={focalHintArrowStyle} />
+              </div>
+            )}
+          </>
         )}
       </Box>
-    </VStack>
+    </Box>
   )
 }

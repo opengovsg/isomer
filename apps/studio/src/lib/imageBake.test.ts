@@ -6,9 +6,23 @@ import {
   computeCanvasTransform,
   isAnimatedWebp,
   isAnimatedPng,
+  isAnimatedGif,
   isAnimatedImageBytes,
   type CropRect,
 } from "./imageBake"
+
+// A minimal GIF with `frameCount` frames (no color tables, 1x1 frames) — enough
+// structure for the block-walking sniffer, not a decodable image.
+const gifBytes = (frameCount: number): Uint8Array => {
+  // "GIF89a" + logical screen descriptor (1x1, no global color table).
+  const header = [...asciiBytes("GIF89a"), 1, 0, 1, 0, 0x00, 0, 0]
+  // Image Separator + 2,2,2,2 descriptor fields + packed(no LCT), LZW size, end.
+  const frame = [0x2c, 0, 0, 0, 0, 1, 0, 1, 0, 0x00, 0x02, 0x00]
+  const out = [...header]
+  for (let i = 0; i < frameCount; i++) out.push(...frame)
+  out.push(0x3b) // trailer
+  return Uint8Array.from(out)
+}
 
 const asciiBytes = (s: string): number[] => [...s].map((c) => c.charCodeAt(0))
 
@@ -307,7 +321,7 @@ describe("isAnimatedPng", () => {
 })
 
 describe("isAnimatedImageBytes", () => {
-  it("sniffs WebP by MIME", () => {
+  it("sniffs an animated WebP by its container bytes", () => {
     const animated = Uint8Array.from([
       ...asciiBytes("RIFF"),
       0,
@@ -323,21 +337,41 @@ describe("isAnimatedImageBytes", () => {
       0x02,
       ...new Array<number>(10).fill(0),
     ])
-    expect(isAnimatedImageBytes("image/webp", animated)).toBe(true)
+    expect(isAnimatedImageBytes(animated)).toBe(true)
   })
 
-  it("sniffs PNG by MIME", () => {
+  it("sniffs an APNG by its container bytes", () => {
     const apng = Uint8Array.from([
       ...PNG_SIGNATURE,
       ...pngChunk("acTL", 8),
       ...pngChunk("IDAT", 4),
     ])
-    expect(isAnimatedImageBytes("image/png", apng)).toBe(true)
+    expect(isAnimatedImageBytes(apng)).toBe(true)
   })
 
-  it("returns false for formats that can't animate (JPEG)", () => {
-    expect(isAnimatedImageBytes("image/jpeg", Uint8Array.from([1, 2, 3]))).toBe(
+  it("sniffs an animated GIF mislabeled as another format", () => {
+    expect(isAnimatedImageBytes(gifBytes(2))).toBe(true)
+  })
+
+  it("returns false for bytes that aren't an animated WebP/APNG/GIF (e.g. JPEG)", () => {
+    expect(isAnimatedImageBytes(Uint8Array.from([1, 2, 3]))).toBe(false)
+  })
+})
+
+describe("isAnimatedGif", () => {
+  it("is true for a multi-frame GIF", () => {
+    expect(isAnimatedGif(gifBytes(2))).toBe(true)
+    expect(isAnimatedGif(gifBytes(5))).toBe(true)
+  })
+
+  it("is false for a single-frame GIF", () => {
+    expect(isAnimatedGif(gifBytes(1))).toBe(false)
+  })
+
+  it("is false for non-GIF bytes", () => {
+    expect(isAnimatedGif(Uint8Array.from(asciiBytes("RIFF0000WEBP")))).toBe(
       false,
     )
+    expect(isAnimatedGif(Uint8Array.from([1, 2, 3]))).toBe(false)
   })
 })

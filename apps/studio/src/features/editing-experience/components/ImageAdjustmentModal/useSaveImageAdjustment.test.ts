@@ -1,6 +1,10 @@
-import { describe, it, expect } from "vitest"
+import { afterEach, describe, it, expect, vi } from "vitest"
 
-import { resolveOriginalKey, chooseBakeMime } from "./useSaveImageAdjustment"
+import {
+  chooseBakeMime,
+  fetchImageBlob,
+  resolveOriginalKey,
+} from "./useSaveImageAdjustment"
 
 describe("useSaveImageAdjustment pure helpers", () => {
   describe("resolveOriginalKey", () => {
@@ -42,34 +46,129 @@ describe("useSaveImageAdjustment pure helpers", () => {
 
   describe("chooseBakeMime", () => {
     it("returns the original MIME type for bakeable formats (JPEG)", () => {
-      const result = chooseBakeMime("image/jpeg")
-      expect(result).toBe("image/jpeg")
+      expect(chooseBakeMime("image/jpeg", "1/uuid/photo.jpg")).toBe(
+        "image/jpeg",
+      )
     })
 
     it("returns the original MIME type for bakeable formats (PNG)", () => {
-      const result = chooseBakeMime("image/png")
-      expect(result).toBe("image/png")
+      expect(chooseBakeMime("image/png", "1/uuid/photo.png")).toBe("image/png")
     })
 
     it("returns the original MIME type for bakeable formats (WebP)", () => {
-      const result = chooseBakeMime("image/webp")
-      expect(result).toBe("image/webp")
+      expect(chooseBakeMime("image/webp", "1/uuid/photo.webp")).toBe(
+        "image/webp",
+      )
     })
 
-    it("throws for non-bakeable formats (GIF)", () => {
-      expect(() => chooseBakeMime("image/gif")).toThrow()
+    // The bug on staging: the CDN served a real PNG as "binary/octet-stream",
+    // which blocked saving. Fall back to the server-validated key extension.
+    it("falls back to the key extension when the type is generic (octet-stream)", () => {
+      expect(chooseBakeMime("binary/octet-stream", "1/uuid/photo.png")).toBe(
+        "image/png",
+      )
     })
 
-    it("throws for non-bakeable formats (AVIF)", () => {
-      expect(() => chooseBakeMime("image/avif")).toThrow()
+    it("falls back to the key extension for the .jpg alias", () => {
+      expect(chooseBakeMime("", "1/uuid/photo.jpg")).toBe("image/jpeg")
     })
 
-    it("throws for non-bakeable formats (TIFF)", () => {
-      expect(() => chooseBakeMime("image/tiff")).toThrow()
+    it("throws when both the type and key extension are non-bakeable", () => {
+      expect(() => chooseBakeMime("image/gif", "1/uuid/anim.gif")).toThrow()
+      expect(() => chooseBakeMime("image/avif", "1/uuid/photo.avif")).toThrow()
+      expect(() => chooseBakeMime("image/tiff", "1/uuid/photo.tiff")).toThrow()
+      expect(() =>
+        chooseBakeMime("image/svg+xml", "1/uuid/vector.svg"),
+      ).toThrow()
     })
 
-    it("throws for vector formats (SVG)", () => {
-      expect(() => chooseBakeMime("image/svg+xml")).toThrow()
+    it("throws for a generic type with a non-image extension", () => {
+      expect(() =>
+        chooseBakeMime("binary/octet-stream", "1/uuid/doc.pdf"),
+      ).toThrow()
     })
+  })
+})
+
+describe("fetchImageBlob", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  const okResponse = (blob: Blob) =>
+    ({ ok: true, status: 200, blob: () => Promise.resolve(blob) }) as Response
+  const errResponse = (status: number) =>
+    ({ ok: false, status, blob: () => Promise.resolve(new Blob()) }) as Response
+
+  it("returns the pristine original when ?original is available (no fallback)", async () => {
+    const blob = new Blob(["png"], { type: "image/png" })
+    const fetchMock = vi.fn().mockResolvedValueOnce(okResponse(blob))
+    vi.stubGlobal("fetch", fetchMock)
+
+    const result = await fetchImageBlob("/1/uuid/photo.png")
+
+    expect(result).toBe(blob)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock.mock.calls[0]?.[0]).toContain("?original=true")
+  })
+
+  it("falls back to the plain URL requesting webp when ?original is gated (403)", async () => {
+    const webp = new Blob(["webp"], { type: "image/webp" })
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(errResponse(403))
+      .mockResolvedValueOnce(okResponse(webp))
+    vi.stubGlobal("fetch", fetchMock)
+
+    const result = await fetchImageBlob("/1/uuid/photo.png")
+
+    expect(result).toBe(webp)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    // The fallback must force webp — avif (the browser default) isn't bakeable.
+    const fallbackUrl = fetchMock.mock.calls[1]?.[0] as string
+    const fallbackInit = fetchMock.mock.calls[1]?.[1] as RequestInit | undefined
+    expect(fallbackUrl).not.toContain("original=true")
+    expect(fallbackInit?.headers).toMatchObject({ Accept: "image/webp" })
+  })
+
+  it("throws when both the original and the fallback are gated", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(errResponse(403))
+      .mockResolvedValueOnce(errResponse(403))
+    vi.stubGlobal("fetch", fetchMock)
+
+    await expect(fetchImageBlob("/1/uuid/photo.png")).rejects.toThrow(
+      /Failed to fetch image/,
+    )
+  })
+
+  it("falls back to the plain URL when ?original THROWS (CORS-opaque 403)", async () => {
+    // Regression: a CORS-opaque error response makes the cors fetch reject
+    // rather than resolve with !ok. The fallback must still run (a bare
+    // `await fetch(original)` would abort before reaching it).
+    const webp = new Blob(["webp"], { type: "image/webp" })
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockResolvedValueOnce(okResponse(webp))
+    vi.stubGlobal("fetch", fetchMock)
+
+    const result = await fetchImageBlob("/1/uuid/photo.png")
+
+    expect(result).toBe(webp)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it("throws when ?original throws and the fallback also throws", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+    vi.stubGlobal("fetch", fetchMock)
+
+    await expect(fetchImageBlob("/1/uuid/photo.png")).rejects.toThrow(
+      /Failed to fetch image/,
+    )
   })
 })
