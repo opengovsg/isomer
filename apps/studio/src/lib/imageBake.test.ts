@@ -3,7 +3,6 @@ import { describe, it, expect } from "vitest"
 import {
   canBakeImage,
   cropRectToPixels,
-  outputDimensions,
   computeCanvasTransform,
   isAnimatedWebp,
   isAnimatedPng,
@@ -133,43 +132,6 @@ describe("cropRectToPixels", () => {
     const result = cropRectToPixels(crop, 3, 3)
     expect(result.sx + result.sw).toBeLessThanOrEqual(3)
     expect(result.sy + result.sh).toBeLessThanOrEqual(3)
-  })
-})
-
-describe("outputDimensions", () => {
-  it("preserves dimensions for 0 degree rotation", () => {
-    const result = outputDimensions(800, 600, 0)
-    expect(result).toEqual({ width: 800, height: 600 })
-  })
-
-  it("preserves dimensions for 180 degree rotation", () => {
-    const result = outputDimensions(800, 600, 180)
-    expect(result).toEqual({ width: 800, height: 600 })
-  })
-
-  it("swaps dimensions for 90 degree rotation", () => {
-    const result = outputDimensions(800, 600, 90)
-    expect(result).toEqual({ width: 600, height: 800 })
-  })
-
-  it("swaps dimensions for 270 degree rotation", () => {
-    const result = outputDimensions(800, 600, 270)
-    expect(result).toEqual({ width: 600, height: 800 })
-  })
-
-  it("handles square dimensions", () => {
-    const result = outputDimensions(500, 500, 90)
-    expect(result).toEqual({ width: 500, height: 500 })
-  })
-
-  it("handles very small dimensions", () => {
-    const result = outputDimensions(1, 2, 90)
-    expect(result).toEqual({ width: 2, height: 1 })
-  })
-
-  it("handles very large dimensions", () => {
-    const result = outputDimensions(4000, 3000, 270)
-    expect(result).toEqual({ width: 3000, height: 4000 })
   })
 })
 

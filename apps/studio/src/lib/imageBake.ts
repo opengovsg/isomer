@@ -150,27 +150,6 @@ export const cropRectToPixels = (
 }
 
 /**
- * Calculate output canvas dimensions after rotation.
- * Rotations of 90 or 270 degrees swap width and height.
- * Rotations of 0 or 180 degrees preserve the dimensions.
- *
- * @param croppedWidth - Pixel width of the cropped region
- * @param croppedHeight - Pixel height of the cropped region
- * @param rotate - Rotation in degrees: 0, 90, 180, or 270
- * @returns Object with output {width, height}
- */
-export const outputDimensions = (
-  croppedWidth: number,
-  croppedHeight: number,
-  rotate: 0 | 90 | 180 | 270,
-): { width: number; height: number } => {
-  if (rotate === 90 || rotate === 270) {
-    return { width: croppedHeight, height: croppedWidth }
-  }
-  return { width: croppedWidth, height: croppedHeight }
-}
-
-/**
  * Compute canvas transform scale factors (rotate, flipH, flipV).
  * Returns the transformation parameters to be applied to the canvas.
  *
@@ -248,17 +227,23 @@ export const bakeImage = async (
   })
 
   try {
-    const { sx, sy, sw, sh } = cropRectToPixels(
-      adjustment.crop,
-      bitmap.width,
-      bitmap.height,
-    )
+    // The editor crops against the rotated/flipped ("display") image, so crop
+    // coordinates are normalized to THAT, not the original — rotate/flip
+    // first, then crop. Flipping doesn't change dimensions; a 90/270
+    // rotation swaps them.
+    const rotatedQuarter = adjustment.rotate === 90 || adjustment.rotate === 270
+    const displayWidth = rotatedQuarter ? bitmap.height : bitmap.width
+    const displayHeight = rotatedQuarter ? bitmap.width : bitmap.height
 
-    const { width: outputWidth, height: outputHeight } = outputDimensions(
-      sw,
-      sh,
-      adjustment.rotate,
-    )
+    // Crop rect in display-image pixels. Its size is the output size
+    // directly — the rotation has already been accounted for by swapping
+    // the display dims.
+    const {
+      sx: dx,
+      sy: dy,
+      sw: outputWidth,
+      sh: outputHeight,
+    } = cropRectToPixels(adjustment.crop, displayWidth, displayHeight)
 
     // Create canvas and apply transforms
     const canvas =
@@ -281,18 +266,20 @@ export const bakeImage = async (
       adjustment.flipV,
     )
 
-    // Translate to center, apply transforms, translate back
-    ctx.translate(outputWidth / 2, outputHeight / 2)
+    // Draw the WHOLE original into the cropped display frame: shift so the
+    // crop's top-left sits at the canvas origin, move to the display centre,
+    // flip, rotate, then centre the original before drawing it.
+    ctx.translate(displayWidth / 2 - dx, displayHeight / 2 - dy)
     if (scaleX !== 1 || scaleY !== 1) {
       ctx.scale(scaleX, scaleY)
     }
     if (rotate !== 0) {
       ctx.rotate((rotate * Math.PI) / 180)
     }
-    ctx.translate(-sw / 2, -sh / 2)
+    ctx.translate(-bitmap.width / 2, -bitmap.height / 2)
 
-    // Draw the cropped region onto the canvas
-    ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, sw, sh)
+    // Draw the full original; the canvas size + translate above crop it.
+    ctx.drawImage(bitmap, 0, 0)
 
     // Convert to blob with the specified MIME type and quality.
     // Guard the OffscreenCanvas symbol via a type predicate: referencing it
