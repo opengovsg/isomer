@@ -23,6 +23,12 @@ export interface SessionData {
       verificationToken: SessionVerificationToken
       codeVerifier: string
       nonce?: string
+      state?: string
+      // Pinned when the authorization request is built. The callback must not
+      // re-read the GrowthBook flag: a mid-login change would exchange a FAPI
+      // authorization code against the legacy token endpoint.
+      useFapi?: boolean
+      dpopPrivateJwk?: string
     }
   }
 }

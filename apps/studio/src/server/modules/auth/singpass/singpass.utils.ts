@@ -1,5 +1,10 @@
 import type { TokenSet } from "openid-client"
 
+// FAPI 2.0 ID tokens put the user UUID in `sub` directly. Legacy tokens use
+// `u=<uuid>` inside a comma-separated list (`s=<nric>,u=<uuid>` or `u=<uuid>`).
+const BARE_UUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export const extractUuid = (tokens: TokenSet) => {
   if (!tokens.id_token) {
     // No ID token happens when there is an error in communicating with Singpass
@@ -7,15 +12,16 @@ export const extractUuid = (tokens: TokenSet) => {
   }
 
   const data = tokens.claims()
+  const { sub } = data
 
-  // Sub can be in the form of "s=<uid>,u=<uuid>" or "u=<uuid>" depending on the
-  // type of Singpass app configured (NRIC/UUID or UUID only).
-  // Ref: https://docs.developer.singpass.gov.sg/docs/technical-specifications/singpass-authentication-api/2.-token-endpoint/authorization-code-grant
-  const subParts = data.sub.split(",")
+  if (BARE_UUID.test(sub)) {
+    return sub
+  }
+
+  const subParts = sub.split(",")
   const uuidPart = subParts.find((part) => part.startsWith("u="))
 
   if (!uuidPart) {
-    // Failed to extract the UUID from the ID token
     return undefined
   }
 

@@ -23,6 +23,7 @@ import { IsomerLogo } from "~/components/Svg"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { SingpassLoginButton } from "~/features/sign-in/components"
 import { UnableToUseSignpassModal } from "~/features/sign-in/components/UnableToUseSignpassModal"
+import { singpassSignInError } from "~/features/sign-in/singpassRedirect"
 import { SIGN_IN } from "~/lib/routes"
 import { trpc } from "~/utils/trpc"
 
@@ -33,7 +34,7 @@ const SingpassSignInPage: NextPageWithLayout = () => {
     onClose: closeUnableToUseSingpassModal,
   } = useDisclosure()
   const router = useRouter()
-  const isSingpassError = Boolean(router.query.error)
+  const singpassError = singpassSignInError(router.query.error)
   const { data, isLoading, isError } =
     trpc.auth.singpass.getUserProps.useQuery()
 
@@ -87,7 +88,7 @@ const SingpassSignInPage: NextPageWithLayout = () => {
             <Flex w="100%" flexDir="column" alignItems="start" gap="1.75rem">
               <IsomerLogo />
 
-              {isSingpassError && (
+              {singpassError && (
                 <Infobox variant="error" w="full" size="sm">
                   <Box>
                     <Text textStyle="subhead-2" color="base.content.strong">
@@ -95,17 +96,23 @@ const SingpassSignInPage: NextPageWithLayout = () => {
                     </Text>
 
                     <Text textStyle="body-2" color="base.content.strong">
-                      Please try again later. If the issue persists, reach out
-                      to{" "}
-                      <Link
-                        as={NextLink}
-                        variant="inline"
-                        href={ISOMER_SUPPORT_LINK}
-                        color="base.content.strong"
-                      >
-                        Isomer Support
-                      </Link>
-                      .
+                      {singpassError === "retry" ? (
+                        <>Singpass ran into a problem. Try signing in again.</>
+                      ) : (
+                        <>
+                          Please try again later. If the issue persists, reach
+                          out to{" "}
+                          <Link
+                            as={NextLink}
+                            variant="inline"
+                            href={ISOMER_SUPPORT_LINK}
+                            color="base.content.strong"
+                          >
+                            Isomer Support
+                          </Link>
+                          .
+                        </>
+                      )}
                     </Text>
                   </Box>
                 </Infobox>
