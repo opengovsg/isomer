@@ -339,8 +339,8 @@ catalogs:
       specifier: ^4.5.0
       version: 4.6.0
     jose:
-      specifier: ^6.2.12
-      version: 6.2.12
+      specifier: ^6.2.13
+      version: 6.2.14
     jotai:
       specifier: ^3.0.1
       version: 3.0.1
@@ -1038,7 +1038,7 @@ importers:
         version: 4.6.0(@noble/hashes@2.2.0)
       jose:
         specifier: 'catalog:'
-        version: 6.2.12
+        version: 6.2.14
       jotai:
         specifier: 'catalog:'
         version: 3.0.1(@types/react@18.3.31)(react@18.3.1)
@@ -9146,8 +9146,8 @@ packages:
   jose@4.15.9:
     resolution: {integrity: sha512-1vUQX+IdDMVPj4k8kOxgUqlcK518yluMuGZwqlr44FS1ppZB/5GWh4rZG89erpOBOJjU/OBsnCVFfapsRz6nEA==}
 
-  jose@6.2.12:
-    resolution: {integrity: sha512-9NiFmJEex0sy2Dk58j2UGBSHgUs2ypF9eZSu4L6vjOX3Dp96Sw1F3uL+H+D1sx02jZZdzUT0HgvCy59CuvXcWw==}
+  jose@6.2.14:
+    resolution: {integrity: sha512-3JasLuki1NRLQvY4wCoC37KZk4qxoBx2k2aFqLxT84IezqW0bkJKnNtxnZj/Fu1xsQivoc/lytxaRHJoGLjJ1A==}
 
   jotai@3.0.1:
     resolution: {integrity: sha512-6tS7wY9otdiNp26Wqb/1ds3OuVJVoV+tJlN4hpLrYmfFf/t9bauVt+zKBNSpS5qSl5h6GieVQ+OknVraZX+udQ==}
@@ -19912,7 +19912,7 @@ snapshots:
 
   jose@4.15.9: {}
 
-  jose@6.2.12: {}
+  jose@6.2.14: {}
 
   jotai@3.0.1(@types/react@18.3.31)(react@18.3.1):
     optionalDependencies:
