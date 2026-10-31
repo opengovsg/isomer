@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { useState } from "react"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
+import { resolveAdjustmentConfig } from "./adjustmentConfigRegistry"
 import { ImageAdjustmentModal } from "./ImageAdjustmentModal"
 
 const TIER_B_CONFIG: AdjustmentConfig = {
@@ -45,12 +46,16 @@ interface ImageAdjustmentModalHarnessProps {
   isOpen: boolean
   value?: ImageAdjustment
   block?: unknown
+  config?: AdjustmentConfig
+  imageFieldName?: string
 }
 
 const ImageAdjustmentModalHarness = ({
   isOpen: initialIsOpen,
   value,
   block,
+  config = TIER_B_CONFIG,
+  imageFieldName = "backgroundUrl",
 }: ImageAdjustmentModalHarnessProps) => {
   const [isOpen, setIsOpen] = useState(initialIsOpen)
   const [savedValue, setSavedValue] = useState<ImageAdjustment | undefined>(
@@ -79,11 +84,12 @@ const ImageAdjustmentModalHarness = ({
       <ImageAdjustmentModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        config={TIER_B_CONFIG}
+        config={config}
         src={savedSrc}
         value={value}
         block={block}
-        imageFieldName="backgroundUrl"
+        imageFieldName={imageFieldName}
+        fieldHost={block}
         siteId={1}
         resourceId="test-resource"
         onSave={({ src, imageAdjustment }) => {
@@ -147,6 +153,29 @@ export const WithRealComponentPreview: Story = {
         "This copy, gradient, and crop all come from the real component.",
       buttonLabel: "Explore",
       buttonUrl: "/",
+    },
+  },
+}
+
+// Exercises Blockquote's per-state `layout` override: the SAME 1:1 image masks
+// into a circle on a content page and a square on the homepage, driven by
+// BLOCKQUOTE_CONFIG's "circle"/"square" previewStates each forcing their own
+// `layout` on the shared real-component preview (AdjustmentPreview renders the
+// block once per state rather than once-and-reused). Regression coverage for
+// Greptile 4205368562: nothing else in Storybook renders BLOCKQUOTE_CONFIG.
+export const WithBlockquotePreview: Story = {
+  args: {
+    isOpen: true,
+    imageFieldName: "imageSrc",
+    config: resolveAdjustmentConfig({
+      block: { type: "blockquote" },
+      fieldName: "imageSrc",
+    }),
+    block: {
+      type: "blockquote",
+      quote: "The circle/square mask depends on the page's layout, not size.",
+      source: "Image Adjustment Modal",
+      imageAlt: "A person smiling",
     },
   },
 }

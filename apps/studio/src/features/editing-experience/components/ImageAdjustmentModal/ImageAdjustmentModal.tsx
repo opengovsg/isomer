@@ -49,6 +49,10 @@ interface ImageAdjustmentModalProps {
   // crop frame) rather than an approximation.
   block: unknown
   imageFieldName: string
+  // The field's immediate host (for an array-nested InfoCards image, the card
+  // object) — read by the config's focalEnabledFor/previewObjectFitFor to resolve
+  // the controls for this card's current imageFit.
+  fieldHost: unknown
   siteId: number
   resourceId?: string
   onSave: (result: {
@@ -64,11 +68,19 @@ export const ImageAdjustmentModal = ({
   src,
   block,
   imageFieldName,
+  fieldHost,
   value,
   siteId,
   resourceId,
   onSave,
 }: ImageAdjustmentModalProps): JSX.Element => {
+  // Tier C (InfoCards): focal and the preview's object-fit depend on the card's
+  // current imageFit; other components have no resolver and fall back to the
+  // static config / cover.
+  const focalEnabled = config.focalEnabledFor
+    ? config.focalEnabledFor(fieldHost)
+    : config.focalEnabled
+  const previewObjectFit = config.previewObjectFitFor?.(fieldHost) ?? "cover"
   const [draft, setDraft] = useState<ImageAdjustment | undefined>(value)
   // The source image's true pixel aspect ratio, reported by CropFocalControl
   // once its <img> loads — needed so "Reset crop & focal" can seed the same
@@ -258,6 +270,9 @@ export const ImageAdjustmentModal = ({
                   scrim={config.scrim}
                   block={block}
                   imageFieldName={imageFieldName}
+                  skipRealComponentPreview={config.skipRealComponentPreview}
+                  stackPreviews={config.stackPreviews}
+                  objectFit={previewObjectFit}
                   siteId={siteId}
                 />
               </GridItem>
@@ -267,14 +282,14 @@ export const ImageAdjustmentModal = ({
                 <VStack align="start" spacing="1.5rem" w="100%">
                   {/* Crop + focal point: one shared image canvas, since focal
                       is only meaningful relative to the crop. */}
-                  {(config.cropMode !== "none" || config.focalEnabled) && (
+                  {(config.cropMode !== "none" || focalEnabled) && (
                     <CropFocalControl
                       src={originalSrc}
                       crop={draft?.crop}
                       focal={draft?.focal}
                       cropMode={config.cropMode}
                       lockedRatio={lockedRatio}
-                      focalEnabled={config.focalEnabled}
+                      focalEnabled={focalEnabled}
                       onCropChange={(crop) =>
                         setDraft((d) => ({ ...ensureAdjustment(d), crop }))
                       }

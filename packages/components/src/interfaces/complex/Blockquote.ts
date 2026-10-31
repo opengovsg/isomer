@@ -3,7 +3,7 @@ import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import { IsomerString } from "../primitives/IsomerString"
-import { AltTextSchema, ImageSrcSchema } from "./Image"
+import { AltTextSchema, ImageSrcSchema, imageAdjustmentSchema } from "./Image"
 
 export const BlockquoteSchema = Type.Object(
   {
@@ -24,6 +24,7 @@ export const BlockquoteSchema = Type.Object(
     // If no image is provided and this is required, the schema will throw an error,
     // making it impossible to create a blockquote without an image on Studio
     imageAlt: Type.Optional(AltTextSchema),
+    imageAdjustment: Type.Optional(imageAdjustmentSchema),
   },
   {
     title: "Blockquote",
