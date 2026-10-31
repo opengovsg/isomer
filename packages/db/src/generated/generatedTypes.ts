@@ -15,8 +15,30 @@ import type {
   BuildStatusType,
   AuditLogExportReportType,
   AuditLogExportStatus,
+  AssetStatus,
+  AssetLinkSource,
 } from "./generatedEnums"
 
+export interface Asset {
+  id: GeneratedAlways<string>
+  siteId: number
+  s3Key: string
+  uploadedBy: string | null
+  status: Generated<AssetStatus>
+  unreferencedAt: Timestamp | null
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
+export interface AssetLink {
+  id: GeneratedAlways<string>
+  assetId: string
+  resourceId: string | null
+  source: AssetLinkSource
+  usedInDraft: Generated<boolean>
+  usedInPublished: Generated<boolean>
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
 export interface AuditLog {
   id: GeneratedAlways<string>
   userId: string
@@ -206,6 +228,8 @@ export interface Whitelist {
   updatedAt: Generated<Timestamp>
 }
 export interface DB {
+  Asset: Asset
+  AssetLink: AssetLink
   AuditLog: AuditLog
   AuditLogExportBatch: AuditLogExportBatch
   AuditLogExportRequest: AuditLogExportRequest

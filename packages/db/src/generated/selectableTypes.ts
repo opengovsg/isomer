@@ -2,6 +2,8 @@
 import { type Selectable } from "kysely"
 
 import type * as T from "./generatedTypes"
+export type Asset = Selectable<T.Asset>
+export type AssetLink = Selectable<T.AssetLink>
 export type AuditLog = Selectable<T.AuditLog>
 export type AuditLogExportBatch = Selectable<T.AuditLogExportBatch>
 export type AuditLogExportRequest = Selectable<T.AuditLogExportRequest>
