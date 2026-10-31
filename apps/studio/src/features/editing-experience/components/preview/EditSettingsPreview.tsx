@@ -29,6 +29,7 @@ import { trpc } from "~/utils/trpc"
 import { siteSchema } from "../../schema"
 import Preview from "./Preview"
 import { ViewportContainer } from "./ViewportContainer"
+import { ViewportProvider } from "./ViewportProvider"
 
 const SHARED_TAB_STYLES = {
   border: "1px solid",
@@ -215,67 +216,69 @@ export const EditSettingsPreview = ({
 
   return (
     <Box bg="base.canvas.backdrop" h="full">
-      <ViewportContainer
-        siteId={siteId}
-        theme={theme}
-        callback={jumpToFooter ? handleIframeMount : undefined}
-        header={
-          previewMockContentPage && (
-            <Tabs
-              pt="1.5rem"
-              px="2rem"
-              w="full"
-              display="flex"
-              onChange={(index) => setTabIndex(index)}
-            >
-              <TabList w="full" gap={0} textTransform="none">
-                <Tab borderLeftRadius="4px" {...SHARED_TAB_STYLES}>
-                  <Text textStyle="subhead-2">Homepage</Text>
-                </Tab>
-                <Tab {...SHARED_TAB_STYLES} borderRightRadius="4px">
-                  <Text textStyle="subhead-2">Content page</Text>
-                </Tab>
-              </TabList>
-            </Tabs>
-          )
-        }
-      >
-        {showChromeTab && (
-          <>
-            <Box
-              style={{
-                display: "flex",
-                background: "#e8eaed",
-                paddingTop: "8px",
-                paddingLeft: "12px",
-                paddingRight: "12px",
-              }}
-            >
-              <WindowButtons />
-              <ChromeTab favicon={rest.favicon}>
-                <Text style={{ ...bodyTextStyle, fontFamily: "inherit" }}>
-                  {siteName}
-                </Text>
-              </ChromeTab>
-            </Box>
-            <AddressBar>
-              <Text style={{ ...bodyTextStyle, fontFamily: "inherit" }}>
-                {rest.url ?? "example.isomer.gov.sg"}
-              </Text>
-            </AddressBar>
-          </>
-        )}
-        <Preview
+      <ViewportProvider>
+        <ViewportContainer
           siteId={siteId}
-          resourceId={Number(id)}
-          permalink={"/"}
-          lastModified={new Date().toISOString()}
-          {...previewProps}
-          overrides={{ site: { siteName, ...rest } }}
-        />
-        {!!rest.askgov && <AskgovWidget />}
-        {!!rest.vica && <VicaWidget />}
-      </ViewportContainer>
+          theme={theme}
+          callback={jumpToFooter ? handleIframeMount : undefined}
+          header={
+            previewMockContentPage && (
+              <Tabs
+                pt="1.5rem"
+                px="2rem"
+                w="full"
+                display="flex"
+                onChange={(index) => setTabIndex(index)}
+              >
+                <TabList w="full" gap={0} textTransform="none">
+                  <Tab borderLeftRadius="4px" {...SHARED_TAB_STYLES}>
+                    <Text textStyle="subhead-2">Homepage</Text>
+                  </Tab>
+                  <Tab {...SHARED_TAB_STYLES} borderRightRadius="4px">
+                    <Text textStyle="subhead-2">Content page</Text>
+                  </Tab>
+                </TabList>
+              </Tabs>
+            )
+          }
+        >
+          {showChromeTab && (
+            <>
+              <Box
+                style={{
+                  display: "flex",
+                  background: "#e8eaed",
+                  paddingTop: "8px",
+                  paddingLeft: "12px",
+                  paddingRight: "12px",
+                }}
+              >
+                <WindowButtons />
+                <ChromeTab favicon={rest.favicon}>
+                  <Text style={{ ...bodyTextStyle, fontFamily: "inherit" }}>
+                    {siteName}
+                  </Text>
+                </ChromeTab>
+              </Box>
+              <AddressBar>
+                <Text style={{ ...bodyTextStyle, fontFamily: "inherit" }}>
+                  {rest.url ?? "example.isomer.gov.sg"}
+                </Text>
+              </AddressBar>
+            </>
+          )}
+          <Preview
+            siteId={siteId}
+            resourceId={Number(id)}
+            permalink={"/"}
+            lastModified={new Date().toISOString()}
+            {...previewProps}
+            overrides={{ site: { siteName, ...rest } }}
+          />
+          {!!rest.askgov && <AskgovWidget />}
+          {!!rest.vica && <VicaWidget />}
+        </ViewportContainer>
+      </ViewportProvider>
     </Box>
   )
 }

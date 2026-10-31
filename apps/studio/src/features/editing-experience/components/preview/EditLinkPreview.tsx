@@ -13,6 +13,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
+import { ViewportProvider } from "./ViewportProvider"
 
 const currentDate = new Date().toString()
 
@@ -92,16 +93,18 @@ export const EditCollectionLinkPreview = ({
   )
 
   return (
-    <ViewportContainer siteId={siteId}>
-      <PreviewWithCustomSitemap
-        content={[]}
-        page={{ title: parentTitle, tagCategories, showThumbnail, showDate }}
-        layout={"collection"}
-        siteId={siteId}
-        siteMap={siteMap}
-        permalink={parentPermalink}
-        version="0.1.0"
-      />
-    </ViewportContainer>
+    <ViewportProvider>
+      <ViewportContainer siteId={siteId}>
+        <PreviewWithCustomSitemap
+          content={[]}
+          page={{ title: parentTitle, tagCategories, showThumbnail, showDate }}
+          layout={"collection"}
+          siteId={siteId}
+          siteMap={siteMap}
+          permalink={parentPermalink}
+          version="0.1.0"
+        />
+      </ViewportContainer>
+    </ViewportProvider>
   )
 }

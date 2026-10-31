@@ -19,6 +19,10 @@ import {
   jsonFormsBooleanControlTester,
   JsonFormsChildrenPagesLayoutControl,
   jsonFormsChildrenPagesLayoutControlTester,
+  JsonFormsHeroCarouselLayoutControl,
+  jsonFormsHeroCarouselLayoutControlTester,
+  JsonFormsHeroCarouselSlidesControl,
+  jsonFormsHeroCarouselSlidesControlTester,
   JsonFormsChildrenPagesOrderingControl,
   jsonFormsChildrenPagesOrderingControlTester,
   JsonFormsCollectionDropdownControl,
@@ -158,6 +162,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   },
   { tester: jsonFormsDateControlTester, renderer: JsonFormsDateControl },
   { tester: jsonFormsObjectControlTester, renderer: JsonFormsObjectControl },
+  {
+    tester: jsonFormsHeroCarouselSlidesControlTester,
+    renderer: JsonFormsHeroCarouselSlidesControl,
+  },
   { tester: jsonFormsArrayControlTester, renderer: JsonFormsArrayControl },
   { tester: jsonFormsBooleanControlTester, renderer: JsonFormsBooleanControl },
   { tester: jsonFormsConstControlTester, renderer: JsonFormsConstControl },
@@ -211,6 +219,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsChildrenPagesLayoutControlTester,
     renderer: JsonFormsChildrenPagesLayoutControl,
+  },
+  {
+    tester: jsonFormsHeroCarouselLayoutControlTester,
+    renderer: JsonFormsHeroCarouselLayoutControl,
   },
   {
     tester: jsonFormsHeroBlockImageControlTester,

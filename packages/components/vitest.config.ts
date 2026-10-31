@@ -15,6 +15,11 @@ const alias = {
 const BROWSER_TEST_PATTERN = "**/*.browser.test.{ts,tsx}"
 
 export default defineConfig({
+  resolve: {
+    // usehooks-ts calls React. The browser tests load a second copy unless
+    // Vite is told to share this one, and those hooks then throw.
+    dedupe: ["react", "react-dom"],
+  },
   plugins: [react()],
   test: {
     coverage: {

@@ -97,6 +97,14 @@ export {
   jsonFormsHeroBlockImageControlTester,
 } from "./JsonFormsHeroBlockImageControl"
 export {
+  default as JsonFormsHeroCarouselLayoutControl,
+  jsonFormsHeroCarouselLayoutControlTester,
+} from "./JsonFormsHeroCarouselLayoutControl"
+export {
+  default as JsonFormsHeroCarouselSlidesControl,
+  jsonFormsHeroCarouselSlidesControlTester,
+} from "./JsonFormsHeroCarouselSlidesControl"
+export {
   default as JsonFormsChildrenPagesOrderingControl,
   jsonFormsChildrenPagesOrderingControlTester,
 } from "./JsonFormsChildrenPagesOrderingControl"
