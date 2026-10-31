@@ -32,7 +32,7 @@ import { Steps } from "../components/complex/Steps"
 import { Video } from "../components/complex/Video"
 import { Prose } from "../components/native/Prose"
 
-interface RenderComponentProps {
+export interface RenderComponentProps {
   elementKey?: number
   component: IsomerComponent
   layout: IsomerPageLayoutType
