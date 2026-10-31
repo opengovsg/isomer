@@ -99,6 +99,8 @@ import {
   jsonFormsUuidControlTester,
   jsonFormsAntiScamDisclaimerBannerLayoutRenderer,
   jsonFormsAntiScamDisclaimerBannerLayoutTester,
+  jsonFormsInfoCardsLayoutRenderer,
+  jsonFormsInfoCardsLayoutTester,
   jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
   JsonFormsWidgetIntegrationControl,
@@ -199,6 +201,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsAntiScamDisclaimerBannerLayoutTester,
     renderer: jsonFormsAntiScamDisclaimerBannerLayoutRenderer,
+  },
+  {
+    tester: jsonFormsInfoCardsLayoutTester,
+    renderer: jsonFormsInfoCardsLayoutRenderer,
   },
   {
     tester: jsonFormsVerticalLayoutTester,

@@ -23,7 +23,8 @@ import {
   ImageSchema,
   InfobarDefaultSchema,
   InfobarHomepageSchema,
-  InfoCardsSchema,
+  InfoCardsDefaultSchema,
+  InfoCardsHomepageSchema,
   InfoColsSchema,
   InfopicSchema,
   KeyStatisticsSchema,
@@ -48,7 +49,7 @@ export const IsomerComplexComponentsMap = {
   iframe: IframeSchema,
   image: ImageSchema,
   infobar: InfobarHomepageSchema,
-  infocards: InfoCardsSchema,
+  infocards: InfoCardsHomepageSchema,
   infocols: InfoColsSchema,
   infopic: InfopicSchema,
   contentpic: ContentpicSchema,
@@ -96,6 +97,13 @@ const generateComponentSchema = ({ component, layout }: ComponentSchema) => {
 
   if (component === "infobar") {
     return layout === "homepage" ? InfobarHomepageSchema : InfobarDefaultSchema
+  }
+
+  // TODO: remove when we are rolling out to all pages beyond the homepage
+  if (component === "infocards") {
+    return layout === "homepage"
+      ? InfoCardsHomepageSchema
+      : InfoCardsDefaultSchema
   }
 
   return IsomerComplexComponentsMap[component]

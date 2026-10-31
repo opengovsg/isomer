@@ -64,7 +64,7 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
 
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
-      <VStack spacing={0} align="start">
+      <VStack spacing={0} align="start" data-path={path}>
         <VStack align="start" spacing="0.25rem" w="full">
           <HStack w="full" justifyContent="space-between" align="center">
             <Text textStyle="subhead-1" flex={1}>

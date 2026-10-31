@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { HeroProps } from "~/interfaces/complex/Hero"
 import type { HomePageSchemaType } from "~/types"
 import { http, HttpResponse } from "msw"
+import { INFOCARDS_CAROUSEL_MAX_CARDS, INFOCARDS_DISPLAY } from "~/interfaces"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
@@ -828,4 +829,123 @@ export const HeroSearchbarWithImage: Story = {
       backgroundUrl: "/hero-banner.png",
     },
   }),
+}
+
+const infoCardsCarouselHero = {
+  type: "hero" as const,
+  variant: "gradient" as const,
+  backgroundUrl: "/hero-banner.png",
+  title: "Ministry of Trade and Industry",
+  subtitle: "A leading global city of enterprise and talent",
+  buttonLabel: "Main CTA",
+  buttonUrl: "/",
+}
+
+const infoCardsCarouselCards = [
+  {
+    title:
+      "Testing for a card with a long line length that spans across two lines or more",
+    description:
+      "Explore Duxton with us and leave with a full belly, tipsy mind, and a happy smile.",
+    imageUrl: "https://placehold.co/200x300",
+    imageAlt: "alt text",
+    url: "/faq",
+  },
+  {
+    title: "Card with short title",
+    description:
+      "Card description, 200 chars. In the kingdom of Veridonia, the government operates as a benevolent monarchy.",
+    imageUrl: "https://placehold.co/800x400",
+    imageAlt: "alt text",
+  },
+  {
+    title: "Hover on me to see me change colors",
+    description: "Card description.",
+    imageUrl: "https://placehold.co/800x200",
+    imageAlt: "alt text",
+    url: "https://www.google.com",
+  },
+  {
+    title: "A non-placeholder image version",
+    description: "This is an image that is added using a URL.",
+    imageUrl: "https://placehold.co/500x500",
+    imageAlt: "alt text",
+    url: "https://www.google.com",
+  },
+  {
+    title: "A neighbourhood programme",
+    description:
+      "Join a guided walk and leave with a few places worth coming back to.",
+    imageUrl: "https://placehold.co/500x500",
+    imageAlt: "alt text",
+  },
+  {
+    title: "One more card past the first page",
+    description: "The last page should sit flush with a hint on the left.",
+    imageUrl: "https://placehold.co/500x500",
+    imageAlt: "alt text",
+  },
+]
+
+const infoCardsCarouselSection = {
+  type: "infocards" as const,
+  display: INFOCARDS_DISPLAY.carousel,
+  maxColumns: "3" as const,
+  title: "Section title ministry highlights",
+  subtitle:
+    "Section subtitle, maximum 150 chars. These are some of the things we are working on.",
+}
+
+export const InfoCardsCarousel: Story = {
+  name: "InfoCards carousel (with image)",
+  parameters: { argos: argosWithoutMobileSmall },
+  args: {
+    ...generateArgs({
+      heroProps: infoCardsCarouselHero,
+    }),
+    content: [
+      infoCardsCarouselHero,
+      {
+        ...infoCardsCarouselSection,
+        variant: "cardsWithImages",
+        cards: infoCardsCarouselCards.slice(0, INFOCARDS_CAROUSEL_MAX_CARDS),
+      },
+    ],
+  },
+}
+
+export const InfoCardsCarouselWithoutImages: Story = {
+  name: "InfoCards carousel (without images)",
+  parameters: { argos: argosWithoutMobileSmall },
+  args: {
+    ...generateArgs({
+      heroProps: infoCardsCarouselHero,
+    }),
+    content: [
+      infoCardsCarouselHero,
+      {
+        ...infoCardsCarouselSection,
+        variant: "cardsWithoutImages",
+        cards: infoCardsCarouselCards.slice(0, INFOCARDS_CAROUSEL_MAX_CARDS),
+      },
+    ],
+  },
+}
+
+export const InfoCardsCarouselFullImages: Story = {
+  name: "InfoCards carousel (full images)",
+  parameters: { argos: argosWithoutMobileSmall },
+  args: {
+    ...generateArgs({
+      heroProps: infoCardsCarouselHero,
+    }),
+    content: [
+      infoCardsCarouselHero,
+      {
+        ...infoCardsCarouselSection,
+        variant: "cardsWithFullImages",
+        cards: infoCardsCarouselCards.slice(0, INFOCARDS_CAROUSEL_MAX_CARDS),
+      },
+    ],
+  },
 }

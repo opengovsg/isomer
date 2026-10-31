@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { InfoCardsProps } from "~/interfaces"
 import type { IsomerPageLayoutType } from "~/types"
+import { INFOCARDS_CAROUSEL_MAX_CARDS, INFOCARDS_DISPLAY } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
+
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { InfoCards } from "./InfoCards"
 
@@ -28,6 +31,7 @@ const generateArgs = ({
   hasCTA = false,
   variant = "cardsWithImages",
   numCards = 6,
+  display,
 }: {
   layout?: IsomerPageLayoutType
   maxColumns: "1" | "2" | "3"
@@ -35,6 +39,7 @@ const generateArgs = ({
   hasCTA?: boolean
   variant?: InfoCardsProps["variant"]
   numCards?: number
+  display?: InfoCardsProps["display"]
 }): InfoCardsProps => {
   const cards = [
     {
@@ -81,9 +86,9 @@ const generateArgs = ({
       url: "https://www.google.com",
     },
     {
-      title: "A card with a very long description",
+      title: "A neighbourhood programme",
       description:
-        "A wonderful serenity has taken possession of my entire soul, like these sweet mornings of spring which I enjoy with my whole heart. I am alone, and feel the charm of existence in this spot, which was created for the bliss of souls like mine. I am so happy, my dear friend, so absorbed in the exquisite sense of mere tranquil existence, that I neglect my talents. I should be incapable of drawing a single stroke at the present moment; and yet I feel that I never was a greater artist than now. When,.",
+        "Join a guided walk and leave with a few places worth coming back to.",
       imageUrl: "https://placehold.co/500x500",
       imageAlt: "alt text",
       imageFit: "contain",
@@ -123,6 +128,7 @@ const generateArgs = ({
     variant,
     cards: allCards,
     headingLevel: 2,
+    ...(display ? { display } : {}),
     ...(hasCTA ? { label: "This is a CTA", url: "/" } : {}),
   } as InfoCardsProps
 }
@@ -281,5 +287,58 @@ export const FullImageSevenCardsMaxColumnsThree: Story = {
     maxColumns: "3",
     variant: "cardsWithFullImages",
     numCards: 7,
+  }),
+}
+
+export const CarouselWithImages: Story = {
+  name: "Carousel (with image)",
+  args: generateArgs({
+    layout: "homepage",
+    maxColumns: "2",
+    display: INFOCARDS_DISPLAY.carousel,
+    numCards: INFOCARDS_CAROUSEL_MAX_CARDS,
+  }),
+}
+
+export const CarouselWithoutImages: Story = {
+  name: "Carousel (without images)",
+  args: generateArgs({
+    layout: "homepage",
+    maxColumns: "3",
+    display: INFOCARDS_DISPLAY.carousel,
+    variant: "cardsWithoutImages",
+    numCards: INFOCARDS_CAROUSEL_MAX_CARDS,
+  }),
+}
+
+export const CarouselFullImages: Story = {
+  name: "Carousel (full images)",
+  args: generateArgs({
+    layout: "homepage",
+    maxColumns: "2",
+    display: INFOCARDS_DISPLAY.carousel,
+    variant: "cardsWithFullImages",
+    numCards: INFOCARDS_CAROUSEL_MAX_CARDS,
+  }),
+}
+
+export const CarouselStaticOnDesktop: Story = {
+  name: "Carousel (static when cards fit)",
+  parameters: { argos: withArgosModes(["desktop"]) },
+  args: generateArgs({
+    layout: "homepage",
+    maxColumns: "3",
+    display: INFOCARDS_DISPLAY.carousel,
+    numCards: 3,
+  }),
+}
+
+export const CarouselLongText: Story = {
+  name: "Carousel (long text card)",
+  args: generateArgs({
+    layout: "homepage",
+    maxColumns: "3",
+    display: INFOCARDS_DISPLAY.carousel,
+    numCards: 5,
   }),
 }

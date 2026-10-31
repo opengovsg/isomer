@@ -30,7 +30,10 @@ export {
   type ImageProps,
 } from "./Image"
 export {
-  InfoCardsSchema,
+  InfoCardsDefaultSchema,
+  InfoCardsHomepageSchema,
+  INFOCARDS_CAROUSEL_MAX_CARDS,
+  INFOCARDS_DISPLAY,
   type InfoCardsProps,
   CARDS_WITHOUT_IMAGES,
   CARDS_WITH_IMAGES,
