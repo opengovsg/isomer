@@ -805,6 +805,150 @@ export const HeroFloatingShortText: Story = {
   }),
 }
 
+const homepageQuickLinksItems = [
+  {
+    icon: "stars" as const,
+    title: "Explore Isomer's features",
+    description:
+      "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+    buttonLabel: "See features",
+    buttonUrl: "/",
+  },
+  {
+    icon: "line-chart" as const,
+    title: "See how others use Isomer",
+    description:
+      "Browse websites built with Isomer across agencies and see what good government digital service looks like.",
+    buttonLabel: "View showcase",
+    buttonUrl: "/",
+  },
+  {
+    icon: "globe" as const,
+    title: "Start building your site",
+    description:
+      "Get guidance on setting up your agency site, from content planning to launch.",
+    buttonLabel: "Get started",
+    buttonUrl: "/",
+  },
+  {
+    icon: "users" as const,
+    title: "Join the community",
+    description:
+      "Connect with other agencies using Isomer and learn from shared playbooks.",
+    buttonLabel: "Join us",
+    buttonUrl: "/",
+  },
+]
+
+export const HeroGradientQuickLinks: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      actions: {
+        layout: "quickLinks",
+        title: "Get started",
+        showIcon: true,
+        items: homepageQuickLinksItems,
+      },
+    },
+  }),
+}
+
+export const HeroGradientQuickLinksTwoItems: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      actions: {
+        layout: "quickLinks",
+        title: "Get started",
+        showIcon: true,
+        items: homepageQuickLinksItems.slice(0, 2),
+      },
+    },
+  }),
+}
+
+// Minimal copy so tray width is driven by layout, not content length (see FloatingShortText).
+export const HeroGradientQuickLinksTwoItemsShortText: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Title",
+      subtitle: "Subtitle",
+      actions: {
+        layout: "quickLinks",
+        title: "Tray",
+        showIcon: true,
+        items: [
+          {
+            icon: "stars",
+            title: "One",
+            description: "A",
+            buttonLabel: "Go",
+            buttonUrl: "/",
+          },
+          {
+            icon: "line-chart",
+            title: "Two",
+            description: "B",
+            buttonLabel: "Go",
+            buttonUrl: "/",
+          },
+        ],
+      },
+    },
+  }),
+}
+
+export const HeroGradientQuickLinksThreeItems: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      actions: {
+        layout: "quickLinks",
+        title: "Get started",
+        showIcon: true,
+        items: homepageQuickLinksItems.slice(0, 3),
+      },
+    },
+  }),
+}
+
+export const HeroGradientQuickLinksNoTitle: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      actions: {
+        layout: "quickLinks",
+        showIcon: true,
+        items: homepageQuickLinksItems,
+      },
+    },
+  }),
+}
+
 export const HeroSearchbar: Story = {
   args: generateArgs({
     heroProps: {

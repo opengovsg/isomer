@@ -1,0 +1,1 @@
+export { HeroGradient } from "./HeroGradient"

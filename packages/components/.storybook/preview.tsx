@@ -111,22 +111,30 @@ document.addEventListener(
 
 // Argos stabilization waits for images and fonts but not iframes, so embeds
 // (maps, FormSG, Spotify) would be captured blank on a slow CI network.
+// This afterEach runs inside the 15s story test and again for every viewport
+// inside a 30s hook. A 15s wait plus a settle exceeds that test whenever an
+// embed never fires `load`, and the shard then uploads nothing.
+const IFRAME_WAIT_MS = 4_000
+const IFRAME_SETTLE_MS = 1_000
+
 const waitForIframesInVitest = async () => {
   if (!("__vitest_browser__" in globalThis)) return
   const iframes = Array.from(document.querySelectorAll("iframe"))
   if (iframes.length === 0) return
   iframes.forEach((iframe) => (iframe.loading = "eager"))
   // Not Date.now(): stories freeze it with mockdate, so it would never pass.
-  const deadline = performance.now() + 15_000
+  const deadline = performance.now() + IFRAME_WAIT_MS
   while (
     performance.now() < deadline &&
     !iframes.every((iframe) => loadedIframes.has(iframe))
   ) {
     await new Promise((resolve) => setTimeout(resolve, 100))
   }
-  // ponytail: fixed settle for embeds that paint after `load` (map tiles,
-  // Spotify player); raise it if those still flake.
-  await new Promise((resolve) => setTimeout(resolve, 1_000))
+  // Settle only after `load`. An embed that never loads has nothing further
+  // to paint, and the extra second is what pushed the old 15s wait over the
+  // test limit.
+  if (!iframes.every((iframe) => loadedIframes.has(iframe))) return
+  await new Promise((resolve) => setTimeout(resolve, IFRAME_SETTLE_MS))
 }
 
 const preview: Preview = {

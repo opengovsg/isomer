@@ -220,6 +220,131 @@ export const Searchbar: Story = {
   },
 }
 
+const quickLinksItemsBase = [
+  {
+    icon: "stars" as const,
+    title: "Explore Isomer's features",
+    description:
+      "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+    buttonLabel: "See features",
+    buttonUrl: "/",
+  },
+  {
+    icon: "line-chart" as const,
+    title: "See how others use Isomer",
+    description:
+      "Browse websites built with Isomer across agencies and see what good government digital service looks like.",
+    buttonLabel: "View showcase",
+    buttonUrl: "/",
+  },
+  {
+    icon: "globe" as const,
+    title: "Start building your site",
+    description:
+      "Get guidance on setting up your agency site, from content planning to launch.",
+    buttonLabel: "Get started",
+    buttonUrl: "/",
+  },
+  {
+    icon: "users" as const,
+    title: "Join the community",
+    description:
+      "Connect with other agencies using Isomer and learn from shared playbooks.",
+    buttonLabel: "Join us",
+    buttonUrl: "/",
+  },
+]
+
+const quickLinksBase = {
+  layout: "quickLinks" as const,
+  title: "Get started",
+  showIcon: true,
+  items: quickLinksItemsBase,
+}
+
+export const GradientQuickLinks: Story = {
+  args: {
+    headingLevel: 1,
+    site: generateSiteConfig(),
+    backgroundUrl: "/hero-banner.png",
+    title: "Set up a good government website, fast",
+    subtitle:
+      "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+    variant: "gradient",
+    actions: quickLinksBase,
+  },
+}
+
+export const GradientQuickLinksTwoItems: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    actions: { ...quickLinksBase, items: quickLinksItemsBase.slice(0, 2) },
+  },
+}
+
+// Minimal copy so tray width is driven by layout, not content length (see FloatingShortText).
+export const GradientQuickLinksTwoItemsShortText: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    title: "Title",
+    subtitle: "Subtitle",
+    actions: {
+      ...quickLinksBase,
+      title: "Tray",
+      items: [
+        {
+          icon: "stars",
+          title: "One",
+          description: "A",
+          buttonLabel: "Go",
+          buttonUrl: "/",
+        },
+        {
+          icon: "line-chart",
+          title: "Two",
+          description: "B",
+          buttonLabel: "Go",
+          buttonUrl: "/",
+        },
+      ],
+    },
+  },
+}
+
+export const GradientQuickLinksThreeItems: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    actions: { ...quickLinksBase, items: quickLinksItemsBase.slice(0, 3) },
+  },
+}
+
+export const GradientQuickLinksNoTitle: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    actions: { ...quickLinksBase, title: undefined },
+  },
+}
+
+export const GradientQuickLinksNoIcons: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    actions: { ...quickLinksBase, showIcon: false },
+  },
+}
+
+export const GradientQuickLinksTitleLinkOnly: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    actions: {
+      ...quickLinksBase,
+      items: quickLinksItemsBase.slice(0, 2).map((item) => ({
+        ...item,
+        buttonLabel: undefined,
+      })),
+    },
+  },
+}
+
 export const SearchbarWithImage: Story = {
   decorators: [withSearchSgSetup()],
   args: {
