@@ -249,6 +249,89 @@ describe("asset.router", async () => {
     })
   })
 
+  describe("getPresignedPutUrlForBake", () => {
+    const UUID = "11111111-1111-1111-1111-111111111111"
+
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.getPresignedPutUrlForBake({
+        siteId: 1,
+        resourceId: "1",
+        src: `/1/${UUID}/source.png`,
+        ext: "jpeg",
+        fileSize: 1,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have permission to update resource", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder({})
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getPresignedPutUrlForBake({
+        siteId: site.id,
+        resourceId: page.id,
+        src: `/${site.id}/${UUID}/source.png`,
+        ext: "jpeg",
+        fileSize: 1,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return success if user has permission to update resource", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder({})
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        siteId: site.id,
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: String(session.userId),
+      })
+
+      // Act
+      const result = await caller.getPresignedPutUrlForBake({
+        siteId: site.id,
+        resourceId: page.id,
+        src: `/${site.id}/${UUID}/source.png`,
+        ext: "jpeg",
+        fileSize: 1,
+      })
+
+      // Assert
+      expect(result).toMatchObject({
+        fileKey: expect.stringContaining(`${site.id}/${UUID}/baked-`),
+        uploadConfig: {
+          presignedPutUrl: "https://example.com/signed-url",
+        },
+      })
+    })
+  })
+
   describe("deleteAssets", () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange
