@@ -85,14 +85,16 @@ export const auditRouter = router({
 
         // Anything else (e.g. a DB error) may leak request internals; log it
         // with the request context and surface a generic error to the client.
-        ctx.logger.error({
-          error,
-          message: "Failed to create audit log export request",
-          scope,
-          siteCount: siteIds.length,
-          month,
-          reportType,
-        })
+        ctx.logger.error(
+          {
+            error,
+            scope,
+            siteCount: siteIds.length,
+            month,
+            reportType,
+          },
+          "Failed to create audit log export request",
+        )
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to create audit log export request",

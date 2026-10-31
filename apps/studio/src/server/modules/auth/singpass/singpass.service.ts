@@ -78,25 +78,20 @@ export const login = async ({
   nonce,
   state,
 }: LoginParams) => {
-  try {
-    const client = await getSingpassClient()
-    const stringifiedState = JSON.stringify(state)
-    const tokens = await client.callback(
-      SINGPASS_REDIRECT_URI,
-      {
-        code,
-        state: stringifiedState,
-      },
-      {
-        state: stringifiedState,
-        code_verifier: codeVerifier,
-        nonce,
-      },
-    )
-    const uuid = extractUuid(tokens)
-    return { uuid }
-  } catch (e) {
-    console.trace(e)
-    throw e
-  }
+  const client = await getSingpassClient()
+  const stringifiedState = JSON.stringify(state)
+  const tokens = await client.callback(
+    SINGPASS_REDIRECT_URI,
+    {
+      code,
+      state: stringifiedState,
+    },
+    {
+      state: stringifiedState,
+      code_verifier: codeVerifier,
+      nonce,
+    },
+  )
+  const uuid = extractUuid(tokens)
+  return { uuid }
 }

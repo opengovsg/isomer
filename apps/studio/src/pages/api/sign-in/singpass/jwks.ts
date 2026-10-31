@@ -44,11 +44,10 @@ export default async function handler(
       return response.status(405).end()
     }
   } catch (error) {
-    logger.error({
-      error: "Failed to respond to Singpass public JWKS request",
-      action: "handler",
-      originalError: error,
-    })
+    logger.error(
+      { action: "handler", originalError: error },
+      "Failed to respond to Singpass public JWKS request",
+    )
     return response.status(500).end()
   }
 }
