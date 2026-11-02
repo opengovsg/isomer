@@ -126,14 +126,16 @@ export const assetRouter = router({
         const totalDeleteCounts = fileKeys.length
 
         if (deleteFailedCounts > 0) {
-          ctx.logger.error({
-            message: `Failed to delete files/images`,
-            merged: {
-              fileKeys,
-              deleteFailedCounts,
-              totalDeleteCounts,
+          ctx.logger.error(
+            {
+              merged: {
+                fileKeys,
+                deleteFailedCounts,
+                totalDeleteCounts,
+              },
             },
-          })
+            "Failed to delete files/images",
+          )
 
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
