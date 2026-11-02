@@ -224,13 +224,13 @@ export const cropRectToPixels = (
  * Compute canvas transform scale factors (rotate, flipH, flipV).
  * Returns the transformation parameters to be applied to the canvas.
  *
- * @param rotate - Rotation in degrees: 0, 90, 180, or 270
+ * @param rotate - Rotation in degrees, 0-360
  * @param flipH - Whether to flip horizontally
  * @param flipV - Whether to flip vertically
  * @returns Object with {rotate, scaleX, scaleY}
  */
 export const computeCanvasTransform = (
-  rotate: 0 | 90 | 180 | 270,
+  rotate: number,
   flipH: boolean,
   flipV: boolean,
 ): {
