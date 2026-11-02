@@ -1,4 +1,6 @@
 export {
+  renderComponent,
+  type RenderComponentProps,
   renderLayout,
   renderPageContent,
   renderComponentPreviewText,

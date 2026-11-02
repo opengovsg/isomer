@@ -9,6 +9,12 @@ export interface ImageClientProps {
   assetsBaseUrl?: string
   lazyLoading?: boolean
   onLoad?: ReactEventHandler<HTMLImageElement>
-  objectPosition?: string // focal-point render; applied as inline object-position only when set
-  imageAdjustment?: ImageAdjustment // source of focal when objectPosition isn't explicitly given
+  objectPosition?: string // applied as inline object-position only when set
+}
+
+export interface ImageClientWithAdjustmentProps extends Omit<
+  ImageClientProps,
+  "objectPosition"
+> {
+  imageAdjustment?: ImageAdjustment // source of focal; derived into objectPosition
 }
