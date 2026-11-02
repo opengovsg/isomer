@@ -48,10 +48,11 @@ export const imageAdjustmentSchema = Type.Object(
       x: NormalizedUnit,
       y: NormalizedUnit,
     }),
-    rotate: Type.Union(
-      [Type.Literal(0), Type.Literal(90), Type.Literal(180), Type.Literal(270)],
-      { default: 0 },
-    ),
+    // Degrees, free-form rather than quarter-turn literals -- keeps the door
+    // open to arbitrary-angle rotation (e.g. Instagram-style) without a
+    // breaking schema change later, since fields here can only be deprecated
+    // and added, never have their type changed once shipped.
+    rotate: Type.Number({ minimum: 0, maximum: 360, default: 0 }),
     flipH: Type.Boolean({ default: false }),
     flipV: Type.Boolean({ default: false }),
     originalKey: Type.String(),
