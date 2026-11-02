@@ -4,6 +4,7 @@ import {
   chooseBakeMime,
   fetchImageBlob,
   resolveOriginalKey,
+  validateCropBounds,
 } from "./useSaveImageAdjustment"
 
 describe("useSaveImageAdjustment pure helpers", () => {
@@ -85,6 +86,44 @@ describe("useSaveImageAdjustment pure helpers", () => {
     it("throws for a generic type with a non-image extension", () => {
       expect(() =>
         chooseBakeMime("binary/octet-stream", "1/uuid/doc.pdf"),
+      ).toThrow()
+    })
+  })
+
+  describe("validateCropBounds", () => {
+    it("accepts a full-image crop", () => {
+      expect(() =>
+        validateCropBounds({ x: 0, y: 0, width: 1, height: 1 }),
+      ).not.toThrow()
+    })
+
+    it("accepts a crop that exactly touches the far edges", () => {
+      expect(() =>
+        validateCropBounds({ x: 0.5, y: 0.5, width: 0.5, height: 0.5 }),
+      ).not.toThrow()
+    })
+
+    it("throws when x + width exceeds 1", () => {
+      expect(() =>
+        validateCropBounds({ x: 0.2, y: 0, width: 1, height: 1 }),
+      ).toThrow()
+    })
+
+    it("throws when y + height exceeds 1", () => {
+      expect(() =>
+        validateCropBounds({ x: 0, y: 0.3, width: 1, height: 0.8 }),
+      ).toThrow()
+    })
+
+    it("throws for a zero-width crop", () => {
+      expect(() =>
+        validateCropBounds({ x: 0, y: 0, width: 0, height: 1 }),
+      ).toThrow()
+    })
+
+    it("throws for a zero-height crop", () => {
+      expect(() =>
+        validateCropBounds({ x: 0, y: 0, width: 1, height: 0 }),
       ).toThrow()
     })
   })
