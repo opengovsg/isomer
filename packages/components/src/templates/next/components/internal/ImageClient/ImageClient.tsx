@@ -2,7 +2,6 @@
 
 import type { ImageClientProps } from "~/interfaces"
 import { forwardRef } from "react"
-import { getFocalObjectPosition } from "~/utils/getFocalObjectPosition"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { resolveManagedAssetUrl } from "~/utils/resolveManagedAssetUrl"
 
@@ -30,7 +29,6 @@ export const ImageClient = forwardRef<
       lazyLoading = true, // next/image defaults to lazy loading true too
       onLoad,
       objectPosition,
-      imageAdjustment,
     },
     ref,
   ) => {
@@ -40,10 +38,6 @@ export const ImageClient = forwardRef<
     // cache-bust query could break a signed external URL.
     const canRetry = !isExternalUrl(src) && assetsBaseUrl !== undefined
 
-    // Explicit objectPosition wins; otherwise derive focal from imageAdjustment.
-    const resolvedObjectPosition =
-      objectPosition ?? getFocalObjectPosition(imageAdjustment)
-
     return (
       <img
         ref={ref}
@@ -52,11 +46,7 @@ export const ImageClient = forwardRef<
         width={width}
         height="auto"
         className={className}
-        style={
-          resolvedObjectPosition
-            ? { objectPosition: resolvedObjectPosition }
-            : undefined
-        }
+        style={objectPosition ? { objectPosition } : undefined}
         onLoad={(e) => {
           // Reveal the image once it loads (it may have been hidden by a prior
           // error while self-healing — see onError).
