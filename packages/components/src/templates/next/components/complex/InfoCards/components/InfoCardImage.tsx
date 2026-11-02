@@ -3,7 +3,7 @@ import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
 import type { With4Cols } from "./types"
-import { ImageClient } from "../../../internal/ImageClient"
+import { ImageClientWithAdjustment } from "../../../internal/ImageClient"
 import { compoundStyles } from "../common"
 
 export const InfoCardImage = ({
@@ -49,7 +49,7 @@ export const InfoCardImage = ({
         isFallback,
       })}
     >
-      <ImageClient
+      <ImageClientWithAdjustment
         src={imageUrl}
         alt={imageAlt}
         width="100%"

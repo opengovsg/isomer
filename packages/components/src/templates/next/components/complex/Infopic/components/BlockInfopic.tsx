@@ -3,7 +3,7 @@ import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import type { InfopicProps } from "../types"
-import { ImageClient } from "../../../internal/ImageClient"
+import { ImageClientWithAdjustment } from "../../../internal/ImageClient"
 import { LinkButton } from "../../../internal/LinkButton"
 import { infopicStyles } from "../common"
 
@@ -50,7 +50,7 @@ export const BlockInfopic = ({
         )}
       </div>
       <div className={compoundStyles.imageContainer()}>
-        <ImageClient
+        <ImageClientWithAdjustment
           src={imageSrc}
           alt={imageAlt || ""}
           width="100%"
