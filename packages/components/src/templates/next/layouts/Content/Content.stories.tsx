@@ -3,7 +3,7 @@ import { http, HttpResponse } from "msw"
 import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
 import { generateSiteConfig } from "~/stories/helpers"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { ContentLayout } from "./Content"
 
@@ -14,7 +14,7 @@ const meta: Meta<typeof ContentLayout> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    argos: withArgosModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -5258,9 +5258,9 @@ export const DynamicComponentListLoading: Story = {
 
 export const AudioEmbedStory: Story = {
   parameters: {
-    // Delay the Chromatic snapshot so iframes have time to load and don’t appear as white blocks.
-    chromatic: {
-      ...withChromaticModes(["mobile", "tablet", "desktop"]),
+    // Delay the Argos snapshot so iframes have time to load and don’t appear as white blocks.
+    argos: {
+      ...withArgosModes(["mobile", "tablet", "desktop"]),
       delay: 5000,
     },
   },
@@ -5296,9 +5296,9 @@ export const AudioEmbedStory: Story = {
 
 export const VideoEmbedStory: Story = {
   parameters: {
-    // Delay the Chromatic snapshot so iframes have time to load and don’t appear as white blocks.
-    chromatic: {
-      ...withChromaticModes(["mobile", "tablet", "desktop"]),
+    // Delay the Argos snapshot so iframes have time to load and don’t appear as white blocks.
+    argos: {
+      ...withArgosModes(["mobile", "tablet", "desktop"]),
       delay: 10000,
     },
   },

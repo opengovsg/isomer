@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ContentpicProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { Contentpic } from "./Contentpic"
 
@@ -15,8 +15,8 @@ const meta: Meta<ContentpicProps> = {
     themes: {
       themeOverride: "Isomer Next",
     },
-    chromatic: {
-      ...withChromaticModes(["desktop", "tablet", "mobile"]),
+    argos: {
+      ...withArgosModes(["desktop", "tablet", "mobile"]),
     },
   },
   args: {

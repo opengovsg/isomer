@@ -1,9 +1,9 @@
 import { Box } from "@chakra-ui/react"
 import { type Meta, type StoryObj } from "@storybook/nextjs-vite"
-import { expect, userEvent, within } from "storybook/test"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 import { RiskyFileUploadModal } from "~/components/PageEditor/RiskyFileUploadModal"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 const meta: Meta<typeof RiskyFileUploadModal> = {
   title: "Pages/Edit Page/RiskyFileUploadModal",
@@ -17,9 +17,9 @@ const meta: Meta<typeof RiskyFileUploadModal> = {
   ],
   parameters: {
     layout: "fullscreen",
-    chromatic: {
+    argos: {
       delay: 200,
-      ...withChromaticModes(["gsib", "desktop"]),
+      ...withArgosModes(["gsib", "desktop"]),
     },
   },
   args: {
@@ -56,6 +56,7 @@ export const ErrorState: Story = {
     const errorMessage = await screen.findByText(
       "You must accept the risks to upload the file.",
     )
-    await expect(errorMessage).toBeVisible()
+    // The modal fades in, so visibility settles after the text is in the DOM.
+    await waitFor(() => expect(errorMessage).toBeVisible())
   },
 }

@@ -1,7 +1,7 @@
 /**
  * This file holds the viewports for Storybook rendering, and also for
  * Choromatic to take snapshots based on the given mode.
- * @see https://www.chromatic.com/docs/modes/ and the `modes.ts` file.
+ * @see https://argos-ci.com/docs/learn/how-to-guides/visual-coverage/storybook-story-modes and the `modes.ts` file.
  *
  * Width breakpoints are set as OGPDS defaults (as of writing this ) of
  *
@@ -39,7 +39,7 @@ interface StorybookViewportParameter {
  * set in `modes.ts`.
  *
  * An additional `xs` viewport is added (outside of tailwindcss breakpoints)
- * specifically for Chromatic to have a snapshot for the smallest screen size.
+ * specifically for Argos to have a snapshot for the smallest screen size.
  */
 export const viewport = {
   viewports: {
