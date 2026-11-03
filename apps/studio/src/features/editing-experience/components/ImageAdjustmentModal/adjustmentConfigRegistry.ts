@@ -34,11 +34,13 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
       aspectRatio: { width: 1440, height: 500 },
     },
   ],
-  // Mirrors HeroGradient's left-to-right dark gradient so editors can judge
-  // text contrast against the chosen crop/focal.
+  // Must match HeroGradient.tsx's own className exactly, so editors judge contrast
+  // against the real overlay: solid dark on mobile, gradient from lg: up.
   scrim: {
     id: "gradient",
-    className: "bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)]",
+    className:
+      "bg-black/60 lg:bg-transparent lg:bg-gradient-to-r lg:from-black lg:to-black/25",
+    label: "Dark gradient (for text contrast)",
   },
 }
 

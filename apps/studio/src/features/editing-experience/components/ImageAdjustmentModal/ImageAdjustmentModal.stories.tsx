@@ -36,6 +36,7 @@ const TIER_B_CONFIG: AdjustmentConfig = {
   scrim: {
     id: "gradient",
     className: "bg-gradient-to-r from-black/50 to-transparent",
+    label: "Dark gradient (for text contrast)",
   },
   preUploadCopy:
     "For best results, use images at least 1600px wide. Square images will be cropped to your selected aspect ratio.",
