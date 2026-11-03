@@ -89,7 +89,7 @@ export const ChoosingStyle: Story = {
       (await canvas.findByRole("radio", { name: /gradient/i })).closest(
         "label",
       ),
-    ).not.toHaveTextContent("New")
+    ).toHaveTextContent("New")
     await expect(canvas.queryByRole("radio", { name: "Search bar" })).toBeNull()
   },
 }
