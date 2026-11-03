@@ -75,7 +75,11 @@ export interface AdjustmentRenderContext {
 // (e.g. HeroGradient's left-to-right dark gradient) so editors can judge contrast.
 export interface AdjustmentScrim {
   id: string
+  // Must match the component's own className exactly — this is an approximation
+  // used only in the framed-<img> fallback preview, not read by the real component.
   className: string
+  // Editor-facing description shown in the Overlay panel; never show raw Tailwind classes.
+  label: string
 }
 
 // For an array-nested image field (e.g. an InfoCards card) whose containing
