@@ -43,9 +43,7 @@ interface ImageAdjustmentModalProps {
   config: AdjustmentConfig
   src: string
   value?: ImageAdjustment
-  // The real block content + the name of the field holding the image, so the
-  // preview can render the actual published component (real copy, scrim,
-  // crop frame) rather than an approximation.
+  // So the preview can render the actual published component rather than an approximation.
   block: unknown
   imageFieldName: string
   siteId: number
@@ -82,28 +80,20 @@ export const ImageAdjustmentModal = ({
   // Drives UI locking during a save. Local (not the hook's isSaving) so the
   // save timeout below can unlock the modal even if the underlying upload hangs.
   const [isSaving, setIsSaving] = useState(false)
-  // Tracks the REAL underlying save (bake -> presign -> upload), independent
-  // of the UI-facing `isSaving`/timeout below. The timeout exists so a hung
-  // request can't trap the editor in a disabled modal, but it only abandons
-  // the promise -- it doesn't cancel the actual upload. Without this guard,
-  // retrying after a timeout starts a second upload while the first is still
-  // running in the background.
+  // Tracks the REAL underlying save, independent of the UI-facing timeout below:
+  // the timeout only abandons the promise, it can't cancel the actual upload, so
+  // without this guard a retry would start a second upload while the first runs on.
   const savePromiseRef = useRef<ReturnType<typeof save> | null>(null)
 
-  // Check if draft differs from original value.
   const isModified = JSON.stringify(draft) !== JSON.stringify(value)
 
-  // The crop/focal canvas and the live preview must both edit/bake from the
-  // TRUE original, never a previous bake — same rule useSaveImageAdjustment
-  // follows (RFC: re-encode loss must not compound). On a first edit `src`
-  // IS the original; on a re-edit, `src` is the previous bake and only
-  // `draft.originalKey` points at the true original.
+  // Crop/focal editing and preview must bake from the TRUE original, never a
+  // previous bake, so re-encode loss can't compound across edits.
   const originalSrc = `/${resolveOriginalKey(src, draft ?? {})}`
 
   const handleClose = () => {
-    // Block dismissal while a save is in flight — otherwise the editor could
-    // discard, then the completing upload writes the discarded edit back via
-    // onSave. The save timeout guarantees this lock is released.
+    // Block dismissal mid-save — otherwise a discard followed by the completing
+    // upload would write the discarded edit back via onSave.
     if (isSaving) return
     if (isModified) {
       onDiscardChangesModalOpen()
@@ -118,16 +108,14 @@ export const ImageAdjustmentModal = ({
   }
 
   const handleSave = async () => {
-    // Nothing to persist (untouched, or reverted back to the original) — just
-    // close without re-baking/uploading.
+    // Nothing to persist — just close without re-baking/uploading.
     if (!isModified || !draft) {
       onClose()
       return
     }
 
-    // A previous save is still actually running in the background (it timed
-    // out from the UI's perspective, but the upload itself can't be
-    // cancelled) -- don't start a second, concurrent one.
+    // A previous save timed out from the UI's perspective but is still running
+    // in the background — don't start a second, concurrent one.
     if (savePromiseRef.current) {
       toast({
         title: "Still saving the previous change",
@@ -175,11 +163,9 @@ export const ImageAdjustmentModal = ({
 
   const handleReset = () => {
     if (value?.originalKey) {
-      // Restore to original
       onSave({ src: `/${value.originalKey}`, imageAdjustment: undefined })
       onClose()
     } else {
-      // No prior adjustment, just clear draft
       setDraft(undefined)
     }
   }
@@ -229,7 +215,6 @@ export const ImageAdjustmentModal = ({
               w="100%"
               h="100%"
             >
-              {/* Canvas Area: Live Breakpoint Preview */}
               <GridItem>
                 <AdjustmentPreview
                   src={src}
@@ -242,11 +227,9 @@ export const ImageAdjustmentModal = ({
                 />
               </GridItem>
 
-              {/* Controls Panel */}
               <GridItem>
                 <VStack align="start" spacing="1.5rem" w="100%">
-                  {/* Crop + focal point: one shared image canvas, since focal
-                      is only meaningful relative to the crop. */}
+                  {/* One shared canvas: focal is only meaningful relative to the crop. */}
                   {(config.cropMode !== "none" || config.focalEnabled) && (
                     <CropFocalControl
                       src={originalSrc}
@@ -269,7 +252,6 @@ export const ImageAdjustmentModal = ({
                     />
                   )}
 
-                  {/* Preserve-only note */}
                   {config.cropMode === "none" && (
                     <Box
                       w="100%"
@@ -286,7 +268,6 @@ export const ImageAdjustmentModal = ({
                     </Box>
                   )}
 
-                  {/* Locked Ratios */}
                   {config.lockedRatios && config.lockedRatios.length > 0 && (
                     <Box w="100%">
                       <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
@@ -306,7 +287,6 @@ export const ImageAdjustmentModal = ({
                     </Box>
                   )}
 
-                  {/* Preview States */}
                   {config.previewStates.length > 0 && (
                     <Box w="100%">
                       <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
@@ -328,7 +308,6 @@ export const ImageAdjustmentModal = ({
                     </Box>
                   )}
 
-                  {/* Overlay */}
                   {config.scrim && (
                     <Box w="100%">
                       <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
@@ -340,7 +319,6 @@ export const ImageAdjustmentModal = ({
                     </Box>
                   )}
 
-                  {/* Pre-upload Copy */}
                   {config.preUploadCopy && (
                     <Box
                       w="100%"
