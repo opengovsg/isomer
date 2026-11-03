@@ -62,6 +62,10 @@ import {
   duplicateSelectedRows,
 } from "./TableBubbleMenu.duplicate"
 import {
+  splitFullyMergedColumn,
+  splitFullyMergedRow,
+} from "./TableBubbleMenu.split"
+import {
   canMergeCells,
   canSplitCell,
   getColumnMovePlan,
@@ -314,6 +318,7 @@ const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
       aria-hidden
       className="chakra-switch__track"
       data-checked={checkedDataAttr}
+
       __css={{
         display: "inline-flex",
         flexShrink: 0,
@@ -325,16 +330,48 @@ const HeaderSwitchVisual = ({ isChecked }: { isChecked: boolean }) => {
       <chakra.span
         className="chakra-switch__thumb"
         data-checked={checkedDataAttr}
+
         __css={styles.thumb}
       >
         <Icon
           as={ThumbIcon}
           data-checked={checkedDataAttr}
+
           __css={styles.thumbIcon}
         />
       </chakra.span>
     </chakra.span>
   )
+}
+
+const splitSelectedMergedCell = (editor: Editor) => {
+  const { state } = editor
+  const selection = state.selection
+
+  if (selection instanceof CellSelection) {
+    const rect = selectedRect(state)
+    if (splitFullyMergedRow(editor, rect)) return
+    if (splitFullyMergedColumn(editor, rect)) return
+
+    if (selection.$anchorCell.pos !== selection.$headCell.pos) {
+      const mapIndex = rect.top * rect.map.width + rect.left
+      const cellOffset = rect.map.map[mapIndex]
+      if (cellOffset !== undefined) {
+        const cellPos = rect.tableStart + cellOffset
+        const narrowed = editor
+          .chain()
+          .focus()
+          .setCellSelection({ anchorCell: cellPos, headCell: cellPos })
+          .run()
+        if (narrowed) {
+          editor.chain().focus().splitCell().run()
+          return
+        }
+      }
+    }
+  }
+
+  editor.chain().focus().splitCell().run()
 }
 
 const MergeCellsButton = ({ editor }: { editor: Editor }) => (
@@ -349,7 +386,7 @@ const SplitCellButton = ({ editor }: { editor: Editor }) => (
   <ActionButton
     label="Split cell"
     icon={<IconSplitCell boxSize="1rem" />}
-    onClick={() => editor.chain().focus().splitCell().run()}
+    onClick={() => splitSelectedMergedCell(editor)}
   />
 )
 
@@ -408,7 +445,6 @@ const RowSelectionActions = ({
     { top: rect.top, bottom: rect.bottom, tableHeight: rect.map.height },
     "down",
   )
-
   return (
     <ActionGroup>
       {selectionIsTopRow(rect) && (
@@ -483,7 +519,6 @@ const ColumnSelectionActions = ({
     { left: rect.left, right: rect.right, tableWidth: rect.map.width },
     "right",
   )
-
   return (
     <ActionGroup>
       {selectionIsLeftmostColumn(rect) && (
@@ -568,6 +603,7 @@ const SelectionActions = ({
           />
         </ActionGroup>
       )
+
     case "multi-cell":
       return (
         <ActionGroup>

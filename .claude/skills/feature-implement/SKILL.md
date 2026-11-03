@@ -29,7 +29,7 @@ If you find yourself in this skill without one of those preconditions, abort and
 
 ### 2. Read the area conventions
 
-For every directory you intend to edit, read its `AGENTS.md`. Quote the relevant rules in your internal scratchpad. Plan the implementation against those rules — do not edit first and reconcile after.
+For every directory you intend to edit, read its `AGENTS.md` and plan the implementation against its rules — do not edit first and reconcile after.
 
 Particular files to re-read every time:
 
@@ -46,7 +46,7 @@ A feature lands as a Graphite stack of small PRs, not one big PR. Default split:
 1. **Schema / interface PR.** Type, Zod schema, JSON schema additions. Backward compatible.
 2. **Server PR.** New procedure, service, tests. Wires the new behaviour but is unreachable from the UI.
 3. **Client PR.** Hooks, components, page wiring. The user-visible change.
-4. **Story / Chromatic PR.** Storybook stories for FE work.
+4. **Story / Argos PR.** Storybook stories for FE work.
 
 If the change is one-shot eligible and trivially small (e.g. a single component update for design-iteration), one PR is OK.
 
@@ -81,7 +81,7 @@ While writing:
 
 **Schema (`apps/studio/src/schemas/**`, `packages/components/src/schemas/**`):**
 
-- User-facing `message` strings on every constraint.
+- User-facing `error` strings on every constraint (see `apps/studio/src/schemas/AGENTS.md`).
 - A unit test for any schema with conditional rules.
 
 These are guardrails, not suggestions. A PR without the required artefact must not be opened.
@@ -138,7 +138,7 @@ PR body template:
 - [ ] typecheck / lint / unit pass
 - [ ] Storybook story added (FE)
 - [ ] tRPC integration test added (BE)
-- [ ] Chromatic preview link (FE, after CI builds)
+- [ ] Argos preview link (FE, after CI builds)
 
 ## Closes
 <ticket id on the bottom PR only>
@@ -159,7 +159,7 @@ Risk: <tier>
 Awaiting: <review or design sign-off>
 ```
 
-If this is a `design-iteration` and Chromatic is wired up, attach the preview link.
+If this is a `design-iteration` and Argos is wired up, attach the preview link.
 
 ## Hard rules
 

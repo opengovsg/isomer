@@ -10,7 +10,7 @@ import { generateSiteConfig } from "~/stories/helpers"
 import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { HomepageLayout } from "./Homepage"
 
@@ -22,12 +22,7 @@ const meta: Meta<typeof HomepageLayout> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes([
-      "mobileSmall",
-      "mobile",
-      "tablet",
-      "desktop",
-    ]),
+    argos: withArgosModes(["mobileSmall", "mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -53,10 +48,10 @@ const meta: Meta<typeof HomepageLayout> = {
 export default meta
 type Story = StoryObj<typeof HomepageLayout>
 
-const chromaticWithoutMobileSmall = {
+const argosWithoutMobileSmall = {
   modes: {
-    // Chromatic stacks story modes with the modes inherited from meta.
-    mobileSmall: { disable: true },
+    // Argos stacks story modes with the modes inherited from meta.
+    mobileSmall: { disabled: true },
   },
 }
 
@@ -700,8 +695,8 @@ export const Dark: Story = {
 }
 
 export const HeroBlock: Story = {
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds Argos's capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -734,8 +729,8 @@ const heroBlockCurvedHomepageProps = {
 
 export const HeroBlockLeftCurved: Story = {
   name: "Curve+Left",
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds the capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       ...heroBlockCurvedHomepageProps,
@@ -746,8 +741,8 @@ export const HeroBlockLeftCurved: Story = {
 
 export const HeroBlockRightCurved: Story = {
   name: "Curve+Right",
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds the capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       ...heroBlockCurvedHomepageProps,
@@ -757,8 +752,8 @@ export const HeroBlockRightCurved: Story = {
 }
 
 export const HeroLargeImage: Story = {
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds Argos's capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -776,8 +771,8 @@ export const HeroLargeImage: Story = {
 }
 
 export const HeroFloating: Story = {
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds Argos's capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -806,6 +801,144 @@ export const HeroFloatingShortText: Story = {
       buttonUrl: "/",
       secondaryButtonLabel: "Explore now",
       secondaryButtonUrl: "/",
+    },
+  }),
+}
+
+const homepageQuickLinksItems = [
+  {
+    icon: "stars" as const,
+    title: "Explore Isomer's features",
+    description:
+      "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+    buttonUrl: "/",
+  },
+  {
+    icon: "line-chart" as const,
+    title: "See how others use Isomer",
+    description:
+      "Browse websites built with Isomer across agencies and see what good government digital service looks like.",
+    buttonUrl: "/",
+  },
+  {
+    icon: "globe" as const,
+    title: "Start building your site",
+    description:
+      "Get guidance on setting up your agency site, from content planning to launch.",
+    buttonUrl: "/",
+  },
+  {
+    icon: "users" as const,
+    title: "Join the community",
+    description:
+      "Connect with other agencies using Isomer and learn from shared playbooks.",
+    buttonUrl: "/",
+  },
+]
+
+export const HeroGradientQuickLinks: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      actions: {
+        layout: "quickLinks",
+        title: "Get started",
+        showIcon: true,
+        items: homepageQuickLinksItems,
+      },
+    },
+  }),
+}
+
+export const HeroGradientQuickLinksTwoItems: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      actions: {
+        layout: "quickLinks",
+        title: "Get started",
+        showIcon: true,
+        items: homepageQuickLinksItems.slice(0, 2),
+      },
+    },
+  }),
+}
+
+// Minimal copy so tray width is driven by layout, not content length (see FloatingShortText).
+export const HeroGradientQuickLinksTwoItemsShortText: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Title",
+      subtitle: "Subtitle",
+      actions: {
+        layout: "quickLinks",
+        title: "Tray",
+        showIcon: true,
+        items: [
+          {
+            icon: "stars",
+            title: "One",
+            description: "A",
+            buttonUrl: "/",
+          },
+          {
+            icon: "line-chart",
+            title: "Two",
+            description: "B",
+            buttonUrl: "/",
+          },
+        ],
+      },
+    },
+  }),
+}
+
+export const HeroGradientQuickLinksThreeItems: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      actions: {
+        layout: "quickLinks",
+        title: "Get started",
+        showIcon: true,
+        items: homepageQuickLinksItems.slice(0, 3),
+      },
+    },
+  }),
+}
+
+export const HeroGradientQuickLinksNoTitle: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      actions: {
+        layout: "quickLinks",
+        showIcon: true,
+        items: homepageQuickLinksItems,
+      },
     },
   }),
 }
