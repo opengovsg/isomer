@@ -89,6 +89,19 @@ describe("bakeImage", () => {
     ).rejects.toThrow(/Cannot bake image format/)
   })
 
+  it("throws for a non-quarter-turn rotation instead of silently clipping content", async () => {
+    // The schema allows any 0-360 rotate value, but outputDimensions/
+    // computeCanvasTransform only correctly handle quarter turns -- a 45°
+    // rotation would otherwise rotate content inside an unrotated-size
+    // canvas and silently clip the corners.
+    const original = await createQuadrantImage()
+    await expect(
+      bakeImage(original, baseAdjustment({ rotate: 45 }), {
+        mimeType: "image/png",
+      }),
+    ).rejects.toThrow(/quarter-turn/)
+  })
+
   it("crops to the requested normalized region", async () => {
     const original = await createQuadrantImage()
     const baked = await bakeImage(
@@ -124,15 +137,32 @@ describe("bakeImage", () => {
     expect(await getPixel(baked, 0, 3)).toEqual(RED)
   })
 
-  it("rotating 90 degrees swaps the output's width and height", async () => {
+  it("rotating 90 degrees swaps dimensions and rotates content clockwise", async () => {
     const original = await createWideImage()
     const baked = await bakeImage(original, baseAdjustment({ rotate: 90 }), {
       mimeType: "image/png",
     })
     const bitmap = await createImageBitmap(baked)
-    // Original is 6x2 (wide); rotated 90/270 it must report 2x6 (tall).
+    // Original is 6x2 (wide, red left half / blue right half); rotated 90
+    // clockwise it must report 2x6 (tall), with the red half now on top.
     expect(bitmap.width).toBe(2)
     expect(bitmap.height).toBe(6)
+    expect(await getPixel(baked, 0, 0)).toEqual(RED)
+    expect(await getPixel(baked, 0, 5)).toEqual(BLUE)
+  })
+
+  it("rotating 270 degrees swaps dimensions and rotates content counterclockwise", async () => {
+    const original = await createWideImage()
+    const baked = await bakeImage(original, baseAdjustment({ rotate: 270 }), {
+      mimeType: "image/png",
+    })
+    const bitmap = await createImageBitmap(baked)
+    // 270 is the opposite rotation from 90 -- the red/blue halves land on
+    // the opposite ends, not just the same dimension swap.
+    expect(bitmap.width).toBe(2)
+    expect(bitmap.height).toBe(6)
+    expect(await getPixel(baked, 0, 0)).toEqual(BLUE)
+    expect(await getPixel(baked, 0, 5)).toEqual(RED)
   })
 
   it("rotating 180 degrees preserves dimensions and inverts both axes", async () => {
