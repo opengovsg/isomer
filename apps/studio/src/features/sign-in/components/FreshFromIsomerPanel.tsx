@@ -167,10 +167,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
       <Flex role="tablist" aria-label="Fresh from Isomer" gap="1.5rem">
         {SPOTLIGHTS.map((item, index) => {
           const isActive = index === activeIndex
-          const showLoadingBar =
-            isActive && item.media.type === "video" && isBuffering && isPlaying
-          const showProgressBar =
-            isActive && item.media.type === "video" && !showLoadingBar
+          const showProgressBar = isActive && item.media.type === "video"
 
           return (
             <Box
@@ -193,30 +190,12 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
               _focusVisible={{ boxShadow: "outline", outline: "none" }}
             >
               {item.tabLabel}
-              {showLoadingBar && (
-                <Box
-                  aria-hidden
-                  position="absolute"
-                  left="0"
-                  bottom="0"
-                  h="2px"
-                  w="100%"
-                  bg="interaction.main.default"
-                  transformOrigin="left"
-                  sx={{
-                    animation:
-                      "freshFromIsomerLoading 1.2s ease-in-out infinite",
-                    "@keyframes freshFromIsomerLoading": {
-                      "0%": { transform: "scaleX(0.2)" },
-                      "50%": { transform: "scaleX(1)" },
-                      "100%": { transform: "scaleX(0.2)" },
-                    },
-                  }}
-                />
-              )}
               {showProgressBar && (
                 <Box
-                  ref={underlineRef}
+                  ref={(node: HTMLDivElement | null) => {
+                    // Ignore null: unmount of a later tab runs after mount of an earlier one and would clear the shared ref.
+                    if (node) underlineRef.current = node
+                  }}
                   aria-hidden
                   position="absolute"
                   left="0"
