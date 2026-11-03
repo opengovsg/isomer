@@ -5,8 +5,7 @@ type: best-practice
 ---
 
 Living reference for `apps/studio/tests/e2e/`. Update this file only when the stack
-introduces a **new reusable pattern** — not when merely adding test cases. See
-`docs/superpowers/plans/2026-07-24-e2e-scale-and-coverage-spec.md`.
+introduces a **new reusable pattern** — not when merely adding test cases.
 
 ## File layout
 
@@ -79,7 +78,7 @@ When iterating the same Act/Assert over multiple sections, register **one
 `test()` per section** (a `for` loop around `test(...)`) — not multiple Acts in
 one test body.
 
-## Per-site isolation (PR-2)
+## Per-site isolation
 
 Every test file gets a dedicated site via `provisionE2ESite` in `beforeAll` —
 including read-only tests. There is no per-test/per-site teardown: the whole
@@ -109,14 +108,14 @@ test.beforeAll(async () => {
 - **Exception:** files that exercise surfaces not scoped to a site (e.g. `godmode/`,
   `smoke.test.ts`) do not need `provisionE2ESite`
 
-## Settings publisher gate (PR-7)
+## Settings publisher gate
 
 Publisher permission gates for settings Publish buttons live in **one** file:
 `site/settings-permissions.test.ts`. Individual settings happy-path files do not
 repeat the gate — add new Publish-gated sections to `PUBLISH_GATED_SETTINGS_SECTIONS`
 in `fixtures/site.po.ts` and extend `settings-permissions.test.ts`.
 
-## Role projects and tags (PR-3)
+## Role projects and tags
 
 Playwright config defines one project per role plus `unauthenticated` (smoke),
 `singpass` (skipped legacy suite), and `login-flow` (full UI sign-in). Role
@@ -165,7 +164,7 @@ await withRoleSession(browser, "admin", async ({ page }) => {
 })
 ```
 
-## Page objects (PR-4)
+## Page objects
 
 Page objects live in `fixtures/*.po.ts` and wrap locators + actions for **one** UI
 surface. **All `page.*` Playwright calls belong in `fixtures/*.po.ts` or
@@ -213,7 +212,7 @@ async fillPageWizard(title: string) {
 }
 ```
 
-## DB assertion helpers (PR-5)
+## DB assertion helpers
 
 When a test needs to verify persisted state (e.g. "the created page has state
 Draft"), the raw query lives in `fixtures/<entity>.db.ts` — one file per DB
@@ -301,7 +300,7 @@ const editor = await openSeededPageEditor(page, siteId, seededPage.id)
 
 ## How to detect violations
 
-- Asserting "Sample Site", hardcoding a site ID, or calling `teardownE2ESite`/`getSeedSiteId()` (neither exists anymore) → use `provisionE2ESite` and assert on the returned site
+- Asserting "Sample Site", hardcoding a site ID, or calling `teardownE2ESite`/`getSeedSiteId()` (neither exists) → use `provisionE2ESite` and assert on the returned site
 - Duplicated cross-surface flows in test files → move to `helpers.ts`; duplicated modal/form steps → add a PO method
 - `test.use({ storageState: storageStateFor(...) })` in a test file → use `{ tag: roleTag(...) }` on `test.describe` instead
 - Raw `{ tag: "@role:admin" }` → use `roleTag("admin")` so unknown roles fail typecheck

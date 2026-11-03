@@ -59,9 +59,8 @@ if (requestedMonth > currentMonth) throwFutureError()
 ```
 
 `toLocaleDateString`/`Intl` are still fine for **display** — e.g.
-`apps/studio/src/utils/formatDate.ts` and the gazette publish-date label
-(`apps/studio/src/server/modules/gazette/gazette.service.ts:400`) format dates
-for humans, not for comparison, so they are not violations.
+`apps/studio/src/utils/formatDate.ts` formats dates for humans, not for
+comparison, so it is not a violation.
 
 ## How to detect
 

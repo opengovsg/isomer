@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { AntiScamDisclaimerBanner } from "./AntiScamDisclaimerBanner"
 
@@ -9,7 +9,7 @@ const meta: Meta<typeof AntiScamDisclaimerBanner> = {
   component: AntiScamDisclaimerBanner,
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    argos: withArgosModes(["mobile", "tablet", "desktop"]),
   },
   args: {
     type: "antiscambanner",
