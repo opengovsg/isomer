@@ -760,6 +760,173 @@ describe("hero carousel rotation", () => {
     expect(imageFrames()[2]?.getAttribute("aria-hidden")).toBe("true")
   })
 
+  it("moves real keyboard focus through pause, the active slide's call to action, then the slide arrows", async () => {
+    // Arrange
+    render(
+      <>
+        <button type="button">Before carousel</button>
+        <HeroCarouselGradientClient
+          headingTag="h1"
+          inactiveHeadingTag="h2"
+          slides={linkedSlides}
+        />
+      </>,
+    )
+    // A real click gives the test frame keyboard focus before tabbing.
+    await userEvent.click(
+      screen.getByRole("button", { name: "Before carousel" }),
+    )
+    const focusedName = () =>
+      document.activeElement?.getAttribute("aria-label") ??
+      document.activeElement?.textContent.trim()
+
+    // Act / Assert
+    await userEvent.tab()
+    expect(focusedName()).toBe("Start slide rotation")
+
+    await userEvent.tab()
+    expect(focusedName()).toBe("Start")
+
+    await userEvent.tab()
+    expect(focusedName()).toBe("Previous slide")
+
+    await userEvent.tab()
+    expect(focusedName()).toBe("Next slide")
+
+    await userEvent.keyboard("{Enter}")
+    expect(liveRegion().textContent).toBe("Slide 2 of 2: Second")
+    expect(focusedName()).toBe("Next slide")
+
+    await userEvent.tab({ shift: true })
+    expect(focusedName()).toBe("Previous slide")
+
+    await userEvent.keyboard("{Enter}")
+    expect(liveRegion().textContent).toBe("Slide 1 of 2: Short")
+    expect(focusedName()).toBe("Previous slide")
+
+    // Only slide 1's call to action is reachable, not slide 2's.
+    await userEvent.tab({ shift: true })
+    expect(focusedName()).toBe("Start")
+
+    await userEvent.tab({ shift: true })
+    expect(focusedName()).toBe("Start slide rotation")
+
+    advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
+    expect(liveRegion().textContent).toBe("Slide 1 of 2: Short")
+  })
+
+  describe("touch", () => {
+    const touch = (
+      target: HTMLElement,
+      type: "pointerDown" | "pointerUp" | "pointerCancel",
+      clientX: number,
+      clientY = 100,
+    ) =>
+      fireEvent[type](target, {
+        pointerId: 1,
+        pointerType: "touch",
+        clientX,
+        clientY,
+      })
+
+    const watchClicks = (link: HTMLElement) => {
+      const onClick = vi.fn((event: Event) => event.preventDefault())
+      link.addEventListener("click", onClick)
+      return onClick
+    }
+
+    it("swipes over a call to action to change slides without following the link", () => {
+      // Arrange
+      renderGradient(linkedSlides)
+      const callToAction = screen.getByRole("link", { name: "Start" })
+      const onClick = watchClicks(callToAction)
+
+      // Act
+      touch(callToAction, "pointerDown", 200)
+      touch(callToAction, "pointerUp", 100)
+      fireEvent.click(callToAction)
+
+      // Assert
+      expect(liveRegion().textContent).toBe("Slide 2 of 2: Second")
+      expect(onClick).not.toHaveBeenCalled()
+    })
+
+    it("swipes right to go to the previous slide", () => {
+      // Arrange
+      const section = renderGradient(linkedSlides)
+
+      // Act
+      touch(section, "pointerDown", 100)
+      touch(section, "pointerUp", 200)
+
+      // Assert
+      expect(liveRegion().textContent).toBe("Slide 2 of 2: Second")
+    })
+
+    it("still follows the link on an ordinary tap after a swipe", () => {
+      // Arrange
+      const section = renderGradient(linkedSlides)
+      touch(section, "pointerDown", 100)
+      touch(section, "pointerUp", 200)
+      fireEvent.click(section)
+      const callToAction = screen.getByRole("link", { name: "Continue" })
+      const onClick = watchClicks(callToAction)
+
+      // Act
+      touch(callToAction, "pointerDown", 100)
+      touch(callToAction, "pointerUp", 100)
+      fireEvent.click(callToAction)
+
+      // Assert
+      expect(onClick).toHaveBeenCalledOnce()
+    })
+
+    it("does not change slides or block the link on a mostly vertical swipe", () => {
+      // Arrange
+      renderGradient(linkedSlides)
+      const callToAction = screen.getByRole("link", { name: "Start" })
+      const onClick = watchClicks(callToAction)
+
+      // Act
+      touch(callToAction, "pointerDown", 100, 100)
+      touch(callToAction, "pointerUp", 150, 200)
+      fireEvent.click(callToAction)
+
+      // Assert
+      expect(liveRegion().textContent).toBe("Slide 1 of 2: Short")
+      expect(onClick).toHaveBeenCalledOnce()
+    })
+
+    it("does not change slides when the swipe is cancelled", () => {
+      // Arrange
+      const section = renderGradient(linkedSlides)
+
+      // Act
+      touch(section, "pointerDown", 200)
+      touch(section, "pointerCancel", 200)
+      touch(section, "pointerUp", 100)
+
+      // Assert
+      expect(liveRegion().textContent).toBe("Slide 1 of 2: Short")
+    })
+
+    it("stops rotation once touch interaction starts", () => {
+      // Arrange
+      const section = renderGradient()
+
+      // Act
+      touch(section, "pointerDown", 100)
+      touch(section, "pointerUp", 100)
+      advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
+
+      // Assert
+      expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
+      expect(rotationButton().getAttribute("aria-label")).toBe(
+        "Start slide rotation",
+      )
+    })
+  })
+
   it("renders one slide without a rotation control, timer, or live region", () => {
     // Arrange
     render(
