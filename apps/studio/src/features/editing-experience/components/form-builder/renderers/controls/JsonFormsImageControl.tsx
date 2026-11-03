@@ -67,10 +67,13 @@ function JsonFormsImageControl({
   // Gate the adjustment entry point behind a GrowthBook flag (off by default,
   // rolled out per-user) — this is a rollout-sensitive editor path.
   const isImageAdjustmentEnabled = useIsImageAdjustmentEnabled()
-  // Only managed site-storage assets (relative "/{siteId}/..." paths) can be
-  // baked; external/absolute URLs have no derivable bake key, so hide Adjust
-  // for them rather than letting Save fail.
-  const isManagedAsset = !!data && data.startsWith("/")
+  // Only this site's managed storage assets ("/{siteId}/...") can be baked;
+  // external/absolute URLs (or another site's assets) have no derivable bake
+  // key, so hide Adjust rather than letting Save fail. Mirrors the same
+  // `${siteId}/` prefix check asset.service.ts's doAllFileKeysBelongToSite
+  // uses server-side — this one is UX-only, the server re-derives and checks
+  // the real key independently before issuing a presigned URL.
+  const isManagedAsset = !!data && data.startsWith(`/${siteId}/`)
   // The bake-presign mutation requires a resourceId; without a page/link in
   // the URL there's nothing to pass (the save call would send an empty
   // string and fail server-side), so hide Adjust rather than let an editor
