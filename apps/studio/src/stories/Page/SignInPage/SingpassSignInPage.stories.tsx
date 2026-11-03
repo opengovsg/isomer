@@ -70,6 +70,42 @@ export const ExistingUserWithName: Story = {
   },
 }
 
+export const NewUserRetry: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        meHandlers.unauthorized(),
+        authSingpassHandlers.getUserProps.newUser(),
+      ],
+    },
+    nextjs: {
+      router: {
+        query: {
+          error: "retry",
+        },
+      },
+    },
+  },
+}
+
+export const NewUserUnavailable: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        meHandlers.unauthorized(),
+        authSingpassHandlers.getUserProps.newUser(),
+      ],
+    },
+    nextjs: {
+      router: {
+        query: {
+          error: "unavailable",
+        },
+      },
+    },
+  },
+}
+
 export const ExistingUserWithError: Story = {
   parameters: {
     msw: {

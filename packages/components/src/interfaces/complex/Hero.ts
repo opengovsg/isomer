@@ -7,11 +7,14 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import {
+  HERO_ACTION_LAYOUT_FORMAT,
   HERO_BANNER_STYLE_FORMAT,
   HERO_BLOCK_IMAGE_FORMAT,
   HERO_CAROUSEL_FORMAT,
   HERO_CAROUSEL_SLIDES_FORMAT,
+  HERO_QUICK_LINKS_FORMAT,
 } from "../format"
+import { IconPicker } from "../primitives/IconPicker"
 import { IsomerString } from "../primitives/IsomerString"
 import { generateImageSrcSchema } from "./Image"
 
@@ -39,6 +42,19 @@ export const HERO_CAROUSEL_CONTENT_ALIGNMENT = {
 
 export type HeroCarouselContentAlignment =
   (typeof HERO_CAROUSEL_CONTENT_ALIGNMENT)[keyof typeof HERO_CAROUSEL_CONTENT_ALIGNMENT]
+
+export const HERO_GRADIENT_ACTION_LAYOUT = {
+  buttons: "buttons",
+  quickLinks: "quickLinks",
+} as const
+
+export type HeroGradientActionLayout =
+  (typeof HERO_GRADIENT_ACTION_LAYOUT)[keyof typeof HERO_GRADIENT_ACTION_LAYOUT]
+
+export const HERO_QUICK_LINKS_LIMITS = {
+  minItems: 2,
+  maxItems: 4,
+} as const
 
 export const HERO_BLOCK_IMAGE_POSITION = {
   left: "left",
@@ -97,7 +113,7 @@ const HeroBaseSchema = Type.Object({
 const CallToActionsSchema = Type.Object({
   buttonLabel: Type.Optional(
     IsomerString({
-      title: "Primary Call-to-Action text",
+      title: "Primary button text",
       description:
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
     }),
@@ -112,7 +128,7 @@ const CallToActionsSchema = Type.Object({
   ),
   secondaryButtonLabel: Type.Optional(
     IsomerString({
-      title: "Secondary Call-to-Action text",
+      title: "Secondary button text",
       description:
         "A descriptive text. Avoid generic text such as “Click here” or “Learn more”",
     }),
@@ -152,7 +168,31 @@ const GROUPINGS = {
   },
 } as const
 
-const HeroGradientSchema = Type.Composite(
+const HeroGradientQuickLinksItemSchema = Type.Object({
+  icon: IconPicker(),
+  title: IsomerString({
+    title: "Title",
+    pattern: NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
+  }),
+  description: IsomerString({
+    title: "Description",
+    pattern: NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
+  }),
+  buttonUrl: Type.String({
+    title: "Call-to-action destination",
+    description: "When this is clicked, open:",
+    format: "link",
+    pattern: LINK_HREF_PATTERN,
+  }),
+})
+
+const HeroGradientSharedSchema = Type.Composite(
   [
     Type.Object({
       variant: Type.Literal(HERO_STYLE.gradient.key, {
@@ -161,15 +201,82 @@ const HeroGradientSchema = Type.Composite(
       backgroundUrl: BackgroundUrlSchema,
     }),
     HeroBaseSchema,
+  ],
+  {
+    groups: [GROUPINGS.TEXT],
+  },
+)
+
+const HeroGradientButtonsLayoutSchema = Type.Composite(
+  [
+    Type.Object({
+      // Optional so existing gradient heroes with no actions still match buttons.
+      actions: Type.Optional(
+        Type.Object({
+          layout: Type.Literal(HERO_GRADIENT_ACTION_LAYOUT.buttons, {
+            default: HERO_GRADIENT_ACTION_LAYOUT.buttons,
+          }),
+        }),
+      ),
+    }),
+    // Button fields stay at the root, matching existing gradient heroes and the other hero styles.
     CallToActionsSchema,
   ],
   {
-    title: HERO_STYLE.gradient.title,
-    groups: [
-      GROUPINGS.TEXT,
-      GROUPINGS.PRIMARY_CALL_TO_ACTION,
-      GROUPINGS.SECONDARY_CALL_TO_ACTION,
-    ],
+    title: "Buttons only",
+  },
+)
+
+const HeroGradientQuickLinksLayoutSchema = Type.Object(
+  {
+    actions: Type.Object({
+      layout: Type.Literal(HERO_GRADIENT_ACTION_LAYOUT.quickLinks, {
+        default: HERO_GRADIENT_ACTION_LAYOUT.quickLinks,
+      }),
+      title: Type.Optional(
+        IsomerString({
+          title: "Title",
+          pattern: NON_EMPTY_STRING_REGEX,
+          errorMessage: {
+            pattern: "cannot be empty or contain only spaces",
+          },
+        }),
+      ),
+      showIcon: Type.Boolean({
+        title: "Show icons",
+        default: true,
+      }),
+      items: Type.Array(HeroGradientQuickLinksItemSchema, {
+        title: "Content",
+        format: HERO_QUICK_LINKS_FORMAT,
+        ...HERO_QUICK_LINKS_LIMITS,
+      }),
+    }),
+  },
+  {
+    title: "Quick links",
+  },
+)
+
+const HeroGradientSchema = Type.Intersect(
+  [
+    HeroGradientSharedSchema,
+    Type.Unsafe<
+      | Static<typeof HeroGradientButtonsLayoutSchema>
+      | Static<typeof HeroGradientQuickLinksLayoutSchema>
+    >({
+      oneOf: [
+        HeroGradientButtonsLayoutSchema,
+        HeroGradientQuickLinksLayoutSchema,
+      ],
+      format: HERO_ACTION_LAYOUT_FORMAT,
+      title: "Layout",
+      description:
+        "Check the desktop layout in Fullscreen, under preview options",
+    }),
+  ],
+  {
+    title: "Gradient (Default)",
   },
 )
 
@@ -385,6 +492,22 @@ interface HeroLayoutProps {
 }
 
 type CommonProps = Static<typeof HeroBaseSchema> & HeroLayoutProps
+
+export type HeroGradientQuickLinksItem = Static<
+  typeof HeroGradientQuickLinksItemSchema
+>
+
+export type HeroGradientButtonsProps = Simplify<
+  CommonProps &
+    Static<typeof HeroGradientSharedSchema> &
+    Static<typeof HeroGradientButtonsLayoutSchema>
+>
+
+export type HeroGradientQuickLinksProps = Simplify<
+  CommonProps &
+    Static<typeof HeroGradientSharedSchema> &
+    Static<typeof HeroGradientQuickLinksLayoutSchema>
+>
 
 export type HeroGradientProps = Simplify<
   CommonProps & Static<typeof HeroGradientSchema>
