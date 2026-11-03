@@ -5,7 +5,7 @@ import {
   HERO_STYLE,
 } from "@opengovsg/isomer-components"
 import { Type } from "@sinclair/typebox"
-import { expect, userEvent, within } from "storybook/test"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 
 import { FormBuilder } from "./formBuilder"
 
@@ -107,8 +107,20 @@ export const ConfirmLeavingCarousel: Story = {
       /click to explore different styles/i,
     )
     await userEvent.click(caption.closest("button") ?? caption)
-    await userEvent.click(await canvas.findByRole("radio", { name: "Block" }))
 
+    // Cancelling keeps the carousel selected.
+    await userEvent.click(await canvas.findByRole("radio", { name: "Block" }))
+    await userEvent.click(
+      await body.findByRole("button", { name: "Keep carousel" }),
+    )
+    await waitFor(() =>
+      expect(
+        body.queryByRole("dialog", { name: "Discard extra carousel slides?" }),
+      ).toBeNull(),
+    )
+    await expect(canvas.getByRole("radio", { name: "Carousel" })).toBeChecked()
+
+    await userEvent.click(canvas.getByRole("radio", { name: "Block" }))
     const modal = await body.findByRole("dialog", {
       name: "Discard extra carousel slides?",
     })

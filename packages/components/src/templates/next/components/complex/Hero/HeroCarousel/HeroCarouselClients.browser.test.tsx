@@ -853,14 +853,15 @@ describe("hero carousel rotation", () => {
 
     it("swipes right to go to the previous slide", () => {
       // Arrange
-      const section = renderGradient(linkedSlides)
+      // Three slides, so going back from slide 1 wraps to slide 3, not 2.
+      const section = renderGradient()
 
       // Act
       touch(section, "pointerDown", 100)
       touch(section, "pointerUp", 200)
 
       // Assert
-      expect(liveRegion().textContent).toBe("Slide 2 of 2: Second")
+      expect(liveRegion().textContent).toBe("Slide 3 of 3: Gamma")
     })
 
     it("still follows the link on an ordinary tap after a swipe", () => {

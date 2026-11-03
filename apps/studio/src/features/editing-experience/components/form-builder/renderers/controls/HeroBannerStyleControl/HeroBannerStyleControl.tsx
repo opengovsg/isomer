@@ -11,6 +11,7 @@ import { Button, FormLabel } from "@opengovsg/design-system-react"
 import {
   getHeroStyleVariantForBranchTitle,
   HERO_STYLE,
+  type HeroCarouselProps,
   type HeroStyleVariant,
 } from "@opengovsg/isomer-components"
 import { useId, useState } from "react"
@@ -276,7 +277,7 @@ export function HeroBannerStyleCombinator({
   const [pendingValue, setPendingValue] = useState<string>()
   const { core } = useJsonForms()
   const slideCount =
-    (Resolve.data(core?.data, path) as { slides?: unknown[] } | undefined)
+    (Resolve.data(core?.data, path) as Partial<HeroCarouselProps> | undefined)
       ?.slides?.length ?? 0
 
   const options = renderInfos
