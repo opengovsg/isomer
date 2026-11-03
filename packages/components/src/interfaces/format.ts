@@ -1,4 +1,6 @@
 export const ARRAY_RADIO_FORMAT = "radio"
+export const HERO_ACTION_LAYOUT_FORMAT = "hero-action-layout"
+export const HERO_QUICK_LINKS_FORMAT = "hero-quick-links"
 export const HERO_BANNER_STYLE_FORMAT = "hero-banner-style"
 export const HERO_BLOCK_IMAGE_FORMAT = "hero-block-image"
 export const COLLECTION_DROPDOWN_FORMAT = "collection-dropdown"
