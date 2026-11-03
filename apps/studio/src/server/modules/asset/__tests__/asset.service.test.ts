@@ -761,7 +761,7 @@ describe("asset.service", () => {
       )
     })
 
-    it("should throw BAD_REQUEST for source from different site", () => {
+    it("should throw FORBIDDEN for source from different site", () => {
       // Arrange — source belongs to siteId 99, but we're deriving for siteId 36
       const src = `/99/${UUID}/source.png`
       const originalKey = `99/${UUID}/source.png`
@@ -771,7 +771,7 @@ describe("asset.service", () => {
       // Act & Assert
       expect(() => deriveBakeKey({ src, originalKey, ext, siteId })).toThrow(
         new TRPCError({
-          code: "BAD_REQUEST",
+          code: "FORBIDDEN",
           message: "Image source does not belong to this site",
         }),
       )

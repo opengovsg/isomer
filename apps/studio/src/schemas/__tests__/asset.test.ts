@@ -9,6 +9,7 @@ import {
 import {
   deleteAssetsSchema,
   fileNameAndSizeSchema,
+  getPresignedPutUrlForBakeSchema,
   getPresignedPutUrlSchema,
   MAX_DELETE_FILE_KEYS,
 } from "../asset"
@@ -370,5 +371,31 @@ describe("deleteAssetsSchema", () => {
         `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
       )
     }
+  })
+})
+
+describe("getPresignedPutUrlForBakeSchema", () => {
+  const baseInput = {
+    siteId: 1,
+    resourceId: "1",
+    src: "https://example.com/image.jpg",
+    originalKey: "1/uuid/image.jpg",
+    ext: "jpeg" as const,
+  }
+
+  it("rejects a fileSize above the image size limit", () => {
+    const result = getPresignedPutUrlForBakeSchema.safeParse({
+      ...baseInput,
+      fileSize: MAX_IMG_FILE_SIZE_BYTES + 1,
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts a fileSize at the image size limit", () => {
+    const result = getPresignedPutUrlForBakeSchema.safeParse({
+      ...baseInput,
+      fileSize: MAX_IMG_FILE_SIZE_BYTES,
+    })
+    expect(result.success).toBe(true)
   })
 })
