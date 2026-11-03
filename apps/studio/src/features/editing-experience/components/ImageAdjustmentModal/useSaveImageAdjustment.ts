@@ -119,27 +119,6 @@ export const validateCropBounds = (crop: ImageAdjustment["crop"]): void => {
   }
 }
 
-/**
- * Guard against an out-of-bounds or zero-area crop before baking. The schema
- * only bounds each field independently to [0,1]; nothing upstream enforces
- * that a crop rectangle actually fits inside the image or has any area --
- * a zero-width/height crop reaches canvas drawImage() and throws there instead.
- * @param crop - The draft's crop rectangle
- * @throws If the crop extends past the image's right or bottom edge, or has no area
- */
-export const validateCropBounds = (crop: ImageAdjustment["crop"]): void => {
-  if (
-    crop.x + crop.width > 1 ||
-    crop.y + crop.height > 1 ||
-    crop.width <= 0 ||
-    crop.height <= 0
-  ) {
-    throw new Error(
-      `Invalid crop: (x=${crop.x}, width=${crop.width}, y=${crop.y}, height=${crop.height}) extends outside the image or has no area.`,
-    )
-  }
-}
-
 interface UseSaveImageAdjustmentInput {
   siteId: number
   resourceId?: string
