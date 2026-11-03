@@ -190,11 +190,13 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
     tablet: { width: 2, height: 1 },
     desktop: { width: 5, height: 2 },
   }),
-  // Mirrors HeroGradient's left-to-right dark gradient so editors can judge
-  // text contrast against the chosen crop/focal.
+  // Must match HeroGradient.tsx's own className exactly, so editors judge contrast
+  // against the real overlay: solid dark on mobile, gradient from lg: up.
   scrim: {
     id: "gradient",
-    className: "bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)]",
+    className:
+      "bg-black/60 lg:bg-transparent lg:bg-gradient-to-r lg:from-black lg:to-black/25",
+    label: "Dark gradient (for text contrast)",
   },
   preUploadCopy:
     "Use a high-resolution image (at least 2560×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text — this variant adds a gradient overlay.",
@@ -438,8 +440,6 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
     tablet: { width: 1, height: 1 },
     desktop: { width: 2, height: 3 },
   }),
-  // Approximates the real card's bottom-half dark gradient (the title overlay):
-  // opaque at the bottom edge, fading out by the vertical midpoint.
   scrim: {
     id: "infocards-full-image-overlay",
     // Exactly the gradient InfoCardWithFullImage renders (from-[…100%] to-[…0%]),
@@ -447,6 +447,7 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
     // component) and the preview overlay matches the published card.
     className:
       "bg-gradient-to-t from-[rgba(38,38,38,100%)] to-[rgba(38,38,38,0%)]",
+    label: "Dark gradient (for title readability)",
   },
   preUploadCopy:
     "The card crops this image to fill its frame and overlays the title on a dark gradient at the bottom. Keep your key subject in the upper half and set a focal point to anchor it.",
