@@ -7,7 +7,7 @@ import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
-import { ImageClient } from "../../internal/ImageClient"
+import { ImageClientWithAdjustment } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
 const HERO_THEME_MAPPINGS = {
@@ -181,7 +181,7 @@ export const HeroBlock = ({
         </div>
       </div>
       <div className={styles.imageColumn()} style={{ contain: "layout" }}>
-        <ImageClient
+        <ImageClientWithAdjustment
           src={backgroundUrl}
           alt=""
           width="100%"
