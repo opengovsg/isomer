@@ -38,6 +38,12 @@ const NormalizedUnit = Type.Number({ minimum: 0, maximum: 1 })
 // modal, never a hand-edited JSONForms control -> format: "hidden".
 export const imageAdjustmentSchema = Type.Object(
   {
+    // Crop box as a fraction of the original image: x/y is the top-left
+    // corner, width/height is the box size. All relative to the full
+    // original, not to any previous crop -- e.g. {x:0.25, y:0, width:0.5,
+    // height:1} keeps the horizontal middle half and the full height.
+    // x+width and y+height are each expected to stay within 1 (enforced at
+    // save time, not here -- see validateCropBounds in useSaveImageAdjustment.ts).
     crop: Type.Object({
       x: NormalizedUnit,
       y: NormalizedUnit,
@@ -48,10 +54,11 @@ export const imageAdjustmentSchema = Type.Object(
       x: NormalizedUnit,
       y: NormalizedUnit,
     }),
-    rotate: Type.Union(
-      [Type.Literal(0), Type.Literal(90), Type.Literal(180), Type.Literal(270)],
-      { default: 0 },
-    ),
+    // Degrees, free-form rather than quarter-turn literals -- keeps the door
+    // open to arbitrary-angle rotation (e.g. Instagram-style) without a
+    // breaking schema change later, since fields here can only be deprecated
+    // and added, never have their type changed once shipped.
+    rotate: Type.Number({ minimum: 0, maximum: 360, default: 0 }),
     flipH: Type.Boolean({ default: false }),
     flipV: Type.Boolean({ default: false }),
     originalKey: Type.String(),

@@ -67,10 +67,9 @@ const matchesAscii = (
 }
 
 const readUint32BE = (bytes: Uint8Array, offset: number): number =>
-  (bytes[offset] ?? 0) * 0x1000000 +
-  (((bytes[offset + 1] ?? 0) << 16) |
-    ((bytes[offset + 2] ?? 0) << 8) |
-    (bytes[offset + 3] ?? 0))
+  new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(
+    offset,
+  )
 
 /**
  * Detect animated WebP via the VP8X extended-format animation flag.
@@ -107,21 +106,50 @@ export const isAnimatedPng = (bytes: Uint8Array): boolean => {
 }
 
 /**
- * Whether the given bytes are an animated image that baking would flatten.
- * Only WebP and PNG need sniffing; JPEG (the other bakeable MIME) can't animate.
+ * Whether a blob is an animated image that baking would flatten. Only WebP
+ * and PNG need sniffing (JPEG, the other bakeable MIME, can't animate) --
+ * checked against the MIME first so a JPEG never pays for reading its full
+ * byte contents just to be told it isn't a container format at all.
  */
-export const isAnimatedImageBytes = (
-  mimeType: string,
-  bytes: Uint8Array,
-): boolean => {
-  if (mimeType === "image/webp") return isAnimatedWebp(bytes)
-  if (mimeType === "image/png") return isAnimatedPng(bytes)
-  return false
+export const isAnimatedImageBlob = async (blob: Blob): Promise<boolean> => {
+  if (blob.type !== "image/webp" && blob.type !== "image/png") return false
+  const bytes = new Uint8Array(await blob.arrayBuffer())
+  return blob.type === "image/webp"
+    ? isAnimatedWebp(bytes)
+    : isAnimatedPng(bytes)
 }
 
-/** Blob wrapper around isAnimatedImageBytes. */
-export const isAnimatedImageBlob = async (blob: Blob): Promise<boolean> =>
-  isAnimatedImageBytes(blob.type, new Uint8Array(await blob.arrayBuffer()))
+const clamp = (n: number, lo: number, hi: number): number =>
+  Math.min(Math.max(n, lo), hi)
+
+// Rounds a normalized [start, start+size) span to a pixel-space [start, end)
+// span that's guaranteed to stay within [0, srcSize] and -- for any positive
+// size -- to cover at least 1px. Rounding the START and END coordinates
+// (not start+size independently) means start+size can never exceed srcSize
+// from rounding drift alone (e.g. a 0.5/0.5 split of a 3px source
+// independently rounds to start=2, size=2, overflowing by 1); clamping on
+// top of that also catches a genuinely tiny positive size (e.g. 5% of a
+// 10px source) that would otherwise round away to a zero-pixel span the
+// canvas can't draw.
+const roundPixelSpan = (
+  startFrac: number,
+  sizeFrac: number,
+  srcSize: number,
+): { start: number; size: number } => {
+  if (sizeFrac <= 0) {
+    return {
+      start: clamp(Math.round(startFrac * srcSize), 0, srcSize),
+      size: 0,
+    }
+  }
+  const start = clamp(Math.round(startFrac * srcSize), 0, srcSize - 1)
+  const end = clamp(
+    Math.round((startFrac + sizeFrac) * srcSize),
+    start + 1,
+    srcSize,
+  )
+  return { start, size: end - start }
+}
 
 /**
  * Convert a normalized crop rectangle to pixel coordinates.
@@ -138,31 +166,26 @@ export const cropRectToPixels = (
   srcWidth: number,
   srcHeight: number,
 ): PixelRect => {
-  // Round the START and END coordinates (not start+size independently), so
-  // sx+sw can never exceed srcWidth due to rounding drift -- e.g. a 0.5/0.5
-  // split of a 3px-wide source independently rounds to sx=2, sw=2 (overflow);
-  // rounding the end coordinate instead gives sx=2, sw=round(3)-2=1.
-  const sx = Math.round(crop.x * srcWidth)
-  const sy = Math.round(crop.y * srcHeight)
-  const sw = Math.round((crop.x + crop.width) * srcWidth) - sx
-  const sh = Math.round((crop.y + crop.height) * srcHeight) - sy
+  const { start: sx, size: sw } = roundPixelSpan(crop.x, crop.width, srcWidth)
+  const { start: sy, size: sh } = roundPixelSpan(crop.y, crop.height, srcHeight)
   return { sx, sy, sw, sh }
 }
 
 /**
  * Calculate output canvas dimensions after rotation.
  * Rotations of 90 or 270 degrees swap width and height.
- * Rotations of 0 or 180 degrees preserve the dimensions.
+ * Any other angle (including non-quarter-turns) preserves the dimensions --
+ * arbitrary-angle canvas expansion isn't implemented yet.
  *
  * @param croppedWidth - Pixel width of the cropped region
  * @param croppedHeight - Pixel height of the cropped region
- * @param rotate - Rotation in degrees: 0, 90, 180, or 270
+ * @param rotate - Rotation in degrees, 0-360
  * @returns Object with output {width, height}
  */
 export const outputDimensions = (
   croppedWidth: number,
   croppedHeight: number,
-  rotate: 0 | 90 | 180 | 270,
+  rotate: number,
 ): { width: number; height: number } => {
   if (rotate === 90 || rotate === 270) {
     return { width: croppedHeight, height: croppedWidth }
@@ -174,13 +197,13 @@ export const outputDimensions = (
  * Compute canvas transform scale factors (rotate, flipH, flipV).
  * Returns the transformation parameters to be applied to the canvas.
  *
- * @param rotate - Rotation in degrees: 0, 90, 180, or 270
+ * @param rotate - Rotation in degrees, 0-360
  * @param flipH - Whether to flip horizontally
  * @param flipV - Whether to flip vertically
  * @returns Object with {rotate, scaleX, scaleY}
  */
 export const computeCanvasTransform = (
-  rotate: 0 | 90 | 180 | 270,
+  rotate: number,
   flipH: boolean,
   flipV: boolean,
 ): {
@@ -207,6 +230,25 @@ const isOffscreenCanvas = (
   canvas: OffscreenCanvas | HTMLCanvasElement,
 ): canvas is OffscreenCanvas =>
   typeof OffscreenCanvas !== "undefined" && canvas instanceof OffscreenCanvas
+
+const canvasToBlob = (
+  canvas: OffscreenCanvas | HTMLCanvasElement,
+  opts: BakeImageOptions,
+): Promise<Blob> => {
+  if (isOffscreenCanvas(canvas)) {
+    return canvas.convertToBlob({ type: opts.mimeType, quality: opts.quality })
+  }
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) reject(new Error("Canvas toBlob returned null"))
+        else resolve(blob)
+      },
+      opts.mimeType,
+      opts.quality,
+    )
+  })
+}
 
 /**
  * Bake an image by applying crop, rotate, and flip from an adjustment object.
@@ -294,26 +336,7 @@ export const bakeImage = async (
     // Draw the cropped region onto the canvas
     ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, sw, sh)
 
-    // Convert to blob with the specified MIME type and quality.
-    // Guard the OffscreenCanvas symbol via a type predicate: referencing it
-    // directly in `instanceof` throws ReferenceError in browsers that lack it,
-    // and the predicate still narrows the HTMLCanvasElement branch (no cast).
-    const convertToBlob = isOffscreenCanvas(canvas)
-      ? () =>
-          canvas.convertToBlob({ type: opts.mimeType, quality: opts.quality })
-      : () =>
-          new Promise<Blob>((resolve, reject) => {
-            canvas.toBlob(
-              (blob) => {
-                if (!blob) reject(new Error("Canvas toBlob returned null"))
-                else resolve(blob)
-              },
-              opts.mimeType,
-              opts.quality,
-            )
-          })
-
-    const blob = await convertToBlob()
+    const blob = await canvasToBlob(canvas, opts)
     // Some browsers can decode a format they can't encode via canvas and
     // silently substitute PNG instead (e.g. requesting webp) -- verify the
     // actual output type rather than trusting the request succeeded.

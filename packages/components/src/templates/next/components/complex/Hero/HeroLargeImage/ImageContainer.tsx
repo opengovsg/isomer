@@ -1,16 +1,19 @@
 "use client"
 
-import type { ImageClientProps } from "~/interfaces"
+import type {
+  ImageClientProps,
+  ImageClientWithAdjustmentProps,
+} from "~/interfaces"
 import { useEffect, useRef, useState } from "react"
 
-import { ImageClient } from "../../../internal/ImageClient"
+import { ImageClientWithAdjustment } from "../../../internal/ImageClient"
 import { ScrollForMoreButton } from "./ScrollForMoreButton"
 
 interface ImageContainerProps {
   imageSrc: ImageClientProps["src"]
   imageAlt: ImageClientProps["alt"]
   assetsBaseUrl: ImageClientProps["assetsBaseUrl"]
-  imageAdjustment?: ImageClientProps["imageAdjustment"]
+  imageAdjustment?: ImageClientWithAdjustmentProps["imageAdjustment"]
 }
 
 // Arbitrary threshold to prevent the button from showing too early
@@ -59,7 +62,7 @@ export const ImageContainer = ({
 
   return (
     <div className="relative w-full">
-      <ImageClient
+      <ImageClientWithAdjustment
         ref={imageRef}
         src={imageSrc}
         alt={imageAlt}

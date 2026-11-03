@@ -2,7 +2,6 @@
 
 import type { ImageClientProps } from "~/interfaces"
 import { forwardRef } from "react"
-import { getFocalObjectPosition } from "~/utils/getFocalObjectPosition"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 export const ImageClient = forwardRef<
@@ -19,7 +18,6 @@ export const ImageClient = forwardRef<
       lazyLoading = true, // next/image defaults to lazy loading true too
       onLoad,
       objectPosition,
-      imageAdjustment,
     },
     ref,
   ) => {
@@ -27,10 +25,6 @@ export const ImageClient = forwardRef<
       isExternalUrl(src) || assetsBaseUrl === undefined
         ? src
         : `${assetsBaseUrl}${src}`
-
-    // Explicit objectPosition wins; otherwise derive focal from imageAdjustment.
-    const resolvedObjectPosition =
-      objectPosition ?? getFocalObjectPosition(imageAdjustment)
 
     return (
       <img
@@ -40,11 +34,7 @@ export const ImageClient = forwardRef<
         width={width}
         height="auto"
         className={className}
-        style={
-          resolvedObjectPosition
-            ? { objectPosition: resolvedObjectPosition }
-            : undefined
-        }
+        style={objectPosition ? { objectPosition } : undefined}
         onLoad={onLoad}
         onError={({ currentTarget }) => {
           currentTarget.onerror = null
