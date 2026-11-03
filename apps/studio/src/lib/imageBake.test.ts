@@ -6,7 +6,7 @@ import {
   computeCanvasTransform,
   isAnimatedWebp,
   isAnimatedPng,
-  isAnimatedImageBytes,
+  isAnimatedImageBlob,
   type CropRect,
 } from "./imageBake"
 
@@ -132,6 +132,34 @@ describe("cropRectToPixels", () => {
     const result = cropRectToPixels(crop, 3, 3)
     expect(result.sx + result.sw).toBeLessThanOrEqual(3)
     expect(result.sy + result.sh).toBeLessThanOrEqual(3)
+  })
+
+  it("never rounds a positive crop down to a zero-pixel width or height", () => {
+    // Regression test: a crop narrower than half a source pixel (e.g. 5% of
+    // a 5px-wide source) independently rounded width/height to 0, which
+    // reaches canvas as a zero-sized, undraw-able region.
+    const crop: CropRect = { x: 0, y: 0, width: 0.05, height: 0.05 }
+    const result = cropRectToPixels(crop, 5, 5)
+    expect(result.sw).toBeGreaterThanOrEqual(1)
+    expect(result.sh).toBeGreaterThanOrEqual(1)
+  })
+
+  it("keeps a right/bottom-edge crop within the source bounds", () => {
+    // A crop whose normalized start is already at (or past) the edge must
+    // still clamp to a valid, non-overflowing pixel rect.
+    const crop: CropRect = { x: 1, y: 1, width: 0.1, height: 0.1 }
+    const result = cropRectToPixels(crop, 10, 10)
+    expect(result.sx + result.sw).toBeLessThanOrEqual(10)
+    expect(result.sy + result.sh).toBeLessThanOrEqual(10)
+    expect(result.sw).toBeGreaterThanOrEqual(1)
+    expect(result.sh).toBeGreaterThanOrEqual(1)
+  })
+
+  it("returns a zero-size rect for a zero-area crop, without clamping it to 1px", () => {
+    const crop: CropRect = { x: 0.5, y: 0.5, width: 0, height: 0 }
+    const result = cropRectToPixels(crop, 100, 100)
+    expect(result.sw).toBe(0)
+    expect(result.sh).toBe(0)
   })
 })
 
@@ -306,8 +334,8 @@ describe("isAnimatedPng", () => {
   })
 })
 
-describe("isAnimatedImageBytes", () => {
-  it("sniffs WebP by MIME", () => {
+describe("isAnimatedImageBlob", () => {
+  it("sniffs an animated WebP blob by MIME", async () => {
     const animated = Uint8Array.from([
       ...asciiBytes("RIFF"),
       0,
@@ -323,21 +351,24 @@ describe("isAnimatedImageBytes", () => {
       0x02,
       ...new Array<number>(10).fill(0),
     ])
-    expect(isAnimatedImageBytes("image/webp", animated)).toBe(true)
+    const blob = new Blob([animated], { type: "image/webp" })
+    expect(await isAnimatedImageBlob(blob)).toBe(true)
   })
 
-  it("sniffs PNG by MIME", () => {
+  it("sniffs an animated PNG blob by MIME", async () => {
     const apng = Uint8Array.from([
       ...PNG_SIGNATURE,
       ...pngChunk("acTL", 8),
       ...pngChunk("IDAT", 4),
     ])
-    expect(isAnimatedImageBytes("image/png", apng)).toBe(true)
+    const blob = new Blob([apng], { type: "image/png" })
+    expect(await isAnimatedImageBlob(blob)).toBe(true)
   })
 
-  it("returns false for formats that can't animate (JPEG)", () => {
-    expect(isAnimatedImageBytes("image/jpeg", Uint8Array.from([1, 2, 3]))).toBe(
-      false,
-    )
+  it("returns false without reading bytes for formats that can't animate (JPEG)", async () => {
+    const blob = new Blob([Uint8Array.from([1, 2, 3])], {
+      type: "image/jpeg",
+    })
+    expect(await isAnimatedImageBlob(blob)).toBe(false)
   })
 })
