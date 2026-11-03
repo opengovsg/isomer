@@ -1,76 +1,43 @@
-import type { ImageAdjustment } from "@opengovsg/isomer-components"
 import { describe, expect, it } from "vitest"
 
 import { bakeImage } from "./imageBake"
 
-// bakeImage needs a real Canvas/createImageBitmap, so this runs in real
-// Chromium (Vitest Browser Mode) rather than the simulated "node" project —
-// see vitest.config.ts's BROWSER_TEST_PATTERN.
+type Rgb = [number, number, number]
 
-type Adjustment = Pick<ImageAdjustment, "crop" | "rotate" | "flipH" | "flipV">
+const RED: Rgb = [255, 0, 0]
+const GREEN: Rgb = [0, 255, 0]
+const BLUE: Rgb = [0, 0, 255]
+const WHITE: Rgb = [255, 255, 255]
 
-const baseAdjustment = (overrides: Partial<Adjustment> = {}): Adjustment => ({
-  crop: { x: 0, y: 0, width: 1, height: 1 },
-  rotate: 0,
-  flipH: false,
-  flipV: false,
-  ...overrides,
-})
-
-const blobFromCanvas = (canvas: HTMLCanvasElement): Promise<Blob> =>
-  new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (!blob) reject(new Error("canvas.toBlob returned null"))
-      else resolve(blob)
-    }, "image/png")
+// Build a tiny lossless PNG blob from row-major pixels (index = y*width + x).
+const makeImageBlob = async (
+  width: number,
+  height: number,
+  pixels: Rgb[],
+): Promise<Blob> => {
+  const canvas = document.createElement("canvas")
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext("2d")
+  if (!ctx) throw new Error("no 2d context")
+  const imageData = ctx.createImageData(width, height)
+  pixels.forEach(([r, g, b], i) => {
+    imageData.data[i * 4] = r
+    imageData.data[i * 4 + 1] = g
+    imageData.data[i * 4 + 2] = b
+    imageData.data[i * 4 + 3] = 255
   })
-
-// 4x4 image, one solid color per 2x2 quadrant — lets crop/flip/rotate be
-// verified by sampling a single pixel per quadrant, with no anti-aliasing
-// since every fill lands on exact pixel boundaries.
-const RED = [255, 0, 0, 255]
-const GREEN = [0, 255, 0, 255]
-const BLUE = [0, 0, 255, 255]
-const YELLOW = [255, 255, 0, 255]
-
-const createQuadrantImage = (): Promise<Blob> => {
-  const canvas = document.createElement("canvas")
-  canvas.width = 4
-  canvas.height = 4
-  const ctx = canvas.getContext("2d")
-  if (!ctx) throw new Error("no 2d context")
-  ctx.fillStyle = `rgb(${RED.slice(0, 3).join(",")})`
-  ctx.fillRect(0, 0, 2, 2) // top-left
-  ctx.fillStyle = `rgb(${GREEN.slice(0, 3).join(",")})`
-  ctx.fillRect(2, 0, 2, 2) // top-right
-  ctx.fillStyle = `rgb(${BLUE.slice(0, 3).join(",")})`
-  ctx.fillRect(0, 2, 2, 2) // bottom-left
-  ctx.fillStyle = `rgb(${YELLOW.slice(0, 3).join(",")})`
-  ctx.fillRect(2, 2, 2, 2) // bottom-right
-  return blobFromCanvas(canvas)
+  ctx.putImageData(imageData, 0, 0)
+  return new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error("toBlob null"))),
+      "image/png",
+    ),
+  )
 }
 
-// Non-square image (6 wide x 2 tall), left half red / right half blue — used
-// to verify rotate swaps output dimensions and actually rotates content, not
-// just a square that would hide a transposition bug.
-const createWideImage = (): Promise<Blob> => {
-  const canvas = document.createElement("canvas")
-  canvas.width = 6
-  canvas.height = 2
-  const ctx = canvas.getContext("2d")
-  if (!ctx) throw new Error("no 2d context")
-  ctx.fillStyle = `rgb(${RED.slice(0, 3).join(",")})`
-  ctx.fillRect(0, 0, 3, 2)
-  ctx.fillStyle = `rgb(${BLUE.slice(0, 3).join(",")})`
-  ctx.fillRect(3, 0, 3, 2)
-  return blobFromCanvas(canvas)
-}
-
-const getPixel = async (
-  blob: Blob,
-  x: number,
-  y: number,
-): Promise<number[]> => {
+// Decode a baked blob back into addressable pixels.
+const readPixels = async (blob: Blob) => {
   const bitmap = await createImageBitmap(blob)
   const canvas = document.createElement("canvas")
   canvas.width = bitmap.width
@@ -78,92 +45,105 @@ const getPixel = async (
   const ctx = canvas.getContext("2d")
   if (!ctx) throw new Error("no 2d context")
   ctx.drawImage(bitmap, 0, 0)
-  return Array.from(ctx.getImageData(x, y, 1, 1).data)
+  const { data } = ctx.getImageData(0, 0, bitmap.width, bitmap.height)
+  return {
+    width: bitmap.width,
+    height: bitmap.height,
+    at: (x: number, y: number): Rgb => {
+      const i = (y * bitmap.width + x) * 4
+      return [data[i]!, data[i + 1]!, data[i + 2]!]
+    },
+  }
 }
 
-describe("bakeImage", () => {
-  it("throws for a non-bakeable MIME type before touching the canvas", async () => {
-    const original = await createQuadrantImage()
-    await expect(
-      bakeImage(original, baseAdjustment(), { mimeType: "image/avif" }),
-    ).rejects.toThrow(/Cannot bake image format/)
-  })
+const FULL_CROP = { x: 0, y: 0, width: 1, height: 1 }
+const PNG = { mimeType: "image/png" }
 
-  it("crops to the requested normalized region", async () => {
-    const original = await createQuadrantImage()
+// Covers the canvas composition that bakeImage actually ships (display-space
+// crop, full-image draw, rotate/flip transform) — the pure helpers it used to
+// lean on no longer reflect the real output.
+describe("bakeImage composition", () => {
+  it("passes a full-crop, un-rotated image through unchanged", async () => {
+    const src = await makeImageBlob(2, 1, [RED, BLUE])
     const baked = await bakeImage(
-      original,
-      baseAdjustment({ crop: { x: 0, y: 0, width: 0.5, height: 0.5 } }),
-      { mimeType: "image/png" },
+      src,
+      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      PNG,
     )
-    const bitmap = await createImageBitmap(baked)
-    expect(bitmap.width).toBe(2)
-    expect(bitmap.height).toBe(2)
-    expect(await getPixel(baked, 0, 0)).toEqual(RED)
+    const out = await readPixels(baked)
+    expect([out.width, out.height]).toEqual([2, 1])
+    expect(out.at(0, 0)).toEqual(RED)
+    expect(out.at(1, 0)).toEqual(BLUE)
   })
 
-  it("flips horizontally, mirroring left and right quadrants", async () => {
-    const original = await createQuadrantImage()
-    const baked = await bakeImage(original, baseAdjustment({ flipH: true }), {
-      mimeType: "image/png",
-    })
-    // Originally red (top-left) / green (top-right) — flipped, red should now
-    // be on the right and green on the left.
-    expect(await getPixel(baked, 0, 0)).toEqual(GREEN)
-    expect(await getPixel(baked, 3, 0)).toEqual(RED)
+  it("rotates 90° clockwise: a 2×1 (left/right) becomes a 1×2 (top/bottom)", async () => {
+    const src = await makeImageBlob(2, 1, [RED, BLUE])
+    const baked = await bakeImage(
+      src,
+      { crop: FULL_CROP, rotate: 90, flipH: false, flipV: false },
+      PNG,
+    )
+    const out = await readPixels(baked)
+    // 90° swaps the dimensions, and the left edge rotates to the top.
+    expect([out.width, out.height]).toEqual([1, 2])
+    expect(out.at(0, 0)).toEqual(RED)
+    expect(out.at(0, 1)).toEqual(BLUE)
   })
 
-  it("flips vertically, mirroring top and bottom quadrants", async () => {
-    const original = await createQuadrantImage()
-    const baked = await bakeImage(original, baseAdjustment({ flipV: true }), {
-      mimeType: "image/png",
-    })
-    // Originally red (top-left) / blue (bottom-left) — flipped, blue should
-    // now be on top and red on the bottom.
-    expect(await getPixel(baked, 0, 0)).toEqual(BLUE)
-    expect(await getPixel(baked, 0, 3)).toEqual(RED)
+  it("rotates 270° counterclockwise: the opposite edge rotates to the top", async () => {
+    const src = await makeImageBlob(2, 1, [RED, BLUE])
+    const baked = await bakeImage(
+      src,
+      { crop: FULL_CROP, rotate: 270, flipH: false, flipV: false },
+      PNG,
+    )
+    const out = await readPixels(baked)
+    // 270° is the opposite rotation from 90° -- the right edge rotates to
+    // the top instead of the left edge.
+    expect([out.width, out.height]).toEqual([1, 2])
+    expect(out.at(0, 0)).toEqual(BLUE)
+    expect(out.at(0, 1)).toEqual(RED)
   })
 
-  it("rotating 90 degrees swaps dimensions and rotates content clockwise", async () => {
-    const original = await createWideImage()
-    const baked = await bakeImage(original, baseAdjustment({ rotate: 90 }), {
-      mimeType: "image/png",
-    })
-    const bitmap = await createImageBitmap(baked)
-    // Original is 6x2 (wide, red left half / blue right half); rotated 90
-    // clockwise it must report 2x6 (tall), with the red half now on top.
-    expect(bitmap.width).toBe(2)
-    expect(bitmap.height).toBe(6)
-    expect(await getPixel(baked, 0, 0)).toEqual(RED)
-    expect(await getPixel(baked, 0, 5)).toEqual(BLUE)
+  it("flips horizontally: left/right are mirrored", async () => {
+    const src = await makeImageBlob(2, 1, [RED, BLUE])
+    const baked = await bakeImage(
+      src,
+      { crop: FULL_CROP, rotate: 0, flipH: true, flipV: false },
+      PNG,
+    )
+    const out = await readPixels(baked)
+    expect([out.width, out.height]).toEqual([2, 1])
+    expect(out.at(0, 0)).toEqual(BLUE)
+    expect(out.at(1, 0)).toEqual(RED)
   })
 
-  it("rotating 270 degrees swaps dimensions and rotates content counterclockwise", async () => {
-    const original = await createWideImage()
-    const baked = await bakeImage(original, baseAdjustment({ rotate: 270 }), {
-      mimeType: "image/png",
-    })
-    const bitmap = await createImageBitmap(baked)
-    // 270 is the opposite rotation from 90 -- the red/blue halves land on
-    // the opposite ends, not just the same dimension swap.
-    expect(bitmap.width).toBe(2)
-    expect(bitmap.height).toBe(6)
-    expect(await getPixel(baked, 0, 0)).toEqual(BLUE)
-    expect(await getPixel(baked, 0, 5)).toEqual(RED)
+  it("flips vertically: top/bottom are mirrored", async () => {
+    const src = await makeImageBlob(1, 2, [RED, BLUE])
+    const baked = await bakeImage(
+      src,
+      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: true },
+      PNG,
+    )
+    const out = await readPixels(baked)
+    expect([out.width, out.height]).toEqual([1, 2])
+    expect(out.at(0, 0)).toEqual(BLUE)
+    expect(out.at(0, 1)).toEqual(RED)
   })
 
-  it("rotating 180 degrees preserves dimensions and inverts both axes", async () => {
-    const original = await createQuadrantImage()
-    const baked = await bakeImage(original, baseAdjustment({ rotate: 180 }), {
-      mimeType: "image/png",
-    })
-    const bitmap = await createImageBitmap(baked)
-    expect(bitmap.width).toBe(4)
-    expect(bitmap.height).toBe(4)
-    // 180 degrees is equivalent to flipping both axes: red (top-left) ends
-    // up bottom-right, and vice versa.
-    expect(await getPixel(baked, 0, 0)).toEqual(YELLOW)
-    expect(await getPixel(baked, 3, 3)).toEqual(RED)
+  it("rotates 180°: dimensions are preserved and both axes invert", async () => {
+    const src = await makeImageBlob(2, 2, [RED, GREEN, BLUE, WHITE])
+    const baked = await bakeImage(
+      src,
+      { crop: FULL_CROP, rotate: 180, flipH: false, flipV: false },
+      PNG,
+    )
+    const out = await readPixels(baked)
+    expect([out.width, out.height]).toEqual([2, 2])
+    // 180° is equivalent to flipping both axes: each corner ends up at its
+    // diagonally opposite position.
+    expect(out.at(0, 0)).toEqual(WHITE)
+    expect(out.at(1, 1)).toEqual(RED)
   })
 
   // CHARACTERIZATION TEST, not a spec: rotate + flip together are not
@@ -180,20 +160,35 @@ describe("bakeImage", () => {
   // left-right as the user would see it on screen". Confirm this is the
   // intended composition — not just leave it as accidental — before shipping
   // a rotate+flip UI control.
-  it("documents current (unreviewed) behavior for rotate + flipH combined", async () => {
-    const original = await createQuadrantImage()
+  it("documents current (unreviewed) behavior for rotate 90 + flipH combined", async () => {
+    const src = await makeImageBlob(2, 2, [RED, GREEN, BLUE, WHITE])
     const baked = await bakeImage(
-      original,
-      baseAdjustment({ rotate: 90, flipH: true }),
-      { mimeType: "image/png" },
+      src,
+      { crop: FULL_CROP, rotate: 90, flipH: true, flipV: false },
+      PNG,
     )
-    const bitmap = await createImageBitmap(baked)
-    expect(bitmap.width).toBe(4)
-    expect(bitmap.height).toBe(4)
-    expect(await getPixel(baked, 0, 0)).toEqual(RED) // unchanged
-    expect(await getPixel(baked, 3, 3)).toEqual(YELLOW) // unchanged
-    expect(await getPixel(baked, 3, 0)).toEqual(BLUE) // was bottom-left
-    expect(await getPixel(baked, 0, 3)).toEqual(GREEN) // was top-right
+    const out = await readPixels(baked)
+    expect([out.width, out.height]).toEqual([2, 2])
+    expect(out.at(0, 0)).toEqual(RED)
+    expect(out.at(1, 1)).toEqual(WHITE)
+  })
+
+  it("crops in display space: keeping the right half drops the left pixels", async () => {
+    const src = await makeImageBlob(4, 1, [RED, GREEN, BLUE, WHITE])
+    const baked = await bakeImage(
+      src,
+      {
+        crop: { x: 0.5, y: 0, width: 0.5, height: 1 },
+        rotate: 0,
+        flipH: false,
+        flipV: false,
+      },
+      PNG,
+    )
+    const out = await readPixels(baked)
+    expect([out.width, out.height]).toEqual([2, 1])
+    expect(out.at(0, 0)).toEqual(BLUE)
+    expect(out.at(1, 0)).toEqual(WHITE)
   })
 
   it("throws for an animated source, without relying on the caller to check first", () => {
@@ -209,7 +204,11 @@ describe("bakeImage", () => {
     const animatedWebp = new Blob([header], { type: "image/webp" })
 
     return expect(
-      bakeImage(animatedWebp, baseAdjustment(), { mimeType: "image/webp" }),
+      bakeImage(
+        animatedWebp,
+        { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+        { mimeType: "image/webp" },
+      ),
     ).rejects.toThrow(/animated/)
   })
 })

@@ -58,6 +58,11 @@ export interface AdjustmentConfig {
   scrim?: AdjustmentScrim
   // Guidance copy shown before/around upload (resolution hints etc.).
   preUploadCopy?: string
+  // The widest CSS-pixel width the image renders into on the published site
+  // (across all breakpoints). Used to warn when the cropped region can't fill
+  // that frame even at 1x — i.e. the result would look soft/blurry. Omit for
+  // components whose frame width isn't meaningfully bounded.
+  maxRenderedWidthPx?: number
   // Tier C conditional focal: overrides focalEnabled based on the field's
   // immediate host object — the block itself, or for an array-nested image field
   // (e.g. an InfoCards card) the card object. InfoCards offers the focal point

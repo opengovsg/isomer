@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest"
 
-import { resolveAdjustmentConfig } from "./adjustmentConfigRegistry"
+import {
+  INTENTIONALLY_NOT_ADJUSTABLE,
+  resolveAdjustmentConfig,
+} from "./adjustmentConfigRegistry"
 
 describe("resolveAdjustmentConfig", () => {
   it("returns undefined for components not yet wired", () => {
@@ -10,6 +13,26 @@ describe("resolveAdjustmentConfig", () => {
     expect(
       resolveAdjustmentConfig({ block: null, fieldName: "image" }),
     ).toBeUndefined()
+  })
+
+  // Tier D = preserve-only: these components have image fields but must never
+  // offer crop/focal adjustment. The registry is an allow-list, so the guarantee
+  // is simply that none of them resolve a config — which is what hides the
+  // "Adjust image" entry point in JsonFormsImageControl. Lock that in so a future
+  // registry entry can't silently light the modal up on one of them.
+  describe("Tier D (preserve-only) blocks resolve no config", () => {
+    const tierDBlocks = [
+      { type: "image" },
+      { type: "imagegallery" },
+      ...INTENTIONALLY_NOT_ADJUSTABLE.map((type) => ({ type })),
+    ]
+    for (const block of tierDBlocks) {
+      it(`returns undefined for "${block.type}"`, () => {
+        expect(
+          resolveAdjustmentConfig({ block, fieldName: "src" }),
+        ).toBeUndefined()
+      })
+    }
   })
 
   describe("hero:floating", () => {
