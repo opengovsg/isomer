@@ -19,8 +19,6 @@ const createStyles = tv({
       "prose-headline-lg-semibold text-base-content-strong",
     ],
     description: "prose-body-base text-base-content",
-    button:
-      "prose-headline-base-medium items-center gap-1 text-base-content-strong",
     buttonIcon:
       "mb-0.5 ml-1 inline text-[1.375rem] transition ease-in group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0",
   },
@@ -59,12 +57,10 @@ export const QuickLinksItem = ({
   site,
   headingLevel,
 }: QuickLinksItemProps) => {
-  const { title, icon, description, buttonUrl, buttonLabel } = item
-  const trimmedTitle = title?.trim()
-  const trimmedButtonLabel = buttonLabel?.trim()
+  const { title, icon, description, buttonUrl } = item
+  const trimmedTitle = title.trim()
   const hasLink = Boolean(buttonUrl)
   const isExternalLink = isExternalUrl(buttonUrl)
-  const showTitleArrow = hasLink && !trimmedButtonLabel
   const TitleTag = getHeadingTag(headingLevel)
 
   return (
@@ -82,7 +78,7 @@ export const QuickLinksItem = ({
       {trimmedTitle ? (
         <TitleTag className={styles.title({ hasLink })}>
           {trimmedTitle}
-          {showTitleArrow ? (
+          {hasLink ? (
             <BiRightArrowAlt
               aria-hidden
               className={styles.buttonIcon({
@@ -95,18 +91,6 @@ export const QuickLinksItem = ({
 
       {description ? (
         <p className={styles.description()}>{description}</p>
-      ) : null}
-
-      {hasLink && !showTitleArrow ? (
-        <div className={styles.button()}>
-          {trimmedButtonLabel}
-          <BiRightArrowAlt
-            aria-hidden
-            className={styles.buttonIcon({
-              isExternalLink,
-            })}
-          />
-        </div>
       ) : null}
     </Link>
   )

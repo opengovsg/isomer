@@ -1,6 +1,6 @@
 import type { HeroGradientQuickLinksItem } from "@opengovsg/isomer-components"
 
-// Required fields only. buttonLabel stays empty so the item shows a link icon.
+// Required fields only. The title always shows a link icon.
 export const createDefaultHeroGradientQuickLinksItem =
   (): HeroGradientQuickLinksItem => ({
     title: "Quick link title",

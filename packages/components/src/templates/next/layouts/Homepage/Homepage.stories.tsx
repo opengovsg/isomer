@@ -811,7 +811,6 @@ const homepageQuickLinksItems = [
     title: "Explore Isomer's features",
     description:
       "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
-    buttonLabel: "See features",
     buttonUrl: "/",
   },
   {
@@ -819,7 +818,6 @@ const homepageQuickLinksItems = [
     title: "See how others use Isomer",
     description:
       "Browse websites built with Isomer across agencies and see what good government digital service looks like.",
-    buttonLabel: "View showcase",
     buttonUrl: "/",
   },
   {
@@ -827,7 +825,6 @@ const homepageQuickLinksItems = [
     title: "Start building your site",
     description:
       "Get guidance on setting up your agency site, from content planning to launch.",
-    buttonLabel: "Get started",
     buttonUrl: "/",
   },
   {
@@ -835,7 +832,6 @@ const homepageQuickLinksItems = [
     title: "Join the community",
     description:
       "Connect with other agencies using Isomer and learn from shared playbooks.",
-    buttonLabel: "Join us",
     buttonUrl: "/",
   },
 ]
@@ -896,14 +892,12 @@ export const HeroGradientQuickLinksTwoItemsShortText: Story = {
             icon: "stars",
             title: "One",
             description: "A",
-            buttonLabel: "Go",
             buttonUrl: "/",
           },
           {
             icon: "line-chart",
             title: "Two",
             description: "B",
-            buttonLabel: "Go",
             buttonUrl: "/",
           },
         ],

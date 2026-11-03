@@ -3,7 +3,6 @@ import type { Simplify } from "type-fest"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { omit } from "lodash-es"
-import { SUPPORTED_ICON_NAMES } from "~/common/icons"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
@@ -12,8 +11,8 @@ import {
   HERO_BANNER_STYLE_FORMAT,
   HERO_BLOCK_IMAGE_FORMAT,
   HERO_QUICK_LINKS_FORMAT,
-  ICON_PICKER_FORMAT,
 } from "../format"
+import { IconPicker } from "../primitives/IconPicker"
 import { IsomerString } from "../primitives/IsomerString"
 import { generateImageSrcSchema } from "./Image"
 
@@ -139,18 +138,7 @@ const GROUPINGS = {
 } as const
 
 const HeroGradientQuickLinksItemSchema = Type.Object({
-  icon: Type.Union(
-    SUPPORTED_ICON_NAMES.map((icon) =>
-      Type.Literal(icon, {
-        title: icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-/g, " "),
-      }),
-    ),
-    {
-      title: "Column icon",
-      type: "string",
-      format: ICON_PICKER_FORMAT,
-    },
-  ),
+  icon: IconPicker(),
   title: IsomerString({
     title: "Title",
     pattern: NON_EMPTY_STRING_REGEX,
@@ -165,14 +153,6 @@ const HeroGradientQuickLinksItemSchema = Type.Object({
       pattern: "cannot be empty or contain only spaces",
     },
   }),
-  buttonLabel: Type.Optional(
-    IsomerString({
-      title: "Call-to-action text",
-      maxLength: 50,
-      description:
-        "A descriptive text. Avoid generic text such as “Click here” or “Learn more”. Leave empty to show a link icon beside the title.",
-    }),
-  ),
   buttonUrl: Type.String({
     title: "Call-to-action destination",
     description: "When this is clicked, open:",
