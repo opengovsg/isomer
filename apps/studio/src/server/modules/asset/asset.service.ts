@@ -156,6 +156,11 @@ export const getPresignedPutUrl = async ({
   return { presignedPutUrl, contentType, contentDisposition }
 }
 
+// Marks a key as server-generated (vs. uploader-provided). Referenced by
+// downstream bake logic that needs to recognise/strip it, so it's a shared
+// constant rather than a literal repeated at each call site.
+export const BAKED_FILE_PREFIX = "baked-"
+
 /**
  * Derive a bake key from the source image's current location.
  * Bridges relative path to full URL, extracts folder, and mints server leaf.
@@ -183,16 +188,16 @@ export const deriveBakeKey = ({
   // Extract folder: drop the leaf (last segment) from `${siteId}/${uuid}/${file}`
   const folder = key.substring(0, key.lastIndexOf("/"))
 
-  // Defense-in-depth: assert folder starts with `${siteId}/`
-  if (!folder.startsWith(`${siteId}/`)) {
+  // Defense-in-depth: assert folder belongs to this site
+  if (!doAllFileKeysBelongToSite({ fileKeys: [folder], siteId })) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
+      code: "FORBIDDEN",
       message: "Image source does not belong to this site",
     })
   }
 
   // Mint server leaf and return full bake key
-  return `${folder}/baked-${randomUUID()}.${ext}`
+  return `${folder}/${BAKED_FILE_PREFIX}${randomUUID()}.${ext}`
 }
 
 // Best-effort delete: the derived format may not exist for every asset
