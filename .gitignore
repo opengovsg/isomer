@@ -69,3 +69,6 @@ apps/studio/public/assets/css/preview-tw.css
 
 # JSON generated when publishing from the local Studio to the local template
 apps/template/.local-publish*/
+
+# Argos screenshots
+screenshots/

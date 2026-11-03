@@ -1,10 +1,10 @@
 /**
- * This file is for Chromatic viewport modes.
- * @see https://www.chromatic.com/docs/modes/
+ * This file is for Argos viewport modes.
+ * @see https://argos-ci.com/docs/learn/how-to-guides/visual-coverage/storybook-story-modes
  * The names should correspond to the viewports exported in `viewports.ts`.
  */
 
-export type ChromaticModeKey = keyof typeof modes
+export type ArgosModeKey = keyof typeof modes
 
 export const modes = {
   mobileSmall: {
@@ -31,6 +31,6 @@ export const modes = {
 }
 
 // Mainly for typing available viewports for use in storybook
-export const getViewportByMode = (viewport: ChromaticModeKey) => {
+export const getViewportByMode = (viewport: ArgosModeKey) => {
   return modes[viewport].viewport
 }

@@ -36,7 +36,7 @@ const OpenedUnpublishModal = ({
 const meta: Meta<typeof PublishOrUnpublishModal> = {
   title: "Components/UnpublishModal",
   component: PublishOrUnpublishModal,
-  // The modal renders in a portal; give Chromatic a bounding box to snapshot.
+  // The modal renders in a portal; give Argos a bounding box to snapshot.
   decorators: [
     (storyFn) => (
       <Box w="100%" h="100vh">
@@ -48,7 +48,7 @@ const meta: Meta<typeof PublishOrUnpublishModal> = {
   parameters: {
     layout: "fullscreen",
     // Prevent flaky snapshots while the modal animates in.
-    chromatic: { delay: 200 },
+    argos: { delay: 200 },
     msw: {
       handlers: [
         ...ADMIN_HANDLERS,

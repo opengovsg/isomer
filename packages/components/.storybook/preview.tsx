@@ -9,6 +9,7 @@ import "bootstrap-icons/font/bootstrap-icons.css"
 
 import "../src/index.css"
 import { viewport } from "@isomer/storybook-config"
+import { applyViewportInVitest } from "@isomer/storybook-config/test-viewport"
 
 const CUSTOM_GENERAL_VIEWPORTS = {
   smallDesktop: {
@@ -96,23 +97,71 @@ const resetIsomerQueryParams = () => {
   }
 }
 
+// `load` doesn't bubble, but a capturing listener still sees it for every
+// iframe, including ones Argos re-renders right before its screenshot.
+const loadedIframes = new WeakSet<EventTarget>()
+document.addEventListener(
+  "load",
+  (event) => {
+    if (event.target instanceof HTMLIFrameElement)
+      loadedIframes.add(event.target)
+  },
+  true,
+)
+
+// Argos stabilization waits for images and fonts but not iframes, so embeds
+// (maps, FormSG, Spotify) would be captured blank on a slow CI network.
+const waitForIframesInVitest = async () => {
+  if (!("__vitest_browser__" in globalThis)) return
+  const iframes = Array.from(document.querySelectorAll("iframe"))
+  if (iframes.length === 0) return
+  iframes.forEach((iframe) => (iframe.loading = "eager"))
+  // Not Date.now(): stories freeze it with mockdate, so it would never pass.
+  const deadline = performance.now() + 15_000
+  while (
+    performance.now() < deadline &&
+    !iframes.every((iframe) => loadedIframes.has(iframe))
+  ) {
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
+  // ponytail: fixed settle for embeds that paint after `load` (map tiles,
+  // Spotify player); raise it if those still flake.
+  await new Promise((resolve) => setTimeout(resolve, 1_000))
+}
+
 const preview: Preview = {
   // Storybook's preview iframe is a single persistent document, so query
   // state written by a previous story can leak into the next one. Reset only
   // Isomer's parameters before rendering; Storybook owns the other parameters
   // in the search string. A lifecycle hook keeps this side effect out of
-  // React's render phase, which is required by Chromatic's story renderer.
-  beforeEach: resetIsomerQueryParams,
+  // React's render phase.
+  beforeEach: async (context) => {
+    resetIsomerQueryParams()
+    await applyViewportInVitest(context)
+  },
+  afterEach: waitForIframesInVitest,
 
   loaders: [
     mswLoader(async () => {
       const worker = setupWorker()
-      await worker.start({ onUnhandledFrame: "bypass" })
+      // Relative, so the worker resolves next to the Storybook even when it is
+      // deployed under a sub-path (/components/, /studio/) instead of the root.
+      await worker.start({
+        onUnhandledFrame: "bypass",
+        // Per-request logs flood the Vitest output on CI with thousands of entries.
+        quiet: true,
+        serviceWorker: { url: "./mockServiceWorker.js" },
+      })
       return worker
     }),
   ],
 
   parameters: {
+    argos: {
+      // Argos crops, pads and zooms the capture by default. Chromatic captured
+      // the full viewport width as rendered.
+      fitToContent: false,
+    },
     viewport: {
       options: {
         ...viewport.viewports,
@@ -127,14 +176,11 @@ const preview: Preview = {
      * ```
      * export const SomeStory: Story = {
      *   parameters: {
-     *     chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+     *     argos: withArgosModes(["mobile", "tablet", "desktop"]),
      *   }
      * }
      * ```
      */
-    chromatic: {
-      prefersReducedMotion: "reduce",
-    },
   },
 
   tags: ["autodocs"],
