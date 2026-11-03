@@ -24,7 +24,7 @@ const slideImageStyles = tv({
 })
 
 const slideContentStyles = tv({
-  base: "pointer-events-none col-start-1 row-start-1 flex w-full flex-col gap-9 self-start opacity-0 transition-opacity duration-[400ms] ease-out motion-reduce:transition-none",
+  base: "pointer-events-none col-start-1 row-start-1 flex w-full min-w-0 flex-col gap-9 self-start opacity-0 transition-opacity duration-[400ms] ease-out motion-reduce:transition-none",
   variants: {
     isCurrent: {
       true: "pointer-events-auto relative z-10 opacity-100",
@@ -153,7 +153,9 @@ export const CarouselSlideContent = ({
           <div className="flex flex-col gap-6">
             <SlideTag className={titleClassName}>{slide.title}</SlideTag>
             {slide.subtitle && (
-              <p className="prose-title-lg-regular">{slide.subtitle}</p>
+              <p className="prose-title-lg-regular break-words">
+                {slide.subtitle}
+              </p>
             )}
           </div>
           <SlideActions slide={slide} className={actionsClassName} />
