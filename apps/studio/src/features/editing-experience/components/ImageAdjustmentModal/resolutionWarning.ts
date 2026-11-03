@@ -44,7 +44,7 @@ export const computeLowResWarning = ({
 }: {
   naturalSize?: { width: number; height: number }
   crop?: CropRectNormalized
-  rotate?: 0 | 90 | 180 | 270
+  rotate?: number
   lockedRatio?: AspectRatio
   maxRenderedWidthPx?: number
   maxRenderedHeightPx?: number
