@@ -164,9 +164,13 @@ export const ImageAdjustmentModal = ({
     setIsSaving(true)
     const savePromise = save(src, draft)
     savePromiseRef.current = savePromise
-    void savePromise.finally(() => {
-      savePromiseRef.current = null
-    })
+    // .finally() re-throws, so without a .catch() here this chain would be an
+    // unhandled rejection on top of the one already handled below via Promise.race.
+    void savePromise
+      .finally(() => {
+        savePromiseRef.current = null
+      })
+      .catch(() => undefined)
 
     let timeoutId: ReturnType<typeof setTimeout> | undefined
     try {
