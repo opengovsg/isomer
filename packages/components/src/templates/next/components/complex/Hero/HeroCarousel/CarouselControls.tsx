@@ -5,7 +5,7 @@ import { twMerge } from "~/lib/twMerge"
 
 import { HERO_CAROUSEL_ROTATION_INTERVAL_MS } from "./constants"
 
-// pointer:coarse is a proxy for whether the user is using a touch-only pointer type.
+// pointer:coarse matches a touch pointer.
 const coarsePointerControlSizeClassName =
   "[@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
 
@@ -13,9 +13,8 @@ const coarsePointerControlSizeClassName =
 // pause, call to action, previous, next.
 const carouselControlsStyles = tv({
   slots: {
-    // Bottom row, right column, vertically centred with the slide position.
     rotation: "col-start-2 row-start-2 self-center justify-self-end",
-    // Bottom row, left column. w-fit stops the chip stretching across the row.
+    // w-fit stops the chip stretching across the row.
     position:
       "col-start-1 row-start-2 flex w-fit items-center self-center justify-self-start",
     chip: "flex h-10 items-center rounded-full px-1 [@media(pointer:coarse)]:h-11",
@@ -30,11 +29,10 @@ const carouselControlsStyles = tv({
     },
     isCenteredOnTablet: {
       true: {
-        // From md, leave the grid and pin the pause to the hero's right edge.
-        rotation: "md:absolute md:bottom-9 md:right-10 md:z-10 lg:bottom-10",
-        // From md, centre the position chip on the hero. h-10 matches the pause.
+        rotation:
+          "md:z-10 md:col-start-1 md:row-start-2 md:mr-10 md:self-center md:justify-self-end",
         position:
-          "md:absolute md:bottom-9 md:left-1/2 md:z-10 md:h-10 md:-translate-x-1/2 md:items-center lg:bottom-10 [@media(pointer:coarse)]:md:h-11",
+          "md:col-start-1 md:row-start-2 md:h-10 md:self-center md:justify-self-center [@media(pointer:coarse)]:md:h-11",
       },
     },
   },

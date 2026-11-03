@@ -29,8 +29,7 @@ const slideContentStyles = tv({
     isCurrent: {
       true: "pointer-events-auto relative z-10 opacity-100",
     },
-    // From md, centre the title and CTAs together so a short slide isn't
-    // pinned to the top of space reserved by a taller one.
+    // Centres a short slide within a taller one.
     isVerticallyCentered: {
       true: "md:self-center",
     },
