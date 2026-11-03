@@ -350,7 +350,7 @@ export const ImageAdjustmentModal = ({
                         Overlay
                       </Text>
                       <Text textStyle="body-2" color="base.content.medium">
-                        {config.scrim.className}
+                        {config.scrim.label}
                       </Text>
                     </Box>
                   )}
