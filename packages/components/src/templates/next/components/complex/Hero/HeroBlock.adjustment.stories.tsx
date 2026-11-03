@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ImageAdjustment } from "~/interfaces/complex/Image"
 import { generateSiteConfig } from "~/stories/helpers"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { HeroBlock } from "./HeroBlock"
 
@@ -18,7 +18,7 @@ const meta: Meta<typeof HeroBlock> = {
   title: "Next/Components/Hero/HeroBlock/ImageAdjustment",
   component: HeroBlock,
   parameters: {
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    argos: withArgosModes(["mobile", "tablet", "desktop"]),
     themes: { themeOverride: "Isomer Next" },
   },
 }
