@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from "react"
 import { Box, Flex, Stack, Text } from "@chakra-ui/react"
 import { Badge, IconButton, Link } from "@opengovsg/design-system-react"
 import { useEffect, useRef, useState } from "react"
@@ -19,19 +20,34 @@ interface Spotlight {
 // Hardcoded login spotlight. Replace these entries (up to 3) when the edition changes.
 const SPOTLIGHTS: Spotlight[] = [
   {
-    id: "unpublishing",
-    tabLabel: "Unpublishing",
+    id: "hero-banners",
+    tabLabel: "Hero banners",
     media: {
       type: "video",
-      src: "/assets/fresh-from-isomer/unpublishing.mp4",
+      src: "/assets/fresh-from-isomer/hero-banners.mp4",
     },
-    aspectRatio: 1280 / 868,
+    aspectRatio: 1920 / 1080,
     badge: "New",
-    title: "Unpublish pages",
+    title: "New hero banner styles",
     description:
-      "Take a page off your live site without deleting it. You can publish it again at any time.",
+      "Curve the image edge, surface up to four quick links, or rotate up to four slides with their own images, text and buttons.",
     learnMoreHref:
-      "https://support.isomer.gov.sg/en/articles/17125273-unpublishing",
+      "https://support.isomer.gov.sg/en/articles/10390602-editing-your-home-page",
+  },
+  {
+    id: "table-editing",
+    tabLabel: "Table editing",
+    media: {
+      type: "video",
+      src: "/assets/fresh-from-isomer/table-editing.mp4",
+    },
+    aspectRatio: 3840 / 2160,
+    badge: "New",
+    title: "Tables just got easier to work with",
+    description:
+      "Pick a size, merge cells, add colours, resize or move columns and edit full screen.",
+    learnMoreHref:
+      "https://support.isomer.gov.sg/en/articles/10425930-text-block#h_6da533f62d",
   },
   {
     id: "page-history",
@@ -57,6 +73,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const mediaFrameRef = useRef<HTMLDivElement>(null)
   const underlineRef = useRef<HTMLDivElement>(null)
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
   const pausedForHoverRef = useRef(false)
   const isMediaHovered = useHover(mediaFrameRef)
   const active = SPOTLIGHTS[activeIndex]
@@ -109,6 +126,33 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
     setIsBuffering(next.media.type === "video")
   }
 
+  // WAI-ARIA tabs: arrow keys move both focus and selection between tabs,
+  // Home/End jump to the first/last tab. Inactive tabs are tabIndex -1 so the
+  // tablist is a single tab stop.
+  const handleTabListKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const count = SPOTLIGHTS.length
+    let nextIndex: number
+    switch (event.key) {
+      case "ArrowRight":
+        nextIndex = (activeIndex + 1) % count
+        break
+      case "ArrowLeft":
+        nextIndex = (activeIndex - 1 + count) % count
+        break
+      case "Home":
+        nextIndex = 0
+        break
+      case "End":
+        nextIndex = count - 1
+        break
+      default:
+        return
+    }
+    event.preventDefault()
+    if (nextIndex !== activeIndex) selectSpotlight(nextIndex)
+    tabRefs.current[nextIndex]?.focus()
+  }
+
   const togglePlayback = () => {
     const video = videoRef.current
     if (!video) return
@@ -133,7 +177,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
             borderRadius="full"
             flexShrink={0}
           >
-            Oct 2026 edition
+            Nov 2026 edition
           </Badge>
         </Flex>
 
@@ -149,7 +193,12 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
         )}
       </Flex>
 
-      <Flex role="tablist" aria-label="Fresh from Isomer" gap="1.5rem">
+      <Flex
+        role="tablist"
+        aria-label="Fresh from Isomer"
+        gap="1.5rem"
+        onKeyDown={handleTabListKeyDown}
+      >
         {SPOTLIGHTS.map((item, index) => {
           const isActive = index === activeIndex
           const showLoadingBar =
@@ -162,10 +211,14 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
               as="button"
               type="button"
               key={item.id}
+              ref={(el: HTMLButtonElement | null) => {
+                tabRefs.current[index] = el
+              }}
               role="tab"
               id={`fresh-from-isomer-tab-${item.id}`}
               aria-selected={isActive}
               aria-controls={`fresh-from-isomer-panel-${item.id}`}
+              tabIndex={isActive ? 0 : -1}
               position="relative"
               pb="0.5rem"
               color={isActive ? "base.content.strong" : "base.content.medium"}
