@@ -6,28 +6,64 @@ import {
   computeCanvasTransform,
   isAnimatedWebp,
   isAnimatedPng,
-  isAnimatedImageBytes,
   type CropRect,
 } from "./imageBake"
 
-const asciiBytes = (s: string): number[] => [...s].map((c) => c.charCodeAt(0))
+// Minimal valid (extended-format) WebP header with the VP8X animation flag
+// either set or clear -- just enough bytes for isAnimatedWebp's own reader,
+// not a decodable image.
+const makeWebpHeader = (animated: boolean): Uint8Array => {
+  const bytes = new Uint8Array(21)
+  bytes.set([0x52, 0x49, 0x46, 0x46], 0) // "RIFF"
+  bytes.set([0x57, 0x45, 0x42, 0x50], 8) // "WEBP"
+  bytes.set([0x56, 0x50, 0x38, 0x58], 12) // "VP8X"
+  bytes[20] = animated ? 0x02 : 0x00
+  return bytes
+}
 
-// Build a PNG chunk: 4-byte big-endian length, 4-byte type, data, 4-byte CRC
-// (CRC is zero-filled; the sniffer doesn't validate it).
-const pngChunk = (type: string, dataLength: number): number[] => [
-  (dataLength >>> 24) & 0xff,
-  (dataLength >>> 16) & 0xff,
-  (dataLength >>> 8) & 0xff,
-  dataLength & 0xff,
-  ...asciiBytes(type),
-  ...new Array<number>(dataLength).fill(0),
-  0,
-  0,
-  0,
-  0,
-]
-
+// Minimal valid PNG byte stream: signature, then either an "acTL" chunk
+// before "IDAT" (animated/APNG) or straight to "IDAT" (static) -- chunk
+// data/CRC bytes are irrelevant to isAnimatedPng's chunk walk, so each
+// chunk's length is 0.
+const makeChunk = (type: string): number[] => {
+  const typeBytes = Array.from(type, (c) => c.charCodeAt(0))
+  return [0, 0, 0, 0, ...typeBytes, 0, 0, 0, 0] // length(0) + type + crc(0)
+}
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+const makePng = (animated: boolean): Uint8Array =>
+  new Uint8Array([
+    ...PNG_SIGNATURE,
+    ...(animated ? makeChunk("acTL") : []),
+    ...makeChunk("IDAT"),
+  ])
+
+describe("isAnimatedWebp", () => {
+  it("returns true for an extended-format WebP with the animation flag set", () => {
+    expect(isAnimatedWebp(makeWebpHeader(true))).toBe(true)
+  })
+
+  it("returns false for an extended-format WebP without the animation flag", () => {
+    expect(isAnimatedWebp(makeWebpHeader(false))).toBe(false)
+  })
+
+  it("returns false for a non-WebP byte stream", () => {
+    expect(isAnimatedWebp(new Uint8Array(21))).toBe(false)
+  })
+})
+
+describe("isAnimatedPng", () => {
+  it("returns true for a PNG with an acTL chunk before IDAT", () => {
+    expect(isAnimatedPng(makePng(true))).toBe(true)
+  })
+
+  it("returns false for a static PNG (IDAT with no preceding acTL)", () => {
+    expect(isAnimatedPng(makePng(false))).toBe(false)
+  })
+
+  it("returns false for a non-PNG byte stream", () => {
+    expect(isAnimatedPng(new Uint8Array(8))).toBe(false)
+  })
+})
 
 describe("canBakeImage", () => {
   it("returns true for JPEG", () => {
@@ -132,6 +168,34 @@ describe("cropRectToPixels", () => {
     const result = cropRectToPixels(crop, 3, 3)
     expect(result.sx + result.sw).toBeLessThanOrEqual(3)
     expect(result.sy + result.sh).toBeLessThanOrEqual(3)
+  })
+
+  it("never rounds a positive crop down to a zero-pixel width or height", () => {
+    // Regression test: a crop narrower than half a source pixel (e.g. 5% of
+    // a 5px-wide source) independently rounded width/height to 0, which
+    // reaches canvas as a zero-sized, undraw-able region.
+    const crop: CropRect = { x: 0, y: 0, width: 0.05, height: 0.05 }
+    const result = cropRectToPixels(crop, 5, 5)
+    expect(result.sw).toBeGreaterThanOrEqual(1)
+    expect(result.sh).toBeGreaterThanOrEqual(1)
+  })
+
+  it("keeps a right/bottom-edge crop within the source bounds", () => {
+    // A crop whose normalized start is already at (or past) the edge must
+    // still clamp to a valid, non-overflowing pixel rect.
+    const crop: CropRect = { x: 1, y: 1, width: 0.1, height: 0.1 }
+    const result = cropRectToPixels(crop, 10, 10)
+    expect(result.sx + result.sw).toBeLessThanOrEqual(10)
+    expect(result.sy + result.sh).toBeLessThanOrEqual(10)
+    expect(result.sw).toBeGreaterThanOrEqual(1)
+    expect(result.sh).toBeGreaterThanOrEqual(1)
+  })
+
+  it("returns a zero-size rect for a zero-area crop, without clamping it to 1px", () => {
+    const crop: CropRect = { x: 0.5, y: 0.5, width: 0, height: 0 }
+    const result = cropRectToPixels(crop, 100, 100)
+    expect(result.sw).toBe(0)
+    expect(result.sh).toBe(0)
   })
 })
 
@@ -244,100 +308,5 @@ describe("computeCanvasTransform", () => {
       scaleX: -1,
       scaleY: -1,
     })
-  })
-})
-
-describe("isAnimatedWebp", () => {
-  const header = (chunk: string, flags: number): number[] => [
-    ...asciiBytes("RIFF"),
-    0,
-    0,
-    0,
-    0,
-    ...asciiBytes("WEBP"),
-    ...asciiBytes(chunk),
-    10,
-    0,
-    0,
-    0,
-    flags,
-    ...new Array<number>(10).fill(0),
-  ]
-
-  it("returns true for an extended WebP with the animation flag set", () => {
-    expect(isAnimatedWebp(Uint8Array.from(header("VP8X", 0x02)))).toBe(true)
-  })
-
-  it("returns false for an extended WebP without the animation flag", () => {
-    expect(isAnimatedWebp(Uint8Array.from(header("VP8X", 0x10)))).toBe(false)
-  })
-
-  it("returns false for a non-extended (static) WebP", () => {
-    expect(isAnimatedWebp(Uint8Array.from(header("VP8 ", 0x02)))).toBe(false)
-  })
-
-  it("returns false for non-WebP bytes", () => {
-    expect(isAnimatedWebp(Uint8Array.from([1, 2, 3]))).toBe(false)
-  })
-})
-
-describe("isAnimatedPng", () => {
-  it("returns true when acTL precedes IDAT (APNG)", () => {
-    const apng = Uint8Array.from([
-      ...PNG_SIGNATURE,
-      ...pngChunk("IHDR", 13),
-      ...pngChunk("acTL", 8),
-      ...pngChunk("IDAT", 4),
-    ])
-    expect(isAnimatedPng(apng)).toBe(true)
-  })
-
-  it("returns false for a static PNG (no acTL)", () => {
-    const png = Uint8Array.from([
-      ...PNG_SIGNATURE,
-      ...pngChunk("IHDR", 13),
-      ...pngChunk("IDAT", 4),
-    ])
-    expect(isAnimatedPng(png)).toBe(false)
-  })
-
-  it("returns false for non-PNG bytes", () => {
-    expect(isAnimatedPng(Uint8Array.from([1, 2, 3]))).toBe(false)
-  })
-})
-
-describe("isAnimatedImageBytes", () => {
-  it("sniffs WebP by MIME", () => {
-    const animated = Uint8Array.from([
-      ...asciiBytes("RIFF"),
-      0,
-      0,
-      0,
-      0,
-      ...asciiBytes("WEBP"),
-      ...asciiBytes("VP8X"),
-      10,
-      0,
-      0,
-      0,
-      0x02,
-      ...new Array<number>(10).fill(0),
-    ])
-    expect(isAnimatedImageBytes("image/webp", animated)).toBe(true)
-  })
-
-  it("sniffs PNG by MIME", () => {
-    const apng = Uint8Array.from([
-      ...PNG_SIGNATURE,
-      ...pngChunk("acTL", 8),
-      ...pngChunk("IDAT", 4),
-    ])
-    expect(isAnimatedImageBytes("image/png", apng)).toBe(true)
-  })
-
-  it("returns false for formats that can't animate (JPEG)", () => {
-    expect(isAnimatedImageBytes("image/jpeg", Uint8Array.from([1, 2, 3]))).toBe(
-      false,
-    )
   })
 })

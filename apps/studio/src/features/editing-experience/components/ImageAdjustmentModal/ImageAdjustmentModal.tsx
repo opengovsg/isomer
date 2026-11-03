@@ -35,6 +35,7 @@ import {
   flipRectH,
   flipRectV,
   nextRotation,
+  normalizeRotation,
   rotatePointCcw,
   rotatePointCw,
   rotateRectCcw,
@@ -142,7 +143,8 @@ export const ImageAdjustmentModal = ({
       computeLowResWarning({
         naturalSize,
         crop: draft?.crop,
-        rotate: draft?.rotate,
+        rotate:
+          draft?.rotate != null ? normalizeRotation(draft.rotate) : undefined,
         lockedRatio,
         maxRenderedWidthPx: config.maxRenderedWidthPx,
       }),
@@ -277,7 +279,10 @@ export const ImageAdjustmentModal = ({
     if (isLockedRatioAspectPending) return
     setDraft((d) => {
       const base = ensureAdjustment(d)
-      const rotate = nextRotation(base, direction)
+      const rotate = nextRotation(
+        { ...base, rotate: normalizeRotation(base.rotate) },
+        direction,
+      )
       if (lockedRatio) {
         const quarter = rotate === 90 || rotate === 270
         const displayAspect = quarter
@@ -399,7 +404,7 @@ export const ImageAdjustmentModal = ({
                       cropMode={config.cropMode}
                       lockedRatio={lockedRatio}
                       focalEnabled={focalEnabled}
-                      rotate={draft?.rotate ?? 0}
+                      rotate={normalizeRotation(draft?.rotate ?? 0)}
                       flipH={draft?.flipH ?? false}
                       flipV={draft?.flipV ?? false}
                       onCropChange={(crop) =>

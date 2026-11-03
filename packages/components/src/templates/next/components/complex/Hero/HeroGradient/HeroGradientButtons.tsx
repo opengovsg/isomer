@@ -3,7 +3,7 @@ import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { ComponentContent } from "../../../internal/customCssClass"
-import { ImageClient } from "../../../internal/ImageClient"
+import { ImageClientWithAdjustment } from "../../../internal/ImageClient"
 import { LinkButton } from "../../../internal/LinkButton/LinkButton"
 
 export const HeroGradientButtons = ({
@@ -26,7 +26,7 @@ export const HeroGradientButtons = ({
         style={{ contain: "layout" }}
         aria-hidden
       >
-        <ImageClient
+        <ImageClientWithAdjustment
           src={backgroundUrl}
           alt=""
           width="100%"
