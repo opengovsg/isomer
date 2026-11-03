@@ -1,6 +1,8 @@
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
+import { backOff } from "exponential-backoff"
 import { useState } from "react"
 import { env } from "~/env.mjs"
+import { getAssetUploadBackoffOptions } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import {
   BAKEABLE_FORMAT_BY_MIME,
   bakeImage,
@@ -8,6 +10,7 @@ import {
   isAnimatedImageBlob,
 } from "~/lib/imageBake"
 import { performUpload } from "~/lib/storage/client"
+import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
 
 /**
@@ -80,7 +83,8 @@ interface UseSaveImageAdjustmentOutput {
  * Hook to save an image adjustment via the fail-safe order:
  * 1. Bake the original image
  * 2. Upload the bake to S3
- * 3. Only on success, return the new src + imageAdjustment with originalKey set
+ * 3. Wait for the upload to clear the malware scan (readable)
+ * 4. Only on success, return the new src + imageAdjustment with originalKey set
  * Any earlier failure leaves the blob untouched.
  */
 export const useSaveImageAdjustment = ({
@@ -149,7 +153,16 @@ export const useSaveImageAdjustment = ({
       const file = new File([bakedBlob], `baked.${ext}`, { type: mime })
       await performUpload(file, fileKey, uploadConfig)
 
-      // Step 8: Return the new src and imageAdjustment
+      // Step 8: Wait for the malware scan to tag the upload as readable, so
+      // repointing the block doesn't momentarily 403 (see useAssetUpload).
+      await backOff(async () => {
+        const response = await fetch(`${ASSETS_BASE_URL}/${fileKey}`)
+        if (!response.ok) {
+          throw new Error(`Unable to read from ${fileKey}`)
+        }
+      }, getAssetUploadBackoffOptions({}))
+
+      // Step 9: Return the new src and imageAdjustment
       return {
         src: `/${fileKey}`,
         imageAdjustment: {
