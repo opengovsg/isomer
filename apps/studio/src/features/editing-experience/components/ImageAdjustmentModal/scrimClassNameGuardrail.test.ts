@@ -18,34 +18,43 @@ const REPO_ROOT = path.resolve(__dirname, "../../../../../../../")
 // the scrim's className is a verbatim substring of the component's source.
 const SCRIM_CONFIGS: {
   block: unknown
-  componentPath: string
+  // HeroGradient.tsx just dispatches on actions.layout to one of two
+  // sub-components, each with its own gradient; the registry's scrim mirrors
+  // the default (Buttons) one, so match against either's source.
+  componentPaths: string[]
 }[] = [
   {
     block: { type: "hero", variant: "gradient" },
-    componentPath:
-      "packages/components/src/templates/next/components/complex/Hero/HeroGradient.tsx",
+    componentPaths: [
+      "packages/components/src/templates/next/components/complex/Hero/HeroGradient/HeroGradientButtons.tsx",
+      "packages/components/src/templates/next/components/complex/Hero/HeroGradient/HeroGradientQuickLinks/HeroGradientQuickLinks.tsx",
+    ],
   },
   {
     block: { type: "infocards", variant: "cardsWithFullImages" },
-    componentPath:
+    componentPaths: [
       "packages/components/src/templates/next/components/complex/InfoCards/components/InfoCardWithFullImage.tsx",
+    ],
   },
 ]
 
 describe("scrim className guardrail", () => {
-  for (const { block, componentPath } of SCRIM_CONFIGS) {
+  for (const { block, componentPaths } of SCRIM_CONFIGS) {
     const config = resolveAdjustmentConfig({
       block,
       fieldName: "image",
     })
 
-    it(`"${config?.componentType}" scrim className appears in ${componentPath}`, () => {
+    it(`"${config?.componentType}" scrim className appears in one of ${componentPaths.join(", ")}`, () => {
       expect(config?.scrim).toBeDefined()
-      const source = fs.readFileSync(
-        path.join(REPO_ROOT, componentPath),
-        "utf-8",
+      const sources = componentPaths.map((componentPath) =>
+        fs.readFileSync(path.join(REPO_ROOT, componentPath), "utf-8"),
       )
-      expect(source).toContain(config?.scrim?.className)
+      expect(
+        sources.some((source) =>
+          source.includes(config?.scrim?.className ?? ""),
+        ),
+      ).toBe(true)
     })
   }
 
