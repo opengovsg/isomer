@@ -17,12 +17,8 @@ import type {
   AdjustmentScrim,
 } from "./AdjustmentConfig"
 
-// Minimal site stub for an ISOLATED single-block preview — there is no real
-// page/nav/footer context here (this renders one block, not a whole page), so
-// only the fields HeroGradient/Contentpic actually read (assetsBaseUrl,
-// siteMapArray for reference-link resolution, which degrades gracefully to
-// the raw link on a miss) are populated. Mirrors the same escape hatch
-// PreviewWithCustomSitemap.tsx already uses for its own site prop.
+// Only the fields HeroGradient/Contentpic actually read are populated — this
+// renders one isolated block, not a real page. Mirrors PreviewWithCustomSitemap.tsx.
 const PREVIEW_SITE_STUB = {
   assetsBaseUrl: ASSETS_BASE_URL,
   siteMapArray: [],
@@ -30,19 +26,14 @@ const PREVIEW_SITE_STUB = {
 
 interface AdjustmentPreviewProps {
   src: string
-  // The TRUE original's raw stored path (e.g. "/1/uuid/file.png"), resolved
-  // once by the parent modal via resolveOriginalKey — the bake input must
-  // always be the original, never a previous bake (RFC: re-encode loss must
-  // not compound). On a first edit this equals `src`; on a re-edit, `src` is
-  // the previous bake and only this points at the true original.
+  // The true original's stored path, resolved by the parent via resolveOriginalKey —
+  // bake input must always be the original, never a previous bake, so re-encode loss can't compound.
   originalSrc: string
   adjustment?: ImageAdjustment
   previewStates: AdjustmentPreviewState[]
   scrim?: AdjustmentScrim
-  // The real block content + the field name holding the image, so the real
-  // published component can be rendered (real copy/scrim/frame) instead of
-  // the framed-<img> approximation below. Falls back to the approximation
-  // when absent or when rendering the real component fails for any reason.
+  // Lets the real published component render (real copy/scrim/frame) instead of the
+  // framed-<img> approximation below; falls back to it when absent or rendering fails.
   block?: unknown
   imageFieldName?: string
 }
@@ -60,19 +51,13 @@ export const AdjustmentPreview = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const bakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevPreviewUrlRef = useRef<string | null>(null)
-  // Monotonic token for the latest bake request. Each effect run bumps it so an
-  // older, still-running bake can detect it has been superseded and drop its
-  // result instead of overwriting the preview of a newer draft.
+  // Monotonic token so a superseded, still-running bake can detect it and drop its result.
   const bakeRequestIdRef = useRef(0)
 
-  // src arrives as the raw stored path (e.g. "/1/uuid/file.png"); resolve it to
-  // the asset domain for DISPLAY (the fallback shown before any bake exists),
-  // same as ImageClient does at render time.
+  // Resolve to the asset domain, same as ImageClient does at render time.
   const displaySrc = generateAssetUrl(src)
   const originalFetchUrl = generateAssetUrl(originalSrc)
 
-  // Fetch the original image once per resolved original. Comment notes CORS
-  // must be readable.
   useEffect(() => {
     const fetchOriginal = async () => {
       try {
@@ -91,22 +76,17 @@ export const AdjustmentPreview = ({
     void fetchOriginal()
   }, [originalFetchUrl])
 
-  // Debounced bake effect (~150ms) keyed on crop/rotate/flipH/flipV changes.
   useEffect(() => {
-    // Clear any pending timeout
     if (bakeTimeoutRef.current) {
       clearTimeout(bakeTimeoutRef.current)
     }
 
-    // Supersede any in-flight bake from a prior adjustment: debouncing only
-    // cancels a bake that hasn't started yet, so a bake already awaiting
-    // bakeImage could otherwise finish last and overwrite this newer draft.
+    // Debouncing only cancels a bake that hasn't started yet; bump the token so a
+    // bake already awaiting bakeImage can't overwrite this newer draft when it resolves.
     const requestId = ++bakeRequestIdRef.current
     const isStale = () => requestId !== bakeRequestIdRef.current
 
-    // If no blob or no adjustment with crop, nothing to bake
     if (!originalBlob || !adjustment?.crop) {
-      // Revoke previous URL if clearing the preview
       if (prevPreviewUrlRef.current) {
         URL.revokeObjectURL(prevPreviewUrlRef.current)
         prevPreviewUrlRef.current = null
@@ -117,8 +97,7 @@ export const AdjustmentPreview = ({
 
     const runBake = async () => {
       try {
-        // Guard: only bake static, supported formats. Animated WebP/APNG pass
-        // canBakeImage but would be flattened, so fall back to uncropped src.
+        // Animated WebP/APNG pass canBakeImage but would be flattened, so skip them too.
         if (
           !canBakeImage(originalBlob.type) ||
           (await isAnimatedImageBlob(originalBlob))
@@ -129,23 +108,19 @@ export const AdjustmentPreview = ({
         const bakedBlob = await bakeImage(originalBlob, adjustment, {
           mimeType: originalBlob.type,
         })
-        // A newer adjustment started while this bake ran — discard this result
-        // so the older crop can't replace the newer preview.
+        // A newer adjustment started while this bake ran — discard it.
         if (isStale()) {
           return
         }
         const bakeUrl = URL.createObjectURL(bakedBlob)
-        // Revoke previous URL before setting new one
         if (prevPreviewUrlRef.current) {
           URL.revokeObjectURL(prevPreviewUrlRef.current)
         }
         prevPreviewUrlRef.current = bakeUrl
         setPreviewUrl(bakeUrl)
       } catch (error) {
-        // On any failure (CORS taint, canvas issue, etc.): fall back to the
-        // uncropped src. Clear the previous preview so a stale crop from an
-        // earlier successful bake isn't left showing for this draft — unless a
-        // newer bake has already superseded this one.
+        // Fall back to the uncropped src (CORS taint, canvas issue, etc.) unless
+        // a newer bake has already superseded this one.
         console.debug("Failed to bake image", error)
         if (isStale()) {
           return
@@ -164,12 +139,8 @@ export const AdjustmentPreview = ({
         clearTimeout(bakeTimeoutRef.current)
       }
     }
-    // Deliberately narrower than `adjustment` itself: focal is applied at
-    // render time as CSS object-position (see getFocalObjectPosition below
-    // and the framed-image fallback), independent of this baked preview — a
-    // focal-only drag doesn't change which pixels are cropped, so it
-    // shouldn't trigger a canvas re-encode. Depending on the whole object
-    // would re-bake on every focal drag for no visual gain.
+    // Deliberately narrower than `adjustment`: focal is applied at render time as
+    // CSS object-position, so a focal-only drag shouldn't trigger a canvas re-encode.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     originalBlob,
@@ -182,10 +153,8 @@ export const AdjustmentPreview = ({
     adjustment?.flipV,
   ])
 
-  // Cleanup: revoke object URL on unmount. Also bumps bakeRequestIdRef so a
-  // bake that's still in flight when this unmounts sees isStale() as true
-  // once it resolves, instead of creating (and leaking) a new object URL on
-  // an already-unmounted component.
+  // Bumps bakeRequestIdRef so a bake still in flight at unmount sees isStale() once it
+  // resolves, instead of creating (and leaking) a new object URL after unmount.
   useEffect(() => {
     return () => {
       bakeRequestIdRef.current++
@@ -195,7 +164,6 @@ export const AdjustmentPreview = ({
     }
   }, [])
 
-  // Helper: compute objectPosition for focal point (render-time, always applied)
   const getFocalObjectPosition = (focal?: { x: number; y: number }) => {
     if (!focal || (focal.x == null && focal.y == null)) {
       return undefined
@@ -205,9 +173,7 @@ export const AdjustmentPreview = ({
 
   const adjustedSrc = previewUrl ?? displaySrc
 
-  // Real-component preview: render the actual published block (real copy,
-  // scrim, frame behaviour) with the adjusted image + draft imageAdjustment
-  // spliced in, instead of the framed-<img> approximation below.
+  // Renders the actual published block with the adjusted image + draft spliced in.
   let previewComponent: React.ReactNode = null
   if (block && typeof block === "object" && imageFieldName) {
     try {
@@ -245,15 +211,8 @@ export const AdjustmentPreview = ({
         pb="0.5rem"
       >
         {previewStates.map((state) => {
-          // Simulate a real device viewport at this breakpoint's exact width
-          // (so the real component's own sm:/md:/lg: Tailwind classes
-          // evaluate correctly, which they can't if we just shrink an outer
-          // container — the iframe's OWN layout viewport is what media
-          // queries read) sized to this breakpoint's aspect ratio, then
-          // CSS-scale the whole simulated viewport down to fit the small
-          // preview column. The scale only affects the rendered OUTPUT box,
-          // not the iframe's internal viewport, so breakpoint classes still
-          // evaluate against the real width.
+          // Render the iframe at its real breakpoint width (so sm:/md:/lg: classes
+          // evaluate correctly), then CSS-scale the box down to fit the preview column.
           const viewportWidth = state.viewportWidth ?? 1024
           const viewportHeight = state.aspectRatio
             ? Math.round(
@@ -343,7 +302,6 @@ export const AdjustmentPreview = ({
         const frameContent = (
           <Box w="100%" h="100%" position="relative" overflow="hidden">
             {imageNode}
-            {/* Scrim overlay for contrast visualization */}
             {scrim && (
               <Box
                 position="absolute"
@@ -363,7 +321,6 @@ export const AdjustmentPreview = ({
             flexShrink={0}
             minW="fit-content"
           >
-            {/* Label with optional viewport width */}
             <Text
               textStyle="body-2"
               fontWeight="semibold"
@@ -373,7 +330,6 @@ export const AdjustmentPreview = ({
               {state.viewportWidth && ` (${state.viewportWidth}px)`}
             </Text>
 
-            {/* Frame box with aspect ratio */}
             <Box
               w="auto"
               borderWidth="1px"

@@ -22,12 +22,9 @@ import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 import { useAdjustmentConfigForField } from "../../hooks/useAdjustmentConfigForField"
 import { getCustomErrorMessage } from "./utils"
 
-// JsonFormsImageControl is registered as a renderer for every FormBuilder
-// instance (every settings page and content-block editor), regardless of
-// whether that schema even has an image field. ImageAdjustmentModal pulls in
-// canvas baking/crop/preview code that's only relevant behind a per-agency
-// GrowthBook flag (off by default) — load it lazily so it doesn't bloat every
-// FormBuilder page's shared bundle.
+// This renderer loads for every FormBuilder instance regardless of whether its schema
+// has an image field — load the modal's canvas baking/crop/preview code lazily
+// so it doesn't bloat every FormBuilder page's shared bundle.
 const ImageAdjustmentModal = dynamic(() =>
   import("~/features/editing-experience/components/ImageAdjustmentModal").then(
     (mod) => mod.ImageAdjustmentModal,
@@ -77,10 +74,6 @@ function JsonFormsImageControl({
   // open the modal, make changes, and hit a save error.
   const hasResourceContext = !!(pageId ?? linkId)
 
-  // Reads the sibling imageAdjustment field and containing block via
-  // JsonForms' core data (the only way to reach data outside this control's
-  // own path) and memoizes the derived config -- see the hook's own comment
-  // for why that matters.
   const { block, fieldName, siblingPath, currentAdjustment, config } =
     useAdjustmentConfigForField(path)
 
@@ -111,8 +104,6 @@ function JsonFormsImageControl({
               if (currentAdjustment) handleChange(siblingPath, undefined)
             }}
           />
-          {/* Adjustment entry point — only for components with a config, and
-              only for managed (bakeable) assets */}
           {isImageAdjustmentEnabled &&
             isManagedAsset &&
             hasResourceContext &&
