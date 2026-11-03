@@ -159,6 +159,11 @@ export const getPresignedPutUrl = async ({
 const BARE_UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+// Marks a key as server-generated (vs. uploader-provided). Referenced by
+// downstream bake logic that needs to recognise/strip it, so it's a shared
+// constant rather than a literal repeated at each call site.
+export const BAKED_FILE_PREFIX = "baked-"
+
 /**
  * Derive a human-friendly base name for a bake leaf from the TRUE original key,
  * so the baked file keeps the uploader's filename (e.g. "beach-photo") instead
@@ -170,7 +175,8 @@ const BARE_UUID_PATTERN =
 export const deriveBakeBaseName = (originalKey: string): string => {
   const leaf = originalKey.split("/").pop() ?? ""
   let base = leaf.replace(/\.[^.]+$/, "") // drop extension
-  if (base.startsWith("baked-")) base = base.slice("baked-".length) // legacy prefix
+  if (base.startsWith(BAKED_FILE_PREFIX))
+    base = base.slice(BAKED_FILE_PREFIX.length) // legacy prefix
   if (BARE_UUID_PATTERN.test(base)) return "image" // legacy baked key, no real name
   // filenamify strips path separators and unsafe chars, so originalKey can't
   // inject a path segment into the key.
@@ -207,10 +213,10 @@ export const deriveBakeKey = ({
   // Extract folder: drop the leaf (last segment) from `${siteId}/${uuid}/${file}`
   const folder = key.substring(0, key.lastIndexOf("/"))
 
-  // Defense-in-depth: assert folder starts with `${siteId}/`
-  if (!folder.startsWith(`${siteId}/`)) {
+  // Defense-in-depth: assert folder belongs to this site
+  if (!doAllFileKeysBelongToSite({ fileKeys: [folder], siteId })) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
+      code: "FORBIDDEN",
       message: "Image source does not belong to this site",
     })
   }

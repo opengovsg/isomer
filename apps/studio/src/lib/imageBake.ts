@@ -246,6 +246,28 @@ export const cropRectToPixels = (
 }
 
 /**
+ * Calculate output canvas dimensions after rotation.
+ * Rotations of 90 or 270 degrees swap width and height.
+ * Any other angle (including non-quarter-turns) preserves the dimensions --
+ * arbitrary-angle canvas expansion isn't implemented yet.
+ *
+ * @param croppedWidth - Pixel width of the cropped region
+ * @param croppedHeight - Pixel height of the cropped region
+ * @param rotate - Rotation in degrees, 0-360
+ * @returns Object with output {width, height}
+ */
+export const outputDimensions = (
+  croppedWidth: number,
+  croppedHeight: number,
+  rotate: number,
+): { width: number; height: number } => {
+  if (rotate === 90 || rotate === 270) {
+    return { width: croppedHeight, height: croppedWidth }
+  }
+  return { width: croppedWidth, height: croppedHeight }
+}
+
+/**
  * Compute canvas transform scale factors (rotate, flipH, flipV).
  * Returns the transformation parameters to be applied to the canvas.
  *
