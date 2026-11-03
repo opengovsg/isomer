@@ -147,6 +147,34 @@ describe("cropRectToPixels", () => {
     expect(result.sx + result.sw).toBeLessThanOrEqual(3)
     expect(result.sy + result.sh).toBeLessThanOrEqual(3)
   })
+
+  it("never rounds a positive crop down to a zero-pixel width or height", () => {
+    // Regression test: a crop narrower than half a source pixel (e.g. 5% of
+    // a 5px-wide source) independently rounded width/height to 0, which
+    // reaches canvas as a zero-sized, undraw-able region.
+    const crop: CropRect = { x: 0, y: 0, width: 0.05, height: 0.05 }
+    const result = cropRectToPixels(crop, 5, 5)
+    expect(result.sw).toBeGreaterThanOrEqual(1)
+    expect(result.sh).toBeGreaterThanOrEqual(1)
+  })
+
+  it("keeps a right/bottom-edge crop within the source bounds", () => {
+    // A crop whose normalized start is already at (or past) the edge must
+    // still clamp to a valid, non-overflowing pixel rect.
+    const crop: CropRect = { x: 1, y: 1, width: 0.1, height: 0.1 }
+    const result = cropRectToPixels(crop, 10, 10)
+    expect(result.sx + result.sw).toBeLessThanOrEqual(10)
+    expect(result.sy + result.sh).toBeLessThanOrEqual(10)
+    expect(result.sw).toBeGreaterThanOrEqual(1)
+    expect(result.sh).toBeGreaterThanOrEqual(1)
+  })
+
+  it("returns a zero-size rect for a zero-area crop, without clamping it to 1px", () => {
+    const crop: CropRect = { x: 0.5, y: 0.5, width: 0, height: 0 }
+    const result = cropRectToPixels(crop, 100, 100)
+    expect(result.sw).toBe(0)
+    expect(result.sh).toBe(0)
+  })
 })
 
 describe("computeCanvasTransform", () => {
