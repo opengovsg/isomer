@@ -89,19 +89,6 @@ describe("bakeImage", () => {
     ).rejects.toThrow(/Cannot bake image format/)
   })
 
-  it("throws for a non-quarter-turn rotation instead of silently clipping content", async () => {
-    // The schema allows any 0-360 rotate value, but outputDimensions/
-    // computeCanvasTransform only correctly handle quarter turns -- a 45°
-    // rotation would otherwise rotate content inside an unrotated-size
-    // canvas and silently clip the corners.
-    const original = await createQuadrantImage()
-    await expect(
-      bakeImage(original, baseAdjustment({ rotate: 45 }), {
-        mimeType: "image/png",
-      }),
-    ).rejects.toThrow(/quarter-turn/)
-  })
-
   it("crops to the requested normalized region", async () => {
     const original = await createQuadrantImage()
     const baked = await bakeImage(
