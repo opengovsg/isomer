@@ -3,9 +3,11 @@ import {
   BiBarChartAlt2,
   BiBookOpen,
   BiBuildings,
+  BiBulb,
   BiCalendar,
   BiChart,
   BiChat,
+  BiCheckShield,
   BiFile,
   BiGlobe,
   BiGroup,
@@ -16,6 +18,7 @@ import {
   BiPhone,
   BiRightArrowAlt,
   BiStar,
+  BiVideo,
 } from "react-icons/bi"
 
 import { BiClipboardCheck } from "./custom-icons/BiClipboardCheck"
@@ -40,6 +43,9 @@ export const SUPPORTED_ICON_NAMES = [
   "chat",
   "megaphone",
   "clipboard-check",
+  "bulb",
+  "video",
+  "check-shield",
 ] as const
 
 export type SupportedIconName = (typeof SUPPORTED_ICON_NAMES)[number]
@@ -65,4 +71,7 @@ export const SUPPORTED_ICONS_MAP: Record<SupportedIconName, SupportedIconType> =
     chat: BiChat,
     megaphone: BiMegaphone,
     "clipboard-check": BiClipboardCheck,
+    bulb: BiBulb,
+    video: BiVideo,
+    "check-shield": BiCheckShield,
   }

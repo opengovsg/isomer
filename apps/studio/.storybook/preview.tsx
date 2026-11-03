@@ -16,6 +16,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"
+import { createStore, Provider as JotaiProvider } from "jotai"
 import { merge } from "lodash-es"
 import mockdate from "mockdate"
 import { mswLoader } from "msw-storybook-addon/csf3"
@@ -23,6 +24,7 @@ import { setupWorker } from "msw/browser"
 import { useCallback, useState } from "react"
 import ReactDOM from "react-dom"
 import { ErrorBoundary } from "react-error-boundary"
+import { configure } from "storybook/test"
 import superjson from "superjson"
 import { AppBanner } from "~/components/AppBanner"
 import { EnvProvider } from "~/components/AppProviders"
@@ -33,7 +35,7 @@ import { LoginStateContext } from "~/features/auth"
 import { createMockGrowthBook } from "~/stories/utils/growthbook"
 import { theme } from "~/theme"
 
-import { viewport, withChromaticModes } from "@isomer/storybook-config"
+import { viewport, withArgosModes } from "@isomer/storybook-config"
 
 // Storybook's Next.js preview runs on Next's bundled React 19, which removed
 // findDOMNode. react-input-mask and react-transition-group (used by OGP's
@@ -54,6 +56,63 @@ legacyReactDOM.findDOMNode ??= (instance) => {
 interface Fiber {
   stateNode: unknown
   child?: Fiber
+}
+// Some pages render nothing while loading (`<Suspense fallback={null}>`), so
+// the DOM alone can't tell they are still waiting. Track in-flight fetches
+// (tRPC through MSW) and when the network last changed.
+let pendingFetches = 0
+let lastFetchActivity = 0
+const originalFetch = globalThis.fetch
+globalThis.fetch = async (...args) => {
+  pendingFetches++
+  lastFetchActivity = performance.now()
+  try {
+    return await originalFetch(...args)
+  } finally {
+    pendingFetches--
+    lastFetchActivity = performance.now()
+  }
+}
+
+// Argos only waits for images in the top document, and the Storybook SDK
+// turns off its aria-busy wait. So it would capture Suspense skeletons and the
+// page preview (a same-origin iframe) before their data, styles and images
+// land. Loading Chakra skeletons are the only ones with an infinite animation.
+const isPageSettled = () => {
+  // ponytail: 300ms of network quiet lets React render a resolved query and
+  // start any follow-up query; raise it if chained queries still get cut off.
+  if (pendingFetches > 0 || performance.now() - lastFetchActivity < 300) {
+    return false
+  }
+  const frameDocs = Array.from(document.querySelectorAll("iframe")).flatMap(
+    (iframe) => (iframe.contentDocument ? [iframe.contentDocument] : []),
+  )
+  return [document, ...frameDocs].every((doc) => {
+    const isSkeletonLoading = Array.from(
+      doc.querySelectorAll<HTMLElement>(".chakra-skeleton"),
+    ).some((el) => getComputedStyle(el).animationIterationCount === "infinite")
+    if (isSkeletonLoading) return false
+    if (doc === document) return true
+    const images = Array.from(doc.images)
+    images.forEach((img) => (img.loading = "eager"))
+    return (
+      images.every((img) => img.complete) &&
+      Array.from(
+        doc.querySelectorAll<HTMLLinkElement>("link[rel='stylesheet']"),
+      ).every((link) => link.sheet)
+    )
+  })
+}
+
+const waitForPageSettledInVitest = async () => {
+  if (!("__vitest_browser__" in globalThis)) return
+  // ponytail: stories that stay loading on purpose (e.g. `Loading`) spend the
+  // whole timeout here; add a parameter to skip them if that gets slow.
+  // Not Date.now(): stories freeze it with mockdate, so it would never pass.
+  const deadline = performance.now() + 5_000
+  while (performance.now() < deadline && !isPageSettled()) {
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
 }
 
 const trpc = createTRPCReact<AppRouter>()
@@ -170,6 +229,13 @@ const conditionalMockDateDecorator: Decorator = (story, context) => {
   return story()
 }
 
+// Jotai atoms otherwise live in one global store, so state such as an open
+// settings modal leaks into every later story rendered in the same page.
+const JotaiStoreDecorator: Decorator = (story) => {
+  const [store] = useState(createStore)
+  return <JotaiProvider store={store}>{story()}</JotaiProvider>
+}
+
 const decorators: Decorator[] = [
   WithLayoutDecorator,
   SetupDecorator,
@@ -182,13 +248,29 @@ const decorators: Decorator[] = [
   }),
   LoginStateDecorator,
   conditionalMockDateDecorator,
+  JotaiStoreDecorator,
 ]
 
 const preview: Preview = {
+  // Stories load data through MSW and render Suspense skeletons first. The 1s
+  // default for findBy*/waitFor is too short on a loaded CI runner, so wait
+  // longer instead of failing the play function.
+  beforeAll: () => {
+    configure({ asyncUtilTimeout: 5000 })
+  },
+  afterEach: waitForPageSettledInVitest,
+
   loaders: [
     mswLoader(async () => {
       const worker = setupWorker()
-      await worker.start({ onUnhandledFrame: "bypass" })
+      // Relative, so the worker resolves next to the Storybook even when it is
+      // deployed under a sub-path (/components/, /studio/) instead of the root.
+      await worker.start({
+        onUnhandledFrame: "bypass",
+        // Per-request logs flood the Vitest output on CI with thousands of entries.
+        quiet: true,
+        serviceWorker: { url: "./mockServiceWorker.js" },
+      })
       return worker
     }),
   ],
@@ -198,21 +280,32 @@ const preview: Preview = {
     layout: "fullscreen",
     // MOH site launch!!! aka birth of Isomer Next hehe
     date: new Date(2024, 10, 28),
-    viewport,
+    viewport: {
+      // Argos reads "100%" heights as 100px, which clips modals and drawers
+      // (they render in portals), so give Studio a real viewport height.
+      viewports: Object.fromEntries(
+        Object.entries(viewport.viewports).map(([key, value]) => [
+          key,
+          { ...value, styles: { ...value.styles, height: "720px" } },
+        ]),
+      ),
+    },
     /**
      * If tablet view is needed, add it on a per-story basis.
      * @example
      * ```
      * export const SomeStory: Story = {
      *   parameters: {
-     *     chromatic: withChromaticModes(["gsib", "desktop", "tablet"]),
+     *     argos: withArgosModes(["gsib", "desktop", "tablet"]),
      *   }
      * }
      * ```
      */
-    chromatic: {
-      ...withChromaticModes(["gsib"]),
-      prefersReducedMotion: "reduce",
+    argos: {
+      ...withArgosModes(["gsib"]),
+      // Modals and drawers render in portals, so cropping to the body's
+      // content captures a sliver. Capture the whole viewport like Chromatic.
+      fitToContent: false,
     },
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {

@@ -5,7 +5,7 @@ import {
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { Hero } from "./Hero"
 
@@ -14,7 +14,7 @@ const meta: Meta<typeof Hero> = {
   component: Hero,
   argTypes: {},
   parameters: {
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    argos: withArgosModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -217,6 +217,112 @@ export const Searchbar: Story = {
     subtitle:
       "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
     variant: "searchbar",
+  },
+}
+
+const quickLinksItemsBase = [
+  {
+    icon: "stars" as const,
+    title: "Explore Isomer's features",
+    description:
+      "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+    buttonUrl: "/",
+  },
+  {
+    icon: "line-chart" as const,
+    title: "See how others use Isomer",
+    description:
+      "Browse websites built with Isomer across agencies and see what good government digital service looks like.",
+    buttonUrl: "/",
+  },
+  {
+    icon: "globe" as const,
+    title: "Start building your site",
+    description:
+      "Get guidance on setting up your agency site, from content planning to launch.",
+    buttonUrl: "/",
+  },
+  {
+    icon: "users" as const,
+    title: "Join the community",
+    description:
+      "Connect with other agencies using Isomer and learn from shared playbooks.",
+    buttonUrl: "/",
+  },
+]
+
+const quickLinksBase = {
+  layout: "quickLinks" as const,
+  title: "Get started",
+  showIcon: true,
+  items: quickLinksItemsBase,
+}
+
+export const GradientQuickLinks: Story = {
+  args: {
+    headingLevel: 1,
+    site: generateSiteConfig(),
+    backgroundUrl: "/hero-banner.png",
+    title: "Set up a good government website, fast",
+    subtitle:
+      "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+    variant: "gradient",
+    actions: quickLinksBase,
+  },
+}
+
+export const GradientQuickLinksTwoItems: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    actions: { ...quickLinksBase, items: quickLinksItemsBase.slice(0, 2) },
+  },
+}
+
+// Minimal copy so tray width is driven by layout, not content length (see FloatingShortText).
+export const GradientQuickLinksTwoItemsShortText: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    title: "Title",
+    subtitle: "Subtitle",
+    actions: {
+      ...quickLinksBase,
+      title: "Tray",
+      items: [
+        {
+          icon: "stars",
+          title: "One",
+          description: "A",
+          buttonUrl: "/",
+        },
+        {
+          icon: "line-chart",
+          title: "Two",
+          description: "B",
+          buttonUrl: "/",
+        },
+      ],
+    },
+  },
+}
+
+export const GradientQuickLinksThreeItems: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    actions: { ...quickLinksBase, items: quickLinksItemsBase.slice(0, 3) },
+  },
+}
+
+export const GradientQuickLinksNoTitle: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    actions: { ...quickLinksBase, title: undefined },
+  },
+}
+
+export const GradientQuickLinksNoIcons: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    actions: { ...quickLinksBase, showIcon: false },
   },
 }
 

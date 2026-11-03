@@ -1,12 +1,12 @@
-import type { HeroGradientProps } from "~/interfaces/complex/Hero"
+import type { HeroGradientButtonsProps } from "~/interfaces/complex/Hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
-import { ComponentContent } from "../../internal/customCssClass"
-import { ImageClientWithAdjustment } from "../../internal/ImageClient"
-import { LinkButton } from "../../internal/LinkButton/LinkButton"
+import { ComponentContent } from "../../../internal/customCssClass"
+import { ImageClientWithAdjustment } from "../../../internal/ImageClient"
+import { LinkButton } from "../../../internal/LinkButton/LinkButton"
 
-export const HeroGradient = ({
+export const HeroGradientButtons = ({
   title,
   subtitle,
   buttonLabel,
@@ -17,7 +17,7 @@ export const HeroGradient = ({
   imageAdjustment,
   site,
   headingLevel,
-}: HeroGradientProps) => {
+}: HeroGradientButtonsProps) => {
   const Tag = getHeadingTag(headingLevel)
   return (
     <section className="relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]">
@@ -36,7 +36,7 @@ export const HeroGradient = ({
           lazyLoading={false} // hero is always above the fold
         />
       </div>
-      <div className="relative z-10 w-full content-center bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]">
+      <div className="relative z-10 w-full content-center bg-black/60 lg:bg-transparent lg:bg-gradient-to-r lg:from-black lg:to-black/25">
         <div
           className={`${ComponentContent} flex flex-row justify-start py-16 text-start text-base-content-inverse`}
         >

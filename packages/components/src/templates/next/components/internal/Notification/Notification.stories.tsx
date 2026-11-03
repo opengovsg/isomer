@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { NotificationProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { Notification } from "./Notification"
 
@@ -136,6 +136,6 @@ export const Antiscam: Story = {
   },
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["desktop", "tablet", "mobile"]),
+    argos: withArgosModes(["desktop", "tablet", "mobile"]),
   },
 }

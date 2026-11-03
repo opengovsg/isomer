@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 const meta: Meta = {
   title: "Foundation/Typography",
   tags: ["!autodocs"],
   parameters: {
-    chromatic: withChromaticModes(["desktop", "tablet", "mobile"]),
+    argos: withArgosModes(["desktop", "tablet", "mobile"]),
   },
 }
 export default meta

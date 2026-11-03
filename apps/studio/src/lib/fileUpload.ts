@@ -14,6 +14,7 @@ export const FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
   ".doc": "application/msword",
   ".docx":
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".ics": "text/calendar",
 }
 
 export const RISKY_FILE_EXTENSIONS = new Set<
