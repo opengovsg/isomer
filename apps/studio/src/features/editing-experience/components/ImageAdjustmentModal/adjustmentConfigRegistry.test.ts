@@ -155,44 +155,61 @@ describe("resolveAdjustmentConfig", () => {
     })
 
     // The real card frame (InfoCards/common.ts cardImageContainer) is 3:2 at
-    // every breakpoint EXCEPT lg+, where only two combos are overridden:
-    // homepage+2-column -> 2:1, default(content-page)+3-column -> 1:1 square.
-    // Every other combo (including 1-column, which has no lg override) stays
-    // 3:2 for both layouts. The preview must reflect the block's own
-    // maxColumns, previewing both layouts only where they actually diverge.
-    describe("desktop preview states follow the block's maxColumns", () => {
-      const desktopStatesFor = (maxColumns?: string) =>
+    // every breakpoint on content pages EXCEPT lg+ with 3 columns, which
+    // overrides it to 1:1 square. The homepage layout's own overrides are a
+    // different page than the one being edited, so the preview covers content
+    // pages only — one plain Mobile/Tablet/Desktop state each, following the
+    // block's own maxColumns.
+    describe("preview states follow the block's maxColumns (content pages only)", () => {
+      const statesFor = (maxColumns?: string) =>
         resolveAdjustmentConfig({
           block: { type: "infocards", variant: "cardsWithImages", maxColumns },
           fieldName: "imageUrl",
-        })?.versions[0]?.previewStates.filter((s) => s.id !== "mobile")
+        })?.versions[0]?.previewStates
 
-      it("3 columns (default): previews content-page square and homepage 3:2 separately", () => {
-        const states = desktopStatesFor("3")
-        expect(states?.map((s) => s.layout)).toEqual(["content", "homepage"])
+      it("previews exactly Mobile/Tablet/Desktop, with plain labels", () => {
+        const states = statesFor("3")
+        expect(states?.map((s) => s.label)).toEqual([
+          "Mobile",
+          "Tablet",
+          "Desktop",
+        ])
+        expect(states?.map((s) => s.layout)).toEqual([
+          undefined,
+          undefined,
+          undefined,
+        ])
+      })
+
+      it("3 columns (default): desktop frame is square", () => {
+        const states = statesFor("3")
         expect(states?.map((s) => s.aspectRatio)).toEqual([
+          { width: 3, height: 2 },
+          { width: 3, height: 2 },
           { width: 1, height: 1 },
-          { width: 3, height: 2 },
         ])
       })
 
-      it("2 columns: previews content-page 3:2 and homepage 2:1 separately", () => {
-        const states = desktopStatesFor("2")
-        expect(states?.map((s) => s.layout)).toEqual(["content", "homepage"])
+      it("2 columns: every breakpoint stays 3:2", () => {
+        const states = statesFor("2")
         expect(states?.map((s) => s.aspectRatio)).toEqual([
           { width: 3, height: 2 },
-          { width: 2, height: 1 },
+          { width: 3, height: 2 },
+          { width: 3, height: 2 },
         ])
       })
 
-      it("1 column: both layouts render the same 3:2 shape, so a single state covers it", () => {
-        const states = desktopStatesFor("1")
-        expect(states).toHaveLength(1)
-        expect(states?.[0]?.aspectRatio).toEqual({ width: 3, height: 2 })
+      it("1 column: every breakpoint stays 3:2", () => {
+        const states = statesFor("1")
+        expect(states?.map((s) => s.aspectRatio)).toEqual([
+          { width: 3, height: 2 },
+          { width: 3, height: 2 },
+          { width: 3, height: 2 },
+        ])
       })
 
       it("defaults to 3 columns when maxColumns is unset", () => {
-        expect(desktopStatesFor(undefined)).toEqual(desktopStatesFor("3"))
+        expect(statesFor(undefined)).toEqual(statesFor("3"))
       })
     })
   })
