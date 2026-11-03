@@ -1,4 +1,3 @@
-import type { KeyboardEvent } from "react"
 import { Box, Flex, Stack, Text } from "@chakra-ui/react"
 import { Badge, IconButton, Link } from "@opengovsg/design-system-react"
 import { useEffect, useRef, useState } from "react"
@@ -73,7 +72,6 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const mediaFrameRef = useRef<HTMLDivElement>(null)
   const underlineRef = useRef<HTMLDivElement>(null)
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
   const pausedForHoverRef = useRef(false)
   const isMediaHovered = useHover(mediaFrameRef)
   const active = SPOTLIGHTS[activeIndex]
@@ -126,33 +124,6 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
     setIsBuffering(next.media.type === "video")
   }
 
-  // WAI-ARIA tabs: arrow keys move both focus and selection between tabs,
-  // Home/End jump to the first/last tab. Inactive tabs are tabIndex -1 so the
-  // tablist is a single tab stop.
-  const handleTabListKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const count = SPOTLIGHTS.length
-    let nextIndex: number
-    switch (event.key) {
-      case "ArrowRight":
-        nextIndex = (activeIndex + 1) % count
-        break
-      case "ArrowLeft":
-        nextIndex = (activeIndex - 1 + count) % count
-        break
-      case "Home":
-        nextIndex = 0
-        break
-      case "End":
-        nextIndex = count - 1
-        break
-      default:
-        return
-    }
-    event.preventDefault()
-    if (nextIndex !== activeIndex) selectSpotlight(nextIndex)
-    tabRefs.current[nextIndex]?.focus()
-  }
-
   const togglePlayback = () => {
     const video = videoRef.current
     if (!video) return
@@ -193,12 +164,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
         )}
       </Flex>
 
-      <Flex
-        role="tablist"
-        aria-label="Fresh from Isomer"
-        gap="1.5rem"
-        onKeyDown={handleTabListKeyDown}
-      >
+      <Flex role="tablist" aria-label="Fresh from Isomer" gap="1.5rem">
         {SPOTLIGHTS.map((item, index) => {
           const isActive = index === activeIndex
           const showLoadingBar =
@@ -211,14 +177,10 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
               as="button"
               type="button"
               key={item.id}
-              ref={(el: HTMLButtonElement | null) => {
-                tabRefs.current[index] = el
-              }}
               role="tab"
               id={`fresh-from-isomer-tab-${item.id}`}
               aria-selected={isActive}
               aria-controls={`fresh-from-isomer-panel-${item.id}`}
-              tabIndex={isActive ? 0 : -1}
               position="relative"
               pb="0.5rem"
               color={isActive ? "base.content.strong" : "base.content.medium"}
