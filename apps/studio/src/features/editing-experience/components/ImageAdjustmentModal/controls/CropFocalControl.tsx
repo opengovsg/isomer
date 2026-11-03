@@ -49,8 +49,11 @@ interface CropFocalControlProps {
   focalEnabled: boolean
   // Rotation/flip are applied to the whole image before cropping, so the canvas
   // shows the rotated/flipped ("display") image and crop/focal are placed in
-  // that orientation — matching the preview and the baked output.
-  rotate?: 0 | 90 | 180 | 270
+  // that orientation — matching the preview and the baked output. The stored
+  // value is free-form degrees (imageAdjustmentSchema); only 90/270 affect the
+  // width/height swap below, non-quarter-turn values are passed straight
+  // through to the CSS transform.
+  rotate?: number
   flipH?: boolean
   flipV?: boolean
   onCropChange: (crop: CropRectNormalized) => void

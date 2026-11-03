@@ -35,6 +35,7 @@ import {
   flipRectH,
   flipRectV,
   nextRotation,
+  normalizeRotation,
   rotatePointCcw,
   rotatePointCw,
   rotateRectCcw,
@@ -275,7 +276,14 @@ export const ImageAdjustmentModal = ({
     if (isLockedRatioAspectPending) return
     setDraft((d) => {
       const base = ensureAdjustment(d)
-      const rotate = nextRotation(base, direction)
+      // The stored value is free-form degrees (imageAdjustmentSchema), but
+      // nextRotation models the quarter-turn state these buttons actually
+      // produce -- in practice base.rotate is always already a multiple of
+      // 90 since these buttons are the only thing that ever sets it.
+      const rotate = nextRotation(
+        { ...base, rotate: normalizeRotation(base.rotate) },
+        direction,
+      )
       if (lockedRatio) {
         const quarter = rotate === 90 || rotate === 270
         const displayAspect = quarter
