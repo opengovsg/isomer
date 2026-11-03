@@ -71,7 +71,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
   const [isBuffering, setIsBuffering] = useState(true)
   const videoRef = useRef<HTMLVideoElement>(null)
   const mediaFrameRef = useRef<HTMLDivElement>(null)
-  const underlineRef = useRef<HTMLDivElement>(null)
+  const underlineRef = useRef<HTMLDivElement | null>(null)
   const pausedForHoverRef = useRef(false)
   const isMediaHovered = useHover(mediaFrameRef)
   const active = SPOTLIGHTS[activeIndex]
