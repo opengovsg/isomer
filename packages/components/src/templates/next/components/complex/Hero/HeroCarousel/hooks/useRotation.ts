@@ -216,12 +216,13 @@ export const useRotation = (slideCount: number) => {
   const onRotationChange = useCallback(
     (next: "rotating" | "stopped") => {
       if (blockRotation) {
+        preview.onAutoplayBlocked?.()
         return
       }
       resetElapsed()
       setPhase(next)
     },
-    [blockRotation, resetElapsed],
+    [blockRotation, preview, resetElapsed],
   )
 
   const showRotationControl = phase !== "pending" && hasEnoughSlides

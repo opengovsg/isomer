@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from "react"
 import { createContext, useContext, useMemo, useState } from "react"
+import { useCounter } from "usehooks-ts"
 
 import { useViewport } from "./ViewportProvider"
 
@@ -7,6 +8,8 @@ interface EditPageCarouselPreview {
   activeIndex: number
   setActiveIndex: (index: number) => void
   autoplay: boolean
+  onAutoplayBlocked: () => void
+  attentionPulse: number
 }
 
 const EditPageCarouselPreviewContext =
@@ -17,13 +20,16 @@ export function EditPageCarouselPreviewProvider({
 }: PropsWithChildren) {
   const { viewport } = useViewport()
   const [activeIndex, setActiveIndex] = useState(0)
+  const { count: attentionPulse, increment: onAutoplayBlocked } = useCounter(0)
   const value = useMemo(
     () => ({
       activeIndex,
       setActiveIndex,
       autoplay: viewport === "fullscreen",
+      onAutoplayBlocked,
+      attentionPulse,
     }),
-    [activeIndex, viewport],
+    [activeIndex, attentionPulse, onAutoplayBlocked, viewport],
   )
 
   return (

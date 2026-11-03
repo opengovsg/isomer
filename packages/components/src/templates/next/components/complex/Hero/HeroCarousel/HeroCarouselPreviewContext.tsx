@@ -7,6 +7,9 @@ export interface HeroCarouselPreview {
   activeIndex: number
   setActiveIndex: (index: number) => void
   autoplay: boolean
+  // Studio sets this so a play/pause click can point at the preview notice
+  // while autoplay is held off.
+  onAutoplayBlocked?: () => void
 }
 
 const HeroCarouselPreviewContext = createContext<HeroCarouselPreview | null>(

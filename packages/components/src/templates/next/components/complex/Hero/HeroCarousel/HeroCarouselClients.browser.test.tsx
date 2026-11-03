@@ -550,6 +550,39 @@ describe("hero carousel rotation", () => {
     )
   })
 
+  it("reports a blocked rotation attempt when autoplay is false", () => {
+    // Arrange
+    const onAutoplayBlocked = vi.fn()
+    const Harness = () => {
+      const [activeIndex, setActiveIndex] = useState(0)
+
+      return (
+        <HeroCarouselPreviewProvider
+          value={{
+            activeIndex,
+            setActiveIndex,
+            autoplay: false,
+            onAutoplayBlocked,
+          }}
+        >
+          <HeroCarouselGradientClient
+            headingTag="h1"
+            inactiveHeadingTag="h2"
+            slides={indexedSlides}
+          />
+        </HeroCarouselPreviewProvider>
+      )
+    }
+    render(<Harness />)
+
+    // Act
+    fireEvent.click(rotationButton())
+
+    // Assert
+    expect(onAutoplayBlocked).toHaveBeenCalledOnce()
+    expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
+  })
+
   it("rotates when autoplay turns on", () => {
     // Arrange
     const Harness = () => {
