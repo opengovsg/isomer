@@ -1,28 +1,12 @@
 ---
 name: review-dependency-upgrade
-description: Use this skill when the user asks to review, evaluate, or assess a dependency upgrade — e.g. "review this upgrade", "is bumping X from a.b.c to x.y.z safe?", "what breaks if I upgrade <pkg>?", "check this package bump". Covers pnpm/npm packages and github-actions. Researches breaking changes for every intermediate version and reports which ones actually impact the user's codebase. Also runs unattended on Dependabot PRs via GitHub Actions — no human in the loop.
+description: Use this skill when the user asks to review, evaluate, or assess a dependency upgrade — e.g. "review this upgrade", "is bumping X from a.b.c to x.y.z safe?", "what breaks if I upgrade <pkg>?", "check this package bump". Covers pnpm/npm packages and github-actions. Researches breaking changes for every intermediate version and reports which ones actually impact the user's codebase.
 version: 0.2.1
 ---
 
 # Review Dependency Upgrade
 
 Assess whether upgrading a dependency will break the user's codebase. Walk every intermediate version, list breaking changes, and cross-check each against actual usage.
-
-## Automation context
-
-Detect **unattended mode** when `GITHUB_ACTIONS=true` or `CI=true`. Do not key this on a specific workflow file, job name, or bot actor.
-
-When in unattended mode, there is no human to answer questions, approve steps, or pick options. **Run to completion every time** — infer missing inputs, make reasonable defaults, post the report, and exit.
-
-When **not** in unattended mode (e.g. interactive chat), you may ask the user for missing inputs.
-
-**Hard rules for unattended mode:**
-
-- **Never ask the user for clarification, confirmation, or approval.** Not in chat, not as a PR comment question.
-- **Never pause or offer choices** ("which PR?", "focus on one major?", "shall I continue?"). Decide and proceed.
-- **Never modify the repo** — review and comment only (see Guidelines). Do not write files inside the repository working tree; CI runners on pull-request events may auto-commit dirty trees.
-- **Always post the report** as a PR comment in unattended mode (see step 5) — including when the verdict is `SAFE`, when the breaking-changes table is empty, and when you could not infer the upgrade target.
-- **Posting is the final mandatory step.** Your final response must be the full report — do not end with a summary or meta-commentary instead of it.
 
 ## Inputs to resolve
 
@@ -44,7 +28,7 @@ Infer from the repo and PR context — in this order:
 - Multiple packages in one PR → review each in separate table sections in one comment.
 - Version range spans many majors → cover all majors; do not truncate or ask to narrow scope.
 - Changelog unavailable → report that explicitly; verdict is `NEEDS REVIEW`.
-- Cannot identify any package → post a short PR comment stating what was checked and that no upgrade could be inferred; do not ask follow-up questions.
+- Cannot identify any package → say what was checked and ask the user which upgrade to review.
 
 ## Procedure
 
@@ -131,45 +115,10 @@ Do not skip posting because "there is nothing to say".
 
 ### 5. Post to GitHub PR
 
-In **unattended mode**, always deliver the report as a PR comment. In interactive mode, post when a PR is associated with the review; otherwise deliver the report in chat only.
+Post the report as a PR comment when a PR is associated with the review; otherwise deliver it in chat only.
 
-**All unattended runs:**
-
-- Output the full report (step 4 format) as your **final message** — nothing after it, no wrapper text.
-- Do not write files inside the repository working tree.
-- Do not modify tracked files.
-
-**GitHub Actions** (`GITHUB_ACTIONS=true`):
-
-- Assume the runner posts your final output as the PR comment. Do not also run `gh pr comment` unless you have clear evidence the report did not reach the PR.
-
-**Other CI** (`CI=true`, not GitHub Actions) or when `gh` posting is required:
-
-- Write the report to `/tmp/dep-review-<pkg>.md` (outside the repo).
-- Post with `gh pr comment <number> --body-file /tmp/dep-review-<pkg>.md` and confirm exit code 0.
-
-**Resolve the PR** when using `gh`:
-
-1. `gh pr view --json number,url,headRefName,title,state` on the current branch.
-2. If that fails, read `$GITHUB_EVENT_PATH` for `pull_request.number` when present.
-3. If multiple open PRs share the branch, use the PR whose `headRefName` matches the current branch.
-4. If no PR is found, output the report to the action log only — do not fail the job.
-
-If `gh pr comment` fails, retry once. If it still fails, output the full report to the action log with a prominent `## POST FAILED` header — do not treat the run as complete.
-
-**Skip posting only when:**
-
-- The PR is closed or merged — output the report to the action log and note the PR state in the log.
-
-### 6. Completion gate (unattended mode only)
-
-Before ending, verify one of:
-
-- ✅ **GitHub Actions:** your final response is the full report from step 4, or
-- ✅ **`gh pr comment` succeeded** (exit code 0), or
-- ✅ PR is closed/merged and you logged why posting was skipped.
-
-If none apply, you are not done — go back to step 5.
+- Resolve the PR with `gh pr view --json number,url,headRefName,title,state` on the current branch. If it is closed or merged, deliver the report in chat and note the PR state.
+- Write the report to a file outside the repository (e.g. `/tmp/dep-review-<pkg>.md`) and post it with `gh pr comment <number> --body-file <file>`.
 
 ## Guidelines
 
@@ -180,18 +129,15 @@ If none apply, you are not done — go back to step 5.
 
 ## Failure modes
 
-Handle these without asking a human:
-
 | Situation | Action |
 | --- | --- |
-| No package/version inferable from diff or PR metadata | Post a short PR comment: could not infer upgrade target; list files inspected. Verdict N/A. |
+| No package/version inferable from diff or PR metadata | List the files inspected and ask which upgrade to review. |
 | Changelog unavailable | Report with `NEEDS REVIEW`; list sources attempted. |
-| `gh` or network failure | Log the full report; exit without failing the workflow. |
+| `gh` or network failure | Deliver the full report in chat and say posting failed. |
 | Very large version span | Cover all intermediate majors/minors; report may be long — that is acceptable. |
 
 ## Anti-patterns the agent must refuse
 
-- Asking the user which PR, package, or version to review **in unattended mode**.
 - Offering to narrow scope or "focus on one major at a time" instead of completing the review.
 - Modifying `package.json`, lockfiles, workflow files, or source to "fix" the upgrade.
 - Guessing breaking changes without fetching upstream release notes.

@@ -40,20 +40,14 @@ async function sendEmailWithTemplate({
   emailType,
 }: SendEmailWithTemplateProps): Promise<void> {
   if (!isValidEmail(data.recipientEmail)) {
-    logger.error({
-      error: "Invalid email format",
-      email: data.recipientEmail,
-    })
+    logger.error({ email: data.recipientEmail }, "Invalid email format")
     throw new Error("Invalid email format")
   }
 
   // Drop malformed cc addresses rather than failing the send for everyone
   const validCc = data.cc?.filter((email) => {
     if (isValidEmail(email)) return true
-    logger.error({
-      error: "Invalid cc email format",
-      email,
-    })
+    logger.warn({ email }, "Invalid cc email format")
     return false
   })
 
@@ -65,11 +59,10 @@ async function sendEmailWithTemplate({
       cc: validCc,
     })
   } catch (error) {
-    logger.error({
-      error: `Failed to send ${emailType} email`,
-      email: data.recipientEmail,
-      originalError: error,
-    })
+    logger.error(
+      { email: data.recipientEmail, originalError: error },
+      `Failed to send ${emailType} email`,
+    )
     throw error
   }
 }
