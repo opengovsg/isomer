@@ -53,11 +53,11 @@ export const FileAttachment = ({
   const toast = useToast()
 
   // setHref is recreated on every render by callers (it's an inline closure
-  // over path/handleChange), so it can't be a dependency here without the
-  // effect re-firing on every render while isLoading is true -- each firing
-  // writes "" back into the form state, which can race with and clobber the
-  // real uploaded src. A ref keeps this effect tied only to isLoading's
-  // actual true/false transitions, which is its real intent.
+  // over path/handleChange). Listing it as a dependency makes the effect
+  // re-fire on every render while isLoading is true, and each re-fire writes
+  // "" back into the form state, racing with and clobbering the real
+  // uploaded src. A ref keeps this effect tied only to isLoading's actual
+  // true/false transitions, which is the real intent.
   const setHrefRef = useRef(setHref)
   useEffect(() => {
     setHrefRef.current = setHref
@@ -137,7 +137,7 @@ export const FileAttachment = ({
                   })
 
               if (parseResult.success) return null
-              // NOTE: safe assertion here because we're in error path and there's at least 1 error
+              // NOTE: safe assertion, we're in the error path and there's at least 1 error
               return (
                 parseResult.error.issues[0]?.message ||
                 "Please ensure that your file begins with alphanumeric characters!"
