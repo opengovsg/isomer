@@ -1,9 +1,7 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
-import { Box, HStack, Text, VStack } from "@chakra-ui/react"
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import { Text } from "@chakra-ui/react"
 import {
   and,
-  composePaths,
   isControl,
   rankWith,
   Resolve,
@@ -15,11 +13,10 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useEditPageCarouselPreview } from "~/features/editing-experience/components/preview/EditPageCarouselPreviewProvider"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 
-import { AddItemButton } from "../../../components/AddItemButton"
+import { DraggableArrayList } from "../../../components/DraggableArrayList"
 import { DraggableTagButton } from "../../../components/DraggableTagButton"
 import { NestedDrawerSwitch } from "../../../components/NestedDrawerSwitch"
 import { TagRowActionsMenu } from "../../../components/TagRowActionsMenu"
-import { useBuilderErrors } from "../../../ErrorProvider"
 import { useArray } from "../../../hooks/useArray"
 import { defaultHeroCarouselSlide } from "../../../utils/defaultHeroCarouselSlide"
 import {
@@ -37,6 +34,7 @@ export const jsonFormsHeroCarouselSlidesControlTester: RankedTester = rankWith(
   ),
 )
 
+// Slides list that keeps the preview carousel on the slide being edited.
 function JsonFormsHeroCarouselSlidesControl(props: ArrayLayoutProps) {
   const {
     data,
@@ -53,7 +51,6 @@ function JsonFormsHeroCarouselSlidesControl(props: ArrayLayoutProps) {
     description,
     label,
   } = props
-  const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
   const preview = useEditPageCarouselPreview()
   const slides = (Resolve.data(core?.data, path) ?? []) as {
@@ -72,177 +69,104 @@ function JsonFormsHeroCarouselSlidesControl(props: ArrayLayoutProps) {
     moveUp,
     moveDown,
   })
-  const {
-    setSelectedIndex,
-    isAddItemDisabled,
-    isRemoveItemDisabled,
-    onDragEnd,
-  } = arrayResult
+  const { setSelectedIndex, isAddItemDisabled, isRemoveItemDisabled } =
+    arrayResult
 
-  const openSlide = (index: number) => {
-    setSelectedIndex(index)
-    preview?.setActiveIndex(index)
-  }
-
-  const setDrawerIndex = (index?: number) => {
+  const selectSlide = (index?: number) => {
     setSelectedIndex(index)
     if (index !== undefined) {
       preview?.setActiveIndex(index)
     }
   }
 
-  const deleteSlide = (index: number) => {
+  const removeSlide = (index: number) => {
     if (!removeItems || isRemoveItemDisabled) {
-      return
+      return false
     }
 
     removeItems(path, [index])()
-    if (preview) {
-      preview.setActiveIndex(
-        indexAfterDelete(preview.activeIndex, index, data - 1),
-      )
-    }
+    preview?.setActiveIndex(
+      indexAfterDelete(preview.activeIndex, index, data - 1),
+    )
+    return true
   }
 
-  const handleDrawerRemove = (itemPath: string, index: number) => () => {
-    if (!removeItems || isRemoveItemDisabled) {
+  // Stay in the drawer on the neighbouring slide instead of closing it.
+  const handleDrawerRemove = (_itemPath: string, index: number) => () => {
+    if (!removeSlide(index)) {
       return
     }
-
-    removeItems(itemPath, [index])()
     const nextLength = data - 1
     setSelectedIndex(
       nextLength <= 0 ? undefined : indexAfterDelete(index, index, nextLength),
     )
-    if (preview) {
-      preview.setActiveIndex(
-        indexAfterDelete(preview.activeIndex, index, nextLength),
-      )
-    }
   }
 
   return (
     <NestedDrawerSwitch
       {...props}
       {...arrayResult}
-      setSelectedIndex={setDrawerIndex}
+      setSelectedIndex={selectSlide}
       handleRemoveSelectedItem={handleDrawerRemove}
     >
-      <VStack spacing={0} align="start">
-        <VStack align="start" spacing="0.25rem" w="full">
-          <HStack w="full" justifyContent="space-between" align="center">
-            <Text textStyle="subhead-1" flex={1}>
-              {label}
-            </Text>
-            <AddItemButton
-              onClick={() => {
-                addItem(path, defaultHeroCarouselSlide())()
-                const nextIndex = data
-                setSelectedIndex(nextIndex)
-                preview?.setActiveIndex(nextIndex)
-              }}
-              isDisabled={isAddItemDisabled}
-            >
-              Add item
-            </AddItemButton>
-          </HStack>
-          {description && (
-            <Text textStyle="body-2" textColor="base.content.default">
-              {description}
-            </Text>
-          )}
-        </VStack>
-        <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
-          <DragDropContext
-            onDragEnd={(result) => {
-              if (!result.destination) {
-                return
-              }
+      <DraggableArrayList
+        label={label}
+        description={description}
+        path={path}
+        count={data}
+        isAddDisabled={isAddItemDisabled}
+        onAdd={() => {
+          addItem(path, defaultHeroCarouselSlide())()
+          selectSlide(data)
+        }}
+        onDragEnd={(result) => {
+          arrayResult.onDragEnd(result)
+          if (preview && result.destination) {
+            preview.setActiveIndex(
+              indexAfterMove(
+                preview.activeIndex,
+                result.source.index,
+                result.destination.index,
+              ),
+            )
+          }
+        }}
+        renderRow={(index, { hasError, dragHandleProps }) => {
+          const slide = slides[index]
+          const fileName = slideImageFileName(slide?.backgroundUrl)
 
-              const from = result.source.index
-              const to = result.destination.index
-              onDragEnd(result)
-              if (preview && from !== to) {
-                preview.setActiveIndex(
-                  indexAfterMove(preview.activeIndex, from, to),
-                )
-              }
-            }}
-          >
-            <Droppable droppableId="slides">
-              {({ droppableProps, innerRef, placeholder }) => (
-                <VStack
-                  {...droppableProps}
-                  align="baseline"
-                  w="100%"
-                  h="100%"
-                  spacing={0}
-                  ref={innerRef}
-                >
-                  {[...Array(data).keys()].map((index) => {
-                    const childPath = composePaths(path, `${index}`)
-                    const hasError = hasErrorAt(childPath)
-                    const slide = slides[index]
-                    const fileName = slideImageFileName(slide?.backgroundUrl)
-
-                    return (
-                      <Draggable
-                        key={childPath}
-                        draggableId={childPath}
-                        disableInteractiveElementBlocking
-                        index={index}
-                      >
-                        {({ draggableProps, dragHandleProps, innerRef }) => (
-                          <DraggableTagButton.Root
-                            draggableProps={draggableProps}
-                            isError={hasError}
-                            ref={innerRef}
-                          >
-                            <DraggableTagButton.Handle
-                              dragHandleProps={dragHandleProps}
-                            />
-                            <DraggableTagButton.Body
-                              onClick={() => openSlide(index)}
-                            >
-                              <DraggableTagButton.Icon
-                                icon={TYPE_TO_ICON.image}
-                              />
-                              <DraggableTagButton.Content>
-                                <Text textStyle="subhead-2" textAlign="start">
-                                  {slideRowTitle(slide?.title, index)}
-                                </Text>
-                                {hasError ? (
-                                  <DraggableTagButton.ErrorCaption />
-                                ) : (
-                                  fileName && (
-                                    <DraggableTagButton.Subtitle>
-                                      {fileName}
-                                    </DraggableTagButton.Subtitle>
-                                  )
-                                )}
-                              </DraggableTagButton.Content>
-                            </DraggableTagButton.Body>
-                            <DraggableTagButton.Trailing>
-                              <TagRowActionsMenu
-                                noun="slide"
-                                index={index}
-                                isDisabled={isRemoveItemDisabled}
-                                onDelete={() => deleteSlide(index)}
-                              />
-                            </DraggableTagButton.Trailing>
-                          </DraggableTagButton.Root>
-                        )}
-                      </Draggable>
+          return (
+            <>
+              <DraggableTagButton.Handle dragHandleProps={dragHandleProps} />
+              <DraggableTagButton.Body onClick={() => selectSlide(index)}>
+                <DraggableTagButton.Icon icon={TYPE_TO_ICON.image} />
+                <DraggableTagButton.Content>
+                  <Text textStyle="subhead-2" textAlign="start">
+                    {slideRowTitle(slide?.title, index)}
+                  </Text>
+                  {hasError ? (
+                    <DraggableTagButton.ErrorCaption />
+                  ) : (
+                    fileName && (
+                      <DraggableTagButton.Subtitle>
+                        {fileName}
+                      </DraggableTagButton.Subtitle>
                     )
-                  })}
-
-                  {placeholder}
-                </VStack>
-              )}
-            </Droppable>
-          </DragDropContext>
-        </Box>
-      </VStack>
+                  )}
+                </DraggableTagButton.Content>
+              </DraggableTagButton.Body>
+              <DraggableTagButton.Trailing>
+                <TagRowActionsMenu
+                  noun="slide"
+                  index={index}
+                  isDisabled={isRemoveItemDisabled}
+                  onDelete={() => removeSlide(index)}
+                />
+              </DraggableTagButton.Trailing>
+            </>
+          )
+        }}
+      />
     </NestedDrawerSwitch>
   )
 }
