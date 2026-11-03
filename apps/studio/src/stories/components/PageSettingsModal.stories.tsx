@@ -38,7 +38,7 @@ const BASE_HANDLERS = [
 const meta: Meta<typeof PageSettingsModal> = {
   title: "Components/PageSettingsModal",
   component: PageSettingsModal,
-  // The modal renders in a portal; give Chromatic a bounding box to snapshot.
+  // The modal renders in a portal; give Argos a bounding box to snapshot.
   decorators: [
     (storyFn) => (
       <Box w="100%" h="100vh">
@@ -50,7 +50,7 @@ const meta: Meta<typeof PageSettingsModal> = {
   parameters: {
     layout: "fullscreen",
     // Prevent flaky snapshots while the modal animates in.
-    chromatic: { delay: 200 },
+    argos: { delay: 200 },
     nextjs: { router: { query: { siteId: "1" } } },
     msw: { handlers: [...BASE_HANDLERS, redirectHandlers.getBySource.none()] },
   },

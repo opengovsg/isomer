@@ -11,22 +11,47 @@ import { SIGN_IN_SINGPASS } from "~/lib/routes"
 import { callbackUrlSchema } from "~/schemas/url"
 import { trpc } from "~/utils/trpc"
 
-/**
- * This component is responsible for handling the callback from the Singpass
- * login.
- */
-export const SingpassCallback = (): JSX.Element => {
+import { singpassCallbackFailurePath } from "../singpassRedirect"
+
+const queryValue = (
+  value: string | string[] | undefined,
+): string | undefined =>
+  typeof value === "string" && value.length > 0 ? value : undefined
+
+const RedirectToSingpassSignIn = ({
+  singpassError,
+}: {
+  singpassError: string | undefined
+}): JSX.Element => {
+  const router = useRouter()
+
+  useEffect(() => {
+    void router.replace(singpassCallbackFailurePath(singpassError))
+  }, [router, singpassError])
+
+  return <FullscreenSpinner />
+}
+
+const CompleteSingpassLogin = ({
+  code,
+  state,
+  iss,
+}: {
+  code: string
+  state: string
+  iss?: string
+}): JSX.Element => {
   const { setHasLoginStateFlag } = useLoginState()
 
   const router = useRouter()
   const utils = trpc.useUtils()
 
-  const {
-    query: { code, state },
-  } = router
-
   const [data, dataQuery] = trpc.auth.singpass.callback.useSuspenseQuery(
-    { code: String(code), state: String(state) },
+    {
+      code,
+      state,
+      iss,
+    },
     {
       staleTime: Infinity,
     },
@@ -112,4 +137,29 @@ export const SingpassCallback = (): JSX.Element => {
       </Grid>
     </Flex>
   )
+}
+
+/**
+ * This component is responsible for handling the callback from the Singpass
+ * login.
+ */
+export const SingpassCallback = (): JSX.Element => {
+  const router = useRouter()
+
+  if (!router.isReady) {
+    return <FullscreenSpinner />
+  }
+
+  const code = queryValue(router.query.code)
+  const state = queryValue(router.query.state)
+  const iss = queryValue(router.query.iss)
+  const singpassError = queryValue(router.query.error)
+
+  // A failed Singpass redirect has `error` and no authorization code. Do not
+  // send a stand-in code to the token exchange.
+  if (singpassError || !code || !state) {
+    return <RedirectToSingpassSignIn singpassError={singpassError} />
+  }
+
+  return <CompleteSingpassLogin code={code} state={state} iss={iss} />
 }

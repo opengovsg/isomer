@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import type { PaginationProps } from "../../../types/Pagination"
 import { PaginationControls } from "./PaginationControls"
@@ -48,7 +48,7 @@ export const SomePages: Story = {
 
 export const ManyPages: Story = {
   parameters: {
-    chromatic: withChromaticModes(["mobile", "tablet"]),
+    argos: withArgosModes(["mobile", "tablet"]),
   },
   args: {
     totalItems: 1240,

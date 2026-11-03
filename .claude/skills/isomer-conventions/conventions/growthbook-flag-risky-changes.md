@@ -92,8 +92,6 @@ const isNewThingEnabled = useFeatureValue<boolean>(SOME_FEATURE_KEY, false)
   should default off, so an outage falls back to the known-good path. See the
   deliberate exception `IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE` in
   `apps/studio/src/lib/growthbook.ts` where `true` is intentional.
-- Canary pattern reference: `enabledSites.includes(siteId.toString())` in
-  `apps/studio/src/features/editing-experience/components/form-builder/renderers/controls/JsonFormsCategoryControl.tsx:66`.
 - A hand-rolled `enabledEmails`/allowlist check in application code — `email`
   is already a live GrowthBook attribute (`apps/studio/src/components/AvatarMenu.tsx`,
   `apps/studio/src/server/modules/auth/email/email.router.ts`), so this belongs
