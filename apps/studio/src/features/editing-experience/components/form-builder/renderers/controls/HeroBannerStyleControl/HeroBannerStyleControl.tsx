@@ -5,7 +5,8 @@ import type {
   UISchemaElement,
 } from "@jsonforms/core"
 import { Box, Flex, FormControl, Icon, Text, VStack } from "@chakra-ui/react"
-import { JsonFormsDispatch } from "@jsonforms/react"
+import { Resolve } from "@jsonforms/core"
+import { JsonFormsDispatch, useJsonForms } from "@jsonforms/react"
 import { Button, FormLabel } from "@opengovsg/design-system-react"
 import {
   getHeroStyleVariantForBranchTitle,
@@ -16,7 +17,8 @@ import { useId, useState } from "react"
 import { BiCheck, BiChevronRight } from "react-icons/bi"
 import { NewFeatureBadge } from "~/features/editing-experience/components/shared/NewFeatureBadge"
 
-import { DrawerHeader } from "../../../Drawer/DrawerHeader"
+import { DrawerHeader } from "../../../../Drawer/DrawerHeader"
+import { DiscardCarouselSlidesModal } from "./DiscardCarouselSlidesModal"
 
 interface HeroBannerStyleOption {
   label: string
@@ -271,6 +273,11 @@ export function HeroBannerStyleCombinator({
   cells: JsonFormsCellRendererRegistryEntry[] | undefined
 }) {
   const [isOpen, setIsOpen] = useState(false)
+  const [pendingValue, setPendingValue] = useState<string>()
+  const { core } = useJsonForms()
+  const slideCount =
+    (Resolve.data(core?.data, path) as { slides?: unknown[] } | undefined)
+      ?.slides?.length ?? 0
 
   const options = renderInfos
     .map((renderInfo) => {
@@ -295,14 +302,41 @@ export function HeroBannerStyleCombinator({
     (option) => option.label === variant || option.value === variant,
   )
 
+  // Leaving carousel keeps only the first slide, so confirm before dropping the rest.
+  const handleChange = (value: string) => {
+    const isLeavingCarousel =
+      selected?.key === HERO_STYLE.carousel.key &&
+      options.find((option) => option.value === value)?.key !==
+        HERO_STYLE.carousel.key
+
+    if (isLeavingCarousel && slideCount > 1) {
+      setPendingValue(value)
+      return
+    }
+    onChange(value)
+  }
+
   if (isOpen) {
     return (
-      <HeroBannerStyleDrawer
-        options={options}
-        value={selected?.value ?? ""}
-        onChange={onChange}
-        onClose={() => setIsOpen(false)}
-      />
+      <>
+        <HeroBannerStyleDrawer
+          options={options}
+          value={selected?.value ?? ""}
+          onChange={handleChange}
+          onClose={() => setIsOpen(false)}
+        />
+        <DiscardCarouselSlidesModal
+          isOpen={pendingValue !== undefined}
+          slideCount={slideCount}
+          onClose={() => setPendingValue(undefined)}
+          onConfirm={() => {
+            if (pendingValue !== undefined) {
+              onChange(pendingValue)
+            }
+            setPendingValue(undefined)
+          }}
+        />
+      </>
     )
   }
 
