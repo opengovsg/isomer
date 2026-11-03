@@ -49,6 +49,7 @@ export const singpassRouter = router({
         ...session,
         userId,
         verificationToken,
+        landingUrl: landingUrl.toString(),
       })
 
       await ctx.session.save()
@@ -96,7 +97,7 @@ export const singpassRouter = router({
         })
       }
 
-      const { codeVerifier, nonce, userId, verificationToken } =
+      const { codeVerifier, nonce, userId, verificationToken, landingUrl } =
         ctx.session.singpass.sessionState
 
       if (!code || !codeVerifier || !nonce || !userId) {
@@ -208,7 +209,7 @@ export const singpassRouter = router({
 
       return {
         isNewUser: !possibleUser.singpassUuid,
-        redirectUrl: DASHBOARD,
+        redirectUrl: landingUrl ?? DASHBOARD,
       }
     }),
 })
