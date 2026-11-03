@@ -250,15 +250,6 @@ const canvasToBlob = (
   })
 }
 
-// bakeImage only implements quarter-turn canvas rotation (outputDimensions
-// swaps width/height for exactly 90/270, computeCanvasTransform rotates the
-// context by the raw degree value either way) -- the schema's rotate field
-// allows any 0-360 value, but any non-quarter-turn would rotate content
-// inside an unrotated-size canvas and silently clip the corners instead of
-// erroring. Reject it here rather than let that happen without either a
-// correct implementation or a complaint.
-const QUARTER_TURN_ROTATIONS = new Set([0, 90, 180, 270])
-
 /**
  * Bake an image by applying crop, rotate, and flip from an adjustment object.
  * The original blob is decoded with EXIF orientation normalization, ensuring
@@ -280,14 +271,6 @@ export const bakeImage = async (
   if (!canBakeImage(opts.mimeType)) {
     throw new Error(
       `Cannot bake image format "${opts.mimeType}". Supported formats: JPEG, PNG, WebP.`,
-    )
-  }
-
-  // Guard: only quarter-turn rotations are correctly implemented (see
-  // QUARTER_TURN_ROTATIONS).
-  if (!QUARTER_TURN_ROTATIONS.has(adjustment.rotate)) {
-    throw new Error(
-      `Cannot bake image with a ${adjustment.rotate}° rotation: only quarter-turn rotations (0, 90, 180, 270) are supported.`,
     )
   }
 
