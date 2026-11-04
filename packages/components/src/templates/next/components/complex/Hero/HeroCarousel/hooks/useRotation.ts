@@ -164,9 +164,7 @@ export const useRotation = (slideCount: number) => {
 
   const onPointerDown = (event: PointerEvent<HTMLElement>) => {
     suppressClickRef.current = false
-    if (event.pointerType === "touch" || event.pointerType === "pen") {
-      stop()
-    }
+    // Only touch can swipe; mouse drags (e.g. text selection) must not change slides.
     if (event.pointerType !== "touch") {
       swipeRef.current = null
       return
@@ -234,8 +232,8 @@ export const useRotation = (slideCount: number) => {
     sectionProps: {
       ref: sectionRef,
       // Focus stops rotation, which is how keyboard and screen reader users
-      // reach the call to action and pause control. Slide arrows keep rotating
-      // and restart the interval. Hover does not stop rotation.
+      // reach the call to action and pause control. Slide arrows and swipes keep
+      // rotating and restart the interval. Hover and touch scrolling do not stop rotation.
       onFocus: onSectionFocus,
       onPointerDown,
       onPointerUp,
