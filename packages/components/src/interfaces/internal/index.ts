@@ -74,6 +74,7 @@ export type { AttrsDirProps } from "./AttrsDir"
 export {
   AskgovSchema,
   type AskgovWidgetProps,
+  type AskgovWidgetClientProps,
   type AskgovProps,
 } from "./Askgov"
 export {
