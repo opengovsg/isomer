@@ -15,11 +15,8 @@ export interface LowResWarning {
 
 /**
  * Decide whether to warn that the cropped region is too low-resolution for the
- * component's largest rendered frame. The crop is normalized to the rotated/
- * flipped ("display") image the editor cropped against, so a 90/270 rotation
- * swaps the source's natural dimensions before the crop is applied — the crop
- * width/height are then the effective output dimensions directly. `naturalSize`
- * is the source image's un-rotated natural size (what the <img> reports).
+ * component's largest rendered frame. The crop width/height are the effective
+ * output dimensions directly.
  *
  * The fit matters:
  * - **cover** (or width-only, when no height is configured): the frame is filled
@@ -36,7 +33,6 @@ export interface LowResWarning {
 export const computeLowResWarning = ({
   naturalSize,
   crop,
-  rotate,
   lockedRatio,
   maxRenderedWidthPx,
   maxRenderedHeightPx,
@@ -44,7 +40,6 @@ export const computeLowResWarning = ({
 }: {
   naturalSize?: { width: number; height: number }
   crop?: CropRectNormalized
-  rotate?: number
   lockedRatio?: AspectRatio
   maxRenderedWidthPx?: number
   maxRenderedHeightPx?: number
@@ -53,15 +48,12 @@ export const computeLowResWarning = ({
   if (!naturalSize) return undefined
   if (maxRenderedWidthPx == null && maxRenderedHeightPx == null)
     return undefined
-  const rotatedQuarter = rotate === 90 || rotate === 270
-  const displayWidth = rotatedQuarter ? naturalSize.height : naturalSize.width
-  const displayHeight = rotatedQuarter ? naturalSize.width : naturalSize.height
   const effectiveCrop =
-    crop ?? defaultCropRect(lockedRatio, displayWidth / displayHeight)
+    crop ?? defaultCropRect(lockedRatio, naturalSize.width / naturalSize.height)
   const { sw: effectiveWidth, sh: effectiveHeight } = cropRectToPixels(
     effectiveCrop,
-    displayWidth,
-    displayHeight,
+    naturalSize.width,
+    naturalSize.height,
   )
 
   const widthShort: LowResWarning | undefined =

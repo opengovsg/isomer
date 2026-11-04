@@ -64,45 +64,6 @@ describe("computeLowResWarning", () => {
     ).toEqual({ dimension: "width", effectivePx: 900, targetPx: 960 })
   })
 
-  it("uses the rotated output width (90° swaps width and height)", () => {
-    const size = { width: 2000, height: 400 }
-    expect(
-      computeLowResWarning({
-        naturalSize: size,
-        crop: fullCrop,
-        maxRenderedWidthPx: 1280,
-      }),
-    ).toBeUndefined()
-    expect(
-      computeLowResWarning({
-        naturalSize: size,
-        crop: fullCrop,
-        rotate: 90,
-        maxRenderedWidthPx: 1280,
-      }),
-    ).toEqual({ dimension: "width", effectivePx: 400, targetPx: 1280 })
-  })
-
-  it("measures crop.width against the rotated display frame (not crop.height)", () => {
-    const size = { width: 2000, height: 2000 }
-    expect(
-      computeLowResWarning({
-        naturalSize: size,
-        crop: { x: 0, y: 0, width: 1, height: 0.5 },
-        rotate: 90,
-        maxRenderedWidthPx: 1280,
-      }),
-    ).toBeUndefined()
-    expect(
-      computeLowResWarning({
-        naturalSize: size,
-        crop: { x: 0, y: 0, width: 0.5, height: 1 },
-        rotate: 90,
-        maxRenderedWidthPx: 1280,
-      }),
-    ).toEqual({ dimension: "width", effectivePx: 1000, targetPx: 1280 })
-  })
-
   it("falls back to the full-image default crop when none is set yet", () => {
     expect(
       computeLowResWarning({

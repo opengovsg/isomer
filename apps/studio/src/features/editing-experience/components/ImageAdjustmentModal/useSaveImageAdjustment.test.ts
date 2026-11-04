@@ -15,9 +15,6 @@ describe("useSaveImageAdjustment pure helpers", () => {
         originalKey: "path/to/original.png",
         crop: { x: 0, y: 0, width: 1, height: 1 },
         focal: { x: 0.5, y: 0.5 },
-        rotate: 0 as const,
-        flipH: false,
-        flipV: false,
       }
 
       const result = resolveOriginalKey(currentSrc, draft)
