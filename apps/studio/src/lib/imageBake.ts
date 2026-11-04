@@ -378,7 +378,7 @@ const QUALITY_BACKOFF_STEPS = [0.8, 0.6, 0.4]
  */
 export const bakeImageWithinSizeLimit = async (
   original: Blob,
-  adjustment: Pick<ImageAdjustment, "crop" | "rotate" | "flipH" | "flipV">,
+  adjustment: Pick<ImageAdjustment, "crop">,
   opts: { mimeType: string; maxBytes: number },
 ): Promise<Blob> => {
   const fullQuality = await bakeImage(original, adjustment, {

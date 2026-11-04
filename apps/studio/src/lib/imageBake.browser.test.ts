@@ -120,12 +120,12 @@ describe("bakeImageWithinSizeLimit", () => {
     const src = await makeNoisyImageBlob(16)
     const fullQuality = await bakeImage(
       src,
-      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { crop: FULL_CROP },
       { mimeType: "image/jpeg" },
     )
     const result = await bakeImageWithinSizeLimit(
       src,
-      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { crop: FULL_CROP },
       { mimeType: "image/jpeg", maxBytes: fullQuality.size },
     )
     expect(result.size).toBe(fullQuality.size)
@@ -135,7 +135,7 @@ describe("bakeImageWithinSizeLimit", () => {
     const src = await makeNoisyImageBlob(64)
     const fullQuality = await bakeImage(
       src,
-      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { crop: FULL_CROP },
       { mimeType: "image/jpeg" },
     )
     // A threshold between full quality and the lowest backoff step's size --
@@ -143,7 +143,7 @@ describe("bakeImageWithinSizeLimit", () => {
     const maxBytes = Math.floor(fullQuality.size * 0.7)
     const result = await bakeImageWithinSizeLimit(
       src,
-      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { crop: FULL_CROP },
       { mimeType: "image/jpeg", maxBytes },
     )
     expect(result.type).toBe("image/jpeg")
@@ -155,12 +155,12 @@ describe("bakeImageWithinSizeLimit", () => {
     const src = await makeNoisyImageBlob(16)
     const fullQuality = await bakeImage(
       src,
-      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { crop: FULL_CROP },
       { mimeType: "image/png" },
     )
     const result = await bakeImageWithinSizeLimit(
       src,
-      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { crop: FULL_CROP },
       { mimeType: "image/png", maxBytes: 1 },
     )
     expect(result.size).toBe(fullQuality.size)
@@ -170,12 +170,12 @@ describe("bakeImageWithinSizeLimit", () => {
     const src = await makeNoisyImageBlob(64)
     const lowestQuality = await bakeImage(
       src,
-      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { crop: FULL_CROP },
       { mimeType: "image/jpeg", quality: 0.4 },
     )
     const result = await bakeImageWithinSizeLimit(
       src,
-      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
+      { crop: FULL_CROP },
       { mimeType: "image/jpeg", maxBytes: 1 },
     )
     expect(result.size).toBe(lowestQuality.size)
