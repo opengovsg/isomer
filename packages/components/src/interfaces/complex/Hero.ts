@@ -10,6 +10,8 @@ import {
   HERO_ACTION_LAYOUT_FORMAT,
   HERO_BANNER_STYLE_FORMAT,
   HERO_BLOCK_IMAGE_FORMAT,
+  HERO_CAROUSEL_FORMAT,
+  HERO_CAROUSEL_SLIDES_FORMAT,
   HERO_QUICK_LINKS_FORMAT,
 } from "../format"
 import { IconPicker } from "../primitives/IconPicker"
@@ -22,7 +24,24 @@ export const HERO_STYLE = {
   largeImage: { key: "largeImage", title: "Large image" },
   floating: { key: "floating", title: "Floating" },
   searchbar: { key: "searchbar", title: "Search bar" },
+  carousel: { key: "carousel", title: "Carousel" },
 } as const
+
+export const HERO_CAROUSEL_LAYOUT = {
+  block: "block",
+  gradient: "gradient",
+} as const
+
+export type HeroCarouselLayout =
+  (typeof HERO_CAROUSEL_LAYOUT)[keyof typeof HERO_CAROUSEL_LAYOUT]
+
+export const HERO_CAROUSEL_CONTENT_ALIGNMENT = {
+  left: "left",
+  center: "center",
+} as const
+
+export type HeroCarouselContentAlignment =
+  (typeof HERO_CAROUSEL_CONTENT_ALIGNMENT)[keyof typeof HERO_CAROUSEL_CONTENT_ALIGNMENT]
 
 export const HERO_GRADIENT_ACTION_LAYOUT = {
   buttons: "buttons",
@@ -42,6 +61,9 @@ export const HERO_BLOCK_IMAGE_POSITION = {
   right: "right",
 } as const
 
+export type HeroCarouselImagePosition =
+  (typeof HERO_BLOCK_IMAGE_POSITION)[keyof typeof HERO_BLOCK_IMAGE_POSITION]
+
 export const HERO_BLOCK_IMAGE_EDGE = {
   straight: "straight",
   curved: "curved",
@@ -58,25 +80,34 @@ export function getHeroStyleVariantForBranchTitle(
   )?.key
 }
 
+function heroContentFields(descriptions: { title: string; subtitle: string }) {
+  return {
+    title: IsomerString({
+      title: "Hero text",
+      description: descriptions.title,
+      maxLength: 100,
+      pattern: NON_EMPTY_STRING_REGEX,
+      errorMessage: {
+        pattern: "cannot be empty or contain only spaces",
+      },
+    }),
+    subtitle: Type.Optional(
+      IsomerString({
+        title: "Description",
+        description: descriptions.subtitle,
+        format: "textarea",
+        maxLength: 300,
+      }),
+    ),
+  }
+}
+
 const HeroBaseSchema = Type.Object({
   type: Type.Literal("hero", { default: "hero" }),
-  title: IsomerString({
-    title: "Hero text",
-    description: "The title of the hero banner",
-    maxLength: 100,
-    pattern: NON_EMPTY_STRING_REGEX,
-    errorMessage: {
-      pattern: "cannot be empty or contain only spaces",
-    },
+  ...heroContentFields({
+    title: "The title of the hero banner",
+    subtitle: "The contents of the hero banner",
   }),
-  subtitle: Type.Optional(
-    IsomerString({
-      title: "Description",
-      description: "The contents of the hero banner",
-      format: "textarea",
-      maxLength: 300,
-    }),
-  ),
 })
 
 const CallToActionsSchema = Type.Object({
@@ -352,6 +383,86 @@ const HeroSearchbarSchema = Type.Composite(
   },
 )
 
+export const HeroCarouselSlideSchema = Type.Composite(
+  [
+    Type.Object({
+      backgroundUrl: BackgroundUrlSchema,
+      ...heroContentFields({
+        title:
+          "Keep it short. The slide with the most text sets the height for all slides.",
+        subtitle:
+          "Keep text lengths similar across slides, or shorter slides will look empty.",
+      }),
+    }),
+    CallToActionsSchema,
+  ],
+  {
+    title: "Slide",
+    groups: [
+      GROUPINGS.TEXT,
+      GROUPINGS.PRIMARY_CALL_TO_ACTION,
+      GROUPINGS.SECONDARY_CALL_TO_ACTION,
+    ],
+  },
+)
+
+export const HERO_CAROUSEL_SLIDE_LIMITS = {
+  minItems: 2,
+  maxItems: 4,
+} as const
+
+const HeroCarouselSchema = Type.Object(
+  {
+    type: Type.Literal("hero", { default: "hero" }),
+    variant: Type.Literal(HERO_STYLE.carousel.key, {
+      default: HERO_STYLE.carousel.key,
+    }),
+    carousel: Type.Union(
+      [
+        Type.Object({
+          layout: Type.Literal(HERO_CAROUSEL_LAYOUT.block, { title: "Block" }),
+          imagePosition: Type.Union(
+            [
+              Type.Literal(HERO_BLOCK_IMAGE_POSITION.right, {
+                title: "Right",
+              }),
+              Type.Literal(HERO_BLOCK_IMAGE_POSITION.left, {
+                title: "Left",
+              }),
+            ],
+            { type: "string" },
+          ),
+        }),
+        Type.Object({
+          layout: Type.Literal(HERO_CAROUSEL_LAYOUT.gradient, {
+            title: "Gradient",
+          }),
+          contentAlignment: Type.Union(
+            [
+              Type.Literal(HERO_CAROUSEL_CONTENT_ALIGNMENT.left, {
+                title: "Left",
+              }),
+              Type.Literal(HERO_CAROUSEL_CONTENT_ALIGNMENT.center, {
+                title: "Center",
+              }),
+            ],
+            { type: "string" },
+          ),
+        }),
+      ],
+      { format: HERO_CAROUSEL_FORMAT },
+    ),
+    slides: Type.Array(HeroCarouselSlideSchema, {
+      title: "Slides",
+      format: HERO_CAROUSEL_SLIDES_FORMAT,
+      ...HERO_CAROUSEL_SLIDE_LIMITS,
+    }),
+  },
+  {
+    title: HERO_STYLE.carousel.title,
+  },
+)
+
 export const HeroSchema = Type.Intersect(
   [
     Type.Union(
@@ -360,6 +471,7 @@ export const HeroSchema = Type.Intersect(
         HeroBlockSchema,
         HeroLargeImageSchema,
         HeroFloatingSchema,
+        HeroCarouselSchema,
         HeroSearchbarSchema,
       ],
       {
@@ -373,11 +485,13 @@ export const HeroSchema = Type.Intersect(
   },
 )
 
-type CommonProps = Static<typeof HeroBaseSchema> & {
+interface HeroLayoutProps {
   site: IsomerSiteProps
   theme?: "default" | "inverse"
   headingLevel: number
 }
+
+type CommonProps = Static<typeof HeroBaseSchema> & HeroLayoutProps
 
 export type HeroGradientQuickLinksItem = Static<
   typeof HeroGradientQuickLinksItemSchema
@@ -415,9 +529,14 @@ export type HeroSearchbarProps = Simplify<
   CommonProps & Static<typeof HeroSearchbarSchema>
 >
 
+export type HeroCarouselProps = Simplify<
+  HeroLayoutProps & Static<typeof HeroCarouselSchema>
+>
+
 export type HeroProps =
   | HeroGradientProps
   | HeroBlockProps
   | HeroLargeImageProps
   | HeroFloatingProps
   | HeroSearchbarProps
+  | HeroCarouselProps
