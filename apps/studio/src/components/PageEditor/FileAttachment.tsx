@@ -53,11 +53,11 @@ export const FileAttachment = ({
   const toast = useToast()
 
   // setHref is recreated on every render by callers (it's an inline closure
-  // over path/handleChange). Listing it as a dependency makes the effect
-  // re-fire on every render while isLoading is true, and each re-fire writes
-  // "" back into the form state, racing with and clobbering the real
-  // uploaded src. A ref keeps this effect tied only to isLoading's actual
-  // true/false transitions, which is the real intent.
+  // over path/handleChange), so it can't be a dependency here without the
+  // effect re-firing on every render while isLoading is true -- each firing
+  // writes "" back into the form state, which can race with and clobber the
+  // real uploaded src. A ref keeps this effect tied only to isLoading's
+  // actual true/false transitions, which is its real intent.
   const setHrefRef = useRef(setHref)
   useEffect(() => {
     setHrefRef.current = setHref
@@ -86,6 +86,19 @@ export const FileAttachment = ({
                 })
               })
           } else setHrefRef.current(path)
+        },
+        // Without this, a failure in the presign call or the S3 PUT itself
+        // (permission denied, validation, network/CORS) silently reverts the
+        // control to its pre-upload state with no visible error at all.
+        onError: (error) => {
+          console.error("Failed to upload file", error)
+          toast({
+            title: "Failed to upload file",
+            description:
+              error instanceof Error ? error.message : "Please try again.",
+            status: "error",
+            ...BRIEF_TOAST_SETTINGS,
+          })
         },
       },
     )
@@ -137,7 +150,7 @@ export const FileAttachment = ({
                   })
 
               if (parseResult.success) return null
-              // NOTE: safe assertion, we're in the error path and there's at least 1 error
+              // NOTE: safe assertion here because we're in error path and there's at least 1 error
               return (
                 parseResult.error.issues[0]?.message ||
                 "Please ensure that your file begins with alphanumeric characters!"

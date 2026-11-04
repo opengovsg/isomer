@@ -1,4 +1,5 @@
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
+import { getFocalObjectPosition } from "~/utils/getFocalObjectPosition"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
@@ -16,6 +17,7 @@ export const FullInfopic = ({
   buttonLabel,
   buttonUrl,
   description,
+  imageAdjustment,
   isTextOnRight,
   site,
   headingLevel,
@@ -27,13 +29,14 @@ export const FullInfopic = ({
     colorScheme: "inverse",
   })
   const hasLinkButton = !!buttonLabel && !!buttonUrl
+  const backgroundPosition = getFocalObjectPosition(imageAdjustment) ?? "center"
 
   return (
     <section
       style={{
         backgroundImage: `url('${imageSrc}')`,
         backgroundSize: "cover",
-        backgroundPosition: "center",
+        backgroundPosition,
       }}
       id={id}
     >

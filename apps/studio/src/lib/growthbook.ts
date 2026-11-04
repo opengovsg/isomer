@@ -24,8 +24,10 @@ export const ENABLE_SEARCHSG_GAZETTE_INGESTION =
 export const IS_CENTRAL_NOTIFICATION_BANNER_ENABLED_FEATURE_KEY =
   "is-central-notification-banner-enabled"
 
-// Gates the "Adjust image" entry point in JsonFormsImageControl. OFF by default;
-// rolled out per-user via GrowthBook targeting rules, same pattern as is-singpass-enabled.
+// Gates the image-adjustment editor entry point (the "Adjust image" button and
+// modal in JsonFormsImageControl). A boolean On/Off flag, OFF by default; roll
+// out by user via GrowthBook targeting rules (e.g. `email`), same pattern as
+// is-audit-log-enabled / is-singpass-enabled.
 export const IS_IMAGE_ADJUSTMENT_ENABLED_FEATURE_KEY =
   "is-image-adjustment-enabled"
 export const IS_IMAGE_ADJUSTMENT_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false

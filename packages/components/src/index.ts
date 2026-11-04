@@ -6,7 +6,10 @@ export * from "./presets"
 // no legitimate existing public entry point for that; exporting it here is
 // the sanctioned way to cross the Studio<->components boundary (see this
 // package's CLAUDE.md) rather than reaching into an unexported internal.
-export { renderComponent, type RenderComponentProps } from "./templates/next"
+export {
+  renderComponent,
+  type RenderComponentProps,
+} from "./templates/next/render"
 export {
   FORMSG_EMBED_URL_REGEXES,
   MAPS_EMBED_URL_REGEXES,

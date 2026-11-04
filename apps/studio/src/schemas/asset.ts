@@ -184,3 +184,7 @@ export const getPresignedPutUrlForBakeSchema = z.object({
     error: `File size must not exceed ${formatFileSizeLimit({ bytes: MAX_IMG_FILE_SIZE_BYTES })}`,
   }),
 })
+
+export type GetPresignedPutUrlForBakeInput = z.infer<
+  typeof getPresignedPutUrlForBakeSchema
+>

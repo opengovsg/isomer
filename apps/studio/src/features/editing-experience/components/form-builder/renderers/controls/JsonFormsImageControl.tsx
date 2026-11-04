@@ -1,6 +1,6 @@
 import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
-import { Box, FormControl, useDisclosure } from "@chakra-ui/react"
+import { Box, FormControl, HStack, Text, useDisclosure } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
@@ -22,9 +22,12 @@ import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 import { useAdjustmentConfigForField } from "../../hooks/useAdjustmentConfigForField"
 import { getCustomErrorMessage } from "./utils"
 
-// This renderer loads for every FormBuilder instance regardless of whether its schema
-// has an image field — load the modal's canvas baking/crop/preview code lazily
-// so it doesn't bloat every FormBuilder page's shared bundle.
+// JsonFormsImageControl is registered as a renderer for every FormBuilder
+// instance (every settings page and content-block editor), regardless of
+// whether that schema even has an image field. ImageAdjustmentModal pulls in
+// canvas baking/crop/preview code that's only relevant behind a per-agency
+// GrowthBook flag (off by default) — load it lazily so it doesn't bloat every
+// FormBuilder page's shared bundle.
 const ImageAdjustmentModal = dynamic(() =>
   import("~/features/editing-experience/components/ImageAdjustmentModal").then(
     (mod) => mod.ImageAdjustmentModal,
@@ -64,16 +67,23 @@ function JsonFormsImageControl({
   // Gate the adjustment entry point behind a GrowthBook flag (off by default,
   // rolled out per-user) — this is a rollout-sensitive editor path.
   const isImageAdjustmentEnabled = useIsImageAdjustmentEnabled()
-  // Only managed site-storage assets (relative "/{siteId}/..." paths) can be
-  // baked; external/absolute URLs have no derivable bake key, so hide Adjust
-  // for them rather than letting Save fail.
-  const isManagedAsset = !!data && data.startsWith("/")
+  // Only this site's managed storage assets ("/{siteId}/...") can be baked;
+  // external/absolute URLs (or another site's assets) have no derivable bake
+  // key, so hide Adjust rather than letting Save fail. Mirrors the same
+  // `${siteId}/` prefix check asset.service.ts's doAllFileKeysBelongToSite
+  // uses server-side — this one is UX-only, the server re-derives and checks
+  // the real key independently before issuing a presigned URL.
+  const isManagedAsset = !!data && data.startsWith(`/${siteId}/`)
   // The bake-presign mutation requires a resourceId; without a page/link in
   // the URL there's nothing to pass (the save call would send an empty
   // string and fail server-side), so hide Adjust rather than let an editor
   // open the modal, make changes, and hit a save error.
   const hasResourceContext = !!(pageId ?? linkId)
 
+  // Reads the sibling imageAdjustment field and containing block via
+  // JsonForms' core data (the only way to reach data outside this control's
+  // own path) and memoizes the derived config -- see the hook's own comment
+  // for why that matters.
   const { block, fieldName, siblingPath, currentAdjustment, config } =
     useAdjustmentConfigForField(path)
 
@@ -104,20 +114,26 @@ function JsonFormsImageControl({
               if (currentAdjustment) handleChange(siblingPath, undefined)
             }}
           />
+          {/* Adjustment entry point — only for components with a config, and
+              only for managed (bakeable) assets */}
           {isImageAdjustmentEnabled &&
             isManagedAsset &&
             hasResourceContext &&
             config && (
               <>
-                <Button
-                  leftIcon={<BiPencil />}
-                  variant="clear"
-                  colorScheme="neutral"
-                  mt="1rem"
-                  onClick={onAdjustmentModalOpen}
-                >
-                  Adjust image
-                </Button>
+                <HStack spacing="1rem" mt="1rem">
+                  <Button
+                    leftIcon={<BiPencil />}
+                    variant="clear"
+                    colorScheme="neutral"
+                    onClick={onAdjustmentModalOpen}
+                  >
+                    Adjust image
+                  </Button>
+                  <Text textStyle="body-2" color="base.content.medium">
+                    {currentAdjustment ? "Adjusted" : "Not adjusted"}
+                  </Text>
+                </HStack>
 
                 <ImageAdjustmentModal
                   key={data}
@@ -138,16 +154,36 @@ function JsonFormsImageControl({
             )}
         </Box>
       ) : (
-        <FileAttachment
-          maxSizeInBytes={schema.maxSizeInBytes ?? MAX_IMG_FILE_SIZE_BYTES}
-          acceptedFileTypes={
-            schema.allowedMimeTypeMappings ?? IMAGE_ACCEPTED_MIME_TYPE_MAPPING
-          }
-          siteId={siteId}
-          resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
-          setHref={(src) => handleChange(path, src)}
-          shouldFetchResource={true}
-        />
+        <Box>
+          {/* Pre-upload guidance — shown before a file is chosen, per the
+              component's real frame behaviour (never a universal ratio for a
+              responsive frame). */}
+          {isImageAdjustmentEnabled && config?.preUploadCopy && (
+            <Box
+              w="100%"
+              mb="0.75rem"
+              p="1rem"
+              bgColor="utility.ui"
+              borderRadius="0.25rem"
+              borderWidth="1px"
+              borderColor="base.divider.medium"
+            >
+              <Text textStyle="body-2">{config.preUploadCopy}</Text>
+            </Box>
+          )}
+          <FileAttachment
+            maxSizeInBytes={schema.maxSizeInBytes ?? MAX_IMG_FILE_SIZE_BYTES}
+            acceptedFileTypes={
+              schema.allowedMimeTypeMappings ?? IMAGE_ACCEPTED_MIME_TYPE_MAPPING
+            }
+            siteId={siteId}
+            resourceId={
+              (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
+            }
+            setHref={(src) => handleChange(path, src)}
+            shouldFetchResource={true}
+          />
+        </Box>
       )}
       {!!errors && (
         <FormErrorMessage>

@@ -28,6 +28,7 @@ import { getAssetUploadBackoffBudgetMs } from "../form-builder/hooks/useAssetUpl
 import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
 import { CropFocalControl } from "./controls/CropFocalControl"
+import { defaultCropRect } from "./controls/cropGeometry"
 import {
   focalToWholeImagePoint,
   pointToCropRelativeFocal,
@@ -50,7 +51,9 @@ interface ImageAdjustmentModalProps {
   config: AdjustmentConfig
   src: string
   value?: ImageAdjustment
-  // So the preview can render the actual published component rather than an approximation.
+  // The real block content + the name of the field holding the image, so the
+  // preview can render the actual published component (real copy, scrim,
+  // crop frame) rather than an approximation.
   block: unknown
   imageFieldName: string
   siteId: number
@@ -74,6 +77,12 @@ export const ImageAdjustmentModal = ({
   onSave,
 }: ImageAdjustmentModalProps): JSX.Element => {
   const [draft, setDraft] = useState<ImageAdjustment | undefined>(value)
+  // The source image's true pixel aspect ratio, reported by CropFocalControl
+  // once its <img> loads — needed so "Reset crop & focal" can seed the same
+  // ratio-correct crop the control itself would (see defaultCropRect).
+  // `undefined` until the image loads: for a locked ratio the reset is disabled
+  // until then, so a wrong (square-assumed) crop can never be baked.
+  const [imageAspect, setImageAspect] = useState<number | undefined>(undefined)
   const {
     isOpen: isDiscardChangesModalOpen,
     onOpen: onDiscardChangesModalOpen,
@@ -87,15 +96,25 @@ export const ImageAdjustmentModal = ({
   // Drives UI locking during a save. Local (not the hook's isSaving) so the
   // save timeout below can unlock the modal even if the underlying upload hangs.
   const [isSaving, setIsSaving] = useState(false)
-  // Tracks the REAL underlying save, independent of the UI-facing timeout below:
-  // the timeout only abandons the promise, it can't cancel the actual upload, so
-  // without this guard a retry would start a second upload while the first runs on.
+  // Tracks the REAL underlying save (bake -> presign -> upload), independent
+  // of the UI-facing `isSaving`/timeout below. The timeout exists so a hung
+  // request can't trap the editor in a disabled modal, but it only abandons
+  // the promise -- it doesn't cancel the actual upload. Without this guard,
+  // retrying after a timeout starts a second upload while the first is still
+  // running in the background.
   const savePromiseRef = useRef<ReturnType<typeof save> | null>(null)
 
+  // Check if draft differs from original value.
   const isModified = JSON.stringify(draft) !== JSON.stringify(value)
 
-  // Crop/focal editing and preview must bake from the TRUE original, never a
-  // previous bake, so re-encode loss can't compound across edits.
+  const lockedRatio =
+    config.cropMode === "fixed" ? config.lockedRatios?.[0] : undefined
+
+  // The crop/focal canvas and the live preview must both edit/bake from the
+  // TRUE original, never a previous bake — same rule useSaveImageAdjustment
+  // follows (RFC: re-encode loss must not compound). On a first edit `src`
+  // IS the original; on a re-edit, `src` is the previous bake and only
+  // `draft.originalKey` points at the true original.
   const originalSrc = `/${resolveOriginalKey(src, draft ?? {})}`
 
   const handleClose = () => {
@@ -117,14 +136,16 @@ export const ImageAdjustmentModal = ({
   }
 
   const handleSave = async () => {
-    // Nothing to persist — just close without re-baking/uploading.
+    // Nothing to persist (untouched, or reverted back to the original) — just
+    // close without re-baking/uploading.
     if (!isModified || !draft) {
       onClose()
       return
     }
 
-    // A previous save timed out from the UI's perspective but is still running
-    // in the background — don't start a second, concurrent one.
+    // A previous save is still actually running in the background (it timed
+    // out from the UI's perspective, but the upload itself can't be
+    // cancelled) -- don't start a second, concurrent one.
     if (savePromiseRef.current) {
       toast({
         title: "Still saving the previous change",
@@ -139,9 +160,13 @@ export const ImageAdjustmentModal = ({
     setIsSaving(true)
     const savePromise = save(src, draft)
     savePromiseRef.current = savePromise
-    void savePromise.finally(() => {
-      savePromiseRef.current = null
-    })
+    // .finally() re-throws, so without a .catch() here this chain would be an
+    // unhandled rejection on top of the one already handled below via Promise.race.
+    void savePromise
+      .finally(() => {
+        savePromiseRef.current = null
+      })
+      .catch(() => undefined)
 
     let timeoutId: ReturnType<typeof setTimeout> | undefined
     try {
@@ -170,13 +195,22 @@ export const ImageAdjustmentModal = ({
     }
   }
 
+  // Resets just the crop/focal draft back to defaults (full-image crop, or
+  // the largest centered rect under a locked ratio; centered focal) — it
+  // does NOT save or close, same as any other crop/focal edit, so the editor
+  // can see the reset in the preview and still Save/Undo/Cancel from there.
+  // Disabled for a locked ratio until the real image aspect is known (see
+  // imageAspect) — without the true aspect, defaultCropRect would bake the
+  // wrong pixel ratio. A free (non-locked) crop ignores imageAspect, so it is
+  // always resettable.
+  const isResetDisabled = lockedRatio != null && imageAspect === undefined
+
   const handleReset = () => {
-    if (value?.originalKey) {
-      onSave({ src: `/${value.originalKey}`, imageAdjustment: undefined })
-      onClose()
-    } else {
-      setDraft(undefined)
-    }
+    setDraft((d) => ({
+      ...ensureAdjustment(d),
+      crop: defaultCropRect(lockedRatio, imageAspect ?? 1),
+      focal: { x: 0.5, y: 0.5 },
+    }))
   }
 
   const handleUndo = () => {
@@ -224,6 +258,7 @@ export const ImageAdjustmentModal = ({
               w="100%"
               h="100%"
             >
+              {/* Canvas Area: Live Breakpoint Preview */}
               <GridItem>
                 <AdjustmentPreview
                   src={src}
@@ -233,23 +268,22 @@ export const ImageAdjustmentModal = ({
                   scrim={config.scrim}
                   block={block}
                   imageFieldName={imageFieldName}
+                  siteId={siteId}
                 />
               </GridItem>
 
+              {/* Controls Panel */}
               <GridItem>
                 <VStack align="start" spacing="1.5rem" w="100%">
-                  {/* One shared canvas: focal is only meaningful relative to the crop. */}
+                  {/* Crop + focal point: one shared image canvas, since focal
+                      is only meaningful relative to the crop. */}
                   {(config.cropMode !== "none" || config.focalEnabled) && (
                     <CropFocalControl
                       src={originalSrc}
                       crop={draft?.crop}
                       focal={draft?.focal}
                       cropMode={config.cropMode}
-                      lockedRatio={
-                        config.cropMode === "fixed"
-                          ? config.lockedRatios?.[0]
-                          : undefined
-                      }
+                      lockedRatio={lockedRatio}
                       focalEnabled={config.focalEnabled}
                       onCropChange={(crop) =>
                         setDraft((d) => {
@@ -267,10 +301,12 @@ export const ImageAdjustmentModal = ({
                       onFocalChange={(focal) =>
                         setDraft((d) => ({ ...ensureAdjustment(d), focal }))
                       }
+                      onImageAspectChange={setImageAspect}
                       isDisabled={isSaving}
                     />
                   )}
 
+                  {/* Preserve-only note */}
                   {config.cropMode === "none" && (
                     <Box
                       w="100%"
@@ -281,12 +317,13 @@ export const ImageAdjustmentModal = ({
                       borderColor="base.divider.medium"
                     >
                       <Text textStyle="body-2">
-                        This image cannot be cropped. Only focal point
-                        adjustments are available.
+                        This image cannot be cropped. Only focal point and
+                        rotation adjustments are available.
                       </Text>
                     </Box>
                   )}
 
+                  {/* Locked Ratios */}
                   {config.lockedRatios && config.lockedRatios.length > 0 && (
                     <Box w="100%">
                       <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
@@ -306,6 +343,7 @@ export const ImageAdjustmentModal = ({
                     </Box>
                   )}
 
+                  {/* Preview States */}
                   {config.previewStates.length > 0 && (
                     <Box w="100%">
                       <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
@@ -327,6 +365,7 @@ export const ImageAdjustmentModal = ({
                     </Box>
                   )}
 
+                  {/* Overlay */}
                   {config.scrim && (
                     <Box w="100%">
                       <Text textStyle="h6" fontWeight="semibold" mb="0.5rem">
@@ -338,6 +377,7 @@ export const ImageAdjustmentModal = ({
                     </Box>
                   )}
 
+                  {/* Pre-upload Copy */}
                   {config.preUploadCopy && (
                     <Box
                       w="100%"
@@ -363,9 +403,9 @@ export const ImageAdjustmentModal = ({
                 variant="clear"
                 colorScheme="neutral"
                 onClick={handleReset}
-                isDisabled={isSaving}
+                isDisabled={isResetDisabled || isSaving}
               >
-                Reset image
+                Reset crop & focal
               </Button>
               <Button
                 variant="clear"
