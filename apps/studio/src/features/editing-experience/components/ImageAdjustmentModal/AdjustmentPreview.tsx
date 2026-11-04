@@ -148,9 +148,6 @@ export const AdjustmentPreview = ({
     adjustment?.crop?.y,
     adjustment?.crop?.width,
     adjustment?.crop?.height,
-    adjustment?.rotate,
-    adjustment?.flipH,
-    adjustment?.flipV,
   ])
 
   // Bumps bakeRequestIdRef so a bake still in flight at unmount sees isStale() once it
