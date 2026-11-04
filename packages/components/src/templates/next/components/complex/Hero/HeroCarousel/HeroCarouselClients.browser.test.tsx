@@ -911,7 +911,7 @@ describe("hero carousel rotation", () => {
       expect(liveRegion().textContent).toBe("Slide 1 of 2: Short")
     })
 
-    it("stops rotation once touch interaction starts", () => {
+    it("keeps rotating after a tap", () => {
       // Arrange
       const section = renderGradient()
 
@@ -921,9 +921,9 @@ describe("hero carousel rotation", () => {
       advanceRotation(HERO_CAROUSEL_ROTATION_INTERVAL_MS)
 
       // Assert
-      expect(liveRegion().textContent).toBe("Slide 1 of 3: Alpha")
+      expect(liveRegion().textContent).toBe("Slide 2 of 3: Beta")
       expect(rotationButton().getAttribute("aria-label")).toBe(
-        "Start slide rotation",
+        "Pause slide rotation",
       )
     })
   })
