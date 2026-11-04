@@ -1,5 +1,5 @@
 /**
- * Image baking utility for client-side crop, rotate, and flip operations.
+ * Image baking utility for client-side crop operations.
  *
  * FAIL-SAFE SAVE ORDER (save wiring is a later task):
  * 1. Upload baked image Blob to S3 first
@@ -171,53 +171,6 @@ export const cropRectToPixels = (
   return { sx, sy, sw, sh }
 }
 
-/**
- * Calculate output canvas dimensions after rotation.
- * Rotations of 90 or 270 degrees swap width and height.
- * Any other angle (including non-quarter-turns) preserves the dimensions --
- * arbitrary-angle canvas expansion isn't implemented yet.
- *
- * @param croppedWidth - Pixel width of the cropped region
- * @param croppedHeight - Pixel height of the cropped region
- * @param rotate - Rotation in degrees, 0-360
- * @returns Object with output {width, height}
- */
-export const outputDimensions = (
-  croppedWidth: number,
-  croppedHeight: number,
-  rotate: number,
-): { width: number; height: number } => {
-  if (rotate === 90 || rotate === 270) {
-    return { width: croppedHeight, height: croppedWidth }
-  }
-  return { width: croppedWidth, height: croppedHeight }
-}
-
-/**
- * Compute canvas transform scale factors (rotate, flipH, flipV).
- * Returns the transformation parameters to be applied to the canvas.
- *
- * @param rotate - Rotation in degrees, 0-360
- * @param flipH - Whether to flip horizontally
- * @param flipV - Whether to flip vertically
- * @returns Object with {rotate, scaleX, scaleY}
- */
-export const computeCanvasTransform = (
-  rotate: number,
-  flipH: boolean,
-  flipV: boolean,
-): {
-  rotate: number
-  scaleX: number
-  scaleY: number
-} => {
-  // Build scale factors: -1 for flip, 1 for no flip
-  const scaleX = flipH ? -1 : 1
-  const scaleY = flipV ? -1 : 1
-
-  return { rotate, scaleX, scaleY }
-}
-
 export interface BakeImageOptions {
   mimeType: string
   quality?: number
@@ -251,20 +204,20 @@ const canvasToBlob = (
 }
 
 /**
- * Bake an image by applying crop, rotate, and flip from an adjustment object.
- * The original blob is decoded with EXIF orientation normalization, ensuring
- * crop coordinates are interpreted against an upright reference frame.
- * Re-encoding always starts from the original (never a prior bake).
+ * Bake an image by applying crop from an adjustment object. The original blob
+ * is decoded with EXIF orientation normalization, ensuring crop coordinates
+ * are interpreted against an upright reference frame. Re-encoding always
+ * starts from the original (never a prior bake).
  *
  * @param original - The original image Blob (never a prior bake)
- * @param adjustment - Adjustment object with crop, rotate, flipH, flipV
+ * @param adjustment - Adjustment object with crop
  * @param opts - Bake options: mimeType (required), quality (0-1, optional)
  * @returns Promise<Blob> - The baked image Blob
  * @throws Error if the mimeType is not bakeable
  */
 export const bakeImage = async (
   original: Blob,
-  adjustment: Pick<ImageAdjustment, "crop" | "rotate" | "flipH" | "flipV">,
+  adjustment: Pick<ImageAdjustment, "crop">,
   opts: BakeImageOptions,
 ): Promise<Blob> => {
   // Guard: only static raster formats
@@ -296,42 +249,18 @@ export const bakeImage = async (
       bitmap.height,
     )
 
-    const { width: outputWidth, height: outputHeight } = outputDimensions(
-      sw,
-      sh,
-      adjustment.rotate,
-    )
-
-    // Create canvas and apply transforms
     const canvas =
       typeof OffscreenCanvas !== "undefined"
-        ? new OffscreenCanvas(outputWidth, outputHeight)
+        ? new OffscreenCanvas(sw, sh)
         : document.createElement("canvas")
 
-    if ("width" in canvas) canvas.width = outputWidth
-    if ("height" in canvas) canvas.height = outputHeight
+    if ("width" in canvas) canvas.width = sw
+    if ("height" in canvas) canvas.height = sh
 
     const ctx = canvas.getContext("2d")
     if (!ctx) {
       throw new Error("Failed to get 2D canvas context")
     }
-
-    // Apply rotate + flip transforms
-    const { rotate, scaleX, scaleY } = computeCanvasTransform(
-      adjustment.rotate,
-      adjustment.flipH,
-      adjustment.flipV,
-    )
-
-    // Translate to center, apply transforms, translate back
-    ctx.translate(outputWidth / 2, outputHeight / 2)
-    if (scaleX !== 1 || scaleY !== 1) {
-      ctx.scale(scaleX, scaleY)
-    }
-    if (rotate !== 0) {
-      ctx.rotate((rotate * Math.PI) / 180)
-    }
-    ctx.translate(-sw / 2, -sh / 2)
 
     // Draw the cropped region onto the canvas
     ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, sw, sh)
