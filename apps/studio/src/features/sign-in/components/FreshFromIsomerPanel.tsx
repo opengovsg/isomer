@@ -40,7 +40,7 @@ const SPOTLIGHTS: Spotlight[] = [
       type: "video",
       src: "/assets/fresh-from-isomer/table-editing.mp4",
     },
-    aspectRatio: 3840 / 2160,
+    aspectRatio: 1920 / 1080,
     badge: "New",
     title: "Tables just got easier to work with",
     description:
