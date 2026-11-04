@@ -152,7 +152,7 @@ export const CarouselSlideContent = ({
           <div className="flex flex-col gap-6">
             <SlideTag className={titleClassName}>{slide.title}</SlideTag>
             {slide.subtitle && (
-              <p className="prose-title-lg-regular break-words">
+              <p className="prose-title-lg-regular break-words text-[1.125rem] md:text-[1.5rem]">
                 {slide.subtitle}
               </p>
             )}

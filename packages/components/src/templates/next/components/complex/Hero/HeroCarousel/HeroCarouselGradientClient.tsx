@@ -108,7 +108,7 @@ export const HeroCarouselGradientClient = ({
               currentIndex={currentIndex}
               headingTag={headingTag}
               inactiveHeadingTag={inactiveHeadingTag}
-              titleClassName="prose-display-xl break-words"
+              titleClassName="prose-display-xl break-words text-[2.25rem] leading-[1.2] md:text-[3rem] md:leading-[1.1] xl:text-[3rem] xl:leading-[1.1]"
               actionsClassName={styles.actions()}
               isVerticallyCenteredPerSlide={isCentered}
             />

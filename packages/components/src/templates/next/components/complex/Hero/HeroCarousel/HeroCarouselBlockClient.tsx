@@ -120,7 +120,7 @@ export const HeroCarouselBlockClient = ({
               currentIndex={currentIndex}
               headingTag={headingTag}
               inactiveHeadingTag={inactiveHeadingTag}
-              titleClassName="prose-display-xl break-words text-balance"
+              titleClassName="prose-display-xl break-words text-balance text-[2.25rem] leading-[1.2] md:text-[3rem] md:leading-[1.1] xl:text-[3rem] xl:leading-[1.1]"
               actionsClassName={styles.actions()}
             />
           </div>
