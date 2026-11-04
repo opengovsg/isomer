@@ -4,7 +4,15 @@ import type {
   JsonSchema,
   UISchemaElement,
 } from "@jsonforms/core"
-import { Box, Flex, FormControl, Icon, Text, VStack } from "@chakra-ui/react"
+import {
+  Box,
+  Flex,
+  FormControl,
+  Icon,
+  Text,
+  useDisclosure,
+  VStack,
+} from "@chakra-ui/react"
 import { Resolve } from "@jsonforms/core"
 import { JsonFormsDispatch, useJsonForms } from "@jsonforms/react"
 import { Button, FormLabel } from "@opengovsg/design-system-react"
@@ -273,7 +281,7 @@ export function HeroBannerStyleCombinator({
   renderers: JsonFormsRendererRegistryEntry[] | undefined
   cells: JsonFormsCellRendererRegistryEntry[] | undefined
 }) {
-  const [isOpen, setIsOpen] = useState(false)
+  const { isOpen, onOpen, onClose } = useDisclosure()
   const [pendingValue, setPendingValue] = useState<string>()
   const { core } = useJsonForms()
   const slideCount =
@@ -324,7 +332,7 @@ export function HeroBannerStyleCombinator({
           options={options}
           value={selected?.value ?? ""}
           onChange={handleChange}
-          onClose={() => setIsOpen(false)}
+          onClose={onClose}
         />
         <DiscardCarouselSlidesModal
           isOpen={pendingValue !== undefined}
@@ -348,7 +356,7 @@ export function HeroBannerStyleCombinator({
           <FormLabel description={description}>{label || "Variant"}</FormLabel>
           <HeroBannerStyleTrigger
             label={selected?.label ?? ""}
-            onOpen={() => setIsOpen(true)}
+            onOpen={onOpen}
           />
         </FormControl>
       </Box>
