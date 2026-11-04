@@ -25,7 +25,7 @@ const gradientCarouselStyles = tv({
     contentPanel: "relative z-10 flex w-full flex-col justify-end",
     contentInner: `${ComponentContent} grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-16 py-16 pb-9 text-start text-base-content-inverse lg:pb-16`,
     copy: "col-span-2 row-start-1 flex min-w-0 flex-col",
-    actions: "flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row",
+    actions: "flex flex-wrap justify-start gap-x-5 gap-y-4 [&>*]:h-auto",
   },
   variants: {
     contentAlignment: {

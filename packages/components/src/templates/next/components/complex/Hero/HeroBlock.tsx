@@ -150,7 +150,7 @@ export const HeroBlock = ({
             )}
           </div>
           {buttonLabel && buttonUrl && (
-            <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
+            <div className="flex flex-wrap justify-start gap-x-5 gap-y-4 [&>*]:h-auto">
               <LinkButton
                 href={getReferenceLinkHref(
                   buttonUrl,
@@ -161,6 +161,7 @@ export const HeroBlock = ({
                 variant="solid"
                 colorScheme={heroButton}
                 isWithFocusVisibleHighlight
+                className="h-auto"
               >
                 {buttonLabel}
               </LinkButton>
@@ -175,6 +176,7 @@ export const HeroBlock = ({
                     site.assetsBaseUrl,
                   )}
                   isWithFocusVisibleHighlight
+                  className="h-auto"
                 >
                   {secondaryButtonLabel}
                 </LinkButton>

@@ -45,6 +45,14 @@ export const Gradient: Story = {
   },
 }
 
+export const GradientLongCtas: Story = {
+  args: {
+    ...Gradient.args,
+    buttonLabel: "Browse all website templates",
+    secondaryButtonLabel: "Contact the Isomer team",
+  },
+}
+
 export const ColourBlock: Story = {
   args: {
     headingLevel: 1,
@@ -60,6 +68,14 @@ export const ColourBlock: Story = {
     secondaryButtonUrl: "/",
     variant: "block",
     theme: "default",
+  },
+}
+
+export const ColourBlockLongCtas: Story = {
+  args: {
+    ...ColourBlock.args,
+    buttonLabel: "Browse all website templates",
+    secondaryButtonLabel: "Contact the Isomer team",
   },
 }
 
@@ -131,9 +147,9 @@ export const ColourBlockLongWord: Story = {
     title: "International Accreditation Pronouncements",
     subtitle:
       "A test for a long subtitle that will expand the hero banner. What will happen if the text is very very very long?",
-    buttonLabel: "Main CTA",
+    buttonLabel: "Browse all website templates",
     buttonUrl: "/",
-    secondaryButtonLabel: "Sub CTA",
+    secondaryButtonLabel: "Contact the Isomer team",
     secondaryButtonUrl: "/",
     variant: "block",
     theme: "default",
@@ -154,6 +170,14 @@ export const LargeImage: Story = {
     secondaryButtonLabel: "Sub CTA",
     secondaryButtonUrl: "/",
     variant: "largeImage",
+  },
+}
+
+export const LargeImageLongCtas: Story = {
+  args: {
+    ...LargeImage.args,
+    buttonLabel: "Browse all website templates",
+    secondaryButtonLabel: "Contact the Isomer team",
   },
 }
 
@@ -205,6 +229,14 @@ export const FloatingShortText: Story = {
     secondaryButtonLabel: "Explore now",
     secondaryButtonUrl: "/",
     variant: "floating",
+  },
+}
+
+export const FloatingLongCtas: Story = {
+  args: {
+    ...Floating.args,
+    buttonLabel: "Browse all website templates",
+    secondaryButtonLabel: "Contact the Isomer team",
   },
 }
 
@@ -305,6 +337,45 @@ export const CarouselGradientCenter: Story = {
       layout: HERO_CAROUSEL_LAYOUT.gradient,
       contentAlignment: HERO_CAROUSEL_CONTENT_ALIGNMENT.center,
     },
+  },
+}
+
+const carouselLongCtaSlides = [
+  {
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Set up good government websites, fast",
+    subtitle:
+      "Isomer is a website builder made for government teams. Pick a template, add your content, and publish.",
+    buttonLabel: "Browse all website templates",
+    buttonUrl: "/",
+    secondaryButtonLabel: "Contact the Isomer team",
+    secondaryButtonUrl: "/",
+  },
+  {
+    backgroundUrl:
+      "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Built for the public sector",
+    subtitle:
+      "Meet accessibility, security, and branding requirements out of the box.",
+    buttonLabel: "Browse all website templates",
+    buttonUrl: "/",
+    secondaryButtonLabel: "Contact the Isomer team",
+    secondaryButtonUrl: "/",
+  },
+]
+
+export const CarouselBlockLongCtas: Story = {
+  args: {
+    ...CarouselBlock.args,
+    slides: carouselLongCtaSlides,
+  },
+}
+
+export const CarouselGradientLongCtas: Story = {
+  args: {
+    ...CarouselGradient.args,
+    slides: carouselLongCtaSlides,
   },
 }
 

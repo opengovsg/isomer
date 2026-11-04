@@ -98,6 +98,7 @@ const SlideActions = ({
         // TODO: non-inverse color schemes are not supported yet
         colorScheme="inverse"
         isWithFocusVisibleHighlight
+        className="h-auto"
       >
         {slide.primaryLabel}
       </LinkButton>
@@ -108,6 +109,7 @@ const SlideActions = ({
           size="lg"
           href={slide.secondaryHref}
           isWithFocusVisibleHighlight
+          className="h-auto"
         >
           {slide.secondaryLabel}
         </LinkButton>

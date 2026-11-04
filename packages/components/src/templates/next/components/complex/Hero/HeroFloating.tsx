@@ -82,7 +82,7 @@ export const HeroFloating = ({
 
           {/* Button container */}
           {buttonLabel && buttonUrl && (
-            <div className="flex flex-col justify-start gap-x-5 gap-y-4 md:flex-row">
+            <div className="flex flex-wrap justify-start gap-x-5 gap-y-4 [&>*]:h-auto">
               <LinkButton
                 href={getReferenceLinkHref(
                   buttonUrl,

@@ -37,7 +37,7 @@ export const HeroLargeImage = ({
         </div>
         {/* Button container */}
         {buttonLabel && buttonUrl && (
-          <div className="flex flex-col items-start justify-center gap-x-5 gap-y-4 md:flex-row md:items-center">
+          <div className="flex flex-wrap items-start justify-start gap-x-5 gap-y-4 md:items-center md:justify-center [&>*]:h-auto">
             <LinkButton
               href={getReferenceLinkHref(
                 buttonUrl,
