@@ -26,6 +26,7 @@ export {
   type HeroGradientQuickLinksItem,
   type HeroGradientQuickLinksProps,
   type HeroBlockProps,
+  type HeroCarouselProps,
   type HeroCarouselContentAlignment,
   type HeroCarouselImagePosition,
   type HeroCarouselLayout,
