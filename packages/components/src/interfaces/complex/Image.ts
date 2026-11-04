@@ -32,8 +32,8 @@ export const ImageSrcSchema = generateImageSrcSchema({})
 const NormalizedUnit = Type.Number({ minimum: 0, maximum: 1 })
 
 // The imageAdjustment sibling object (Engineering RFC 09). Optional per
-// image-bearing component; absence = unedited. crop/rotate/flip are baked into
-// the rendered pixels and kept only so the editor can re-bake from the original;
+// image-bearing component; absence = unedited. crop is baked into the
+// rendered pixels and kept only so the editor can re-bake from the original;
 // focal is emitted at render time as object-position. Written by the adjustment
 // modal, never a hand-edited JSONForms control -> format: "hidden".
 export const imageAdjustmentSchema = Type.Object(
@@ -54,13 +54,6 @@ export const imageAdjustmentSchema = Type.Object(
       x: NormalizedUnit,
       y: NormalizedUnit,
     }),
-    // Degrees, free-form rather than quarter-turn literals -- keeps the door
-    // open to arbitrary-angle rotation (e.g. Instagram-style) without a
-    // breaking schema change later, since fields here can only be deprecated
-    // and added, never have their type changed once shipped.
-    rotate: Type.Number({ minimum: 0, maximum: 360, default: 0 }),
-    flipH: Type.Boolean({ default: false }),
-    flipV: Type.Boolean({ default: false }),
     originalKey: Type.String(),
   },
   {

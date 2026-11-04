@@ -141,7 +141,7 @@ export const AdjustmentPreview = ({
     void fetchOriginal()
   }, [originalFetchUrl])
 
-  // Debounced bake effect (~150ms) keyed on crop/rotate/flipH/flipV changes.
+  // Debounced bake effect (~150ms) keyed on crop changes.
   useEffect(() => {
     // Clear any pending timeout
     if (bakeTimeoutRef.current) {

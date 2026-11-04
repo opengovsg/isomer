@@ -7,9 +7,6 @@ import type { ImageAdjustment } from "@opengovsg/isomer-components"
 export const DEFAULT_ADJUSTMENT: ImageAdjustment = {
   crop: { x: 0, y: 0, width: 1, height: 1 },
   focal: { x: 0.5, y: 0.5 },
-  rotate: 0,
-  flipH: false,
-  flipV: false,
   originalKey: "",
 }
 
