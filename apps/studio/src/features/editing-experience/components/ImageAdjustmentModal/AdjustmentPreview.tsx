@@ -194,7 +194,16 @@ export const AdjustmentPreview = ({
         clearTimeout(bakeTimeoutRef.current)
       }
     }
-  }, [originalBlob, adjustment])
+    // Deliberately narrower than `adjustment`: focal is applied at render time as
+    // CSS object-position, so a focal-only drag shouldn't trigger a canvas re-encode.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    originalBlob,
+    adjustment?.crop?.x,
+    adjustment?.crop?.y,
+    adjustment?.crop?.width,
+    adjustment?.crop?.height,
+  ])
 
   // Cleanup: revoke object URL on unmount. Also bumps bakeRequestIdRef so a
   // bake that's still in flight when this unmounts sees isStale() as true

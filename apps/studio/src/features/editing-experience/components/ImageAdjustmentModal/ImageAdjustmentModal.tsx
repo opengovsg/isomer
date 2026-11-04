@@ -317,8 +317,8 @@ export const ImageAdjustmentModal = ({
                       borderColor="base.divider.medium"
                     >
                       <Text textStyle="body-2">
-                        This image cannot be cropped. Only focal point and
-                        rotation adjustments are available.
+                        This image cannot be cropped. Only focal point
+                        adjustments are available.
                       </Text>
                     </Box>
                   )}
