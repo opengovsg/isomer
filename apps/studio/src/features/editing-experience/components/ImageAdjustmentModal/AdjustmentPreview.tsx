@@ -213,7 +213,7 @@ export const AdjustmentPreview = ({
     void fetchOriginal()
   }, [originalFile, originalFetchUrl, plainFetchUrl])
 
-  // Debounced bake effect (~150ms) keyed on crop/rotate/flipH/flipV changes.
+  // Debounced bake effect (~150ms) keyed on crop changes.
   useEffect(() => {
     // Clear any pending timeout
     if (bakeTimeoutRef.current) {
@@ -313,9 +313,6 @@ export const AdjustmentPreview = ({
     adjustment?.crop?.y,
     adjustment?.crop?.width,
     adjustment?.crop?.height,
-    adjustment?.rotate,
-    adjustment?.flipH,
-    adjustment?.flipV,
   ])
 
   // Cleanup: revoke object URL on unmount. Also bumps bakeRequestIdRef so a

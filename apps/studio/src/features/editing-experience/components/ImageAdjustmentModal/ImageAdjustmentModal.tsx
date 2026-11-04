@@ -251,7 +251,7 @@ export const ImageAdjustmentModal = ({
   // Scroll container for the preview rail — read by PersistentScrollbar so
   // its track/thumb overlay reflects this element's real scroll state.
   const previewRailRef = useRef<HTMLDivElement>(null)
-  const trackToolUsed = (tool: "crop" | "focal" | "rotate" | "flip") => {
+  const trackToolUsed = (tool: "crop" | "focal") => {
     if (trackedToolsRef.current.has(tool)) return
     trackedToolsRef.current.add(tool)
     posthog.capture("image_adjustment_tool_used", {
@@ -286,7 +286,6 @@ export const ImageAdjustmentModal = ({
       computeLowResWarning({
         naturalSize,
         crop: draft?.crop,
-        rotate: draft?.rotate,
         lockedRatio,
         maxRenderedWidthPx: config.maxRenderedWidthPx,
         maxRenderedHeightPx: config.maxRenderedHeightPx,
@@ -298,7 +297,6 @@ export const ImageAdjustmentModal = ({
       config.maxRenderedHeightPx,
       previewObjectFit,
       draft?.crop,
-      draft?.rotate,
       lockedRatio,
     ],
   )
@@ -416,9 +414,6 @@ export const ImageAdjustmentModal = ({
       ...ensureAdjustment(d),
       crop: defaultCropRect(lockedRatio, imageAspect ?? 1),
       focal: { x: 0.5, y: 0.5 },
-      rotate: 0,
-      flipH: false,
-      flipV: false,
     }))
   }
 
@@ -525,9 +520,6 @@ export const ImageAdjustmentModal = ({
                       lockedRatio={lockedRatio}
                       focalEnabled={focalEnabled}
                       isOpen={isOpen}
-                      rotate={draft?.rotate ?? 0}
-                      flipH={draft?.flipH ?? false}
-                      flipV={draft?.flipV ?? false}
                       onCropChange={(crop) => {
                         trackToolUsed("crop")
                         setDraft((d) => ({ ...ensureAdjustment(d), crop }))
@@ -580,8 +572,8 @@ export const ImageAdjustmentModal = ({
                     borderColor="base.divider.medium"
                   >
                     <Text textStyle="body-2">
-                      This image cannot be cropped. Only focal point and
-                      rotation adjustments are available.
+                      This image cannot be cropped. Only focal point adjustments
+                      are available.
                     </Text>
                   </Box>
                 )}

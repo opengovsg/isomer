@@ -59,130 +59,24 @@ const readPixels = async (blob: Blob) => {
 const FULL_CROP = { x: 0, y: 0, width: 1, height: 1 }
 const PNG = { mimeType: "image/png" }
 
-// Covers the canvas composition that bakeImage actually ships (display-space
-// crop, full-image draw, rotate/flip transform) — the pure helpers it used to
-// lean on no longer reflect the real output.
+// Covers the canvas composition that bakeImage actually ships (crop, then a
+// full-image draw) — the pure helpers it used to lean on no longer reflect
+// the real output.
 describe("bakeImage composition", () => {
-  it("passes a full-crop, un-rotated image through unchanged", async () => {
+  it("passes a full-crop image through unchanged", async () => {
     const src = await makeImageBlob(2, 1, [RED, BLUE])
-    const baked = await bakeImage(
-      src,
-      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
-      PNG,
-    )
+    const baked = await bakeImage(src, { crop: FULL_CROP }, PNG)
     const out = await readPixels(baked)
     expect([out.width, out.height]).toEqual([2, 1])
     expect(out.at(0, 0)).toEqual(RED)
     expect(out.at(1, 0)).toEqual(BLUE)
   })
 
-  it("rotates 90° clockwise: a 2×1 (left/right) becomes a 1×2 (top/bottom)", async () => {
-    const src = await makeImageBlob(2, 1, [RED, BLUE])
-    const baked = await bakeImage(
-      src,
-      { crop: FULL_CROP, rotate: 90, flipH: false, flipV: false },
-      PNG,
-    )
-    const out = await readPixels(baked)
-    // 90° swaps the dimensions, and the left edge rotates to the top.
-    expect([out.width, out.height]).toEqual([1, 2])
-    expect(out.at(0, 0)).toEqual(RED)
-    expect(out.at(0, 1)).toEqual(BLUE)
-  })
-
-  it("rotates 270° counterclockwise: the opposite edge rotates to the top", async () => {
-    const src = await makeImageBlob(2, 1, [RED, BLUE])
-    const baked = await bakeImage(
-      src,
-      { crop: FULL_CROP, rotate: 270, flipH: false, flipV: false },
-      PNG,
-    )
-    const out = await readPixels(baked)
-    // 270° is the opposite rotation from 90° -- the right edge rotates to
-    // the top instead of the left edge.
-    expect([out.width, out.height]).toEqual([1, 2])
-    expect(out.at(0, 0)).toEqual(BLUE)
-    expect(out.at(0, 1)).toEqual(RED)
-  })
-
-  it("flips horizontally: left/right are mirrored", async () => {
-    const src = await makeImageBlob(2, 1, [RED, BLUE])
-    const baked = await bakeImage(
-      src,
-      { crop: FULL_CROP, rotate: 0, flipH: true, flipV: false },
-      PNG,
-    )
-    const out = await readPixels(baked)
-    expect([out.width, out.height]).toEqual([2, 1])
-    expect(out.at(0, 0)).toEqual(BLUE)
-    expect(out.at(1, 0)).toEqual(RED)
-  })
-
-  it("flips vertically: top/bottom are mirrored", async () => {
-    const src = await makeImageBlob(1, 2, [RED, BLUE])
-    const baked = await bakeImage(
-      src,
-      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: true },
-      PNG,
-    )
-    const out = await readPixels(baked)
-    expect([out.width, out.height]).toEqual([1, 2])
-    expect(out.at(0, 0)).toEqual(BLUE)
-    expect(out.at(0, 1)).toEqual(RED)
-  })
-
-  it("rotates 180°: dimensions are preserved and both axes invert", async () => {
-    const src = await makeImageBlob(2, 2, [RED, GREEN, BLUE, WHITE])
-    const baked = await bakeImage(
-      src,
-      { crop: FULL_CROP, rotate: 180, flipH: false, flipV: false },
-      PNG,
-    )
-    const out = await readPixels(baked)
-    expect([out.width, out.height]).toEqual([2, 2])
-    // 180° is equivalent to flipping both axes: each corner ends up at its
-    // diagonally opposite position.
-    expect(out.at(0, 0)).toEqual(WHITE)
-    expect(out.at(1, 1)).toEqual(RED)
-  })
-
-  // CHARACTERIZATION TEST, not a spec: rotate + flip together are not
-  // reachable from the editor UI today (adjustmentDraft.ts always seeds
-  // rotate: 0 / flipH: false / flipV: false, and no control in
-  // ImageAdjustmentModal/CropFocalControl ever changes them — see the
-  // "Tier D rotate/flip safeguards" deferral in the original PR). This pins
-  // down bakeImage's current behavior so it doesn't regress silently, but it
-  // is not a statement that this is the intended semantics: the canvas
-  // transform order here (translate -> scale(flip) -> rotate -> translate)
-  // applies flip in the already-rotated frame, which for rotate=90 +
-  // flipH composes into a diagonal transpose (top-left and bottom-right stay
-  // put; top-right and bottom-left swap) rather than "rotate, then mirror
-  // left-right as the user would see it on screen". Confirm this is the
-  // intended composition — not just leave it as accidental — before shipping
-  // a rotate+flip UI control.
-  it("documents current (unreviewed) behavior for rotate 90 + flipH combined", async () => {
-    const src = await makeImageBlob(2, 2, [RED, GREEN, BLUE, WHITE])
-    const baked = await bakeImage(
-      src,
-      { crop: FULL_CROP, rotate: 90, flipH: true, flipV: false },
-      PNG,
-    )
-    const out = await readPixels(baked)
-    expect([out.width, out.height]).toEqual([2, 2])
-    expect(out.at(0, 0)).toEqual(RED)
-    expect(out.at(1, 1)).toEqual(WHITE)
-  })
-
-  it("crops in display space: keeping the right half drops the left pixels", async () => {
+  it("crops: keeping the right half drops the left pixels", async () => {
     const src = await makeImageBlob(4, 1, [RED, GREEN, BLUE, WHITE])
     const baked = await bakeImage(
       src,
-      {
-        crop: { x: 0.5, y: 0, width: 0.5, height: 1 },
-        rotate: 0,
-        flipH: false,
-        flipV: false,
-      },
+      { crop: { x: 0.5, y: 0, width: 0.5, height: 1 } },
       PNG,
     )
     const out = await readPixels(baked)
@@ -204,11 +98,7 @@ describe("bakeImage composition", () => {
     const animatedWebp = new Blob([header], { type: "image/webp" })
 
     return expect(
-      bakeImage(
-        animatedWebp,
-        { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
-        { mimeType: "image/webp" },
-      ),
+      bakeImage(animatedWebp, { crop: FULL_CROP }, { mimeType: "image/webp" }),
     ).rejects.toThrow(/animated/)
   })
 })

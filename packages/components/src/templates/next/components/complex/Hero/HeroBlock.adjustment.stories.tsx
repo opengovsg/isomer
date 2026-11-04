@@ -26,14 +26,11 @@ const meta: Meta<typeof HeroBlock> = {
 export default meta
 type Story = StoryObj<typeof HeroBlock>
 
-// A full, valid imageAdjustment object. crop/rotate/flip are baked into the src
-// in production, so here they are identity; only `focal` acts at render time.
+// A full, valid imageAdjustment object. crop is baked into the src in
+// production, so here it is identity; only `focal` acts at render time.
 const adjustmentWithFocal = (x: number, y: number): ImageAdjustment => ({
   crop: { x: 0, y: 0, width: 1, height: 1 },
   focal: { x, y },
-  rotate: 0,
-  flipH: false,
-  flipV: false,
   originalKey: "1/00000000-0000-0000-0000-000000000000/original.jpg",
 })
 
