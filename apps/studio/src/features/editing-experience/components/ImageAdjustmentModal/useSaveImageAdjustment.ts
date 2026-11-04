@@ -1,7 +1,6 @@
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
 import { backOff } from "exponential-backoff"
 import { useState } from "react"
-import { env } from "~/env.mjs"
 import { getAssetUploadBackoffOptions } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import {
   BAKEABLE_FORMAT_BY_MIME,
@@ -111,7 +110,7 @@ export const useSaveImageAdjustment = ({
       validateCropBounds(draft.crop)
 
       // Step 2: Fetch the original blob from S3
-      const originalUrl = `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}/${originalKey}`
+      const originalUrl = `${ASSETS_BASE_URL}/${originalKey}`
       const originalResponse = await fetch(originalUrl)
       if (!originalResponse.ok) {
         throw new Error(

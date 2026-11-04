@@ -49,6 +49,9 @@ export const AdjustmentPreview = ({
 }: AdjustmentPreviewProps): JSX.Element => {
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  // Surfaces the otherwise-silent fallback to the uncropped src, so a preview
+  // that looks "fine" doesn't mask a fetch failure that save would throw on.
+  const [fetchError, setFetchError] = useState(false)
   const bakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevPreviewUrlRef = useRef<string | null>(null)
   // Monotonic token so a superseded, still-running bake can detect it and drop its result.
@@ -60,6 +63,7 @@ export const AdjustmentPreview = ({
 
   useEffect(() => {
     const fetchOriginal = async () => {
+      setFetchError(false)
       try {
         const response = await fetch(originalFetchUrl)
         if (!response.ok) {
@@ -68,9 +72,11 @@ export const AdjustmentPreview = ({
         const blob = await response.blob()
         setOriginalBlob(blob)
       } catch (error) {
-        // Silently fail: CORS-blocked images will fall back to uncropped src
+        // Falls back to the uncropped src (CORS-blocked images, etc.); fetchError
+        // surfaces that fallback since save would throw on the same failure.
         console.debug("Failed to fetch original image", error)
         setOriginalBlob(null)
+        setFetchError(true)
       }
     }
     void fetchOriginal()
@@ -195,10 +201,96 @@ export const AdjustmentPreview = ({
     }
   }
 
+  const fetchErrorBanner = fetchError && (
+    <Text textStyle="caption-2" color="utility.feedback.critical" mb="0.5rem">
+      Couldn't load the original image for preview. Showing the current image
+      instead.
+    </Text>
+  )
+
   if (previewComponent) {
     const DISPLAY_WIDTH_CAP = 200
 
     return (
+      <VStack align="stretch" spacing={0} w="100%">
+        {fetchErrorBanner}
+        <HStack
+          align="flex-start"
+          spacing="1rem"
+          w="100%"
+          overflowX="auto"
+          overflowY="hidden"
+          pb="0.5rem"
+        >
+          {previewStates.map((state) => {
+            // Render the iframe at its real breakpoint width (so sm:/md:/lg: classes
+            // evaluate correctly), then CSS-scale the box down to fit the preview column.
+            const viewportWidth = state.viewportWidth ?? 1024
+            const viewportHeight = state.aspectRatio
+              ? Math.round(
+                  (viewportWidth * state.aspectRatio.height) /
+                    state.aspectRatio.width,
+                )
+              : 600
+            const displayWidth = Math.min(viewportWidth, DISPLAY_WIDTH_CAP)
+            const scale = displayWidth / viewportWidth
+
+            return (
+              <VStack
+                key={state.id}
+                align="stretch"
+                spacing="0.5rem"
+                flexShrink={0}
+                minW="fit-content"
+              >
+                <Text
+                  textStyle="body-2"
+                  fontWeight="semibold"
+                  color="base.content.medium"
+                >
+                  {state.label}
+                  {state.viewportWidth && ` (${state.viewportWidth}px)`}
+                </Text>
+
+                <Box
+                  borderWidth="1px"
+                  borderColor="base.divider.medium"
+                  borderRadius="0.25rem"
+                  overflow="hidden"
+                  style={{
+                    width: displayWidth,
+                    height: viewportHeight * scale,
+                    position: "relative",
+                  }}
+                >
+                  <Box
+                    style={{
+                      width: viewportWidth,
+                      height: viewportHeight,
+                      transform: `scale(${scale})`,
+                      transformOrigin: "top left",
+                    }}
+                  >
+                    <PreviewIframe
+                      widthPx={viewportWidth}
+                      heightPx={viewportHeight}
+                      preventPointerEvents
+                    >
+                      {previewComponent}
+                    </PreviewIframe>
+                  </Box>
+                </Box>
+              </VStack>
+            )
+          })}
+        </HStack>
+      </VStack>
+    )
+  }
+
+  return (
+    <VStack align="stretch" spacing={0} w="100%">
+      {fetchErrorBanner}
       <HStack
         align="flex-start"
         spacing="1rem"
@@ -208,17 +300,33 @@ export const AdjustmentPreview = ({
         pb="0.5rem"
       >
         {previewStates.map((state) => {
-          // Render the iframe at its real breakpoint width (so sm:/md:/lg: classes
-          // evaluate correctly), then CSS-scale the box down to fit the preview column.
-          const viewportWidth = state.viewportWidth ?? 1024
-          const viewportHeight = state.aspectRatio
-            ? Math.round(
-                (viewportWidth * state.aspectRatio.height) /
-                  state.aspectRatio.width,
-              )
-            : 600
-          const displayWidth = Math.min(viewportWidth, DISPLAY_WIDTH_CAP)
-          const scale = displayWidth / viewportWidth
+          const imageNode = (
+            <Box
+              as="img"
+              src={adjustedSrc}
+              alt={`Preview: ${state.label}`}
+              w="100%"
+              h="100%"
+              style={{
+                objectFit: "cover",
+                objectPosition: getFocalObjectPosition(adjustment?.focal),
+              }}
+            />
+          )
+
+          const frameContent = (
+            <Box w="100%" h="100%" position="relative" overflow="hidden">
+              {imageNode}
+              {scrim && (
+                <Box
+                  position="absolute"
+                  inset={0}
+                  className={scrim.className}
+                  pointerEvents="none"
+                />
+              )}
+            </Box>
+          )
 
           return (
             <VStack
@@ -238,117 +346,28 @@ export const AdjustmentPreview = ({
               </Text>
 
               <Box
+                w="auto"
                 borderWidth="1px"
                 borderColor="base.divider.medium"
                 borderRadius="0.25rem"
                 overflow="hidden"
+                bg="base.canvas.default"
+                position="relative"
                 style={{
-                  width: displayWidth,
-                  height: viewportHeight * scale,
-                  position: "relative",
+                  aspectRatio: state.aspectRatio
+                    ? `${state.aspectRatio.width} / ${state.aspectRatio.height}`
+                    : undefined,
+                  width: state.viewportWidth
+                    ? Math.min(state.viewportWidth, 200)
+                    : 200,
                 }}
               >
-                <Box
-                  style={{
-                    width: viewportWidth,
-                    height: viewportHeight,
-                    transform: `scale(${scale})`,
-                    transformOrigin: "top left",
-                  }}
-                >
-                  <PreviewIframe
-                    widthPx={viewportWidth}
-                    heightPx={viewportHeight}
-                    preventPointerEvents
-                  >
-                    {previewComponent}
-                  </PreviewIframe>
-                </Box>
+                {frameContent}
               </Box>
             </VStack>
           )
         })}
       </HStack>
-    )
-  }
-
-  return (
-    <HStack
-      align="flex-start"
-      spacing="1rem"
-      w="100%"
-      overflowX="auto"
-      overflowY="hidden"
-      pb="0.5rem"
-    >
-      {previewStates.map((state) => {
-        const imageNode = (
-          <Box
-            as="img"
-            src={adjustedSrc}
-            alt={`Preview: ${state.label}`}
-            w="100%"
-            h="100%"
-            style={{
-              objectFit: "cover",
-              objectPosition: getFocalObjectPosition(adjustment?.focal),
-            }}
-          />
-        )
-
-        const frameContent = (
-          <Box w="100%" h="100%" position="relative" overflow="hidden">
-            {imageNode}
-            {scrim && (
-              <Box
-                position="absolute"
-                inset={0}
-                className={scrim.className}
-                pointerEvents="none"
-              />
-            )}
-          </Box>
-        )
-
-        return (
-          <VStack
-            key={state.id}
-            align="stretch"
-            spacing="0.5rem"
-            flexShrink={0}
-            minW="fit-content"
-          >
-            <Text
-              textStyle="body-2"
-              fontWeight="semibold"
-              color="base.content.medium"
-            >
-              {state.label}
-              {state.viewportWidth && ` (${state.viewportWidth}px)`}
-            </Text>
-
-            <Box
-              w="auto"
-              borderWidth="1px"
-              borderColor="base.divider.medium"
-              borderRadius="0.25rem"
-              overflow="hidden"
-              bg="base.canvas.default"
-              position="relative"
-              style={{
-                aspectRatio: state.aspectRatio
-                  ? `${state.aspectRatio.width} / ${state.aspectRatio.height}`
-                  : undefined,
-                width: state.viewportWidth
-                  ? Math.min(state.viewportWidth, 200)
-                  : 200,
-              }}
-            >
-              {frameContent}
-            </Box>
-          </VStack>
-        )
-      })}
-    </HStack>
+    </VStack>
   )
 }
