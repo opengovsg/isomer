@@ -1,5 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import {
+  HERO_BLOCK_IMAGE_POSITION,
+  HERO_CAROUSEL_CONTENT_ALIGNMENT,
+  HERO_CAROUSEL_LAYOUT,
+} from "~/interfaces/complex/Hero"
+import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
 } from "~/stories/decorators"
@@ -217,6 +222,195 @@ export const Searchbar: Story = {
     subtitle:
       "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
     variant: "searchbar",
+  },
+}
+
+export const CarouselBlock: Story = {
+  args: {
+    headingLevel: 1,
+    site: generateSiteConfig(),
+    variant: "carousel",
+    carousel: {
+      layout: HERO_CAROUSEL_LAYOUT.block,
+      imagePosition: HERO_BLOCK_IMAGE_POSITION.right,
+    },
+    slides: [
+      {
+        backgroundUrl:
+          "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        title: "Set up good government websites, fast",
+        subtitle:
+          "Isomer is a website builder made for government teams. Pick a template, add your content, and publish.",
+        buttonLabel: "Get started",
+        buttonUrl: "/",
+        secondaryButtonLabel: "Learn more",
+        secondaryButtonUrl: "/",
+      },
+      {
+        backgroundUrl:
+          "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        title: "Built for the public sector",
+        subtitle:
+          "Meet accessibility, security, and branding requirements out of the box.",
+      },
+      {
+        backgroundUrl:
+          "https://images.unsplash.com/photo-1594318142972-1e2ea7487a3e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1740",
+        title: "Templates that already meet the bar",
+        subtitle:
+          "Start from a layout that handles accessibility, security, and branding.",
+        buttonLabel: "Browse all website templates",
+        buttonUrl: "/",
+        secondaryButtonLabel: "Contact the Isomer team",
+        secondaryButtonUrl: "/",
+      },
+      {
+        backgroundUrl:
+          "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        title: "Publish with confidence",
+        subtitle:
+          "Preview changes, collaborate with your team, and ship updates when you are ready.",
+        buttonLabel: "See how publishing works",
+        buttonUrl: "/",
+      },
+    ],
+    theme: "default",
+  },
+}
+
+export const CarouselBlockImageLeft: Story = {
+  args: {
+    ...CarouselBlock.args,
+    carousel: {
+      layout: HERO_CAROUSEL_LAYOUT.block,
+      imagePosition: HERO_BLOCK_IMAGE_POSITION.left,
+    },
+  },
+}
+
+export const CarouselGradient: Story = {
+  args: {
+    ...CarouselBlock.args,
+    carousel: {
+      layout: HERO_CAROUSEL_LAYOUT.gradient,
+      contentAlignment: HERO_CAROUSEL_CONTENT_ALIGNMENT.left,
+    },
+  },
+}
+
+export const CarouselGradientCenter: Story = {
+  args: {
+    ...CarouselBlock.args,
+    carousel: {
+      layout: HERO_CAROUSEL_LAYOUT.gradient,
+      contentAlignment: HERO_CAROUSEL_CONTENT_ALIGNMENT.center,
+    },
+  },
+}
+
+const quickLinksItemsBase = [
+  {
+    icon: "stars" as const,
+    title: "Explore Isomer's features",
+    description:
+      "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+    buttonUrl: "/",
+  },
+  {
+    icon: "line-chart" as const,
+    title: "See how others use Isomer",
+    description:
+      "Browse websites built with Isomer across agencies and see what good government digital service looks like.",
+    buttonUrl: "/",
+  },
+  {
+    icon: "globe" as const,
+    title: "Start building your site",
+    description:
+      "Get guidance on setting up your agency site, from content planning to launch.",
+    buttonUrl: "/",
+  },
+  {
+    icon: "users" as const,
+    title: "Join the community",
+    description:
+      "Connect with other agencies using Isomer and learn from shared playbooks.",
+    buttonUrl: "/",
+  },
+]
+
+const quickLinksBase = {
+  layout: "quickLinks" as const,
+  title: "Get started",
+  showIcon: true,
+  items: quickLinksItemsBase,
+}
+
+export const GradientQuickLinks: Story = {
+  args: {
+    headingLevel: 1,
+    site: generateSiteConfig(),
+    backgroundUrl: "/hero-banner.png",
+    title: "Set up a good government website, fast",
+    subtitle:
+      "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+    variant: "gradient",
+    actions: quickLinksBase,
+  },
+}
+
+export const GradientQuickLinksTwoItems: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    actions: { ...quickLinksBase, items: quickLinksItemsBase.slice(0, 2) },
+  },
+}
+
+// Minimal copy so tray width is driven by layout, not content length (see FloatingShortText).
+export const GradientQuickLinksTwoItemsShortText: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    title: "Title",
+    subtitle: "Subtitle",
+    actions: {
+      ...quickLinksBase,
+      title: "Tray",
+      items: [
+        {
+          icon: "stars",
+          title: "One",
+          description: "A",
+          buttonUrl: "/",
+        },
+        {
+          icon: "line-chart",
+          title: "Two",
+          description: "B",
+          buttonUrl: "/",
+        },
+      ],
+    },
+  },
+}
+
+export const GradientQuickLinksThreeItems: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    actions: { ...quickLinksBase, items: quickLinksItemsBase.slice(0, 3) },
+  },
+}
+
+export const GradientQuickLinksNoTitle: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    actions: { ...quickLinksBase, title: undefined },
+  },
+}
+
+export const GradientQuickLinksNoIcons: Story = {
+  args: {
+    ...GradientQuickLinks.args,
+    actions: { ...quickLinksBase, showIcon: false },
   },
 }
 

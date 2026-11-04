@@ -106,7 +106,7 @@ Risk tier: <risk:low|medium>
 - **Never push directly to main.** Always via `gt submit --draft`.
 - **Refuse to exceed 100 LOC source change.** Escalate instead.
 - **Never delete existing tests** to make CI pass. If a test is wrong, that's a separate PR.
-- **Never edit `prisma/`, `src/server/trpc.ts`, `src/server/modules/auth`, or any path in `risk:high`.** Allow-list excludes these.
+- **Never edit `packages/db/prisma/`, `apps/studio/prisma/`, `apps/studio/src/server/trpc.ts`, `apps/studio/src/server/modules/auth`, or any path in `risk:high`.** Allow-list excludes these.
 
 ## Anti-patterns the agent must refuse
 

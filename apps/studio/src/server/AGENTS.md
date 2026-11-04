@@ -23,7 +23,7 @@ A module is a vertical slice of one domain (page, resource, auth, audit, permiss
 
 ## Procedure types — pick the right base
 
-All four are exported from `~/server/trpc`:
+All three are exported from `~/server/trpc`:
 
 | Procedure            | Use for                                                                       |
 | -------------------- | ----------------------------------------------------------------------------- |
