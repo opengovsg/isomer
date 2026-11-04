@@ -6,7 +6,7 @@
 
 ## Summary
 
-The "Adjust image" feature stores, in a single asset folder, an **immutable original upload** and a **baked render copy** (the original with crop/rotate/flip applied). The page renders the baked copy; the editor always re-bakes from the original, so the original is the source of truth.
+The "Adjust image" feature stores, in a single asset folder, an **immutable original upload** and a **baked render copy** (the original with crop applied). The page renders the baked copy; the editor always re-bakes from the original, so the original is the source of truth.
 
 This rides mechanics the RFC already provides, and **needs no substantive change**:
 - **References resolve by folder** (the RFC matches via the directory portion of `Asset.s3Key`), so the baked `src` keeps the folder's one `Asset` referenced — the original is sweep-protected for free.

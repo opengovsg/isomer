@@ -20,9 +20,6 @@ type Story = StoryObj<typeof ImageClientWithAdjustment>
 const adjustmentWithFocal = (x: number, y: number): ImageAdjustment => ({
   crop: { x: 0, y: 0, width: 1, height: 1 },
   focal: { x, y },
-  rotate: 0,
-  flipH: false,
-  flipV: false,
   originalKey: "1/00000000-0000-0000-0000-000000000000/original.jpg",
 })
 
