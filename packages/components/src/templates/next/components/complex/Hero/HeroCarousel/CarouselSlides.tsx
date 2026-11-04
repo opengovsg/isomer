@@ -98,6 +98,7 @@ const SlideActions = ({
         // TODO: non-inverse color schemes are not supported yet
         colorScheme="inverse"
         isWithFocusVisibleHighlight
+        className="h-auto"
       >
         {slide.primaryLabel}
       </LinkButton>
@@ -108,6 +109,7 @@ const SlideActions = ({
           size="lg"
           href={slide.secondaryHref}
           isWithFocusVisibleHighlight
+          className="h-auto"
         >
           {slide.secondaryLabel}
         </LinkButton>
@@ -152,7 +154,7 @@ export const CarouselSlideContent = ({
           <div className="flex flex-col gap-6">
             <SlideTag className={titleClassName}>{slide.title}</SlideTag>
             {slide.subtitle && (
-              <p className="prose-title-lg-regular break-words">
+              <p className="prose-title-lg-regular break-words text-[1.125rem] md:text-[1.5rem]">
                 {slide.subtitle}
               </p>
             )}

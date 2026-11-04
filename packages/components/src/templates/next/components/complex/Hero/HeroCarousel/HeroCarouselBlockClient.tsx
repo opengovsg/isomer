@@ -28,7 +28,7 @@ const blockCarouselStyles = tv({
       "flex flex-col bg-brand-canvas-inverse px-6 py-12 md:px-10 lg:w-1/2 lg:justify-end lg:pb-12 lg:pt-11",
     content:
       "grid w-full max-w-[548px] grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-9 text-base-content-inverse lg:mx-0",
-    actions: "flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row",
+    actions: "flex flex-wrap justify-start gap-x-5 gap-y-4 [&>*]:h-auto",
     imageColumn:
       "relative h-80 overflow-hidden lg:h-auto lg:max-h-full lg:min-h-[31.25rem] lg:w-1/2",
     mobileDots:
@@ -120,7 +120,7 @@ export const HeroCarouselBlockClient = ({
               currentIndex={currentIndex}
               headingTag={headingTag}
               inactiveHeadingTag={inactiveHeadingTag}
-              titleClassName="prose-display-xl break-words text-balance"
+              titleClassName="prose-display-xl break-words text-balance text-[2.25rem] leading-[1.2] md:text-[3rem] md:leading-[1.1] xl:text-[3rem] xl:leading-[1.1]"
               actionsClassName={styles.actions()}
             />
           </div>

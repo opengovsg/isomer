@@ -25,7 +25,7 @@ const gradientCarouselStyles = tv({
     contentPanel: "relative z-10 flex w-full flex-col justify-end",
     contentInner: `${ComponentContent} grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-16 py-16 pb-9 text-start text-base-content-inverse lg:pb-16`,
     copy: "col-span-2 row-start-1 flex min-w-0 flex-col",
-    actions: "flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row",
+    actions: "flex flex-wrap justify-start gap-x-5 gap-y-4 [&>*]:h-auto",
   },
   variants: {
     contentAlignment: {
@@ -108,7 +108,7 @@ export const HeroCarouselGradientClient = ({
               currentIndex={currentIndex}
               headingTag={headingTag}
               inactiveHeadingTag={inactiveHeadingTag}
-              titleClassName="prose-display-xl break-words"
+              titleClassName="prose-display-xl break-words text-[2.25rem] leading-[1.2] md:text-[3rem] md:leading-[1.1] xl:text-[3rem] xl:leading-[1.1]"
               actionsClassName={styles.actions()}
               isVerticallyCenteredPerSlide={isCentered}
             />
