@@ -47,12 +47,6 @@ interface CropFocalControlProps {
   cropMode: "fixed" | "custom" | "none"
   lockedRatio?: { width: number; height: number }
   focalEnabled: boolean
-  // Rotation/flip are applied to the whole image before cropping, so the canvas
-  // shows the rotated/flipped ("display") image and crop/focal are placed in
-  // that orientation — matching the preview and the baked output.
-  rotate?: 0 | 90 | 180 | 270
-  flipH?: boolean
-  flipV?: boolean
   onCropChange: (crop: CropRectNormalized) => void
   onFocalChange: (focal: { x: number; y: number }) => void
   // Fired once the image's true pixel aspect ratio is known, so a caller
@@ -85,9 +79,6 @@ export const CropFocalControl = ({
   cropMode,
   lockedRatio,
   focalEnabled,
-  rotate = 0,
-  flipH = false,
-  flipV = false,
   onCropChange,
   onFocalChange,
   onImageAspectChange,
@@ -95,19 +86,12 @@ export const CropFocalControl = ({
   isDisabled = false,
 }: CropFocalControlProps): JSX.Element => {
   const boxRef = useRef<HTMLDivElement>(null)
-  // The source image's true (un-rotated) pixel aspect. The canvas works in
-  // "display" space (post rotate/flip), so a 90/270 rotation inverts it — that
-  // display aspect drives the box, letterboxing and crop math below.
+  // The source image's true pixel aspect — drives the box, letterboxing and
+  // crop math below.
   const [naturalAspect, setNaturalAspect] = useState<number | undefined>(
     undefined,
   )
-  const rotatedQuarter = rotate === 90 || rotate === 270
-  const aspectRatio =
-    naturalAspect === undefined
-      ? undefined
-      : rotatedQuarter
-        ? 1 / naturalAspect
-        : naturalAspect
+  const aspectRatio = naturalAspect
   const [boxSize, setBoxSize] = useState({ width: 0, height: 0 })
   const [dragTarget, setDragTarget] = useState<DragTarget>(null)
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null)
@@ -336,37 +320,14 @@ export const CropFocalControl = ({
     zIndex: 11,
   }
 
-  // Show the image in "display" orientation (rotate then flip). For 0/180 the
-  // img fills the box normally; a 90/270 rotation would overflow, so size it to
-  // the box's swapped dimensions and rotate it into place (centered). Flips are
-  // just a scale, so they never change sizing. All crop/focal overlay math
-  // below stays in display space, unchanged — only the image is transformed.
-  const flipX = flipH ? -1 : 1
-  const flipY = flipV ? -1 : 1
-  const displayImageStyle: CSSProperties =
-    rotatedQuarter && boxSize.width > 0
-      ? {
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          width: `${boxSize.height}px`,
-          height: `${boxSize.width}px`,
-          objectFit: "contain",
-          transform: `translate(-50%, -50%) scale(${flipX}, ${flipY}) rotate(${rotate}deg)`,
-          transformOrigin: "center",
-          userSelect: "none",
-          pointerEvents: "none",
-        }
-      : {
-          width: "100%",
-          height: "100%",
-          objectFit: "contain",
-          objectPosition: "center",
-          transform: `scale(${flipX}, ${flipY}) rotate(${rotate}deg)`,
-          transformOrigin: "center",
-          userSelect: "none",
-          pointerEvents: "none",
-        }
+  const displayImageStyle: CSSProperties = {
+    width: "100%",
+    height: "100%",
+    objectFit: "contain",
+    objectPosition: "center",
+    userSelect: "none",
+    pointerEvents: "none",
+  }
 
   const label =
     showCrop && focalEnabled

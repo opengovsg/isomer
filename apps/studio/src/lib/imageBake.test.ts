@@ -3,7 +3,6 @@ import { describe, it, expect } from "vitest"
 import {
   canBakeImage,
   cropRectToPixels,
-  computeCanvasTransform,
   isAnimatedWebp,
   isAnimatedPng,
   type CropRect,
@@ -196,117 +195,5 @@ describe("cropRectToPixels", () => {
     const result = cropRectToPixels(crop, 100, 100)
     expect(result.sw).toBe(0)
     expect(result.sh).toBe(0)
-  })
-})
-
-describe("computeCanvasTransform", () => {
-  it("returns identity transform for no rotation, no flip", () => {
-    const result = computeCanvasTransform(0, false, false)
-
-    expect(result).toEqual({
-      rotate: 0,
-      scaleX: 1,
-      scaleY: 1,
-    })
-  })
-
-  it("returns correct transform for horizontal flip only", () => {
-    const result = computeCanvasTransform(0, true, false)
-
-    expect(result).toEqual({
-      rotate: 0,
-      scaleX: -1,
-      scaleY: 1,
-    })
-  })
-
-  it("returns correct transform for vertical flip only", () => {
-    const result = computeCanvasTransform(0, false, true)
-
-    expect(result).toEqual({
-      rotate: 0,
-      scaleX: 1,
-      scaleY: -1,
-    })
-  })
-
-  it("returns correct transform for both horizontal and vertical flip", () => {
-    const result = computeCanvasTransform(0, true, true)
-
-    expect(result).toEqual({
-      rotate: 0,
-      scaleX: -1,
-      scaleY: -1,
-    })
-  })
-
-  it("returns correct transform for 90 degree rotation only", () => {
-    const result = computeCanvasTransform(90, false, false)
-
-    expect(result).toEqual({
-      rotate: 90,
-      scaleX: 1,
-      scaleY: 1,
-    })
-  })
-
-  it("returns correct transform for 90 rotation with horizontal flip", () => {
-    const result = computeCanvasTransform(90, true, false)
-
-    expect(result).toEqual({
-      rotate: 90,
-      scaleX: -1,
-      scaleY: 1,
-    })
-  })
-
-  it("returns correct transform for 90 rotation with vertical flip", () => {
-    const result = computeCanvasTransform(90, false, true)
-
-    expect(result).toEqual({
-      rotate: 90,
-      scaleX: 1,
-      scaleY: -1,
-    })
-  })
-
-  it("returns correct transform for 180 degree rotation", () => {
-    const result = computeCanvasTransform(180, false, false)
-
-    expect(result).toEqual({
-      rotate: 180,
-      scaleX: 1,
-      scaleY: 1,
-    })
-  })
-
-  it("returns correct transform for 180 rotation with horizontal flip", () => {
-    const result = computeCanvasTransform(180, true, false)
-
-    expect(result).toEqual({
-      rotate: 180,
-      scaleX: -1,
-      scaleY: 1,
-    })
-  })
-
-  it("returns correct transform for 270 degree rotation", () => {
-    const result = computeCanvasTransform(270, false, false)
-
-    expect(result).toEqual({
-      rotate: 270,
-      scaleX: 1,
-      scaleY: 1,
-    })
-  })
-
-  it("returns correct transform for 270 rotation with both flips", () => {
-    const result = computeCanvasTransform(270, true, true)
-
-    expect(result).toEqual({
-      rotate: 270,
-      scaleX: -1,
-      scaleY: -1,
-    })
   })
 })

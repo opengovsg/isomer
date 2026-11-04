@@ -59,60 +59,24 @@ const readPixels = async (blob: Blob) => {
 const FULL_CROP = { x: 0, y: 0, width: 1, height: 1 }
 const PNG = { mimeType: "image/png" }
 
-// Covers the canvas composition that bakeImage actually ships (display-space
-// crop, full-image draw, rotate/flip transform) — the pure helpers it used to
-// lean on no longer reflect the real output.
+// Covers the canvas composition that bakeImage actually ships (crop, then a
+// full-image draw) — the pure helpers it used to lean on no longer reflect
+// the real output.
 describe("bakeImage composition", () => {
-  it("passes a full-crop, un-rotated image through unchanged", async () => {
+  it("passes a full-crop image through unchanged", async () => {
     const src = await makeImageBlob(2, 1, [RED, BLUE])
-    const baked = await bakeImage(
-      src,
-      { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
-      PNG,
-    )
+    const baked = await bakeImage(src, { crop: FULL_CROP }, PNG)
     const out = await readPixels(baked)
     expect([out.width, out.height]).toEqual([2, 1])
     expect(out.at(0, 0)).toEqual(RED)
     expect(out.at(1, 0)).toEqual(BLUE)
   })
 
-  it("rotates 90° clockwise: a 2×1 (left/right) becomes a 1×2 (top/bottom)", async () => {
-    const src = await makeImageBlob(2, 1, [RED, BLUE])
-    const baked = await bakeImage(
-      src,
-      { crop: FULL_CROP, rotate: 90, flipH: false, flipV: false },
-      PNG,
-    )
-    const out = await readPixels(baked)
-    // 90° swaps the dimensions, and the left edge rotates to the top.
-    expect([out.width, out.height]).toEqual([1, 2])
-    expect(out.at(0, 0)).toEqual(RED)
-    expect(out.at(0, 1)).toEqual(BLUE)
-  })
-
-  it("flips horizontally: left/right are mirrored", async () => {
-    const src = await makeImageBlob(2, 1, [RED, BLUE])
-    const baked = await bakeImage(
-      src,
-      { crop: FULL_CROP, rotate: 0, flipH: true, flipV: false },
-      PNG,
-    )
-    const out = await readPixels(baked)
-    expect([out.width, out.height]).toEqual([2, 1])
-    expect(out.at(0, 0)).toEqual(BLUE)
-    expect(out.at(1, 0)).toEqual(RED)
-  })
-
-  it("crops in display space: keeping the right half drops the left pixels", async () => {
+  it("crops: keeping the right half drops the left pixels", async () => {
     const src = await makeImageBlob(4, 1, [RED, GREEN, BLUE, WHITE])
     const baked = await bakeImage(
       src,
-      {
-        crop: { x: 0.5, y: 0, width: 0.5, height: 1 },
-        rotate: 0,
-        flipH: false,
-        flipV: false,
-      },
+      { crop: { x: 0.5, y: 0, width: 0.5, height: 1 } },
       PNG,
     )
     const out = await readPixels(baked)
@@ -134,11 +98,7 @@ describe("bakeImage composition", () => {
     const animatedWebp = new Blob([header], { type: "image/webp" })
 
     return expect(
-      bakeImage(
-        animatedWebp,
-        { crop: FULL_CROP, rotate: 0, flipH: false, flipV: false },
-        { mimeType: "image/webp" },
-      ),
+      bakeImage(animatedWebp, { crop: FULL_CROP }, { mimeType: "image/webp" }),
     ).rejects.toThrow(/animated/)
   })
 })
