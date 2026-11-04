@@ -93,7 +93,7 @@ export const FileAttachment = forwardRef<HTMLDivElement, FileAttachmentProps>(
             onUploadSuccess?.()
             if (shouldFetchResource) {
               void handleAssetUpload(path)
-                .then((src) => setHref(src))
+                .then((src) => setHrefRef.current(src))
                 .catch(() => {
                   toast({
                     title: "Failed to upload file",
@@ -102,7 +102,7 @@ export const FileAttachment = forwardRef<HTMLDivElement, FileAttachmentProps>(
                     ...BRIEF_TOAST_SETTINGS,
                   })
                 })
-            } else setHref(path)
+            } else setHrefRef.current(path)
           },
           // Without this, a failure in the presign call or the S3 PUT itself
           // (permission denied, validation, network/CORS) silently reverts the
@@ -134,7 +134,7 @@ export const FileAttachment = forwardRef<HTMLDivElement, FileAttachmentProps>(
               onRejection={setRejections}
               onChange={(file) => {
                 if (!file) {
-                  setHref(undefined)
+                  setHrefRef.current(undefined)
                   return
                 }
 
