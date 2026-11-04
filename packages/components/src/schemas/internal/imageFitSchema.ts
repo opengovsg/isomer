@@ -34,3 +34,11 @@ export const InfoCardsImageFitSchema = generateImageFitSchema({
   description: `Select "Resize image to fit" only if the image has a white background.`,
   format: "hidden",
 })
+
+// Same pattern as InfoCardsImageFitSchema, for the collection item thumbnail
+// (page.image) — see CollectionCard/BlogCard for the cover/contain render split.
+export const CollectionThumbnailImageFitSchema = generateImageFitSchema({
+  title: "Image display",
+  description: `Select "Resize image to fit" only if the image has a white background.`,
+  format: "hidden",
+})
