@@ -12,6 +12,11 @@ export const VicaWidget = ({
 }: VicaWidgetProps) => {
   return (
     <VicaWidgetClient
+      scriptUrl={
+        rest.useDevStagingScript
+          ? "https://webchat.mol-vica.com/static/js/chat.js"
+          : "https://webchat.vica.gov.sg/static/js/chat.js"
+      }
       app-icon={
         appIcon
           ? getReferenceLinkHref(appIcon, site.siteMapArray, site.assetsBaseUrl)
