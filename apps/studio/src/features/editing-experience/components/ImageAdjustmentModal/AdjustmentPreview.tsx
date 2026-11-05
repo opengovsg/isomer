@@ -138,6 +138,9 @@ export const AdjustmentPreview = ({
 
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  // Surfaces the otherwise-silent fallback to the uncropped src, so a preview
+  // that looks "fine" doesn't mask a fetch failure that save would throw on.
+  const [fetchError, setFetchError] = useState(false)
   const bakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevPreviewUrlRef = useRef<string | null>(null)
   // Monotonic token for the latest bake request. Each effect run bumps it so an
@@ -182,6 +185,7 @@ export const AdjustmentPreview = ({
       return
     }
     const fetchOriginal = async () => {
+      setFetchError(false)
       // Try ?original (pristine), then fall back to the plain variant — the same
       // URL the <img> display uses. The ?original object is gated by a
       // malware-scan tag and can 403; critically, that error response can also be
@@ -206,7 +210,10 @@ export const AdjustmentPreview = ({
           ? await tryFetch(plainFetchUrl, { headers: { Accept: "image/webp" } })
           : null)
       if (!blob) {
+        // Falls back to the uncropped src (CORS-blocked images, etc.); fetchError
+        // surfaces that fallback since save would throw on the same failure.
         console.debug("Failed to fetch original image for preview bake")
+        setFetchError(true)
       }
       setOriginalBlob(blob)
     }
@@ -542,8 +549,16 @@ export const AdjustmentPreview = ({
   )[0]
   const restStates = previewStates.filter((s) => s.id !== bigState?.id)
 
+  const fetchErrorBanner = fetchError && (
+    <Text textStyle="caption-2" color="utility.feedback.critical">
+      Couldn't load the original image for preview. Showing the current image
+      instead.
+    </Text>
+  )
+
   return (
     <VStack ref={railRef} align="stretch" spacing="1rem" w="100%">
+      {fetchErrorBanner}
       {stackPreviews ? (
         // Every tile full-width, one per row (see the prop's doc).
         previewStates.map((state) => renderTile(state, railWidth))
