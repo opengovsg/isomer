@@ -731,17 +731,17 @@ catalogs:
       version: 3.32.0
   trpc:
     '@trpc/client':
-      specifier: ^11.19.0
-      version: 11.19.0
+      specifier: ^11.22.1
+      version: 11.24.0
     '@trpc/next':
-      specifier: ^11.19.0
-      version: 11.19.0
+      specifier: ^11.22.1
+      version: 11.24.0
     '@trpc/react-query':
-      specifier: ^11.19.0
-      version: 11.19.0
+      specifier: ^11.22.1
+      version: 11.24.0
     '@trpc/server':
-      specifier: ^11.19.0
-      version: 11.19.0
+      specifier: ^11.22.1
+      version: 11.24.0
   vitest:
     '@vitejs/plugin-react':
       specifier: ^6.1.2
@@ -981,16 +981,16 @@ importers:
         version: 3.32.0(@floating-ui/dom@1.8.0)(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@trpc/client':
         specifier: catalog:trpc
-        version: 11.19.0(@trpc/server@11.19.0(typescript@6.0.3))(typescript@6.0.3)
+        version: 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
       '@trpc/next':
         specifier: catalog:trpc
-        version: 11.19.0(@tanstack/react-query@5.105.0(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.19.0(@trpc/server@11.19.0(typescript@6.0.3))(typescript@6.0.3))(@trpc/react-query@11.19.0(@tanstack/react-query@5.105.0(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.19.0(@trpc/server@11.19.0(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.19.0(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3))(@trpc/server@11.19.0(typescript@6.0.3))(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@6.0.3)
+        version: 11.24.0(648c9f1822ba8d2fe3023a7b33cc1bce)
       '@trpc/react-query':
         specifier: catalog:trpc
-        version: 11.19.0(@tanstack/react-query@5.105.0(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.19.0(@trpc/server@11.19.0(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.19.0(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)
+        version: 11.24.0(@tanstack/react-query@5.105.0(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)
       '@trpc/server':
         specifier: catalog:trpc
-        version: 11.19.0(typescript@6.0.3)
+        version: 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
       '@uidotdev/usehooks':
         specifier: 'catalog:'
         version: 2.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1249,7 +1249,7 @@ importers:
         version: 3.0.3(msw@3.0.3(@types/node@26.6.5)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(storybook@10.6.5(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       msw-trpc:
         specifier: 'catalog:'
-        version: 2.0.1(@trpc/server@11.19.0(typescript@6.0.3))(msw@3.0.3(@types/node@26.6.5)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(typescript@6.0.3)
+        version: 2.0.1(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(msw@3.0.3(@types/node@26.6.5)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(typescript@6.0.3)
       node-mocks-http:
         specifier: 'catalog:'
         version: 1.18.1(@types/node@26.6.5)
@@ -6427,21 +6427,19 @@ packages:
       react: ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@trpc/client@11.19.0':
-    resolution: {integrity: sha512-0MKkPq6MejsKB5Opca1Rl22KVIaqo2+A1EiXyZ8EGUsl9TLrPdpGn+Usux20TZKFwnSC2+wI/WilqNJaP4ODfw==}
-    hasBin: true
+  '@trpc/client@11.24.0':
+    resolution: {integrity: sha512-D9zoHnF/LGL5SpVnDaSO3b9ymF0jgfnawxtU7HkDjVbcmXeWiAGnJT6fD2UTfEmP63+i57VE49RQqRO0Ig7WJg==}
     peerDependencies:
-      '@trpc/server': 11.19.0
+      '@trpc/server': 11.24.0
       typescript: '>=5.7.2'
 
-  '@trpc/next@11.19.0':
-    resolution: {integrity: sha512-6rSzxEm87zZP3XM4KZakhUTMFrrqs+eVV9zqyX5Xpu03s7VhXfvDYQ/ampnZ5NxL5wrvcl14jV2QYeJ6FSzBJw==}
-    hasBin: true
+  '@trpc/next@11.24.0':
+    resolution: {integrity: sha512-HI+uWkyUod9Wg2PhCxGqcVIO1nt54xkzn7fjpMljhdggD0ighuLe/bGwtIuvfIcqVKsNJ0xgll2kyuv9Yyg0Ew==}
     peerDependencies:
       '@tanstack/react-query': ^5.59.15
-      '@trpc/client': 11.19.0
-      '@trpc/react-query': 11.19.0
-      '@trpc/server': 11.19.0
+      '@trpc/client': 11.24.0
+      '@trpc/react-query': 11.24.0
+      '@trpc/server': 11.24.0
       next: '*'
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -6452,20 +6450,35 @@ packages:
       '@trpc/react-query':
         optional: true
 
-  '@trpc/react-query@11.19.0':
-    resolution: {integrity: sha512-TrqZBa/6weXX27mf0P2dMCI65duqO3B/wf9BkP1MezUWSUg7SRGJrIv6K8vjgjeHdafFBI1mmcqPEYXHF4AlVQ==}
+  '@trpc/react-query@11.24.0':
+    resolution: {integrity: sha512-Fv0E18+X9t9dN8vs7LezSp+iRGdvHsTCQiUd2aj5XtitPfxuQGiWqb5ovM3fjFzItpIKfdYGZva8r2i1p2PTNA==}
     peerDependencies:
       '@tanstack/react-query': ^5.80.3
-      '@trpc/client': 11.19.0
-      '@trpc/server': 11.19.0
+      '@trpc/client': 11.24.0
+      '@trpc/server': 11.24.0
       react: '>=18.2.0'
       typescript: '>=5.7.2'
 
-  '@trpc/server@11.19.0':
-    resolution: {integrity: sha512-7C1goiDurz82yFKtZUbEzjXd0Rg/jyisaIZQhdvus+1l7E6mwcEYZXjZ1US/HF8kOyz1LERL8UN3bcboJtjcyQ==}
-    hasBin: true
+  '@trpc/server@11.24.0':
+    resolution: {integrity: sha512-CxpaiIY58ItaLpGxwYTxHHYx5evRAJ4B2Eq94axvg28nwihDgjQIUiLG8T49DZ/t4R2tPHHdeLkF6t0kyjD5YQ==}
     peerDependencies:
+      '@types/aws-lambda': '*'
+      '@types/express': '*'
+      '@types/ws': '*'
+      fastify: '*'
+      next: '*'
       typescript: '>=5.7.2'
+    peerDependenciesMeta:
+      '@types/aws-lambda':
+        optional: true
+      '@types/express':
+        optional: true
+      '@types/ws':
+        optional: true
+      fastify:
+        optional: true
+      next:
+        optional: true
 
   '@turbo/darwin-64@2.11.10':
     resolution: {integrity: sha512-By4idRap5+nLnMuRzLB4qkOPRlvNdyY1ne4VJYDyUoUB11H94k7uif9mbe3JT8JSNXs1D68uMcBj6hJ/jMQRvA==}
@@ -16589,34 +16602,37 @@ snapshots:
     transitivePeerDependencies:
       - '@floating-ui/dom'
 
-  '@trpc/client@11.19.0(@trpc/server@11.19.0(typescript@6.0.3))(typescript@6.0.3)':
+  '@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)':
     dependencies:
-      '@trpc/server': 11.19.0(typescript@6.0.3)
+      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
       typescript: 6.0.3
 
-  '@trpc/next@11.19.0(@tanstack/react-query@5.105.0(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.19.0(@trpc/server@11.19.0(typescript@6.0.3))(typescript@6.0.3))(@trpc/react-query@11.19.0(@tanstack/react-query@5.105.0(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.19.0(@trpc/server@11.19.0(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.19.0(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3))(@trpc/server@11.19.0(typescript@6.0.3))(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@6.0.3)':
+  '@trpc/next@11.24.0(648c9f1822ba8d2fe3023a7b33cc1bce)':
     dependencies:
-      '@trpc/client': 11.19.0(@trpc/server@11.19.0(typescript@6.0.3))(typescript@6.0.3)
-      '@trpc/server': 11.19.0(typescript@6.0.3)
+      '@trpc/client': 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
+      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
       next: 16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       typescript: 6.0.3
     optionalDependencies:
       '@tanstack/react-query': 5.105.0(@types/react@18.3.31)(react@18.3.1)
-      '@trpc/react-query': 11.19.0(@tanstack/react-query@5.105.0(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.19.0(@trpc/server@11.19.0(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.19.0(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)
+      '@trpc/react-query': 11.24.0(@tanstack/react-query@5.105.0(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)
 
-  '@trpc/react-query@11.19.0(@tanstack/react-query@5.105.0(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.19.0(@trpc/server@11.19.0(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.19.0(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)':
+  '@trpc/react-query@11.24.0(@tanstack/react-query@5.105.0(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)':
     dependencies:
       '@tanstack/react-query': 5.105.0(@types/react@18.3.31)(react@18.3.1)
-      '@trpc/client': 11.19.0(@trpc/server@11.19.0(typescript@6.0.3))(typescript@6.0.3)
-      '@trpc/server': 11.19.0(typescript@6.0.3)
+      '@trpc/client': 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
+      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
       react: 18.3.1
       typescript: 6.0.3
 
-  '@trpc/server@11.19.0(typescript@6.0.3)':
+  '@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)':
     dependencies:
       typescript: 6.0.3
+    optionalDependencies:
+      '@types/ws': 8.18.1
+      next: 16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1)
 
   '@turbo/darwin-64@2.11.10':
     optional: true
@@ -17385,7 +17401,7 @@ snapshots:
       pathe: 2.0.3
       sirv: 3.0.2
       tinyrainbow: 3.2.0
-      vitest: 5.0.5(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(@vitest/coverage-istanbul@5.0.5)(jsdom@30.1.3(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.6.5)(typescript@6.0.3))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
+      vitest: 5.0.5(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(@vitest/coverage-istanbul@5.0.5)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.6.5)(typescript@6.0.3))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -20129,10 +20145,10 @@ snapshots:
       msw: 3.0.3(@types/node@26.6.5)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
       storybook: 10.6.5(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
-  msw-trpc@2.0.1(@trpc/server@11.19.0(typescript@6.0.3))(msw@3.0.3(@types/node@26.6.5)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(typescript@6.0.3):
+  msw-trpc@2.0.1(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(msw@3.0.3(@types/node@26.6.5)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(typescript@6.0.3):
     dependencies:
-      '@trpc/client': 11.19.0(@trpc/server@11.19.0(typescript@6.0.3))(typescript@6.0.3)
-      '@trpc/server': 11.19.0(typescript@6.0.3)
+      '@trpc/client': 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
+      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
       msw: 3.0.3(@types/node@26.6.5)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
     transitivePeerDependencies:
       - typescript
