@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from "react"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { PLACEHOLDER_IMAGE_FILENAME } from "~/features/editing-experience/components/constants"
 import { fetchImageBlob } from "~/features/editing-experience/components/ImageAdjustmentModal/useSaveImageAdjustment"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
@@ -79,6 +80,10 @@ function JsonFormsImageControl({
   // Gate the adjustment entry point behind a GrowthBook flag (off by default,
   // rolled out per-user) — this is a rollout-sensitive editor path.
   const isImageAdjustmentEnabled = useIsImageAdjustmentEnabled()
+  // `null` outside the page editor (e.g. the link editor, which shares this
+  // control but has no EditorDrawerProvider) — the preview then falls back
+  // to "content" inside AdjustmentPreview.
+  const pageLayout = useOptionalEditorDrawerContext()?.previewPageState.layout
   // Only managed site-storage assets (relative "/..." paths) can be baked;
   // external/absolute URLs and the built-in placeholder have no derivable bake
   // key, so hide Adjust for them rather than letting Save fail.
@@ -382,6 +387,7 @@ function JsonFormsImageControl({
               imageFieldName={fieldName}
               fieldHost={fieldHost}
               originalFile={originalFile}
+              pageLayout={pageLayout}
               siteId={siteId}
               resourceId={resourceId}
               initialImageFit={initialImageFit}

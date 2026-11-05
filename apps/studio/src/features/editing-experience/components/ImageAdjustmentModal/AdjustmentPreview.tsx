@@ -2,6 +2,7 @@
 
 import type {
   IsomerComponent,
+  IsomerPageLayoutType,
   IsomerSiteProps,
   ImageAdjustment,
 } from "@opengovsg/isomer-components"
@@ -88,10 +89,14 @@ interface AdjustmentPreviewProps {
   // tile would be too small to read.
   stackPreviews?: boolean
   // The object-fit the framed-image approximation uses (skipRealComponentPreview
-  // path). "contain" letterboxes the whole (cropped) image to match InfoCards'
-  // "Resize image to fit"; defaults to "cover". Ignored on the real-component
-  // path, which renders the component's own fit.
+  // path). "contain" letterboxes the whole (cropped) image to match a field
+  // like InfoCards' "Resize image to fit"; defaults to "cover". Ignored on the
+  // real-component path, which renders the component's own fit.
   objectFit?: "cover" | "contain"
+  // The real page layout the published page would render at — threaded
+  // through so a state without its own `layout` still previews the real
+  // shape instead of always defaulting to "content".
+  pageLayout?: IsomerPageLayoutType
   // Needed to pull the site's brand theme CSS vars into the preview iframe —
   // without them, classes like `bg-brand-canvas-inverse` resolve to nothing.
   siteId: number
@@ -118,6 +123,7 @@ export const AdjustmentPreview = ({
   skipRealComponentPreview,
   stackPreviews,
   objectFit = "cover",
+  pageLayout,
   siteId,
 }: AdjustmentPreviewProps): JSX.Element => {
   // The preview tiles are sized relative to the rail's own width: the widest
@@ -353,7 +359,14 @@ export const AdjustmentPreview = ({
   const renderPreviewComponent = (
     layout: AdjustmentPreviewState["layout"],
   ): React.ReactNode => {
-    if (!block || typeof block !== "object" || !imageFieldName) return null
+    if (
+      !block ||
+      typeof block !== "object" ||
+      !fieldHost ||
+      typeof fieldHost !== "object" ||
+      !imageFieldName
+    )
+      return null
     try {
       // For an array-nested field (fieldHost !== block, e.g. an InfoCards
       // card), the image + alt fallback below apply to the field HOST (the
@@ -398,7 +411,7 @@ export const AdjustmentPreview = ({
       }
       const rendered = renderComponent({
         component,
-        layout: layout ?? "content",
+        layout: layout ?? pageLayout ?? "content",
         site: PREVIEW_SITE_STUB,
         permalink: "",
         headingLevel: 1,
@@ -427,12 +440,13 @@ export const AdjustmentPreview = ({
     }
   }
 
-  // Gate on the default-layout render succeeding, same as every state did
-  // before per-state layout existed — a failure here falls through to the
-  // framed-<img> approximation for every state, not just the one that failed.
-  // A state requesting a non-default `layout` re-renders on its own and, in the
-  // rarer case that only its specific layout throws, is simply skipped (its
-  // sibling states still render for real).
+  // Gate on the default-layout render succeeding (and on skipRealComponentPreview
+  // not opting out of it entirely), same as every state did before per-state
+  // layout existed — a failure here falls through to the framed-<img>
+  // approximation for every state, not just the one that failed. A state
+  // requesting a non-default `layout` re-renders on its own and, in the rarer
+  // case that only its specific layout throws, is simply skipped (its sibling
+  // states still render for real).
   const defaultRender = skipRealComponentPreview
     ? null
     : renderPreviewComponent(undefined)

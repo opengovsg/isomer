@@ -18,6 +18,7 @@ const REPO_ROOT = path.resolve(__dirname, "../../../../../../../")
 // the scrim's className is a verbatim substring of the component's source.
 const SCRIM_CONFIGS: {
   block: unknown
+  fieldName: string
   // HeroGradient.tsx just dispatches on actions.layout to one of two
   // sub-components, each with its own gradient; the registry's scrim mirrors
   // the default (Buttons) one, so match against either's source.
@@ -25,6 +26,7 @@ const SCRIM_CONFIGS: {
 }[] = [
   {
     block: { type: "hero", variant: "gradient" },
+    fieldName: "backgroundUrl",
     componentPaths: [
       "packages/components/src/templates/next/components/complex/Hero/HeroGradient/HeroGradientButtons.tsx",
       "packages/components/src/templates/next/components/complex/Hero/HeroGradient/HeroGradientQuickLinks/HeroGradientQuickLinks.tsx",
@@ -32,6 +34,7 @@ const SCRIM_CONFIGS: {
   },
   {
     block: { type: "infocards", variant: "cardsWithFullImages" },
+    fieldName: "imageUrl",
     componentPaths: [
       "packages/components/src/templates/next/components/complex/InfoCards/components/InfoCardWithFullImage.tsx",
     ],
@@ -39,10 +42,10 @@ const SCRIM_CONFIGS: {
 ]
 
 describe("scrim className guardrail", () => {
-  for (const { block, componentPaths } of SCRIM_CONFIGS) {
+  for (const { block, fieldName, componentPaths } of SCRIM_CONFIGS) {
     const config = resolveAdjustmentConfig({
       block,
-      fieldName: "image",
+      fieldName,
     })
 
     it(`"${config?.componentType}" scrim className appears in one of ${componentPaths.join(", ")}`, () => {
@@ -63,27 +66,27 @@ describe("scrim className guardrail", () => {
   // entirely.
   it("covers every scrim-bearing config in the registry", () => {
     const allBlocks = [
-      { type: "image" },
-      { type: "imagegallery" },
-      { type: "hero", variant: "gradient" },
-      { type: "hero", variant: "largeImage" },
-      { type: "hero", variant: "block" },
-      { type: "hero", variant: "floating" },
-      { type: "contentpic" },
-      { type: "infopic" },
-      { type: "blockquote" },
-      { type: "infocards", variant: "cardsWithImages" },
-      { type: "infocards", variant: "cardsWithFullImages" },
+      { block: { type: "image" }, fieldName: "src" },
+      { block: { type: "imagegallery" }, fieldName: "src" },
+      { block: { type: "hero", variant: "gradient" }, fieldName: "backgroundUrl" },
+      { block: { type: "hero", variant: "largeImage" }, fieldName: "backgroundUrl" },
+      { block: { type: "hero", variant: "block" }, fieldName: "backgroundUrl" },
+      { block: { type: "hero", variant: "floating" }, fieldName: "backgroundUrl" },
+      { block: { type: "contentpic" }, fieldName: "imageSrc" },
+      { block: { type: "infopic" }, fieldName: "imageSrc" },
+      { block: { type: "blockquote" }, fieldName: "imageSrc" },
+      { block: { type: "infocards", variant: "cardsWithImages" }, fieldName: "imageUrl" },
+      { block: { type: "infocards", variant: "cardsWithFullImages" }, fieldName: "imageUrl" },
     ]
     const scrimComponentTypes = allBlocks
-      .map((block) => resolveAdjustmentConfig({ block, fieldName: "image" }))
+      .map(({ block, fieldName }) => resolveAdjustmentConfig({ block, fieldName }))
       .filter((config): config is AdjustmentConfig => config?.scrim != null)
       .map((config) => config.componentType)
       .sort()
 
     const coveredComponentTypes = SCRIM_CONFIGS.map(
-      ({ block }) =>
-        resolveAdjustmentConfig({ block, fieldName: "image" })?.componentType,
+      ({ block, fieldName }) =>
+        resolveAdjustmentConfig({ block, fieldName })?.componentType,
     ).sort()
 
     expect(scrimComponentTypes).toEqual(coveredComponentTypes)
