@@ -23,7 +23,11 @@ const REPO_ROOT = path.resolve(__dirname, "../../../../../../../")
 // at component file(s) containing the literal string "imageAdjustment", and
 // a story file that demonstrates a focal point.
 const FOCAL_WIRING_CONFIGS: {
-  resolve: { block: unknown; context?: Parameters<typeof resolveAdjustmentConfig>[0]["context"] }
+  resolve: {
+    block: unknown
+    fieldName: string
+    context?: Parameters<typeof resolveAdjustmentConfig>[0]["context"]
+  }
   // Every listed path must contain "imageAdjustment" -- unlike the scrim
   // guardrail's `.some(...)`, this is `.every(...)`: HeroGradient has two
   // render branches an editor can pick between (Buttons/QuickLinks), and
@@ -32,7 +36,10 @@ const FOCAL_WIRING_CONFIGS: {
   storyPaths: string[]
 }[] = [
   {
-    resolve: { block: { type: "hero", variant: "gradient" } },
+    resolve: {
+      block: { type: "hero", variant: "gradient" },
+      fieldName: "backgroundUrl",
+    },
     componentPaths: [
       "packages/components/src/templates/next/components/complex/Hero/HeroGradient/HeroGradientButtons.tsx",
       "packages/components/src/templates/next/components/complex/Hero/HeroGradient/HeroGradientQuickLinks/HeroGradientQuickLinks.tsx",
@@ -42,7 +49,10 @@ const FOCAL_WIRING_CONFIGS: {
     ],
   },
   {
-    resolve: { block: { type: "hero", variant: "block" } },
+    resolve: {
+      block: { type: "hero", variant: "block" },
+      fieldName: "backgroundUrl",
+    },
     componentPaths: [
       "packages/components/src/templates/next/components/complex/Hero/HeroBlock.tsx",
     ],
@@ -51,7 +61,10 @@ const FOCAL_WIRING_CONFIGS: {
     ],
   },
   {
-    resolve: { block: { type: "hero", variant: "largeImage" } },
+    resolve: {
+      block: { type: "hero", variant: "largeImage" },
+      fieldName: "backgroundUrl",
+    },
     componentPaths: [
       "packages/components/src/templates/next/components/complex/Hero/HeroLargeImage/HeroLargeImage.tsx",
     ],
@@ -60,7 +73,7 @@ const FOCAL_WIRING_CONFIGS: {
     ],
   },
   {
-    resolve: { block: { type: "infopic" } },
+    resolve: { block: { type: "infopic" }, fieldName: "imageSrc" },
     componentPaths: [
       "packages/components/src/templates/next/components/complex/Infopic/components/BlockInfopic.tsx",
       "packages/components/src/templates/next/components/complex/Infopic/components/FullInfopic.tsx",
@@ -70,7 +83,10 @@ const FOCAL_WIRING_CONFIGS: {
     ],
   },
   {
-    resolve: { block: { type: "infocards", variant: "cardsWithImages" } },
+    resolve: {
+      block: { type: "infocards", variant: "cardsWithImages" },
+      fieldName: "imageUrl",
+    },
     componentPaths: [
       "packages/components/src/templates/next/components/complex/InfoCards/components/InfoCardImage.tsx",
     ],
@@ -79,7 +95,10 @@ const FOCAL_WIRING_CONFIGS: {
     ],
   },
   {
-    resolve: { block: { type: "infocards", variant: "cardsWithFullImages" } },
+    resolve: {
+      block: { type: "infocards", variant: "cardsWithFullImages" },
+      fieldName: "imageUrl",
+    },
     componentPaths: [
       "packages/components/src/templates/next/components/complex/InfoCards/components/InfoCardWithFullImage.tsx",
     ],
@@ -92,6 +111,7 @@ const FOCAL_WIRING_CONFIGS: {
     // branch, which short-circuits before the block `type` switch.
     resolve: {
       block: undefined,
+      fieldName: "image",
       context: { isCollectionThumbnail: true },
     },
     componentPaths: [
@@ -109,27 +129,38 @@ const FOCAL_WIRING_CONFIGS: {
 // completeness check below, mirroring scrimClassNameGuardrail's ALL_BLOCKS.
 const ALL_RESOLUTIONS: {
   block: unknown
+  fieldName: string
   context?: Parameters<typeof resolveAdjustmentConfig>[0]["context"]
 }[] = [
-  { block: { type: "image" } },
-  { block: { type: "imagegallery" } },
-  { block: { type: "hero", variant: "gradient" } },
-  { block: { type: "hero", variant: "largeImage" } },
-  { block: { type: "hero", variant: "block" } },
-  { block: { type: "hero", variant: "floating" } },
-  { block: { type: "contentpic" } },
-  { block: { type: "infopic" } },
-  { block: { type: "blockquote" } },
-  { block: { type: "infocards", variant: "cardsWithImages" } },
-  { block: { type: "infocards", variant: "cardsWithFullImages" } },
-  { block: undefined, context: { isCollectionThumbnail: true } },
+  { block: { type: "image" }, fieldName: "src" },
+  { block: { type: "imagegallery" }, fieldName: "src" },
+  { block: { type: "hero", variant: "gradient" }, fieldName: "backgroundUrl" },
+  { block: { type: "hero", variant: "largeImage" }, fieldName: "backgroundUrl" },
+  { block: { type: "hero", variant: "block" }, fieldName: "backgroundUrl" },
+  { block: { type: "hero", variant: "floating" }, fieldName: "backgroundUrl" },
+  { block: { type: "contentpic" }, fieldName: "imageSrc" },
+  { block: { type: "infopic" }, fieldName: "imageSrc" },
+  { block: { type: "blockquote" }, fieldName: "imageSrc" },
+  {
+    block: { type: "infocards", variant: "cardsWithImages" },
+    fieldName: "imageUrl",
+  },
+  {
+    block: { type: "infocards", variant: "cardsWithFullImages" },
+    fieldName: "imageUrl",
+  },
+  {
+    block: undefined,
+    fieldName: "image",
+    context: { isCollectionThumbnail: true },
+  },
 ]
 
 describe("imageAdjustment wiring guardrail", () => {
   for (const { resolve, componentPaths, storyPaths } of FOCAL_WIRING_CONFIGS) {
     const config = resolveAdjustmentConfig({
       block: resolve.block,
-      fieldName: "image",
+      fieldName: resolve.fieldName,
       context: resolve.context,
     })
 
@@ -158,8 +189,8 @@ describe("imageAdjustment wiring guardrail", () => {
   // both checks entirely -- the exact gap that let the collection thumbnail
   // ship with no render wiring and no story.
   it("covers every focalEnabled config in the registry", () => {
-    const focalComponentTypes = ALL_RESOLUTIONS.map(({ block, context }) =>
-      resolveAdjustmentConfig({ block, fieldName: "image", context }),
+    const focalComponentTypes = ALL_RESOLUTIONS.map(({ block, fieldName, context }) =>
+      resolveAdjustmentConfig({ block, fieldName, context }),
     )
       .filter(
         (config): config is AdjustmentConfig => config?.focalEnabled === true,
@@ -171,7 +202,7 @@ describe("imageAdjustment wiring guardrail", () => {
       ({ resolve }) =>
         resolveAdjustmentConfig({
           block: resolve.block,
-          fieldName: "image",
+          fieldName: resolve.fieldName,
           context: resolve.context,
         })?.componentType,
     ).sort()
