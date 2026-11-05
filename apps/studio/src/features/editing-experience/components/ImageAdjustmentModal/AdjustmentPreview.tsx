@@ -184,7 +184,7 @@ export const AdjustmentPreview = ({
         ...block,
         [imageFieldName]: adjustedSrc,
         imageAdjustment: adjustment,
-      } as IsomerComponent
+      } as unknown as IsomerComponent
       previewComponent = renderComponent({
         component,
         layout: "content",
