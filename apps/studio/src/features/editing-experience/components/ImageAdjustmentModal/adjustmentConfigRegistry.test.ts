@@ -1,9 +1,19 @@
+import type { IsomerSiteProps } from "@opengovsg/isomer-components"
+import { renderComponent } from "@opengovsg/isomer-components"
+import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
 import {
   INTENTIONALLY_NOT_ADJUSTABLE,
   resolveAdjustmentConfig,
 } from "./adjustmentConfigRegistry"
+
+// Minimal site stub for rendering a single block in isolation — mirrors
+// AdjustmentPreview's own PREVIEW_SITE_STUB.
+const SITE_STUB = {
+  assetsBaseUrl: "",
+  siteMapArray: [],
+} as unknown as IsomerSiteProps
 
 describe("resolveAdjustmentConfig", () => {
   it("returns undefined for components not yet wired", () => {
@@ -12,6 +22,21 @@ describe("resolveAdjustmentConfig", () => {
     ).toBeUndefined()
     expect(
       resolveAdjustmentConfig({ block: null, fieldName: "image" }),
+    ).toBeUndefined()
+  })
+
+  it("returns undefined for an unregistered field name on an otherwise-registered block", () => {
+    expect(
+      resolveAdjustmentConfig({
+        block: { type: "hero", variant: "floating" },
+        fieldName: "someOtherField",
+      }),
+    ).toBeUndefined()
+    expect(
+      resolveAdjustmentConfig({
+        block: { type: "infocards", variant: "cardsWithImages" },
+        fieldName: "someOtherField",
+      }),
     ).toBeUndefined()
   })
 
@@ -108,15 +133,12 @@ describe("resolveAdjustmentConfig", () => {
         expect(config).toBeDefined()
         expect(config?.cropMode).toBe("custom")
         expect(config?.focalEnabled).toBe(true)
+        // Array-nested field: both variants render the real card in its real
+        // position (alongside its real siblings), not a hand-built
+        // approximation — every other wired component gets a real preview too.
+        expect(config?.skipRealComponentPreview).toBeFalsy()
+        expect(config?.buildSingleItemPreviewBlock).toBeTypeOf("function")
       }
-      // cardsWithImages previews just the cropped image (framed approximation):
-      // its text sits below the image and adds nothing to a crop/focal preview.
-      expect(withImages?.skipRealComponentPreview).toBe(true)
-      expect(withImages?.buildSingleItemPreviewBlock).toBeUndefined()
-      // cardsWithFullImages overlays the title on the image, so it renders the
-      // real card (single card spliced into the block) to show text-over-image.
-      expect(fullImage?.skipRealComponentPreview).toBeFalsy()
-      expect(fullImage?.buildSingleItemPreviewBlock).toBeTypeOf("function")
     })
 
     it("does not resolve for the no-image variant", () => {
@@ -138,17 +160,113 @@ describe("resolveAdjustmentConfig", () => {
       expect(focalEnabledFor?.({ imageFit: "contain" })).toBe(false)
     })
 
-    it("previews with object-contain only under 'Resize image to fit'", () => {
-      const previewObjectFitFor = withImages?.previewObjectFitFor
-      expect(previewObjectFitFor).toBeDefined()
-      expect(previewObjectFitFor?.({})).toBe("cover")
-      expect(previewObjectFitFor?.({ imageFit: "cover" })).toBe("cover")
-      expect(previewObjectFitFor?.({ imageFit: "contain" })).toBe("contain")
+    it("splices the edited card back into its real position among siblings", () => {
+      const originalCard = { imageUrl: "/old.png" }
+      const block = {
+        type: "infocards",
+        variant: "cardsWithImages",
+        title: "Section title",
+        subtitle: "Section subtitle",
+        label: "See all",
+        url: "/some-link",
+        maxColumns: "3",
+        cards: [originalCard, { imageUrl: "/other.png" }],
+      }
+      const editedCard = { imageUrl: "/new.png" }
+      const preview = withImages!.buildSingleItemPreviewBlock!(
+        block,
+        editedCard,
+        originalCard,
+      )!
+      expect(preview.cards).toEqual([editedCard, { imageUrl: "/other.png" }])
+      expect(preview.title).toBe("")
+      expect(preview.subtitle).toBeUndefined()
+      expect(preview.label).toBeUndefined()
+      expect(preview.url).toBeUndefined()
+      // Non-chrome fields (needed by the real renderer) pass through untouched.
+      expect(preview.maxColumns).toBe("3")
     })
 
-    it("mirrors the full-image card's bottom gradient overlay as a scrim", () => {
-      expect(withImages?.scrim).toBeUndefined()
-      expect(fullImage?.scrim?.className).toContain("bg-gradient-to-t")
+    it("falls back to a single-card array when the original card isn't among the block's siblings", () => {
+      const block = {
+        type: "infocards",
+        variant: "cardsWithImages",
+        cards: [{ imageUrl: "/a.png" }],
+      }
+      const detachedCard = { imageUrl: "/detached.png" }
+      const preview = withImages!.buildSingleItemPreviewBlock!(
+        block,
+        detachedCard,
+      )!
+      expect(preview.cards).toEqual([detachedCard])
+    })
+
+    it("renders the real grid for real, with the edited card's image updated and siblings unchanged", () => {
+      const cardA = { imageUrl: "/a.png", imageAlt: "a", title: "Card A" }
+      const cardB = { imageUrl: "/b.png", imageAlt: "b", title: "Card B" }
+      const cardC = { imageUrl: "/c.png", imageAlt: "c", title: "Card C" }
+      const block = {
+        type: "infocards",
+        variant: "cardsWithImages",
+        maxColumns: "3",
+        layout: "content",
+        cards: [cardA, cardB, cardC],
+      }
+      const editedCard = { ...cardB, imageUrl: "/edited.png" }
+      const preview = withImages?.buildSingleItemPreviewBlock?.(
+        block,
+        editedCard,
+        cardB,
+      )
+      const html = renderToStaticMarkup(
+        renderComponent({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          component: preview as any,
+          layout: "content",
+          site: SITE_STUB,
+          permalink: "",
+          headingLevel: 1,
+        }),
+      )
+
+      expect(html.match(/<img/g)).toHaveLength(3)
+      expect(html).toContain("/edited.png")
+      expect(html).not.toContain("/b.png")
+      expect(html).toContain("/a.png")
+      expect(html).toContain("/c.png")
+      expect(html).toContain("Card A")
+      expect(html).toContain("Card B")
+      expect(html).toContain("Card C")
+    })
+
+    it("the full-image variant renders the real title + gradient overlay for real", () => {
+      const card = { imageUrl: "/a.png", imageAlt: "a", title: "Real title" }
+      const block = {
+        type: "infocards",
+        variant: "cardsWithFullImages",
+        maxColumns: "3",
+        layout: "content",
+        cards: [card],
+      }
+      const editedCard = { ...card, imageUrl: "/edited.png" }
+      const preview = fullImage?.buildSingleItemPreviewBlock?.(
+        block,
+        editedCard,
+        card,
+      )
+      const html = renderToStaticMarkup(
+        renderComponent({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          component: preview as any,
+          layout: "content",
+          site: SITE_STUB,
+          permalink: "",
+          headingLevel: 1,
+        }),
+      )
+
+      expect(html).toContain("Real title")
+      expect(html).toContain("bg-gradient-to-t")
     })
 
     // The real card frame (InfoCards/common.ts cardImageContainer) is 3:2 at
@@ -228,42 +346,53 @@ describe("resolveAdjustmentConfig", () => {
   // the UI constrains their crop to a locked aspect, so width and height can
   // never diverge independently.
   describe("custom-crop cover-fit components configure a height threshold", () => {
-    const cases: { label: string; block: unknown; expectedHeight: number }[] = [
+    const cases: {
+      label: string
+      block: unknown
+      fieldName: string
+      expectedHeight: number
+    }[] = [
       {
         label: "hero:gradient",
         block: { type: "hero", variant: "gradient" },
+        fieldName: "backgroundUrl",
         expectedHeight: 500,
       },
       {
         label: "hero:block",
         block: { type: "hero", variant: "block" },
+        fieldName: "backgroundUrl",
         expectedHeight: 500,
       },
       {
         label: "hero:largeImage",
         block: { type: "hero", variant: "largeImage" },
+        fieldName: "backgroundUrl",
         expectedHeight: 640,
       },
       {
         label: "infopic",
         block: { type: "infopic" },
+        fieldName: "imageSrc",
         expectedHeight: 400,
       },
       {
         label: "infocards:cardsWithImages",
         block: { type: "infocards", variant: "cardsWithImages" },
+        fieldName: "imageUrl",
         expectedHeight: 427,
       },
       {
         label: "infocards:cardsWithFullImages",
         block: { type: "infocards", variant: "cardsWithFullImages" },
+        fieldName: "imageUrl",
         expectedHeight: 640,
       },
     ]
 
-    for (const { label, block, expectedHeight } of cases) {
+    for (const { label, block, fieldName, expectedHeight } of cases) {
       it(`${label} sets maxRenderedHeightPx (${expectedHeight})`, () => {
-        const config = resolveAdjustmentConfig({ block, fieldName: "image" })
+        const config = resolveAdjustmentConfig({ block, fieldName })
         expect(config?.cropMode).toBe("custom")
         expect(config?.maxRenderedHeightPx).toBe(expectedHeight)
       })
@@ -280,25 +409,25 @@ describe("resolveAdjustmentConfig", () => {
   describe("focal point is offered only for breakpoint-reshaping (responsive cover) frames", () => {
     it("responsive cover-fit components have focal enabled", () => {
       const responsiveBlocks = [
-        { type: "hero", variant: "gradient" }, // 16:10 -> 2:1 -> 5:2
-        { type: "hero", variant: "block" }, // stacked band -> side-by-side
-        { type: "hero", variant: "largeImage" }, // square -> 2:1
-        { type: "infopic" }, // 5:4 -> 2:1 -> 3:1
+        { block: { type: "hero", variant: "gradient" }, fieldName: "backgroundUrl" }, // 16:10 -> 2:1 -> 5:2
+        { block: { type: "hero", variant: "block" }, fieldName: "backgroundUrl" }, // stacked band -> side-by-side
+        { block: { type: "hero", variant: "largeImage" }, fieldName: "backgroundUrl" }, // square -> 2:1
+        { block: { type: "infopic" }, fieldName: "imageSrc" }, // 5:4 -> 2:1 -> 3:1
       ]
-      for (const block of responsiveBlocks) {
-        const config = resolveAdjustmentConfig({ block, fieldName: "image" })
+      for (const { block, fieldName } of responsiveBlocks) {
+        const config = resolveAdjustmentConfig({ block, fieldName })
         expect(config?.focalEnabled).toBe(true)
       }
     })
 
     it("fixed-crop (baked-once, same shape every breakpoint) components have focal disabled", () => {
       const fixedBlocks = [
-        { type: "contentpic" }, // aspect-[5/6] always
-        { type: "blockquote" }, // 1:1 always (circle/square mask only)
-        { type: "hero", variant: "floating" }, // aspect-[3/2] always
+        { block: { type: "contentpic" }, fieldName: "imageSrc" }, // aspect-[5/6] always
+        { block: { type: "blockquote" }, fieldName: "imageSrc" }, // 1:1 always (circle/square mask only)
+        { block: { type: "hero", variant: "floating" }, fieldName: "backgroundUrl" }, // aspect-[3/2] always
       ]
-      for (const block of fixedBlocks) {
-        const config = resolveAdjustmentConfig({ block, fieldName: "image" })
+      for (const { block, fieldName } of fixedBlocks) {
+        const config = resolveAdjustmentConfig({ block, fieldName })
         expect(config?.cropMode).toBe("fixed")
         expect(config?.focalEnabled).toBe(false)
       }
