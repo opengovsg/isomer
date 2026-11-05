@@ -5,7 +5,11 @@ import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 import { InfoCardImage } from "../InfoCardImage"
 
 const site = generateSiteConfig()
-const imageAdjustment = { focal: { x: 0.25, y: 0.75 } }
+const imageAdjustment = {
+  crop: { x: 0, y: 0, width: 1, height: 1 },
+  focal: { x: 0.25, y: 0.75 },
+  originalKey: "1/uuid/original.png",
+}
 
 describe("InfoCardImage", () => {
   it("applies the focal point as object-position under imageFit cover", () => {
