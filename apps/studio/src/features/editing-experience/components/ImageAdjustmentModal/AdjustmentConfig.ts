@@ -69,15 +69,29 @@ export interface AdjustmentConfig {
   // whole image is letterboxed, so a focal anchor has nothing to do. Crop stays
   // available in both fits (the crop defines the region that is then letterboxed).
   focalEnabledFor?: (fieldHost: unknown) => boolean
-  // Builds the block the real-component preview renders, from the owner block
-  // and the edited field host (image + draft adjustment already spliced in).
-  // Omit when the image field sits directly on the block (host === block) —
-  // the edited host IS the component to render. Needed for array-nested image
-  // fields (InfoCards) where the real component renders the whole block/all
-  // cards: this lets the preview render just the one card being edited.
-  buildPreviewBlock?: (
+  // Tier C conditional preview fit: the object-fit the framed-image preview
+  // (skipRealComponentPreview path) uses, resolved from the field host.
+  previewObjectFitFor?: (fieldHost: unknown) => "cover" | "contain"
+  // Opt out of the real-component preview in favour of the framed-image
+  // approximation below. For an array-nested image field whose host component
+  // has no buildSingleItemPreviewBlock (or it returns undefined for a given
+  // item) — the approximation (one framed image + scrim per state) is the
+  // fallback for a component that can't produce a meaningful single-item
+  // real render.
+  skipRealComponentPreview?: boolean
+  // Builds the block the real-component preview renders: the edited item
+  // (image + draft adjustment already spliced in) spliced back into the owner
+  // block's own item array BY REFERENCE (matched against `originalItem`), so
+  // every sibling still renders unchanged, in its real position — not just the
+  // one being edited in isolation. Falls back to a single-item array if the
+  // original can't be found there. Needed for array-nested image fields (e.g.
+  // an InfoCards card) where the real component otherwise renders the whole
+  // block/every item. Returning undefined falls back to the framed-image
+  // approximation, same as skipRealComponentPreview.
+  buildSingleItemPreviewBlock?: (
     ownerBlock: unknown,
-    editedHost: Record<string, unknown>,
+    editedItem: Record<string, unknown>,
+    originalItem?: unknown,
   ) => unknown
   // Stack the preview frames vertically (one per row) instead of side-by-side,
   // so each frame gets the full column width. Use for components with only a

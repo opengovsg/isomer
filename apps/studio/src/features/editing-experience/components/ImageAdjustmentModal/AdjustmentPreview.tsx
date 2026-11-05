@@ -56,14 +56,25 @@ interface AdjustmentPreviewProps {
   // the adjusted src + draft imageAdjustment are spliced in here, not onto
   // `block` directly, so an array-nested edit doesn't leak onto the wrong card.
   fieldHost?: unknown
-  // See AdjustmentConfig.buildPreviewBlock.
-  buildPreviewBlock?: (
+  // See AdjustmentConfig.buildSingleItemPreviewBlock.
+  buildSingleItemPreviewBlock?: (
     ownerBlock: unknown,
-    editedHost: Record<string, unknown>,
+    editedItem: Record<string, unknown>,
+    originalItem?: unknown,
   ) => unknown
+  // Opt out of the real-component render and always use the framed-image
+  // approximation below. Set for an array-nested image field with no
+  // buildSingleItemPreviewBlock, where the real component would render the
+  // whole block/every item instead of the single one being edited.
+  skipRealComponentPreview?: boolean
   // Stack the preview frames vertically (one per row) instead of side-by-side,
   // giving each the full column width. See AdjustmentConfig.stackPreviews.
   stackPreviews?: boolean
+  // The object-fit the framed-image approximation uses (skipRealComponentPreview
+  // path). "contain" letterboxes the whole (cropped) image to match a field
+  // like InfoCards' "Resize image to fit"; defaults to "cover". Ignored on the
+  // real-component path, which renders the component's own fit.
+  objectFit?: "cover" | "contain"
   // The real page layout the published page would render at — threaded
   // through so a state without its own `layout` still previews the real
   // shape instead of always defaulting to "content".
@@ -101,8 +112,10 @@ export const AdjustmentPreview = ({
   block,
   imageFieldName,
   fieldHost,
-  buildPreviewBlock,
+  buildSingleItemPreviewBlock,
+  skipRealComponentPreview,
   stackPreviews,
+  objectFit = "cover",
   pageLayout,
   siteId,
 }: AdjustmentPreviewProps): JSX.Element => {
@@ -291,8 +304,14 @@ export const AdjustmentPreview = ({
         imageAdjustment: adjustment,
         ...(hasAlt ? {} : { imageAlt: "Preview image" }),
       }
-      const component = (buildPreviewBlock?.(block, editedHost) ??
-        editedHost) as IsomerComponent
+      let component: IsomerComponent
+      if (buildSingleItemPreviewBlock) {
+        const built = buildSingleItemPreviewBlock(block, editedHost, fieldHost)
+        if (!built) return null
+        component = built as IsomerComponent
+      } else {
+        component = editedHost as unknown as IsomerComponent
+      }
       const rendered = renderComponent({
         component,
         layout: layout ?? pageLayout ?? "content",
@@ -310,12 +329,8 @@ export const AdjustmentPreview = ({
       // wrapper the text/buttons sit flush left with no padding, even though
       // the background image (a separate, non-"component-content" sibling)
       // renders correctly full-bleed either way.
-      // shortcut: forcing InfoCards' real `.grid` to one column via a class
-      // selector couples this preview to that class name; upgrade path is to
-      // export InfoCardWithImage/InfoCardWithFullImage and render the single
-      // card directly instead of going through the grid at all.
       return (
-        <div className="break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10 [&_.grid]:!grid-cols-1">
+        <div className="break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10">
           {rendered}
         </div>
       )
@@ -328,13 +343,15 @@ export const AdjustmentPreview = ({
     }
   }
 
-  // Gate on the default-layout render succeeding — a failure here falls
-  // through to the framed-<img> approximation below for every state, not
-  // just the one that failed. A state requesting a non-default `layout`
-  // re-renders on its own and, in the rarer case that only its specific
-  // layout throws, is simply skipped (its sibling states still render for
-  // real).
-  const defaultRender = renderPreviewComponent(undefined)
+  // Gate on the default-layout render succeeding (and on skipRealComponentPreview
+  // not opting out of it entirely) — a failure here falls through to the
+  // framed-<img> approximation below for every state, not just the one that
+  // failed. A state requesting a non-default `layout` re-renders on its own
+  // and, in the rarer case that only its specific layout throws, is simply
+  // skipped (its sibling states still render for real).
+  const defaultRender = skipRealComponentPreview
+    ? null
+    : renderPreviewComponent(undefined)
 
   const fetchErrorBanner = fetchError && (
     <Text textStyle="caption-2" color="utility.feedback.critical" mb="0.5rem">
@@ -416,8 +433,13 @@ export const AdjustmentPreview = ({
             w="100%"
             h="100%"
             style={{
-              objectFit: "cover",
-              objectPosition: getFocalObjectPosition(adjustment?.focal),
+              objectFit,
+              // Mirror the renderer: focal is ignored under "contain" (the
+              // letterboxed image stays object-center), applied under "cover".
+              objectPosition:
+                objectFit === "contain"
+                  ? undefined
+                  : getFocalObjectPosition(adjustment?.focal),
             }}
           />
         )

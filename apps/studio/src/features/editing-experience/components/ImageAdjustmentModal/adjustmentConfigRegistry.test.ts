@@ -70,9 +70,9 @@ describe("resolveAdjustmentConfig", () => {
         expect(config).toBeDefined()
         expect(config?.cropMode).toBe("custom")
         expect(config?.focalEnabled).toBe(true)
-        // Array-nested field: preview renders the single card, not the whole
-        // block/all cards.
-        expect(config?.buildPreviewBlock).toBeDefined()
+        // Array-nested field: preview renders the real card in its real
+        // position, not a hand-built approximation.
+        expect(config?.buildSingleItemPreviewBlock).toBeDefined()
       }
     })
 
@@ -95,7 +95,8 @@ describe("resolveAdjustmentConfig", () => {
       expect(focalEnabledFor?.({ imageFit: "contain" })).toBe(false)
     })
 
-    it("builds a single-card preview block from the owner block and the edited card", () => {
+    it("splices the edited card back into its real position among siblings", () => {
+      const originalCard = { imageUrl: "/old.png" }
       const block = {
         type: "infocards",
         variant: "cardsWithImages",
@@ -104,15 +105,16 @@ describe("resolveAdjustmentConfig", () => {
         label: "See all",
         url: "/some-link",
         maxColumns: "3",
-        cards: [{ imageUrl: "/old.png" }, { imageUrl: "/other.png" }],
+        cards: [originalCard, { imageUrl: "/other.png" }],
       }
-      const card = { imageUrl: "/new.png" }
-      const preview = withImages?.buildPreviewBlock?.(block, card) as Record<
-        string,
-        unknown
-      >
-      expect(preview.cards).toEqual([card])
-      expect(preview.title).toBeUndefined()
+      const editedCard = { imageUrl: "/new.png" }
+      const preview = withImages?.buildSingleItemPreviewBlock?.(
+        block,
+        editedCard,
+        originalCard,
+      ) as Record<string, unknown>
+      expect(preview.cards).toEqual([editedCard, { imageUrl: "/other.png" }])
+      expect(preview.title).toBe("")
       expect(preview.subtitle).toBeUndefined()
       expect(preview.label).toBeUndefined()
       expect(preview.url).toBeUndefined()
@@ -120,20 +122,37 @@ describe("resolveAdjustmentConfig", () => {
       expect(preview.maxColumns).toBe("3")
     })
 
-    it("renders exactly one card for real, from a block with several cards", () => {
+    it("falls back to a single-card array when the original card isn't among the block's siblings", () => {
+      const block = {
+        type: "infocards",
+        variant: "cardsWithImages",
+        cards: [{ imageUrl: "/a.png" }],
+      }
+      const detachedCard = { imageUrl: "/detached.png" }
+      const preview = withImages?.buildSingleItemPreviewBlock?.(
+        block,
+        detachedCard,
+      ) as Record<string, unknown>
+      expect(preview.cards).toEqual([detachedCard])
+    })
+
+    it("renders the real grid for real, with the edited card's image updated and siblings unchanged", () => {
+      const cardA = { imageUrl: "/a.png", imageAlt: "a", title: "Card A" }
+      const cardB = { imageUrl: "/b.png", imageAlt: "b", title: "Card B" }
+      const cardC = { imageUrl: "/c.png", imageAlt: "c", title: "Card C" }
       const block = {
         type: "infocards",
         variant: "cardsWithImages",
         maxColumns: "3",
         layout: "content",
-        cards: [
-          { imageUrl: "/a.png", imageAlt: "a", title: "Card A" },
-          { imageUrl: "/b.png", imageAlt: "b", title: "Card B" },
-          { imageUrl: "/c.png", imageAlt: "c", title: "Card C" },
-        ],
+        cards: [cardA, cardB, cardC],
       }
-      const editedCard = { imageUrl: "/edited.png", imageAlt: "edited" }
-      const preview = withImages?.buildPreviewBlock?.(block, editedCard)
+      const editedCard = { ...cardB, imageUrl: "/edited.png" }
+      const preview = withImages?.buildSingleItemPreviewBlock?.(
+        block,
+        editedCard,
+        cardB,
+      )
       const html = renderToStaticMarkup(
         renderComponent({
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -145,25 +164,31 @@ describe("resolveAdjustmentConfig", () => {
         }),
       )
 
-      expect(html.match(/<img/g)).toHaveLength(1)
+      expect(html.match(/<img/g)).toHaveLength(3)
       expect(html).toContain("/edited.png")
-      expect(html).not.toContain("Card A")
+      expect(html).not.toContain("/b.png")
+      expect(html).toContain("/a.png")
+      expect(html).toContain("/c.png")
+      expect(html).toContain("Card A")
+      expect(html).toContain("Card B")
+      expect(html).toContain("Card C")
     })
 
     it("the full-image variant renders the real title + gradient overlay for real", () => {
+      const card = { imageUrl: "/a.png", imageAlt: "a", title: "Real title" }
       const block = {
         type: "infocards",
         variant: "cardsWithFullImages",
         maxColumns: "3",
         layout: "content",
-        cards: [{ imageUrl: "/a.png", imageAlt: "a", title: "Real title" }],
+        cards: [card],
       }
-      const editedCard = {
-        imageUrl: "/edited.png",
-        imageAlt: "edited",
-        title: "Real title",
-      }
-      const preview = fullImage?.buildPreviewBlock?.(block, editedCard)
+      const editedCard = { ...card, imageUrl: "/edited.png" }
+      const preview = fullImage?.buildSingleItemPreviewBlock?.(
+        block,
+        editedCard,
+        card,
+      )
       const html = renderToStaticMarkup(
         renderComponent({
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -89,11 +89,13 @@ export const ImageAdjustmentModal = ({
   resourceId,
   onSave,
 }: ImageAdjustmentModalProps): JSX.Element => {
-  // Tier C (InfoCards): focal depends on the card's current imageFit; other
-  // components have no resolver and fall back to the static config.
+  // Tier C (InfoCards): focal and the preview's object-fit depend on the card's
+  // current imageFit; other components have no resolver and fall back to the
+  // static config / cover.
   const focalEnabled = config.focalEnabledFor
     ? config.focalEnabledFor(fieldHost)
     : config.focalEnabled
+  const previewObjectFit = config.previewObjectFitFor?.(fieldHost) ?? "cover"
   const [draft, setDraft] = useState<ImageAdjustment | undefined>(value)
   // The source image's true pixel aspect ratio, reported by CropFocalControl
   // once its <img> loads — needed so "Reset crop & focal" can seed the same
@@ -287,8 +289,12 @@ export const ImageAdjustmentModal = ({
                   block={block}
                   imageFieldName={imageFieldName}
                   fieldHost={fieldHost}
-                  buildPreviewBlock={config.buildPreviewBlock}
+                  buildSingleItemPreviewBlock={
+                    config.buildSingleItemPreviewBlock
+                  }
+                  skipRealComponentPreview={config.skipRealComponentPreview}
                   stackPreviews={config.stackPreviews}
+                  objectFit={previewObjectFit}
                   pageLayout={pageLayout}
                   siteId={siteId}
                 />

@@ -21,21 +21,36 @@ const asBlock = (block: unknown): { type?: string; variant?: string } =>
 const infoCardFocalEnabled = (fieldHost: unknown): boolean =>
   (fieldHost as { imageFit?: string } | null)?.imageFit !== IMAGE_FIT.Content
 
-// Builds the single-card block the real-component preview renders: the owner
-// InfoCards block, with its heading/footer chrome blanked out (the preview is
-// one card, not the whole section) and `cards` replaced by just the card
-// being edited.
+// Builds the block the real-component preview renders: the owner InfoCards
+// block, heading/footer chrome blanked out (the preview is about one card's
+// crop/focal, not the section copy), with the edited card spliced back into
+// `cards` BY REFERENCE in its real position — so every sibling card still
+// renders unchanged, in the real grid, at its real column width/shape. Falls
+// back to a single-card array if the original card can't be found there
+// (e.g. called with a detached card object).
 const buildInfoCardsPreviewBlock = (
   block: unknown,
   card: Record<string, unknown>,
-): unknown => ({
-  ...(block as object),
-  title: undefined,
-  subtitle: undefined,
-  label: undefined,
-  url: undefined,
-  cards: [card],
-})
+  originalCard?: unknown,
+): unknown => {
+  if (typeof block !== "object" || block === null) return undefined
+  const blockRecord = block as Record<string, unknown>
+  const siblings: unknown[] = Array.isArray(blockRecord.cards)
+    ? blockRecord.cards
+    : []
+  const cards =
+    originalCard !== undefined && siblings.includes(originalCard)
+      ? siblings.map((c) => (c === originalCard ? card : c))
+      : [card]
+  return {
+    ...blockRecord,
+    title: "",
+    subtitle: undefined,
+    label: undefined,
+    url: undefined,
+    cards,
+  }
+}
 
 // Every Tier B config previews at the same three breakpoint viewport widths
 // (mobile 375 / tablet 768 / desktop 1280); only the aspect-ratio guess differs
@@ -246,7 +261,7 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   cropMode: "custom",
   focalEnabled: true,
   focalEnabledFor: infoCardFocalEnabled,
-  buildPreviewBlock: buildInfoCardsPreviewBlock,
+  buildSingleItemPreviewBlock: buildInfoCardsPreviewBlock,
   previewStates: responsivePreviewStates({
     mobile: { width: 3, height: 2 },
     tablet: { width: 3, height: 2 },
@@ -266,7 +281,7 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   cropMode: "custom",
   focalEnabled: true,
   focalEnabledFor: infoCardFocalEnabled,
-  buildPreviewBlock: buildInfoCardsPreviewBlock,
+  buildSingleItemPreviewBlock: buildInfoCardsPreviewBlock,
   previewStates: responsivePreviewStates({
     mobile: { width: 1, height: 1 },
     tablet: { width: 1, height: 1 },
