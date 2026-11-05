@@ -19,6 +19,22 @@ const SITE_STUB = {
   siteMapArray: [],
 } as unknown as IsomerSiteProps
 
+// Renders a single block to static HTML for assertions against real markup.
+const renderBlockHtml = (
+  component: unknown,
+  layout: IsomerPageLayoutType,
+): string =>
+  renderToStaticMarkup(
+    renderComponent({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      component: component as any,
+      layout,
+      site: SITE_STUB,
+      permalink: "",
+      headingLevel: 1,
+    }),
+  )
+
 describe("resolveAdjustmentConfig", () => {
   it("returns undefined for components not yet wired", () => {
     expect(
@@ -223,16 +239,7 @@ describe("resolveAdjustmentConfig", () => {
         editedCard,
         cardB,
       )
-      const html = renderToStaticMarkup(
-        renderComponent({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          component: preview as any,
-          layout: "content",
-          site: SITE_STUB,
-          permalink: "",
-          headingLevel: 1,
-        }),
-      )
+      const html = renderBlockHtml(preview, "content")
 
       expect(html.match(/<img/g)).toHaveLength(3)
       expect(html).toContain("/edited.png")
@@ -259,16 +266,7 @@ describe("resolveAdjustmentConfig", () => {
         editedCard,
         card,
       )
-      const html = renderToStaticMarkup(
-        renderComponent({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          component: preview as any,
-          layout: "content",
-          site: SITE_STUB,
-          permalink: "",
-          headingLevel: 1,
-        }),
-      )
+      const html = renderBlockHtml(preview, "content")
 
       expect(html).toContain("Real title")
       expect(html).toContain("bg-gradient-to-t")
@@ -667,16 +665,7 @@ describe("resolveAdjustmentConfig", () => {
         imageAlt: "a",
         content: { type: "prose", content: [] },
       }
-      const html = renderToStaticMarkup(
-        renderComponent({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          component: block as any,
-          layout: "content",
-          site: SITE_STUB,
-          permalink: "",
-          headingLevel: 1,
-        }),
-      )
+      const html = renderBlockHtml(block, "content")
       expect(html).toContain("sm:w-[200px]")
     })
 
@@ -694,16 +683,7 @@ describe("resolveAdjustmentConfig", () => {
         imageSrc: "/a.png",
         imageAlt: "a",
       }
-      const html = renderToStaticMarkup(
-        renderComponent({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          component: block as any,
-          layout: "homepage",
-          site: SITE_STUB,
-          permalink: "",
-          headingLevel: 1,
-        }),
-      )
+      const html = renderBlockHtml(block, "homepage")
       expect(html).toContain("w-60")
     })
   })
