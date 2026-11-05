@@ -1,6 +1,16 @@
+import type { IsomerSiteProps } from "@opengovsg/isomer-components"
+import { renderComponent } from "@opengovsg/isomer-components"
+import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
 import { resolveAdjustmentConfig } from "./adjustmentConfigRegistry"
+
+// Minimal site stub for rendering a single block in isolation — mirrors
+// AdjustmentPreview's own PREVIEW_SITE_STUB.
+const SITE_STUB = {
+  assetsBaseUrl: "",
+  siteMapArray: [],
+} as unknown as IsomerSiteProps
 
 describe("resolveAdjustmentConfig", () => {
   it("returns undefined for components not yet wired", () => {
@@ -9,6 +19,21 @@ describe("resolveAdjustmentConfig", () => {
     ).toBeUndefined()
     expect(
       resolveAdjustmentConfig({ block: null, fieldName: "image" }),
+    ).toBeUndefined()
+  })
+
+  it("returns undefined for an unregistered field name on an otherwise-registered block", () => {
+    expect(
+      resolveAdjustmentConfig({
+        block: { type: "hero", variant: "floating" },
+        fieldName: "someOtherField",
+      }),
+    ).toBeUndefined()
+    expect(
+      resolveAdjustmentConfig({
+        block: { type: "infocards", variant: "cardsWithImages" },
+        fieldName: "someOtherField",
+      }),
     ).toBeUndefined()
   })
 
@@ -45,8 +70,9 @@ describe("resolveAdjustmentConfig", () => {
         expect(config).toBeDefined()
         expect(config?.cropMode).toBe("custom")
         expect(config?.focalEnabled).toBe(true)
-        // Array-nested field: preview the single card, not the whole block.
-        expect(config?.skipRealComponentPreview).toBe(true)
+        // Array-nested field: preview renders the single card, not the whole
+        // block/all cards.
+        expect(config?.buildPreviewBlock).toBeDefined()
       }
     })
 
@@ -69,17 +95,88 @@ describe("resolveAdjustmentConfig", () => {
       expect(focalEnabledFor?.({ imageFit: "contain" })).toBe(false)
     })
 
-    it("previews with object-contain only under 'Resize image to fit'", () => {
-      const previewObjectFitFor = withImages?.previewObjectFitFor
-      expect(previewObjectFitFor).toBeDefined()
-      expect(previewObjectFitFor?.({})).toBe("cover")
-      expect(previewObjectFitFor?.({ imageFit: "cover" })).toBe("cover")
-      expect(previewObjectFitFor?.({ imageFit: "contain" })).toBe("contain")
+    it("builds a single-card preview block from the owner block and the edited card", () => {
+      const block = {
+        type: "infocards",
+        variant: "cardsWithImages",
+        title: "Section title",
+        subtitle: "Section subtitle",
+        label: "See all",
+        url: "/some-link",
+        maxColumns: "3",
+        cards: [{ imageUrl: "/old.png" }, { imageUrl: "/other.png" }],
+      }
+      const card = { imageUrl: "/new.png" }
+      const preview = withImages?.buildPreviewBlock?.(block, card) as Record<
+        string,
+        unknown
+      >
+      expect(preview.cards).toEqual([card])
+      expect(preview.title).toBeUndefined()
+      expect(preview.subtitle).toBeUndefined()
+      expect(preview.label).toBeUndefined()
+      expect(preview.url).toBeUndefined()
+      // Non-chrome fields (needed by the real renderer) pass through untouched.
+      expect(preview.maxColumns).toBe("3")
     })
 
-    it("mirrors the full-image card's bottom gradient overlay as a scrim", () => {
-      expect(withImages?.scrim).toBeUndefined()
-      expect(fullImage?.scrim?.className).toContain("bg-gradient-to-t")
+    it("renders exactly one card for real, from a block with several cards", () => {
+      const block = {
+        type: "infocards",
+        variant: "cardsWithImages",
+        maxColumns: "3",
+        layout: "content",
+        cards: [
+          { imageUrl: "/a.png", imageAlt: "a", title: "Card A" },
+          { imageUrl: "/b.png", imageAlt: "b", title: "Card B" },
+          { imageUrl: "/c.png", imageAlt: "c", title: "Card C" },
+        ],
+      }
+      const editedCard = { imageUrl: "/edited.png", imageAlt: "edited" }
+      const preview = withImages?.buildPreviewBlock?.(block, editedCard)
+      const html = renderToStaticMarkup(
+        renderComponent({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          component: preview as any,
+          layout: "content",
+          site: SITE_STUB,
+          permalink: "",
+          headingLevel: 1,
+        }),
+      )
+
+      expect(html.match(/<img/g)).toHaveLength(1)
+      expect(html).toContain("/edited.png")
+      expect(html).not.toContain("Card A")
+    })
+
+    it("the full-image variant renders the real title + gradient overlay for real", () => {
+      const block = {
+        type: "infocards",
+        variant: "cardsWithFullImages",
+        maxColumns: "3",
+        layout: "content",
+        cards: [{ imageUrl: "/a.png", imageAlt: "a", title: "Real title" }],
+      }
+      const editedCard = {
+        imageUrl: "/edited.png",
+        imageAlt: "edited",
+        title: "Real title",
+      }
+      const preview = fullImage?.buildPreviewBlock?.(block, editedCard)
+      const html = renderToStaticMarkup(
+        renderComponent({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          component: preview as any,
+          layout: "content",
+          site: SITE_STUB,
+          permalink: "",
+          headingLevel: 1,
+        }),
+      )
+
+      expect(html).toContain("Real title")
+      expect(html).toContain("bg-gradient-to-t")
     })
   })
 })

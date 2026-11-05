@@ -14,6 +14,7 @@ import { BiPencil } from "react-icons/bi"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useIsImageAdjustmentEnabled } from "~/hooks/useIsImageAdjustmentEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -67,6 +68,10 @@ function JsonFormsImageControl({
   // Gate the adjustment entry point behind a GrowthBook flag (off by default,
   // rolled out per-user) — this is a rollout-sensitive editor path.
   const isImageAdjustmentEnabled = useIsImageAdjustmentEnabled()
+  // `null` outside the page editor (e.g. the link editor, which shares this
+  // control but has no EditorDrawerProvider) — the preview then falls back
+  // to "content" inside AdjustmentPreview.
+  const pageLayout = useOptionalEditorDrawerContext()?.previewPageState.layout
   // Only this site's managed storage assets ("/{siteId}/...") can be baked;
   // external/absolute URLs (or another site's assets) have no derivable bake
   // key, so hide Adjust rather than letting Save fail. Mirrors the same
@@ -147,6 +152,7 @@ function JsonFormsImageControl({
                   block={block}
                   imageFieldName={fieldName}
                   fieldHost={fieldHost}
+                  pageLayout={pageLayout}
                   siteId={siteId}
                   resourceId={
                     (pageId ?? linkId) ? String(pageId ?? linkId) : undefined

@@ -1,4 +1,7 @@
-import type { ImageAdjustment } from "@opengovsg/isomer-components"
+import type {
+  ImageAdjustment,
+  IsomerPageLayoutType,
+} from "@opengovsg/isomer-components"
 import {
   Box,
   Grid,
@@ -60,6 +63,10 @@ interface ImageAdjustmentModalProps {
   // object) — read by the config's focalEnabledFor/previewObjectFitFor to resolve
   // the controls for this card's current imageFit.
   fieldHost: unknown
+  // The real page layout the published page would render at (e.g. the
+  // page editor's current layout) — threaded through to the preview so a
+  // state without its own `layout` override shows the real shape.
+  pageLayout?: IsomerPageLayoutType
   siteId: number
   resourceId?: string
   onSave: (result: {
@@ -76,18 +83,17 @@ export const ImageAdjustmentModal = ({
   block,
   imageFieldName,
   fieldHost,
+  pageLayout,
   value,
   siteId,
   resourceId,
   onSave,
 }: ImageAdjustmentModalProps): JSX.Element => {
-  // Tier C (InfoCards): focal and the preview's object-fit depend on the card's
-  // current imageFit; other components have no resolver and fall back to the
-  // static config / cover.
+  // Tier C (InfoCards): focal depends on the card's current imageFit; other
+  // components have no resolver and fall back to the static config.
   const focalEnabled = config.focalEnabledFor
     ? config.focalEnabledFor(fieldHost)
     : config.focalEnabled
-  const previewObjectFit = config.previewObjectFitFor?.(fieldHost) ?? "cover"
   const [draft, setDraft] = useState<ImageAdjustment | undefined>(value)
   // The source image's true pixel aspect ratio, reported by CropFocalControl
   // once its <img> loads — needed so "Reset crop & focal" can seed the same
@@ -280,9 +286,10 @@ export const ImageAdjustmentModal = ({
                   scrim={config.scrim}
                   block={block}
                   imageFieldName={imageFieldName}
-                  skipRealComponentPreview={config.skipRealComponentPreview}
+                  fieldHost={fieldHost}
+                  buildPreviewBlock={config.buildPreviewBlock}
                   stackPreviews={config.stackPreviews}
-                  objectFit={previewObjectFit}
+                  pageLayout={pageLayout}
                   siteId={siteId}
                 />
               </GridItem>

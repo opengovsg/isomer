@@ -69,17 +69,16 @@ export interface AdjustmentConfig {
   // whole image is letterboxed, so a focal anchor has nothing to do. Crop stays
   // available in both fits (the crop defines the region that is then letterboxed).
   focalEnabledFor?: (fieldHost: unknown) => boolean
-  // Tier C conditional preview fit: the object-fit the framed-image preview
-  // (skipRealComponentPreview path) uses, resolved from the field host. InfoCards
-  // returns "contain" under "Resize image to fit" so the preview matches the
-  // letterboxed published result instead of always showing a cover crop.
-  previewObjectFitFor?: (fieldHost: unknown) => "cover" | "contain"
-  // Opt out of the real-component preview (W0-I) in favour of the framed-image
-  // approximation. Needed for array-nested image fields (InfoCards) where the
-  // real component renders the whole block/all cards, not the single card being
-  // edited — the approximation (one framed image + scrim per state) is both
-  // simpler and a better single-card preview.
-  skipRealComponentPreview?: boolean
+  // Builds the block the real-component preview renders, from the owner block
+  // and the edited field host (image + draft adjustment already spliced in).
+  // Omit when the image field sits directly on the block (host === block) —
+  // the edited host IS the component to render. Needed for array-nested image
+  // fields (InfoCards) where the real component renders the whole block/all
+  // cards: this lets the preview render just the one card being edited.
+  buildPreviewBlock?: (
+    ownerBlock: unknown,
+    editedHost: Record<string, unknown>,
+  ) => unknown
   // Stack the preview frames vertically (one per row) instead of side-by-side,
   // so each frame gets the full column width. Use for components with only a
   // couple of small-ratio states where side-by-side makes each too small to
