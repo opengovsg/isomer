@@ -108,6 +108,9 @@ export const AdjustmentPreview = ({
       : (FRAME_DISPLAY_WIDTH[stateId] ?? DEFAULT_FRAME_DISPLAY_WIDTH)
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  // Surfaces the otherwise-silent fallback to the uncropped src, so a preview
+  // that looks "fine" doesn't mask a fetch failure that save would throw on.
+  const [fetchError, setFetchError] = useState(false)
   const bakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevPreviewUrlRef = useRef<string | null>(null)
   // Monotonic token for the latest bake request. Each effect run bumps it so an
@@ -125,6 +128,7 @@ export const AdjustmentPreview = ({
   // must be readable.
   useEffect(() => {
     const fetchOriginal = async () => {
+      setFetchError(false)
       try {
         const response = await fetch(originalFetchUrl)
         if (!response.ok) {
@@ -133,9 +137,11 @@ export const AdjustmentPreview = ({
         const blob = await response.blob()
         setOriginalBlob(blob)
       } catch (error) {
-        // Silently fail: CORS-blocked images will fall back to uncropped src
+        // Falls back to the uncropped src (CORS-blocked images, etc.); fetchError
+        // surfaces that fallback since save would throw on the same failure.
         console.debug("Failed to fetch original image", error)
         setOriginalBlob(null)
+        setFetchError(true)
       }
     }
     void fetchOriginal()
@@ -214,7 +220,16 @@ export const AdjustmentPreview = ({
         clearTimeout(bakeTimeoutRef.current)
       }
     }
-  }, [originalBlob, adjustment])
+    // Deliberately narrower than `adjustment`: focal is applied at render time as
+    // CSS object-position, so a focal-only drag shouldn't trigger a canvas re-encode.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    originalBlob,
+    adjustment?.crop?.x,
+    adjustment?.crop?.y,
+    adjustment?.crop?.width,
+    adjustment?.crop?.height,
+  ])
 
   // Cleanup: revoke object URL on unmount. Also bumps bakeRequestIdRef so a
   // bake that's still in flight when this unmounts sees isStale() as true
@@ -304,15 +319,24 @@ export const AdjustmentPreview = ({
     ? null
     : renderPreviewComponent(undefined)
 
+  const fetchErrorBanner = fetchError && (
+    <Text textStyle="caption-2" color="utility.feedback.critical" mb="0.5rem">
+      Couldn't load the original image for preview. Showing the current image
+      instead.
+    </Text>
+  )
+
   if (defaultRender) {
     return (
-      <Flex
-        direction={stackPreviews ? "column" : "row"}
-        wrap={stackPreviews ? "nowrap" : "wrap"}
-        align="flex-start"
-        gap="1rem"
-        w="100%"
-      >
+      <VStack align="stretch" spacing={0} w="100%">
+        {fetchErrorBanner}
+        <Flex
+          direction={stackPreviews ? "column" : "row"}
+          wrap={stackPreviews ? "nowrap" : "wrap"}
+          align="flex-start"
+          gap="1rem"
+          w="100%"
+        >
         {previewStates.map((state) => {
           const displayWidth = resolveDisplayWidth(state.id)
           const rendered = state.layout
@@ -345,18 +369,21 @@ export const AdjustmentPreview = ({
             </ErrorBoundary>
           )
         })}
-      </Flex>
+        </Flex>
+      </VStack>
     )
   }
 
   return (
-    <Flex
-      direction={stackPreviews ? "column" : "row"}
-      wrap={stackPreviews ? "nowrap" : "wrap"}
-      align="flex-start"
-      gap="1rem"
-      w="100%"
-    >
+    <VStack align="stretch" spacing={0} w="100%">
+      {fetchErrorBanner}
+      <Flex
+        direction={stackPreviews ? "column" : "row"}
+        wrap={stackPreviews ? "nowrap" : "wrap"}
+        align="flex-start"
+        gap="1rem"
+        w="100%"
+      >
       {previewStates.map((state) => {
         const displayWidth = resolveDisplayWidth(state.id)
         const aspect = state.aspectRatio
@@ -434,7 +461,8 @@ export const AdjustmentPreview = ({
           </VStack>
         )
       })}
-    </Flex>
+      </Flex>
+    </VStack>
   )
 }
 

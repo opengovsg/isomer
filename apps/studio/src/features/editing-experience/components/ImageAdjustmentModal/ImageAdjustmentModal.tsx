@@ -24,10 +24,15 @@ import { useRef, useState } from "react"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
+import { getAssetUploadBackoffBudgetMs } from "../form-builder/hooks/useAssetUpload"
 import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
 import { CropFocalControl } from "./controls/CropFocalControl"
 import { defaultCropRect } from "./controls/cropGeometry"
+import {
+  focalToWholeImagePoint,
+  pointToCropRelativeFocal,
+} from "./controls/focalGeometry"
 import {
   resolveOriginalKey,
   useSaveImageAdjustment,
@@ -35,8 +40,10 @@ import {
 
 // Upper bound on how long we wait for a save (bake → presign → upload) before
 // surfacing an error and unlocking the modal, so a hung network request can't
-// trap the editor in a permanently disabled modal.
-const SAVE_TIMEOUT_MS = 30_000
+// trap the editor in a permanently disabled modal. Must exceed the asset
+// upload's own retry backoff budget, or we'd time out saves that are still
+// retrying and about to succeed.
+const SAVE_TIMEOUT_MS = getAssetUploadBackoffBudgetMs() + 15_000
 
 interface ImageAdjustmentModalProps {
   isOpen: boolean
@@ -123,10 +130,11 @@ export const ImageAdjustmentModal = ({
   const originalSrc = `/${resolveOriginalKey(src, draft ?? {})}`
 
   const handleClose = () => {
-    // Block dismissal while a save is in flight — otherwise the editor could
-    // discard, then the completing upload writes the discarded edit back via
-    // onSave. The save timeout guarantees this lock is released.
-    if (isSaving) return
+    // Block dismissal mid-save — otherwise a discard followed by the completing
+    // upload would write the discarded edit back via onSave. Check the real
+    // promise, not just isSaving: the save timeout clears isSaving while the
+    // underlying upload keeps running in the background.
+    if (isSaving || savePromiseRef.current) return
     if (isModified) {
       onDiscardChangesModalOpen()
     } else {
@@ -293,7 +301,17 @@ export const ImageAdjustmentModal = ({
                       lockedRatio={lockedRatio}
                       focalEnabled={focalEnabled}
                       onCropChange={(crop) =>
-                        setDraft((d) => ({ ...ensureAdjustment(d), crop }))
+                        setDraft((d) => {
+                          const base = ensureAdjustment(d)
+                          // Focal is stored crop-relative; re-base it against
+                          // the new crop so a focal placed before this crop
+                          // edit still points at the same spot on the image.
+                          const focal = pointToCropRelativeFocal(
+                            focalToWholeImagePoint(base.focal, base.crop),
+                            crop,
+                          )
+                          return { ...base, crop, focal }
+                        })
                       }
                       onFocalChange={(focal) =>
                         setDraft((d) => ({ ...ensureAdjustment(d), focal }))
@@ -314,8 +332,8 @@ export const ImageAdjustmentModal = ({
                       borderColor="base.divider.medium"
                     >
                       <Text textStyle="body-2">
-                        This image cannot be cropped. Only focal point and
-                        rotation adjustments are available.
+                        This image cannot be cropped. Only focal point
+                        adjustments are available.
                       </Text>
                     </Box>
                   )}
