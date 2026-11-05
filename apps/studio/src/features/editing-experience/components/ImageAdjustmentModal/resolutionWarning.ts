@@ -4,7 +4,7 @@ import type { AspectRatio } from "./AdjustmentConfig"
 import type { CropRectNormalized } from "./controls/cropGeometry"
 import { defaultCropRect } from "./controls/cropGeometry"
 
-export interface LowResWarning {
+interface LowResWarning {
   // Effective pixel width of the cropped region (what ships).
   effectiveWidth: number
   // The frame width it's being compared against (config.maxRenderedWidthPx).

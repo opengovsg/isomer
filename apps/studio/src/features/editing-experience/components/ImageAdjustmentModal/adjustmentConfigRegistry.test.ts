@@ -227,4 +227,63 @@ describe("resolveAdjustmentConfig", () => {
       expect(html).toContain("bg-gradient-to-t")
     })
   })
+
+  // contentpic and blockquote hardcode their maxRenderedWidthPx as literal
+  // copies of a Tailwind width class in packages/components — nothing binds
+  // them, so a renderer change would silently desync the warning. Pin both
+  // against the real rendered markup.
+  describe("pinned maxRenderedWidthPx values", () => {
+    it("contentpic's 200px matches the rendered sm:w-[200px] frame", () => {
+      const config = resolveAdjustmentConfig({
+        block: { type: "contentpic" },
+        fieldName: "imageSrc",
+      })
+      expect(config?.maxRenderedWidthPx).toBe(200)
+
+      const block = {
+        type: "contentpic",
+        imageSrc: "/a.png",
+        imageAlt: "a",
+        content: { type: "prose", content: [] },
+      }
+      const html = renderToStaticMarkup(
+        renderComponent({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          component: block as any,
+          layout: "content",
+          site: SITE_STUB,
+          permalink: "",
+          headingLevel: 1,
+        }),
+      )
+      expect(html).toContain("sm:w-[200px]")
+    })
+
+    it("blockquote's 240px matches the rendered homepage w-60 frame", () => {
+      const config = resolveAdjustmentConfig({
+        block: { type: "blockquote" },
+        fieldName: "imageSrc",
+      })
+      expect(config?.maxRenderedWidthPx).toBe(240)
+
+      const block = {
+        type: "blockquote",
+        quote: "Quote",
+        source: "Source",
+        imageSrc: "/a.png",
+        imageAlt: "a",
+      }
+      const html = renderToStaticMarkup(
+        renderComponent({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          component: block as any,
+          layout: "homepage",
+          site: SITE_STUB,
+          permalink: "",
+          headingLevel: 1,
+        }),
+      )
+      expect(html).toContain("w-60")
+    })
+  })
 })

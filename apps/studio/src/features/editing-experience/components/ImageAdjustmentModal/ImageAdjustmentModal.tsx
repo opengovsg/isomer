@@ -100,7 +100,7 @@ export const ImageAdjustmentModal = ({
   const previewObjectFit = config.previewObjectFitFor?.(fieldHost) ?? "cover"
   const [draft, setDraft] = useState<ImageAdjustment | undefined>(value)
   // The source image's true pixel aspect ratio, reported by CropFocalControl
-  // once its <img> loads — needed so "Reset crop & focal" can seed the same
+  // once its <img> loads — needed so "Reset adjustments" can seed the same
   // ratio-correct crop the control itself would (see defaultCropRect).
   // `undefined` until the image loads: for a locked ratio the reset is disabled
   // until then, so a wrong (square-assumed) crop can never be baked.

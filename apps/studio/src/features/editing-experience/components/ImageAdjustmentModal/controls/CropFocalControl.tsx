@@ -91,13 +91,12 @@ export const CropFocalControl = ({
   const [naturalAspect, setNaturalAspect] = useState<number | undefined>(
     undefined,
   )
-  const aspectRatio = naturalAspect
   const [boxSize, setBoxSize] = useState({ width: 0, height: 0 })
   const [dragTarget, setDragTarget] = useState<DragTarget>(null)
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null)
 
   const showCrop = cropMode !== "none"
-  const currentCrop = crop ?? defaultCropRect(lockedRatio, aspectRatio ?? 1)
+  const currentCrop = crop ?? defaultCropRect(lockedRatio, naturalAspect ?? 1)
   const currentFocal = focal ?? { x: 0.5, y: 0.5 }
 
   // Track the canvas box's own pixel size, so we can work out exactly where
@@ -126,10 +125,10 @@ export const CropFocalControl = ({
   // it were the image.
   const imageBounds: NormalizedRect = useMemo(
     () =>
-      aspectRatio
-        ? getContainedImageBounds(boxSize, aspectRatio)
+      naturalAspect
+        ? getContainedImageBounds(boxSize, naturalAspect)
         : { x: 0, y: 0, width: 1, height: 1 },
-    [boxSize, aspectRatio],
+    [boxSize, naturalAspect],
   )
 
   // Map an image-normalized rect/point into box-normalized space for display.
@@ -222,7 +221,7 @@ export const CropFocalControl = ({
         normalizedX,
         normalizedY,
         lockedRatio,
-        aspectRatio ?? 1,
+        naturalAspect ?? 1,
       ),
     )
   }
@@ -356,7 +355,7 @@ export const CropFocalControl = ({
         position="relative"
         w="100%"
         maxH="20rem"
-        aspectRatio={aspectRatio}
+        aspectRatio={naturalAspect}
         borderWidth="1px"
         borderColor="base.divider.medium"
         borderRadius="0.25rem"

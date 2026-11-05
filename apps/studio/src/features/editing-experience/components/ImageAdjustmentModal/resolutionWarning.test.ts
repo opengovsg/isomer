@@ -60,4 +60,17 @@ describe("computeLowResWarning", () => {
       }),
     ).toEqual({ effectiveWidth: 500, targetWidth: 1280 })
   })
+
+  it("falls back to the locked-ratio default crop when none is set yet", () => {
+    // 300x180 landscape image, 5:6 portrait frame → defaultCropRect fits the
+    // largest centered 5:6 rect: width = 0.5 (normalized), giving a 150px-wide
+    // pixel crop (0.25*300 to 0.75*300) — below the 200px target.
+    expect(
+      computeLowResWarning({
+        naturalSize: { width: 300, height: 180 },
+        lockedRatio: { width: 5, height: 6 },
+        maxRenderedWidthPx: 200,
+      }),
+    ).toEqual({ effectiveWidth: 150, targetWidth: 200 })
+  })
 })
