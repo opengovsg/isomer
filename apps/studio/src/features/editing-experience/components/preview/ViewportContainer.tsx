@@ -1,6 +1,6 @@
 import type { FlexProps } from "@chakra-ui/react"
 import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
-import type { PropsWithChildren } from "react"
+import type { PropsWithChildren, ReactNode } from "react"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Flex, Portal } from "@chakra-ui/react"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -10,6 +10,7 @@ import { convertThemeToCss } from "~/features/settings/utils"
 import type { ViewportOptions } from "./IframeToolbar"
 import { IframeToolbar } from "./IframeToolbar"
 import { PreviewIframe } from "./PreviewIframe"
+import { useViewport } from "./ViewportProvider"
 
 const PortalIfFullscreen = ({
   viewport,
@@ -27,6 +28,7 @@ interface ViewportContainerProps {
   callback?: (props: IframeCallbackFnProps) => void
   theme?: IsomerSiteThemeProps
   header?: React.ReactNode
+  banner?: ReactNode
 }
 export const ViewportContainer = ({
   children,
@@ -34,13 +36,14 @@ export const ViewportContainer = ({
   callback,
   theme,
   header,
+  banner,
 }: PropsWithChildren<ViewportContainerProps>) => {
   const themeCssVars = useSiteThemeCssVars({ siteId })
   const mergedTheme = theme
     ? { ...themeCssVars, ...convertThemeToCss(theme) }
     : themeCssVars
 
-  const [viewport, setViewport] = useState<ViewportOptions>("responsive")
+  const { viewport, setViewport } = useViewport()
 
   // Measure the preview area's content width so the toolbar's "Fit to screen"
   // label can report which device bucket the responsive pane is simulating —
@@ -97,6 +100,7 @@ export const ViewportContainer = ({
           setViewport={setViewport}
           responsiveWidthPx={previewAreaWidth}
         />
+        {banner}
         <Flex
           ref={previewAreaRef}
           px="2rem"
