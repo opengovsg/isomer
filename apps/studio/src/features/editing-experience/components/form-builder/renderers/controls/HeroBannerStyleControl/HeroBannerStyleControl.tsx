@@ -4,19 +4,30 @@ import type {
   JsonSchema,
   UISchemaElement,
 } from "@jsonforms/core"
-import { Box, Flex, FormControl, Icon, Text, VStack } from "@chakra-ui/react"
-import { JsonFormsDispatch } from "@jsonforms/react"
+import {
+  Box,
+  Flex,
+  FormControl,
+  Icon,
+  Text,
+  useDisclosure,
+  VStack,
+} from "@chakra-ui/react"
+import { Resolve } from "@jsonforms/core"
+import { JsonFormsDispatch, useJsonForms } from "@jsonforms/react"
 import { Button, FormLabel } from "@opengovsg/design-system-react"
 import {
   getHeroStyleVariantForBranchTitle,
   HERO_STYLE,
+  type HeroCarouselProps,
   type HeroStyleVariant,
 } from "@opengovsg/isomer-components"
 import { useId, useState } from "react"
 import { BiCheck, BiChevronRight } from "react-icons/bi"
 import { NewFeatureBadge } from "~/features/editing-experience/components/shared/NewFeatureBadge"
 
-import { DrawerHeader } from "../../../Drawer/DrawerHeader"
+import { DrawerHeader } from "../../../../Drawer/DrawerHeader"
+import { DiscardCarouselSlidesModal } from "./DiscardCarouselSlidesModal"
 
 interface HeroBannerStyleOption {
   label: string
@@ -26,6 +37,7 @@ interface HeroBannerStyleOption {
 
 const HERO_BANNER_STYLE_VARIANTS_WITH_NEW_BADGE = new Set<HeroStyleVariant>([
   HERO_STYLE.block.key,
+  HERO_STYLE.carousel.key,
   HERO_STYLE.gradient.key,
 ] satisfies readonly HeroStyleVariant[])
 
@@ -269,7 +281,12 @@ export function HeroBannerStyleCombinator({
   renderers: JsonFormsRendererRegistryEntry[] | undefined
   cells: JsonFormsCellRendererRegistryEntry[] | undefined
 }) {
-  const [isOpen, setIsOpen] = useState(false)
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const [pendingValue, setPendingValue] = useState<string>()
+  const { core } = useJsonForms()
+  const slideCount =
+    (Resolve.data(core?.data, path) as Partial<HeroCarouselProps> | undefined)
+      ?.slides?.length ?? 0
 
   const options = renderInfos
     .map((renderInfo) => {
@@ -294,14 +311,41 @@ export function HeroBannerStyleCombinator({
     (option) => option.label === variant || option.value === variant,
   )
 
+  // Leaving carousel keeps only the first slide, so confirm before dropping the rest.
+  const handleChange = (value: string) => {
+    const isLeavingCarousel =
+      selected?.key === HERO_STYLE.carousel.key &&
+      options.find((option) => option.value === value)?.key !==
+        HERO_STYLE.carousel.key
+
+    if (isLeavingCarousel && slideCount > 1) {
+      setPendingValue(value)
+      return
+    }
+    onChange(value)
+  }
+
   if (isOpen) {
     return (
-      <HeroBannerStyleDrawer
-        options={options}
-        value={selected?.value ?? ""}
-        onChange={onChange}
-        onClose={() => setIsOpen(false)}
-      />
+      <>
+        <HeroBannerStyleDrawer
+          options={options}
+          value={selected?.value ?? ""}
+          onChange={handleChange}
+          onClose={onClose}
+        />
+        <DiscardCarouselSlidesModal
+          isOpen={pendingValue !== undefined}
+          slideCount={slideCount}
+          onClose={() => setPendingValue(undefined)}
+          onConfirm={() => {
+            if (pendingValue !== undefined) {
+              onChange(pendingValue)
+            }
+            setPendingValue(undefined)
+          }}
+        />
+      </>
     )
   }
 
@@ -312,7 +356,7 @@ export function HeroBannerStyleCombinator({
           <FormLabel description={description}>{label || "Variant"}</FormLabel>
           <HeroBannerStyleTrigger
             label={selected?.label ?? ""}
-            onOpen={() => setIsOpen(true)}
+            onOpen={onOpen}
           />
         </FormControl>
       </Box>

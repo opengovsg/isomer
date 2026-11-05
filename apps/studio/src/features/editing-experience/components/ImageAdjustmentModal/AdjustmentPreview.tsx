@@ -392,9 +392,9 @@ export const AdjustmentPreview = ({
         // same as skipRealComponentPreview.
         const built = buildSingleItemPreviewBlock?.(block, adjustedHost, host)
         if (!built) return null
-        component = built as IsomerComponent
+        component = built as unknown as IsomerComponent
       } else {
-        component = adjustedHost as IsomerComponent
+        component = adjustedHost as unknown as IsomerComponent
       }
       const rendered = renderComponent({
         component,
