@@ -1,6 +1,6 @@
 import type { AttachmentProps } from "@opengovsg/design-system-react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
-import { Attachment, useToast } from "@opengovsg/design-system-react"
+import { Attachment, Infobox, useToast } from "@opengovsg/design-system-react"
 import { uniq } from "lodash-es"
 import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
@@ -25,7 +25,7 @@ interface FileAttachmentProps {
   acceptedFileTypes: Record<string, string>
   shouldFetchResource?: boolean
   onUploadedFile?: (file: File) => void
-  enableRiskyFileWarning?: boolean
+  enableUploadWarnings?: boolean
 }
 
 type FileRejections = AttachmentProps<false>["rejections"]
@@ -38,7 +38,7 @@ export const FileAttachment = ({
   acceptedFileTypes,
   shouldFetchResource = true,
   onUploadedFile,
-  enableRiskyFileWarning = false,
+  enableUploadWarnings = false,
 }: FileAttachmentProps) => {
   const [rejections, setRejections] = useState<FileRejections>([])
   const [pendingAckRiskyFile, setPendingAckRiskyFile] = useState<File | null>(
@@ -98,7 +98,7 @@ export const FileAttachment = ({
               }
 
               const ext = getFileExtension(file.name)
-              if (enableRiskyFileWarning && RISKY_FILE_EXTENSIONS.has(ext)) {
+              if (enableUploadWarnings && RISKY_FILE_EXTENSIONS.has(ext)) {
                 setPendingAckRiskyFile(file)
                 return
               }
@@ -139,9 +139,20 @@ export const FileAttachment = ({
           <br />
           {`Accepted file types: ${Object.keys(acceptedFileTypes).join(", ")}`}
         </Text>
+        {/* File attachments are served to visitors as-is; Studio never inspects
+            their contents, so prompt the editor to verify before uploading. */}
+        {enableUploadWarnings && (
+          <Infobox variant="warning" size="sm" mt={3}>
+            <Text textStyle="body-2">
+              Please verify contents before proceeding. Isomer Studio does not
+              verify contents of uploads and accepts no liability for security
+              issues or damages arising from this file.
+            </Text>
+          </Infobox>
+        )}
       </FormControl>
 
-      {enableRiskyFileWarning && pendingAckRiskyFile && (
+      {enableUploadWarnings && pendingAckRiskyFile && (
         <RiskyFileUploadModal
           isOpen={!!pendingAckRiskyFile}
           file={pendingAckRiskyFile}

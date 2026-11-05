@@ -332,7 +332,7 @@ const ModalLinkEditor = ({
             setHref={(href) => setHref(href ?? "")}
             shouldFetchResource={false}
             onUploadedFile={onUploadedFile}
-            enableRiskyFileWarning={true}
+            enableUploadWarnings={true}
           />
         )
       }
