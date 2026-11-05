@@ -7,6 +7,7 @@ import type { PropsWithChildren } from "react"
 import type { PartialDeep } from "type-fest"
 import { Skeleton } from "@chakra-ui/react"
 import {
+  HeroCarouselPreviewProvider,
   LinkComponentProvider,
   RenderEngine,
 } from "@opengovsg/isomer-components"
@@ -16,6 +17,8 @@ import { forwardRef, useEffect } from "react"
 import { withSuspense } from "~/hocs/withSuspense"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
+
+import { useEditPageCarouselPreview } from "./EditPageCarouselPreviewProvider"
 
 export type PreviewProps = IsomerSchema & {
   permalink: string
@@ -56,6 +59,8 @@ function SuspendablePreviewWithCustomSitemap({
     id: siteId,
   })
 
+  const heroCarousel = useEditPageCarouselPreview()
+
   useEffect(() => {
     onRendered?.()
   }, [onRendered])
@@ -74,24 +79,34 @@ function SuspendablePreviewWithCustomSitemap({
     ...overrides.site,
   }
 
+  const page = (
+    <RenderEngine
+      {...renderProps}
+      // TODO: fixup all the typing errors
+      // @ts-expect-error to fix when types are proper
+      site={{
+        ...siteConfig,
+        siteMap,
+        environment: "production",
+        search: {
+          type: "localSearch",
+          searchUrl: "/search",
+        },
+        assetsBaseUrl: ASSETS_BASE_URL,
+      }}
+      ScriptComponent={Script}
+    />
+  )
+
   return (
     <LinkComponentProvider value={FakeLink}>
-      <RenderEngine
-        {...renderProps}
-        // TODO: fixup all the typing errors
-        // @ts-expect-error to fix when types are proper
-        site={{
-          ...siteConfig,
-          siteMap,
-          environment: "production",
-          search: {
-            type: "localSearch",
-            searchUrl: "/search",
-          },
-          assetsBaseUrl: ASSETS_BASE_URL,
-        }}
-        ScriptComponent={Script}
-      />
+      {heroCarousel ? (
+        <HeroCarouselPreviewProvider value={heroCarousel}>
+          {page}
+        </HeroCarouselPreviewProvider>
+      ) : (
+        page
+      )}
     </LinkComponentProvider>
   )
 }
