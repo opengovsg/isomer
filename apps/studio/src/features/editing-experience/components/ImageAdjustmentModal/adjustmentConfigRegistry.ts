@@ -1,4 +1,5 @@
 import type { IsomerPageLayoutType } from "@opengovsg/isomer-components"
+import { IMAGE_FIT } from "@opengovsg/isomer-components"
 
 import type {
   AdjustmentConfig,
@@ -29,10 +30,13 @@ export const INTENTIONALLY_NOT_ADJUSTABLE = [
 // actually writes its sibling `imageFit` onto (a card for InfoCards, the
 // `image` object for the collection thumbnail).
 const imageFitFocalEnabled = (fieldHost: unknown): boolean =>
-  (fieldHost as { imageFit?: string } | null)?.imageFit !== "contain"
+  (fieldHost as { imageFit?: string } | null)?.imageFit !== IMAGE_FIT.Content
 
+// Preview-only object-fit fallback for the framed-image approximation (used
+// when a real-component render fails or isn't attempted) — mirrors the real
+// card's own imageFit so a fallback frame doesn't show the wrong fit.
 const imageFitPreviewObjectFit = (fieldHost: unknown): "cover" | "contain" =>
-  (fieldHost as { imageFit?: string } | null)?.imageFit === "contain"
+  (fieldHost as { imageFit?: string } | null)?.imageFit === IMAGE_FIT.Content
     ? "contain"
     : "cover"
 
@@ -385,10 +389,11 @@ const buildBlockquoteConfig = (
 // 1:1 — see infoCardsDesktopAspect), so this is the Tier-B cover+focal pattern
 // (free crop baked in, focal anchors the subject across the swing). Crop is always
 // offered; focal is offered only under imageFit "cover" (focalEnabledFor) —
-// under "contain" the image is letterboxed, so the preview switches to
-// object-contain (previewObjectFitFor) and the focal control is hidden. The
-// preview uses the framed-image approximation, not the real block (which would
-// render every card).
+// under "contain" the image is letterboxed, so the focal control is hidden.
+// The preview renders the real card (via buildSingleItemPreviewBlock,
+// alongside its real siblings) — every other wired component gets a real
+// render, and this card's shape depends on maxColumns/layout the same way a
+// hand-picked approximation would have to replicate anyway.
 const infoCardsWithImagesConfig = (block: unknown): AdjustmentConfig => ({
   componentType: "infocards:cardsWithImages",
   cropMode: "custom",
@@ -403,13 +408,7 @@ const infoCardsWithImagesConfig = (block: unknown): AdjustmentConfig => ({
   // of width.
   maxRenderedHeightPx: 427,
   focalEnabledFor: imageFitFocalEnabled,
-  previewObjectFitFor: imageFitPreviewObjectFit,
-  // Preview shows just the cropped image, not the card chrome/text: on this
-  // variant the title/description sit in a separate section below the image, so
-  // they add nothing to a crop/focal preview. Use the framed-image
-  // approximation (previewStates below set its shape); fit/fill still drives
-  // object-fit there via previewObjectFitFor.
-  skipRealComponentPreview: true,
+  buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
   // Base frame is 3:2 at every breakpoint except the lg+ overrides some
   // maxColumns apply on content pages (see infoCardsDesktopAspect) — mobile
   // and tablet share the unoverridden 3:2 base.
@@ -426,9 +425,9 @@ const infoCardsWithImagesConfig = (block: unknown): AdjustmentConfig => ({
 
 // Tier C — InfoCards "cards with full images". Same conditional crop/focal as
 // the default variant, but the image fills the whole card (square on mobile →
-// 2:3 portrait at lg) with a dark bottom gradient the title sits over. That
-// overlay is mirrored as a scrim so editors can judge whether the focal keeps
-// the subject clear of the text.
+// 2:3 portrait at lg) with a dark bottom gradient the title sits over. The
+// preview renders the real card, so the real gradient/title show directly —
+// no separate scrim approximation needed.
 const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   componentType: "infocards:cardsWithFullImages",
   cropMode: "custom",
@@ -621,20 +620,42 @@ export function resolveAdjustmentConfig(args: {
     return buildCollectionThumbnailConfig(args.context.collectionVariant)
 
   const { type, variant } = asBlock(args.block)
-  if (type === "image") return IMAGE_CONFIG
-  if (type === "imagegallery") return IMAGE_GALLERY_CONFIG
-  if (type === "hero" && variant === "gradient") return HERO_GRADIENT_CONFIG
-  if (type === "hero" && variant === "largeImage")
+  const { fieldName } = args
+  if (type === "image" && fieldName === "src") return IMAGE_CONFIG
+  if (type === "imagegallery" && fieldName === "src")
+    return IMAGE_GALLERY_CONFIG
+  if (type === "hero" && variant === "gradient" && fieldName === "backgroundUrl")
+    return HERO_GRADIENT_CONFIG
+  if (
+    type === "hero" &&
+    variant === "largeImage" &&
+    fieldName === "backgroundUrl"
+  )
     return HERO_LARGE_IMAGE_CONFIG
-  if (type === "hero" && variant === "block") return HERO_BLOCK_CONFIG
-  if (type === "hero" && variant === "floating") return HERO_FLOATING_CONFIG
-  if (type === "contentpic") return CONTENTPIC_CONFIG
-  if (type === "infopic") return INFOPIC_CONFIG
-  if (type === "blockquote")
+  if (type === "hero" && variant === "block" && fieldName === "backgroundUrl")
+    return HERO_BLOCK_CONFIG
+  if (
+    type === "hero" &&
+    variant === "floating" &&
+    fieldName === "backgroundUrl"
+  )
+    return HERO_FLOATING_CONFIG
+  if (type === "contentpic" && fieldName === "imageSrc")
+    return CONTENTPIC_CONFIG
+  if (type === "infopic" && fieldName === "imageSrc") return INFOPIC_CONFIG
+  if (type === "blockquote" && fieldName === "imageSrc")
     return buildBlockquoteConfig(args.context?.pageLayout)
-  if (type === "infocards" && variant === "cardsWithImages")
+  if (
+    type === "infocards" &&
+    variant === "cardsWithImages" &&
+    fieldName === "imageUrl"
+  )
     return infoCardsWithImagesConfig(args.block)
-  if (type === "infocards" && variant === "cardsWithFullImages")
+  if (
+    type === "infocards" &&
+    variant === "cardsWithFullImages" &&
+    fieldName === "imageUrl"
+  )
     return INFOCARDS_WITH_FULL_IMAGE_CONFIG
   // absence = not integrated (optional by design); deliberate opt-outs are asserted in the registry test.
   return undefined

@@ -1,4 +1,7 @@
-import type { ImageAdjustment } from "@opengovsg/isomer-components"
+import type {
+  ImageAdjustment,
+  IsomerPageLayoutType,
+} from "@opengovsg/isomer-components"
 import type { RefObject } from "react"
 import {
   Box,
@@ -156,6 +159,10 @@ interface ImageAdjustmentModalProps {
   // from local bytes while the uploaded original is still gated by the scan
   // window. Kept client-side only — never sent to the Studio server.
   originalFile?: File
+  // The real page layout the published page would render at (e.g. the
+  // page editor's current layout) — threaded through to the preview so a
+  // state without its own `layout` override shows the real shape.
+  pageLayout?: IsomerPageLayoutType
   siteId: number
   resourceId?: string
   // When provided, this component owns an imageFit (e.g. InfoCards) and the
@@ -177,6 +184,7 @@ export const ImageAdjustmentModal = ({
   imageFieldName,
   fieldHost,
   originalFile,
+  pageLayout,
   value,
   siteId,
   resourceId,
@@ -743,6 +751,7 @@ export const ImageAdjustmentModal = ({
                     skipRealComponentPreview={config.skipRealComponentPreview}
                     stackPreviews={config.stackPreviews}
                     objectFit={previewObjectFit}
+                    pageLayout={pageLayout}
                     siteId={siteId}
                   />
                 </VStack>
