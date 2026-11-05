@@ -1,3 +1,4 @@
+import type { JsonSchema } from "@jsonforms/core"
 import { describe, expect, it } from "vitest"
 
 import { PLACEHOLDER_IMAGE_FILENAME } from "../../constants"
@@ -27,14 +28,22 @@ const carouselSchema = {
 
 // Mirrors HeroGradientSchema's shape: Type.Intersect flattens into `allOf`,
 // not a top-level `properties` map, unlike Type.Composite (blockSchema above).
-const gradientSchema = {
+// The second allOf member is the buttons-vs-quick-links oneOf: buttons layout
+// carries CallToActionsSchema's fields at the root (buttonLabel, buttonUrl),
+// quick-links carries its own `actions.items` instead.
+const gradientSchema: JsonSchema = {
   type: "object",
   allOf: [
     {
       type: "object",
       properties: { type: {}, variant: {}, backgroundUrl: {}, title: {} },
     },
-    { oneOf: [{ properties: { actions: {} } }] },
+    {
+      oneOf: [
+        { properties: { actions: {}, buttonLabel: {}, buttonUrl: {} } },
+        { properties: { actions: {} } },
+      ],
+    },
   ],
 }
 
@@ -156,6 +165,46 @@ describe("nextHeroCarouselVariantData", () => {
       backgroundUrl: "/uploads/existing.png",
       title: "Hello",
     })
+  })
+
+  it("keeps button content when switching into gradient (nested under the oneOf action-layout member)", () => {
+    // Act
+    const result = nextHeroCarouselVariantData(
+      {
+        type: "hero",
+        variant: "block",
+        title: "Hello",
+        buttonLabel: "Learn more",
+        buttonUrl: "/about",
+      },
+      { type: "hero", variant: "gradient" },
+      gradientSchema,
+    )
+
+    // Assert
+    expect(result).toEqual({
+      type: "hero",
+      variant: "gradient",
+      title: "Hello",
+      buttonLabel: "Learn more",
+      buttonUrl: "/about",
+    })
+  })
+
+  it("accepts losing quick-links content on the hop out of gradient (no other variant carries actions.items)", () => {
+    // Arrange: quick-links data already isn't in `source` by the time a
+    // later switch into gradient runs, because Block's own schema (a
+    // Type.Composite with no `actions` property) dropped it on the way out.
+    const afterLeavingGradient = nextHeroCarouselVariantData(
+      {
+        type: "hero",
+        variant: "gradient",
+        actions: { layout: "quickLinks", items: [{ label: "Docs" }] },
+      },
+      { type: "hero", variant: "block" },
+      blockSchema,
+    )
+    expect(afterLeavingGradient.actions).toBeUndefined()
   })
 
   it("drops root hero fields when entering carousel", () => {
