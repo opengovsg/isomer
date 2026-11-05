@@ -5,7 +5,7 @@ import {
   HERO_STYLE,
 } from "@opengovsg/isomer-components"
 import { Type } from "@sinclair/typebox"
-import { expect, userEvent, within } from "storybook/test"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 
 import { FormBuilder } from "./formBuilder"
 
@@ -16,6 +16,7 @@ const HERO_BANNER_VARIANT_SCHEMA_OPTIONS = {
   block: {},
   largeImage: {},
   floating: {},
+  carousel: {},
   searchbar: { format: "hidden" },
 } satisfies Record<HeroStyleId, { format?: string }>
 
@@ -78,9 +79,62 @@ export const ChoosingStyle: Story = {
         name: "Choose a hero banner style",
       }),
     ).toBeVisible()
+    const block = await canvas.findByRole("radio", { name: "Block" })
+    const carousel = await canvas.findByRole("radio", { name: "Carousel" })
+    await expect(block).toBeVisible()
+    await expect(carousel).toBeVisible()
+    await expect(block.closest("label")).toHaveTextContent("New")
+    await expect(carousel.closest("label")).toHaveTextContent("New")
+    await expect(
+      (await canvas.findByRole("radio", { name: /gradient/i })).closest(
+        "label",
+      ),
+    ).toHaveTextContent("New")
+    await expect(canvas.queryByRole("radio", { name: "Search bar" })).toBeNull()
+  },
+}
+
+export const ConfirmLeavingCarousel: Story = {
+  args: {
+    data: { variant: "carousel", slides: [{}, {}, {}] },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // Chakra modals render in a portal outside the canvas.
+    const body = within(canvasElement.ownerDocument.body)
+
+    const caption = await canvas.findByText(
+      /click to explore different styles/i,
+    )
+    await userEvent.click(caption.closest("button") ?? caption)
+
+    // Cancelling keeps the carousel selected.
+    await userEvent.click(await canvas.findByRole("radio", { name: "Block" }))
+    await userEvent.click(
+      await body.findByRole("button", { name: "Keep carousel" }),
+    )
+    await waitFor(() =>
+      expect(
+        body.queryByRole("dialog", { name: "Discard extra carousel slides?" }),
+      ).toBeNull(),
+    )
+    await expect(canvas.getByRole("radio", { name: "Carousel" })).toBeChecked()
+
+    await userEvent.click(canvas.getByRole("radio", { name: "Block" }))
+    const modal = await body.findByRole("dialog", {
+      name: "Discard extra carousel slides?",
+    })
+    await expect(modal).toHaveTextContent("The other 2 slides will be removed.")
+    // The modal hides the drawer from assistive tech while it is open.
+    await expect(
+      canvas.getByRole("radio", { name: "Carousel", hidden: true }),
+    ).toBeChecked()
+
+    await userEvent.click(
+      within(modal).getByRole("button", { name: "Yes, change style" }),
+    )
     await expect(
       await canvas.findByRole("radio", { name: "Block" }),
-    ).toBeVisible()
-    await expect(canvas.queryByRole("radio", { name: "Search bar" })).toBeNull()
+    ).toBeChecked()
   },
 }

@@ -49,10 +49,14 @@ export const HeroGradientQuickLinks = ({
         >
           <div className="xl:max-w-50% flex w-full flex-col gap-9 sm:w-3/5">
             <div className="flex flex-col gap-6">
-              <HeroTag className="prose-display-xl break-words">
+              <HeroTag className="prose-display-xl break-words text-[2.25rem] leading-[1.2] md:text-[3rem] md:leading-[1.1] xl:text-[3rem] xl:leading-[1.1]">
                 {title}
               </HeroTag>
-              {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
+              {subtitle && (
+                <p className="prose-title-lg-regular text-[1.125rem] md:text-[1.5rem]">
+                  {subtitle}
+                </p>
+              )}
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import type { IframeCallbackFnProps } from "~/types/dom"
 import { merge } from "lodash-es"
 import Preview from "~/features/editing-experience/components/preview/Preview"
 import { ViewportContainer } from "~/features/editing-experience/components/preview/ViewportContainer"
+import { ViewportProvider } from "~/features/editing-experience/components/preview/ViewportProvider"
 import { waitForElement } from "~/utils/dom"
 import { trpc } from "~/utils/trpc"
 
@@ -39,20 +40,22 @@ export const EditFooterPreview = ({
   })
 
   return (
-    <ViewportContainer siteId={siteId} callback={handleIframeMount}>
-      <Preview
-        {...merge(content, { page: { title } })}
-        overrides={{
-          site: {
-            footerItems: previewFooterState,
-          },
-        }}
-        siteId={siteId}
-        resourceId={pageId}
-        permalink="/"
-        lastModified={updatedAt.toISOString()}
-        version="0.1.0"
-      />
-    </ViewportContainer>
+    <ViewportProvider>
+      <ViewportContainer siteId={siteId} callback={handleIframeMount}>
+        <Preview
+          {...merge(content, { page: { title } })}
+          overrides={{
+            site: {
+              footerItems: previewFooterState,
+            },
+          }}
+          siteId={siteId}
+          resourceId={pageId}
+          permalink="/"
+          lastModified={updatedAt.toISOString()}
+          version="0.1.0"
+        />
+      </ViewportContainer>
+    </ViewportProvider>
   )
 }

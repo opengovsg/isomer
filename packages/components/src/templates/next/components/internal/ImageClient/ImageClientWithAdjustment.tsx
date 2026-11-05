@@ -1,5 +1,3 @@
-"use client"
-
 import type { ImageClientWithAdjustmentProps } from "~/interfaces"
 import { forwardRef } from "react"
 import { getFocalObjectPosition } from "~/utils/getFocalObjectPosition"

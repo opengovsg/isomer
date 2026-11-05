@@ -42,11 +42,17 @@ export const HeroGradientButtons = ({
         >
           <div className="xl:max-w-50% flex w-full flex-col gap-9 sm:w-3/5">
             <div className="flex flex-col gap-6">
-              <Tag className="prose-display-xl break-words">{title}</Tag>
-              {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
+              <Tag className="prose-display-xl break-words text-[2.25rem] leading-[1.2] md:text-[3rem] md:leading-[1.1] xl:text-[3rem] xl:leading-[1.1]">
+                {title}
+              </Tag>
+              {subtitle && (
+                <p className="prose-title-lg-regular text-[1.125rem] md:text-[1.5rem]">
+                  {subtitle}
+                </p>
+              )}
             </div>
             {buttonLabel && buttonUrl && (
-              <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
+              <div className="flex flex-wrap justify-start gap-x-5 gap-y-4 [&>*]:h-auto">
                 <LinkButton
                   href={getReferenceLinkHref(
                     buttonUrl,
@@ -55,6 +61,7 @@ export const HeroGradientButtons = ({
                   )}
                   size="lg"
                   isWithFocusVisibleHighlight
+                  className="h-auto"
                 >
                   {buttonLabel}
                 </LinkButton>
@@ -69,6 +76,7 @@ export const HeroGradientButtons = ({
                       site.assetsBaseUrl,
                     )}
                     isWithFocusVisibleHighlight
+                    className="h-auto"
                   >
                     {secondaryButtonLabel}
                   </LinkButton>

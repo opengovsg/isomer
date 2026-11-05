@@ -277,7 +277,7 @@ export const AdjustmentPreview = ({
         [imageFieldName]: adjustedSrc,
         imageAdjustment: adjustment,
         ...(hasAlt ? {} : { imageAlt: "Preview image" }),
-      } as IsomerComponent
+      } as unknown as IsomerComponent
       const rendered = renderComponent({
         component,
         layout: layout ?? "content",
