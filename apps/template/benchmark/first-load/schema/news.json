@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "layout": "collection",
+  "page": {
+    "title": "News",
+    "subtitle": "Collection landing used by the first-load JS benchmark."
+  },
+  "content": []
+}

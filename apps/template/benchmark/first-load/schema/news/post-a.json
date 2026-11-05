@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "layout": "article",
+  "page": {
+    "title": "Post A",
+    "category": "News",
+    "articlePageHeader": {
+      "summary": "Article child of the benchmark collection."
+    }
+  },
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Benchmark article."
+        }
+      ]
+    }
+  ]
+}

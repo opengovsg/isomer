@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "layout": "database",
+  "page": {
+    "title": "Registry",
+    "contentPageHeader": {
+      "summary": "Database landing used by the first-load JS benchmark."
+    },
+    "database": {
+      "title": "Registry",
+      "headers": ["Name"],
+      "items": [["Example"]]
+    }
+  },
+  "content": []
+}

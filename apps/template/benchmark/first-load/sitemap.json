@@ -1,0 +1,46 @@
+{
+  "permalink": "/",
+  "lastModified": "2024-04-03T05:17:15.276Z",
+  "layout": "homepage",
+  "title": "Home",
+  "summary": "",
+  "children": [
+    {
+      "permalink": "/about",
+      "lastModified": "2024-04-05T06:30:35.606Z",
+      "layout": "content",
+      "title": "About us",
+      "summary": ""
+    },
+    {
+      "permalink": "/news",
+      "lastModified": "2024-04-05T06:30:35.606Z",
+      "layout": "collection",
+      "title": "News",
+      "summary": "",
+      "children": [
+        {
+          "permalink": "/news/post-a",
+          "lastModified": "2024-04-05T06:30:35.606Z",
+          "layout": "article",
+          "title": "Post A",
+          "summary": ""
+        }
+      ]
+    },
+    {
+      "permalink": "/search",
+      "lastModified": "2024-04-05T06:30:35.606Z",
+      "layout": "search",
+      "title": "Search",
+      "summary": ""
+    },
+    {
+      "permalink": "/data/registry",
+      "lastModified": "2024-04-05T06:30:35.606Z",
+      "layout": "database",
+      "title": "Registry",
+      "summary": ""
+    }
+  ]
+}
