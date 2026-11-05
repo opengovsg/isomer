@@ -85,6 +85,26 @@ describe("bakeImage composition", () => {
     expect(out.at(1, 0)).toEqual(WHITE)
   })
 
+  it("throws for a non-bakeable MIME type before touching the canvas", async () => {
+    const src = await makeImageBlob(2, 1, [RED, BLUE])
+    await expect(
+      bakeImage(src, { crop: FULL_CROP }, { mimeType: "image/avif" }),
+    ).rejects.toThrow(/Cannot bake image format/)
+  })
+
+  it("crops: keeping the bottom half drops the top pixels", async () => {
+    const src = await makeImageBlob(1, 4, [RED, GREEN, BLUE, WHITE]) // 1 wide, 4 tall
+    const baked = await bakeImage(
+      src,
+      { crop: { x: 0, y: 0.5, width: 1, height: 0.5 } },
+      PNG,
+    )
+    const out = await readPixels(baked)
+    expect([out.width, out.height]).toEqual([1, 2])
+    expect(out.at(0, 0)).toEqual(BLUE)
+    expect(out.at(0, 1)).toEqual(WHITE)
+  })
+
   it("throws for an animated source, without relying on the caller to check first", () => {
     // A minimal (undecoded) WebP header with the VP8X animation flag set --
     // enough for isAnimatedImageBlob to detect, without needing a real
