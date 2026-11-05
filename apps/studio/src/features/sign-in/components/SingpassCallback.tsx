@@ -13,9 +13,7 @@ import { trpc } from "~/utils/trpc"
 
 import { singpassCallbackFailurePath } from "../singpassRedirect"
 
-const queryValue = (
-  value: string | string[] | undefined,
-): string | undefined =>
+const queryValue = (value: string | string[] | undefined): string | undefined =>
   typeof value === "string" && value.length > 0 ? value : undefined
 
 const RedirectToSingpassSignIn = ({
