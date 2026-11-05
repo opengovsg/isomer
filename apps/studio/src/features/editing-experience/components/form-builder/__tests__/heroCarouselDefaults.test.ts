@@ -25,6 +25,19 @@ const carouselSchema = {
   },
 }
 
+// Mirrors HeroGradientSchema's shape: Type.Intersect flattens into `allOf`,
+// not a top-level `properties` map, unlike Type.Composite (blockSchema above).
+const gradientSchema = {
+  type: "object",
+  allOf: [
+    {
+      type: "object",
+      properties: { type: {}, variant: {}, backgroundUrl: {}, title: {} },
+    },
+    { oneOf: [{ properties: { actions: {} } }] },
+  ],
+}
+
 describe("nextHeroCarouselVariantData", () => {
   it("keeps the previous hero image on the first slide and placeholders the second", () => {
     // Arrange
@@ -120,6 +133,28 @@ describe("nextHeroCarouselVariantData", () => {
       backgroundUrl: "/uploads/existing.png",
       title: "Edited",
       subtitle: "From the slide",
+    })
+  })
+
+  it("keeps shared fields when switching into gradient (ISOM-2834: allOf-shaped schema)", () => {
+    // Act
+    const result = nextHeroCarouselVariantData(
+      {
+        type: "hero",
+        variant: "block",
+        backgroundUrl: "/uploads/existing.png",
+        title: "Hello",
+      },
+      { type: "hero", variant: "gradient" },
+      gradientSchema,
+    )
+
+    // Assert
+    expect(result).toEqual({
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/uploads/existing.png",
+      title: "Hello",
     })
   })
 
