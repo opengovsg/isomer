@@ -261,35 +261,35 @@ catalogs:
     "@tanstack/react-query": ^5.104.5
     "@tanstack/react-query-devtools": ^5.104.5
   tiptap:
-    "@tiptap/core": ^3.32.0
-    "@tiptap/extension-bold": ^3.32.0
-    "@tiptap/extension-bullet-list": ^3.32.0
-    "@tiptap/extension-character-count": ^3.32.0
-    "@tiptap/extension-document": ^3.32.0
-    "@tiptap/extension-dropcursor": ^3.32.0
-    "@tiptap/extension-gapcursor": ^3.32.0
-    "@tiptap/extension-hard-break": ^3.32.0
-    "@tiptap/extension-heading": ^3.32.0
-    "@tiptap/extension-history": ^3.32.0
-    "@tiptap/extension-horizontal-rule": ^3.32.0
-    "@tiptap/extension-image": ^3.32.0
-    "@tiptap/extension-italic": ^3.32.0
-    "@tiptap/extension-link": ^3.32.0
-    "@tiptap/extension-list-item": ^3.32.0
-    "@tiptap/extension-ordered-list": ^3.32.0
-    "@tiptap/extension-paragraph": ^3.32.0
-    "@tiptap/extension-strike": ^3.32.0
-    "@tiptap/extension-subscript": ^3.32.0
-    "@tiptap/extension-superscript": ^3.32.0
-    "@tiptap/extension-table": ^3.32.0
-    "@tiptap/extension-table-cell": ^3.32.0
-    "@tiptap/extension-table-header": ^3.32.0
-    "@tiptap/extension-table-row": ^3.32.0
-    "@tiptap/extension-text": ^3.32.0
-    "@tiptap/extension-underline": ^3.32.0
-    "@tiptap/html": ^3.32.0
-    "@tiptap/pm": ^3.32.0
-    "@tiptap/react": ^3.32.0
+    "@tiptap/core": ^3.32.1
+    "@tiptap/extension-bold": ^3.32.1
+    "@tiptap/extension-bullet-list": ^3.32.1
+    "@tiptap/extension-character-count": ^3.32.1
+    "@tiptap/extension-document": ^3.32.1
+    "@tiptap/extension-dropcursor": ^3.32.1
+    "@tiptap/extension-gapcursor": ^3.32.1
+    "@tiptap/extension-hard-break": ^3.32.1
+    "@tiptap/extension-heading": ^3.32.1
+    "@tiptap/extension-history": ^3.32.1
+    "@tiptap/extension-horizontal-rule": ^3.32.1
+    "@tiptap/extension-image": ^3.32.1
+    "@tiptap/extension-italic": ^3.32.1
+    "@tiptap/extension-link": ^3.32.1
+    "@tiptap/extension-list-item": ^3.32.1
+    "@tiptap/extension-ordered-list": ^3.32.1
+    "@tiptap/extension-paragraph": ^3.32.1
+    "@tiptap/extension-strike": ^3.32.1
+    "@tiptap/extension-subscript": ^3.32.1
+    "@tiptap/extension-superscript": ^3.32.1
+    "@tiptap/extension-table": ^3.32.1
+    "@tiptap/extension-table-cell": ^3.32.1
+    "@tiptap/extension-table-header": ^3.32.1
+    "@tiptap/extension-table-row": ^3.32.1
+    "@tiptap/extension-text": ^3.32.1
+    "@tiptap/extension-underline": ^3.32.1
+    "@tiptap/html": ^3.32.1
+    "@tiptap/pm": ^3.32.1
+    "@tiptap/react": ^3.32.1
   trpc:
     "@trpc/client": ^11.19.0
     "@trpc/next": ^11.19.0
