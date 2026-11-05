@@ -4,7 +4,7 @@ import type { AspectRatio } from "./AdjustmentConfig"
 import type { CropRectNormalized } from "./controls/cropGeometry"
 import { defaultCropRect } from "./controls/cropGeometry"
 
-export interface LowResWarning {
+interface LowResWarning {
   // Which axis is under-resolved — drives the "wide"/"tall" wording.
   dimension: "width" | "height"
   // Effective pixel size of the cropped region on that axis (what ships).
