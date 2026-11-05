@@ -2,6 +2,7 @@
 
 import type {
   IsomerComponent,
+  IsomerPageLayoutType,
   IsomerSiteProps,
   ImageAdjustment,
 } from "@opengovsg/isomer-components"
@@ -50,19 +51,34 @@ interface AdjustmentPreviewProps {
   // when absent or when rendering the real component fails for any reason.
   block?: unknown
   imageFieldName?: string
+  // The image field's immediate host (the block itself for a root-level
+  // field, or the card object for an array-nested field like InfoCards) —
+  // the adjusted src + draft imageAdjustment are spliced in here, not onto
+  // `block` directly, so an array-nested edit doesn't leak onto the wrong card.
+  fieldHost?: unknown
+  // See AdjustmentConfig.buildSingleItemPreviewBlock.
+  buildSingleItemPreviewBlock?: (
+    ownerBlock: unknown,
+    editedItem: Record<string, unknown>,
+    originalItem?: unknown,
+  ) => unknown
   // Opt out of the real-component render and always use the framed-image
-  // approximation below. Set for array-nested image fields (InfoCards), where
-  // the real component would render the whole block/all cards instead of the
-  // single card being edited.
+  // approximation below. Set for an array-nested image field with no
+  // buildSingleItemPreviewBlock, where the real component would render the
+  // whole block/every item instead of the single one being edited.
   skipRealComponentPreview?: boolean
   // Stack the preview frames vertically (one per row) instead of side-by-side,
   // giving each the full column width. See AdjustmentConfig.stackPreviews.
   stackPreviews?: boolean
   // The object-fit the framed-image approximation uses (skipRealComponentPreview
-  // path). "contain" letterboxes the whole (cropped) image to match InfoCards'
-  // "Resize image to fit"; defaults to "cover". Ignored on the real-component
-  // path, which renders the component's own fit.
+  // path). "contain" letterboxes the whole (cropped) image to match a field
+  // like InfoCards' "Resize image to fit"; defaults to "cover". Ignored on the
+  // real-component path, which renders the component's own fit.
   objectFit?: "cover" | "contain"
+  // The real page layout the published page would render at — threaded
+  // through so a state without its own `layout` still previews the real
+  // shape instead of always defaulting to "content".
+  pageLayout?: IsomerPageLayoutType
   // Needed to pull the site's brand theme CSS vars into the preview iframe —
   // without them, classes like `bg-brand-canvas-inverse` resolve to nothing.
   siteId: number
@@ -95,9 +111,12 @@ export const AdjustmentPreview = ({
   scrim,
   block,
   imageFieldName,
+  fieldHost,
+  buildSingleItemPreviewBlock,
   skipRealComponentPreview,
   stackPreviews,
   objectFit = "cover",
+  pageLayout,
   siteId,
 }: AdjustmentPreviewProps): JSX.Element => {
   // When stacking, each frame gets the full column width; otherwise fall back
@@ -262,7 +281,14 @@ export const AdjustmentPreview = ({
   const renderPreviewComponent = (
     layout: AdjustmentPreviewState["layout"],
   ): React.ReactNode => {
-    if (!block || typeof block !== "object" || !imageFieldName) return null
+    if (
+      !block ||
+      typeof block !== "object" ||
+      !fieldHost ||
+      typeof fieldHost !== "object" ||
+      !imageFieldName
+    )
+      return null
     try {
       // Preview-only safety net: some components (e.g. Blockquote) gate
       // whether they render the image at all on a sibling `imageAlt` field,
@@ -270,17 +296,25 @@ export const AdjustmentPreview = ({
       // filled in. An editor adjusting crop/focal mid-edit shouldn't have
       // that silently blank the very image they're trying to preview — the
       // real saved value (and the production render path) is untouched.
-      const existingAlt = (block as Record<string, unknown>).imageAlt
+      const existingAlt = (fieldHost as Record<string, unknown>).imageAlt
       const hasAlt = typeof existingAlt === "string" && existingAlt.length > 0
-      const component = {
-        ...block,
+      const editedHost = {
+        ...fieldHost,
         [imageFieldName]: adjustedSrc,
         imageAdjustment: adjustment,
         ...(hasAlt ? {} : { imageAlt: "Preview image" }),
-      } as unknown as IsomerComponent
+      }
+      let component: IsomerComponent
+      if (buildSingleItemPreviewBlock) {
+        const built = buildSingleItemPreviewBlock(block, editedHost, fieldHost)
+        if (!built) return null
+        component = built as IsomerComponent
+      } else {
+        component = editedHost as unknown as IsomerComponent
+      }
       const rendered = renderComponent({
         component,
-        layout: layout ?? "content",
+        layout: layout ?? pageLayout ?? "content",
         site: PREVIEW_SITE_STUB,
         permalink: "",
         headingLevel: 1,
@@ -309,8 +343,8 @@ export const AdjustmentPreview = ({
     }
   }
 
-  // Gate on the default-layout render succeeding, same as every state did
-  // before per-state layout existed — a failure here falls through to the
+  // Gate on the default-layout render succeeding (and on skipRealComponentPreview
+  // not opting out of it entirely) — a failure here falls through to the
   // framed-<img> approximation below for every state, not just the one that
   // failed. A state requesting a non-default `layout` re-renders on its own
   // and, in the rarer case that only its specific layout throws, is simply

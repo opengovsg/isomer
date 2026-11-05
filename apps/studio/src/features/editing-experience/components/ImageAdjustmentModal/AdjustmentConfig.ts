@@ -75,16 +75,29 @@ export interface AdjustmentConfig {
   // available in both fits (the crop defines the region that is then letterboxed).
   focalEnabledFor?: (fieldHost: unknown) => boolean
   // Tier C conditional preview fit: the object-fit the framed-image preview
-  // (skipRealComponentPreview path) uses, resolved from the field host. InfoCards
-  // returns "contain" under "Resize image to fit" so the preview matches the
-  // letterboxed published result instead of always showing a cover crop.
+  // (skipRealComponentPreview path) uses, resolved from the field host.
   previewObjectFitFor?: (fieldHost: unknown) => "cover" | "contain"
-  // Opt out of the real-component preview (W0-I) in favour of the framed-image
-  // approximation. Needed for array-nested image fields (InfoCards) where the
-  // real component renders the whole block/all cards, not the single card being
-  // edited — the approximation (one framed image + scrim per state) is both
-  // simpler and a better single-card preview.
+  // Opt out of the real-component preview in favour of the framed-image
+  // approximation below. For an array-nested image field whose host component
+  // has no buildSingleItemPreviewBlock (or it returns undefined for a given
+  // item) — the approximation (one framed image + scrim per state) is the
+  // fallback for a component that can't produce a meaningful single-item
+  // real render.
   skipRealComponentPreview?: boolean
+  // Builds the block the real-component preview renders: the edited item
+  // (image + draft adjustment already spliced in) spliced back into the owner
+  // block's own item array BY REFERENCE (matched against `originalItem`), so
+  // every sibling still renders unchanged, in its real position — not just the
+  // one being edited in isolation. Falls back to a single-item array if the
+  // original can't be found there. Needed for array-nested image fields (e.g.
+  // an InfoCards card) where the real component otherwise renders the whole
+  // block/every item. Returning undefined falls back to the framed-image
+  // approximation, same as skipRealComponentPreview.
+  buildSingleItemPreviewBlock?: (
+    ownerBlock: unknown,
+    editedItem: Record<string, unknown>,
+    originalItem?: unknown,
+  ) => unknown
   // Stack the preview frames vertically (one per row) instead of side-by-side,
   // so each frame gets the full column width. Use for components with only a
   // couple of small-ratio states where side-by-side makes each too small to

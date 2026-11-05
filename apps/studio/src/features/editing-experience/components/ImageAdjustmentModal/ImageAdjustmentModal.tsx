@@ -1,4 +1,7 @@
-import type { ImageAdjustment } from "@opengovsg/isomer-components"
+import type {
+  ImageAdjustment,
+  IsomerPageLayoutType,
+} from "@opengovsg/isomer-components"
 import {
   Box,
   Grid,
@@ -62,6 +65,10 @@ interface ImageAdjustmentModalProps {
   // object) — read by the config's focalEnabledFor/previewObjectFitFor to resolve
   // the controls for this card's current imageFit.
   fieldHost: unknown
+  // The real page layout the published page would render at (e.g. the
+  // page editor's current layout) — threaded through to the preview so a
+  // state without its own `layout` override shows the real shape.
+  pageLayout?: IsomerPageLayoutType
   siteId: number
   resourceId?: string
   onSave: (result: {
@@ -78,6 +85,7 @@ export const ImageAdjustmentModal = ({
   block,
   imageFieldName,
   fieldHost,
+  pageLayout,
   value,
   siteId,
   resourceId,
@@ -302,9 +310,14 @@ export const ImageAdjustmentModal = ({
                   scrim={config.scrim}
                   block={block}
                   imageFieldName={imageFieldName}
+                  fieldHost={fieldHost}
+                  buildSingleItemPreviewBlock={
+                    config.buildSingleItemPreviewBlock
+                  }
                   skipRealComponentPreview={config.skipRealComponentPreview}
                   stackPreviews={config.stackPreviews}
                   objectFit={previewObjectFit}
+                  pageLayout={pageLayout}
                   siteId={siteId}
                 />
               </GridItem>
