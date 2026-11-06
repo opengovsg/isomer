@@ -16,7 +16,7 @@ import {
 } from "../format"
 import { IconPicker } from "../primitives/IconPicker"
 import { IsomerString } from "../primitives/IsomerString"
-import { generateImageSrcSchema } from "./Image"
+import { generateImageSrcSchema, imageAdjustmentSchema } from "./Image"
 
 export const HERO_STYLE = {
   gradient: { key: "gradient", title: "Gradient (Default)" },
@@ -199,6 +199,7 @@ const HeroGradientSharedSchema = Type.Composite(
         default: HERO_STYLE.gradient.key,
       }),
       backgroundUrl: BackgroundUrlSchema,
+      imageAdjustment: Type.Optional(imageAdjustmentSchema),
     }),
     HeroBaseSchema,
   ],
