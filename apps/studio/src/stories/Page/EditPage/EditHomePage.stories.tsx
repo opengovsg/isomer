@@ -1,11 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite"
-import { expect, userEvent, within } from "storybook/test"
+import mockdate from "mockdate"
+import { http, HttpResponse } from "msw"
+import { expect, userEvent, waitFor, within } from "storybook/test"
+import { assetHandler } from "tests/msw/handlers/asset"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
+import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 
 const COMMON_HANDLERS = [
@@ -206,5 +210,74 @@ export const ReopenAntiScamDisclaimerSaveBlockDisabled: Story = {
       name: /save block/i,
     })
     await expect(saveAfterReopen).toBeDisabled()
+  },
+}
+
+// Regression: uploading a hero image used to crash the form with "Maximum
+// update depth exceeded" because the hero's combinator controls rebuilt their
+// render infos (and so the image control's uischema) on every render.
+export const HeroImageUpload: Story = {
+  parameters: {
+    // Frozen time stalls JsonForms' debounced onChange, so the upload would
+    // never reach the preview.
+    disableMockDate: true,
+    msw: {
+      handlers: [
+        assetHandler.getPresignedPutUrl.default(),
+        http.put("/storybook/upload", () => new HttpResponse(null)),
+        http.get(
+          `${ASSETS_BASE_URL}/MOCK_STORYBOOK_ASSET`,
+          () => new HttpResponse(null),
+        ),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  // disableMockDate only skips freezing, so clear any date an earlier story
+  // froze.
+  beforeEach: () => {
+    mockdate.reset()
+  },
+  play: async ({ canvasElement, ...rest }) => {
+    await EditHero.play?.({ canvasElement, ...rest })
+    const canvas = within(canvasElement)
+
+    const currentImageRow = (await canvas.findByText("hero-banner.png"))
+      .parentElement
+    if (!currentImageRow) throw new Error("Hero image row not rendered")
+    await userEvent.click(
+      within(currentImageRow).getByRole("button", { name: "Remove file" }),
+    )
+    const fileInput = await waitFor(() => {
+      const input =
+        canvasElement.querySelector<HTMLInputElement>('input[type="file"]')
+      if (!input) throw new Error("File input not rendered")
+      return input
+    })
+    await userEvent.upload(
+      fileInput,
+      new File(["hero"], "hero.png", { type: "image/png" }),
+    )
+
+    await expect(
+      await canvas.findByText("MOCK_STORYBOOK_ASSET", undefined, {
+        timeout: 5000,
+      }),
+    ).toBeVisible()
+    await waitFor(
+      () => {
+        const previewImages = Array.from(
+          canvasElement
+            .querySelector("iframe")
+            ?.contentDocument?.querySelectorAll("img") ?? [],
+        )
+        return expect(
+          previewImages.some((img) =>
+            img.getAttribute("src")?.endsWith("/MOCK_STORYBOOK_ASSET"),
+          ),
+        ).toBe(true)
+      },
+      { timeout: 5000 },
+    )
   },
 }

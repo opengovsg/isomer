@@ -5,6 +5,7 @@ import {
   rankWith,
 } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsAllOfProps } from "@jsonforms/react"
+import { useMemo } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsAllOfControlTester: RankedTester = rankWith(
@@ -21,13 +22,20 @@ function JsonFormsAllOfControl({
   uischema,
   uischemas,
 }: CombinatorRendererProps) {
-  const allOfRenderInfos = createCombinatorRenderInfos(
-    schema.allOf ?? [],
-    rootSchema,
-    "allOf",
-    uischema,
-    path,
-    uischemas,
+  // NOTE: Memoised because createCombinatorRenderInfos generates a fresh
+  // uischema per call. New uischema identities defeat the memo on every
+  // descendant control, so they all re-render on any form change.
+  const allOfRenderInfos = useMemo(
+    () =>
+      createCombinatorRenderInfos(
+        schema.allOf ?? [],
+        rootSchema,
+        "allOf",
+        uischema,
+        path,
+        uischemas,
+      ),
+    [schema, rootSchema, uischema, path, uischemas],
   )
 
   return (
