@@ -6,7 +6,7 @@ import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { IsomerString } from "../primitives/IsomerString"
-import { AltTextSchema, ImageSrcSchema } from "./Image"
+import { AltTextSchema, ImageSrcSchema, imageAdjustmentSchema } from "./Image"
 
 export const CARDS_WITHOUT_IMAGES = "cardsWithoutImages"
 export const CARDS_WITH_IMAGES = "cardsWithImages"
@@ -45,6 +45,12 @@ const SingleCardWithImageSchema = Type.Composite([
   Type.Object({
     imageUrl: ImageSrcSchema,
     imageFit: Type.Optional(InfoCardsImageFitSchema),
+    // Crop is baked into imageUrl under both fits; focal renders as
+    // object-position only under imageFit "cover" (the editor hides the focal
+    // control for "contain", and InfoCardImage ignores any stale focal there, so
+    // a letterboxed image stays object-center) — see the InfoCards
+    // AdjustmentConfig entries in Studio's adjustmentConfigRegistry.
+    imageAdjustment: Type.Optional(imageAdjustmentSchema),
     imageAlt: AltTextSchema,
   }),
 ])

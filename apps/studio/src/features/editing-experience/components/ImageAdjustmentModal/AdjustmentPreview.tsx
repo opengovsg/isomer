@@ -2,6 +2,7 @@
 
 import type {
   IsomerComponent,
+  IsomerPageLayoutType,
   IsomerSiteProps,
   ImageAdjustment,
 } from "@opengovsg/isomer-components"
@@ -50,6 +51,34 @@ interface AdjustmentPreviewProps {
   // when absent or when rendering the real component fails for any reason.
   block?: unknown
   imageFieldName?: string
+  // The image field's immediate host (the block itself for a root-level
+  // field, or the card object for an array-nested field like InfoCards) —
+  // the adjusted src + draft imageAdjustment are spliced in here, not onto
+  // `block` directly, so an array-nested edit doesn't leak onto the wrong card.
+  fieldHost?: unknown
+  // See AdjustmentConfig.buildSingleItemPreviewBlock.
+  buildSingleItemPreviewBlock?: (
+    ownerBlock: unknown,
+    editedItem: Record<string, unknown>,
+    originalItem?: unknown,
+  ) => unknown
+  // Opt out of the real-component render and always use the framed-image
+  // approximation below. Set for an array-nested image field with no
+  // buildSingleItemPreviewBlock, where the real component would render the
+  // whole block/every item instead of the single one being edited.
+  skipRealComponentPreview?: boolean
+  // Stack the preview frames vertically (one per row) instead of side-by-side,
+  // giving each the full column width. See AdjustmentConfig.stackPreviews.
+  stackPreviews?: boolean
+  // The object-fit the framed-image approximation uses (skipRealComponentPreview
+  // path). "contain" letterboxes the whole (cropped) image to match a field
+  // like InfoCards' "Resize image to fit"; defaults to "cover". Ignored on the
+  // real-component path, which renders the component's own fit.
+  objectFit?: "cover" | "contain"
+  // The real page layout the published page would render at — threaded
+  // through so a state without its own `layout` still previews the real
+  // shape instead of always defaulting to "content".
+  pageLayout?: IsomerPageLayoutType
   // Needed to pull the site's brand theme CSS vars into the preview iframe —
   // without them, classes like `bg-brand-canvas-inverse` resolve to nothing.
   siteId: number
@@ -69,6 +98,10 @@ const FRAME_DISPLAY_WIDTH: Record<string, number> = {
   desktop: 320,
 }
 const DEFAULT_FRAME_DISPLAY_WIDTH = 220
+// Wider width used when frames are stacked vertically (stackPreviews): each
+// frame has the whole column to itself, so it can be larger than the
+// side-by-side widths above.
+const STACKED_FRAME_DISPLAY_WIDTH = 360
 
 export const AdjustmentPreview = ({
   src,
@@ -78,8 +111,20 @@ export const AdjustmentPreview = ({
   scrim,
   block,
   imageFieldName,
+  fieldHost,
+  buildSingleItemPreviewBlock,
+  skipRealComponentPreview,
+  stackPreviews,
+  objectFit = "cover",
+  pageLayout,
   siteId,
 }: AdjustmentPreviewProps): JSX.Element => {
+  // When stacking, each frame gets the full column width; otherwise fall back
+  // to the per-breakpoint side-by-side widths.
+  const resolveDisplayWidth = (stateId: string): number =>
+    stackPreviews
+      ? STACKED_FRAME_DISPLAY_WIDTH
+      : (FRAME_DISPLAY_WIDTH[stateId] ?? DEFAULT_FRAME_DISPLAY_WIDTH)
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   // Surfaces the otherwise-silent fallback to the uncropped src, so a preview
@@ -230,18 +275,46 @@ export const AdjustmentPreview = ({
 
   // Real-component preview: render the actual published block (real copy,
   // scrim, frame behaviour) with the adjusted image + draft imageAdjustment
-  // spliced in, instead of the framed-<img> approximation below.
-  let previewComponent: React.ReactNode = null
-  if (block && typeof block === "object" && imageFieldName) {
+  // spliced in, instead of the framed-<img> approximation below. Rendered
+  // per-state (rather than once and reused) because a state can request a
+  // non-default `layout` (e.g. Blockquote's homepage/square variant).
+  const renderPreviewComponent = (
+    layout: AdjustmentPreviewState["layout"],
+  ): React.ReactNode => {
+    if (
+      !block ||
+      typeof block !== "object" ||
+      !fieldHost ||
+      typeof fieldHost !== "object" ||
+      !imageFieldName
+    )
+      return null
     try {
-      const component = {
-        ...block,
+      // Preview-only safety net: some components (e.g. Blockquote) gate
+      // whether they render the image at all on a sibling `imageAlt` field,
+      // to avoid publishing an inaccessible image when alt text was never
+      // filled in. An editor adjusting crop/focal mid-edit shouldn't have
+      // that silently blank the very image they're trying to preview — the
+      // real saved value (and the production render path) is untouched.
+      const existingAlt = (fieldHost as Record<string, unknown>).imageAlt
+      const hasAlt = typeof existingAlt === "string" && existingAlt.length > 0
+      const editedHost = {
+        ...fieldHost,
         [imageFieldName]: adjustedSrc,
         imageAdjustment: adjustment,
-      } as unknown as IsomerComponent
+        ...(hasAlt ? {} : { imageAlt: "Preview image" }),
+      }
+      let component: IsomerComponent
+      if (buildSingleItemPreviewBlock) {
+        const built = buildSingleItemPreviewBlock(block, editedHost, fieldHost)
+        if (!built) return null
+        component = built as IsomerComponent
+      } else {
+        component = editedHost as unknown as IsomerComponent
+      }
       const rendered = renderComponent({
         component,
-        layout: "content",
+        layout: layout ?? pageLayout ?? "content",
         site: PREVIEW_SITE_STUB,
         permalink: "",
         headingLevel: 1,
@@ -256,7 +329,7 @@ export const AdjustmentPreview = ({
       // wrapper the text/buttons sit flush left with no padding, even though
       // the background image (a separate, non-"component-content" sibling)
       // renders correctly full-bleed either way.
-      previewComponent = (
+      return (
         <div className="break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10">
           {rendered}
         </div>
@@ -266,9 +339,19 @@ export const AdjustmentPreview = ({
         "Failed to render real-component preview, falling back to approximation",
         error,
       )
-      previewComponent = null
+      return null
     }
   }
+
+  // Gate on the default-layout render succeeding (and on skipRealComponentPreview
+  // not opting out of it entirely) — a failure here falls through to the
+  // framed-<img> approximation below for every state, not just the one that
+  // failed. A state requesting a non-default `layout` re-renders on its own
+  // and, in the rarer case that only its specific layout throws, is simply
+  // skipped (its sibling states still render for real).
+  const defaultRender = skipRealComponentPreview
+    ? null
+    : renderPreviewComponent(undefined)
 
   const fetchErrorBanner = fetchError && (
     <Text textStyle="caption-2" color="utility.feedback.critical" mb="0.5rem">
@@ -277,34 +360,49 @@ export const AdjustmentPreview = ({
     </Text>
   )
 
-  if (previewComponent) {
+  if (defaultRender) {
     return (
       <VStack align="stretch" spacing={0} w="100%">
         {fetchErrorBanner}
-        <Flex wrap="wrap" align="flex-start" gap="1rem" w="100%">
-          {previewStates.map((state) => {
-            const displayWidth =
-              FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
-            return (
-              // The theme fetch suspends AND can throw; without the ErrorBoundary
-              // a failed getTheme would tear down the whole modal instead of this
-              // one frame degrading to a theme-less (but still correct) preview.
-              <ErrorBoundary
-                key={state.id}
-                fallbackRender={() => (
-                  <PreviewFrame state={state}>{previewComponent}</PreviewFrame>
-                )}
+        <Flex
+          direction={stackPreviews ? "column" : "row"}
+          wrap={stackPreviews ? "nowrap" : "wrap"}
+          align="flex-start"
+          gap="1rem"
+          w="100%"
+        >
+        {previewStates.map((state) => {
+          const displayWidth = resolveDisplayWidth(state.id)
+          const rendered = state.layout
+            ? renderPreviewComponent(state.layout)
+            : defaultRender
+          if (!rendered) return null
+          return (
+            // The theme fetch suspends AND can throw; without the ErrorBoundary
+            // a failed getTheme would tear down the whole modal instead of this
+            // one frame degrading to a theme-less (but still correct) preview.
+            <ErrorBoundary
+              key={state.id}
+              fallbackRender={() => (
+                <PreviewFrame state={state} displayWidth={displayWidth}>
+                  {rendered}
+                </PreviewFrame>
+              )}
+            >
+              <Suspense
+                fallback={<Skeleton w={`${displayWidth}px`} h="9rem" />}
               >
-                <Suspense
-                  fallback={<Skeleton w={`${displayWidth}px`} h="9rem" />}
+                <ThemedPreviewFrame
+                  siteId={siteId}
+                  state={state}
+                  displayWidth={displayWidth}
                 >
-                  <ThemedPreviewFrame siteId={siteId} state={state}>
-                    {previewComponent}
-                  </ThemedPreviewFrame>
-                </Suspense>
-              </ErrorBoundary>
-            )
-          })}
+                  {rendered}
+                </ThemedPreviewFrame>
+              </Suspense>
+            </ErrorBoundary>
+          )
+        })}
         </Flex>
       </VStack>
     )
@@ -313,80 +411,90 @@ export const AdjustmentPreview = ({
   return (
     <VStack align="stretch" spacing={0} w="100%">
       {fetchErrorBanner}
-      <Flex wrap="wrap" align="flex-start" gap="1rem" w="100%">
-        {previewStates.map((state) => {
-          const displayWidth =
-            FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
-          const aspect = state.aspectRatio
-            ? state.aspectRatio.width / state.aspectRatio.height
-            : 1
-          const displayHeight = displayWidth / aspect
+      <Flex
+        direction={stackPreviews ? "column" : "row"}
+        wrap={stackPreviews ? "nowrap" : "wrap"}
+        align="flex-start"
+        gap="1rem"
+        w="100%"
+      >
+      {previewStates.map((state) => {
+        const displayWidth = resolveDisplayWidth(state.id)
+        const aspect = state.aspectRatio
+          ? state.aspectRatio.width / state.aspectRatio.height
+          : 1
+        const displayHeight = displayWidth / aspect
 
-          const imageNode = (
-            <Box
-              as="img"
-              src={adjustedSrc}
-              alt={`Preview: ${state.label}`}
-              w="100%"
-              h="100%"
-              style={{
-                objectFit: "cover",
-                objectPosition: getFocalObjectPosition(adjustment?.focal),
-              }}
-            />
-          )
+        const imageNode = (
+          <Box
+            as="img"
+            src={adjustedSrc}
+            alt={`Preview: ${state.label}`}
+            w="100%"
+            h="100%"
+            style={{
+              objectFit,
+              // Mirror the renderer: focal is ignored under "contain" (the
+              // letterboxed image stays object-center), applied under "cover".
+              objectPosition:
+                objectFit === "contain"
+                  ? undefined
+                  : getFocalObjectPosition(adjustment?.focal),
+            }}
+          />
+        )
 
-          const frameContent = (
-            <Box w="100%" h="100%" position="relative" overflow="hidden">
-              {imageNode}
-              {/* Scrim overlay for contrast visualization */}
-              {scrim && (
-                <Box
-                  position="absolute"
-                  inset={0}
-                  className={scrim.className}
-                  pointerEvents="none"
-                />
-              )}
-            </Box>
-          )
-
-          return (
-            <VStack
-              key={state.id}
-              align="stretch"
-              spacing="0.5rem"
-              flexShrink={0}
-            >
-              {/* Label with optional viewport width */}
-              <Text
-                textStyle="body-2"
-                fontWeight="semibold"
-                color="base.content.medium"
-              >
-                {state.label}
-                {state.viewportWidth && ` (${state.viewportWidth}px)`}
-              </Text>
-
-              {/* Frame box, using the same per-breakpoint display width as
-                every other component's preview. */}
+        const frameContent = (
+          <Box w="100%" h="100%" position="relative" overflow="hidden">
+            {imageNode}
+            {/* Scrim overlay for contrast visualization */}
+            {scrim && (
               <Box
-                borderWidth="1px"
-                borderColor="base.divider.medium"
-                borderRadius="0.25rem"
-                overflow="hidden"
-                bg="base.canvas.default"
-                position="relative"
-                style={{
-                  width: displayWidth,
-                  height: displayHeight,
-                }}
-              >
-                {frameContent}
-              </Box>
-            </VStack>
-          )
-        })}
+                position="absolute"
+                inset={0}
+                className={scrim.className}
+                pointerEvents="none"
+              />
+            )}
+          </Box>
+        )
+
+        return (
+          <VStack
+            key={state.id}
+            align="stretch"
+            spacing="0.5rem"
+            flexShrink={0}
+          >
+            {/* Label with optional viewport width */}
+            <Text
+              textStyle="body-2"
+              fontWeight="semibold"
+              color="base.content.medium"
+            >
+              {state.label}
+              {state.viewportWidth && ` (${state.viewportWidth}px)`}
+            </Text>
+
+            {/* Frame box, using the same per-breakpoint display width as
+                every other component's preview. */}
+            <Box
+              borderWidth="1px"
+              borderColor="base.divider.medium"
+              borderRadius="0.25rem"
+              overflow="hidden"
+              bg="base.canvas.default"
+              position="relative"
+              style={{
+                width: displayWidth,
+                height: displayHeight,
+              }}
+            >
+              {frameContent}
+            </Box>
+          </VStack>
+        )
+      })}
       </Flex>
     </VStack>
   )
@@ -411,10 +519,12 @@ export const AdjustmentPreview = ({
 // ErrorBoundary fallback above.
 const PreviewFrame = ({
   state,
+  displayWidth,
   themeCssVars,
   children,
 }: {
   state: AdjustmentPreviewState
+  displayWidth: number
   themeCssVars?: CSSProperties
   children: React.ReactNode
 }) => {
@@ -446,8 +556,6 @@ const PreviewFrame = ({
     [],
   )
 
-  const displayWidth =
-    FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
   const scale = displayWidth / viewportWidth
 
   return (
@@ -500,15 +608,21 @@ const PreviewFrame = ({
 const ThemedPreviewFrame = ({
   siteId,
   state,
+  displayWidth,
   children,
 }: {
   siteId: number
   state: AdjustmentPreviewState
+  displayWidth: number
   children: React.ReactNode
 }) => {
   const themeCssVars = useSiteThemeCssVars({ siteId })
   return (
-    <PreviewFrame state={state} themeCssVars={themeCssVars}>
+    <PreviewFrame
+      state={state}
+      displayWidth={displayWidth}
+      themeCssVars={themeCssVars}
+    >
       {children}
     </PreviewFrame>
   )

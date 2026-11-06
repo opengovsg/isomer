@@ -114,3 +114,9 @@ export const useEditorDrawerContext = () => {
 
   return editorDrawerContext
 }
+
+// Non-throwing variant for components mounted both inside and outside the
+// provider (e.g. JsonFormsImageControl, shared between the page editor and
+// the link editor, which has no EditorDrawerProvider).
+export const useOptionalEditorDrawerContext = () =>
+  useContext(EditorDrawerContext)

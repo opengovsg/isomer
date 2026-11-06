@@ -1,3 +1,5 @@
+import { IMAGE_FIT } from "@opengovsg/isomer-components"
+
 import type {
   AdjustmentConfig,
   AdjustmentPreviewState,
@@ -7,6 +9,48 @@ import type {
 // Narrow an unknown block to read its discriminators safely.
 const asBlock = (block: unknown): { type?: string; variant?: string } =>
   typeof block === "object" && block !== null ? block : {}
+
+// InfoCards is Tier C: a card is always adjustable (you can crop the image that
+// is then displayed) regardless of its imageFit, but the controls offered depend
+// on the fit. Under "cover" ("Default") the card crops the image to fill its
+// frame, so both crop and focal apply. Under "contain" ("Resize image to fit")
+// the whole image is letterboxed, so the focal anchor has nothing to do — crop
+// stays available (it defines the region that is then letterboxed), focal is
+// hidden. imageFit is optional and defaults to "cover". The fieldHost here is
+// the individual card object.
+const infoCardFocalEnabled = (fieldHost: unknown): boolean =>
+  (fieldHost as { imageFit?: string } | null)?.imageFit !== IMAGE_FIT.Content
+
+// Builds the block the real-component preview renders: the owner InfoCards
+// block, heading/footer chrome blanked out (the preview is about one card's
+// crop/focal, not the section copy), with the edited card spliced back into
+// `cards` BY REFERENCE in its real position — so every sibling card still
+// renders unchanged, in the real grid, at its real column width/shape. Falls
+// back to a single-card array if the original card can't be found there
+// (e.g. called with a detached card object).
+const buildInfoCardsPreviewBlock = (
+  block: unknown,
+  card: Record<string, unknown>,
+  originalCard?: unknown,
+): unknown => {
+  if (typeof block !== "object" || block === null) return undefined
+  const blockRecord = block as Record<string, unknown>
+  const siblings: unknown[] = Array.isArray(blockRecord.cards)
+    ? blockRecord.cards
+    : []
+  const cards =
+    originalCard !== undefined && siblings.includes(originalCard)
+      ? siblings.map((c) => (c === originalCard ? card : c))
+      : [card]
+  return {
+    ...blockRecord,
+    title: "",
+    subtitle: undefined,
+    label: undefined,
+    url: undefined,
+    cards,
+  }
+}
 
 // Every Tier B config previews at the same three breakpoint viewport widths
 // (mobile 375 / tablet 768 / desktop 1280); only the aspect-ratio guess differs
@@ -143,6 +187,110 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
     "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed.",
 }
 
+// Tier A — fixed 3:2 crop (aspect-[3/2]), no focal; the image crop is the same
+// shape at every breakpoint. Like Contentpic, the crop is baked into the src so
+// the renderer needs nothing at runtime. Risk-first per the orchestration plan:
+// the floating text card overlaps the bottom of the image, so the real-component
+// preview (which renders the actual overlapping card) is what lets an editor
+// catch a subject hidden behind it. That overlap is breakpoint-specific — the
+// card sits -1.5rem into a full-width image below md, -10rem at md, then
+// -17.85rem over a 66.67%-wide image at lg — so preview all three regimes; a
+// single desktop state would hide how much the card covers on mobile/tablet.
+// The 3:2 aspectRatio is only the pre-measure flash guess (PreviewFrame measures
+// the real height, which includes the overlapping card).
+const HERO_FLOATING_CONFIG: AdjustmentConfig = {
+  componentType: "hero:floating",
+  cropMode: "fixed",
+  focalEnabled: false,
+  lockedRatios: [{ width: 3, height: 2 }],
+  previewStates: responsivePreviewStates({
+    mobile: { width: 3, height: 2 },
+    tablet: { width: 3, height: 2 },
+    desktop: { width: 3, height: 2 },
+  }),
+  preUploadCopy:
+    "Use a high-resolution image (at least 1500×1000px) with a 3:2 aspect ratio. Keep key subjects out of the bottom third — the text card floats over it.",
+}
+
+// Tier A — fixed 1:1 crop, no focal; crop is baked into the src like every
+// other Tier A component. Blockquote renders the SAME 1:1 image two different
+// shapes depending on the page's layout — a circle (rounded-full, every
+// layout except homepage/notfound) or a square (homepage) — so both are
+// previewed, each forcing its own `layout` on the shared real-component
+// preview (see AdjustmentPreview's per-state layout override) rather than
+// relying on a breakpoint/viewport difference.
+const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
+  componentType: "blockquote",
+  cropMode: "fixed",
+  focalEnabled: false,
+  lockedRatios: [{ width: 1, height: 1 }],
+  // Both states are 1:1 — side-by-side they'd be small; stack them so each
+  // circle/square mask gets the full preview column width.
+  stackPreviews: true,
+  previewStates: [
+    {
+      id: "circle",
+      label: "Circle (content pages)",
+      layout: "content",
+      viewportWidth: 768,
+      aspectRatio: { width: 1, height: 1 },
+    },
+    {
+      id: "square",
+      label: "Square (homepage)",
+      layout: "homepage",
+      viewportWidth: 768,
+      aspectRatio: { width: 1, height: 1 },
+    },
+  ],
+  preUploadCopy:
+    "Use a square (1:1) image, at least 240×240px. The subject should sit centered — this image is masked into a circle on most pages.",
+}
+
+// Tier C — InfoCards "cards with images". Per-card image cover-fit into a card
+// whose aspect ratio swings across breakpoints (3:2 on mobile → 1:1 at lg for
+// the default 3-column content layout, or 2:1 for a 2-column homepage), so this
+// is the Tier-B cover+focal pattern (free crop baked in, focal anchors the
+// subject across the swing). Crop is always offered; focal is offered only under
+// imageFit "cover" (focalEnabledFor) — under "contain" the image is letterboxed,
+// so the focal control is hidden. The preview renders the real single card (via
+// buildPreviewBlock) at plain responsive breakpoints — the ratios below are only
+// the pre-measure guess, the real rendered card shape always wins.
+const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
+  componentType: "infocards:cardsWithImages",
+  cropMode: "custom",
+  focalEnabled: true,
+  focalEnabledFor: infoCardFocalEnabled,
+  buildSingleItemPreviewBlock: buildInfoCardsPreviewBlock,
+  previewStates: responsivePreviewStates({
+    mobile: { width: 3, height: 2 },
+    tablet: { width: 3, height: 2 },
+    desktop: { width: 1, height: 1 },
+  }),
+  preUploadCopy:
+    "The card crops this image to fill its frame, and the frame's shape changes across screen sizes. Set a focal point so your key subject stays in view.",
+}
+
+// Tier C — InfoCards "cards with full images". Same conditional crop/focal as
+// the default variant, but the image fills the whole card (square on mobile →
+// 2:3 portrait at lg) with a dark bottom gradient the title sits over. The
+// preview renders the real card, so the real gradient/title show directly —
+// no separate scrim approximation needed.
+const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
+  componentType: "infocards:cardsWithFullImages",
+  cropMode: "custom",
+  focalEnabled: true,
+  focalEnabledFor: infoCardFocalEnabled,
+  buildSingleItemPreviewBlock: buildInfoCardsPreviewBlock,
+  previewStates: responsivePreviewStates({
+    mobile: { width: 1, height: 1 },
+    tablet: { width: 1, height: 1 },
+    desktop: { width: 2, height: 3 },
+  }),
+  preUploadCopy:
+    "The card crops this image to fill its frame and overlays the title on a dark gradient at the bottom. Keep your key subject in the upper half and set a focal point to anchor it.",
+}
+
 /**
  * Resolves the adjustment config for an image field, by the containing block's
  * discriminators. Returns undefined for components not yet wired — the entry
@@ -153,11 +301,39 @@ export function resolveAdjustmentConfig(args: {
   fieldName: string
 }): AdjustmentConfig | undefined {
   const { type, variant } = asBlock(args.block)
-  if (type === "hero" && variant === "gradient") return HERO_GRADIENT_CONFIG
-  if (type === "hero" && variant === "largeImage")
+  const { fieldName } = args
+  if (type === "hero" && variant === "gradient" && fieldName === "backgroundUrl")
+    return HERO_GRADIENT_CONFIG
+  if (
+    type === "hero" &&
+    variant === "largeImage" &&
+    fieldName === "backgroundUrl"
+  )
     return HERO_LARGE_IMAGE_CONFIG
-  if (type === "hero" && variant === "block") return HERO_BLOCK_CONFIG
-  if (type === "contentpic") return CONTENTPIC_CONFIG
-  if (type === "infopic") return INFOPIC_CONFIG
+  if (type === "hero" && variant === "block" && fieldName === "backgroundUrl")
+    return HERO_BLOCK_CONFIG
+  if (
+    type === "hero" &&
+    variant === "floating" &&
+    fieldName === "backgroundUrl"
+  )
+    return HERO_FLOATING_CONFIG
+  if (type === "contentpic" && fieldName === "imageSrc")
+    return CONTENTPIC_CONFIG
+  if (type === "infopic" && fieldName === "imageSrc") return INFOPIC_CONFIG
+  if (type === "blockquote" && fieldName === "imageSrc")
+    return BLOCKQUOTE_CONFIG
+  if (
+    type === "infocards" &&
+    variant === "cardsWithImages" &&
+    fieldName === "imageUrl"
+  )
+    return INFOCARDS_WITH_IMAGES_CONFIG
+  if (
+    type === "infocards" &&
+    variant === "cardsWithFullImages" &&
+    fieldName === "imageUrl"
+  )
+    return INFOCARDS_WITH_FULL_IMAGE_CONFIG
   return undefined
 }
