@@ -3,7 +3,7 @@ import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment, useToast } from "@opengovsg/design-system-react"
 import { uniq } from "lodash-es"
 import dynamic from "next/dynamic"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
@@ -52,10 +52,21 @@ export const FileAttachment = ({
   const { handleAssetUpload, isLoading } = useAssetUpload({})
   const toast = useToast()
 
+  // setHref is recreated on every render by callers (it's an inline closure
+  // over path/handleChange). Listing it as a dependency makes the effect
+  // re-fire on every render while isLoading is true, and each re-fire writes
+  // "" back into the form state, racing with and clobbering the real
+  // uploaded src. A ref keeps this effect tied only to isLoading's actual
+  // true/false transitions, which is the real intent.
+  const setHrefRef = useRef(setHref)
+  useEffect(() => {
+    setHrefRef.current = setHref
+  })
+
   useEffect(() => {
     // NOTE: The outer link modal uses this to disable the button
-    if (isLoading) setHref("")
-  }, [isLoading, setHref])
+    if (isLoading) setHrefRef.current("")
+  }, [isLoading])
 
   const doUpload = (file: File) => {
     uploadFile(
@@ -65,7 +76,7 @@ export const FileAttachment = ({
           onUploadedFile?.(file)
           if (shouldFetchResource) {
             void handleAssetUpload(path)
-              .then((src) => setHref(src))
+              .then((src) => setHrefRef.current(src))
               .catch(() => {
                 toast({
                   title: "Failed to upload file",
@@ -74,7 +85,7 @@ export const FileAttachment = ({
                   ...BRIEF_TOAST_SETTINGS,
                 })
               })
-          } else setHref(path)
+          } else setHrefRef.current(path)
         },
       },
     )
@@ -93,7 +104,7 @@ export const FileAttachment = ({
             onRejection={setRejections}
             onChange={(file) => {
               if (!file) {
-                setHref(undefined)
+                setHrefRef.current(undefined)
                 return
               }
 
@@ -126,7 +137,7 @@ export const FileAttachment = ({
                   })
 
               if (parseResult.success) return null
-              // NOTE: safe assertion here because we're in error path and there's at least 1 error
+              // NOTE: safe assertion, we're in the error path and there's at least 1 error
               return (
                 parseResult.error.issues[0]?.message ||
                 "Please ensure that your file begins with alphanumeric characters!"
