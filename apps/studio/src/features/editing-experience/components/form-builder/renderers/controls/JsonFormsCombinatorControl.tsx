@@ -122,7 +122,8 @@ function JsonFormsCombinatorControl({
   data,
   combinatorType,
 }: JsonFormsCombinatorControlProps) {
-  // NOTE: Memoised for a stable uischema, see JsonFormsAllOfControl
+  // NOTE: Memoised as each call generates a new uischema, which re-renders
+  // every control in the active branch
   const renderInfos = useMemo(
     () =>
       createCombinatorRenderInfos(
