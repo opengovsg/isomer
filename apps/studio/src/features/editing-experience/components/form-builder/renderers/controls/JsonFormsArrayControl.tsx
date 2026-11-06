@@ -1,8 +1,9 @@
-import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
-import { Box, HStack, Text, VStack } from "@chakra-ui/react"
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import type {
+  ArrayLayoutProps,
+  RankedTester,
+  UISchemaElement,
+} from "@jsonforms/core"
 import {
-  composePaths,
   createDefaultValue,
   isObjectArrayControl,
   isPrimitiveArrayControl,
@@ -12,11 +13,9 @@ import {
 import { withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { AddItemButton } from "../../components/AddItemButton"
+import { DraggableArrayList } from "../../components/DraggableArrayList"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
-import { EmptyArray } from "../../components/EmptyArray"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
-import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
@@ -24,7 +23,16 @@ export const jsonFormsArrayControlTester: RankedTester = rankWith(
   or(isObjectArrayControl, isPrimitiveArrayControl),
 )
 
-function JsonFormsArrayControl(props: ArrayLayoutProps) {
+export function JsonFormsArrayControl({
+  createItem,
+  childLabelProp,
+  mapDrawerUiSchema,
+  ...props
+}: ArrayLayoutProps & {
+  createItem?: () => unknown
+  childLabelProp?: string
+  mapDrawerUiSchema?: (uischema: UISchemaElement) => UISchemaElement
+}) {
   const {
     data,
     path,
@@ -41,7 +49,6 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
     moveDown,
     description,
   } = props
-  const { hasErrorAt } = useBuilderErrors()
   const arrayResult = useArray({
     data,
     path,
@@ -63,95 +70,53 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
   } = arrayResult
 
   return (
-    <NestedDrawerSwitch {...props} {...arrayResult}>
-      <VStack spacing={0} align="start" data-path={path}>
-        <VStack align="start" spacing="0.25rem" w="full">
-          <HStack w="full" justifyContent="space-between" align="center">
-            <Text textStyle="subhead-1" flex={1}>
-              {label}
-            </Text>
-            <AddItemButton
-              onClick={() => {
-                addItem(path, createDefaultValue(schema, rootSchema))()
-                setSelectedIndex(data)
-              }}
-              isDisabled={isAddItemDisabled}
+    <NestedDrawerSwitch
+      {...props}
+      {...arrayResult}
+      childUiSchema={
+        mapDrawerUiSchema ? mapDrawerUiSchema(childUiSchema) : childUiSchema
+      }
+    >
+      <DraggableArrayList
+        label={label}
+        description={description}
+        path={path}
+        count={data}
+        isAddDisabled={isAddItemDisabled}
+        onAdd={() => {
+          addItem(
+            path,
+            createItem ? createItem() : createDefaultValue(schema, rootSchema),
+          )()
+          setSelectedIndex(data)
+        }}
+        onDragEnd={onDragEnd}
+        renderRow={(index, { hasError, dragHandleProps }) => (
+          <>
+            <DraggableTagButton.Handle
+              dragHandleProps={dragHandleProps}
+              py={hasError ? "0.75rem" : "1.25rem"}
+            />
+            <DraggableTagButton.Body
+              onClick={() => setSelectedIndex(index)}
+              py={hasError ? "0.75rem" : "1rem"}
             >
-              Add item
-            </AddItemButton>
-          </HStack>
-          {description && (
-            <Text textStyle="body-2" textColor="base.content.default">
-              {description}
-            </Text>
-          )}
-        </VStack>
-        <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="blocks">
-              {({ droppableProps, innerRef, placeholder }) => (
-                <VStack
-                  {...droppableProps}
-                  align="baseline"
-                  w="100%"
-                  h="100%"
-                  spacing={0}
-                  ref={innerRef}
-                >
-                  {data === 0 && <EmptyArray />}
-
-                  {[...Array(data).keys()].map((index) => {
-                    const childPath = composePaths(path, `${index}`)
-                    const hasError = hasErrorAt(childPath)
-
-                    return (
-                      <Draggable
-                        key={childPath}
-                        draggableId={childPath}
-                        disableInteractiveElementBlocking
-                        index={index}
-                      >
-                        {({ draggableProps, dragHandleProps, innerRef }) => (
-                          <DraggableTagButton.Root
-                            draggableProps={draggableProps}
-                            isError={hasError}
-                            ref={innerRef}
-                          >
-                            <DraggableTagButton.Handle
-                              dragHandleProps={dragHandleProps}
-                              py={hasError ? "0.75rem" : "1.25rem"}
-                            />
-                            <DraggableTagButton.Body
-                              onClick={() => setSelectedIndex(index)}
-                              py={hasError ? "0.75rem" : "1rem"}
-                            >
-                              <DraggableTagButton.Content>
-                                <DraggableTagButton.Label
-                                  index={index}
-                                  path={path}
-                                  schema={schema}
-                                  uischema={childUiSchema}
-                                  enabled={enabled}
-                                  removeItem={handleRemoveSelectedItem}
-                                />
-                                {hasError && (
-                                  <DraggableTagButton.ErrorCaption />
-                                )}
-                              </DraggableTagButton.Content>
-                            </DraggableTagButton.Body>
-                          </DraggableTagButton.Root>
-                        )}
-                      </Draggable>
-                    )
-                  })}
-
-                  {placeholder}
-                </VStack>
-              )}
-            </Droppable>
-          </DragDropContext>
-        </Box>
-      </VStack>
+              <DraggableTagButton.Content>
+                <DraggableTagButton.Label
+                  {...(childLabelProp ? { childLabelProp } : {})}
+                  index={index}
+                  path={path}
+                  schema={schema}
+                  uischema={childUiSchema}
+                  enabled={enabled}
+                  removeItem={handleRemoveSelectedItem}
+                />
+                {hasError && <DraggableTagButton.ErrorCaption />}
+              </DraggableTagButton.Content>
+            </DraggableTagButton.Body>
+          </>
+        )}
+      />
     </NestedDrawerSwitch>
   )
 }

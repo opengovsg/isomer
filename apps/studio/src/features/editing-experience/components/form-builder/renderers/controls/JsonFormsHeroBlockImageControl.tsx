@@ -21,11 +21,6 @@ import {
 
 type HeroBlockImageData = NonNullable<HeroBlockProps["blockImage"]>
 
-// Text-only position choices — no card-style hover (edge previews keep default).
-const imagePositionRadioCss = {
-  _hover: { bg: "none" },
-}
-
 export const jsonFormsHeroBlockImageControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.HeroBlockImageControl,
   and(
@@ -72,26 +67,30 @@ function JsonFormsHeroBlockImageControl({
             value={HERO_BLOCK_IMAGE_POSITION.right}
             allowDeselect={false}
             size="sm"
-            __css={imagePositionRadioCss}
           >
             Right
+            <Box mt="0.625rem">
+              <HeroBlockImagePreviewRightStraightIcon />
+            </Box>
           </Radio>
           <Radio
             value={HERO_BLOCK_IMAGE_POSITION.left}
             allowDeselect={false}
             size="sm"
-            __css={imagePositionRadioCss}
           >
             <Flex as="span" align="center">
               Left
               <NewFeatureBadge />
             </Flex>
+            <Box mt="0.625rem">
+              <HeroBlockImagePreviewLeftStraightIcon />
+            </Box>
           </Radio>
         </Radio.RadioGroup>
       </FormControl>
 
       <FormControl isRequired gap="0.5rem">
-        <FormLabel description="Check the desktop layout in Fullscreen, under preview options">
+        <FormLabel description="Check the desktop layout in Full screen, under preview options">
           Image edge
         </FormLabel>
         <Radio.RadioGroup
