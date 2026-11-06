@@ -175,6 +175,11 @@ export const getPresignedPutUrlForBakeSchema = z.object({
   src: z.string({
     error: "Missing image source",
   }),
+  // The true original's key — used only to derive the baked file's leaf name so
+  // it keeps the uploader's filename (e.g. "beach-photo-<uuid>.png").
+  originalKey: z.string({
+    error: "Missing original image key",
+  }),
   ext: z.enum(BAKEABLE_EXTENSIONS, {
     error: "Unsupported image format. Use jpeg, png, or webp.",
   }),
@@ -184,7 +189,3 @@ export const getPresignedPutUrlForBakeSchema = z.object({
     error: `File size must not exceed ${formatFileSizeLimit({ bytes: MAX_IMG_FILE_SIZE_BYTES })}`,
   }),
 })
-
-export type GetPresignedPutUrlForBakeInput = z.infer<
-  typeof getPresignedPutUrlForBakeSchema
->

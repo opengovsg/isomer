@@ -66,8 +66,6 @@ describe("resolveAdjustmentConfig", () => {
   // registry entry can't silently light the modal up on one of them.
   describe("Tier D (preserve-only) blocks resolve no config", () => {
     const tierDBlocks = [
-      { type: "image" },
-      { type: "imagegallery" },
       ...INTENTIONALLY_NOT_ADJUSTABLE.map((type) => ({ type })),
     ]
     for (const block of tierDBlocks) {
@@ -77,6 +75,48 @@ describe("resolveAdjustmentConfig", () => {
         ).toBeUndefined()
       })
     }
+  })
+
+  // Native Image block (P2a): the one block that offers a free-form crop with no
+  // focal point — it renders at its own cropped aspect ratio, so nothing
+  // cover-fits and an anchor would have nothing to anchor. Lock in custom/no-focal
+  // and that it previews the real component (not the framed approximation).
+  describe("image (P2a — free-form crop)", () => {
+    const config = resolveAdjustmentConfig({
+      block: { type: "image" },
+      fieldName: "src",
+    })
+
+    it("resolves a custom-crop, no-focal config", () => {
+      expect(config).toBeDefined()
+      expect(config?.cropMode).toBe("custom")
+      expect(config?.focalEnabled).toBe(false)
+      expect(config?.lockedRatios).toBeUndefined()
+      expect(config?.skipRealComponentPreview).toBeFalsy()
+      expect(config?.previewStates.length).toBeGreaterThan(0)
+    })
+  })
+
+  // ImageGallery (P2b): array-nested, always letterboxed (object-contain). Crop
+  // is offered but there's no focal (nothing cover-fits), and the preview uses
+  // the framed approximation with a contain fit (the real component renders the
+  // whole gallery, not the single image being edited).
+  describe("imagegallery (P2b — crop, letterboxed)", () => {
+    const config = resolveAdjustmentConfig({
+      block: { type: "imagegallery" },
+      fieldName: "src",
+    })
+
+    it("resolves a custom-crop, no-focal, contain-preview config", () => {
+      expect(config).toBeDefined()
+      expect(config?.cropMode).toBe("custom")
+      expect(config?.focalEnabled).toBe(false)
+      expect(config?.lockedRatios).toBeUndefined()
+      // Array-nested: preview the single image framed, not the whole gallery.
+      expect(config?.skipRealComponentPreview).toBe(true)
+      // Always letterboxed → the preview must contain, never cover.
+      expect(config?.previewObjectFitFor?.({})).toBe("contain")
+    })
   })
 
   describe("hero:floating", () => {
@@ -112,9 +152,11 @@ describe("resolveAdjustmentConfig", () => {
         expect(config).toBeDefined()
         expect(config?.cropMode).toBe("custom")
         expect(config?.focalEnabled).toBe(true)
-        // Array-nested field: preview renders the real card in its real
-        // position, not a hand-built approximation.
-        expect(config?.buildSingleItemPreviewBlock).toBeDefined()
+        // Array-nested field: both variants render the real card in its real
+        // position (alongside its real siblings), not a hand-built
+        // approximation — every other wired component gets a real preview too.
+        expect(config?.skipRealComponentPreview).toBeFalsy()
+        expect(config?.buildSingleItemPreviewBlock).toBeTypeOf("function")
       }
     })
 
@@ -150,11 +192,11 @@ describe("resolveAdjustmentConfig", () => {
         cards: [originalCard, { imageUrl: "/other.png" }],
       }
       const editedCard = { imageUrl: "/new.png" }
-      const preview = withImages?.buildSingleItemPreviewBlock?.(
+      const preview = withImages!.buildSingleItemPreviewBlock!(
         block,
         editedCard,
         originalCard,
-      ) as Record<string, unknown>
+      )!
       expect(preview.cards).toEqual([editedCard, { imageUrl: "/other.png" }])
       expect(preview.title).toBe("")
       expect(preview.subtitle).toBeUndefined()
@@ -171,10 +213,10 @@ describe("resolveAdjustmentConfig", () => {
         cards: [{ imageUrl: "/a.png" }],
       }
       const detachedCard = { imageUrl: "/detached.png" }
-      const preview = withImages?.buildSingleItemPreviewBlock?.(
+      const preview = withImages!.buildSingleItemPreviewBlock!(
         block,
         detachedCard,
-      ) as Record<string, unknown>
+      )!
       expect(preview.cards).toEqual([detachedCard])
     })
 
@@ -226,6 +268,207 @@ describe("resolveAdjustmentConfig", () => {
 
       expect(html).toContain("Real title")
       expect(html).toContain("bg-gradient-to-t")
+    })
+
+    // The real card frame (InfoCards/common.ts cardImageContainer) is 3:2 at
+    // every breakpoint EXCEPT lg+, where only two combos are overridden:
+    // homepage+2-column -> 2:1, default(content-page)+3-column -> 1:1 square.
+    // Every other combo (including 1-column, which has no lg override) stays
+    // 3:2 for both layouts. The preview must reflect the block's own
+    // maxColumns, previewing both layouts only where they actually diverge.
+    describe("desktop preview states follow the block's maxColumns", () => {
+      const desktopStatesFor = (maxColumns?: string) =>
+        resolveAdjustmentConfig({
+          block: { type: "infocards", variant: "cardsWithImages", maxColumns },
+          fieldName: "imageUrl",
+        })?.previewStates.filter((s) => s.id !== "mobile")
+
+      it("3 columns (default): previews content-page square and homepage 3:2 separately", () => {
+        const states = desktopStatesFor("3")
+        expect(states?.map((s) => s.layout)).toEqual(["content", "homepage"])
+        expect(states?.map((s) => s.aspectRatio)).toEqual([
+          { width: 1, height: 1 },
+          { width: 3, height: 2 },
+        ])
+      })
+
+      it("2 columns: previews content-page 3:2 and homepage 2:1 separately", () => {
+        const states = desktopStatesFor("2")
+        expect(states?.map((s) => s.layout)).toEqual(["content", "homepage"])
+        expect(states?.map((s) => s.aspectRatio)).toEqual([
+          { width: 3, height: 2 },
+          { width: 2, height: 1 },
+        ])
+      })
+
+      it("1 column: both layouts render the same 3:2 shape, so a single state covers it", () => {
+        const states = desktopStatesFor("1")
+        expect(states).toHaveLength(1)
+        expect(states?.[0]?.aspectRatio).toEqual({ width: 3, height: 2 })
+      })
+
+      it("defaults to 3 columns when maxColumns is unset", () => {
+        expect(desktopStatesFor(undefined)).toEqual(desktopStatesFor("3"))
+      })
+    })
+  })
+
+  describe("blockquote (per-state layout override)", () => {
+    const config = resolveAdjustmentConfig({
+      block: { type: "blockquote" },
+      fieldName: "imageSrc",
+    })
+
+    // Blockquote renders the same 1:1 image as a circle everywhere except the
+    // homepage, where it's a square — a real-component preview regression here
+    // would mean an editor never sees the shape their crop will actually take.
+    it("previews a circle state for content pages and a square state for the homepage", () => {
+      expect(config).toBeDefined()
+      expect(config?.previewStates).toEqual([
+        expect.objectContaining({ id: "circle", layout: "content" }),
+        expect.objectContaining({ id: "square", layout: "homepage" }),
+      ])
+    })
+
+    it("stacks the two 1:1 states instead of showing them side-by-side", () => {
+      expect(config?.stackPreviews).toBe(true)
+    })
+  })
+
+  // Regression (resolutionWarning gap): every custom-crop (free-aspect)
+  // cover-fit component must supply maxRenderedHeightPx, not just
+  // maxRenderedWidthPx — otherwise computeLowResWarning only ever checks the
+  // crop's width, and a wide-but-short custom crop (e.g. a 1300×300 region)
+  // can pass the width check while still blurring out when the component
+  // stretches it to fill a tall cover frame. Values are derived from each
+  // component's actual rendered frame height (see the config comments) or,
+  // where the frame itself has no fixed height, the Isomer image guidelines'
+  // minimum (Notion). Fixed-ratio (cropMode "fixed") components are exempt:
+  // the UI constrains their crop to a locked aspect, so width and height can
+  // never diverge independently.
+  describe("custom-crop cover-fit components configure a height threshold", () => {
+    const cases: {
+      label: string
+      block: unknown
+      fieldName: string
+      expectedHeight: number
+    }[] = [
+      {
+        label: "hero:gradient",
+        block: { type: "hero", variant: "gradient" },
+        fieldName: "backgroundUrl",
+        expectedHeight: 500,
+      },
+      {
+        label: "hero:block",
+        block: { type: "hero", variant: "block" },
+        fieldName: "backgroundUrl",
+        expectedHeight: 500,
+      },
+      {
+        label: "hero:largeImage",
+        block: { type: "hero", variant: "largeImage" },
+        fieldName: "backgroundUrl",
+        expectedHeight: 640,
+      },
+      {
+        label: "infopic",
+        block: { type: "infopic" },
+        fieldName: "imageSrc",
+        expectedHeight: 400,
+      },
+      {
+        label: "infocards:cardsWithImages",
+        block: { type: "infocards", variant: "cardsWithImages" },
+        fieldName: "imageUrl",
+        expectedHeight: 427,
+      },
+      {
+        label: "infocards:cardsWithFullImages",
+        block: { type: "infocards", variant: "cardsWithFullImages" },
+        fieldName: "imageUrl",
+        expectedHeight: 640,
+      },
+    ]
+
+    for (const { label, block, fieldName, expectedHeight } of cases) {
+      it(`${label} sets maxRenderedHeightPx (${expectedHeight})`, () => {
+        const config = resolveAdjustmentConfig({ block, fieldName })
+        expect(config?.cropMode).toBe("custom")
+        expect(config?.maxRenderedHeightPx).toBe(expectedHeight)
+      })
+    }
+  })
+
+  // Focal point rule: the control is only ever worth offering when the
+  // component's rendered frame actually reshapes across breakpoints — that's
+  // the only situation where an anchor point has anything to do. A fixed crop
+  // baked once (same shape everywhere) or a letterboxed/contain frame (whole
+  // image always shown, regardless of frame shape) leaves focal with nothing
+  // to anchor. Locks this invariant in across the whole registry so a future
+  // entry can't set focalEnabled ad hoc.
+  describe("focal point is offered only for breakpoint-reshaping (responsive cover) frames", () => {
+    it("responsive cover-fit components have focal enabled", () => {
+      const responsiveBlocks = [
+        { block: { type: "hero", variant: "gradient" }, fieldName: "backgroundUrl" }, // 16:10 -> 2:1 -> 5:2
+        { block: { type: "hero", variant: "block" }, fieldName: "backgroundUrl" }, // stacked band -> side-by-side
+        { block: { type: "hero", variant: "largeImage" }, fieldName: "backgroundUrl" }, // square -> 2:1
+        { block: { type: "infopic" }, fieldName: "imageSrc" }, // 5:4 -> 2:1 -> 3:1
+      ]
+      for (const { block, fieldName } of responsiveBlocks) {
+        const config = resolveAdjustmentConfig({ block, fieldName })
+        expect(config?.focalEnabled).toBe(true)
+      }
+    })
+
+    it("fixed-crop (baked-once, same shape every breakpoint) components have focal disabled", () => {
+      const fixedBlocks = [
+        { block: { type: "contentpic" }, fieldName: "imageSrc" }, // aspect-[5/6] always
+        { block: { type: "blockquote" }, fieldName: "imageSrc" }, // 1:1 always (circle/square mask only)
+        { block: { type: "hero", variant: "floating" }, fieldName: "backgroundUrl" }, // aspect-[3/2] always
+      ]
+      for (const { block, fieldName } of fixedBlocks) {
+        const config = resolveAdjustmentConfig({ block, fieldName })
+        expect(config?.cropMode).toBe("fixed")
+        expect(config?.focalEnabled).toBe(false)
+      }
+    })
+
+    it("free-form or letterboxed (object-contain) components have focal disabled even though cropMode is custom", () => {
+      // Native Image block: free-form crop, renders at its own cropped
+      // aspect with no frame to cover-fit into.
+      const image = resolveAdjustmentConfig({
+        block: { type: "image" },
+        fieldName: "src",
+      })
+      expect(image?.cropMode).toBe("custom")
+      expect(image?.focalEnabled).toBe(false)
+
+      // ImageGallery: frame height/ratio does vary by breakpoint, but it's
+      // always object-contain (letterboxed) -- the whole image is shown
+      // regardless of frame shape, so there's still nothing to anchor.
+      const gallery = resolveAdjustmentConfig({
+        block: { type: "imagegallery" },
+        fieldName: "src",
+      })
+      expect(gallery?.cropMode).toBe("custom")
+      expect(gallery?.focalEnabled).toBe(false)
+    })
+
+    it("InfoCards (Tier C) ties focal to imageFit, not just the responsive frame", () => {
+      // The InfoCards frame genuinely reshapes across breakpoints/columns
+      // (common.ts cardImageContainer), so focalEnabled defaults to true --
+      // but focalEnabledFor hides it once imageFit is "contain", since a
+      // letterboxed image has nothing for focal to anchor either.
+      for (const variant of ["cardsWithImages", "cardsWithFullImages"]) {
+        const config = resolveAdjustmentConfig({
+          block: { type: "infocards", variant },
+          fieldName: "imageUrl",
+        })
+        expect(config?.focalEnabled).toBe(true)
+        expect(config?.focalEnabledFor?.({ imageFit: "contain" })).toBe(false)
+        expect(config?.focalEnabledFor?.({ imageFit: "cover" })).toBe(true)
+      }
     })
   })
 

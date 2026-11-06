@@ -1,18 +1,15 @@
 "use client"
 
-import type {
-  ImageClientProps,
-  ImageClientWithAdjustmentProps,
-} from "~/interfaces"
+import type { ImageClientWithAdjustmentProps } from "~/interfaces"
 import { useEffect, useRef, useState } from "react"
 
 import { ImageClientWithAdjustment } from "../../../internal/ImageClient"
 import { ScrollForMoreButton } from "./ScrollForMoreButton"
 
 interface ImageContainerProps {
-  imageSrc: ImageClientProps["src"]
-  imageAlt: ImageClientProps["alt"]
-  assetsBaseUrl: ImageClientProps["assetsBaseUrl"]
+  imageSrc: ImageClientWithAdjustmentProps["src"]
+  imageAlt: ImageClientWithAdjustmentProps["alt"]
+  assetsBaseUrl: ImageClientWithAdjustmentProps["assetsBaseUrl"]
   imageAdjustment?: ImageClientWithAdjustmentProps["imageAdjustment"]
 }
 
