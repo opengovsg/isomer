@@ -36,6 +36,29 @@ const NormalizedUnit = Type.Number({ minimum: 0, maximum: 1 })
 // rendered pixels and kept only so the editor can re-bake from the original;
 // focal is emitted at render time as object-position. Written by the adjustment
 // modal, never a hand-edited JSONForms control -> format: "hidden".
+//
+// Adding this to a new image-bearing component is 3 layers, and each has
+// silently shipped broken on its own before (see HeroGradientQuickLinks and
+// the collection thumbnail in git history for real examples):
+//   1. Schema: add `imageAdjustment: Type.Optional(imageAdjustmentSchema)` as
+//      a sibling of the image src field. Covered by
+//      imageAdjustmentSchemaGuardrail.test.ts.
+//   2. Resolve + render: add a case in Studio's resolveAdjustmentConfig
+//      (apps/studio .../ImageAdjustmentModal/adjustmentConfigRegistry.ts),
+//      then forward imageAdjustment through to ImageClientWithAdjustment (or
+//      getFocalObjectPosition directly for a CSS background-image) in EVERY
+//      render branch the component has -- not just the first one you touch.
+//      Reference implementation: InfoCardImage.tsx. Covered by
+//      imageAdjustmentWiringGuardrail.test.ts, keyed off focalEnabled: true.
+//   3. Prove it: add a *.adjustment.stories.tsx (or a story in the
+//      component's own stories file) that sets a real imageAdjustment and
+//      shows the image visibly shift -- a schema field existing says nothing
+//      about whether any render branch honours it. Reference:
+//      HeroBlock.adjustment.stories.tsx. Also covered by
+//      imageAdjustmentWiringGuardrail.test.ts.
+// If a component is deliberately never adjustable (e.g. LogoCloud, Video),
+// add it to both INTENTIONALLY_NOT_ADJUSTABLE (adjustmentConfigRegistry.ts)
+// and the schema guardrail's own allowlist instead of skipping these steps.
 export const imageAdjustmentSchema = Type.Object(
   {
     // Crop box as a fraction of the original image: x/y is the top-left
