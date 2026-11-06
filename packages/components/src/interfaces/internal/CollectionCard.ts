@@ -1,4 +1,6 @@
+import type { ImageAdjustment } from "~/interfaces/complex/Image"
 import type { ImageProps } from "~/interfaces"
+import type { IMAGE_FIT } from "~/interfaces/constants"
 import type {
   DateTaggedItem,
   FormattedDate,
@@ -30,7 +32,13 @@ interface BaseCardProps {
   title: string
   url: string
   description: string
-  image?: Pick<ImageProps, "src" | "alt">
+  image?: Pick<ImageProps, "src" | "alt"> & {
+    imageFit?: (typeof IMAGE_FIT)[keyof typeof IMAGE_FIT]
+    // Sibling written by the adjustment modal; absence = unedited. Crop is
+    // baked into `src`; focal (object-position) is only applied under
+    // imageFit "cover" — see CollectionCard/BlogCard's effectiveImageAdjustment.
+    imageAdjustment?: ImageAdjustment
+  }
   isContainNeeded?: boolean
   site: IsomerSiteProps
 }

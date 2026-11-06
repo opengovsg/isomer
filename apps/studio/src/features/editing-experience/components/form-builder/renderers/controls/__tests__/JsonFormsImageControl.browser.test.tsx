@@ -31,6 +31,16 @@ vi.mock("~/hooks/useIsImageAdjustmentEnabled", () => ({
 vi.mock("~/components/PageEditor/FileAttachment", () => ({
   FileAttachment: () => <div data-testid="file-attachment" />,
 }))
+// No EditorDrawerProvider wraps this test, so useCollectionIndexVariant's
+// queries are always disabled -- stub just enough of the tRPC client shape
+// for its (never-fired) useQuery calls to not blow up on a missing context.
+vi.mock("~/utils/trpc", () => ({
+  trpc: {
+    resource: { getParentOf: { useQuery: () => ({ data: undefined }) } },
+    folder: { getIndexpage: { useQuery: () => ({ data: undefined }) } },
+    page: { readPageAndBlob: { useQuery: () => ({ data: undefined }) } },
+  },
+}))
 
 const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsImageControlTester, renderer: JsonFormsImageControl },

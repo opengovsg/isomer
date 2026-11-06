@@ -119,7 +119,9 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(1)
-      expect(result[0]!.image).toEqual(itemImage)
+      // The item's own image now carries isContainNeeded/imageAdjustment
+      // derived from its imageFit/imageAdjustment (see getItemImage).
+      expect(result[0]!.image).toMatchObject(itemImage)
       expect(result[0]!.isContainNeeded).toBe(false)
     })
 
@@ -204,8 +206,38 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(1)
-      expect(result[0]!.image).toEqual(itemImage)
+      // The item's own image now carries isContainNeeded/imageAdjustment
+      // derived from its imageFit/imageAdjustment (see getItemImage).
+      expect(result[0]!.image).toMatchObject(itemImage)
       expect(result[0]!.isContainNeeded).toBe(false)
+    })
+
+    it("derives isContainNeeded from the item's own imageFit and forwards imageAdjustment", () => {
+      const focal = { x: 0.5, y: 0.25 }
+      const itemImage = {
+        src: "/images/thumbnail.png",
+        alt: "Thumbnail",
+        imageFit: "contain" as const,
+        imageAdjustment: {
+          crop: { x: 0, y: 0, width: 1, height: 1 },
+          focal,
+          originalKey: "original.png",
+        },
+      }
+      const site = createSiteWithChildren([
+        createArticleChild({ image: itemImage }),
+      ])
+
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        showThumbnail: { fallback: "first-image" },
+      })
+
+      expect(result[0]!.isContainNeeded).toBe(true)
+      expect(result[0]!.image).toMatchObject({
+        imageAdjustment: itemImage.imageAdjustment,
+      })
     })
 
     it("should fall back to firstImage when item has no image but has a firstImage", () => {
@@ -301,7 +333,9 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(2)
-      expect(result[0]!.image).toEqual(itemImage)
+      // The item's own image now carries isContainNeeded/imageAdjustment
+      // derived from its imageFit/imageAdjustment (see getItemImage).
+      expect(result[0]!.image).toMatchObject(itemImage)
       expect(result[0]!.isContainNeeded).toBe(false)
       expect(result[1]!.image).toEqual(SITE_LOGO_FALLBACK)
       expect(result[1]!.isContainNeeded).toBe(true)
@@ -337,7 +371,9 @@ describe("getCollectionItems", () => {
       })
 
       expect(result).toHaveLength(3)
-      expect(result[0]!.image).toEqual(itemImage)
+      // The item's own image now carries isContainNeeded/imageAdjustment
+      // derived from its imageFit/imageAdjustment (see getItemImage).
+      expect(result[0]!.image).toMatchObject(itemImage)
       expect(result[0]!.isContainNeeded).toBe(false)
       expect(result[1]!.image).toEqual(firstImage)
       expect(result[1]!.isContainNeeded).toBe(false)

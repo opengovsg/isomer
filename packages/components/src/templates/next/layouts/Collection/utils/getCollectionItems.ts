@@ -1,3 +1,4 @@
+import type { ImageAdjustment } from "~/interfaces/complex/Image"
 import type { AllCardProps } from "~/interfaces"
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import type { CollectionPagePageProps } from "~/types/page"
@@ -21,6 +22,7 @@ type GetItemImageResult =
       src: string
       alt: string
       isContainNeeded?: boolean
+      imageAdjustment?: ImageAdjustment
     }
   | undefined
 
@@ -35,9 +37,17 @@ const getItemImage = ({
     return undefined
   }
 
-  // If the item has an image, we will show the item's image
+  // If the item has an image, we will show the item's image. isContainNeeded
+  // is derived from the editor's own imageFit choice here (same cover/contain
+  // split InfoCards offers) -- the fallback branches below set it directly
+  // since the site logo is always letterboxed.
   if (item.image?.src) {
-    return item.image
+    return {
+      src: item.image.src,
+      alt: item.image.alt,
+      isContainNeeded: item.image.imageFit === "contain",
+      imageAdjustment: item.image.imageAdjustment,
+    }
   }
 
   switch (showThumbnail.fallback) {

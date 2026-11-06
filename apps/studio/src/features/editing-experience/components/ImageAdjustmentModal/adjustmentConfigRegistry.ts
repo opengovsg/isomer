@@ -1,9 +1,12 @@
+import type { IsomerPageLayoutType } from "@opengovsg/isomer-components"
 import { IMAGE_FIT } from "@opengovsg/isomer-components"
 
 import type {
   AdjustmentConfig,
   AdjustmentPreviewState,
+  AdjustmentRenderContext,
   AspectRatio,
+  PreviewVersion,
 } from "./AdjustmentConfig"
 
 // Narrow an unknown block to read its discriminators safely.
@@ -17,21 +20,22 @@ export const INTENTIONALLY_NOT_ADJUSTABLE = [
   "navbar",
 ] as const
 
-// InfoCards is Tier C: a card is always adjustable (you can crop the image that
-// is then displayed) regardless of its imageFit, but the controls offered depend
-// on the fit. Under "cover" ("Default") the card crops the image to fill its
-// frame, so both crop and focal apply. Under "contain" ("Resize image to fit")
-// the whole image is letterboxed, so the focal anchor has nothing to do — crop
-// stays available (it defines the region that is then letterboxed), focal is
-// hidden. imageFit is optional and defaults to "cover". The fieldHost here is
-// the individual card object.
-const infoCardFocalEnabled = (fieldHost: unknown): boolean =>
+// Shared by every component with an `ownsImageFitField` sibling toggle
+// (InfoCards' cards, the collection item thumbnail): under "cover" ("Default")
+// the frame crops the image to fill it, so both crop and focal apply. Under
+// "contain" ("Resize image to fit") the whole image is letterboxed, so the
+// focal anchor has nothing to do — crop stays available (it defines the region
+// that is then letterboxed), focal is hidden. imageFit is optional and
+// defaults to "cover". `fieldHost` is whatever object the modal's fit control
+// actually writes its sibling `imageFit` onto (a card for InfoCards, the
+// `image` object for the collection thumbnail).
+const imageFitFocalEnabled = (fieldHost: unknown): boolean =>
   (fieldHost as { imageFit?: string } | null)?.imageFit !== IMAGE_FIT.Content
 
 // Preview-only object-fit fallback for the framed-image approximation (used
 // when a real-component render fails or isn't attempted) — mirrors the real
 // card's own imageFit so a fallback frame doesn't show the wrong fit.
-const infoCardPreviewObjectFit = (fieldHost: unknown): "cover" | "contain" =>
+const imageFitPreviewObjectFit = (fieldHost: unknown): "cover" | "contain" =>
   (fieldHost as { imageFit?: string } | null)?.imageFit === IMAGE_FIT.Content
     ? "contain"
     : "cover"
@@ -70,74 +74,40 @@ const buildSingleCardPreviewBlock = (
 }
 
 // InfoCards' own "cards with images" card frame (common.ts cardImageContainer)
-// is 3:2 at every breakpoint EXCEPT at lg+, where two specific
-// maxColumns+layout combos are overridden: homepage+2-column goes to 2:1,
-// default(content-page)+3-column goes to 1:1 (square) — every other
-// combination (including 1-column, which has no lg override at all) stays
-// 3:2. Keyed by the block's own `maxColumns` (schema only offers "1"/"2"/"3").
-const INFOCARDS_DESKTOP_ASPECT_BY_MAX_COLUMNS: Record<
+// is 3:2 at every breakpoint on content pages EXCEPT at lg+ with maxColumns
+// "3", which overrides it to 1:1 (square); "1" and "2" columns have no lg
+// override there and stay 3:2. (The homepage layout has its own lg overrides,
+// e.g. 2-column goes to 2:1 — but a block's image field has no way to know
+// which page it's published on, so this previews the content-page frame only;
+// the homepage shape is a different page than the one being edited, out of
+// scope here, same reasoning as ImageGallery/the collection thumbnail skipping
+// their own unknowable contexts.) Keyed by the block's own `maxColumns`
+// (schema only offers "1"/"2"/"3").
+const INFOCARDS_CONTENT_PAGE_DESKTOP_ASPECT_BY_MAX_COLUMNS: Record<
   "1" | "2" | "3",
-  { homepage: AspectRatio; contentPage: AspectRatio }
+  AspectRatio
 > = {
-  "1": {
-    homepage: { width: 3, height: 2 },
-    contentPage: { width: 3, height: 2 },
-  },
-  "2": {
-    homepage: { width: 2, height: 1 },
-    contentPage: { width: 3, height: 2 },
-  },
-  "3": {
-    homepage: { width: 3, height: 2 },
-    contentPage: { width: 1, height: 1 },
-  },
+  "1": { width: 3, height: 2 },
+  "2": { width: 3, height: 2 },
+  "3": { width: 1, height: 1 },
 }
 
-const aspectRatiosEqual = (a: AspectRatio, b: AspectRatio): boolean =>
-  a.width / a.height === b.width / b.height
-
-// Builds the lg+ preview state(s) for "cards with images" from the actual
-// block's maxColumns. A block's image field has no way to know which page
-// it's published on, so when the homepage/content-page shapes for this
-// maxColumns actually differ, both are previewed (same per-state `layout`
-// pattern Blockquote uses) rather than guessing one; when they're the same
-// shape (1-column, or any combo without an lg override), a single state
-// covers it.
-const infoCardsDesktopStates = (block: unknown): AdjustmentPreviewState[] => {
+const infoCardsDesktopAspect = (block: unknown): AspectRatio => {
   const rawMaxColumns = (block as { maxColumns?: unknown } | null)?.maxColumns
   const maxColumns =
     rawMaxColumns === "1" || rawMaxColumns === "2" || rawMaxColumns === "3"
       ? rawMaxColumns
       : "3"
-  const { homepage, contentPage } =
-    INFOCARDS_DESKTOP_ASPECT_BY_MAX_COLUMNS[maxColumns]
-
-  if (aspectRatiosEqual(homepage, contentPage)) {
-    return [
-      {
-        id: "desktop",
-        label: `Desktop (${maxColumns} column${maxColumns === "1" ? "" : "s"})`,
-        layout: "content",
-        aspectRatio: contentPage,
-      },
-    ]
-  }
-
-  return [
-    {
-      id: "desktop-content",
-      label: `Desktop (${maxColumns} columns, content pages)`,
-      layout: "content",
-      aspectRatio: contentPage,
-    },
-    {
-      id: "desktop-homepage",
-      label: `Desktop (${maxColumns} columns, homepage)`,
-      layout: "homepage",
-      aspectRatio: homepage,
-    },
-  ]
+  return INFOCARDS_CONTENT_PAGE_DESKTOP_ASPECT_BY_MAX_COLUMNS[maxColumns]
 }
+
+// Wraps a plain previewStates array as the sole `PreviewVersion` of a config
+// that has no distinct shape/variant axis (i.e. almost everything but
+// Blockquote) — no `label` needed since the modal only shows its version
+// dropdown when there's more than one version.
+const singleVersion = (
+  previewStates: AdjustmentPreviewState[],
+): PreviewVersion[] => [{ id: "default", previewStates }]
 
 // Standard Desktop/Tablet/Mobile preview set, shared by every component so all
 // editor previews show the same three breakpoint viewport widths (mobile 375 /
@@ -190,11 +160,13 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   maxRenderedHeightPx: 500,
   // Closest common ratio to each breakpoint's hero band (375×240→16:10,
   // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
-  previewStates: responsivePreviewStates({
-    mobile: { width: 16, height: 10 },
-    tablet: { width: 2, height: 1 },
-    desktop: { width: 5, height: 2 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 16, height: 10 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 5, height: 2 },
+    }),
+  ),
   // Must match HeroGradient.tsx's own className exactly, so editors judge contrast
   // against the real overlay: solid dark on mobile, gradient from lg: up.
   scrim: {
@@ -226,11 +198,13 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   maxRenderedHeightPx: 500,
   // Closest common ratio to each breakpoint's hero band (375×240→16:10,
   // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
-  previewStates: responsivePreviewStates({
-    mobile: { width: 16, height: 10 },
-    tablet: { width: 2, height: 1 },
-    desktop: { width: 5, height: 2 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 16, height: 10 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 5, height: 2 },
+    }),
+  ),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text.",
 }
@@ -250,11 +224,13 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
   // so Mobile (375) shows the stacked layout while Tablet/Desktop show the row.
   // Aspect ratios are pre-measure flash guesses only (PreviewFrame measures the
   // real rendered height).
-  previewStates: responsivePreviewStates({
-    mobile: { width: 4, height: 5 },
-    tablet: { width: 2, height: 1 },
-    desktop: { width: 2, height: 1 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 4, height: 5 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 2, height: 1 },
+    }),
+  ),
   preUploadCopy:
     "Use a high-resolution image (at least 400×480px) with a 5:6 (portrait) aspect ratio. Keep the key subject centered — the image is cropped to a fixed portrait frame beside your text.",
 }
@@ -273,11 +249,13 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
   maxRenderedHeightPx: 400,
   // Closest common ratio to each breakpoint's frame (375×300→5:4,
   // 768×400→2:1, 1280×450→3:1); the real tile height is still measured.
-  previewStates: responsivePreviewStates({
-    mobile: { width: 5, height: 4 },
-    tablet: { width: 2, height: 1 },
-    desktop: { width: 3, height: 1 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 5, height: 4 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 3, height: 1 },
+    }),
+  ),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px). Place the key subject on the side matching where the image sits (left or right) rather than centering it.",
 }
@@ -296,11 +274,13 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   // Widest frame is 2:1 from md up (md:aspect-[2/1]) → 640px tall at 1280px.
   // Crop is free (custom), so height must be checked independently of width.
   maxRenderedHeightPx: 640,
-  previewStates: responsivePreviewStates({
-    mobile: { width: 1, height: 1 },
-    tablet: { width: 2, height: 1 },
-    desktop: { width: 2, height: 1 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 1, height: 1 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 2, height: 1 },
+    }),
+  ),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed.",
 }
@@ -324,33 +304,24 @@ const HERO_FLOATING_CONFIG: AdjustmentConfig = {
   // Full-width below lg (~1024px), 66.67% (~800px) at lg — the tablet regime
   // is the widest frame.
   maxRenderedWidthPx: 1024,
-  previewStates: responsivePreviewStates({
-    mobile: { width: 3, height: 2 },
-    tablet: { width: 3, height: 2 },
-    desktop: { width: 3, height: 2 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 3, height: 2 },
+      tablet: { width: 3, height: 2 },
+      desktop: { width: 3, height: 2 },
+    }),
+  ),
   preUploadCopy:
     "Use a high-resolution image (at least 1500×1000px) with a 3:2 aspect ratio. Keep key subjects out of the bottom third — the text card floats over it.",
 }
 
-// Tier A — fixed 1:1 crop, no focal; crop is baked into the src like every
-// other Tier A component. Blockquote renders the SAME 1:1 image two different
-// shapes depending on the page's layout — a circle (rounded-full, every
-// layout except homepage/notfound) or a square (homepage) — so both are
-// previewed, each forcing its own `layout` on the shared real-component
-// preview (see AdjustmentPreview's per-state layout override) rather than
-// relying on a breakpoint/viewport difference.
-const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
-  componentType: "blockquote",
-  cropMode: "fixed",
-  focalEnabled: false,
-  lockedRatios: [{ width: 1, height: 1 }],
-  // Masked avatar: 240px on the homepage (w-60), 96px elsewhere — warn against
-  // the larger.
-  maxRenderedWidthPx: 240,
-  // Both states are 1:1 — side-by-side they'd be small; stack them so each
-  // circle/square mask gets the full preview column width.
-  stackPreviews: true,
+// Blockquote's two rendered shapes — see buildBlockquoteConfig below. Each is
+// its own PreviewVersion (not a second entry in one version's previewStates):
+// the circle/square split is a rendered-SHAPE axis, not a breakpoint, so it
+// belongs in the versions dropdown rather than the breakpoint row.
+const BLOCKQUOTE_CIRCLE_VERSION: PreviewVersion = {
+  id: "circle",
+  label: "Circle (content pages)",
   previewStates: [
     {
       id: "circle",
@@ -359,6 +330,13 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
       viewportWidth: 768,
       aspectRatio: { width: 1, height: 1 },
     },
+  ],
+}
+
+const BLOCKQUOTE_SQUARE_VERSION: PreviewVersion = {
+  id: "square",
+  label: "Square (homepage)",
+  previewStates: [
     {
       id: "square",
       label: "Square (homepage)",
@@ -367,16 +345,49 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
       aspectRatio: { width: 1, height: 1 },
     },
   ],
-  preUploadCopy:
-    "Use a square (1:1) image, at least 240×240px. The subject should sit centered — this image is masked into a circle on most pages.",
+}
+
+// Tier A — fixed 1:1 crop, no focal; crop is baked into the src like every
+// other Tier A component. Blockquote renders the SAME 1:1 image two different
+// shapes depending on the page's layout — a circle (rounded-full, every
+// layout except homepage/notfound) or a square (homepage/notfound). When the
+// page's layout is known (context-resolvable, see AdjustmentRenderContext),
+// this narrows to the single version that actually applies; when it isn't
+// known (e.g. this control renders in a non-page-editor context, like the
+// Navbar/Footer logo settings forms), both versions are offered so the editor
+// can check either shape.
+const buildBlockquoteConfig = (
+  pageLayout?: IsomerPageLayoutType,
+): AdjustmentConfig => {
+  const versions =
+    pageLayout === undefined
+      ? [BLOCKQUOTE_CIRCLE_VERSION, BLOCKQUOTE_SQUARE_VERSION]
+      : pageLayout === "homepage" || pageLayout === "notfound"
+        ? [BLOCKQUOTE_SQUARE_VERSION]
+        : [BLOCKQUOTE_CIRCLE_VERSION]
+
+  return {
+    componentType: "blockquote",
+    cropMode: "fixed",
+    focalEnabled: false,
+    lockedRatios: [{ width: 1, height: 1 }],
+    // Masked avatar: 240px on the homepage (w-60), 96px elsewhere — warn
+    // against the larger.
+    maxRenderedWidthPx: 240,
+    // Each version has a single 1:1 state, which would be small as a
+    // half-width tile — stack it to use the full preview column width.
+    stackPreviews: true,
+    versions,
+    preUploadCopy:
+      "Use a square (1:1) image, at least 240×240px. The subject should sit centered — this image is masked into a circle on most pages.",
+  }
 }
 
 // Tier C — InfoCards "cards with images". Per-card image cover-fit into a card
-// whose aspect ratio swings across breakpoints (3:2 on mobile; at lg it's
-// usually still 3:2, but the default 3-column content-page layout overrides it
-// to 1:1 and the 2-column homepage layout overrides it to 2:1 — see
-// infoCardsDesktopStates), so this is the Tier-B cover+focal pattern (free crop
-// baked in, focal anchors the subject across the swing). Crop is always
+// whose aspect ratio swings across breakpoints on content pages (3:2 on
+// mobile/tablet; at lg it's usually still 3:2, but 3-column overrides it to
+// 1:1 — see infoCardsDesktopAspect), so this is the Tier-B cover+focal pattern
+// (free crop baked in, focal anchors the subject across the swing). Crop is always
 // offered; focal is offered only under imageFit "cover" (focalEnabledFor) —
 // under "contain" the image is letterboxed, so the focal control is hidden.
 // The preview renders the real card (via buildSingleItemPreviewBlock,
@@ -396,17 +407,18 @@ const infoCardsWithImagesConfig = (block: unknown): AdjustmentConfig => ({
   // 640px. Crop is free (custom), so height must be checked independently
   // of width.
   maxRenderedHeightPx: 427,
-  focalEnabledFor: infoCardFocalEnabled,
+  focalEnabledFor: imageFitFocalEnabled,
   buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
-  previewStates: [
-    {
-      id: "mobile",
-      label: "Mobile",
-      viewportWidth: 375,
-      aspectRatio: { width: 3, height: 2 },
-    },
-    ...infoCardsDesktopStates(block),
-  ],
+  // Base frame is 3:2 at every breakpoint except the lg+ overrides some
+  // maxColumns apply on content pages (see infoCardsDesktopAspect) — mobile
+  // and tablet share the unoverridden 3:2 base.
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 3, height: 2 },
+      tablet: { width: 3, height: 2 },
+      desktop: infoCardsDesktopAspect(block),
+    }),
+  ),
   preUploadCopy:
     "The card crops this image to fill its frame, and the frame's shape changes across screen sizes. Set a focal point so your key subject stays in view.",
 })
@@ -427,19 +439,21 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   // Full-image cards are square on mobile, portrait at lg (lg:aspect-[2/3]);
   // 640 is a conservative height representative (the square case at 640px).
   maxRenderedHeightPx: 640,
-  focalEnabledFor: infoCardFocalEnabled,
-  previewObjectFitFor: infoCardPreviewObjectFit,
+  focalEnabledFor: imageFitFocalEnabled,
+  previewObjectFitFor: imageFitPreviewObjectFit,
   // Renders the single card for real via buildSingleItemPreviewBlock; falls
   // back to the framed-image approximation (with its scrim below) if that
   // render fails or produces nothing (see AdjustmentPreview).
   buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
   // Card is square up to lg, then 2:3 portrait at lg: square on mobile/tablet,
   // portrait on desktop.
-  previewStates: responsivePreviewStates({
-    mobile: { width: 1, height: 1 },
-    tablet: { width: 1, height: 1 },
-    desktop: { width: 2, height: 3 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 1, height: 1 },
+      tablet: { width: 1, height: 1 },
+      desktop: { width: 2, height: 3 },
+    }),
+  ),
   scrim: {
     id: "infocards-full-image-overlay",
     // Exactly the gradient InfoCardWithFullImage renders (from-[…100%] to-[…0%]),
@@ -472,11 +486,11 @@ const IMAGE_CONFIG: AdjustmentConfig = {
   maxRenderedWidthPx: 960,
   // Free-form crop: no fixed ratio, so previews carry no aspectRatio — the
   // caption shows width only and the real render is measured.
-  previewStates: [
+  versions: singleVersion([
     { id: "mobile", label: "Mobile", viewportWidth: 375 },
     { id: "tablet", label: "Tablet", viewportWidth: 768 },
     { id: "desktop", label: "Desktop", viewportWidth: 1280 },
-  ],
+  ]),
   preUploadCopy:
     "You can crop this image to any shape. Use a high-resolution image so the area you keep stays sharp at the size it displays on your page.",
 }
@@ -507,13 +521,85 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
   // a fixed height (17rem mobile → 28.5rem from sm) over the content column, so it
   // grows wider as the viewport grows — the three states approximate that frame
   // shape per breakpoint (the image is letterboxed to fit either way).
-  previewStates: responsivePreviewStates({
-    mobile: { width: 5, height: 4 },
-    tablet: { width: 3, height: 2 },
-    desktop: { width: 2, height: 1 },
-  }),
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 5, height: 4 },
+      tablet: { width: 3, height: 2 },
+      desktop: { width: 2, height: 1 },
+    }),
+  ),
   preUploadCopy:
     "Gallery images are shown in full (letterboxed to fit the frame), never cropped to it. Crop here only to trim parts of the image you don't want to show.",
+}
+
+// Collection item thumbnail (`page.image`) — a page-level field, not a
+// content-block field, so it has no block `type` discriminator for the
+// registry to key off (see resolveAdjustmentConfig's isCollectionThumbnail
+// branch). The same source image also feeds a homepage CollectionBlock
+// embed, whose frame depends on the live collection item count at render
+// time (3:2, or 2:1 at desktop for exactly 2 items) — genuinely unknowable
+// here, and out of scope for this editor; the preview only reflects the
+// collection's own index-page listing.
+// That listing's frame IS knowable: the collection's index page already has
+// a "Layout" setting (JsonFormsCollectionVariantControl, format
+// "collection-variant") picking CollectionCard ("1-column", a fixed 200x160
+// / 5:4 box) or BlogCard ("2-column", a fixed aspect-[2/1] box) — see
+// CollectionResults.tsx. useAdjustmentConfigForField fetches that setting
+// and passes it as `collectionVariant`, so the preview mimics every other
+// component here: one resolved frame, no version picker. Unresolved
+// (query still loading, or this control somehow renders outside a page
+// editor) falls back to the schema's own "collection" (1-column) default.
+// ChildrenPages was considered but ruled out: it only ever reads the
+// immediate children of the page it's placed on, and a collection's items
+// are children of the Collection resource, one level below that — so a
+// ChildrenPages block can never reach an individual item's thumbnail (at
+// most it would show the Collection's own page.image, a different field).
+// cropMode is "custom" (not a locked ratio) and ownsImageFitField is set so
+// editors can choose "Resize image to fit" (contain, no cropping) instead of
+// the default cover crop — same fit/fill toggle InfoCards already offers,
+// with focal hidden under "contain" for the same reason (nothing to anchor
+// once the image is letterboxed). The real render context is a different
+// page (the collection index) than the one being edited — skip the
+// real-component preview in favour of the framed approximation, as
+// ImageGallery does for the same reason.
+const buildCollectionThumbnailConfig = (
+  collectionVariant?: "collection" | "blog",
+): AdjustmentConfig => {
+  const isBlogVariant = collectionVariant === "blog"
+
+  return {
+    componentType: "collection:thumbnail",
+    cropMode: "custom",
+    focalEnabled: true,
+    ownsImageFitField: true,
+    focalEnabledFor: imageFitFocalEnabled,
+    previewObjectFitFor: imageFitPreviewObjectFit,
+    // BlogCard's 2-column frame is wider (half a desktop row) than
+    // CollectionCard's fixed 200px box.
+    maxRenderedWidthPx: isBlogVariant ? 640 : 200,
+    // CollectionCard's box is a fixed 160px tall; BlogCard's 2:1 frame at
+    // that same width is shallower.
+    maxRenderedHeightPx: isBlogVariant ? 320 : 160,
+    skipRealComponentPreview: true,
+    // Identical ratio at every breakpoint either way (CollectionCard's
+    // `h-[160px] w-[200px]` and BlogCard's `aspect-[2/1]` both carry no
+    // md:/lg: override), so all three preview states share one ratio.
+    versions: singleVersion(
+      isBlogVariant
+        ? responsivePreviewStates({
+            mobile: { width: 2, height: 1 },
+            tablet: { width: 2, height: 1 },
+            desktop: { width: 2, height: 1 },
+          })
+        : responsivePreviewStates({
+            mobile: { width: 5, height: 4 },
+            tablet: { width: 5, height: 4 },
+            desktop: { width: 5, height: 4 },
+          }),
+    ),
+    preUploadCopy:
+      "This thumbnail appears on your collection listing. Choose whether it should fill the frame (cropped, with a focal point to anchor it) or fit within it (no cropping).",
+  }
 }
 
 /**
@@ -524,7 +610,15 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
 export function resolveAdjustmentConfig(args: {
   block: unknown
   fieldName: string
+  context?: AdjustmentRenderContext
 }): AdjustmentConfig | undefined {
+  // Page-level thumbnail field (no block-type ancestor) on a confirmed
+  // collection item — see COLLECTION_THUMBNAIL_CONFIG. Checked before the
+  // block-type switch below since this field's host has no `type`
+  // discriminator for that switch to key off.
+  if (args.context?.isCollectionThumbnail)
+    return buildCollectionThumbnailConfig(args.context.collectionVariant)
+
   const { type, variant } = asBlock(args.block)
   const { fieldName } = args
   if (type === "image" && fieldName === "src") return IMAGE_CONFIG
@@ -550,7 +644,7 @@ export function resolveAdjustmentConfig(args: {
     return CONTENTPIC_CONFIG
   if (type === "infopic" && fieldName === "imageSrc") return INFOPIC_CONFIG
   if (type === "blockquote" && fieldName === "imageSrc")
-    return BLOCKQUOTE_CONFIG
+    return buildBlockquoteConfig(args.context?.pageLayout)
   if (
     type === "infocards" &&
     variant === "cardsWithImages" &&

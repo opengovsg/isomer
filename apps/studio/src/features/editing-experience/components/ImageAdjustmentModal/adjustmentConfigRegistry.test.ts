@@ -6,6 +6,7 @@ import { renderComponent } from "@opengovsg/isomer-components"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
+import type { AdjustmentConfig } from "./AdjustmentConfig"
 import {
   INTENTIONALLY_NOT_ADJUSTABLE,
   resolveAdjustmentConfig,
@@ -93,7 +94,8 @@ describe("resolveAdjustmentConfig", () => {
       expect(config?.focalEnabled).toBe(false)
       expect(config?.lockedRatios).toBeUndefined()
       expect(config?.skipRealComponentPreview).toBeFalsy()
-      expect(config?.previewStates.length).toBeGreaterThan(0)
+      expect(config?.versions).toHaveLength(1)
+      expect(config?.versions[0]?.previewStates.length).toBeGreaterThan(0)
     })
   })
 
@@ -131,9 +133,9 @@ describe("resolveAdjustmentConfig", () => {
     // hide how much the card covers the subject on mobile/tablet.
     it("previews all three responsive breakpoint regimes", () => {
       expect(config).toBeDefined()
-      expect(config?.previewStates.map((s) => s.viewportWidth)).toEqual([
-        375, 768, 1280,
-      ])
+      expect(
+        config?.versions[0]?.previewStates.map((s) => s.viewportWidth),
+      ).toEqual([375, 768, 1280])
     })
   })
 
@@ -271,67 +273,117 @@ describe("resolveAdjustmentConfig", () => {
     })
 
     // The real card frame (InfoCards/common.ts cardImageContainer) is 3:2 at
-    // every breakpoint EXCEPT lg+, where only two combos are overridden:
-    // homepage+2-column -> 2:1, default(content-page)+3-column -> 1:1 square.
-    // Every other combo (including 1-column, which has no lg override) stays
-    // 3:2 for both layouts. The preview must reflect the block's own
-    // maxColumns, previewing both layouts only where they actually diverge.
-    describe("desktop preview states follow the block's maxColumns", () => {
-      const desktopStatesFor = (maxColumns?: string) =>
+    // every breakpoint on content pages EXCEPT lg+ with 3 columns, which
+    // overrides it to 1:1 square. The homepage layout's own overrides are a
+    // different page than the one being edited, so the preview covers content
+    // pages only — one plain Mobile/Tablet/Desktop state each, following the
+    // block's own maxColumns.
+    describe("preview states follow the block's maxColumns (content pages only)", () => {
+      const statesFor = (maxColumns?: string) =>
         resolveAdjustmentConfig({
           block: { type: "infocards", variant: "cardsWithImages", maxColumns },
           fieldName: "imageUrl",
-        })?.previewStates.filter((s) => s.id !== "mobile")
+        })?.versions[0]?.previewStates
 
-      it("3 columns (default): previews content-page square and homepage 3:2 separately", () => {
-        const states = desktopStatesFor("3")
-        expect(states?.map((s) => s.layout)).toEqual(["content", "homepage"])
+      it("previews exactly Mobile/Tablet/Desktop, with plain labels", () => {
+        const states = statesFor("3")
+        expect(states?.map((s) => s.label)).toEqual([
+          "Mobile",
+          "Tablet",
+          "Desktop",
+        ])
+        expect(states?.map((s) => s.layout)).toEqual([
+          undefined,
+          undefined,
+          undefined,
+        ])
+      })
+
+      it("3 columns (default): desktop frame is square", () => {
+        const states = statesFor("3")
         expect(states?.map((s) => s.aspectRatio)).toEqual([
+          { width: 3, height: 2 },
+          { width: 3, height: 2 },
           { width: 1, height: 1 },
-          { width: 3, height: 2 },
         ])
       })
 
-      it("2 columns: previews content-page 3:2 and homepage 2:1 separately", () => {
-        const states = desktopStatesFor("2")
-        expect(states?.map((s) => s.layout)).toEqual(["content", "homepage"])
+      it("2 columns: every breakpoint stays 3:2", () => {
+        const states = statesFor("2")
         expect(states?.map((s) => s.aspectRatio)).toEqual([
           { width: 3, height: 2 },
-          { width: 2, height: 1 },
+          { width: 3, height: 2 },
+          { width: 3, height: 2 },
         ])
       })
 
-      it("1 column: both layouts render the same 3:2 shape, so a single state covers it", () => {
-        const states = desktopStatesFor("1")
-        expect(states).toHaveLength(1)
-        expect(states?.[0]?.aspectRatio).toEqual({ width: 3, height: 2 })
+      it("1 column: every breakpoint stays 3:2", () => {
+        const states = statesFor("1")
+        expect(states?.map((s) => s.aspectRatio)).toEqual([
+          { width: 3, height: 2 },
+          { width: 3, height: 2 },
+          { width: 3, height: 2 },
+        ])
       })
 
       it("defaults to 3 columns when maxColumns is unset", () => {
-        expect(desktopStatesFor(undefined)).toEqual(desktopStatesFor("3"))
+        expect(statesFor(undefined)).toEqual(statesFor("3"))
       })
     })
   })
 
-  describe("blockquote (per-state layout override)", () => {
-    const config = resolveAdjustmentConfig({
-      block: { type: "blockquote" },
-      fieldName: "imageSrc",
-    })
+  describe("blockquote (context-resolved circle/square versions)", () => {
+    const configFor = (pageLayout?: IsomerPageLayoutType) =>
+      resolveAdjustmentConfig({
+        block: { type: "blockquote" },
+        fieldName: "imageSrc",
+        context: { pageLayout },
+      })
 
     // Blockquote renders the same 1:1 image as a circle everywhere except the
-    // homepage, where it's a square — a real-component preview regression here
-    // would mean an editor never sees the shape their crop will actually take.
-    it("previews a circle state for content pages and a square state for the homepage", () => {
-      expect(config).toBeDefined()
-      expect(config?.previewStates).toEqual([
-        expect.objectContaining({ id: "circle", layout: "content" }),
-        expect.objectContaining({ id: "square", layout: "homepage" }),
+    // homepage/notfound layouts, where it's a square — a real-component
+    // preview regression here would mean an editor never sees the shape their
+    // crop will actually take.
+    it("resolves only the circle version for a content-page layout", () => {
+      const config = configFor("content")
+      expect(config?.versions).toEqual([
+        expect.objectContaining({
+          id: "circle",
+          previewStates: [expect.objectContaining({ layout: "content" })],
+        }),
       ])
     })
 
-    it("stacks the two 1:1 states instead of showing them side-by-side", () => {
-      expect(config?.stackPreviews).toBe(true)
+    it("resolves only the square version for the homepage layout", () => {
+      const config = configFor("homepage")
+      expect(config?.versions).toEqual([
+        expect.objectContaining({
+          id: "square",
+          previewStates: [expect.objectContaining({ layout: "homepage" })],
+        }),
+      ])
+    })
+
+    it("resolves only the square version for the notfound layout", () => {
+      const config = configFor("notfound")
+      expect(config?.versions).toEqual([
+        expect.objectContaining({
+          id: "square",
+          previewStates: [expect.objectContaining({ layout: "homepage" })],
+        }),
+      ])
+    })
+
+    // When the page layout isn't known (e.g. this control renders outside a
+    // page editor), fall back to showing both candidate versions.
+    it("resolves both versions when no page-layout context is given", () => {
+      const config = configFor(undefined)
+      expect(config?.versions.map((v) => v.id)).toEqual(["circle", "square"])
+    })
+
+    it("stacks each version's 1:1 state instead of showing it half-width", () => {
+      expect(configFor("content")?.stackPreviews).toBe(true)
+      expect(configFor(undefined)?.stackPreviews).toBe(true)
     })
   })
 
@@ -469,6 +521,129 @@ describe("resolveAdjustmentConfig", () => {
         expect(config?.focalEnabledFor?.({ imageFit: "contain" })).toBe(false)
         expect(config?.focalEnabledFor?.({ imageFit: "cover" })).toBe(true)
       }
+    })
+  })
+
+  describe("collection item thumbnail (page-level, context-resolved)", () => {
+    // The page-level thumbnail has no block-type ancestor, so it's never
+    // keyed off `block` -- it's resolved purely from the
+    // `isCollectionThumbnail` context flag (set by useAdjustmentConfigForField
+    // from the editor's resource type, since the field's own data has no
+    // discriminator to distinguish a collection item from any other page
+    // that happens to compose the same `image` field shape).
+    it("resolves when isCollectionThumbnail is set, regardless of block shape", () => {
+      const config = resolveAdjustmentConfig({
+        block: { layout: "article" },
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      expect(config).toBeDefined()
+      expect(config?.cropMode).toBe("custom")
+      expect(config?.focalEnabled).toBe(true)
+      expect(config?.ownsImageFitField).toBe(true)
+      expect(config?.skipRealComponentPreview).toBe(true)
+    })
+
+    it("does not resolve for a similar-looking page without the collection-item signal", () => {
+      // A content/index/database page composes the identical `image` field
+      // shape for its own unrelated page thumbnail -- without the context
+      // flag (i.e. not a confirmed CollectionPage/CollectionLink resource),
+      // it must not light up the collection-item config.
+      expect(
+        resolveAdjustmentConfig({
+          block: { layout: "content" },
+          fieldName: "src",
+        }),
+      ).toBeUndefined()
+      expect(
+        resolveAdjustmentConfig({
+          block: { layout: "content" },
+          fieldName: "src",
+          context: { isCollectionThumbnail: false },
+        }),
+      ).toBeUndefined()
+    })
+
+    // The homepage CollectionBlock embed also consumes this image, but its
+    // frame depends on the live collection item count at render time -- this
+    // editor genuinely cannot know that, so it's out of scope: the preview
+    // only ever shows the collection's own index-page listing, resolved to a
+    // single version (no dropdown, matching every other component here).
+    it("resolves exactly one version", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true, collectionVariant: "blog" },
+      })
+      expect(config?.versions).toHaveLength(1)
+    })
+
+    const aspectRatiosFor = (config: AdjustmentConfig) =>
+      config.versions[0]?.previewStates.map((s) => s.aspectRatio)
+
+    it("models the 1-column (CollectionCard) layout as a fixed 5:4 frame at every breakpoint", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: {
+          isCollectionThumbnail: true,
+          collectionVariant: "collection",
+        },
+      })
+      expect(aspectRatiosFor(config!)).toEqual([
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+      ])
+    })
+
+    it("models the 2-column (BlogCard) layout as a fixed 2:1 frame at every breakpoint", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true, collectionVariant: "blog" },
+      })
+      expect(aspectRatiosFor(config!)).toEqual([
+        { width: 2, height: 1 },
+        { width: 2, height: 1 },
+        { width: 2, height: 1 },
+      ])
+    })
+
+    it("defaults to the 1-column (CollectionCard) layout when the variant is unresolved", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      expect(aspectRatiosFor(config!)).toEqual([
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+      ])
+    })
+
+    it("offers the focal point only when imageFit is cover (or unset), same as InfoCards", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      expect(config?.focalEnabledFor?.({})).toBe(true)
+      expect(config?.focalEnabledFor?.({ imageFit: "cover" })).toBe(true)
+      expect(config?.focalEnabledFor?.({ imageFit: "contain" })).toBe(false)
+    })
+
+    it("previews with object-contain only under 'Resize image to fit'", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      expect(config?.previewObjectFitFor?.({})).toBe("cover")
+      expect(config?.previewObjectFitFor?.({ imageFit: "contain" })).toBe(
+        "contain",
+      )
     })
   })
 

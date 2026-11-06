@@ -36,7 +36,9 @@ interface ChildpageLayoutProps
     >,
     Pick<ImageClientProps, "assetsBaseUrl"> {
   childpages: Childpage[]
-  fallback: Required<NonNullable<IsomerSitemap["image"]>>
+  // Only src/alt are ever read for the fallback (site logo) -- it has no
+  // imageFit/imageAdjustment of its own, unlike a real child page's image.
+  fallback: Pick<NonNullable<IsomerSitemap["image"]>, "src" | "alt">
 }
 
 const BoxLayout = ({
