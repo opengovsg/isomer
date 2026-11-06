@@ -1,9 +1,15 @@
-import type { IsomerSiteProps } from "@opengovsg/isomer-components"
+import type {
+  IsomerPageLayoutType,
+  IsomerSiteProps,
+} from "@opengovsg/isomer-components"
 import { renderComponent } from "@opengovsg/isomer-components"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import { resolveAdjustmentConfig } from "./adjustmentConfigRegistry"
+import {
+  INTENTIONALLY_NOT_ADJUSTABLE,
+  resolveAdjustmentConfig,
+} from "./adjustmentConfigRegistry"
 
 // Minimal site stub for rendering a single block in isolation — mirrors
 // AdjustmentPreview's own PREVIEW_SITE_STUB.
@@ -11,6 +17,22 @@ const SITE_STUB = {
   assetsBaseUrl: "",
   siteMapArray: [],
 } as unknown as IsomerSiteProps
+
+// Renders a single block to static HTML for assertions against real markup.
+const renderBlockHtml = (
+  component: unknown,
+  layout: IsomerPageLayoutType,
+): string =>
+  renderToStaticMarkup(
+    renderComponent({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      component: component as any,
+      layout,
+      site: SITE_STUB,
+      permalink: "",
+      headingLevel: 1,
+    }),
+  )
 
 describe("resolveAdjustmentConfig", () => {
   it("returns undefined for components not yet wired", () => {
@@ -35,6 +57,26 @@ describe("resolveAdjustmentConfig", () => {
         fieldName: "someOtherField",
       }),
     ).toBeUndefined()
+  })
+
+  // Tier D = preserve-only: these components have image fields but must never
+  // offer crop/focal adjustment. The registry is an allow-list, so the guarantee
+  // is simply that none of them resolve a config — which is what hides the
+  // "Adjust image" entry point in JsonFormsImageControl. Lock that in so a future
+  // registry entry can't silently light the modal up on one of them.
+  describe("Tier D (preserve-only) blocks resolve no config", () => {
+    const tierDBlocks = [
+      { type: "image" },
+      { type: "imagegallery" },
+      ...INTENTIONALLY_NOT_ADJUSTABLE.map((type) => ({ type })),
+    ]
+    for (const block of tierDBlocks) {
+      it(`returns undefined for "${block.type}"`, () => {
+        expect(
+          resolveAdjustmentConfig({ block, fieldName: "src" }),
+        ).toBeUndefined()
+      })
+    }
   })
 
   describe("hero:floating", () => {
@@ -153,16 +195,7 @@ describe("resolveAdjustmentConfig", () => {
         editedCard,
         cardB,
       )
-      const html = renderToStaticMarkup(
-        renderComponent({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          component: preview as any,
-          layout: "content",
-          site: SITE_STUB,
-          permalink: "",
-          headingLevel: 1,
-        }),
-      )
+      const html = renderBlockHtml(preview, "content")
 
       expect(html.match(/<img/g)).toHaveLength(3)
       expect(html).toContain("/edited.png")
@@ -189,19 +222,51 @@ describe("resolveAdjustmentConfig", () => {
         editedCard,
         card,
       )
-      const html = renderToStaticMarkup(
-        renderComponent({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          component: preview as any,
-          layout: "content",
-          site: SITE_STUB,
-          permalink: "",
-          headingLevel: 1,
-        }),
-      )
+      const html = renderBlockHtml(preview, "content")
 
       expect(html).toContain("Real title")
       expect(html).toContain("bg-gradient-to-t")
+    })
+  })
+
+  // contentpic and blockquote hardcode their maxRenderedWidthPx as literal
+  // copies of a Tailwind width class in packages/components — nothing binds
+  // them, so a renderer change would silently desync the warning. Pin both
+  // against the real rendered markup.
+  describe("pinned maxRenderedWidthPx values", () => {
+    it("contentpic's 200px matches the rendered sm:w-[200px] frame", () => {
+      const config = resolveAdjustmentConfig({
+        block: { type: "contentpic" },
+        fieldName: "imageSrc",
+      })
+      expect(config?.maxRenderedWidthPx).toBe(200)
+
+      const block = {
+        type: "contentpic",
+        imageSrc: "/a.png",
+        imageAlt: "a",
+        content: { type: "prose", content: [] },
+      }
+      const html = renderBlockHtml(block, "content")
+      expect(html).toContain("sm:w-[200px]")
+    })
+
+    it("blockquote's 240px matches the rendered homepage w-60 frame", () => {
+      const config = resolveAdjustmentConfig({
+        block: { type: "blockquote" },
+        fieldName: "imageSrc",
+      })
+      expect(config?.maxRenderedWidthPx).toBe(240)
+
+      const block = {
+        type: "blockquote",
+        quote: "Quote",
+        source: "Source",
+        imageSrc: "/a.png",
+        imageAlt: "a",
+      }
+      const html = renderBlockHtml(block, "homepage")
+      expect(html).toContain("w-60")
     })
   })
 })

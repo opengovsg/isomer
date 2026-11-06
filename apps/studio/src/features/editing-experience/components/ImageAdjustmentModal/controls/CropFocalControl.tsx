@@ -53,6 +53,10 @@ interface CropFocalControlProps {
   // that needs to compute a ratio-correct crop independently (e.g. the
   // modal's "Reset image" button) can do the same math this control does.
   onImageAspectChange?: (aspect: number) => void
+  // Fired once the image's true pixel dimensions are known, so the modal can
+  // compare the cropped region's effective resolution against the component's
+  // rendered frame and warn on low-resolution crops.
+  onNaturalSizeChange?: (size: { width: number; height: number }) => void
   // Blocks further crop/focal edits while a save is in flight -- otherwise
   // an edit made during that window is silently lost: handleSave already
   // captured the draft it's uploading, so a later edit updates local state
@@ -78,16 +82,21 @@ export const CropFocalControl = ({
   onCropChange,
   onFocalChange,
   onImageAspectChange,
+  onNaturalSizeChange,
   isDisabled = false,
 }: CropFocalControlProps): JSX.Element => {
   const boxRef = useRef<HTMLDivElement>(null)
-  const [aspectRatio, setAspectRatio] = useState<number | undefined>(undefined)
+  // The source image's true pixel aspect — drives the box, letterboxing and
+  // crop math below.
+  const [naturalAspect, setNaturalAspect] = useState<number | undefined>(
+    undefined,
+  )
   const [boxSize, setBoxSize] = useState({ width: 0, height: 0 })
   const [dragTarget, setDragTarget] = useState<DragTarget>(null)
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null)
 
   const showCrop = cropMode !== "none"
-  const currentCrop = crop ?? defaultCropRect(lockedRatio, aspectRatio ?? 1)
+  const currentCrop = crop ?? defaultCropRect(lockedRatio, naturalAspect ?? 1)
   const currentFocal = focal ?? { x: 0.5, y: 0.5 }
 
   // Track the canvas box's own pixel size, so we can work out exactly where
@@ -116,10 +125,10 @@ export const CropFocalControl = ({
   // it were the image.
   const imageBounds: NormalizedRect = useMemo(
     () =>
-      aspectRatio
-        ? getContainedImageBounds(boxSize, aspectRatio)
+      naturalAspect
+        ? getContainedImageBounds(boxSize, naturalAspect)
         : { x: 0, y: 0, width: 1, height: 1 },
-    [boxSize, aspectRatio],
+    [boxSize, naturalAspect],
   )
 
   // Map an image-normalized rect/point into box-normalized space for display.
@@ -140,8 +149,12 @@ export const CropFocalControl = ({
     const img = event.currentTarget
     if (img.naturalWidth > 0 && img.naturalHeight > 0) {
       const aspect = img.naturalWidth / img.naturalHeight
-      setAspectRatio(aspect)
+      setNaturalAspect(aspect)
       onImageAspectChange?.(aspect)
+      onNaturalSizeChange?.({
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+      })
     }
   }
 
@@ -208,7 +221,7 @@ export const CropFocalControl = ({
         normalizedX,
         normalizedY,
         lockedRatio,
-        aspectRatio ?? 1,
+        naturalAspect ?? 1,
       ),
     )
   }
@@ -306,6 +319,15 @@ export const CropFocalControl = ({
     zIndex: 11,
   }
 
+  const displayImageStyle: CSSProperties = {
+    width: "100%",
+    height: "100%",
+    objectFit: "contain",
+    objectPosition: "center",
+    userSelect: "none",
+    pointerEvents: "none",
+  }
+
   const label =
     showCrop && focalEnabled
       ? "Crop & focal point"
@@ -333,7 +355,7 @@ export const CropFocalControl = ({
         position="relative"
         w="100%"
         maxH="20rem"
-        aspectRatio={aspectRatio}
+        aspectRatio={naturalAspect}
         borderWidth="1px"
         borderColor="base.divider.medium"
         borderRadius="0.25rem"
@@ -352,14 +374,7 @@ export const CropFocalControl = ({
           src={generateAssetUrl(src)}
           alt="Image for crop and focal point adjustment"
           onLoad={handleImageLoad}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            objectPosition: "center",
-            userSelect: "none",
-            pointerEvents: "none",
-          }}
+          style={displayImageStyle}
         />
 
         {showCrop && (
