@@ -11,12 +11,19 @@ interface PreviewIframeProps {
   keyForRerender?: string
   style?: CSSProperties
   viewport?: ViewportOptions
-  // Exact pixel size for the iframe's own layout viewport, bypassing the `viewport`
-  // enum's fixed presets, so content's media queries evaluate against an arbitrary
-  // breakpoint width even if the caller then CSS-scales the iframe down to fit.
+  // Exact pixel size for the iframe's OWN layout viewport, bypassing the
+  // `viewport` enum's fixed presets — so a caller can simulate an arbitrary
+  // breakpoint width (e.g. a design's custom 375/768/1440 set) and have the
+  // content's real CSS media queries evaluate against that width. The caller
+  // is then free to CSS-transform-scale the whole iframe down to fit a
+  // smaller display area without affecting the internal viewport the
+  // content's media queries see (a transform only affects the rendered
+  // output box, not the iframe's own layout viewport).
   widthPx?: number
   heightPx?: number
-  callback?: (props: IframeCallbackFnProps) => void
+  // May return a cleanup fn (e.g. to disconnect an observer it set up); it runs
+  // when the iframe effect tears down, so callers don't leak past unmount.
+  callback?: (props: IframeCallbackFnProps) => void | (() => void)
 }
 
 export const PreviewIframe = ({
@@ -160,13 +167,20 @@ const IframeInnerComponent = ({
       childList: true,
     })
 
-    if (callback) {
-      callback({ document: iframeDocument, window: iframeWindow })
-    }
+    const callbackCleanup = callback?.({
+      document: iframeDocument,
+      window: iframeWindow,
+    })
 
     return () => {
       observer.disconnect()
       portalObserver.disconnect()
+      // Only invoke the return value if the callback actually gave us a cleanup
+      // function. Pre-existing callers pass ASYNC callbacks (returning a
+      // Promise), and `?.()` would happily try to call that Promise — throwing
+      // "callbackCleanup is not a function" on every teardown and destabilizing
+      // the preview (e.g. the navbar/footer settings previews remount-loop).
+      if (typeof callbackCleanup === "function") callbackCleanup()
     }
   }, [callback, iframeDocument, iframeDocument?.documentElement, iframeWindow])
 

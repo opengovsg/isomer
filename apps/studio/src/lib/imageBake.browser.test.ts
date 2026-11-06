@@ -23,8 +23,8 @@ const blobFromCanvas = (canvas: HTMLCanvasElement): Promise<Blob> =>
   })
 
 // 4x4 image, one solid color per 2x2 quadrant — lets crop be verified by
-// sampling a single pixel per quadrant, with no anti-aliasing since every
-// fill lands on exact pixel boundaries.
+// sampling a single pixel per quadrant, with no anti-aliasing
+// since every fill lands on exact pixel boundaries.
 const RED = [255, 0, 0, 255]
 const GREEN = [0, 255, 0, 255]
 const BLUE = [0, 0, 255, 255]

@@ -107,8 +107,6 @@ export const useSaveImageAdjustment = ({
       // Step 1: Resolve the original key
       const originalKey = resolveOriginalKey(currentSrc, draft)
 
-      validateCropBounds(draft.crop)
-
       // Step 2: Fetch the original blob from S3
       const originalUrl = `${ASSETS_BASE_URL}/${originalKey}`
       const originalResponse = await fetch(originalUrl)
@@ -129,6 +127,8 @@ export const useSaveImageAdjustment = ({
           "This image can't be adjusted because it's animated. Adjusting would flatten it to a single frame.",
         )
       }
+
+      validateCropBounds(draft.crop)
 
       // Step 4: Bake the image
       const bakedBlob = await bakeImage(originalBlob, draft, {

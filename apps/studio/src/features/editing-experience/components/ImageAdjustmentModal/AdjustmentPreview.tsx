@@ -5,10 +5,15 @@ import type {
   IsomerSiteProps,
   ImageAdjustment,
 } from "@opengovsg/isomer-components"
-import { Box, HStack, Text, VStack } from "@chakra-ui/react"
+import type { CSSProperties } from "react"
+import type { IframeCallbackFnProps } from "~/types/dom"
+import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { renderComponent } from "@opengovsg/isomer-components"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { ErrorBoundary } from "react-error-boundary"
+import Suspense from "~/components/Suspense"
 import { PreviewIframe } from "~/features/editing-experience/components/preview/PreviewIframe"
+import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { bakeImage, canBakeImage, isAnimatedImageBlob } from "~/lib/imageBake"
 import { ASSETS_BASE_URL, generateAssetUrl } from "~/utils/generateAssetUrl"
 
@@ -17,8 +22,12 @@ import type {
   AdjustmentScrim,
 } from "./AdjustmentConfig"
 
-// Only the fields HeroGradient/Contentpic actually read are populated — this
-// renders one isolated block, not a real page. Mirrors PreviewWithCustomSitemap.tsx.
+// Minimal site stub for an ISOLATED single-block preview — there is no real
+// page/nav/footer context here (this renders one block, not a whole page), so
+// only the fields HeroGradient/Contentpic actually read (assetsBaseUrl,
+// siteMapArray for reference-link resolution, which degrades gracefully to
+// the raw link on a miss) are populated. Mirrors the same escape hatch
+// PreviewWithCustomSitemap.tsx already uses for its own site prop.
 const PREVIEW_SITE_STUB = {
   assetsBaseUrl: ASSETS_BASE_URL,
   siteMapArray: [],
@@ -26,17 +35,40 @@ const PREVIEW_SITE_STUB = {
 
 interface AdjustmentPreviewProps {
   src: string
-  // The true original's stored path, resolved by the parent via resolveOriginalKey —
-  // bake input must always be the original, never a previous bake, so re-encode loss can't compound.
+  // The TRUE original's raw stored path (e.g. "/1/uuid/file.png"), resolved
+  // once by the parent modal via resolveOriginalKey — the bake input must
+  // always be the original, never a previous bake (RFC: re-encode loss must
+  // not compound). On a first edit this equals `src`; on a re-edit, `src` is
+  // the previous bake and only this points at the true original.
   originalSrc: string
   adjustment?: ImageAdjustment
   previewStates: AdjustmentPreviewState[]
   scrim?: AdjustmentScrim
-  // Lets the real published component render (real copy/scrim/frame) instead of the
-  // framed-<img> approximation below; falls back to it when absent or rendering fails.
+  // The real block content + the field name holding the image, so the real
+  // published component can be rendered (real copy/scrim/frame) instead of
+  // the framed-<img> approximation below. Falls back to the approximation
+  // when absent or when rendering the real component fails for any reason.
   block?: unknown
   imageFieldName?: string
+  // Needed to pull the site's brand theme CSS vars into the preview iframe —
+  // without them, classes like `bg-brand-canvas-inverse` resolve to nothing.
+  siteId: number
 }
+
+// Fixed on-screen DISPLAY WIDTH per breakpoint, shared by every component's
+// preview — narrower for mobile, wider for tablet/desktop. This alone tends
+// to produce portrait-looking mobile frames and landscape-looking
+// tablet/desktop frames, since that mirrors how each component's own
+// responsive layout actually behaves at those widths (e.g. mobile widths
+// stack content vertically). The resulting HEIGHT is never guessed or
+// capped — see PreviewFrame — so nothing is ever cropped or hidden behind a
+// scrollbar; what's shown always exactly matches the real published result.
+const FRAME_DISPLAY_WIDTH: Record<string, number> = {
+  mobile: 140,
+  tablet: 220,
+  desktop: 320,
+}
+const DEFAULT_FRAME_DISPLAY_WIDTH = 220
 
 export const AdjustmentPreview = ({
   src,
@@ -46,6 +78,7 @@ export const AdjustmentPreview = ({
   scrim,
   block,
   imageFieldName,
+  siteId,
 }: AdjustmentPreviewProps): JSX.Element => {
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -54,13 +87,19 @@ export const AdjustmentPreview = ({
   const [fetchError, setFetchError] = useState(false)
   const bakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevPreviewUrlRef = useRef<string | null>(null)
-  // Monotonic token so a superseded, still-running bake can detect it and drop its result.
+  // Monotonic token for the latest bake request. Each effect run bumps it so an
+  // older, still-running bake can detect it has been superseded and drop its
+  // result instead of overwriting the preview of a newer draft.
   const bakeRequestIdRef = useRef(0)
 
-  // Resolve to the asset domain, same as ImageClient does at render time.
+  // src arrives as the raw stored path (e.g. "/1/uuid/file.png"); resolve it to
+  // the asset domain for DISPLAY (the fallback shown before any bake exists),
+  // same as ImageClient does at render time.
   const displaySrc = generateAssetUrl(src)
   const originalFetchUrl = generateAssetUrl(originalSrc)
 
+  // Fetch the original image once per resolved original. Comment notes CORS
+  // must be readable.
   useEffect(() => {
     const fetchOriginal = async () => {
       setFetchError(false)
@@ -82,17 +121,22 @@ export const AdjustmentPreview = ({
     void fetchOriginal()
   }, [originalFetchUrl])
 
+  // Debounced bake effect (~150ms) keyed on crop changes.
   useEffect(() => {
+    // Clear any pending timeout
     if (bakeTimeoutRef.current) {
       clearTimeout(bakeTimeoutRef.current)
     }
 
-    // Debouncing only cancels a bake that hasn't started yet; bump the token so a
-    // bake already awaiting bakeImage can't overwrite this newer draft when it resolves.
+    // Supersede any in-flight bake from a prior adjustment: debouncing only
+    // cancels a bake that hasn't started yet, so a bake already awaiting
+    // bakeImage could otherwise finish last and overwrite this newer draft.
     const requestId = ++bakeRequestIdRef.current
     const isStale = () => requestId !== bakeRequestIdRef.current
 
+    // If no blob or no adjustment with crop, nothing to bake
     if (!originalBlob || !adjustment?.crop) {
+      // Revoke previous URL if clearing the preview
       if (prevPreviewUrlRef.current) {
         URL.revokeObjectURL(prevPreviewUrlRef.current)
         prevPreviewUrlRef.current = null
@@ -103,7 +147,8 @@ export const AdjustmentPreview = ({
 
     const runBake = async () => {
       try {
-        // Animated WebP/APNG pass canBakeImage but would be flattened, so skip them too.
+        // Guard: only bake static, supported formats. Animated WebP/APNG pass
+        // canBakeImage but would be flattened, so fall back to uncropped src.
         if (
           !canBakeImage(originalBlob.type) ||
           (await isAnimatedImageBlob(originalBlob))
@@ -114,19 +159,23 @@ export const AdjustmentPreview = ({
         const bakedBlob = await bakeImage(originalBlob, adjustment, {
           mimeType: originalBlob.type,
         })
-        // A newer adjustment started while this bake ran — discard it.
+        // A newer adjustment started while this bake ran — discard this result
+        // so the older crop can't replace the newer preview.
         if (isStale()) {
           return
         }
         const bakeUrl = URL.createObjectURL(bakedBlob)
+        // Revoke previous URL before setting new one
         if (prevPreviewUrlRef.current) {
           URL.revokeObjectURL(prevPreviewUrlRef.current)
         }
         prevPreviewUrlRef.current = bakeUrl
         setPreviewUrl(bakeUrl)
       } catch (error) {
-        // Fall back to the uncropped src (CORS taint, canvas issue, etc.) unless
-        // a newer bake has already superseded this one.
+        // On any failure (CORS taint, canvas issue, etc.): fall back to the
+        // uncropped src. Clear the previous preview so a stale crop from an
+        // earlier successful bake isn't left showing for this draft — unless a
+        // newer bake has already superseded this one.
         console.debug("Failed to bake image", error)
         if (isStale()) {
           return
@@ -156,8 +205,10 @@ export const AdjustmentPreview = ({
     adjustment?.crop?.height,
   ])
 
-  // Bumps bakeRequestIdRef so a bake still in flight at unmount sees isStale() once it
-  // resolves, instead of creating (and leaking) a new object URL after unmount.
+  // Cleanup: revoke object URL on unmount. Also bumps bakeRequestIdRef so a
+  // bake that's still in flight when this unmounts sees isStale() as true
+  // once it resolves, instead of creating (and leaking) a new object URL on
+  // an already-unmounted component.
   useEffect(() => {
     return () => {
       bakeRequestIdRef.current++
@@ -167,6 +218,7 @@ export const AdjustmentPreview = ({
     }
   }, [])
 
+  // Helper: compute objectPosition for focal point (render-time, always applied)
   const getFocalObjectPosition = (focal?: { x: number; y: number }) => {
     if (!focal || (focal.x == null && focal.y == null)) {
       return undefined
@@ -176,7 +228,9 @@ export const AdjustmentPreview = ({
 
   const adjustedSrc = previewUrl ?? displaySrc
 
-  // Renders the actual published block with the adjusted image + draft spliced in.
+  // Real-component preview: render the actual published block (real copy,
+  // scrim, frame behaviour) with the adjusted image + draft imageAdjustment
+  // spliced in, instead of the framed-<img> approximation below.
   let previewComponent: React.ReactNode = null
   if (block && typeof block === "object" && imageFieldName) {
     try {
@@ -185,13 +239,28 @@ export const AdjustmentPreview = ({
         [imageFieldName]: adjustedSrc,
         imageAdjustment: adjustment,
       } as unknown as IsomerComponent
-      previewComponent = renderComponent({
+      const rendered = renderComponent({
         component,
         layout: "content",
         site: PREVIEW_SITE_STUB,
         permalink: "",
         headingLevel: 1,
       })
+      // renderComponent dispatches a bare component with no page layout
+      // around it. In a real page, the horizontal gutter/max-width for any
+      // element marked `.component-content` (e.g. HeroGradient's text block)
+      // comes from an ANCESTOR selector the page layout applies —
+      // `[&_.component-content]:px-6 [&_.component-content]:md:px-10
+      // [&_.component-content]:max-w-screen-xl [&_.component-content]:mx-auto`
+      // (see Homepage.tsx) — not from the component itself. Without this
+      // wrapper the text/buttons sit flush left with no padding, even though
+      // the background image (a separate, non-"component-content" sibling)
+      // renders correctly full-bleed either way.
+      previewComponent = (
+        <div className="break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10">
+          {rendered}
+        </div>
+      )
     } catch (error) {
       console.debug(
         "Failed to render real-component preview, falling back to approximation",
@@ -209,81 +278,34 @@ export const AdjustmentPreview = ({
   )
 
   if (previewComponent) {
-    const DISPLAY_WIDTH_CAP = 200
-
     return (
       <VStack align="stretch" spacing={0} w="100%">
         {fetchErrorBanner}
-        <HStack
-          align="flex-start"
-          spacing="1rem"
-          w="100%"
-          overflowX="auto"
-          overflowY="hidden"
-          pb="0.5rem"
-        >
+        <Flex wrap="wrap" align="flex-start" gap="1rem" w="100%">
           {previewStates.map((state) => {
-            // Render the iframe at its real breakpoint width (so sm:/md:/lg: classes
-            // evaluate correctly), then CSS-scale the box down to fit the preview column.
-            const viewportWidth = state.viewportWidth ?? 1024
-            const viewportHeight = state.aspectRatio
-              ? Math.round(
-                  (viewportWidth * state.aspectRatio.height) /
-                    state.aspectRatio.width,
-                )
-              : 600
-            const displayWidth = Math.min(viewportWidth, DISPLAY_WIDTH_CAP)
-            const scale = displayWidth / viewportWidth
-
+            const displayWidth =
+              FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
             return (
-              <VStack
+              // The theme fetch suspends AND can throw; without the ErrorBoundary
+              // a failed getTheme would tear down the whole modal instead of this
+              // one frame degrading to a theme-less (but still correct) preview.
+              <ErrorBoundary
                 key={state.id}
-                align="stretch"
-                spacing="0.5rem"
-                flexShrink={0}
-                minW="fit-content"
+                fallbackRender={() => (
+                  <PreviewFrame state={state}>{previewComponent}</PreviewFrame>
+                )}
               >
-                <Text
-                  textStyle="body-2"
-                  fontWeight="semibold"
-                  color="base.content.medium"
+                <Suspense
+                  fallback={<Skeleton w={`${displayWidth}px`} h="9rem" />}
                 >
-                  {state.label}
-                  {state.viewportWidth && ` (${state.viewportWidth}px)`}
-                </Text>
-
-                <Box
-                  borderWidth="1px"
-                  borderColor="base.divider.medium"
-                  borderRadius="0.25rem"
-                  overflow="hidden"
-                  style={{
-                    width: displayWidth,
-                    height: viewportHeight * scale,
-                    position: "relative",
-                  }}
-                >
-                  <Box
-                    style={{
-                      width: viewportWidth,
-                      height: viewportHeight,
-                      transform: `scale(${scale})`,
-                      transformOrigin: "top left",
-                    }}
-                  >
-                    <PreviewIframe
-                      widthPx={viewportWidth}
-                      heightPx={viewportHeight}
-                      preventPointerEvents
-                    >
-                      {previewComponent}
-                    </PreviewIframe>
-                  </Box>
-                </Box>
-              </VStack>
+                  <ThemedPreviewFrame siteId={siteId} state={state}>
+                    {previewComponent}
+                  </ThemedPreviewFrame>
+                </Suspense>
+              </ErrorBoundary>
             )
           })}
-        </HStack>
+        </Flex>
       </VStack>
     )
   }
@@ -291,15 +313,15 @@ export const AdjustmentPreview = ({
   return (
     <VStack align="stretch" spacing={0} w="100%">
       {fetchErrorBanner}
-      <HStack
-        align="flex-start"
-        spacing="1rem"
-        w="100%"
-        overflowX="auto"
-        overflowY="hidden"
-        pb="0.5rem"
-      >
+      <Flex wrap="wrap" align="flex-start" gap="1rem" w="100%">
         {previewStates.map((state) => {
+          const displayWidth =
+            FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
+          const aspect = state.aspectRatio
+            ? state.aspectRatio.width / state.aspectRatio.height
+            : 1
+          const displayHeight = displayWidth / aspect
+
           const imageNode = (
             <Box
               as="img"
@@ -317,6 +339,7 @@ export const AdjustmentPreview = ({
           const frameContent = (
             <Box w="100%" h="100%" position="relative" overflow="hidden">
               {imageNode}
+              {/* Scrim overlay for contrast visualization */}
               {scrim && (
                 <Box
                   position="absolute"
@@ -334,8 +357,8 @@ export const AdjustmentPreview = ({
               align="stretch"
               spacing="0.5rem"
               flexShrink={0}
-              minW="fit-content"
             >
+              {/* Label with optional viewport width */}
               <Text
                 textStyle="body-2"
                 fontWeight="semibold"
@@ -345,8 +368,9 @@ export const AdjustmentPreview = ({
                 {state.viewportWidth && ` (${state.viewportWidth}px)`}
               </Text>
 
+              {/* Frame box, using the same per-breakpoint display width as
+                every other component's preview. */}
               <Box
-                w="auto"
                 borderWidth="1px"
                 borderColor="base.divider.medium"
                 borderRadius="0.25rem"
@@ -354,12 +378,8 @@ export const AdjustmentPreview = ({
                 bg="base.canvas.default"
                 position="relative"
                 style={{
-                  aspectRatio: state.aspectRatio
-                    ? `${state.aspectRatio.width} / ${state.aspectRatio.height}`
-                    : undefined,
-                  width: state.viewportWidth
-                    ? Math.min(state.viewportWidth, 200)
-                    : 200,
+                  width: displayWidth,
+                  height: displayHeight,
                 }}
               >
                 {frameContent}
@@ -367,7 +387,129 @@ export const AdjustmentPreview = ({
             </VStack>
           )
         })}
-      </HStack>
+      </Flex>
     </VStack>
+  )
+}
+
+// Renders the real component inside a simulated device viewport at this
+// breakpoint's exact width (so the component's own sm:/md:/lg: Tailwind
+// classes evaluate correctly — the iframe's OWN layout viewport is what
+// media queries read, which a container shrunk from outside can't fake),
+// scaled down to a fixed DISPLAY WIDTH (see FRAME_DISPLAY_WIDTH). The
+// frame's HEIGHT is measured from the real rendered content via a
+// ResizeObserver inside the iframe, never guessed — so condition (1), the
+// preview exactly reflecting the post-publish look, holds regardless of how
+// tall any given component's content turns out to be, with nothing cropped
+// or hidden behind a scrollbar.
+//
+// The site's brand theme CSS vars are passed in (via ThemedPreviewFrame) and
+// applied to the iframe — without them, Tailwind classes like
+// `bg-brand-canvas-inverse` resolve to nothing, which previously caused
+// white-on-white text in the HeroBlock preview. They're a prop (not fetched
+// here) so this frame still renders if the theme fetch fails — see the
+// ErrorBoundary fallback above.
+const PreviewFrame = ({
+  state,
+  themeCssVars,
+  children,
+}: {
+  state: AdjustmentPreviewState
+  themeCssVars?: CSSProperties
+  children: React.ReactNode
+}) => {
+  const viewportWidth = state.viewportWidth ?? 1024
+  // Used only as the initial guess before the real height is measured, to
+  // avoid a 0-height flash — corrected immediately on mount.
+  const estimatedHeight = state.aspectRatio
+    ? Math.round(
+        (viewportWidth * state.aspectRatio.height) / state.aspectRatio.width,
+      )
+    : viewportWidth
+  const [measuredHeight, setMeasuredHeight] = useState<number | null>(null)
+  const viewportHeight = measuredHeight ?? estimatedHeight
+
+  const handleIframeMount = useCallback(
+    ({ document: iframeDocument }: IframeCallbackFnProps) => {
+      if (!iframeDocument?.body) return
+      const update = () => setMeasuredHeight(iframeDocument.body.scrollHeight)
+      update()
+      // The global ResizeObserver can observe elements belonging to another
+      // same-origin document just fine — no need to reach into the iframe's
+      // own window for its constructor.
+      const observer = new ResizeObserver(update)
+      observer.observe(iframeDocument.body)
+      // Disconnect on iframe teardown — PreviewIframe runs this when its effect
+      // cleans up, so we don't leak observers or setState after unmount.
+      return () => observer.disconnect()
+    },
+    [],
+  )
+
+  const displayWidth =
+    FRAME_DISPLAY_WIDTH[state.id] ?? DEFAULT_FRAME_DISPLAY_WIDTH
+  const scale = displayWidth / viewportWidth
+
+  return (
+    <VStack align="stretch" spacing="0.5rem" flexShrink={0}>
+      <Text
+        textStyle="body-2"
+        fontWeight="semibold"
+        color="base.content.medium"
+      >
+        {state.label}
+        {state.viewportWidth && ` (${state.viewportWidth}px)`}
+      </Text>
+
+      <Box
+        borderWidth="1px"
+        borderColor="base.divider.medium"
+        borderRadius="0.25rem"
+        overflow="hidden"
+        style={{
+          width: displayWidth,
+          height: viewportHeight * scale,
+          position: "relative",
+        }}
+      >
+        <Box
+          style={{
+            width: viewportWidth,
+            height: viewportHeight,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+          }}
+        >
+          <PreviewIframe
+            widthPx={viewportWidth}
+            heightPx={viewportHeight}
+            preventPointerEvents
+            style={themeCssVars}
+            callback={handleIframeMount}
+          >
+            {children}
+          </PreviewIframe>
+        </Box>
+      </Box>
+    </VStack>
+  )
+}
+
+// Fetches the site theme (suspends, and throws on error — hence the Suspense +
+// ErrorBoundary around it) and hands the CSS vars to PreviewFrame as a prop.
+const ThemedPreviewFrame = ({
+  siteId,
+  state,
+  children,
+}: {
+  siteId: number
+  state: AdjustmentPreviewState
+  children: React.ReactNode
+}) => {
+  const themeCssVars = useSiteThemeCssVars({ siteId })
+  return (
+    <PreviewFrame state={state} themeCssVars={themeCssVars}>
+      {children}
+    </PreviewFrame>
   )
 }

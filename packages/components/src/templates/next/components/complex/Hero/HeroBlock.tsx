@@ -7,7 +7,7 @@ import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
-import { ImageClient } from "../../internal/ImageClient"
+import { ImageClientWithAdjustment } from "../../internal/ImageClient"
 import { LinkButton } from "../../internal/LinkButton/LinkButton"
 
 const HERO_THEME_MAPPINGS = {
@@ -119,6 +119,7 @@ export const HeroBlock = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   backgroundUrl,
+  imageAdjustment,
   blockImage,
   site,
   theme = "default",
@@ -186,11 +187,12 @@ export const HeroBlock = ({
         </div>
       </div>
       <div className={styles.imageColumn()} style={{ contain: "layout" }}>
-        <ImageClient
+        <ImageClientWithAdjustment
           src={backgroundUrl}
           alt=""
           width="100%"
           className={styles.image()}
+          imageAdjustment={imageAdjustment}
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={false} // hero is always above the fold
         />
