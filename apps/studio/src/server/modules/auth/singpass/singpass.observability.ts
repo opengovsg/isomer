@@ -23,7 +23,6 @@ export const singpassLoginLogFields = ({
   stage: "authorization" | "par" | "token_exchange" | "callback"
   outcome?: "success" | "failure"
 } & Record<string, unknown>) => ({
-  singpassFlow: "fapi2" as const,
   singpassStage: stage,
   ...(outcome === undefined ? {} : { singpassOutcome: outcome }),
   ...extra,

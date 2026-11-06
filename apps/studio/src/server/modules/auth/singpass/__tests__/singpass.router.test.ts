@@ -20,6 +20,7 @@ import * as SingpassService from "../singpass.service"
 const createCaller = createCallerFactory(singpassRouter)
 const TEST_VALID_EMAIL = "test@open.gov.sg"
 const CALLBACK_STATE = "callback-state"
+const CALLBACK_ISSUER = "https://stg-id.singpass.gov.sg/fapi"
 const MOCK_ORIGINAL_UUID = "2625dd66-2cbb-414b-a136-f62bb516653c"
 const MOCK_SINGPASS_UUID = "beef6054-985f-4073-ae91-cd61552e2a7d"
 const MOCK_DPOP_JWK = '{"kty":"EC"}'
@@ -217,6 +218,7 @@ describe("auth.singpass", () => {
       const result = caller.callback({
         state: "different-state",
         code: "code",
+        iss: CALLBACK_ISSUER,
       })
 
       // Assert
@@ -234,6 +236,7 @@ describe("auth.singpass", () => {
       const result = caller.callback({
         state: "state",
         code: "code",
+        iss: CALLBACK_ISSUER,
       })
 
       // Assert
@@ -269,6 +272,7 @@ describe("auth.singpass", () => {
       const result = caller.callback({
         state: CALLBACK_STATE,
         code: "code",
+        iss: CALLBACK_ISSUER,
       })
 
       // Assert
@@ -310,6 +314,7 @@ describe("auth.singpass", () => {
       const result = caller.callback({
         state: CALLBACK_STATE,
         code: "code",
+        iss: CALLBACK_ISSUER,
       })
 
       // Assert
@@ -351,6 +356,7 @@ describe("auth.singpass", () => {
       await caller.callback({
         state: CALLBACK_STATE,
         code: "code",
+        iss: CALLBACK_ISSUER,
       })
 
       // Assert
@@ -415,13 +421,13 @@ describe("auth.singpass", () => {
       await caller.callback({
         state: CALLBACK_STATE,
         code: "code",
-        iss: "https://stg-id.singpass.gov.sg/fapi",
+        iss: CALLBACK_ISSUER,
       })
 
       // Assert
       expect(login).toHaveBeenCalledWith(
         expect.objectContaining({
-          iss: "https://stg-id.singpass.gov.sg/fapi",
+          iss: CALLBACK_ISSUER,
           dpopPrivateJwk: MOCK_DPOP_JWK,
         }),
       )
@@ -457,6 +463,7 @@ describe("auth.singpass", () => {
       await caller.callback({
         state: CALLBACK_STATE,
         code: "code",
+        iss: CALLBACK_ISSUER,
       })
 
       // Assert

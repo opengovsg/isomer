@@ -50,7 +50,7 @@ const getClient = async (): Promise<Client> => {
     const singpassIssuer = await Issuer.discover(
       env.SINGPASS_FAPI_ISSUER_ENDPOINT,
     )
-    const fapiClient = new singpassIssuer.FAPI2Client(
+    client = new singpassIssuer.FAPI2Client(
       {
         client_id: env.SINGPASS_CLIENT_ID,
         response_types: ["code"],
@@ -64,8 +64,7 @@ const getClient = async (): Promise<Client> => {
       },
       clientKeys,
     )
-    installDpopHeader(fapiClient)
-    client = fapiClient
+    installDpopHeader(client)
   }
   return client
 }
@@ -128,7 +127,7 @@ interface LoginParams {
   codeVerifier: string
   nonce: string
   state: string
-  iss?: string
+  iss: string
   dpopPrivateJwk: string
 }
 
@@ -148,7 +147,7 @@ export const login = async ({
       {
         code,
         state,
-        ...(iss ? { iss } : {}),
+        iss,
       },
       {
         state,
