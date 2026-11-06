@@ -122,8 +122,7 @@ function JsonFormsCombinatorControl({
   data,
   combinatorType,
 }: JsonFormsCombinatorControlProps) {
-  // NOTE: Memoised so the active branch keeps a stable uischema identity;
-  // see JsonFormsAllOfControl.
+  // NOTE: Memoised for a stable uischema, see JsonFormsAllOfControl
   const renderInfos = useMemo(
     () =>
       createCombinatorRenderInfos(

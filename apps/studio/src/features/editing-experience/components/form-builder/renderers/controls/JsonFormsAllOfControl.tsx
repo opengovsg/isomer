@@ -22,9 +22,8 @@ function JsonFormsAllOfControl({
   uischema,
   uischemas,
 }: CombinatorRendererProps) {
-  // NOTE: Memoised because createCombinatorRenderInfos generates a fresh
-  // uischema per call. New uischema identities defeat the memo on every
-  // descendant control, so they all re-render on any form change.
+  // NOTE: Memoised as each call generates a new uischema, which re-renders
+  // every descendant control
   const allOfRenderInfos = useMemo(
     () =>
       createCombinatorRenderInfos(
