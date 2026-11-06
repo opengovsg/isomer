@@ -3,7 +3,7 @@ import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment, useToast } from "@opengovsg/design-system-react"
 import { uniq } from "lodash-es"
 import dynamic from "next/dynamic"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
@@ -20,7 +20,6 @@ interface FileAttachmentProps {
   setHref: (href?: string) => void
   siteId: number
   resourceId?: string
-  value?: File
   maxSizeInBytes: number
   acceptedFileTypes: Record<string, string>
   shouldFetchResource?: boolean
@@ -52,29 +51,27 @@ export const FileAttachment = ({
   const { handleAssetUpload, isLoading } = useAssetUpload({})
   const toast = useToast()
 
-  useEffect(() => {
-    // NOTE: The outer link modal uses this to disable the button
-    if (isLoading) setHref("")
-  }, [isLoading, setHref])
-
   const doUpload = (file: File) => {
     uploadFile(
       { file },
       {
         onSuccess: ({ path }) => {
           onUploadedFile?.(file)
-          if (shouldFetchResource) {
-            void handleAssetUpload(path)
-              .then((src) => setHref(src))
-              .catch(() => {
-                toast({
-                  title: "Failed to upload file",
-                  description: "Please try again.",
-                  status: "error",
-                  ...BRIEF_TOAST_SETTINGS,
-                })
+          if (!shouldFetchResource) {
+            setHref(path)
+            return
+          }
+
+          void handleAssetUpload(path)
+            .then((src) => setHref(src))
+            .catch(() => {
+              toast({
+                title: "Failed to upload file",
+                description: "Please try again.",
+                status: "error",
+                ...BRIEF_TOAST_SETTINGS,
               })
-          } else setHref(path)
+            })
         },
       },
     )
@@ -126,7 +123,6 @@ export const FileAttachment = ({
                   })
 
               if (parseResult.success) return null
-              // NOTE: safe assertion here because we're in error path and there's at least 1 error
               return (
                 parseResult.error.issues[0]?.message ||
                 "Please ensure that your file begins with alphanumeric characters!"
@@ -143,7 +139,7 @@ export const FileAttachment = ({
 
       {enableRiskyFileWarning && pendingAckRiskyFile && (
         <RiskyFileUploadModal
-          isOpen={!!pendingAckRiskyFile}
+          isOpen
           file={pendingAckRiskyFile}
           onConfirm={() => doUpload(pendingAckRiskyFile)}
           onClose={() => setPendingAckRiskyFile(null)}
