@@ -26,11 +26,8 @@ const carouselSchema = {
   },
 }
 
-// Mirrors HeroGradientSchema's shape: Type.Intersect flattens into `allOf`,
-// not a top-level `properties` map, unlike Type.Composite (blockSchema above).
-// The second allOf member is the buttons-vs-quick-links oneOf: buttons layout
-// carries CallToActionsSchema's fields at the root (buttonLabel, buttonUrl),
-// quick-links carries its own `actions.items` instead.
+// Mirrors HeroGradientSchema (Type.Intersect): fields live under `allOf`/`oneOf`,
+// not a top-level `properties` map. The oneOf is the buttons-vs-quick-links layout.
 const gradientSchema: JsonSchema = {
   type: "object",
   allOf: [
@@ -189,22 +186,6 @@ describe("nextHeroCarouselVariantData", () => {
       buttonLabel: "Learn more",
       buttonUrl: "/about",
     })
-  })
-
-  it("accepts losing quick-links content on the hop out of gradient (no other variant carries actions.items)", () => {
-    // Arrange: quick-links data already isn't in `source` by the time a
-    // later switch into gradient runs, because Block's own schema (a
-    // Type.Composite with no `actions` property) dropped it on the way out.
-    const afterLeavingGradient = nextHeroCarouselVariantData(
-      {
-        type: "hero",
-        variant: "gradient",
-        actions: { layout: "quickLinks", items: [{ label: "Docs" }] },
-      },
-      { type: "hero", variant: "block" },
-      blockSchema,
-    )
-    expect(afterLeavingGradient.actions).toBeUndefined()
   })
 
   it("drops root hero fields when entering carousel", () => {

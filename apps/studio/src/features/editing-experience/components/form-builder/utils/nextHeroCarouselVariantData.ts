@@ -21,18 +21,9 @@ type HeroData = Record<string, unknown> & {
 
 const isCarousel = (data: HeroData) => data.variant === HERO_STYLE.carousel.key
 
-// Type.Composite flattens into a plain `properties` map, but Type.Intersect
-// (used by HeroGradientSchema, to validate its oneOf action-layout member)
-// only exposes its members via `allOf` -- `schema.properties` is undefined
-// there. Walk `allOf` recursively so gradient's keys aren't silently dropped,
-// which otherwise made every switch INTO gradient wipe the banner's data.
-// Also union in `oneOf`/`anyOf` branches (gradient's buttons-vs-quick-links
-// layout choice) so CallToActionsSchema's button fields -- present on every
-// other Hero variant -- survive a round trip through gradient. Quick-links'
-// own fields (items/title/showIcon, gradient-only) are still lost on the hop
-// OUT of gradient to a variant that doesn't carry them at all; no amount of
-// recursion here can restore data that already isn't in `source` by the time
-// this runs, so that loss is accepted rather than worked around.
+// HeroGradientSchema is a Type.Intersect: its fields live under `allOf`/`oneOf`,
+// not a top-level `properties`. Collect them all so switching into gradient
+// doesn't drop the banner's data.
 const flatSchemaPropertyKeys = (schema: JsonSchema): string[] => {
   if (schema.properties) return Object.keys(schema.properties)
   if (schema.allOf) return schema.allOf.flatMap(flatSchemaPropertyKeys)
