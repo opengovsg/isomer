@@ -12,12 +12,39 @@ import {
   shouldBlockIndexing,
 } from "@opengovsg/isomer-components"
 import { notFound } from "next/navigation"
+import { existsSync, readFileSync } from "node:fs"
+import { join, relative, sep } from "node:path"
 
 import { serializeForInlineScript } from "@isomer/validators"
 
 export const dynamic = "force-static"
 
 const INDEX_PAGE_PERMALINK = "_index"
+const schemaDir = join(process.cwd(), "schema")
+
+// Folder index pages live at `schema/<permalink>/_index.json`. A dynamic
+// `import(\`@/schema/${permalink}/_index.json\`)` makes Turbopack fail the
+// production build when nothing matches that shape, and a permalink can
+// contain slashes. Read the file instead. `next build` runs with cwd at
+// apps/template, which is also where the publisher invokes `build:template`.
+const readFolderIndexSchema = (
+  joinedPermalink: string,
+): IsomerPageSchemaType => {
+  const file = join(schemaDir, joinedPermalink, `${INDEX_PAGE_PERMALINK}.json`)
+  const rel = relative(schemaDir, file)
+  if (rel === ".." || rel.startsWith(`..${sep}`) || rel.startsWith("/")) {
+    throw new Error(
+      `Schema path escapes the schema directory: ${joinedPermalink}`,
+    )
+  }
+  if (!existsSync(file)) {
+    const error = new Error(`Cannot find module '${file}'`)
+    Object.assign(error, { code: "MODULE_NOT_FOUND" })
+    throw error
+  }
+  return JSON.parse(readFileSync(file, "utf8")) as IsomerPageSchemaType
+}
+
 const isModuleNotFoundError = (error: unknown) =>
   error instanceof Error &&
   "code" in error &&
@@ -56,10 +83,8 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
   const schema = (await import(`@/schema/${joinedPermalink}.json`)
     // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     .then((module) => module.default)
-    // NOTE: If the initial import is missing,
-    // this might be the case where the file is an index page
-    // and has `_index` appended to the original permalink
-    // so we have to do another import w the appended index path
+    // NOTE: If the initial import is missing, this might be a folder index
+    // page whose file is `schema/<permalink>/_index.json`.
     .catch(async (error: unknown) => {
       if (!isModuleNotFoundError(error)) throw error
 
@@ -70,11 +95,7 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
           (module) => module.default,
         )
       }
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
-      return import(
-        `@/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
-        // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-      ).then((module) => module.default)
+      return readFolderIndexSchema(joinedPermalink)
     })
     .catch((error: unknown) => {
       if (isModuleNotFoundError(error)) notFound()
