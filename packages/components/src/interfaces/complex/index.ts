@@ -2,15 +2,22 @@ export { AccordionSchema, type AccordionProps } from "./Accordion"
 export { BlockquoteSchema, type BlockquoteProps } from "./Blockquote"
 export { ButtonSchema, type ButtonProps } from "./Button"
 export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
-export {
-  CalloutSchema,
-  DEFAULT_CALLOUT_VARIANT,
-  type CalloutProps,
-  type CalloutVariant,
-} from "./Callout"
+export { CalloutSchema, type CalloutProps } from "./Callout/Callout"
+export { DEFAULT_CALLOUT_VARIANT, type CalloutVariant } from "./Callout"
 export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
+export {
+  HeroCarouselSlideSchema,
+  HeroSchema,
+  type HeroGradientQuickLinksItem,
+  type HeroGradientQuickLinksProps,
+  type HeroBlockProps,
+  type HeroCarouselProps,
+  type HeroGradientButtonsProps,
+  type HeroGradientProps,
+  type HeroProps,
+} from "./Hero/Hero"
 export {
   getHeroStyleVariantForBranchTitle,
   HERO_GRADIENT_ACTION_LAYOUT,
@@ -20,19 +27,10 @@ export {
   HERO_CAROUSEL_LAYOUT,
   HERO_QUICK_LINKS_LIMITS,
   HERO_STYLE,
-  HeroCarouselSlideSchema,
-  HeroSchema,
   type HeroGradientActionLayout,
-  type HeroGradientQuickLinksItem,
-  type HeroGradientQuickLinksProps,
-  type HeroBlockProps,
-  type HeroCarouselProps,
   type HeroCarouselContentAlignment,
   type HeroCarouselImagePosition,
   type HeroCarouselLayout,
-  type HeroGradientButtonsProps,
-  type HeroGradientProps,
-  type HeroProps,
   type HeroStyleVariant,
 } from "./Hero"
 export { IframeSchema, type IframeProps } from "./Iframe"
@@ -43,19 +41,15 @@ export {
   ImageSchema,
   type ImageProps,
 } from "./Image"
-export {
-  InfoCardsSchema,
-  type InfoCardsProps,
-  CARDS_WITHOUT_IMAGES,
-  CARDS_WITH_IMAGES,
-} from "./InfoCards"
+export { InfoCardsSchema, type InfoCardsProps } from "./InfoCards/InfoCards"
+export { CARDS_WITHOUT_IMAGES, CARDS_WITH_IMAGES } from "./InfoCards"
 export { InfoColsSchema, type InfoColsProps } from "./InfoCols"
 export {
   InfobarDefaultSchema,
   InfobarHomepageSchema,
   type InfobarProps,
 } from "./Infobar"
-export { InfopicSchema, type InfopicProps } from "./Infopic"
+export { InfopicSchema, type InfopicProps } from "./Infopic/Infopic"
 export { KeyStatisticsSchema, type KeyStatisticsProps } from "./KeyStatistics"
 export { StepsSchema, type StepsProps } from "./Steps"
 export { MapSchema, type MapProps } from "./Map"

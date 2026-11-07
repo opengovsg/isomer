@@ -1,2 +1,2 @@
-export * from "./CentralNotification"
+export type * from "./CentralNotification"
 export * from "./constants"

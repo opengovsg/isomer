@@ -1,2 +1,2 @@
-export * from "./Callout"
+export type * from "./Callout"
 export * from "./constants"

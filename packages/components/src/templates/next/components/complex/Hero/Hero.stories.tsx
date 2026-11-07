@@ -3,7 +3,7 @@ import {
   HERO_BLOCK_IMAGE_POSITION,
   HERO_CAROUSEL_CONTENT_ALIGNMENT,
   HERO_CAROUSEL_LAYOUT,
-} from "~/interfaces/complex/Hero/constants"
+} from "~/interfaces/complex/Hero"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,

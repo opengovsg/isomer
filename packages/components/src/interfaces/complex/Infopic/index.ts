@@ -1,2 +1,2 @@
-export * from "./Infopic"
+export type * from "./Infopic"
 export * from "./constants"

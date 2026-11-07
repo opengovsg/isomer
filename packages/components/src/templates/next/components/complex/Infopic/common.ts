@@ -1,4 +1,4 @@
-import { InfopicVariants } from "~/interfaces/complex/Infopic/constants"
+import { InfopicVariants } from "~/interfaces/complex/Infopic"
 import { tv } from "~/lib/tv"
 
 export const infopicStyles = tv({

@@ -3,13 +3,13 @@ export {
   type ArticlePageHeaderProps,
 } from "./ArticlePageHeader"
 export {
-  CENTRAL_NOTIFICATION_FILE_NAME,
   CentralNotificationEntrySchema,
   CentralNotificationBroadcastSchema,
   type CentralNotificationEntry,
   type CentralNotificationBroadcast,
   type CentralNotificationProps,
-} from "./CentralNotification"
+} from "./CentralNotification/CentralNotification"
+export { CENTRAL_NOTIFICATION_FILE_NAME } from "./CentralNotification"
 export type { BaseParagraphProps } from "./BaseParagraph"
 export type { BreadcrumbProps } from "./Breadcrumb"
 export type {

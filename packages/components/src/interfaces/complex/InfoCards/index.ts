@@ -1,2 +1,2 @@
-export * from "./InfoCards"
+export type * from "./InfoCards"
 export * from "./constants"
