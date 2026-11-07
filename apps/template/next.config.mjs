@@ -2,7 +2,7 @@ import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { collectUsedHeroVariants } from "./heroVariants.mjs"
+import { collectUsedHeroVariants, heroVariantStubs } from "./heroVariants.mts"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const isDevelopment = process.env.NODE_ENV === "development"
@@ -75,25 +75,16 @@ const nextConfig = {
       )
     }
 
-    // Only carousel and largeImage pull client modules the other variants do
-    // not. Stub those folder entries when the schema walk did not see them.
-    // Same both-compilers replacement as the Algolia stub. A null component
-    // is valid on the server and the client. Gradient, block, floating, and
-    // searchbar stay: replacing them would not drop a unique client module.
+    // Entries come from HERO_VARIANT_STUBS. A variant is replaced only when
+    // the schema walk did not see it. Same both-compilers replacement as the
+    // Algolia stub. A null component is valid on the server and the client.
     if (usedHeroVariants) {
-      if (!usedHeroVariants.has("carousel")) {
+      for (const { variant, module, stub } of heroVariantStubs()) {
+        if (usedHeroVariants.has(variant)) continue
         config.plugins.push(
           new webpack.NormalModuleReplacementPlugin(
-            /[\\/]templates[\\/]next[\\/]components[\\/]complex[\\/]Hero[\\/]HeroCarousel[\\/]index\.js$/,
-            path.join(__dirname, "stubs/HeroCarousel.js"),
-          ),
-        )
-      }
-      if (!usedHeroVariants.has("largeImage")) {
-        config.plugins.push(
-          new webpack.NormalModuleReplacementPlugin(
-            /[\\/]templates[\\/]next[\\/]components[\\/]complex[\\/]Hero[\\/]HeroLargeImage[\\/]index\.js$/,
-            path.join(__dirname, "stubs/HeroLargeImage.js"),
+            module,
+            path.join(__dirname, stub),
           ),
         )
       }
