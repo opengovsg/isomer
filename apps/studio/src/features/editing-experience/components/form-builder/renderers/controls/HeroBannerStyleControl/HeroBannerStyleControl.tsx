@@ -1,9 +1,3 @@
-import type {
-  JsonFormsCellRendererRegistryEntry,
-  JsonFormsRendererRegistryEntry,
-  JsonSchema,
-  UISchemaElement,
-} from "@jsonforms/core"
 import {
   Box,
   Flex,
@@ -13,15 +7,22 @@ import {
   useDisclosure,
   VStack,
 } from "@chakra-ui/react"
-import { Resolve } from "@jsonforms/core"
+import {
+  type JsonFormsCellRendererRegistryEntry,
+  type JsonFormsRendererRegistryEntry,
+  type JsonSchema,
+  Resolve,
+  type UISchemaElement,
+} from "@jsonforms/core"
 import { JsonFormsDispatch, useJsonForms } from "@jsonforms/react"
 import { Button, FormLabel } from "@opengovsg/design-system-react"
 import {
   getHeroStyleVariantForBranchTitle,
+  type HeroProps,
   HERO_STYLE,
-  type HeroCarouselProps,
   type HeroStyleVariant,
 } from "@opengovsg/isomer-components"
+import { cloneDeep } from "lodash-es"
 import { useId, useState } from "react"
 import { BiCheck, BiChevronRight } from "react-icons/bi"
 import { NewFeatureBadge } from "~/features/editing-experience/components/shared/NewFeatureBadge"
@@ -123,12 +124,14 @@ function HeroBannerStyleDrawer({
   options,
   value,
   onChange,
-  onClose,
+  onBack,
+  onSave,
 }: {
   options: HeroBannerStyleOption[]
   value: string
   onChange: (value: string) => void
-  onClose: () => void
+  onBack: () => void
+  onSave: () => void
 }) {
   const radioGroupName = useId()
 
@@ -147,7 +150,7 @@ function HeroBannerStyleDrawer({
     >
       <DrawerHeader
         label="Choose a hero banner style"
-        onBackClick={onClose}
+        onBackClick={onBack}
         backAriaLabel="Back to hero banner"
       />
       <Box flex={1} minH={0} overflow="auto" w="100%" px="1.5rem" py="1rem">
@@ -237,7 +240,7 @@ function HeroBannerStyleDrawer({
         px="2rem"
         w="full"
       >
-        <Button w="100%" onClick={onClose}>
+        <Button w="100%" onClick={onSave}>
           Save
         </Button>
       </Box>
@@ -249,6 +252,16 @@ interface HeroBannerStyleRenderInfo {
   label: string
   schema: JsonSchema
   uischema: UISchemaElement
+}
+
+interface OpenedHeroStyle {
+  originKey: HeroStyleVariant | undefined
+  originValue: string
+  hero: HeroProps
+}
+
+function heroSlideCount(hero: HeroProps) {
+  return "slides" in hero ? hero.slides.length : 0
 }
 
 function combinatorOptionFromRenderInfo(renderInfo: HeroBannerStyleRenderInfo) {
@@ -275,18 +288,24 @@ export function HeroBannerStyleCombinator({
   description: string | undefined
   renderInfos: HeroBannerStyleRenderInfo[]
   variant: string
-  onChange: (value: string) => void
+  onChange: (value: string, nextData?: HeroProps) => void
   activeRenderInfo: HeroBannerStyleRenderInfo | undefined
   path: string
   renderers: JsonFormsRendererRegistryEntry[] | undefined
   cells: JsonFormsCellRendererRegistryEntry[] | undefined
 }) {
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const [pendingValue, setPendingValue] = useState<string>()
+  const {
+    isOpen: isStyleDrawerOpen,
+    onOpen: onStyleDrawerOpen,
+    onClose: onStyleDrawerClose,
+  } = useDisclosure()
+  const {
+    isOpen: isDiscardModalOpen,
+    onOpen: onDiscardModalOpen,
+    onClose: onDiscardModalClose,
+  } = useDisclosure()
+  const [opened, setOpened] = useState<OpenedHeroStyle>()
   const { core } = useJsonForms()
-  const slideCount =
-    (Resolve.data(core?.data, path) as Partial<HeroCarouselProps> | undefined)
-      ?.slides?.length ?? 0
 
   const options = renderInfos
     .map((renderInfo) => {
@@ -311,39 +330,74 @@ export function HeroBannerStyleCombinator({
     (option) => option.label === variant || option.value === variant,
   )
 
-  // Leaving carousel keeps only the first slide, so confirm before dropping the rest.
-  const handleChange = (value: string) => {
-    const isLeavingCarousel =
-      selected?.key === HERO_STYLE.carousel.key &&
-      options.find((option) => option.value === value)?.key !==
-        HERO_STYLE.carousel.key
+  const closeStyleDrawer = () => {
+    onDiscardModalClose()
+    onStyleDrawerClose()
+  }
 
-    if (isLeavingCarousel && slideCount > 1) {
-      setPendingValue(value)
+  const restoreOpenedHero = () => {
+    if (!opened) {
+      return
+    }
+    onChange(opened.originValue, opened.hero)
+  }
+
+  const openStyleDrawer = () => {
+    setOpened({
+      originKey: selected?.key,
+      originValue: selected?.value ?? "",
+      hero: cloneDeep(Resolve.data(core?.data, path) as HeroProps),
+    })
+    onStyleDrawerOpen()
+  }
+
+  // Writing the style on click is what updates the preview. Choosing the style
+  // the picker opened on puts that hero back, instead of seeding a new one.
+  const handleSelect = (value: string) => {
+    if (opened && value === opened.originValue) {
+      restoreOpenedHero()
       return
     }
     onChange(value)
   }
 
-  if (isOpen) {
+  const handleBack = () => {
+    if (opened && selected?.value !== opened.originValue) {
+      restoreOpenedHero()
+    }
+    closeStyleDrawer()
+  }
+
+  const handleSave = () => {
+    if (
+      opened?.originKey === HERO_STYLE.carousel.key &&
+      selected?.key !== HERO_STYLE.carousel.key &&
+      heroSlideCount(opened.hero) > 1
+    ) {
+      onDiscardModalOpen()
+      return
+    }
+    closeStyleDrawer()
+  }
+
+  if (isStyleDrawerOpen) {
     return (
       <>
         <HeroBannerStyleDrawer
           options={options}
           value={selected?.value ?? ""}
-          onChange={handleChange}
-          onClose={onClose}
+          onChange={handleSelect}
+          onBack={handleBack}
+          onSave={handleSave}
         />
         <DiscardCarouselSlidesModal
-          isOpen={pendingValue !== undefined}
-          slideCount={slideCount}
-          onClose={() => setPendingValue(undefined)}
-          onConfirm={() => {
-            if (pendingValue !== undefined) {
-              onChange(pendingValue)
-            }
-            setPendingValue(undefined)
+          isOpen={isDiscardModalOpen}
+          slideCount={opened ? heroSlideCount(opened.hero) : 0}
+          onClose={() => {
+            restoreOpenedHero()
+            onDiscardModalClose()
           }}
+          onConfirm={closeStyleDrawer}
         />
       </>
     )
@@ -356,7 +410,7 @@ export function HeroBannerStyleCombinator({
           <FormLabel description={description}>{label || "Variant"}</FormLabel>
           <HeroBannerStyleTrigger
             label={selected?.label ?? ""}
-            onOpen={onOpen}
+            onOpen={openStyleDrawer}
           />
         </FormControl>
       </Box>
