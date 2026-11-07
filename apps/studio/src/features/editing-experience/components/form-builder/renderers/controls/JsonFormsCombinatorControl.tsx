@@ -57,7 +57,7 @@ interface CombinatorFormatContext {
   description: string | undefined
   renderInfos: CombinatorRenderInfo[]
   variant: string
-  onChange: (value: string) => void
+  onChange: (value: string, nextData?: object) => void
   activeRenderInfo: CombinatorRenderInfo | undefined
   path: string
   renderers: JsonFormsCombinatorControlProps["renderers"]
@@ -160,8 +160,15 @@ function JsonFormsCombinatorControl({
     return options[0]?.label ?? ""
   })
 
-  const onChange = (value: string) => {
+  const onChange = (value: string, nextData?: object) => {
     setVariant(value)
+
+    // The style picker passes the hero it opened with so Back can put that
+    // preview back. Every other caller rebuilds the branch from the schema.
+    if (nextData) {
+      handleChange(path, nextData)
+      return
+    }
 
     const newSchema = renderInfos.find((renderInfo) => {
       const option = String(renderInfo.label || renderInfo.schema.const)
