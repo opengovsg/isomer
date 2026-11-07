@@ -1,4 +1,4 @@
-import type { HeroSearchbarProps } from "~/interfaces/complex/hero"
+import type { HeroSearchbarProps } from "~/interfaces/complex/Hero"
 
 import { ImageClient } from "../../../internal/ImageClient"
 import { SearchbarContent } from "./SearchbarContent"

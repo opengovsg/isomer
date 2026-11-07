@@ -7,7 +7,7 @@ export {
   DEFAULT_CALLOUT_VARIANT,
   type CalloutProps,
   type CalloutVariant,
-} from "./callout"
+} from "./Callout"
 export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
@@ -34,7 +34,7 @@ export {
   type HeroGradientProps,
   type HeroProps,
   type HeroStyleVariant,
-} from "./hero"
+} from "./Hero"
 export { IframeSchema, type IframeProps } from "./Iframe"
 export {
   generateImageSrcSchema,
@@ -48,14 +48,14 @@ export {
   type InfoCardsProps,
   CARDS_WITHOUT_IMAGES,
   CARDS_WITH_IMAGES,
-} from "./infoCards"
+} from "./InfoCards"
 export { InfoColsSchema, type InfoColsProps } from "./InfoCols"
 export {
   InfobarDefaultSchema,
   InfobarHomepageSchema,
   type InfobarProps,
 } from "./Infobar"
-export { InfopicSchema, type InfopicProps } from "./infopic"
+export { InfopicSchema, type InfopicProps } from "./Infopic"
 export { KeyStatisticsSchema, type KeyStatisticsProps } from "./KeyStatistics"
 export { StepsSchema, type StepsProps } from "./Steps"
 export { MapSchema, type MapProps } from "./Map"

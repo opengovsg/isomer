@@ -1,2 +1,2 @@
-export * from "./hero"
+export * from "./Callout"
 export * from "./constants"

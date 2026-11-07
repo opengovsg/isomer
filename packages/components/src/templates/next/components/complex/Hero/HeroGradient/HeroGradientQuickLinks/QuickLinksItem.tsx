@@ -1,5 +1,5 @@
 import type { SupportedIconName } from "~/common/icons"
-import type { HeroGradientQuickLinksProps } from "~/interfaces/complex/hero"
+import type { HeroGradientQuickLinksProps } from "~/interfaces/complex/Hero"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { tv } from "~/lib/tv"

@@ -1,2 +1,2 @@
-export * from "./callout"
+export * from "./Infopic"
 export * from "./constants"

@@ -1,4 +1,4 @@
-import type { HeroFloatingProps } from "~/interfaces/complex/hero"
+import type { HeroFloatingProps } from "~/interfaces/complex/Hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 

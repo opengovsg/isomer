@@ -9,7 +9,7 @@ export {
   type CentralNotificationEntry,
   type CentralNotificationBroadcast,
   type CentralNotificationProps,
-} from "./centralNotification"
+} from "./CentralNotification"
 export type { BaseParagraphProps } from "./BaseParagraph"
 export type { BreadcrumbProps } from "./Breadcrumb"
 export type {

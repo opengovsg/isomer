@@ -1,4 +1,4 @@
-import type { HeroGradientQuickLinksProps } from "~/interfaces/complex/hero"
+import type { HeroGradientQuickLinksProps } from "~/interfaces/complex/Hero"
 import { twMerge } from "~/lib/twMerge"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 

@@ -1,4 +1,4 @@
-import { INFOCARD_VARIANT } from "~/interfaces/complex/infoCards/constants"
+import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards/constants"
 import { tv } from "~/lib/tv"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 

@@ -1,2 +1,2 @@
-export * from "./infopic"
+export * from "./Hero"
 export * from "./constants"

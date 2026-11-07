@@ -7,7 +7,7 @@ import type {
 import type { IsomerSiteProps } from "~/types"
 import { useEffect, useState } from "react"
 import { useDismissedCentralNotification } from "~/hooks/useDismissedCentralNotification"
-import { CENTRAL_NOTIFICATION_FILE_NAME } from "~/interfaces/internal/centralNotification/constants"
+import { CENTRAL_NOTIFICATION_FILE_NAME } from "~/interfaces/internal/CentralNotification/constants"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
 import { Prose } from "../../native/Prose"
