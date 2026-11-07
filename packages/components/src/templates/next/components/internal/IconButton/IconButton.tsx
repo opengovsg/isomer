@@ -4,13 +4,11 @@ import type { AriaButtonProps } from "@react-aria/button"
 import type { IconType } from "react-icons"
 import type { VariantProps } from "tailwind-variants"
 import type { SetRequired } from "type-fest"
-import { useButton } from "@react-aria/button"
 import { useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
-import { forwardRef, useRef } from "react"
+import { forwardRef } from "react"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { mergeRefs } from "~/utils/rac"
 import { focusRing } from "~/utils/tailwind"
 
 const iconButtonStyles = tv({
@@ -57,27 +55,44 @@ const iconButtonIconStyles = tv({
 
 interface IconButtonProps
   extends
-    SetRequired<Omit<AriaButtonProps<"button">, "children">, "aria-label">,
+    SetRequired<
+      Omit<AriaButtonProps<"button">, "children" | "onPress">,
+      "aria-label"
+    >,
     VariantProps<typeof iconButtonStyles> {
   icon: IconType
   className?: string
+  onPress?: () => void
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
   (
-    { icon: Icon, className, variant, size, colorScheme, isDisabled, ...props },
+    {
+      icon: Icon,
+      className,
+      variant,
+      size,
+      colorScheme,
+      isDisabled,
+      onPress,
+      onClick,
+      type,
+      ...props
+    },
     ref,
   ) => {
-    const buttonRef = useRef<HTMLButtonElement>(null)
-    const { buttonProps } = useButton({ ...props, isDisabled }, buttonRef)
     const { focusProps, isFocusVisible } = useFocusRing()
-
-    const mergedProps = mergeProps(buttonProps, focusProps)
 
     return (
       <button
-        {...mergedProps}
-        ref={mergeRefs(buttonRef, ref)}
+        {...mergeProps(focusProps, props)}
+        type={type ?? "button"}
+        disabled={isDisabled}
+        onClick={(event) => {
+          onClick?.(event)
+          onPress?.()
+        }}
+        ref={ref}
         className={twMerge(
           iconButtonStyles({
             isFocusVisible,

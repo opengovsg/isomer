@@ -2,7 +2,6 @@
 
 import type { AriaButtonProps } from "@react-aria/button"
 import type { VariantProps } from "tailwind-variants"
-import { useButton } from "@react-aria/button"
 import { useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -47,6 +46,7 @@ export const DownloadButton = ({
   size,
   colorScheme,
   url,
+  onPress: _onPress,
   ...props
 }: DownloadButtonProps) => {
   const [text, setText] = useState<string>("Download")
@@ -93,23 +93,16 @@ export const DownloadButton = ({
     void updateDisplayText()
   }, [url, strategy])
 
-  const { buttonProps } = useButton(
-    {
-      ...props,
-      isDisabled: isDownloading,
-      onPress: () => {
-        void handleDownload()
-      },
-    },
-    ref,
-  )
   const { focusProps, isFocusVisible } = useFocusRing()
-
-  const mergedProps = mergeProps(buttonProps, focusProps)
 
   return (
     <button
-      {...mergedProps}
+      {...mergeProps(focusProps, props)}
+      type="button"
+      disabled={isDownloading}
+      onClick={() => {
+        void handleDownload()
+      }}
       ref={ref}
       className={twMerge(
         buttonStyles({
