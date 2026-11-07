@@ -1,10 +1,7 @@
 "use client"
 
-import type { AriaTextFieldOptions } from "@react-aria/textfield"
 import type { ClassNames } from "~/utils/rac"
 import { useFocusRing } from "@react-aria/focus"
-import { useTextField } from "@react-aria/textfield"
-import { mergeProps } from "@react-aria/utils"
 import { useRef, useState } from "react"
 import { BiSearch, BiX } from "react-icons/bi"
 import { tv } from "~/lib/tv"
@@ -32,8 +29,13 @@ const fieldGroupStyles = tv({
   },
 })
 
-interface SearchFieldProps extends AriaTextFieldOptions<"input"> {
+interface SearchFieldProps {
   placeholder?: string
+  value?: string
+  onChange?: (value: string) => void
+  isDisabled?: boolean
+  isInvalid?: boolean
+  "aria-label"?: string
   classNames?: ClassNames<
     | "container"
     | "fieldgroup"
@@ -49,22 +51,19 @@ interface SearchFieldProps extends AriaTextFieldOptions<"input"> {
 export function SearchField({
   classNames,
   placeholder,
-  ...props
+  value = "",
+  onChange,
+  isDisabled = false,
+  isInvalid = false,
+  "aria-label": ariaLabel,
 }: SearchFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [isFocusWithin, setIsFocusWithin] = useState(false)
-  const { inputProps } = useTextField(props, inputRef)
   const { focusProps } = useFocusRing()
-
-  const isDisabled = props.isDisabled ?? false
-  const isInvalid = props.isInvalid ?? false
-  const value = typeof inputProps.value === "string" ? inputProps.value : ""
-  const isEmpty = !value || value.length === 0
+  const isEmpty = value.length === 0
 
   const handleClear = () => {
-    if (props.onChange) {
-      props.onChange("")
-    }
+    onChange?.("")
     inputRef.current?.focus()
   }
 
@@ -95,9 +94,14 @@ export function SearchField({
           }
         />
         <input
-          {...mergeProps(inputProps, focusProps)}
+          {...focusProps}
           ref={inputRef}
           type="search"
+          value={value}
+          onChange={(event) => onChange?.(event.target.value)}
+          disabled={isDisabled}
+          aria-invalid={isInvalid || undefined}
+          aria-label={ariaLabel}
           className={twMerge(
             inputStyles(),
             "bg-transparent [&::-webkit-search-cancel-button]:hidden",

@@ -588,9 +588,6 @@ catalogs:
     '@react-aria/interactions':
       specifier: ^3.28.1
       version: 3.28.1
-    '@react-aria/textfield':
-      specifier: ^3.19.1
-      version: 3.19.1
     '@react-aria/utils':
       specifier: ^3.34.1
       version: 3.34.1
@@ -1417,9 +1414,6 @@ importers:
       '@react-aria/interactions':
         specifier: catalog:react-aria
         version: 3.28.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@react-aria/textfield':
-        specifier: catalog:react-aria
-        version: 3.19.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-aria/utils':
         specifier: catalog:react-aria
         version: 3.34.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -5643,12 +5637,6 @@ packages:
 
   '@react-aria/interactions@3.28.1':
     resolution: {integrity: sha512-Bqb+HrD5I5MHS2SKBhISYqo2SW8Y2dfzgF/Y1lIJq7xqLxheo9vzxPGEHhz+XzkgGfoqEJx8A6a3C7uiqS3HWA==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-
-  '@react-aria/textfield@3.19.1':
-    resolution: {integrity: sha512-zYxQvOgN2CkvNvKchHEDu9UAOrwYzsaeUKVbrFcXJ2iIeZuZnEcNNJpp7WVCfV+9XeP+Jzjjnmjg9BH1H52ebg==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
@@ -15882,13 +15870,6 @@ snapshots:
   '@react-aria/interactions@3.28.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@react-types/shared': 3.34.0(react@18.3.1)
-      '@swc/helpers': 0.5.23
-      react: 18.3.1
-      react-aria: 3.48.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react-dom: 18.3.1(react@18.3.1)
-
-  '@react-aria/textfield@3.19.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
       '@swc/helpers': 0.5.23
       react: 18.3.1
       react-aria: 3.48.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

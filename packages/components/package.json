@@ -60,7 +60,6 @@
     "@react-aria/checkbox": "catalog:react-aria",
     "@react-aria/focus": "catalog:react-aria",
     "@react-aria/interactions": "catalog:react-aria",
-    "@react-aria/textfield": "catalog:react-aria",
     "@react-aria/utils": "catalog:react-aria",
     "@react-stately/checkbox": "catalog:react-aria",
     "@react-stately/toggle": "catalog:react-aria",
