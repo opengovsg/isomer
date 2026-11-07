@@ -1,8 +1,7 @@
 import type { HeadingLink } from "~/interfaces/internal/TableOfContents"
 import type { IsomerComponent, IsomerSiteProps } from "~/types"
-import { unescape } from "lodash-es"
 
-import { getTextAsHtml } from "./getTextAsHtml"
+import { getTextAsHtml, unescapeHtml } from "./getTextAsHtml"
 
 // Generates the table of contents given the blocks of the page
 export const getTableOfContents = (
@@ -31,7 +30,7 @@ export const getTableOfContents = (
 
       for (const component of block.content) {
         if (component.type === "heading" && component.attrs.level === 2) {
-          const content = unescape(
+          const content = unescapeHtml(
             getTextAsHtml({ site, content: component.content }).replace(
               /<br\s*\/?>/gi,
               " ",

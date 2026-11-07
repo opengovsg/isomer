@@ -1,5 +1,4 @@
 import type { ContactInformationUIProps } from "~/interfaces"
-import { compact } from "lodash-es"
 
 interface FilterContactMethodsProps {
   methods: ContactInformationUIProps["methods"]
@@ -15,10 +14,8 @@ export const filterContactMethods = ({
     .filter((method) => Array.isArray(method.values))
     .map((method) => ({
       ...method,
-      values: compact(
-        method.values.filter(
-          (value) => typeof value === "string" && value.trim() !== "",
-        ),
+      values: method.values.filter(
+        (value) => typeof value === "string" && value.trim() !== "",
       ),
     }))
 

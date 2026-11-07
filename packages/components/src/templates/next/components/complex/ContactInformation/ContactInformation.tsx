@@ -1,17 +1,23 @@
 import type { ContactInformationProps } from "~/interfaces"
-import { omit } from "lodash-es"
 import { DATA_SOURCE_TYPE } from "~/interfaces/integration"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { DgsContactInformation } from "./DgsContactInformation"
 import { NativeContactInformation } from "./NativeContactInformation"
 
+function withoutUrlAndSite<T extends { url?: string; site: unknown }>(
+  props: T,
+): Pick<T, Exclude<keyof T, "url" | "site">> {
+  const { url: _url, site: _site, ...rest } = props
+  return rest
+}
+
 export const ContactInformation = ({
   dataSource,
   ...rest
 }: ContactInformationProps) => {
   const uiProps = {
-    ...omit(rest, ["url", "site"]),
+    ...withoutUrlAndSite(rest),
     referenceLinkHref: getReferenceLinkHref(
       rest.url,
       rest.site.siteMapArray,

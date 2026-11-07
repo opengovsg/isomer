@@ -1,7 +1,6 @@
 import type { HeadingProps } from "~/interfaces"
-import { unescape } from "lodash-es"
 import { getHeadingTag } from "~/utils/getHeadingTag"
-import { getTextAsHtml } from "~/utils/getTextAsHtml"
+import { getTextAsHtml, unescapeHtml } from "~/utils/getTextAsHtml"
 
 // `level` only selects the visual style/font size below — it no longer
 // determines the rendered tag. The tag comes from `headingLevel`, computed
@@ -15,7 +14,7 @@ export const Heading = ({
   headingLevel,
 }: Omit<HeadingProps, "type">) => {
   const Tag = getHeadingTag(headingLevel)
-  const textContent = unescape(
+  const textContent = unescapeHtml(
     getTextAsHtml({
       site,
       content,

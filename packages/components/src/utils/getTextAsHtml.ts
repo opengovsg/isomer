@@ -2,9 +2,34 @@ import type { HardBreakProps } from "~/interfaces"
 import type { Marks, TextProps } from "~/interfaces/native/Text"
 import type { IsomerSiteProps } from "~/types"
 import DOMPurify from "isomorphic-dompurify"
-import { escape, isEqual } from "lodash-es"
 
 import { getReferenceLinkHref } from "./getReferenceLinkHref"
+
+// Same entities as the previous lodash escape/unescape. One pass, so "&amp;lt;" stays "&lt;".
+const HTML_ESCAPES: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+}
+
+const HTML_UNESCAPES: Record<string, string> = {
+  "&amp;": "&",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&quot;": '"',
+  "&#39;": "'",
+}
+
+const escape = (value: string | undefined) =>
+  (value ?? "").replace(/[&<>"']/g, (char) => HTML_ESCAPES[char] ?? char)
+
+export const unescapeHtml = (value: string) =>
+  value.replace(
+    /&(?:amp|lt|gt|quot|#39);/g,
+    (entity) => HTML_UNESCAPES[entity] ?? entity,
+  )
 
 type MarkTypes = Marks["type"]
 
@@ -69,7 +94,8 @@ export const getTextAsHtml = ({
     const isLinkMarkNew =
       (!previousNodeLinkMark && !!currentNodeLinkMark) ||
       (!!previousNodeLinkMark && !currentNodeLinkMark) ||
-      !isEqual(previousNodeLinkMark, currentNodeLinkMark)
+      JSON.stringify(previousNodeLinkMark) !==
+        JSON.stringify(currentNodeLinkMark)
 
     // Close off the existing link mark if it is different
     if (isLinkMarkNew && !!previousNodeLinkMark) {

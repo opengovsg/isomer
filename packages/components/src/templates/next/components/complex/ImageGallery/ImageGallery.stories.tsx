@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ImageGalleryProps } from "~/interfaces/complex/ImageGallery"
-import { omit } from "lodash-es"
 import { expect, userEvent, waitFor, within } from "storybook/test"
 import { generateSiteConfig } from "~/stories/helpers"
 
@@ -92,7 +91,8 @@ export const NoCaption: Story = {
     images: IMAGES.map((image, index) => {
       // Remove caption for the first image
       if (index === 0) {
-        return omit(image, "caption")
+        const { caption: _caption, ...imageWithoutCaption } = image
+        return imageWithoutCaption
       }
       return image
     }),

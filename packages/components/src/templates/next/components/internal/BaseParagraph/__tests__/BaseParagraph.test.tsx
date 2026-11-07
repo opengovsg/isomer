@@ -1,10 +1,9 @@
 import type { ParagraphProps, ProseProps, TextProps } from "~/interfaces"
 import { polyfill } from "interweave-ssr"
-import { escape, unescape } from "lodash-es"
 import { renderToStaticMarkup } from "react-dom/server"
 import { beforeAll, describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
-import { getTextAsHtml } from "~/utils/getTextAsHtml"
+import { getTextAsHtml, unescapeHtml } from "~/utils/getTextAsHtml"
 
 import { Accordion } from "../../../complex/Accordion"
 import { Callout } from "../../../complex/Callout"
@@ -135,7 +134,7 @@ describe("prose text rendering", () => {
         // Assert
         expect(html).not.toMatch(/<a\b/i)
         expect(html).not.toContain('src="injected.png"')
-        expect(unescape(html.replace(/<[^>]*>/g, ""))).toContain(
+        expect(unescapeHtml(html.replace(/<[^>]*>/g, ""))).toContain(
           name === "top-level prose" ? "Download form <b>" : payload,
         )
       })
@@ -162,7 +161,7 @@ describe("prose text rendering", () => {
       const html = renderToStaticMarkup(<BaseParagraph content={content} />)
 
       // Assert
-      expect(unescape(html.replace(/<[^>]*>/g, ""))).toBe(
+      expect(unescapeHtml(html.replace(/<[^>]*>/g, ""))).toBe(
         "Before label after & <b>",
       )
       expect(html).not.toContain("font-size")
@@ -217,7 +216,9 @@ describe("prose text rendering", () => {
     })
 
     // Assert
-    expect(html).toBe(`<a target="_self" href="${escape(href)}">Link</a>`)
+    expect(html).toBe(
+      '<a target="_self" href="/page&quot;&gt;&lt;a href=&quot;javascript:alert(1)&quot;&gt;&lt;img src=&quot;injected.png">Link</a>',
+    )
   })
 
   it("preserves literal special characters in headings", () => {
@@ -232,7 +233,7 @@ describe("prose text rendering", () => {
     )
 
     // Assert
-    expect(unescape(html.replace(/<[^>]*>/g, ""))).toBe("A & B < C")
+    expect(unescapeHtml(html.replace(/<[^>]*>/g, ""))).toBe("A & B < C")
   })
 })
 
