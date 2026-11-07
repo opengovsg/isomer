@@ -5,23 +5,20 @@ import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { DgsContactInformation } from "./DgsContactInformation"
 import { NativeContactInformation } from "./NativeContactInformation"
 
-function withoutUrlAndSite<T extends { url?: string; site: unknown }>(
-  props: T,
-): Pick<T, Exclude<keyof T, "url" | "site">> {
-  const { url: _url, site: _site, ...rest } = props
-  return rest
-}
-
 export const ContactInformation = ({
   dataSource,
   ...rest
 }: ContactInformationProps) => {
+  const { url, site, ...uiRest } = rest as Omit<
+    ContactInformationProps,
+    "dataSource"
+  >
   const uiProps = {
-    ...withoutUrlAndSite(rest),
+    ...uiRest,
     referenceLinkHref: getReferenceLinkHref(
-      rest.url,
-      rest.site.siteMapArray,
-      rest.site.assetsBaseUrl,
+      url,
+      site.siteMapArray,
+      site.assetsBaseUrl,
     ),
   }
 

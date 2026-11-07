@@ -91,11 +91,14 @@ export const getTextAsHtml = ({
       : escape(node.text)
 
     const currentNodeLinkMark = node.marks?.find((mark) => mark.type === "link")
-    const isLinkMarkNew =
-      (!previousNodeLinkMark && !!currentNodeLinkMark) ||
-      (!!previousNodeLinkMark && !currentNodeLinkMark) ||
-      JSON.stringify(previousNodeLinkMark) !==
-        JSON.stringify(currentNodeLinkMark)
+    const isSameLinkMark =
+      previousNodeLinkMark === currentNodeLinkMark ||
+      (previousNodeLinkMark?.type === "link" &&
+        currentNodeLinkMark?.type === "link" &&
+        previousNodeLinkMark.attrs.href === currentNodeLinkMark.attrs.href &&
+        (previousNodeLinkMark.attrs.target || "_self") ===
+          (currentNodeLinkMark.attrs.target || "_self"))
+    const isLinkMarkNew = !isSameLinkMark
 
     // Close off the existing link mark if it is different
     if (isLinkMarkNew && !!previousNodeLinkMark) {

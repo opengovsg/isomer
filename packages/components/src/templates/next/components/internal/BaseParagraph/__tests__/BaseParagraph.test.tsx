@@ -221,6 +221,84 @@ describe("prose text rendering", () => {
     )
   })
 
+  it("keeps adjacent text in one anchor when link attrs keys are reordered", () => {
+    // Arrange / Act
+    const html = getTextAsHtml({
+      site,
+      content: [
+        {
+          type: "text",
+          text: "Hel",
+          marks: [
+            {
+              type: "link",
+              attrs: { href: "https://example.com", target: "_blank" },
+            },
+          ],
+        },
+        {
+          type: "text",
+          text: "lo",
+          marks: [
+            {
+              type: "link",
+              attrs: { target: "_blank", href: "https://example.com" },
+            },
+          ],
+        },
+      ],
+    })
+
+    // Assert
+    expect(html).toBe('<a target="_blank" href="https://example.com">Hello</a>')
+  })
+
+  it("keeps adjacent text in one anchor when one link omits target and the other uses _self", () => {
+    // Arrange / Act
+    const html = getTextAsHtml({
+      site,
+      content: [
+        {
+          type: "text",
+          text: "Hel",
+          marks: [{ type: "link", attrs: { href: "/page" } }],
+        },
+        {
+          type: "text",
+          text: "lo",
+          marks: [{ type: "link", attrs: { href: "/page", target: "_self" } }],
+        },
+      ],
+    })
+
+    // Assert
+    expect(html).toBe('<a target="_self" href="/page">Hello</a>')
+  })
+
+  it("opens a new anchor when adjacent link hrefs differ", () => {
+    // Arrange / Act
+    const html = getTextAsHtml({
+      site,
+      content: [
+        {
+          type: "text",
+          text: "A",
+          marks: [{ type: "link", attrs: { href: "/a", target: "_self" } }],
+        },
+        {
+          type: "text",
+          text: "B",
+          marks: [{ type: "link", attrs: { href: "/b", target: "_self" } }],
+        },
+      ],
+    })
+
+    // Assert
+    expect(html).toBe(
+      '<a target="_self" href="/a">A</a><a target="_self" href="/b">B</a>',
+    )
+  })
+
   it("preserves literal special characters in headings", () => {
     // Act
     const html = renderToStaticMarkup(
