@@ -81,7 +81,7 @@ catalog:
   dayjs: ^1.11.23
   date-fns: ^4.4.0
   dotenv: ^16.6.1
-  dotenv-cli: ^11.0.0
+  dotenv-cli: ^11.1.0
   jsdom: ^30.1.2
   isomorphic-dompurify: ^4.5.0
   mockdate: ^3.0.5
