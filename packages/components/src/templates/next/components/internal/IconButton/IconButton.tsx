@@ -5,8 +5,6 @@ import type { IconType } from "react-icons"
 import type { VariantProps } from "tailwind-variants"
 import type { SetRequired } from "type-fest"
 import { useButton } from "@react-aria/button"
-import { useFocusRing } from "@react-aria/focus"
-import { mergeProps } from "@react-aria/utils"
 import { forwardRef, useRef } from "react"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
@@ -19,7 +17,7 @@ const iconButtonStyles = tv({
   variants: {
     variant: {
       clear:
-        "bg-transparent active:bg-base-canvas-backdrop/80 hover:bg-base-canvas-backdrop/50",
+        "bg-transparent active:bg-base-canvas-backdrop/80 hover:bg-base-canvas-backdrop/50 focus-visible:bg-utility-highlight focus-visible:text-base-content-strong focus-visible:transition-none",
     },
     isDisabled: {
       true: "cursor-not-allowed",
@@ -36,12 +34,6 @@ const iconButtonStyles = tv({
       variant: "clear",
       colorScheme: "default",
       className: "text-base-content",
-    },
-    {
-      variant: "clear",
-      isFocusVisible: true,
-      className:
-        "bg-utility-highlight text-base-content-strong transition-none",
     },
   ],
   defaultVariants: {
@@ -70,17 +62,13 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
   ) => {
     const buttonRef = useRef<HTMLButtonElement>(null)
     const { buttonProps } = useButton({ ...props, isDisabled }, buttonRef)
-    const { focusProps, isFocusVisible } = useFocusRing()
-
-    const mergedProps = mergeProps(buttonProps, focusProps)
 
     return (
       <button
-        {...mergedProps}
+        {...buttonProps}
         ref={mergeRefs(buttonRef, ref)}
         className={twMerge(
           iconButtonStyles({
-            isFocusVisible,
             isDisabled,
             variant,
             size,

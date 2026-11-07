@@ -7,8 +7,6 @@ import {
   DialogTitle,
 } from "@headlessui/react"
 import { useButton } from "@react-aria/button"
-import { useFocusRing } from "@react-aria/focus"
-import { mergeProps } from "@react-aria/utils"
 import { useEffect, useRef, useState } from "react"
 import { BiChevronDown, BiX } from "react-icons/bi"
 import { tv } from "~/lib/tv"
@@ -47,20 +45,14 @@ const ExpandFilterButton = ({
 }: ExpandFilterButtonProps) => {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const { buttonProps } = useButton({ onPress }, buttonRef)
-  const { focusProps, isFocusVisible } = useFocusRing()
-  const mergedProps = mergeProps(buttonProps, focusProps)
 
   return (
     <button
-      {...mergedProps}
+      {...buttonProps}
       ref={buttonRef}
       aria-expanded={isExpanded}
       aria-controls={panelId}
-      className={twMerge(
-        expandFilterButtonStyle({
-          isFocusVisible,
-        }),
-      )}
+      className={twMerge(expandFilterButtonStyle())}
     >
       <span>{label}</span>
       <BiChevronDown

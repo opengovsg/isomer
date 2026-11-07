@@ -3,8 +3,6 @@
 import type { AriaButtonProps } from "@react-aria/button"
 import type { VariantProps } from "tailwind-variants"
 import { useButton } from "@react-aria/button"
-import { useFocusRing } from "@react-aria/focus"
-import { mergeProps } from "@react-aria/utils"
 import { forwardRef, useRef } from "react"
 import { twMerge } from "~/lib/twMerge"
 import { mergeRefs } from "~/utils/rac"
@@ -27,17 +25,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const internalRef = useRef<HTMLButtonElement>(null)
     const { buttonProps } = useButton({ ...props, isDisabled }, internalRef)
-    const { focusProps, isFocusVisible } = useFocusRing()
-
-    const mergedProps = mergeProps(buttonProps, focusProps)
 
     return (
       <button
-        {...mergedProps}
+        {...buttonProps}
         ref={mergeRefs(internalRef, ref)}
         className={twMerge(
           buttonStyles({
-            isFocusVisible,
             isDisabled,
             variant,
             size,

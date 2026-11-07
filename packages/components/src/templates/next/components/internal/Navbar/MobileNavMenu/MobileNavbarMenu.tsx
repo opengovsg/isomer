@@ -3,8 +3,7 @@
 import type { Dispatch, SetStateAction } from "react"
 import type { NavbarClientProps } from "~/interfaces"
 import { useButton } from "@react-aria/button"
-import { FocusScope, useFocusRing } from "@react-aria/focus"
-import { mergeProps } from "@react-aria/utils"
+import { FocusScope } from "@react-aria/focus"
 import { forwardRef, useRef } from "react"
 import { useScrollLock } from "usehooks-ts"
 import { isExternalUrl } from "~/utils/isExternalUrl"
@@ -45,8 +44,6 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
     useScrollLock()
     const buttonRef = useRef<HTMLButtonElement>(null)
     const { buttonProps } = useButton({ onPress: onCloseMenu }, buttonRef)
-    const { focusProps } = useFocusRing()
-    const mergedButtonProps = mergeProps(buttonProps, focusProps)
 
     return (
       <div
@@ -127,7 +124,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
             )}
 
             <button
-              {...mergedButtonProps}
+              {...buttonProps}
               ref={buttonRef}
               className={focusVisibleHighlight({
                 className:

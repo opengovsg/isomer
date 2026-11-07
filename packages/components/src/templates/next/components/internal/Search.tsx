@@ -2,9 +2,7 @@
 
 import type { AriaTextFieldOptions } from "@react-aria/textfield"
 import type { ClassNames } from "~/utils/rac"
-import { useFocusRing } from "@react-aria/focus"
 import { useTextField } from "@react-aria/textfield"
-import { mergeProps } from "@react-aria/utils"
 import { useRef, useState } from "react"
 import { BiSearch, BiX } from "react-icons/bi"
 import { tv } from "~/lib/tv"
@@ -54,7 +52,6 @@ export function SearchField({
   const inputRef = useRef<HTMLInputElement>(null)
   const [isFocusWithin, setIsFocusWithin] = useState(false)
   const { inputProps } = useTextField(props, inputRef)
-  const { focusProps } = useFocusRing()
 
   const isDisabled = props.isDisabled ?? false
   const isInvalid = props.isInvalid ?? false
@@ -95,7 +92,7 @@ export function SearchField({
           }
         />
         <input
-          {...mergeProps(inputProps, focusProps)}
+          {...inputProps}
           ref={inputRef}
           type="search"
           className={twMerge(

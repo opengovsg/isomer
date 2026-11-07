@@ -16,7 +16,6 @@ import {
   useCheckboxGroup,
   useCheckboxGroupItem,
 } from "@react-aria/checkbox"
-import { useFocusRing } from "@react-aria/focus"
 import { usePress } from "@react-aria/interactions"
 import { mergeProps } from "@react-aria/utils"
 import { useCheckboxGroupState } from "@react-stately/checkbox"
@@ -114,7 +113,7 @@ const checkboxStyles = tv({
 
 const boxStyles = tv({
   extend: focusRing,
-  base: "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 transition",
+  base: "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 transition group-has-[:focus-visible]:outline-2",
   variants: {
     isSelected: {
       false:
@@ -162,8 +161,6 @@ function CheckboxRenderer({
   isSelected,
 }: CheckboxRenderProps) {
   const labelRef = useRef<HTMLLabelElement>(null)
-  const { focusProps, isFocusVisible } = useFocusRing()
-  const mergedInputProps = mergeProps(inputProps, focusProps)
 
   // usePress handles both mouse and keyboard interactions
   // For keyboard: onPress will be called (Enter/Space)
@@ -198,7 +195,7 @@ function CheckboxRenderer({
       data-selected={isSelected || isIndeterminate ? "true" : undefined}
     >
       <input
-        {...mergedInputProps}
+        {...inputProps}
         ref={inputRef}
         type="checkbox"
         checked={isSelected || isIndeterminate}
@@ -213,7 +210,6 @@ function CheckboxRenderer({
             isSelected: isSelected || isIndeterminate,
             isInvalid,
             isDisabled: !!isDisabled,
-            isFocusVisible,
           })}
         >
           {isIndeterminate ? (

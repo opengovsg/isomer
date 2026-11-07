@@ -1,8 +1,6 @@
 "use client"
 
 import { useButton } from "@react-aria/button"
-import { useFocusRing } from "@react-aria/focus"
-import { mergeProps } from "@react-aria/utils"
 import { useRef, useState } from "react"
 import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
@@ -38,12 +36,10 @@ const FilterSectionButton = ({
 }) => {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const { buttonProps } = useButton({ onPress: onToggle }, buttonRef)
-  const { focusProps } = useFocusRing()
-  const mergedProps = mergeProps(buttonProps, focusProps)
 
   return (
     <button
-      {...mergedProps}
+      {...buttonProps}
       ref={buttonRef}
       aria-expanded={isOpen}
       aria-controls={panelId}

@@ -6,16 +6,15 @@ export const buttonStyles = tv({
   extend: focusRing,
   variants: {
     variant: {
-      solid: "",
-      outline: "",
+      solid:
+        "focus-visible:bg-utility-highlight focus-visible:text-base-content-strong focus-visible:transition-none",
+      outline:
+        "focus-visible:bg-utility-highlight focus-visible:text-base-content-strong focus-visible:transition-none",
       unstyled: "",
     },
     colorScheme: {
       default: "",
       inverse: "",
-    },
-    isFocusVisible: {
-      true: "",
     },
     isDisabled: {
       true: "cursor-not-allowed",
@@ -62,18 +61,6 @@ export const buttonStyles = tv({
       size: "base",
       // -1 px for border
       className: "px-[19px] py-[11px]",
-    },
-    {
-      variant: "solid",
-      isFocusVisible: true,
-      className:
-        "bg-utility-highlight text-base-content-strong transition-none",
-    },
-    {
-      variant: "outline",
-      isFocusVisible: true,
-      className:
-        "bg-utility-highlight text-base-content-strong transition-none",
     },
   ],
   defaultVariants: {
