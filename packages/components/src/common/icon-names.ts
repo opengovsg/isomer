@@ -1,0 +1,25 @@
+export const SUPPORTED_ICON_NAMES = [
+  "right-arrow",
+  "bar-chart",
+  "line-chart",
+  "users",
+  "office-building",
+  "stars",
+  "globe",
+  "calendar",
+  "book-open",
+  "news",
+  "file",
+  "help-circle",
+  "phone",
+  "id-card",
+  "map-pin",
+  "chat",
+  "megaphone",
+  "clipboard-check",
+  "bulb",
+  "video",
+  "check-shield",
+] as const
+
+export type SupportedIconName = (typeof SUPPORTED_ICON_NAMES)[number]

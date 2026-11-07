@@ -1,5 +1,5 @@
 import type { NotificationClientProps } from "~/interfaces"
-import { BiInfoCircle, BiX } from "react-icons/bi"
+import { BiInfoCircle, BiX } from "~/common/clientBoxicons"
 
 import { IconButton } from "../IconButton"
 

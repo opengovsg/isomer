@@ -3,8 +3,8 @@
 import type { NavbarProps } from "~/interfaces/internal/Navbar"
 import { FocusScope } from "@react-aria/focus"
 import { forwardRef } from "react"
-import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
 import { useScrollLock } from "usehooks-ts"
+import { BiChevronDown, BiRightArrowAlt, BiX } from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import {

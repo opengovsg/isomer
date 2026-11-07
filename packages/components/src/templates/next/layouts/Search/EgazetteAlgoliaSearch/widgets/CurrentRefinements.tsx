@@ -1,6 +1,6 @@
 import { useMemo } from "react"
-import { BiX } from "react-icons/bi"
 import { useCurrentRefinements } from "react-instantsearch"
+import { BiX } from "~/common/clientBoxicons"
 import { Button } from "~/templates/next/components/internal/Button"
 
 import { EGAZETTE_CATEGORIES } from "../categories"

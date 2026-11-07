@@ -1,5 +1,10 @@
 import { useRef } from "react"
-import { BiChevronLeft, BiChevronRight, BiPause, BiPlay } from "react-icons/bi"
+import {
+  BiChevronLeft,
+  BiChevronRight,
+  BiPause,
+  BiPlay,
+} from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 
