@@ -54,20 +54,11 @@ type Story = StoryObj<typeof DownloadButton>
 
 // Default scenario
 export const Default: Story = {
-  args: {
-    children: "Work with us",
-  },
-}
-
-export const LongerButtonText: Story = {
-  args: {
-    children: "slightly longer (link) button text",
-  },
+  args: {},
 }
 
 export const OutlineVariant: Story = {
   args: {
-    ...Default.args,
     variant: "outline",
   },
 }

@@ -1,9 +1,8 @@
 "use client"
 
-import type { AriaButtonProps } from "@react-aria/button"
+import type { ComponentPropsWithoutRef } from "react"
 import type { IconType } from "react-icons"
 import type { VariantProps } from "tailwind-variants"
-import type { SetRequired } from "type-fest"
 import { useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
 import { forwardRef } from "react"
@@ -55,13 +54,11 @@ const iconButtonIconStyles = tv({
 
 interface IconButtonProps
   extends
-    SetRequired<
-      Omit<AriaButtonProps<"button">, "children" | "onPress">,
-      "aria-label"
-    >,
+    Omit<ComponentPropsWithoutRef<"button">, "children" | "disabled">,
     VariantProps<typeof iconButtonStyles> {
   icon: IconType
-  className?: string
+  "aria-label": string
+  isDisabled?: boolean
   onPress?: () => void
 }
 

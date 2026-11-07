@@ -1,6 +1,6 @@
 "use client"
 
-import type { AriaButtonProps } from "@react-aria/button"
+import type { ComponentPropsWithoutRef } from "react"
 import type { VariantProps } from "tailwind-variants"
 import { useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
@@ -11,9 +11,9 @@ import { buttonStyles } from "./common"
 
 export interface ButtonProps
   extends
-    Omit<AriaButtonProps<"button">, "onPress">,
+    Omit<ComponentPropsWithoutRef<"button">, "disabled">,
     VariantProps<typeof buttonStyles> {
-  className?: string
+  isDisabled?: boolean
   onPress?: () => void
 }
 
