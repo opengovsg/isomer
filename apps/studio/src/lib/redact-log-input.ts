@@ -9,9 +9,29 @@ const SENSITIVE_KEYS = new Set([
   "authorization",
   "accesstoken",
   "refreshtoken",
+  "phone",
+  // Singpass authorisation code
+  "code",
 ])
 
-const isSensitiveKey = (key: string) => SENSITIVE_KEYS.has(key.toLowerCase())
+// Page and SVG bodies can run to megabytes; their size is enough to debug with
+const SIZE_ONLY_KEYS = new Set(["content", "blocks"])
+
+const redactValue = (key: string, value: unknown): unknown => {
+  const normalisedKey = key.toLowerCase()
+
+  if (SENSITIVE_KEYS.has(normalisedKey)) {
+    return REDACTED
+  }
+
+  if (SIZE_ONLY_KEYS.has(normalisedKey) && value != null) {
+    const length =
+      typeof value === "string" ? value.length : JSON.stringify(value).length
+    return `[OMITTED: ${length} chars]`
+  }
+
+  return redactLogInput(value)
+}
 
 export const redactLogInput = (input: unknown): unknown => {
   if (input === null || input === undefined) {
@@ -26,7 +46,7 @@ export const redactLogInput = (input: unknown): unknown => {
     return Object.fromEntries(
       Object.entries(input).map(([key, value]) => [
         key,
-        isSensitiveKey(key) ? REDACTED : redactLogInput(value),
+        redactValue(key, value),
       ]),
     )
   }
