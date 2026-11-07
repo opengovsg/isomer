@@ -2,6 +2,8 @@ import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { collectUsedHeroVariants } from "./heroVariants.mjs"
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const isDevelopment = process.env.NODE_ENV === "development"
 const localPublishDir = path.join(__dirname, ".local-publish")
@@ -26,6 +28,13 @@ const useLocalJson = (resource) => {
 const { site } = JSON.parse(
   fs.readFileSync(path.join(__dirname, "data/config.json"), "utf-8"),
 )
+
+// Schema JSON is on disk before a production export. `null` is fail-open:
+// skip the stubs. Dev skips the walk so a later schema edit cannot freeze a
+// stub list into the dev server.
+const usedHeroVariants = isDevelopment
+  ? null
+  : collectUsedHeroVariants(path.join(__dirname, "schema"))
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -64,6 +73,30 @@ const nextConfig = {
           path.join(__dirname, "stubs/EgazetteAlgoliaSearch.js"),
         ),
       )
+    }
+
+    // Only carousel and largeImage pull client modules the other variants do
+    // not. Stub those folder entries when the schema walk did not see them.
+    // Same both-compilers replacement as the Algolia stub. A null component
+    // is valid on the server and the client. Gradient, block, floating, and
+    // searchbar stay: replacing them would not drop a unique client module.
+    if (usedHeroVariants) {
+      if (!usedHeroVariants.has("carousel")) {
+        config.plugins.push(
+          new webpack.NormalModuleReplacementPlugin(
+            /[\\/]templates[\\/]next[\\/]components[\\/]complex[\\/]Hero[\\/]HeroCarousel[\\/]index\.js$/,
+            path.join(__dirname, "stubs/HeroCarousel.js"),
+          ),
+        )
+      }
+      if (!usedHeroVariants.has("largeImage")) {
+        config.plugins.push(
+          new webpack.NormalModuleReplacementPlugin(
+            /[\\/]templates[\\/]next[\\/]components[\\/]complex[\\/]Hero[\\/]HeroLargeImage[\\/]index\.js$/,
+            path.join(__dirname, "stubs/HeroLargeImage.js"),
+          ),
+        )
+      }
     }
     return config
   },
