@@ -1,5 +1,5 @@
 import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
-import type { SupportedIconName } from "@opengovsg/isomer-components"
+import type { SupportedIconName } from "@opengovsg/isomer-components/icon-names"
 import { Box, chakra, FormControl, Grid, Icon } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"

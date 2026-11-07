@@ -25,9 +25,6 @@ import type { SupportedIconName } from "./icon-names"
 import { BiClipboardCheck } from "./custom-icons/BiClipboardCheck"
 import { BiMegaphone } from "./custom-icons/BiMegaphone"
 
-export { SUPPORTED_ICON_NAMES } from "./icon-names"
-export type { SupportedIconName } from "./icon-names"
-
 // TODO: use union types to support more icon libraries apart from react-icons
 type SupportedIconType = IconType
 export const SUPPORTED_ICONS_MAP: Record<SupportedIconName, SupportedIconType> =

@@ -1,4 +1,4 @@
-import type { SupportedIconName } from "~/common/icons"
+import type { SupportedIconName } from "~/common/icon-names"
 import type { InfoColsProps } from "~/interfaces"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
