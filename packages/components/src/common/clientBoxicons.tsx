@@ -70,6 +70,20 @@ export function BiChevronRight(props: IconBaseProps) {
   )
 }
 
+export function BiClipboardCheck(props: IconBaseProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      {...props}
+    >
+      <path d="M19 3h-2c0-.55-.45-1-1-1H8c-.55 0-1 .45-1 1H5c-1.1 0-2 .9-2 2v15c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m0 17H5V5h2v2h10V5h2z" />
+      <path d="M11 14.09 8.71 11.8 7.3 13.21l3 3c.2.2.45.29.71.29s.51-.1.71-.29l5-5-1.41-1.41-4.29 4.29Z" />
+    </svg>
+  )
+}
+
 export function BiDotsHorizontalRounded(props: IconBaseProps) {
   return (
     <svg
@@ -225,6 +239,19 @@ export function BiMap(props: IconBaseProps) {
     >
       <path d="M12 14c2.206 0 4-1.794 4-4s-1.794-4-4-4-4 1.794-4 4 1.794 4 4 4zm0-6c1.103 0 2 .897 2 2s-.897 2-2 2-2-.897-2-2 .897-2 2-2z" />
       <path d="M11.42 21.814a.998.998 0 0 0 1.16 0C12.884 21.599 20.029 16.44 20 10c0-4.411-3.589-8-8-8S4 5.589 4 9.995c-.029 6.445 7.116 11.604 7.42 11.819zM12 4c3.309 0 6 2.691 6 6.005.021 4.438-4.388 8.423-6 9.73-1.611-1.308-6.021-5.294-6-9.735 0-3.309 2.691-6 6-6z" />
+    </svg>
+  )
+}
+
+export function BiMegaphone(props: IconBaseProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      {...props}
+    >
+      <path d="M21.57 3.18a.98.98 0 0 0-.92-.11L7.82 8H4.01c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h3.81l1 .39-.47 1.4c-.33 1 .17 2.1 1.15 2.49l3.14 1.26c.24.09.49.14.74.14.29 0 .58-.06.84-.19.5-.23.88-.66 1.05-1.18l.42-1.27 4.93 1.9c.12.04.24.07.36.07.2 0 .4-.06.57-.18.27-.19.43-.5.43-.82V4c0-.33-.16-.64-.43-.82ZM4 10h3v4H4zm9.39 9.68-3.14-1.26.44-1.32 3.15 1.21-.45 1.36ZM20 18.55 9 14.32V9.69l11-4.23z" />
     </svg>
   )
 }

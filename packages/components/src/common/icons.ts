@@ -10,20 +10,20 @@ import {
   BiChart,
   BiChat,
   BiCheckShield,
+  BiClipboardCheck,
   BiFile,
   BiGlobe,
   BiGroup,
   BiHelpCircle,
   BiIdCard,
   BiMapPin,
+  BiMegaphone,
   BiNews,
   BiPhone,
   BiRightArrowAlt,
   BiStar,
   BiVideo,
 } from "./clientBoxicons"
-import { BiClipboardCheck } from "./custom-icons/BiClipboardCheck"
-import { BiMegaphone } from "./custom-icons/BiMegaphone"
 
 // TODO: use union types to support more icon libraries apart from react-icons
 type SupportedIconType = IconType
