@@ -1,68 +1,99 @@
 #!/usr/bin/env bash
-# Posts a sticky PR comment comparing the Template's gzipped bundle size,
-# by category, on this PR against the same build from `main`.
+# Posts a sticky PR comment comparing first-load JS on this PR against `main`.
 #
-# The Template (`isomer-base-template`, built with `next build --webpack`) is the
-# real consumer of @opengovsg/isomer-components, so its webpack-bundled, tree-shaken,
-# minified, gzipped output reflects what actually ships to browsers — unlike the raw
-# published tarball, which is everything in the package before tree-shaking.
+# Each number is the unique gzipped JS one exported HTML references
+# (script src, modulepreload, preload as=script). CSS is not included.
+# Informational only: this script never exits non-zero because a page grew.
 #
 # Required env:
-#   GH_TOKEN                         token with pull-requests:write
-#   PR_NUMBER                        the pull request number
-#   PR_{FRAMEWORK,VENDOR,PAGE,CSS,TOTAL}    gzipped bytes per category (PR build)
-#   BASE_{FRAMEWORK,VENDOR,PAGE,CSS,TOTAL}  gzipped bytes per category (main build)
+#   GH_TOKEN
+#   PR_NUMBER
+#   PR_SEARCHSG_ROOT, PR_SEARCHSG_ABOUT, PR_SEARCHSG_NEWS, PR_SEARCHSG_NEWS_POST_A,
+#   PR_SEARCHSG_SEARCH, PR_SEARCHSG_DATA_REGISTRY, and the same six with BASE_
+#   PR_EGAZETTE_* and BASE_EGAZETTE_* for the same six pages
 
 set -euo pipefail
 
 : "${PR_NUMBER:?PR_NUMBER is required}"
 
-human() { awk -v b="$1" 'BEGIN { printf "%.2f KB", b / 1024 }'; }
+human() { awk -v b="$1" 'BEGIN { printf "%.1f KB", b / 1024 }'; }
 
-# Renders "+1.23 KB (+0.45%)" / "-1.23 KB (-0.45%)" / "±0.00 KB (+0.00%)".
 delta_cell() {
   local base="$1" pr="$2"
   local d=$((pr - base)) sign pct abs
   if [ "$d" -gt 0 ]; then sign="+"; elif [ "$d" -lt 0 ]; then sign="-"; else sign="±"; fi
   abs=${d#-}
   if [ "$base" -gt 0 ]; then
-    pct=$(awk -v d="$d" -v base="$base" 'BEGIN { printf "%+.2f", (d / base) * 100 }')
+    pct=$(awk -v d="$d" -v base="$base" 'BEGIN { printf "%+.1f", (d / base) * 100 }')
   else
     pct="n/a"
   fi
   printf "%s%s (%s%%)" "$sign" "$(human "$abs")" "$pct"
 }
 
-# Headline reflects the category we actually care about: vendor + shared.
-vdelta=$((PR_VENDOR - BASE_VENDOR))
-if [ "$vdelta" -gt 0 ]; then emoji="📈"; elif [ "$vdelta" -lt 0 ]; then emoji="📉"; else emoji="📦"; fi
-
-row() { # label base pr  ->  "| label | base | pr | delta |"
+row() {
   printf "| %s | %s | %s | %s |" "$1" "$(human "$2")" "$(human "$3")" "$(delta_cell "$2" "$3")"
 }
 
-r_vendor=$(row "🧩 Vendor + shared — components & deps" "$BASE_VENDOR" "$PR_VENDOR")
-r_css=$(row "🎨 CSS" "$BASE_CSS" "$PR_CSS")
-r_page=$(row "📄 Page / route" "$BASE_PAGE" "$PR_PAGE")
-r_framework=$(row "⚙️ Framework & runtime (fixed)" "$BASE_FRAMEWORK" "$PR_FRAMEWORK")
-r_total=$(row "**Total**" "$BASE_TOTAL" "$PR_TOTAL")
+searchsg=$(
+  printf '%s\n' \
+    "$(row "/" "$BASE_SEARCHSG_ROOT" "$PR_SEARCHSG_ROOT")" \
+    "$(row "/about" "$BASE_SEARCHSG_ABOUT" "$PR_SEARCHSG_ABOUT")" \
+    "$(row "/news" "$BASE_SEARCHSG_NEWS" "$PR_SEARCHSG_NEWS")" \
+    "$(row "/news/post-a" "$BASE_SEARCHSG_NEWS_POST_A" "$PR_SEARCHSG_NEWS_POST_A")" \
+    "$(row "/search" "$BASE_SEARCHSG_SEARCH" "$PR_SEARCHSG_SEARCH")" \
+    "$(row "/data/registry" "$BASE_SEARCHSG_DATA_REGISTRY" "$PR_SEARCHSG_DATA_REGISTRY")"
+)
 
-# Single-quoted printf format keeps backticks/parens in the prose literal.
-body=$(printf '<!-- template-bundle-size -->
-### %s Template bundle size (gzipped)
+egazette=$(
+  printf '%s\n' \
+    "$(row "/" "$BASE_EGAZETTE_ROOT" "$PR_EGAZETTE_ROOT")" \
+    "$(row "/about" "$BASE_EGAZETTE_ABOUT" "$PR_EGAZETTE_ABOUT")" \
+    "$(row "/news" "$BASE_EGAZETTE_NEWS" "$PR_EGAZETTE_NEWS")" \
+    "$(row "/news/post-a" "$BASE_EGAZETTE_NEWS_POST_A" "$PR_EGAZETTE_NEWS_POST_A")" \
+    "$(row "/search" "$BASE_EGAZETTE_SEARCH" "$PR_EGAZETTE_SEARCH")" \
+    "$(row "/data/registry" "$BASE_EGAZETTE_DATA_REGISTRY" "$PR_EGAZETTE_DATA_REGISTRY")"
+)
 
-Built `isomer-base-template` (`next build --webpack`) against the committed sample content, consuming this PR'"'"'s `@opengovsg/isomer-components`, compared to `main`. Sizes are gzipped.
+# Headline only. The table rows are what to read.
+sum_delta=0
+for pair in \
+  "$BASE_SEARCHSG_ROOT $PR_SEARCHSG_ROOT" \
+  "$BASE_SEARCHSG_ABOUT $PR_SEARCHSG_ABOUT" \
+  "$BASE_SEARCHSG_NEWS $PR_SEARCHSG_NEWS" \
+  "$BASE_SEARCHSG_NEWS_POST_A $PR_SEARCHSG_NEWS_POST_A" \
+  "$BASE_SEARCHSG_SEARCH $PR_SEARCHSG_SEARCH" \
+  "$BASE_SEARCHSG_DATA_REGISTRY $PR_SEARCHSG_DATA_REGISTRY" \
+  "$BASE_EGAZETTE_ROOT $PR_EGAZETTE_ROOT" \
+  "$BASE_EGAZETTE_ABOUT $PR_EGAZETTE_ABOUT" \
+  "$BASE_EGAZETTE_NEWS $PR_EGAZETTE_NEWS" \
+  "$BASE_EGAZETTE_NEWS_POST_A $PR_EGAZETTE_NEWS_POST_A" \
+  "$BASE_EGAZETTE_SEARCH $PR_EGAZETTE_SEARCH" \
+  "$BASE_EGAZETTE_DATA_REGISTRY $PR_EGAZETTE_DATA_REGISTRY"
+do
+  set -- $pair
+  sum_delta=$((sum_delta + $2 - $1))
+done
+if [ "$sum_delta" -gt 0 ]; then emoji="📈"; elif [ "$sum_delta" -lt 0 ]; then emoji="📉"; else emoji="📦"; fi
 
-| Category | main | this PR | Δ |
+body=$(printf '<!-- first-load-js -->
+### %s First-load JS (gzipped)
+
+Unique JS referenced by each exported page (`script src`, modulepreload, preload as=script), compared with `main`. Same six-page fixture and scorer on both checkouts. Each checkout is built with its own `build:template`. CSS is not included.
+
+#### searchSG
+
+| Page | main | this PR | Δ |
 | --- | ---: | ---: | ---: |
 %s
-%s
-%s
-%s
+
+#### egazette-algolia
+
+| Page | main | this PR | Δ |
+| --- | ---: | ---: | ---: |
 %s
 
-<sub>**Vendor + shared** is the signal — that is where the components package and its dependencies land after webpack tree-shaking. **Framework & runtime** (Next.js + React + polyfills) is fixed overhead that does not move with a components change. Components are pulled into shared chunks via a static render `switch`, so per-route chunks stay tiny. Informational only — never fails the build.\n' \
-  "$emoji" "$r_vendor" "$r_css" "$r_page" "$r_framework" "$r_total")
+<sub>Read the rows. `/news` and Egazette `/search` can move differently from the other pages. Informational only. This does not fail the build.\n' \
+  "$emoji" "$searchsg" "$egazette")
 
-# Sticky comment: edit the bot's previous bundle-size comment if present, else create one.
 gh pr comment "$PR_NUMBER" --body "$body" --edit-last --create-if-none

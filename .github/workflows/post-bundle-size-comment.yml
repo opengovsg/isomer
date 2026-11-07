@@ -27,6 +27,10 @@ name: Post bundle size comment
 # value is a plain non-negative integer — and never runs a script the
 # artifact supplied. comment-template-bundle-size.sh instead comes from this
 # job's own checkout of the trusted base-repo ref.
+#
+# The artifact is one integer per page and search type (gzipped first-load
+# JS bytes). This job does not fail when a page grew. The comment script
+# only prints the comparison.
 on:
   workflow_run:
     workflows: ["bundle-size"]
