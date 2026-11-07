@@ -1,4 +1,6 @@
 import type { IconType } from "react-icons"
+
+import type { SupportedIconName } from "./icon-names"
 import {
   BiBarChartAlt2,
   BiBookOpen,
@@ -19,9 +21,7 @@ import {
   BiRightArrowAlt,
   BiStar,
   BiVideo,
-} from "react-icons/bi"
-
-import type { SupportedIconName } from "./icon-names"
+} from "./clientBoxicons"
 import { BiClipboardCheck } from "./custom-icons/BiClipboardCheck"
 import { BiMegaphone } from "./custom-icons/BiMegaphone"
 

@@ -1,6 +1,6 @@
 import type { VariantProps } from "tailwind-variants"
 import type { AccordionProps as BaseAccordionProps } from "~/interfaces/complex/Accordion"
-import { BiMinus, BiPlus } from "react-icons/bi"
+import { BiMinus, BiPlus } from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight } from "~/utils/tailwind"
 

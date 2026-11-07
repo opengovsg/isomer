@@ -21,10 +21,6 @@
       "import": "./dist/esm/index.js",
       "default": "./dist/esm/index.js"
     },
-    "./icon-names": {
-      "import": "./dist/esm/common/icon-names.js",
-      "default": "./dist/esm/common/icon-names.js"
-    },
     "./templates/next": {
       "import": "./dist/esm/templates/next/index.js",
       "default": "./dist/esm/templates/next/index.js"

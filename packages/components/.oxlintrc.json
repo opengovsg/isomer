@@ -43,6 +43,10 @@
               {
                 "name": "next/navigation",
                 "message": "Please use export from next instead of next/navigation"
+              },
+              {
+                "name": "react-icons/bi",
+                "message": "Do not import from react-icons/bi. Import the icon from ~/common/clientBoxicons (packages/components/src/common/clientBoxicons.tsx) instead."
               }
             ],
             "patterns": [

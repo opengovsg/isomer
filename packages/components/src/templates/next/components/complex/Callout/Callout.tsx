@@ -1,6 +1,6 @@
 import type { IconType } from "react-icons"
 import type { CalloutProps, CalloutVariant } from "~/interfaces"
-import { BiCheckCircle, BiError, BiErrorCircle } from "react-icons/bi"
+import { BiCheckCircle, BiError, BiErrorCircle } from "~/common/clientBoxicons"
 import { DEFAULT_CALLOUT_VARIANT } from "~/interfaces/complex/Callout"
 import { tv } from "~/lib/tv"
 

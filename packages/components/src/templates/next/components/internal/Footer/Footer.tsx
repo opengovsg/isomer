@@ -4,7 +4,6 @@ import type {
   FooterItem as FooterItemType,
   SocialMediaType,
 } from "~/interfaces/internal/Footer"
-import { BiLinkExternal } from "react-icons/bi"
 import {
   FaFacebook,
   FaInstagram,
@@ -22,6 +21,7 @@ import {
 import { IoLogoGithub } from "react-icons/io"
 import { IsomerLogo } from "~/assets/IsomerLogo"
 import { OgpLogo } from "~/assets/OgpLogo"
+import { BiLinkExternal } from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { getFormattedDate } from "~/utils/getFormattedDate"

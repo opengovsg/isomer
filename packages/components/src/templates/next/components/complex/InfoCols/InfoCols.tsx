@@ -1,6 +1,6 @@
 import type { SupportedIconName } from "~/common/icon-names"
 import type { InfoColsProps } from "~/interfaces"
-import { BiRightArrowAlt } from "react-icons/bi"
+import { BiRightArrowAlt } from "~/common/clientBoxicons"
 import { SUPPORTED_ICONS_MAP } from "~/common/icons"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"

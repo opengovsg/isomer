@@ -1,4 +1,4 @@
-import { BiError } from "react-icons/bi"
+import { BiError } from "~/common/clientBoxicons"
 
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"

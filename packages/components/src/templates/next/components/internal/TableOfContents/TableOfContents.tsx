@@ -1,5 +1,5 @@
 import type { TableOfContentsProps } from "~/interfaces"
-import { BiMinus } from "react-icons/bi"
+import { BiMinus } from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight } from "~/utils/tailwind"
 
