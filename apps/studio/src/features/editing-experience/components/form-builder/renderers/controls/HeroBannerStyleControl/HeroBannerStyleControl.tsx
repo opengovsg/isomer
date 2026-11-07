@@ -1,12 +1,4 @@
-import {
-  Box,
-  Flex,
-  FormControl,
-  Icon,
-  Text,
-  useDisclosure,
-  VStack,
-} from "@chakra-ui/react"
+import { Box, Flex, FormControl, Icon, Text, VStack } from "@chakra-ui/react"
 import {
   type JsonFormsCellRendererRegistryEntry,
   type JsonFormsRendererRegistryEntry,
@@ -23,12 +15,19 @@ import {
   type HeroStyleVariant,
 } from "@opengovsg/isomer-components"
 import { cloneDeep } from "lodash-es"
-import { useId, useState } from "react"
+import { useId, useReducer } from "react"
 import { BiCheck, BiChevronRight } from "react-icons/bi"
 import { NewFeatureBadge } from "~/features/editing-experience/components/shared/NewFeatureBadge"
 
 import { DrawerHeader } from "../../../../Drawer/DrawerHeader"
 import { DiscardCarouselSlidesModal } from "./DiscardCarouselSlidesModal"
+import {
+  closedHeroBannerStyleState,
+  heroBannerStyleReducer,
+  heroBannerStyleTransition,
+  heroSlideCount,
+  type HeroBannerStyleAction,
+} from "./heroBannerStyleMachine"
 
 interface HeroBannerStyleOption {
   label: string
@@ -254,16 +253,6 @@ interface HeroBannerStyleRenderInfo {
   uischema: UISchemaElement
 }
 
-interface OpenedHeroStyle {
-  originKey: HeroStyleVariant | undefined
-  originValue: string
-  hero: HeroProps
-}
-
-function heroSlideCount(hero: HeroProps) {
-  return "slides" in hero ? hero.slides.length : 0
-}
-
 function combinatorOptionFromRenderInfo(renderInfo: HeroBannerStyleRenderInfo) {
   const option = String(renderInfo.label || renderInfo.schema.const)
 
@@ -294,17 +283,24 @@ export function HeroBannerStyleCombinator({
   renderers: JsonFormsRendererRegistryEntry[] | undefined
   cells: JsonFormsCellRendererRegistryEntry[] | undefined
 }) {
-  const {
-    isOpen: isStyleDrawerOpen,
-    onOpen: onStyleDrawerOpen,
-    onClose: onStyleDrawerClose,
-  } = useDisclosure()
-  const {
-    isOpen: isDiscardModalOpen,
-    onOpen: onDiscardModalOpen,
-    onClose: onDiscardModalClose,
-  } = useDisclosure()
-  const [opened, setOpened] = useState<OpenedHeroStyle>()
+  const [styleState, reduceStyle] = useReducer(
+    heroBannerStyleReducer,
+    closedHeroBannerStyleState,
+  )
+  const dispatchStyle = (action: HeroBannerStyleAction) => {
+    const { effect } = heroBannerStyleTransition(styleState, action)
+    switch (effect?.type) {
+      case "restore":
+        onChange(effect.origin.originValue, effect.origin.hero)
+        break
+      case "select":
+        onChange(effect.value)
+        break
+      case undefined:
+        break
+    }
+    reduceStyle(action)
+  }
   const { core } = useJsonForms()
 
   const options = renderInfos
@@ -330,74 +326,36 @@ export function HeroBannerStyleCombinator({
     (option) => option.label === variant || option.value === variant,
   )
 
-  const closeStyleDrawer = () => {
-    onDiscardModalClose()
-    onStyleDrawerClose()
-  }
-
-  const restoreOpenedHero = () => {
-    if (!opened) {
-      return
-    }
-    onChange(opened.originValue, opened.hero)
-  }
-
   const openStyleDrawer = () => {
-    setOpened({
-      originKey: selected?.key,
-      originValue: selected?.value ?? "",
-      hero: cloneDeep(Resolve.data(core?.data, path) as HeroProps),
+    dispatchStyle({
+      type: "open",
+      origin: {
+        originKey: selected?.key,
+        originValue: selected?.value ?? "",
+        hero: cloneDeep(Resolve.data(core?.data, path) as HeroProps),
+      },
     })
-    onStyleDrawerOpen()
   }
 
-  // Writing the style on click is what updates the preview. Choosing the style
-  // the picker opened on puts that hero back, instead of seeding a new one.
-  const handleSelect = (value: string) => {
-    if (opened && value === opened.originValue) {
-      restoreOpenedHero()
-      return
-    }
-    onChange(value)
-  }
-
-  const handleBack = () => {
-    if (opened && selected?.value !== opened.originValue) {
-      restoreOpenedHero()
-    }
-    closeStyleDrawer()
-  }
-
-  const handleSave = () => {
-    if (
-      opened?.originKey === HERO_STYLE.carousel.key &&
-      selected?.key !== HERO_STYLE.carousel.key &&
-      heroSlideCount(opened.hero) > 1
-    ) {
-      onDiscardModalOpen()
-      return
-    }
-    closeStyleDrawer()
-  }
-
-  if (isStyleDrawerOpen) {
+  if (styleState.status !== "closed") {
     return (
       <>
         <HeroBannerStyleDrawer
           options={options}
           value={selected?.value ?? ""}
-          onChange={handleSelect}
-          onBack={handleBack}
-          onSave={handleSave}
+          onChange={(value) => dispatchStyle({ type: "select", value })}
+          onBack={() =>
+            dispatchStyle({ type: "back", selectedValue: selected?.value })
+          }
+          onSave={() =>
+            dispatchStyle({ type: "save", selectedKey: selected?.key })
+          }
         />
         <DiscardCarouselSlidesModal
-          isOpen={isDiscardModalOpen}
-          slideCount={opened ? heroSlideCount(opened.hero) : 0}
-          onClose={() => {
-            restoreOpenedHero()
-            onDiscardModalClose()
-          }}
-          onConfirm={closeStyleDrawer}
+          isOpen={styleState.status === "confirmingDiscard"}
+          slideCount={heroSlideCount(styleState.origin.hero)}
+          onClose={() => dispatchStyle({ type: "cancelDiscard" })}
+          onConfirm={() => dispatchStyle({ type: "confirmDiscard" })}
         />
       </>
     )
