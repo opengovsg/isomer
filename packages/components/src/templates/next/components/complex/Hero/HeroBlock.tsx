@@ -1,8 +1,8 @@
+import type { HeroBlockProps } from "~/interfaces/complex/Hero/Hero"
 import {
   HERO_BLOCK_IMAGE_EDGE,
   HERO_BLOCK_IMAGE_POSITION,
-  type HeroBlockProps,
-} from "~/interfaces/complex/Hero"
+} from "~/interfaces/complex/Hero/constants"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"

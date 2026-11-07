@@ -3,7 +3,10 @@ export { BlockquoteSchema, type BlockquoteProps } from "./Blockquote"
 export { ButtonSchema, type ButtonProps } from "./Button"
 export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
 export { CalloutSchema, type CalloutProps } from "./Callout/Callout"
-export { DEFAULT_CALLOUT_VARIANT, type CalloutVariant } from "./Callout"
+export {
+  DEFAULT_CALLOUT_VARIANT,
+  type CalloutVariant,
+} from "./Callout/constants"
 export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
@@ -32,7 +35,7 @@ export {
   type HeroCarouselImagePosition,
   type HeroCarouselLayout,
   type HeroStyleVariant,
-} from "./Hero"
+} from "./Hero/constants"
 export { IframeSchema, type IframeProps } from "./Iframe"
 export {
   generateImageSrcSchema,
@@ -42,7 +45,7 @@ export {
   type ImageProps,
 } from "./Image"
 export { InfoCardsSchema, type InfoCardsProps } from "./InfoCards/InfoCards"
-export { CARDS_WITHOUT_IMAGES, CARDS_WITH_IMAGES } from "./InfoCards"
+export { CARDS_WITHOUT_IMAGES, CARDS_WITH_IMAGES } from "./InfoCards/constants"
 export { InfoColsSchema, type InfoColsProps } from "./InfoCols"
 export {
   InfobarDefaultSchema,

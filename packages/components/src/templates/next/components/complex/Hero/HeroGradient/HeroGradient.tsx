@@ -1,7 +1,5 @@
-import {
-  HERO_GRADIENT_ACTION_LAYOUT,
-  type HeroGradientProps,
-} from "~/interfaces/complex/Hero"
+import type { HeroGradientProps } from "~/interfaces/complex/Hero/Hero"
+import { HERO_GRADIENT_ACTION_LAYOUT } from "~/interfaces/complex/Hero/constants"
 
 import { HeroGradientButtons } from "./HeroGradientButtons"
 import { HeroGradientQuickLinks } from "./HeroGradientQuickLinks"

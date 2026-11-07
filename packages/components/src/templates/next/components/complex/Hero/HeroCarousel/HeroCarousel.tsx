@@ -1,8 +1,8 @@
+import type { HeroCarouselProps } from "~/interfaces/complex/Hero/Hero"
 import {
   HERO_CAROUSEL_LAYOUT,
   HERO_CAROUSEL_SLIDE_LIMITS,
-  type HeroCarouselProps,
-} from "~/interfaces/complex/Hero"
+} from "~/interfaces/complex/Hero/constants"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
