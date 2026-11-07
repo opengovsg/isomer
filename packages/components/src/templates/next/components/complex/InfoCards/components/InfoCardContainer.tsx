@@ -1,6 +1,5 @@
 import type { PropsWithChildren } from "react"
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
-import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { Link } from "../../../internal/Link"
@@ -11,7 +10,7 @@ export const InfoCardContainer = ({
   site,
   children,
   isExternalLink,
-  variant = INFOCARD_VARIANT.default,
+  variant,
 }: PropsWithChildren<
   Pick<SingleCardWithImageProps, "variant" | "url" | "site" | "isExternalLink">
 >): JSX.Element => {

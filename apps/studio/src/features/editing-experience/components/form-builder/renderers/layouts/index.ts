@@ -10,3 +10,7 @@ export {
   default as jsonFormsVerticalLayoutRenderer,
   jsonFormsVerticalLayoutTester,
 } from "./JsonFormsVerticalLayout"
+export {
+  default as jsonFormsInfoCardsLayoutRenderer,
+  jsonFormsInfoCardsLayoutTester,
+} from "./JsonFormsInfoCardsLayout"
