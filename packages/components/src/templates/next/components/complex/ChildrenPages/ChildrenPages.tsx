@@ -1,7 +1,7 @@
 import type { ChildrenPagesProps, ImageClientProps } from "~/interfaces"
 import type { IsomerSitemap } from "~/types"
 import { BiRightArrowAlt } from "react-icons/bi"
-import { INFOCARD_VARIANT } from "~/interfaces/complex/infoCardConstants"
+import { INFOCARD_VARIANT } from "~/interfaces/complex/infoCards/constants"
 import { IMAGE_FIT } from "~/interfaces/constants"
 import { tv } from "~/lib/tv"
 import { createChildrenPagesComparator } from "~/utils/createChildrenPagesComparator"

@@ -2,9 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import { NotificationCustomSchema } from "./Notification"
-
-export { CENTRAL_NOTIFICATION_FILE_NAME } from "./centralNotificationConstants"
+import { NotificationCustomSchema } from "../Notification"
 
 export const CentralNotificationEntrySchema = Type.Object({
   notification: NotificationCustomSchema,

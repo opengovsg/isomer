@@ -1,4 +1,4 @@
-import type { HeroLargeImageProps } from "~/interfaces/complex/Hero"
+import type { HeroLargeImageProps } from "~/interfaces/complex/hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 

@@ -1,4 +1,4 @@
-import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
+import type { SingleCardWithImageProps } from "~/interfaces/complex/infoCards"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 

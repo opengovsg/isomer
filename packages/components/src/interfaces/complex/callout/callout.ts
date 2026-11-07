@@ -2,16 +2,8 @@ import type { Static } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import { CalloutProseSchema } from "../native/Prose"
-import {
-  CALLOUT_VARIANT_OPTIONS,
-  type CalloutVariant,
-} from "./calloutConstants"
-
-export {
-  type CalloutVariant,
-  DEFAULT_CALLOUT_VARIANT,
-} from "./calloutConstants"
+import { CalloutProseSchema } from "../../native/Prose"
+import { CALLOUT_VARIANT_OPTIONS, type CalloutVariant } from "./constants"
 
 export const CalloutSchema = Type.Object(
   {

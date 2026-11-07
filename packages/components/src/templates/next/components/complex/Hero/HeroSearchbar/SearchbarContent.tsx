@@ -1,4 +1,4 @@
-import type { HeroSearchbarProps } from "~/interfaces/complex/Hero"
+import type { HeroSearchbarProps } from "~/interfaces/complex/hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
 import { ComponentContent } from "../../../internal/customCssClass"

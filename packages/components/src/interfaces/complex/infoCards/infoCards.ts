@@ -4,22 +4,15 @@ import { Type } from "@sinclair/typebox"
 import { InfoCardsImageFitSchema } from "~/schemas/internal"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
-import type { INFOCARD_VARIANT } from "./infoCardConstants"
-import { ARRAY_RADIO_FORMAT } from "../format"
-import { IsomerString } from "../primitives/IsomerString"
-import { AltTextSchema, ImageSrcSchema } from "./Image"
+import { ARRAY_RADIO_FORMAT } from "../../format"
+import { IsomerString } from "../../primitives/IsomerString"
+import { AltTextSchema, ImageSrcSchema } from "../Image"
 import {
   CARDS_WITH_FULL_IMAGES,
   CARDS_WITH_IMAGES,
   CARDS_WITHOUT_IMAGES,
-} from "./infoCardConstants"
-
-export {
-  CARDS_WITH_FULL_IMAGES,
-  CARDS_WITH_IMAGES,
-  CARDS_WITHOUT_IMAGES,
-  INFOCARD_VARIANT,
-} from "./infoCardConstants"
+  type INFOCARD_VARIANT,
+} from "./constants"
 
 type InfoCardVariants = keyof typeof INFOCARD_VARIANT
 

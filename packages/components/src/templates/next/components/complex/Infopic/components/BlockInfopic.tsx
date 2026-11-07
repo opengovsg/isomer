@@ -1,4 +1,4 @@
-import { InfopicVariants } from "~/interfaces/complex/infopicConstants"
+import { InfopicVariants } from "~/interfaces/complex/infopic/constants"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 

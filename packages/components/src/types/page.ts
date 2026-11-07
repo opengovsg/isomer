@@ -207,8 +207,6 @@ export type DateFilterSidebarVisibility = Pick<
   "showStatusLabelsFilter" | "showDateRangeFilter"
 >
 
-export { isDateFilter, isTextFilter } from "./tagCategory"
-
 // oneOf, not a flat object with every field optional. Order: text=0, date=1.
 // TAG_CATEGORY_ITEM_FORMAT tells JsonFormsCombinatorControl to skip the Variant
 // picker — type is chosen at creation, not switched here.

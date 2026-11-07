@@ -1,8 +1,8 @@
 "use client"
 
-import type { HeroCarouselImagePosition } from "~/interfaces/complex/Hero"
+import type { HeroCarouselImagePosition } from "~/interfaces/complex/hero"
 import type { HeadingTag } from "~/utils/getHeadingTag"
-import { HERO_BLOCK_IMAGE_POSITION } from "~/interfaces/complex/heroConstants"
+import { HERO_BLOCK_IMAGE_POSITION } from "~/interfaces/complex/hero/constants"
 import { tv } from "~/lib/tv"
 
 import type { HeroCarouselSlideView } from "./CarouselSlides"

@@ -1,4 +1,4 @@
-import type { HeroGradientButtonsProps } from "~/interfaces/complex/Hero"
+import type { HeroGradientButtonsProps } from "~/interfaces/complex/hero"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 

@@ -3,11 +3,9 @@ import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
-import { IsomerString } from "../primitives/IsomerString"
-import { AltTextSchema, ImageSrcSchema } from "./Image"
-import { InfopicVariants } from "./infopicConstants"
-
-export { InfopicVariants } from "./infopicConstants"
+import { IsomerString } from "../../primitives/IsomerString"
+import { AltTextSchema, ImageSrcSchema } from "../Image"
+import { InfopicVariants } from "./constants"
 
 export const InfopicSchema = Type.Object(
   {

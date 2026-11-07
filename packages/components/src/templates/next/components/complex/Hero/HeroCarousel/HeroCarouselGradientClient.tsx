@@ -1,8 +1,8 @@
 "use client"
 
-import type { HeroCarouselContentAlignment } from "~/interfaces/complex/Hero"
+import type { HeroCarouselContentAlignment } from "~/interfaces/complex/hero"
 import type { HeadingTag } from "~/utils/getHeadingTag"
-import { HERO_CAROUSEL_CONTENT_ALIGNMENT } from "~/interfaces/complex/heroConstants"
+import { HERO_CAROUSEL_CONTENT_ALIGNMENT } from "~/interfaces/complex/hero/constants"
 import { tv } from "~/lib/tv"
 
 import type { HeroCarouselSlideView } from "./CarouselSlides"

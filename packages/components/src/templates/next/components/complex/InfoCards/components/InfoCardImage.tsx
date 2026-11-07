@@ -1,5 +1,5 @@
-import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
-import { INFOCARD_VARIANT } from "~/interfaces/complex/infoCardConstants"
+import type { SingleCardWithImageProps } from "~/interfaces/complex/infoCards"
+import { INFOCARD_VARIANT } from "~/interfaces/complex/infoCards/constants"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
 import type { With4Cols } from "./types"
