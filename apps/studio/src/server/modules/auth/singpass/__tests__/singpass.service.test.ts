@@ -70,7 +70,7 @@ describe("getAuthorizationUrl", () => {
 
   it("sends DPoP on PAR through the production FAPI2Client setup", async () => {
     // Act
-    const { authorizationUrl } = await getAuthorizationUrl({ useFapi: true })
+    const { authorizationUrl } = await getAuthorizationUrl()
 
     // Assert
     expect(parProofs).toHaveLength(1)
