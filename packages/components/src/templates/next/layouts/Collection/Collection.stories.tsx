@@ -16,7 +16,7 @@ import { CollectionLayout } from "./Collection"
 
 const COLLECTION_ITEMS: IsomerSitemap[] = Array.from(
   { length: 10 },
-  (_, index) => [
+  (_, index): IsomerSitemap[] => [
     {
       id: `${index}`,
       title: `This is a publication title that is really long because ${index}`,
