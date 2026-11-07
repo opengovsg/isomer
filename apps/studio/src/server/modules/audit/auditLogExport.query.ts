@@ -201,6 +201,9 @@ type DisplayableAuditLogEvent = Exclude<
   | "CancelSchedulePublish"
   | "ScheduleUnpublish"
   | "CancelScheduleUnpublish"
+  // Not emitted yet; add descriptions once their deltas exist
+  | "AssetCreate"
+  | "AssetDelete"
 >
 
 const AUDIT_LOGS_EVENTS_QUERIES: Record<
