@@ -1,6 +1,6 @@
 import type { ContactInformationProps } from "~/interfaces"
 import { omit } from "lodash-es"
-import { DATA_SOURCE_TYPE } from "~/interfaces/integration"
+import { DATA_SOURCE_TYPE } from "~/interfaces/integration/dataSource"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { DgsContactInformation } from "./DgsContactInformation"

@@ -5,17 +5,9 @@ import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 import { IsomerString } from "../primitives/IsomerString"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
+import { InfopicVariants } from "./infopicConstants"
 
-export const InfopicVariants = {
-  Block: {
-    value: "block",
-    label: "Block (Default)",
-  },
-  Full: {
-    value: "full",
-    label: "Full-image",
-  },
-} as const
+export { InfopicVariants } from "./infopicConstants"
 
 export const InfopicSchema = Type.Object(
   {

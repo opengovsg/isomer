@@ -1,7 +1,7 @@
 import type { IconType } from "react-icons"
 import type { CalloutProps, CalloutVariant } from "~/interfaces"
 import { BiCheckCircle, BiError, BiErrorCircle } from "react-icons/bi"
-import { DEFAULT_CALLOUT_VARIANT } from "~/interfaces/complex/Callout"
+import { DEFAULT_CALLOUT_VARIANT } from "~/interfaces/complex/calloutConstants"
 import { tv } from "~/lib/tv"
 
 import { Prose } from "../../native/Prose"

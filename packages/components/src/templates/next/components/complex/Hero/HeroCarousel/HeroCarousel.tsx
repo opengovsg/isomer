@@ -2,7 +2,7 @@ import type { HeroCarouselProps } from "~/interfaces/complex/Hero"
 import {
   HERO_CAROUSEL_LAYOUT,
   HERO_CAROUSEL_SLIDE_LIMITS,
-} from "~/interfaces/complex/Hero"
+} from "~/interfaces/complex/heroConstants"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 

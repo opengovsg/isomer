@@ -1,7 +1,7 @@
 import type { DateFilterDisplayEntry } from "~/interfaces/internal/DateFilter"
 import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
 import { format, isSameDay, parseISO } from "date-fns"
-import { isDateFilter } from "~/types/page"
+import { isDateFilter } from "~/types/tagCategory"
 
 import { buildDateFilterStatusLabels } from "./buildDateFilterStatusLabels"
 
