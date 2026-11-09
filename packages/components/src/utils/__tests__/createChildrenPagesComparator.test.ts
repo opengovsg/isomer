@@ -1,5 +1,4 @@
 import type { ChildPage } from "~/templates/next/components/complex/ChildrenPages/types"
-import { cloneDeep } from "lodash-es"
 import { describe, expect, it } from "vitest"
 
 import { createChildrenPagesComparator } from "../createChildrenPagesComparator"
@@ -54,7 +53,7 @@ describe("ChildrenPages.utils", () => {
 
       // Act
       const comparator = createChildrenPagesComparator(ordering)
-      const actual = cloneDeep(generateChildrenPages()).sort(comparator)
+      const actual = structuredClone(generateChildrenPages()).sort(comparator)
 
       // Assert
       expect(actual.map(({ id }) => id)).toEqual(ordering)
@@ -89,8 +88,8 @@ describe("ChildrenPages.utils", () => {
       const comparator = createChildrenPagesComparator(ordering)
 
       // Sort multiple times with the same comparator
-      const sorted1 = cloneDeep(generateChildrenPages()).sort(comparator)
-      const sorted2 = cloneDeep(generateChildrenPages()).sort(comparator)
+      const sorted1 = structuredClone(generateChildrenPages()).sort(comparator)
+      const sorted2 = structuredClone(generateChildrenPages()).sort(comparator)
 
       // Assert - both sorts should produce the same result
       expect(sorted1.map(({ id }) => id)).toEqual(ordering)

@@ -1,5 +1,4 @@
 import type { ContactInformationProps } from "~/interfaces"
-import { omit } from "lodash-es"
 import { DATA_SOURCE_TYPE } from "~/interfaces/integration"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
@@ -10,12 +9,16 @@ export const ContactInformation = ({
   dataSource,
   ...rest
 }: ContactInformationProps) => {
+  const { url, site, ...uiRest } = rest as Omit<
+    ContactInformationProps,
+    "dataSource"
+  >
   const uiProps = {
-    ...omit(rest, ["url", "site"]),
+    ...uiRest,
     referenceLinkHref: getReferenceLinkHref(
-      rest.url,
-      rest.site.siteMapArray,
-      rest.site.assetsBaseUrl,
+      url,
+      site.siteMapArray,
+      site.assetsBaseUrl,
     ),
   }
 

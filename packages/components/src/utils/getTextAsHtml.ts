@@ -2,9 +2,34 @@ import type { HardBreakProps } from "~/interfaces"
 import type { Marks, TextProps } from "~/interfaces/native/Text"
 import type { IsomerSiteProps } from "~/types"
 import DOMPurify from "isomorphic-dompurify"
-import { escape, isEqual } from "lodash-es"
 
 import { getReferenceLinkHref } from "./getReferenceLinkHref"
+
+// Same entities as the previous lodash escape/unescape. One pass, so "&amp;lt;" stays "&lt;".
+const HTML_ESCAPES: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+}
+
+const HTML_UNESCAPES: Record<string, string> = {
+  "&amp;": "&",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&quot;": '"',
+  "&#39;": "'",
+}
+
+const escape = (value: string | undefined) =>
+  (value ?? "").replace(/[&<>"']/g, (char) => HTML_ESCAPES[char] ?? char)
+
+export const unescapeHtml = (value: string) =>
+  value.replace(
+    /&(?:amp|lt|gt|quot|#39);/g,
+    (entity) => HTML_UNESCAPES[entity] ?? entity,
+  )
 
 type MarkTypes = Marks["type"]
 
@@ -66,10 +91,14 @@ export const getTextAsHtml = ({
       : escape(node.text)
 
     const currentNodeLinkMark = node.marks?.find((mark) => mark.type === "link")
-    const isLinkMarkNew =
-      (!previousNodeLinkMark && !!currentNodeLinkMark) ||
-      (!!previousNodeLinkMark && !currentNodeLinkMark) ||
-      !isEqual(previousNodeLinkMark, currentNodeLinkMark)
+    const isSameLinkMark =
+      previousNodeLinkMark === currentNodeLinkMark ||
+      (previousNodeLinkMark?.type === "link" &&
+        currentNodeLinkMark?.type === "link" &&
+        previousNodeLinkMark.attrs.href === currentNodeLinkMark.attrs.href &&
+        (previousNodeLinkMark.attrs.target || "_self") ===
+          (currentNodeLinkMark.attrs.target || "_self"))
+    const isLinkMarkNew = !isSameLinkMark
 
     // Close off the existing link mark if it is different
     if (isLinkMarkNew && !!previousNodeLinkMark) {

@@ -6,10 +6,8 @@ import type {
   DgsContactInformationProps,
   DgsTransformedContactInformationProps,
 } from "~/interfaces"
-import { omit, pick } from "lodash-es"
 import { useMemo } from "react"
 import { transformDgsField, useDgsData } from "~/hooks/useDgsData"
-import { InjectableContactInformationKeys } from "~/interfaces/complex/ContactInformation/constants"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 
 import { ContactInformationUI } from "../components"
@@ -38,7 +36,9 @@ export const DgsContactInformation = ({
       <ContactInformationUI
         isLoading={isLoading}
         methods={[]} // not needed for loading state but its required prop
-        {...pick(rest, "type", "layout", "headingLevel")}
+        type={rest.type}
+        layout={rest.layout}
+        headingLevel={rest.headingLevel}
         acceptHtmlTags
       />
     )
@@ -58,25 +58,29 @@ export const DgsContactInformation = ({
 export const DgsTransformedContactInformation = ({
   record,
   isLoading,
+  title: titleTemplate,
+  description: descriptionTemplate,
+  methods: methodsTemplate,
+  otherInformation: otherInformationTemplate,
   ...rest
 }: DgsTransformedContactInformationProps) => {
   const title = transformDgsField(
-    rest.title,
+    titleTemplate,
     record,
   ) as ContactInformationUIProps["title"]
 
   const description = transformDgsField(
-    rest.description,
+    descriptionTemplate,
     record,
   ) as ContactInformationUIProps["description"]
 
   const methods = safeJsonParse<ContactInformationUIProps["methods"]>(
-    transformDgsField(rest.methods, record),
+    transformDgsField(methodsTemplate, record),
   )
 
   const otherInformation = safeJsonParse<
     ContactInformationUIProps["otherInformation"]
-  >(transformDgsField(rest.otherInformation, record))
+  >(transformDgsField(otherInformationTemplate, record))
 
   return (
     <ContactInformationUI
@@ -85,10 +89,7 @@ export const DgsTransformedContactInformation = ({
       description={description}
       methods={methods ?? []}
       otherInformation={otherInformation}
-      type={rest.type}
-      layout={rest.layout}
-      headingLevel={rest.headingLevel}
-      {...omit(rest, InjectableContactInformationKeys)}
+      {...rest}
       acceptHtmlTags
     />
   )

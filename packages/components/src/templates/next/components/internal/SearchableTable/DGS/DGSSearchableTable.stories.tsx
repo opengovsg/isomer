@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { DGSSearchableTableProps } from "~/interfaces"
-import { omit } from "lodash-es"
 import { http, HttpResponse } from "msw"
 import { expect, userEvent, waitFor, within } from "storybook/test"
 import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
@@ -50,8 +49,10 @@ export const SelectedHeaders: Story = {
   },
 }
 
+const { title: _title, ...argsWithoutTitle } = commonArgs
+
 export const DefaultTitleWhenUnspecified: Story = {
-  args: omit(commonArgs, "title"),
+  args: argsWithoutTitle,
 }
 
 export const LargeDataset: Story = {

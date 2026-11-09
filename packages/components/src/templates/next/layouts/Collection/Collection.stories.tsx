@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
 import { addDays, format } from "date-fns"
-import { flatten, times } from "lodash-es"
 import { expect, fireEvent, userEvent, within } from "storybook/test"
 import { generateSiteConfig } from "~/stories/helpers"
 import {
@@ -15,8 +14,9 @@ import { withArgosModes } from "@isomer/storybook-config"
 
 import { CollectionLayout } from "./Collection"
 
-const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
-  times(10, (index) => [
+const COLLECTION_ITEMS: IsomerSitemap[] = Array.from(
+  { length: 10 },
+  (_, index): IsomerSitemap[] => [
     {
       id: `${index}`,
       title: `This is a publication title that is really long because ${index}`,
@@ -56,8 +56,8 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       category: "Category Name",
       ref: "https://guide.isomer.gov.sg",
     },
-  ]),
-)
+  ],
+).flat()
 
 const generateArgs = ({
   collectionItems = COLLECTION_ITEMS,
@@ -400,7 +400,7 @@ const dateFilterCollectionItem = (
 })
 
 const DATE_FILTER_COLLECTION_ITEMS: IsomerSitemap[] = [
-  ...times(12, (index) =>
+  ...Array.from({ length: 12 }, (_, index) =>
     dateFilterCollectionItem(index, [
       {
         id: EVENT_DATE_FILTER_ID,
@@ -409,7 +409,7 @@ const DATE_FILTER_COLLECTION_ITEMS: IsomerSitemap[] = [
       },
     ]),
   ),
-  ...times(10, (index) =>
+  ...Array.from({ length: 10 }, (_, index) =>
     dateFilterCollectionItem(12 + index, [
       {
         id: EVENT_DATE_FILTER_ID,
@@ -418,7 +418,7 @@ const DATE_FILTER_COLLECTION_ITEMS: IsomerSitemap[] = [
       },
     ]),
   ),
-  ...times(2, (index) =>
+  ...Array.from({ length: 2 }, (_, index) =>
     dateFilterCollectionItem(22 + index, [
       {
         id: EVENT_DATE_FILTER_ID,

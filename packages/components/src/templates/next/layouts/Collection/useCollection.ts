@@ -1,6 +1,5 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPagePageProps } from "~/types"
-import { isEmpty, isEqual } from "lodash-es"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useQueryParams } from "~/hooks/useQueryParams"
 
@@ -35,14 +34,14 @@ export const useCollection = ({
   // Once on load (and if this page's items or filters change). Not on a timer:
   // tag and year filters stay precomputed; only date-bucket counts are refreshed.
   //
-  // Bails out via isEqual when the recomputed value matches the previous one:
+  // Bails out when the recomputed value matches the previous one:
   // callers that pass a fresh `items`/`tagCategories` reference each render
   // (e.g. an inline array literal) would otherwise re-trigger this effect on
   // every render, causing an infinite render loop.
   useEffect(() => {
     setAvailableFilters((prev) => {
       const next = refreshDateFilterCounts({ filters, items, tagCategories })
-      return isEqual(next, prev) ? prev : next
+      return JSON.stringify(next) === JSON.stringify(prev) ? prev : next
     })
   }, [filters, items, tagCategories])
 
@@ -61,7 +60,7 @@ export const useCollection = ({
 
   const appliedFilters = useMemo(() => {
     const filters = queryParams.filters
-    if (isEmpty(filters)) {
+    if (!filters) {
       return []
     }
     try {

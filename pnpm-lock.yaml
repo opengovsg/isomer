@@ -1450,9 +1450,6 @@ importers:
       js-md5:
         specifier: 'catalog:'
         version: 0.9.2
-      lodash-es:
-        specifier: 'catalog:'
-        version: 4.18.1
       react-icons:
         specifier: 'catalog:'
         version: 5.7.0(react@18.3.1)
@@ -1511,9 +1508,6 @@ importers:
       '@testing-library/react':
         specifier: 'catalog:'
         version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@types/lodash-es':
-        specifier: 'catalog:'
-        version: 4.17.12
       '@types/react':
         specifier: catalog:react
         version: 18.3.31

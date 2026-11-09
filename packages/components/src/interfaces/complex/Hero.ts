@@ -2,7 +2,6 @@ import type { Static } from "@sinclair/typebox"
 import type { Simplify } from "type-fest"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
-import { omit } from "lodash-es"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
@@ -143,9 +142,10 @@ const CallToActionsSchema = Type.Object({
   ),
 })
 
-const BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING = omit(
-  IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
-  ".gif",
+const BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING = Object.fromEntries(
+  Object.entries(IMAGE_ACCEPTED_MIME_TYPE_MAPPING).filter(
+    ([extension]) => extension !== ".gif",
+  ),
 )
 
 const BackgroundUrlSchema = generateImageSrcSchema({
