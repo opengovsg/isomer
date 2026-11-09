@@ -4,7 +4,7 @@ import { Type } from "@sinclair/typebox"
 import { InfoCardsImageFitSchema } from "~/schemas/internal"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
-import { ARRAY_RADIO_FORMAT } from "../format"
+import { ARRAY_RADIO_FORMAT, INFOCARDS_LAYOUT_FORMAT } from "../format"
 import { IsomerString } from "../primitives/IsomerString"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
@@ -15,6 +15,12 @@ export const CARDS_WITH_FULL_IMAGES = "cardsWithFullImages"
 export const INFOCARD_VARIANT = {
   bold: "bold",
   default: "default",
+  block: "block",
+} as const
+
+export const INFOCARDS_DISPLAY = {
+  wrap: "wrap",
+  carousel: "carousel",
 } as const
 
 type InfoCardVariants = keyof typeof INFOCARD_VARIANT
@@ -70,20 +76,6 @@ const InfoCardsBaseSchema = Type.Object({
       title: "Description",
     }),
   ),
-  maxColumns: Type.Optional(
-    Type.Union(
-      [
-        Type.Literal("1", { title: "1 column" }),
-        Type.Literal("2", { title: "2 columns" }),
-        Type.Literal("3", { title: "3 columns" }),
-      ],
-      {
-        title: "Number of columns",
-        description: "This only affects how the block appears on large screens",
-        default: "3",
-      },
-    ),
-  ),
   // TODO: Remove "label" and "url"
   // Context: This one is a stopgap measure in lieu of linking collections to the homepage
   // Will be hidden in Studio for now
@@ -106,6 +98,49 @@ const InfoCardsBaseSchema = Type.Object({
     }),
   ),
 })
+
+// Type.Intersect keeps display and maxColumns on the component object.
+// The Studio renderer matches format infocards-layout and hides maxColumns
+// when display is carousel.
+const InfoCardsLayoutSchema = Type.Object(
+  {
+    display: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal(INFOCARDS_DISPLAY.wrap, {
+            title: "Wrap to the next line",
+          }),
+          Type.Literal(INFOCARDS_DISPLAY.carousel, {
+            title: "Show as a carousel",
+          }),
+        ],
+        {
+          title: "Cards layout",
+          description:
+            "Applies when there are more cards than fit on one line.",
+          default: INFOCARDS_DISPLAY.wrap,
+          format: ARRAY_RADIO_FORMAT,
+        },
+      ),
+    ),
+    maxColumns: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal("1", { title: "1 column" }),
+          Type.Literal("2", { title: "2 columns" }),
+          Type.Literal("3", { title: "3 columns" }),
+        ],
+        {
+          title: "Number of columns",
+          description:
+            "This only affects how the block appears on large screens",
+          default: "3",
+        },
+      ),
+    ),
+  },
+  { format: INFOCARDS_LAYOUT_FORMAT },
+)
 
 const InfoCardsWithImageSchema = Type.Object(
   {
@@ -156,40 +191,63 @@ const InfoCardsNoImageSchema = Type.Object(
   },
 )
 
-export const InfoCardsSchema = Type.Intersect(
-  [
-    InfoCardsBaseSchema,
-    // Use Type.Unsafe to generate oneOf (not anyOf) for AJV discriminator support
-    // Type.Union generates anyOf which doesn't work with discriminator
-    Type.Unsafe<
-      | Static<typeof InfoCardsWithImageSchema>
-      | Static<typeof InfoCardsNoImageSchema>
-      | Static<typeof InfoCardsWithFullImageSchema>
-    >({
-      oneOf: [
-        InfoCardsWithImageSchema,
-        InfoCardsNoImageSchema,
-        InfoCardsWithFullImageSchema,
-      ],
-      discriminator: { propertyName: "variant" },
-      format: ARRAY_RADIO_FORMAT,
-      title: "Style",
-    }),
+// Use Type.Unsafe to generate oneOf (not anyOf) for AJV discriminator support.
+// Type.Union generates anyOf which doesn't work with discriminator.
+const InfoCardsVariantSchema = Type.Unsafe<
+  | Static<typeof InfoCardsWithImageSchema>
+  | Static<typeof InfoCardsNoImageSchema>
+  | Static<typeof InfoCardsWithFullImageSchema>
+>({
+  oneOf: [
+    InfoCardsWithImageSchema,
+    InfoCardsNoImageSchema,
+    InfoCardsWithFullImageSchema,
   ],
+  discriminator: { propertyName: "variant" },
+  format: ARRAY_RADIO_FORMAT,
+  title: "Style",
+})
+
+export const INFOCARDS_CAROUSEL_MAX_CARDS = 6
+
+export const InfoCardsHomepageSchema = Type.Intersect(
+  [InfoCardsBaseSchema, InfoCardsLayoutSchema, InfoCardsVariantSchema],
   {
     title: "Cards",
+    // Carousel caps cards. Set on the intersect so it sees both display and cards.
+    if: {
+      properties: { display: { const: INFOCARDS_DISPLAY.carousel } },
+      required: ["display"],
+    },
+    then: {
+      properties: { cards: { maxItems: INFOCARDS_CAROUSEL_MAX_CARDS } },
+    },
   },
+)
+
+// Omits display. Carousel is homepage-only until it ships on other pages.
+// TODO: Collapse InfoCardsHomepageSchema and InfoCardsDefaultSchema into one schema.
+export const InfoCardsDefaultSchema = Type.Intersect(
+  [
+    InfoCardsBaseSchema,
+    Type.Omit(InfoCardsLayoutSchema, ["display"], {
+      format: INFOCARDS_LAYOUT_FORMAT,
+    }),
+    InfoCardsVariantSchema,
+  ],
+  { title: "Cards" },
 )
 
 export type SingleCardNoImageProps = Static<typeof SingleCardNoImageSchema> & {
   site: IsomerSiteProps
   isExternalLink?: boolean
   headingLevel: number
+  variant?: InfoCardVariants
 }
 export type SingleCardWithImageProps = Static<
   typeof SingleCardWithImageSchema
 > &
-  Pick<Static<typeof InfoCardsBaseSchema>, "maxColumns"> & {
+  Pick<Static<typeof InfoCardsLayoutSchema>, "maxColumns"> & {
     site: IsomerSiteProps
     layout: IsomerPageLayoutType
     isExternalLink?: boolean
@@ -198,7 +256,7 @@ export type SingleCardWithImageProps = Static<
     isFallback?: boolean
     headingLevel: number
   }
-export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
+export type InfoCardsProps = Static<typeof InfoCardsHomepageSchema> & {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
   sectionIdx?: number // TODO: Remove this property, only used in classic theme

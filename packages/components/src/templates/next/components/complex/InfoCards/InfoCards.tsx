@@ -4,12 +4,14 @@ import {
   CARDS_WITH_IMAGES,
   CARDS_WITHOUT_IMAGES,
   INFOCARD_VARIANT,
+  INFOCARDS_DISPLAY,
 } from "~/interfaces/complex/InfoCards"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
 import { LinkButton } from "../../internal/LinkButton"
+import { CarouselWrapperClient } from "./CarouselWrapperClient"
 import { compoundStyles } from "./common"
 import {
   InfoCardNoImage,
@@ -24,6 +26,7 @@ export const InfoCards = ({
   variant,
   cards,
   maxColumns,
+  display,
   label,
   url,
   layout,
@@ -32,70 +35,65 @@ export const InfoCards = ({
   headingLevel,
 }: InfoCardsProps): JSX.Element => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
+  const isCarousel =
+    layout === "homepage" && display === INFOCARDS_DISPLAY.carousel
+  const cardMaxColumns = isCarousel ? undefined : maxColumns
   const cardVariant =
     variant === CARDS_WITH_FULL_IMAGES
       ? INFOCARD_VARIANT.bold
-      : INFOCARD_VARIANT.default
+      : isCarousel && variant === CARDS_WITHOUT_IMAGES
+        ? INFOCARD_VARIANT.block
+        : INFOCARD_VARIANT.default
   const TitleTag = getHeadingTag(headingLevel)
 
-  const InfoCardsToRender = () => {
+  const renderedCards = (() => {
     switch (variant) {
       case CARDS_WITH_IMAGES:
-        return (
-          <>
-            {cards.map((card, idx) => (
-              <InfoCardWithImage
-                key={idx}
-                {...card}
-                maxColumns={maxColumns}
-                layout={layout}
-                site={site}
-                shouldLazyLoad={shouldLazyLoad}
-                headingLevel={headingLevel + 1}
-              />
-            ))}
-          </>
-        )
+        return cards.map((card, idx) => (
+          <InfoCardWithImage
+            key={idx}
+            {...card}
+            maxColumns={cardMaxColumns}
+            layout={layout}
+            site={site}
+            shouldLazyLoad={shouldLazyLoad}
+            headingLevel={headingLevel + 1}
+          />
+        ))
       case CARDS_WITHOUT_IMAGES:
-        return (
-          <>
-            {cards.map((card, idx) => (
-              <InfoCardNoImage
-                key={idx}
-                {...card}
-                site={site}
-                headingLevel={headingLevel + 1}
-              />
-            ))}
-          </>
-        )
-      case CARDS_WITH_FULL_IMAGES: {
-        return (
-          <>
-            {cards.map((card, idx) => (
-              <InfoCardWithFullImage
-                key={idx}
-                {...card}
-                maxColumns={maxColumns}
-                layout={layout}
-                site={site}
-                shouldLazyLoad={shouldLazyLoad}
-                headingLevel={headingLevel + 1}
-              />
-            ))}
-          </>
-        )
-      }
-
-      default:
+        return cards.map((card, idx) => (
+          <InfoCardNoImage
+            key={idx}
+            {...card}
+            site={site}
+            headingLevel={headingLevel + 1}
+            variant={cardVariant}
+          />
+        ))
+      case CARDS_WITH_FULL_IMAGES:
+        return cards.map((card, idx) => (
+          <InfoCardWithFullImage
+            key={idx}
+            {...card}
+            maxColumns={cardMaxColumns}
+            layout={layout}
+            site={site}
+            shouldLazyLoad={shouldLazyLoad}
+            headingLevel={headingLevel + 1}
+          />
+        ))
+      default: {
         const _: never = variant
-        return <></>
+        return _
+      }
     }
-  }
+  })()
 
   return (
     <section
       id={id}
+      aria-roledescription={isCarousel ? "carousel" : undefined}
+      aria-label={isCarousel ? title || "Cards" : undefined}
       className={compoundStyles.container({ layout: simplifiedLayout })}
     >
       {(title || subtitle) && (
@@ -120,14 +118,20 @@ export const InfoCards = ({
         </div>
       )}
 
-      <div
-        className={compoundStyles.grid({
-          maxColumns,
-          variant: cardVariant,
-        })}
-      >
-        <InfoCardsToRender />
-      </div>
+      {isCarousel ? (
+        <CarouselWrapperClient cardCount={cards.length} variant={cardVariant}>
+          {renderedCards}
+        </CarouselWrapperClient>
+      ) : (
+        <div
+          className={compoundStyles.grid({
+            maxColumns,
+            variant: cardVariant,
+          })}
+        >
+          {renderedCards}
+        </div>
+      )}
 
       {!!url && !!label && (
         <div className={compoundStyles.urlButtonContainer()}>
