@@ -57,6 +57,8 @@ export const AuditLogEvent = {
   RedirectCreate: "RedirectCreate",
   RedirectDelete: "RedirectDelete",
   AuditLogExportCreate: "AuditLogExportCreate",
+  AssetCreate: "AssetCreate",
+  AssetDelete: "AssetDelete",
 } as const
 export type AuditLogEvent = (typeof AuditLogEvent)[keyof typeof AuditLogEvent]
 export const BuildStatusType = {
@@ -81,3 +83,17 @@ export const AuditLogExportStatus = {
 } as const
 export type AuditLogExportStatus =
   (typeof AuditLogExportStatus)[keyof typeof AuditLogExportStatus]
+export const AssetStatus = {
+  PENDING_UPLOAD: "PENDING_UPLOAD",
+  UPLOADED: "UPLOADED",
+  REMOVAL_FAILED: "REMOVAL_FAILED",
+} as const
+export type AssetStatus = (typeof AssetStatus)[keyof typeof AssetStatus]
+export const AssetLinkSource = {
+  RESOURCE: "RESOURCE",
+  SITE_CONFIG: "SITE_CONFIG",
+  NAVBAR: "NAVBAR",
+  FOOTER: "FOOTER",
+} as const
+export type AssetLinkSource =
+  (typeof AssetLinkSource)[keyof typeof AssetLinkSource]
