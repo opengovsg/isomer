@@ -7,7 +7,7 @@ import {
   resolveTagCategoryDisplay,
   TAG_CATEGORY_DISPLAY_OPTIONS,
 } from "~/types/constants"
-import { isTextFilter } from "~/types/page"
+import { isTextFilter } from "~/types/tagCategory"
 
 interface GetPillAndPlaintextTagsResult {
   pillTags: TagGroup[] | undefined

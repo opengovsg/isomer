@@ -2,10 +2,7 @@ import type { Static } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import { NotificationCustomSchema } from "./Notification"
-
-// Studio publishes this file to the assets bucket; sites fetch it
-export const CENTRAL_NOTIFICATION_FILE_NAME = "central-notification.json"
+import { NotificationCustomSchema } from "../Notification"
 
 export const CentralNotificationEntrySchema = Type.Object({
   notification: NotificationCustomSchema,

@@ -5,7 +5,7 @@ import {
   DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY,
   TAG_CATEGORY_TYPE,
 } from "~/types/constants"
-import { isDateFilter } from "~/types/page"
+import { isDateFilter } from "~/types/tagCategory"
 
 import type { Filter } from "../../../types/Filter"
 import { getDateFilterStatus } from "./getDateFilterStatus"

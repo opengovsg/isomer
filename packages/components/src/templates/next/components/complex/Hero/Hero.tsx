@@ -1,5 +1,5 @@
-import type { HeroProps } from "~/interfaces/complex/Hero"
-import { HERO_STYLE } from "~/interfaces/complex/Hero"
+import type { HeroProps } from "~/interfaces/complex/Hero/Hero"
+import { HERO_STYLE } from "~/interfaces/complex/Hero/constants"
 
 import { HeroBlock } from "./HeroBlock"
 import { HeroCarousel } from "./HeroCarousel"

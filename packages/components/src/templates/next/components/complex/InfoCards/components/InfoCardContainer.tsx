@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "react"
-import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
-import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
+import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards/InfoCards"
+import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards/constants"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { Link } from "../../../internal/Link"
