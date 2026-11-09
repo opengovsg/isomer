@@ -3,7 +3,7 @@ import type {
   CollectionBlockProps,
   CollectionBlockSingleCardProps,
 } from "~/interfaces/complex/CollectionBlock"
-import { BiRightArrowAlt } from "react-icons/bi"
+import { BiRightArrowAlt } from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"

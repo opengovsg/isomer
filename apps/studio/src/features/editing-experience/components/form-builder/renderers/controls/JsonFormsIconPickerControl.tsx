@@ -1,5 +1,4 @@
 import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
-import type { SupportedIconName } from "@opengovsg/isomer-components"
 import { Box, chakra, FormControl, Grid, Icon } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
@@ -11,6 +10,8 @@ import {
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { getCustomErrorMessage } from "./utils"
+
+type SupportedIconName = keyof typeof SUPPORTED_ICONS_MAP
 
 // Two rows of icons in the picker; column count sets the grid width.
 const ICON_PICKER_COLUMNS = 9

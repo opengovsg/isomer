@@ -1,6 +1,6 @@
 import type { VariantProps } from "tailwind-variants"
 import type { LinkProps } from "~/interfaces/internal/Link"
-import { BiLinkExternal } from "react-icons/bi"
+import { BiLinkExternal } from "~/common/clientBoxicons"
 import { twMerge } from "~/lib/twMerge"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
