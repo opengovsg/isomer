@@ -202,12 +202,11 @@ export const pushFapiAuthorizationRequest = async ({
 
   logger?.info(
     singpassLoginLogFields({
-      useFapi: true,
       stage: "par",
       parPhase: "start",
       parAttempt: 1,
     }),
-    singpassLogMessage({ useFapi: true, message: "PAR starting" }),
+    singpassLogMessage({ message: "PAR starting" }),
   )
 
   let nonce: string | undefined
@@ -229,14 +228,12 @@ export const pushFapiAuthorizationRequest = async ({
           dpopNonceRetry = true
           logger?.warn(
             singpassLoginLogFields({
-              useFapi: true,
               stage: "par",
               parPhase: "dpop_nonce_retry",
               parAttempt: attempt,
               singpassError: singpassErrorCode(error),
             }),
             singpassLogMessage({
-              useFapi: true,
               message: "PAR retrying with DPoP nonce",
             }),
           )
@@ -251,14 +248,12 @@ export const pushFapiAuthorizationRequest = async ({
           if (!isTransientParError(error)) return false
           logger?.warn(
             singpassLoginLogFields({
-              useFapi: true,
               stage: "par",
               parPhase: "transient_retry",
               parAttempt: failedAttempt,
               singpassError: singpassErrorCode(error),
             }),
             singpassLogMessage({
-              useFapi: true,
               message: "PAR retrying after transient error",
             }),
           )
@@ -268,14 +263,12 @@ export const pushFapiAuthorizationRequest = async ({
     )
     logger?.info(
       singpassLoginLogFields({
-        useFapi: true,
         stage: "par",
         outcome: "success",
         parAttempt: attempt,
         dpopNonceRetry,
       }),
       singpassLogMessage({
-        useFapi: true,
         message: dpopNonceRetry
           ? "PAR succeeded after DPoP nonce retry"
           : "PAR succeeded",
@@ -290,7 +283,6 @@ export const pushFapiAuthorizationRequest = async ({
     logger?.error(
       {
         ...singpassLoginLogFields({
-          useFapi: true,
           stage: "par",
           outcome: "failure",
           parAttempt: attempt,
@@ -299,7 +291,7 @@ export const pushFapiAuthorizationRequest = async ({
         singpassError: singpassErrorCode(error),
         err: error,
       },
-      singpassLogMessage({ useFapi: true, message: "PAR failed" }),
+      singpassLogMessage({ message: "PAR failed" }),
     )
     throw error
   }
