@@ -55,7 +55,7 @@ export const rewriteSchemaHeroVariant = (variant: HeroSchemaVariant) => {
   for (const rel of HERO_SCHEMA_FILES) {
     const path = join(TEMPLATE_DIR, rel)
     const data = JSON.parse(readFileSync(path, "utf-8")) as {
-      content: Array<{ type: string }>
+      content: { type: string; [key: string]: unknown }[]
     }
     const heroIndex = data.content.findIndex((block) => block.type === "hero")
     if (heroIndex === -1) {
@@ -64,10 +64,8 @@ export const rewriteSchemaHeroVariant = (variant: HeroSchemaVariant) => {
     if (variant === "carousel") {
       data.content[heroIndex] = { ...carouselHero }
     } else {
-      data.content[heroIndex] = {
-        ...data.content[heroIndex],
-        variant,
-      }
+      const hero = data.content[heroIndex]
+      data.content[heroIndex] = { ...hero, type: "hero", variant }
     }
     writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`, "utf-8")
   }
