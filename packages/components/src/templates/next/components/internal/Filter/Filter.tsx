@@ -1,9 +1,7 @@
 "use client"
 
-import { useButton } from "@react-aria/button"
 import { useFocusRing } from "@react-aria/focus"
-import { mergeProps } from "@react-aria/utils"
-import { useRef, useState } from "react"
+import { useState } from "react"
 import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { updateAppliedFilterDateRange } from "~/templates/next/layouts/Collection/utils"
@@ -36,15 +34,13 @@ const FilterSectionButton = ({
   onToggle: () => void
   panelId: string
 }) => {
-  const buttonRef = useRef<HTMLButtonElement>(null)
-  const { buttonProps } = useButton({ onPress: onToggle }, buttonRef)
   const { focusProps } = useFocusRing()
-  const mergedProps = mergeProps(buttonProps, focusProps)
 
   return (
     <button
-      {...mergedProps}
-      ref={buttonRef}
+      {...focusProps}
+      type="button"
+      onClick={onToggle}
       aria-expanded={isOpen}
       aria-controls={panelId}
       className="group prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-left text-base-content outline-0"
