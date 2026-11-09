@@ -8,6 +8,9 @@ export const groupFocusVisibleHighlight = tv({
   base: "group-focus-visible:bg-utility-highlight group-focus-visible:text-base-content-strong group-focus-visible:decoration-transparent group-focus-visible:shadow-focus-visible group-focus-visible:outline-0 group-focus-visible:transition-none group-focus-visible:hover:decoration-transparent",
 })
 
+export const focusRingClasses =
+  "outline outline-0 outline-offset-2 outline-link focus-visible:outline-2"
+
 export const focusRing = tv({
-  base: "outline outline-0 outline-offset-2 outline-link focus-visible:outline-2",
+  base: focusRingClasses,
 })
