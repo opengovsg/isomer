@@ -257,9 +257,9 @@ catalogs:
     eslint-plugin-storybook: 10.6.5
     storybook-addon-pseudo-states: 10.6.5
   tanstack-query:
-    "@tanstack/query-devtools": ^5.104.5
-    "@tanstack/react-query": ^5.104.5
-    "@tanstack/react-query-devtools": ^5.104.5
+    "@tanstack/query-devtools": ^5.105.2
+    "@tanstack/react-query": ^5.105.2
+    "@tanstack/react-query-devtools": ^5.105.2
   tiptap:
     "@tiptap/core": ^3.32.1
     "@tiptap/extension-bold": ^3.32.1
