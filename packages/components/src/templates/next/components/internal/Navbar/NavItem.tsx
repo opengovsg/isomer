@@ -1,7 +1,7 @@
 "use client"
 
 import type { NavbarProps } from "~/interfaces/internal/Navbar"
-import { FocusScope } from "@react-aria/focus"
+import { FocusTrap, FocusTrapFeatures } from "@headlessui/react"
 import { forwardRef } from "react"
 import { BiChevronDown, BiRightArrowAlt, BiX } from "react-icons/bi"
 import { useScrollLock } from "usehooks-ts"
@@ -128,7 +128,9 @@ const Megamenu = ({
         className="absolute bottom-0 left-0 right-0 top-full z-[1] h-screen bg-canvas-overlay/40"
         onClick={onCloseMegamenu}
       />
-      <FocusScope contain restoreFocus>
+      <FocusTrap
+        features={FocusTrapFeatures.TabLock | FocusTrapFeatures.RestoreFocus}
+      >
         <div className={megamenu()}>
           <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 pb-16 pt-12">
             <div className="flex w-full flex-row items-start">
@@ -182,7 +184,7 @@ const Megamenu = ({
             </ul>
           </div>
         </div>
-      </FocusScope>
+      </FocusTrap>
     </div>
   )
 }

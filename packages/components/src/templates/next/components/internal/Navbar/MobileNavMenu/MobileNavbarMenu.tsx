@@ -2,8 +2,8 @@
 
 import type { Dispatch, SetStateAction } from "react"
 import type { NavbarClientProps } from "~/interfaces"
+import { FocusTrap, FocusTrapFeatures } from "@headlessui/react"
 import { useButton } from "@react-aria/button"
-import { FocusScope } from "@react-aria/focus"
 import { forwardRef, useRef } from "react"
 import { useScrollLock } from "usehooks-ts"
 import { isExternalUrl } from "~/utils/isExternalUrl"
@@ -53,7 +53,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
           top,
         }}
       >
-        <FocusScope restoreFocus>
+        <FocusTrap features={FocusTrapFeatures.RestoreFocus}>
           <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
             {isPinned && !!search && (
               <div className="border-y border-b-base-divider-subtle bg-base-canvas-alt px-6 py-3">
@@ -134,7 +134,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
               Exit navigation menu
             </button>
           </div>
-        </FocusScope>
+        </FocusTrap>
       </div>
     )
   },

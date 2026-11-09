@@ -239,7 +239,6 @@ catalogs:
   "react-aria":
     "@react-aria/button": ^3.15.1
     "@react-aria/checkbox": ^3.17.1
-    "@react-aria/focus": ^3.22.1
     "@react-aria/interactions": ^3.28.1
     "@react-aria/textfield": ^3.19.1
     "@react-aria/utils": ^3.34.1

@@ -58,7 +58,6 @@
     "@isomer/validators": "workspace:*",
     "@react-aria/button": "catalog:react-aria",
     "@react-aria/checkbox": "catalog:react-aria",
-    "@react-aria/focus": "catalog:react-aria",
     "@react-aria/interactions": "catalog:react-aria",
     "@react-aria/textfield": "catalog:react-aria",
     "@react-aria/utils": "catalog:react-aria",
