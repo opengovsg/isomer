@@ -9,6 +9,8 @@ const renderImage = (withProvider: boolean) => {
     <ImageClient
       src="/image.png"
       alt="test"
+      width="100%"
+      className=""
       assetsBaseUrl="https://assets.example.com"
     />
   )
