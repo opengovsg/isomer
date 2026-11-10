@@ -187,9 +187,10 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
 // rendered (object-cover) by the shared CarouselSlideImages, used by BOTH
 // carousel layouts (block = half-width image panel at lg; gradient = full-bleed
 // with a dark overlay). The editor resolves a single slide's backgroundUrl to
-// the owning carousel block, so this one config covers both layouts — it uses
-// the more generous full-bleed geometry (the gradient layout, the widest the
-// image ever renders) so a sharp image doesn't false-warn under either layout.
+// the owning carousel block. The thresholds below are shared by both layouts and
+// use the more generous full-bleed geometry (gradient, the widest the image ever
+// renders) so a sharp image doesn't false-warn under either; only the preview
+// shapes follow the block's carousel layout.
 // Focal anchors the subject as the band reshapes across breakpoints; crop is
 // free (custom), exactly like HERO_GRADIENT_CONFIG.
 //
@@ -200,7 +201,7 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
 // the single slide being edited. The framed approximation with the hero-band
 // aspect ratios is the honest single-slide preview here (same reasoning as
 // IMAGE_GALLERY_CONFIG's array-nested skip).
-const HERO_CAROUSEL_CONFIG: AdjustmentConfig = {
+const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => ({
   componentType: "hero:carousel",
   imageField: "backgroundUrl",
   cropMode: "custom",
@@ -213,21 +214,32 @@ const HERO_CAROUSEL_CONFIG: AdjustmentConfig = {
   // height (shared by both layouts' sections). Crop is free (custom), so width
   // and height can fall short independently — both must be checked.
   maxRenderedHeightPx: 500,
-  // Closest common ratio to each breakpoint's hero band (375×240→16:10,
-  // 768×360→2:1, 1280×500→5:2), matching the section's min-h scale
-  // (15/22.5/31.25rem) — same as HERO_GRADIENT_CONFIG. Framed preview, so these
-  // set the tile shape directly.
+  // Framed preview, so these set the tile shape directly. Gradient (default):
+  // closest common ratio to each hero band (375×240→16:10, 768×360→2:1,
+  // 1280×500→5:2), as in HERO_GRADIENT_CONFIG. Block: imageColumn is h-80 below
+  // lg and half-width at lg with min-h 500 (375×320→7:6, 768×320→12:5,
+  // 640×500→5:4).
   versions: singleVersion(
-    responsivePreviewStates({
-      mobile: { width: 16, height: 10 },
-      tablet: { width: 2, height: 1 },
-      desktop: { width: 5, height: 2 },
-    }),
+    responsivePreviewStates(
+      block.type === "hero" &&
+        block.variant === "carousel" &&
+        block.carousel?.layout === "block"
+        ? {
+            mobile: { width: 7, height: 6 },
+            tablet: { width: 12, height: 5 },
+            desktop: { width: 5, height: 4 },
+          }
+        : {
+            mobile: { width: 16, height: 10 },
+            tablet: { width: 2, height: 1 },
+            desktop: { width: 5, height: 2 },
+          },
+    ),
   ),
   skipRealComponentPreview: true,
   preUploadCopy:
     "Use a high-resolution image (at least 2560×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text — the carousel may add a dark overlay for text contrast.",
-}
+})
 
 // Tier A — fixed 5:6 crop (aspect-[5/6]), no focal. The crop is baked into the
 // src, so the renderer needs nothing at runtime; the config only drives the
@@ -620,7 +632,6 @@ export const CONFIGS: AdjustmentConfig[] = [
   HERO_LARGE_IMAGE_CONFIG,
   HERO_BLOCK_CONFIG,
   HERO_FLOATING_CONFIG,
-  HERO_CAROUSEL_CONFIG,
   CONTENTPIC_CONFIG,
   INFOPIC_CONFIG,
   INFOCARDS_WITH_FULL_IMAGE_CONFIG,
@@ -657,6 +668,12 @@ export function resolveAdjustmentConfig(args: {
     fieldName === "imageUrl"
   )
     return infoCardsWithImagesConfig(block)
+  if (
+    block.type === "hero" &&
+    variant === "carousel" &&
+    fieldName === "backgroundUrl"
+  )
+    return heroCarouselConfig(block)
   // absence = not integrated (optional by design); deliberate opt-outs are asserted in the registry test.
   return CONFIGS.find(
     (c) =>

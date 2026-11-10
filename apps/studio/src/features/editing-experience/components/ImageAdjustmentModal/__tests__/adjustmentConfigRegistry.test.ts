@@ -477,6 +477,22 @@ describe("resolveAdjustmentConfig", () => {
       }
     })
 
+    it("hero carousel preview shapes follow the carousel layout (gradient when absent)", () => {
+      const desktopRatio = (carousel?: { layout: string }) =>
+        resolveAdjustmentConfig({
+          block: { type: "hero", variant: "carousel", carousel },
+          fieldName: "backgroundUrl",
+        })?.versions[0]?.previewStates.find((s) => s.id === "desktop")
+          ?.aspectRatio
+
+      expect(desktopRatio({ layout: "block" })).toEqual({ width: 5, height: 4 })
+      expect(desktopRatio({ layout: "gradient" })).toEqual({
+        width: 5,
+        height: 2,
+      })
+      expect(desktopRatio()).toEqual({ width: 5, height: 2 })
+    })
+
     it("fixed-crop (baked-once, same shape every breakpoint) components have focal disabled", () => {
       const fixedBlocks = [
         { block: { type: "contentpic" }, fieldName: "imageSrc" }, // aspect-[5/6] always
