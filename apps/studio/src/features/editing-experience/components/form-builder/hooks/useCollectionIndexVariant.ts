@@ -13,6 +13,9 @@ import { trpc } from "~/utils/trpc"
  * parent collection's content as a side effect of opening one of its items.
  * Disabled entirely unless the field being resolved is actually a collection
  * thumbnail, so every other image field's render stays free of this.
+ *
+ * A pending or failed lookup returns undefined, so the registry falls back to
+ * the card ("collection") shape; this is an accepted limitation.
  */
 export const useCollectionIndexVariant = ({
   siteId,
