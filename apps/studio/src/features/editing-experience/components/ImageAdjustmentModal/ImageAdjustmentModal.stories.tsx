@@ -6,6 +6,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { useState } from "react"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
+import { resolveAdjustmentConfig } from "./adjustmentConfigRegistry"
 import { ImageAdjustmentModal } from "./ImageAdjustmentModal"
 
 const TIER_B_CONFIG: AdjustmentConfig = {
@@ -159,5 +160,30 @@ export const WithRealComponentPreview: Story = {
       buttonLabel: "Explore",
       buttonUrl: "/",
     } as IsomerComponent,
+  },
+}
+
+// Exercises Blockquote's per-version `layout` override: the SAME 1:1 image
+// masks into a circle on a content page and a square on the homepage, driven
+// by its "circle"/"square" PreviewVersions, each forcing their own `layout` on
+// the shared real-component preview (AdjustmentPreview renders the block once
+// per state rather than once-and-reused). No pageLayout context is passed
+// here, so both versions resolve and the version dropdown appears. Regression
+// coverage for Greptile 4205368562: nothing else in Storybook renders the
+// Blockquote config.
+export const WithBlockquotePreview: Story = {
+  args: {
+    isOpen: true,
+    imageFieldName: "imageSrc",
+    config: resolveAdjustmentConfig({
+      block: { type: "blockquote" } as IsomerComponent,
+      fieldName: "imageSrc",
+    }),
+    block: {
+      type: "blockquote",
+      quote: "The circle/square mask depends on the page's layout, not size.",
+      source: "Image Adjustment Modal",
+      imageAlt: "A person smiling",
+    },
   },
 }

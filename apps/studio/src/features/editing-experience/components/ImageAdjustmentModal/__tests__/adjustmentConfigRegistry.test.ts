@@ -61,7 +61,13 @@ describe("resolveAdjustmentConfig", () => {
   it("returns undefined for an unregistered field name on an otherwise-registered block", () => {
     expect(
       resolveAdjustmentConfig({
-        block: { type: "hero", variant: "gradient" },
+        block: { type: "hero", variant: "floating" },
+        fieldName: "someOtherField",
+      }),
+    ).toBeUndefined()
+    expect(
+      resolveAdjustmentConfig({
+        block: { type: "infocards", variant: "cardsWithImages" },
         fieldName: "someOtherField",
       }),
     ).toBeUndefined()
@@ -83,6 +89,263 @@ describe("resolveAdjustmentConfig", () => {
         ).toBeUndefined()
       })
     }
+  })
+
+  describe("hero:floating", () => {
+    const config = resolveAdjustmentConfig({
+      block: { type: "hero", variant: "floating" },
+      fieldName: "backgroundUrl",
+    })
+
+    // The floating text card overlaps the image by a different amount at each
+    // breakpoint (-1.5rem below md, -10rem at md, -17.85rem at lg), so the
+    // preview must exercise all three regimes — a single desktop state would
+    // hide how much the card covers the subject on mobile/tablet.
+    it("previews all three responsive breakpoint regimes", () => {
+      expect(config).toBeDefined()
+      expect(
+        config?.versions[0]?.previewStates.map((s) => s.viewportWidth),
+      ).toEqual([375, 768, 1280])
+    })
+  })
+
+  describe("infocards (Tier C — conditional Fit/Fill)", () => {
+    const withImages = resolveAdjustmentConfig({
+      block: { type: "infocards", variant: "cardsWithImages" },
+      fieldName: "imageUrl",
+    })
+    const fullImage = resolveAdjustmentConfig({
+      block: { type: "infocards", variant: "cardsWithFullImages" },
+      fieldName: "imageUrl",
+    })
+
+    it("resolves a crop+focal config for both image variants", () => {
+      for (const config of [withImages, fullImage]) {
+        expect(config).toBeDefined()
+        expect(config?.cropMode).toBe("custom")
+        expect(config?.focalEnabled).toBe(true)
+        // Array-nested field: both variants render the real card in its real
+        // position (alongside its real siblings), not a hand-built
+        // approximation — every other wired component gets a real preview too.
+        expect(config?.skipRealComponentPreview).toBeFalsy()
+        expect(config?.buildSingleItemPreviewBlock).toBeTypeOf("function")
+      }
+    })
+
+    it("does not resolve for the no-image variant", () => {
+      expect(
+        resolveAdjustmentConfig({
+          block: { type: "infocards", variant: "cardsWithoutImages" },
+          fieldName: "imageUrl",
+        }),
+      ).toBeUndefined()
+    })
+
+    it("splices the edited card back into its real position among siblings", () => {
+      const originalCard = { imageUrl: "/old.png" }
+      const block = {
+        type: "infocards",
+        variant: "cardsWithImages",
+        title: "Section title",
+        subtitle: "Section subtitle",
+        label: "See all",
+        url: "/some-link",
+        maxColumns: "3",
+        cards: [originalCard, { imageUrl: "/other.png" }],
+      }
+      const editedCard = { imageUrl: "/new.png" }
+      const preview = withImages!.buildSingleItemPreviewBlock!(
+        block as IsomerComponent,
+        editedCard,
+        originalCard,
+      ) as Record<string, unknown>
+      expect(preview.cards).toEqual([editedCard, { imageUrl: "/other.png" }])
+      expect(preview.title).toBe("")
+      expect(preview.subtitle).toBeUndefined()
+      expect(preview.label).toBeUndefined()
+      expect(preview.url).toBeUndefined()
+      // Non-chrome fields (needed by the real renderer) pass through untouched.
+      expect(preview.maxColumns).toBe("3")
+    })
+
+    it("falls back to a single-card array when the original card isn't among the block's siblings", () => {
+      const block = {
+        type: "infocards",
+        variant: "cardsWithImages",
+        cards: [{ imageUrl: "/a.png" }],
+      }
+      const detachedCard = { imageUrl: "/detached.png" }
+      const preview = withImages!.buildSingleItemPreviewBlock!(
+        block as IsomerComponent,
+        detachedCard,
+        { imageUrl: "/not-a-sibling.png" },
+      ) as Record<string, unknown>
+      expect(preview.cards).toEqual([detachedCard])
+    })
+
+    it("renders the real grid for real, with the edited card's image updated and siblings unchanged", () => {
+      const cardA = { imageUrl: "/a.png", imageAlt: "a", title: "Card A" }
+      const cardB = { imageUrl: "/b.png", imageAlt: "b", title: "Card B" }
+      const cardC = { imageUrl: "/c.png", imageAlt: "c", title: "Card C" }
+      const block = {
+        type: "infocards",
+        variant: "cardsWithImages",
+        maxColumns: "3",
+        layout: "content",
+        cards: [cardA, cardB, cardC],
+      }
+      const editedCard = { ...cardB, imageUrl: "/edited.png" }
+      const preview = withImages?.buildSingleItemPreviewBlock?.(
+        block as IsomerComponent,
+        editedCard,
+        cardB,
+      )
+      const html = renderBlockHtml(preview, "content")
+
+      expect(html.match(/<img/g)).toHaveLength(3)
+      expect(html).toContain("/edited.png")
+      expect(html).not.toContain("/b.png")
+      expect(html).toContain("/a.png")
+      expect(html).toContain("/c.png")
+      expect(html).toContain("Card A")
+      expect(html).toContain("Card B")
+      expect(html).toContain("Card C")
+    })
+
+    it("the full-image variant renders the real title + gradient overlay for real", () => {
+      const card = { imageUrl: "/a.png", imageAlt: "a", title: "Real title" }
+      const block = {
+        type: "infocards",
+        variant: "cardsWithFullImages",
+        maxColumns: "3",
+        layout: "content",
+        cards: [card],
+      }
+      const editedCard = { ...card, imageUrl: "/edited.png" }
+      const preview = fullImage?.buildSingleItemPreviewBlock?.(
+        block as IsomerComponent,
+        editedCard,
+        card,
+      )
+      const html = renderBlockHtml(preview, "content")
+
+      expect(html).toContain("Real title")
+      expect(html).toContain("bg-gradient-to-t")
+    })
+
+    // The real card frame (InfoCards/common.ts cardImageContainer) is 3:2 at
+    // every breakpoint on content pages EXCEPT lg+ with 3 columns, which
+    // overrides it to 1:1 square. The homepage layout's own overrides are a
+    // different page than the one being edited, so the preview covers content
+    // pages only — one plain Mobile/Tablet/Desktop state each, following the
+    // block's own maxColumns.
+    describe("preview states follow the block's maxColumns (content pages only)", () => {
+      const statesFor = (maxColumns?: string) =>
+        resolveAdjustmentConfig({
+          block: { type: "infocards", variant: "cardsWithImages", maxColumns },
+          fieldName: "imageUrl",
+        })?.versions[0]?.previewStates
+
+      it("previews exactly Mobile/Tablet/Desktop, with plain labels", () => {
+        const states = statesFor("3")
+        expect(states?.map((s) => s.label)).toEqual([
+          "Mobile",
+          "Tablet",
+          "Desktop",
+        ])
+        expect(states?.map((s) => s.layout)).toEqual([
+          undefined,
+          undefined,
+          undefined,
+        ])
+      })
+
+      it("3 columns (default): desktop frame is square", () => {
+        const states = statesFor("3")
+        expect(states?.map((s) => s.aspectRatio)).toEqual([
+          { width: 3, height: 2 },
+          { width: 3, height: 2 },
+          { width: 1, height: 1 },
+        ])
+      })
+
+      it("2 columns: every breakpoint stays 3:2", () => {
+        const states = statesFor("2")
+        expect(states?.map((s) => s.aspectRatio)).toEqual([
+          { width: 3, height: 2 },
+          { width: 3, height: 2 },
+          { width: 3, height: 2 },
+        ])
+      })
+
+      it("1 column: every breakpoint stays 3:2", () => {
+        const states = statesFor("1")
+        expect(states?.map((s) => s.aspectRatio)).toEqual([
+          { width: 3, height: 2 },
+          { width: 3, height: 2 },
+          { width: 3, height: 2 },
+        ])
+      })
+
+      it("defaults to 3 columns when maxColumns is unset", () => {
+        expect(statesFor(undefined)).toEqual(statesFor("3"))
+      })
+    })
+  })
+
+  describe("blockquote (context-resolved circle/square versions)", () => {
+    const configFor = (pageLayout?: IsomerPageLayoutType) =>
+      resolveAdjustmentConfig({
+        block: { type: "blockquote" },
+        fieldName: "imageSrc",
+        context: { pageLayout },
+      })
+
+    // Blockquote renders the same 1:1 image as a circle everywhere except the
+    // homepage/notfound layouts, where it's a square — a real-component
+    // preview regression here would mean an editor never sees the shape their
+    // crop will actually take.
+    it("resolves only the circle version for a content-page layout", () => {
+      const config = configFor("content")
+      expect(config?.versions).toEqual([
+        expect.objectContaining({
+          id: "circle",
+          previewStates: [expect.objectContaining({ layout: "content" })],
+        }),
+      ])
+    })
+
+    it("resolves only the square version for the homepage layout", () => {
+      const config = configFor("homepage")
+      expect(config?.versions).toEqual([
+        expect.objectContaining({
+          id: "square",
+          previewStates: [expect.objectContaining({ layout: "homepage" })],
+        }),
+      ])
+    })
+
+    it("resolves only the square version for the notfound layout", () => {
+      const config = configFor("notfound")
+      expect(config?.versions).toEqual([
+        expect.objectContaining({
+          id: "square",
+          previewStates: [expect.objectContaining({ layout: "homepage" })],
+        }),
+      ])
+    })
+
+    // When the page layout isn't known (e.g. this control renders outside a
+    // page editor), fall back to showing both candidate versions.
+    it("resolves both versions when no page-layout context is given", () => {
+      const config = configFor(undefined)
+      expect(config?.versions.map((v) => v.id)).toEqual(["circle", "square"])
+    })
+
+    it("stacks each version's 1:1 state instead of showing it half-width", () => {
+      expect(configFor("content")?.stackPreviews).toBe(true)
+      expect(configFor(undefined)?.stackPreviews).toBe(true)
+    })
   })
 
   // Regression (resolutionWarning gap): every custom-crop (free-aspect)
@@ -126,6 +389,18 @@ describe("resolveAdjustmentConfig", () => {
         block: { type: "infopic" },
         fieldName: "imageSrc",
         expectedHeight: 400,
+      },
+      {
+        label: "infocards:cardsWithImages",
+        block: { type: "infocards", variant: "cardsWithImages" },
+        fieldName: "imageUrl",
+        expectedHeight: 427,
+      },
+      {
+        label: "infocards:cardsWithFullImages",
+        block: { type: "infocards", variant: "cardsWithFullImages" },
+        fieldName: "imageUrl",
+        expectedHeight: 640,
       },
     ]
 
@@ -171,6 +446,11 @@ describe("resolveAdjustmentConfig", () => {
     it("fixed-crop (baked-once, same shape every breakpoint) components have focal disabled", () => {
       const fixedBlocks = [
         { block: { type: "contentpic" }, fieldName: "imageSrc" }, // aspect-[5/6] always
+        { block: { type: "blockquote" }, fieldName: "imageSrc" }, // 1:1 always (circle/square mask only)
+        {
+          block: { type: "hero", variant: "floating" },
+          fieldName: "backgroundUrl",
+        }, // aspect-[3/2] always
       ]
       for (const { block, fieldName } of fixedBlocks) {
         const config = resolveAdjustmentConfig({ block, fieldName })
@@ -178,12 +458,27 @@ describe("resolveAdjustmentConfig", () => {
         expect(config?.focalEnabled).toBe(false)
       }
     })
+
+    it("InfoCards (Tier C) ties focal to imageFit, not just the responsive frame", () => {
+      // The InfoCards frame genuinely reshapes across breakpoints/columns
+      // (common.ts cardImageContainer), so focalEnabled is true -- the modal
+      // hides it once its fit control is "contain" (ownsImageFitField), since
+      // a letterboxed image has nothing for focal to anchor either.
+      for (const variant of ["cardsWithImages", "cardsWithFullImages"]) {
+        const config = resolveAdjustmentConfig({
+          block: { type: "infocards", variant },
+          fieldName: "imageUrl",
+        })
+        expect(config?.focalEnabled).toBe(true)
+        expect(config?.ownsImageFitField).toBe(true)
+      }
+    })
   })
 
-  // contentpic hardcodes its maxRenderedWidthPx as a literal copy of a
-  // Tailwind width class in packages/components — nothing binds them, so a
-  // renderer change would silently desync the warning. Pin it against the
-  // real rendered markup.
+  // contentpic and blockquote hardcode their maxRenderedWidthPx as literal
+  // copies of a Tailwind width class in packages/components — nothing binds
+  // them, so a renderer change would silently desync the warning. Pin both
+  // against the real rendered markup.
   describe("pinned maxRenderedWidthPx values", () => {
     it("contentpic's 200px matches the rendered sm:w-[200px] frame", () => {
       const config = resolveAdjustmentConfig({
@@ -200,6 +495,24 @@ describe("resolveAdjustmentConfig", () => {
       }
       const html = renderBlockHtml(block, "content")
       expect(html).toContain("sm:w-[200px]")
+    })
+
+    it("blockquote's 240px matches the rendered homepage w-60 frame", () => {
+      const config = resolveAdjustmentConfig({
+        block: { type: "blockquote" },
+        fieldName: "imageSrc",
+      })
+      expect(config?.maxRenderedWidthPx).toBe(240)
+
+      const block = {
+        type: "blockquote",
+        quote: "Quote",
+        source: "Source",
+        imageSrc: "/a.png",
+        imageAlt: "a",
+      }
+      const html = renderBlockHtml(block, "homepage")
+      expect(html).toContain("w-60")
     })
   })
 })
