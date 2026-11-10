@@ -110,6 +110,15 @@ describe("imageAdjustment wiring guardrail", () => {
             source.includes("getFocalObjectPosition"),
         ),
       ).toBe(true)
+      // Alternative render branches must each take part: every file needs the
+      // key or an application marker (parent -> child chains hold only one).
+      for (const source of sources) {
+        expect(
+          source.includes(key) ||
+            source.includes("ImageClientWithAdjustment") ||
+            source.includes("getFocalObjectPosition"),
+        ).toBe(true)
+      }
     })
 
     it(`"${config?.componentType}" has a focal-point story: ${storyPaths.join(", ")}`, () => {
