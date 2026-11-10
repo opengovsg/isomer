@@ -1,4 +1,6 @@
+import { backOff } from "exponential-backoff"
 import { describe, it, expect } from "vitest"
+import { getAssetUploadBackoffOptions } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 
 import {
   resolveOriginalKey,
@@ -110,5 +112,49 @@ describe("useSaveImageAdjustment pure helpers", () => {
         validateCropBounds({ x: 0, y: 0, width: 1, height: 0 }),
       ).toThrow()
     })
+  })
+})
+
+// The hook's save deadline is enforced by a single AbortController threaded
+// through fetch/backOff calls (see useSaveImageAdjustment.ts). These test the
+// two load-bearing assumptions directly, without mocking the whole
+// useMutation/tRPC stack: that fetch honors a custom abort reason, and that
+// the retry predicate actually cuts a backOff loop short instead of letting
+// it run its full budget.
+describe("save deadline mechanics", () => {
+  it("fetch rejects with the AbortController's own reason once aborted", async () => {
+    const controller = new AbortController()
+    const reason = new Error("Saving took too long. Please try again.")
+    controller.abort(reason)
+
+    await expect(
+      fetch("https://example.invalid/test", { signal: controller.signal }),
+    ).rejects.toBe(reason)
+  })
+
+  it("stops a backOff loop once aborted, instead of exhausting all retries", async () => {
+    const controller = new AbortController()
+    const reason = new Error("Saving took too long. Please try again.")
+    let attempts = 0
+
+    setTimeout(() => controller.abort(reason), 15)
+
+    const attempt = () => {
+      attempts++
+      if (controller.signal.aborted) throw controller.signal.reason
+      throw new Error("not ready yet")
+    }
+
+    await expect(
+      backOff(attempt, {
+        ...getAssetUploadBackoffOptions({
+          numOfAttempts: 10,
+          baseTimeoutMs: 5,
+        }),
+        retry: () => !controller.signal.aborted,
+      }),
+    ).rejects.toBe(reason)
+
+    expect(attempts).toBeLessThan(10)
   })
 })

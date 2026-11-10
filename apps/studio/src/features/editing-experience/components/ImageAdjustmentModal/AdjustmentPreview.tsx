@@ -6,7 +6,10 @@ import type {
   ImageAdjustment,
 } from "@opengovsg/isomer-components"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
-import { getFocalObjectPosition, renderComponent } from "@opengovsg/isomer-components"
+import {
+  getFocalObjectPosition,
+  renderComponent,
+} from "@opengovsg/isomer-components"
 import { useEffect, useRef, useState } from "react"
 import { useDebounceValue } from "usehooks-ts"
 import { PreviewIframe } from "~/features/editing-experience/components/preview/PreviewIframe"
@@ -157,7 +160,7 @@ interface AdjustmentPreviewProps {
   scrim?: AdjustmentScrim
   // Lets the real published component render (real copy/scrim/frame) instead of the
   // framed-<img> approximation below; falls back to it when absent or rendering fails.
-  block?: unknown
+  block?: IsomerComponent
   imageFieldName?: string
 }
 
@@ -187,7 +190,7 @@ export const AdjustmentPreview = ({
         ...block,
         [imageFieldName]: adjustedSrc,
         imageAdjustment: adjustment,
-      } as unknown as IsomerComponent
+      } as IsomerComponent
       previewComponent = renderComponent({
         component,
         layout: "content",

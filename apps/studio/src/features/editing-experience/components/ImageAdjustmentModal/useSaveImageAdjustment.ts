@@ -5,7 +5,11 @@ import {
   getAssetUploadBackoffBudgetMs,
   getAssetUploadBackoffOptions,
 } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
-import { BAKEABLE_FORMAT_BY_MIME, bakeImage, canBakeImage } from "~/lib/imageBake"
+import {
+  BAKEABLE_FORMAT_BY_MIME,
+  bakeImage,
+  canBakeImage,
+} from "~/lib/imageBake"
 import { performUpload } from "~/lib/storage/client"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
@@ -167,17 +171,20 @@ export const useSaveImageAdjustment = ({
         // repointing the block doesn't momentarily 403 (see useAssetUpload).
         // The retry predicate stops the loop once the deadline fires, since
         // the delay between retries isn't itself abortable.
-        await backOff(async () => {
-          const response = await fetch(`${ASSETS_BASE_URL}/${fileKey}`, {
-            signal: controller.signal,
-          })
-          if (!response.ok) {
-            throw new Error(`Unable to read from ${fileKey}`)
-          }
-        }, {
-          ...getAssetUploadBackoffOptions({}),
-          retry: () => !controller.signal.aborted,
-        })
+        await backOff(
+          async () => {
+            const response = await fetch(`${ASSETS_BASE_URL}/${fileKey}`, {
+              signal: controller.signal,
+            })
+            if (!response.ok) {
+              throw new Error(`Unable to read from ${fileKey}`)
+            }
+          },
+          {
+            ...getAssetUploadBackoffOptions({}),
+            retry: () => !controller.signal.aborted,
+          },
+        )
 
         // Step 9: Return the new src and imageAdjustment
         return {

@@ -1,4 +1,7 @@
-import type { ImageAdjustment } from "@opengovsg/isomer-components"
+import type {
+  ImageAdjustment,
+  IsomerComponent,
+} from "@opengovsg/isomer-components"
 import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { useState } from "react"
 
@@ -45,7 +48,7 @@ const TIER_B_CONFIG: AdjustmentConfig = {
 interface ImageAdjustmentModalHarnessProps {
   isOpen: boolean
   value?: ImageAdjustment
-  block?: unknown
+  block?: IsomerComponent
 }
 
 const ImageAdjustmentModalHarness = ({
@@ -137,6 +140,8 @@ export const WithExistingValue: Story = {
 export const WithRealComponentPreview: Story = {
   args: {
     isOpen: true,
+    // Fixture is a partial shape for story readability, not a schema-complete
+    // HeroGradient -- same discriminator-only trust the real resolver uses.
     block: {
       type: "hero",
       variant: "gradient",
@@ -145,6 +150,6 @@ export const WithRealComponentPreview: Story = {
         "This copy, gradient, and crop all come from the real component.",
       buttonLabel: "Explore",
       buttonUrl: "/",
-    },
+    } as IsomerComponent,
   },
 }

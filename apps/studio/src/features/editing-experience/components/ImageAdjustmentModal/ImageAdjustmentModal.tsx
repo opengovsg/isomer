@@ -1,4 +1,7 @@
-import type { ImageAdjustment } from "@opengovsg/isomer-components"
+import type {
+  ImageAdjustment,
+  IsomerComponent,
+} from "@opengovsg/isomer-components"
 import {
   Box,
   Grid,
@@ -42,8 +45,10 @@ interface ImageAdjustmentModalProps {
   config: AdjustmentConfig
   src: string
   value?: ImageAdjustment
-  // So the preview can render the actual published component rather than an approximation.
-  block: unknown
+  // So the preview can render the actual published component rather than an
+  // approximation. Legitimately undefined -- e.g. the empty-adjustment story --
+  // AdjustmentPreview falls back to a framed-<img> approximation for that case.
+  block?: IsomerComponent
   imageFieldName: string
   siteId: number
   resourceId?: string
