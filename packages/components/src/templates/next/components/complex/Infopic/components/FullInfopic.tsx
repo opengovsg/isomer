@@ -1,4 +1,5 @@
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
+import { getFocalObjectPosition } from "~/utils/getFocalObjectPosition"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { resolveManagedAssetUrl } from "~/utils/resolveManagedAssetUrl"
@@ -17,6 +18,7 @@ export const FullInfopic = ({
   buttonLabel,
   buttonUrl,
   description,
+  imageSrcImageAdjustment: imageAdjustment,
   isTextOnRight,
   site,
   headingLevel,
@@ -28,6 +30,7 @@ export const FullInfopic = ({
     colorScheme: "inverse",
   })
   const hasLinkButton = !!buttonLabel && !!buttonUrl
+  const backgroundPosition = getFocalObjectPosition(imageAdjustment) ?? "center"
 
   // Resolve the managed-asset URL here (a CSS background can't go through
   // ImageClient).
@@ -38,7 +41,7 @@ export const FullInfopic = ({
       style={{
         backgroundImage: `url('${backgroundUrl}')`,
         backgroundSize: "cover",
-        backgroundPosition: "center",
+        backgroundPosition,
       }}
       id={id}
     >

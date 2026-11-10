@@ -85,6 +85,37 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
     "Use a high-resolution image (at least 2560×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text — this variant adds a gradient overlay.",
 }
 
+// Tier B — responsive layout that STACKS (text, then the 320px image band)
+// below lg (1024px), switching to side-by-side only at lg and up. The
+// previewStates' aspect ratios are only an initial guess shown before
+// PreviewFrame measures the real rendered height (which includes the full
+// stacked text block on mobile/tablet, not just the image band) — matching
+// HeroGradient's own min-h scale (15/22.5/31.25rem), since both use the same
+// Tailwind breakpoints for their section's min-height.
+const HERO_BLOCK_CONFIG: AdjustmentConfig = {
+  componentType: "hero:block",
+  imageField: "backgroundUrl",
+  cropMode: "custom",
+  focalEnabled: true,
+  // Image band is half the viewport at lg (lg:w-1/2); ~960px on large desktop.
+  maxRenderedWidthPx: 960,
+  // lg:min-h-[31.25rem] (500px) on the image panel — same minimum height as
+  // HeroGradient, matching the Isomer image guidelines' 1280×500 minimum for
+  // this variant. Crop is free (custom), so height must be checked too.
+  maxRenderedHeightPx: 500,
+  // Closest common ratio to each breakpoint's hero band (375×240→16:10,
+  // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 16, height: 10 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 5, height: 2 },
+    }),
+  ),
+  preUploadCopy:
+    "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text.",
+}
+
 // Tier A — fixed 5:6 crop (aspect-[5/6]), no focal. The crop is baked into the
 // src, so the renderer needs nothing at runtime; the config only drives the
 // editor's fixed-ratio crop UI.
@@ -112,11 +143,66 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
     "Use a high-resolution image (at least 400×480px) with a 5:6 (portrait) aspect ratio. Keep the key subject centered — the image is cropped to a fixed portrait frame beside your text.",
 }
 
+// Tier B — responsive image with text. Content-dependent cover: frame height
+// varies with copy length, so preview aspect ratios are approximations.
+const INFOPIC_CONFIG: AdjustmentConfig = {
+  componentType: "infopic",
+  imageField: "imageSrc",
+  cropMode: "custom",
+  focalEnabled: true,
+  // One of two columns at lg (lg:grid-cols-2); ~960px on large desktop.
+  maxRenderedWidthPx: 960,
+  // object-cover frame; image band is capped at 400px (max-h-[400px]) and the
+  // container floors at 360px — 400 is a conservative height floor. Crop is
+  // free (custom), so height must be checked independently of width.
+  maxRenderedHeightPx: 400,
+  // Closest common ratio to each breakpoint's frame (375×300→5:4,
+  // 768×400→2:1, 1280×450→3:1); the real tile height is still measured.
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 5, height: 4 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 3, height: 1 },
+    }),
+  ),
+  preUploadCopy:
+    "Use a high-resolution image (at least 1280×500px). Place the key subject on the side matching where the image sits (left or right) rather than centering it.",
+}
+
+// Tier B — responsive full-bleed image hero with the largest aspect-ratio swing
+// of any Hero variant (aspect-square below md, md:aspect-[2/1] from md/768 up).
+// Focal anchors the subject across this extreme swing; crop is free (custom).
+// md is 768, so the tablet breakpoint already sits in the 2:1 regime — only
+// mobile (375, below md) gets the square guess.
+const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
+  componentType: "hero:largeImage",
+  imageField: "backgroundUrl",
+  cropMode: "custom",
+  focalEnabled: true,
+  // Full-bleed; warn against the 1280px content ceiling (same as hero:gradient).
+  maxRenderedWidthPx: 1280,
+  // Widest frame is 2:1 from md up (md:aspect-[2/1]) → 640px tall at 1280px.
+  // Crop is free (custom), so height must be checked independently of width.
+  maxRenderedHeightPx: 640,
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 1, height: 1 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 2, height: 1 },
+    }),
+  ),
+  preUploadCopy:
+    "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed.",
+}
+
 // Every static config, matched by resolveAdjustmentConfig on
 // `type:variant` (or bare `type`) plus the image field name.
 export const CONFIGS: AdjustmentConfig[] = [
   HERO_GRADIENT_CONFIG,
+  HERO_LARGE_IMAGE_CONFIG,
+  HERO_BLOCK_CONFIG,
   CONTENTPIC_CONFIG,
+  INFOPIC_CONFIG,
 ]
 
 /**
