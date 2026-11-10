@@ -392,8 +392,7 @@ export const HeroCarouselSlideSchema = Type.Composite(
   [
     Type.Object({
       // Reserves backgroundUrlImageAdjustment per slide, collision-safe across
-      // the slide array. The editor and renderer wiring lands in a follow-up;
-      // carousel has no resolveAdjustmentConfig entry on this branch yet.
+      // the slide array.
       ...generateAdjustableImageFields("backgroundUrl", BACKGROUND_IMAGE_OPTS),
       ...heroContentFields({
         title:
