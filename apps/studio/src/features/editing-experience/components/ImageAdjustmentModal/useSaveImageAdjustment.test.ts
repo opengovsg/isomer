@@ -175,6 +175,24 @@ describe("fetchImageBlob", () => {
     expect(fallbackInit?.headers).toMatchObject({ Accept: "image/webp" })
   })
 
+  it("requests only a prefix when maxBytes is given", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(errResponse(403))
+      .mockResolvedValueOnce(okResponse(new Blob(["webp"])))
+    vi.stubGlobal("fetch", fetchMock)
+
+    await fetchImageBlob("/1/uuid/photo.png", undefined, 1024)
+
+    const originalInit = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined
+    const fallbackInit = fetchMock.mock.calls[1]?.[1] as RequestInit | undefined
+    expect(originalInit?.headers).toMatchObject({ Range: "bytes=0-1023" })
+    expect(fallbackInit?.headers).toMatchObject({
+      Accept: "image/webp",
+      Range: "bytes=0-1023",
+    })
+  })
+
   it("throws when both the original and the fallback are gated", async () => {
     const fetchMock = vi
       .fn()
