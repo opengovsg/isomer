@@ -109,6 +109,24 @@ describe("resolveAdjustmentConfig", () => {
         fieldName: "backgroundUrl",
         expectedHeight: 500,
       },
+      {
+        label: "hero:block",
+        block: { type: "hero", variant: "block" },
+        fieldName: "backgroundUrl",
+        expectedHeight: 500,
+      },
+      {
+        label: "hero:largeImage",
+        block: { type: "hero", variant: "largeImage" },
+        fieldName: "backgroundUrl",
+        expectedHeight: 640,
+      },
+      {
+        label: "infopic",
+        block: { type: "infopic" },
+        fieldName: "imageSrc",
+        expectedHeight: 400,
+      },
     ]
 
     for (const { label, block, fieldName, expectedHeight } of cases) {
@@ -134,6 +152,15 @@ describe("resolveAdjustmentConfig", () => {
           block: { type: "hero", variant: "gradient" },
           fieldName: "backgroundUrl",
         }, // 16:10 -> 2:1 -> 5:2
+        {
+          block: { type: "hero", variant: "block" },
+          fieldName: "backgroundUrl",
+        }, // stacked band -> side-by-side
+        {
+          block: { type: "hero", variant: "largeImage" },
+          fieldName: "backgroundUrl",
+        }, // square -> 2:1
+        { block: { type: "infopic" }, fieldName: "imageSrc" }, // 5:4 -> 2:1 -> 3:1
       ]
       for (const { block, fieldName } of responsiveBlocks) {
         const config = resolveAdjustmentConfig({ block, fieldName })

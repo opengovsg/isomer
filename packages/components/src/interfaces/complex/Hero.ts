@@ -153,8 +153,9 @@ const BACKGROUND_IMAGE_OPTS = {
   allowedMimeTypeMappings: BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 }
 
-// Only gradient spreads generateAdjustableImageFields; every other variant uses
-// the bare src, with no adjustment sibling.
+// Only searchbar (a hidden beta variant), carousel slides and floating use the
+// bare src, with no adjustment sibling. Every other adjustable variant spreads
+// generateAdjustableImageFields instead.
 const BackgroundUrlSchema = generateImageSrcSchema(BACKGROUND_IMAGE_OPTS)
 
 const GROUPINGS = {
@@ -284,13 +285,13 @@ const HeroGradientSchema = Type.Intersect(
   },
 )
 
-export const HeroBlockSchema = Type.Composite(
+const HeroBlockSchema = Type.Composite(
   [
     Type.Object({
       variant: Type.Literal(HERO_STYLE.block.key, {
         default: HERO_STYLE.block.key,
       }),
-      backgroundUrl: BackgroundUrlSchema,
+      ...generateAdjustableImageFields("backgroundUrl", BACKGROUND_IMAGE_OPTS),
       blockImage: Type.Optional(
         Type.Object(
           {
@@ -328,13 +329,13 @@ export const HeroBlockSchema = Type.Composite(
   },
 )
 
-export const HeroLargeImageSchema = Type.Composite(
+const HeroLargeImageSchema = Type.Composite(
   [
     Type.Object({
       variant: Type.Literal(HERO_STYLE.largeImage.key, {
         default: HERO_STYLE.largeImage.key,
       }),
-      backgroundUrl: BackgroundUrlSchema,
+      ...generateAdjustableImageFields("backgroundUrl", BACKGROUND_IMAGE_OPTS),
     }),
     HeroBaseSchema,
     CallToActionsSchema,

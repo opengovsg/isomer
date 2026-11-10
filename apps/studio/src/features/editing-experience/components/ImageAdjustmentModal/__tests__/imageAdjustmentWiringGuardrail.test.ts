@@ -66,6 +66,40 @@ const FOCAL_WIRING_CONFIGS: {
       "packages/components/src/templates/next/components/complex/Hero/HeroGradient.adjustment.stories.tsx",
     ],
   },
+  {
+    resolve: {
+      block: { type: "hero", variant: "block" },
+      fieldName: "backgroundUrl",
+    },
+    componentPaths: [
+      "packages/components/src/templates/next/components/complex/Hero/HeroBlock.tsx",
+    ],
+    storyPaths: [
+      "packages/components/src/templates/next/components/complex/Hero/HeroBlock.adjustment.stories.tsx",
+    ],
+  },
+  {
+    resolve: {
+      block: { type: "hero", variant: "largeImage" },
+      fieldName: "backgroundUrl",
+    },
+    componentPaths: [
+      "packages/components/src/templates/next/components/complex/Hero/HeroLargeImage/HeroLargeImage.tsx",
+    ],
+    storyPaths: [
+      "packages/components/src/templates/next/components/complex/Hero/HeroLargeImage/HeroLargeImage.adjustment.stories.tsx",
+    ],
+  },
+  {
+    resolve: { block: { type: "infopic" }, fieldName: "imageSrc" },
+    componentPaths: [
+      "packages/components/src/templates/next/components/complex/Infopic/components/BlockInfopic.tsx",
+      "packages/components/src/templates/next/components/complex/Infopic/components/FullInfopic.tsx",
+    ],
+    storyPaths: [
+      "packages/components/src/templates/next/components/complex/Infopic/Infopic.adjustment.stories.tsx",
+    ],
+  },
 ]
 
 describe("imageAdjustment wiring guardrail", () => {
