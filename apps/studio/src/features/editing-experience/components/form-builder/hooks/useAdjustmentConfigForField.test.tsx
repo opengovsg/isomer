@@ -3,9 +3,16 @@
 import type { PropsWithChildren } from "react"
 import { JsonFormsStateProvider } from "@jsonforms/react"
 import { renderHook } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { useAdjustmentConfigForField } from "./useAdjustmentConfigForField"
+
+// useCollectionIndexVariant issues a tRPC query (only enabled for collection
+// thumbnails, which none of these cases are). Stub it so the renderHook wrapper
+// doesn't need a tRPC provider.
+vi.mock("./useCollectionIndexVariant", () => ({
+  useCollectionIndexVariant: () => undefined,
+}))
 
 const renderWithData = (data: unknown, path: string) =>
   renderHook(() => useAdjustmentConfigForField(path), {
