@@ -6,8 +6,8 @@ import { withArgosModes } from "@isomer/storybook-config"
 
 import { HeroLargeImage } from "./HeroLargeImage"
 
-// W1-A end-to-end demo: HeroLargeImage driven through its real `imageAdjustment`
-// schema field (not a throwaway spike prop). Proves focal -> object-position
+// End-to-end demo: HeroLargeImage driven through its real `imageAdjustment`
+// schema field. Proves focal -> object-position
 // flows schema -> props -> ImageClient. This variant has the largest aspect-ratio
 // swing of any Hero (square on mobile, 2:1 on desktop), so focal behavior differs
 // dramatically per breakpoint: vertical focal bites hard on the square mobile,

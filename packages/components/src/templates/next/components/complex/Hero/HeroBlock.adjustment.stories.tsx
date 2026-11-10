@@ -6,8 +6,8 @@ import { withArgosModes } from "@isomer/storybook-config"
 
 import { HeroBlock } from "./HeroBlock"
 
-// W1-B end-to-end demo: HeroBlock driven through its real `imageAdjustment`
-// schema field (not a throwaway spike prop). Proves focal -> object-position
+// End-to-end demo: HeroBlock driven through its real `imageAdjustment`
+// schema field. Proves focal -> object-position
 // flows schema -> props -> ImageClient. HeroBlock has a unique layout quirk:
 // hard mobile height (h-80 / 320px), so mobile aspectRatio is fixed at 375×320,
 // while desktop shows the image as a half-width panel (720px wide at 1440 viewport
