@@ -44,7 +44,6 @@ const buildSingleCardPreviewBlock: BuildSingleItemPreviewBlock = (
 ) => {
   if (block.type !== "infocards" || block.variant === "cardsWithoutImages")
     return undefined
-  // The edited card is the same card record with the adjusted image spliced in.
   const editedCard = card as (typeof block.cards)[number]
   const cards = block.cards.some((c) => c === originalCard)
     ? block.cards.map((c) => (c === originalCard ? editedCard : c))
