@@ -124,9 +124,8 @@ describe("resolveAdjustmentConfig", () => {
         expect(config).toBeDefined()
         expect(config?.cropMode).toBe("custom")
         expect(config?.focalEnabled).toBe(true)
-        // Array-nested field: both variants render the real card in its real
-        // position (alongside its real siblings), not a hand-built
-        // approximation — every other wired component gets a real preview too.
+        // Array-nested field: both variants render the real edited card, not a
+        // hand-built approximation — every other wired component gets a real preview too.
         expect(config?.skipRealComponentPreview).toBeFalsy()
         expect(config?.buildSingleItemPreviewBlock).toBeTypeOf("function")
       }
@@ -141,7 +140,7 @@ describe("resolveAdjustmentConfig", () => {
       ).toBeUndefined()
     })
 
-    it("splices the edited card back into its real position among siblings", () => {
+    it("previews only the edited card, keeping maxColumns/variant and dropping section chrome", () => {
       const originalCard = { imageUrl: "/old.png" }
       const block = {
         type: "infocards",
@@ -159,31 +158,17 @@ describe("resolveAdjustmentConfig", () => {
         editedCard,
         originalCard,
       ) as Record<string, unknown>
-      expect(preview.cards).toEqual([editedCard, { imageUrl: "/other.png" }])
+      expect(preview.cards).toEqual([editedCard])
       expect(preview.title).toBe("")
       expect(preview.subtitle).toBeUndefined()
       expect(preview.label).toBeUndefined()
       expect(preview.url).toBeUndefined()
       // Non-chrome fields (needed by the real renderer) pass through untouched.
       expect(preview.maxColumns).toBe("3")
+      expect(preview.variant).toBe("cardsWithImages")
     })
 
-    it("falls back to a single-card array when the original card isn't among the block's siblings", () => {
-      const block = {
-        type: "infocards",
-        variant: "cardsWithImages",
-        cards: [{ imageUrl: "/a.png" }],
-      }
-      const detachedCard = { imageUrl: "/detached.png" }
-      const preview = withImages!.buildSingleItemPreviewBlock!(
-        block as IsomerComponent,
-        detachedCard,
-        { imageUrl: "/not-a-sibling.png" },
-      ) as Record<string, unknown>
-      expect(preview.cards).toEqual([detachedCard])
-    })
-
-    it("renders the real grid for real, with the edited card's image updated and siblings unchanged", () => {
+    it("renders only the card being edited (not the first card) for real", () => {
       const cardA = { imageUrl: "/a.png", imageAlt: "a", title: "Card A" }
       const cardB = { imageUrl: "/b.png", imageAlt: "b", title: "Card B" }
       const cardC = { imageUrl: "/c.png", imageAlt: "c", title: "Card C" }
@@ -202,14 +187,11 @@ describe("resolveAdjustmentConfig", () => {
       )
       const html = renderBlockHtml(preview, "content")
 
-      expect(html.match(/<img/g)).toHaveLength(3)
+      expect(html.match(/<img/g)).toHaveLength(1)
       expect(html).toContain("/edited.png")
-      expect(html).not.toContain("/b.png")
-      expect(html).toContain("/a.png")
-      expect(html).toContain("/c.png")
-      expect(html).toContain("Card A")
       expect(html).toContain("Card B")
-      expect(html).toContain("Card C")
+      expect(html).not.toContain("Card A")
+      expect(html).not.toContain("Card C")
     })
 
     it("the full-image variant renders the real title + gradient overlay for real", () => {
