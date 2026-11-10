@@ -44,6 +44,9 @@ import { useAdjustmentConfigForField } from "../../hooks/useAdjustmentConfigForF
 import { isManagedSiteAsset } from "./isManagedSiteAsset"
 import { getCustomErrorMessage } from "./utils"
 
+// Enough to reach the WebP VP8X flags and a PNG's acTL chunk (before IDAT).
+const ANIMATION_SNIFF_BYTES = 64 * 1024
+
 // JsonFormsImageControl is registered as a renderer for every FormBuilder
 // instance (every settings page and content-block editor), regardless of
 // whether that schema even has an image field. ImageAdjustmentModal pulls in
@@ -196,7 +199,13 @@ function JsonFormsImageControl({
     setAnimationResolved(false)
     const blobPromise = originalFile
       ? Promise.resolve(originalFile)
-      : fetchImageBlob(`/${editingOriginalKey}`)
+      : // Animation markers sit in the file header, so sniff a prefix; fall
+        // back to the full file if the ranged request is refused.
+        fetchImageBlob(
+          `/${editingOriginalKey}`,
+          undefined,
+          ANIMATION_SNIFF_BYTES,
+        ).catch(() => fetchImageBlob(`/${editingOriginalKey}`))
     blobPromise
       .then(isAnimatedImageBlob)
       .then((animated) => {
