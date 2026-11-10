@@ -7,11 +7,11 @@ import { renderComponent } from "@opengovsg/isomer-components"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import type { AdjustmentRenderContext } from "./AdjustmentConfig"
+import type { AdjustmentRenderContext } from "../AdjustmentConfig"
 import {
   INTENTIONALLY_NOT_ADJUSTABLE,
   resolveAdjustmentConfig as resolveAdjustmentConfigTyped,
-} from "./adjustmentConfigRegistry"
+} from "../adjustmentConfigRegistry"
 
 // Fixtures are partial blocks carrying only the discriminators the registry
 // reads, so cast once here rather than at every call site.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { computeLowResWarning } from "./resolutionWarning"
+import { computeLowResWarning } from "../resolutionWarning"
 
 describe("computeLowResWarning", () => {
   const fullCrop = { x: 0, y: 0, width: 1, height: 1 }
