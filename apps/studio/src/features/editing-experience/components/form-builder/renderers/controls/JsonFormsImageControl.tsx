@@ -275,6 +275,8 @@ function JsonFormsImageControl({
       // Mark a real upload (not the loading-state "" or a clear) so the
       // editor auto-opens once the new src lands and canAdjust is true.
       if (src) {
+        // A new asset invalidates the old crop/focal/originalKey.
+        if (currentAdjustment) handleChange(siblingPath, undefined)
         justUploadedRef.current = true
         // New asset → force the auto-open gate to wait for a fresh
         // animation check (avoids acting on the prior asset's result).
