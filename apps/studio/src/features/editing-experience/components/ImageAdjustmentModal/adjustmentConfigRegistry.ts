@@ -294,35 +294,29 @@ const HERO_FLOATING_CONFIG: AdjustmentConfig = {
 }
 
 // Blockquote's two rendered shapes — see buildBlockquoteConfig below. Each is
-// its own PreviewVersion (not a second entry in one version's previewStates):
-// the circle/square split is a rendered-SHAPE axis, not a breakpoint, so it
-// belongs in the versions dropdown rather than the breakpoint row.
+// its own PreviewVersion: the circle/square split is a rendered-SHAPE axis, not
+// a breakpoint, so it belongs in the versions dropdown. Within a version the
+// states are the shared Mobile/Tablet/Desktop set, each carrying the version's
+// page `layout` so the real component renders the right shape.
+const blockquoteStates = (
+  layout: IsomerPageLayoutType,
+): AdjustmentPreviewState[] =>
+  responsivePreviewStates({
+    mobile: { width: 1, height: 1 },
+    tablet: { width: 1, height: 1 },
+    desktop: { width: 1, height: 1 },
+  }).map((state) => ({ ...state, layout }))
+
 const BLOCKQUOTE_CIRCLE_VERSION: PreviewVersion = {
   id: "circle",
   label: "Circle (content pages)",
-  previewStates: [
-    {
-      id: "circle",
-      label: "Circle (content pages)",
-      layout: "content",
-      viewportWidth: 768,
-      aspectRatio: { width: 1, height: 1 },
-    },
-  ],
+  previewStates: blockquoteStates("content"),
 }
 
 const BLOCKQUOTE_SQUARE_VERSION: PreviewVersion = {
   id: "square",
   label: "Square (homepage)",
-  previewStates: [
-    {
-      id: "square",
-      label: "Square (homepage)",
-      layout: "homepage",
-      viewportWidth: 768,
-      aspectRatio: { width: 1, height: 1 },
-    },
-  ],
+  previewStates: blockquoteStates("homepage"),
 }
 
 // Tier A — fixed 1:1 crop, no focal; crop is baked into the src like every
@@ -353,9 +347,6 @@ const buildBlockquoteConfig = (
     // Masked avatar: 240px on the homepage (w-60), 96px elsewhere — warn
     // against the larger.
     maxRenderedWidthPx: 240,
-    // Each version has a single 1:1 state, which would be small as a
-    // half-width tile — stack it to use the full preview column width.
-    stackPreviews: true,
     versions,
     preUploadCopy:
       "Use a square (1:1) image, at least 240×240px. The subject should sit centered — this image is masked into a circle on most pages.",
