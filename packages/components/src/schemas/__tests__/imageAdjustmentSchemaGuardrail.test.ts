@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import {
-  HeroCarouselSlideSchema,
-  HeroFloatingSchema,
-} from "../../interfaces/complex/Hero"
+import { HeroCarouselSlideSchema } from "../../interfaces/complex/Hero"
 import { IsomerComplexComponentsMap } from "../components"
 
 // Components that intentionally never get image-adjustment -- mirrors
@@ -13,12 +10,7 @@ import { IsomerComplexComponentsMap } from "../components"
 const INTENTIONALLY_NOT_ADJUSTABLE = new Set(["logocloud", "video"])
 
 // Pending: wired in a later PR of this stack.
-const PENDING_COMPONENTS = new Set([
-  "image",
-  "imagegallery",
-  "blockquote",
-  "infocards",
-])
+const PENDING_COMPONENTS = new Set(["image", "imagegallery"])
 
 interface ImageField {
   properties: Record<string, unknown>
@@ -90,7 +82,6 @@ describe("imageAdjustment schema guardrail", () => {
       for (const { properties, imageFieldName } of findImageFields(schema)) {
         // Pending: wired in a later PR of this stack.
         if (properties === HeroCarouselSlideSchema.properties) continue
-        if (properties === HeroFloatingSchema.properties) continue
         expect(properties).toHaveProperty(`${imageFieldName}ImageAdjustment`)
       }
     })
