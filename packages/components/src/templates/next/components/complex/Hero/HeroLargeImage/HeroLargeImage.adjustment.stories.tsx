@@ -58,7 +58,7 @@ export const FocalTop: Story = {
     title: "Focal top (y = 0)",
     subtitle:
       "The top edge stays pinned across all breakpoints. On mobile (square), vertical focal dominates. On desktop (2:1), the full top sliver fits — focal vertical play is inert.",
-    imageAdjustment: adjustmentWithFocal(0.5, 0),
+    backgroundUrlImageAdjustment: adjustmentWithFocal(0.5, 0),
   },
 }
 
@@ -68,7 +68,7 @@ export const FocalBottom: Story = {
     title: "Focal bottom (y = 1)",
     subtitle:
       "The bottom edge stays pinned across all breakpoints. On mobile (square), vertical focal dominates. On desktop (2:1), the full bottom sliver fits — focal vertical play is inert.",
-    imageAdjustment: adjustmentWithFocal(0.5, 1),
+    backgroundUrlImageAdjustment: adjustmentWithFocal(0.5, 1),
   },
 }
 
@@ -78,7 +78,7 @@ export const FocalLeft: Story = {
     title: "Focal left (x = 0)",
     subtitle:
       "The left edge stays pinned across all breakpoints. On mobile (square), horizontal focal is inert. On desktop (2:1), horizontal focal dominates — the subject moves off-center.",
-    imageAdjustment: adjustmentWithFocal(0, 0.5),
+    backgroundUrlImageAdjustment: adjustmentWithFocal(0, 0.5),
   },
 }
 
@@ -88,6 +88,6 @@ export const FocalRight: Story = {
     title: "Focal right (x = 1)",
     subtitle:
       "The right edge stays pinned across all breakpoints. On mobile (square), horizontal focal is inert. On desktop (2:1), horizontal focal dominates — the subject moves off-center.",
-    imageAdjustment: adjustmentWithFocal(1, 0.5),
+    backgroundUrlImageAdjustment: adjustmentWithFocal(1, 0.5),
   },
 }

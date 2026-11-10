@@ -16,7 +16,10 @@ import {
 } from "../format"
 import { IconPicker } from "../primitives/IconPicker"
 import { IsomerString } from "../primitives/IsomerString"
-import { generateImageSrcSchema, imageAdjustmentSchema } from "./Image"
+import {
+  generateAdjustableImageFields,
+  generateImageSrcSchema,
+} from "./Image"
 
 export const HERO_STYLE = {
   gradient: { key: "gradient", title: "Gradient (Default)" },
@@ -148,10 +151,14 @@ const BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING = omit(
   ".gif",
 )
 
-const BackgroundUrlSchema = generateImageSrcSchema({
+const BACKGROUND_IMAGE_OPTS = {
   title: "Hero image",
   allowedMimeTypeMappings: BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-})
+}
+
+// Searchbar + carousel slides take the bare src (no adjustment sibling); the
+// adjustable variants spread generateAdjustableImageFields instead.
+const BackgroundUrlSchema = generateImageSrcSchema(BACKGROUND_IMAGE_OPTS)
 
 const GROUPINGS = {
   TEXT: {
@@ -198,8 +205,7 @@ const HeroGradientSharedSchema = Type.Composite(
       variant: Type.Literal(HERO_STYLE.gradient.key, {
         default: HERO_STYLE.gradient.key,
       }),
-      backgroundUrl: BackgroundUrlSchema,
-      imageAdjustment: Type.Optional(imageAdjustmentSchema),
+      ...generateAdjustableImageFields("backgroundUrl", BACKGROUND_IMAGE_OPTS),
     }),
     HeroBaseSchema,
   ],
@@ -287,8 +293,7 @@ const HeroBlockSchema = Type.Composite(
       variant: Type.Literal(HERO_STYLE.block.key, {
         default: HERO_STYLE.block.key,
       }),
-      backgroundUrl: BackgroundUrlSchema,
-      imageAdjustment: Type.Optional(imageAdjustmentSchema),
+      ...generateAdjustableImageFields("backgroundUrl", BACKGROUND_IMAGE_OPTS),
       blockImage: Type.Optional(
         Type.Object(
           {
@@ -332,8 +337,7 @@ const HeroLargeImageSchema = Type.Composite(
       variant: Type.Literal(HERO_STYLE.largeImage.key, {
         default: HERO_STYLE.largeImage.key,
       }),
-      backgroundUrl: BackgroundUrlSchema,
-      imageAdjustment: Type.Optional(imageAdjustmentSchema),
+      ...generateAdjustableImageFields("backgroundUrl", BACKGROUND_IMAGE_OPTS),
     }),
     HeroBaseSchema,
     CallToActionsSchema,
@@ -354,8 +358,7 @@ const HeroFloatingSchema = Type.Composite(
       variant: Type.Literal(HERO_STYLE.floating.key, {
         default: HERO_STYLE.floating.key,
       }),
-      backgroundUrl: BackgroundUrlSchema,
-      imageAdjustment: Type.Optional(imageAdjustmentSchema),
+      ...generateAdjustableImageFields("backgroundUrl", BACKGROUND_IMAGE_OPTS),
     }),
     HeroBaseSchema,
     CallToActionsSchema,
@@ -390,7 +393,11 @@ const HeroSearchbarSchema = Type.Composite(
 export const HeroCarouselSlideSchema = Type.Composite(
   [
     Type.Object({
-      backgroundUrl: BackgroundUrlSchema,
+      // Reserves backgroundUrlImageAdjustment per slide (collision-safe across
+      // the slide array). Renderer/editor wiring is still deferred — carousel
+      // has no resolveAdjustmentConfig entry yet — same deferred state as
+      // HeroFloating.
+      ...generateAdjustableImageFields("backgroundUrl", BACKGROUND_IMAGE_OPTS),
       ...heroContentFields({
         title:
           "Keep it short. The slide with the most text sets the height for all slides.",

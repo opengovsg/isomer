@@ -57,7 +57,7 @@ export const BlockFocalTop: Story = {
     ...SHARED,
     variant: "block",
     title: "Block – Focal top (y = 0)",
-    imageAdjustment: adjustmentWithFocal(0.5, 0),
+    imageSrcImageAdjustment: adjustmentWithFocal(0.5, 0),
   },
 }
 
@@ -66,7 +66,7 @@ export const BlockFocalBottom: Story = {
     ...SHARED,
     variant: "block",
     title: "Block – Focal bottom (y = 1)",
-    imageAdjustment: adjustmentWithFocal(0.5, 1),
+    imageSrcImageAdjustment: adjustmentWithFocal(0.5, 1),
   },
 }
 
@@ -83,7 +83,7 @@ export const FullFocalTop: Story = {
     ...SHARED,
     variant: "full",
     title: "Full – Focal top (y = 0)",
-    imageAdjustment: adjustmentWithFocal(0.5, 0),
+    imageSrcImageAdjustment: adjustmentWithFocal(0.5, 0),
   },
 }
 
@@ -92,6 +92,6 @@ export const FullFocalBottom: Story = {
     ...SHARED,
     variant: "full",
     title: "Full – Focal bottom (y = 1)",
-    imageAdjustment: adjustmentWithFocal(0.5, 1),
+    imageSrcImageAdjustment: adjustmentWithFocal(0.5, 1),
   },
 }

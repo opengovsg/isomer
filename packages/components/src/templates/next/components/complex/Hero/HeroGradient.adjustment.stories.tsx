@@ -57,7 +57,7 @@ export const FocalTop: Story = {
     ...SHARED,
     title: "Focal top (y = 0)",
     subtitle: "The top edge stays pinned across all breakpoints.",
-    imageAdjustment: adjustmentWithFocal(0.5, 0),
+    backgroundUrlImageAdjustment: adjustmentWithFocal(0.5, 0),
   },
 }
 
@@ -66,6 +66,6 @@ export const FocalBottom: Story = {
     ...SHARED,
     title: "Focal bottom (y = 1)",
     subtitle: "The bottom edge stays pinned across all breakpoints.",
-    imageAdjustment: adjustmentWithFocal(0.5, 1),
+    backgroundUrlImageAdjustment: adjustmentWithFocal(0.5, 1),
   },
 }

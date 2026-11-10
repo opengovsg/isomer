@@ -8,35 +8,48 @@ import { IsomerComplexComponentsMap } from "../components"
 // reason should also be opted out there, and vice versa.
 const INTENTIONALLY_NOT_ADJUSTABLE = new Set(["logocloud", "video"])
 
+interface ImageField {
+  properties: Record<string, unknown>
+  imageFieldName: string
+}
+
 // A plain-object walk of a compiled TypeBox schema (JSON-schema shaped at
 // runtime: `.properties`, `.anyOf`/`.allOf` for unions/composites, `.items`
-// for arrays). Returns every object node that has an image-upload field
-// (format: "image", set by generateImageSrcSchema) as a direct property --
-// `imageAdjustment` is expected as a SIBLING of that field, not somewhere
-// else in the tree.
-const findImageFieldParents = (node: unknown, acc: object[] = []): object[] => {
+// for arrays). Returns every image-upload field (format: "image", set by
+// generateImageSrcSchema) together with the properties object it lives in.
+// Each such field is expected to have a `${fieldName}ImageAdjustment` sibling
+// (emitted by generateAdjustableImageFields) -- NOT a single shared
+// "imageAdjustment" key, so two image fields on one node get distinct,
+// non-colliding adjustment keys. A node whose own format is "hidden" (a
+// beta/not-yet-editable variant, e.g. HeroSearchbar) is skipped: nothing can
+// set an adjustment on a field nobody can edit.
+const findImageFields = (node: unknown, acc: ImageField[] = []): ImageField[] => {
   if (node === null || typeof node !== "object") return acc
 
   const record = node as Record<string, unknown>
   const properties = record.properties
   if (properties !== null && typeof properties === "object") {
-    const values = Object.values(properties as Record<string, unknown>)
-    const hasImageField = values.some(
-      (prop) =>
+    const props = properties as Record<string, unknown>
+    const isHidden = (record as { format?: unknown }).format === "hidden"
+    for (const [name, prop] of Object.entries(props)) {
+      if (
+        !isHidden &&
         prop !== null &&
         typeof prop === "object" &&
-        (prop as { format?: unknown }).format === "image",
-    )
-    if (hasImageField) acc.push(record)
-    values.forEach((prop) => findImageFieldParents(prop, acc))
+        (prop as { format?: unknown }).format === "image"
+      ) {
+        acc.push({ properties: props, imageFieldName: name })
+      }
+      findImageFields(prop, acc)
+    }
   }
 
   for (const key of ["anyOf", "oneOf", "allOf", "items"]) {
     const value = record[key]
     if (Array.isArray(value)) {
-      value.forEach((child: unknown) => findImageFieldParents(child, acc))
+      value.forEach((child: unknown) => findImageFields(child, acc))
     } else if (value !== undefined) {
-      findImageFieldParents(value, acc)
+      findImageFields(value, acc)
     }
   }
 
@@ -58,20 +71,9 @@ describe("imageAdjustment schema guardrail", () => {
   )) {
     if (INTENTIONALLY_NOT_ADJUSTABLE.has(componentType)) continue
 
-    it(`"${componentType}" pairs every image field with imageAdjustment`, () => {
-      const imageFieldParents = findImageFieldParents(schema)
-
-      for (const parent of imageFieldParents) {
-        // format: "hidden" on the node itself (not the image field) marks a
-        // beta/not-yet-editable variant -- e.g. HeroSearchbar's backgroundUrl,
-        // explicitly commented "we don't want to show this in the UI yet".
-        // Nothing can set imageAdjustment on a field nobody can edit, so this
-        // isn't the same gap as a shipped, editable field missing its sibling.
-        if ((parent as { format?: unknown }).format === "hidden") continue
-
-        const properties = (parent as { properties?: Record<string, unknown> })
-          .properties
-        expect(properties).toHaveProperty("imageAdjustment")
+    it(`"${componentType}" pairs every image field with its ImageAdjustment sibling`, () => {
+      for (const { properties, imageFieldName } of findImageFields(schema)) {
+        expect(properties).toHaveProperty(`${imageFieldName}ImageAdjustment`)
       }
     })
   }

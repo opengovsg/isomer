@@ -121,7 +121,7 @@ const generateArgs = ({
   if (focal) {
     cards.forEach((card) => {
       ;(card as any).imageFit = isImageFitContain ? "contain" : "cover"
-      ;(card as any).imageAdjustment = { focal }
+      ;(card as any).imageUrlImageAdjustment = { focal }
     })
   }
 

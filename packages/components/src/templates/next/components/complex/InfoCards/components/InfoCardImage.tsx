@@ -10,7 +10,7 @@ export const InfoCardImage = ({
   imageUrl,
   imageAlt,
   imageFit,
-  imageAdjustment,
+  imageUrlImageAdjustment: imageAdjustment,
   maxColumns,
   url,
   layout,
@@ -26,7 +26,7 @@ export const InfoCardImage = ({
   | "maxColumns"
   | "url"
   | "imageFit"
-  | "imageAdjustment"
+  | "imageUrlImageAdjustment"
   | "layout"
   | "site"
   | "shouldLazyLoad"

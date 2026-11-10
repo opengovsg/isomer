@@ -20,10 +20,11 @@ export const imageSchemaObject = Type.Object({
         }),
         alt: AltTextSchema,
         imageFit: Type.Optional(CollectionThumbnailImageFitSchema),
-        // Sibling written by the adjustment modal; absence = unedited. Crop is
-        // baked into `src`; focal renders as object-position only under
-        // imageFit "cover" (contain letterboxes the whole image) — see
-        // CollectionCard/BlogCard.
+        // Single-image thumbnail that stores its adjustment in a DB column
+        // (resource.thumbnailAdjustment), not the content-JSON sibling the
+        // content components use. Kept as the fixed "imageAdjustment" key
+        // (no collision risk with one image) -- Studio's
+        // useAdjustmentConfigForField special-cases this via isCollectionThumbnail.
         imageAdjustment: Type.Optional(imageAdjustmentSchema),
       },
       {

@@ -119,7 +119,7 @@ export const HeroBlock = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   backgroundUrl,
-  imageAdjustment,
+  backgroundUrlImageAdjustment: imageAdjustment,
   blockImage,
   site,
   theme = "default",

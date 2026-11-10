@@ -15,7 +15,7 @@ export const BlockInfopic = ({
   buttonUrl,
   description,
   imageAlt,
-  imageAdjustment,
+  imageSrcImageAdjustment: imageAdjustment,
   isTextOnRight,
   shouldLazyLoad,
   site,

@@ -10,7 +10,7 @@ export const HeroGradientQuickLinks = ({
   title,
   subtitle,
   backgroundUrl,
-  imageAdjustment,
+  backgroundUrlImageAdjustment: imageAdjustment,
   actions,
   site,
   headingLevel,

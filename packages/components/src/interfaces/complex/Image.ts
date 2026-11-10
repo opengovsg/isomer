@@ -1,4 +1,4 @@
-import type { Static } from "@sinclair/typebox"
+import type { Static, TOptional } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
@@ -31,17 +31,20 @@ export const ImageSrcSchema = generateImageSrcSchema({})
 // Normalized [0,1] coordinate, shared by crop + focal in imageAdjustment.
 const NormalizedUnit = Type.Number({ minimum: 0, maximum: 1 })
 
-// The imageAdjustment sibling object (Engineering RFC 09). Optional per
-// image-bearing component; absence = unedited. crop is baked into the
-// rendered pixels and kept only so the editor can re-bake from the original;
-// focal is emitted at render time as object-position. Written by the adjustment
-// modal, never a hand-edited JSONForms control -> format: "hidden".
+// The imageAdjustment object (Engineering RFC 09). Optional per image-bearing
+// component; absence = unedited. crop is baked into the rendered pixels and
+// kept only so the editor can re-bake from the original; focal is emitted at
+// render time as object-position. Written by the adjustment modal, never a
+// hand-edited JSONForms control -> format: "hidden".
 //
 // Adding this to a new image-bearing component is 3 layers, and each has
 // silently shipped broken on its own before (see HeroGradientQuickLinks and
 // the collection thumbnail in git history for real examples):
-//   1. Schema: add `imageAdjustment: Type.Optional(imageAdjustmentSchema)` as
-//      a sibling of the image src field. Covered by
+//   1. Schema: spread `...generateAdjustableImageFields("<srcField>", {...})`
+//      into the component schema (see the factory below). It emits the image
+//      src field AND a `<srcField>ImageAdjustment` sibling together, so the
+//      sibling can't be forgotten or misnamed -- and two image fields on one
+//      component get distinct, non-colliding adjustment keys. Covered by
 //      imageAdjustmentSchemaGuardrail.test.ts.
 //   2. Resolve + render: add a case in Studio's resolveAdjustmentConfig
 //      (apps/studio .../ImageAdjustmentModal/adjustmentConfigRegistry.ts),
@@ -87,6 +90,45 @@ export const imageAdjustmentSchema = Type.Object(
 
 export type ImageAdjustment = Static<typeof imageAdjustmentSchema>
 
+// Emits an image src field and its adjustment sibling as ONE spread-in pair,
+// keyed off the field's own name (backgroundUrl -> backgroundUrlImageAdjustment):
+//   Type.Object({ ...generateAdjustableImageFields("backgroundUrl", { title }) })
+// Naming the sibling after its field (rather than a fixed "imageAdjustment"
+// key) means a component with two image fields gets two distinct adjustment
+// keys instead of silently colliding on one. The src itself stays a plain
+// string, so no stored data changes shape. Images that are never adjustable
+// (LogoCloud, Video) keep calling generateImageSrcSchema directly.
+//
+// Pass `optional: true` when the image field itself may be absent (e.g.
+// Blockquote, whose image is optional) -- the src is wrapped in Type.Optional
+// and the return type reflects that. The adjustment sibling is always optional
+// regardless.
+export const generateAdjustableImageFields = <
+  TName extends string,
+  TOptionalSrc extends boolean = false,
+>(
+  name: TName,
+  opts: {
+    title?: string
+    description?: string
+    allowedMimeTypeMappings?: Record<string, string>
+    maxSizeInBytes?: number
+    optional?: TOptionalSrc
+  } = {},
+) => {
+  const src = generateImageSrcSchema(opts)
+  return {
+    [name]: opts.optional ? Type.Optional(src) : src,
+    [`${name}ImageAdjustment`]: Type.Optional(imageAdjustmentSchema),
+  } as Record<
+    TName,
+    TOptionalSrc extends true
+      ? TOptional<ReturnType<typeof generateImageSrcSchema>>
+      : ReturnType<typeof generateImageSrcSchema>
+  > &
+    Record<`${TName}ImageAdjustment`, TOptional<typeof imageAdjustmentSchema>>
+}
+
 // Note: ajv pattern does not support the use of patternFlag like "i" for case-insensitive
 // Thus, we manually add the case-insensitive flag to the regex pattern
 // Refer to "/altTextRegexPattern.test.ts" for the explanation of the regex pattern
@@ -107,7 +149,7 @@ export const AltTextSchema = IsomerString({
 export const ImageSchema = Type.Object(
   {
     type: Type.Literal("image", { default: "image" }),
-    src: ImageSrcSchema,
+    ...generateAdjustableImageFields("src"),
     alt: AltTextSchema,
     caption: Type.Optional(
       IsomerString({
@@ -133,10 +175,6 @@ export const ImageSchema = Type.Object(
         },
       ),
     ),
-    // Sibling written by the adjustment modal; absence = unedited. The crop is
-    // baked into `src`, so the renderer needs nothing at runtime — this is kept
-    // only so the editor can re-bake from the original (format: "hidden").
-    imageAdjustment: Type.Optional(imageAdjustmentSchema),
   },
   {
     title: "Image",

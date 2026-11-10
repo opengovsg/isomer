@@ -12,7 +12,7 @@ export const InfoCardWithFullImage = ({
   imageUrl,
   imageAlt,
   imageFit,
-  imageAdjustment,
+  imageUrlImageAdjustment: imageAdjustment,
   url,
   maxColumns,
   layout,
@@ -33,7 +33,7 @@ export const InfoCardWithFullImage = ({
       <InfoCardImage
         isFallback={isFallback}
         imageFit={imageFit}
-        imageAdjustment={imageAdjustment}
+        imageUrlImageAdjustment={imageAdjustment}
         imageUrl={imageUrl}
         imageAlt={imageAlt}
         url={url}

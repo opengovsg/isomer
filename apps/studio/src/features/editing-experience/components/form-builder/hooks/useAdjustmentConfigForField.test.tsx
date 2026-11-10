@@ -30,7 +30,7 @@ describe("useAdjustmentConfigForField", () => {
     expect(result.current.block).toBe(data)
     expect(result.current.fieldHost).toBe(data)
     expect(result.current.fieldName).toBe("backgroundUrl")
-    expect(result.current.siblingPath).toBe("imageAdjustment")
+    expect(result.current.siblingPath).toBe("backgroundUrlImageAdjustment")
     expect(result.current.config?.componentType).toBe("hero:floating")
   })
 
@@ -46,7 +46,7 @@ describe("useAdjustmentConfigForField", () => {
     expect(result.current.block).toBe(data)
     expect(result.current.fieldHost).toBe(card)
     expect(result.current.fieldName).toBe("imageUrl")
-    expect(result.current.siblingPath).toBe("cards.0.imageAdjustment")
+    expect(result.current.siblingPath).toBe("cards.0.imageUrlImageAdjustment")
     expect(result.current.config?.componentType).toBe(
       "infocards:cardsWithImages",
     )

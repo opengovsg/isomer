@@ -14,7 +14,7 @@ export const HeroLargeImage = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   backgroundUrl,
-  imageAdjustment,
+  backgroundUrlImageAdjustment: imageAdjustment,
   site,
   headingLevel,
 }: HeroLargeImageProps) => {

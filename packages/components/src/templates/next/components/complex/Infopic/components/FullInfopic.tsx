@@ -20,7 +20,7 @@ export const FullInfopic = ({
   buttonLabel,
   buttonUrl,
   description,
-  imageAdjustment,
+  imageSrcImageAdjustment: imageAdjustment,
   isTextOnRight,
   site,
   headingLevel,

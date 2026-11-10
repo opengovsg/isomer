@@ -45,7 +45,28 @@ export const useAdjustmentConfigForField = (path: string) => {
   const pathParts = path.split(".")
   const fieldName = pathParts.pop() ?? ""
   const parentPath = pathParts.join(".")
-  const siblingPath = [parentPath, "imageAdjustment"].filter(Boolean).join(".")
+
+  // The page-level thumbnail (`page.image.src`) is the one image field with
+  // no block-type ancestor -- imageSchemaObject composes it directly onto the
+  // page metadata object, so its parentPath is always exactly "image" (never
+  // nested inside a block). That shape alone isn't a safe signal (content/
+  // index/database pages compose the identical `image` field for their own
+  // unrelated page thumbnail), so this also requires the resource type to
+  // confirm the page is actually a collection item.
+  const isCollectionThumbnail =
+    isCollectionItemResource && parentPath === "image"
+
+  // Content components name the adjustment after its own image field
+  // (backgroundUrl -> backgroundUrlImageAdjustment), emitted together by
+  // generateAdjustableImageFields. Deriving the key from fieldName (rather than
+  // a fixed "imageAdjustment") lets a component carry two image fields without
+  // their adjustments colliding on one shared key. The collection thumbnail is
+  // the sole exception: a single-image, DB-column-backed field (imageSchemaObject)
+  // that keeps the fixed "imageAdjustment" key -- no collision risk with one image.
+  const siblingKey = isCollectionThumbnail
+    ? "imageAdjustment"
+    : `${fieldName}ImageAdjustment`
+  const siblingPath = [parentPath, siblingKey].filter(Boolean).join(".")
 
   // The field's immediate host: for a root-level image field the block itself,
   // for an array-nested field (e.g. an InfoCards card) the card object. This is
@@ -77,16 +98,6 @@ export const useAdjustmentConfigForField = (path: string) => {
     }
     return fieldHost
   }, [rootData, parentPath, fieldHost])
-
-  // The page-level thumbnail (`page.image.src`) is the one image field with
-  // no block-type ancestor -- imageSchemaObject composes it directly onto the
-  // page metadata object, so its parentPath is always exactly "image" (never
-  // nested inside a block). That shape alone isn't a safe signal on its own
-  // (content/index/database pages compose the identical `image` field for
-  // their own unrelated page thumbnail), so this also requires the resource
-  // type to confirm the page is actually a collection item.
-  const isCollectionThumbnail =
-    isCollectionItemResource && parentPath === "image"
 
   // Only fetched for an actual collection thumbnail field — every other
   // image field leaves this disabled and gets undefined back immediately.
