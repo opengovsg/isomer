@@ -368,7 +368,7 @@ export const AdjustmentPreview = ({
     const hasAlt = typeof existingAlt === "string" && existingAlt.length > 0
     const patch = {
       [imageFieldName]: adjustedSrc,
-      imageAdjustment: adjustment,
+      [`${imageFieldName}ImageAdjustment`]: adjustment,
       ...(hasAlt ? {} : { imageAlt: "Preview image" }),
       // A card (nested field) owns an `imageFit` the real component reads to
       // decide cover vs contain. The Fit/Fill toggle lives in modal state and
