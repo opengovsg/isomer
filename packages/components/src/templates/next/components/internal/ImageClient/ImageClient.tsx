@@ -66,6 +66,9 @@ export const ImageClient = forwardRef<
         onError={({ currentTarget }) => {
           // Reset the counter when the underlying src changed (reused <img>).
           if (currentTarget.dataset.retryBase !== imgSrc) {
+            // Drop a timer left over from the previous src.
+            window.clearTimeout(Number(currentTarget.dataset.retryTimeoutId))
+            delete currentTarget.dataset.retryTimeoutId
             currentTarget.dataset.retryBase = imgSrc
             currentTarget.dataset.retry = "0"
           }
@@ -81,6 +84,8 @@ export const ImageClient = forwardRef<
             const sep = imgSrc.includes("?") ? "&" : "?"
             const timeoutId = window.setTimeout(() => {
               delete currentTarget.dataset.retryTimeoutId
+              // Skip if the element has moved to a different src since.
+              if (currentTarget.dataset.retryBase !== imgSrc) return
               currentTarget.src = `${imgSrc}${sep}retry=${attempt + 1}`
             }, retryDelayMs(attempt))
             currentTarget.dataset.retryTimeoutId = String(timeoutId)
