@@ -1,6 +1,12 @@
 import type { ControlProps, JsonSchema, RankedTester } from "@jsonforms/core"
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
-import { Box, FormControl, Text, useDisclosure } from "@chakra-ui/react"
+import {
+  Box,
+  FormControl,
+  RadioGroup,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
@@ -8,8 +14,12 @@ import {
   FormLabel,
   Infobox,
   Link,
+  Radio,
 } from "@opengovsg/design-system-react"
-import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
+import {
+  IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
+  IMAGE_FIT,
+} from "@opengovsg/isomer-components"
 import dynamic from "next/dynamic"
 import posthog from "posthog-js"
 import { useEffect, useRef, useState } from "react"
@@ -396,6 +406,27 @@ function JsonFormsImageControl({
               initialImageFit={initialImageFit}
               onSave={handleAdjustmentSave}
             />
+          )}
+          {/* The modal owns the fit toggle when it can open; otherwise offer it inline.
+              While the animation check is pending canAdjust is still true, so this
+              doesn't flash in and out. */}
+          {hasImageFitField && !canAdjust && (
+            <FormControl mt="1rem">
+              <FormLabel description='Select "Resize image to fit" only if the image has a white background.'>
+                Image display
+              </FormLabel>
+              <RadioGroup
+                value={initialImageFit}
+                onChange={(value) => handleChange(imageFitPath, value)}
+              >
+                <Radio my="1px" value={IMAGE_FIT.Cover} allowDeselect={false}>
+                  Default (recommended)
+                </Radio>
+                <Radio my="1px" value={IMAGE_FIT.Content} allowDeselect={false}>
+                  Resize image to fit
+                </Radio>
+              </RadioGroup>
+            </FormControl>
           )}
           {showAnimatedFormatCallout && (
             <Infobox variant="warning" size="sm" mt="0.75rem">
