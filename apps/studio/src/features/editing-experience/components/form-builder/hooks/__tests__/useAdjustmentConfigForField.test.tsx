@@ -10,7 +10,7 @@ import { useAdjustmentConfigForField } from "../useAdjustmentConfigForField"
 // useCollectionIndexVariant issues a tRPC query (only enabled for collection
 // thumbnails, which none of these cases are). Stub it so the renderHook wrapper
 // doesn't need a tRPC provider.
-vi.mock("./useCollectionIndexVariant", () => ({
+vi.mock("../useCollectionIndexVariant", () => ({
   useCollectionIndexVariant: () => undefined,
 }))
 
