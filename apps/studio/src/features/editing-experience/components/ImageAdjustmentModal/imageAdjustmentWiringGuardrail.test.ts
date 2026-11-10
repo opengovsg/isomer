@@ -49,6 +49,8 @@ const FOCAL_WIRING_CONFIGS: {
   // render branches an editor can pick between (Buttons/QuickLinks), and
   // both must honour a focal point, not just one of them.
   componentPaths: string[]
+  // Sibling key the schema emits; defaults to `${imageField}ImageAdjustment`.
+  siblingKey?: string
   storyPaths: string[]
 }[] = [
   {
@@ -78,7 +80,12 @@ const ALL_RESOLUTIONS: {
 ]
 
 describe("imageAdjustment wiring guardrail", () => {
-  for (const { resolve, componentPaths, storyPaths } of FOCAL_WIRING_CONFIGS) {
+  for (const {
+    resolve,
+    componentPaths,
+    siblingKey,
+    storyPaths,
+  } of FOCAL_WIRING_CONFIGS) {
     const config = resolveAdjustmentConfig({
       block: resolve.block,
       fieldName: resolve.fieldName,
@@ -92,6 +99,16 @@ describe("imageAdjustment wiring guardrail", () => {
       )
       expect(
         sources.every((source) => source.includes("imageAdjustment")),
+      ).toBe(true)
+      // The renderer must read the key the schema emits, and actually apply it.
+      const key = siblingKey ?? `${config?.imageField}ImageAdjustment`
+      expect(sources.some((source) => source.includes(key))).toBe(true)
+      expect(
+        sources.some(
+          (source) =>
+            source.includes("ImageClientWithAdjustment") ||
+            source.includes("getFocalObjectPosition"),
+        ),
       ).toBe(true)
     })
 
