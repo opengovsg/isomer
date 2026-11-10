@@ -100,4 +100,20 @@ describe("JsonFormsImageControl", () => {
       ),
     )
   })
+
+  it("offers Replace image for an external image that can't be adjusted", () => {
+    render(
+      <ThemeProvider theme={theme}>
+        <JsonForms
+          schema={schema}
+          data={{ logoUrl: "https://placehold.co/600x400" }}
+          renderers={renderers}
+          ajv={ajv}
+          onChange={() => undefined}
+        />
+      </ThemeProvider>,
+    )
+    expect(screen.getByText("Replace image")).toBeInTheDocument()
+    expect(screen.queryByText("Edit image")).not.toBeInTheDocument()
+  })
 })
