@@ -15,14 +15,13 @@ interface ImageField {
 
 // A plain-object walk of a compiled TypeBox schema (JSON-schema shaped at
 // runtime: `.properties`, `.anyOf`/`.allOf` for unions/composites, `.items`
-// for arrays). Returns every image-upload field (format: "image", set by
-// generateImageSrcSchema) together with the properties object it lives in.
-// Each such field is expected to have a `${fieldName}ImageAdjustment` sibling
-// (emitted by generateAdjustableImageFields) -- NOT a single shared
-// "imageAdjustment" key, so two image fields on one node get distinct,
-// non-colliding adjustment keys. A node whose own format is "hidden" (a
-// beta/not-yet-editable variant, e.g. HeroSearchbar) is skipped: nothing can
-// set an adjustment on a field nobody can edit.
+// for arrays). Returns every image-upload field (format: "image", from
+// generateImageSrcSchema) with the properties object it lives in. Each such
+// field should have a `${fieldName}ImageAdjustment` sibling (from
+// generateAdjustableImageFields), not one shared "imageAdjustment" key, so two
+// image fields on one node get distinct, non-colliding keys. A node whose own
+// format is "hidden" (a beta or not-yet-editable variant like HeroSearchbar) is
+// skipped, since nothing can set an adjustment on a field nobody can edit.
 const findImageFields = (
   node: unknown,
   acc: ImageField[] = [],
