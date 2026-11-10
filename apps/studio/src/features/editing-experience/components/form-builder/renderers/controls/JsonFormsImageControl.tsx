@@ -416,6 +416,7 @@ function JsonFormsImageControl({
                 Image display
               </FormLabel>
               <RadioGroup
+                aria-label="Image display"
                 value={initialImageFit}
                 onChange={(value) => handleChange(imageFitPath, value)}
               >

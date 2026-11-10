@@ -1,7 +1,7 @@
 import type { JsonFormsRendererRegistryEntry } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { render, screen } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { theme } from "~/theme"
 import { ajv } from "~/utils/ajv"
@@ -72,7 +72,8 @@ describe("JsonFormsImageControl", () => {
     expect(screen.getByTestId("file-attachment")).toBeInTheDocument()
   })
 
-  it("offers the image fit choice inline when Adjust is unavailable", () => {
+  it("offers the image fit choice inline when Adjust is unavailable", async () => {
+    const onChange = vi.fn()
     render(
       <ThemeProvider theme={theme}>
         <JsonForms
@@ -80,11 +81,23 @@ describe("JsonFormsImageControl", () => {
           data={{ logoUrl: "https://example.com/logo.png" }}
           renderers={renderers}
           ajv={ajv}
-          onChange={() => undefined}
+          onChange={onChange}
         />
       </ThemeProvider>,
     )
+    expect(
+      screen.getByRole("radiogroup", { name: "Image display" }),
+    ).toBeInTheDocument()
     expect(screen.getByLabelText("Default (recommended)")).toBeInTheDocument()
     expect(screen.getByLabelText("Resize image to fit")).toBeChecked()
+
+    fireEvent.click(screen.getByLabelText("Default (recommended)"))
+    await waitFor(() =>
+      expect(onChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ imageFit: "cover" }),
+        }),
+      ),
+    )
   })
 })
