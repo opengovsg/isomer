@@ -5,13 +5,19 @@ import {
   getAssetUploadBackoffBudgetMs,
   getAssetUploadBackoffOptions,
 } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
+import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 import {
   BAKEABLE_FORMAT_BY_MIME,
-  bakeImage,
+  bakeImageWithinSizeLimit,
   canBakeImage,
+  mimeFromKeyExtension,
 } from "~/lib/imageBake"
 import { performUpload } from "~/lib/storage/client"
-import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
+import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
+import {
+  generateAssetUrl,
+  generateOriginalAssetUrl,
+} from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
 
 // Must exceed the malware-scan poll's own worst-case budget (≈63s), or a save
@@ -36,17 +42,75 @@ export const resolveOriginalKey = (
  * Choose the MIME type to use for baking, preserving the original format.
  * Unsupported formats are rejected rather than silently flattened to JPEG,
  * which would rasterize vectors (SVG) and drop animation frames (GIF/APNG).
- * @param originalType - The original image MIME type
+ *
+ * Prefers the fetched blob's Content-Type, but falls back to the key's
+ * (server-validated) extension when that type is missing or generic — a CDN
+ * can serve a real PNG as "binary/octet-stream", which must not block a save.
+ * @param originalType - The original image MIME type (from the HTTP response)
+ * @param originalKey - The original image key, used for the extension fallback
  * @returns The MIME type to use for baking
  * @throws If the original format cannot be baked (see BAKEABLE_FORMAT_BY_MIME)
  */
-export const chooseBakeMime = (originalType: string): string => {
-  if (!canBakeImage(originalType)) {
-    throw new Error(
-      `This image can't be adjusted. Only JPEG, PNG, and WebP images are supported (got "${originalType}").`,
-    )
+export const chooseBakeMime = (
+  originalType: string,
+  originalKey: string,
+): string => {
+  if (canBakeImage(originalType)) return originalType
+
+  const fromExtension = mimeFromKeyExtension(originalKey)
+  if (fromExtension) return fromExtension
+
+  throw new Error(
+    `This image can't be adjusted. Only JPEG, PNG, and WebP images are supported (got "${originalType}").`,
+  )
+}
+
+/**
+ * Fetch image bytes for baking, preferring the pristine original (transcode
+ * bypass) and falling back to the plain (transcoded) URL when the original is
+ * inaccessible — the ?original object is gated by a malware-scan tag and 403s
+ * for unscanned/just-uploaded or post-conversion-deleted originals. Throws on a
+ * non-ok response so a 403 XML body is never mistaken for image bytes.
+ * @param key - The image key with leading slash (e.g. "/site/uuid/file.png")
+ */
+export const fetchImageBlob = async (
+  key: string,
+  signal?: AbortSignal,
+): Promise<Blob> => {
+  const originalUrl = generateOriginalAssetUrl(key)
+  const plainUrl = generateAssetUrl(key)
+
+  // Each attempt is isolated so a thrown ?original never skips the plain
+  // fallback: the ?original object is gated by a malware-scan tag and can 403,
+  // and that error response can be CORS-opaque, making the fetch *throw* rather
+  // than resolve with !ok. A bare `await fetch(originalUrl)` would then abort the
+  // whole save before the fallback ran.
+  const tryFetch = async (
+    url: string,
+    init?: RequestInit,
+  ): Promise<Blob | null> => {
+    try {
+      const response = await fetch(url, init)
+      return response.ok ? await response.blob() : null
+    } catch {
+      return null
+    }
   }
-  return originalType
+
+  // Force the webp variant (not avif) on the fallback: the CDN picks the format
+  // from Accept, and the baker only accepts jpeg/png/webp (BAKEABLE_FORMAT_BY_MIME),
+  // so a default */* (avif) fetch would be rejected downstream.
+  const blob =
+    (await tryFetch(originalUrl, { signal })) ??
+    (plainUrl !== originalUrl
+      ? await tryFetch(plainUrl, { headers: { Accept: "image/webp" }, signal })
+      : null)
+  // tryFetch swallows the abort, so surface the deadline's own reason here.
+  signal?.throwIfAborted()
+  if (!blob) {
+    throw new Error(`Failed to fetch image: ${key}`)
+  }
+  return blob
 }
 
 /**
@@ -78,6 +142,10 @@ interface UseSaveImageAdjustmentInput {
 export interface SaveImageAdjustmentVariables {
   currentSrc: string
   draft: ImageAdjustment
+  // The retained client-side original bytes, when the image being edited was
+  // uploaded this session. Bakes from these directly (no fetch), so a save
+  // works even while the uploaded original is still gated by the scan window.
+  originalFile?: Blob
 }
 
 export interface SaveImageAdjustmentResult {
@@ -111,7 +179,7 @@ export const useSaveImageAdjustment = ({
     Error,
     SaveImageAdjustmentVariables
   >({
-    mutationFn: async ({ currentSrc, draft }) => {
+    mutationFn: async ({ currentSrc, draft, originalFile }) => {
       const controller = new AbortController()
       const timeoutId = setTimeout(
         () => controller.abort(new Error(SAVE_TIMEOUT_MESSAGE)),
@@ -124,28 +192,35 @@ export const useSaveImageAdjustment = ({
 
         validateCropBounds(draft.crop)
 
-        // Step 2: Fetch the original blob from S3
-        const originalUrl = `${ASSETS_BASE_URL}/${originalKey}`
-        const originalResponse = await fetch(originalUrl, {
-          signal: controller.signal,
-        })
-        if (!originalResponse.ok) {
-          throw new Error(
-            `Failed to fetch the original image (status ${originalResponse.status}).`,
-          )
-        }
-        const originalBlob = await originalResponse.blob()
+        // Step 2: Get the bytes to bake — the retained client-side original if
+        // we have it (no fetch; works while the uploaded original is still
+        // gated), else fetch, preferring the pristine original and falling back
+        // to the plain URL (see fetchImageBlob).
+        const originalBlob =
+          originalFile ??
+          (await fetchImageBlob(`/${originalKey}`, controller.signal))
 
         // Step 3: Choose the MIME type for baking
-        const mime = chooseBakeMime(originalBlob.type)
+        const mime = chooseBakeMime(originalBlob.type, originalKey)
 
-        // Step 4: Bake the image. bakeImage itself rejects animated sources
-        // (WebP/APNG pass the MIME gate but would flatten). Canvas work can't
-        // be interrupted mid-encode, so just skip starting it past the deadline.
+        // Step 4: Bake the image, backing off quality (JPEG/WebP only) if the
+        // full-quality encode would exceed the server's size cap -- a crop
+        // re-encoded through canvas can end up larger than a well-optimized
+        // source even at default quality, so a source that passed the
+        // upload-time size check can still fail here with no earlier warning.
+        // bakeImage itself rejects animated sources (WebP/APNG pass the MIME
+        // gate but would flatten). Canvas work can't be interrupted mid-encode,
+        // so just skip starting it past the deadline.
         if (controller.signal.aborted) throw new Error(SAVE_TIMEOUT_MESSAGE)
-        const bakedBlob = await bakeImage(originalBlob, draft, {
+        const bakedBlob = await bakeImageWithinSizeLimit(originalBlob, draft, {
           mimeType: mime,
+          maxBytes: MAX_IMG_FILE_SIZE_BYTES,
         })
+        if (bakedBlob.size > MAX_IMG_FILE_SIZE_BYTES) {
+          throw new Error(
+            `This edited image is too large to save (over ${formatFileSizeLimit({ bytes: MAX_IMG_FILE_SIZE_BYTES })}). Try cropping to a smaller region, or use a smaller source image.`,
+          )
+        }
 
         // Step 5: Get the extension for the baked image
         const ext =
@@ -159,6 +234,9 @@ export const useSaveImageAdjustment = ({
           siteId,
           resourceId: resourceId || "",
           src: currentSrc,
+          // Keeps the uploader's filename in the baked key (derived from the
+          // true original, so re-edits don't accumulate suffixes).
+          originalKey,
           ext,
           fileSize: bakedBlob.size,
         })
@@ -173,7 +251,7 @@ export const useSaveImageAdjustment = ({
         // the delay between retries isn't itself abortable.
         await backOff(
           async () => {
-            const response = await fetch(`${ASSETS_BASE_URL}/${fileKey}`, {
+            const response = await fetch(generateAssetUrl(`/${fileKey}`), {
               signal: controller.signal,
             })
             if (!response.ok) {

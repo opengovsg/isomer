@@ -262,6 +262,7 @@ describe("asset.router", async () => {
         siteId: 1,
         resourceId: "1",
         src: `/1/${UUID}/source.png`,
+        originalKey: `1/${UUID}/source.png`,
         ext: "jpeg",
         fileSize: 1,
       })
@@ -286,6 +287,7 @@ describe("asset.router", async () => {
         siteId: site.id,
         resourceId: page.id,
         src: `/${site.id}/${UUID}/source.png`,
+        originalKey: `${site.id}/${UUID}/source.png`,
         ext: "jpeg",
         fileSize: 1,
       })
@@ -318,13 +320,15 @@ describe("asset.router", async () => {
         siteId: site.id,
         resourceId: page.id,
         src: `/${site.id}/${UUID}/source.png`,
+        originalKey: `${site.id}/${UUID}/source.png`,
         ext: "jpeg",
         fileSize: 1,
       })
 
-      // Assert
+      // Assert — the leaf preserves the original's filename ("source"), not a
+      // generic "baked-" prefix (see deriveBakeBaseName).
       expect(result).toMatchObject({
-        fileKey: expect.stringContaining(`${site.id}/${UUID}/baked-`),
+        fileKey: expect.stringContaining(`${site.id}/${UUID}/source-`),
         uploadConfig: {
           presignedPutUrl: "https://example.com/signed-url",
         },
