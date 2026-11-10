@@ -25,6 +25,7 @@ export const HeroCarousel = ({
 
   const slideViews = slides.map((slide) => ({
     backgroundUrl: slide.backgroundUrl,
+    imageAdjustment: slide.backgroundUrlImageAdjustment,
     title: slide.title,
     subtitle: slide.subtitle,
     primaryLabel: slide.buttonLabel,

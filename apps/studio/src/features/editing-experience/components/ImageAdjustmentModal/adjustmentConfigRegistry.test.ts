@@ -465,6 +465,7 @@ describe("resolveAdjustmentConfig", () => {
         { block: { type: "hero", variant: "gradient" }, fieldName: "backgroundUrl" }, // 16:10 -> 2:1 -> 5:2
         { block: { type: "hero", variant: "block" }, fieldName: "backgroundUrl" }, // stacked band -> side-by-side
         { block: { type: "hero", variant: "largeImage" }, fieldName: "backgroundUrl" }, // square -> 2:1
+        { block: { type: "hero", variant: "carousel" }, fieldName: "backgroundUrl" }, // full-bleed band, 16:10 -> 5:2
         { block: { type: "infopic" }, fieldName: "imageSrc" }, // 5:4 -> 2:1 -> 3:1
       ]
       for (const { block, fieldName } of responsiveBlocks) {

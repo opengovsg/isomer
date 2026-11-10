@@ -73,6 +73,22 @@ const FOCAL_WIRING_CONFIGS: {
     ],
   },
   {
+    // Both carousel layouts (block/gradient) render slide images through the
+    // shared CarouselSlides.tsx; HeroCarousel.tsx maps the per-slide schema
+    // field into the slide view. Both must carry it, so both are listed.
+    resolve: {
+      block: { type: "hero", variant: "carousel" },
+      fieldName: "backgroundUrl",
+    },
+    componentPaths: [
+      "packages/components/src/templates/next/components/complex/Hero/HeroCarousel/HeroCarousel.tsx",
+      "packages/components/src/templates/next/components/complex/Hero/HeroCarousel/CarouselSlides.tsx",
+    ],
+    storyPaths: [
+      "packages/components/src/templates/next/components/complex/Hero/HeroCarousel.adjustment.stories.tsx",
+    ],
+  },
+  {
     resolve: { block: { type: "infopic" }, fieldName: "imageSrc" },
     componentPaths: [
       "packages/components/src/templates/next/components/complex/Infopic/components/BlockInfopic.tsx",
@@ -138,6 +154,7 @@ const ALL_RESOLUTIONS: {
   { block: { type: "hero", variant: "largeImage" }, fieldName: "backgroundUrl" },
   { block: { type: "hero", variant: "block" }, fieldName: "backgroundUrl" },
   { block: { type: "hero", variant: "floating" }, fieldName: "backgroundUrl" },
+  { block: { type: "hero", variant: "carousel" }, fieldName: "backgroundUrl" },
   { block: { type: "contentpic" }, fieldName: "imageSrc" },
   { block: { type: "infopic" }, fieldName: "imageSrc" },
   { block: { type: "blockquote" }, fieldName: "imageSrc" },

@@ -209,6 +209,54 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
     "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text.",
 }
 
+// Tier B — full-bleed responsive carousel hero. Each slide's backgroundUrl is
+// rendered (object-cover) by the shared CarouselSlideImages, used by BOTH
+// carousel layouts (block = half-width image panel at lg; gradient = full-bleed
+// with a dark overlay). The editor resolves a single slide's backgroundUrl to
+// the owning carousel block, so this one config covers both layouts — it uses
+// the more generous full-bleed geometry (the gradient layout, the widest the
+// image ever renders) so a sharp image doesn't false-warn under either layout.
+// Focal anchors the subject as the band reshapes across breakpoints; crop is
+// free (custom), exactly like HERO_GRADIENT_CONFIG.
+//
+// Preview: skipRealComponentPreview — the carousel is an interactive client
+// component that refuses to render below HERO_CAROUSEL_SLIDE_LIMITS.minItems (2)
+// slides and rotates between them, so buildSingleItemPreviewBlock (which renders
+// the whole block with every item) would show the full rotating carousel, not
+// the single slide being edited. The framed approximation with the hero-band
+// aspect ratios is the honest single-slide preview here (same reasoning as
+// IMAGE_GALLERY_CONFIG's array-nested skip). No scrim is declared: the dark
+// overlay only exists in the gradient layout, so showing it in the framed
+// preview would misrepresent the block layout (image sits in its own half with
+// no overlay).
+const HERO_CAROUSEL_CONFIG: AdjustmentConfig = {
+  componentType: "hero:carousel",
+  cropMode: "custom",
+  focalEnabled: true,
+  // Full-bleed in the gradient layout; no CSS width cap. Warn against the
+  // 1280px content ceiling as a conservative "looks soft on desktop" floor —
+  // same reasoning and value as HERO_GRADIENT_CONFIG.
+  maxRenderedWidthPx: 1280,
+  // lg:min-h-[31.25rem] (500px) — the carousel section's actual minimum rendered
+  // height (shared by both layouts' sections). Crop is free (custom), so width
+  // and height can fall short independently — both must be checked.
+  maxRenderedHeightPx: 500,
+  // Closest common ratio to each breakpoint's hero band (375×240→16:10,
+  // 768×360→2:1, 1280×500→5:2), matching the section's min-h scale
+  // (15/22.5/31.25rem) — same as HERO_GRADIENT_CONFIG. Framed preview, so these
+  // set the tile shape directly.
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 16, height: 10 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 5, height: 2 },
+    }),
+  ),
+  skipRealComponentPreview: true,
+  preUploadCopy:
+    "Use a high-resolution image (at least 2560×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text — the carousel may add a dark overlay for text contrast.",
+}
+
 // Tier A — fixed 5:6 crop (aspect-[5/6]), no focal. The crop is baked into the
 // src, so the renderer needs nothing at runtime; the config only drives the
 // editor's fixed-ratio crop UI.
@@ -640,6 +688,12 @@ export function resolveAdjustmentConfig(args: {
     fieldName === "backgroundUrl"
   )
     return HERO_FLOATING_CONFIG
+  if (
+    type === "hero" &&
+    variant === "carousel" &&
+    fieldName === "backgroundUrl"
+  )
+    return HERO_CAROUSEL_CONFIG
   if (type === "contentpic" && fieldName === "imageSrc")
     return CONTENTPIC_CONFIG
   if (type === "infopic" && fieldName === "imageSrc") return INFOPIC_CONFIG
