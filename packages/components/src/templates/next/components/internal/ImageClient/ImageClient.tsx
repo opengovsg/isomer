@@ -87,8 +87,9 @@ export const ImageClient = forwardRef<
             const sep = imgSrc.includes("?") ? "&" : "?"
             const timeoutId = window.setTimeout(() => {
               delete currentTarget.dataset.retryTimeoutId
-              // Skip if the element has moved to a different src since.
-              if (currentTarget.dataset.retryBase !== imgSrc) return
+              // Skip if React has since rendered a different src onto the element
+              // (retryBase only updates on error, so it can't tell).
+              if (!currentTarget.getAttribute("src")?.startsWith(imgSrc)) return
               currentTarget.src = `${imgSrc}${sep}retry=${attempt + 1}`
             }, retryDelayMs(attempt))
             currentTarget.dataset.retryTimeoutId = String(timeoutId)
