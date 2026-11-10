@@ -43,11 +43,11 @@ const SingleCardNoImageSchema = Type.Object({
 const SingleCardWithImageSchema = Type.Composite([
   SingleCardNoImageSchema,
   Type.Object({
-    // imageUrlImageAdjustment (from the spread): crop is baked into imageUrl
-    // under both fits; focal renders as object-position only under imageFit
-    // "cover" (the editor hides the focal control for "contain", and
+    // imageUrlImageAdjustment, from the spread. The crop is baked into imageUrl
+    // under both fits. focal renders as object-position only under imageFit
+    // "cover"; the editor hides the focal control for "contain", and
     // InfoCardImage ignores any stale focal there, so a letterboxed image stays
-    // object-center) — see the InfoCards AdjustmentConfig entries in Studio's
+    // object-center. See the InfoCards AdjustmentConfig entries in Studio's
     // adjustmentConfigRegistry.
     ...generateAdjustableImageFields("imageUrl"),
     imageFit: Type.Optional(InfoCardsImageFitSchema),

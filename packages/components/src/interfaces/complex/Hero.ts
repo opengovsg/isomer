@@ -153,8 +153,9 @@ const BACKGROUND_IMAGE_OPTS = {
   allowedMimeTypeMappings: BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 }
 
-// Searchbar + carousel slides take the bare src (no adjustment sibling); the
-// adjustable variants spread generateAdjustableImageFields instead.
+// Only searchbar uses the bare src now, a hidden beta variant with no
+// adjustment sibling. Every adjustable variant, carousel slides included,
+// spreads generateAdjustableImageFields instead.
 const BackgroundUrlSchema = generateImageSrcSchema(BACKGROUND_IMAGE_OPTS)
 
 const GROUPINGS = {
@@ -390,10 +391,9 @@ const HeroSearchbarSchema = Type.Composite(
 export const HeroCarouselSlideSchema = Type.Composite(
   [
     Type.Object({
-      // Reserves backgroundUrlImageAdjustment per slide (collision-safe across
-      // the slide array). Renderer/editor wiring is still deferred — carousel
-      // has no resolveAdjustmentConfig entry yet — same deferred state as
-      // HeroFloating.
+      // Reserves backgroundUrlImageAdjustment per slide, collision-safe across
+      // the slide array. The editor and renderer wiring lands in a follow-up;
+      // carousel has no resolveAdjustmentConfig entry on this branch yet.
       ...generateAdjustableImageFields("backgroundUrl", BACKGROUND_IMAGE_OPTS),
       ...heroContentFields({
         title:

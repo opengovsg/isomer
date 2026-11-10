@@ -46,23 +46,23 @@ export const useAdjustmentConfigForField = (path: string) => {
   const fieldName = pathParts.pop() ?? ""
   const parentPath = pathParts.join(".")
 
-  // The page-level thumbnail (`page.image.src`) is the one image field with
-  // no block-type ancestor -- imageSchemaObject composes it directly onto the
-  // page metadata object, so its parentPath is always exactly "image" (never
-  // nested inside a block). That shape alone isn't a safe signal (content/
-  // index/database pages compose the identical `image` field for their own
-  // unrelated page thumbnail), so this also requires the resource type to
-  // confirm the page is actually a collection item.
+  // The page-level thumbnail (`page.image.src`) is the one image field with no
+  // block-type ancestor. imageSchemaObject composes it directly onto the page
+  // metadata object, so its parentPath is always exactly "image", never nested
+  // inside a block. That shape alone isn't a safe signal, since content, index,
+  // and database pages compose the identical `image` field for their own page
+  // thumbnail, so this also checks the resource type to confirm the page is a
+  // collection item.
   const isCollectionThumbnail =
     isCollectionItemResource && parentPath === "image"
 
-  // Content components name the adjustment after its own image field
-  // (backgroundUrl -> backgroundUrlImageAdjustment), emitted together by
-  // generateAdjustableImageFields. Deriving the key from fieldName (rather than
-  // a fixed "imageAdjustment") lets a component carry two image fields without
+  // Content components name the adjustment after their own image field
+  // (backgroundUrl gives backgroundUrlImageAdjustment), emitted together by
+  // generateAdjustableImageFields. Deriving the key from fieldName, rather than
+  // a fixed "imageAdjustment", lets a component carry two image fields without
   // their adjustments colliding on one shared key. The collection thumbnail is
-  // the sole exception: a single-image, DB-column-backed field (imageSchemaObject)
-  // that keeps the fixed "imageAdjustment" key -- no collision risk with one image.
+  // the one exception: a single-image field (imageSchemaObject) that keeps the
+  // fixed "imageAdjustment" key. One image means no collision.
   const siblingKey = isCollectionThumbnail
     ? "imageAdjustment"
     : `${fieldName}ImageAdjustment`
