@@ -28,33 +28,26 @@ const imageFitPreviewObjectFit = (
 ): "cover" | "contain" =>
   fieldHost?.imageFit === IMAGE_FIT.Content ? "contain" : "cover"
 
-// Builds the InfoCards block the real-component preview renders. Renders the
-// real sibling cards alongside the one being edited (edited card patched in via
-// `originalCard`) so the multi-column grid (e.g. maxColumns "3") looks natural
-// instead of a lone card in empty columns. Drops the section's own
-// title/subtitle/link button — those belong to the containing block, not the
-// grid of cards, and would clutter the small preview tile. Keeps
-// maxColumns/layout as-is so the cards' real per-breakpoint aspect (e.g. the
-// lg:aspect-square compound variant) matches the live page exactly. Falls back
-// to just the edited card if it can't be located among the siblings.
+// Builds the InfoCards block the real-component preview renders: ONLY the card
+// being edited, so it fills the tile (AdjustmentPreview forces the grid to one
+// column). Drops the section's title/subtitle/link button. Keeps
+// maxColumns/layout/variant so the card's per-breakpoint frame aspect (e.g.
+// lg:aspect-square) matches the live page.
 const buildSingleCardPreviewBlock: BuildSingleItemPreviewBlock = (
   block,
   card,
-  originalCard,
+  _originalCard,
 ) => {
   if (block.type !== "infocards" || block.variant === "cardsWithoutImages")
     return undefined
   const editedCard = card as (typeof block.cards)[number]
-  const cards = block.cards.some((c) => c === originalCard)
-    ? block.cards.map((c) => (c === originalCard ? editedCard : c))
-    : [editedCard]
   const preview: typeof block = {
     ...block,
     title: "",
     subtitle: undefined,
     url: undefined,
     label: undefined,
-    cards,
+    cards: [editedCard],
   }
   return preview
 }
@@ -376,8 +369,7 @@ const buildBlockquoteConfig = (
 // (free crop baked in, focal anchors the subject across the swing). Crop is always
 // offered; focal is offered only under imageFit "cover" (isFocalApplicable) —
 // under "contain" the image is letterboxed, so the focal control is hidden.
-// The preview renders the real card (via buildSingleItemPreviewBlock,
-// alongside its real siblings) — every other wired component gets a real
+// The preview renders only the edited real card (via buildSingleItemPreviewBlock) — every other wired component gets a real
 // render, and this card's shape depends on maxColumns/layout the same way a
 // hand-picked approximation would have to replicate anyway.
 const infoCardsWithImagesConfig = (
