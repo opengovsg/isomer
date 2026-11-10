@@ -5,7 +5,7 @@ import { cardImageStyles } from "../CollectionCard/cardImageStyles"
 import { DateFilterDates } from "../CollectionCard/DateFilterDates"
 import { DateFilterStatusClient } from "../CollectionCard/DateFilterStatusClient"
 import { Title } from "../CollectionCard/Title" // Reusing since the logic is the same for both
-import { ImageClient } from "../ImageClient"
+import { ImageClientWithAdjustment } from "../ImageClient"
 import { Link } from "../Link"
 import { PillTags, PlaintextTags } from "../Tags"
 
@@ -30,6 +30,10 @@ export const BlogCard = ({
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
   const hasDateFilters = (dateFilterDisplayEntries?.length ?? 0) > 0
+  // See CollectionCard's identical derivation.
+  const effectiveImageAdjustment = isContainNeeded
+    ? undefined
+    : image?.imageAdjustment
 
   return (
     // NOTE: In smaller viewports, we render a border between items for easy distinguishing
@@ -42,12 +46,13 @@ export const BlogCard = ({
       {image && (
         <div className="relative mb-3 flex aspect-[2/1] h-auto min-h-40 shrink-0 items-center justify-center">
           {
-            <ImageClient
+            <ImageClientWithAdjustment
               src={imageSrc || ""}
               alt={image.alt}
               width="100%"
               className={cardImageStyles({ contain: isContainNeeded })}
               assetsBaseUrl={siteAssetsBaseUrl}
+              imageAdjustment={effectiveImageAdjustment}
             />
           }
         </div>

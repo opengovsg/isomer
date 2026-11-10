@@ -110,6 +110,44 @@ export const CardWithoutImage: Story = {
   args: generateArgs({ image: undefined }),
 }
 
+// Image-adjustment focal point (object-position) applied to a cover-fit
+// thumbnail. The subject is pulled towards the top-left, visibly off-centre
+// vs the default object-center crop — the render path the collection
+// thumbnail editor's focal control drives (see CollectionCard's
+// effectiveImageAdjustment).
+export const WithFocalPoint: Story = {
+  args: generateArgs({
+    image: {
+      src: "https://placehold.co/500x500",
+      alt: "placeholder",
+      imageAdjustment: {
+        crop: { x: 0, y: 0, width: 1, height: 1 },
+        focal: { x: 0.2, y: 0.2 },
+        originalKey: "1/00000000-0000-0000-0000-000000000000/original.jpg",
+      },
+    },
+  }),
+}
+
+// Regression: a focal set while imageFit was "cover" must NOT leak through
+// once the thumbnail switches to "Resize image to fit" (contain). Despite a
+// top-left focal, the letterboxed image stays centred (no object-position).
+// Contrast with WithFocalPoint above.
+export const ContainIgnoresFocalPoint: Story = {
+  args: generateArgs({
+    isContainNeeded: true,
+    image: {
+      src: "https://placehold.co/500x500",
+      alt: "placeholder",
+      imageAdjustment: {
+        crop: { x: 0, y: 0, width: 1, height: 1 },
+        focal: { x: 0.2, y: 0.2 },
+        originalKey: "1/00000000-0000-0000-0000-000000000000/original.jpg",
+      },
+    },
+  }),
+}
+
 export const CardWithoutPlaintextTags: Story = {
   args: generateArgs({ plaintextTags: [] }),
 }

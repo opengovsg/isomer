@@ -11,6 +11,7 @@ import type {
 } from "~/schemas/resource"
 import {
   createChildrenPagesComparator,
+  type ImageAdjustment,
   type IsomerSitemap,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
@@ -659,6 +660,14 @@ export const getLocalisedSitemap = async (
   const thumbnailSql = sql<string>`
         published.content->'page'->'image'->> 'src'
     `.as("thumbnail")
+  // Fit + focal/crop metadata for the thumbnail above -- see CollectionCard/
+  // BlogCard's effectiveImageAdjustment for how these are applied at render.
+  const thumbnailImageFitSql = sql<"cover" | "contain" | null>`
+        published.content->'page'->'image'->> 'imageFit'
+    `.as("thumbnailImageFit")
+  const thumbnailAdjustmentSql = sql<ImageAdjustment | null>`
+        published.content->'page'->'image'->'imageAdjustment'
+    `.as("thumbnailAdjustment")
   const categorySql = sql<string>`
     CASE
       WHEN (published.content ->> 'layout') IN ('article','link')
@@ -726,6 +735,8 @@ export const getLocalisedSitemap = async (
         .select(() => [
           headerSql,
           thumbnailSql,
+          thumbnailImageFitSql,
+          thumbnailAdjustmentSql,
           categorySql,
           dateSql,
           firstImageSql,
@@ -746,6 +757,12 @@ export const getLocalisedSitemap = async (
             .select(({ eb }) => [
               eb.cast<string>(eb.val(""), "text").as("summary"),
               eb.cast<string>(eb.val(""), "text").as("thumbnail"),
+              eb
+                .cast<"cover" | "contain" | null>(eb.val(null), "text")
+                .as("thumbnailImageFit"),
+              eb
+                .cast<ImageAdjustment | null>(eb.val(null), "jsonb")
+                .as("thumbnailAdjustment"),
               eb.cast<string>(eb.val(""), "text").as("category"),
               eb.cast<string>(eb.val(""), "text").as("date"),
               eb
@@ -777,6 +794,8 @@ export const getLocalisedSitemap = async (
         .select(() => [
           headerSql,
           thumbnailSql,
+          thumbnailImageFitSql,
+          thumbnailAdjustmentSql,
           categorySql,
           dateSql,
           firstImageSql,
@@ -801,6 +820,8 @@ export const getLocalisedSitemap = async (
         .select(({ eb }) => [
           headerSql,
           thumbnailSql,
+          thumbnailImageFitSql,
+          thumbnailAdjustmentSql,
           categorySql,
           dateSql,
           firstImageSql,
@@ -828,6 +849,8 @@ export const getLocalisedSitemap = async (
             .select(({ eb }) => [
               headerSql,
               thumbnailSql,
+              thumbnailImageFitSql,
+              thumbnailAdjustmentSql,
               categorySql,
               dateSql,
               firstImageSql,
@@ -842,6 +865,8 @@ export const getLocalisedSitemap = async (
     .select([
       "summary",
       "thumbnail",
+      "thumbnailImageFit",
+      "thumbnailAdjustment",
       "category",
       "date",
       "firstImage",
@@ -855,6 +880,8 @@ export const getLocalisedSitemap = async (
         .select([
           "summary",
           "thumbnail",
+          "thumbnailImageFit",
+          "thumbnailAdjustment",
           "category",
           "date",
           "firstImage",
@@ -869,6 +896,8 @@ export const getLocalisedSitemap = async (
         .select([
           "summary",
           "thumbnail",
+          "thumbnailImageFit",
+          "thumbnailAdjustment",
           "category",
           "date",
           "firstImage",
