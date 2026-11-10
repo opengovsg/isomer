@@ -7,10 +7,10 @@ import { describe, expect, it, vi } from "vitest"
 
 import { useAdjustmentConfigForField } from "../useAdjustmentConfigForField"
 
-const { mockQuery, mockUseCollectionIndexVariant } = vi.hoisted(() => ({
-  mockQuery: { current: { siteId: "1" } as Record<string, string> },
-  mockUseCollectionIndexVariant: vi.fn(),
-}))
+const mockQuery: { current: { siteId: string; linkId?: string } } = vi.hoisted(
+  () => ({ current: { siteId: "1" } }),
+)
+const mockUseCollectionIndexVariant = vi.hoisted(() => vi.fn())
 
 // No router in the test renderer; the hook reads route params via useQueryParse.
 vi.mock("next/router", () => ({
