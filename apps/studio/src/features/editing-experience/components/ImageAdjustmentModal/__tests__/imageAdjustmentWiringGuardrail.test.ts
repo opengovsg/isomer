@@ -126,6 +126,23 @@ const FOCAL_WIRING_CONFIGS: {
       "packages/components/src/templates/next/components/complex/InfoCards/InfoCards.stories.tsx",
     ],
   },
+  {
+    // Not block-type-keyed -- see resolveAdjustmentConfig's isCollectionThumbnail
+    // branch, which short-circuits before the block `type` switch.
+    resolve: {
+      block: undefined,
+      fieldName: "image",
+      context: { isCollectionThumbnail: true },
+    },
+    componentPaths: [
+      "packages/components/src/templates/next/components/internal/CollectionCard/CollectionCard.tsx",
+      "packages/components/src/templates/next/components/internal/BlogCard/BlogCard.tsx",
+    ],
+    storyPaths: [
+      "packages/components/src/templates/next/components/internal/CollectionCard/CollectionCard.stories.tsx",
+      "packages/components/src/templates/next/components/internal/BlogCard/BlogCard.stories.tsx",
+    ],
+  },
 ]
 
 describe("imageAdjustment wiring guardrail", () => {

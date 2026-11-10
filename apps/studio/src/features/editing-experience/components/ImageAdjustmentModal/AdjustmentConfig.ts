@@ -59,6 +59,19 @@ export interface PreviewVersion {
 // not a plugin system.
 export interface AdjustmentRenderContext {
   pageLayout?: IsomerPageLayoutType
+  // True when the field being resolved is the page-level thumbnail
+  // (`page.image`) of a collection item (a CollectionPage/CollectionLink
+  // resource) — the one root-level image field with no block-type ancestor
+  // to key the registry off of. Set by useAdjustmentConfigForField from the
+  // editor's resource type, since the field's own data has no discriminator.
+  isCollectionThumbnail?: boolean
+  // The parent collection's index page "Layout" setting (collection-variant
+  // format: "collection" = 1-column CollectionCard, "blog" = 2-column
+  // BlogCard) — fetched by useAdjustmentConfigForField since it lives on a
+  // different page's content than the one being edited. Undefined while that
+  // fetch is loading/unavailable; resolves to the 1-column frame in that case,
+  // matching the schema's own "collection" default.
+  collectionVariant?: "collection" | "blog"
 }
 
 // For an array-nested image field (e.g. an InfoCards card) whose containing
