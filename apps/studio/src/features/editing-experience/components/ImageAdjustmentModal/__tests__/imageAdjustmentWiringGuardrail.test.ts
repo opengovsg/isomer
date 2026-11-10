@@ -134,6 +134,7 @@ const FOCAL_WIRING_CONFIGS: {
       fieldName: "image",
       context: { isCollectionThumbnail: true },
     },
+    siblingKey: "imageAdjustment",
     componentPaths: [
       "packages/components/src/templates/next/components/internal/CollectionCard/CollectionCard.tsx",
       "packages/components/src/templates/next/components/internal/BlogCard/BlogCard.tsx",
