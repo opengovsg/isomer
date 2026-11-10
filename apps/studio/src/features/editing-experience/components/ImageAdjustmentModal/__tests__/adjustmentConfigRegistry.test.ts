@@ -94,6 +94,49 @@ describe("resolveAdjustmentConfig", () => {
     }
   })
 
+  // Native Image block (P2a): the one block that offers a free-form crop with no
+  // focal point — it renders at its own cropped aspect ratio, so nothing
+  // cover-fits and an anchor would have nothing to anchor. Lock in custom/no-focal
+  // and that it previews the real component (not the framed approximation).
+  describe("image (P2a — free-form crop)", () => {
+    const config = resolveAdjustmentConfig({
+      block: { type: "image" },
+      fieldName: "src",
+    })
+
+    it("resolves a custom-crop, no-focal config", () => {
+      expect(config).toBeDefined()
+      expect(config?.cropMode).toBe("custom")
+      expect(config?.focalEnabled).toBe(false)
+      expect(config?.lockedRatios).toBeUndefined()
+      expect(config?.skipRealComponentPreview).toBeFalsy()
+      expect(config?.versions).toHaveLength(1)
+      expect(config?.versions[0]?.previewStates.length).toBeGreaterThan(0)
+    })
+  })
+
+  // ImageGallery (P2b): array-nested, always letterboxed (object-contain). Crop
+  // is offered but there's no focal (nothing cover-fits), and the preview uses
+  // the framed approximation with a contain fit (the real component renders the
+  // whole gallery, not the single image being edited).
+  describe("imagegallery (P2b — crop, letterboxed)", () => {
+    const config = resolveAdjustmentConfig({
+      block: { type: "imagegallery" },
+      fieldName: "src",
+    })
+
+    it("resolves a custom-crop, no-focal, contain-preview config", () => {
+      expect(config).toBeDefined()
+      expect(config?.cropMode).toBe("custom")
+      expect(config?.focalEnabled).toBe(false)
+      expect(config?.lockedRatios).toBeUndefined()
+      // Array-nested: preview the single image framed, not the whole gallery.
+      expect(config?.skipRealComponentPreview).toBe(true)
+      // Always letterboxed → the preview must contain, never cover.
+      expect(config?.previewObjectFitFor?.({})).toBe("contain")
+    })
+  })
+
   describe("hero:floating", () => {
     const config = resolveAdjustmentConfig({
       block: { type: "hero", variant: "floating" },
@@ -443,6 +486,27 @@ describe("resolveAdjustmentConfig", () => {
         expect(config?.cropMode).toBe("fixed")
         expect(config?.focalEnabled).toBe(false)
       }
+    })
+
+    it("free-form or letterboxed (object-contain) components have focal disabled even though cropMode is custom", () => {
+      // Native Image block: free-form crop, renders at its own cropped
+      // aspect with no frame to cover-fit into.
+      const image = resolveAdjustmentConfig({
+        block: { type: "image" },
+        fieldName: "src",
+      })
+      expect(image?.cropMode).toBe("custom")
+      expect(image?.focalEnabled).toBe(false)
+
+      // ImageGallery: frame height/ratio does vary by breakpoint, but it's
+      // always object-contain (letterboxed) -- the whole image is shown
+      // regardless of frame shape, so there's still nothing to anchor.
+      const gallery = resolveAdjustmentConfig({
+        block: { type: "imagegallery" },
+        fieldName: "src",
+      })
+      expect(gallery?.cropMode).toBe("custom")
+      expect(gallery?.focalEnabled).toBe(false)
     })
 
     it("InfoCards (Tier C) ties focal to imageFit, not just the responsive frame", () => {

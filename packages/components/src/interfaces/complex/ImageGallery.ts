@@ -3,10 +3,13 @@ import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import { IsomerString } from "../primitives/IsomerString"
-import { AltTextSchema, ImageSrcSchema } from "./Image"
+import { AltTextSchema, generateAdjustableImageFields } from "./Image"
 
 const SingleImageSchema = Type.Object({
-  src: ImageSrcSchema,
+  // srcImageAdjustment, from the spread. The crop is baked into `src` (then
+  // letterboxed by the gallery frame), so the renderer needs nothing at
+  // runtime. It's kept only to re-bake from the original.
+  ...generateAdjustableImageFields("src"),
   alt: AltTextSchema,
   caption: Type.Optional(IsomerString()),
 })
