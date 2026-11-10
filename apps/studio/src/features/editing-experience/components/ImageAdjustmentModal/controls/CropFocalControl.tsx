@@ -1,5 +1,3 @@
-"use client"
-
 import type { CSSProperties } from "react"
 import { Box, Text, VStack } from "@chakra-ui/react"
 import { useRef, useState } from "react"
@@ -11,6 +9,7 @@ import {
   EDGE_HANDLES,
   clientDeltaToNormalized,
   defaultCropRect,
+  edgesMovedBy,
   moveRect,
   resizeRectByHandle,
 } from "./cropGeometry"
@@ -21,18 +20,15 @@ import {
 } from "./focalGeometry"
 
 // Percentage anchor + resize cursor for each of the 8 standard handles.
-const HANDLE_LAYOUT: Record<
-  HandlePosition,
-  { left: string; top: string; cursor: string }
-> = {
-  nw: { left: "0%", top: "0%", cursor: "nwse-resize" },
-  n: { left: "50%", top: "0%", cursor: "ns-resize" },
-  ne: { left: "100%", top: "0%", cursor: "nesw-resize" },
-  e: { left: "100%", top: "50%", cursor: "ew-resize" },
-  se: { left: "100%", top: "100%", cursor: "nwse-resize" },
-  s: { left: "50%", top: "100%", cursor: "ns-resize" },
-  sw: { left: "0%", top: "100%", cursor: "nesw-resize" },
-  w: { left: "0%", top: "50%", cursor: "ew-resize" },
+const handleLayout = (
+  handle: HandlePosition,
+): { left: string; top: string; cursor: string } => {
+  const { movesLeft, movesRight, movesTop, movesBottom } = edgesMovedBy(handle)
+  return {
+    left: movesLeft ? "0%" : movesRight ? "100%" : "50%",
+    top: movesTop ? "0%" : movesBottom ? "100%" : "50%",
+    cursor: `${handle}-resize`,
+  }
 }
 
 interface CropFocalControlProps {
@@ -166,12 +162,7 @@ export const CropFocalControl = ({
   ) => {
     if (dragTarget !== "focal" || !boxRef.current) return
     const boxRect = boxRef.current.getBoundingClientRect()
-    const wholeImagePoint = pointToFocal(event.clientX, event.clientY, {
-      left: boxRect.left,
-      top: boxRect.top,
-      width: boxRect.width,
-      height: boxRect.height,
-    })
+    const wholeImagePoint = pointToFocal(event.clientX, event.clientY, boxRect)
     onFocalChange(pointToCropRelativeFocal(wholeImagePoint, currentCrop))
   }
 
@@ -197,20 +188,23 @@ export const CropFocalControl = ({
     zIndex: 10,
   }
 
-  const getHandleStyle = (handle: HandlePosition): CSSProperties => ({
-    position: "absolute",
-    left: HANDLE_LAYOUT[handle].left,
-    top: HANDLE_LAYOUT[handle].top,
-    transform: "translate(-50%, -50%)",
-    width: "10px",
-    height: "10px",
-    backgroundColor: "white",
-    border: "2px solid #0066cc",
-    borderRadius: "2px",
-    cursor: dragTarget === handle ? "grabbing" : HANDLE_LAYOUT[handle].cursor,
-    pointerEvents: "auto",
-    zIndex: 12,
-  })
+  const getHandleStyle = (handle: HandlePosition): CSSProperties => {
+    const layout = handleLayout(handle)
+    return {
+      position: "absolute",
+      left: layout.left,
+      top: layout.top,
+      transform: "translate(-50%, -50%)",
+      width: "10px",
+      height: "10px",
+      backgroundColor: "white",
+      border: "2px solid #0066cc",
+      borderRadius: "2px",
+      cursor: dragTarget === handle ? "grabbing" : layout.cursor,
+      pointerEvents: "auto",
+      zIndex: 12,
+    }
+  }
 
   const focalWholeImagePoint = focalToWholeImagePoint(currentFocal, currentCrop)
   const markerStyle: CSSProperties = {
@@ -284,7 +278,6 @@ export const CropFocalControl = ({
             onPointerDown={handleRectPointerDown}
             onPointerMove={handleRectPointerMove}
             onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
             onPointerCancel={handlePointerUp}
             onLostPointerCapture={handlePointerUp}
           >
@@ -299,7 +292,6 @@ export const CropFocalControl = ({
                   handleResizePointerMove(event, handle)
                 }
                 onPointerUp={handlePointerUp}
-                onPointerLeave={handlePointerUp}
                 onPointerCancel={handlePointerUp}
                 onLostPointerCapture={handlePointerUp}
               />
@@ -313,7 +305,6 @@ export const CropFocalControl = ({
             onPointerDown={handleFocalPointerDown}
             onPointerMove={handleFocalPointerMove}
             onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
             onPointerCancel={handlePointerUp}
             onLostPointerCapture={handlePointerUp}
           />

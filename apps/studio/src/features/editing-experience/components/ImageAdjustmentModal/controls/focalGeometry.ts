@@ -5,8 +5,6 @@
 import type { CropRectNormalized } from "./cropGeometry"
 import { clampUnit } from "./cropGeometry"
 
-export { clampUnit }
-
 /**
  * Converts client coordinates to normalized focal point coordinates [0, 1].
  * Guards against zero width/height by returning 0.5.

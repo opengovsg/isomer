@@ -2,13 +2,9 @@
  * Pure utility functions for crop rectangle geometry calculations.
  * No dependencies, fully unit-testable.
  */
+import type { CropRect } from "~/lib/imageBake"
 
-export interface CropRectNormalized {
-  x: number
-  y: number
-  width: number
-  height: number
-}
+export type CropRectNormalized = CropRect
 
 export const MIN_CROP_SIZE = 0.05 // avoid degenerate/zero-size crops
 
@@ -59,63 +55,12 @@ export const CORNER_HANDLES: readonly HandlePosition[] = [
 ]
 export const EDGE_HANDLES: readonly HandlePosition[] = ["n", "e", "s", "w"]
 
-interface HandleEdges {
-  movesLeft: boolean
-  movesTop: boolean
-  movesRight: boolean
-  movesBottom: boolean
-}
-
-const HANDLE_EDGES: Record<HandlePosition, HandleEdges> = {
-  nw: {
-    movesLeft: true,
-    movesTop: true,
-    movesRight: false,
-    movesBottom: false,
-  },
-  n: {
-    movesLeft: false,
-    movesTop: true,
-    movesRight: false,
-    movesBottom: false,
-  },
-  ne: {
-    movesLeft: false,
-    movesTop: true,
-    movesRight: true,
-    movesBottom: false,
-  },
-  e: {
-    movesLeft: false,
-    movesTop: false,
-    movesRight: true,
-    movesBottom: false,
-  },
-  se: {
-    movesLeft: false,
-    movesTop: false,
-    movesRight: true,
-    movesBottom: true,
-  },
-  s: {
-    movesLeft: false,
-    movesTop: false,
-    movesRight: false,
-    movesBottom: true,
-  },
-  sw: {
-    movesLeft: true,
-    movesTop: false,
-    movesRight: false,
-    movesBottom: true,
-  },
-  w: {
-    movesLeft: true,
-    movesTop: false,
-    movesRight: false,
-    movesBottom: false,
-  },
-}
+export const edgesMovedBy = (handle: HandlePosition) => ({
+  movesLeft: handle.includes("w"),
+  movesRight: handle.includes("e"),
+  movesTop: handle.includes("n"),
+  movesBottom: handle.includes("s"),
+})
 
 /**
  * Resize a rect by dragging a specific handle to a new normalized pointer
@@ -140,7 +85,7 @@ export const resizeRectByHandle = (
   pointerY: number,
   lockedRatio?: { width: number; height: number },
 ): CropRectNormalized => {
-  const edges = HANDLE_EDGES[handle]
+  const edges = edgesMovedBy(handle)
   const px = clampUnit(pointerX)
   const py = clampUnit(pointerY)
 
