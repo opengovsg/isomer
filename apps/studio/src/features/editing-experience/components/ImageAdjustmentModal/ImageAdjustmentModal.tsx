@@ -539,6 +539,7 @@ export const ImageAdjustmentModal = ({
                       <Button
                         variant={imageFit === "cover" ? "solid" : "outline"}
                         aria-pressed={imageFit === "cover"}
+                        isDisabled={isSaving}
                         onClick={() => setImageFit("cover")}
                       >
                         Fill
@@ -546,6 +547,7 @@ export const ImageAdjustmentModal = ({
                       <Button
                         variant={imageFit === "contain" ? "solid" : "outline"}
                         aria-pressed={imageFit === "contain"}
+                        isDisabled={isSaving}
                         onClick={() => setImageFit("contain")}
                       >
                         Fit
