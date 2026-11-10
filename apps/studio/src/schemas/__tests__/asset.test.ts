@@ -398,4 +398,13 @@ describe("getPresignedPutUrlForBakeSchema", () => {
     })
     expect(result.success).toBe(true)
   })
+
+  it("rejects an originalKey longer than the S3 key limit", () => {
+    const result = getPresignedPutUrlForBakeSchema.safeParse({
+      ...baseInput,
+      originalKey: "a".repeat(1025),
+      fileSize: 1000,
+    })
+    expect(result.success).toBe(false)
+  })
 })
