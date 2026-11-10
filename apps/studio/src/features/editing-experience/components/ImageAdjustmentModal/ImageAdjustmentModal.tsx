@@ -333,7 +333,11 @@ export const ImageAdjustmentModal = ({
     // Only imageFit changed (crop/focal untouched) — nothing to bake, so skip
     // straight to onSave instead of invoking save() with an empty draft.
     if (!draft) {
-      onSave({ src, imageAdjustment: value, imageFit })
+      onSave({
+        src,
+        imageAdjustment: value,
+        imageFit: hasImageFitControl ? imageFit : undefined,
+      })
       onClose()
       return
     }
@@ -360,7 +364,10 @@ export const ImageAdjustmentModal = ({
         site_id: siteId,
         resource_id: resourceId,
       })
-      onSave({ ...result, imageFit })
+      onSave({
+        ...result,
+        imageFit: hasImageFitControl ? imageFit : undefined,
+      })
       onClose()
     } catch (err) {
       toast({
