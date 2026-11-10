@@ -715,7 +715,6 @@ export const ImageAdjustmentModal = ({
                       config.buildSingleItemPreviewBlock
                     }
                     skipRealComponentPreview={config.skipRealComponentPreview}
-                    stackPreviews={config.stackPreviews}
                     objectFit={previewObjectFit}
                     pageLayout={pageLayout}
                     siteId={siteId}

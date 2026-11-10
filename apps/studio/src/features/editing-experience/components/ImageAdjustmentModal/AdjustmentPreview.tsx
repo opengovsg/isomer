@@ -261,11 +261,6 @@ interface AdjustmentPreviewProps {
   // would render the whole block/all items instead of the single one being
   // edited.
   skipRealComponentPreview?: boolean
-  // Stack every preview tile at full rail width (one per row) instead of the
-  // default big-tile + two-up layout. For components whose states are all small,
-  // equal-ratio masks (e.g. Blockquote's circle + square) where a half-width
-  // tile would be too small to read.
-  stackPreviews?: boolean
   // The object-fit the framed-image approximation uses (skipRealComponentPreview
   // path). "contain" letterboxes the whole (cropped) image to match a field
   // like InfoCards' "Resize image to fit"; defaults to "cover". Ignored on the
@@ -297,7 +292,6 @@ export const AdjustmentPreview = ({
   fieldHost,
   buildSingleItemPreviewBlock,
   skipRealComponentPreview,
-  stackPreviews,
   objectFit = "cover",
   pageLayout,
   siteId,
@@ -532,18 +526,11 @@ export const AdjustmentPreview = ({
   return (
     <VStack ref={railRef} align="stretch" spacing="1rem" w="100%">
       {fetchErrorBanner}
-      {stackPreviews ? (
-        // Every tile full-width, one per row (see the prop's doc).
-        previewStates.map((state) => renderTile(state, railWidth))
-      ) : (
-        <>
-          {bigState && renderTile(bigState, railWidth)}
-          {restStates.length > 0 && (
-            <Flex gap={`${TILE_GAP_PX}px`} wrap="wrap" align="flex-start">
-              {restStates.map((state) => renderTile(state, smallTileWidth))}
-            </Flex>
-          )}
-        </>
+      {bigState && renderTile(bigState, railWidth)}
+      {restStates.length > 0 && (
+        <Flex gap={`${TILE_GAP_PX}px`} wrap="wrap" align="flex-start">
+          {restStates.map((state) => renderTile(state, smallTileWidth))}
+        </Flex>
       )}
     </VStack>
   )

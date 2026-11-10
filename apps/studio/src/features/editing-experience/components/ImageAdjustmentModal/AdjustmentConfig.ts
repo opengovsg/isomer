@@ -127,11 +127,6 @@ export interface AdjustmentConfig {
   // real-component preview for that render (AdjustmentPreview falls back to
   // the framed approximation rather than rendering every item).
   buildSingleItemPreviewBlock?: BuildSingleItemPreviewBlock
-  // Stack the preview frames vertically (one per row) instead of side-by-side,
-  // so each frame gets the full column width. Use for components with only a
-  // couple of small-ratio states where side-by-side makes each too small to
-  // read (e.g. Blockquote's circle + square 1:1 masks).
-  stackPreviews?: boolean
   // Has a sibling imageFit field that the modal's fit control writes to
   // (InfoCards' "Resize image to fit").
   ownsImageFitField?: boolean
