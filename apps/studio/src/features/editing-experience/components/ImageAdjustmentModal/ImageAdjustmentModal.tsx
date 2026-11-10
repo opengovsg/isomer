@@ -319,6 +319,7 @@ export const ImageAdjustmentModal = ({
 
   const handleDiscard = () => {
     setDraft(value)
+    setImageFit(initialImageFit ?? "cover")
     onDiscardChangesModalClose()
   }
 
