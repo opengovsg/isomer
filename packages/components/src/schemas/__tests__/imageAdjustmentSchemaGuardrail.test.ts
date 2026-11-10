@@ -9,9 +9,6 @@ import { IsomerComplexComponentsMap } from "../components"
 // reason should also be opted out there, and vice versa.
 const INTENTIONALLY_NOT_ADJUSTABLE = new Set(["logocloud", "video"])
 
-// Pending: wired in a later PR of this stack.
-const PENDING_COMPONENTS = new Set(["image", "imagegallery"])
-
 interface ImageField {
   properties: Record<string, unknown>
   imageFieldName: string
@@ -76,7 +73,6 @@ describe("imageAdjustment schema guardrail", () => {
     IsomerComplexComponentsMap,
   )) {
     if (INTENTIONALLY_NOT_ADJUSTABLE.has(componentType)) continue
-    if (PENDING_COMPONENTS.has(componentType)) continue
 
     it(`"${componentType}" pairs every image field with its ImageAdjustment sibling`, () => {
       for (const { properties, imageFieldName } of findImageFields(schema)) {

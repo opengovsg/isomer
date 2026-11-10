@@ -145,7 +145,7 @@ export const AltTextSchema = IsomerString({
 export const ImageSchema = Type.Object(
   {
     type: Type.Literal("image", { default: "image" }),
-    src: ImageSrcSchema,
+    ...generateAdjustableImageFields("src"),
     alt: AltTextSchema,
     caption: Type.Optional(
       IsomerString({
