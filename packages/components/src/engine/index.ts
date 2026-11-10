@@ -5,6 +5,7 @@ export {
 } from "./render"
 export { LinkComponentProvider } from "~/templates/next/context/LinkComponentContext"
 export { HeroCarouselPreviewProvider } from "~/templates/next/components/complex/Hero/HeroCarousel/HeroCarouselPreviewContext"
+export { ImageRetryProvider } from "~/templates/next/components/internal/ImageClient/ImageRetryContext"
 export { RenderApplicationScripts } from "./renderApplicationScripts"
 export { RenderApplicationHeadScripts } from "./renderApplicationHeadScripts"
 export {
