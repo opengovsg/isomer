@@ -1,13 +1,8 @@
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
+import { useMutation } from "@tanstack/react-query"
 import { backOff } from "exponential-backoff"
-import { useState } from "react"
 import { getAssetUploadBackoffOptions } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
-import {
-  BAKEABLE_FORMAT_BY_MIME,
-  bakeImage,
-  canBakeImage,
-  isAnimatedImageBlob,
-} from "~/lib/imageBake"
+import { BAKEABLE_FORMAT_BY_MIME, bakeImage, canBakeImage } from "~/lib/imageBake"
 import { performUpload } from "~/lib/storage/client"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
@@ -69,13 +64,14 @@ interface UseSaveImageAdjustmentInput {
   resourceId?: string
 }
 
-interface UseSaveImageAdjustmentOutput {
-  save: (
-    currentSrc: string,
-    draft: ImageAdjustment,
-  ) => Promise<{ src: string; imageAdjustment: ImageAdjustment }>
-  isSaving: boolean
-  error: Error | null
+export interface SaveImageAdjustmentVariables {
+  currentSrc: string
+  draft: ImageAdjustment
+}
+
+export interface SaveImageAdjustmentResult {
+  src: string
+  imageAdjustment: ImageAdjustment
 }
 
 /**
@@ -85,25 +81,25 @@ interface UseSaveImageAdjustmentOutput {
  * 3. Wait for the upload to clear the malware scan (readable)
  * 4. Only on success, return the new src + imageAdjustment with originalKey set
  * Any earlier failure leaves the blob untouched.
+ *
+ * Built on useMutation (see useUploadAssetMutation for the house pattern) so
+ * isPending/error bookkeeping isn't hand-rolled — isPending in particular is a
+ * more reliable signal than a manual ref for "is a save still really running",
+ * since it only flips false when this mutationFn settles.
  */
 export const useSaveImageAdjustment = ({
   siteId,
   resourceId,
-}: UseSaveImageAdjustmentInput): UseSaveImageAdjustmentOutput => {
-  const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
-
+}: UseSaveImageAdjustmentInput) => {
   const { mutateAsync: getPresignedPutUrlForBake } =
     trpc.asset.getPresignedPutUrlForBake.useMutation()
 
-  const save = async (
-    currentSrc: string,
-    draft: ImageAdjustment,
-  ): Promise<{ src: string; imageAdjustment: ImageAdjustment }> => {
-    setIsSaving(true)
-    setError(null)
-
-    try {
+  return useMutation<
+    SaveImageAdjustmentResult,
+    Error,
+    SaveImageAdjustmentVariables
+  >({
+    mutationFn: async ({ currentSrc, draft }) => {
       // Step 1: Resolve the original key
       const originalKey = resolveOriginalKey(currentSrc, draft)
 
@@ -122,15 +118,10 @@ export const useSaveImageAdjustment = ({
       // Step 3: Choose the MIME type for baking
       const mime = chooseBakeMime(originalBlob.type)
 
-      // Reject animated WebP/APNG: they pass the MIME gate but baking would
-      // flatten them to a single frame and drop the animation.
-      if (await isAnimatedImageBlob(originalBlob)) {
-        throw new Error(
-          "This image can't be adjusted because it's animated. Adjusting would flatten it to a single frame.",
-        )
-      }
-
-      // Step 4: Bake the image
+      // Step 4: Bake the image — bakeImage rejects an animated source itself
+      // (WebP/APNG pass the MIME gate but would flatten to a single frame),
+      // so there's no separate pre-check here; its error message is already
+      // user-facing and surfaces directly in the save-failure toast.
       const bakedBlob = await bakeImage(originalBlob, draft, {
         mimeType: mime,
       })
@@ -169,14 +160,7 @@ export const useSaveImageAdjustment = ({
           originalKey,
         },
       }
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err))
-      setError(error)
-      throw error
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  return { save, isSaving, error }
+    },
+    retry: false,
+  })
 }

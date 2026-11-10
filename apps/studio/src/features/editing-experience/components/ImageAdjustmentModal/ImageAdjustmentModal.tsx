@@ -20,7 +20,7 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import { useRef, useState } from "react"
+import { useState } from "react"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
@@ -80,17 +80,13 @@ export const ImageAdjustmentModal = ({
     onClose: onDiscardChangesModalClose,
   } = useDisclosure()
   const toast = useToast()
-  const { save } = useSaveImageAdjustment({
+  const saveMutation = useSaveImageAdjustment({
     siteId,
     resourceId,
   })
-  // Drives UI locking during a save. Local (not the hook's isSaving) so the
+  // Drives UI locking during a save. Local (not saveMutation.isPending) so the
   // save timeout below can unlock the modal even if the underlying upload hangs.
   const [isSaving, setIsSaving] = useState(false)
-  // Tracks the REAL underlying save, independent of the UI-facing timeout below:
-  // the timeout only abandons the promise, it can't cancel the actual upload, so
-  // without this guard a retry would start a second upload while the first runs on.
-  const savePromiseRef = useRef<ReturnType<typeof save> | null>(null)
 
   const isModified = JSON.stringify(draft) !== JSON.stringify(value)
 
@@ -100,10 +96,11 @@ export const ImageAdjustmentModal = ({
 
   const handleClose = () => {
     // Block dismissal mid-save — otherwise a discard followed by the completing
-    // upload would write the discarded edit back via onSave. Check the real
-    // promise, not just isSaving: the save timeout clears isSaving while the
-    // underlying upload keeps running in the background.
-    if (isSaving || savePromiseRef.current) return
+    // upload would write the discarded edit back via onSave. Check isPending,
+    // not just isSaving: the save timeout clears isSaving while the underlying
+    // upload keeps running in the background, but isPending only flips false
+    // once the mutation itself actually settles.
+    if (isSaving || saveMutation.isPending) return
     if (isModified) {
       onDiscardChangesModalOpen()
     } else {
@@ -124,8 +121,10 @@ export const ImageAdjustmentModal = ({
     }
 
     // A previous save timed out from the UI's perspective but is still running
-    // in the background — don't start a second, concurrent one.
-    if (savePromiseRef.current) {
+    // in the background — don't start a second, concurrent one. isPending is
+    // react-query's own tracking of the real mutationFn promise, unaffected
+    // by the UI-facing timeout below, so no separate ref is needed for this.
+    if (saveMutation.isPending) {
       toast({
         title: "Still saving the previous change",
         description: "Please wait for it to finish before saving again.",
@@ -137,11 +136,11 @@ export const ImageAdjustmentModal = ({
     }
 
     setIsSaving(true)
-    const savePromise = save(src, draft)
-    savePromiseRef.current = savePromise
-    void savePromise.finally(() => {
-      savePromiseRef.current = null
-    })
+    // No separate .finally()/ref bookkeeping needed here (unlike the old
+    // hand-rolled version) — isPending above already tracks completion, and
+    // this single promise is the only handler attached to the mutation, so
+    // there's no discarded derived-promise chain to leak an unhandled rejection.
+    const savePromise = saveMutation.mutateAsync({ currentSrc: src, draft })
 
     let timeoutId: ReturnType<typeof setTimeout> | undefined
     try {

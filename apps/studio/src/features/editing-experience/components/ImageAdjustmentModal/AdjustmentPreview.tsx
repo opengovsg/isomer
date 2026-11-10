@@ -6,8 +6,9 @@ import type {
   ImageAdjustment,
 } from "@opengovsg/isomer-components"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
-import { renderComponent } from "@opengovsg/isomer-components"
+import { getFocalObjectPosition, renderComponent } from "@opengovsg/isomer-components"
 import { useEffect, useRef, useState } from "react"
+import { useDebounceValue } from "usehooks-ts"
 import { PreviewIframe } from "~/features/editing-experience/components/preview/PreviewIframe"
 import { bakeImage, canBakeImage, isAnimatedImageBlob } from "~/lib/imageBake"
 import { ASSETS_BASE_URL, generateAssetUrl } from "~/utils/generateAssetUrl"
@@ -23,6 +24,128 @@ const PREVIEW_SITE_STUB = {
   assetsBaseUrl: ASSETS_BASE_URL,
   siteMapArray: [],
 } as unknown as IsomerSiteProps
+
+// Fetches the true original's bytes for baking (never a previous bake, so
+// re-encode loss can't compound). Falls back to the uncropped src on failure
+// (CORS-blocked images etc.) and surfaces that fallback via fetchError, since
+// save would throw on the same failure.
+const useOriginalImageBlob = (originalFetchUrl: string) => {
+  const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
+  const [fetchError, setFetchError] = useState(false)
+
+  useEffect(() => {
+    const fetchOriginal = async () => {
+      setFetchError(false)
+      try {
+        const response = await fetch(originalFetchUrl)
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status}`)
+        }
+        const blob = await response.blob()
+        setOriginalBlob(blob)
+      } catch (error) {
+        console.debug("Failed to fetch original image", error)
+        setOriginalBlob(null)
+        setFetchError(true)
+      }
+    }
+    void fetchOriginal()
+  }, [originalFetchUrl])
+
+  return { originalBlob, fetchError }
+}
+
+type CropRect = NonNullable<ImageAdjustment["crop"]>
+
+// Bakes a debounced preview of `crop` against `originalBlob`, returning an
+// object URL (or null while there's nothing baked yet / crop is unset).
+// Debounced on crop alone (not the whole adjustment): focal is applied at
+// render time as CSS object-position, so a focal-only drag shouldn't trigger
+// a canvas re-encode.
+const useBakedPreviewUrl = (
+  originalBlob: Blob | null,
+  crop: CropRect | undefined,
+) => {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [debouncedCrop, setDebouncedCrop] = useDebounceValue(crop, 150)
+  const prevPreviewUrlRef = useRef<string | null>(null)
+  // Monotonic token so a superseded, still-running bake can detect it and drop
+  // its result — debouncing only cancels a bake that hasn't started yet.
+  const bakeRequestIdRef = useRef(0)
+
+  useEffect(() => {
+    setDebouncedCrop(crop)
+  }, [crop, setDebouncedCrop])
+
+  useEffect(() => {
+    const requestId = ++bakeRequestIdRef.current
+    const isStale = () => requestId !== bakeRequestIdRef.current
+
+    if (!originalBlob || !debouncedCrop) {
+      if (prevPreviewUrlRef.current) {
+        URL.revokeObjectURL(prevPreviewUrlRef.current)
+        prevPreviewUrlRef.current = null
+      }
+      setPreviewUrl(null)
+      return
+    }
+
+    const runBake = async () => {
+      try {
+        // Animated WebP/APNG pass canBakeImage but would be flattened, so skip them too.
+        if (
+          !canBakeImage(originalBlob.type) ||
+          (await isAnimatedImageBlob(originalBlob))
+        ) {
+          return
+        }
+
+        const bakedBlob = await bakeImage(
+          originalBlob,
+          { crop: debouncedCrop },
+          { mimeType: originalBlob.type },
+        )
+        // A newer crop started while this bake ran — discard it.
+        if (isStale()) {
+          return
+        }
+        const bakeUrl = URL.createObjectURL(bakedBlob)
+        if (prevPreviewUrlRef.current) {
+          URL.revokeObjectURL(prevPreviewUrlRef.current)
+        }
+        prevPreviewUrlRef.current = bakeUrl
+        setPreviewUrl(bakeUrl)
+      } catch (error) {
+        // Fall back to the uncropped src (CORS taint, canvas issue, etc.) unless
+        // a newer bake has already superseded this one.
+        console.debug("Failed to bake image", error)
+        if (isStale()) {
+          return
+        }
+        if (prevPreviewUrlRef.current) {
+          URL.revokeObjectURL(prevPreviewUrlRef.current)
+          prevPreviewUrlRef.current = null
+        }
+        setPreviewUrl(null)
+      }
+    }
+    void runBake()
+  }, [originalBlob, debouncedCrop])
+
+  // Bumps bakeRequestIdRef so a bake still in flight at unmount sees isStale()
+  // once it resolves, instead of creating (and leaking) a new object URL after
+  // unmount.
+  useEffect(() => {
+    return () => {
+      bakeRequestIdRef.current++
+      if (prevPreviewUrlRef.current) {
+        URL.revokeObjectURL(prevPreviewUrlRef.current)
+      }
+    }
+  }, [])
+
+  return previewUrl
+}
 
 interface AdjustmentPreviewProps {
   src: string
@@ -47,132 +170,12 @@ export const AdjustmentPreview = ({
   block,
   imageFieldName,
 }: AdjustmentPreviewProps): JSX.Element => {
-  const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  // Surfaces the otherwise-silent fallback to the uncropped src, so a preview
-  // that looks "fine" doesn't mask a fetch failure that save would throw on.
-  const [fetchError, setFetchError] = useState(false)
-  const bakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const prevPreviewUrlRef = useRef<string | null>(null)
-  // Monotonic token so a superseded, still-running bake can detect it and drop its result.
-  const bakeRequestIdRef = useRef(0)
-
   // Resolve to the asset domain, same as ImageClient does at render time.
   const displaySrc = generateAssetUrl(src)
   const originalFetchUrl = generateAssetUrl(originalSrc)
 
-  useEffect(() => {
-    const fetchOriginal = async () => {
-      setFetchError(false)
-      try {
-        const response = await fetch(originalFetchUrl)
-        if (!response.ok) {
-          throw new Error(`Failed to fetch image: ${response.status}`)
-        }
-        const blob = await response.blob()
-        setOriginalBlob(blob)
-      } catch (error) {
-        // Falls back to the uncropped src (CORS-blocked images, etc.); fetchError
-        // surfaces that fallback since save would throw on the same failure.
-        console.debug("Failed to fetch original image", error)
-        setOriginalBlob(null)
-        setFetchError(true)
-      }
-    }
-    void fetchOriginal()
-  }, [originalFetchUrl])
-
-  useEffect(() => {
-    if (bakeTimeoutRef.current) {
-      clearTimeout(bakeTimeoutRef.current)
-    }
-
-    // Debouncing only cancels a bake that hasn't started yet; bump the token so a
-    // bake already awaiting bakeImage can't overwrite this newer draft when it resolves.
-    const requestId = ++bakeRequestIdRef.current
-    const isStale = () => requestId !== bakeRequestIdRef.current
-
-    if (!originalBlob || !adjustment?.crop) {
-      if (prevPreviewUrlRef.current) {
-        URL.revokeObjectURL(prevPreviewUrlRef.current)
-        prevPreviewUrlRef.current = null
-      }
-      setPreviewUrl(null)
-      return
-    }
-
-    const runBake = async () => {
-      try {
-        // Animated WebP/APNG pass canBakeImage but would be flattened, so skip them too.
-        if (
-          !canBakeImage(originalBlob.type) ||
-          (await isAnimatedImageBlob(originalBlob))
-        ) {
-          return
-        }
-
-        const bakedBlob = await bakeImage(originalBlob, adjustment, {
-          mimeType: originalBlob.type,
-        })
-        // A newer adjustment started while this bake ran — discard it.
-        if (isStale()) {
-          return
-        }
-        const bakeUrl = URL.createObjectURL(bakedBlob)
-        if (prevPreviewUrlRef.current) {
-          URL.revokeObjectURL(prevPreviewUrlRef.current)
-        }
-        prevPreviewUrlRef.current = bakeUrl
-        setPreviewUrl(bakeUrl)
-      } catch (error) {
-        // Fall back to the uncropped src (CORS taint, canvas issue, etc.) unless
-        // a newer bake has already superseded this one.
-        console.debug("Failed to bake image", error)
-        if (isStale()) {
-          return
-        }
-        if (prevPreviewUrlRef.current) {
-          URL.revokeObjectURL(prevPreviewUrlRef.current)
-          prevPreviewUrlRef.current = null
-        }
-        setPreviewUrl(null)
-      }
-    }
-    bakeTimeoutRef.current = setTimeout(() => void runBake(), 150)
-
-    return () => {
-      if (bakeTimeoutRef.current) {
-        clearTimeout(bakeTimeoutRef.current)
-      }
-    }
-    // Deliberately narrower than `adjustment`: focal is applied at render time as
-    // CSS object-position, so a focal-only drag shouldn't trigger a canvas re-encode.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    originalBlob,
-    adjustment?.crop?.x,
-    adjustment?.crop?.y,
-    adjustment?.crop?.width,
-    adjustment?.crop?.height,
-  ])
-
-  // Bumps bakeRequestIdRef so a bake still in flight at unmount sees isStale() once it
-  // resolves, instead of creating (and leaking) a new object URL after unmount.
-  useEffect(() => {
-    return () => {
-      bakeRequestIdRef.current++
-      if (prevPreviewUrlRef.current) {
-        URL.revokeObjectURL(prevPreviewUrlRef.current)
-      }
-    }
-  }, [])
-
-  const getFocalObjectPosition = (focal?: { x: number; y: number }) => {
-    if (!focal || (focal.x == null && focal.y == null)) {
-      return undefined
-    }
-    return `${(focal.x ?? 0.5) * 100}% ${(focal.y ?? 0.5) * 100}%`
-  }
+  const { originalBlob, fetchError } = useOriginalImageBlob(originalFetchUrl)
+  const previewUrl = useBakedPreviewUrl(originalBlob, adjustment?.crop)
 
   const adjustedSrc = previewUrl ?? displaySrc
 
@@ -309,7 +312,7 @@ export const AdjustmentPreview = ({
               h="100%"
               style={{
                 objectFit: "cover",
-                objectPosition: getFocalObjectPosition(adjustment?.focal),
+                objectPosition: getFocalObjectPosition(adjustment),
               }}
             />
           )

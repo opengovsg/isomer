@@ -1,4 +1,7 @@
-import type { ImageAdjustment } from "@opengovsg/isomer-components"
+import type {
+  ImageAdjustment,
+  IsomerComponent,
+} from "@opengovsg/isomer-components"
 import { useJsonForms } from "@jsonforms/react"
 import { get } from "lodash-es"
 import { useMemo } from "react"
@@ -32,14 +35,23 @@ export const useAdjustmentConfigForField = (path: string) => {
     | ImageAdjustment
     | undefined
 
+  const config = resolveAdjustmentConfig({ block, fieldName })
+  // resolveAdjustmentConfig only matches block.type/variant discriminators --
+  // it doesn't validate the rest of the shape against the component schema.
+  // A resolved config means "this is a block type we've wired up", not "this
+  // object is a fully-valid IsomerComponent". Callers that pass this into
+  // renderComponent must keep handling render failure (see AdjustmentPreview's
+  // try/catch) rather than relying on this type for runtime safety.
+  const typedBlock = config ? (block as IsomerComponent) : undefined
+
   return useMemo(
     () => ({
-      block,
+      block: typedBlock,
       fieldName,
       siblingPath,
       currentAdjustment,
-      config: resolveAdjustmentConfig({ block, fieldName }),
+      config,
     }),
-    [block, fieldName, siblingPath, currentAdjustment],
+    [typedBlock, fieldName, siblingPath, currentAdjustment, config],
   )
 }
