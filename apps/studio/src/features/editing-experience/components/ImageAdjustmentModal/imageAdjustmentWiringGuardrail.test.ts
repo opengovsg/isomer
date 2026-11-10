@@ -151,7 +151,10 @@ const ALL_RESOLUTIONS: {
   { block: { type: "image" }, fieldName: "src" },
   { block: { type: "imagegallery" }, fieldName: "src" },
   { block: { type: "hero", variant: "gradient" }, fieldName: "backgroundUrl" },
-  { block: { type: "hero", variant: "largeImage" }, fieldName: "backgroundUrl" },
+  {
+    block: { type: "hero", variant: "largeImage" },
+    fieldName: "backgroundUrl",
+  },
   { block: { type: "hero", variant: "block" }, fieldName: "backgroundUrl" },
   { block: { type: "hero", variant: "floating" }, fieldName: "backgroundUrl" },
   { block: { type: "hero", variant: "carousel" }, fieldName: "backgroundUrl" },
@@ -186,9 +189,9 @@ describe("imageAdjustment wiring guardrail", () => {
       const sources = componentPaths.map((componentPath) =>
         fs.readFileSync(path.join(REPO_ROOT, componentPath), "utf-8"),
       )
-      expect(sources.every((source) => source.includes("imageAdjustment"))).toBe(
-        true,
-      )
+      expect(
+        sources.every((source) => source.includes("imageAdjustment")),
+      ).toBe(true)
     })
 
     it(`"${config?.componentType}" has a focal-point story: ${storyPaths.join(", ")}`, () => {
@@ -206,8 +209,9 @@ describe("imageAdjustment wiring guardrail", () => {
   // both checks entirely -- the exact gap that let the collection thumbnail
   // ship with no render wiring and no story.
   it("covers every focalEnabled config in the registry", () => {
-    const focalComponentTypes = ALL_RESOLUTIONS.map(({ block, fieldName, context }) =>
-      resolveAdjustmentConfig({ block, fieldName, context }),
+    const focalComponentTypes = ALL_RESOLUTIONS.map(
+      ({ block, fieldName, context }) =>
+        resolveAdjustmentConfig({ block, fieldName, context }),
     )
       .filter(
         (config): config is AdjustmentConfig => config?.focalEnabled === true,

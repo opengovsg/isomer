@@ -672,7 +672,11 @@ export function resolveAdjustmentConfig(args: {
   if (type === "image" && fieldName === "src") return IMAGE_CONFIG
   if (type === "imagegallery" && fieldName === "src")
     return IMAGE_GALLERY_CONFIG
-  if (type === "hero" && variant === "gradient" && fieldName === "backgroundUrl")
+  if (
+    type === "hero" &&
+    variant === "gradient" &&
+    fieldName === "backgroundUrl"
+  )
     return HERO_GRADIENT_CONFIG
   if (
     type === "hero" &&

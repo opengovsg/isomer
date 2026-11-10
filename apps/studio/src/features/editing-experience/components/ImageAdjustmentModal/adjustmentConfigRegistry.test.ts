@@ -462,10 +462,22 @@ describe("resolveAdjustmentConfig", () => {
   describe("focal point is offered only for breakpoint-reshaping (responsive cover) frames", () => {
     it("responsive cover-fit components have focal enabled", () => {
       const responsiveBlocks = [
-        { block: { type: "hero", variant: "gradient" }, fieldName: "backgroundUrl" }, // 16:10 -> 2:1 -> 5:2
-        { block: { type: "hero", variant: "block" }, fieldName: "backgroundUrl" }, // stacked band -> side-by-side
-        { block: { type: "hero", variant: "largeImage" }, fieldName: "backgroundUrl" }, // square -> 2:1
-        { block: { type: "hero", variant: "carousel" }, fieldName: "backgroundUrl" }, // full-bleed band, 16:10 -> 5:2
+        {
+          block: { type: "hero", variant: "gradient" },
+          fieldName: "backgroundUrl",
+        }, // 16:10 -> 2:1 -> 5:2
+        {
+          block: { type: "hero", variant: "block" },
+          fieldName: "backgroundUrl",
+        }, // stacked band -> side-by-side
+        {
+          block: { type: "hero", variant: "largeImage" },
+          fieldName: "backgroundUrl",
+        }, // square -> 2:1
+        {
+          block: { type: "hero", variant: "carousel" },
+          fieldName: "backgroundUrl",
+        }, // full-bleed band, 16:10 -> 5:2
         { block: { type: "infopic" }, fieldName: "imageSrc" }, // 5:4 -> 2:1 -> 3:1
       ]
       for (const { block, fieldName } of responsiveBlocks) {
@@ -478,7 +490,10 @@ describe("resolveAdjustmentConfig", () => {
       const fixedBlocks = [
         { block: { type: "contentpic" }, fieldName: "imageSrc" }, // aspect-[5/6] always
         { block: { type: "blockquote" }, fieldName: "imageSrc" }, // 1:1 always (circle/square mask only)
-        { block: { type: "hero", variant: "floating" }, fieldName: "backgroundUrl" }, // aspect-[3/2] always
+        {
+          block: { type: "hero", variant: "floating" },
+          fieldName: "backgroundUrl",
+        }, // aspect-[3/2] always
       ]
       for (const { block, fieldName } of fixedBlocks) {
         const config = resolveAdjustmentConfig({ block, fieldName })
