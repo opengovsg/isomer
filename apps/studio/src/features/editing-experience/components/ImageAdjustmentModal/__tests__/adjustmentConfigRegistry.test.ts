@@ -94,11 +94,11 @@ describe("resolveAdjustmentConfig", () => {
     }
   })
 
-  // Native Image block (P2a): the one block that offers a free-form crop with no
+  // Native Image block: the one block that offers a free-form crop with no
   // focal point — it renders at its own cropped aspect ratio, so nothing
   // cover-fits and an anchor would have nothing to anchor. Lock in custom/no-focal
   // and that it previews the real component (not the framed approximation).
-  describe("image (P2a — free-form crop)", () => {
+  describe("image", () => {
     const config = resolveAdjustmentConfig({
       block: { type: "image" },
       fieldName: "src",
@@ -115,11 +115,11 @@ describe("resolveAdjustmentConfig", () => {
     })
   })
 
-  // ImageGallery (P2b): array-nested, always letterboxed (object-contain). Crop
+  // ImageGallery: array-nested, always letterboxed (object-contain). Crop
   // is offered but there's no focal (nothing cover-fits), and the preview uses
   // the framed approximation with a contain fit (the real component renders the
   // whole gallery, not the single image being edited).
-  describe("imagegallery (P2b — crop, letterboxed)", () => {
+  describe("imagegallery", () => {
     const config = resolveAdjustmentConfig({
       block: { type: "imagegallery" },
       fieldName: "src",
