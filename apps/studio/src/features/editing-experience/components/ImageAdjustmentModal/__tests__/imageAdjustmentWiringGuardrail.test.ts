@@ -3,11 +3,11 @@ import fs from "fs"
 import path from "path"
 import { describe, expect, it } from "vitest"
 
-import type { AdjustmentRenderContext } from "./AdjustmentConfig"
+import type { AdjustmentRenderContext } from "../AdjustmentConfig"
 import {
   CONFIGS,
   resolveAdjustmentConfig as resolveAdjustmentConfigTyped,
-} from "./adjustmentConfigRegistry"
+} from "../adjustmentConfigRegistry"
 
 // Fixtures are partial blocks carrying only the discriminators the registry
 // reads, so cast once here rather than at every call site.
@@ -23,7 +23,7 @@ const resolveAdjustmentConfig = (args: {
 
 // Root of the monorepo, resolved from this file's location so the test works
 // regardless of the cwd it's invoked from.
-const REPO_ROOT = path.resolve(__dirname, "../../../../../../../")
+const REPO_ROOT = path.resolve(__dirname, "../../../../../../../../")
 
 // Every config with focalEnabled: true, paired with (a) the real render
 // file(s) that must actually apply its imageAdjustment at render time, and

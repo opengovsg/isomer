@@ -5,7 +5,7 @@ import { JsonFormsStateProvider } from "@jsonforms/react"
 import { renderHook } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
-import { useAdjustmentConfigForField } from "./useAdjustmentConfigForField"
+import { useAdjustmentConfigForField } from "../useAdjustmentConfigForField"
 
 const renderWithData = (data: unknown, path: string) =>
   renderHook(() => useAdjustmentConfigForField(path), {
