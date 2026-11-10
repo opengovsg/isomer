@@ -405,7 +405,13 @@ export const AdjustmentPreview = ({
     // the background image (a separate, non-"component-content" sibling)
     // renders correctly full-bleed either way.
     return (
-      <div className="break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10">
+      <div
+        className={`break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10${
+          // Single-item preview: force InfoCards' grid (the only `auto-rows-max`
+          // element) to one column so the lone card fills the tile at every breakpoint.
+          isNestedField ? " [&_.auto-rows-max]:!grid-cols-1" : ""
+        }`}
+      >
         {renderComponent({
           component,
           layout: layout ?? pageLayout ?? "content",
