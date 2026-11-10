@@ -63,6 +63,7 @@ const useOriginalImageBlob = (originalSrc: string, originalFile?: Blob) => {
   const plainFetchUrl = generateAssetUrl(originalSrc)
 
   useEffect(() => {
+    let cancelled = false
     if (originalFile) {
       setOriginalBlob(originalFile)
       return
@@ -96,11 +97,14 @@ const useOriginalImageBlob = (originalSrc: string, originalFile?: Blob) => {
         // Falls back to the uncropped src (CORS-blocked images, etc.); fetchError
         // surfaces that fallback since save would throw on the same failure.
         console.debug("Failed to fetch original image for preview bake")
-        setFetchError(true)
+        if (!cancelled) setFetchError(true)
       }
-      setOriginalBlob(blob)
+      if (!cancelled) setOriginalBlob(blob)
     }
     void fetchOriginal()
+    return () => {
+      cancelled = true
+    }
   }, [originalFile, originalFetchUrl, plainFetchUrl])
 
   return { originalBlob, fetchError }
