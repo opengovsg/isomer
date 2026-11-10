@@ -6,8 +6,8 @@ import { withArgosModes } from "@isomer/storybook-config"
 
 import { Infopic } from "./Infopic"
 
-// W1-C end-to-end demo: Infopic driven through its real `imageAdjustment`
-// schema field (not a throwaway spike prop). Proves focal -> object-position
+// End-to-end demo: Infopic driven through its real `imageAdjustment`
+// schema field. Proves focal -> object-position
 // (Block) and backgroundPosition (Full) flow schema -> props -> render.
 // Infopic's frame is content-dependent (text height varies), so the preview
 // aspect ratios are approximations; focal behavior is uniform across both
