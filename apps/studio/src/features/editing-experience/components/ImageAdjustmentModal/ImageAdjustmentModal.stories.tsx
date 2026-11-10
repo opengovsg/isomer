@@ -168,9 +168,8 @@ export const WithRealComponentPreview: Story = {
 // by its "circle"/"square" PreviewVersions, each forcing their own `layout` on
 // the shared real-component preview (AdjustmentPreview renders the block once
 // per state rather than once-and-reused). No pageLayout context is passed
-// here, so both versions resolve and the version dropdown appears. Regression
-// coverage for Greptile 4205368562: nothing else in Storybook renders the
-// Blockquote config.
+// here, so both versions resolve and the version dropdown appears. Covers the
+// Blockquote config, which nothing else in Storybook renders.
 export const WithBlockquotePreview: Story = {
   args: {
     isOpen: true,
