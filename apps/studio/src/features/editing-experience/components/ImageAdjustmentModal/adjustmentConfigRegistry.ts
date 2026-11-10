@@ -114,7 +114,10 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
 
 // Every static config, matched by resolveAdjustmentConfig on
 // `type:variant` (or bare `type`) plus the image field name.
-const CONFIGS: AdjustmentConfig[] = [HERO_GRADIENT_CONFIG, CONTENTPIC_CONFIG]
+export const CONFIGS: AdjustmentConfig[] = [
+  HERO_GRADIENT_CONFIG,
+  CONTENTPIC_CONFIG,
+]
 
 /**
  * Resolves the adjustment config for an image field, by the containing block's

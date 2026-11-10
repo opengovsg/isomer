@@ -3,11 +3,11 @@ import fs from "fs"
 import path from "path"
 import { describe, expect, it } from "vitest"
 
-import type {
-  AdjustmentConfig,
-  AdjustmentRenderContext,
-} from "./AdjustmentConfig"
-import { resolveAdjustmentConfig as resolveAdjustmentConfigTyped } from "./adjustmentConfigRegistry"
+import type { AdjustmentRenderContext } from "./AdjustmentConfig"
+import {
+  CONFIGS,
+  resolveAdjustmentConfig as resolveAdjustmentConfigTyped,
+} from "./adjustmentConfigRegistry"
 
 // Fixtures are partial blocks carrying only the discriminators the registry
 // reads, so cast once here rather than at every call site.
@@ -68,17 +68,6 @@ const FOCAL_WIRING_CONFIGS: {
   },
 ]
 
-// Every resolvable config in the registry, focal or not -- used only by the
-// completeness check below.
-const ALL_RESOLUTIONS: {
-  block: unknown
-  fieldName: string
-  context?: AdjustmentRenderContext
-}[] = [
-  { block: { type: "hero", variant: "gradient" }, fieldName: "backgroundUrl" },
-  { block: { type: "contentpic" }, fieldName: "imageSrc" },
-]
-
 describe("imageAdjustment wiring guardrail", () => {
   for (const {
     resolve,
@@ -136,16 +125,12 @@ describe("imageAdjustment wiring guardrail", () => {
   // both checks entirely -- the exact gap that let the collection thumbnail
   // ship with no render wiring and no story.
   it("covers every focalEnabled config in the registry", () => {
-    const focalComponentTypes = ALL_RESOLUTIONS.map(
-      ({ block, fieldName, context }) =>
-        resolveAdjustmentConfig({ block, fieldName, context }),
-    )
-      .filter(
-        (config): config is AdjustmentConfig => config?.focalEnabled === true,
-      )
-      .map((config) => config.componentType)
-      .sort()
+    const focalComponentTypes = CONFIGS.filter(
+      (config) => config.focalEnabled,
+    ).map((config) => config.componentType)
 
+    // Rows may exceed the static registry: configs resolved by an explicit
+    // block/context branch can't be enumerated from CONFIGS and keep a row here.
     const coveredComponentTypes = FOCAL_WIRING_CONFIGS.map(
       ({ resolve }) =>
         resolveAdjustmentConfig({
@@ -153,8 +138,10 @@ describe("imageAdjustment wiring guardrail", () => {
           fieldName: resolve.fieldName,
           context: resolve.context,
         })?.componentType,
-    ).sort()
+    )
 
-    expect(focalComponentTypes).toEqual(coveredComponentTypes)
+    expect(coveredComponentTypes).toEqual(
+      expect.arrayContaining(focalComponentTypes),
+    )
   })
 })
