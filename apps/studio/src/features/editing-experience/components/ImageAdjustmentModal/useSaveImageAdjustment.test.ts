@@ -74,18 +74,24 @@ describe("useSaveImageAdjustment pure helpers", () => {
     })
 
     it("throws when both the type and key extension are non-bakeable", () => {
-      expect(() => chooseBakeMime("image/gif", "1/uuid/anim.gif")).toThrow()
-      expect(() => chooseBakeMime("image/avif", "1/uuid/photo.avif")).toThrow()
-      expect(() => chooseBakeMime("image/tiff", "1/uuid/photo.tiff")).toThrow()
+      expect(() => chooseBakeMime("image/gif", "1/uuid/anim.gif")).toThrow(
+        /can't be adjusted/,
+      )
+      expect(() => chooseBakeMime("image/avif", "1/uuid/photo.avif")).toThrow(
+        /can't be adjusted/,
+      )
+      expect(() => chooseBakeMime("image/tiff", "1/uuid/photo.tiff")).toThrow(
+        /can't be adjusted/,
+      )
       expect(() =>
         chooseBakeMime("image/svg+xml", "1/uuid/vector.svg"),
-      ).toThrow()
+      ).toThrow(/can't be adjusted/)
     })
 
     it("throws for a generic type with a non-image extension", () => {
       expect(() =>
         chooseBakeMime("binary/octet-stream", "1/uuid/doc.pdf"),
-      ).toThrow()
+      ).toThrow(/can't be adjusted/)
     })
   })
 
