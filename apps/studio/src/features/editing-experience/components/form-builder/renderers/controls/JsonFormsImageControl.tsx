@@ -27,7 +27,6 @@ import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { PLACEHOLDER_IMAGE_FILENAME } from "~/features/editing-experience/components/constants"
 import { fetchImageBlob } from "~/features/editing-experience/components/ImageAdjustmentModal/useSaveImageAdjustment"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useIsImageAdjustmentEnabled } from "~/hooks/useIsImageAdjustmentEnabled"
@@ -101,10 +100,6 @@ function JsonFormsImageControl({
   // external/absolute URLs and the built-in placeholder have no derivable bake
   // key, so hide Adjust for them rather than letting Save fail.
   const isManagedAsset = isManagedSiteAsset(data, siteId)
-  // The built-in placeholder means no real image has been uploaded yet —
-  // offer "Replace image" (opens the upload flow) instead of an edit/adjust
-  // affordance, which doesn't apply to a stock asset.
-  const isPlaceholderImage = data === `/${PLACEHOLDER_IMAGE_FILENAME}`
   // Lets the "Replace image" text open the same upload flow used for a fresh
   // upload (see the hidden FileAttachment below), by finding and clicking its
   // file input directly.
@@ -144,8 +139,8 @@ function JsonFormsImageControl({
     !!config &&
     isBakeableFormat
 
-  // Same asset that would be adjustable but for its format — tell the user why
-  // the editor isn't offered, rather than silently hiding the pencil.
+  // Same asset that would be adjustable but for its format — explain why the
+  // editor isn't offered (the row offers "Replace image" instead).
   const showUnsupportedFormatCallout =
     isImageAdjustmentEnabled && isManagedAsset && !!config && !isBakeableFormat
 
@@ -360,33 +355,23 @@ function JsonFormsImageControl({
             // malware-scan tag and 403s; the variant is fine for a thumbnail.
             imageSrc={generateAssetUrl(data)}
             onEdit={
-              isPlaceholderImage
-                ? // No real image uploaded yet — reuse the same upload flow as
-                  // the empty-field FileAttachment below (hidden, see
-                  // replaceUploadRef) instead of the adjustment modal.
+              canAdjust
+                ? () => {
+                    posthog.capture("image_adjustment_modal_opened", {
+                      site_id: siteId,
+                      resource_id: resourceId,
+                      source: "manual_edit",
+                    })
+                    onAdjustmentModalOpen()
+                  }
+                : // Not adjustable — reuse the empty-field upload flow (hidden
+                  // FileAttachment below, via replaceUploadRef).
                   () =>
                     replaceUploadRef.current
                       ?.querySelector<HTMLInputElement>('input[type="file"]')
                       ?.click()
-                : canAdjust
-                  ? () => {
-                      posthog.capture("image_adjustment_modal_opened", {
-                        site_id: siteId,
-                        resource_id: resourceId,
-                        source: "manual_edit",
-                      })
-                      onAdjustmentModalOpen()
-                    }
-                  : undefined
             }
-            editLabel={isPlaceholderImage ? "Replace image" : undefined}
-            // Unsupported format: show a disabled Edit affordance with a tooltip
-            // instead of opening the editor.
-            editDisabledReason={
-              showUnsupportedFormatCallout
-                ? "Only JPG, PNG and WebP can be edited"
-                : undefined
-            }
+            editLabel={canAdjust ? undefined : "Replace image"}
             onClick={() => {
               // Clear the sibling adjustment too — otherwise a stale
               // imageAdjustment (with an originalKey pointing at the removed
@@ -446,7 +431,14 @@ function JsonFormsImageControl({
               </Text>
             </Infobox>
           )}
-          {isPlaceholderImage && (
+          {showUnsupportedFormatCallout && (
+            <Infobox variant="warning" size="sm" mt="0.75rem">
+              <Text textStyle="body-2">
+                Only JPG, PNG and WebP can be edited
+              </Text>
+            </Infobox>
+          )}
+          {!canAdjust && (
             // Not shown — only here so "Replace image" above can open the
             // native file picker via replaceUploadRef.current.click(), reusing
             // this exact upload flow instead of a second implementation.
