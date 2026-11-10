@@ -7,7 +7,10 @@ import { renderComponent } from "@opengovsg/isomer-components"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import type { AdjustmentRenderContext } from "../AdjustmentConfig"
+import type {
+  AdjustmentPreviewState,
+  AdjustmentRenderContext,
+} from "../AdjustmentConfig"
 import {
   INTENTIONALLY_NOT_ADJUSTABLE,
   resolveAdjustmentConfig as resolveAdjustmentConfigTyped,
@@ -287,34 +290,38 @@ describe("resolveAdjustmentConfig", () => {
     // homepage/notfound layouts, where it's a square — a real-component
     // preview regression here would mean an editor never sees the shape their
     // crop will actually take.
+    const BREAKPOINTS = ["Mobile", "Tablet", "Desktop"]
+    const expectStates = (
+      version: { previewStates: AdjustmentPreviewState[] } | undefined,
+      layout: string,
+    ) => {
+      expect(version?.previewStates.map((s) => s.label)).toEqual(BREAKPOINTS)
+      expect(version?.previewStates.map((s) => s.id)).toEqual([
+        "mobile",
+        "tablet",
+        "desktop",
+      ])
+      expect(version?.previewStates.every((s) => s.layout === layout)).toBe(
+        true,
+      )
+    }
+
     it("resolves only the circle version for a content-page layout", () => {
       const config = configFor("content")
-      expect(config?.versions).toEqual([
-        expect.objectContaining({
-          id: "circle",
-          previewStates: [expect.objectContaining({ layout: "content" })],
-        }),
-      ])
+      expect(config?.versions.map((v) => v.id)).toEqual(["circle"])
+      expectStates(config?.versions[0], "content")
     })
 
     it("resolves only the square version for the homepage layout", () => {
       const config = configFor("homepage")
-      expect(config?.versions).toEqual([
-        expect.objectContaining({
-          id: "square",
-          previewStates: [expect.objectContaining({ layout: "homepage" })],
-        }),
-      ])
+      expect(config?.versions.map((v) => v.id)).toEqual(["square"])
+      expectStates(config?.versions[0], "homepage")
     })
 
     it("resolves only the square version for the notfound layout", () => {
       const config = configFor("notfound")
-      expect(config?.versions).toEqual([
-        expect.objectContaining({
-          id: "square",
-          previewStates: [expect.objectContaining({ layout: "homepage" })],
-        }),
-      ])
+      expect(config?.versions.map((v) => v.id)).toEqual(["square"])
+      expectStates(config?.versions[0], "homepage")
     })
 
     // When the page layout isn't known (e.g. this control renders outside a
@@ -322,11 +329,8 @@ describe("resolveAdjustmentConfig", () => {
     it("resolves both versions when no page-layout context is given", () => {
       const config = configFor(undefined)
       expect(config?.versions.map((v) => v.id)).toEqual(["circle", "square"])
-    })
-
-    it("stacks each version's 1:1 state instead of showing it half-width", () => {
-      expect(configFor("content")?.stackPreviews).toBe(true)
-      expect(configFor(undefined)?.stackPreviews).toBe(true)
+      expectStates(config?.versions[0], "content")
+      expectStates(config?.versions[1], "homepage")
     })
   })
 
