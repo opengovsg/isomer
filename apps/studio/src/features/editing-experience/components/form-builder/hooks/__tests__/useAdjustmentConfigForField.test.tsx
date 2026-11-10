@@ -7,11 +7,22 @@ import { describe, expect, it, vi } from "vitest"
 
 import { useAdjustmentConfigForField } from "../useAdjustmentConfigForField"
 
+const { mockQuery, mockUseCollectionIndexVariant } = vi.hoisted(() => ({
+  mockQuery: { current: { siteId: "1" } as Record<string, string> },
+  mockUseCollectionIndexVariant: vi.fn(),
+}))
+
+// No router in the test renderer; the hook reads route params via useQueryParse.
+vi.mock("next/router", () => ({
+  useRouter: () => ({ query: mockQuery.current }),
+}))
+
 // useCollectionIndexVariant issues a tRPC query (only enabled for collection
 // thumbnails, which none of these cases are). Stub it so the renderHook wrapper
 // doesn't need a tRPC provider.
 vi.mock("../useCollectionIndexVariant", () => ({
-  useCollectionIndexVariant: () => undefined,
+  useCollectionIndexVariant: (args: unknown) =>
+    mockUseCollectionIndexVariant(args) as undefined,
 }))
 
 const renderWithData = (data: unknown, path: string) =>
@@ -66,6 +77,28 @@ describe("useAdjustmentConfigForField", () => {
       cards: [{ imageUrl: "/1/uuid/card.png", someOtherField: "x" }],
     }
     const { result } = renderWithData(data, "cards.0.someOtherField")
+
+    expect(result.current.config).toBeUndefined()
+  })
+
+  it("treats a link-route image field as the collection thumbnail without an EditorDrawerProvider", () => {
+    mockQuery.current = { siteId: "7", linkId: "42" }
+    const data = { image: { src: "/7/uuid/thumb.png", alt: "" } }
+    const { result } = renderWithData(data, "image.src")
+    mockQuery.current = { siteId: "1" }
+
+    expect(result.current.siblingPath).toBe("image.imageAdjustment")
+    expect(result.current.config).toBeDefined()
+    expect(mockUseCollectionIndexVariant).toHaveBeenCalledWith({
+      siteId: 7,
+      pageId: 42,
+      enabled: true,
+    })
+  })
+
+  it("does not treat an image field as a thumbnail without context or a linkId", () => {
+    const data = { image: { src: "/1/uuid/thumb.png", alt: "" } }
+    const { result } = renderWithData(data, "image.src")
 
     expect(result.current.config).toBeUndefined()
   })
