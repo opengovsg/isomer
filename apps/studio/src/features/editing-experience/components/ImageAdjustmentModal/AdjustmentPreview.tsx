@@ -18,7 +18,7 @@ import { ErrorBoundary } from "react-error-boundary"
 import { useDebounceValue } from "usehooks-ts"
 import Suspense from "~/components/Suspense"
 import { PreviewIframe } from "~/features/editing-experience/components/preview/PreviewIframe"
-import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
+import { useSiteThemeCssVars } from "~/hooks/useSiteThemeCssVars"
 import { bakeImage, isAnimatedImageBlob } from "~/lib/imageBake"
 import {
   ASSETS_BASE_URL,
