@@ -120,6 +120,7 @@ const FOCAL_WIRING_CONFIGS: {
     },
     componentPaths: [
       "packages/components/src/templates/next/components/complex/InfoCards/components/InfoCardWithFullImage.tsx",
+      "packages/components/src/templates/next/components/complex/InfoCards/components/InfoCardImage.tsx",
     ],
     storyPaths: [
       "packages/components/src/templates/next/components/complex/InfoCards/InfoCards.stories.tsx",
