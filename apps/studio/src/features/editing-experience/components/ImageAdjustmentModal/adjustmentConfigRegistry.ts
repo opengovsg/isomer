@@ -623,8 +623,8 @@ const buildCollectionThumbnailConfig = (
 
 // Every static config, matched by resolveAdjustmentConfig on
 // `type:variant` (or bare `type`) plus the image field name. Configs that are
-// built from context/block (blockquote, InfoCards cardsWithImages, the
-// collection thumbnail) are resolved explicitly before this lookup.
+// built from context/block (blockquote, InfoCards cardsWithImages, the hero
+// carousel, the collection thumbnail) are resolved explicitly before this lookup.
 export const CONFIGS: AdjustmentConfig[] = [
   IMAGE_CONFIG,
   IMAGE_GALLERY_CONFIG,

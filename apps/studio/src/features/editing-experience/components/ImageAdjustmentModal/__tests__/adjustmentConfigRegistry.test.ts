@@ -478,19 +478,28 @@ describe("resolveAdjustmentConfig", () => {
     })
 
     it("hero carousel preview shapes follow the carousel layout (gradient when absent)", () => {
-      const desktopRatio = (carousel?: { layout: string }) =>
-        resolveAdjustmentConfig({
-          block: { type: "hero", variant: "carousel", carousel },
-          fieldName: "backgroundUrl",
-        })?.versions[0]?.previewStates.find((s) => s.id === "desktop")
-          ?.aspectRatio
+      const ratios = (carousel?: { layout: string }) =>
+        Object.fromEntries(
+          (
+            resolveAdjustmentConfig({
+              block: { type: "hero", variant: "carousel", carousel },
+              fieldName: "backgroundUrl",
+            })?.versions[0]?.previewStates ?? []
+          ).map((s) => [s.id, s.aspectRatio]),
+        )
+      const gradient = {
+        mobile: { width: 16, height: 10 },
+        tablet: { width: 2, height: 1 },
+        desktop: { width: 5, height: 2 },
+      }
 
-      expect(desktopRatio({ layout: "block" })).toEqual({ width: 5, height: 4 })
-      expect(desktopRatio({ layout: "gradient" })).toEqual({
-        width: 5,
-        height: 2,
+      expect(ratios({ layout: "block" })).toEqual({
+        mobile: { width: 7, height: 6 },
+        tablet: { width: 12, height: 5 },
+        desktop: { width: 5, height: 4 },
       })
-      expect(desktopRatio()).toEqual({ width: 5, height: 2 })
+      expect(ratios({ layout: "gradient" })).toEqual(gradient)
+      expect(ratios()).toEqual(gradient)
     })
 
     it("fixed-crop (baked-once, same shape every breakpoint) components have focal disabled", () => {
