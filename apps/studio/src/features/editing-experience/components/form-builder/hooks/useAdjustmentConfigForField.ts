@@ -7,6 +7,8 @@ import { get } from "lodash-es"
 import { useMemo } from "react"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { resolveAdjustmentConfig } from "~/features/editing-experience/components/ImageAdjustmentModal/adjustmentConfigRegistry"
+import { pageOrLinkSchema } from "~/features/editing-experience/schema"
+import { useQueryParse } from "~/hooks/useQueryParse"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { useCollectionIndexVariant } from "./useCollectionIndexVariant"
@@ -40,8 +42,13 @@ export const useAdjustmentConfigForField = (path: string) => {
   // (content/index/database pages) compose the exact same `image` field
   // shape for their own unrelated "page thumbnail" use, so the resource type
   // check -- not the field shape -- is what makes this safe to key off.
+  // The collection-link route has no EditorDrawerProvider; a linkId in the
+  // route (only that route has one) means the form edits a CollectionLink.
+  const { siteId: routeSiteId, linkId } = useQueryParse(pageOrLinkSchema)
+  const isLinkEditorRoute = editorDrawerContext === null && linkId !== undefined
   const resourceType = editorDrawerContext?.type
   const isCollectionItemResource =
+    isLinkEditorRoute ||
     resourceType === ResourceType.CollectionPage ||
     resourceType === ResourceType.CollectionLink
 
@@ -111,9 +118,9 @@ export const useAdjustmentConfigForField = (path: string) => {
   // Only fetched for an actual collection thumbnail field — every other
   // image field leaves this disabled and gets undefined back immediately.
   const collectionVariant = useCollectionIndexVariant({
-    siteId: editorDrawerContext?.siteId ?? 0,
-    pageId: editorDrawerContext?.pageId ?? 0,
-    enabled: isCollectionThumbnail && editorDrawerContext !== null,
+    siteId: editorDrawerContext?.siteId ?? routeSiteId,
+    pageId: editorDrawerContext?.pageId ?? linkId ?? 0,
+    enabled: isCollectionThumbnail,
   })
 
   const currentAdjustment = get(rootData, siblingPath) as
