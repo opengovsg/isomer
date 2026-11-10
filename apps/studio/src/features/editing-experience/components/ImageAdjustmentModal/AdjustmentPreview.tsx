@@ -24,7 +24,6 @@ import {
 
 import type {
   AdjustmentPreviewState,
-  AdjustmentScrim,
   BuildSingleItemPreviewBlock,
 } from "./AdjustmentConfig"
 import { chooseBakeMime } from "./useSaveImageAdjustment"
@@ -55,15 +54,11 @@ interface AdjustmentPreviewProps {
   originalFile?: Blob
   adjustment?: ImageAdjustment
   previewStates: AdjustmentPreviewState[]
-  scrim?: AdjustmentScrim
-  // Text drawn over the scrim in the framed preview — the card title for the
-  // full-image InfoCards variant, which overlays its title on the gradient.
-  scrimText?: string
   // The real block content + the field name holding the image, so the real
   // published component can be rendered (real copy/scrim/frame) instead of
   // the framed-<img> approximation below. Falls back to the approximation
-  // when absent or when rendering the real component fails for any reason.
-  block?: unknown
+  // when absent.
+  block?: IsomerComponent
   imageFieldName?: string
   // The field's immediate host — for a root-level image field this equals
   // `block`; for an array-nested field (e.g. an InfoCards card) this is the
@@ -71,7 +66,7 @@ interface AdjustmentPreviewProps {
   // render needs `buildSingleItemPreviewBlock` to splice just this one item
   // back into a synthetic single-item block (otherwise the real component
   // would render the whole block/every item) — see that prop's doc.
-  fieldHost?: unknown
+  fieldHost?: Record<string, unknown>
   // Builds the synthetic single-item block for an array-nested image field
   // (see AdjustmentConfig). Required (and used) only when `fieldHost` differs
   // from `block`; absent/undefined there falls back to the framed-image
@@ -114,8 +109,6 @@ export const AdjustmentPreview = ({
   originalFile,
   adjustment,
   previewStates,
-  scrim,
-  scrimText,
   block,
   imageFieldName,
   fieldHost,
@@ -359,94 +352,68 @@ export const AdjustmentPreview = ({
   const renderPreviewComponent = (
     layout: AdjustmentPreviewState["layout"],
   ): React.ReactNode => {
-    if (
-      !block ||
-      typeof block !== "object" ||
-      !fieldHost ||
-      typeof fieldHost !== "object" ||
-      !imageFieldName
-    )
-      return null
-    try {
-      // For an array-nested field (fieldHost !== block, e.g. an InfoCards
-      // card), the image + alt fallback below apply to the field HOST (the
-      // card), not the containing block — read/patch that instead.
-      const isNestedField = fieldHost !== undefined && fieldHost !== block
-      const host = (isNestedField ? fieldHost : block) as Record<
-        string,
-        unknown
-      >
-      // Preview-only safety net: some components (e.g. Blockquote) gate
-      // whether they render the image at all on a sibling `imageAlt` field,
-      // to avoid publishing an inaccessible image when alt text was never
-      // filled in. An editor adjusting crop/focal mid-edit shouldn't have
-      // that silently blank the very image they're trying to preview — the
-      // real saved value (and the production render path) is untouched.
-      const existingAlt = host.imageAlt
-      const hasAlt = typeof existingAlt === "string" && existingAlt.length > 0
-      const adjustedHost = {
-        ...host,
-        [imageFieldName]: adjustedSrc,
-        imageAdjustment: adjustment,
-        ...(hasAlt ? {} : { imageAlt: "Preview image" }),
-        // A card (nested field) owns an `imageFit` the real component reads to
-        // decide cover vs contain. The Fit/Fill toggle lives in modal state and
-        // arrives here as `objectFit`; splice it onto the edited card so the
-        // real-component preview reflects the toggle live (otherwise it renders
-        // the stale saved fit and the preview appears not to update).
-        ...(isNestedField ? { imageFit: objectFit } : {}),
-      }
-      let component: IsomerComponent
-      if (isNestedField) {
-        // The real component renders every item in the block (e.g. every
-        // InfoCards card) — splice the adjusted single item back into a
-        // synthetic single-item block so only it renders. No builder (or it
-        // returns nothing) falls back to the framed-image approximation,
-        // same as skipRealComponentPreview.
-        const built = buildSingleItemPreviewBlock?.(block, adjustedHost, host)
-        if (!built) return null
-        component = built as unknown as IsomerComponent
-      } else {
-        component = adjustedHost as unknown as IsomerComponent
-      }
-      const rendered = renderComponent({
-        component,
-        layout: layout ?? pageLayout ?? "content",
-        site: PREVIEW_SITE_STUB,
-        permalink: "",
-        headingLevel: 1,
-      })
-      // renderComponent dispatches a bare component with no page layout
-      // around it. In a real page, the horizontal gutter/max-width for any
-      // element marked `.component-content` (e.g. HeroGradient's text block)
-      // comes from an ANCESTOR selector the page layout applies —
-      // `[&_.component-content]:px-6 [&_.component-content]:md:px-10
-      // [&_.component-content]:max-w-screen-xl [&_.component-content]:mx-auto`
-      // (see Homepage.tsx) — not from the component itself. Without this
-      // wrapper the text/buttons sit flush left with no padding, even though
-      // the background image (a separate, non-"component-content" sibling)
-      // renders correctly full-bleed either way.
-      return (
-        <div className="break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10">
-          {rendered}
-        </div>
-      )
-    } catch (error) {
-      console.debug(
-        "Failed to render real-component preview, falling back to approximation",
-        error,
-      )
-      return null
+    if (!block || !fieldHost || !imageFieldName) return null
+    // The image + alt fallback below apply to the field HOST: the block itself
+    // for a root-level field, the card for an array-nested one (e.g. InfoCards).
+    const isNestedField = fieldHost !== block
+    // Preview-only safety net: some components (e.g. Blockquote) gate
+    // whether they render the image at all on a sibling `imageAlt` field,
+    // to avoid publishing an inaccessible image when alt text was never
+    // filled in. An editor adjusting crop/focal mid-edit shouldn't have
+    // that silently blank the very image they're trying to preview — the
+    // real saved value (and the production render path) is untouched.
+    const existingAlt = fieldHost.imageAlt
+    const hasAlt = typeof existingAlt === "string" && existingAlt.length > 0
+    const patch = {
+      [imageFieldName]: adjustedSrc,
+      imageAdjustment: adjustment,
+      ...(hasAlt ? {} : { imageAlt: "Preview image" }),
+      // A card (nested field) owns an `imageFit` the real component reads to
+      // decide cover vs contain. The Fit/Fill toggle lives in modal state and
+      // arrives here as `objectFit`; splice it onto the edited card so the
+      // real-component preview reflects the toggle live (otherwise it renders
+      // the stale saved fit and the preview appears not to update).
+      ...(isNestedField ? { imageFit: objectFit } : {}),
     }
+    // The real component renders every item in the block (e.g. every
+    // InfoCards card) — splice the adjusted single item back into a
+    // synthetic single-item block so only it renders. No builder (or it
+    // returns nothing) falls back to the framed-image approximation,
+    // same as skipRealComponentPreview.
+    const component = isNestedField
+      ? buildSingleItemPreviewBlock?.(
+          block,
+          { ...fieldHost, ...patch },
+          fieldHost,
+        )
+      : ({ ...block, ...patch } as IsomerComponent)
+    if (!component) return null
+    // renderComponent dispatches a bare component with no page layout
+    // around it. In a real page, the horizontal gutter/max-width for any
+    // element marked `.component-content` (e.g. HeroGradient's text block)
+    // comes from an ANCESTOR selector the page layout applies —
+    // `[&_.component-content]:px-6 [&_.component-content]:md:px-10
+    // [&_.component-content]:max-w-screen-xl [&_.component-content]:mx-auto`
+    // (see Homepage.tsx) — not from the component itself. Without this
+    // wrapper the text/buttons sit flush left with no padding, even though
+    // the background image (a separate, non-"component-content" sibling)
+    // renders correctly full-bleed either way.
+    return (
+      <div className="break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10">
+        {renderComponent({
+          component,
+          layout: layout ?? pageLayout ?? "content",
+          site: PREVIEW_SITE_STUB,
+          permalink: "",
+          headingLevel: 1,
+        })}
+      </div>
+    )
   }
 
-  // Gate on the default-layout render succeeding (and on skipRealComponentPreview
-  // not opting out of it entirely), same as every state did before per-state
-  // layout existed — a failure here falls through to the framed-<img>
-  // approximation for every state, not just the one that failed. A state
-  // requesting a non-default `layout` re-renders on its own and, in the rarer
-  // case that only its specific layout throws, is simply skipped (its sibling
-  // states still render for real).
+  // Use the real component for every state when it can be built (and
+  // skipRealComponentPreview doesn't opt out); otherwise every state falls
+  // through to the framed-<img> approximation.
   const defaultRender = skipRealComponentPreview
     ? null
     : renderPreviewComponent(undefined)
@@ -462,17 +429,32 @@ export const AdjustmentPreview = ({
       const rendered = state.layout
         ? renderPreviewComponent(state.layout)
         : defaultRender
-      if (!rendered) return null
       return (
         // The theme fetch suspends AND can throw; without the ErrorBoundary a
         // failed getTheme would tear down the whole modal instead of this one
-        // frame degrading to a theme-less (but still correct) preview.
+        // frame degrading to a theme-less (but still correct) preview. If the
+        // component itself throws, the theme-less retry throws too, and the
+        // inner boundary shows a static "Preview unavailable" tile instead.
         <ErrorBoundary
           key={state.id}
           fallbackRender={() => (
-            <PreviewFrame state={state} displayWidth={width}>
-              {rendered}
-            </PreviewFrame>
+            <ErrorBoundary
+              fallbackRender={() => (
+                <PreviewTile label={state.label} width={width}>
+                  <Text
+                    p="0.75rem"
+                    textStyle="caption-2"
+                    color="base.content.medium"
+                  >
+                    Preview unavailable
+                  </Text>
+                </PreviewTile>
+              )}
+            >
+              <PreviewFrame state={state} displayWidth={width}>
+                {rendered}
+              </PreviewFrame>
+            </ErrorBoundary>
           )}
         >
           <Suspense fallback={<Skeleton w={`${width}px`} h="9rem" />}>
@@ -493,64 +475,29 @@ export const AdjustmentPreview = ({
       ? state.aspectRatio.width / state.aspectRatio.height
       : 1
     return (
-      <VStack
+      <PreviewTile
         key={state.id}
-        align="stretch"
-        spacing="0.375rem"
-        flexShrink={0}
-        w={`${width}px`}
+        label={state.label}
+        width={width}
+        height={width / aspect}
       >
-        <TileCaption>{state.label}</TileCaption>
-        <Box {...TILE_FRAME_PROPS} style={{ width, height: width / aspect }}>
-          <Box w="100%" h="100%" position="relative" overflow="hidden">
-            <Box
-              as="img"
-              src={adjustedSrc}
-              alt={`Preview: ${state.label}`}
-              w="100%"
-              h="100%"
-              style={{
-                objectFit,
-                // Mirror the renderer: focal is ignored under "contain" (the
-                // letterboxed image stays object-center), applied under "cover".
-                objectPosition:
-                  objectFit === "contain"
-                    ? undefined
-                    : getFocalObjectPosition(adjustment?.focal),
-              }}
-            />
-            {/* Scrim overlay — mirrors the live component's overlay (e.g. the
-                InfoCards full-image gradient) so editors can judge contrast. */}
-            {scrim && (
-              <Box
-                position="absolute"
-                inset={0}
-                className={scrim.className}
-                pointerEvents="none"
-              >
-                {/* The full-image card overlays its title on the gradient — show
-                    it so editors can judge the subject against the text. */}
-                {scrimText && (
-                  <Text
-                    position="absolute"
-                    bottom={0}
-                    left={0}
-                    right={0}
-                    px="0.5rem"
-                    pb="0.5rem"
-                    color="white"
-                    textStyle="caption-1"
-                    fontWeight="600"
-                    noOfLines={2}
-                  >
-                    {scrimText}
-                  </Text>
-                )}
-              </Box>
-            )}
-          </Box>
-        </Box>
-      </VStack>
+        <Box
+          as="img"
+          src={adjustedSrc}
+          alt={`Preview: ${state.label}`}
+          w="100%"
+          h="100%"
+          style={{
+            objectFit,
+            // Mirror the renderer: focal is ignored under "contain" (the
+            // letterboxed image stays object-center), applied under "cover".
+            objectPosition:
+              objectFit === "contain"
+                ? undefined
+                : getFocalObjectPosition(adjustment?.focal),
+          }}
+        />
+      </PreviewTile>
     )
   }
 
@@ -590,26 +537,40 @@ export const AdjustmentPreview = ({
   )
 }
 
-// Shared tile chrome + caption, used by both the real-component and framed-image
-// tiles so their frames stay visually identical.
-const TILE_FRAME_PROPS = {
-  borderWidth: "1px",
-  borderColor: "base.divider.medium",
-  borderRadius: "0.125rem",
-  overflow: "hidden",
-  bg: "base.canvas.default",
-  position: "relative",
-} as const
-
-const TileCaption = ({ children }: { children: string }): JSX.Element => (
-  <Text
-    textStyle="caption-2"
-    textTransform="uppercase"
-    letterSpacing="0.05em"
-    color="base.content.medium"
-  >
-    {children}
-  </Text>
+// Shared tile chrome + caption, used by the real-component, framed-image and
+// "unavailable" tiles so their frames stay visually identical.
+const PreviewTile = ({
+  label,
+  width,
+  height,
+  children,
+}: {
+  label: string
+  width: number
+  height?: number
+  children: React.ReactNode
+}): JSX.Element => (
+  <VStack align="stretch" spacing="0.375rem" flexShrink={0} w={`${width}px`}>
+    <Text
+      textStyle="caption-2"
+      textTransform="uppercase"
+      letterSpacing="0.05em"
+      color="base.content.medium"
+    >
+      {label}
+    </Text>
+    <Box
+      borderWidth="1px"
+      borderColor="base.divider.medium"
+      borderRadius="0.125rem"
+      overflow="hidden"
+      bg="base.canvas.default"
+      position="relative"
+      style={{ width, height }}
+    >
+      {children}
+    </Box>
+  </VStack>
 )
 
 // Renders the real component inside a simulated device viewport at this
@@ -671,37 +632,30 @@ const PreviewFrame = ({
   const scale = displayWidth / viewportWidth
 
   return (
-    <VStack
-      align="stretch"
-      spacing="0.375rem"
-      flexShrink={0}
-      w={`${displayWidth}px`}
+    <PreviewTile
+      label={state.label}
+      width={displayWidth}
+      height={viewportHeight * scale}
     >
-      <TileCaption>{state.label}</TileCaption>
       <Box
-        {...TILE_FRAME_PROPS}
-        style={{ width: displayWidth, height: viewportHeight * scale }}
+        style={{
+          width: viewportWidth,
+          height: viewportHeight,
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
+        }}
       >
-        <Box
-          style={{
-            width: viewportWidth,
-            height: viewportHeight,
-            transform: `scale(${scale})`,
-            transformOrigin: "top left",
-          }}
+        <PreviewIframe
+          widthPx={viewportWidth}
+          heightPx={viewportHeight}
+          preventPointerEvents
+          style={themeCssVars}
+          callback={handleIframeMount}
         >
-          <PreviewIframe
-            widthPx={viewportWidth}
-            heightPx={viewportHeight}
-            preventPointerEvents
-            style={themeCssVars}
-            callback={handleIframeMount}
-          >
-            {children}
-          </PreviewIframe>
-        </Box>
+          {children}
+        </PreviewIframe>
       </Box>
-    </VStack>
+    </PreviewTile>
   )
 }
 

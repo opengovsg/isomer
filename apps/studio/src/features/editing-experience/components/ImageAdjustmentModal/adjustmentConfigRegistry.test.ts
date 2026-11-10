@@ -1,4 +1,5 @@
 import type {
+  IsomerComponent,
   IsomerPageLayoutType,
   IsomerSiteProps,
 } from "@opengovsg/isomer-components"
@@ -6,11 +7,26 @@ import { renderComponent } from "@opengovsg/isomer-components"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import type { AdjustmentConfig } from "./AdjustmentConfig"
+import type {
+  AdjustmentConfig,
+  AdjustmentRenderContext,
+} from "./AdjustmentConfig"
 import {
   INTENTIONALLY_NOT_ADJUSTABLE,
-  resolveAdjustmentConfig,
+  resolveAdjustmentConfig as resolveAdjustmentConfigTyped,
 } from "./adjustmentConfigRegistry"
+
+// Fixtures are partial blocks carrying only the discriminators the registry
+// reads, so cast once here rather than at every call site.
+const resolveAdjustmentConfig = (args: {
+  block: unknown
+  fieldName: string
+  context?: AdjustmentRenderContext
+}) =>
+  resolveAdjustmentConfigTyped({
+    ...args,
+    block: args.block as IsomerComponent | undefined,
+  })
 
 // Minimal site stub for rendering a single block in isolation — mirrors
 // AdjustmentPreview's own PREVIEW_SITE_STUB.
@@ -171,16 +187,6 @@ describe("resolveAdjustmentConfig", () => {
       ).toBeUndefined()
     })
 
-    it("offers the focal point only when the card's imageFit is cover (or unset)", () => {
-      const focalEnabledFor = withImages?.focalEnabledFor
-      expect(focalEnabledFor).toBeDefined()
-      // Unset defaults to cover.
-      expect(focalEnabledFor?.({})).toBe(true)
-      expect(focalEnabledFor?.({ imageFit: "cover" })).toBe(true)
-      // "contain" (Resize image to fit) letterboxes the whole image — no focal.
-      expect(focalEnabledFor?.({ imageFit: "contain" })).toBe(false)
-    })
-
     it("splices the edited card back into its real position among siblings", () => {
       const originalCard = { imageUrl: "/old.png" }
       const block = {
@@ -195,10 +201,10 @@ describe("resolveAdjustmentConfig", () => {
       }
       const editedCard = { imageUrl: "/new.png" }
       const preview = withImages!.buildSingleItemPreviewBlock!(
-        block,
+        block as IsomerComponent,
         editedCard,
         originalCard,
-      )!
+      ) as Record<string, unknown>
       expect(preview.cards).toEqual([editedCard, { imageUrl: "/other.png" }])
       expect(preview.title).toBe("")
       expect(preview.subtitle).toBeUndefined()
@@ -216,9 +222,10 @@ describe("resolveAdjustmentConfig", () => {
       }
       const detachedCard = { imageUrl: "/detached.png" }
       const preview = withImages!.buildSingleItemPreviewBlock!(
-        block,
+        block as IsomerComponent,
         detachedCard,
-      )!
+        { imageUrl: "/not-a-sibling.png" },
+      ) as Record<string, unknown>
       expect(preview.cards).toEqual([detachedCard])
     })
 
@@ -235,7 +242,7 @@ describe("resolveAdjustmentConfig", () => {
       }
       const editedCard = { ...cardB, imageUrl: "/edited.png" }
       const preview = withImages?.buildSingleItemPreviewBlock?.(
-        block,
+        block as IsomerComponent,
         editedCard,
         cardB,
       )
@@ -262,7 +269,7 @@ describe("resolveAdjustmentConfig", () => {
       }
       const editedCard = { ...card, imageUrl: "/edited.png" }
       const preview = fullImage?.buildSingleItemPreviewBlock?.(
-        block,
+        block as IsomerComponent,
         editedCard,
         card,
       )
@@ -525,17 +532,16 @@ describe("resolveAdjustmentConfig", () => {
 
     it("InfoCards (Tier C) ties focal to imageFit, not just the responsive frame", () => {
       // The InfoCards frame genuinely reshapes across breakpoints/columns
-      // (common.ts cardImageContainer), so focalEnabled defaults to true --
-      // but focalEnabledFor hides it once imageFit is "contain", since a
-      // letterboxed image has nothing for focal to anchor either.
+      // (common.ts cardImageContainer), so focalEnabled is true -- the modal
+      // hides it once its fit control is "contain" (ownsImageFitField), since
+      // a letterboxed image has nothing for focal to anchor either.
       for (const variant of ["cardsWithImages", "cardsWithFullImages"]) {
         const config = resolveAdjustmentConfig({
           block: { type: "infocards", variant },
           fieldName: "imageUrl",
         })
         expect(config?.focalEnabled).toBe(true)
-        expect(config?.focalEnabledFor?.({ imageFit: "contain" })).toBe(false)
-        expect(config?.focalEnabledFor?.({ imageFit: "cover" })).toBe(true)
+        expect(config?.ownsImageFitField).toBe(true)
       }
     })
   })
@@ -637,17 +643,6 @@ describe("resolveAdjustmentConfig", () => {
         { width: 5, height: 4 },
         { width: 5, height: 4 },
       ])
-    })
-
-    it("offers the focal point only when imageFit is cover (or unset), same as InfoCards", () => {
-      const config = resolveAdjustmentConfig({
-        block: {},
-        fieldName: "src",
-        context: { isCollectionThumbnail: true },
-      })
-      expect(config?.focalEnabledFor?.({})).toBe(true)
-      expect(config?.focalEnabledFor?.({ imageFit: "cover" })).toBe(true)
-      expect(config?.focalEnabledFor?.({ imageFit: "contain" })).toBe(false)
     })
 
     it("previews with object-contain only under 'Resize image to fit'", () => {

@@ -240,8 +240,9 @@ function JsonFormsImageControl({
   // get an unexpected imageFit control.
   const hasImageFitField = config?.ownsImageFitField ?? false
   const initialImageFit = hasImageFitField
-    ? ((fieldHost as { imageFit?: "cover" | "contain" } | null)?.imageFit ??
-      "cover")
+    ? fieldHost?.imageFit === "contain"
+      ? "contain"
+      : "cover"
     : undefined
 
   // Sibling path for the field host's imageFit field, mirroring siblingPath's

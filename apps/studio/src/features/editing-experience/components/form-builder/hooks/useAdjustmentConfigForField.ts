@@ -1,4 +1,7 @@
-import type { ImageAdjustment } from "@opengovsg/isomer-components"
+import type {
+  ImageAdjustment,
+  IsomerComponent,
+} from "@opengovsg/isomer-components"
 import { useJsonForms } from "@jsonforms/react"
 import { get } from "lodash-es"
 import { useMemo } from "react"
@@ -70,18 +73,24 @@ export const useAdjustmentConfigForField = (path: string) => {
 
   // The field's immediate host: for a root-level image field the block itself,
   // for an array-nested field (e.g. an InfoCards card) the card object. This is
-  // what Tier C's focalEnabledFor/previewObjectFitFor read (e.g. the card's
+  // what Tier C's previewObjectFitFor reads (e.g. the card's
   // imageFit), and where the imageAdjustment sibling is written.
   // Per-block editor forms (e.g. HeroEditorDrawer) mount the form with the
   // block itself as the data root, so a top-level image field has an empty
   // parentPath -- in that case the host IS rootData.
-  const fieldHost: unknown = parentPath ? get(rootData, parentPath) : rootData
+  const rawFieldHost: unknown = parentPath
+    ? get(rootData, parentPath)
+    : rootData
+  const fieldHost =
+    typeof rawFieldHost === "object" && rawFieldHost !== null
+      ? (rawFieldHost as Record<string, unknown>)
+      : undefined
 
   // The block that OWNS the field = the nearest ancestor carrying a block
   // `type` discriminator, which is what the registry keys on. For a root-level
   // image field that is the immediate host; for an array-nested field the card
   // has no `type`, so this climbs to the enclosing block (e.g. InfoCards).
-  const ownerBlock: unknown = useMemo(() => {
+  const ownerBlock = useMemo((): IsomerComponent | undefined => {
     const segments = parentPath ? parentPath.split(".") : []
     for (let depth = segments.length; depth >= 0; depth--) {
       const ancestorPath = segments.slice(0, depth).join(".")
@@ -93,11 +102,11 @@ export const useAdjustmentConfigForField = (path: string) => {
         candidate !== null &&
         typeof (candidate as { type?: unknown }).type === "string"
       ) {
-        return candidate
+        return candidate as IsomerComponent
       }
     }
-    return fieldHost
-  }, [rootData, parentPath, fieldHost])
+    return undefined
+  }, [rootData, parentPath])
 
   // Only fetched for an actual collection thumbnail field — every other
   // image field leaves this disabled and gets undefined back immediately.

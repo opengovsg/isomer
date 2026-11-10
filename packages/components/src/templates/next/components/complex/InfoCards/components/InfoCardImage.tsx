@@ -1,5 +1,6 @@
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
 import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
+import { isFocalApplicable } from "~/interfaces/constants"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
 import type { With4Cols } from "./types"
@@ -37,8 +38,9 @@ export const InfoCardImage = ({
   // (already-cropped) image is letterboxed, so an object-position would only
   // shove it off-center within the letterbox — a focal set earlier under cover
   // must not leak through. "contain" cards always keep the object-center default.
-  const effectiveImageAdjustment =
-    imageFit === "contain" ? undefined : imageAdjustment
+  const effectiveImageAdjustment = isFocalApplicable(imageFit)
+    ? imageAdjustment
+    : undefined
   return (
     <div
       className={compoundStyles.cardImageContainer({

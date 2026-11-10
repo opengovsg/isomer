@@ -1,5 +1,6 @@
 import type {
   ImageAdjustment,
+  IsomerComponent,
   IsomerPageLayoutType,
 } from "@opengovsg/isomer-components"
 import type { RefObject } from "react"
@@ -33,6 +34,7 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
+import { isFocalApplicable } from "@opengovsg/isomer-components"
 import posthog from "posthog-js"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { BiChevronDown, BiInfoCircle, BiReset } from "react-icons/bi"
@@ -44,11 +46,11 @@ import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
 import { CropFocalControl } from "./controls/CropFocalControl"
 import { defaultCropRect } from "./controls/cropGeometry"
-import { computeLowResWarning } from "./resolutionWarning"
 import {
   focalToWholeImagePoint,
   pointToCropRelativeFocal,
 } from "./controls/focalGeometry"
+import { computeLowResWarning } from "./resolutionWarning"
 import {
   resolveOriginalKey,
   useSaveImageAdjustment,
@@ -148,12 +150,12 @@ interface ImageAdjustmentModalProps {
   // The real block content + the name of the field holding the image, so the
   // preview can render the actual published component (real copy, scrim,
   // crop frame) rather than an approximation.
-  block: unknown
+  block: IsomerComponent | undefined
   imageFieldName: string
   // The field's immediate host (for an array-nested InfoCards image, the card
-  // object) — read by the config's focalEnabledFor/previewObjectFitFor to resolve
-  // the controls for this card's current imageFit.
-  fieldHost: unknown
+  // object) — read by the config's previewObjectFitFor to resolve the preview
+  // fit for this card's current imageFit.
+  fieldHost: Record<string, unknown> | undefined
   // The retained client-side bytes of the just-uploaded original, when available
   // (see JsonFormsImageControl). Lets the crop canvas, preview, and save bake
   // from local bytes while the uploaded original is still gated by the scan
@@ -211,13 +213,9 @@ export const ImageAdjustmentModal = ({
     initialImageFit ?? "cover",
   )
   // Tier C (InfoCards): focal and the preview's object-fit depend on the card's
-  // current imageFit; other components have no resolver and fall back to the
-  // static config / cover.
-  const focalEnabled = hasImageFitControl
-    ? imageFit !== "contain"
-    : config.focalEnabledFor
-      ? config.focalEnabledFor(fieldHost)
-      : config.focalEnabled
+  // current imageFit; other components fall back to the static config / cover.
+  const focalEnabled =
+    config.focalEnabled && (!hasImageFitControl || isFocalApplicable(imageFit))
   const previewObjectFit = hasImageFitControl
     ? imageFit === "contain"
       ? "contain"
@@ -738,10 +736,6 @@ export const ImageAdjustmentModal = ({
                     originalFile={originalFile}
                     adjustment={draft}
                     previewStates={activeVersion?.previewStates ?? []}
-                    scrim={config.scrim}
-                    // The card's title, overlaid on the gradient in the full-image
-                    // card preview (only drawn when the config has a scrim).
-                    scrimText={(fieldHost as { title?: string } | null)?.title}
                     block={block}
                     imageFieldName={imageFieldName}
                     fieldHost={fieldHost}

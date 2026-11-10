@@ -1,4 +1,7 @@
-import type { IsomerPageLayoutType } from "@opengovsg/isomer-components"
+import type {
+  IsomerComponent,
+  IsomerPageLayoutType,
+} from "@opengovsg/isomer-components"
 
 // FROZEN CONTRACT (W0-A / ISOM-2587). The per-component declaration that drives
 // the component-agnostic image adjustment modal (W0-D). Every per-component
@@ -71,51 +74,39 @@ export interface AdjustmentRenderContext {
   collectionVariant?: "collection" | "blog"
 }
 
-// Optional scrim/overlay drawn over the preview to mirror the live component
-// (e.g. HeroGradient's left-to-right dark gradient) so editors can judge contrast.
-export interface AdjustmentScrim {
-  id: string
-  // Must match the component's own className exactly — this is an approximation
-  // used only in the framed-<img> fallback preview, not read by the real component.
-  className: string
-  // Editor-facing description shown in the Overlay panel; never show raw Tailwind classes.
-  label: string
-}
-
 // For an array-nested image field (e.g. an InfoCards card) whose containing
-// block renders EVERY item, builds the block to render for the preview. `item`
-// is the field host (e.g. the card object) with the adjusted image +
+// block renders EVERY item, builds the block to render for the preview.
+// `editedItem` is the field host (e.g. the card object) with the adjusted image +
 // imageAdjustment already spliced in; `originalItem` is that same host BEFORE
 // the splice, so the builder can locate it among the block's items and swap in
 // the adjusted copy — rendering the real sibling items alongside it so the
 // multi-column grid looks natural. Return undefined to skip the real-component
 // preview for this render (falls back to the framed-image approximation) — e.g.
-// if `block` isn't shaped as expected.
+// if `ownerBlock` isn't shaped as expected.
 export type BuildSingleItemPreviewBlock = (
-  block: unknown,
-  item: unknown,
-  originalItem?: unknown,
-) => Record<string, unknown> | undefined
+  ownerBlock: IsomerComponent,
+  editedItem: Record<string, unknown>,
+  originalItem: Record<string, unknown>,
+) => IsomerComponent | undefined
 
 export interface AdjustmentConfig {
   // Block/component type key this config applies to.
   componentType: string
+  // Name of the image field this config adjusts (e.g. "backgroundUrl").
+  imageField: string
   cropMode: CropMode
   // For cropMode "fixed": the ratio(s) to enforce. One entry = Tier A. Multiple
   // = Tier B responsive (ratio varies by breakpoint, paired with previewStates).
   lockedRatios?: AspectRatio[]
-  // Whether the focal-point control is offered (Tier B; false for A / D).
-  // For Tier C (InfoCards) this is the default; focalEnabledFor overrides it per
-  // field host (focal is meaningless once the image is letterboxed under "Resize
-  // image to fit", so it's hidden there).
+  // Capability flag: whether the focal-point control can ever be offered (Tier
+  // B/C; false for A / D). With ownsImageFitField the modal additionally hides
+  // it while the fit is "contain" (see isFocalApplicable).
   focalEnabled: boolean
   // One or more named preview versions (e.g. Blockquote's circle/square masks).
   // Always >= 1 entry. The modal shows a dropdown to pick the active one only
   // when there's more than one; otherwise it renders the single version's
   // previewStates directly, same as before this existed.
   versions: PreviewVersion[]
-  // A single overlay mirroring the live component (e.g. HeroGradient's gradient).
-  scrim?: AdjustmentScrim
   // Guidance copy shown before/around upload (resolution hints etc.).
   preUploadCopy?: string
   // The widest CSS-pixel width the image renders into on the published site
@@ -130,20 +121,15 @@ export interface AdjustmentConfig {
   // computeLowResWarning). Omit when the frame height isn't meaningfully bounded
   // (e.g. a width-driven natural-aspect image whose height just follows width).
   maxRenderedHeightPx?: number
-  // Tier C conditional focal: overrides focalEnabled based on the field's
-  // immediate host object — the block itself, or for an array-nested image field
-  // (e.g. an InfoCards card) the card object. InfoCards offers the focal point
-  // only under imageFit "cover"; under "contain" ("Resize image to fit") the
-  // whole image is letterboxed, so a focal anchor has nothing to do. Crop stays
-  // available in both fits (the crop defines the region that is then letterboxed).
-  focalEnabledFor?: (fieldHost: unknown) => boolean
   // Tier C conditional preview fit: the object-fit the framed-image preview
   // (skipRealComponentPreview path) uses, resolved from the field host.
-  previewObjectFitFor?: (fieldHost: unknown) => "cover" | "contain"
+  previewObjectFitFor?: (
+    fieldHost: Record<string, unknown> | undefined,
+  ) => "cover" | "contain"
   // Opt out of the real-component preview in favour of the framed-image
   // approximation below. For an array-nested image field whose host component
   // has no buildSingleItemPreviewBlock (or it returns undefined for a given
-  // item) — the approximation (one framed image + scrim per state) is the
+  // item) — the approximation (one framed image per state) is the
   // fallback for a component that can't produce a meaningful single-item
   // real render.
   skipRealComponentPreview?: boolean

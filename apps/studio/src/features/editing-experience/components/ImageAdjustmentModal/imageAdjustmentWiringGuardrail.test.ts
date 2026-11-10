@@ -1,9 +1,25 @@
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 import fs from "fs"
 import path from "path"
 import { describe, expect, it } from "vitest"
 
-import type { AdjustmentConfig } from "./AdjustmentConfig"
-import { resolveAdjustmentConfig } from "./adjustmentConfigRegistry"
+import type {
+  AdjustmentConfig,
+  AdjustmentRenderContext,
+} from "./AdjustmentConfig"
+import { resolveAdjustmentConfig as resolveAdjustmentConfigTyped } from "./adjustmentConfigRegistry"
+
+// Fixtures are partial blocks carrying only the discriminators the registry
+// reads, so cast once here rather than at every call site.
+const resolveAdjustmentConfig = (args: {
+  block: unknown
+  fieldName: string
+  context?: AdjustmentRenderContext
+}) =>
+  resolveAdjustmentConfigTyped({
+    ...args,
+    block: args.block as IsomerComponent | undefined,
+  })
 
 // Root of the monorepo, resolved from this file's location so the test works
 // regardless of the cwd it's invoked from.
@@ -26,10 +42,10 @@ const FOCAL_WIRING_CONFIGS: {
   resolve: {
     block: unknown
     fieldName: string
-    context?: Parameters<typeof resolveAdjustmentConfig>[0]["context"]
+    context?: AdjustmentRenderContext
   }
-  // Every listed path must contain "imageAdjustment" -- unlike the scrim
-  // guardrail's `.some(...)`, this is `.every(...)`: HeroGradient has two
+  // Every listed path must contain "imageAdjustment" -- this is
+  // `.every(...)`, not `.some(...)`: HeroGradient has two
   // render branches an editor can pick between (Buttons/QuickLinks), and
   // both must honour a focal point, not just one of them.
   componentPaths: string[]
@@ -142,11 +158,11 @@ const FOCAL_WIRING_CONFIGS: {
 ]
 
 // Every resolvable config in the registry, focal or not -- used only by the
-// completeness check below, mirroring scrimClassNameGuardrail's ALL_BLOCKS.
+// completeness check below.
 const ALL_RESOLUTIONS: {
   block: unknown
   fieldName: string
-  context?: Parameters<typeof resolveAdjustmentConfig>[0]["context"]
+  context?: AdjustmentRenderContext
 }[] = [
   { block: { type: "image" }, fieldName: "src" },
   { block: { type: "imagegallery" }, fieldName: "src" },

@@ -1,4 +1,7 @@
-import type { ImageAdjustment } from "@opengovsg/isomer-components"
+import type {
+  ImageAdjustment,
+  IsomerComponent,
+} from "@opengovsg/isomer-components"
 import type { Meta, StoryObj } from "@storybook/nextjs-vite"
 import { useState } from "react"
 
@@ -8,6 +11,7 @@ import { ImageAdjustmentModal } from "./ImageAdjustmentModal"
 
 const TIER_B_CONFIG: AdjustmentConfig = {
   componentType: "hero",
+  imageField: "backgroundUrl",
   cropMode: "fixed",
   lockedRatios: [
     { width: 16, height: 9 },
@@ -39,11 +43,6 @@ const TIER_B_CONFIG: AdjustmentConfig = {
       ],
     },
   ],
-  scrim: {
-    id: "gradient",
-    className: "bg-gradient-to-r from-black/50 to-transparent",
-    label: "Dark gradient (for text contrast)",
-  },
   preUploadCopy:
     "For best results, use images at least 1600px wide. Square images will be cropped to your selected aspect ratio.",
 }
@@ -51,7 +50,7 @@ const TIER_B_CONFIG: AdjustmentConfig = {
 interface ImageAdjustmentModalHarnessProps {
   isOpen: boolean
   value?: ImageAdjustment
-  block?: unknown
+  block?: IsomerComponent
   config?: AdjustmentConfig
   imageFieldName?: string
 }
@@ -151,6 +150,8 @@ export const WithRealComponentPreview: Story = {
     block: {
       type: "hero",
       variant: "gradient",
+      // Replaced by the adjusted image in the preview.
+      backgroundUrl: "",
       title: "A real HeroGradient, rendered live",
       subtitle:
         "This copy, gradient, and crop all come from the real component.",
@@ -173,7 +174,7 @@ export const WithBlockquotePreview: Story = {
     isOpen: true,
     imageFieldName: "imageSrc",
     config: resolveAdjustmentConfig({
-      block: { type: "blockquote" },
+      block: { type: "blockquote" } as IsomerComponent,
       fieldName: "imageSrc",
     }),
     block: {
