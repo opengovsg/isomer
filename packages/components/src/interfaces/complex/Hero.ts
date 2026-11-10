@@ -153,9 +153,9 @@ const BACKGROUND_IMAGE_OPTS = {
   allowedMimeTypeMappings: BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 }
 
-// Only searchbar (a hidden beta variant) and carousel slides use the bare src,
-// with no adjustment sibling. Every other adjustable variant spreads
-// generateAdjustableImageFields instead.
+// Only searchbar uses the bare src now, a hidden beta variant with no
+// adjustment sibling. Every adjustable variant, carousel slides included,
+// spreads generateAdjustableImageFields instead.
 const BackgroundUrlSchema = generateImageSrcSchema(BACKGROUND_IMAGE_OPTS)
 
 const GROUPINGS = {
@@ -391,7 +391,10 @@ const HeroSearchbarSchema = Type.Composite(
 export const HeroCarouselSlideSchema = Type.Composite(
   [
     Type.Object({
-      backgroundUrl: BackgroundUrlSchema,
+      // Reserves backgroundUrlImageAdjustment per slide, collision-safe across
+      // the slide array. The editor and renderer wiring lands in a follow-up;
+      // carousel has no resolveAdjustmentConfig entry on this branch yet.
+      ...generateAdjustableImageFields("backgroundUrl", BACKGROUND_IMAGE_OPTS),
       ...heroContentFields({
         title:
           "Keep it short. The slide with the most text sets the height for all slides.",
