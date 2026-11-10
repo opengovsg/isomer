@@ -85,6 +85,7 @@ const FOCAL_WIRING_CONFIGS: {
     },
     componentPaths: [
       "packages/components/src/templates/next/components/complex/Hero/HeroLargeImage/HeroLargeImage.tsx",
+      "packages/components/src/templates/next/components/complex/Hero/HeroLargeImage/ImageContainer.tsx",
     ],
     storyPaths: [
       "packages/components/src/templates/next/components/complex/Hero/HeroLargeImage/HeroLargeImage.adjustment.stories.tsx",
