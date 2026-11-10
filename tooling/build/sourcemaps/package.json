@@ -1,0 +1,11 @@
+{
+  "name": "sourcemaps",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pinned datadog-ci for uploading Studio sourcemaps from the deploy workflow",
+  "license": "ISC",
+  "author": "",
+  "dependencies": {
+    "@datadog/datadog-ci": "catalog:"
+  }
+}
