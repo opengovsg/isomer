@@ -13,7 +13,7 @@ import { HeroGradient } from "./HeroGradient"
 // band reshapes. (Horizontal focal is near-inert on this wide band — the
 // W0-S-F geometry finding.)
 const meta: Meta<typeof HeroGradient> = {
-  title: "Next/Components/Hero/ImageAdjustment",
+  title: "Next/Components/Hero/HeroGradient/ImageAdjustment",
   component: HeroGradient,
   parameters: {
     argos: withArgosModes(["mobile", "tablet", "desktop"]),
@@ -57,7 +57,7 @@ export const FocalTop: Story = {
     ...SHARED,
     title: "Focal top (y = 0)",
     subtitle: "The top edge stays pinned across all breakpoints.",
-    imageAdjustment: adjustmentWithFocal(0.5, 0),
+    backgroundUrlImageAdjustment: adjustmentWithFocal(0.5, 0),
   },
 }
 
@@ -66,6 +66,6 @@ export const FocalBottom: Story = {
     ...SHARED,
     title: "Focal bottom (y = 1)",
     subtitle: "The bottom edge stays pinned across all breakpoints.",
-    imageAdjustment: adjustmentWithFocal(0.5, 1),
+    backgroundUrlImageAdjustment: adjustmentWithFocal(0.5, 1),
   },
 }

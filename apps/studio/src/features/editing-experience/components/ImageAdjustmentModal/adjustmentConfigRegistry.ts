@@ -1,8 +1,57 @@
-import type { AdjustmentConfig } from "./AdjustmentConfig"
+import type { IsomerComponent } from "@opengovsg/isomer-components"
 
-// Narrow an unknown block to read its discriminators safely.
-const asBlock = (block: unknown): { type?: string; variant?: string } =>
-  typeof block === "object" && block !== null ? block : {}
+import type {
+  AdjustmentConfig,
+  AdjustmentPreviewState,
+  AdjustmentRenderContext,
+  AspectRatio,
+  PreviewVersion,
+} from "./AdjustmentConfig"
+
+/** Deliberate opt-outs: these component types will never have image adjustment, by design. */
+export const INTENTIONALLY_NOT_ADJUSTABLE = [
+  "logocloud",
+  "video",
+  "navbar",
+] as const
+
+// Wraps a plain previewStates array as the sole `PreviewVersion` of a config
+// that has no distinct shape/variant axis — no `label` needed since the modal only shows its version
+// dropdown when there's more than one version.
+const singleVersion = (
+  previewStates: AdjustmentPreviewState[],
+): PreviewVersion[] => [{ id: "default", previewStates }]
+
+// Standard Desktop/Tablet/Mobile preview set, shared by every component so all
+// editor previews show the same three breakpoint viewport widths (mobile 375 /
+// tablet 768 / desktop 1280); only the aspect ratio differs per component. For
+// real-component previews the ratio is just a pre-measure flash guess
+// (PreviewFrame measures the real rendered height); for framed previews
+// (skipRealComponentPreview) it sets the tile's actual shape.
+const responsivePreviewStates = (ratios: {
+  mobile: AspectRatio
+  tablet: AspectRatio
+  desktop: AspectRatio
+}): AdjustmentPreviewState[] => [
+  {
+    id: "mobile",
+    label: "Mobile",
+    viewportWidth: 375,
+    aspectRatio: ratios.mobile,
+  },
+  {
+    id: "tablet",
+    label: "Tablet",
+    viewportWidth: 768,
+    aspectRatio: ratios.tablet,
+  },
+  {
+    id: "desktop",
+    label: "Desktop",
+    viewportWidth: 1280,
+    aspectRatio: ratios.desktop,
+  },
+]
 
 // Tier B — full-bleed responsive gradient hero. Focal anchors the subject as the
 // banner reshapes across breakpoints (proven in spike W0-S-F); crop is free
@@ -12,36 +61,28 @@ const asBlock = (block: unknown): { type?: string; variant?: string } =>
 // wide band the vertical focal moves the image, the horizontal barely does.
 const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   componentType: "hero:gradient",
+  imageField: "backgroundUrl",
   cropMode: "custom",
   focalEnabled: true,
-  previewStates: [
-    {
-      id: "mobile",
-      label: "Mobile",
-      viewportWidth: 375,
-      aspectRatio: { width: 375, height: 240 },
-    },
-    {
-      id: "tablet",
-      label: "Tablet",
-      viewportWidth: 768,
-      aspectRatio: { width: 768, height: 360 },
-    },
-    {
-      id: "desktop",
-      label: "Desktop",
-      viewportWidth: 1440,
-      aspectRatio: { width: 1440, height: 500 },
-    },
-  ],
-  // Must match HeroGradient.tsx's own className exactly, so editors judge contrast
-  // against the real overlay: solid dark on mobile, gradient from lg: up.
-  scrim: {
-    id: "gradient",
-    className:
-      "bg-black/60 lg:bg-transparent lg:bg-gradient-to-r lg:from-black lg:to-black/25",
-    label: "Dark gradient (for text contrast)",
-  },
+  // Full-bleed; no CSS width cap. Warn against the 1280px content ceiling
+  // (max-w-screen-xl) as a conservative "looks soft on desktop" floor.
+  maxRenderedWidthPx: 1280,
+  // lg:min-h-[31.25rem] (500px) — the hero band's actual minimum rendered
+  // height, matching the Isomer image guidelines' 2560×500 minimum for this
+  // variant. Crop is free (custom), so width and height can fall short
+  // independently — both must be checked.
+  maxRenderedHeightPx: 500,
+  // Closest common ratio to each breakpoint's hero band (375×240→16:10,
+  // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 16, height: 10 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 5, height: 2 },
+    }),
+  ),
+  preUploadCopy:
+    "Use a high-resolution image (at least 2560×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text — this variant adds a gradient overlay.",
 }
 
 // Tier A — fixed 5:6 crop (aspect-[5/6]), no focal. The crop is baked into the
@@ -49,25 +90,31 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
 // editor's fixed-ratio crop UI.
 const CONTENTPIC_CONFIG: AdjustmentConfig = {
   componentType: "contentpic",
+  imageField: "imageSrc",
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 5, height: 6 }],
+  // Fixed 200px-wide frame from sm up (sm:w-[200px]).
+  maxRenderedWidthPx: 200,
   // Contentpic stacks (image above text) as a column below Tailwind `sm` (640px)
-  // and switches to its real side-by-side row layout — image fixed at 200×240 —
-  // at `sm` and up (`sm:flex-row`). Preview at exactly 640px so the frame shows
-  // that true desktop row layout rather than the narrow mobile column a <640px
-  // viewport would render; it's also the smallest faithful desktop width, which
-  // keeps the image as large as possible once the frame is scaled down.
-  previewStates: [
-    {
-      id: "desktop",
-      label: "Desktop",
-      viewportWidth: 640,
-      // Rough landscape estimate for the pre-measure flash only.
-      aspectRatio: { width: 640, height: 300 },
-    },
-  ],
+  // and switches to its side-by-side row layout at `sm` and up (`sm:flex-row`),
+  // so Mobile (375) shows the stacked layout while Tablet/Desktop show the row.
+  // Aspect ratios are pre-measure flash guesses only (PreviewFrame measures the
+  // real rendered height).
+  versions: singleVersion(
+    responsivePreviewStates({
+      mobile: { width: 4, height: 5 },
+      tablet: { width: 2, height: 1 },
+      desktop: { width: 2, height: 1 },
+    }),
+  ),
+  preUploadCopy:
+    "Use a high-resolution image (at least 400×480px) with a 5:6 (portrait) aspect ratio. Keep the key subject centered — the image is cropped to a fixed portrait frame beside your text.",
 }
+
+// Every static config, matched by resolveAdjustmentConfig on
+// `type:variant` (or bare `type`) plus the image field name.
+const CONFIGS: AdjustmentConfig[] = [HERO_GRADIENT_CONFIG, CONTENTPIC_CONFIG]
 
 /**
  * Resolves the adjustment config for an image field, by the containing block's
@@ -75,11 +122,21 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
  * point hides the "Adjust image" action rather than offering a dead modal.
  */
 export function resolveAdjustmentConfig(args: {
-  block: unknown
+  block: IsomerComponent | undefined
   fieldName: string
+  context?: AdjustmentRenderContext
 }): AdjustmentConfig | undefined {
-  const { type, variant } = asBlock(args.block)
-  if (type === "hero" && variant === "gradient") return HERO_GRADIENT_CONFIG
-  if (type === "contentpic") return CONTENTPIC_CONFIG
-  return undefined
+  const { block, fieldName } = args
+  if (!block) return undefined
+  const variant =
+    "variant" in block && typeof block.variant === "string"
+      ? block.variant
+      : undefined
+  // absence = not integrated (optional by design); deliberate opt-outs are asserted in the registry test.
+  return CONFIGS.find(
+    (c) =>
+      (c.componentType === `${block.type}:${variant}` ||
+        c.componentType === block.type) &&
+      c.imageField === fieldName,
+  )
 }

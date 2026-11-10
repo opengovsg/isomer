@@ -14,7 +14,7 @@ export const HeroGradientButtons = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   backgroundUrl,
-  imageAdjustment,
+  backgroundUrlImageAdjustment: imageAdjustment,
   site,
   headingLevel,
 }: HeroGradientButtonsProps) => {

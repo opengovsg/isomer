@@ -5,6 +5,7 @@ import { ARRAY_RADIO_FORMAT } from "~/interfaces/format"
 const generateImageFitSchema = (props: {
   title: string
   description?: string
+  format?: string
 }) =>
   Type.Union(
     [
