@@ -10,37 +10,38 @@ import { ImageAdjustmentModal } from "./ImageAdjustmentModal"
 
 const TIER_B_CONFIG: AdjustmentConfig = {
   componentType: "hero",
+  imageField: "backgroundUrl",
   cropMode: "fixed",
   lockedRatios: [
     { width: 16, height: 9 },
     { width: 4, height: 3 },
   ],
   focalEnabled: true,
-  previewStates: [
+  versions: [
     {
-      id: "mobile",
-      label: "Mobile",
-      viewportWidth: 375,
-      aspectRatio: { width: 4, height: 3 },
-    },
-    {
-      id: "tablet",
-      label: "Tablet",
-      viewportWidth: 768,
-      aspectRatio: { width: 16, height: 9 },
-    },
-    {
-      id: "desktop",
-      label: "Desktop",
-      viewportWidth: 1024,
-      aspectRatio: { width: 16, height: 9 },
+      id: "default",
+      previewStates: [
+        {
+          id: "mobile",
+          label: "Mobile",
+          viewportWidth: 375,
+          aspectRatio: { width: 4, height: 3 },
+        },
+        {
+          id: "tablet",
+          label: "Tablet",
+          viewportWidth: 768,
+          aspectRatio: { width: 16, height: 9 },
+        },
+        {
+          id: "desktop",
+          label: "Desktop",
+          viewportWidth: 1024,
+          aspectRatio: { width: 16, height: 9 },
+        },
+      ],
     },
   ],
-  scrim: {
-    id: "gradient",
-    className: "bg-gradient-to-r from-black/50 to-transparent",
-    label: "Dark gradient (for text contrast)",
-  },
   preUploadCopy:
     "For best results, use images at least 1600px wide. Square images will be cropped to your selected aspect ratio.",
 }
@@ -49,12 +50,16 @@ interface ImageAdjustmentModalHarnessProps {
   isOpen: boolean
   value?: ImageAdjustment
   block?: IsomerComponent
+  config?: AdjustmentConfig
+  imageFieldName?: string
 }
 
 const ImageAdjustmentModalHarness = ({
   isOpen: initialIsOpen,
   value,
   block,
+  config = TIER_B_CONFIG,
+  imageFieldName = "backgroundUrl",
 }: ImageAdjustmentModalHarnessProps) => {
   const [isOpen, setIsOpen] = useState(initialIsOpen)
   const [savedValue, setSavedValue] = useState<ImageAdjustment | undefined>(
@@ -83,11 +88,12 @@ const ImageAdjustmentModalHarness = ({
       <ImageAdjustmentModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        config={TIER_B_CONFIG}
+        config={config}
         src={savedSrc}
         value={value}
         block={block}
-        imageFieldName="backgroundUrl"
+        imageFieldName={imageFieldName}
+        fieldHost={block}
         siteId={1}
         resourceId="test-resource"
         onSave={({ src, imageAdjustment }) => {
@@ -145,6 +151,8 @@ export const WithRealComponentPreview: Story = {
     block: {
       type: "hero",
       variant: "gradient",
+      // Replaced by the adjusted image in the preview.
+      backgroundUrl: "",
       title: "A real HeroGradient, rendered live",
       subtitle:
         "This copy, gradient, and crop all come from the real component.",
