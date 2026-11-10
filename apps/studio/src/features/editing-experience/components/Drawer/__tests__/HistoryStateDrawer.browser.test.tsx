@@ -59,7 +59,7 @@ vi.mock("~/utils/trpc", () => ({
   },
 }))
 
-vi.mock("~/features/preview/hooks/useSiteThemeCssVars", () => ({
+vi.mock("~/hooks/useSiteThemeCssVars", () => ({
   useSiteThemeCssVars: () => ({}),
 }))
 
