@@ -138,10 +138,12 @@ const FOCAL_WIRING_CONFIGS: {
     componentPaths: [
       "packages/components/src/templates/next/components/internal/CollectionCard/CollectionCard.tsx",
       "packages/components/src/templates/next/components/internal/BlogCard/BlogCard.tsx",
+      "packages/components/src/templates/next/components/complex/CollectionBlock/CollectionBlock.tsx",
     ],
     storyPaths: [
       "packages/components/src/templates/next/components/internal/CollectionCard/CollectionCard.stories.tsx",
       "packages/components/src/templates/next/components/internal/BlogCard/BlogCard.stories.tsx",
+      "packages/components/src/templates/next/components/complex/CollectionBlock/CollectionBlock.stories.tsx",
     ],
   },
 ]

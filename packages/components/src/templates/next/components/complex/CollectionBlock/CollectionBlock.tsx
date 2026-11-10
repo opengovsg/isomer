@@ -11,7 +11,7 @@ import { getResourceIdFromReferenceLink } from "~/utils/getResourceIdFromReferen
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { ComponentContent } from "../../internal/customCssClass"
-import { ImageClient } from "../../internal/ImageClient"
+import { ImageClientWithAdjustment } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
 import { PlaintextTags } from "../../internal/Tags"
@@ -92,6 +92,10 @@ const SingleCard = ({
 }: CollectionBlockSingleCardProps): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
   const CardTitleTag = getHeadingTag(headingLevel)
+  // Focal point only applies to cover-fit; a letterboxed image stays centred.
+  const effectiveImageAdjustment = isContainNeeded
+    ? undefined
+    : image?.imageAdjustment
 
   const renderImage = () => {
     if (!image?.src) {
@@ -100,7 +104,7 @@ const SingleCard = ({
 
     return (
       <div className={compoundStyles.cardImageContainer({ numberOfCards })}>
-        <ImageClient
+        <ImageClientWithAdjustment
           src={image.src}
           alt={image.alt}
           width="100%"
@@ -109,6 +113,7 @@ const SingleCard = ({
           })}
           lazyLoading={shouldLazyLoad}
           assetsBaseUrl={site.assetsBaseUrl}
+          imageAdjustment={effectiveImageAdjustment}
         />
       </div>
     )

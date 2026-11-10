@@ -45,6 +45,7 @@ const generateArgs = ({
   displayThumbnail,
   displayCategory,
   withImageFallback = false,
+  withFocalPoint = false,
   buttonLabel = "View all corrections",
   isDateless = false,
   numberOfCards = 3,
@@ -55,6 +56,7 @@ const generateArgs = ({
     isDateless?: boolean
     numberOfCards?: number
     withImageFallback?: boolean
+    withFocalPoint?: boolean
     tagCategories?: TagCategories
     taggedOptionIds?: string[]
   }
@@ -77,6 +79,14 @@ const generateArgs = ({
             image: {
               src: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=3715&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
               alt: "Image 1",
+              ...(withFocalPoint && {
+                imageAdjustment: {
+                  crop: { x: 0, y: 0, width: 1, height: 1 },
+                  focal: { x: 0.2, y: 0.2 },
+                  originalKey:
+                    "1/00000000-0000-0000-0000-000000000000/original.jpg",
+                },
+              }),
             },
           }),
     },
@@ -150,6 +160,16 @@ const generateArgs = ({
 export const WithImage: Story = {
   name: "With Image",
   args: generateArgs({ displayThumbnail: true, displayCategory: true }),
+}
+
+// First card carries a top-left focal point (object-position), as set in the
+// collection thumbnail adjustment modal.
+export const WithFocalPoint: Story = {
+  args: generateArgs({
+    displayThumbnail: true,
+    displayCategory: true,
+    withFocalPoint: true,
+  }),
 }
 
 export const WithImageFallback: Story = {
