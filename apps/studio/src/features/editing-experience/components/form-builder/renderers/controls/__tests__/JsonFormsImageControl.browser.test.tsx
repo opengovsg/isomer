@@ -25,6 +25,12 @@ vi.mock("~/hooks/useQueryParse", () => ({
 vi.mock("~/hooks/useIsImageAdjustmentEnabled", () => ({
   useIsImageAdjustmentEnabled: () => false,
 }))
+vi.mock("../../../hooks/useAdjustmentConfigForField", () => ({
+  useAdjustmentConfigForField: () => ({
+    fieldHost: { imageFit: "contain" },
+    config: { ownsImageFitField: true },
+  }),
+}))
 // Stub the upload input so this test isolates JsonFormsImageControl's own render
 // (the crash is in its derived-const block, before this renders) without pulling
 // in FileAttachment's tRPC/upload deps.
@@ -64,5 +70,21 @@ describe("JsonFormsImageControl", () => {
       </ThemeProvider>,
     )
     expect(screen.getByTestId("file-attachment")).toBeInTheDocument()
+  })
+
+  it("offers the image fit choice inline when Adjust is unavailable", () => {
+    render(
+      <ThemeProvider theme={theme}>
+        <JsonForms
+          schema={schema}
+          data={{ logoUrl: "https://example.com/logo.png" }}
+          renderers={renderers}
+          ajv={ajv}
+          onChange={() => undefined}
+        />
+      </ThemeProvider>,
+    )
+    expect(screen.getByLabelText("Default (recommended)")).toBeInTheDocument()
+    expect(screen.getByLabelText("Resize image to fit")).toBeChecked()
   })
 })
