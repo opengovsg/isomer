@@ -98,7 +98,7 @@ export const ContentPageHeader = ({
               assetsBaseUrl={site.assetsBaseUrl}
               alt={image.alt}
               // Raw (relative) src; ImageClient resolves it against
-              // assetsBaseUrl so the editor's ?original bypass applies.
+              // assetsBaseUrl.
               src={image.src}
               width="100%"
               className={styles.image()}
