@@ -16,10 +16,7 @@ import {
 } from "../format"
 import { IconPicker } from "../primitives/IconPicker"
 import { IsomerString } from "../primitives/IsomerString"
-import {
-  generateAdjustableImageFields,
-  generateImageSrcSchema,
-} from "./Image"
+import { generateAdjustableImageFields, generateImageSrcSchema } from "./Image"
 
 export const HERO_STYLE = {
   gradient: { key: "gradient", title: "Gradient (Default)" },

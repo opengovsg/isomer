@@ -23,7 +23,10 @@ interface ImageField {
 // non-colliding adjustment keys. A node whose own format is "hidden" (a
 // beta/not-yet-editable variant, e.g. HeroSearchbar) is skipped: nothing can
 // set an adjustment on a field nobody can edit.
-const findImageFields = (node: unknown, acc: ImageField[] = []): ImageField[] => {
+const findImageFields = (
+  node: unknown,
+  acc: ImageField[] = [],
+): ImageField[] => {
   if (node === null || typeof node !== "object") return acc
 
   const record = node as Record<string, unknown>
