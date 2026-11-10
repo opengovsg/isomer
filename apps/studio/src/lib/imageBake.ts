@@ -228,9 +228,8 @@ export const bakeImage = async (
   }
 
   // Guard against baking an animated source: canvas rasterizes a single
-  // frame, silently dropping the animation. This is the single check for
-  // this (no caller-side pre-check) — the message is user-facing since it's
-  // the one callers surface directly in error toasts.
+  // frame, silently dropping the animation. The only check for this (no
+  // caller-side duplicate) — message is user-facing, surfaced directly in toasts.
   if (await isAnimatedImageBlob(original)) {
     throw new Error(
       "This image can't be adjusted because it's animated. Adjusting would flatten it to a single frame.",

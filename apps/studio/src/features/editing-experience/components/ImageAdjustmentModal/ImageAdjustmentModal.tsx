@@ -24,7 +24,6 @@ import { useState } from "react"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
-import { getAssetUploadBackoffBudgetMs } from "../form-builder/hooks/useAssetUpload"
 import { ensureAdjustment } from "./adjustmentDraft"
 import { AdjustmentPreview } from "./AdjustmentPreview"
 import { CropFocalControl } from "./controls/CropFocalControl"
@@ -36,13 +35,6 @@ import {
   resolveOriginalKey,
   useSaveImageAdjustment,
 } from "./useSaveImageAdjustment"
-
-// Upper bound on how long we wait for a save (bake → presign → upload) before
-// surfacing an error and unlocking the modal, so a hung network request can't
-// trap the editor in a permanently disabled modal. Must exceed the asset
-// upload's own retry backoff budget, or we'd time out saves that are still
-// retrying and about to succeed.
-const SAVE_TIMEOUT_MS = getAssetUploadBackoffBudgetMs() + 15_000
 
 interface ImageAdjustmentModalProps {
   isOpen: boolean
@@ -84,9 +76,9 @@ export const ImageAdjustmentModal = ({
     siteId,
     resourceId,
   })
-  // Drives UI locking during a save. Local (not saveMutation.isPending) so the
-  // save timeout below can unlock the modal even if the underlying upload hangs.
-  const [isSaving, setIsSaving] = useState(false)
+  // The hook bounds the real save to SAVE_TIMEOUT_MS itself, so isPending is
+  // the single source of truth -- no separate local flag needed.
+  const isSaving = saveMutation.isPending
 
   const isModified = JSON.stringify(draft) !== JSON.stringify(value)
 
@@ -96,11 +88,8 @@ export const ImageAdjustmentModal = ({
 
   const handleClose = () => {
     // Block dismissal mid-save — otherwise a discard followed by the completing
-    // upload would write the discarded edit back via onSave. Check isPending,
-    // not just isSaving: the save timeout clears isSaving while the underlying
-    // upload keeps running in the background, but isPending only flips false
-    // once the mutation itself actually settles.
-    if (isSaving || saveMutation.isPending) return
+    // upload would write the discarded edit back via onSave.
+    if (isSaving) return
     if (isModified) {
       onDiscardChangesModalOpen()
     } else {
@@ -120,10 +109,7 @@ export const ImageAdjustmentModal = ({
       return
     }
 
-    // A previous save timed out from the UI's perspective but is still running
-    // in the background — don't start a second, concurrent one. isPending is
-    // react-query's own tracking of the real mutationFn promise, unaffected
-    // by the UI-facing timeout below, so no separate ref is needed for this.
+    // A previous save is still genuinely in flight — don't start a second one.
     if (saveMutation.isPending) {
       toast({
         title: "Still saving the previous change",
@@ -135,24 +121,8 @@ export const ImageAdjustmentModal = ({
       return
     }
 
-    setIsSaving(true)
-    // No separate .finally()/ref bookkeeping needed here (unlike the old
-    // hand-rolled version) — isPending above already tracks completion, and
-    // this single promise is the only handler attached to the mutation, so
-    // there's no discarded derived-promise chain to leak an unhandled rejection.
-    const savePromise = saveMutation.mutateAsync({ currentSrc: src, draft })
-
-    let timeoutId: ReturnType<typeof setTimeout> | undefined
     try {
-      const result = await Promise.race([
-        savePromise,
-        new Promise<never>((_, reject) => {
-          timeoutId = setTimeout(
-            () => reject(new Error("Saving took too long. Please try again.")),
-            SAVE_TIMEOUT_MS,
-          )
-        }),
-      ])
+      const result = await saveMutation.mutateAsync({ currentSrc: src, draft })
       onSave(result)
       onClose()
     } catch (err) {
@@ -163,9 +133,6 @@ export const ImageAdjustmentModal = ({
         duration: 5000,
         isClosable: true,
       })
-    } finally {
-      if (timeoutId) clearTimeout(timeoutId)
-      setIsSaving(false)
     }
   }
 

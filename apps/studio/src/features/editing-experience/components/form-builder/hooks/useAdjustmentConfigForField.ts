@@ -36,12 +36,9 @@ export const useAdjustmentConfigForField = (path: string) => {
     | undefined
 
   const config = resolveAdjustmentConfig({ block, fieldName })
-  // resolveAdjustmentConfig only matches block.type/variant discriminators --
-  // it doesn't validate the rest of the shape against the component schema.
-  // A resolved config means "this is a block type we've wired up", not "this
-  // object is a fully-valid IsomerComponent". Callers that pass this into
-  // renderComponent must keep handling render failure (see AdjustmentPreview's
-  // try/catch) rather than relying on this type for runtime safety.
+  // resolveAdjustmentConfig only matches type/variant discriminators, not the
+  // full component schema -- this cast isn't runtime-verified, so callers
+  // still need their own fallback for a malformed block (see AdjustmentPreview).
   const typedBlock = config ? (block as IsomerComponent) : undefined
 
   return useMemo(
