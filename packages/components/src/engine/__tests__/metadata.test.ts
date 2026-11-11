@@ -371,6 +371,43 @@ const getSerializedPageJsonLd = (
   >
 
 describe("getPageJsonLd", () => {
+  const siteMap = {
+    id: "1",
+    title: "Home",
+    permalink: "/",
+    lastModified: "",
+    layout: "homepage",
+    summary: "",
+    children: [
+      {
+        id: "2",
+        title: "About us",
+        permalink: "/about-us",
+        lastModified: "",
+        layout: "content",
+        summary: "",
+        children: [
+          {
+            id: "3",
+            title: "Our team",
+            permalink: "/about-us/our-team",
+            lastModified: "",
+            layout: "content",
+            summary: "",
+          },
+        ],
+      },
+      {
+        id: "4",
+        title: "Search",
+        permalink: "/search",
+        lastModified: "",
+        layout: "search",
+        summary: "",
+      },
+    ],
+  } satisfies IsomerSitemap
+
   const contentPage = {
     layout: "content",
     meta: {},
@@ -386,6 +423,7 @@ describe("getPageJsonLd", () => {
     content: [],
     site: generateSiteConfig({
       url: "https://example.gov.sg",
+      siteMap,
     }),
   } satisfies IsomerPageSchemaType
 
@@ -405,7 +443,73 @@ describe("getPageJsonLd", () => {
       publisher: {
         "@id": "https://example.gov.sg/#organization",
       },
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: "https://example.gov.sg/",
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "About us",
+            item: "https://example.gov.sg/about-us/",
+          },
+        ],
+      },
     })
+  })
+
+  it("lists every ancestor in the breadcrumb of a nested page", () => {
+    const jsonLd = getSerializedPageJsonLd({
+      ...contentPage,
+      page: { ...contentPage.page, permalink: "/about-us/our-team" },
+    })
+
+    expect(
+      jsonLd.breadcrumb.itemListElement.map(({ name, item }) => [name, item]),
+    ).toEqual([
+      ["Home", "https://example.gov.sg/"],
+      ["About us", "https://example.gov.sg/about-us/"],
+      ["Our team", "https://example.gov.sg/about-us/our-team/"],
+    ])
+  })
+
+  it("gives the homepage a breadcrumb of only itself", () => {
+    const jsonLd = getSerializedPageJsonLd({
+      layout: "homepage",
+      page: { title: "Home", permalink: "/" },
+      content: [],
+      site: contentPage.site,
+    } as unknown as IsomerPageSchemaType)
+
+    expect(jsonLd.breadcrumb.itemListElement).toEqual([
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://example.gov.sg/",
+      },
+    ])
+  })
+
+  it("adds a breadcrumb to pages that do not display one", () => {
+    const jsonLd = getSerializedPageJsonLd({
+      layout: "search",
+      page: { title: "Search", permalink: "/search" },
+      content: [],
+      site: contentPage.site,
+    } as unknown as IsomerPageSchemaType)
+
+    expect(
+      jsonLd.breadcrumb.itemListElement.map(({ name, item }) => [name, item]),
+    ).toEqual([
+      ["Home", "https://example.gov.sg/"],
+      ["Search", "https://example.gov.sg/search/"],
+    ])
   })
 
   it("uses the explicitly configured meta description", () => {
@@ -425,6 +529,7 @@ describe("getPageJsonLd", () => {
       site: {
         siteName: "Example Agency",
         url: "",
+        siteMap,
       },
     })
 

@@ -1,9 +1,13 @@
 import type { DistributedOmit } from "type-fest"
 import type { IsomerPageSchemaType } from "~/types/schema"
-import type { IsomerSiteConfigProps } from "~/types/site"
+import type {
+  IsomerGeneratedSiteProps,
+  IsomerSiteConfigProps,
+} from "~/types/site"
 import type { IsomerSitemap } from "~/types/sitemap"
 import { HERO_STYLE } from "~/interfaces/complex/Hero"
 import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
+import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
@@ -30,7 +34,8 @@ type PageSchemaWithoutSite = DistributedOmit<IsomerPageSchemaType, "site">
 type GetPageJsonLdProps = PageSchemaWithoutSite & {
   // NOTE: `siteName` is the homepage's meta-description fallback, so it is
   // needed wherever that description is derived.
-  site: Pick<IsomerSiteConfigProps, "siteName" | "url">
+  site: Pick<IsomerSiteConfigProps, "siteName" | "url"> &
+    Pick<IsomerGeneratedSiteProps, "siteMap">
 }
 
 const getNonEmptyString = (value?: string) => {
@@ -264,6 +269,12 @@ export const getPageJsonLd = (props: GetPageJsonLdProps) => {
   const canonicalUrl = getCanonicalUrl(props)
   const siteUrl = getSiteUrl(props.site.url)
   const pageUrl = withTrailingSlash(new URL(canonicalUrl, siteUrl).toString())
+  // NOTE: Emitted on every page, including layouts that do not display a
+  // breadcrumb, so search engines always get the page hierarchy
+  const breadcrumb = getBreadcrumbFromSiteMap(
+    props.site.siteMap,
+    props.page.permalink.split("/").slice(1),
+  )
 
   return {
     "@context": "https://schema.org",
@@ -279,6 +290,15 @@ export const getPageJsonLd = (props: GetPageJsonLdProps) => {
     },
     publisher: {
       "@id": new URL("#organization", siteUrl).toString(),
+    },
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumb.links.map(({ title, url }, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: title,
+        item: withTrailingSlash(new URL(url, siteUrl).toString()),
+      })),
     },
   }
 }
