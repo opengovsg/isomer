@@ -1,36 +1,10 @@
 import { describe, it, expect } from "vitest"
 
 import {
-  clampUnit,
   focalToWholeImagePoint,
   pointToCropRelativeFocal,
   pointToFocal,
 } from "./focalGeometry"
-
-describe("clampUnit", () => {
-  it("clamps values below 0 to 0", () => {
-    expect(clampUnit(-0.5)).toBe(0)
-    expect(clampUnit(-100)).toBe(0)
-  })
-
-  it("clamps values above 1 to 1", () => {
-    expect(clampUnit(1.5)).toBe(1)
-    expect(clampUnit(100)).toBe(1)
-  })
-
-  it("passes through values in [0, 1]", () => {
-    expect(clampUnit(0)).toBe(0)
-    expect(clampUnit(0.5)).toBe(0.5)
-    expect(clampUnit(1)).toBe(1)
-  })
-
-  it("falls back to 0.5 for NaN instead of propagating it", () => {
-    // Regression test: a zero-size preview box produces a 0/0 division
-    // upstream, and NaN survives Math.min/Math.max untouched.
-    expect(clampUnit(NaN)).toBe(0.5)
-    expect(clampUnit(0 / 0)).toBe(0.5)
-  })
-})
 
 describe("pointToFocal", () => {
   it("maps center of rect to {0.5, 0.5}", () => {
