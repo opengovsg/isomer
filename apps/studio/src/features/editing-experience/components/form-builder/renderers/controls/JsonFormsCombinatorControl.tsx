@@ -19,7 +19,7 @@ import {
   HERO_BANNER_STYLE_FORMAT,
   TAG_CATEGORY_ITEM_FORMAT,
 } from "@opengovsg/isomer-components"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { nextHeroCarouselVariantData } from "../../utils/nextHeroCarouselVariantData"
@@ -122,14 +122,19 @@ function JsonFormsCombinatorControl({
   data,
   combinatorType,
 }: JsonFormsCombinatorControlProps) {
-  const combinatorSchemas = schema[combinatorType] ?? []
-  const renderInfos = createCombinatorRenderInfos(
-    combinatorSchemas,
-    rootSchema,
-    combinatorType,
-    uischema,
-    path,
-    uischemas,
+  // NOTE: Memoised as each call generates a new uischema, which re-renders
+  // every control in the active branch
+  const renderInfos = useMemo(
+    () =>
+      createCombinatorRenderInfos(
+        schema[combinatorType] ?? [],
+        rootSchema,
+        combinatorType,
+        uischema,
+        path,
+        uischemas,
+      ),
+    [schema, rootSchema, combinatorType, uischema, path, uischemas],
   )
 
   const options = renderInfos

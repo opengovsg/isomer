@@ -15,6 +15,7 @@ import {
   Infobox,
   Link,
   Radio,
+  useToast,
 } from "@opengovsg/design-system-react"
 import {
   IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
@@ -26,6 +27,7 @@ import { useEffect, useRef, useState } from "react"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { fetchImageBlob } from "~/features/editing-experience/components/ImageAdjustmentModal/useSaveImageAdjustment"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
@@ -40,6 +42,7 @@ import {
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 
 import { useAdjustmentConfigForField } from "../../hooks/useAdjustmentConfigForField"
+import { useAssetUpload } from "../../hooks/useAssetUpload"
 import { isManagedSiteAsset } from "./isManagedSiteAsset"
 import { getCustomErrorMessage } from "./utils"
 
@@ -268,6 +271,8 @@ function JsonFormsImageControl({
   // Shared by the empty-field upload UI and the hidden "Replace image" upload
   // (triggered via replaceUploadRef) — both are the same upload flow, so the
   // field value is fully replaced by the new asset either way, never layered.
+  const { handleAssetUpload, isLoading } = useAssetUpload({})
+  const toast = useToast()
   const uploadFileAttachmentProps = {
     maxSizeInBytes: schema.maxSizeInBytes ?? MAX_IMG_FILE_SIZE_BYTES,
     acceptedFileTypes:
@@ -285,26 +290,39 @@ function JsonFormsImageControl({
       })
     },
     setHref: (src?: string) => {
-      handleChange(path, src)
-      // Mark a real upload (not the loading-state "" or a clear) so the
-      // editor auto-opens once the new src lands and canAdjust is true.
-      if (src) {
-        // A new asset invalidates the old crop/focal/originalKey.
-        if (currentAdjustment) handleChange(siblingPath, undefined)
-        justUploadedRef.current = true
-        // New asset → force the auto-open gate to wait for a fresh
-        // animation check (avoids acting on the prior asset's result).
-        setAnimationResolved(false)
-        if (pendingFileRef.current) {
-          uploadedOriginalRef.current = {
-            key: src.replace(/^\//, ""),
-            file: pendingFileRef.current,
-          }
-          pendingFileRef.current = null
-        }
+      if (!src) {
+        handleChange(path, undefined)
+        return
       }
+      // Only save the path once the CDN serves it, so the preview can show it
+      void handleAssetUpload(src)
+        .then(() => {
+          handleChange(path, src)
+          // A new asset invalidates the old crop/focal/originalKey.
+          if (currentAdjustment) handleChange(siblingPath, undefined)
+          // Mark a real upload so the editor auto-opens once canAdjust is true.
+          justUploadedRef.current = true
+          // New asset → force the auto-open gate to wait for a fresh
+          // animation check (avoids acting on the prior asset's result).
+          setAnimationResolved(false)
+          if (pendingFileRef.current) {
+            uploadedOriginalRef.current = {
+              key: src.replace(/^\//, ""),
+              file: pendingFileRef.current,
+            }
+            pendingFileRef.current = null
+          }
+        })
+        .catch(() => {
+          toast({
+            title: "Failed to upload file",
+            description: "Please try again.",
+            status: "error",
+            ...BRIEF_TOAST_SETTINGS,
+          })
+        })
     },
-    shouldFetchResource: true,
+    isLoading,
   }
 
   const handleAdjustmentSave = ({
@@ -345,7 +363,8 @@ function JsonFormsImageControl({
           </Text>
         </Infobox>
       )}
-      {data ? (
+      {/* While a replacement waits for the CDN, show the uploader's skeleton. */}
+      {data && !isLoading ? (
         <Box>
           {/* Adjustment entry point — a pencil on the file row, only for
               components with a config and only for managed (bakeable) assets. */}
