@@ -7,6 +7,7 @@ import {
   Button,
   FormErrorMessage,
   FormLabel,
+  useToast,
 } from "@opengovsg/design-system-react"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import dynamic from "next/dynamic"
@@ -14,12 +15,14 @@ import { BiPencil } from "react-icons/bi"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useIsImageAdjustmentEnabled } from "~/hooks/useIsImageAdjustmentEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 
 import { useAdjustmentConfigForField } from "../../hooks/useAdjustmentConfigForField"
+import { useAssetUpload } from "../../hooks/useAssetUpload"
 import { getCustomErrorMessage } from "./utils"
 
 // This renderer loads for every FormBuilder instance regardless of whether its schema
@@ -87,6 +90,27 @@ function JsonFormsImageControl({
     handleChange(path, src)
     handleChange(siblingPath, imageAdjustment)
   }
+  const { handleAssetUpload, isLoading } = useAssetUpload({})
+  const toast = useToast()
+
+  // Only save the path once the CDN serves it, so the preview can show it
+  const handleUploaded = (src?: string) => {
+    if (!src) {
+      handleChange(path, undefined)
+      return
+    }
+
+    void handleAssetUpload(src)
+      .then(() => handleChange(path, src))
+      .catch(() => {
+        toast({
+          title: "Failed to upload file",
+          description: "Please try again.",
+          status: "error",
+          ...BRIEF_TOAST_SETTINGS,
+        })
+      })
+  }
 
   return (
     <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
@@ -145,8 +169,8 @@ function JsonFormsImageControl({
           }
           siteId={siteId}
           resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
-          setHref={(src) => handleChange(path, src)}
-          shouldFetchResource={true}
+          setHref={handleUploaded}
+          isLoading={isLoading}
         />
       )}
       {!!errors && (
