@@ -2,6 +2,12 @@ import { describe, expect, it } from "vitest"
 
 import { PLACEHOLDER_IMAGE_FILENAME } from "../../constants"
 import {
+  CARDS_WITH_FULL_IMAGES,
+  CARDS_WITH_IMAGES,
+  CARDS_WITHOUT_IMAGES,
+  InfoCardsSchema,
+} from "../../interfaces/complex/InfoCards"
+import {
   convertVariantData,
   defaultHeroCarouselSlide,
 } from "../convertVariantData"
@@ -227,27 +233,21 @@ describe("convertVariantData: hero", () => {
   })
 })
 
-// Mirrors the InfoCards style branches: each defines only `variant` and `cards`.
-const cardsBranchSchema = (cardFields: string[]): VariantSchema => ({
-  properties: {
-    variant: {},
-    cards: {
-      items: {
-        properties: Object.fromEntries(cardFields.map((key) => [key, {}])),
-      },
-    },
-  },
-})
+// The real InfoCards style branches, so these tests track schema changes.
+const infoCardsStyle = (variant: string) => {
+  const { oneOf } = InfoCardsSchema.allOf[1] as unknown as {
+    oneOf: (VariantSchema & { properties: { variant: { const: string } } })[]
+  }
+  const style = oneOf.find(
+    (branch) => branch.properties.variant.const === variant,
+  )
 
-const withImagesSchema = cardsBranchSchema([
-  "title",
-  "description",
-  "url",
-  "imageUrl",
-  "imageFit",
-  "imageAlt",
-])
-const withoutImagesSchema = cardsBranchSchema(["title", "description", "url"])
+  if (!style) {
+    throw new Error(`No InfoCards style: ${variant}`)
+  }
+
+  return style
+}
 
 const infoCards = {
   type: "infocards",
@@ -273,7 +273,7 @@ describe("convertVariantData: infocards", () => {
     const result = convertVariantData(
       infoCards,
       { variant: "cardsWithoutImages", cards: [] },
-      withoutImagesSchema,
+      infoCardsStyle(CARDS_WITHOUT_IMAGES),
     )
 
     // Assert
@@ -287,6 +287,30 @@ describe("convertVariantData: infocards", () => {
     })
   })
 
+  it("drops descriptions but keeps images when switching to full images", () => {
+    // Act
+    const result = convertVariantData(
+      infoCards,
+      { variant: CARDS_WITH_FULL_IMAGES, cards: [] },
+      infoCardsStyle(CARDS_WITH_FULL_IMAGES),
+    )
+
+    // Assert
+    expect(result).toEqual({
+      ...infoCards,
+      variant: CARDS_WITH_FULL_IMAGES,
+      cards: [
+        {
+          title: "Card",
+          url: "/card",
+          imageUrl: "/uploads/card.png",
+          imageFit: "cover",
+          imageAlt: "A card",
+        },
+      ],
+    })
+  })
+
   it("keeps card content when switching into a style with images", () => {
     // Act
     const result = convertVariantData(
@@ -296,7 +320,7 @@ describe("convertVariantData: infocards", () => {
         cards: [{ title: "Card", url: "/card" }],
       },
       { variant: "cardsWithImages", cards: [] },
-      withImagesSchema,
+      infoCardsStyle(CARDS_WITH_IMAGES),
     )
 
     // Assert
@@ -320,7 +344,7 @@ describe("convertVariantData: infocards", () => {
     const result = convertVariantData(
       { type: "infocards" },
       { variant: "cardsWithoutImages", cards: [] },
-      withoutImagesSchema,
+      infoCardsStyle(CARDS_WITHOUT_IMAGES),
     )
 
     // Assert
