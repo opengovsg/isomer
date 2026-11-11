@@ -1,8 +1,10 @@
 import type { JsonFormsRendererRegistryEntry } from "@jsonforms/core"
 import { JsonForms } from "@jsonforms/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { Type } from "@sinclair/typebox"
+import { render, screen, waitFor } from "@testing-library/react"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+import { userEvent } from "vitest/browser"
 import { theme } from "~/theme"
 import { ajv } from "~/utils/ajv"
 
@@ -13,33 +15,64 @@ import JsonFormsImageControl, {
   jsonFormsImageControlTester,
 } from "../JsonFormsImageControl"
 
+const UPLOADED_PATH = "/1/uuid/hero.png"
+
+// The control builds asset URLs from env, which reads `process` (absent in the browser)
 vi.mock("~/env.mjs", () => ({
   env: {
     NEXT_PUBLIC_APP_URL: "http://localhost:3000",
     NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: "user-content.example.com",
   },
 }))
-vi.mock("~/hooks/useQueryParse", () => ({
-  useQueryParse: () => ({ siteId: 1, pageId: undefined, linkId: undefined }),
-}))
+// No GrowthBookProvider here; these tests cover upload only, so keep Adjust off
 vi.mock("~/hooks/useIsImageAdjustmentEnabled", () => ({
   useIsImageAdjustmentEnabled: () => false,
 }))
-vi.mock("../../../hooks/useAdjustmentConfigForField", () => ({
-  useAdjustmentConfigForField: () => ({
-    fieldHost: { imageFit: "contain" },
-    config: { ownsImageFitField: true },
+vi.mock("~/hooks/useQueryParse", () => ({
+  useQueryParse: () => ({ siteId: 1, pageId: 1 }),
+}))
+
+// Stand-in for the presign + PUT round trip; the control only sees the path
+// that FileAttachment reports once it succeeds.
+vi.mock("~/hooks/useUploadAssetMutation", () => ({
+  useUploadAssetMutation: () => ({
+    mutate: (
+      _input: { file: File },
+      { onSuccess }: { onSuccess: (res: { path: string }) => void },
+    ) => onSuccess({ path: UPLOADED_PATH }),
   }),
 }))
-// Stub the upload input so this test isolates JsonFormsImageControl's own render
-// (the crash is in its derived-const block, before this renders) without pulling
-// in FileAttachment's tRPC/upload deps.
-vi.mock("~/components/PageEditor/FileAttachment", () => ({
-  FileAttachment: () => <div data-testid="file-attachment" />,
-}))
-// No EditorDrawerProvider wraps this test, so useCollectionIndexVariant's
-// queries are always disabled -- stub just enough of the tRPC client shape
-// for its (never-fired) useQuery calls to not blow up on a missing context.
+
+// The CDN availability check, resolved or rejected by each test. Like the real
+// hook, `isLoading` stays true while it runs.
+const handleAssetUpload = vi.fn<(src: string) => Promise<string>>()
+vi.mock(
+  "~/features/editing-experience/components/form-builder/hooks/useAssetUpload",
+  async () => {
+    const { useState } = await import("react")
+    return {
+      useAssetUpload: () => {
+        const [isLoading, setIsLoading] = useState(false)
+        return {
+          isLoading,
+          handleAssetUpload: (src: string) => {
+            setIsLoading(true)
+            return handleAssetUpload(src).finally(() => setIsLoading(false))
+          },
+        }
+      },
+    }
+  },
+)
+
+// The save path imports other exports of the mocked useAssetUpload module;
+// these tests never open the editor, so stub it out.
+vi.mock(
+  "~/features/editing-experience/components/ImageAdjustmentModal/useSaveImageAdjustment",
+  () => ({ fetchImageBlob: vi.fn() }),
+)
+
+// No tRPC provider here; stub the queries the collection thumbnail lookup declares
 vi.mock("~/utils/trpc", () => ({
   trpc: {
     resource: { getParentOf: { useQuery: () => ({ data: undefined }) } },
@@ -56,75 +89,98 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   },
 ]
 
-const schema = {
-  type: "object",
-  properties: {
-    logoUrl: { type: "string", format: "image", title: "Logo" },
-  },
-} as const
+const schema = Type.Object({
+  image: Type.Optional(Type.String({ title: "Hero image", format: "image" })),
+})
 
-// Regression: an EMPTY image field (e.g. the logo-settings favicon slot) made
-// editingOriginalKey undefined, and `uploadedOriginalRef.current?.key ===
-// editingOriginalKey` evaluated `undefined === undefined` → true, dereferencing
-// the null ref (TypeError: reading 'file') and crashing the whole page.
+const renderImageControl = (data: { image?: string } = {}) => {
+  const onChange = vi.fn<(data: { image?: string }) => void>()
+  const { container } = render(
+    <ThemeProvider theme={theme}>
+      <JsonForms
+        schema={schema}
+        data={data}
+        renderers={renderers}
+        ajv={ajv}
+        onChange={({ data }) => onChange(data as { image?: string })}
+      />
+    </ThemeProvider>,
+  )
+  const uploadImage = async () => {
+    const input =
+      container.querySelector<HTMLInputElement>('input[type="file"]')
+    if (!input) throw new Error("File input not rendered")
+    await userEvent.upload(
+      input,
+      new File(["png"], "hero.png", { type: "image/png" }),
+    )
+  }
+  const savedImages = () => onChange.mock.calls.map(([data]) => data.image)
+  return { uploadImage, savedImages }
+}
+
 describe("JsonFormsImageControl", () => {
-  it("renders an empty image field without crashing", () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <JsonForms
-          schema={schema}
-          data={{}}
-          renderers={renderers}
-          ajv={ajv}
-          onChange={() => undefined}
-        />
-      </ThemeProvider>,
-    )
-    expect(screen.getByTestId("file-attachment")).toBeInTheDocument()
+  beforeEach(() => {
+    handleAssetUpload.mockReset()
   })
 
-  it("offers the image fit choice inline when Adjust is unavailable", async () => {
-    const onChange = vi.fn()
-    render(
-      <ThemeProvider theme={theme}>
-        <JsonForms
-          schema={schema}
-          data={{ logoUrl: "https://example.com/logo.png" }}
-          renderers={renderers}
-          ajv={ajv}
-          onChange={onChange}
-        />
-      </ThemeProvider>,
+  it("only saves the uploaded path once the CDN serves it", async () => {
+    // Arrange
+    let resolveCdnCheck = (_src: string) => {}
+    handleAssetUpload.mockReturnValue(
+      new Promise((resolve) => {
+        resolveCdnCheck = resolve
+      }),
     )
-    expect(
-      screen.getByRole("radiogroup", { name: "Image display" }),
-    ).toBeInTheDocument()
-    expect(screen.getByLabelText("Default (recommended)")).toBeInTheDocument()
-    expect(screen.getByLabelText("Resize image to fit")).toBeChecked()
+    const { uploadImage, savedImages } = renderImageControl()
 
-    fireEvent.click(screen.getByLabelText("Default (recommended)"))
+    // Act: upload, leaving the CDN check pending
+    await uploadImage()
+
+    // Assert: the CDN check started but nothing is saved yet
     await waitFor(() =>
-      expect(onChange).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ imageFit: "cover" }),
-        }),
-      ),
+      expect(handleAssetUpload).toHaveBeenCalledExactlyOnceWith(UPLOADED_PATH),
     )
+    // Outlast JsonForms' 10ms debounced onChange, as a real CDN check does, so
+    // any interim write is emitted rather than merged into the final one
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    // Nothing (not even an interim "") is saved while the CDN check runs
+    expect(savedImages().every((image) => image === undefined)).toBe(true)
+
+    // Act: the CDN starts serving the file
+    resolveCdnCheck(UPLOADED_PATH)
+
+    // Assert: only the final path is saved
+    await waitFor(() => expect(savedImages().at(-1)).toBe(UPLOADED_PATH))
+    expect(screen.getByText("hero.png")).toBeVisible()
+    // Across the whole upload, the final path is the only value ever saved
+    expect(savedImages().filter((image) => image !== undefined)).toEqual([
+      UPLOADED_PATH,
+    ])
   })
 
-  it("offers Replace image for an external image that can't be adjusted", () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <JsonForms
-          schema={schema}
-          data={{ logoUrl: "https://placehold.co/600x400" }}
-          renderers={renderers}
-          ajv={ajv}
-          onChange={() => undefined}
-        />
-      </ThemeProvider>,
-    )
-    expect(screen.getByText("Replace image")).toBeInTheDocument()
-    expect(screen.queryByText("Edit image")).not.toBeInTheDocument()
+  it("shows an error and saves nothing when the CDN check fails", async () => {
+    // Arrange
+    handleAssetUpload.mockRejectedValue(new Error("Unable to read"))
+    const { uploadImage, savedImages } = renderImageControl()
+
+    // Act
+    await uploadImage()
+
+    // Assert
+    expect(await screen.findByText("Failed to upload file")).toBeVisible()
+    expect(savedImages().every((image) => image === undefined)).toBe(true)
+  })
+
+  it("clears the saved path when the image is removed", async () => {
+    // Arrange
+    const { savedImages } = renderImageControl({ image: UPLOADED_PATH })
+
+    // Act
+    await userEvent.click(screen.getByRole("button", { name: "Remove file" }))
+
+    // Assert
+    await waitFor(() => expect(savedImages().at(-1)).toBeUndefined())
+    expect(handleAssetUpload).not.toHaveBeenCalled()
   })
 })
