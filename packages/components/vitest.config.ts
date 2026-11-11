@@ -14,6 +14,12 @@ const alias = {
 // instead of a simulated DOM. Pattern is relative to `dir: "src"`.
 const BROWSER_TEST_PATTERN = "**/*.browser.test.{ts,tsx}"
 
+// Not VITEST_STORYBOOK alone: addon-a11y only fails on violations when that is
+// unset, but Storybook's UI runner still sets it.
+const isStorybookRun = !!(
+  process.env.STORYBOOK_TESTS || process.env.VITEST_STORYBOOK
+)
+
 export default defineConfig({
   resolve: {
     // usehooks-ts calls React. The browser tests load a second copy unless
@@ -33,9 +39,9 @@ export default defineConfig({
         "**/*.d.ts",
       ],
     },
-    // Storybook runs separately (VITEST_STORYBOOK=true) so unit runs never load
+    // Storybook runs separately (STORYBOOK_TESTS=true) so unit runs never load
     // the Argos plugin, which uploads screenshots on CI.
-    projects: process.env.VITEST_STORYBOOK
+    projects: isStorybookRun
       ? [
           {
             extends: true,

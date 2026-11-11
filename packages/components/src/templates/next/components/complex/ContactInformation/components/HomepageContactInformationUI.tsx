@@ -102,7 +102,8 @@ export const HomepageContactInformationUI = ({
   acceptHtmlTags = false,
   headingLevel,
 }: ContactInformationUIProps) => {
-  const TitleTag = getHeadingTag(headingLevel)
+  // The loading placeholder is empty, and screen readers announce empty headings.
+  const TitleTag = isLoading ? "div" : getHeadingTag(headingLevel)
   const filteredMethods = filterContactMethods({ methods, whitelistedMethods })
 
   const numberOfContactMethods: NumberOfContactMethods = isLoading
