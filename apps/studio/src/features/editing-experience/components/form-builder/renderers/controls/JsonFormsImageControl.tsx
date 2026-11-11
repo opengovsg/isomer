@@ -294,6 +294,9 @@ function JsonFormsImageControl({
         handleChange(path, undefined)
         return
       }
+      // Take the picked File now: a later upload may overwrite the ref mid-wait.
+      const file = pendingFileRef.current
+      pendingFileRef.current = null
       // Only save the path once the CDN serves it, so the preview can show it
       void handleAssetUpload(src)
         .then(() => {
@@ -305,12 +308,11 @@ function JsonFormsImageControl({
           // New asset → force the auto-open gate to wait for a fresh
           // animation check (avoids acting on the prior asset's result).
           setAnimationResolved(false)
-          if (pendingFileRef.current) {
+          if (file) {
             uploadedOriginalRef.current = {
               key: src.replace(/^\//, ""),
-              file: pendingFileRef.current,
+              file,
             }
-            pendingFileRef.current = null
           }
         })
         .catch(() => {
