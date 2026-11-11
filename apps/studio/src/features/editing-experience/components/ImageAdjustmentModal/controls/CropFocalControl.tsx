@@ -40,6 +40,12 @@ interface CropFocalControlProps {
   focalEnabled: boolean
   onCropChange: (crop: CropRectNormalized) => void
   onFocalChange: (focal: { x: number; y: number }) => void
+  // Blocks further crop/focal edits while a save is in flight -- otherwise
+  // an edit made during that window is silently lost: handleSave already
+  // captured the draft it's uploading, so a later edit updates local state
+  // but never makes it into the save that's about to complete and close
+  // the modal via onSave.
+  isDisabled?: boolean
 }
 
 type DragTarget = "rect" | "focal" | HandlePosition | null
@@ -58,6 +64,7 @@ export const CropFocalControl = ({
   focalEnabled,
   onCropChange,
   onFocalChange,
+  isDisabled = false,
 }: CropFocalControlProps): JSX.Element => {
   const boxRef = useRef<HTMLDivElement>(null)
   const [aspectRatio, setAspectRatio] = useState<number | undefined>(undefined)
@@ -88,6 +95,7 @@ export const CropFocalControl = ({
   // there, so a listener on a *descendant* of the capturing element would
   // never see them.
   const handleRectPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (isDisabled) return
     event.stopPropagation()
     setDragTarget("rect")
     lastPointerRef.current = { x: event.clientX, y: event.clientY }
@@ -111,6 +119,7 @@ export const CropFocalControl = ({
     event: React.PointerEvent<HTMLDivElement>,
     handle: HandlePosition,
   ) => {
+    if (isDisabled) return
     event.stopPropagation()
     setDragTarget(handle)
     event.currentTarget.setPointerCapture(event.pointerId)
@@ -145,6 +154,7 @@ export const CropFocalControl = ({
   const handleFocalPointerDown = (
     event: React.PointerEvent<HTMLDivElement>,
   ) => {
+    if (isDisabled) return
     event.stopPropagation()
     // Commit the (until-now local) default crop on the first focal edit, so a
     // focal-only adjustment still bakes within the correct frame. Focal values
