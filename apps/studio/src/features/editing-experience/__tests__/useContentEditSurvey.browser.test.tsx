@@ -30,16 +30,16 @@ const mockEnv = vi.hoisted<{
 }))
 vi.mock("~/env.mjs", () => mockEnv)
 
-const routeChangeStartHandlers = vi.hoisted<(() => void)[]>(() => [])
+const beforeHistoryChangeHandlers = vi.hoisted<(() => void)[]>(() => [])
 vi.mock("next/router", () => ({
   useRouter: () => ({
     events: {
       on: (_event: string, handler: () => void) => {
-        routeChangeStartHandlers.push(handler)
+        beforeHistoryChangeHandlers.push(handler)
       },
       off: (_event: string, handler: () => void) => {
-        const index = routeChangeStartHandlers.indexOf(handler)
-        if (index !== -1) routeChangeStartHandlers.splice(index, 1)
+        const index = beforeHistoryChangeHandlers.indexOf(handler)
+        if (index !== -1) beforeHistoryChangeHandlers.splice(index, 1)
       },
     },
   }),
@@ -87,7 +87,7 @@ const renderTracker = (store: ReturnType<typeof createStore>) =>
 beforeEach(() => {
   trackEventMock.mockClear()
   mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
-  routeChangeStartHandlers.length = 0
+  beforeHistoryChangeHandlers.length = 0
 })
 
 describe("useFireContentEditSurveyEvent", () => {
@@ -270,7 +270,7 @@ describe("useLeftEditorSurveyTracker", () => {
     })
 
     // Act
-    act(() => routeChangeStartHandlers.forEach((handler) => handler()))
+    act(() => beforeHistoryChangeHandlers.forEach((handler) => handler()))
 
     // Assert
     expect(trackEventMock).toHaveBeenCalledTimes(1)
@@ -289,6 +289,6 @@ describe("useLeftEditorSurveyTracker", () => {
     unmount()
 
     // Assert
-    expect(routeChangeStartHandlers).toHaveLength(0)
+    expect(beforeHistoryChangeHandlers).toHaveLength(0)
   })
 })
