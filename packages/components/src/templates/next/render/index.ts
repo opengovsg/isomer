@@ -1,3 +1,5 @@
+export { renderComponent } from "./renderComponent"
+export type { RenderComponentProps } from "./renderComponent"
 export { renderLayout } from "./renderLayout"
 export { renderPageContent } from "./renderPageContent"
 export { renderComponentPreviewText } from "./renderComponentPreviewText"
