@@ -13,6 +13,8 @@ export {
   NO_STYLIZED_UNICODE_REGEX,
   isSiteNotificationActive,
   createChildrenPagesComparator,
+  convertVariantData,
+  defaultHeroCarouselSlide,
   formatBytes,
   DGS_REQUEST_MAX_BYTES,
   getAskgovIdFromString,

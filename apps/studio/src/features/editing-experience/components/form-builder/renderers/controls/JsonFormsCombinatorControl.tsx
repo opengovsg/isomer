@@ -16,13 +16,13 @@ import {
 import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
 import {
   ARRAY_RADIO_FORMAT,
+  convertVariantData,
   HERO_BANNER_STYLE_FORMAT,
   TAG_CATEGORY_ITEM_FORMAT,
 } from "@opengovsg/isomer-components"
 import { useMemo, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { nextHeroCarouselVariantData } from "../../utils/nextHeroCarouselVariantData"
 import { HeroBannerStyleCombinator } from "./HeroBannerStyleControl"
 
 export const jsonFormsOneOfControlTester: RankedTester = rankWith(
@@ -176,16 +176,8 @@ function JsonFormsCombinatorControl({
       if (newSchema.type === "string") {
         handleChange(path, newSchema.const || "")
       } else {
-        handleChange(
-          path,
-          schema.format === HERO_BANNER_STYLE_FORMAT
-            ? // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
-              nextHeroCarouselVariantData(data, newData, newSchema)
-            : {
-                ...data,
-                ...newData,
-              },
-        )
+        // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
+        handleChange(path, convertVariantData(data, newData, newSchema))
       }
     }
   }

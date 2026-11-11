@@ -35,3 +35,5 @@ export const CONTENT_TYPE_TO_FORMAT = {
 export const SUPPORTED_OPTIMIZABLE_FORMATS = Object.values(
   CONTENT_TYPE_TO_FORMAT,
 )
+
+export const PLACEHOLDER_IMAGE_FILENAME = "placeholder_no_image.png"

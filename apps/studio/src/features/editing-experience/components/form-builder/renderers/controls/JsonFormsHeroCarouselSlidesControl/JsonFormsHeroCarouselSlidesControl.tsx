@@ -8,7 +8,10 @@ import {
   schemaMatches,
 } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { HERO_CAROUSEL_SLIDES_FORMAT } from "@opengovsg/isomer-components"
+import {
+  defaultHeroCarouselSlide,
+  HERO_CAROUSEL_SLIDES_FORMAT,
+} from "@opengovsg/isomer-components"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useEditPageCarouselPreview } from "~/features/editing-experience/components/preview/EditPageCarouselPreviewProvider"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
@@ -18,7 +21,6 @@ import { DraggableTagButton } from "../../../components/DraggableTagButton"
 import { NestedDrawerSwitch } from "../../../components/NestedDrawerSwitch"
 import { TagRowActionsMenu } from "../../../components/TagRowActionsMenu"
 import { useArray } from "../../../hooks/useArray"
-import { defaultHeroCarouselSlide } from "../../../utils/defaultHeroCarouselSlide"
 import {
   indexAfterDelete,
   indexAfterMove,

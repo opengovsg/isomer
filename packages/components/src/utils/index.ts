@@ -42,4 +42,8 @@ export {
 } from "./validation"
 export { isSiteNotificationActive } from "./isSiteNotificationActive"
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
+export {
+  convertVariantData,
+  defaultHeroCarouselSlide,
+} from "./convertVariantData"
 export { resolveCollectionSortOrder } from "../templates/next/layouts/Collection/utils/collectionSortOrder"
