@@ -1,3 +1,4 @@
+import type { JsonSchema } from "@jsonforms/core"
 import { describe, expect, it } from "vitest"
 
 import { PLACEHOLDER_IMAGE_FILENAME } from "../../constants"
@@ -23,6 +24,24 @@ const carouselSchema = {
     carousel: {},
     slides: {},
   },
+}
+
+// Mirrors HeroGradientSchema (Type.Intersect): fields live under `allOf`/`oneOf`,
+// not a top-level `properties` map. The oneOf is the buttons-vs-quick-links layout.
+const gradientSchema: JsonSchema = {
+  type: "object",
+  allOf: [
+    {
+      type: "object",
+      properties: { type: {}, variant: {}, backgroundUrl: {}, title: {} },
+    },
+    {
+      oneOf: [
+        { properties: { actions: {}, buttonLabel: {}, buttonUrl: {} } },
+        { properties: { actions: {} } },
+      ],
+    },
+  ],
 }
 
 describe("nextHeroCarouselVariantData", () => {
@@ -120,6 +139,52 @@ describe("nextHeroCarouselVariantData", () => {
       backgroundUrl: "/uploads/existing.png",
       title: "Edited",
       subtitle: "From the slide",
+    })
+  })
+
+  it("keeps shared fields when switching into gradient (ISOM-2834: allOf-shaped schema)", () => {
+    // Act
+    const result = nextHeroCarouselVariantData(
+      {
+        type: "hero",
+        variant: "block",
+        backgroundUrl: "/uploads/existing.png",
+        title: "Hello",
+      },
+      { type: "hero", variant: "gradient" },
+      gradientSchema,
+    )
+
+    // Assert
+    expect(result).toEqual({
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/uploads/existing.png",
+      title: "Hello",
+    })
+  })
+
+  it("keeps button content when switching into gradient (nested under the oneOf action-layout member)", () => {
+    // Act
+    const result = nextHeroCarouselVariantData(
+      {
+        type: "hero",
+        variant: "block",
+        title: "Hello",
+        buttonLabel: "Learn more",
+        buttonUrl: "/about",
+      },
+      { type: "hero", variant: "gradient" },
+      gradientSchema,
+    )
+
+    // Assert
+    expect(result).toEqual({
+      type: "hero",
+      variant: "gradient",
+      title: "Hello",
+      buttonLabel: "Learn more",
+      buttonUrl: "/about",
     })
   })
 
