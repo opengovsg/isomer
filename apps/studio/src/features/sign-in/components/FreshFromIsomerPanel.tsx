@@ -136,7 +136,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
   }
 
   return (
-    <Stack spacing="1.25rem" w="100%" maxW="36rem">
+    <Stack spacing="1.25rem" w="100%" maxW="36rem" data-visual-test="blackout">
       <Flex align="center" justify="space-between" gap="1rem">
         <Flex align="center" gap="0.75rem" minW={0}>
           <Text as="h2" textStyle="h5" color="base.content.strong">

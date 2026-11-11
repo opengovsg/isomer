@@ -34,3 +34,7 @@ export type AskgovProps = Static<typeof AskgovSchema>
 export type AskgovWidgetProps = AskgovProps & {
   environment: IsomerSiteProps["environment"]
 }
+
+export type AskgovWidgetClientProps = AskgovProps & {
+  scriptUrl: string
+}
