@@ -16,6 +16,7 @@ export const UnsavedPageChangesGuard = (): JSX.Element => {
     addedBlockIndex,
     setAddedBlockIndex,
     setDrawerState,
+    setModifiedAssets,
   } = useEditorDrawerContext()
   const [nextUrl, setNextUrl] = useState("")
   const isOpen = !!nextUrl
@@ -42,6 +43,7 @@ export const UnsavedPageChangesGuard = (): JSX.Element => {
     setSavedPageState(discardedPageState)
     setPreviewPageState(discardedPageState)
     setAddedBlockIndex(null)
+    setModifiedAssets([])
     setDrawerState({ state: "root" })
     setNextUrl("")
     void router.push(nextUrl)

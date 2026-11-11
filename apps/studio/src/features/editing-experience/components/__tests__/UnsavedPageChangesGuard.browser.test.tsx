@@ -86,15 +86,21 @@ describe("UnsavedPageChangesGuard", () => {
   })
 
   it("lets navigation through when there are no unsaved changes", () => {
+    // Arrange
     renderGuard()
 
-    expect(navigate()).toBe(false)
+    // Act
+    const isBlocked = navigate()
+
+    // Assert
+    expect(isBlocked).toBe(false)
     expect(
       screen.queryByText("Are you sure you want to discard your changes?"),
     ).not.toBeInTheDocument()
   })
 
   it("blocks navigation and navigates only after discard is confirmed", async () => {
+    // Arrange
     renderGuard()
     act(() => {
       drawerContext.setPreviewPageState({
@@ -103,27 +109,38 @@ describe("UnsavedPageChangesGuard", () => {
       })
     })
 
-    expect(navigate()).toBe(true)
+    // Act
+    const isBlocked = navigate()
+
+    // Assert
+    expect(isBlocked).toBe(true)
     expect(
       await screen.findByText("Are you sure you want to discard your changes?"),
     ).toBeInTheDocument()
     expect(pushMock).not.toHaveBeenCalled()
 
+    // Act
     fireEvent.click(
       screen.getByRole("button", { name: "Yes, discard changes" }),
     )
 
+    // Assert
     expect(pushMock).toHaveBeenCalledWith(NEXT_URL)
   })
 
   // A new block is written to both saved and preview state before it persists.
   it("blocks navigation while a newly added block is unsaved", async () => {
+    // Arrange
     renderGuard()
     act(() => {
       drawerContext.setAddedBlockIndex(0)
     })
 
-    expect(navigate()).toBe(true)
+    // Act
+    const isBlocked = navigate()
+
+    // Assert
+    expect(isBlocked).toBe(true)
     expect(
       await screen.findByText("Are you sure you want to discard your changes?"),
     ).toBeInTheDocument()
@@ -131,10 +148,12 @@ describe("UnsavedPageChangesGuard", () => {
 
   // e.g. View history stays on the editor, so state must reset on discard.
   it("reverts edits and closes the modal on discard", async () => {
+    // Arrange
     renderGuard()
     act(() => {
       drawerContext.setDrawerState({ state: "complexEditor" })
       drawerContext.setAddedBlockIndex(0)
+      drawerContext.setModifiedAssets([{ path: "#/src", src: "/old.png" }])
       drawerContext.setPreviewPageState({
         ...PAGE_STATE,
         page: { ...PAGE_STATE.page, title: "Edited" },
@@ -143,10 +162,12 @@ describe("UnsavedPageChangesGuard", () => {
     navigate()
     await screen.findByText("Are you sure you want to discard your changes?")
 
+    // Act
     fireEvent.click(
       screen.getByRole("button", { name: "Yes, discard changes" }),
     )
 
+    // Assert
     await waitFor(() =>
       expect(
         screen.queryByText("Are you sure you want to discard your changes?"),
@@ -157,5 +178,6 @@ describe("UnsavedPageChangesGuard", () => {
     expect(drawerContext.savedPageState).toEqual(discardedState)
     expect(drawerContext.addedBlockIndex).toBeNull()
     expect(drawerContext.drawerState).toEqual({ state: "root" })
+    expect(drawerContext.modifiedAssets).toEqual([])
   })
 })
