@@ -1,9 +1,12 @@
-import type { JsonSchema } from "@jsonforms/core"
 import { describe, expect, it } from "vitest"
 
 import { PLACEHOLDER_IMAGE_FILENAME } from "../../constants"
-import { defaultHeroCarouselSlide } from "../utils/defaultHeroCarouselSlide"
-import { nextHeroCarouselVariantData } from "../utils/nextHeroCarouselVariantData"
+import {
+  convertVariantData,
+  defaultHeroCarouselSlide,
+} from "../convertVariantData"
+
+type VariantSchema = Parameters<typeof convertVariantData>[2]
 
 const blockSchema = {
   type: "object",
@@ -28,11 +31,9 @@ const carouselSchema = {
 
 // Mirrors HeroGradientSchema (Type.Intersect): fields live under `allOf`/`oneOf`,
 // not a top-level `properties` map. The oneOf is the buttons-vs-quick-links layout.
-const gradientSchema: JsonSchema = {
-  type: "object",
+const gradientSchema: VariantSchema = {
   allOf: [
     {
-      type: "object",
       properties: { type: {}, variant: {}, backgroundUrl: {}, title: {} },
     },
     {
@@ -44,7 +45,7 @@ const gradientSchema: JsonSchema = {
   ],
 }
 
-describe("nextHeroCarouselVariantData", () => {
+describe("convertVariantData: hero", () => {
   it("keeps the previous hero image on the first slide and placeholders the second", () => {
     // Arrange
     const previous = {
@@ -54,14 +55,15 @@ describe("nextHeroCarouselVariantData", () => {
     }
 
     // Act
-    const result = nextHeroCarouselVariantData(
+    const result = convertVariantData(
       previous,
-      { variant: "carousel" },
+      { type: "hero", variant: "carousel" },
       carouselSchema,
     )
 
     // Assert
     expect(result).toEqual({
+      type: "hero",
       variant: "carousel",
       carousel: { layout: "block", imagePosition: "right" },
       slides: [
@@ -76,14 +78,15 @@ describe("nextHeroCarouselVariantData", () => {
 
   it("uses the placeholder image when the previous hero has none", () => {
     // Act
-    const result = nextHeroCarouselVariantData(
+    const result = convertVariantData(
       { variant: "block", title: "Hello" },
-      { variant: "carousel" },
+      { type: "hero", variant: "carousel" },
       carouselSchema,
     )
 
     // Assert
     expect(result).toEqual({
+      type: "hero",
       variant: "carousel",
       carousel: { layout: "block", imagePosition: "right" },
       slides: [
@@ -98,7 +101,7 @@ describe("nextHeroCarouselVariantData", () => {
 
   it("keeps shared fields when switching between non-carousel variants", () => {
     // Act
-    const result = nextHeroCarouselVariantData(
+    const result = convertVariantData(
       { type: "hero", variant: "gradient", title: "Hello" },
       { type: "hero", variant: "block" },
       blockSchema,
@@ -126,7 +129,7 @@ describe("nextHeroCarouselVariantData", () => {
     }
 
     // Act
-    const result = nextHeroCarouselVariantData(
+    const result = convertVariantData(
       previous,
       { type: "hero", variant: "block" },
       blockSchema,
@@ -144,7 +147,7 @@ describe("nextHeroCarouselVariantData", () => {
 
   it("keeps shared fields when switching into gradient (ISOM-2834: allOf-shaped schema)", () => {
     // Act
-    const result = nextHeroCarouselVariantData(
+    const result = convertVariantData(
       {
         type: "hero",
         variant: "block",
@@ -166,7 +169,7 @@ describe("nextHeroCarouselVariantData", () => {
 
   it("keeps button content when switching into gradient (nested under the oneOf action-layout member)", () => {
     // Act
-    const result = nextHeroCarouselVariantData(
+    const result = convertVariantData(
       {
         type: "hero",
         variant: "block",
@@ -201,7 +204,7 @@ describe("nextHeroCarouselVariantData", () => {
     }
 
     // Act
-    const result = nextHeroCarouselVariantData(
+    const result = convertVariantData(
       previous,
       { type: "hero", variant: "carousel", carousel: { layout: "block" } },
       carouselSchema,
@@ -221,5 +224,120 @@ describe("nextHeroCarouselVariantData", () => {
         defaultHeroCarouselSlide(),
       ],
     })
+  })
+})
+
+// Mirrors the InfoCards style branches: each defines only `variant` and `cards`.
+const cardsBranchSchema = (cardFields: string[]): VariantSchema => ({
+  properties: {
+    variant: {},
+    cards: {
+      items: {
+        properties: Object.fromEntries(cardFields.map((key) => [key, {}])),
+      },
+    },
+  },
+})
+
+const withImagesSchema = cardsBranchSchema([
+  "title",
+  "description",
+  "url",
+  "imageUrl",
+  "imageFit",
+  "imageAlt",
+])
+const withoutImagesSchema = cardsBranchSchema(["title", "description", "url"])
+
+const infoCards = {
+  type: "infocards",
+  title: "Block title",
+  subtitle: "Block subtitle",
+  maxColumns: "3",
+  variant: "cardsWithImages",
+  cards: [
+    {
+      title: "Card",
+      description: "Desc",
+      url: "/card",
+      imageUrl: "/uploads/card.png",
+      imageFit: "cover",
+      imageAlt: "A card",
+    },
+  ],
+}
+
+describe("convertVariantData: infocards", () => {
+  it("keeps cards and block fields when switching style", () => {
+    // Act
+    const result = convertVariantData(
+      infoCards,
+      { variant: "cardsWithoutImages", cards: [] },
+      withoutImagesSchema,
+    )
+
+    // Assert
+    expect(result).toEqual({
+      type: "infocards",
+      title: "Block title",
+      subtitle: "Block subtitle",
+      maxColumns: "3",
+      variant: "cardsWithoutImages",
+      cards: [{ title: "Card", description: "Desc", url: "/card" }],
+    })
+  })
+
+  it("keeps card content when switching into a style with images", () => {
+    // Act
+    const result = convertVariantData(
+      {
+        ...infoCards,
+        variant: "cardsWithoutImages",
+        cards: [{ title: "Card", url: "/card" }],
+      },
+      { variant: "cardsWithImages", cards: [] },
+      withImagesSchema,
+    )
+
+    // Assert
+    expect(result).toMatchObject({ cards: [{ title: "Card", url: "/card" }] })
+  })
+
+  it("keeps cards untrimmed when the branch has no card schema", () => {
+    // Act
+    const result = convertVariantData(
+      infoCards,
+      { variant: "cardsWithoutImages", cards: [] },
+      { properties: { variant: {} } },
+    )
+
+    // Assert
+    expect(result).toMatchObject({ cards: infoCards.cards })
+  })
+
+  it("falls back to the branch default when there are no cards yet", () => {
+    // Act
+    const result = convertVariantData(
+      { type: "infocards" },
+      { variant: "cardsWithoutImages", cards: [] },
+      withoutImagesSchema,
+    )
+
+    // Assert
+    expect(result).toMatchObject({ cards: [] })
+  })
+})
+
+describe("convertVariantData: other components", () => {
+  it("merges the branch defaults over the previous data", () => {
+    // Act
+    const result = convertVariantData(
+      { type: "image", src: "/a.png", size: "default" },
+      { size: "smaller" },
+      {},
+    )
+
+    // Assert
+    expect(result).toEqual({ type: "image", src: "/a.png", size: "smaller" })
   })
 })

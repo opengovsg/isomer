@@ -1,4 +1,4 @@
-export const PLACEHOLDER_IMAGE_FILENAME = "placeholder_no_image.png"
+export { PLACEHOLDER_IMAGE_FILENAME } from "@opengovsg/isomer-components"
 export const BANNER_MAX_CHARACTERS = 250
 
 export const CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE =
