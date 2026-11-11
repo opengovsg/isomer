@@ -315,7 +315,11 @@ describe("HistoryStateDrawer", () => {
     screen.getByRole("button", { name: "View changes" }).click()
 
     // Assert
+    // Same skeleton race as the test above: the heading is inside
+    // `PageDiffContent`, which mounts only after `Suspense`'s effect.
     const dialog = await screen.findByRole("dialog")
-    expect(within(dialog).queryByText("Changes in version 1")).not.toBeNull()
+    expect(
+      await within(dialog).findByText("Changes in version 1"),
+    ).not.toBeNull()
   })
 })
