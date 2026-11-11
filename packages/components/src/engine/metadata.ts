@@ -62,6 +62,10 @@ const getAbsoluteHttpUrl = (
   }
 }
 
+// NOTE: Sites are exported with `trailingSlash: true`, so this is the URL
+// actually served
+const withTrailingSlash = (url: string) => (url.endsWith("/") ? url : `${url}/`)
+
 const getSiteUrl = (configuredUrl: string) => {
   const siteUrl = getNonEmptyString(configuredUrl) ?? DEFAULT_SITE_URL
   return getAbsoluteHttpUrl(siteUrl, DEFAULT_SITE_URL) ?? DEFAULT_SITE_URL
@@ -259,7 +263,7 @@ const getCanonicalUrl = (props: GetPageJsonLdProps) => {
 export const getPageJsonLd = (props: GetPageJsonLdProps) => {
   const canonicalUrl = getCanonicalUrl(props)
   const siteUrl = getSiteUrl(props.site.url)
-  const pageUrl = new URL(canonicalUrl, siteUrl).toString()
+  const pageUrl = withTrailingSlash(new URL(canonicalUrl, siteUrl).toString())
 
   return {
     "@context": "https://schema.org",
@@ -375,9 +379,7 @@ export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
   return getSitemapAsArray(sitemap)
     .filter((item) => item.layout !== ISOMER_PAGE_LAYOUTS.Link)
     .map(({ permalink, lastModified }) => {
-      const permalinkWithTrailingSlash = permalink.endsWith("/")
-        ? permalink
-        : `${permalink}/`
+      const permalinkWithTrailingSlash = withTrailingSlash(permalink)
 
       return {
         url:

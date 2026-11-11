@@ -393,8 +393,8 @@ describe("getPageJsonLd", () => {
     expect(getSerializedPageJsonLd(contentPage)).toEqual({
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "@id": "https://example.gov.sg/about-us#webpage",
-      url: "https://example.gov.sg/about-us",
+      "@id": "https://example.gov.sg/about-us/#webpage",
+      url: "https://example.gov.sg/about-us/",
       name: "About us",
       description: "Learn about our work.",
       dateModified: "2026-08-18T10:00:00.000Z",
@@ -428,8 +428,8 @@ describe("getPageJsonLd", () => {
       },
     })
 
-    expect(jsonLd.url).toBe("https://www.isomer.gov.sg/about-us")
-    expect(jsonLd["@id"]).toBe("https://www.isomer.gov.sg/about-us#webpage")
+    expect(jsonLd.url).toBe("https://www.isomer.gov.sg/about-us/")
+    expect(jsonLd["@id"]).toBe("https://www.isomer.gov.sg/about-us/#webpage")
     expect(jsonLd.isPartOf["@id"]).toBe("https://www.isomer.gov.sg/#website")
   })
 })
