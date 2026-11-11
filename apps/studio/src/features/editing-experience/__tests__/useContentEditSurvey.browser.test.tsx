@@ -30,20 +30,31 @@ const mockEnv = vi.hoisted<{
 }))
 vi.mock("~/env.mjs", () => mockEnv)
 
-const routeChangeStartHandlers = vi.hoisted<(() => void)[]>(() => [])
+const routerEventHandlers = vi.hoisted<Map<string, (() => void)[]>>(
+  () => new Map(),
+)
 vi.mock("next/router", () => ({
   useRouter: () => ({
     events: {
-      on: (_event: string, handler: () => void) => {
-        routeChangeStartHandlers.push(handler)
+      on: (event: string, handler: () => void) => {
+        routerEventHandlers.set(event, [
+          ...(routerEventHandlers.get(event) ?? []),
+          handler,
+        ])
       },
-      off: (_event: string, handler: () => void) => {
-        const index = routeChangeStartHandlers.indexOf(handler)
-        if (index !== -1) routeChangeStartHandlers.splice(index, 1)
+      off: (event: string, handler: () => void) => {
+        routerEventHandlers.set(
+          event,
+          (routerEventHandlers.get(event) ?? []).filter((h) => h !== handler),
+        )
       },
     },
   }),
 }))
+
+const emitRouterEvent = (event: string) => {
+  routerEventHandlers.get(event)?.forEach((handler) => handler())
+}
 
 const BASE_PAGE: IsomerSchema = {
   version: "0.1.0",
@@ -87,7 +98,7 @@ const renderTracker = (store: ReturnType<typeof createStore>) =>
 beforeEach(() => {
   trackEventMock.mockClear()
   mockEnv.env.NEXT_PUBLIC_INTERCOM_APP_ID = "test-app-id"
-  routeChangeStartHandlers.length = 0
+  routerEventHandlers.clear()
 })
 
 describe("useFireContentEditSurveyEvent", () => {
@@ -270,12 +281,29 @@ describe("useLeftEditorSurveyTracker", () => {
     })
 
     // Act
-    act(() => routeChangeStartHandlers.forEach((handler) => handler()))
+    act(() => emitRouterEvent("beforeHistoryChange"))
 
     // Assert
     expect(trackEventMock).toHaveBeenCalledTimes(1)
     expect(trackEventMock).toHaveBeenCalledWith(LEFT_EDITOR_AFTER_EDITING_EVENT)
     expect(store.get(hasContentEditAtom)).toBe(false)
+  })
+
+  // The unsaved-changes guard can still cancel navigation at routeChangeStart.
+  it("does not fire on routeChangeStart alone", () => {
+    // Arrange
+    const store = createStore()
+    store.set(hasContentEditAtom, true)
+    renderHook(() => useLeftEditorSurveyTracker(), {
+      wrapper: jotaiWrapper(store),
+    })
+
+    // Act
+    act(() => emitRouterEvent("routeChangeStart"))
+
+    // Assert
+    expect(trackEventMock).not.toHaveBeenCalled()
+    expect(store.get(hasContentEditAtom)).toBe(true)
   })
 
   it("unsubscribes from route changes on unmount", () => {
@@ -289,6 +317,6 @@ describe("useLeftEditorSurveyTracker", () => {
     unmount()
 
     // Assert
-    expect(routeChangeStartHandlers).toHaveLength(0)
+    expect(routerEventHandlers.get("beforeHistoryChange")).toHaveLength(0)
   })
 })
