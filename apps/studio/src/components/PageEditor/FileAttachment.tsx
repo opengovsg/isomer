@@ -3,9 +3,8 @@ import { Box, FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment, useToast } from "@opengovsg/design-system-react"
 import { uniq } from "lodash-es"
 import dynamic from "next/dynamic"
-import { forwardRef, useEffect, useRef, useState } from "react"
+import { forwardRef, useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { RISKY_FILE_EXTENSIONS } from "~/lib/fileUpload"
 import { fileNameAndSizeSchema, uploadSvgSchema } from "~/schemas/asset"
@@ -20,27 +19,19 @@ interface FileAttachmentProps {
   setHref: (href?: string) => void
   siteId: number
   resourceId?: string
-  value?: File
   maxSizeInBytes: number
   acceptedFileTypes: Record<string, string>
-  shouldFetchResource?: boolean
+  isLoading?: boolean
   onUploadedFile?: (file: File) => void
   enableRiskyFileWarning?: boolean
-  // Fired once the file has actually landed in S3 (mutation success), ahead of
-  // the optional asset-fetch step below. Left to callers to decide what (if
-  // anything) to track — this component is shared by non-image attachments too.
+  // Fired once the file has landed in S3; callers decide what to track.
   onUploadSuccess?: () => void
 }
 
 type FileRejections = AttachmentProps<false>["rejections"]
 
-// Forwards ref to a wrapper around the Attachment so callers (e.g. a
-// "Replace image" link standing in for a hidden dropzone) can open the native
-// file picker programmatically — via ref.current.querySelector('input[type=
-// "file"]').click() — reusing this same upload flow instead of
-// re-implementing it. (Attachment's own type doesn't expose a ref, despite
-// being a forwardRef component at runtime, so we wrap it instead of passing
-// ref straight through.)
+// The ref points at a wrapper so callers (e.g. a "Replace image" link) can open
+// the file picker and reuse this upload flow; Attachment's type exposes no ref.
 export const FileAttachment = forwardRef<HTMLDivElement, FileAttachmentProps>(
   (
     {
@@ -49,7 +40,7 @@ export const FileAttachment = forwardRef<HTMLDivElement, FileAttachmentProps>(
       resourceId,
       maxSizeInBytes,
       acceptedFileTypes,
-      shouldFetchResource = true,
+      isLoading = false,
       onUploadedFile,
       enableRiskyFileWarning = false,
       onUploadSuccess,
@@ -65,24 +56,7 @@ export const FileAttachment = forwardRef<HTMLDivElement, FileAttachmentProps>(
       siteId,
       resourceId,
     })
-    const { handleAssetUpload, isLoading } = useAssetUpload({})
     const toast = useToast()
-
-    // setHref is recreated on every render by callers (it's an inline closure
-    // over path/handleChange), so it can't be a dependency here without the
-    // effect re-firing on every render while isLoading is true -- each firing
-    // writes "" back into the form state, which can race with and clobber the
-    // real uploaded src. A ref keeps this effect tied only to isLoading's
-    // actual true/false transitions, which is its real intent.
-    const setHrefRef = useRef(setHref)
-    useEffect(() => {
-      setHrefRef.current = setHref
-    })
-
-    useEffect(() => {
-      // NOTE: The outer link modal uses this to disable the button
-      if (isLoading) setHrefRef.current("")
-    }, [isLoading])
 
     const doUpload = (file: File) => {
       uploadFile(
@@ -91,22 +65,9 @@ export const FileAttachment = forwardRef<HTMLDivElement, FileAttachmentProps>(
           onSuccess: ({ path }) => {
             onUploadedFile?.(file)
             onUploadSuccess?.()
-            if (shouldFetchResource) {
-              void handleAssetUpload(path)
-                .then((src) => setHrefRef.current(src))
-                .catch(() => {
-                  toast({
-                    title: "Failed to upload file",
-                    description: "Please try again.",
-                    status: "error",
-                    ...BRIEF_TOAST_SETTINGS,
-                  })
-                })
-            } else setHrefRef.current(path)
+            setHref(path)
           },
-          // Without this, a failure in the presign call or the S3 PUT itself
-          // (permission denied, validation, network/CORS) silently reverts the
-          // control to its pre-upload state with no visible error at all.
+          // Otherwise a failed presign or S3 PUT reverts the control silently.
           onError: (error) => {
             console.error("Failed to upload file", error)
             toast({
@@ -134,7 +95,7 @@ export const FileAttachment = forwardRef<HTMLDivElement, FileAttachmentProps>(
               onRejection={setRejections}
               onChange={(file) => {
                 if (!file) {
-                  setHrefRef.current(undefined)
+                  setHref(undefined)
                   return
                 }
 
@@ -167,7 +128,6 @@ export const FileAttachment = forwardRef<HTMLDivElement, FileAttachmentProps>(
                     })
 
                 if (parseResult.success) return null
-                // NOTE: safe assertion here because we're in error path and there's at least 1 error
                 return (
                   parseResult.error.issues[0]?.message ||
                   "Please ensure that your file begins with alphanumeric characters!"
@@ -184,7 +144,7 @@ export const FileAttachment = forwardRef<HTMLDivElement, FileAttachmentProps>(
 
         {enableRiskyFileWarning && pendingAckRiskyFile && (
           <RiskyFileUploadModal
-            isOpen={!!pendingAckRiskyFile}
+            isOpen
             file={pendingAckRiskyFile}
             onConfirm={() => doUpload(pendingAckRiskyFile)}
             onClose={() => setPendingAckRiskyFile(null)}
