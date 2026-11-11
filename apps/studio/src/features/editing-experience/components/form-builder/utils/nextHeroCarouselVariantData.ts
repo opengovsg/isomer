@@ -21,6 +21,17 @@ type HeroData = Record<string, unknown> & {
 
 const isCarousel = (data: HeroData) => data.variant === HERO_STYLE.carousel.key
 
+// HeroGradientSchema is a Type.Intersect: its fields live under `allOf`/`oneOf`,
+// not a top-level `properties`. Collect them all so switching into gradient
+// doesn't drop the banner's data.
+const flatSchemaPropertyKeys = (schema: JsonSchema): string[] => {
+  if (schema.properties) return Object.keys(schema.properties)
+  if (schema.allOf) return schema.allOf.flatMap(flatSchemaPropertyKeys)
+  if (schema.oneOf) return schema.oneOf.flatMap(flatSchemaPropertyKeys)
+  if (schema.anyOf) return schema.anyOf.flatMap(flatSchemaPropertyKeys)
+  return []
+}
+
 /**
  * Data for a hero variant switch. Keeps only fields the selected branch
  * defines. Entering carousel seeds two slides from the previous hero; leaving
@@ -61,9 +72,8 @@ export function nextHeroCarouselVariantData(
     ...seeded,
   }
 
-  // Hero branches are flat objects (Type.Composite / Type.Object).
   return Object.fromEntries(
-    Object.keys(schema.properties ?? {})
+    flatSchemaPropertyKeys(schema)
       .filter((key) => Object.hasOwn(source, key))
       .map((key) => [key, source[key]]),
   )
