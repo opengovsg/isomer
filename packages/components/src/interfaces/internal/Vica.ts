@@ -79,7 +79,9 @@ export const VicaSchema = Type.Object(
 
 export type VicaProps = Static<typeof VicaSchema>
 
-export type VicaWidgetClientProps = VicaProps
+export type VicaWidgetClientProps = VicaProps & {
+  scriptUrl: string
+}
 
 export type VicaWidgetProps = VicaProps & {
   site: Pick<IsomerSiteProps, "siteMapArray" | "assetsBaseUrl">
