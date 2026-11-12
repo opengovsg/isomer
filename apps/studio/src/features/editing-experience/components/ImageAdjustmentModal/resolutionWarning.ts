@@ -5,30 +5,19 @@ import type { CropRectNormalized } from "./controls/cropGeometry"
 import { defaultCropRect } from "./controls/cropGeometry"
 
 interface LowResWarning {
-  // Which axis is under-resolved — drives the "wide"/"tall" wording.
+  // The under-resolved axis. Picks the "wide" or "tall" wording.
   dimension: "width" | "height"
-  // Effective pixel size of the cropped region on that axis (what ships).
+  // Pixel size of the cropped region on that axis.
   effectivePx: number
-  // The frame size on that axis it's being compared against.
+  // Frame size on that axis.
   targetPx: number
 }
 
 /**
- * Decide whether to warn that the cropped region is too low-resolution for the
- * component's largest rendered frame. The crop width/height are the effective
- * output dimensions directly.
- *
- * The fit matters:
- * - **cover** (or width-only, when no height is configured): the frame is filled
- *   on both axes, so a shortfall on EITHER axis upscales (blurs) the image.
- *   Report the axis that falls furthest short.
- * - **contain**: the image is letterboxed, scaling up only until the limiting
- *   axis fills the frame, so it is upscaled ONLY when BOTH axes fall short (a
- *   wide-but-short or tall-but-narrow crop stays sharp). Report the binding axis
- *   (the one that fills first), whose ratio is the actual upscale factor.
- *
- * Returns undefined when there's nothing to warn about (no image loaded yet, no
- * frame size configured, or the crop can fill the frame at 1x).
+ * Warns when the crop has too few pixels for the component's largest frame.
+ * "cover" fills both axes, so either one falling short blurs the image.
+ * "contain" letterboxes, so it blurs only when both fall short.
+ * Returns undefined with no image, no frame size, or a crop that fits.
  */
 export const computeLowResWarning = ({
   naturalSize,
@@ -73,19 +62,18 @@ export const computeLowResWarning = ({
         }
       : undefined
 
-  // The upscale factor on an axis is targetPx / effectivePx (>1 means blur).
+  // Above 1 means the image is upscaled and blurs.
   const upscale = (s: LowResWarning) => s.targetPx / s.effectivePx
 
   if (objectFit === "contain") {
-    // Letterboxed: only blurry when BOTH axes fall short; the binding axis is
-    // the one that fills first (smaller upscale ratio = the actual scale used).
+    // The axis with the smaller ratio fills first and sets the real scale.
     if (!widthShort || !heightShort) return undefined
     return upscale(widthShort) <= upscale(heightShort)
       ? widthShort
       : heightShort
   }
 
-  // Cover / width-only: either axis falling short upscales — report the worst.
+  // Report the axis that falls furthest short.
   const shortfalls = [widthShort, heightShort].filter(
     (s): s is LowResWarning => s != null,
   )

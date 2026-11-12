@@ -32,34 +32,24 @@ import type {
 } from "./AdjustmentConfig"
 import { chooseBakeMime } from "./useSaveImageAdjustment"
 
-// Minimal site stub for an ISOLATED single-block preview — there is no real
-// page/nav/footer context here (this renders one block, not a whole page), so
-// only the fields HeroGradient/Contentpic actually read (assetsBaseUrl,
-// siteMapArray for reference-link resolution, which degrades gracefully to
-// the raw link on a miss) are populated. Mirrors the same escape hatch
-// PreviewWithCustomSitemap.tsx already uses for its own site prop.
+// Site stub for a single-block preview. It fills only the fields the block
+// reads, as PreviewWithCustomSitemap.tsx does.
 const PREVIEW_SITE_STUB = {
   assetsBaseUrl: ASSETS_BASE_URL,
   siteMapArray: [],
 } as unknown as IsomerSiteProps
 
-// Gets the bytes to bake: the retained local original if we have it (no fetch;
-// works while the uploaded original is still gated), else fetch -- ?original
-// first, then the webp variant. CORS must be readable. Always the TRUE
-// original, never a previous bake, so re-encode loss can't compound. On
-// failure the preview falls back to the uncropped src and surfaces that via
-// fetchError, since save would throw on the same failure.
+// Returns the bytes to bake. Uses the retained local file when there is one,
+// else fetches the true original, never a previous bake.
+// On failure it sets fetchError and the preview shows the uncropped src.
 const useOriginalImageBlob = (originalSrc: string, originalFile?: Blob) => {
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
   const [fetchError, setFetchError] = useState(false)
 
-  // Bake from the pristine original (bypass the CDN transcode), matching the
-  // save path — the transcoded variant can be downscaled or carry a generic
-  // "binary/octet-stream" type that the bake gate rejects.
+  // The transcoded variant can be downscaled or have a generic type the
+  // bake rejects, so fetch the pristine original as the save path does.
   const originalFetchUrl = generateOriginalAssetUrl(originalSrc)
-  // Fallback when the ?original bypass is gated (e.g. 403): force the webp
-  // variant (not avif) so baking can proceed — the baker only accepts
-  // jpeg/png/webp, so a default */* (avif) fetch would be rejected downstream.
+  // Fallback when ?original 403s. Ask for webp because the baker rejects avif.
   const plainFetchUrl = generateAssetUrl(originalSrc)
 
   useEffect(() => {
@@ -70,13 +60,8 @@ const useOriginalImageBlob = (originalSrc: string, originalFile?: Blob) => {
     }
     const fetchOriginal = async () => {
       setFetchError(false)
-      // Try ?original (pristine), then fall back to the plain variant — the same
-      // URL the <img> display uses. The ?original object is gated by a
-      // malware-scan tag and can 403; critically, that error response can also be
-      // CORS-opaque, so the fetch *throws* rather than resolving with !ok. Each
-      // attempt is therefore isolated so a thrown ?original never skips the plain
-      // fallback (the earlier `let response = await fetch(...)` aborted the whole
-      // bake on a throw, freezing the preview on the previous bake).
+      // ?original can 403, and a CORS-opaque 403 makes fetch throw. Catch per
+      // attempt so a throw still reaches the plain-variant fallback.
       const tryFetch = async (
         url: string,
         init?: RequestInit,
@@ -94,8 +79,6 @@ const useOriginalImageBlob = (originalSrc: string, originalFile?: Blob) => {
           ? await tryFetch(plainFetchUrl, { headers: { Accept: "image/webp" } })
           : null)
       if (!blob) {
-        // Falls back to the uncropped src (CORS-blocked images, etc.); fetchError
-        // surfaces that fallback since save would throw on the same failure.
         console.debug("Failed to fetch original image for preview bake")
         if (!cancelled) setFetchError(true)
       }
@@ -148,13 +131,9 @@ const useBakedPreviewUrl = (
 
     const runBake = async () => {
       try {
-        // Resolve the bake MIME the same way the save path does: prefer the
-        // fetched blob's Content-Type, but fall back to the key's extension when
-        // that type is missing or generic. ?original can return 200 with a
-        // generic "binary/octet-stream" (no network/console error), which a bare
-        // canBakeImage(blob.type) gate would silently reject — freezing the
-        // preview on the previous bake for a re-edit. chooseBakeMime throws for a
-        // genuinely unbakeable format, which we treat as "fall back to uncropped".
+        // ?original can return a generic "binary/octet-stream" type, so
+        // chooseBakeMime falls back to the key's extension. It throws on an
+        // unbakeable format, and the preview then stays uncropped.
         let mimeType: string
         try {
           mimeType = chooseBakeMime(
@@ -165,8 +144,7 @@ const useBakedPreviewUrl = (
           return
         }
 
-        // Animated WebP/APNG pass the MIME gate but would be flattened, so fall
-        // back to the uncropped src rather than baking a single frame.
+        // Baking an animated WebP or APNG would flatten it to one frame.
         if (await isAnimatedImageBlob(originalBlob)) {
           return
         }
@@ -176,23 +154,19 @@ const useBakedPreviewUrl = (
           { crop: debouncedCrop },
           { mimeType },
         )
-        // A newer crop started while this bake ran — discard this result
-        // so the older crop can't replace the newer preview.
+        // A newer crop started while this bake ran. Drop this result.
         if (isStale()) {
           return
         }
         const bakeUrl = URL.createObjectURL(bakedBlob)
-        // Revoke previous URL before setting new one
         if (prevPreviewUrlRef.current) {
           URL.revokeObjectURL(prevPreviewUrlRef.current)
         }
         prevPreviewUrlRef.current = bakeUrl
         setPreviewUrl(bakeUrl)
       } catch (error) {
-        // On any failure (CORS taint, canvas issue, etc.): fall back to the
-        // uncropped src. Clear the previous preview so a stale crop from an
-        // earlier successful bake isn't left showing for this draft — unless a
-        // newer bake has already superseded this one.
+        // Clear the previous preview so a stale crop doesn't stay on screen,
+        // unless a newer bake has superseded this one.
         console.debug("Failed to bake image", error)
         if (isStale()) {
           return
@@ -224,61 +198,39 @@ const useBakedPreviewUrl = (
 
 interface AdjustmentPreviewProps {
   src: string
-  // The TRUE original's raw stored path (e.g. "/1/uuid/file.png"), resolved
-  // once by the parent modal via resolveOriginalKey — the bake input must
-  // always be the original, never a previous bake (RFC: re-encode loss must
-  // not compound). On a first edit this equals `src`; on a re-edit, `src` is
-  // the previous bake and only this points at the true original.
+  // Raw stored path of the true original, e.g. "/1/uuid/file.png". Equals
+  // `src` on a first edit. On a re-edit `src` is the previous bake.
   originalSrc: string
-  // The retained client-side original bytes, when the image was uploaded this
-  // session. Baked from directly (no fetch) and shown as the uncropped display
-  // fallback, so the preview works while the uploaded original is still gated by
-  // the malware-scan window.
+  // Original bytes kept from an upload this session. Lets the preview work
+  // while the malware scan still gates the uploaded original.
   originalFile?: Blob
   adjustment?: ImageAdjustment
   previewStates: AdjustmentPreviewState[]
-  // The real block content + the field name holding the image, so the real
-  // published component can be rendered (real copy/scrim/frame) instead of
-  // the framed-<img> approximation below. Falls back to the approximation
-  // when absent.
+  // The block and the image's field name, for rendering the real component.
+  // Without them the preview uses the framed-image approximation.
   block?: IsomerComponent
   imageFieldName?: string
-  // The field's immediate host — for a root-level image field this equals
-  // `block`; for an array-nested field (e.g. an InfoCards card) this is the
-  // individual card object. When it differs from `block`, the real-component
-  // render needs `buildSingleItemPreviewBlock` to splice just this one item
-  // back into a synthetic single-item block (otherwise the real component
-  // would render the whole block/every item) — see that prop's doc.
+  // The object that holds the field. Equals `block` for a root-level field,
+  // and is the single item, e.g. one InfoCards card, for an array-nested one.
   fieldHost?: Record<string, unknown>
-  // Builds the synthetic single-item block for an array-nested image field
-  // (see AdjustmentConfig). Required (and used) only when `fieldHost` differs
-  // from `block`; absent/undefined there falls back to the framed-image
-  // approximation, same as `skipRealComponentPreview`.
+  // Builds a one-item block for an array-nested field. Without it the
+  // preview uses the framed-image approximation.
   buildSingleItemPreviewBlock?: BuildSingleItemPreviewBlock
-  // Opt out of the real-component render and always use the framed-image
-  // approximation below. Set for array-nested image fields with no
-  // buildSingleItemPreviewBlock (e.g. ImageGallery), where the real component
-  // would render the whole block/all items instead of the single one being
-  // edited.
+  // Always use the framed-image approximation. Set for array-nested fields
+  // with no builder, e.g. ImageGallery.
   skipRealComponentPreview?: boolean
-  // The object-fit the framed-image approximation uses (skipRealComponentPreview
-  // path). "contain" letterboxes the whole (cropped) image to match a field
-  // like InfoCards' "Resize image to fit"; defaults to "cover". Ignored on the
-  // real-component path, which renders the component's own fit.
+  // object-fit for the framed-image approximation and for a nested item's
+  // `imageFit`. Defaults to "cover".
   objectFit?: "cover" | "contain"
-  // The real page layout the published page would render at — threaded
-  // through so a layout-dependent shape previews correctly instead of always
-  // defaulting to "content".
+  // The layout the published page renders at. Defaults to "content".
   pageLayout?: IsomerPageLayoutType
-  // Needed to pull the site's brand theme CSS vars into the preview iframe —
-  // without them, classes like `bg-brand-canvas-inverse` resolve to nothing.
+  // Used to load the site's brand theme CSS vars into the preview iframe.
   siteId: number
 }
 
-// Gap (px) between the two small tiles in the rail's second row.
+// Gap between the two small tiles in the rail's second row.
 const TILE_GAP_PX = 12
-// The rail's design width (Figma) — used as the pre-measure default so tiles
-// render at the right size on first paint, before the ResizeObserver reports.
+// The rail's Figma width, used until the ResizeObserver reports.
 const DEFAULT_RAIL_WIDTH_PX = 336
 
 export const AdjustmentPreview = ({
@@ -296,8 +248,7 @@ export const AdjustmentPreview = ({
   pageLayout,
   siteId,
 }: AdjustmentPreviewProps): JSX.Element => {
-  // The preview tiles are sized relative to the rail's own width: the widest
-  // state fills the rail on its own row, the rest sit two-up below it.
+  // Tile widths derive from the rail's measured width.
   const railRef = useRef<HTMLDivElement>(null)
   const [railWidth, setRailWidth] = useState(DEFAULT_RAIL_WIDTH_PX)
   useEffect(() => {
@@ -312,9 +263,8 @@ export const AdjustmentPreview = ({
   }, [])
   const smallTileWidth = Math.floor((railWidth - TILE_GAP_PX) / 2)
 
-  // Object URL for the retained local original (when the image was uploaded this
-  // session), used as the uncropped display fallback — avoids a 404 before the
-  // first bake for a fresh upload whose CDN variant hasn't propagated yet.
+  // Show the local original before the first bake. A fresh upload's CDN
+  // variant may still 404.
   const [localOriginalUrl, setLocalOriginalUrl] = useState<string | null>(null)
   useEffect(() => {
     if (!originalFile) {
@@ -326,10 +276,7 @@ export const AdjustmentPreview = ({
     return () => URL.revokeObjectURL(url)
   }, [originalFile])
 
-  // src arrives as the raw stored path (e.g. "/1/uuid/file.png"); resolve it to
-  // the asset domain for DISPLAY (the fallback shown before any bake exists),
-  // same as ImageClient does at render time. Prefer the local original when we
-  // have it.
+  // `src` is the raw stored path. Resolve it to the asset domain for display.
   const displaySrc = localOriginalUrl ?? generateAssetUrl(src)
 
   const { originalBlob, fetchError } = useOriginalImageBlob(
@@ -344,59 +291,37 @@ export const AdjustmentPreview = ({
 
   const adjustedSrc = previewUrl ?? displaySrc
 
-  // Real-component preview: render the actual published block (real copy,
-  // scrim, frame behaviour) with the adjusted image + draft imageAdjustment
-  // spliced in, instead of the framed-<img> approximation below. Rendered at
-  // the page's own layout, so a layout-dependent shape (e.g. Blockquote's
-  // circle vs square) matches what this page will publish.
+  // Renders the real published block with the adjusted image and the draft
+  // adjustment patched in, at the page's own layout.
   const renderPreviewComponent = (): React.ReactNode => {
     if (!block || !fieldHost || !imageFieldName) return null
-    // The image + alt fallback below apply to the field HOST: the block itself
-    // for a root-level field, the card for an array-nested one (e.g. InfoCards).
     const isNestedField = fieldHost !== block
-    // Preview-only safety net: some components (e.g. Blockquote) gate
-    // whether they render the image at all on a sibling `imageAlt` field,
-    // to avoid publishing an inaccessible image when alt text was never
-    // filled in. An editor adjusting crop/focal mid-edit shouldn't have
-    // that silently blank the very image they're trying to preview — the
-    // real saved value (and the production render path) is untouched.
+    // Some components, e.g. Blockquote, hide the image when `imageAlt` is
+    // empty. Fill it in for the preview only so the image still shows.
     const existingAlt = fieldHost.imageAlt
     const hasAlt = typeof existingAlt === "string" && existingAlt.length > 0
     const patch = {
       [imageFieldName]: adjustedSrc,
       [`${imageFieldName}ImageAdjustment`]: adjustment,
       ...(hasAlt ? {} : { imageAlt: "Preview image" }),
-      // A card (nested field) owns an `imageFit` the real component reads to
-      // decide cover vs contain. The Fit/Fill toggle lives in modal state and
-      // arrives here as `objectFit`; splice it onto the edited card so the
-      // real-component preview reflects the toggle live (otherwise it renders
-      // the stale saved fit and the preview appears not to update).
+      // The real component reads a nested item's `imageFit`. Patch in the
+      // modal's Fit/Fill choice so the preview follows the toggle.
       ...(isNestedField ? { imageFit: objectFit } : {}),
     }
-    // The real component renders every item in the block (e.g. every
-    // InfoCards card) — splice the adjusted single item back into a
-    // synthetic single-item block so only it renders. No builder (or it
-    // returns nothing) falls back to the framed-image approximation,
-    // same as skipRealComponentPreview.
+    // The real component renders every item, so build a one-item block.
+    // No builder means the framed-image approximation.
     const component = isNestedField
       ? buildSingleItemPreviewBlock?.(block, { ...fieldHost, ...patch })
       : ({ ...block, ...patch } as IsomerComponent)
     if (!component) return null
-    // renderComponent dispatches a bare component with no page layout
-    // around it. In a real page, the horizontal gutter/max-width for any
-    // element marked `.component-content` (e.g. HeroGradient's text block)
-    // comes from an ANCESTOR selector the page layout applies —
-    // `[&_.component-content]:px-6 [&_.component-content]:md:px-10
-    // [&_.component-content]:max-w-screen-xl [&_.component-content]:mx-auto`
-    // (see Homepage.tsx) — not from the component itself. Without this
-    // wrapper the text/buttons sit flush left with no padding, even though
-    // the background image (a separate, non-"component-content" sibling)
-    // renders correctly full-bleed either way.
+    // On a real page the layout styles `.component-content` from an ancestor
+    // selector, see Homepage.tsx. Without this wrapper the text and buttons
+    // sit flush left.
     return (
       <div
         className={`break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10${
-          // Single-item preview: force InfoCards' grid (the only `auto-rows-max`
-          // element) to one column so the lone card fills the tile at every breakpoint.
+          // InfoCards' grid is the only `auto-rows-max` element. One column
+          // makes the lone card fill the tile.
           isNestedField ? " [&_.auto-rows-max]:!grid-cols-1" : ""
         }`}
       >
@@ -411,25 +336,18 @@ export const AdjustmentPreview = ({
     )
   }
 
-  // Use the real component for every state when it can be built (and
-  // skipRealComponentPreview doesn't opt out); otherwise every state falls
-  // through to the framed-<img> approximation.
   const rendered = skipRealComponentPreview ? null : renderPreviewComponent()
   const useRealComponent = !!rendered
 
-  // One rail tile at a given display width — either the real-component render
-  // (scaled in an iframe) or the framed-image approximation.
   const renderTile = (
     state: AdjustmentPreviewState,
     width: number,
   ): React.ReactNode => {
     if (useRealComponent) {
       return (
-        // The theme fetch suspends AND can throw; without the ErrorBoundary a
-        // failed getTheme would tear down the whole modal instead of this one
-        // frame degrading to a theme-less (but still correct) preview. If the
-        // component itself throws, the theme-less retry throws too, and the
-        // inner boundary shows a static "Preview unavailable" tile instead.
+        // The theme fetch can throw. The outer boundary retries without the
+        // theme. If the component itself throws, the inner one shows
+        // "Preview unavailable".
         <ErrorBoundary
           key={state.id}
           fallbackRender={() => (
@@ -484,8 +402,7 @@ export const AdjustmentPreview = ({
           h="100%"
           style={{
             objectFit,
-            // Mirror the renderer: focal is ignored under "contain" (the
-            // letterboxed image stays object-center), applied under "cover".
+            // As in the renderer, "contain" ignores the focal point.
             objectPosition:
               objectFit === "contain"
                 ? undefined
@@ -496,10 +413,8 @@ export const AdjustmentPreview = ({
     )
   }
 
-  // The widest state fills the rail on its own row; the rest sit two-up below.
-  // A state with no explicit viewportWidth renders at PreviewFrame's 1024px
-  // default, so rank it as such (not 0) — otherwise a Mobile-only-375 set like
-  // InfoCards would wrongly promote Mobile over the (wider) desktop states.
+  // The widest state gets its own row. A state with no viewportWidth
+  // renders at PreviewFrame's 1024px default, so rank it as 1024.
   const bigState = [...previewStates].sort(
     (a, b) => (b.viewportWidth ?? 1024) - (a.viewportWidth ?? 1024),
   )[0]
@@ -525,8 +440,7 @@ export const AdjustmentPreview = ({
   )
 }
 
-// Shared tile chrome + caption, used by the real-component, framed-image and
-// "unavailable" tiles so their frames stay visually identical.
+// Shared frame and caption for all three tile kinds.
 const PreviewTile = ({
   label,
   width,
@@ -561,23 +475,10 @@ const PreviewTile = ({
   </VStack>
 )
 
-// Renders the real component inside a simulated device viewport at this
-// breakpoint's exact width (so the component's own sm:/md:/lg: Tailwind
-// classes evaluate correctly — the iframe's OWN layout viewport is what
-// media queries read, which a container shrunk from outside can't fake),
-// scaled down to a fixed DISPLAY WIDTH (see FRAME_DISPLAY_WIDTH). The
-// frame's HEIGHT is measured from the real rendered content via a
-// ResizeObserver inside the iframe, never guessed — so condition (1), the
-// preview exactly reflecting the post-publish look, holds regardless of how
-// tall any given component's content turns out to be, with nothing cropped
-// or hidden behind a scrollbar.
-//
-// The site's brand theme CSS vars are passed in (via ThemedPreviewFrame) and
-// applied to the iframe — without them, Tailwind classes like
-// `bg-brand-canvas-inverse` resolve to nothing, which previously caused
-// white-on-white text in the HeroBlock preview. They're a prop (not fetched
-// here) so this frame still renders if the theme fetch fails — see the
-// ErrorBoundary fallback above.
+// Renders the real component in an iframe as wide as the breakpoint, so its
+// media queries evaluate against that width, then scales it to displayWidth.
+// A ResizeObserver in the iframe measures the height.
+// themeCssVars is a prop so the frame still renders if the theme fetch fails.
 const PreviewFrame = ({
   state,
   displayWidth,
@@ -590,8 +491,7 @@ const PreviewFrame = ({
   children: React.ReactNode
 }) => {
   const viewportWidth = state.viewportWidth ?? 1024
-  // Used only as the initial guess before the real height is measured, to
-  // avoid a 0-height flash — corrected immediately on mount.
+  // Initial guess to avoid a 0-height flash before the first measure.
   const estimatedHeight = state.aspectRatio
     ? Math.round(
         (viewportWidth * state.aspectRatio.height) / state.aspectRatio.width,
@@ -605,13 +505,10 @@ const PreviewFrame = ({
       if (!iframeDocument?.body) return
       const update = () => setMeasuredHeight(iframeDocument.body.scrollHeight)
       update()
-      // The global ResizeObserver can observe elements belonging to another
-      // same-origin document just fine — no need to reach into the iframe's
-      // own window for its constructor.
+      // The global ResizeObserver can observe a same-origin iframe's elements.
       const observer = new ResizeObserver(update)
       observer.observe(iframeDocument.body)
-      // Disconnect on iframe teardown — PreviewIframe runs this when its effect
-      // cleans up, so we don't leak observers or setState after unmount.
+      // PreviewIframe runs this cleanup when the iframe tears down.
       return () => observer.disconnect()
     },
     [],
@@ -647,8 +544,8 @@ const PreviewFrame = ({
   )
 }
 
-// Fetches the site theme (suspends, and throws on error — hence the Suspense +
-// ErrorBoundary around it) and hands the CSS vars to PreviewFrame as a prop.
+// Fetches the site theme. It suspends and can throw, so callers wrap it in
+// Suspense and an ErrorBoundary.
 const ThemedPreviewFrame = ({
   siteId,
   state,

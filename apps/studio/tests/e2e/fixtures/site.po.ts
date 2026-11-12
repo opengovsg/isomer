@@ -228,7 +228,7 @@ export class SitePO {
    * empty dropzone so a new file can be uploaded in its place.
    */
   removeUploadedFileButton(group: Locator) {
-    // exact: the clickable "Replace image" row's name also contains "Remove file"
+    // exact, because the "Replace image" row's name also contains "Remove file"
     return group.getByRole("button", { name: "Remove file", exact: true })
   }
 
