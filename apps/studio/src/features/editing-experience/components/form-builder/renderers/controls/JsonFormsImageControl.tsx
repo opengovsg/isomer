@@ -46,15 +46,11 @@ import { useAssetUpload } from "../../hooks/useAssetUpload"
 import { isManagedSiteAsset } from "./isManagedSiteAsset"
 import { getCustomErrorMessage } from "./utils"
 
-// Enough to reach the WebP VP8X flags and a PNG's acTL chunk (before IDAT).
+// Covers the WebP VP8X flags and a PNG's acTL chunk, which sits before IDAT.
 const ANIMATION_SNIFF_BYTES = 64 * 1024
 
-// JsonFormsImageControl is registered as a renderer for every FormBuilder
-// instance (every settings page and content-block editor), regardless of
-// whether that schema even has an image field. ImageAdjustmentModal pulls in
-// canvas baking/crop/preview code that's only relevant behind a per-agency
-// GrowthBook flag (off by default) — load it lazily so it doesn't bloat every
-// FormBuilder page's shared bundle.
+// Every FormBuilder page loads this control. Lazy-load the modal to keep its
+// canvas bake, crop and preview code out of that shared bundle.
 const ImageAdjustmentModal = dynamic(() =>
   import("~/features/editing-experience/components/ImageAdjustmentModal").then(
     (mod) => mod.ImageAdjustmentModal,
@@ -95,17 +91,12 @@ function JsonFormsImageControl({
   // Gate the adjustment entry point behind a GrowthBook flag (off by default,
   // rolled out per-user) — this is a rollout-sensitive editor path.
   const isImageAdjustmentEnabled = useIsImageAdjustmentEnabled()
-  // `null` outside the page editor (e.g. the link editor, which shares this
-  // control but has no EditorDrawerProvider) — the preview then falls back
-  // to "content" inside AdjustmentPreview.
+  // Undefined in the link editor, which has no EditorDrawerProvider.
+  // AdjustmentPreview then falls back to "content".
   const pageLayout = useOptionalEditorDrawerContext()?.previewPageState.layout
-  // Only managed site-storage assets (relative "/..." paths) can be baked;
-  // external/absolute URLs and the built-in placeholder have no derivable bake
-  // key, so hide Adjust for them rather than letting Save fail.
+  // External URLs and the placeholder have no bake key, so Save would fail.
   const isManagedAsset = isManagedSiteAsset(data, siteId)
-  // Lets the "Replace image" text open the same upload flow used for a fresh
-  // upload (see the hidden FileAttachment below), by finding and clicking its
-  // file input directly.
+  // "Replace image" clicks the file input of the hidden FileAttachment below.
   const replaceUploadRef = useRef<HTMLDivElement>(null)
   // The bake-presign mutation requires a resourceId; without a page/link in
   // the URL there's nothing to pass (the save call would send an empty
@@ -113,10 +104,6 @@ function JsonFormsImageControl({
   // open the modal, make changes, and hit a save error.
   const hasResourceContext = resourceId !== undefined
 
-  // Reads the sibling imageAdjustment field and containing block via
-  // JsonForms' core data (the only way to reach data outside this control's
-  // own path) and memoizes the derived config -- see the hook's own comment
-  // for why that matters.
   const {
     block,
     fieldHost,
@@ -126,15 +113,11 @@ function JsonFormsImageControl({
     config,
   } = useAdjustmentConfigForField(path)
 
-  // AVIF/TIFF etc. are uploadable but can't be baked (canvas can't re-encode
-  // them), so the editor would fail on save. Derive editability from the
-  // asset's extension and gate the entry point on it.
+  // Editors can upload AVIF and TIFF, but canvas can't re-encode them.
   const isBakeableFormat =
     !!data && canBakeImage(mimeFromKeyExtension(data) ?? "")
 
-  // The adjustment entry point shows only when the flag is on, the asset is a
-  // managed, bakeable-format asset, and the owning component has a config.
-  // Animated-format detection (below) further gates this once it resolves.
+  // The animation check below narrows this further once it settles.
   const canAdjustBase =
     isImageAdjustmentEnabled &&
     isManagedAsset &&
@@ -142,52 +125,36 @@ function JsonFormsImageControl({
     !!config &&
     isBakeableFormat
 
-  // Same asset that would be adjustable but for its format — explain why the
-  // editor isn't offered (the row offers "Replace image" instead).
   const showUnsupportedFormatCallout =
     isImageAdjustmentEnabled && isManagedAsset && !!config && !isBakeableFormat
 
-  // Retain the just-uploaded File client-side (never sent to the Studio server —
-  // it goes direct to S3 via a presigned PUT) so the editor can bake from local
-  // bytes while the uploaded original is still gated by the malware-scan window.
-  // pendingFileRef bridges onUploadedFile (has the File) and setHref (has the
-  // resulting key); uploadedOriginalRef holds the committed {key, file}.
+  // Keep the uploaded File so the editor can bake from local bytes while the
+  // malware scan still blocks the uploaded original. onUploadedFile gets the
+  // File and setHref gets its key, so pendingFileRef carries one to the other.
   const pendingFileRef = useRef<File | null>(null)
   const uploadedOriginalRef = useRef<{ key: string; file: File } | null>(null)
 
-  // The original key for the image being edited — `data` on a first edit, or the
-  // stored originalKey on a re-edit. Mirrors resolveOriginalKey, inlined to keep
-  // the heavy imageBake module out of this shared bundle (see dynamic import).
+  // Mirrors resolveOriginalKey. Inlined to keep imageBake out of this bundle.
   const editingOriginalKey =
     currentAdjustment?.originalKey || data?.replace(/^\//, "")
-  // Guard on the ref being populated first: for an empty field (e.g. the favicon
-  // slot) editingOriginalKey is undefined, and a bare `?.key === editingOriginalKey`
-  // is `undefined === undefined` → true, which would dereference a null ref. Only
-  // match a real retained upload for this exact key.
+  // Check the ref first. On an empty field both keys are undefined, so a bare
+  // `?.key === editingOriginalKey` matches and dereferences null.
   const uploadedOriginal = uploadedOriginalRef.current
   const originalFile =
     uploadedOriginal && uploadedOriginal.key === editingOriginalKey
       ? uploadedOriginal.file
       : undefined
 
-  // Animated WebP/APNG pass the MIME/extension gate above but useSaveImageAdjustment
-  // rejects them at save time (baking would flatten them to one frame) — detect
-  // it up front so the editor isn't offered just to fail later. Fails open: stays
-  // false while the check is pending or if it errors, since the save-time guard
-  // remains the backstop. Only WebP and PNG can carry animation, so skip the
-  // (full-image) fetch entirely for every other format — the common JPEG case
-  // never downloads just to sniff a header it can't have.
+  // Baking flattens animated WebP and APNG to one frame, so save rejects them.
+  // Detect them here instead. Fails open, the save-time guard is the backstop.
+  // Only WebP and PNG can animate, so other formats skip the fetch.
   const assetMime = data ? mimeFromKeyExtension(data) : undefined
   const couldBeAnimated =
     assetMime === "image/webp" || assetMime === "image/png"
   const [isAnimatedAsset, setIsAnimatedAsset] = useState(false)
-  // Whether the animation check has settled for the current asset. Auto-open
-  // waits on this so a freshly-uploaded animated image is never popped open
-  // before we've ruled it out (reset to false on each new upload in setHref).
+  // Auto-open waits on this so it never opens an animated upload.
   const [animationResolved, setAnimationResolved] = useState(false)
   useEffect(() => {
-    // Nothing to fetch (not adjustable, or a format that can't animate) — settle
-    // immediately as "not animated".
     if (!canAdjustBase || !editingOriginalKey || !couldBeAnimated) {
       setIsAnimatedAsset(false)
       setAnimationResolved(true)
@@ -197,8 +164,8 @@ function JsonFormsImageControl({
     setAnimationResolved(false)
     const blobPromise = originalFile
       ? Promise.resolve(originalFile)
-      : // Animation markers sit in the file header, so sniff a prefix; fall
-        // back to the full file if the ranged request is refused.
+      : // Animation markers sit in the header. Fetch a prefix, or the full
+        // file if the server refuses the ranged request.
         fetchImageBlob(
           `/${editingOriginalKey}`,
           undefined,
@@ -225,20 +192,13 @@ function JsonFormsImageControl({
 
   const canAdjust = canAdjustBase && !isAnimatedAsset
 
-  // Tell the user why an otherwise-adjustable asset can't be edited, rather
-  // than silently hiding the pencil.
   const showAnimatedFormatCallout = canAdjustBase && isAnimatedAsset
 
-  // Auto-open the editor right after a fresh upload (set in FileAttachment's
-  // setHref below) for every component resolveAdjustmentConfig has a config
-  // for — not on page load for an already-saved image, not on undo/history
-  // restores, and not for Tier D (no config) components, which keep only the
-  // manual Edit/Adjust button.
+  // Auto-open the editor after a fresh upload only. Page loads and history
+  // restores never set this ref.
   const justUploadedRef = useRef(false)
   useEffect(() => {
     if (!justUploadedRef.current) return
-    // Wait for the animation check to settle before deciding, so an animated
-    // upload is never auto-opened in the window before it's ruled out.
     if (!animationResolved) return
     justUploadedRef.current = false
     if (canAdjust) {
@@ -251,10 +211,8 @@ function JsonFormsImageControl({
     }
   }, [animationResolved, canAdjust, onAdjustmentModalOpen, siteId, resourceId])
 
-  // Some components (InfoCards' cards, the collection thumbnail) own a
-  // sibling `imageFit` field that the modal's fit control writes back to —
-  // gated by the config's ownsImageFitField flag so other components never
-  // get an unexpected imageFit control.
+  // InfoCards' cards and the collection thumbnail own a sibling `imageFit`
+  // field. The modal's fit control writes back to it.
   const hasImageFitField = config?.ownsImageFitField ?? false
   const initialImageFit = hasImageFitField
     ? fieldHost?.imageFit === "contain"
@@ -262,15 +220,11 @@ function JsonFormsImageControl({
       : "cover"
     : undefined
 
-  // Sibling path for the field host's imageFit field, mirroring siblingPath's
-  // parent+field construction for imageAdjustment.
   const imageFitPath = [path.split(".").slice(0, -1).join("."), "imageFit"]
     .filter(Boolean)
     .join(".")
 
-  // Shared by the empty-field upload UI and the hidden "Replace image" upload
-  // (triggered via replaceUploadRef) — both are the same upload flow, so the
-  // field value is fully replaced by the new asset either way, never layered.
+  // Shared by the empty-field uploader and the hidden "Replace image" one.
   const { handleAssetUpload, isLoading } = useAssetUpload({})
   const toast = useToast()
   const uploadFileAttachmentProps = {
@@ -280,7 +234,6 @@ function JsonFormsImageControl({
     siteId,
     resourceId,
     onUploadedFile: (file: File) => {
-      // Stash the picked File; setHref below pairs it with its key.
       pendingFileRef.current = file
     },
     onUploadSuccess: () => {
@@ -294,19 +247,17 @@ function JsonFormsImageControl({
         handleChange(path, undefined)
         return
       }
-      // Take the picked File now: a later upload may overwrite the ref mid-wait.
+      // Take the File now. A later upload may overwrite the ref mid-wait.
       const file = pendingFileRef.current
       pendingFileRef.current = null
-      // Only save the path once the CDN serves it, so the preview can show it
+      // Save the path only once the CDN serves it, so the preview can load it.
       void handleAssetUpload(src)
         .then(() => {
           handleChange(path, src)
-          // A new asset invalidates the old crop/focal/originalKey.
+          // The old crop, focal point and originalKey don't fit a new asset.
           if (currentAdjustment) handleChange(siblingPath, undefined)
-          // Mark a real upload so the editor auto-opens once canAdjust is true.
           justUploadedRef.current = true
-          // New asset → force the auto-open gate to wait for a fresh
-          // animation check (avoids acting on the prior asset's result).
+          // Stops auto-open acting on the previous asset's animation result.
           setAnimationResolved(false)
           if (file) {
             uploadedOriginalRef.current = {
@@ -346,8 +297,6 @@ function JsonFormsImageControl({
   return (
     <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
       <FormLabel description={description}>{label}</FormLabel>
-      {/* Guidance shown at all times (before and after upload), per the
-          component's real frame behaviour — a border matching the info icon. */}
       {isImageAdjustmentEnabled && config?.preUploadCopy && (
         <Infobox
           variant="info"
@@ -368,12 +317,9 @@ function JsonFormsImageControl({
       {/* While a replacement waits for the CDN, show the uploader's skeleton. */}
       {data && !isLoading ? (
         <Box>
-          {/* Adjustment entry point — a pencil on the file row, only for
-              components with a config and only for managed (bakeable) assets. */}
           <AttachmentData
             data={data.split("/").pop() ?? "Unknown"}
-            // Plain (optimized) URL — the ?original object is gated by a
-            // malware-scan tag and 403s; the variant is fine for a thumbnail.
+            // Not ?original, which 403s until the malware scan tags the object.
             imageSrc={generateAssetUrl(data)}
             onEdit={
               canAdjust
@@ -385,8 +331,7 @@ function JsonFormsImageControl({
                     })
                     onAdjustmentModalOpen()
                   }
-                : // Not adjustable — reuse the empty-field upload flow (hidden
-                  // FileAttachment below, via replaceUploadRef).
+                : // Not adjustable, so open the hidden uploader below.
                   () =>
                     replaceUploadRef.current
                       ?.querySelector<HTMLInputElement>('input[type="file"]')
@@ -422,9 +367,8 @@ function JsonFormsImageControl({
               onSave={handleAdjustmentSave}
             />
           )}
-          {/* The modal owns the fit toggle when it can open; otherwise offer it inline.
-              While the animation check is pending canAdjust is still true, so this
-              doesn't flash in and out. */}
+          {/* The modal owns the fit toggle. Offer it inline when the modal
+              can't open. */}
           {hasImageFitField && !canAdjust && (
             <FormControl mt="1rem">
               <FormLabel description='Select "Resize image to fit" only if the image has a white background.'>
@@ -460,9 +404,7 @@ function JsonFormsImageControl({
             </Infobox>
           )}
           {!canAdjust && (
-            // Not shown — only here so "Replace image" above can open the
-            // native file picker via replaceUploadRef.current.click(), reusing
-            // this exact upload flow instead of a second implementation.
+            // Hidden. "Replace image" above clicks its file input.
             <Box display="none">
               <FileAttachment
                 ref={replaceUploadRef}
