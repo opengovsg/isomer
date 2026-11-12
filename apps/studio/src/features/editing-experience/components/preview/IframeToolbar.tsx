@@ -20,21 +20,21 @@ interface IframeToolbarProps {
   responsiveWidthPx?: number
 }
 
+// Bucket the ACTUAL responsive-pane width (not the window) against the shared
+// md/lg breakpoints; 0 means "not measured yet" and defaults to desktop.
+const getDeviceLabel = (widthPx: number) => {
+  if (widthPx >= 1024) return "desktop"
+  if (widthPx >= 768) return "tablet"
+  if (widthPx > 0) return "mobile"
+  return "desktop"
+}
+
 export const IframeToolbar = ({
   viewport,
   setViewport,
   responsiveWidthPx = 0,
 }: IframeToolbarProps): JSX.Element => {
-  // Bucket the ACTUAL responsive-pane width (not the window) against the shared
-  // md/lg breakpoints; defaults to desktop before the first measurement lands.
-  const defaultModeDeviceLabel =
-    responsiveWidthPx >= 1024
-      ? "desktop"
-      : responsiveWidthPx >= 768
-        ? "tablet"
-        : responsiveWidthPx > 0
-          ? "mobile"
-          : "desktop"
+  const defaultModeDeviceLabel = getDeviceLabel(responsiveWidthPx)
 
   const toolbarTextLabels = useMemo(() => {
     switch (viewport) {
