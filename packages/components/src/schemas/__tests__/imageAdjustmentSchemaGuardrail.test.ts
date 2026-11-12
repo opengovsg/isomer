@@ -73,7 +73,48 @@ const findImageFields = (
   return acc
 }
 
+// The properties objects that make up a component's own top level: reached
+// only through unions/composites (anyOf/oneOf/allOf), never by descending into
+// a property or an array's `items`.
+const findTopLevelProperties = (
+  node: unknown,
+  acc = new Set<unknown>(),
+): Set<unknown> => {
+  if (node === null || typeof node !== "object") return acc
+  const record = node as Record<string, unknown>
+  if (record.properties) acc.add(record.properties)
+  for (const key of ["anyOf", "oneOf", "allOf"]) {
+    const value = record[key]
+    if (Array.isArray(value)) {
+      value.forEach((child: unknown) => findTopLevelProperties(child, acc))
+    }
+  }
+  return acc
+}
+
 describe("imageAdjustment schema guardrail", () => {
+  // Studio's useAdjustmentConfigForField finds the block that owns an image
+  // field by climbing to the nearest ancestor with a string `type`. A nested
+  // image host (a card, slide or gallery item) that declared its own `type`
+  // would stop that climb early, so no config would resolve and "Adjust"
+  // would silently vanish for that field.
+  for (const [componentType, schema] of Object.entries(
+    IsomerComplexComponentsMap,
+  )) {
+    it(`"${componentType}" has no nested image host with its own "type"`, () => {
+      // Arrange
+      const topLevel = findTopLevelProperties(schema)
+
+      // Act
+      const nestedHostsWithType = findImageFields(schema).filter(
+        ({ properties }) => !topLevel.has(properties) && "type" in properties,
+      )
+
+      // Assert
+      expect(nestedHostsWithType).toEqual([])
+    })
+  }
+
   // A component gaining an image-upload field (format: "image") but no
   // imageAdjustment sibling is exactly how the collection thumbnail shipped
   // with focal/fit controls in the editor that silently did nothing -- its
