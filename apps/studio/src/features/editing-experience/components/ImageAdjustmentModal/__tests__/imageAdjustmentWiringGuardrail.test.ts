@@ -9,8 +9,7 @@ import {
   resolveAdjustmentConfig as resolveAdjustmentConfigTyped,
 } from "../adjustmentConfigRegistry"
 
-// Fixtures are partial blocks carrying only the discriminators the registry
-// reads, so cast once here rather than at every call site.
+// Fixtures are partial blocks, so cast once here.
 const resolveAdjustmentConfig = (args: {
   block: unknown
   fieldName: string
@@ -21,35 +20,21 @@ const resolveAdjustmentConfig = (args: {
     block: args.block as IsomerComponent | undefined,
   })
 
-// Root of the monorepo, resolved from this file's location so the test works
-// regardless of the cwd it's invoked from.
 const REPO_ROOT = path.resolve(__dirname, "../../../../../../../../")
 
-// Every config with focalEnabled: true, paired with (a) the real render
-// file(s) that must actually apply its imageAdjustment at render time, and
-// (b) a Storybook file that must demonstrate a non-default focal point.
-// Neither pairing is enforced by the type system: a schema field existing
-// (focalEnabled: true) says nothing about whether a render branch forwards
-// it, or whether anyone ever wrote a story proving it moves the image. Both
-// gaps have shipped for real -- HeroGradientQuickLinks silently dropped
-// imageAdjustment despite sharing a schema with HeroGradientButtons (which
-// wired it correctly), and the collection thumbnail had focalEnabled: true
-// with no schema field, no render wiring, and no story at all. This test
-// closes both gaps going forward: every focalEnabled config here must point
-// at component file(s) containing the literal string "imageAdjustment", and
-// a story file that demonstrates a focal point.
+// Each focalEnabled config, with the render files that must apply its
+// adjustment and a story that shows a focal point. Types can't check either.
+// Both have shipped broken. HeroGradientQuickLinks dropped the adjustment,
+// and the collection thumbnail had no render wiring and no story.
 const FOCAL_WIRING_CONFIGS: {
   resolve: {
     block: unknown
     fieldName: string
     context?: AdjustmentRenderContext
   }
-  // Every listed path must contain "imageAdjustment" -- this is
-  // `.every(...)`, not `.some(...)`: HeroGradient has two
-  // render branches an editor can pick between (Buttons/QuickLinks), and
-  // both must honour a focal point, not just one of them.
+  // Every path must pass, since an editor can pick any render branch.
   componentPaths: string[]
-  // Sibling key the schema emits; defaults to `${imageField}ImageAdjustment`.
+  // Defaults to `${imageField}ImageAdjustment`.
   siblingKey?: string
   storyPaths: string[]
 }[] = [
@@ -185,7 +170,7 @@ describe("imageAdjustment wiring guardrail", () => {
       expect(
         sources.every((source) => source.includes("imageAdjustment")),
       ).toBe(true)
-      // The renderer must read the key the schema emits, and actually apply it.
+      // The renderer must read the key the schema emits, then apply it.
       const key = siblingKey ?? `${config?.imageField}ImageAdjustment`
       expect(sources.some((source) => source.includes(key))).toBe(true)
       expect(
@@ -195,8 +180,8 @@ describe("imageAdjustment wiring guardrail", () => {
             source.includes("getFocalObjectPosition"),
         ),
       ).toBe(true)
-      // Alternative render branches must each take part: every file needs the
-      // key or an application marker (parent -> child chains hold only one).
+      // Every file needs the key or an apply marker. A parent and child
+      // pair may hold one each.
       for (const source of sources) {
         expect(
           source.includes(key) ||
@@ -216,17 +201,15 @@ describe("imageAdjustment wiring guardrail", () => {
     })
   }
 
-  // Guards against a future registry entry setting focalEnabled: true without
-  // also adding it to FOCAL_WIRING_CONFIGS above, which would let it skip
-  // both checks entirely -- the exact gap that let the collection thumbnail
-  // ship with no render wiring and no story.
+  // A focalEnabled config missing from FOCAL_WIRING_CONFIGS would skip both
+  // checks above.
   it("covers every focalEnabled config in the registry", () => {
     const focalComponentTypes = CONFIGS.filter(
       (config) => config.focalEnabled,
     ).map((config) => config.componentType)
 
-    // Rows may exceed the static registry: configs resolved by an explicit
-    // block/context branch can't be enumerated from CONFIGS and keep a row here.
+    // CONFIGS can't list configs resolved from a block or context branch,
+    // so FOCAL_WIRING_CONFIGS may have extra rows.
     const coveredComponentTypes = FOCAL_WIRING_CONFIGS.map(
       ({ resolve }) =>
         resolveAdjustmentConfig({

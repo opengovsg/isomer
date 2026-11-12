@@ -31,9 +31,7 @@ vi.mock("../../../hooks/useAdjustmentConfigForField", () => ({
     config: { ownsImageFitField: true },
   }),
 }))
-// Stub the upload input so this test isolates JsonFormsImageControl's own render
-// (the crash is in its derived-const block, before this renders) without pulling
-// in FileAttachment's tRPC/upload deps.
+// Stubbed to keep FileAttachment's tRPC and upload deps out of this test.
 vi.mock("~/components/PageEditor/FileAttachment", () => ({
   FileAttachment: () => <div data-testid="file-attachment" />,
 }))
@@ -63,10 +61,9 @@ const schema = {
   },
 } as const
 
-// Regression: an EMPTY image field (e.g. the logo-settings favicon slot) made
-// editingOriginalKey undefined, and `uploadedOriginalRef.current?.key ===
-// editingOriginalKey` evaluated `undefined === undefined` → true, dereferencing
-// the null ref (TypeError: reading 'file') and crashing the whole page.
+// Regression. On an empty field, such as the favicon slot, the retained
+// upload's key and editingOriginalKey were both undefined. They matched, and
+// the control read `.file` off a null ref and crashed the page.
 describe("JsonFormsImageControl", () => {
   it("renders an empty image field without crashing", () => {
     render(

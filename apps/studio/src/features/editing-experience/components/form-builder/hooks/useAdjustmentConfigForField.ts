@@ -27,11 +27,8 @@ import { useCollectionIndexVariant } from "./useCollectionIndexVariant"
 export const useAdjustmentConfigForField = (path: string) => {
   const ctx = useJsonForms()
   const rootData: unknown = ctx.core?.data
-  // Context the registry can use when resolving a config (see
-  // AdjustmentRenderContext). Optional-safe: this hook is also called from
-  // JsonFormsImageControl when it renders in provider-less settings forms
-  // (Navbar/Footer/logo) with no EditorDrawerProvider around it — there,
-  // pageLayout is simply undefined rather than throwing.
+  // Settings forms like Navbar and Footer have no EditorDrawerProvider, so
+  // pageLayout is undefined there.
   const editorDrawerContext = useOptionalEditorDrawerContext()
   const pageLayout = editorDrawerContext?.previewPageState.layout
   // Collection items (CollectionPage/CollectionLink resources) are the only
@@ -77,13 +74,10 @@ export const useAdjustmentConfigForField = (path: string) => {
     : `${fieldName}ImageAdjustment`
   const siblingPath = [parentPath, siblingKey].filter(Boolean).join(".")
 
-  // The field's immediate host: for a root-level image field the block itself,
-  // for an array-nested field (e.g. an InfoCards card) the card object. This is
-  // what Tier C's previewObjectFitFor reads (e.g. the card's
-  // imageFit), and where the imageAdjustment sibling is written.
-  // Per-block editor forms (e.g. HeroEditorDrawer) mount the form with the
-  // block itself as the data root, so a top-level image field has an empty
-  // parentPath -- in that case the host IS rootData.
+  // The object that holds the field. That is the block for a root-level
+  // field and the card for a nested one, such as an InfoCards card.
+  // Per-block forms like HeroEditorDrawer use the block as the data root, so
+  // parentPath is empty and the host is rootData.
   const rawFieldHost: unknown = parentPath
     ? get(rootData, parentPath)
     : rootData
@@ -92,14 +86,10 @@ export const useAdjustmentConfigForField = (path: string) => {
       ? (rawFieldHost as Record<string, unknown>)
       : undefined
 
-  // The block that OWNS the field = the nearest ancestor carrying a block
-  // `type` discriminator, which is what the registry keys on. For a root-level
-  // image field that is the immediate host; for an array-nested field the card
-  // has no `type`, so this climbs to the enclosing block (e.g. InfoCards).
-  // This relies on nested image hosts (cards, slides, gallery items) never
-  // declaring their own `type`: one that did would stop the climb early, no
-  // config would resolve, and Adjust would silently disappear. Enforced by
-  // imageAdjustmentSchemaGuardrail.test.ts in the components package.
+  // The owning block is the nearest ancestor with a `type`, which is what
+  // the registry keys on. Nested hosts like cards must never declare a
+  // `type`, or the climb stops early and Adjust disappears.
+  // imageAdjustmentSchemaGuardrail.test.ts enforces this.
   const ownerBlock = useMemo((): IsomerComponent | undefined => {
     const segments = parentPath ? parentPath.split(".") : []
     for (let depth = segments.length; depth >= 0; depth--) {
