@@ -7,19 +7,16 @@ import type {
   AspectRatio,
 } from "./AdjustmentConfig"
 
-/** Deliberate opt-outs: these component types will never have image adjustment, by design. */
+/** These component types never get image adjustment, by design. */
 export const INTENTIONALLY_NOT_ADJUSTABLE = [
   "logocloud",
   "video",
   "navbar",
 ] as const
 
-// Standard Desktop/Tablet/Mobile preview set, shared by every component so all
-// editor previews show the same three breakpoint viewport widths (mobile 375 /
-// tablet 768 / desktop 1280); only the aspect ratio differs per component. For
-// real-component previews the ratio is just a pre-measure flash guess
-// (PreviewFrame measures the real rendered height); for framed previews
-// (skipRealComponentPreview) it sets the tile's actual shape.
+// The three breakpoint widths every editor preview uses. Only the aspect
+// ratio differs per component. A real-component preview uses the ratio as a
+// first guess before it measures. A framed preview uses it as the tile shape.
 const responsivePreviewStates = (ratios: {
   mobile: AspectRatio
   tablet: AspectRatio
@@ -56,16 +53,14 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   imageField: "backgroundUrl",
   cropMode: "custom",
   focalEnabled: true,
-  // Full-bleed; no CSS width cap. Warn against the 1280px content ceiling
-  // (max-w-screen-xl) as a conservative "looks soft on desktop" floor.
+  // Full-bleed with no CSS width cap, so warn against the 1280px
+  // max-w-screen-xl content width.
   maxRenderedWidthPx: 1280,
-  // lg:min-h-[31.25rem] (500px) — the hero band's actual minimum rendered
-  // height, matching the Isomer image guidelines' 2560×500 minimum for this
-  // variant. Crop is free (custom), so width and height can fall short
-  // independently — both must be checked.
+  // lg:min-h-[31.25rem] is 500px, the image guidelines' minimum height for
+  // this variant. The crop is free, so check width and height separately.
   maxRenderedHeightPx: 500,
-  // Closest common ratio to each breakpoint's hero band (375×240→16:10,
-  // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
+  // Closest common ratio to the hero band at each breakpoint, 375×240,
+  // 768×360 and 1280×500.
   previewStates: responsivePreviewStates({
     mobile: { width: 16, height: 10 },
     tablet: { width: 2, height: 1 },
@@ -84,13 +79,10 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 5, height: 6 }],
-  // Fixed 200px-wide frame from sm up (sm:w-[200px]).
+  // sm:w-[200px] fixes the frame at 200px wide from sm up.
   maxRenderedWidthPx: 200,
-  // Contentpic stacks (image above text) as a column below Tailwind `sm` (640px)
-  // and switches to its side-by-side row layout at `sm` and up (`sm:flex-row`),
-  // so Mobile (375) shows the stacked layout while Tablet/Desktop show the row.
-  // Aspect ratios are pre-measure flash guesses only (PreviewFrame measures the
-  // real rendered height).
+  // Contentpic stacks below `sm` and sits side by side from `sm` up, so
+  // Mobile shows the stacked layout. The ratios are first guesses only.
   previewStates: responsivePreviewStates({
     mobile: { width: 4, height: 5 },
     tablet: { width: 2, height: 1 },
@@ -100,8 +92,8 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
     "Use a high-resolution image (at least 400×480px) with a 5:6 (portrait) aspect ratio. Keep the key subject centered — the image is cropped to a fixed portrait frame beside your text.",
 }
 
-// Every static config, matched by resolveAdjustmentConfig on
-// `type:variant` (or bare `type`) plus the image field name.
+// resolveAdjustmentConfig matches these on `type:variant` or bare `type`,
+// plus the image field name.
 export const CONFIGS: AdjustmentConfig[] = [
   HERO_GRADIENT_CONFIG,
   CONTENTPIC_CONFIG,
@@ -123,7 +115,8 @@ export function resolveAdjustmentConfig(args: {
     "variant" in block && typeof block.variant === "string"
       ? block.variant
       : undefined
-  // absence = not integrated (optional by design); deliberate opt-outs are asserted in the registry test.
+  // No match means not wired yet. The registry test asserts the deliberate
+  // opt-outs.
   return CONFIGS.find(
     (c) =>
       (c.componentType === `${block.type}:${variant}` ||

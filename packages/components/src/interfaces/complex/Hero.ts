@@ -153,8 +153,7 @@ const BACKGROUND_IMAGE_OPTS = {
   allowedMimeTypeMappings: BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 }
 
-// Only gradient spreads generateAdjustableImageFields; every other variant uses
-// the bare src, with no adjustment sibling.
+// Only the gradient variant is adjustable. The others use this bare src.
 const BackgroundUrlSchema = generateImageSrcSchema(BACKGROUND_IMAGE_OPTS)
 
 const GROUPINGS = {

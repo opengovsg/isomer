@@ -3,7 +3,6 @@ export const IMAGE_FIT = {
   Content: "contain",
 } as const
 
-// A focal point only applies under "cover": under "contain" the whole image is
-// letterboxed, so there is nothing for an object-position to anchor.
+// "contain" shows the whole image, so a focal point has nothing to move.
 export const isFocalApplicable = (imageFit?: string): boolean =>
   imageFit !== IMAGE_FIT.Content

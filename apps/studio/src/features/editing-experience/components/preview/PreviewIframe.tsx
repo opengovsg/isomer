@@ -12,18 +12,11 @@ interface PreviewIframeProps {
   keyForRerender?: string
   style?: CSSProperties
   viewport?: ViewportOptions
-  // Exact pixel size for the iframe's OWN layout viewport, bypassing the
-  // `viewport` enum's fixed presets — so a caller can simulate an arbitrary
-  // breakpoint width (e.g. a design's custom 375/768/1440 set) and have the
-  // content's real CSS media queries evaluate against that width. The caller
-  // is then free to CSS-transform-scale the whole iframe down to fit a
-  // smaller display area without affecting the internal viewport the
-  // content's media queries see (a transform only affects the rendered
-  // output box, not the iframe's own layout viewport).
+  // Exact size of the iframe's layout viewport, overriding `viewport`. The
+  // content's media queries see this width even if a CSS transform scales it.
   widthPx?: number
   heightPx?: number
-  // May return a cleanup fn (e.g. to disconnect an observer it set up); it runs
-  // when the iframe effect tears down, so callers don't leak past unmount.
+  // May return a cleanup function, which runs when the iframe effect ends.
   callback?: (props: IframeCallbackFnProps) => void | (() => void)
 }
 
@@ -176,11 +169,8 @@ const IframeInnerComponent = ({
     return () => {
       observer.disconnect()
       portalObserver.disconnect()
-      // Only invoke the return value if the callback actually gave us a cleanup
-      // function. Pre-existing callers pass ASYNC callbacks (returning a
-      // Promise), and `?.()` would happily try to call that Promise — throwing
-      // "callbackCleanup is not a function" on every teardown and destabilizing
-      // the preview (e.g. the navbar/footer settings previews remount-loop).
+      // Some callers pass async callbacks, so this can be a Promise. `?.()`
+      // would throw on it.
       if (typeof callbackCleanup === "function") callbackCleanup()
     }
   }, [callback, iframeDocument, iframeDocument?.documentElement, iframeWindow])
