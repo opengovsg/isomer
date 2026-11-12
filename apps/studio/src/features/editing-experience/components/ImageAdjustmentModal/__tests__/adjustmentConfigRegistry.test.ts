@@ -9,7 +9,6 @@ import { describe, expect, it } from "vitest"
 
 import type {
   AdjustmentConfig,
-  AdjustmentPreviewState,
   AdjustmentRenderContext,
 } from "../AdjustmentConfig"
 import {
@@ -111,8 +110,7 @@ describe("resolveAdjustmentConfig", () => {
       expect(config?.focalEnabled).toBe(false)
       expect(config?.lockedRatios).toBeUndefined()
       expect(config?.skipRealComponentPreview).toBeFalsy()
-      expect(config?.versions).toHaveLength(1)
-      expect(config?.versions[0]?.previewStates.length).toBeGreaterThan(0)
+      expect(config?.previewStates.length).toBeGreaterThan(0)
     })
   })
 
@@ -150,9 +148,9 @@ describe("resolveAdjustmentConfig", () => {
     // hide how much the card covers the subject on mobile/tablet.
     it("previews all three responsive breakpoint regimes", () => {
       expect(config).toBeDefined()
-      expect(
-        config?.versions[0]?.previewStates.map((s) => s.viewportWidth),
-      ).toEqual([375, 768, 1280])
+      expect(config?.previewStates.map((s) => s.viewportWidth)).toEqual([
+        375, 768, 1280,
+      ])
     })
   })
 
@@ -203,7 +201,6 @@ describe("resolveAdjustmentConfig", () => {
       const preview = withImages!.buildSingleItemPreviewBlock!(
         block as IsomerComponent,
         editedCard,
-        originalCard,
       ) as Record<string, unknown>
       expect(preview.cards).toEqual([editedCard])
       expect(preview.title).toBe("")
@@ -230,7 +227,6 @@ describe("resolveAdjustmentConfig", () => {
       const preview = withImages?.buildSingleItemPreviewBlock?.(
         block as IsomerComponent,
         editedCard,
-        cardB,
       )
       const html = renderBlockHtml(preview, "content")
 
@@ -254,7 +250,6 @@ describe("resolveAdjustmentConfig", () => {
       const preview = fullImage?.buildSingleItemPreviewBlock?.(
         block as IsomerComponent,
         editedCard,
-        card,
       )
       const html = renderBlockHtml(preview, "content")
 
@@ -262,119 +257,35 @@ describe("resolveAdjustmentConfig", () => {
       expect(html).toContain("bg-gradient-to-t")
     })
 
-    // The real card frame (InfoCards/common.ts cardImageContainer) is 3:2 at
-    // every breakpoint on content pages EXCEPT lg+ with 3 columns, which
-    // overrides it to 1:1 square. The homepage layout's own overrides are a
-    // different page than the one being edited, so the preview covers content
-    // pages only — one plain Mobile/Tablet/Desktop state each, following the
-    // block's own maxColumns.
-    describe("preview states follow the block's maxColumns (content pages only)", () => {
-      const statesFor = (maxColumns?: string) =>
-        resolveAdjustmentConfig({
-          block: { type: "infocards", variant: "cardsWithImages", maxColumns },
-          fieldName: "imageUrl",
-        })?.versions[0]?.previewStates
-
-      it("previews exactly Mobile/Tablet/Desktop, with plain labels", () => {
-        const states = statesFor("3")
-        expect(states?.map((s) => s.label)).toEqual([
-          "Mobile",
-          "Tablet",
-          "Desktop",
-        ])
-        expect(states?.map((s) => s.layout)).toEqual([
-          undefined,
-          undefined,
-          undefined,
-        ])
-      })
-
-      it("3 columns (default): desktop frame is square", () => {
-        const states = statesFor("3")
-        expect(states?.map((s) => s.aspectRatio)).toEqual([
-          { width: 3, height: 2 },
-          { width: 3, height: 2 },
-          { width: 1, height: 1 },
-        ])
-      })
-
-      it("2 columns: every breakpoint stays 3:2", () => {
-        const states = statesFor("2")
-        expect(states?.map((s) => s.aspectRatio)).toEqual([
-          { width: 3, height: 2 },
-          { width: 3, height: 2 },
-          { width: 3, height: 2 },
-        ])
-      })
-
-      it("1 column: every breakpoint stays 3:2", () => {
-        const states = statesFor("1")
-        expect(states?.map((s) => s.aspectRatio)).toEqual([
-          { width: 3, height: 2 },
-          { width: 3, height: 2 },
-          { width: 3, height: 2 },
-        ])
-      })
-
-      it("defaults to 3 columns when maxColumns is unset", () => {
-        expect(statesFor(undefined)).toEqual(statesFor("3"))
-      })
+    it("previews exactly Mobile/Tablet/Desktop", () => {
+      expect(withImages?.previewStates.map((s) => s.label)).toEqual([
+        "Mobile",
+        "Tablet",
+        "Desktop",
+      ])
     })
   })
 
-  describe("blockquote (context-resolved circle/square versions)", () => {
-    const configFor = (pageLayout?: IsomerPageLayoutType) =>
-      resolveAdjustmentConfig({
-        block: { type: "blockquote" },
-        fieldName: "imageSrc",
-        context: { pageLayout },
-      })
+  // Blockquote is a circle on most pages and a square on the homepage. The
+  // preview renders at the page's own layout, so one config serves both: the
+  // page layout must not change what resolves.
+  describe("blockquote", () => {
+    it("resolves the same fixed 1:1 config for every page layout", () => {
+      // Arrange
+      const configFor = (pageLayout?: "content" | "homepage") =>
+        resolveAdjustmentConfig({
+          block: { type: "blockquote" },
+          fieldName: "imageSrc",
+          context: { pageLayout },
+        })
 
-    // Blockquote renders the same 1:1 image as a circle everywhere except the
-    // homepage/notfound layouts, where it's a square — a real-component
-    // preview regression here would mean an editor never sees the shape their
-    // crop will actually take.
-    const BREAKPOINTS = ["Mobile", "Tablet", "Desktop"]
-    const expectStates = (
-      version: { previewStates: AdjustmentPreviewState[] } | undefined,
-      layout: string,
-    ) => {
-      expect(version?.previewStates.map((s) => s.label)).toEqual(BREAKPOINTS)
-      expect(version?.previewStates.map((s) => s.id)).toEqual([
-        "mobile",
-        "tablet",
-        "desktop",
-      ])
-      expect(version?.previewStates.every((s) => s.layout === layout)).toBe(
-        true,
-      )
-    }
+      // Act
+      const configs = [configFor("content"), configFor("homepage"), configFor()]
 
-    it("resolves only the circle version for a content-page layout", () => {
-      const config = configFor("content")
-      expect(config?.versions.map((v) => v.id)).toEqual(["circle"])
-      expectStates(config?.versions[0], "content")
-    })
-
-    it("resolves only the square version for the homepage layout", () => {
-      const config = configFor("homepage")
-      expect(config?.versions.map((v) => v.id)).toEqual(["square"])
-      expectStates(config?.versions[0], "homepage")
-    })
-
-    it("resolves only the square version for the notfound layout", () => {
-      const config = configFor("notfound")
-      expect(config?.versions.map((v) => v.id)).toEqual(["square"])
-      expectStates(config?.versions[0], "homepage")
-    })
-
-    // When the page layout isn't known (e.g. this control renders outside a
-    // page editor), fall back to showing both candidate versions.
-    it("resolves both versions when no page-layout context is given", () => {
-      const config = configFor(undefined)
-      expect(config?.versions.map((v) => v.id)).toEqual(["circle", "square"])
-      expectStates(config?.versions[0], "content")
-      expectStates(config?.versions[1], "homepage")
+      // Assert
+      expect(configs[0]?.lockedRatios).toEqual([{ width: 1, height: 1 }])
+      expect(configs[1]).toBe(configs[0])
+      expect(configs[2]).toBe(configs[0])
     })
   })
 
@@ -569,19 +480,9 @@ describe("resolveAdjustmentConfig", () => {
     // The homepage CollectionBlock embed also consumes this image, but its
     // frame depends on the live collection item count at render time -- this
     // editor genuinely cannot know that, so it's out of scope: the preview
-    // only ever shows the collection's own index-page listing, resolved to a
-    // single version (no dropdown, matching every other component here).
-    it("resolves exactly one version", () => {
-      const config = resolveAdjustmentConfig({
-        block: {},
-        fieldName: "src",
-        context: { isCollectionThumbnail: true, collectionVariant: "blog" },
-      })
-      expect(config?.versions).toHaveLength(1)
-    })
-
+    // only ever shows the collection's own index-page listing.
     const aspectRatiosFor = (config: AdjustmentConfig) =>
-      config.versions[0]?.previewStates.map((s) => s.aspectRatio)
+      config.previewStates.map((s) => s.aspectRatio)
 
     it("models the 1-column (CollectionCard) layout as a fixed 5:4 frame at every breakpoint", () => {
       const config = resolveAdjustmentConfig({
@@ -676,6 +577,58 @@ describe("resolveAdjustmentConfig", () => {
       }
       const html = renderBlockHtml(block, "homepage")
       expect(html).toContain("w-60")
+    })
+  })
+
+  // Same drift risk for the frame shape itself: each value below is a hand
+  // copy of a Tailwind class, so derive the class from the config and check
+  // the real markup still carries it. A locked ratio that drifts from the
+  // frame is the costly case: the crop is baked into the saved image, so the
+  // component would re-crop every saved image with object-cover.
+  describe("pinned frame values", () => {
+    it("contentpic's locked ratio matches the rendered aspect class", () => {
+      // Arrange
+      const config = resolveAdjustmentConfig({
+        block: { type: "contentpic" },
+        fieldName: "imageSrc",
+      })
+      const ratio = config?.lockedRatios?.[0]
+      const block = {
+        type: "contentpic",
+        imageSrc: "/a.png",
+        imageAlt: "a",
+        content: { type: "prose", content: [] },
+      }
+
+      // Act
+      const html = renderBlockHtml(block, "content")
+
+      // Assert
+      expect(ratio).toBeDefined()
+      expect(html).toContain(`aspect-[${ratio?.width}/${ratio?.height}]`)
+    })
+
+    it("hero:gradient's height threshold matches the rendered lg:min-h band", () => {
+      // Arrange
+      const config = resolveAdjustmentConfig({
+        block: { type: "hero", variant: "gradient" },
+        fieldName: "backgroundUrl",
+      })
+      // No `actions` renders the default buttons layout, which sets the band.
+      const block = {
+        type: "hero",
+        variant: "gradient",
+        title: "Title",
+        backgroundUrl: "/a.png",
+      }
+
+      // Act
+      const html = renderBlockHtml(block, "homepage")
+
+      // Assert
+      expect(config?.maxRenderedHeightPx).toBeDefined()
+      const rem = (config?.maxRenderedHeightPx ?? 0) / 16
+      expect(html).toContain(`lg:min-h-[${rem}rem]`)
     })
   })
 })
