@@ -78,15 +78,9 @@ export const edgesMovedBy = (handle: HandlePosition) => ({
  * needed (unlike moveRect, shifting x/y here would move the anchor, which is
  * wrong for a resize).
  *
- * `imageAspect` (the source image's true pixel width/height) defaults to 1
- * (square) for backward compatibility, but MUST be passed for a correct
- * result on any non-square source: `rect.width`/`rect.height` are fractions
- * of the image's independent width/height axes, not a square unit space, so
- * `bakeImage` later multiplies them by the image's actual (possibly
- * unequal) pixel width/height — the FINAL baked pixel ratio is
- * `(rect.width/rect.height) * imageAspect`, not `rect.width/rect.height`
- * alone. To make that final ratio equal `lockedRatio`, the rect's own
- * normalized ratio must be pre-divided by `imageAspect`.
+ * Pass `imageAspect`, the source's pixel width / height, for any non-square
+ * source. The baked pixel ratio is `(rect.width / rect.height) * imageAspect`,
+ * so the rect's own ratio is `lockedRatio / imageAspect`.
  */
 export const resizeRectByHandle = (
   rect: CropRectNormalized,
@@ -155,9 +149,7 @@ export const resizeRectByHandle = (
  * Default starting rect: for a locked ratio, the largest centered rect of
  * that ratio that fits the unit square; otherwise the full image.
  *
- * `imageAspect` defaults to 1 (square) for backward compatibility — see the
- * matching note on `resizeRectByHandle` for why a non-square source needs it
- * passed to land the correct baked pixel ratio.
+ * `imageAspect` works as it does in `resizeRectByHandle`.
  */
 export const defaultCropRect = (
   lockedRatio?: {
@@ -198,12 +190,9 @@ export interface NormalizedRect {
 }
 
 /**
- * Where an image actually renders inside a box under `object-fit: contain`,
- * as a rect normalized to the BOX (not the image) — i.e. the complement of
- * this rect is the letterboxed/pillarboxed "bleed" space. Crop/focal values
- * are normalized to the IMAGE, so callers must map through this rect before
- * treating box-space pointer/percentage math as image-space — otherwise the
- * crop UI lets you drag into bleed space that doesn't exist in the real image.
+ * Where an `object-fit: contain` image renders inside its box, normalized to
+ * the box. Crop and focal values are normalized to the image, so map box
+ * coordinates through this rect first.
  */
 export const getContainedImageBounds = (
   box: { width: number; height: number },
@@ -214,13 +203,11 @@ export const getContainedImageBounds = (
   }
   const boxAspect = box.width / box.height
   if (imageAspect > boxAspect) {
-    // Image is relatively wider than the box: fills box width, letterboxed
-    // (blank bars) top/bottom.
+    // Wider than the box, so bars sit above and below.
     const height = boxAspect / imageAspect
     return { x: 0, y: (1 - height) / 2, width: 1, height }
   }
-  // Image is relatively narrower/taller than the box: fills box height,
-  // pillarboxed (blank bars) left/right.
+  // Narrower than the box, so bars sit left and right.
   const width = imageAspect / boxAspect
   return { x: (1 - width) / 2, y: 0, width, height: 1 }
 }
