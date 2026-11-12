@@ -41,7 +41,6 @@ describe("computeLowResWarning", () => {
   })
 
   it("warns when a tight crop drops the effective width below the frame", () => {
-    // 2000px image, keeping half the width → 1000px effective < 1280.
     expect(
       computeLowResWarning({
         naturalSize: { width: 2000, height: 1200 },
@@ -51,9 +50,7 @@ describe("computeLowResWarning", () => {
     ).toEqual({ dimension: "width", effectivePx: 1000, targetPx: 1280 })
   })
 
-  // Regression (PR #3621 review): the native Image column is ~943px wide just
-  // below `lg`, so the threshold is 960 — a crop between the old 768 floor and
-  // 960 must now warn.
+  // PR #3621 review: the Image column is ~943px wide just below `lg`.
   it("warns on a crop that fills the old 768 floor but not the real frame", () => {
     expect(
       computeLowResWarning({
@@ -75,7 +72,6 @@ describe("computeLowResWarning", () => {
 
   describe("cover: either axis short upscales (reports the worst)", () => {
     it("warns on a wide-but-short crop via the height axis", () => {
-      // 2000×300 fills the width (2000 ≥ 1280) but is too short (300 < 456).
       expect(
         computeLowResWarning({
           naturalSize: { width: 2000, height: 300 },
@@ -88,7 +84,7 @@ describe("computeLowResWarning", () => {
     })
 
     it("reports the axis that falls furthest short", () => {
-      // width ratio 1280/800 = 1.6; height ratio 456/300 = 1.52 → width is worse.
+      // Width needs 1.6x upscaling, height 1.52x.
       expect(
         computeLowResWarning({
           naturalSize: { width: 800, height: 300 },
@@ -102,7 +98,6 @@ describe("computeLowResWarning", () => {
   })
 
   describe("contain: only upscaled when BOTH axes fall short", () => {
-    // Gallery frame: 960 wide × 456 tall, object-contain.
     const frame = {
       maxRenderedWidthPx: 960,
       maxRenderedHeightPx: 456,
@@ -120,8 +115,7 @@ describe("computeLowResWarning", () => {
     })
 
     it("does not warn on a tall portrait crop (fills the height)", () => {
-      // Regression: width-only would have false-warned (500 < 960) even though
-      // contain scales this down to fit the 456px height — sharp.
+      // A width-only check would warn here, since 500 < 960.
       expect(
         computeLowResWarning({
           naturalSize: { width: 500, height: 1500 },
@@ -132,8 +126,7 @@ describe("computeLowResWarning", () => {
     })
 
     it("warns on a genuinely small crop, reporting the binding axis", () => {
-      // 500×300: width ratio 960/500 = 1.92, height ratio 456/300 = 1.52 →
-      // contain fills on the smaller ratio (height), the actual upscale.
+      // Width needs 1.92x, height 1.52x. Contain upscales by the smaller.
       expect(
         computeLowResWarning({
           naturalSize: { width: 500, height: 300 },
@@ -145,9 +138,7 @@ describe("computeLowResWarning", () => {
   })
 
   it("falls back to the locked-ratio default crop when none is set yet", () => {
-    // 300x180 landscape image, 5:6 portrait frame → defaultCropRect fits the
-    // largest centered 5:6 rect: width = 0.5 (normalized), giving a 150px-wide
-    // pixel crop (0.25*300 to 0.75*300) — below the 200px target.
+    // The default 5:6 crop of a 300x180 image is 150px wide.
     expect(
       computeLowResWarning({
         naturalSize: { width: 300, height: 180 },
