@@ -109,11 +109,11 @@ export const AttachmentData = ({
                   as: "button",
                   type: "button",
                   "aria-label": editLabel,
-                  onClick: (e: React.MouseEvent) => {
+                  onClick: (e) => {
                     e.stopPropagation()
                     onEdit()
                   },
-                  onKeyDown: (e: React.KeyboardEvent) => {
+                  onKeyDown: (e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault()
                       e.stopPropagation()
