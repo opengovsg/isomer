@@ -202,4 +202,56 @@ describe("resolveAdjustmentConfig", () => {
       expect(html).toContain("sm:w-[200px]")
     })
   })
+
+  // Same drift risk for the frame shape itself: each value below is a hand
+  // copy of a Tailwind class, so derive the class from the config and check
+  // the real markup still carries it. A locked ratio that drifts from the
+  // frame is the costly case: the crop is baked into the saved image, so the
+  // component would re-crop every saved image with object-cover.
+  describe("pinned frame values", () => {
+    it("contentpic's locked ratio matches the rendered aspect class", () => {
+      // Arrange
+      const config = resolveAdjustmentConfig({
+        block: { type: "contentpic" },
+        fieldName: "imageSrc",
+      })
+      const ratio = config?.lockedRatios?.[0]
+      const block = {
+        type: "contentpic",
+        imageSrc: "/a.png",
+        imageAlt: "a",
+        content: { type: "prose", content: [] },
+      }
+
+      // Act
+      const html = renderBlockHtml(block, "content")
+
+      // Assert
+      expect(ratio).toBeDefined()
+      expect(html).toContain(`aspect-[${ratio?.width}/${ratio?.height}]`)
+    })
+
+    it("hero:gradient's height threshold matches the rendered lg:min-h band", () => {
+      // Arrange
+      const config = resolveAdjustmentConfig({
+        block: { type: "hero", variant: "gradient" },
+        fieldName: "backgroundUrl",
+      })
+      // No `actions` renders the default buttons layout, which sets the band.
+      const block = {
+        type: "hero",
+        variant: "gradient",
+        title: "Title",
+        backgroundUrl: "/a.png",
+      }
+
+      // Act
+      const html = renderBlockHtml(block, "homepage")
+
+      // Assert
+      expect(config?.maxRenderedHeightPx).toBeDefined()
+      const rem = (config?.maxRenderedHeightPx ?? 0) / 16
+      expect(html).toContain(`lg:min-h-[${rem}rem]`)
+    })
+  })
 })

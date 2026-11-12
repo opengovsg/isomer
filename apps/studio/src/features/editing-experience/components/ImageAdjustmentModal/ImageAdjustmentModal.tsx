@@ -10,17 +10,12 @@ import {
   Flex,
   HStack,
   Icon,
-  MenuButton,
-  MenuItemOption,
-  MenuList,
-  MenuOptionGroup,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Portal,
   Spacer,
   Text,
   Tooltip,
@@ -30,14 +25,13 @@ import {
 import {
   Button,
   Infobox,
-  Menu,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
 import { isFocalApplicable } from "@opengovsg/isomer-components"
 import posthog from "posthog-js"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { BiChevronDown, BiInfoCircle, BiReset } from "react-icons/bi"
+import { BiInfoCircle, BiReset } from "react-icons/bi"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
@@ -155,7 +149,7 @@ interface ImageAdjustmentModalProps {
   originalFile?: File
   // The real page layout the published page would render at (e.g. the
   // page editor's current layout) — threaded through to the preview so a
-  // state without its own `layout` override shows the real shape.
+  // layout-dependent shape (e.g. Blockquote) shows the real shape.
   pageLayout?: IsomerPageLayoutType
   siteId: number
   resourceId?: string
@@ -214,20 +208,6 @@ export const ImageAdjustmentModal = ({
       : "cover"
     : (config.previewObjectFitFor?.(fieldHost) ?? "cover")
   const [draft, setDraft] = useState<ImageAdjustment | undefined>(value)
-  // Which of config.versions' preview sets the rail currently shows. Defaults
-  // to the first; only surfaced as a dropdown when there's more than one
-  // version (e.g. Blockquote shown with no page-layout context, so both
-  // circle and square are candidates). Reset whenever the config identity
-  // changes (e.g. re-resolved for a different block) so a stale version id
-  // from a previous image can't silently select nothing.
-  const [activeVersionId, setActiveVersionId] = useState(
-    () => config.versions[0]?.id,
-  )
-  useEffect(() => {
-    setActiveVersionId(config.versions[0]?.id)
-  }, [config])
-  const activeVersion =
-    config.versions.find((v) => v.id === activeVersionId) ?? config.versions[0]
   // The source image's true pixel aspect ratio, reported by CropFocalControl
   // once its <img> loads — needed so "Reset adjustments" can seed the same
   // ratio-correct crop the control itself would (see defaultCropRect).
@@ -635,51 +615,6 @@ export const ImageAdjustmentModal = ({
                         </Box>
                       </Tooltip>
                     </HStack>
-
-                    {/* Only shown when the config declares more than one
-                        preview version (e.g. Blockquote's circle/square masks
-                        with no page-layout context to narrow to one). On its
-                        own row (not squeezed beside "Preview") so it gets the
-                        rail's full width. */}
-                    {config.versions.length > 1 && (
-                      <Menu closeOnSelect size="sm" matchWidth>
-                        <MenuButton
-                          as={Button}
-                          variant="outline"
-                          size="xs"
-                          w="100%"
-                          px="0.6rem"
-                          justifyContent="space-between"
-                          rightIcon={<BiChevronDown />}
-                          aria-label="Preview version"
-                        >
-                          <Text as="span" noOfLines={1}>
-                            {activeVersion?.label ?? "Preview"}
-                          </Text>
-                        </MenuButton>
-                        <Portal>
-                          <MenuList maxH="16rem" overflowY="auto">
-                            <MenuOptionGroup
-                              type="radio"
-                              value={activeVersionId}
-                              onChange={(value) =>
-                                setActiveVersionId(value as string)
-                              }
-                            >
-                              {config.versions.map((v) => (
-                                <MenuItemOption
-                                  key={v.id}
-                                  value={v.id}
-                                  fontSize="sm"
-                                >
-                                  {v.label ?? "Preview"}
-                                </MenuItemOption>
-                              ))}
-                            </MenuOptionGroup>
-                          </MenuList>
-                        </Portal>
-                      </Menu>
-                    )}
                   </VStack>
 
                   {/* Low-resolution warning — the kept crop can't fill this
@@ -707,7 +642,7 @@ export const ImageAdjustmentModal = ({
                     originalSrc={originalSrc}
                     originalFile={originalFile}
                     adjustment={draft}
-                    previewStates={activeVersion?.previewStates ?? []}
+                    previewStates={config.previewStates}
                     block={block}
                     imageFieldName={imageFieldName}
                     fieldHost={fieldHost}

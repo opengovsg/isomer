@@ -5,7 +5,6 @@ import type {
   AdjustmentPreviewState,
   AdjustmentRenderContext,
   AspectRatio,
-  PreviewVersion,
 } from "./AdjustmentConfig"
 
 /** Deliberate opt-outs: these component types will never have image adjustment, by design. */
@@ -14,13 +13,6 @@ export const INTENTIONALLY_NOT_ADJUSTABLE = [
   "video",
   "navbar",
 ] as const
-
-// Wraps a plain previewStates array as the sole `PreviewVersion` of a config
-// that has no distinct shape/variant axis — no `label` needed since the modal only shows its version
-// dropdown when there's more than one version.
-const singleVersion = (
-  previewStates: AdjustmentPreviewState[],
-): PreviewVersion[] => [{ id: "default", previewStates }]
 
 // Standard Desktop/Tablet/Mobile preview set, shared by every component so all
 // editor previews show the same three breakpoint viewport widths (mobile 375 /
@@ -74,13 +66,11 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   maxRenderedHeightPx: 500,
   // Closest common ratio to each breakpoint's hero band (375×240→16:10,
   // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
-  versions: singleVersion(
-    responsivePreviewStates({
-      mobile: { width: 16, height: 10 },
-      tablet: { width: 2, height: 1 },
-      desktop: { width: 5, height: 2 },
-    }),
-  ),
+  previewStates: responsivePreviewStates({
+    mobile: { width: 16, height: 10 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 5, height: 2 },
+  }),
   preUploadCopy:
     "Use a high-resolution image (at least 2560×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text — this variant adds a gradient overlay.",
 }
@@ -105,13 +95,11 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   maxRenderedHeightPx: 500,
   // Closest common ratio to each breakpoint's hero band (375×240→16:10,
   // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
-  versions: singleVersion(
-    responsivePreviewStates({
-      mobile: { width: 16, height: 10 },
-      tablet: { width: 2, height: 1 },
-      desktop: { width: 5, height: 2 },
-    }),
-  ),
+  previewStates: responsivePreviewStates({
+    mobile: { width: 16, height: 10 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 5, height: 2 },
+  }),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text.",
 }
@@ -132,13 +120,11 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
   // so Mobile (375) shows the stacked layout while Tablet/Desktop show the row.
   // Aspect ratios are pre-measure flash guesses only (PreviewFrame measures the
   // real rendered height).
-  versions: singleVersion(
-    responsivePreviewStates({
-      mobile: { width: 4, height: 5 },
-      tablet: { width: 2, height: 1 },
-      desktop: { width: 2, height: 1 },
-    }),
-  ),
+  previewStates: responsivePreviewStates({
+    mobile: { width: 4, height: 5 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 2, height: 1 },
+  }),
   preUploadCopy:
     "Use a high-resolution image (at least 400×480px) with a 5:6 (portrait) aspect ratio. Keep the key subject centered — the image is cropped to a fixed portrait frame beside your text.",
 }
@@ -158,13 +144,11 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
   maxRenderedHeightPx: 400,
   // Closest common ratio to each breakpoint's frame (375×300→5:4,
   // 768×400→2:1, 1280×450→3:1); the real tile height is still measured.
-  versions: singleVersion(
-    responsivePreviewStates({
-      mobile: { width: 5, height: 4 },
-      tablet: { width: 2, height: 1 },
-      desktop: { width: 3, height: 1 },
-    }),
-  ),
+  previewStates: responsivePreviewStates({
+    mobile: { width: 5, height: 4 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 3, height: 1 },
+  }),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px). Place the key subject on the side matching where the image sits (left or right) rather than centering it.",
 }
@@ -184,13 +168,11 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   // Widest frame is 2:1 from md up (md:aspect-[2/1]) → 640px tall at 1280px.
   // Crop is free (custom), so height must be checked independently of width.
   maxRenderedHeightPx: 640,
-  versions: singleVersion(
-    responsivePreviewStates({
-      mobile: { width: 1, height: 1 },
-      tablet: { width: 2, height: 1 },
-      desktop: { width: 2, height: 1 },
-    }),
-  ),
+  previewStates: responsivePreviewStates({
+    mobile: { width: 1, height: 1 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 2, height: 1 },
+  }),
   preUploadCopy:
     "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed.",
 }
