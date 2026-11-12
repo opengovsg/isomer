@@ -335,6 +335,9 @@ catalogs:
     iron-session:
       specifier: ^9.0.1
       version: 9.0.1
+    is-animated:
+      specifier: ^3.0.20
+      version: 3.0.20
     isomorphic-dompurify:
       specifier: ^4.5.0
       version: 4.6.0
@@ -1033,6 +1036,9 @@ importers:
       iron-session:
         specifier: 'catalog:'
         version: 9.0.1
+      is-animated:
+        specifier: 'catalog:'
+        version: 3.0.20
       isomorphic-dompurify:
         specifier: 'catalog:'
         version: 4.6.0(@noble/hashes@2.2.0)
@@ -8848,6 +8854,10 @@ packages:
 
   is-alphanumerical@2.0.1:
     resolution: {integrity: sha512-hmbYhX/9MUMF5uh7tOXyK/n0ZvWpad5caBA17GsC6vyuCqaWliRG5K1qS9inmUhEMaOBIW7/whAnSwveW/LtZw==}
+
+  is-animated@3.0.20:
+    resolution: {integrity: sha512-HYvuR9b4kuVZBGI3cA691gXlWsHsXZU8iRE9LdqNIB8iwSzxGBnRxXlrY3DAYzrzfxlSMZU5G6++1jVvnCiq6Q==}
+    engines: {node: '>=20.0.0'}
 
   is-arrayish@0.2.1:
     resolution: {integrity: sha512-zz06S8t0ozoDXMG+ube26zeCTNXcKIPJZJi8hBrF4idCLms4CG9QtK7qBl1boi5ODzFpjswb5JPmHCbMpjaYzg==}
@@ -19449,6 +19459,8 @@ snapshots:
     dependencies:
       is-alphabetical: 2.0.1
       is-decimal: 2.0.1
+
+  is-animated@3.0.20: {}
 
   is-arrayish@0.2.1: {}
 

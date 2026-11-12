@@ -110,7 +110,7 @@ describe("bakeImage composition", () => {
     // enough for isAnimatedImageBlob to detect, without needing a real
     // decodable image, since bakeImage must reject this before ever calling
     // createImageBitmap.
-    const header = new Uint8Array(21)
+    const header = new Uint8Array(30) // is-animated needs >= 30 bytes
     header.set([0x52, 0x49, 0x46, 0x46], 0) // "RIFF"
     header.set([0x57, 0x45, 0x42, 0x50], 8) // "WEBP"
     header.set([0x56, 0x50, 0x38, 0x58], 12) // "VP8X"
